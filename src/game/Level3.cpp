@@ -4331,7 +4331,7 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
         break;
     case 1: //uint64
         uValue = target->GetUInt64Value(index);
-        PSendSysMessage("The uint64 value of %u in %u is %I64u", GUID_LOPART(guid), index, uValue);
+        PSendSysMessage("The uint64 value of %u (lowguid) in field %u is "UI64FMTD, GUID_LOPART(guid), index, uValue);
         break;
     case 2: //float
         fValue = target->GetFloatValue(index);
@@ -5350,7 +5350,11 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     }
     
     std::string displayName;
-    sObjectMgr->GetPlayerNameByGUID(targetGUID, displayName);
+    if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(targetGUID))
+        displayName = nameData->m_name;
+    else
+        displayName = "<Unknown>";
+
     PSendSysMessage(LANG_QCOMPLETE_THIS_WEEK, displayName.c_str(), completedQuestsThisWeek);
     return true;
 }
@@ -5648,21 +5652,25 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
     
     QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = %u", accountid, uint32(SANCTION_MUTE));
     if (!result) {
-        PSendSysMessage("Aucune sanction pour ce compte.");
+        PSendSysMessage("No sanction on this account.");
         return true;
     }
     
     do {
         Field* fields = result->Fetch();
-        uint32 authorGUID = fields[2].GetUInt32();
         uint32 duration = fields[0].GetUInt32();
+        std::string reason = fields[1].GetString();
+        uint32 authorGUID = fields[2].GetUInt32();
         std::string unbanstr = fields[3].GetString();
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
-        if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
-            //authorname = "<Inconnu>";
+        std::string displayName;
+        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
+            authorname = nameData->m_name;
+        else
             authorname = "<Unknown>";
-        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+
+        PSendSysMessage("Account %u: Mute %s for %s by %s (%s)%s.", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), reason.c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
     return true;
@@ -5706,15 +5714,18 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
     
     do {
         Field* fields = result->Fetch();
-        uint32 authorGUID = fields[2].GetUInt32();
+        std::string reason = fields[1].GetString();
         uint32 duration = fields[0].GetUInt32();
+        uint32 authorGUID = fields[2].GetUInt32();
         std::string unbanstr = fields[3].GetString();
         uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
         std::string authorname;
-        if (!sObjectMgr->GetPlayerNameByLowGUID(authorGUID, authorname))
-            //authorname = "<Inconnu>";
+        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
+            authorname = nameData->m_name;
+        else
             authorname = "<Unknown>";
-        PSendSysMessage("Account %d: Mute %s pour \"%s\" par %s (%s).", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), fields[1].GetString().c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+
+        PSendSysMessage("Account %d: Mute %s by \"%s\" for %s (%s)%s.", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), reason.c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result->NextRow());
     
     return true;

@@ -581,7 +581,8 @@ bool GridMap::ExistVMap(uint32 mapid,int x,int y)
             if(!exists)
             {
                 std::string name = vmgr->getDirFileName(mapid,x,y);
-                TC_LOG_ERROR("VMap file '%s' is missing or point to wrong version vmap file, redo vmaps with latest vmap_assembler.exe program", (sWorld->GetDataPath()+"vmaps/"+name).c_str());
+                TC_LOG_ERROR("maps", "VMap file '%s' does not exist", (sWorld->GetDataPath() + "vmaps/" + name).c_str());
+                TC_LOG_ERROR("maps", "Please place VMAP-files (*.vmtree and *.vmtile) in the vmap-directory (%s), or correct the DataDir setting in your worldserver.conf file.", (sWorld->GetDataPath() + "vmaps/").c_str());
                 return false;
             }
         }

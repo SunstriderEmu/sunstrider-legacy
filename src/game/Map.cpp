@@ -778,7 +778,7 @@ void Map::Update(const uint32 &t_diff)
                     {
                         if(!*itr)
                         {
-                            TC_LOG_ERROR("maps","unit %u has invalid shared vision player, list size %u", obj->GetEntry(), ((Unit*)obj)->GetSharedVisionList().size());
+                            TC_LOG_ERROR("maps","unit %u has invalid shared vision player, list size %u", obj->GetEntry(), uint32(((Unit*)obj)->GetSharedVisionList().size()));
                             continue;
                         }
                         if(Player* p = ObjectAccessor::FindPlayer(*itr))
@@ -2609,7 +2609,8 @@ void InstanceMap::SetResetSchedule(bool on)
     if(!HavePlayers() && !IsRaid() && !IsHeroic())
     {
         InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
-        if(!save) TC_LOG_ERROR("InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %d of %d", on ? "on" : "off", GetInstanceId(), GetId());
+        if(!save) 
+            TC_LOG_ERROR("maps", "InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %u of %u", on ? "on" : "off", GetInstanceId(), GetId());
         else sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }
 }

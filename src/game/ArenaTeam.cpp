@@ -261,7 +261,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     if(newcaptain)
     {
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
-        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] promoted player: %s [GUID: %u] to leader of arena team [Id: %u] [Type: %u].", oldcaptain->GetName().c_str(), oldcaptain->GetGUIDLow(), newcaptain->GetName().c_str(), newcaptain->GetGUID(), GetId(), GetType());
+        TC_LOG_DEBUG("arena", "Player: %s [GUID: " UI64FMTD "] promoted player : %s[GUID:" UI64FMTD "] to leader of arena team[Id:%u][Type:%u].", oldcaptain->GetName().c_str(), oldcaptain->GetGUIDLow(), newcaptain->GetName().c_str(), newcaptain->GetGUID(), GetId(), GetType());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
             GetId(), uint32(AT_EV_PROMOTE), GetType(), GUID_LOPART(guid), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(NULL));
     }

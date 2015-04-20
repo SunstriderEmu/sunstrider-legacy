@@ -295,12 +295,11 @@ void AuctionHouseMgr::SendAuctionExpiredMail( AuctionEntry * auction )
 void AuctionHouseMgr::LoadAuctionItems()
 {
     // data needs to be at first place for Item::LoadFromDB
-    QueryResult result = CharacterDatabase.Query( "SELECT data,itemguid,item_template FROM auctionhouse JOIN item_instance ON itemguid = guid" );
+    QueryResult result = CharacterDatabase.Query( "SELECT data, itemguid, item_template FROM auctionhouse JOIN item_instance ON itemguid = guid" );
 
     if( !result )
     {
-        TC_LOG_INFO("FIXME","");
-        TC_LOG_INFO("FIXME",">> Loaded 0 auction items");
+        TC_LOG_INFO("server.loading",">> Loaded 0 auction items");
         return;
     }
 
@@ -317,7 +316,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         if(!proto)
         {
-            TC_LOG_ERROR("FIXME", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
+            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
             continue;
         }
 
@@ -334,7 +333,6 @@ void AuctionHouseMgr::LoadAuctionItems()
     }
     while( result->NextRow() );
 
-    TC_LOG_INFO("server.loading"," ");
     TC_LOG_INFO("server.loading", ">> Loaded %u auction items", count );
 }
 
@@ -343,8 +341,7 @@ void AuctionHouseMgr::LoadAuctions()
     QueryResult result = CharacterDatabase.Query("SELECT COUNT(*) FROM auctionhouse");
     if( !result )
     {
-        TC_LOG_INFO("FIXME","");
-        TC_LOG_INFO("FIXME",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
+        TC_LOG_INFO("server.loading",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
     }
 
@@ -353,16 +350,14 @@ void AuctionHouseMgr::LoadAuctions()
 
     if(!AuctionCount)
     {
-        TC_LOG_INFO("FIXME","");
-        TC_LOG_INFO("FIXME",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
+        TC_LOG_INFO("server.loading",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
     }
 
     result = CharacterDatabase.Query( "SELECT id,auctioneerguid,itemguid,item_template,itemowner,buyoutprice,time,buyguid,lastbid,startbid,deposit FROM auctionhouse" );
     if( !result )
     {
-        TC_LOG_INFO("FIXME","");
-        TC_LOG_INFO("FIXME",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
+        TC_LOG_INFO("server.loading",">> Loaded 0 auctions. DB table `auctionhouse` is empty.");
         return;
     }
 
@@ -391,7 +386,7 @@ void AuctionHouseMgr::LoadAuctions()
         {
             AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
-            TC_LOG_ERROR("FIXME","Auction %u has not a existing auctioneer (GUID : %u)", aItem->Id, aItem->auctioneer);
+            TC_LOG_ERROR("misc","Auction %u has not a existing auctioneer (GUID : %u)", aItem->Id, aItem->auctioneer);
             delete aItem;
             continue;
         }
@@ -401,7 +396,7 @@ void AuctionHouseMgr::LoadAuctions()
         {
             AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
-            TC_LOG_ERROR("FIXME","Auction %u has not a existing auctioneer (GUID : %u Entry: %u)", aItem->Id, aItem->auctioneer,auctioneerData->id);
+            TC_LOG_ERROR("misc","Auction %u has not a existing auctioneer (GUID : %u Entry: %u)", aItem->Id, aItem->auctioneer,auctioneerData->id);
             delete aItem;
             continue;
         }
@@ -411,7 +406,7 @@ void AuctionHouseMgr::LoadAuctions()
         {
             AuctionHouseMgr::SendAuctionExpiredMail(aItem);
             aItem->DeleteFromDB();
-            TC_LOG_ERROR("FIXME","Auction %u has auctioneer (GUID : %u Entry: %u) with wrong faction %u",
+            TC_LOG_ERROR("misc","Auction %u has auctioneer (GUID : %u Entry: %u) with wrong faction %u",
                 aItem->Id, aItem->auctioneer,auctioneerData->id,auctioneerInfo->faction);
             delete aItem;
             continue;
@@ -422,7 +417,7 @@ void AuctionHouseMgr::LoadAuctions()
         if ( !GetAItem( aItem->item_guidlow ) )
         {
             aItem->DeleteFromDB();
-            TC_LOG_ERROR("FIXME","Auction %u has not a existing item : %u", aItem->Id, aItem->item_guidlow);
+            TC_LOG_ERROR("misc","Auction %u has not a existing item : %u", aItem->Id, aItem->item_guidlow);
             delete aItem;
             continue;
         }
@@ -431,7 +426,6 @@ void AuctionHouseMgr::LoadAuctions()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("FIXME"," ");
     TC_LOG_INFO( "server.loading",">> Loaded %u auctions", AuctionCount );
 }
 

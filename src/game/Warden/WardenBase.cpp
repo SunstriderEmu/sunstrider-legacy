@@ -212,7 +212,7 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket & recvData)
         case WARDEN_CMSG_MODULE_FAILED:
             break;
         default:
-            TC_LOG_ERROR("FIXME","Got unknown warden opcode %02X of size %u.", Opcode, recvData.size() - 1);
+            TC_LOG_ERROR("network","Got unknown warden opcode %02X of size %u.", Opcode, uint32(recvData.size() - 1));
             break;
     }
 }

@@ -616,7 +616,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             {
                 if(e.event.friendlyDeath.range > CREATURE_MAX_DEATH_WARN_RANGE)
                 {
-                    SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has range (%u) above max possible value, range has been capped to %u.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.friendlyDeath.range, CREATURE_MAX_DEATH_WARN_RANGE);
+                    SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has range (%u) above max possible value, range has been capped to %u.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.friendlyDeath.range, uint32(CREATURE_MAX_DEATH_WARN_RANGE));
                     e.event.friendlyDeath.range = (uint32)CREATURE_MAX_DEATH_WARN_RANGE;
                 }
 

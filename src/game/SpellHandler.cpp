@@ -200,7 +200,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
-    TC_LOG_DEBUG("FIXME","WORLD: CMSG_OPEN_ITEM packet, data length = %i",recvPacket.size());
+    TC_LOG_DEBUG("network","WORLD: CMSG_OPEN_ITEM packet, data length = %u", (uint32)recvPacket.size());
 
     Player* pUser = _player;
     uint8 bagIndex, slot;
@@ -211,7 +211,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
     recvPacket >> bagIndex >> slot;
 
-    TC_LOG_DEBUG("FIXME","bagIndex: %u, slot: %u",bagIndex,slot);
+    TC_LOG_DEBUG("network","bagIndex: %u, slot: %u",bagIndex,slot);
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)

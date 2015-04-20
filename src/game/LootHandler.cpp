@@ -529,7 +529,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 
     if (slotid > pLoot->items.size())
     {
-        TC_LOG_ERROR("misc","AutoLootItem: Player %s might be using a hack! (slot %d, size %d)",GetPlayer()->GetName().c_str(), slotid, pLoot->items.size());
+        TC_LOG_ERROR("misc","AutoLootItem: Player %s might be using a hack! (slot %u, size %u)",GetPlayer()->GetName().c_str(), slotid, (uint32)pLoot->items.size());
         return;
     }
 

@@ -462,7 +462,7 @@ void ObjectMgr::LoadNpcOptionLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" npc_option locale strings", mNpcOptionLocaleMap.size() );
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " npc_option locale strings", mNpcOptionLocaleMap.size() );
 }
 
 void ObjectMgr::LoadCreatureTemplates()
@@ -1158,7 +1158,7 @@ void ObjectMgr::LoadCreatureLinkedRespawn()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" linked respawns", mCreatureLinkedRespawnMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " linked respawns", mCreatureLinkedRespawnMap.size());
 }
 
 bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
@@ -1243,13 +1243,13 @@ void ObjectMgr::LoadCreatures()
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` has creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
             continue;
         }
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
-            TC_LOG_ERROR("sql.sql","Table `creature` have creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid,data.id );
+            TC_LOG_ERROR("sql.sql","Table `creature` has creature (GUID: %u) that listed as heroic template in `creature_template_substitution`, skipped.",guid );
             continue;
         }
 
@@ -1294,7 +1294,7 @@ void ObjectMgr::LoadCreatures()
 
     DeleteCreatureData(0);
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" creatures", mCreatureDataMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creatures", mCreatureDataMap.size());
 }
 
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
@@ -1384,7 +1384,7 @@ void ObjectMgr::LoadGameobjects()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobjects", mGameObjectDataMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobjects", mGameObjectDataMap.size());
 }
 
 void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
@@ -1448,7 +1448,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" creature respawn times", mCreatureRespawnTimes.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creature respawn times", mCreatureRespawnTimes.size());
 }
 
 void ObjectMgr::LoadGameobjectRespawnTimes()
@@ -1482,7 +1482,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobject respawn times", mGORespawnTimes.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject respawn times", mGORespawnTimes.size());
 }
 
 // name must be checked to correctness (if received) before call this function
@@ -1617,7 +1617,7 @@ void ObjectMgr::LoadItemLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Item locale strings", mItemLocaleMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Item locale strings", mItemLocaleMap.size());
 }
 void ObjectMgr::LoadItemTemplates()
 {
@@ -3463,7 +3463,7 @@ void ObjectMgr::LoadQuests()
             if(pow(2,11)-1 < qinfo->SkillOrClass) //mask for every class
             {
                 TC_LOG_ERROR("sql.sql","Quest %u has invalid `SkillOrClass` = %i (class case)",
-                    qinfo->GetQuestId(),qinfo->SkillOrClass,-qinfo->SkillOrClass);
+                    qinfo->GetQuestId(), qinfo->SkillOrClass);
             }
         }
         // SkillOrClass (skill case)
@@ -3471,8 +3471,8 @@ void ObjectMgr::LoadQuests()
         {
             if( !sSkillLineStore.LookupEntry(qinfo->SkillOrClass) )
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `SkillOrClass` = %u (skill case) but skill (%i) does not exist",
-                    qinfo->GetQuestId(),qinfo->SkillOrClass,qinfo->SkillOrClass);
+                TC_LOG_ERROR("sql.sql","Quest %u has `SkillOrClass` = %i (skill case) but skill (%i) does not exist",
+                    qinfo->GetQuestId(), qinfo->SkillOrClass, qinfo->SkillOrClass);
             }
         }
 
@@ -4038,7 +4038,7 @@ void ObjectMgr::LoadQuestLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Quest locale strings", mQuestLocaleMap.size() );
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Quest locale strings", mQuestLocaleMap.size() );
 }
 
 void ObjectMgr::LoadPetCreateSpells()
@@ -4545,7 +4545,7 @@ void ObjectMgr::LoadPageTextLocales()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" PageText locale strings in %u ms", mPageTextLocaleMap.size(), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " PageText locale strings in %u ms", mPageTextLocaleMap.size(), GetMSTimeDiffToNow(oldMSTime));
     
 }
 
@@ -4623,7 +4623,7 @@ void ObjectMgr::LoadInstanceTemplate()
         temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld->GetRate(RATE_INSTANCE_RESET_TIME)));
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
@@ -4694,7 +4694,7 @@ void ObjectMgr::LoadInstanceTemplateAddon()
         if(temp->reset_delay == 0) // instance has no reset delay, defaulting to 1 day
             temp->reset_delay = 1;
     }
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Instance Template Addons definitions in %u ms", _instanceTemplateAddonStore.size(), GetMSTimeDiffToNow(oldMSTime));
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Instance Template Addons definitions in %u ms", _instanceTemplateAddonStore.size(), GetMSTimeDiffToNow(oldMSTime));
     
 }
 
@@ -4822,7 +4822,7 @@ void ObjectMgr::LoadNpcTextLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" NpcText locale strings", mNpcTextLocaleMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " NpcText locale strings", mNpcTextLocaleMap.size());
     
 }
 
@@ -5937,7 +5937,7 @@ void ObjectMgr::LoadGameObjectLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobject locale strings", mGameObjectLocaleMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject locale strings", mGameObjectLocaleMap.size());
     
 }
 
@@ -6360,7 +6360,6 @@ void ObjectMgr::LoadWeatherZoneChances()
     if(!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 weather definitions. DB table `game_weather` is empty.");
-        
         return;
     }
 
@@ -6381,19 +6380,19 @@ void ObjectMgr::LoadWeatherZoneChances()
             if(wzc.data[season].rainChance > 100)
             {
                 wzc.data[season].rainChance = 25;
-                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong rain chance > 100%",zone_id,season);
+                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong rain chance > 100\%",zone_id,season);
             }
 
             if(wzc.data[season].snowChance > 100)
             {
                 wzc.data[season].snowChance = 25;
-                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong snow chance > 100%",zone_id,season);
+                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong snow chance > 100\%", zone_id, season);
             }
 
             if(wzc.data[season].stormChance > 100)
             {
                 wzc.data[season].stormChance = 25;
-                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong storm chance > 100%",zone_id,season);
+                TC_LOG_ERROR("sql.sql","Weather for zone %u season %u has wrong storm chance > 100\%",zone_id,season);
             }
         }
 
@@ -6401,7 +6400,6 @@ void ObjectMgr::LoadWeatherZoneChances()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u weather definitions", count);
-    
 }
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
@@ -7983,7 +7981,7 @@ void ObjectMgr::LoadSpellScriptsNew()
 
         const SpellEntry* spell = sSpellMgr->GetSpellInfo(spellId);
         if (!spell) {
-            TC_LOG_ERROR("sql.sql","Spell script %s has incorrect spell ID in `spell_scripts_new` table.",
+            TC_LOG_ERROR("sql.sql","Spell script %s has incorrect spell ID %u in `spell_scripts_new` table.",
                 scriptname.c_str(), spellId);
             continue;
         }

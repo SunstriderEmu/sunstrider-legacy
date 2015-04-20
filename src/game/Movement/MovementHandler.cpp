@@ -547,7 +547,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     if(movedUnit)
         _player->SetMover(movedUnit);
     else
-        TC_LOG_ERROR("network","Player %u - WorldSession::HandleSetActiveMoverOpcode could not find player with guid %u",_player->GetGUID(),guid);
+        TC_LOG_ERROR("network", "Player " UI64FMTD " - WorldSession::HandleSetActiveMoverOpcode could not find player with guid "UI64FMTD, _player->GetGUID(), guid);
 }
 
 //CMSG_MOVE_NOT_ACTIVE_MOVER

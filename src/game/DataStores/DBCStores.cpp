@@ -509,7 +509,7 @@ void LoadDBCStores(const std::string& dataPath)
         for(std::list<std::string>::iterator i = bad_dbc_files.begin(); i != bad_dbc_files.end(); ++i)
             str += *i + "\n";
 
-        TC_LOG_ERROR("server.loading", "\nSome required *.dbc files ("UI64FMTD" from %u) not found or not compatible : \n%s",bad_dbc_files.size(),DBCFilesCount,str.c_str());
+        TC_LOG_ERROR("server.loading", "\nSome required *.dbc files (" UI64FMTD " from %u) not found or not compatible : \n%s",bad_dbc_files.size(),DBCFilesCount,str.c_str());
         exit(1);
     }
 

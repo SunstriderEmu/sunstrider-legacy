@@ -337,7 +337,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
     if ((auction->deposit_time + 60) > time(NULL)) {
         if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
-            pl->GetSession()->SendNotification("Vous ne pouvez pas acheter cet objet avant %u seconde(s).", ((auction->deposit_time + 60) - time(NULL)));
+            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - time(NULL)));
             return;
         }
     }
@@ -520,7 +520,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
     recvData >> outbiddedCount;
     if (recvData.size() != (16 + outbiddedCount * 4 ))
     {
-        TC_LOG_ERROR("auction", "Client sent bad opcode!!! with count: %u and size : %d (mustbe: %d", outbiddedCount, recvData.size(),(16 + outbiddedCount * 4 ));
+        TC_LOG_ERROR("auction", "Client sent bad opcode!!! with count: %u and size : %u (mustbe: %u", outbiddedCount, (uint32)recvData.size(), (16 + outbiddedCount * 4 ));
         outbiddedCount = 0;
     }
 

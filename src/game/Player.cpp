@@ -20527,7 +20527,7 @@ uint32 Player::GetResurrectionSpellId()
                 case 20765: spell_id = 20761; break;        // rank 5
                 case 27239: spell_id = 27240; break;        // rank 6
                 default:
-                    TC_LOG_ERROR("spell","Unhandled spell %%u: S.Resurrection",(*itr)->GetId());
+                    TC_LOG_ERROR("spell","Unhandled spell %u: S.Resurrection",(*itr)->GetId());
                     continue;
             }
 
@@ -21411,7 +21411,7 @@ void Player::_LoadSkills(QueryResult result)
 
             if(count >= PLAYER_MAX_SKILLS)                      // client limit
             {
-                TC_LOG_ERROR("entities.player","Character %u has more than %u skills.", PLAYER_MAX_SKILLS);
+                TC_LOG_ERROR("entities.player","Character %u has more than %u skills.", GetGUIDLow(), uint32(PLAYER_MAX_SKILLS));
                 break;
             }
         } while (result->NextRow());

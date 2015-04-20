@@ -1083,7 +1083,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("FIXME","GameEvent::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("FIXME","GameEvent::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1092,7 +1092,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("FIXME","GameEvent::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("FIXME", "GameEvent::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1133,7 +1133,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("FIXME","GameEvent::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)",internal_event_id,mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("FIXME", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1147,7 +1147,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("FIXME","GameEvent::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)",internal_event_id,mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("FIXME", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 

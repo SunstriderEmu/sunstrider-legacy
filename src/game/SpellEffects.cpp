@@ -3754,7 +3754,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
 
     if (!lockInfo)
     {
-        TC_LOG_ERROR( "Spell::EffectOpenLock: %s [guid = %u] has an unknown lockId: %u!",
+        TC_LOG_ERROR("network", "Spell::EffectOpenLock: %s [guid = %u] has an unknown lockId: %u!",
             (gameObjTarget ? "gameobject" : "item"), GUID_LOPART(guid), lockId);
         SendCastResult(SPELL_FAILED_BAD_TARGETS);
         return;

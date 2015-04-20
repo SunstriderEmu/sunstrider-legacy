@@ -484,13 +484,13 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
             if (item->GetOwnerGUID() != player->GetGUID())
             {
-                PSendSysMessage("queue(%d): for the an item (guid %d), the owner's guid (%d) and player's guid (%d) don't match!", i, item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
+                PSendSysMessage("queue(%u): for the an item (guid %u), the owner's guid (%u) and player's guid (%u) don't match!", uint32(i), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()), player->GetGUIDLow());
                 error = true; continue;
             }
 
             if (item->GetQueuePos() != i)
             {
-                PSendSysMessage("queue(%d): for the an item (guid %d), the queuepos doesn't match it's position in the queue!", i, item->GetGUIDLow());
+                PSendSysMessage("queue(%d): for the an item (guid %d), the queuepos doesn't match it's position in the queue!", uint32(i), item->GetGUIDLow());
                 error = true; continue;
             }
 
@@ -677,7 +677,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
     PSendSysMessage("Stack amount: %u", spell->StackAmount);
     PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
-    PSendSysMessage("SpellFamilyFlags: " UI64FMTD " (%x)", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    PSendSysMessage("SpellFamilyFlags: " UI64FMTD " (" UI64FMTD ")", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
     
     return true;
 }
@@ -826,8 +826,6 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
 
 bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 {
-    
-
     Opcodes op = MSG_NULL_ACTION;
     bool boo = false;
     uint16 un16 = 0;
@@ -894,6 +892,6 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 
     GetSession()->SendPacket(&data);
     
-    PSendSysMessage("Send opcode %u with size %u.", op, data.size());
+    PSendSysMessage("Send opcode %u with size %u.", op, (uint32)data.size());
     return true;
 }

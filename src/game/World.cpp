@@ -1267,7 +1267,6 @@ void World::SetInitialWorldSettings()
     }
 
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
-    TC_LOG_INFO("server.loading", "" );
     TC_LOG_INFO("server.loading", "Loading Trinity strings..." );
     if (!sObjectMgr->LoadTrinityStrings())
         exit(1);                                            // Error message displayed in function already
@@ -3704,7 +3703,7 @@ void World::UpdateMonitoring(uint32 diff)
     filename += sConfigMgr->GetStringDefault("Monitor.players", "players");
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
-    sprintf(data, "%lu %lu", GetActiveSessionCount(), GetQueuedSessionCount());
+    sprintf(data, "%u %u", GetActiveSessionCount(), GetQueuedSessionCount());
     trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", (uint32)now, GetActiveSessionCount(), GetQueuedSessionCount());
     fputs(data, fp);
     fclose(fp);
