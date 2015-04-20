@@ -21,100 +21,48 @@
 #ifndef TRINITY_DEFINE_H
 #define TRINITY_DEFINE_H
 
-#include <sys/types.h>
-
-#include <ace/Basic_Types.h>
-#include <ace/ACE_export.h>
+#include "CompilerDefs.h"
 
 #include <cinttypes>
 #include <cstddef>
 #include <climits>
 
-#include "CompilerDefs.h"
 
 #define TRINITY_LITTLEENDIAN 0
 #define TRINITY_BIGENDIAN    1
 
 #if !defined(TRINITY_ENDIAN)
-#  if defined (ACE_BIG_ENDIAN)
+#  if defined (BOOST_BIG_ENDIAN)
 #    define TRINITY_ENDIAN TRINITY_BIGENDIAN
-#  else //ACE_BYTE_ORDER != ACE_BIG_ENDIAN
-#    define TRINITY_ENDIAN TRINITY_LITTLEENDIAN
-#  endif //ACE_BYTE_ORDER
-#endif //TRINITY_ENDIAN
-
-#if PLATFORM == PLATFORM_WINDOWS
-#  define TRINITY_EXPORT __declspec(dllexport)
-#  define TRINITY_LIBRARY_HANDLE HMODULE
-#  define TRINITY_LOAD_LIBRARY(a) LoadLibrary(a)
-#  define TRINITY_CLOSE_LIBRARY FreeLibrary
-#  define TRINITY_GET_PROC_ADDR GetProcAddress
-#  define TRINITY_SCRIPT_EXT ".dll"
-#  define TRINITY_SCRIPT_NAME "TrinityScript"
-#  define TRINITY_PATH_MAX MAX_PATH
-#else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_LIBRARY_HANDLE void*
-#  define TRINITY_EXPORT export
-#  define TRINITY_LOAD_LIBRARY(a) dlopen(a,RTLD_NOW)
-#  define TRINITY_CLOSE_LIBRARY dlclose
-#  define TRINITY_GET_PROC_ADDR dlsym
-#  if defined(__APPLE_CC__)
-#    define TRINITY_SCRIPT_EXT ".dylib"
-#    if defined(DO_SCRIPTS)
-#      define TRINITY_SCRIPT_NAME "../lib/libtrinityscript"
-#    else
-#      define TRINITY_SCRIPT_NAME "../lib/libtrinityinterface"
-#    endif // DO_SCRIPTS
 #  else
-#    define TRINITY_SCRIPT_EXT ".so"
-#    if defined(DO_SCRIPTS)
-#      define TRINITY_SCRIPT_NAME "libtrinityscript"
-#    else
-#      define TRINITY_SCRIPT_NAME "libtrinityinterface"
-#    endif // DO_SCRIPTS
-#  endif //__APPLE_CC__
-#  define TRINITY_PATH_MAX PATH_MAX
-#endif //PLATFORM
+#    define TRINITY_ENDIAN TRINITY_LITTLEENDIAN
+#  endif
+#endif
 
 #if PLATFORM == PLATFORM_WINDOWS
-#  ifdef TRINITY_WIN32_DLL_IMPORT
-#    define TRINITY_DLL_DECL __declspec(dllimport)
-#  else //!TRINITY_WIN32_DLL_IMPORT
-#    ifdef TRINITY_WIND_DLL_EXPORT
-#      define TRINITY_DLL_DECL __declspec(dllexport)
-#    else //!TRINITY_WIND_DLL_EXPORT
-#      define TRINITY_DLL_DECL
-#    endif //TRINITY_WIND_DLL_EXPORT
-#  endif //TRINITY_WIN32_DLL_IMPORT
-#else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_DLL_DECL
-#endif //PLATFORM
-
-#if PLATFORM == PLATFORM_WINDOWS
-#  define TRINITY_DLL_SPEC __declspec(dllexport)
+#  define TRINITY_LIBRARY_HANDLE HMODULE
+#  define TRINITY_PATH_MAX MAX_PATH
 #  ifndef DECLSPEC_NORETURN
 #    define DECLSPEC_NORETURN __declspec(noreturn)
 #  endif //DECLSPEC_NORETURN
+#  ifndef DECLSPEC_DEPRECATED
+#    define DECLSPEC_DEPRECATED __declspec(deprecated)
+#  endif //DECLSPEC_DEPRECATED
 #else //PLATFORM != PLATFORM_WINDOWS
-#  define TRINITY_DLL_SPEC
+#  define TRINITY_LIBRARY_HANDLE void*
+#  define TRINITY_PATH_MAX PATH_MAX
 #  define DECLSPEC_NORETURN
+#  define DECLSPEC_DEPRECATED
 #endif //PLATFORM
-
-#if !defined(DEBUG)
-#  define TRINITY_INLINE inline
-#else //DEBUG
-#  if !defined(TRINITY_DEBUG)
-#    define TRINITY_DEBUG
-#  endif //TRINITY_DEBUG
-#  define TRINITY_INLINE
-#endif //!DEBUG
 
 #if COMPILER == COMPILER_GNU
 #  define ATTR_NORETURN __attribute__((noreturn))
 #  define ATTR_PRINTF(F,V) __attribute__ ((format (printf, F, V)))
+#  define ATTR_DEPRECATED __attribute__((__deprecated__))
 #else //COMPILER != COMPILER_GNU
 #  define ATTR_NORETURN
 #  define ATTR_PRINTF(F,V)
+#  define ATTR_DEPRECATED
 #endif //COMPILER == COMPILER_GNU
 
 #define UI64FMTD "%" PRIu64
@@ -125,21 +73,13 @@
 
 #define SZFMTD "%" PRIuPTR
 
-typedef ACE_INT64 int64;
-typedef ACE_INT32 int32;
-typedef ACE_INT16 int16;
-typedef ACE_INT8 int8;
-typedef ACE_UINT64 uint64;
-typedef ACE_UINT32 uint32;
-typedef ACE_UINT16 uint16;
-typedef ACE_UINT8 uint8;
-
-#if COMPILER != COMPILER_MICROSOFT
-typedef uint16      WORD;
-typedef uint32      DWORD;
-#endif //COMPILER
-
-typedef uint64 OBJECT_HANDLE;
+typedef int64_t int64;
+typedef int32_t int32;
+typedef int16_t int16;
+typedef int8_t int8;
+typedef uint64_t uint64;
+typedef uint32_t uint32;
+typedef uint16_t uint16;
+typedef uint8_t uint8;
 
 #endif //TRINITY_DEFINE_H
-
