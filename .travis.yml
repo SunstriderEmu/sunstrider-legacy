@@ -12,7 +12,7 @@ before_install:
   - echo "yes" | sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
   - echo "yes" | sudo add-apt-repository 'deb http://mariadb.mirror.nucleus.be//repo/5.5/ubuntu precise main'
   - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-  - sudo apt-get -qq install  g++ gcc make cmake build-essential openssllibtool
+  - sudo apt-get -qq install  g++ gcc make cmake build-essential openssl libtool
   - sudo apt-get -qq install libssl-dev libmariadbclient-dev libmysql++-dev libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 patch git libace-dev
   - sudo apt-get -qq install libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
 
