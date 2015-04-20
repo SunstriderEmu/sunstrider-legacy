@@ -8,6 +8,9 @@ git:
 sudo: required
 
 before_install:
+  - echo "yes" | sudo apt-get install python-software-properties
+  - echo "yes" | sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
+  - echo "yes" | sudo add-apt-repository 'deb http://mariadb.mirror.nucleus.be//repo/5.5/ubuntu precise main'
   - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   - sudo apt-get -qq update
   - sudo apt-get -qq install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
