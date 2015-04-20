@@ -1398,7 +1398,7 @@ public:
                 if(WorldObject* obj = ObjectAccessor::GetObjectInWorld(*itr,m_baseObject))
                     m_objectList->push_back(obj);
                 else
-                    TC_LOG_ERROR("FIXME","SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, *itr);
+                    TC_LOG_ERROR("scripts.ai", "SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, *itr);
             }
         }
 

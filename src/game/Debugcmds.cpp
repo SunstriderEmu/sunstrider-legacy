@@ -656,7 +656,7 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
     if (!target || !target->ToCreature())
         return false;
         
-    PSendSysMessage("AttackDistance: %f - ModDetectRange: %f", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE));
+    PSendSysMessage("AttackDistance: %f - ModDetectRange: %i", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE));
     return true;
 }
 
@@ -815,11 +815,11 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
     SendSysMessage("SmartAI errors :");
     auto errorList = sSmartScriptMgr->GetErrorList(-int32(guid)); //negative guid in argument
     for(auto itr : errorList)
-        PSendSysMessage(itr.c_str());
+        PSendSysMessage("%s", itr.c_str());
 
     errorList = sSmartScriptMgr->GetErrorList(entry);
     for(auto itr : errorList)
-        PSendSysMessage(itr.c_str());
+        PSendSysMessage("%s", itr.c_str());
 
     return true;
 }

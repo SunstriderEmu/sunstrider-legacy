@@ -62,7 +62,7 @@ PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 inst
     _sourcePos.Relocate(startPos);
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
 
-    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator from position %u %u %u (map:%u)\n", _sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ(), mapId);
+    TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator from position %f %f %f (map:%u)\n", _sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ(), mapId);
 
     if (MMAP::MMapFactory::IsPathfindingEnabled(mapId))
     {

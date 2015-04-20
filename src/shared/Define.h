@@ -117,7 +117,7 @@
 #  define ATTR_PRINTF(F,V)
 #endif //COMPILER == COMPILER_GNU
 
-#define UI64FMTD "%u"
+#define UI64FMTD "%" PRIu64
 #define UI64LIT(N) UINT64_C(N)
 
 #define SI64FMTD "%u"

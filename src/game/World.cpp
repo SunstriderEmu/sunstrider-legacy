@@ -1287,7 +1287,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
-    TC_LOG_INFO("server.loading"," ");
 
     TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
@@ -2181,7 +2180,7 @@ void World::ScriptsProcess()
         //if(target && !target->IsInWorld()) target = NULL;
 
         if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16256) {
-            TC_LOG_ERROR("FIXME","Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD ", script info address: %p.", step.sourceGUID, step.targetGUID, step.ownerGUID, step.script);
+            TC_LOG_ERROR("FIXME","Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD, step.sourceGUID, step.targetGUID, step.ownerGUID);
             if (m_scriptSchedule.size() == 1) {
                 m_scriptSchedule.clear();
                 break;

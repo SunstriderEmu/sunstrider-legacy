@@ -462,8 +462,7 @@ void ObjectMgr::LoadNpcOptionLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u npc_option locale strings", mNpcOptionLocaleMap.size() );
-    TC_LOG_INFO("server.loading","");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" npc_option locale strings", mNpcOptionLocaleMap.size() );
 }
 
 void ObjectMgr::LoadCreatureTemplates()
@@ -589,7 +588,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         CreatureTemplate const* heroicInfo = GetCreatureTemplate(cInfo->difficulty_entry_1);
         if(!heroicInfo)
         {
-            TC_LOG_ERROR("sql.sql","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u not exist.",cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
+            TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) have `difficulty_entry_1`=%u but the creature does not exist.", i, cInfo->difficulty_entry_1);
         }
         /*
         if(heroicEntries.find(i)!=heroicEntries.end())
@@ -1159,8 +1158,7 @@ void ObjectMgr::LoadCreatureLinkedRespawn()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u linked respawns", mCreatureLinkedRespawnMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" linked respawns", mCreatureLinkedRespawnMap.size());
 }
 
 bool ObjectMgr::SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid)
@@ -1296,8 +1294,7 @@ void ObjectMgr::LoadCreatures()
 
     DeleteCreatureData(0);
 
-    TC_LOG_INFO("server.loading",">> Loaded %u creatures", mCreatureDataMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" creatures", mCreatureDataMap.size());
 }
 
 void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
@@ -1345,7 +1342,6 @@ void ObjectMgr::LoadGameobjects()
     if(!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 gameobjects. DB table `gameobject` is empty.");
-        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -1388,8 +1384,7 @@ void ObjectMgr::LoadGameobjects()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading",">> Loaded %u gameobjects", mGameObjectDataMap.size());
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobjects", mGameObjectDataMap.size());
 }
 
 void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
@@ -1453,8 +1448,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO("server.loading",">> Loaded %u creature respawn times", mCreatureRespawnTimes.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" creature respawn times", mCreatureRespawnTimes.size());
 }
 
 void ObjectMgr::LoadGameobjectRespawnTimes()
@@ -1488,8 +1482,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
     } while (result->NextRow());
     m_GiantLock.release();
 
-    TC_LOG_INFO("server.loading",">> Loaded %u gameobject respawn times", mGORespawnTimes.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobject respawn times", mGORespawnTimes.size());
 }
 
 // name must be checked to correctness (if received) before call this function
@@ -1624,8 +1617,7 @@ void ObjectMgr::LoadItemLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading",">> Loaded %u Item locale strings", mItemLocaleMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Item locale strings", mItemLocaleMap.size());
 }
 void ObjectMgr::LoadItemTemplates()
 {
@@ -2531,7 +2523,6 @@ void ObjectMgr::LoadPetLevelInfo()
         if (!result)
         {
             TC_LOG_ERROR("server.loading", "Error loading `pet_levelstats` table or empty table.");
-            TC_LOG_INFO("server.loading"," ");
             return;
         }
         do
@@ -2580,7 +2571,6 @@ void ObjectMgr::LoadPetLevelInfo()
         while (result->NextRow());
 
         TC_LOG_INFO("server.loading", ">> Loaded %u level pet stats definitions", count );
-        TC_LOG_INFO("server.loading"," ");
     }
 
     // Fill gaps and check integrity
@@ -2631,7 +2621,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_ERROR( "server.loading","Error loading `playercreateinfo` table or empty table.");
-            TC_LOG_INFO("server.loading"," ");
             exit(1);
         }
 
@@ -2701,7 +2690,6 @@ void ObjectMgr::LoadPlayerInfo()
         while (result->NextRow());
 
         TC_LOG_INFO("server.loading", ">> Loaded %u player create definitions", count );
-        TC_LOG_INFO("server.loading"," ");
     }
 
     // Load playercreate items
@@ -2714,7 +2702,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_INFO( "server.loading",">> Loaded %u custom player create items", count );
-            TC_LOG_INFO("server.loading"," ");
         }
         else
         {
@@ -2761,7 +2748,6 @@ void ObjectMgr::LoadPlayerInfo()
             while(result->NextRow());
 
             TC_LOG_INFO("server.loading", ">> Loaded %u custom player create items", count );
-            TC_LOG_INFO("server.loading"," ");
         }
     }
 
@@ -2779,7 +2765,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_ERROR("player.loading", "Error loading player starting spells or empty table.");
-            TC_LOG_INFO("server.loading"," ");
         }
         else
         {
@@ -2809,7 +2794,6 @@ void ObjectMgr::LoadPlayerInfo()
             while( result->NextRow() );
 
             TC_LOG_INFO( "server.loading",">> Loaded %u player create spells", count );
-            TC_LOG_INFO("server.loading"," ");
         }
     }
 
@@ -2823,7 +2807,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_ERROR( "player.loading","Error loading `playercreateinfo_action` table or empty table.");
-            TC_LOG_INFO("server.loading"," ");
         }
         else
         {
@@ -2856,7 +2839,6 @@ void ObjectMgr::LoadPlayerInfo()
             while( result->NextRow() );
 
             TC_LOG_INFO("player.loading", ">> Loaded %u player create actions", count );
-            TC_LOG_INFO("server.loading"," ");
         }
     }
 
@@ -2870,7 +2852,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_ERROR( "player.loading", "Error loading `player_classlevelstats` table or empty table.");
-            TC_LOG_INFO("server.loading"," ");
             exit(1);
         }
 
@@ -2910,7 +2891,6 @@ void ObjectMgr::LoadPlayerInfo()
         while (result->NextRow());
 
         TC_LOG_INFO( "server.loading",">> Loaded %u level health/mana definitions", count );
-        TC_LOG_INFO("server.loading"," ");
     }
 
     // Fill gaps and check integrity
@@ -2950,7 +2930,6 @@ void ObjectMgr::LoadPlayerInfo()
         if (!result)
         {
             TC_LOG_ERROR( "player.loading", "Error loading `player_levelstats` table or empty table.");
-            TC_LOG_INFO("server.loading"," ");
             exit(1);
         }
 
@@ -2999,7 +2978,6 @@ void ObjectMgr::LoadPlayerInfo()
         while (result->NextRow());
 
         TC_LOG_INFO("server.loading", ">> Loaded %u level stats definitions", count );
-        TC_LOG_INFO("server.loading"," ");
     }
 
     // Fill gaps and check integrity
@@ -3162,7 +3140,6 @@ void ObjectMgr::LoadGuilds()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u guild definitions", count );
-        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -3184,7 +3161,6 @@ void ObjectMgr::LoadGuilds()
     }while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u guild definitions", count );
-    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadArenaTeams()
@@ -3196,7 +3172,6 @@ void ObjectMgr::LoadArenaTeams()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u arenateam definitions", count );
-        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -3219,7 +3194,6 @@ void ObjectMgr::LoadArenaTeams()
         sWorld->updateArenaLeadersTitles();
 
     TC_LOG_INFO("server.loading", ">> Loaded %u arenateam definitions", count );
-    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadGroups()
@@ -3234,7 +3208,6 @@ void ObjectMgr::LoadGroups()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u group definitions", count );
-        TC_LOG_INFO("server.loading"," ");
         return;
     }
 
@@ -3255,7 +3228,6 @@ void ObjectMgr::LoadGroups()
     }while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u group definitions", count );
-    TC_LOG_INFO("server.loading"," ");
 
     // -- loading members --
     count = 0;
@@ -3338,10 +3310,7 @@ void ObjectMgr::LoadGroups()
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u group-instance binds total", count );
-    TC_LOG_INFO("server.loading"," ");
-
     TC_LOG_INFO("server.loading", ">> Loaded %u group members total", count );
-    TC_LOG_INFO("server.loading"," ");
 }
 
 void ObjectMgr::LoadQuests()
@@ -3390,7 +3359,6 @@ void ObjectMgr::LoadQuests()
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 quests definitions" );
         TC_LOG_ERROR("server.loading","`quest_template` table is empty!");
-        TC_LOG_INFO("server.loading"," ");
         return;
     }
     
@@ -4021,8 +3989,7 @@ void ObjectMgr::LoadQuests()
         }
     }
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u quests definitions", mQuestTemplates.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " quests definitions", mQuestTemplates.size());
 }
 
 void ObjectMgr::LoadQuestLocales()
@@ -4044,7 +4011,6 @@ void ObjectMgr::LoadQuestLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 Quest locale strings. DB table `locales_quest` is empty.");
-        TC_LOG_INFO("server.loading","");
         return;
     }
 
@@ -4072,8 +4038,7 @@ void ObjectMgr::LoadQuestLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u Quest locale strings", mQuestLocaleMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Quest locale strings", mQuestLocaleMap.size() );
 }
 
 void ObjectMgr::LoadPetCreateSpells()
@@ -4083,7 +4048,7 @@ void ObjectMgr::LoadPetCreateSpells()
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 pet create spells" );
         TC_LOG_ERROR("sql.sql","`petcreateinfo_spell` table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4116,7 +4081,7 @@ void ObjectMgr::LoadPetCreateSpells()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u pet create spells", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
@@ -4135,7 +4100,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u script definitions", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4330,7 +4295,7 @@ void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u script definitions", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadGameObjectScripts()
@@ -4483,7 +4448,7 @@ void ObjectMgr::LoadItemTexts()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Empty table item_text, loaded 0 item pages" );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4499,7 +4464,7 @@ void ObjectMgr::LoadItemTexts()
     } while ( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u item texts", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadPageTexts()
@@ -4563,7 +4528,7 @@ void ObjectMgr::LoadPageTextLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 PageText locale strings. DB table `locales_page_text` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4580,8 +4545,8 @@ void ObjectMgr::LoadPageTextLocales()
 
     } while (result->NextRow());
 
-    TC_LOG_INFO( "server.loading",">> Loaded %u PageText locale strings in %u ms", mPageTextLocaleMap.size(), GetMSTimeDiffToNow(oldMSTime));
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" PageText locale strings in %u ms", mPageTextLocaleMap.size(), GetMSTimeDiffToNow(oldMSTime));
+    
 }
 
 void ObjectMgr::LoadInstanceTemplate()
@@ -4658,7 +4623,7 @@ void ObjectMgr::LoadInstanceTemplate()
         temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld->GetRate(RATE_INSTANCE_RESET_TIME)));
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime) );
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
 InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
@@ -4729,8 +4694,8 @@ void ObjectMgr::LoadInstanceTemplateAddon()
         if(temp->reset_delay == 0) // instance has no reset delay, defaulting to 1 day
             temp->reset_delay = 1;
     }
-    TC_LOG_INFO("server.loading", ">> Loaded %u Instance Template Addons definitions in %u ms",_instanceTemplateAddonStore.size(), GetMSTimeDiffToNow(oldMSTime));
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" Instance Template Addons definitions in %u ms", _instanceTemplateAddonStore.size(), GetMSTimeDiffToNow(oldMSTime));
+    
 }
 
 InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
@@ -4769,7 +4734,7 @@ void ObjectMgr::LoadGossipText()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4813,7 +4778,7 @@ void ObjectMgr::LoadGossipText()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadNpcTextLocales()
@@ -4834,7 +4799,7 @@ void ObjectMgr::LoadNpcTextLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 Quest locale strings. DB table `locales_npc_text` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4857,8 +4822,8 @@ void ObjectMgr::LoadNpcTextLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u NpcText locale strings", mNpcTextLocaleMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" NpcText locale strings", mNpcTextLocaleMap.size());
+    
 }
 
 //not very fast function but it is called only once a day, or on starting-up
@@ -4956,7 +4921,7 @@ void ObjectMgr::LoadQuestAreaTriggers()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u quest trigger points", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -4999,7 +4964,7 @@ void ObjectMgr::LoadQuestAreaTriggers()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u quest trigger points", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadTavernAreaTriggers()
@@ -5013,7 +4978,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u tavern triggers", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -5036,7 +5001,7 @@ void ObjectMgr::LoadTavernAreaTriggers()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u tavern triggers", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadAreaTriggerScripts()
@@ -5049,7 +5014,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u areatrigger scripts", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -5072,7 +5037,7 @@ void ObjectMgr::LoadAreaTriggerScripts()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u areatrigger scripts", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, uint32 team)
@@ -5190,7 +5155,7 @@ void ObjectMgr::LoadGraveyardZones()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u graveyard-zone links", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -5235,7 +5200,7 @@ void ObjectMgr::LoadGraveyardZones()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u graveyard-zone links", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
@@ -5444,7 +5409,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u area trigger teleport definitions", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -5490,7 +5455,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u area trigger teleport definitions", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadAccessRequirements()
@@ -5504,7 +5469,7 @@ void ObjectMgr::LoadAccessRequirements()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u access requirement definitions", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -5604,7 +5569,7 @@ void ObjectMgr::LoadAccessRequirements()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u access requirement definitions", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
@@ -5954,7 +5919,6 @@ void ObjectMgr::LoadGameObjectLocales()
     if(!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 gameobject locale strings. DB table `locales_gameobject` is empty.");
-        TC_LOG_INFO("server.loading","");
         return;
     }
 
@@ -5973,8 +5937,8 @@ void ObjectMgr::LoadGameObjectLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %u gameobject locale strings", mGameObjectLocaleMap.size() );
-    TC_LOG_INFO("server.loading"," ");
+    TC_LOG_INFO("server.loading", ">> Loaded "UI64FMTD" gameobject locale strings", mGameObjectLocaleMap.size());
+    
 }
 
 void ObjectMgr::LoadGameObjectTemplate()
@@ -6193,7 +6157,7 @@ void ObjectMgr::LoadExplorationBaseXP()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u BaseXP definitions", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6208,7 +6172,7 @@ void ObjectMgr::LoadExplorationBaseXP()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u BaseXP definitions", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 uint32 ObjectMgr::GetBaseXP(uint32 level)
@@ -6224,7 +6188,7 @@ void ObjectMgr::LoadPetNames()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u pet name parts", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6243,7 +6207,7 @@ void ObjectMgr::LoadPetNames()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u pet name parts", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadPetNumber()
@@ -6256,7 +6220,7 @@ void ObjectMgr::LoadPetNumber()
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded the max pet number: %d", m_hiPetNumber-1);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 std::string ObjectMgr::GeneratePetName(uint32 entry)
@@ -6290,7 +6254,7 @@ void ObjectMgr::LoadCorpses()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u corpses", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6314,7 +6278,7 @@ void ObjectMgr::LoadCorpses()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u corpses", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadReputationOnKill()
@@ -6330,7 +6294,7 @@ void ObjectMgr::LoadReputationOnKill()
     if(!result)
     {
         TC_LOG_ERROR("sql.sql",">> Loaded 0 creature award reputation definitions. DB table `creature_onkill_reputation` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6383,7 +6347,7 @@ void ObjectMgr::LoadReputationOnKill()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u creature award reputation definitions", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadWeatherZoneChances()
@@ -6396,7 +6360,7 @@ void ObjectMgr::LoadWeatherZoneChances()
     if(!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 weather definitions. DB table `game_weather` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6437,7 +6401,7 @@ void ObjectMgr::LoadWeatherZoneChances()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u weather definitions", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
@@ -6541,7 +6505,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
     if(!result)
     {
         TC_LOG_ERROR("sql.sql",">> Loaded 0 quest relations from %s. DB table `%s` is empty.",table,table);
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6564,7 +6528,7 @@ void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u quest relations from %s", count,table);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadGameobjectQuestRelations()
@@ -6634,7 +6598,7 @@ void ObjectMgr::LoadReservedPlayersNames()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u reserved player names", count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6651,7 +6615,7 @@ void ObjectMgr::LoadReservedPlayersNames()
     } while ( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u reserved player names", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 enum LanguageType
@@ -6800,7 +6764,7 @@ void ObjectMgr::LoadBattleMastersEntry()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 battlemaster entries - table is empty!" );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -6818,7 +6782,7 @@ void ObjectMgr::LoadBattleMastersEntry()
     } while( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u battlemaster entries", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadGameObjectForQuests()
@@ -6870,7 +6834,7 @@ void ObjectMgr::LoadGameObjectForQuests()
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u GameObject for quests", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table, int32 min_value, int32 max_value)
@@ -6896,7 +6860,6 @@ bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* tabl
             TC_LOG_ERROR("sql.sql",">> Loaded 0 trinity strings. DB table `%s` is empty. Cannot continue.",table);
         else
             TC_LOG_INFO("sql.sql",">> Loaded 0 string templates. DB table `%s` is empty.",table);
-        TC_LOG_INFO("server.loading","");
         return false;
     }
 
@@ -6937,7 +6900,7 @@ bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* tabl
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading"," ");
+    
     if(min_value == MIN_TRINITY_STRING_ID)               // internal Trinity strings
         TC_LOG_INFO("server.loading", ">> Loaded %u Trinity strings from table %s", count,table);
     else
@@ -6978,7 +6941,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
     if( !result )
     {
         TC_LOG_INFO("server.loading", ">> Loaded %u disabled spells", total_count );
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7003,7 +6966,7 @@ void ObjectMgr::LoadSpellDisabledEntrys()
    } while ( result->NextRow() );
 
     TC_LOG_INFO("server.loading", ">> Loaded %u disabled spells from `spell_disabled`", total_count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFishingBaseSkillLevel()
@@ -7016,7 +6979,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     if( !result )
     {
         TC_LOG_ERROR("sql.sql",">> Loaded `skill_fishing_base_level`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7039,7 +7002,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u areas for fishing base skill level", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 // Searches for the same condition already in Conditions store
@@ -7331,7 +7294,7 @@ void ObjectMgr::LoadGameTele()
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `game_tele`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7371,7 +7334,7 @@ void ObjectMgr::LoadGameTele()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u game tele's", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
@@ -7458,7 +7421,7 @@ void ObjectMgr::LoadTrainerSpell()
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `npc_trainer`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7523,7 +7486,7 @@ void ObjectMgr::LoadTrainerSpell()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded Trainers %d", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadVendors()
@@ -7539,7 +7502,7 @@ void ObjectMgr::LoadVendors()
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `npc_vendor`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7571,7 +7534,7 @@ void ObjectMgr::LoadVendors()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d Vendors ", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadNpcTextId()
@@ -7582,7 +7545,7 @@ void ObjectMgr::LoadNpcTextId()
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `npc_gossip`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7612,7 +7575,7 @@ void ObjectMgr::LoadNpcTextId()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d NpcTextId ", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadNpcOptions()
@@ -7627,7 +7590,7 @@ void ObjectMgr::LoadNpcOptions()
     if( !result )
     {
         TC_LOG_ERROR("server.loading",">> Loaded `npc_option`, table is empty!");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -7655,7 +7618,7 @@ void ObjectMgr::LoadNpcOptions()
     } while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %d npc_option entries", count );
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
@@ -7909,7 +7872,7 @@ void ObjectMgr::LoadGMTickets()
   if(!result)
   {
     TC_LOG_INFO("server.loading"," \n>> GM Tickets table is empty, no tickets were loaded.\n" );
-    TC_LOG_INFO("server.loading"," ");
+    
     return;
   }
 
@@ -7941,7 +7904,7 @@ void ObjectMgr::LoadGMTickets()
   m_GMticketid = (*result)[0].GetUInt64(); 
 
   TC_LOG_INFO("server.loading",">>> %u GM Tickets loaded from the database.", count);
-  TC_LOG_INFO("server.loading"," ");
+  
 }
 
 void ObjectMgr::AddOrUpdateGMTicket(GM_Ticket &ticket, bool create)
@@ -8211,7 +8174,7 @@ void ObjectMgr::LoadSpellTemplates()
     }
     
     TC_LOG_INFO("server.loading",">> Loaded %u spell templates.", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
@@ -8241,7 +8204,7 @@ void ObjectMgr::LoadAreaFlagsOverridenData()
     }
     
     TC_LOG_INFO("server.loading",">> Loaded %u overriden data.", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFactionChangeItems()
@@ -8253,7 +8216,7 @@ void ObjectMgr::LoadFactionChangeItems()
     if (!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 faction change items. DB table `player_factionchange_items` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -8279,7 +8242,7 @@ void ObjectMgr::LoadFactionChangeItems()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u faction change items", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFactionChangeSpells()
@@ -8291,7 +8254,7 @@ void ObjectMgr::LoadFactionChangeSpells()
     if (!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 faction change spells. DB table `player_factionchange_spells` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -8316,7 +8279,7 @@ void ObjectMgr::LoadFactionChangeSpells()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u faction change spells", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFactionChangeTitles()
@@ -8328,7 +8291,7 @@ void ObjectMgr::LoadFactionChangeTitles()
     if (!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 faction change titles. DB table `player_factionchange_titles` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -8348,7 +8311,7 @@ void ObjectMgr::LoadFactionChangeTitles()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u faction change titles", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFactionChangeQuests()
@@ -8360,7 +8323,7 @@ void ObjectMgr::LoadFactionChangeQuests()
     if (!result)
     {
         TC_LOG_ERROR("server.loading",">> Loaded 0 faction change quest. DB table `player_factionchange_quests` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -8380,7 +8343,7 @@ void ObjectMgr::LoadFactionChangeQuests()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u faction change quests", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::LoadFactionChangeReputGeneric()
@@ -8392,7 +8355,7 @@ void ObjectMgr::LoadFactionChangeReputGeneric()
     if (!result)
     {
         TC_LOG_INFO("server.loading",">> Loaded 0 faction change reputations (generic). DB table `player_factionchange_reputations_generic` is empty.");
-        TC_LOG_INFO("server.loading"," ");
+        
         return;
     }
 
@@ -8418,7 +8381,7 @@ void ObjectMgr::LoadFactionChangeReputGeneric()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading",">> Loaded %u faction change reputations (generic)", count);
-    TC_LOG_INFO("server.loading"," ");
+    
 }
 
 void ObjectMgr::AddLocaleString(std::string const& s, LocaleConstant locale, StringVector& data)
