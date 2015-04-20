@@ -1,6 +1,6 @@
 language: cpp
 compiler:
-  - g++
+  - clang
 
 git:
   depth: 100
@@ -15,7 +15,7 @@ before_install:
   - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   - echo "yes" | sudo add-apt-repository ppa:boost-latest/ppa
   - sudo apt-get -qq update
-  - sudo apt-get -qq install gcc-4.8 g++-4.8 make cmake build-essential openssl libtool
+  - sudo apt-get -qq install gcc-4.9 g++-4.9 make cmake build-essential openssl libtool
   - sudo apt-get -qq install libssl-dev libmariadbclient-dev libmysql++-dev libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 patch git libace-dev
   - sudo apt-get -qq install libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
 
