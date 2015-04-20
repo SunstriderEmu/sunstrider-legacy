@@ -4,10 +4,10 @@ compiler:
 
 git:
   depth: 1
+  
+sudo: required
 
 before_install:
-  - echo "yes" | sudo add-apt-repository ppa:kalakris/cmake
-  - echo "yes" | sudo add-apt-repository ppa:boost-latest/ppa
   - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   - sudo apt-get -qq update
   - sudo apt-get -qq install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev gdb libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
