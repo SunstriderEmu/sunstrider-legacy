@@ -60,6 +60,21 @@ enum AreaFlags
     AREA_FLAG_OUTSIDE          = 0x04000000,
 };
 
+enum Difficulty
+{
+    REGULAR_DIFFICULTY = 0,
+
+    DUNGEON_DIFFICULTY_NORMAL = 0,
+    DUNGEON_DIFFICULTY_HEROIC = 1,
+//LK
+    DUNGEON_DIFFICULTY_EPIC   = 2,
+
+    RAID_DIFFICULTY_10MAN_NORMAL = 0,
+    RAID_DIFFICULTY_25MAN_NORMAL = 1,
+    RAID_DIFFICULTY_10MAN_HEROIC = 2,
+    RAID_DIFFICULTY_25MAN_HEROIC = 3
+};
+
 enum FactionTemplateFlags
 {
     FACTION_TEMPLATE_FLAG_CONTESTED_GUARD   =   0x00001000, // faction will attack players that were involved in PvP combats

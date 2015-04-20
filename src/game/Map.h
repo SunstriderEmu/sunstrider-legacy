@@ -219,6 +219,7 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
         virtual void MoveAllCreaturesInMoveList();
         virtual void MoveAllGameObjectsInMoveList();
         virtual void RemoveAllObjectsInRemoveList();
+        virtual void RemoveAllPlayers();
 
         bool CreatureRespawnRelocation(Creature *c, bool diffGridOnly);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
         bool GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly);
@@ -354,7 +355,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
 
         bool loaded(const GridPair &) const;
         void EnsureGridLoaded(const Cell&, Player* player = NULL);
-        void  EnsureGridCreated(const GridPair &);
+        void EnsureGridCreated(const GridPair &);
+        void EnsureGridCreated_i(const GridPair &);
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
@@ -377,7 +379,8 @@ class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockabl
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
-        typedef Trinity::ObjectLevelLockable<Map, ZThread::Mutex>::Lock Guard;
+        std::mutex _mapLock;
+        std::mutex _gridLock;
 
         MapEntry const* i_mapEntry;
         uint8 i_spawnMode;
@@ -491,13 +494,14 @@ class BattlegroundMap : public Map
         BattlegroundMap(uint32 id, time_t, uint32 InstanceId);
         ~BattlegroundMap();
 
-        bool Add(Player *);
-        void Remove(Player *, bool);
-        bool CanEnter(Player* player);
+        bool Add(Player *) override;
+        void Remove(Player *, bool) override;
+        bool CanEnter(Player* player) override;
         void SetUnload();
-        void UnloadAll();
+        //void UnloadAll();
+        void RemoveAllPlayers() override;
 
-        virtual void InitVisibilityDistance();
+        virtual void InitVisibilityDistance() override;
         Battleground* GetBG() { return m_bg; }
         void SetBG(Battleground* bg) { m_bg = bg; }
     private:

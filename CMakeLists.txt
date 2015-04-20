@@ -52,6 +52,8 @@ IF(UNIX)
 	find_package(BZip2)
 ELSE()
 	# Package overloads
+	set(BZIP2_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/dep/bzip2")
+	set(ZLIB_INCLUDE_DIR " ${PROJECT_SOURCE_DIR}/dep/zlib")
 	set(BZIP2_LIBRARIES "bzip2")
 	set(ZLIB_LIBRARIES "zlib")
 ENDIF()

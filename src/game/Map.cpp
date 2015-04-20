@@ -356,13 +356,19 @@ void Map::AddNotifier(Creature* obj)
     AddUnitToNotify(obj);
 }
 
-void
-Map::EnsureGridCreated(const GridPair &p)
+void Map::EnsureGridCreated(const GridPair &p)
 {
-    if(!getNGrid(p.x_coord, p.y_coord))
+    std::lock_guard<std::mutex> lock(_gridLock);
+    EnsureGridCreated_i(p);
+}
+
+//Create NGrid so the object can be added to it
+//But object data is not loaded here
+void Map::EnsureGridCreated_i(const GridPair &p)
+{
+    if (!getNGrid(p.x_coord, p.y_coord))
     {
-        Guard guard(*this);
-        if(!getNGrid(p.x_coord, p.y_coord))
+        if (!getNGrid(p.x_coord, p.y_coord))
         {
             setNGrid(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord, i_gridExpiry, sWorld->getConfig(CONFIG_GRID_UNLOAD)),
                 p.x_coord, p.y_coord);
@@ -373,11 +379,11 @@ Map::EnsureGridCreated(const GridPair &p)
             getNGrid(p.x_coord, p.y_coord)->SetGridState(GRID_STATE_IDLE);
 
             //z coord
-            int gx=63-p.x_coord;
-            int gy=63-p.y_coord;
+            int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
+            int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
 
-            if(!GridMaps[gx][gy])
-                Map::LoadMapAndVMap(i_id,i_InstanceId,gx,gy);
+            if (!GridMaps[gx][gy])
+                Map::LoadMapAndVMap(i_id, i_InstanceId, gx, gy);
         }
     }
 }
@@ -2292,7 +2298,7 @@ bool InstanceMap::Add(Player *player)
     // Is it needed?
 
     {
-        Guard guard(*this);
+        std::lock_guard<std::mutex> lock(_mapLock);
         if(!CanEnter(player))
             return false;
 
@@ -2554,11 +2560,28 @@ time_t InstanceMap::GetResetTime()
     return save ? save->GetDifficulty() : DIFFICULTY_NORMAL;
 }
 
+void Map::RemoveAllPlayers()
+{
+    if (HavePlayers())
+    {
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        {
+            Player* player = itr->GetSource();
+            if (!player->IsBeingTeleportedFar())
+            {
+                // this is happening for bg
+                TC_LOG_ERROR("maps", "Map::UnloadAll: player %s is still in map %u during unload, this should not happen!", player->GetName().c_str(), GetId());
+                player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+            }
+        }
+    }
+}
+
 void InstanceMap::UnloadAll()
 {
     if(HavePlayers())
     {
-        TC_LOG_ERROR("FIXME","InstanceMap::UnloadAll: there are still players in the instance at unload, should not happen!");
+        TC_LOG_ERROR("maps","InstanceMap::UnloadAll: there are still players in the instance at unload, should not happen!");
         for(MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
         {
             Player* plr = itr->GetSource();
@@ -2630,7 +2653,7 @@ bool BattlegroundMap::CanEnter(Player * player)
 bool BattlegroundMap::Add(Player * player)
 {
     {
-        Guard guard(*this);
+        std::lock_guard<std::mutex> lock(_mapLock);
         if(!CanEnter(player))
             return false;
         // reset instance validity, battleground maps do not homebind
@@ -2659,21 +2682,13 @@ void BattlegroundMap::SetUnload()
     m_unloadTimer = MIN_UNLOAD_DELAY;
 }
 
-void BattlegroundMap::UnloadAll()
+void BattlegroundMap::RemoveAllPlayers()
 {
-    while(HavePlayers())
-    {
-        if(Player * plr = m_mapRefManager.getFirst()->GetSource())
-        {
-            plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
-            // TeleportTo removes the player from this map (if the map exists) -> calls BattlegroundMap::Remove -> invalidates the iterator.
-            // just in case, remove the player from the list explicitly here as well to prevent a possible infinite loop
-            // note that this remove is not needed if the code works well in other places
-            plr->GetMapRef().unlink();
-            }
-    }
-
-    Map::UnloadAll();
+    if (HavePlayers())
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            if (Player* player = itr->GetSource())
+                if (!player->IsBeingTeleportedFar())
+                    player->TeleportTo(player->GetBattlegroundEntryPoint());
 }
 
 Transport* Map::GetTransport(uint64 guid)

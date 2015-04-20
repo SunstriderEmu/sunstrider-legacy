@@ -579,8 +579,13 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
     Map* iMap = ((MapInstanced*)map)->FindMap(instanceId);
-    if(iMap && iMap->IsDungeon()) ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
-    else sObjectMgr->DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
+    if(iMap && iMap->IsDungeon()) 
+        ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
+    else 
+        sObjectMgr->DeleteRespawnTimeForInstance(instanceId);   // even if map is not loaded
+
+    // Free up the instance id and allow it to be reused
+    //TCmap sMapMgr->FreeInstanceId(instanceId);
 }
 
 void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLeft)

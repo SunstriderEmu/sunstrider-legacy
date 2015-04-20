@@ -27,10 +27,8 @@
 #include "InstanceSaveMgr.h"
 #include "World.h"
 
-MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, 0)
+MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
 {
-    // initialize instanced maps list
-    m_InstancedMaps.clear();
     // fill with zero
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
 }
@@ -58,12 +56,19 @@ void MapInstanced::Update(const uint32& t)
     {
         if(i->second->CanUnload(t))
         {
-            DestroyInstance(i);                             // iterator incremented
+            if (!DestroyInstance(i))                             // iterator incremented
+            {
+                //m_unloadTimer
+            }
         }
         else
         {
             // update only here, because it may schedule some bad things before delete
-            i->second->Update(t);
+            if (sMapMgr->GetMapUpdater()->activated())
+                sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
+            else
+                i->second->Update(t);
+
             ++i;
         }
     }
@@ -185,7 +190,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, uint8 difficulty)
 {
     // load/create a map
-    Guard guard(*this);
+    std::lock_guard<std::mutex> lock(_mapLock);
 
     // make sure we have a valid map id
     const MapEntry* entry = sMapStore.LookupEntry(GetId());
@@ -217,7 +222,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battleground* bg)
 {
     // load/create a map
-    Guard guard(*this);
+    std::lock_guard<std::mutex> lock(_mapLock);
 
     BattlegroundMap *map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId);
     assert(map->IsBattlegroundOrArena());
@@ -227,16 +232,25 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
     return map;
 }
 
-void MapInstanced::DestroyInstance(uint32 InstanceId)
+bool MapInstanced::DestroyInstance(uint32 InstanceId)
 {
     InstancedMaps::iterator itr = m_InstancedMaps.find(InstanceId);
     if(itr != m_InstancedMaps.end())
-        DestroyInstance(itr);
+       return DestroyInstance(itr);
+
+    return false;
 }
 
 // increments the iterator after erase
-void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
+bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
 {
+    itr->second->RemoveAllPlayers();
+    if (itr->second->HavePlayers())
+    {
+        ++itr;
+        return false;
+    }
+
     itr->second->UnloadAll();
     // should only unload VMaps if this is the last instance and grid unloading is enabled
     if(m_InstancedMaps.size() <= 1 && sWorld->getConfig(CONFIG_GRID_UNLOAD))
@@ -248,9 +262,15 @@ void MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
         Map::UnloadAll();
     }
 
+    // Free up the instance id and allow it to be reused for bgs and arenas (other instances are handled in the InstanceSaveMgr)
+/*TCMAP    if (itr->second->IsBattlegroundOrArena())
+        sMapMgr->FreeInstanceId(itr->second->GetInstanceId()); */
+
     // erase map
     delete itr->second;
     m_InstancedMaps.erase(itr++);
+
+    return true;
 }
 
 bool MapInstanced::CanEnter(Player *player)

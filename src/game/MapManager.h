@@ -27,6 +27,7 @@
 #include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
+#include "MapUpdater.h"
 
 class Transport;
 
@@ -117,6 +118,8 @@ class MapManager
         uint32 GetNumPlayersInInstances();
         uint32 GetNumPlayersInMap(uint32 mapId);
 
+        MapUpdater * GetMapUpdater() { return &m_updater; }
+
     private:
         // debugging code, should be deleted some day
         void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
@@ -142,6 +145,7 @@ class MapManager
         IntervalTimer i_timer;
 
         uint32 i_MaxInstanceId;
+        MapUpdater m_updater;
 };
 #define sMapMgr MapManager::instance()
 #endif

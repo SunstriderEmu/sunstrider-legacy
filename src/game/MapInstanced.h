@@ -43,8 +43,9 @@ class MapInstanced : public Map
 
         Map* GetInstance(const WorldObject* obj);
         Map* FindMap(uint32 InstanceId) { return _FindMap(InstanceId); }
-        void DestroyInstance(uint32 InstanceId);
-        void DestroyInstance(InstancedMaps::iterator &itr);
+        //return true of instance was destroyed
+        bool DestroyInstance(uint32 InstanceId);
+        bool DestroyInstance(InstancedMaps::iterator &itr);
 
         void AddGridMapReference(const GridPair &p)
         {
