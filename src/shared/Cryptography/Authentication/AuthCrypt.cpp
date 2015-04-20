@@ -19,9 +19,9 @@
 #include "AuthCrypt.h"
 #include "Cryptography/HMACSHA1.h"
 #include "Cryptography/BigNumber.h"
-#ifdef LICH_KING
-
 #include <cstring>
+
+#ifdef LICH_KING
 
 AuthCrypt::AuthCrypt() :
     _clientDecrypt(SHA_DIGEST_LENGTH), _serverEncrypt(SHA_DIGEST_LENGTH),
