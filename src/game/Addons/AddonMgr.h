@@ -69,7 +69,7 @@ namespace AddonMgr
     typedef std::list<BannedAddon> BannedAddonList;
     BannedAddonList const* GetBannedAddons();
 
-    long GetStandardAddonCRC(uint32 clientBuild);
+    uint64 GetStandardAddonCRC(uint32 clientBuild);
 }
 
 #endif

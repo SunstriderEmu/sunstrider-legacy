@@ -142,7 +142,7 @@ Locale = 0
 #
 #    PlayerSaveInterval
 #        Player save interval (in milliseconds)
-#        Default: 300000 (5 min)
+#        Default: 60000 (1 min)
 #
 #    DisconnectToleranceInterval
 #        Tolerance for disconnected players before putting in the queue. (in seconds)
@@ -209,7 +209,7 @@ SocketSelectTime = 10000
 GridCleanUpDelay = 300000
 MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
-PlayerSaveInterval = 900000
+PlayerSaveInterval = 60000
 DisconnectToleranceInterval = 0
 vmap.enableLOS = 1
 vmap.enableHeight = 1

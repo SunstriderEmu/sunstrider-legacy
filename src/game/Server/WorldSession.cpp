@@ -174,7 +174,7 @@ uint32 WorldSession::GetClientBuild()
 void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
 {
     TC_LOG_ERROR("network","Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
-        GetAccountId(),LookupOpcodeName(packet.GetOpcode()),packet.GetOpcode(),packet.size(),size);
+        GetAccountId(),LookupOpcodeName(packet.GetOpcode()), packet.GetOpcode(), uint32(packet.size()), size);
 }
 
 /// Get the player name

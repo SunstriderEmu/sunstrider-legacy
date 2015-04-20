@@ -99,7 +99,7 @@ void LoadFromDB()
     }
 }
 
-long GetStandardAddonCRC(uint32 clientBuild)
+uint64 GetStandardAddonCRC(uint32 clientBuild)
 {
     switch(clientBuild)
     {

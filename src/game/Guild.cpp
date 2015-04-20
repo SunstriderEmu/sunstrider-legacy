@@ -89,19 +89,19 @@ bool Guild::create(uint64 lGuid, std::string gname)
         "VALUES('%u','%s','%u', '%s', '%s', NOW(),'%u','%u','%u','%u','%u','" UI64FMTD "')",
         Id, gname.c_str(), GUID_LOPART(leaderGuid), dbGINFO.c_str(), dbMOTD.c_str(), EmblemStyle, EmblemColor, BorderStyle, BorderColor, BackgroundColor, guildbank_money);
 
-    rname = "Maître";
+    rname = "Leader";
     CreateRank(rname,GR_RIGHT_ALL, trans);
-    rname = "Officier";
+    rname = "Officer";
     CreateRank(rname,GR_RIGHT_ALL, trans);
-    rname = "Vétéran";
+    rname = "Veteran";
     CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
-    rname = "Membre";
+    rname = "Member";
     CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
-    rname = "Initié";
+    rname = "Initiate";
     CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
 
     if (!AddMember(lGuid, (uint32)GR_GUILDMASTER, trans)) {
-        TC_LOG_ERROR("FIXME","Player %u not added to guild %u!", lGuid, Id);
+        TC_LOG_ERROR("guild", "Player " UI64FMTD " not added to guild %u!", lGuid, Id);
         return false;
     }
     

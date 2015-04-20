@@ -499,13 +499,13 @@ bool ChatHandler::HandleGetItemState(const char* args)
 
             if (test == NULL)
             {
-                PSendSysMessage("queue(%d): the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
+                PSendSysMessage("queue(%d): the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", (uint32)i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
                 error = true; continue;
             }
 
             if (test != item)
             {
-                PSendSysMessage("queue(%d): the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
+                PSendSysMessage("queue(%d): the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the item with guid %d is there instead!", (uint32)i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow(), test->GetGUIDLow());
                 error = true; continue;
             }
         }
@@ -774,7 +774,7 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
     PSendSysMessage("Dump done.");
-    TC_LOG_INFO("profiling",sProfilerMgr->dump().c_str());
+    TC_LOG_INFO("profiling %s",sProfilerMgr->dump().c_str());
     return true;
 }
 

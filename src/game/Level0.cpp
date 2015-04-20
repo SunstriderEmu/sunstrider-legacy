@@ -1412,7 +1412,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
         return true;
     } else {
-        TC_LOG_INFO("command","Shop error - actions : %s - GUID : %u price : %u - hour : %u", actions.c_str(), player->GetGUID(), cost, time(NULL));
+        TC_LOG_INFO("command", "Shop error - actions : %s - GUID : " UI64FMTD " price : %u - hour : %u", actions.c_str(), player->GetGUID(), cost, uint32(time(NULL)));
         return false;
     }
 }

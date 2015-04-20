@@ -94,7 +94,7 @@ void LootStore::LoadLootTable()
     // Clearing store (for reloading case)
     Clear();
 
-    TC_LOG_INFO( "%s :", GetName());
+    TC_LOG_INFO("server.loading", "%s :", GetName());
 
     //                                                 0      1     2                    3        4              5         6              7                 8
     QueryResult result = WorldDatabase.PQuery("SELECT entry, item, ChanceOrQuestChance, groupid, mincountOrRef, maxcount, lootcondition, condition_value1, condition_value2 FROM %s",GetName());

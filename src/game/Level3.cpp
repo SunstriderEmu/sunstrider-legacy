@@ -4270,7 +4270,7 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
         std::stringstream ss(cValue);
         ss >> uValue;
         target->SetUInt64Value(index,uValue);
-        PSendSysMessage("You set the uint64 value of %u in %u to %I64u", GUID_LOPART(guid), index, uValue);
+        PSendSysMessage("You set the uint64 value of %u in %u to " UI64FMTD, GUID_LOPART(guid), index, uValue);
         }
         break;
     case 2: //float
@@ -4331,7 +4331,7 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
         break;
     case 1: //uint64
         uValue = target->GetUInt64Value(index);
-        PSendSysMessage("The uint64 value of %u (lowguid) in field %u is "UI64FMTD, GUID_LOPART(guid), index, uValue);
+        PSendSysMessage("The uint64 value of %u (lowguid) in field %u is " UI64FMTD, GUID_LOPART(guid), index, uValue);
         break;
     case 2: //float
         fValue = target->GetFloatValue(index);
@@ -8418,7 +8418,7 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
         {
             uint8 dir = path->pathDirection;
             std::string pathDirStr = GetWaypointPathDirectionName(WaypointPathDirection(dir));
-            PSendSysMessage("Current path value (in memory) : Path id %u has direction set to %s (%u)", pathDirStr.c_str(), dir);
+            PSendSysMessage("Current path value (in memory) : Path id %u has direction set to %s (%u)", pathId, pathDirStr.c_str(), dir);
         }
     }
     return true;

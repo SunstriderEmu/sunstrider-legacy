@@ -590,7 +590,7 @@ void World::LoadConfigSettings(bool reload)
     }
     m_configs[CONFIG_ADDON_CHANNEL] = sConfigMgr->GetBoolDefault("AddonChannel", true);
     m_configs[CONFIG_GRID_UNLOAD] = sConfigMgr->GetBoolDefault("GridUnload", true);
-    m_configs[CONFIG_INTERVAL_SAVE] = sConfigMgr->GetIntDefault("PlayerSaveInterval", 900000);
+    m_configs[CONFIG_INTERVAL_SAVE] = sConfigMgr->GetIntDefault("PlayerSaveInterval", 60000);
     m_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfigMgr->GetIntDefault("DisconnectToleranceInterval", 0);
 
     m_configs[CONFIG_INTERVAL_GRIDCLEAN] = sConfigMgr->GetIntDefault("GridCleanUpDelay", 300000);
@@ -2139,7 +2139,7 @@ void World::ScriptsProcess()
                     }
                     break;*/
                 default:
-                    TC_LOG_ERROR("FIXME","*_script source with unsupported high guid value %u",GUID_HIPART(step.sourceGUID));
+                    TC_LOG_ERROR("scripts","*_script source with unsupported high guid value %u",GUID_HIPART(step.sourceGUID));
                     break;
             }
         }
@@ -2168,18 +2168,18 @@ void World::ScriptsProcess()
                     target = HashMapHolder<Corpse>::Find(step.targetGUID);
                     break;
                 default:
-                    TC_LOG_ERROR("FIXME","*_script source with unsupported high guid value %u",GUID_HIPART(step.targetGUID));
+                    TC_LOG_ERROR("scripts","*_script source with unsupported high guid value %u",GUID_HIPART(step.targetGUID));
                     break;
             }
         }
         
         if (!source && !target)
-            TC_LOG_ERROR("FIXME","World::ScriptProcess: no source neither target for this script, if this is the last line before a crash, then you'd better return here.");
+            TC_LOG_ERROR("scripts","World::ScriptProcess: no source neither target for this script, if this is the last line before a crash, then you'd better return here.");
 
         //if(target && !target->IsInWorld()) target = NULL;
 
         if (GUID_HIPART(step.sourceGUID) == 16256 || GUID_HIPART(step.targetGUID) == 16256) {
-            TC_LOG_ERROR("FIXME","Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD, step.sourceGUID, step.targetGUID, step.ownerGUID);
+            TC_LOG_ERROR("scripts","Source high GUID seems to be corrupted, skipping this script. Source GUID: " UI64FMTD ", target GUID: " UI64FMTD ", owner GUID: " UI64FMTD, step.sourceGUID, step.targetGUID, step.ownerGUID);
             if (m_scriptSchedule.size() == 1) {
                 m_scriptSchedule.clear();
                 break;
@@ -2192,18 +2192,18 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TALK call for NULL creature.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK call for NULL creature.");
                     break;
                 }
 
                 if(source->GetTypeId()!=TYPEID_UNIT)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TALK call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
                 if(step.script->datalong > 3)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TALK invalid chat type (%u), skipping.",step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK invalid chat type (%u), skipping.",step.script->datalong);
                     break;
                 }
 
@@ -2218,7 +2218,7 @@ void World::ScriptsProcess()
                     case 1:                                 // Whisper
                         if(!unit_target)
                         {
-                            TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.",step.script->datalong);
+                            TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.",step.script->datalong);
                             break;
                         }
                         (source->ToCreature())->Whisper(step.script->dataint,unit_target);
@@ -2238,13 +2238,13 @@ void World::ScriptsProcess()
             case SCRIPT_COMMAND_EMOTE:
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_EMOTE call for NULL creature.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_EMOTE call for NULL creature.");
                     break;
                 }
 
                 if(source->GetTypeId()!=TYPEID_UNIT)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_EMOTE call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_EMOTE call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2253,12 +2253,12 @@ void World::ScriptsProcess()
             case SCRIPT_COMMAND_FIELD_SET:
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FIELD_SET call for NULL object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FIELD_SET call for NULL object.");
                     break;
                 }
                 if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FIELD_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FIELD_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
                         step.script->datalong,source->GetValuesCount(),source->GetTypeId());
                     break;
                 }
@@ -2268,13 +2268,13 @@ void World::ScriptsProcess()
             case SCRIPT_COMMAND_MOVE_TO:
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_MOVE_TO call for NULL creature.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_MOVE_TO call for NULL creature.");
                     break;
                 }
 
                 if(source->GetTypeId()!=TYPEID_UNIT)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_MOVE_TO call for non-creature (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
                 ((Unit *)source)->MonsterMoveWithSpeed(step.script->x, step.script->y, step.script->z, step.script->datalong2 );
@@ -2283,12 +2283,12 @@ void World::ScriptsProcess()
             case SCRIPT_COMMAND_FLAG_SET:
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FLAG_SET call for NULL object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_SET call for NULL object.");
                     break;
                 }
                 if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FLAG_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_SET call for wrong field %u (max count: %u) in object (TypeId: %u).",
                         step.script->datalong,source->GetValuesCount(),source->GetTypeId());
                     break;
                 }
@@ -2298,12 +2298,12 @@ void World::ScriptsProcess()
             case SCRIPT_COMMAND_FLAG_REMOVE:
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FLAG_REMOVE call for NULL object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_REMOVE call for NULL object.");
                     break;
                 }
                 if(step.script->datalong <= OBJECT_FIELD_ENTRY || step.script->datalong >= source->GetValuesCount())
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_FLAG_REMOVE call for wrong field %u (max count: %u) in object (TypeId: %u).",
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_FLAG_REMOVE call for wrong field %u (max count: %u) in object (TypeId: %u).",
                         step.script->datalong,source->GetValuesCount(),source->GetTypeId());
                     break;
                 }
@@ -2316,14 +2316,14 @@ void World::ScriptsProcess()
                 // accept player in any one from target/source arg
                 if (!target && !source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TELEPORT_TO call for NULL object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TELEPORT_TO call for NULL object.");
                     break;
                 }
 
                                                             // must be only Player
                 if((!target || target->GetTypeId() != TYPEID_PLAYER) && (!source || source->GetTypeId() != TYPEID_PLAYER))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TELEPORT_TO call for non-player (TypeIdSource: %u)(TypeIdTarget: %u), skipping.", source ? source->GetTypeId() : 0, target ? target->GetTypeId() : 0);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TELEPORT_TO call for non-player (TypeIdSource: %u)(TypeIdTarget: %u), skipping.", source ? source->GetTypeId() : 0, target ? target->GetTypeId() : 0);
                     break;
                 }
 
@@ -2337,13 +2337,13 @@ void World::ScriptsProcess()
             {
                 if(!step.script->datalong)                  // creature not specified
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL creature.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL creature.");
                     break;
                 }
 
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL world object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for NULL world object.");
                     break;
                 }
 
@@ -2351,7 +2351,7 @@ void World::ScriptsProcess()
 
                 if(!summoner)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for non-WorldObject (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON_CREATURE call for non-WorldObject (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2363,7 +2363,7 @@ void World::ScriptsProcess()
                 Creature* pCreature = summoner->SummonCreature(step.script->datalong, x, y, z, o,TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,step.script->datalong2);
                 if (!pCreature)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_TEMP_SUMMON failed for creature (entry: %u).",step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TEMP_SUMMON failed for creature (entry: %u).",step.script->datalong);
                     break;
                 }
 
@@ -2374,13 +2374,13 @@ void World::ScriptsProcess()
             {
                 if(!step.script->datalong)                  // gameobject not specified
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for NULL gameobject.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for NULL gameobject.");
                     break;
                 }
 
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for NULL world object.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for NULL world object.");
                     break;
                 }
 
@@ -2388,7 +2388,7 @@ void World::ScriptsProcess()
 
                 if(!summoner)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for non-WorldObject (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT call for non-WorldObject (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2407,7 +2407,7 @@ void World::ScriptsProcess()
 
                 if ( !go )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
 
@@ -2417,7 +2417,7 @@ void World::ScriptsProcess()
                     go->GetGoType()==GAMEOBJECT_TYPE_BUTTON      ||
                     go->GetGoType()==GAMEOBJECT_TYPE_TRAP )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT can not be used with gameobject of type %u (guid: %u).", uint32(go->GetGoType()), step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_RESPAWN_GAMEOBJECT can not be used with gameobject of type %u (guid: %u).", uint32(go->GetGoType()), step.script->datalong);
                     break;
                 }
 
@@ -2434,19 +2434,19 @@ void World::ScriptsProcess()
             {
                 if(!step.script->datalong)                  // door not specified
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_OPEN_DOOR call for NULL door.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for NULL door.");
                     break;
                 }
 
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_OPEN_DOOR call for NULL unit.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for NULL unit.");
                     break;
                 }
 
                 if(!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_OPEN_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2467,12 +2467,12 @@ void World::ScriptsProcess()
 
                 if ( !door )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
                 if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_OPEN_DOOR failed for non-door(GoType: %u).", door->GetGoType());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_OPEN_DOOR failed for non-door(GoType: %u).", door->GetGoType());
                     break;
                 }
 
@@ -2489,19 +2489,19 @@ void World::ScriptsProcess()
             {
                 if(!step.script->datalong)                  // guid for door not specified
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CLOSE_DOOR call for NULL door.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for NULL door.");
                     break;
                 }
 
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CLOSE_DOOR call for NULL unit.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for NULL unit.");
                     break;
                 }
 
                 if(!source->isType(TYPEMASK_UNIT))          // must be any Unit (creature or player)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CLOSE_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR call for non-unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
@@ -2522,12 +2522,12 @@ void World::ScriptsProcess()
 
                 if ( !door )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->datalong);
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for gameobject(guid: %u).", step.script->datalong);
                     break;
                 }
                 if ( door->GetGoType() != GAMEOBJECT_TYPE_DOOR )
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CLOSE_DOOR failed for non-door(GoType: %u).", door->GetGoType());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CLOSE_DOOR failed for non-door(GoType: %u).", door->GetGoType());
                     break;
                 }
 
@@ -2545,13 +2545,13 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_QUEST_EXPLORED call for NULL source.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_QUEST_EXPLORED call for NULL source.");
                     break;
                 }
 
                 if(!target)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_QUEST_EXPLORED call for NULL target.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_QUEST_EXPLORED call for NULL target.");
                     break;
                 }
 
@@ -2563,7 +2563,7 @@ void World::ScriptsProcess()
                 {
                     if(source->GetTypeId()!=TYPEID_UNIT && source->GetTypeId()!=TYPEID_GAMEOBJECT)
                     {
-                        TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_QUEST_EXPLORED call for non-creature and non-gameobject (TypeId: %u), skipping.",source->GetTypeId());
+                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_QUEST_EXPLORED call for non-creature and non-gameobject (TypeId: %u), skipping.",source->GetTypeId());
                         break;
                     }
 
@@ -2574,13 +2574,13 @@ void World::ScriptsProcess()
                 {
                     if(target->GetTypeId()!=TYPEID_UNIT && target->GetTypeId()!=TYPEID_GAMEOBJECT)
                     {
-                        TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_QUEST_EXPLORED call for non-creature and non-gameobject (TypeId: %u), skipping.",target->GetTypeId());
+                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_QUEST_EXPLORED call for non-creature and non-gameobject (TypeId: %u), skipping.",target->GetTypeId());
                         break;
                     }
 
                     if(source->GetTypeId()!=TYPEID_PLAYER)
                     {
-                        TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_QUEST_EXPLORED call for non-player(TypeId: %u), skipping.",source->GetTypeId());
+                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_QUEST_EXPLORED call for non-player(TypeId: %u), skipping.",source->GetTypeId());
                         break;
                     }
 
@@ -2602,25 +2602,25 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_ACTIVATE_OBJECT must have source caster.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_ACTIVATE_OBJECT must have source caster.");
                     break;
                 }
 
                 if(!source->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_ACTIVATE_OBJECT source caster isn't unit (TypeId: %u), skipping.",source->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_ACTIVATE_OBJECT source caster isn't unit (TypeId: %u), skipping.",source->GetTypeId());
                     break;
                 }
 
                 if(!target)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_ACTIVATE_OBJECT call for NULL gameobject.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_ACTIVATE_OBJECT call for NULL gameobject.");
                     break;
                 }
 
                 if(target->GetTypeId()!=TYPEID_GAMEOBJECT)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_ACTIVATE_OBJECT call for non-gameobject (TypeId: %u), skipping.",target->GetTypeId());
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_ACTIVATE_OBJECT call for non-gameobject (TypeId: %u), skipping.",target->GetTypeId());
                     break;
                 }
 
@@ -2638,13 +2638,13 @@ void World::ScriptsProcess()
 
                 if(!cmdTarget)
                 {
-                    TC_LOG_ERROR("SCRIPT_COMMAND_REMOVE_AURA call for NULL %s.",step.script->datalong2 ? "source" : "target");
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA call for NULL %s.", step.script->datalong2 ? "source" : "target");
                     break;
                 }
 
                 if(!cmdTarget->isType(TYPEMASK_UNIT))
                 {
-                    TC_LOG_ERROR("SCRIPT_COMMAND_REMOVE_AURA %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_REMOVE_AURA %s isn't unit (TypeId: %u), skipping.",step.script->datalong2 ? "source" : "target",cmdTarget->GetTypeId());
                     break;
                 }
 
@@ -2656,7 +2656,7 @@ void World::ScriptsProcess()
             {
                 if(!source)
                 {
-                    TC_LOG_ERROR("FIXME","SCRIPT_COMMAND_CAST_SPELL must have source caster.");
+                    TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CAST_SPELL must have source caster.");
                     break;
                 }
 
@@ -2740,10 +2740,10 @@ void World::ScriptsProcess()
                     if(CreatureData const* data = sObjectMgr->GetCreatureData(step.script->datalong))
                         target = ObjectAccessor::GetObjectInWorld<Creature>(data->mapid, data->posX, data->posY, MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), target);
                 }
-                //TC_LOG_DEBUG("FIXME","attempting to pass target...");
+                //TC_LOG_DEBUG("scripts","attempting to pass target...");
                 if(!target)
                     break;
-                //TC_LOG_DEBUG("FIXME","target passed");
+                //TC_LOG_DEBUG("scripts","target passed");
                 //Lets choose our ScriptMap map
                 ScriptMapMap *datamap = NULL;
                 switch(step.script->dataint)
@@ -2767,7 +2767,7 @@ void World::ScriptsProcess()
                         datamap = &sWaypointScripts;
                         break;
                     default:
-                        TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
+                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
                         break;
                 }
                 //if no scriptmap present...
@@ -2816,7 +2816,7 @@ void World::ScriptsProcess()
             }
 
             default:
-                TC_LOG_ERROR("sql.sql","Unknown script command %u called.",step.script->command);
+                TC_LOG_ERROR("scripts","Unknown script command %u called.",step.script->command);
                 break;
         }
 
@@ -3787,7 +3787,7 @@ void World::UpdateMonitoring(uint32 diff)
     filename += sConfigMgr->GetStringDefault("Monitor.creatureguid", "creatureguid");
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
-    sprintf(data, "%lu", sObjectMgr->GetMaxCreatureGUID());
+    sprintf(data, "%u", sObjectMgr->GetMaxCreatureGUID());
     fputs(data, fp);
     fclose(fp);
     

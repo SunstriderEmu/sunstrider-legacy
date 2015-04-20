@@ -2207,7 +2207,7 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
             if(c)
                 creatureList.push_back(c);
             else
-                TC_LOG_ERROR("maps","GetAllCreaturesFromPool : couldn't get unit with guid %u",guid);
+                TC_LOG_ERROR("maps", "GetAllCreaturesFromPool : couldn't get unit with guid " UI64FMTD, guid);
         }
     }
 
