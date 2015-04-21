@@ -774,7 +774,7 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
 bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
 {
     PSendSysMessage("Dump done.");
-    TC_LOG_INFO("profiling %s",sProfilerMgr->dump().c_str());
+    TC_LOG_INFO("profiling", "%s", sProfilerMgr->dump().c_str());
     return true;
 }
 

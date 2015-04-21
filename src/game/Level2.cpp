@@ -4343,7 +4343,7 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
 
     if(!pCreature->GetDBTableGUIDLow())
     {
-        PSendSysMessage("Selected creature isn't in `creature` table", pCreature->GetGUIDLow());
+        PSendSysMessage("Selected creature [guidlow:%u] isn't in `creature` table", pCreature->GetGUIDLow());
         SetSentErrorMessage(true);
         return false;
     }

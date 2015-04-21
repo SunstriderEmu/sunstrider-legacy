@@ -76,7 +76,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
         "('%u', '%u', '%u', '%u', '%u', '%u', '%u')", Id, stats.rating, stats.games_week, stats.wins_week, stats.games_season, stats.wins_season, stats.rank);
 
     CharacterDatabase.CommitTransaction(trans);
-    TC_LOG_DEBUG("arena","New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: %u]", GetId(), GetType(), GetCaptain());
+    TC_LOG_DEBUG("arena","New ArenaTeam created [Id: %u] [Type: %u] [Captain GUID: " UI64FMTD "]", GetId(), GetType(), GetCaptain());
     
     std::string ip = "unknown";
     if (Player* captain = sObjectMgr->GetPlayer(GetCaptain()))
@@ -98,7 +98,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
     {
         if(pl->GetArenaTeamId(GetSlot()))
         {
-            TC_LOG_ERROR("FIXME","Arena::AddMember() : player already in this sized team");
+            TC_LOG_ERROR("bg.arena","Arena::AddMember() : player already in this sized team");
             return false;
         }
     }
@@ -107,7 +107,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
         // check if player already in arenateam of that size
         if(Player::GetArenaTeamIdFromDB(PlayerGuid, GetType()) != 0)
         {
-            TC_LOG_ERROR("FIXME","Arena::AddMember() : player already in this sized team");
+            TC_LOG_ERROR("bg.arena","Arena::AddMember() : player already in this sized team");
             return false;
         }
     }

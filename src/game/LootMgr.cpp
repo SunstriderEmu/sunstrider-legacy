@@ -152,13 +152,11 @@ void LootStore::LoadLootTable()
 
         Verify();                                           // Checks validity of the loot store
 
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO( "FIXME",">> Loaded %u loot definitions (%d templates)", count, m_LootTemplates.size());
+        TC_LOG_INFO( "server.loading",">> Loaded %u loot definitions (%u templates)", count, uint32(m_LootTemplates.size()));
     }
     else
     {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_ERROR( "FIXME",">> Loaded 0 loot definitions. DB table `%s` is empty.",GetName() );
+        TC_LOG_ERROR( "server.loading",">> Loaded 0 loot definitions. DB table `%s` is empty.", GetName());
     }
 }
 

@@ -3714,7 +3714,7 @@ void World::UpdateMonitoring(uint32 diff)
     filename += sConfigMgr->GetStringDefault("Monitor.timediff", "timediff");
     if ((fp = fopen(filename.c_str(), "w")) == NULL)
         return;
-    sprintf(data, "%lu", fastTd);
+    sprintf(data, "%u", fastTd);
     trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", (uint32)now, fastTd);
     fputs(data, fp);
     fclose(fp);
