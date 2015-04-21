@@ -5,7 +5,7 @@ https://downloads.mariadb.org/mariadb/repositories/
 Add the required apt-key, apt-get update and you're good to go.
 
 Execute :
-sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libace-dev libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
+sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
 
 Create a root folder for your emulator installation. I will refer to this folder as <root_install_folder>.
 - mkdir build

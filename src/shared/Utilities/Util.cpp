@@ -26,6 +26,7 @@
 #include "zthread/ThreadLocal.h"
 #include "SFMT.h"
 #include <boost/thread/tss.hpp>
+#include <cstdarg>
 
 static boost::thread_specific_ptr<SFMTRand> sfmtRand;
 
