@@ -19,19 +19,21 @@
 #include "Profiler.h"
 #include "ProfilerMgr.h"
 
+#if 0 //profiler disabled, fix it if you want to re use it later (ACE has been removed from the project)
+
 Profiler::Profiler(std::string name)
 {
     //printf("[TRACE] %s\n", name.c_str());
 #ifdef PROFILING
-    _start = ACE_OS::gettimeofday();
-    _fctName = name;
+  /*  _start = ACE_OS::gettimeofday();
+    _fctName = name; */
 #endif // PROFILING
 }
 
 Profiler::~Profiler()
 {
 #ifdef PROFILING
-    _end = ACE_OS::gettimeofday();
+     _end = ACE_OS::gettimeofday();
     
     long elapsed = _end.usec() - _start.usec();
     if (elapsed >= 0)
@@ -39,3 +41,4 @@ Profiler::~Profiler()
 #endif // PROFILING
 }
 
+#endif

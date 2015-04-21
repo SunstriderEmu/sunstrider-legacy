@@ -370,7 +370,7 @@ void IRCMgr::connect()
 
         itr->second->session = irc_create_session(&_callbacks);
         if (!itr->second->session) {
-            TC_LOG_ERROR("IRCMgr","IRCMgr: Could not create IRC session for server %u (%s:%u, %susing SSL): %s.",
+            TC_LOG_ERROR("IRCMgr","IRCMgr: Could not create IRC session for server %u (%s:%u, %susing SSL)",
                     itr->first, itr->second->host.c_str(), itr->second->port, (itr->second->ssl ? "" : "not "));
             continue;
         }

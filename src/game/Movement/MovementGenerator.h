@@ -20,7 +20,6 @@
 #define TRINITY_MOVEMENTGENERATOR_H
 
 #include "Define.h"
-#include <ace/Singleton.h>
 #include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
 #include "Common.h"

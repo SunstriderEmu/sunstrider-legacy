@@ -144,6 +144,7 @@ class MapManager
         MapMapType i_maps;
         IntervalTimer i_timer;
 
+        std::mutex _mapsLock;
         uint32 i_MaxInstanceId;
         MapUpdater m_updater;
 };

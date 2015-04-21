@@ -446,6 +446,7 @@ ObjectAccessor::Update(uint32 diff)
 {
     //build update for each objects
     UpdateDataMapType update_players;
+
     {
         Guard guard(i_updateGuard);
         while(!i_objects.empty())

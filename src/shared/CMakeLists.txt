@@ -45,7 +45,6 @@ add_dependencies(shared revision.h)
 
 target_link_libraries(
 shared
-${ACE_LIBRARY}
 )
 
 INCLUDE_DIRECTORIES(
@@ -71,7 +70,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Packets
 ${CMAKE_CURRENT_SOURCE_DIR}/Threading
 ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
 ${OPENSSL_INCLUDE_DIR}
-${ACE_INCLUDE_DIR}
 ${MYSQL_INCLUDE_DIR}
 #for revision.h
 ${CMAKE_BINARY_DIR}

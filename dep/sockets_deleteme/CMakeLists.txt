@@ -25,7 +25,6 @@ ${CMAKE_SOURCE_DIR}/src/shared/Logging
 ${CMAKE_SOURCE_DIR}/src/shared/Networking
 ${CMAKE_SOURCE_DIR}/src/shared
 ${CMAKE_SOURCE_DIR}/src/framework
-${ACE_INCLUDE_DIR}
 )
 
 add_library(trinitysockets STATIC ${trinitysockets_STAT_SRCS})

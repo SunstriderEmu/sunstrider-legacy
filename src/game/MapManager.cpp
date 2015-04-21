@@ -66,6 +66,11 @@ MapManager::Initialize()
         i_GridStateErrorCount = 0;
     }
 
+    int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
+    // Start mtmaps if needed.
+    if (num_threads > 0)
+        m_updater.activate(num_threads);
+
     InitMaxInstanceId();
 }
 
@@ -242,29 +247,21 @@ MapManager::Update(time_t diff)
     if( !i_timer.Passed() )
         return;
 
+    //TODO : Move players update into threads
     sWorld->RecordTimeDiff(NULL);
     sObjectAccessor->UpdatePlayers(i_timer.GetCurrent());
     sWorld->RecordTimeDiff("UpdatePlayers");
 
-    uint32 i=0;
-    MapMapType::iterator iter;
-    std::vector<Map*> update_queue(i_maps.size());
-    omp_set_num_threads(sWorld->getConfig(CONFIG_NUMTHREADS));
-    for(iter = i_maps.begin(), i=0;iter != i_maps.end(); ++iter, i++)
-        update_queue[i]=iter->second;
-/*
-    gomp in gcc <4.4 version cannot parallelise loops using random access iterators
-    so until gcc 4.4 isnt standard, we need the update_queue workaround
-*/
-    
-#pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
-    for(int32 i = 0; i < i_maps.size(); ++i)
+    MapMapType::iterator iter = i_maps.begin();
+    for (; iter != i_maps.end(); ++iter)
     {
-        //checkAndCorrectGridStatesArray();                   // debugging code, should be deleted some day
-        update_queue[i]->Update(i_timer.GetCurrent());
-        sWorld->RecordTimeDiff("UpdateMap %u", update_queue[i]->GetId());
-    //  TC_LOG_ERROR("FIXME","This is thread %d out of %d threads,updating map %u",omp_get_thread_num(),omp_get_num_threads(),iter->second->GetId());
+        if (m_updater.activated())
+            m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
+        else
+            iter->second->Update(uint32(i_timer.GetCurrent()));
     }
+    if (m_updater.activated())
+        m_updater.wait();
 
     sObjectAccessor->Update(i_timer.GetCurrent());
     sWorld->RecordTimeDiff("UpdateObjectAccessor");
@@ -291,8 +288,8 @@ bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 {
     GridPair p = Trinity::ComputeGridPair(x,y);
 
-    int gx=63-p.x_coord;
-    int gy=63-p.y_coord;
+    int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
+    int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
 
     return GridMap::ExistMap(mapid,gx,gy) && GridMap::ExistVMap(mapid,gx,gy);
 }
@@ -310,14 +307,17 @@ bool MapManager::IsValidMAP(uint32 mapid, bool startUp)
 
 void MapManager::UnloadAll()
 {
-    for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
-        iter->second->UnloadAll();
-
-    while(!i_maps.empty())
+    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end();)
     {
-        delete i_maps.begin()->second;
-        i_maps.erase(i_maps.begin());
+        iter->second->UnloadAll();
+        delete iter->second;
+        i_maps.erase(iter++);
     }
+
+    if (m_updater.activated())
+        m_updater.deactivate();
+
+    Map::DeleteStateMachine();
 }
 
 void MapManager::InitMaxInstanceId()
@@ -333,11 +333,14 @@ void MapManager::InitMaxInstanceId()
 
 uint32 MapManager::GetNumInstances()
 {
+    std::lock_guard<std::mutex> lock(_mapsLock);
+
     uint32 ret = 0;
     for(MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
         Map *map = itr->second;
-        if(!map->Instanceable()) continue;
+        if(!map->Instanceable()) 
+            continue;
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
         for(MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
             if(mitr->second->IsDungeon()) ret++;
@@ -347,11 +350,14 @@ uint32 MapManager::GetNumInstances()
 
 uint32 MapManager::GetNumPlayersInInstances()
 {
+    std::lock_guard<std::mutex> lock(_mapsLock);
+
     uint32 ret = 0;
     for(MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
         Map *map = itr->second;
-        if(!map->Instanceable()) continue;
+        if(!map->Instanceable()) 
+            continue;
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
         for(MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
             if(mitr->second->IsDungeon())
@@ -362,6 +368,8 @@ uint32 MapManager::GetNumPlayersInInstances()
 
 uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
 {
+    std::lock_guard<std::mutex> lock(_mapsLock);
+
     uint32 ret = 0;
 
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)

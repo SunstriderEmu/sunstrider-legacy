@@ -44,7 +44,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/irc
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
 )
 

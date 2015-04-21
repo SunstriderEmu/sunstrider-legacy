@@ -58,7 +58,6 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/Server
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
 )
 
 add_executable(authserver

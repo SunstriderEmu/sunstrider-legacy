@@ -26,7 +26,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/collision/Maps
   ${CMAKE_SOURCE_DIR}/src/collision/Models
   ${CMAKE_SOURCE_DIR}/src/framework/Platform
-  ${ACE_INCLUDE_DIR}
   ${ZLIB_INCLUDE_DIR}
 )
 

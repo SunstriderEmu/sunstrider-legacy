@@ -26,7 +26,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include
   ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
   ${MYSQL_INCLUDE_DIR}
-  ${ACE_INCLUDE_DIR}
 )
 
 #custom libircclient project, probably still a bit dirty (read: if you can make it cleaner do it)

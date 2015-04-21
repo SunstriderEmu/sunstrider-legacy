@@ -53,7 +53,7 @@ private:
     
     ProfileDataMap _data;
 };
-
+#if 0
 #if defined PROFILING
 #define PROFILE { \
     Profiler profiler(__PRETTY_FUNCTION__); \
@@ -61,6 +61,8 @@ private:
 #else
 #define PROFILE NULL
 #endif
+#endif
+#define PROFILE
 
 #define sProfilerMgr ProfilerMgr::instance()
 

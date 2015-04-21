@@ -16,11 +16,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PROFILER_H
-#define    PROFILER_H
+//DISABLED for now
 
+#ifndef PROFILER_H
+#define PROFILER_H
+//profiler disabled, fix it if you want to re use it later (ACE has been removed from the project)
+#if 0 
 #include "Common.h"
-#include <ace/Time_Value.h>
 
 class Profiler
 {
@@ -36,6 +38,6 @@ private:
     ACE_Time_Value _end;
     std::string _fctName;
 };
-
+#endif
 #endif    /* PROFILER_H */
 

@@ -8,7 +8,6 @@ ${CMAKE_CURRENT_SRC_DIR}
 ${CMAKE_SOURCE_DIR}/src/framework
 ${CMAKE_SOURCE_DIR}/src/framework/Platform
 ${CMAKE_SOURCE_DIR}/src/shared
-${ACE_INCLUDE_DIR}
 )
 
 add_library(trinityframework STATIC ${trinityframework_STAT_SRCS})
