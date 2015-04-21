@@ -6,15 +6,8 @@ syntax: glob
 *.rej
 *~
 .git/
-.git/
-*.*-*
+.git-rewrite/
 sql/world.sql
 
 ################################################################################
 syntax: regexp
-
-etc
-bin
-lib
-patches
-^scripts

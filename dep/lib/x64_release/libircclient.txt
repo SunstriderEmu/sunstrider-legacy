@@ -1,0 +1,11 @@
+1.8 version
+
+This is a self compiled version, containing love and about 4 hours of my life.
+HOW TO COMPILE :
+Install Cygwin
+with packages : make, mingw64-x86-gcc-g++, mingw64-x86_64-zlib
+
+then
+
+./configure --host=x86_64-w64-mingw32 --target=x86_64-w64-mingw32
+make
