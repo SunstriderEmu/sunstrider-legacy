@@ -1,8 +1,8 @@
-use wrauth;
+use auth;
 source auth.sql;
-use wrlogs;
+use logs;
 source logs.sql;
-use wrchar;
+use characters;
 source characters.sql;
-use wrworld;
+use world;
 source world.sql;

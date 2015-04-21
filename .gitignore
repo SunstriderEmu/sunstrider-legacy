@@ -6,16 +6,13 @@ syntax: glob
 *.rej
 *~
 .git/
+.git/
 *.*-*
 sql/world.sql
-dep/libircclient/config.log
-dep/libircclient/config.status
-dep/libircclient/src/Makefile
 
 ################################################################################
 syntax: regexp
 
-nbproject
 etc
 bin
 lib
