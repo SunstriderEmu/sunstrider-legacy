@@ -67,6 +67,12 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/
 4. Apply every 'world', 'char', 'auth' updates in the `sql/updates` directory,
    applying them from the lowest revision to the highest.
 
+   Under bash, this can be achieved by running the `apply_updates.sh` script
+   that is in the `sql` directory.
+
+   *When the database creation scripts are updated, those updates are moved to
+   the `sql/updates/old` directory and are not needed anymore.*
+
 [maria_db]:
 https://downloads.mariadb.org/
 
