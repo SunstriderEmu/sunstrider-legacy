@@ -62,6 +62,7 @@ ENDIF()
 target_link_libraries(
     irc
     ${MYSQL_LIBRARY}
-    ${LIBIRCCLIENT_LIB_WIN32}
+	#the next one contains nothing on linux
+    ${LIBIRCCLIENT_LIB_WIN}
     ${Boost_LIBRARIES}
 )

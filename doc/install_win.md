@@ -3,18 +3,18 @@
 
 ## Compiling The Server
 
-The server currently only builds as x86 on
-Windows.
+The server can now be compiled in x64 or x86.  
+Note that the when downloading dependencies (such as OpenSSL or Boost) you must choose the build corresponding to the compiler version you will use, else the linking will fail.
 
 1. Get Git, and clone the repository
    (https://github.com/Nqsty/sunstrider.git).
 
 2. Install [CMake][cmake]
 
-3. Install [OpenSSL][openssl] 32-bit version and note the folder to which you
+3. Install [OpenSSL][openssl] note the folder to which you
    install it. Caution, do not use the 'Light' version.
 
-4. Install [Boost 1.55 32-bits for Visual Studio 2013][boost] or newer to a directory of
+4. Install [Boost 1.55][boost] or newer to a directory of
    your choice. Set the **environment** variable (not a CMake variable)
    `BOOST_ROOT` to wherever you installed Boost.
 
@@ -37,7 +37,7 @@ http://www.cmake.org/cmake/resources/software.html
 http://slproweb.com/products/Win32OpenSSL.html
 
 [boost]:
-http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/boost_1_55_0-msvc-12.0-32.exe/download
+http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/
 
 <!----------------------------------------------------------------------------->
 ## Setting Up The DB
