@@ -15,7 +15,6 @@ configure_file(
   IMMEDIATE @ONLY)
 add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 
-option(DO_MYSQL "With MySQL support" 1)
 option(DO_DEBUG "Debug mode" 0)
 option(DO_WARN "Enable all compile warnings" 0)
 option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
@@ -56,13 +55,8 @@ ELSE()
 	set(ZLIB_LIBRARIES "zlib")
 ENDIF()
 
-find_package(Git)
- 
-IF(DO_MYSQL)
-    message("* With MySQL")
-    add_definitions(-DDO_MYSQL)
-    FIND_MYSQL()
-ENDIF(DO_MYSQL)
+find_package(Git) 
+FIND_MYSQL()
 
 IF (WIN32)
 	IF(PLATFORM EQUAL 64)
