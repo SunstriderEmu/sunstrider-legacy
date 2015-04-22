@@ -17,7 +17,7 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get -qq install gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch
   - sudo apt-get -qq install libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 git
-  - sudo apt-get install libmariadbclient-dev
+  - sudo apt-get install libmariadbclient18 libmariadbclient-dev
   - sudo apt-get -qq install libmysql++-dev
   - sudo apt-get -qq install libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
