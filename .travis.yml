@@ -9,14 +9,16 @@ sudo: required
 
 before_install:
   - sudo apt-get -qq update
-  - echo "yes" | sudo apt-get -qq install python-software-properties
-  - echo "yes" | sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-  - echo "yes" | sudo add-apt-repository 'deb http://mariadb.mirror.nucleus.be//repo/5.5/ubuntu precise main'
-  - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - sudo apt-get -qq install python-software-properties
+  - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
+  - sudo add-apt-repository 'deb http://mariadb.mirror.nucleus.be//repo/5.5/ubuntu precise main'
   - echo "yes" | sudo add-apt-repository ppa:boost-latest/ppa
+  - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
   - sudo apt-get -qq update
-  - sudo apt-get -qq install gcc-4.9 g++-4.9 make cmake build-essential openssl libtool
-  - sudo apt-get -qq install libssl-dev libmariadbclient-dev libmysql++-dev libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 patch git
+  - sudo apt-get -qq install gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch
+  - sudo apt-get -qq install libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 git
+  - sudo apt-get install libmysqlclient18=5.5.42+maria-1~precise libmariadbclient-dev
+  - sudo apt-get -qq install libmysql++-dev
   - sudo apt-get -qq install libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20
@@ -24,7 +26,7 @@ before_install:
 install:
   - mkdir bin
   - cd bin
-  - cmake ../ -DPREFIX="/home/travis" -DCMAKE_CXX_FLAGS="-fpermissive"
+  - cmake ../ -DPREFIX="/home/travis"
 
 script:
   - make -j 10
