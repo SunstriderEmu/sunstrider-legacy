@@ -6,7 +6,7 @@
 The only windows compiler supported for now is MSVC. The server can be compiled
 in x64 or x86, in Release or Debug mode.
 
-When downloading dependencies (such as OpenSSL or Boost) you must get the
+When downloading dependencies (such as OpenSSL, Boost or MariaDB) you must get the
 version corresponding to the compiler version (x86 or x64) you will use, else
 the linking will fail.
 
@@ -84,22 +84,19 @@ http://www.sunstrider.cf/files/world_2015_04_08_r6592.sql.bz2
 
 Follow these steps after compiling the core.
 
-- Copy `bin/zlib1.dll` from the zlib install directory to your burning crusade
-  install directory.
+- Copy `dep/lib/<build>_release/libmySQL.dll` from the source directory to your 
+  burning crusade install directory. (This dependency should be removed)
 
-- Copy `bin/bzip2.dll` from the bzip2 install directory to your burning crusade
-  install directory.
-
-- Copy `src/tools/map_extractor/Release/mapextractor.exe`from the build
+- Copy `src/tools/map_extractor/<configuration>/mapextractor.exe`from the build
   directory to your burning crusade install directory.
 
-- Copy `src/tools/mmaps_generator/Release/mmaps_generator.exe` from the build
+- Copy `src/tools/mmaps_generator/<configuration>/mmaps_generator.exe` from the build
   directory to your burning crusade install directory.
 
-- Copy `src/tools/vmap4_extractor/Release/vmap4extractor.exe` from the build
+- Copy `src/tools/vmap4_extractor/<configuration>/vmap4extractor.exe` from the build
   directory to your burning crusade install directory.
 
-- Copy `src/tools/vmap4_assembler/Release/vmap4assembler.exe` from the build
+- Copy `src/tools/vmap4_assembler/<configuration>/vmap4assembler.exe` from the build
   directory to your burning crusade install directory.
 
 - Run `mapextractor.exe` in the game directory. This will create two directories
@@ -125,9 +122,9 @@ Follow these steps after compiling the core.
 - Copy to your server install directory :
 
 	- `libeay32.dll` from the OpenSSL install directory.
-	- `dep/lib/win32_release/libmySQL.dll` (from there or from your MariaDB
+	- `dep/lib/<build>_release/libmySQL.dll` (from there or from your MariaDB
       directory)
-	- `dep/lib/win32_release/libircclient.dll`
+	- `dep/lib/<build>_release/libircclient.dll`
 
 <!-- comment for spacing -->
 
@@ -174,7 +171,7 @@ those dll and config files, else the server won't be able to find them.
 By default, the executables and debug informations will be put into
 `<build_dir>/src/worldserver/<vs_config>` and
 `<build_dir>/src/authserver/<vs_config>`. So for instance
-`<build_dir>/src/worldserver/RelWithDebInfo`. Follow the instruction from the
+`<build_dir>/src/worldserver/<configuration>`. Follow the instruction from the
 previous section to change that to your install directory.
 
 Alternatively, you can copy them manually to your install directory. Normally,
