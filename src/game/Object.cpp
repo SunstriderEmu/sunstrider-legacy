@@ -826,7 +826,7 @@ void WorldObject::SetWorldObject(bool on)
     GetMap()->AddObjectToSwitchList(this, on); 
 }
 
-void WorldObject::setActive( bool on )
+void WorldObject::SetKeepActive( bool on )
 {
     if(m_isActive == on)
         return;
@@ -846,16 +846,16 @@ void WorldObject::setActive( bool on )
     if(on)
     {
         if(GetTypeId() == TYPEID_UNIT)
-            map->AddToActive(this->ToCreature());
+            map->AddToForceActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->AddToActive((DynamicObject*)this);
+            map->AddToForceActive((DynamicObject*)this);
     }
     else
     {
         if(GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive(this->ToCreature());
+            map->RemoveFromForceActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->RemoveFromActive((DynamicObject*)this);
+            map->RemoveFromForceActive((DynamicObject*)this);
     }
 }
 

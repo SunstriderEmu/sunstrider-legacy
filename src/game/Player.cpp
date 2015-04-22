@@ -1216,16 +1216,6 @@ void Player::Update( uint32 p_time )
     if(!IsInWorld())
         return;
 
-/*    signal(SIGSEGV, __segv_handler);
-    if (sigsetjmp(__jmp_env, 1) == 1) {
-        TC_LOG_ERROR("entities.player","CRASH: Player guid %ld, account id %ld caused crash, kicking it.", GetGUIDLow(), m_session ? m_session->GetAccountId() : 0);
-        signal(SIGSEGV, SIG_DFL);
-        if (!m_session)
-            raise(SIGSEGV);
-        m_session->LogoutPlayer(false);
-        return;
-    }*/
-
     if (m_kickatnextupdate && m_session) {
         m_kickatnextupdate = false;
         m_session->LogoutPlayer(false);
@@ -1300,6 +1290,8 @@ void Player::Update( uint32 p_time )
         }
     }
 
+    //LK m_achievementMgr->UpdateTimedAchievements(p_time);
+
     if (HasUnitState(UNIT_STATE_MELEE_ATTACKING) && !HasUnitState(UNIT_STATE_CASTING))
     {
         if(Unit *pVictim = GetVictim())
@@ -1319,7 +1311,7 @@ void Player::Update( uint32 p_time )
                     }
                 }
                 //120 degrees of radiant range
-                else if( !HasInArc( 2*M_PI/3, pVictim ))
+                else if (!HasInArc(2 * float(M_PI) / 3, pVictim))
                 {
                     SetAttackTimer(BASE_ATTACK,100);
                     if(m_swingErrorMsg != 2)                // send single time (client auto repeat)
@@ -1334,11 +1326,9 @@ void Player::Update( uint32 p_time )
 
                     // prevent base and off attack in same time, delay attack at 0.2 sec
                     if(HaveOffhandWeapon())
-                    {
-                        uint32 off_att = GetAttackTimer(OFF_ATTACK);
-                        if(off_att < ATTACK_DISPLAY_DELAY)
-                            SetAttackTimer(OFF_ATTACK,ATTACK_DISPLAY_DELAY);
-                    }
+                       if (GetAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
+                            SetAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
+
                     AttackerStateUpdate(pVictim, BASE_ATTACK);
                     ResetAttackTimer(BASE_ATTACK);
                 }
@@ -1347,19 +1337,15 @@ void Player::Update( uint32 p_time )
             if ( HaveOffhandWeapon() && IsAttackReady(OFF_ATTACK))
             {
                 if(!IsWithinMeleeRange(pVictim))
-                {
                     SetAttackTimer(OFF_ATTACK,100);
-                }
-                else if( !HasInArc( 2*M_PI/3, pVictim ))
-                {
+                else if (!HasInArc(2 * float(M_PI) / 3, pVictim))
                     SetAttackTimer(OFF_ATTACK,100);
-                }
                 else
                 {
-                    // prevent base and off attack in same time, delay attack at 0.2 sec
-                    uint32 base_att = GetAttackTimer(BASE_ATTACK);
-                    if(base_att < ATTACK_DISPLAY_DELAY)
-                        SetAttackTimer(BASE_ATTACK,ATTACK_DISPLAY_DELAY);
+                     // prevent base and off attack in same time, delay attack at 0.2 sec
+                    if (GetAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
+                        SetAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
+
                     // do attack
                     AttackerStateUpdate(pVictim, OFF_ATTACK);
                     ResetAttackTimer(OFF_ATTACK);
@@ -1469,11 +1455,11 @@ void Player::Update( uint32 p_time )
         m_Last_tick = now;
     }
 
-    if (m_drunk)
+    if (GetDrunkValue())
     {
         m_drunkTimer += p_time;
 
-        if (m_drunkTimer > 10000)
+        if (m_drunkTimer > 9 * IN_MILLISECONDS)
             HandleSobering();
     }
 
@@ -1496,27 +1482,9 @@ void Player::Update( uint32 p_time )
     // group update
     SendUpdateToOutOfRangeGroupMembers();
     
-   /* if (now > _attackersCheckTime) {
-        HostilReference* ref = GetHostilRefManager().getFirst();
-        while (ref) {
-            HostilReference* nextRef = ref->next();
-            if (Unit* target = ref->getSourceUnit()) {
-                if (!this->CanSeeOrDetect(target, false, true) || IsFriendlyTo(target) || !target->IsInCombat())
-                    _removeAttacker(target);
-            }
-
-            ref = nextRef;
-        }
-        
-        _attackersCheckTime = now + 5;
-    }*/
-
     Pet* pet = GetPet();
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->IsPossessed())
-    {
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
-        return;
-    }
     
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard

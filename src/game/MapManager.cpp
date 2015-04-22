@@ -52,8 +52,7 @@ MapManager::~MapManager()
     Map::DeleteStateMachine();
 }
 
-void
-MapManager::Initialize()
+void MapManager::Initialize()
 {
     Map::InitStateMachine();
 
@@ -78,33 +77,6 @@ void MapManager::InitializeVisibilityDistanceInfo()
 {
     for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
         (*iter).second->InitVisibilityDistance();
-}
-
-// debugging code, should be deleted some day
-void MapManager::checkAndCorrectGridStatesArray()
-{
-    bool ok = true;
-    for(int i=0;i<MAX_GRID_STATE; i++)
-    {
-        if(i_GridStates[i] != si_GridStates[i])
-        {
-            TC_LOG_ERROR("FIXME","MapManager::checkGridStates(), GridState: si_GridStates is currupt !!!");
-            ok = false;
-            si_GridStates[i] = i_GridStates[i];
-        }
-        #ifdef TRINITY_DEBUG
-        // inner class checking only when compiled with debug
-        if(!si_GridStates[i]->checkMagic())
-        {
-            ok = false;
-            si_GridStates[i]->setMagic();
-        }
-        #endif
-    }
-    if(!ok)
-        ++i_GridStateErrorCount;
-    if(i_GridStateErrorCount > 2)
-        assert(false);                                      // force a crash. Too many errors
 }
 
 Map* MapManager::CreateBaseMap(uint32 id)
@@ -239,17 +211,11 @@ void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
     bool remove_result = CreateBaseMap(mapid)->RemoveBones(guid, x, y);
 }
 
-void
-MapManager::Update(time_t diff)
+void MapManager::Update(time_t diff)
 {
     i_timer.Update(diff);
     if( !i_timer.Passed() )
         return;
-
-    //TODO : Move players update into threads
-    sWorld->RecordTimeDiff(NULL);
-    sObjectAccessor->UpdatePlayers(i_timer.GetCurrent());
-    sWorld->RecordTimeDiff("UpdatePlayers");
 
     MapMapType::iterator iter = i_maps.begin();
     for (; iter != i_maps.end(); ++iter)
@@ -259,6 +225,7 @@ MapManager::Update(time_t diff)
         else
             iter->second->Update(uint32(i_timer.GetCurrent()));
     }
+
     if (m_updater.activated())
         m_updater.wait();
 
@@ -266,21 +233,6 @@ MapManager::Update(time_t diff)
     sWorld->RecordTimeDiff("UpdateObjectAccessor");
 
     i_timer.SetCurrent(0);
-}
-
-void MapManager::DoDelayedMovesAndRemoves()
-{
-    int i =0;
-    std::vector<Map*> update_queue(i_maps.size());
-    MapMapType::iterator iter;
-    for(iter = i_maps.begin();iter != i_maps.end(); ++iter, i++)
-    update_queue[i] = iter->second;
-
-    omp_set_num_threads(sWorld->getConfig(CONFIG_NUMTHREADS));
-    
-#pragma omp parallel for schedule(dynamic) private(i) shared(update_queue)
-    for(i=0;i<i_maps.size();i++)
-    update_queue[i]->DoDelayedMovesAndRemoves();
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)

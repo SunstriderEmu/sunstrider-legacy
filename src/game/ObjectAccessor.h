@@ -212,7 +212,6 @@ class ObjectAccessor
         void RemoveUpdateObject(Object *obj);
 
         void Update(uint32 diff);
-        void UpdatePlayers(uint32 diff);
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
         void RemoveCorpse(Corpse *corpse);

@@ -104,8 +104,6 @@ class MapManager
             return IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation);
         }
 
-        void DoDelayedMovesAndRemoves();
-
         bool CanPlayerEnter(uint32 mapid, Player* player);
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
@@ -120,8 +118,6 @@ class MapManager
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
     private:
-        // debugging code, should be deleted some day
-        void checkAndCorrectGridStatesArray();              // just for debugging to find some memory overwrites
         GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
         int i_GridStateErrorCount;
     private:

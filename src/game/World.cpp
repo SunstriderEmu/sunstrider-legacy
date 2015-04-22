@@ -1718,7 +1718,7 @@ void World::DetectDBCLang()
 
     m_defaultDbcLocale = LocaleConstant(default_locale);
 
-    TC_LOG_INFO("Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
+    TC_LOG_INFO("server.loading", "Using %s DBC Locale as default. All available DBC locales: %s",localeNames[m_defaultDbcLocale],availableLocalsStr.empty() ? "<none>" : availableLocalsStr.c_str());
 }
 
 void World::RecordTimeDiff(const char *text, ...)
@@ -1741,7 +1741,7 @@ void World::RecordTimeDiff(const char *text, ...)
         va_start(ap, text);
         vsnprintf(str,256,text, ap );
         va_end(ap);
-        TC_LOG_INFO("FIXME","Difftime %s: %u.", str, diff);
+        TC_LOG_INFO("misc","Difftime %s: %u.", str, diff);
     }
 
     m_currentTime = thisTime;
@@ -1824,7 +1824,7 @@ void World::Update(time_t diff)
     {
         if(m_updateTimeSum > m_configs[CONFIG_INTERVAL_LOG_UPDATE])
         {
-            TC_LOG_DEBUG("FIXME","Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
+            TC_LOG_DEBUG("misc","Update time diff: %u. Players online: %u.", m_updateTimeSum / m_updateTimeCount, GetActiveSessionCount());
             m_updateTimeSum = m_updateTime;
             m_updateTimeCount = 1;
         }
@@ -2006,10 +2006,6 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
         m_timers[WUPDATE_EVENTS].Reset();
     }
-
-    /// </ul>
-    ///- Move all creatures with "delayed move" and remove and delete all objects with "delayed remove"
-    //sMapMgr->DoDelayedMovesAndRemoves();
 
     // update the instance reset times
     sInstanceSaveMgr->Update();

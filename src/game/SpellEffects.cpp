@@ -4312,7 +4312,7 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x80000002);
     m_caster->AddDynObject(dynObj);
 
-    dynObj->setActive(true);    //must before add to map to be put in world container
+    dynObj->SetKeepActive(true);    //must before add to map to be put in world container
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
 
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);

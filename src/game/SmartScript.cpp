@@ -1132,7 +1132,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_SET_ACTIVE:
         {
             if (WorldObject* baseObj = GetBaseObject())
-                baseObj->setActive(e.action.active.state);
+                baseObj->SetKeepActive(e.action.active.state);
 
             break;
         }

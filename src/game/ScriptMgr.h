@@ -142,6 +142,9 @@ class ScriptMgr
         void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
         void OnGroupDisband(Group* group);
 
+    public: /* MapScript */
+         void OnMapUpdate(Map* map, uint32 diff);
+
     public: /* TransportScript */
 
         void OnAddPassenger(Transport* transport, Player* player);

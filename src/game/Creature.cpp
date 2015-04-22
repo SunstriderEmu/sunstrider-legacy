@@ -1758,7 +1758,7 @@ void Creature::SetDeathState(DeathState s)
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
 
         //if(!IsPet())
-            setActive(false);
+            SetKeepActive(false);
 
         if(!IsPet() && GetCreatureTemplate()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
@@ -2181,7 +2181,6 @@ void Creature::CallAssistance()
                         assistList.pop_front();
                         continue;
                     }
-                    cr->setActive(true);
                     e->AddAssistant((*assistList.begin())->GetGUID());
                     assistList.pop_front();
                     if (GetInstanceId() == 0 && count >= 4)

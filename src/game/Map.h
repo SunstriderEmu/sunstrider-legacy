@@ -49,6 +49,7 @@ class Battleground;
 class GridMap;
 class Transport;
 struct Position;
+namespace Trinity { struct ObjectUpdater; }
 
 struct ObjectMover
 {
@@ -123,6 +124,7 @@ class Map : public GridRefManager<NGridType>
         template<class T> void Add(T *);
         template<class T> void Remove(T *, bool);
 
+        void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
         virtual void Update(const uint32&);
 
         void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
@@ -236,7 +238,6 @@ class Map : public GridRefManager<NGridType>
    
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
-        void DoDelayedMovesAndRemoves();
 
         virtual bool RemoveBones(uint64 guid, float x, float y);
 
@@ -265,15 +266,15 @@ class Map : public GridRefManager<NGridType>
 
         // must called with AddToWorld
         template<class T>
-        void AddToActive(T* obj) { AddToActiveHelper(obj); }
+        void AddToForceActive(T* obj) { AddToForceActiveHelper(obj); }
 
-        void AddToActive(Creature* obj);
+        void AddToForceActive(Creature* obj);
 
         // must called with RemoveFromWorld
         template<class T>
-        void RemoveFromActive(T* obj) { RemoveFromActiveHelper(obj); }
+        void RemoveFromForceActive(T* obj) { RemoveFromForceActiveHelper(obj); }
 
-        void RemoveFromActive(Creature* obj);
+        void RemoveFromForceActive(Creature* obj);
 
         template<class T> void SwitchGridContainers(T* obj, bool active);
         template<class NOTIFIER> void VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier);
@@ -384,10 +385,11 @@ class Map : public GridRefManager<NGridType>
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
-        typedef std::set<WorldObject*> ActiveNonPlayers;
-        ActiveNonPlayers m_activeNonPlayers;
-        ActiveNonPlayers::iterator m_activeNonPlayersIter;
-
+        /** The objects in m_activeForcedNonPlayers are always kept active and makes everything around them also active, just like players
+        */
+        typedef std::set<WorldObject*> ActiveForcedNonPlayers;
+        ActiveForcedNonPlayers m_activeForcedNonPlayers;
+        ActiveForcedNonPlayers::iterator m_activeForcedNonPlayersIter;
 
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
@@ -416,26 +418,26 @@ class Map : public GridRefManager<NGridType>
             void DeleteFromWorld(T*);
 
         template<class T>
-        void AddToActiveHelper(T* obj)
+        void AddToForceActiveHelper(T* obj)
         {
-            m_activeNonPlayers.insert(obj);
+            m_activeForcedNonPlayers.insert(obj);
         }
 
         template<class T>
-        void RemoveFromActiveHelper(T* obj)
+        void RemoveFromForceActiveHelper(T* obj)
         {
             // Map::Update for active object in proccess
-            if(m_activeNonPlayersIter != m_activeNonPlayers.end())
+            if(m_activeForcedNonPlayersIter != m_activeForcedNonPlayers.end())
             {
-                ActiveNonPlayers::iterator itr = m_activeNonPlayers.find(obj);
-                if(itr == m_activeNonPlayers.end())
+                ActiveForcedNonPlayers::iterator itr = m_activeForcedNonPlayers.find(obj);
+                if(itr == m_activeForcedNonPlayers.end())
                     return;
-                if(itr==m_activeNonPlayersIter)
-                    ++m_activeNonPlayersIter;
-                m_activeNonPlayers.erase(itr);
+                if(itr==m_activeForcedNonPlayersIter)
+                    ++m_activeForcedNonPlayersIter;
+                m_activeForcedNonPlayers.erase(itr);
             }
             else
-                m_activeNonPlayers.erase(obj);
+                m_activeForcedNonPlayers.erase(obj);
         }
 
         typedef std::map<uint32, std::set<uint64> > CreaturePoolMember;

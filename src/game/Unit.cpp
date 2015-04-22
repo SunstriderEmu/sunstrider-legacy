@@ -4515,7 +4515,7 @@ void Unit::RemoveArenaAuras(bool onleave)
 
 void Unit::RemoveAllAurasOnDeath()
 {
-    // used just after dieing to remove all visible auras
+    // used just after dying to remove all visible auras
     // and disable the mods for the passive ones
     for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
@@ -7422,7 +7422,8 @@ void Unit::AddPlayerToVision(Player* plr)
 {
     if(m_sharedVision.empty())
     {
-        setActive(true);
+        //set active so that creatures around in grid are active as well
+        SetKeepActive(true);
         SetWorldObject(true);
     }
     m_sharedVision.push_back(plr->GetGUID());
@@ -7434,7 +7435,7 @@ void Unit::RemovePlayerFromVision(Player* plr)
     m_sharedVision.remove(plr->GetGUID());
     if(m_sharedVision.empty())
     {
-        setActive(false);
+        SetKeepActive(false);
         SetWorldObject(false);
     }
     plr->ClearFarsight();
@@ -9509,7 +9510,7 @@ void Unit::SetDeathState(DeathState s)
         StopMoving();
         DisableSpline();
         //without this when removing IncreaseMaxHealth aura player may stuck with 1 hp
-        //do not why since in IncreaseMaxHealth currenthealth is checked
+        //dont know why since in IncreaseMaxHealth currenthealth is checked
         SetHealth(0);
         SetPower(GetPowerType(), 0);
     }
@@ -9518,10 +9519,6 @@ void Unit::SetDeathState(DeathState s)
         RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
     }
 
-    if (m_deathState != ALIVE && s == ALIVE)
-    {
-        //_ApplyAllAuraMods();
-    }
     m_deathState = s;
 }
 

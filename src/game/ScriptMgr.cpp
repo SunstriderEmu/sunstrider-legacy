@@ -1564,12 +1564,31 @@ void Script::RegisterSelf()
         ++num_sc_scripts;
     }
     else
-        TC_LOG_ERROR("FIXME","TrinityScript: RegisterSelf, but script named %s does not have ScriptName assigned in database.",(this)->Name.c_str());
+        TC_LOG_ERROR("scripts","TrinityScript: RegisterSelf, but script named %s does not have ScriptName assigned in database.",(this)->Name.c_str());
 }
 
 //********************************
 //*** Functions to be Exported ***
 
+
+void ScriptMgr::OnMapUpdate(Map* map, uint32 diff)
+{
+    ASSERT(map);
+
+    /*
+    SCR_MAP_BGN(WorldMapScript, map, itr, end, entry, IsWorldMap);
+        itr->second->OnUpdate(map, diff);
+    SCR_MAP_END;
+
+    SCR_MAP_BGN(InstanceMapScript, map, itr, end, entry, IsDungeon);
+        itr->second->OnUpdate((InstanceMap*)map, diff);
+    SCR_MAP_END;
+
+    SCR_MAP_BGN(BattlegroundMapScript, map, itr, end, entry, IsBattleground);
+        itr->second->OnUpdate((BattlegroundMap*)map, diff);
+    SCR_MAP_END;
+    */
+}
 
 void ScriptMgr::OnAddPassenger(Transport* transport, Player* player)
 {
