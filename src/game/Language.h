@@ -819,10 +819,6 @@ enum TrinityStrings
     LANG_GM_NOTIFY                       = 6614,
     LANG_GM_ANNOUNCE_COLOR               = 6615,
 
-    //Additional output of .gps command, help copy/pasting in scripts :)
-    LANG_GPS_FOR_SCRIPT                  = 11603,
-    LANG_GPS_WMO_DATA                    = 11604,
-
     LANG_GM_SILENCE                      = 6616,              // GM Silenced Spell 1852
 
     // Use for not-in-offcial-sources patches
@@ -924,7 +920,14 @@ enum TrinityStrings
     LANG_REACHED_QCOMPLETE_LIMIT        = 11600,    //"Player has reached quest completions limit for this week. Use 'force' if you want to complete it anyway."
     LANG_QCOMPLETE_THIS_WEEK            = 11601,    //"Player %s already had %u quests completed this week"
     LANG_QCOMPLETE_SUCCESS              = 11602,    //"Quest %u completed for [selected] player %s"
-    LANG_QCOMPLETE_TOTAL                = 11604,    //"Total quests completed this week: %u"
+    LANG_QCOMPLETE_TOTAL                = 11605,    //"Total quests completed this week: %u"
+    
+    //Additional output of .gps command, help copy/pasting in scripts :)
+    LANG_GPS_FOR_SCRIPT                  = 11603,
+    LANG_GPS_WMO_DATA                    = 11604,
+
+    LANG_SWAG                            = 11606, //ROFLCOPTER?
+
 };
 #endif
 

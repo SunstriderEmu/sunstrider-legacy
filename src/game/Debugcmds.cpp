@@ -38,6 +38,13 @@
 #include "SpellMgr.h"
 #include "SmartScriptMgr.h"
 
+bool ChatHandler::HandleYoloCommand(const char* /* args */)
+{
+    SendSysMessage(LANG_SWAG);
+
+    return true;
+}
+
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
     Object *obj = getSelectedUnit();
