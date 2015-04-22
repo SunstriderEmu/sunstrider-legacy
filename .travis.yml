@@ -9,7 +9,6 @@ sudo: required
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get -qq upgrade
   - echo "yes" | sudo apt-get -qq install python-software-properties
   - echo "yes" | sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
   - echo "yes" | sudo add-apt-repository 'deb http://mariadb.mirror.nucleus.be//repo/5.5/ubuntu precise main'

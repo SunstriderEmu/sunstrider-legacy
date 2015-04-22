@@ -160,7 +160,7 @@ void IRCMgr::onIngameGuildJoin(uint32 guildId, std::string const& guildName, std
         return;
     
     std::string msg = origin;
-    msg += " a rejoint le canal de la guilde <";
+    msg += " joined guild channel <";
     msg += guildName;
     msg += ">";
     
@@ -173,7 +173,7 @@ void IRCMgr::onIngameGuildLeft(uint32 guildId, std::string const& guildName, std
         return;
     
     std::string msg = origin;
-    msg += " a quitté le canal de la guilde <";
+    msg += " left guild channel <";
     msg += guildName;
     msg += ">";
     
