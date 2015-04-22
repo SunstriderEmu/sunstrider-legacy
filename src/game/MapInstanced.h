@@ -42,7 +42,7 @@ class MapInstanced : public Map
         bool CanEnter(Player* player);
 
         Map* GetInstance(const WorldObject* obj);
-        Map* FindMap(uint32 InstanceId) { return _FindMap(InstanceId); }
+        Map* FindMap(uint32 InstanceId) { return FindBaseMap(InstanceId); }
         //return true of instance was destroyed
         bool DestroyInstance(uint32 InstanceId);
         bool DestroyInstance(InstancedMaps::iterator &itr);
@@ -70,7 +70,7 @@ class MapInstanced : public Map
 
         InstancedMaps m_InstancedMaps;
 
-        Map* _FindMap(uint32 InstanceId)
+        Map* FindBaseMap(uint32 InstanceId)
         {
             InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
 

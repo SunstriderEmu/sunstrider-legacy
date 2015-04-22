@@ -110,11 +110,6 @@
 
 #include "Threading/LockedQueue.h"
 
-#include <zthread/FastMutex.h>
-#include <zthread/LockedQueue.h>
-#include <zthread/Runnable.h>
-#include <zthread/Thread.h>
-
 #if PLATFORM == PLATFORM_WINDOWS
 #  define FD_SETSIZE 4096
 // XP winver - needed to compile with standard leak check in MemoryLeaks.h

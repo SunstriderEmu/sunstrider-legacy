@@ -1780,6 +1780,7 @@ class Unit : public WorldObject
         AuraList m_removedAuras;
 
         AuraList m_modAuras[TOTAL_AURAS];
+        std::mutex m_GiantLock;
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;
@@ -1802,8 +1803,6 @@ class Unit : public WorldObject
         uint32 m_reactiveTimer[MAX_REACTIVE];
 
         ThreatManager m_ThreatManager;
-
-        ZThread::Mutex m_GiantLock;
         
         uint32 m_unitTypeMask;
         LiquidTypeEntry const* _lastLiquid;

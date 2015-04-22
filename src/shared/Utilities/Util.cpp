@@ -23,7 +23,6 @@
 #include "sockets/socket_include.h"
 #include "utf8cpp/utf8.h"
 #include "mersennetwister/MersenneTwister.h"
-#include "zthread/ThreadLocal.h"
 #include "SFMT.h"
 #include <boost/thread/tss.hpp>
 #include <cstdarg>

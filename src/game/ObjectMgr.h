@@ -344,9 +344,6 @@ class ObjectMgr
 
         std::unordered_map<uint32, uint32> TransportEventMap;
 
-        void Lock() { m_GiantLock.acquire(); }
-        void Unlock() { m_GiantLock.release(); }
-
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
         Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HIGHGUID_PLAYER)); }
 
@@ -1056,7 +1053,9 @@ class ObjectMgr
         PageTextLocaleMap mPageTextLocaleMap;
         TrinityStringLocaleMap mTrinityStringLocaleMap;
         NpcOptionLocaleMap mNpcOptionLocaleMap;
+        std::mutex _creatureRespawnTimeLock;
         RespawnTimes mCreatureRespawnTimes;
+        std::mutex _goRespawnTimeLock;
         RespawnTimes mGORespawnTimes;
 
         typedef std::vector<uint32> GuildBankTabPriceMap;
@@ -1071,8 +1070,6 @@ class ObjectMgr
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
-        ZThread::Mutex m_GiantLock;
-        
         std::map<uint32, SpellEntry*> spellTemplates;
         uint32 maxSpellId;
 

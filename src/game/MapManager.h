@@ -23,7 +23,6 @@
 
 #include "Define.h"
 #include "Policies/Singleton.h"
-#include "zthread/Mutex.h"
 #include "Common.h"
 #include "Map.h"
 #include "GridStates.h"
@@ -44,11 +43,11 @@ class MapManager
         }
 
         Map* GetMap(uint32, const WorldObject* obj);
-        Map* FindMap(uint32 mapid) { return _findMap(mapid); }
+        Map* FindMap(uint32 mapid) { return FindBaseMap(mapid); }
         Map* FindMap(uint32 mapid, uint32 instanceId);
 
         // only const version for outer users
-        Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->_GetBaseMap(id); }
+        Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->CreateBaseMap(id); }
         void DeleteInstance(uint32 mapid, uint32 instanceId);
 
         uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
@@ -132,14 +131,13 @@ class MapManager
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
         
-        Map* _GetBaseMap(uint32 id);
-        Map* _findMap(uint32 id) const
+        Map* CreateBaseMap(uint32 id);
+        Map* FindBaseMap(uint32 id) const
         {
             MapMapType::const_iterator iter = i_maps.find(id);
             return (iter == i_maps.end() ? NULL : iter->second);
         }
 
-        typedef Trinity::ClassLevelLockable<MapManager, ZThread::Mutex>::Lock Guard;
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;

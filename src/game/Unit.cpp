@@ -3761,7 +3761,7 @@ bool Unit::AddAura(Aura *Aur)
     // update single target auras list (before aura add to aura list, to prevent unexpected remove recently added aura)
     if (Aur->IsSingleTarget() && Aur->GetTarget())
     {
-        m_GiantLock.acquire();
+        m_GiantLock.lock();
         // caster pointer can be deleted in time aura remove, find it by guid at each iteration
         for(;;)
         {
@@ -3794,7 +3794,7 @@ bool Unit::AddAura(Aura *Aur)
                 break;
             }
         }
-        m_GiantLock.release();
+        m_GiantLock.unlock();
     }
 
     // add aura, register in lists and arrays
@@ -4297,7 +4297,7 @@ void Unit::RemoveAurasDueToItemSpell(Item* castItem,uint32 spellId)
 
 void Unit::RemoveNotOwnSingleTargetAuras()
 {
-    m_GiantLock.acquire();
+    m_GiantLock.lock();
     // single target auras from other casters
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
     {
@@ -4321,7 +4321,7 @@ void Unit::RemoveNotOwnSingleTargetAuras()
                 iter = scAuras.begin();
         }
     }
-    m_GiantLock.release();
+    m_GiantLock.unlock();
 }
 
 void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
@@ -12096,7 +12096,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     // the reset time is set but not added to the scheduler
                     // until the players leave the instance
                     time_t resettime = cVictim->GetRespawnTimeEx() + 2 * HOUR;
-                    if(InstanceSave *save = sInstanceSaveManager.GetInstanceSave(cVictim->GetInstanceId()))
+                    if(InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(cVictim->GetInstanceId()))
                         if(save->GetResetTime() < resettime) save->SetResetTime(resettime);
                 }
             }

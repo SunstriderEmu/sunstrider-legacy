@@ -204,8 +204,8 @@ bool InstanceSave::UnloadIfEmpty()
 {
     if(m_playerList.empty() && m_groupList.empty())
     {
-        if(!sInstanceSaveManager.lock_instLists)
-            sInstanceSaveManager.RemoveInstanceSave(GetInstanceId());
+        if(!sInstanceSaveMgr->lock_instLists)
+            sInstanceSaveMgr->RemoveInstanceSave(GetInstanceId());
         return false;
     }
     else
@@ -247,7 +247,7 @@ void InstanceSaveManager::CleanupInstances()
     uint64 now = (uint64)time(NULL);
 
     // load reset times and clean expired instances
-    sInstanceSaveManager.LoadResetTimes();
+    sInstanceSaveMgr->LoadResetTimes();
 
     // clean character/group - instance binds with invalid group/characters
     _DelHelper(CharacterDatabase, "character_instance.guid, instance", "character_instance", "LEFT JOIN characters ON character_instance.guid = characters.guid WHERE characters.guid IS NULL");

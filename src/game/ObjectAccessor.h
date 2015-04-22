@@ -23,7 +23,6 @@
 
 #include "Define.h"
 #include "Policies/Singleton.h"
-#include "zthread/FastMutex.h"
 #include "Policies/ThreadingModel.h"
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
@@ -86,9 +85,8 @@ class HashMapHolder
         static MapType  m_objectMap;
 };
 
-class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassLevelLockable<ObjectAccessor, ZThread::FastMutex> >
+class ObjectAccessor
 {
-
     friend class Trinity::OperatorNew<ObjectAccessor>;
     ObjectAccessor();
     ~ObjectAccessor();
@@ -101,8 +99,8 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
             static ObjectAccessor instance;
             return &instance;
         }
-
-        typedef std::unordered_map<uint64, Corpse* >      Player2CorpsesMapType;
+        
+        typedef std::unordered_map<uint64, Corpse* > Player2CorpsesMapType;
         typedef std::unordered_map<Player*, UpdateData>::value_type UpdateDataValueType;
 
         template<class T> static T* GetObjectInWorld(uint64 guid, T* /*fake*/)
@@ -201,7 +199,7 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         {
             HashMapHolder<Player>::Remove(pl);
 
-            Guard guard(i_updateGuard);
+            std::lock_guard<std::mutex> lock(_objectLock);
 
             std::set<Object *>::iterator iter2 = std::find(i_objects.begin(), i_objects.end(), (Object *)pl);
             if( iter2 != i_objects.end() )
@@ -244,19 +242,16 @@ class ObjectAccessor : public Trinity::Singleton<ObjectAccessor, Trinity::ClassL
         };
 
         friend struct WorldObjectChangeAccumulator;
-        Player2CorpsesMapType   i_player2corpse;
 
-        typedef ZThread::FastMutex LockType;
-        typedef Trinity::GeneralLock<LockType > Guard;
-
-        static void _buildChangeObjectForPlayer(WorldObject *, UpdateDataMapType &);
+        static void _buildChangeObjectForPlayer(WorldObject *, UpdateDataMapType&);
         static void _buildPacket(Player *, Object *, UpdateDataMapType &);
         void _update(void);
+        
         std::set<Object *> i_objects;
-        LockType i_playerGuard;
-        LockType i_updateGuard;
-        LockType i_corpseGuard;
-        LockType i_petGuard;
+        Player2CorpsesMapType i_player2corpse;
+
+        std::mutex _objectLock;
+        boost::shared_mutex _corpseLock;
 };
 
 #define sObjectAccessor ObjectAccessor::instance()

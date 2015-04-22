@@ -56,7 +56,6 @@ ${CMAKE_SOURCE_DIR}/src/framework/Platform
 ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
 ${CMAKE_SOURCE_DIR}/dep/include
 ${CMAKE_SOURCE_DIR}/dep/zlib
-${CMAKE_SOURCE_DIR}/dep/zthread
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/Configuration
 ${CMAKE_CURRENT_SOURCE_DIR}/Cryptography

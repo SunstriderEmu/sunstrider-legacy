@@ -83,15 +83,15 @@ class NGrid
 
         const GridType& operator()(unsigned short x, unsigned short y) const
         {
-            assert(x < N);
-            assert(y < N);
+            ASSERT(x < N);
+            ASSERT(y < N);
             return i_cells[x][y];
         }
 
         GridType& operator()(unsigned short x, unsigned short y)
         {
-            assert(x < N);
-            assert(y < N);
+            ASSERT(x < N);
+            ASSERT(y < N);
             return i_cells[x][y];
         }
 
@@ -178,8 +178,8 @@ class NGrid
 
         GridType& getGridType(const uint32& x, const uint32& y)
         {
-            assert(x < N);
-            assert(y < N);
+            ASSERT(x < N);
+            ASSERT(y < N);
             return i_cells[x][y];
         }
 

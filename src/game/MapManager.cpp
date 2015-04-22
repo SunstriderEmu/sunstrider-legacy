@@ -107,14 +107,13 @@ void MapManager::checkAndCorrectGridStatesArray()
         assert(false);                                      // force a crash. Too many errors
 }
 
-Map*
-MapManager::_GetBaseMap(uint32 id)
+Map* MapManager::CreateBaseMap(uint32 id)
 {
-    Map *m = _findMap(id);
+    Map *m = FindBaseMap(id);
 
     if( m == NULL )
     {
-        Guard guard(*this);
+        std::lock_guard<std::mutex> lock(_mapsLock);
 
         const MapEntry* entry = sMapStore.LookupEntry(id);
         if (entry && entry->Instanceable())
@@ -135,7 +134,7 @@ MapManager::_GetBaseMap(uint32 id)
 Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
 {
     //if(!obj->IsInWorld()) TC_LOG_ERROR("FIXME","GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
-    Map *m = _GetBaseMap(id);
+    Map *m = CreateBaseMap(id);
 
     if (m && obj && m->Instanceable()) m = ((MapInstanced*)m)->GetInstance(obj);
 
@@ -230,14 +229,14 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
 
 void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
 {
-    Map *m = _GetBaseMap(mapid);
+    Map *m = CreateBaseMap(mapid);
     if (m && m->Instanceable())
         ((MapInstanced*)m)->DestroyInstance(instanceId);
 }
 
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
 {
-    bool remove_result = _GetBaseMap(mapid)->RemoveBones(guid, x, y);
+    bool remove_result = CreateBaseMap(mapid)->RemoveBones(guid, x, y);
 }
 
 void

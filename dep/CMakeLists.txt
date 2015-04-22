@@ -1,7 +1,6 @@
 add_subdirectory(lib)
 add_subdirectory(recastnavigation)
 add_subdirectory(g3dlite)
-add_subdirectory(src)
 add_subdirectory(gsoap)
 if(TOOLS)
   add_subdirectory(libmpq)

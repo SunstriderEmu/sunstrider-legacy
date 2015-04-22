@@ -15225,7 +15225,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetInstanceId(map->GetInstanceId());
 
     // if the player is in an instance and it has been reset in the meantime teleport him to the entrance
-    if (GetInstanceId() && !sInstanceSaveManager.GetInstanceSave(GetInstanceId()))
+    if (GetInstanceId() && !sInstanceSaveMgr->GetInstanceSave(GetInstanceId()))
     {
         AreaTrigger const* at = sObjectMgr->GetMapEntranceTrigger(GetMapId());
         if (at)
@@ -16206,7 +16206,7 @@ void Player::_LoadBoundInstances(QueryResult result)
             }
 
             // since non permanent binds are always solo bind, they can always be reset
-            InstanceSave *save = sInstanceSaveManager.AddInstanceSave(mapId, instanceId, difficulty, resetTime, !perm, true);
+            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(mapId, instanceId, difficulty, resetTime, !perm, true);
             if(save) BindToInstance(save, perm, true);
         } while(result->NextRow());
     }
@@ -19356,7 +19356,6 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
-    m_GiantLock.acquire();
     if(HaveAtClient(target))
     {
         if(!target->IsVisibleForInState(this,true))
@@ -19384,7 +19383,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
                     SendInitialVisiblePackets(u);
         }
     }
-    m_GiantLock.release();
 }
 
 void Player::SendInitialVisiblePackets(Unit* target)
@@ -19456,7 +19454,7 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
 {
     if(!target)
         return;
-    m_GiantLock.acquire();
+
     if(HaveAtClient(target))
     {
         if(!target->IsVisibleForInState(this,true))
@@ -19478,7 +19476,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObjec
             TC_LOG_DEBUG("debug.grid", "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
         }
     }
-    m_GiantLock.release();
 }
 
 template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
@@ -20334,7 +20331,9 @@ void Player::UpdateForQuestsGO()
     if(m_clientGUIDs.empty())
         return;
 
-    m_GiantLock.acquire();
+    if (!IsInWorld())
+        return;
+
     UpdateData udata;
     WorldPacket packet;
     for(ClientGUIDs::iterator itr=m_clientGUIDs.begin(); itr!=m_clientGUIDs.end(); ++itr)
@@ -20342,13 +20341,14 @@ void Player::UpdateForQuestsGO()
         if(IS_GAMEOBJECT_GUID(*itr))
         {
             GameObject *obj = HashMapHolder<GameObject>::Find(*itr);
-            if(obj)
-                obj->BuildValuesUpdateBlockForPlayer(&udata,this);
+            if(!obj)
+                continue;
+
+            obj->BuildValuesUpdateBlockForPlayer(&udata,this);
         }
     }
     udata.BuildPacket(&packet);
     GetSession()->SendPacket(&packet);
-    m_GiantLock.release();
 }
 
 void Player::SummonIfPossible(bool agree)

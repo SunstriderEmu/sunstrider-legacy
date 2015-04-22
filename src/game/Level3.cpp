@@ -3151,7 +3151,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
 
     std::string guildname = gname;
 
-    Player* player = ObjectAccessor::Instance ().FindPlayerByName (lname);
+    Player* player = sObjectAccessor->FindPlayerByName (lname);
     if (!player)
     {
         SendSysMessage (LANG_PLAYER_NOT_FOUND);
@@ -3201,7 +3201,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     }
 
     uint64 plGuid = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
         plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
@@ -3236,7 +3236,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId ();
@@ -3277,7 +3277,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = ObjectAccessor::Instance ().FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId ();
@@ -6666,9 +6666,9 @@ bool ChatHandler::HandleInstanceStatsCommand(const char* /*args*/)
 {
     PSendSysMessage("instances loaded: %d", sMapMgr->GetNumInstances());
     PSendSysMessage("players in instances: %d", sMapMgr->GetNumPlayersInInstances());
-    PSendSysMessage("instance saves: %d", sInstanceSaveManager.GetNumInstanceSaves());
-    PSendSysMessage("players bound: %d", sInstanceSaveManager.GetNumBoundPlayersTotal());
-    PSendSysMessage("groups bound: %d", sInstanceSaveManager.GetNumBoundGroupsTotal());
+    PSendSysMessage("instance saves: %d", sInstanceSaveMgr->GetNumInstanceSaves());
+    PSendSysMessage("players bound: %d", sInstanceSaveMgr->GetNumBoundPlayersTotal());
+    PSendSysMessage("groups bound: %d", sInstanceSaveMgr->GetNumBoundGroupsTotal());
     return true;
 }
 

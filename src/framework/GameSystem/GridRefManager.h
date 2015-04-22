@@ -22,7 +22,6 @@
 #define _GRIDREFMANAGER
 
 #include "RefManager.h"
-#include "zthread/Mutex.h"
 
 template<class OBJECT>
 class GridReference;

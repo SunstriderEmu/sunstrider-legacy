@@ -2303,11 +2303,11 @@ bool InstanceMap::Add(Player *player)
             return false;
 
         // get or create an instance save for the map
-        InstanceSave *mapSave = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+        InstanceSave *mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
         if(!mapSave)
         {
             TC_LOG_DEBUG("maps","InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-            mapSave = sInstanceSaveManager.AddInstanceSave(GetId(), GetInstanceId(), GetSpawnMode(), 0, true);
+            mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetSpawnMode(), 0, true);
         }
 
         // check for existing instance binds
@@ -2525,7 +2525,7 @@ bool InstanceMap::Reset(uint8 method)
 
 void InstanceMap::PermBindAllPlayers(Player *player)
 {
-    InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+    InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
     if(!save)
     {
         TC_LOG_ERROR("maps","Cannot bind players, no instance save available for map!\n");
@@ -2556,7 +2556,7 @@ void InstanceMap::PermBindAllPlayers(Player *player)
 
 time_t InstanceMap::GetResetTime()
 {
-    InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+    InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
     return save ? save->GetDifficulty() : DIFFICULTY_NORMAL;
 }
 
@@ -2608,10 +2608,10 @@ void InstanceMap::SetResetSchedule(bool on)
     // it is assumed that the reset time will rarely (if ever) change while the reset is scheduled
     if(!HavePlayers() && !IsRaid() && !IsHeroic())
     {
-        InstanceSave *save = sInstanceSaveManager.GetInstanceSave(GetInstanceId());
+        InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
         if(!save) 
             TC_LOG_ERROR("maps", "InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %u of %u", on ? "on" : "off", GetInstanceId(), GetId());
-        else sInstanceSaveManager.ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
+        else sInstanceSaveMgr->ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
     }
 }
 

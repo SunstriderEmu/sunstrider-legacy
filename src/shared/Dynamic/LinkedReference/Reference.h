@@ -46,7 +46,7 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         // Create new link
         inline void link(TO* toObj, FROM* fromObj)
         {
-            assert(fromObj);                                // fromObj MUST not be NULL
+            ASSERT(fromObj);                                // fromObj MUST not be NULL
             if(isValid())
                 unlink();
             if(toObj != NULL)

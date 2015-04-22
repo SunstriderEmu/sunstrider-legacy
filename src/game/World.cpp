@@ -1302,10 +1302,10 @@ void World::SetInitialWorldSettings()
 
     ///- Clean up and pack instances
     TC_LOG_INFO("server.loading", "Cleaning up instances..." );
-    sInstanceSaveManager.CleanupInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
+    sInstanceSaveMgr->CleanupInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
 
 //    TC_LOG_INFO("server.loading", "Packing instances..." );
-//    sInstanceSaveManager.PackInstances();
+//    sInstanceSaveMgr->PackInstances();
 
     TC_LOG_INFO("server.loading", "Loading Localization strings..." );
     sObjectMgr->LoadCreatureLocales();
@@ -2012,7 +2012,7 @@ void World::Update(time_t diff)
     //sMapMgr->DoDelayedMovesAndRemoves();
 
     // update the instance reset times
-    sInstanceSaveManager.Update();
+    sInstanceSaveMgr->Update();
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();

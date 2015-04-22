@@ -1552,43 +1552,12 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, f
     pCreature->SetHomePosition(x, y, z, o);
     pCreature->AIM_Initialize();
 
-    //pCreature->SetDungeonDifficulty(0);
-
     map->Add(pCreature);
     m_BgCreatures[type] = pCreature->GetGUID();
 
     return  pCreature;
 }
-/*
-void Battleground::SpawnBGCreature(uint32 type, uint32 respawntime)
-{
-    Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceId());
-    if(!map)
-        return false;
 
-    if(respawntime == 0)
-    {
-        Creature *obj = HashMapHolder<Creature>::Find(m_BgCreatures[type]);
-        if(obj)
-        {
-            //obj->Respawn();                               // bugged
-            obj->SetRespawnTime(0);
-            sObjectMgr->SaveCreatureRespawnTime(obj->GetGUIDLow(), GetInstanceID(), 0);
-            map->Add(obj);
-        }
-    }
-    else
-    {
-        Creature *obj = HashMapHolder<Creature>::Find(m_BgCreatures[type]);
-        if(obj)
-        {
-            obj->SetDeathState(DEAD);
-            obj->SetRespawnTime(respawntime);
-            map->Add(obj);
-        }
-    }
-}
-*/
 bool Battleground::DelCreature(uint32 type)
 {
     if(!m_BgCreatures[type])

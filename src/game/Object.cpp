@@ -1450,7 +1450,7 @@ Map* WorldObject::_getMap()
     return m_map = sMapMgr->GetMap(GetMapId(), this);
 }
 
-Map* WorldObject::_findMap()
+Map* WorldObject::FindBaseMap()
 {
     return m_map = sMapMgr->FindMap(GetMapId(), GetInstanceId());
 }

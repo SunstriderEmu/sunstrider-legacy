@@ -112,12 +112,18 @@ class InstanceSave
         bool m_canReset;
 };
 
-class InstanceSaveManager : public Trinity::Singleton<InstanceSaveManager, Trinity::ClassLevelLockable<InstanceSaveManager, ZThread::Mutex> >
+class InstanceSaveManager
 {
     friend class InstanceSave;
     public:
         InstanceSaveManager();
         ~InstanceSaveManager();
+
+        static InstanceSaveManager* instance()
+        {
+            static InstanceSaveManager instance;
+            return &instance;
+        }
 
         typedef std::map<uint32 /*InstanceId*/, InstanceSave*> InstanceSaveMap;
         typedef std::unordered_map<uint32 /*InstanceId*/, InstanceSave*> InstanceSaveHashMap;
@@ -170,6 +176,6 @@ class InstanceSaveManager : public Trinity::Singleton<InstanceSaveManager, Trini
         ResetTimeQueue m_resetTimeQueue;
 };
 
-#define sInstanceSaveManager Trinity::Singleton<InstanceSaveManager>::Instance()
+#define sInstanceSaveMgr InstanceSaveManager::instance()
 #endif
 

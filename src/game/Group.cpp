@@ -1694,7 +1694,7 @@ void Group::_homebindIfInstance(Player *player)
     if(player && !player->IsGameMaster() && sMapStore.LookupEntry(player->GetMapId())->IsDungeon())
     {
         // leaving the group in an instance, the homebind timer is started
-        /*InstanceSave *save = sInstanceSaveManager.GetInstanceSave(player->GetInstanceId());
+        /*InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(player->GetInstanceId());
         InstancePlayerBind *playerBind = save ? player->GetBoundInstance(save->GetMapId(), save->GetDifficulty()) : NULL;
         if(!playerBind || !playerBind->perm)*/
             player->m_InstanceValid = false;

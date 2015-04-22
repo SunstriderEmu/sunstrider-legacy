@@ -112,7 +112,6 @@ game
 shared
 trinityframework
 irc
-ZThread
 g3dlite
 ${READLINE_LIBRARY}
 ${UNIX_LIBS}

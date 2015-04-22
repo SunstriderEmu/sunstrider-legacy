@@ -1433,7 +1433,6 @@ void ObjectMgr::LoadCreatureRespawnTimes()
         return;
     }
 
-    m_GiantLock.acquire(); //useless here ?
     do
     {
         Field *fields = result->Fetch();
@@ -1446,7 +1445,6 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 
         ++count;
     } while (result->NextRow());
-    m_GiantLock.release();
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " creature respawn times", mCreatureRespawnTimes.size());
 }
@@ -1467,7 +1465,6 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
         return;
     }
 
-    m_GiantLock.acquire();
     do
     {
         Field *fields = result->Fetch();
@@ -1480,7 +1477,6 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
 
         ++count;
     } while (result->NextRow());
-    m_GiantLock.release();
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject respawn times", mGORespawnTimes.size());
 }
@@ -3304,7 +3300,7 @@ void ObjectMgr::LoadGroups()
                 }
             }
 
-            InstanceSave *save = sInstanceSaveManager.AddInstanceSave(fields[1].GetUInt32(), fields[2].GetUInt32(), fields[4].GetUInt8(), (time_t)fields[5].GetUInt64(), (fields[6].GetUInt32() == 0), true);
+            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt32(), fields[2].GetUInt32(), fields[4].GetUInt8(), (time_t)fields[5].GetUInt64(), (fields[6].GetUInt32() == 0), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
         }while( result->NextRow() );
     }
@@ -6404,14 +6400,15 @@ void ObjectMgr::LoadWeatherZoneChances()
 
 void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    m_GiantLock.acquire();
+    _creatureRespawnTimeLock.lock();
     mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
+    _creatureRespawnTimeLock.unlock();
+
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
         trans->PAppend("INSERT INTO creature_respawn VALUES ( '%u', '" UI64FMTD "', '%u' )", loguid, uint64(t), instance);
     WorldDatabase.CommitTransaction(trans);
-    m_GiantLock.release();
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)
@@ -6426,23 +6423,25 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
 
 void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
 {
-    if(!loguid) return;
+    if(!loguid) 
+        return;
 
-    m_GiantLock.acquire();
+    _goRespawnTimeLock.lock();
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
+    _goRespawnTimeLock.unlock();
+
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
     if (t)
         trans->PAppend("INSERT INTO gameobject_respawn VALUES ( '%u', '" UI64FMTD "', '%u' )", loguid, uint64(t), instance);
     WorldDatabase.CommitTransaction(trans);
-    m_GiantLock.release();
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
 {
-    m_GiantLock.acquire();
     RespawnTimes::iterator next;
 
+    _goRespawnTimeLock.lock();
     for(RespawnTimes::iterator itr = mGORespawnTimes.begin(); itr != mGORespawnTimes.end(); itr = next)
     {
         next = itr;
@@ -6451,7 +6450,9 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
         if(GUID_HIPART(itr->first)==instance)
             mGORespawnTimes.erase(itr);
     }
+    _goRespawnTimeLock.unlock();
 
+    _creatureRespawnTimeLock.lock();
     for(RespawnTimes::iterator itr = mCreatureRespawnTimes.begin(); itr != mCreatureRespawnTimes.end(); itr = next)
     {
         next = itr;
@@ -6460,12 +6461,12 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
         if(GUID_HIPART(itr->first)==instance)
             mCreatureRespawnTimes.erase(itr);
     }
+    _creatureRespawnTimeLock.unlock();
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
     trans->PAppend("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
     WorldDatabase.CommitTransaction(trans);
-    m_GiantLock.release();
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)

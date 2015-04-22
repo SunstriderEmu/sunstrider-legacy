@@ -713,7 +713,7 @@ class WorldObject : public Object, public WorldLocation
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange);
 
         Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
-        Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->_findMap(); }
+        Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->FindBaseMap(); }
         Map const* GetBaseMap() const;
         Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
@@ -763,7 +763,7 @@ class WorldObject : public Object, public WorldLocation
         Map    *m_map;
 
         Map* _getMap();
-        Map* _findMap();
+        Map* FindBaseMap();
 
         bool mSemaphoreTeleport;
 };

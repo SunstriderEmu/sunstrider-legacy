@@ -23,9 +23,6 @@
 
 #include "Define.h"
 #include "Policies/ThreadingModel.h"
-#include "zthread/Lockable.h"
-#include "zthread/Mutex.h"
-#include "zthread/FairReadWriteLock.h"
 #include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
@@ -52,12 +49,6 @@ class Battleground;
 class GridMap;
 class Transport;
 struct Position;
-
-namespace ZThread
-{
-    class Lockable;
-    class ReadWriteLock;
-}
 
 struct ObjectMover
 {
@@ -109,7 +100,7 @@ typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 
-class Map : public GridRefManager<NGridType>, public Trinity::ObjectLevelLockable<Map, ZThread::Mutex>
+class Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
