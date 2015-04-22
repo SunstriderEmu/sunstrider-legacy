@@ -61,8 +61,8 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/
    by Git and taken into account by the script at step 3).
 
 3. If this is a first-time setup, switch to the `sql` sub-directory of the
-   repository, then run `mysql < create_mysql.sql` then `mysql <
-   populate_mysql.sql`.
+   repository, then run `mysql -u root -p < create_mysql.sql` then `mysql -u
+   root -p < populate_mysql.sql`.
 
 4. Apply every 'world', 'char', 'auth' updates in the `sql/updates` directory,
    applying them from the lowest revision to the highest.
@@ -73,11 +73,17 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/
    *When the database creation scripts are updated, those updates are moved to
    the `sql/updates/old` directory and are not needed anymore.*
 
+As an aside, you can dispense with the `-u root -p` part if you [configure the
+user and password in the `my.ini` file][my_ini].
+
 [maria_db]:
 https://downloads.mariadb.org/
 
 [world_db]:
 http://www.sunstrider.cf/files/world_2015_04_08_r6592.sql.bz2
+
+[my_ini]:
+http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
 
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc.
