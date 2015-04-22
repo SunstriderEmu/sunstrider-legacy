@@ -182,7 +182,7 @@ class SmartAI : public CreatureAI
 
         void RemoveAuras();
 
-        void OnSpellClick(Unit* clicker, bool& result); //override FIXME
+        void OnSpellClick(Unit* clicker, bool& result) override;
 
         void FriendlyKilled(Creature const* c, float range) override;
 

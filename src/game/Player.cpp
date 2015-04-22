@@ -2244,7 +2244,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
         return NULL;
 
     // exist (we need look pets also for some interaction (quest/etc)
-    Creature* creature = ObjectAccessor::GetCreatureOrPet(*this, guid);
+    Creature* creature = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, guid);
     if (!creature)
         return NULL;
 

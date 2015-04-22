@@ -152,7 +152,7 @@ class ObjectAccessor
 
         static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
         static Creature* GetCreature(WorldObject const &, uint64);
-        static Creature* GetCreatureOrPet(WorldObject const &, uint64);
+        static Creature* GetCreatureOrPetOrVehicle(WorldObject const &, uint64);
         static Unit* GetUnit(WorldObject const &, uint64);
         static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
         static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }

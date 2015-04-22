@@ -1508,6 +1508,8 @@ class Unit : public WorldObject
         // Movement info
         Movement::MoveSpline * movespline;
 
+        bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
+
         void BuildMovementPacket(ByteBuffer *data) const;
 
         bool isMoving() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }

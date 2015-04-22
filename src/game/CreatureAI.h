@@ -180,6 +180,8 @@ class CreatureAI : public UnitAI
 
         virtual void OnRemove() {}
         
+        virtual void OnSpellClick(Unit* /*clicker*/, bool& /*result*/) { }
+
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }
 };

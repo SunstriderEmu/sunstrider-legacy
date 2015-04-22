@@ -13401,6 +13401,19 @@ void Unit::SetInFront(float x, float y)
         SetOrientation(GetAngle(x,y));
 }
 
+bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
+{
+    //TODO LK vehicules
+
+    bool result = true;
+
+    Creature* creature = ToCreature();
+    if (creature && creature->IsAIEnabled)
+        creature->AI()->OnSpellClick(clicker, result);
+
+    return result;
+}
+
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
     *data << uint32(GetUnitMovementFlags());            // movement flags

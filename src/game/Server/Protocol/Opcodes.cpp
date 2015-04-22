@@ -1169,18 +1169,14 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
     /*0x3F5*/ { "SMSG_GOGOGO_OBSOLETE",                         STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3F6*/ { "SMSG_ECHO_PARTY_SQUELCH",                      STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3F7*/ { "CMSG_SET_TITLE_SUFFIX",                        STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
-#ifdef LICH_KING
     /*0x3F8*/ { "CMSG_SPELLCLICK",                              STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSpellClick                },
-#else
-    /*0x3F8*/ { "CMSG_SPELLCLICK",                              STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL                     },
-#endif
     /*0x3F9*/ { "SMSG_LOOT_LIST",                               STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3FA*/ { "CMSG_GM_CHARACTER_RESTORE",                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x3FB*/ { "CMSG_GM_CHARACTER_SAVE",                       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x3FC*/ { "SMSG_VOICESESSION_FULL",                       STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
     /*0x3FD*/ { "MSG_GUILD_PERMISSIONS",                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildPermissions          },
     /*0x3FE*/ { "MSG_GUILD_BANK_MONEY_WITHDRAWN",               STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildBankMoneyWithdrawn   },
-    /*0x3FF*/ { "MSG_GUILD_EVENT_LOG_QUERY",                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogOpcode  },
+    /*0x3FF*/ { "MSG_GUILD_EVENT_LOG_QUERY",                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogOpcode       },
     /*0x400*/ { "CMSG_MAELSTROM_RENAME_GUILD",                  STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x401*/ { "CMSG_GET_MIRRORIMAGE_DATA",                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleMirrorImageDataRequest    },
     /*0x402*/ { "SMSG_MIRRORIMAGE_DATA",                        STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },

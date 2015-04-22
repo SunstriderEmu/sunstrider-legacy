@@ -302,7 +302,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
 
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_PET_STOP_ATTACK for GUID " UI64FMTD "", guid);
 
-    Unit* pet = ObjectAccessor::GetCreatureOrPet(*_player, guid);
+    Unit* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
 
     if (!pet)
     {
@@ -342,7 +342,7 @@ void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
 
 void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
 {
-    Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, petguid);
+    Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, petguid);
     if(!pet || !pet->GetCharmInfo() || pet->GetCharmInfo()->GetPetNumber() != petnumber)
         return;
 
@@ -413,7 +413,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
     if(ObjectAccessor::FindPlayer(petguid))
         return;
 
-    Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, petguid);
+    Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, petguid);
 
     if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
     {
@@ -561,7 +561,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
     TC_LOG_INFO("entities.player", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid));
 
     // pet/charmed
-    Creature* pet = ObjectAccessor::GetCreatureOrPet(*_player, guid);
+    Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
     if(pet)
     {
         if(pet->IsPet())
@@ -659,7 +659,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     if(ObjectAccessor::FindPlayer(guid))
         return;
 
-    Creature* pet=ObjectAccessor::GetCreatureOrPet(*_player,guid);
+    Creature* pet=ObjectAccessor::GetCreatureOrPetOrVehicle(*_player,guid);
 
     if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
     {

@@ -76,12 +76,15 @@ namespace Trinity
 ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() {}
 
-Creature* ObjectAccessor::GetCreatureOrPet(WorldObject const &u, uint64 guid)
+Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const &u, uint64 guid)
 {
     if(Creature *unit = GetPet(guid))
         return unit;
 
-    return GetCreature(u, guid);
+    if(IS_CREATURE_OR_VEHICLE_GUID(guid))
+        return GetCreature(u, guid);
+
+    return nullptr;
 }
 
 Creature* ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
@@ -107,7 +110,7 @@ Unit* ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
     if(IS_PLAYER_GUID(guid))
         return FindPlayer(guid);
 
-    return GetCreatureOrPet(u, guid);
+    return GetCreatureOrPetOrVehicle(u, guid);
 }
 
 Corpse* ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
@@ -131,7 +134,7 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
 
     if(typemask & TYPEMASK_UNIT)
     {
-        obj = GetCreatureOrPet(p,guid);
+        obj = GetCreatureOrPetOrVehicle(p,guid);
         if(obj) return obj;
     }
 

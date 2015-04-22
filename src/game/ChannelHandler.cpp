@@ -394,3 +394,20 @@ void WorldSession::HandleSetChannelWatch(WorldPacket &recvPacket)
             chn->JoinNotify(_player->GetGUID());*/
 }
 
+void WorldSession::HandleSpellClick(WorldPacket& recvData)
+{
+    uint64 guid;
+    recvData >> guid;
+
+    // this will get something not in world. crash
+    Creature* unit = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
+
+    if (!unit)
+        return;
+
+    /// @todo Unit::SetCharmedBy: 28782 is not in world but 0 is trying to charm it! -> crash
+    if (!unit->IsInWorld())
+        return;
+
+    unit->HandleSpellClick(_player)
+}
