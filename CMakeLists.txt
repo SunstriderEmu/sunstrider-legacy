@@ -1,5 +1,7 @@
 project(Sunstrider)
 cmake_minimum_required(VERSION 2.6)
+
+# Don't escape preprocessor definitions automatically.
 cmake_policy(SET CMP0005 OLD)
 
 include(CheckIncludeFiles)
@@ -19,12 +21,8 @@ option(DO_DEBUG "Debug mode" 0)
 option(DO_WARN "Enable all compile warnings" 0)
 option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
 
-if(PREFIX)
-    set(CMAKE_INSTALL_PREFIX ${PREFIX})
-endif(PREFIX)
-
 if(NOT CONF_DIR)
-	set(CONF_DIR ${PREFIX}/etc)
+	set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/etc)
 endif(NOT CONF_DIR)
 
 set(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
@@ -123,7 +121,7 @@ endif()
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+set(CMAKE_INSTALL_RPATH "${LIBSDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(dep)
