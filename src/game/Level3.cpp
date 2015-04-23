@@ -236,11 +236,11 @@ bool ChatHandler::HandleReloadCommandCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadCreatureQuestRelationsCommand(const char*)
+bool ChatHandler::HandleReloadCreatureQuestStartersCommand(const char*)
 {
-    TC_LOG_INFO("command", "Loading Quests Relations... (`creature_questrelation`)" );
-    sObjectMgr->LoadCreatureQuestRelations();
-    SendGlobalGMSysMessage("DB table `creature_questrelation` (creature quest givers) reloaded.");
+    TC_LOG_INFO("command", "Loading Quests Relations... (`creature_queststarter`)" );
+    sObjectMgr->LoadCreatureQuestStarters();
+    SendGlobalGMSysMessage("DB table `creature_queststarter` (creature quest givers) reloaded.");
     return true;
 }
 
@@ -252,27 +252,27 @@ bool ChatHandler::HandleReloadCreatureLinkedRespawnCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleReloadCreatureQuestInvRelationsCommand(const char*)
+bool ChatHandler::HandleReloadCreatureQuestEndersCommand(const char*)
 {
-    TC_LOG_INFO("command", "Loading Quests Relations... (`creature_involvedrelation`)" );
-    sObjectMgr->LoadCreatureInvolvedRelations();
-    SendGlobalGMSysMessage("DB table `creature_involvedrelation` (creature quest takers) reloaded.");
+    TC_LOG_INFO("command", "Loading Quests Relations... (`creature_questender`)" );
+    sObjectMgr->LoadCreatureQuestEnders();
+    SendGlobalGMSysMessage("DB table `creature_questender` (creature quest takers) reloaded.");
     return true;
 }
 
-bool ChatHandler::HandleReloadGOQuestRelationsCommand(const char*)
+bool ChatHandler::HandleReloadGameobjectQuestStartersCommand(const char*)
 {
-    TC_LOG_INFO("command", "Loading Quests Relations... (`gameobject_questrelation`)" );
-    sObjectMgr->LoadGameobjectQuestRelations();
-    SendGlobalGMSysMessage("DB table `gameobject_questrelation` (gameobject quest givers) reloaded.");
+    TC_LOG_INFO("command", "Loading Quests Relations... (`gameobject_queststarter`)" );
+    sObjectMgr->LoadGameobjectQuestStarters();
+    SendGlobalGMSysMessage("DB table `gameobject_queststarter` (gameobject quest givers) reloaded.");
     return true;
 }
 
-bool ChatHandler::HandleReloadGOQuestInvRelationsCommand(const char*)
+bool ChatHandler::HandleReloadGameobjectQuestEndersCommand(const char*)
 {
-    TC_LOG_INFO("command", "Loading Quests Relations... (`gameobject_involvedrelation`)" );
-    sObjectMgr->LoadGameobjectInvolvedRelations();
-    SendGlobalGMSysMessage("DB table `gameobject_involvedrelation` (gameobject quest takers) reloaded.");
+    TC_LOG_INFO("command", "Loading Quests Relations... (`gameobject_questender`)" );
+    sObjectMgr->LoadGameobjectQuestEnders();
+    SendGlobalGMSysMessage("DB table `gameobject_questender` (gameobject quest takers) reloaded.");
     return true;
 }
 

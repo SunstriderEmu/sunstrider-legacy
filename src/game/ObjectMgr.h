@@ -520,15 +520,15 @@ class ObjectMgr
         void LoadQuests();
         void LoadQuestRelations()
         {
-            LoadGameobjectQuestRelations();
-            LoadGameobjectInvolvedRelations();
-            LoadCreatureQuestRelations();
-            LoadCreatureInvolvedRelations();
+            LoadGameobjectQuestStarters();
+            LoadGameobjectQuestEnders();
+            LoadCreatureQuestStarters();
+            LoadCreatureQuestEnders();
         }
-        void LoadGameobjectQuestRelations();
-        void LoadGameobjectInvolvedRelations();
-        void LoadCreatureQuestRelations();
-        void LoadCreatureInvolvedRelations();
+        void LoadGameobjectQuestStarters();
+        void LoadGameobjectQuestEnders();
+        void LoadCreatureQuestStarters();
+        void LoadCreatureQuestEnders();
 
         QuestRelations mGOQuestRelations;
         QuestRelations mGOQuestInvolvedRelations;
