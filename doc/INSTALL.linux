@@ -13,7 +13,7 @@ Create a root folder for your emulator installation. I will refer to this folder
 
 I suggest you put a script there with the following 
 
-    cmake -DPREFIX="<root_install_folder>"  ../sources
+    cmake -DCMAKE_INSTALL_PREFIX="<root_install_folder>"  ../sources
 
 Then execute it. This will create the make files into your build folder.
 You can then execute :
