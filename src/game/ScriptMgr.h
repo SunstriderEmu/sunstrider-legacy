@@ -10,7 +10,6 @@
 
 #include "Common.h"
 #include "CreatureScript.h"
-#include "SpellScript.h"
 #include "Platform/CompilerDefs.h"
 #include "DBCStructure.h"
 #include "World.h"
@@ -27,7 +26,6 @@ class Player;
 class Creature;
 class CreatureAI;
 class CreatureAINew;
-class SpellScriptWrapper;
 class InstanceData;
 class Quest;
 class Item;
@@ -39,6 +37,7 @@ class WorldObject;
 class Transport;
 class Guild;
 class Group;
+class Spell;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
@@ -242,16 +241,12 @@ class ScriptMgr
         bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
         
         CreatureAINew* getAINew(Creature* creature);
-        SpellScript* getSpellScript(Spell* spell);
         
         void addScript(CreatureScript* cscript) { m_creatureScripts[cscript->getName()] = cscript; }
-        void addScript(SpellScriptWrapper* sscript) { m_spellScripts[sscript->getName()] = sscript; }
         
     private:
         typedef std::map<std::string, CreatureScript*> CreatureScriptMap;
         CreatureScriptMap m_creatureScripts;
-        typedef std::map<std::string, SpellScriptWrapper*> SpellScriptMap;
-        SpellScriptMap m_spellScripts;
 };
 
 //Generic scripting text function
@@ -264,15 +259,8 @@ Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range);
 #else
 #define FUNC_PTR(name, callconvention, returntype, parameters)    typedef returntype(callconvention *name)parameters;
 #endif
-/*
-#ifdef WIN32
-  #define TRINITY_DLL_EXPORT extern "C" __declspec(dllexport)
-#elif defined( __GNUC__ )
-#define TRINITY_DLL_EXPORT extern "C"
-#else
-#define TRINITY_DLL_EXPORT extern "C" export
-#endif
-*/
+
+
 #define sScriptMgr ScriptMgr::instance()
 #endif
 

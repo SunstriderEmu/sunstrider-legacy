@@ -467,9 +467,6 @@ class Spell
         
         void setRemoveReflect() { m_removeReflect = true; }
 
-        void setScript(SpellScript* script) { m_script = script; }
-        SpellScript* getScript() { return m_script; }
-        
         bool DoesApplyAuraName(uint32 name);
 
     protected:
@@ -620,8 +617,6 @@ class Spell
         PathGenerator m_preGeneratedPath;
 
         uint32 m_customAttr;
-
-        SpellScript* m_script;
 };
 
 namespace Trinity

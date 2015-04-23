@@ -381,8 +381,6 @@ Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 origi
     // determine reflection
     m_canReflect = false;
     m_removeReflect = false;
-    
-    m_script = sScriptMgr->getSpellScript(this);
 
     if(   !(m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_BE_REDIRECTED)
        && !(m_spellInfo->Attributes & SPELL_ATTR0_ABILITY)

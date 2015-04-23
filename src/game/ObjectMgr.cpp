@@ -7962,37 +7962,6 @@ void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently
   RemoveGMTicket(ticket, source, permanently);
 }
 
-void ObjectMgr::LoadSpellScriptsNew()
-{
-    m_spellScripts.clear();
-
-    QueryResult result = WorldDatabase.Query("SELECT id, scriptname FROM spell_scripts_new");
-    if (!result) {
-        TC_LOG_INFO("server.loading","DB Table `spell_scripts_new` is empty.");
-        return;
-    }
-
-    uint32 count = result->GetRowCount();
-
-    Field* fields;
-    do {
-        fields = result->Fetch();
-        uint32 spellId = fields[0].GetUInt32();
-        std::string scriptname = fields[1].GetString();
-
-        const SpellEntry* spell = sSpellMgr->GetSpellInfo(spellId);
-        if (!spell) {
-            TC_LOG_ERROR("sql.sql","Spell script %s has incorrect spell ID %u in `spell_scripts_new` table.",
-                scriptname.c_str(), spellId);
-            continue;
-        }
-
-        m_spellScripts[spellId] = scriptname;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading","Loaded %u spell scripts.", count);
-}
-
 void ObjectMgr::LoadSpellTemplates()
 {
     uint32 count = 0;

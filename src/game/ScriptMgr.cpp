@@ -1972,18 +1972,6 @@ CreatureAINew* ScriptMgr::getAINew(Creature* creature)
     return iter->second->getAI(creature);
 }
 
-SpellScript* ScriptMgr::getSpellScript(Spell* spell)
-{
-    if (!spell)
-        return NULL;
-    
-    SpellScriptMap::const_iterator iter = m_spellScripts.find(sObjectMgr->getSpellScriptName(spell->m_spellInfo->Id));
-    if (iter == m_spellScripts.end())
-        return NULL;
-        
-    return iter->second->getScript(spell);
-}
-
 bool ScriptMgr::ItemUse( Player *player, Item* _Item, SpellCastTargets const& targets)
 {
     Script *tmpscript = m_scripts[_Item->GetProto()->ScriptId];

@@ -606,9 +606,6 @@ class ObjectMgr
 
         void LoadGMTickets();
 
-        void LoadSpellScriptsNew();
-        std::string getSpellScriptName(uint32 spellId) { return m_spellScripts[spellId]; }
-        
         void LoadSpellTemplates();
         SpellEntry* GetSpellTemplate(uint32 id);
         std::map<uint32, SpellEntry*>* GetSpellStore() { return &spellTemplates; }
@@ -997,9 +994,6 @@ class ObjectMgr
         EntryScriptsMap m_creatureScriptsByEntry;
         typedef std::map<uint64, std::string> GUIDScriptsMap;
         GUIDScriptsMap m_creatureScriptsByGUID;
-
-        typedef std::map<uint32, std::string> SpellScriptsMap;
-        SpellScriptsMap m_spellScripts;
 
         LocaleConstant DBCLocaleIndex;
 
