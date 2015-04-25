@@ -345,7 +345,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
     std::string GossipStr;
 
     recvData >> textID;
-    TC_LOG_DEBUG("FIXME","WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
+    TC_LOG_DEBUG("network","WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
 
     recvData >> guid;
     GetPlayer()->SetTarget(guid);
@@ -380,7 +380,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
     else
     {
         std::string Text_0[8], Text_1[8];
-        for (int i=0;i<8;i++)
+        for (int i=0;i<MAX_GOSSIP_TEXT_OPTIONS;i++)
         {
             Text_0[i]=pGossip->Options[i].Text_0;
             Text_1[i]=pGossip->Options[i].Text_1;
@@ -392,7 +392,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
             NpcTextLocale const *nl = sObjectMgr->GetNpcTextLocale(textID);
             if (nl)
             {
-                for (int i=0;i<8;i++)
+                for (int i=0;i<MAX_GOSSIP_TEXT_OPTIONS;i++)
                 {
                     if (nl->Text_0[i].size() > loc_idx && !nl->Text_0[i][loc_idx].empty())
                         Text_0[i]=nl->Text_0[i][loc_idx];
@@ -402,7 +402,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
             }
         }
 
-        for (int i=0; i<8; i++)
+        for (int i=0; i<MAX_GOSSIP_TEXT_OPTIONS; i++)
         {
             data << pGossip->Options[i].Probability;
 
@@ -441,7 +441,7 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
     uint32 pageID;
 
     recvData >> pageID;
-    TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_PAGE_TEXT_QUERY for pageID '%u'", pageID);
+    TC_LOG_DEBUG("network","WORLD: Received CMSG_PAGE_TEXT_QUERY for pageID '%u'", pageID);
 
     while (pageID)
     {

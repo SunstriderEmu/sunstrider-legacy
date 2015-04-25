@@ -238,7 +238,7 @@ void PlayerMenu::SendTalking( uint32 textID )
 
     if (!pGossip)
     {
-        for(uint32 i = 0; i < 8; ++i)
+        for(uint32 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << float(0);
             data << "Greetings $N";
@@ -255,7 +255,7 @@ void PlayerMenu::SendTalking( uint32 textID )
     else
     {
         std::string Text_0[8],Text_1[8];
-        for (int i=0;i<8;i++)
+        for (int i=0; i < MAX_GOSSIP_TEXT_OPTIONS ; i++)
         {
             Text_0[i]=pGossip->Options[i].Text_0;
             Text_1[i]=pGossip->Options[i].Text_1;
@@ -275,7 +275,7 @@ void PlayerMenu::SendTalking( uint32 textID )
                 }
             }
         }
-        for (int i=0; i<8; i++)
+        for (int i=0; i < MAX_GOSSIP_TEXT_OPTIONS; i++)
         {
             data << pGossip->Options[i].Probability;
 

@@ -996,7 +996,7 @@ void Creature::prepareGossipMenu( Player *pPlayer,uint32 gossipid )
                             cantalking = false;
                         break;
                     default:
-                        TC_LOG_ERROR("FIXME","Creature %u (entry: %u) have unknown gossip option %u",GetDBTableGUIDLow(),GetEntry(),gso->Action);
+                        TC_LOG_ERROR("sql.sql","Creature %u (entry: %u) have unknown gossip option %u",GetDBTableGUIDLow(),GetEntry(),gso->Action);
                         break;
                 }
             }
