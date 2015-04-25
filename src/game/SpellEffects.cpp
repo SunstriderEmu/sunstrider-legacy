@@ -7193,45 +7193,7 @@ void Spell::EffectSendTaxi(uint32 i)
 {
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
-    /*
-    TaxiPathEntry const* entry = sTaxiPathStore.LookupEntry(m_spellInfo->EffectMiscValue[i]);
-    if(!entry)
-        return;
 
-    std::vector<uint32> nodes;
-
-    nodes.resize(2);
-    nodes[0] = entry->from;
-    nodes[1] = entry->to;
-
-    uint32 mountid = 0;
-    switch(m_spellInfo->Id)
-    {
-        case 31606:       //Stormcrow Amulet
-            if (m_caster->GetTypeId() == TYPEID_PLAYER)
-            {
-                Player* pPlayer = m_caster->ToPlayer();
-                pPlayer->AreaExploredOrEventHappens(9718);
-                
-            }
-            mountid = 17447;
-            break;
-        case 45071:      //Quest - Sunwell Daily - Dead Scar Bombing Run
-        case 45113:      //Quest - Sunwell Daily - Ship Bombing Run
-        case 45353:      //Quest - Sunwell Daily - Ship Bombing Run Return
-            mountid = 22840;
-            break;
-        case 34905:      //Stealth Flight
-            mountid = 6851;
-            break;
-        case 41533:      //Fly of the Netherwing
-        case 41540:      //Fly of the Netherwing
-            mountid = 23468;
-            break;
-    }
-
-    (unitTarget->ToPlayer())->ActivateTaxiPathTo(nodes,mountid);
-    */
     unitTarget->ToPlayer()->ActivateTaxiPathTo(m_spellInfo->EffectMiscValue[i], m_spellInfo->Id);
 }
 

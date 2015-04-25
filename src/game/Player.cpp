@@ -18228,6 +18228,27 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     // change but I couldn't find a suitable alternative. OK to use class because only DK
     // can use this taxi.
     uint32 mount_display_id = sObjectMgr->GetTaxiMountDisplayId(sourcenode, GetTeam(), npc == NULL);
+    
+    //HACKS
+    switch(spellid)
+    {
+        case 31606:       //Stormcrow Amulet
+            AreaExploredOrEventHappens(9718);
+            mount_display_id = 17447;
+            break;
+        case 45071:      //Quest - Sunwell Daily - Dead Scar Bombing Run
+        case 45113:      //Quest - Sunwell Daily - Ship Bombing Run
+        case 45353:      //Quest - Sunwell Daily - Ship Bombing Run Return
+            mount_display_id = 22840;
+            break;
+        case 34905:      //Stealth Flight
+            mount_display_id = 6851;
+            break;
+        case 41533:      //Fly of the Netherwing
+        case 41540:      //Fly of the Netherwing
+            mount_display_id = 23468;
+            break;
+    }
 
     // in spell case allow 0 model
     if ((mount_display_id == 0 && spellid == 0) || sourcepath == 0)

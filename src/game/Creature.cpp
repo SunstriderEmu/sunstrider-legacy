@@ -792,7 +792,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
 
     if(!trainer_spells || trainer_spells->spellList.empty())
     {
-        TC_LOG_ERROR("FIXME","Creature %u (Entry: %u) have UNIT_NPC_FLAG_TRAINER but have empty trainer spell list.",
+        TC_LOG_ERROR("sql.sql","Creature %u (Entry: %u) have UNIT_NPC_FLAG_TRAINER but have empty trainer spell list.",
             GetGUIDLow(),GetEntry());
         return false;
     }
