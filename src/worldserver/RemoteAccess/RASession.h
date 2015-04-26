@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -29,8 +29,6 @@
 using boost::asio::ip::tcp;
 
 const size_t bufferSize = 4096;
-
-#define BUFFER_SIZE 4096
 
 class RASession : public std::enable_shared_from_this <RASession>
 {

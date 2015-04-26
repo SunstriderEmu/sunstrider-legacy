@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,23 +18,25 @@
 #ifndef LOGOPERATION_H
 #define LOGOPERATION_H
 
+#include <memory>
+
 class Logger;
 struct LogMessage;
 
 class LogOperation
 {
     public:
-        LogOperation(Logger const* _logger, LogMessage* _msg)
-            : logger(_logger), msg(_msg)
+        LogOperation(Logger const* _logger, std::unique_ptr<LogMessage>&& _msg)
+            : logger(_logger), msg(std::forward<std::unique_ptr<LogMessage>>(_msg))
         { }
 
-        ~LogOperation();
+        ~LogOperation() { }
 
         int call();
 
     protected:
         Logger const* logger;
-        LogMessage* msg;
+        std::unique_ptr<LogMessage> msg;
 };
 
 #endif

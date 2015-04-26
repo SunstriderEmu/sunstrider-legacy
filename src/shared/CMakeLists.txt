@@ -48,6 +48,7 @@ shared
 )
 
 INCLUDE_DIRECTORIES(
+${CMAKE_SOURCE_DIR}/dep/cppformat
 ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
 ${CMAKE_SOURCE_DIR}/dep/utf8cpp
 ${CMAKE_SOURCE_DIR}/dep/SFMT
@@ -56,6 +57,7 @@ ${CMAKE_SOURCE_DIR}/src/framework/Platform
 ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
 ${CMAKE_SOURCE_DIR}/dep/include
 ${CMAKE_SOURCE_DIR}/dep/zlib
+${CMAKE_SOURCE_DIR}/dep/zthread
 ${CMAKE_CURRENT_SOURCE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}/Configuration
 ${CMAKE_CURRENT_SOURCE_DIR}/Cryptography
@@ -70,6 +72,6 @@ ${CMAKE_CURRENT_SOURCE_DIR}/Threading
 ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
 ${OPENSSL_INCLUDE_DIR}
 ${MYSQL_INCLUDE_DIR}
-#for revision.h
+#next one for revision.h
 ${CMAKE_BINARY_DIR}
 )

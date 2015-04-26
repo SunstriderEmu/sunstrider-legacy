@@ -35,6 +35,7 @@ endif()
 
 INCLUDE_DIRECTORIES(  
     ${CMAKE_BINARY_DIR}
+	${CMAKE_SOURCE_DIR}/dep/cppformat
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_SOURCE_DIR}/dep/gsoap
     ${CMAKE_SOURCE_DIR}/dep/include
@@ -107,18 +108,19 @@ target_link_libraries(
 worldserver
 Detour
 collision
-scripts
+format
+g3dlite
 game
+irc
+scripts
 shared
 trinityframework
-irc
-g3dlite
-${READLINE_LIBRARY}
-${UNIX_LIBS}
+${Boost_LIBRARIES}
 ${MYSQL_LIBRARY}
 ${OPENSSL_LIBRARIES}
+${READLINE_LIBRARY}
+${UNIX_LIBS}
 ${ZLIB_LIBRARIES}
-${Boost_LIBRARIES}
 )
 
 if( UNIX )

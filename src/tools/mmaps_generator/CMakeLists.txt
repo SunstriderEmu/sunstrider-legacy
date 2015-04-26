@@ -12,6 +12,7 @@ file(GLOB_RECURSE mmap_gen_sources *.cpp *.h)
 
 set(mmap_gen_Includes
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/cppformat
   ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/libmpq
   ${CMAKE_SOURCE_DIR}/dep/zlib
@@ -45,6 +46,7 @@ target_link_libraries(mmaps_generator
   g3dlite
   Recast
   Detour
+  format
   shared
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}

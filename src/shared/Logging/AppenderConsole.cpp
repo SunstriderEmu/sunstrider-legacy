@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,7 +18,7 @@
 #include <sstream>
 
 #include "AppenderConsole.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "Util.h"
 
 #if PLATFORM == PLATFORM_WINDOWS
@@ -158,14 +158,14 @@ void AppenderConsole::ResetColor(bool stdout_stream)
     #endif
 }
 
-void AppenderConsole::_write(LogMessage const& message)
+void AppenderConsole::_write(LogMessage const* message)
 {
-    bool stdout_stream = !(message.level == LOG_LEVEL_ERROR || message.level == LOG_LEVEL_FATAL);
+    bool stdout_stream = !(message->level == LOG_LEVEL_ERROR || message->level == LOG_LEVEL_FATAL);
 
     if (_colored)
     {
         uint8 index;
-        switch (message.level)
+        switch (message->level)
         {
             case LOG_LEVEL_TRACE:
                index = 5;
@@ -189,9 +189,9 @@ void AppenderConsole::_write(LogMessage const& message)
         }
 
         SetColor(stdout_stream, _colors[index]);
-        utf8printf(stdout_stream ? stdout : stderr, "%s%s", message.prefix.c_str(), message.text.c_str());
+        utf8printf(stdout_stream ? stdout : stderr, "%s%s\n", message->prefix.c_str(), message->text.c_str());
         ResetColor(stdout_stream);
     }
     else
-        utf8printf(stdout_stream ? stdout : stderr, "%s%s", message.prefix.c_str(), message.text.c_str());
+        utf8printf(stdout_stream ? stdout : stderr, "%s%s\n", message->prefix.c_str(), message->text.c_str());
 }

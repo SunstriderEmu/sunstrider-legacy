@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,7 +32,7 @@ class Logger
         std::string const& getName() const;
         LogLevel getLogLevel() const;
         void setLogLevel(LogLevel level);
-        void write(LogMessage& message) const;
+        void write(LogMessage* message) const;
 
     private:
         std::string name;

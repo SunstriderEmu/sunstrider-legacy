@@ -1,3 +1,4 @@
+add_subdirectory(cppformat)
 add_subdirectory(lib)
 add_subdirectory(recastnavigation)
 add_subdirectory(g3dlite)

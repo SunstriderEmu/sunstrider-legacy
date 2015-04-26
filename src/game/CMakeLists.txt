@@ -5,6 +5,7 @@ set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
 
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/cppformat
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include

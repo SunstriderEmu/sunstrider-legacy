@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,18 +23,18 @@ AppenderDB::AppenderDB(uint8 id, std::string const& name, LogLevel level)
 
 AppenderDB::~AppenderDB() { }
 
-void AppenderDB::_write(LogMessage const& message)
+void AppenderDB::_write(LogMessage const* message)
 {
     // Avoid infinite loop, PExecute triggers Logging with "sql.sql" type
-    if (!enabled || !message.type.find("sql"))
+    if (!enabled || (message->type.find("sql") != std::string::npos))
         return;
 
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_LOG);
-    stmt->setUInt64(0, message.mtime);
+    stmt->setUInt64(0, message->mtime);
     stmt->setUInt32(1, realmId);
-    stmt->setString(2, message.type);
-    stmt->setUInt8(3, uint8(message.level));
-    stmt->setString(4, message.text);
+    stmt->setString(2, message->type);
+    stmt->setUInt8(3, uint8(message->level));
+    stmt->setString(4, message->text);
     LoginDatabase.Execute(stmt);
 }
 
