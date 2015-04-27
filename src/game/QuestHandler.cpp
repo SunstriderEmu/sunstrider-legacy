@@ -63,7 +63,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
         Creature* cr_questgiver = questgiver->ToCreature();
         if (!cr_questgiver->IsHostileTo(_player)) // not show quest status to enemies
         {
-            questStatus = sScriptMgr->NPCDialogStatus(_player, cr_questgiver);
+            questStatus = sScriptMgr->GetDialogStatus(_player, cr_questgiver);
             if (questStatus > 6)
                 questStatus = getDialogStatus(_player, cr_questgiver, defstatus);
         }
@@ -72,7 +72,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
     case TYPEID_GAMEOBJECT:
     {
         GameObject* go_questgiver = (GameObject*) questgiver;
-        questStatus = sScriptMgr->GODialogStatus(_player, go_questgiver);
+        questStatus = sScriptMgr->GetDialogStatus(_player, go_questgiver);
         if (questStatus > 6)
             questStatus = getDialogStatus(_player, go_questgiver, defstatus);
         break;
@@ -109,13 +109,13 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
     // Stop the npc if moving
     pCreature->StopMoving();
 
-    if(sScriptMgr->GossipHello( _player, pCreature ) )
+    if(sScriptMgr->OnGossipHello( _player, pCreature ) )
         return;
 
-    pCreature->prepareGossipMenu(_player);
-    pCreature->sendPreparedGossip(_player);
+    _player->PrepareGossipMenu(pCreature, _player->GetDefaultGossipMenuForSource(pCreature), true);
+    _player->SendPreparedGossip(pCreature);
     
-    pCreature->AI()->sGossipHello(_player);
+    pCreature->AI()->sOnGossipHello(_player);
 }
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
@@ -136,7 +136,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
         || (pObject->GetTypeId()==TYPEID_PLAYER && !(pObject->ToPlayer())->CanShareQuest(quest))
         )
     {
-        _player->PlayerTalkClass->CloseGossip();
+        _player->PlayerTalkClass->SendCloseGossip();
         _player->SetDivider( 0 );
         return;
     }
@@ -147,7 +147,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
         // prevent cheating
         if(!GetPlayer()->CanTakeQuest(qInfo,true) )
         {
-            _player->PlayerTalkClass->CloseGossip();
+            _player->PlayerTalkClass->SendCloseGossip();
             _player->SetDivider( 0 );
             return;
         }
@@ -182,7 +182,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                             pPlayer->SetDivider(_player->GetGUID());
 
                             //need confirmation that any gossip window will close
-                            pPlayer->PlayerTalkClass->CloseGossip();
+                            pPlayer->PlayerTalkClass->SendCloseGossip();
 
                             _player->SendQuestConfirmAccept(qInfo, pPlayer);
                         }
@@ -218,7 +218,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                     bool destroyItem = true;
                     for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
                     {
-                        if ((qInfo->ReqItemId[i] == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetProto()->MaxCount != 0))
+                        if ((qInfo->RequiredItemId[i] == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetProto()->MaxCount != 0))
                         {
                             destroyItem = false;
                             break;
@@ -231,11 +231,11 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                     break;
                 }
                 case TYPEID_GAMEOBJECT:
-                    sScriptMgr->GOQuestAccept(_player, ((GameObject*)pObject), qInfo );
+                    sScriptMgr->OnQuestAccept(_player, ((GameObject*)pObject), qInfo );
                     (pObject->ToGameObject())->AI()->QuestAccept(_player, qInfo);
                     break;
             }
-            _player->PlayerTalkClass->CloseGossip();
+            _player->PlayerTalkClass->SendCloseGossip();
 
             if( qInfo->GetSrcSpell() > 0 )
                 _player->CastSpell( _player, qInfo->GetSrcSpell(), true);
@@ -244,7 +244,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
         }
     }
 
-    _player->PlayerTalkClass->CloseGossip();
+    _player->PlayerTalkClass->SendCloseGossip();
 }
 
 void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
@@ -261,7 +261,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM);
     if(!pObject||!pObject->hasQuest(quest) && !pObject->hasInvolvedQuest(quest))
     {
-        _player->PlayerTalkClass->CloseGossip();
+        _player->PlayerTalkClass->SendCloseGossip();
         return;
     }
 
@@ -335,7 +335,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
                     }
                     break;
                 case TYPEID_GAMEOBJECT:
-                    if( !sScriptMgr->GOChooseReward( _player, ((GameObject*)pObject), pQuest, reward ) )
+                    if( !sScriptMgr->OnQuestReward( _player, ((GameObject*)pObject), pQuest, reward ) )
                     {
                         // Send next quest
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
@@ -379,7 +379,7 @@ void WorldSession::HandleQuestgiverCancel(WorldPacket& /*recvData*/ )
 {
     PROFILE;
     
-    _player->PlayerTalkClass->CloseGossip();
+    _player->PlayerTalkClass->SendCloseGossip();
 }
 
 void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
@@ -731,7 +731,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             if(!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
                 continue;
-            questStatus = sScriptMgr->NPCDialogStatus(_player, questgiver);
+            questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
             if( questStatus > 6 )
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 
@@ -746,7 +746,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             if(questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
                 continue;
-            questStatus = sScriptMgr->GODialogStatus(_player, questgiver);
+            questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
             if( questStatus > 6 )
                 questStatus = getDialogStatus(_player, questgiver, defstatus);
 

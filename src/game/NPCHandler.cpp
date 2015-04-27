@@ -314,18 +314,18 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         }
     }
 
-    if(!sScriptMgr->GossipHello( _player, unit ))
+    if(!sScriptMgr->OnGossipHello( _player, unit ))
     {
         _player->TalkedToCreature(unit->GetEntry(),unit->GetGUID());
-        unit->prepareGossipMenu(_player);
-        unit->sendPreparedGossip(_player);
+        _player->PrepareGossipMenu(unit, _player->GetDefaultGossipMenuForSource(unit), true);
+        _player->SendPreparedGossip(unit);
     }
     
     /*
     if(unit->getAI())
-        unit->getAI()->sGossipHello(_player);
+        unit->getAI()->sOnGossipHello(_player);
     else*/
-        unit->AI()->sGossipHello(_player);
+        unit->AI()->sOnGossipHello(_player);
 }
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
@@ -429,7 +429,7 @@ void WorldSession::SendBindPoint(Creature *npc)
     data << uint32(3286);                                   // Bind
     SendPacket( &data );
 
-    _player->PlayerTalkClass->CloseGossip();
+    _player->PlayerTalkClass->SendCloseGossip();
 }
 
 //Need fix

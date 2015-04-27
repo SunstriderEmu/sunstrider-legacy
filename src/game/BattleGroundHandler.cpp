@@ -65,10 +65,10 @@ void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
         return;
     }
 
-    SendBattlegGroundList(guid, bgTypeId);
+    SendBattleGroundList(guid, bgTypeId);
 }
 
-void WorldSession::SendBattlegGroundList( uint64 guid, uint32 bgTypeId )
+void WorldSession::SendBattleGroundList( uint64 guid, uint32 bgTypeId )
 {
     WorldPacket data;
     sBattlegroundMgr->BuildBattlegroundListPacket(&data, guid, _player, bgTypeId);

@@ -121,8 +121,8 @@ bool ChatHandler::HandleReloadAllLootCommand(const char*)
 
 bool ChatHandler::HandleReloadAllNpcCommand(const char* /*args*/)
 {
-    HandleReloadNpcGossipCommand("a");
-    HandleReloadNpcOptionCommand("a");
+    HandleReloadCreatureGossipCommand("a");
+    HandleReloadGossipMenuOptionCommand("a");
     HandleReloadNpcTrainerCommand("a");
     HandleReloadNpcVendorCommand("a");
     return true;
@@ -190,7 +190,7 @@ bool ChatHandler::HandleReloadAllLocalesCommand(const char* /*args*/)
     HandleReloadLocalesCreatureCommand("a");
     HandleReloadLocalesGameobjectCommand("a");
     HandleReloadLocalesItemCommand("a");
-    HandleReloadLocalesNpcTextCommand("a");
+    HandleReloadLocalesGossipTextCommand("a");
     HandleReloadLocalesPageTextCommand("a");
     HandleReloadLocalesQuestCommand("a");
     return true;
@@ -389,19 +389,37 @@ bool ChatHandler::HandleReloadTrinityStringCommand(const char*)
     return true;
 }
 
-bool ChatHandler::HandleReloadNpcOptionCommand(const char*)
+bool ChatHandler::HandleReloadGossipMenuCommand(const char* args)
 {
-    TC_LOG_INFO( "command", "Re-Loading `npc_option` Table!" );
-    sObjectMgr->LoadNpcOptions();
-    SendGlobalGMSysMessage("DB table `npc_option` reloaded.");
+    TC_LOG_INFO( "command", "Re-Loading `gossip_menu` Table!" );
+    sObjectMgr->LoadGossipMenu();
+    SendGlobalGMSysMessage("DB table `gossip_menu` reloaded.");
     return true;
 }
 
-bool ChatHandler::HandleReloadNpcGossipCommand(const char*)
+bool ChatHandler::HandleReloadGossipTextCommand(const char* args)
 {
-    TC_LOG_INFO( "command", "Re-Loading `npc_gossip` Table!" );
-    sObjectMgr->LoadNpcTextId();
-    SendGlobalGMSysMessage("DB table `npc_gossip` reloaded.");
+    TC_LOG_INFO( "command", "Re-Loading `gossip_text` Table!" );
+    sObjectMgr->LoadGossipText();
+    sObjectMgr->LoadGossipTextLocales();
+    SendGlobalGMSysMessage("DB tables `gossip_text` and `locales_gossip_text` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadCreatureGossipCommand(const char* args)
+{
+    TC_LOG_INFO( "command", "Re-Loading `creature_gossip` Table!" );
+    sObjectMgr->LoadCreatureGossip();
+    SendGlobalGMSysMessage("DB table `creature_gossip` reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadGossipMenuOptionCommand(const char*)
+{
+    TC_LOG_INFO( "command", "Re-Loading `gossip_menu_option` Table!" );
+    sObjectMgr->LoadGossipMenuItems();
+    sObjectMgr->LoadGossipMenuItemsLocales();
+    SendGlobalGMSysMessage("DB tables `gossip_menu_option` and `locales_gossip_menu_option` reloaded.");
     return true;
 }
 
@@ -759,11 +777,11 @@ bool ChatHandler::HandleReloadLocalesItemCommand(const char* /*arg*/)
     return true;
 }
 
-bool ChatHandler::HandleReloadLocalesNpcTextCommand(const char* /*arg*/)
+bool ChatHandler::HandleReloadLocalesGossipTextCommand(const char* /*arg*/)
 {
-    TC_LOG_INFO("command", "Re-Loading Locales NPC Text ... ");
-    sObjectMgr->LoadNpcTextLocales();
-    SendGlobalGMSysMessage("DB table `locales_npc_text` reloaded.");
+    TC_LOG_INFO("command", "Re-Loading Locales Gossip texts ... ");
+    sObjectMgr->LoadGossipTextLocales();
+    SendGlobalGMSysMessage("DB table `locales_gossip_text` reloaded.");
     return true;
 }
 
@@ -5192,8 +5210,8 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     // Add quest items for quests that require items
     for(uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
     {
-        uint32 id = pQuest->ReqItemId[x];
-        uint32 count = pQuest->ReqItemCount[x];
+        uint32 id = pQuest->RequiredItemId[x];
+        uint32 count = pQuest->RequiredItemCount[x];
         if(!id || !count)
             continue;
 
@@ -5211,8 +5229,8 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
     for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        uint32 creature = pQuest->ReqCreatureOrGOId[i];
-        uint32 creaturecount = pQuest->ReqCreatureOrGOCount[i];
+        uint32 creature = pQuest->RequiredNpcOrGo[i];
+        uint32 creaturecount = pQuest->RequiredNpcOrGoCount[i];
 
         if(uint32 spell_id = pQuest->ReqSpell[i])
         {

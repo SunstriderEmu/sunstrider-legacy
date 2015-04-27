@@ -74,84 +74,98 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     GetPlayer()->RepopAtGraveyard();
 }
 
-void WorldSession::HandleGossipSelectOptionOpcode( WorldPacket & recvData )
+void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
 {
-    PROFILE;
-    
-    CHECK_PACKET_SIZE(recvData,8+4+4);
+    TC_LOG_DEBUG("network", "WORLD: CMSG_GOSSIP_SELECT_OPTION");
 
-    uint32 option;
-    uint32 unk;
+    uint32 gossipListId;
+    uint32 menuId;
     uint64 guid;
     std::string code = "";
 
-    recvData >> guid >> unk >> option;
+    recvData >> guid >> menuId >> gossipListId;
 
-    if(_player->PlayerTalkClass->GossipOptionCoded( option ))
+    if (!_player->PlayerTalkClass->GetGossipMenu().GetItem(gossipListId))
     {
-        // recheck
-        CHECK_PACKET_SIZE(recvData,8+4+1);
-        TC_LOG_DEBUG("FIXME","reading string");
-        recvData >> code;
-        TC_LOG_DEBUG("FIXME","string read: %s", code.c_str());
+        recvData.rfinish();
+        return;
     }
 
-    Creature *unit = NULL;
-    GameObject *go = NULL;
-    if(IS_CREATURE_GUID(guid))
+    if (_player->PlayerTalkClass->IsGossipOptionCoded(gossipListId))
+        recvData >> code;
+
+    // Prevent cheating on C++ scripted menus
+    if (_player->PlayerTalkClass->GetGossipMenu().GetSenderGUID() != guid)
+        return;
+
+    Creature* unit = NULL;
+    GameObject* go = NULL;
+    if (IS_CREATURE_OR_VEHICLE_GUID(guid))
     {
-        unit = GetPlayer()->GetNPCIfCanInteractWith(guid);
+        unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
         if (!unit)
         {
-            TC_LOG_ERROR( "FIXME","WORLD: HandleGossipSelectOptionOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)) );
+            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found or you can't interact with him.", guid);
             return;
         }
     }
-    else if(IS_GAMEOBJECT_GUID(guid))
+    else if (IS_GAMEOBJECT_GUID(guid))
     {
-        go = ObjectAccessor::GetGameObject(*_player, guid);
+        go = _player->GetMap()->GetGameObject(guid);
         if (!go)
         {
-            TC_LOG_ERROR( "FIXME","WORLD: HandleGossipSelectOptionOpcode - GameObject (GUID: %u) not found.", uint32(GUID_LOPART(guid)) );
+            TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found.", guid);
             return;
         }
     }
     else
     {
-        TC_LOG_ERROR( "FIXME","WORLD: HandleGossipSelectOptionOpcode - unsupported GUID type for highguid %u. lowpart %u.", uint32(GUID_HIPART(guid)), uint32(GUID_LOPART(guid)) );
+        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - unsupported " UI64FMTD ".", guid);
         return;
     }
 
     // remove fake death
-    if(GetPlayer()->HasUnitState(UNIT_STATE_DIED))
+    if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    if(!code.empty())
+    if ((unit && unit->GetCreatureTemplate()->ScriptID != unit->LastUsedScriptID) || (go && go->GetGOInfo()->ScriptId != go->LastUsedScriptID))
     {
-        if(unit)
+        TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - Script reloaded while in use, ignoring and set new scipt id");
+        if (unit)
+            unit->LastUsedScriptID = unit->GetCreatureTemplate()->ScriptID;
+        if (go)
+            go->LastUsedScriptID = go->GetGOInfo()->ScriptId;
+        _player->PlayerTalkClass->SendCloseGossip();
+        return;
+    }
+    if (!code.empty())
+    {
+        if (unit)
         {
-            if(!sScriptMgr->GossipSelectWithCode( _player, unit, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ), code.c_str()) )
-                unit->OnGossipSelect( _player, option );
-            
-            unit->AI()->sGossipSelectCode(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
+            unit->AI()->sOnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
+            if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+                _player->OnGossipSelect(unit, gossipListId, menuId);
         }
-        else {
-            sScriptMgr->GOSelectWithCode( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ), code.c_str());
-            go->AI()->GossipSelectCode(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option), code.c_str());
+        else
+        {
+            go->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
+            if (!sScriptMgr->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+                _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }
     else
     {
-        if(unit)
+        if (unit)
         {
-            if(!sScriptMgr->GossipSelect( _player, unit, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option )) )
-                unit->OnGossipSelect( _player, option );
-                
-            unit->AI()->sGossipSelect(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
+            unit->AI()->sGossipSelect(_player, menuId, gossipListId);
+            if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
+                _player->OnGossipSelect(unit, gossipListId, menuId);
         }
-        else {
-            sScriptMgr->GOSelect( _player, go, _player->PlayerTalkClass->GossipOptionSender( option ), _player->PlayerTalkClass->GossipOptionAction( option ));
-            go->AI()->GossipSelect(_player, _player->PlayerTalkClass->GossipOptionSender(option), _player->PlayerTalkClass->GossipOptionAction(option));
+        else
+        {
+            go->AI()->OnGossipSelect(_player, menuId, gossipListId);
+            if (!sScriptMgr->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
+                _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }
 }

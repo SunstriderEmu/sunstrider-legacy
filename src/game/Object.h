@@ -738,6 +738,8 @@ class WorldObject : public Object, public WorldLocation
         
         MovementInfo m_movementInfo;
         
+        uint32  LastUsedScriptID;
+
         // Transports
         Transport* GetTransport() const { return m_transport; }
         float GetTransOffsetX() const { return m_movementInfo.transport.pos.GetPositionX(); }

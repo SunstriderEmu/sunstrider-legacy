@@ -1482,7 +1482,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 if (IsPlayer(*itr))
-                    (*itr)->ToPlayer()->PlayerTalkClass->CloseGossip();
+                    (*itr)->ToPlayer()->PlayerTalkClass->SendCloseGossip();
 
             delete targets;
             break;
@@ -2046,10 +2046,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (Player* player = (*itr)->ToPlayer())
                 {
-                    /*
                     if (e.action.sendGossipMenu.gossipMenuId)
                         player->PrepareGossipMenu(GetBaseObject(), e.action.sendGossipMenu.gossipMenuId, true);
-                    else*/
+                    else
                         player->PlayerTalkClass->ClearMenus();
 
                     player->SEND_GOSSIP_MENU(e.action.sendGossipMenu.gossipNpcTextId, GetBaseObject()->GetGUID());

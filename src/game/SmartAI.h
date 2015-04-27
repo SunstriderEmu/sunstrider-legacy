@@ -161,9 +161,9 @@ class SmartAI : public CreatureAI
 
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
-        void sGossipHello(Player* player) override;
+        void sOnGossipHello(Player* player) override;
         void sGossipSelect(Player* player, uint32 sender, uint32 action) override;
-        void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
+        void sOnGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
         void sQuestAccept(Player* player, Quest const* quest) override;
         //void sQuestSelect(Player* player, Quest const* quest);
         //void sQuestComplete(Player* player, Quest const* quest);
@@ -234,9 +234,9 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
-        bool GossipHello(Player* player);
-        bool GossipSelect(Player* player, uint32 sender, uint32 action);
-        bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/);
+        bool OnGossipHello(Player* player);
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/);
         bool QuestAccept(Player* player, Quest const* quest);
         bool QuestReward(Player* player, Quest const* quest, uint32 opt);
         void Destroyed(Player* player, uint32 eventId);

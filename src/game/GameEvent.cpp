@@ -192,8 +192,8 @@ void GameEvent::LoadFromDB()
         QueryResult result = WorldDatabase.Query("SELECT MAX(entry) FROM game_event");
         if( !result )
         {
-            TC_LOG_INFO("FIXME",">> Table game_event is empty.");
-            TC_LOG_INFO("FIXME"," ");
+            TC_LOG_INFO("gameevent",">> Table game_event is empty.");
+            TC_LOG_INFO("gameevent"," ");
             return;
         }
 
@@ -208,8 +208,8 @@ void GameEvent::LoadFromDB()
     if( !result )
     {
         mGameEvent.clear();
-        TC_LOG_INFO("FIXME",">> Table game_event is empty:");
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent",">> Table game_event is empty:");
+        TC_LOG_INFO("gameevent"," ");
         return;
     }
 
@@ -223,7 +223,7 @@ void GameEvent::LoadFromDB()
         uint16 event_id = fields[0].GetUInt16();
         if(event_id==0)
         {
-            TC_LOG_ERROR("FIXME","`game_event` game event id (%i) is reserved and can't be used.",event_id);
+            TC_LOG_ERROR("gameevent","`game_event` game event id (%i) is reserved and can't be used.",event_id);
             continue;
         }
 
@@ -240,7 +240,7 @@ void GameEvent::LoadFromDB()
 
         if(pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
-            TC_LOG_ERROR("FIXME","`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
+            TC_LOG_ERROR("gameevent","`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
             continue;
         }
 
@@ -249,8 +249,8 @@ void GameEvent::LoadFromDB()
 
     } while( result->NextRow() );
 
-    TC_LOG_INFO("FIXME"," ");
-    TC_LOG_INFO( "FIXME",">> Loaded %u game events", count );
+    TC_LOG_INFO("gameevent"," ");
+    TC_LOG_INFO( "gameevent",">> Loaded %u game events", count );
 
     // load game event saves
     //                                       0         1      2
@@ -259,7 +259,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event saves in game events", count );
     }
     else
@@ -272,7 +272,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_save` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_save` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -283,14 +283,14 @@ void GameEvent::LoadFromDB()
             }
             else
             {
-                TC_LOG_ERROR("FIXME","game_event_save includes event save for non-worldevent id %u",event_id);
+                TC_LOG_ERROR("gameevent","game_event_save includes event save for non-worldevent id %u",event_id);
                 continue;
             }
 
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u game event saves in game events", count );
     }
 
@@ -298,7 +298,7 @@ void GameEvent::LoadFromDB()
     result = WorldDatabase.Query("SELECT event_id, prerequisite_event FROM game_event_prerequisite");
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event prerequisites in game events", count );
     }
     else
@@ -311,7 +311,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_prerequisite` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_prerequisite` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -321,21 +321,21 @@ void GameEvent::LoadFromDB()
                 uint16 prerequisite_event = fields[1].GetUInt16();
                 if(prerequisite_event >= mGameEvent.size())
                 {
-                    TC_LOG_ERROR("FIXME","`game_event_prerequisite` game event prerequisite id (%i) is out of range compared to max event id in `game_event`",prerequisite_event);
+                    TC_LOG_ERROR("gameevent","`game_event_prerequisite` game event prerequisite id (%i) is out of range compared to max event id in `game_event`",prerequisite_event);
                     continue;
                 }
                 mGameEvent[event_id].prerequisite_events.insert(prerequisite_event);
             }
             else
             {
-                TC_LOG_ERROR("FIXME","game_event_prerequisiste includes event entry for non-worldevent id %u",event_id);
+                TC_LOG_ERROR("gameevent","game_event_prerequisiste includes event entry for non-worldevent id %u",event_id);
                 continue;
             }
 
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event prerequisites in game events", count );
     }
 
@@ -347,7 +347,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u creatures in game events", count );
     }
     else
@@ -363,7 +363,7 @@ void GameEvent::LoadFromDB()
 
             if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -372,7 +372,7 @@ void GameEvent::LoadFromDB()
             crelist.push_back(guid);
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO( "server.loading",">> Loaded %u creatures in game events", count );
     }
 
@@ -384,7 +384,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u gameobjects in game events", count );
     }
     else
@@ -400,7 +400,7 @@ void GameEvent::LoadFromDB()
 
             if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_gameobject` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_gameobject` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -409,7 +409,7 @@ void GameEvent::LoadFromDB()
             golist.push_back(guid);
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u gameobjects in game events", count );
     }
 
@@ -423,7 +423,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u model/equipment changes in game events", count );
     }
     else
@@ -437,7 +437,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEventModelEquip.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_model_equip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_model_equip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -453,7 +453,7 @@ void GameEvent::LoadFromDB()
             {
                 if(!sObjectMgr->GetEquipmentInfo(newModelEquipSet.equipment_id))
                 {
-                    TC_LOG_ERROR("FIXME","Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
+                    TC_LOG_ERROR("gameevent","Table `game_event_model_equip` have creature (Guid: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", guid, newModelEquipSet.equipment_id);
                     continue;
                 }
             }
@@ -461,7 +461,7 @@ void GameEvent::LoadFromDB()
             equiplist.push_back(std::pair<uint32, ModelEquip>(guid, newModelEquipSet));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO( "server.loading",">> Loaded %u model/equipment changes in game events", count );
     }
 
@@ -472,7 +472,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u quests additions in game events", count );
     }
     else
@@ -487,7 +487,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEventCreatureQuests.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_creature_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_creature_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -496,7 +496,7 @@ void GameEvent::LoadFromDB()
             questlist.push_back(QuestRelation(id, quest));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u quests additions in game events", count );
     }
 
@@ -507,7 +507,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u go quests additions in game events", count );
     }
     else
@@ -522,7 +522,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEventGameObjectQuests.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_gameobject_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_gameobject_quest` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -531,7 +531,7 @@ void GameEvent::LoadFromDB()
             questlist.push_back(QuestRelation(id, quest));
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO( "server.loading",">> Loaded %u quests additions in game events", count );
     }
 
@@ -542,7 +542,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u quest event conditions in game events", count );
     }
     else
@@ -558,7 +558,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_quest_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_quest_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -568,7 +568,7 @@ void GameEvent::LoadFromDB()
             mQuestToEventConditions[quest].num = num;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u quest event conditions in game events", count );
     }
 
@@ -579,7 +579,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u conditions in game events", count );
     }
     else
@@ -593,7 +593,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_condition` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -605,7 +605,7 @@ void GameEvent::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u conditions in game events", count );
     }
 
@@ -616,7 +616,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u condition saves in game events", count );
     }
     else
@@ -630,7 +630,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_condition_save` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_condition_save` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -641,7 +641,7 @@ void GameEvent::LoadFromDB()
             }
             else
             {
-                TC_LOG_ERROR("FIXME","game_event_condition_save contains not present condition evt id %u cond id %u",event_id, condition);
+                TC_LOG_ERROR("gameevent","game_event_condition_save contains not present condition evt id %u cond id %u",event_id, condition);
                 continue;
             }
 
@@ -660,7 +660,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u npcflags in game events", count );
     }
     else
@@ -675,7 +675,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_npcflag` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_npcflag` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -695,7 +695,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u vendor additions in game events", count );
     }
     else
@@ -708,7 +708,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEventVendors.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -719,7 +719,7 @@ void GameEvent::LoadFromDB()
             newEntry.proto = sObjectMgr->GetItemTemplate(itemId);
             if(!newEntry.proto)
             {
-                TC_LOG_ERROR("FIXME","`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)",event_id,itemId);
+                TC_LOG_ERROR("gameevent","`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)",event_id,itemId);
                 continue;
             }
             newEntry.maxcount = fields[3].GetUInt32();
@@ -752,41 +752,6 @@ void GameEvent::LoadFromDB()
         TC_LOG_INFO("server.loading",  ">> Loaded %u vendor additions in game events", count );
     }
 
-    // load game event npc gossip ids
-    //                                   0         1        2
-    result = WorldDatabase.Query("SELECT guid, event_id, textid FROM game_event_npc_gossip");
-
-    count = 0;
-    if( !result )
-    {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO("server.loading",">> Loaded %u npc gossip textids in game events", count );
-    }
-    else
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            uint32 guid     = fields[0].GetUInt32();
-            uint16 event_id = fields[1].GetUInt16();
-            uint32 textid  = fields[2].GetUInt32();
-
-            if(event_id >= mGameEvent.size())
-            {
-                TC_LOG_ERROR("FIXME","`game_event_npc_gossip` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
-                continue;
-            }
-
-            mNPCGossipIds[guid]=EventNPCGossipIdPair(event_id, textid);
-
-            ++count;
-
-        } while( result->NextRow() );
-        TC_LOG_INFO("server.loading", " ");
-        TC_LOG_INFO( "server.loading", ">> Loaded %u npc gossip textids in game events", count );
-    }
-
     // set all flags to 0
     mGameEventBattlegroundHolidays.resize(mGameEvent.size(),0);
     // load game event battleground flags
@@ -796,7 +761,7 @@ void GameEvent::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("FIXME"," ");
+        TC_LOG_INFO("gameevent"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u battleground holidays in game events", count );
     }
     else
@@ -809,7 +774,7 @@ void GameEvent::LoadFromDB()
 
             if(event_id >= mGameEvent.size())
             {
-                TC_LOG_ERROR("FIXME","`game_event_battleground_holiday` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("gameevent","`game_event_battleground_holiday` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
                 continue;
             }
 
@@ -838,15 +803,6 @@ uint32 GameEvent::GetNPCFlag(Creature * cr)
     return mask;
 }
 
-uint32 GameEvent::GetNpcTextId(uint32 guid)
-{
-    GuidEventNpcGossipIdMap::iterator itr = mNPCGossipIds.find(guid);
-    if(itr != mNPCGossipIds.end())
-        if(IsActiveEvent(itr->second.first))
-            return itr->second.second;
-    return 0;
-}
-
 uint32 GameEvent::Initialize()                              // return the next event delay in ms
 {
     m_ActiveEvents.clear();
@@ -867,7 +823,7 @@ uint32 GameEvent::Update()                                  // return the next e
     {
         // must do the activating first, and after that the deactivating
         // so first queue it
-        //TC_LOG_ERROR("FIXME","Checking event %u",itr);
+        //TC_LOG_ERROR("gameevent","Checking event %u",itr);
         if (CheckOneGameEvent(itr))
         {
             // if the world event is in NEXTPHASE state, and the time has passed to finish this event, then do so
@@ -888,14 +844,14 @@ uint32 GameEvent::Update()                                  // return the next e
                 // changed, save to DB the gameevent state, will be updated in next update cycle
                 SaveWorldEventStateToDB(itr);
 
-            //TC_LOG_DEBUG("FIXME","GameEvent %u is active",itr->first);
+            //TC_LOG_DEBUG("gameevent","GameEvent %u is active",itr->first);
             // queue for activation
             if (!IsActiveEvent(itr))
                 activate.insert(itr);
         }
         else
         {
-            //TC_LOG_DEBUG("FIXME","GameEvent %u is not active",itr->first);
+            //TC_LOG_DEBUG("gameevent","GameEvent %u is not active",itr->first);
             if (IsActiveEvent(itr))
                 deactivate.insert(itr);
             else
@@ -929,7 +885,7 @@ uint32 GameEvent::Update()                                  // return the next e
 
 void GameEvent::UnApplyEvent(uint16 event_id)
 {
-    TC_LOG_DEBUG("FIXME","GameEvent %u \"%s\" removed.", event_id, mGameEvent[event_id].description.c_str());
+    TC_LOG_DEBUG("gameevent","GameEvent %u \"%s\" removed.", event_id, mGameEvent[event_id].description.c_str());
     // un-spawn positive event tagged objects
     GameEventUnspawn(event_id);
     // spawn negative event tagget objects
@@ -958,7 +914,7 @@ void GameEvent::ApplyNewEvent(uint16 event_id)
             break;
     }
 
-    TC_LOG_DEBUG("FIXME","GameEvent %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
+    TC_LOG_DEBUG("gameevent","GameEvent %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
 
     // spawn positive event tagget objects
     GameEventSpawn(event_id);
@@ -992,9 +948,10 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
                 uint32 npcflag = GetNPCFlag(cr);
                 if(const CreatureTemplate * ci = cr->GetCreatureTemplate())
                     npcflag |= ci->npcflag;
+
                 cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
                 // reset gossip options, since the flag change might have added / removed some
-                cr->ResetGossipOptions();
+               // cr->ResetGossipOptions();
                 // update to world
                 cr->SendUpdateObjectToAllExcept(NULL);
             }
@@ -1036,7 +993,7 @@ void GameEvent::SpawnCreature(uint32 guid)
         if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
         {
             Creature* pCreature = new Creature;
-            //TC_LOG_DEBUG("FIXME","Spawning creature %u",*itr);
+            //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
             if (!pCreature->LoadFromDB(guid, map))
             {
                 delete pCreature;
@@ -1063,7 +1020,7 @@ void GameEvent::SpawnGameObject(uint32 guid)
         if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
         {
             GameObject* pGameobject = new GameObject;
-            //TC_LOG_DEBUG("FIXME","Spawning gameobject %u", *itr);
+            //TC_LOG_DEBUG("gameevent","Spawning gameobject %u", *itr);
             if (!pGameobject->LoadFromDB(guid, map))
             {
                 delete pGameobject;
@@ -1083,7 +1040,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("FIXME","GameEvent::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("gameevent","GameEvent::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1092,7 +1049,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("FIXME", "GameEvent::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEvent::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1133,7 +1090,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("FIXME", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1147,7 +1104,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("FIXME", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1421,18 +1378,6 @@ void GameEvent::SaveWorldEventStateToDB(uint16 event_id)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void GameEvent::HandleWorldEventGossip(Player *plr, Creature *c)
-{
-    // this function is used to send world state update before sending gossip menu
-    // find the npc's gossip id (if set) in an active game event
-    // if present, send the event's world states
-    GuidEventNpcGossipIdMap::iterator itr = mNPCGossipIds.find(c->GetDBTableGUIDLow());
-    if(itr != mNPCGossipIds.end())
-        if(IsActiveEvent(itr->second.first))
-            // send world state updates to the player about the progress
-            SendWorldStateUpdate(plr, itr->second.first);
-}
-
 void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
 {
     for(auto itr : mGameEvent[event_id].conditions)
@@ -1580,7 +1525,7 @@ bool GameEvent::CreateGameEvent(const char* name,int16& event_id)
 { 
     if(!name)
     {
-        TC_LOG_ERROR("FIXME","CreateGameEvent(...) : No name given");
+        TC_LOG_ERROR("gameevent","CreateGameEvent(...) : No name given");
         return false;
     }
 

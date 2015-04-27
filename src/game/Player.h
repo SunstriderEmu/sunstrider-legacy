@@ -1453,7 +1453,7 @@ class Player : public Unit
             }
         }
         uint32 GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry);
-        void AdjustQuestReqItemCount( Quest const* pQuest );
+        void AdjustQuestRequiredItemCount( Quest const* pQuest );
         void AreaExploredOrEventHappens( uint32 questId );
         void GroupEventHappens( uint32 questId, WorldObject const* pEventObject );
         void ItemAddedQuestCheck( uint32 entry, uint32 count );
@@ -1532,23 +1532,10 @@ class Player : public Unit
         void setRegenTimer(uint32 time) {m_regenTimer = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
 
-        uint32 GetMoney() { return GetUInt32Value (PLAYER_FIELD_COINAGE); }
-        void ModifyMoney( int32 d )
-        {
-            if(d < 0)
-                SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
-            else
-                SetMoney (GetMoney() < uint32(MAX_MONEY_AMOUNT - d) ? GetMoney() + d : MAX_MONEY_AMOUNT);
-
-            // "At Gold Limit"
-            if(GetMoney() >= MAX_MONEY_AMOUNT)
-                SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD,NULL,NULL);
-        }
-        void SetMoney( uint32 value )
-        {
-            SetUInt32Value (PLAYER_FIELD_COINAGE, value);
-            MoneyChanged( value );
-        }
+        uint32 GetMoney() const;
+        bool ModifyMoney(int32 amount, bool sendError = true);
+        void SetMoney( uint32 value );
+        bool HasEnoughMoney(int32 amount) const;
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
 
@@ -2403,6 +2390,18 @@ class Player : public Unit
         
         std::vector<Item*> m_itemUpdateQueue;
         bool m_itemUpdateQueueBlocked;
+        
+        /*********************************************************/
+        /***                    GOSSIP SYSTEM                  ***/
+        /*********************************************************/
+
+        void PrepareGossipMenu(WorldObject* source, uint32 menuId = 0, bool showQuests = false);
+        void SendPreparedGossip(WorldObject* source);
+        void OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 menuId);
+
+        uint32 GetGossipTextId(uint32 menuId, WorldObject* source);
+        uint32 GetGossipTextId(WorldObject* source);
+        static uint32 GetDefaultGossipMenuForSource(WorldObject* source);
 
     protected:
 

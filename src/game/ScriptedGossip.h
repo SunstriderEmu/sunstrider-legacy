@@ -129,16 +129,19 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 
 // This fuction add's a menu item,
 // a - Icon Id
-// b - Text / TextId (from npc_text)
+// b - Text / TextId (from gossip_text)
 // c - Sender(this is to identify the current Menu with this item)
 // d - Action (identifys this Menu Item)
-// e - Text to be displayed in pop up box / TextId (from npc_text)
+// e - Text to be displayed in pop up box / TextId (from gossip_text)
 // f - Money value in pop up box
-#define ADD_GOSSIP_ITEM(a,b,c,d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(a,b,c,d)
-#define ADD_GOSSIP_ITEM_EXTENDED(a,b,c,d,e,f,g)   PlayerTalkClass->GetGossipMenu().AddMenuItem(a,b,c,d,e,f,g)
+#define ADD_GOSSIP_ITEM(a, b, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, "", 0)
+#define ADD_GOSSIP_ITEM_DB(h, i, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(h, i, c, d)
+#define ADD_GOSSIP_ITEM_EXTENDED(a, b, c, d, e, f, g)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, e, f, g)
 
 // This fuction Sends the current menu to show to client, a - NPCTEXTID(uint32) , b - npc guid(uint64)
 #define SEND_GOSSIP_MENU(a,b)      PlayerTalkClass->SendGossipMenu(a,b)
+// a : player , c : creature
+#define SEND_DEFAULT_GOSSIP_MENU(p, c)      p->PlayerTalkClass->SendGossipMenu(p->GetDefaultGossipMenuForSource(c), c->GetGUID())
 
 // This fuction shows POI(point of interest) to client.
 // a - position X
@@ -150,7 +153,7 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 #define SEND_POI(a,b,c,d,e,f)      PlayerTalkClass->SendPointOfInterest(a,b,c,d,e,f)
 
 // Closes the Menu
-#define CLOSE_GOSSIP_MENU()        PlayerTalkClass->CloseGossip()
+#define CLOSE_GOSSIP_MENU()        PlayerTalkClass->SendCloseGossip()
 
 // Fuction to tell to client the details
 // a - quest object

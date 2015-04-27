@@ -62,9 +62,10 @@ enum Gossip_Option
     GOSSIP_OPTION_STABLEPET         = 14,                   //UNIT_NPC_FLAG_STABLE            = 8192,
     GOSSIP_OPTION_ARMORER           = 15,                   //UNIT_NPC_FLAG_ARMORER           = 16384,
     GOSSIP_OPTION_UNLEARNTALENTS    = 16,                   //UNIT_NPC_FLAG_TRAINER (bonus option for GOSSIP_OPTION_TRAINER)
-    GOSSIP_OPTION_UNLEARNPETSKILLS  = 17,                   //UNIT_NPC_FLAG_TRAINER (bonus option for GOSSIP_OPTION_TRAINER)
+    GOSSIP_OPTION_UNLEARNPETTALENTS = 17,                   //UNIT_NPC_FLAG_TRAINER (bonus option for GOSSIP_OPTION_TRAINER)
     GOSSIP_OPTION_OUTDOORPVP        = 18,                   //added by code (option for outdoor pvp creatures)
-    GOSSIP_OPTION_HALLOWS_END       = 19                    // For Innkeepers during Hallow's End
+    GOSSIP_OPTION_HALLOWS_END       = 19,                    // For Innkeepers during Hallow's End
+    GOSSIP_OPTION_MAX
 };
 
 enum Gossip_Guard
@@ -125,21 +126,70 @@ enum GossipOptionIcon
     GOSSIP_ICON_TALK                = 7,                    //white chat bubble with black dots
     GOSSIP_ICON_TABARD              = 8,                    //tabard
     GOSSIP_ICON_BATTLE              = 9,                    //two swords
-    GOSSIP_ICON_DOT                 = 10                    //yellow dot
+    GOSSIP_ICON_DOT                 = 10,                   //yellow dot
+//next ones may not be BC
+    GOSSIP_ICON_CHAT_11             = 11,                   // white chat bubble
+    GOSSIP_ICON_CHAT_12             = 12,                   // white chat bubble
+    GOSSIP_ICON_CHAT_13             = 13,                   // white chat bubble
+    GOSSIP_ICON_UNK_14              = 14,                   // INVALID - DO NOT USE
+    GOSSIP_ICON_UNK_15              = 15,                   // INVALID - DO NOT USE
+    GOSSIP_ICON_CHAT_16             = 16,                   // white chat bubble
+    GOSSIP_ICON_CHAT_17             = 17,                   // white chat bubble
+    GOSSIP_ICON_CHAT_18             = 18,                   // white chat bubble
+    GOSSIP_ICON_CHAT_19             = 19,                   // white chat bubble
+    GOSSIP_ICON_CHAT_20             = 20,                   // white chat bubble
+    GOSSIP_ICON_MAX
 };
 
-struct GossipOption
+struct GossipMenuItems
 {
-    uint32 Id;
-    uint32 GossipId;
-    uint32 NpcFlag;
-    uint32 Icon;
-    uint32 Action;
-    uint32 BoxMoney;
-    bool Coded;
-    std::string OptionText;
-    std::string BoxText;
+    GossipMenuItems() :
+        MenuId(0),
+        OptionIndex(0),
+        OptionIcon(0),
+        OptionText(""),
+        OptionBroadcastTextId(0),
+        OptionType(0),
+        OptionNpcflag(0),
+        ActionMenuId(0),
+        ActionPoiId(0),
+        BoxCoded(false),
+        BoxMoney(0),
+        BoxText(""),
+        BoxBroadcastTextId(0)
+        //condition
+    {}
+
+    uint32          MenuId;
+    uint32          OptionIndex;
+    uint8           OptionIcon;
+    std::string     OptionText;
+    uint32          OptionBroadcastTextId;
+    uint32          OptionType;
+    uint32          OptionNpcflag;
+    uint32          ActionMenuId;
+    uint32          ActionPoiId;
+    bool            BoxCoded;
+    uint32          BoxMoney;
+    std::string     BoxText;
+    uint32          BoxBroadcastTextId;
+    //ConditionList   Conditions;
 };
+
+struct GossipMenus
+{
+    uint32          entry;
+    uint32          text_id;
+    //ConditionList   conditions;
+};
+
+
+typedef std::multimap<uint32, GossipMenus> GossipMenusContainer;
+typedef std::pair<GossipMenusContainer::const_iterator, GossipMenusContainer::const_iterator> GossipMenusMapBounds;
+typedef std::pair<GossipMenusContainer::iterator, GossipMenusContainer::iterator> GossipMenusMapBoundsNonConst;
+typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
+typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
+typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
 
 enum CreatureFlagsExtra
 {
@@ -296,7 +346,7 @@ struct CreatureLocale
     std::vector<std::string> SubName;
 };
 
-struct NpcOptionLocale
+struct GossipMenuItemsLocale
 {
     std::vector<std::string> OptionText;
     std::vector<std::string> BoxText;
@@ -464,7 +514,7 @@ struct TrainerSpellData
     TrainerSpell const* Find(uint32 spell_id) const;
 };
 
-typedef std::list<GossipOption> GossipOptionList;
+typedef std::list<GossipMenuItems> GossipOptionList;
 
 typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 
@@ -511,7 +561,7 @@ class Creature : public Unit
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
         bool isTrainerFor(Player* player, bool msg) const;
-        bool canBeBattleMasterFor(Player* player, bool msg) const;
+        bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool canResetTalentsOf(Player* pPlayer) const;
         bool IsOutOfThreatArea(Unit* pVictim) const;
         bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
@@ -595,18 +645,6 @@ class Creature : public Unit
         std::string GetAIName() const;
         std::string getScriptName(); // New
         uint32 getInstanceEventId();
-
-        void prepareGossipMenu( Player *pPlayer, uint32 gossipid = 0 );
-        void sendPreparedGossip( Player* player );
-        void OnGossipSelect(Player* player, uint32 option);
-        void OnPoiSelect(Player* player, GossipOption const *gossip);
-
-        uint32 GetGossipTextId(uint32 action, uint32 zoneid);
-        uint32 GetNpcTextId();
-        void LoadGossipOptions();
-        void ResetGossipOptions();
-        GossipOption const* GetGossipOption( uint32 id ) const;
-        void AddGossipOption(GossipOption const& gso) { m_goptions.push_back(gso); }
 
         void SetEmoteState(uint8 emote) { m_emoteState = emote; };
         void ResetCreatureEmote();

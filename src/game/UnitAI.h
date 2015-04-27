@@ -62,9 +62,9 @@ class UnitAI
         void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spell);
         
-        virtual void sGossipHello(Player* player) {}
+        virtual void sOnGossipHello(Player* player) {}
         virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
-        virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
+        virtual void sOnGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
         virtual void sQuestAccept(Player* player, Quest const* quest) {}
         virtual void sQuestSelect(Player* player, Quest const* quest) {}
         virtual void sQuestComplete(Player* player, Quest const* quest) {}

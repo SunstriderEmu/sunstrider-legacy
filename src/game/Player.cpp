@@ -6506,10 +6506,10 @@ void Player::RewardReputation(Quest const *pQuest)
     // quest reputation reward/loss
     for(int i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
     {
-        if(pQuest->RewRepFaction[i] && pQuest->RewRepValue[i] )
+        if(pQuest->RewardRepFaction[i] && pQuest->RewardRepValue[i] )
         {
-            int32 rep = CalculateReputationGain(pQuest->GetQuestLevel(),pQuest->RewRepValue[i],true);
-            FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewRepFaction[i]);
+            int32 rep = CalculateReputationGain(pQuest->GetQuestLevel(),pQuest->RewardRepValue[i],true);
+            FactionEntry const* factionEntry = sFactionStore.LookupEntry(pQuest->RewardRepFaction[i]);
             if(factionEntry)
                 ModifyFactionReputation(factionEntry, rep);
         }
@@ -7938,7 +7938,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
 
         if(go->getLootState() == GO_READY)
         {
-            uint32 lootid =  go->GetLootId();
+            uint32 lootid =  go->GetGOInfo()->GetLootId();
 
             //TODO: fix this big hack
             if((go->GetEntry() == BG_AV_OBJECTID_MINE_N || go->GetEntry() == BG_AV_OBJECTID_MINE_S))
@@ -12884,13 +12884,13 @@ void Player::SendPreparedQuest( uint64 guid )
 
     QuestMenuItem const& qmi0 = questMenu.GetItem( 0 );
 
-    uint32 status = qmi0.m_qIcon;
+    uint32 status = qmi0.QuestIcon;
 
     // single element case
-    if ( questMenu.MenuItemCount() == 1 )
+    if ( questMenu.GetMenuItemCount() == 1 )
     {
         // Auto open -- maybe also should verify there is no greeting
-        uint32 quest_id = qmi0.m_qId;
+        uint32 quest_id = qmi0.QuestId;
         Quest const* pQuest = sObjectMgr->GetQuestTemplate(quest_id);
         if ( pQuest )
         {
@@ -12912,10 +12912,10 @@ void Player::SendPreparedQuest( uint64 guid )
         qe._Delay = 0;
         qe._Emote = 0;
         std::string title = "";
-        Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
+        Creature *pCreature = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, guid);
         if( pCreature )
         {
-            uint32 textid = pCreature->GetNpcTextId();
+            uint32 textid = GetGossipTextId(pCreature);
             GossipText * gossiptext = sObjectMgr->GetGossipText(textid);
             if( !gossiptext )
             {
@@ -13077,7 +13077,7 @@ bool Player::CanCompleteQuest( uint32 quest_id )
             {
                 for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
                 {
-                    if( qInfo->ReqItemCount[i]!= 0 && q_status.m_itemcount[i] < qInfo->ReqItemCount[i] )
+                    if( qInfo->RequiredItemCount[i]!= 0 && q_status.m_itemcount[i] < qInfo->RequiredItemCount[i] )
                         return false;
                 }
             }
@@ -13086,10 +13086,10 @@ bool Player::CanCompleteQuest( uint32 quest_id )
             {
                 for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
                 {
-                    if( qInfo->ReqCreatureOrGOId[i] == 0 )
+                    if( qInfo->RequiredNpcOrGo[i] == 0 )
                         continue;
 
-                    if( qInfo->ReqCreatureOrGOCount[i] != 0 && q_status.m_creatureOrGOcount[i] < qInfo->ReqCreatureOrGOCount[i] )
+                    if( qInfo->RequiredNpcOrGoCount[i] != 0 && q_status.m_creatureOrGOcount[i] < qInfo->RequiredNpcOrGoCount[i] )
                         return false;
                 }
             }
@@ -13126,7 +13126,7 @@ bool Player::CanCompleteRepeatableQuest( Quest const *pQuest )
 
     if (pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER) )
         for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
-            if( pQuest->ReqItemId[i] && pQuest->ReqItemCount[i] && !HasItemCount(pQuest->ReqItemId[i],pQuest->ReqItemCount[i]) )
+            if( pQuest->RequiredItemId[i] && pQuest->RequiredItemCount[i] && !HasItemCount(pQuest->RequiredItemId[i],pQuest->RequiredItemCount[i]) )
                 return false;
 
     if( !CanRewardQuest(pQuest, false) )
@@ -13154,8 +13154,8 @@ bool Player::CanRewardQuest( Quest const *pQuest, bool msg )
     {
         for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
         {
-            if( pQuest->ReqItemCount[i]!= 0 &&
-                GetItemCount(pQuest->ReqItemId[i]) < pQuest->ReqItemCount[i] )
+            if( pQuest->RequiredItemCount[i]!= 0 &&
+                GetItemCount(pQuest->RequiredItemId[i]) < pQuest->RequiredItemCount[i] )
             {
                 if(msg)
                     SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
@@ -13177,12 +13177,12 @@ bool Player::CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg )
     if(!CanRewardQuest(pQuest,msg))
         return false;
 
-    if ( pQuest->GetRewChoiceItemsCount() > 0 )
+    if ( pQuest->GetRewardChoiceItemsCount() > 0 )
     {
-        if( pQuest->RewChoiceItemId[reward] )
+        if( pQuest->RewardChoiceItemId[reward] )
         {
             ItemPosCountVec dest;
-            uint8 res = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewChoiceItemId[reward], pQuest->RewChoiceItemCount[reward] );
+            uint8 res = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardChoiceItemId[reward], pQuest->RewardChoiceItemCount[reward] );
             if( res != EQUIP_ERR_OK )
             {
                 SendEquipError( res, NULL, NULL );
@@ -13191,14 +13191,14 @@ bool Player::CanRewardQuest( Quest const *pQuest, uint32 reward, bool msg )
         }
     }
 
-    if ( pQuest->GetRewItemsCount() > 0 )
+    if ( pQuest->GetRewardItemsCount() > 0 )
     {
-        for (uint32 i = 0; i < pQuest->GetRewItemsCount(); ++i)
+        for (uint32 i = 0; i < pQuest->GetRewardItemsCount(); ++i)
         {
-            if( pQuest->RewItemId[i] )
+            if( pQuest->RewardItemId[i] )
             {
                 ItemPosCountVec dest;
-                uint8 res = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewItemId[i], pQuest->RewItemCount[i] );
+                uint8 res = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardItemId[i], pQuest->RewardItemIdCount[i] );
                 if( res != EQUIP_ERR_OK )
                 {
                     SendEquipError( res, NULL, NULL );
@@ -13240,7 +13240,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
     }
 
     GiveQuestSourceItem( pQuest );
-    AdjustQuestReqItemCount( pQuest );
+    AdjustQuestRequiredItemCount( pQuest );
 
     if( pQuest->GetRepObjectiveFaction() )
         SetFactionVisibleForFactionId(pQuest->GetRepObjectiveFaction());
@@ -13296,7 +13296,7 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
             bool destroyItem = true;
             for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
             {
-                if (quest->ReqItemId[i] == item->GetEntry() && item->GetProto()->MaxCount > 0)
+                if (quest->RequiredItemId[i] == item->GetEntry() && item->GetProto()->MaxCount > 0)
                 {
                     destroyItem = false;
                     break;
@@ -13359,38 +13359,38 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
 
     for (int i = 0; i < QUEST_OBJECTIVES_COUNT; i++ )
     {
-        if ( pQuest->ReqItemId[i] )
-            DestroyItemCount( pQuest->ReqItemId[i], pQuest->ReqItemCount[i], true);
+        if ( pQuest->RequiredItemId[i] )
+            DestroyItemCount( pQuest->RequiredItemId[i], pQuest->RequiredItemCount[i], true);
     }
 
     //if( qInfo->HasSpecialFlag( QUEST_FLAGS_TIMED ) )
     //    SetTimedQuest( 0 );
     m_timedquests.erase(pQuest->GetQuestId());
 
-    if ( pQuest->GetRewChoiceItemsCount() > 0 )
+    if ( pQuest->GetRewardChoiceItemsCount() > 0 )
     {
-        if( pQuest->RewChoiceItemId[reward] )
+        if( pQuest->RewardChoiceItemId[reward] )
         {
             ItemPosCountVec dest;
-            if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewChoiceItemId[reward], pQuest->RewChoiceItemCount[reward] ) == EQUIP_ERR_OK )
+            if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardChoiceItemId[reward], pQuest->RewardChoiceItemCount[reward] ) == EQUIP_ERR_OK )
             {
-                Item* item = StoreNewItem( dest, pQuest->RewChoiceItemId[reward], true);
-                SendNewItem(item, pQuest->RewChoiceItemCount[reward], true, false);
+                Item* item = StoreNewItem( dest, pQuest->RewardChoiceItemId[reward], true);
+                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false);
             }
         }
     }
 
-    if ( pQuest->GetRewItemsCount() > 0 )
+    if ( pQuest->GetRewardItemsCount() > 0 )
     {
-        for (uint32 i=0; i < pQuest->GetRewItemsCount(); ++i)
+        for (uint32 i=0; i < pQuest->GetRewardItemsCount(); ++i)
         {
-            if( pQuest->RewItemId[i] )
+            if( pQuest->RewardItemId[i] )
             {
                 ItemPosCountVec dest;
-                if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewItemId[i], pQuest->RewItemCount[i] ) == EQUIP_ERR_OK )
+                if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardItemId[i], pQuest->RewardItemIdCount[i] ) == EQUIP_ERR_OK )
                 {
-                    Item* item = StoreNewItem( dest, pQuest->RewItemId[i], true);
-                    SendNewItem(item, pQuest->RewItemCount[i], true, false);
+                    Item* item = StoreNewItem( dest, pQuest->RewardItemId[i], true);
+                    SendNewItem(item, pQuest->RewardItemIdCount[i], true, false);
                 }
             }
         }
@@ -14034,8 +14034,8 @@ void Player::AutoCompleteQuest( Quest const* qInfo )
     // Add quest items for quests that require items
     for (uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
     {
-        uint32 id = qInfo->ReqItemId[x];
-        uint32 count = qInfo->ReqItemCount[x];
+        uint32 id = qInfo->RequiredItemId[x];
+        uint32 count = qInfo->RequiredItemCount[x];
         if(!id || !count)
             continue;
 
@@ -14056,8 +14056,8 @@ void Player::AutoCompleteQuest( Quest const* qInfo )
     // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
     for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        uint32 creature = qInfo->ReqCreatureOrGOId[i];
-        uint32 creaturecount = qInfo->ReqCreatureOrGOCount[i];
+        uint32 creature = qInfo->RequiredNpcOrGo[i];
+        uint32 creaturecount = qInfo->RequiredNpcOrGoCount[i];
 
         if(uint32 spell_id = qInfo->ReqSpell[i])
         {
@@ -14090,23 +14090,23 @@ uint32 Player::GetReqKillOrCastCurrentCount(uint32 quest_id, int32 entry)
         return 0;
 
     for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
-        if ( qInfo->ReqCreatureOrGOId[j] == entry )
+        if ( qInfo->RequiredNpcOrGo[j] == entry )
             return mQuestStatus[quest_id].m_creatureOrGOcount[j];
 
     return 0;
 }
 
-void Player::AdjustQuestReqItemCount( Quest const* pQuest )
+void Player::AdjustQuestRequiredItemCount( Quest const* pQuest )
 {
     if ( pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
     {
         for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
         {
-            uint32 reqitemcount = pQuest->ReqItemCount[i];
+            uint32 reqitemcount = pQuest->RequiredItemCount[i];
             if( reqitemcount != 0 )
             {
                 uint32 quest_id = pQuest->GetQuestId();
-                uint32 curitemcount = GetItemCount(pQuest->ReqItemId[i],true);
+                uint32 curitemcount = GetItemCount(pQuest->RequiredItemId[i],true);
 
                 QuestStatusData& q_status = mQuestStatus[quest_id];
                 q_status.m_itemcount[i] = std::min(curitemcount, reqitemcount);
@@ -14183,10 +14183,10 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
 
         for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
         {
-            uint32 reqitem = qInfo->ReqItemId[j];
+            uint32 reqitem = qInfo->RequiredItemId[j];
             if ( reqitem == entry )
             {
-                uint32 reqitemcount = qInfo->ReqItemCount[j];
+                uint32 reqitemcount = qInfo->RequiredItemCount[j];
                 uint32 curitemcount = q_status.m_itemcount[j];
                 if ( curitemcount < reqitemcount )
                 {
@@ -14220,12 +14220,12 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
 
         for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
         {
-            uint32 reqitem = qInfo->ReqItemId[j];
+            uint32 reqitem = qInfo->RequiredItemId[j];
             if ( reqitem == entry )
             {
                 QuestStatusData& q_status = mQuestStatus[questid];
 
-                uint32 reqitemcount = qInfo->ReqItemCount[j];
+                uint32 reqitemcount = qInfo->RequiredItemCount[j];
                 uint32 curitemcount;
                 if( q_status.m_status != QUEST_STATUS_COMPLETE )
                     curitemcount = q_status.m_itemcount[j];
@@ -14270,18 +14270,18 @@ void Player::KilledMonster(uint32 entry, uint64 guid, uint32 questId)
                 for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
                 {
                     // skip GO activate objective or none
-                    if(qInfo->ReqCreatureOrGOId[j] <=0)
+                    if(qInfo->RequiredNpcOrGo[j] <=0)
                         continue;
 
                     // skip Cast at creature objective
                     if(qInfo->ReqSpell[j] !=0 )
                         continue;
 
-                    uint32 reqkill = qInfo->ReqCreatureOrGOId[j];
+                    uint32 reqkill = qInfo->RequiredNpcOrGo[j];
 
                     if ( reqkill == entry )
                     {
-                        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[j];
+                        uint32 reqkillcount = qInfo->RequiredNpcOrGoCount[j];
                         uint32 curkillcount = q_status.m_creatureOrGOcount[j];
                         if ( curkillcount < reqkillcount )
                         {
@@ -14323,18 +14323,18 @@ void Player::ActivatedGO(uint32 entry, uint64 guid)
                 for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
                 {
                     // skip GO activate objective or none
-                    if(qInfo->ReqCreatureOrGOId[j] >= 0)
+                    if(qInfo->RequiredNpcOrGo[j] >= 0)
                         continue;
 
                     // skip Cast at creature objective
                     if(qInfo->ReqSpell[j] !=0 )
                         continue;
 
-                    int32 reqkill = qInfo->ReqCreatureOrGOId[j];
+                    int32 reqkill = qInfo->RequiredNpcOrGo[j];
 
                     if ( -reqkill == entry )
                     {
-                        uint32 reqkillcount = qInfo->ReqCreatureOrGOCount[j];
+                        uint32 reqkillcount = qInfo->RequiredNpcOrGoCount[j];
                         uint32 curkillcount = q_status.m_creatureOrGOcount[j];
                         if ( curkillcount < reqkillcount )
                         {
@@ -14389,23 +14389,23 @@ void Player::CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id )
                     if(isCreature)
                     {
                         // creature activate objectives
-                        if(qInfo->ReqCreatureOrGOId[j] > 0)
+                        if(qInfo->RequiredNpcOrGo[j] > 0)
                             // checked at quest_template loading
-                            reqTarget = qInfo->ReqCreatureOrGOId[j];
+                            reqTarget = qInfo->RequiredNpcOrGo[j];
                     }
                     else
                     {
                         // GO activate objective
-                        if(qInfo->ReqCreatureOrGOId[j] < 0)
+                        if(qInfo->RequiredNpcOrGo[j] < 0)
                             // checked at quest_template loading
-                            reqTarget = - qInfo->ReqCreatureOrGOId[j];
+                            reqTarget = - qInfo->RequiredNpcOrGo[j];
                     }
 
                     // other not this creature/GO related objectives
                     if( reqTarget != entry )
                         continue;
 
-                    uint32 reqCastCount = qInfo->ReqCreatureOrGOCount[j];
+                    uint32 reqCastCount = qInfo->RequiredNpcOrGoCount[j];
                     uint32 curCastCount = q_status.m_creatureOrGOcount[j];
                     if ( curCastCount < reqCastCount )
                     {
@@ -14448,20 +14448,20 @@ void Player::TalkedToCreature( uint32 entry, uint64 guid )
                 for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
                 {
                                                             // skip spell casts and Gameobject objectives
-                    if(qInfo->ReqSpell[j] > 0 || qInfo->ReqCreatureOrGOId[j] < 0)
+                    if(qInfo->ReqSpell[j] > 0 || qInfo->RequiredNpcOrGo[j] < 0)
                         continue;
 
                     uint32 reqTarget = 0;
 
-                    if(qInfo->ReqCreatureOrGOId[j] > 0)     // creature activate objectives
+                    if(qInfo->RequiredNpcOrGo[j] > 0)     // creature activate objectives
                                                             // checked at quest_template loading
-                        reqTarget = qInfo->ReqCreatureOrGOId[j];
+                        reqTarget = qInfo->RequiredNpcOrGo[j];
                     else
                         continue;
 
                     if ( reqTarget == entry )
                     {
-                        uint32 reqTalkCount = qInfo->ReqCreatureOrGOCount[j];
+                        uint32 reqTalkCount = qInfo->RequiredNpcOrGoCount[j];
                         uint32 curTalkCount = q_status.m_creatureOrGOcount[j];
                         if ( curTalkCount < reqTalkCount )
                         {
@@ -14536,33 +14536,33 @@ bool Player::HasQuestForItem( uint32 itemid ) const
             // This part for ReqItem drop
             for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
             {
-                if(itemid == qinfo->ReqItemId[j] && q_status.m_itemcount[j] < qinfo->ReqItemCount[j] )
+                if(itemid == qinfo->RequiredItemId[j] && q_status.m_itemcount[j] < qinfo->RequiredItemCount[j] )
                     return true;
             }
             // This part - for ReqSource
             for (int j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; j++)
             {
                 // examined item is a source item
-                if (qinfo->ReqSourceId[j] == itemid && qinfo->ReqSourceRef[j] > 0 && qinfo->ReqSourceRef[j] <= QUEST_OBJECTIVES_COUNT)
+                if (qinfo->RequiredSourceItemId[j] == itemid && qinfo->ReqSourceRef[j] > 0 && qinfo->ReqSourceRef[j] <= QUEST_OBJECTIVES_COUNT)
                 {
                     uint32 idx = qinfo->ReqSourceRef[j]-1;
 
-                    // total count of created ReqItems and SourceItems is less than ReqItemCount
-                    if(qinfo->ReqItemId[idx] != 0 &&
-                        q_status.m_itemcount[idx] * qinfo->ReqSourceCount[j] + GetItemCount(itemid,true) < qinfo->ReqItemCount[idx] * qinfo->ReqSourceCount[j])
+                    // total count of created ReqItems and SourceItems is less than RequiredItemCount
+                    if(qinfo->RequiredItemId[idx] != 0 &&
+                        q_status.m_itemcount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredItemCount[idx] * qinfo->RequiredSourceItemCount[j])
                         return true;
 
-                    // total count of casted ReqCreatureOrGOs and SourceItems is less than ReqCreatureOrGOCount
-                    if (qinfo->ReqCreatureOrGOId[idx] != 0)
+                    // total count of casted ReqCreatureOrGOs and SourceItems is less than RequiredNpcOrGoCount
+                    if (qinfo->RequiredNpcOrGo[idx] != 0)
                     {
-                        if(q_status.m_creatureOrGOcount[idx] * qinfo->ReqSourceCount[j] + GetItemCount(itemid,true) < qinfo->ReqCreatureOrGOCount[idx] * qinfo->ReqSourceCount[j])
+                        if(q_status.m_creatureOrGOcount[idx] * qinfo->RequiredSourceItemCount[j] + GetItemCount(itemid,true) < qinfo->RequiredNpcOrGoCount[idx] * qinfo->RequiredSourceItemCount[j])
                             return true;
                     }
                     // spell with SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT (with script) case
                     else if(qinfo->ReqSpell[idx] != 0)
                     {
                         // not casted and need more reagents/item for use.
-                        if(!q_status.m_explored && GetItemCount(itemid,true) < qinfo->ReqSourceCount[j])
+                        if(!q_status.m_explored && GetItemCount(itemid,true) < qinfo->RequiredSourceItemCount[j])
                             return true;
                     }
                 }
@@ -14586,7 +14586,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
 {
     uint32 questid = pQuest->GetQuestId();
     gameeventmgr.HandleQuestComplete(questid);
-    WorldPacket data( SMSG_QUESTGIVER_QUEST_COMPLETE, (4+4+4+4+4+4+pQuest->GetRewItemsCount()*8) );
+    WorldPacket data( SMSG_QUESTGIVER_QUEST_COMPLETE, (4+4+4+4+4+4+pQuest->GetRewardItemsCount()*8) );
     data << questid;
     data << uint32(0x03);
 
@@ -14601,12 +14601,12 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
         data << uint32(pQuest->GetRewOrReqMoney() + int32(pQuest->GetRewMoneyMaxLevel() * sWorld->GetRate(RATE_DROP_MONEY)));
     }
     data << uint32(0);                                      // new 2.3.0, HonorPoints?
-    data << uint32( pQuest->GetRewItemsCount() );           // max is 5
+    data << uint32( pQuest->GetRewardItemsCount() );           // max is 5
 
-    for (uint32 i = 0; i < pQuest->GetRewItemsCount(); ++i)
+    for (uint32 i = 0; i < pQuest->GetRewardItemsCount(); ++i)
     {
-        if ( pQuest->RewItemId[i] > 0 )
-            data << pQuest->RewItemId[i] << pQuest->RewItemCount[i];
+        if ( pQuest->RewardItemId[i] > 0 )
+            data << pQuest->RewardItemId[i] << pQuest->RewardItemIdCount[i];
         else
             data << uint32(0) << uint32(0);
     }
@@ -14679,7 +14679,7 @@ void Player::SendPushToPartyResponse( Player *pPlayer, uint32 msg )
 void Player::SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint32 count )
 {
     WorldPacket data( SMSG_QUESTUPDATE_ADD_ITEM, (4+4) );
-    data << pQuest->ReqItemId[item_idx];
+    data << pQuest->RequiredItemId[item_idx];
     data << count;
     GetSession()->SendPacket( &data );
 }
@@ -14688,7 +14688,7 @@ void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, u
 {
     assert(old_count + add_count < 256 && "mob/GO count store in 8 bits 2^8 = 256 (0..256)");
 
-    int32 entry = pQuest->ReqCreatureOrGOId[ creatureOrGO_idx ];
+    int32 entry = pQuest->RequiredNpcOrGo[ creatureOrGO_idx ];
     if (entry < 0)
         // client expected gameobject template id in form (id|0x80000000)
         entry = (-entry) | 0x80000000;
@@ -14697,7 +14697,7 @@ void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, u
     data << uint32(pQuest->GetQuestId());
     data << uint32(entry);
     data << uint32(old_count + add_count);
-    data << uint32(pQuest->ReqCreatureOrGOCount[ creatureOrGO_idx ]);
+    data << uint32(pQuest->RequiredNpcOrGoCount[ creatureOrGO_idx ]);
     data << uint64(guid);
     GetSession()->SendPacket(&data);
 
@@ -15451,6 +15451,50 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     }
 
     _LoadDeclinedNames(holder->GetResult(PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES));
+
+    return true;
+}
+
+uint32 Player::GetMoney() const 
+{ 
+    return GetUInt32Value (PLAYER_FIELD_COINAGE); 
+}
+
+bool Player::HasEnoughMoney(int32 amount) const
+{
+    if (amount > 0)
+        return (GetMoney() >= (uint32) amount);
+    return true;
+}
+
+void Player::SetMoney( uint32 value )
+{
+    SetUInt32Value (PLAYER_FIELD_COINAGE, value);
+    MoneyChanged( value );
+}
+
+bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
+{
+    if (!amount)
+        return true;
+
+    //sScriptMgr->OnPlayerMoneyChanged(this, amount);
+
+    if (amount < 0)
+        SetMoney (GetMoney() > uint32(-amount) ? GetMoney() + amount : 0);
+    else
+    {
+        if (GetMoney() < MAX_MONEY_AMOUNT - static_cast<uint32>(amount))
+            SetMoney(GetMoney() + amount);
+        else
+        {
+           // sScriptMgr->OnPlayerMoneyLimit(this, amount);
+
+            if (sendError)
+                SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD, NULL, NULL);
+            return false;
+        }
+    }
 
     return true;
 }
@@ -20304,10 +20348,10 @@ bool Player::HasQuestForGO(int32 GOId)
 
             for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
             {
-                if (qinfo->ReqCreatureOrGOId[j]>=0)         //skip non GO case
+                if (qinfo->RequiredNpcOrGo[j]>=0)         //skip non GO case
                     continue;
 
-                if((-1)*GOId == qinfo->ReqCreatureOrGOId[j] && qs.m_creatureOrGOcount[j] < qinfo->ReqCreatureOrGOCount[j])
+                if((-1)*GOId == qinfo->RequiredNpcOrGo[j] && qs.m_creatureOrGOcount[j] < qinfo->RequiredNpcOrGoCount[j])
                     return true;
             }
         }
@@ -22189,4 +22233,387 @@ void Player::CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uin
     feed.date = time(NULL);
     TC_LOG_DEBUG("server.loading", "[Wowarmory]: create wowarmory feed (GUID: %u, type: %d, data: %u).", feed.guid, feed.type, feed.data);
     m_wowarmory_feeds.push_back(feed);
+}
+
+/*********************************************************/
+/***                    GOSSIP SYSTEM                  ***/
+/*********************************************************/
+
+void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool showQuests /*= false*/)
+{
+    PlayerMenu* menu = PlayerTalkClass;
+    menu->ClearMenus();
+
+    menu->GetGossipMenu().SetMenuId(menuId);
+
+    GossipMenuItemsMapBounds menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuId);
+
+    // if default menuId and no menu options exist for this, use options from default options
+    if (menuItemBounds.first == menuItemBounds.second && menuId == GetDefaultGossipMenuForSource(source))
+        menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(0);
+
+    uint32 npcflags = 0;
+
+    if (source->GetTypeId() == TYPEID_UNIT)
+    {
+        npcflags = source->GetUInt32Value(UNIT_NPC_FLAGS);
+        if (showQuests && npcflags & UNIT_NPC_FLAG_QUESTGIVER)
+            PrepareQuestMenu(source->GetGUID());
+    }
+    else if (source->GetTypeId() == TYPEID_GAMEOBJECT)
+        if (showQuests && source->ToGameObject()->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
+            PrepareQuestMenu(source->GetGUID());
+
+    for (GossipMenuItemsContainer::const_iterator itr = menuItemBounds.first; itr != menuItemBounds.second; ++itr)
+    {
+        bool canTalk = true;
+      /*  if (!sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.Conditions))
+            continue; */
+
+        if (Creature* creature = source->ToCreature())
+        {
+            if (!(itr->second.OptionNpcflag & npcflags))
+                continue;
+
+            switch (itr->second.OptionType)
+            {
+                case GOSSIP_OPTION_ARMORER:
+                    canTalk = false;                       // added in special mode
+                    break;
+                case GOSSIP_OPTION_SPIRITHEALER:
+                    if (!IsDead())
+                        canTalk = false;
+                    break;
+                case GOSSIP_OPTION_VENDOR:
+                {
+                    VendorItemData const* vendorItems = creature->GetVendorItems();
+                    if (!vendorItems || vendorItems->Empty())
+                    {
+                        TC_LOG_ERROR("sql.sql", "Creature %s (Entry: %u GUID: %u DB GUID: %u) has UNIT_NPC_FLAG_VENDOR set but has an empty trading item list.", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetDBTableGUIDLow());
+                        canTalk = false;
+                    }
+                    break;
+                }
+            /*  LK  case GOSSIP_OPTION_LEARNDUALSPEC:
+                    if (!(GetSpecsCount() == 1 && creature->isCanTrainingAndResetTalentsOf(this) && !(getLevel() < sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))))
+                        canTalk = false;
+                    break;
+                    */
+                case GOSSIP_OPTION_UNLEARNTALENTS:
+                    if (!creature->canResetTalentsOf(this))
+                        canTalk = false;
+                    break;
+                case GOSSIP_OPTION_UNLEARNPETTALENTS:
+                    if (!GetPet() || GetPet()->getPetType() != HUNTER_PET || GetPet()->m_spells.size() <= 1 || creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_PETS || creature->GetCreatureTemplate()->trainer_class != CLASS_HUNTER)
+                        canTalk = false;
+                    break;
+                case GOSSIP_OPTION_TAXIVENDOR:
+                    if (GetSession()->SendLearnNewTaxiNode(creature))
+                        return;
+                    break;
+                case GOSSIP_OPTION_BATTLEFIELD:
+                    if (!creature->isCanInteractWithBattleMaster(this, false))
+                        canTalk = false;
+                    break;
+                case GOSSIP_OPTION_STABLEPET:
+                    if (GetClass() != CLASS_HUNTER)
+                        canTalk = false;
+                    break;
+                case GOSSIP_OPTION_QUESTGIVER:
+                    canTalk = false;
+                    break;
+                case GOSSIP_OPTION_TRAINER:
+                    if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
+                        TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
+                        GetName().c_str(), GetGUIDLow(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
+                    // no break;
+                case GOSSIP_OPTION_GOSSIP:
+                case GOSSIP_OPTION_SPIRITGUIDE:
+                case GOSSIP_OPTION_INNKEEPER:
+                case GOSSIP_OPTION_BANKER:
+                case GOSSIP_OPTION_PETITIONER:
+                case GOSSIP_OPTION_TABARDDESIGNER:
+                case GOSSIP_OPTION_AUCTIONEER:
+                    break;                                  // no checks
+                case GOSSIP_OPTION_OUTDOORPVP:
+                    if (!sOutdoorPvPMgr->CanTalkTo(this, creature, itr->second))
+                        canTalk = false;
+                    break;
+                default:
+                    TC_LOG_ERROR("sql.sql", "Creature entry %u has unknown gossip option %u for menu %u", creature->GetEntry(), itr->second.OptionType, itr->second.MenuId);
+                    canTalk = false;
+                    break;
+            }
+        }
+        else if (GameObject* go = source->ToGameObject())
+        {
+            switch (itr->second.OptionType)
+            {
+                case GOSSIP_OPTION_GOSSIP:
+                    if (go->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER && go->GetGoType() != GAMEOBJECT_TYPE_GOOBER)
+                        canTalk = false;
+                    break;
+                default:
+                    canTalk = false;
+                    break;
+            }
+        }
+
+        if (canTalk)
+        {
+            std::string strOptionText, strBoxText;
+
+            strOptionText = itr->second.OptionText;
+            strBoxText = itr->second.BoxText;
+
+            /* //todo GOSSIP
+            BroadcastText const* optionBroadcastText = sObjectMgr->GetBroadcastText(itr->second.OptionBroadcastTextId);
+            BroadcastText const* boxBroadcastText = sObjectMgr->GetBroadcastText(itr->second.BoxBroadcastTextId);
+            LocaleConstant locale = GetSession()->GetSessionDbLocaleIndex();
+
+            if (optionBroadcastText)
+                strOptionText = optionBroadcastText->GetText(locale, GetGender());
+            else
+                strOptionText = itr->second.OptionText;
+
+            if (boxBroadcastText)
+                strBoxText = boxBroadcastText->GetText(locale, GetGender());
+            else
+                strBoxText = itr->second.BoxText;
+
+            if (locale != DEFAULT_LOCALE)
+            {
+                if (!optionBroadcastText)
+                {
+                    /// Find localizations from database.
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                        ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, locale, strOptionText);
+                }
+
+                if (!boxBroadcastText)
+                {
+                    /// Find localizations from database.
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                        ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, locale, strBoxText);
+                }
+            }
+
+            */
+
+            menu->GetGossipMenu().AddMenuItem(itr->second.OptionIndex, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
+            menu->GetGossipMenu().AddGossipMenuItemData(itr->second.OptionIndex, itr->second.ActionMenuId, itr->second.ActionPoiId);
+        }
+    }
+}
+
+void Player::SendPreparedGossip(WorldObject* source)
+{
+    if (!source)
+        return;
+
+    if (source->GetTypeId() == TYPEID_UNIT)
+    {
+        // in case no gossip flag and quest menu not empty, open quest menu (client expect gossip menu with this flag)
+        if (!source->ToCreature()->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP) && !PlayerTalkClass->GetQuestMenu().Empty())
+        {
+            SendPreparedQuest(source->GetGUID());
+            return;
+        }
+    }
+    else if (source->GetTypeId() == TYPEID_GAMEOBJECT)
+    {
+        // probably need to find a better way here
+        if (!PlayerTalkClass->GetGossipMenu().GetMenuId() && !PlayerTalkClass->GetQuestMenu().Empty())
+        {
+            SendPreparedQuest(source->GetGUID());
+            return;
+        }
+    }
+
+    // in case non empty gossip menu (that not included quests list size) show it
+    // (quest entries from quest menu will be included in list)
+
+    uint32 textId = GetGossipTextId(source);
+
+    if (uint32 menuId = PlayerTalkClass->GetGossipMenu().GetMenuId())
+        textId = GetGossipTextId(menuId, source);
+
+    PlayerTalkClass->SendGossipMenu(textId, source->GetGUID());
+}
+
+void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 menuId)
+{
+    GossipMenu& gossipMenu = PlayerTalkClass->GetGossipMenu();
+
+    // if not same, then something funky is going on
+    if (menuId != gossipMenu.GetMenuId())
+        return;
+
+    GossipMenuItem const* item = gossipMenu.GetItem(gossipListId);
+    if (!item)
+        return;
+
+    uint32 gossipOptionId = item->OptionType;
+    uint64 guid = source->GetGUID();
+
+    if (source->GetTypeId() == TYPEID_GAMEOBJECT)
+    {
+        if (gossipOptionId > GOSSIP_OPTION_QUESTGIVER)
+        {
+            TC_LOG_ERROR("entities.player", "Player guid %u request invalid gossip option for GameObject entry %u", GetGUIDLow(), source->GetEntry());
+            return;
+        }
+    }
+
+    GossipMenuItemData const* menuItemData = gossipMenu.GetItemData(gossipListId);
+    if (!menuItemData)
+        return;
+
+    int32 cost = int32(item->BoxMoney);
+    if (!HasEnoughMoney(cost))
+    {
+        SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+        PlayerTalkClass->SendCloseGossip();
+        return;
+    }
+
+    switch (gossipOptionId)
+    {
+        case GOSSIP_OPTION_GOSSIP:
+        {
+            if (menuItemData->GossipActionPoi)
+                PlayerTalkClass->SendPointOfInterest(menuItemData->GossipActionPoi);
+
+            if (menuItemData->GossipActionMenuId)
+            {
+                PrepareGossipMenu(source, menuItemData->GossipActionMenuId);
+                SendPreparedGossip(source);
+            }
+
+            break;
+        }
+        case GOSSIP_OPTION_OUTDOORPVP:
+            sOutdoorPvPMgr->HandleGossipOption(this, source->GetGUID(), gossipListId);
+            break;
+        case GOSSIP_OPTION_SPIRITHEALER:
+            if (IsDead())
+                source->ToCreature()->CastSpell(source->ToCreature(), 17251, true, NULL, NULL, GetGUID());
+            break;
+        case GOSSIP_OPTION_QUESTGIVER:
+            PrepareQuestMenu(guid);
+            SendPreparedQuest(guid);
+            break;
+        case GOSSIP_OPTION_VENDOR:
+        case GOSSIP_OPTION_ARMORER:
+            GetSession()->SendListInventory(guid);
+            break;
+        case GOSSIP_OPTION_STABLEPET:
+            GetSession()->SendStablePet(guid);
+            break;
+        case GOSSIP_OPTION_TRAINER:
+            GetSession()->SendTrainerList(guid);
+            break;
+       /* case GOSSIP_OPTION_LEARNDUALSPEC:
+            if (GetSpecsCount() == 1 && getLevel() >= sWorld->getIntConfig(CONFIG_MIN_DUALSPEC_LEVEL))
+            {
+                // Cast spells that teach dual spec
+                // Both are also ImplicitTarget self and must be cast by player
+                CastSpell(this, 63680, true, NULL, NULL, GetGUID());
+                CastSpell(this, 63624, true, NULL, NULL, GetGUID());
+
+                // Should show another Gossip text with "Congratulations..."
+                PlayerTalkClass->SendCloseGossip();
+            }
+            break;
+           */
+        case GOSSIP_OPTION_UNLEARNTALENTS:
+            PlayerTalkClass->SendCloseGossip();
+            SendTalentWipeConfirm(guid);
+            break;
+        case GOSSIP_OPTION_UNLEARNPETTALENTS:
+            PlayerTalkClass->SendCloseGossip();
+            SendPetSkillWipeConfirm();
+            break;
+        case GOSSIP_OPTION_TAXIVENDOR:
+            GetSession()->SendTaxiMenu(source->ToCreature());
+            break;
+        case GOSSIP_OPTION_INNKEEPER:
+            PlayerTalkClass->SendCloseGossip();
+            SetBindPoint(guid);
+            break;
+        case GOSSIP_OPTION_BANKER:
+            GetSession()->SendShowBank(guid);
+            break;
+        case GOSSIP_OPTION_PETITIONER:
+            PlayerTalkClass->SendCloseGossip();
+            GetSession()->SendPetitionShowList(guid);
+            break;
+        case GOSSIP_OPTION_TABARDDESIGNER:
+            PlayerTalkClass->SendCloseGossip();
+            GetSession()->SendTabardVendorActivate(guid);
+            break;
+        case GOSSIP_OPTION_AUCTIONEER:
+            GetSession()->SendAuctionHello(guid, source->ToCreature());
+            break;
+        case GOSSIP_OPTION_SPIRITGUIDE:
+            PrepareGossipMenu(source);
+            SendPreparedGossip(source);
+            break;
+        case GOSSIP_OPTION_BATTLEFIELD:
+        {
+            BattlegroundTypeId bgTypeId = sObjectMgr->GetBattleMasterBG(GetEntry());
+
+            if (bgTypeId == BATTLEGROUND_TYPE_NONE)
+            {
+                TC_LOG_ERROR("entities.player", "a user (guid %u) requested battlegroundlist from a npc who is no battlemaster", GetGUIDLow());
+                return;
+            }
+
+            GetSession()->SendBattleGroundList(guid, bgTypeId);
+            break;
+        }
+    }
+
+    ModifyMoney(-cost);
+}
+
+uint32 Player::GetGossipTextId(WorldObject* source)
+{
+    if (!source)
+        return DEFAULT_GOSSIP_MESSAGE;
+
+    return GetGossipTextId(GetDefaultGossipMenuForSource(source), source);
+}
+
+uint32 Player::GetGossipTextId(uint32 menuId, WorldObject* source)
+{
+    uint32 textId = DEFAULT_GOSSIP_MESSAGE;
+
+    if (!menuId)
+        return textId;
+
+    GossipMenusMapBounds menuBounds = sObjectMgr->GetGossipMenusMapBounds(menuId);
+
+    for (GossipMenusContainer::const_iterator itr = menuBounds.first; itr != menuBounds.second; ++itr)
+    {
+      //  if (sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.conditions))
+            textId = itr->second.text_id;
+    }
+
+    return textId;
+}
+
+uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
+{
+    switch (source->GetTypeId())
+    {
+        case TYPEID_UNIT:
+            return sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow());
+        case TYPEID_GAMEOBJECT:
+            return source->ToGameObject()->GetGOInfo()->GetGossipMenuId();
+        default:
+            break;
+    }
+
+    return 0;
 }

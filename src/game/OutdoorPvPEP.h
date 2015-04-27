@@ -246,7 +246,7 @@ public:
     bool HandlePlayerEnter(Player * plr);
     void HandlePlayerLeave(Player * plr);
     bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
-    bool CanTalkTo(Player * plr, Creature * c, GossipOption &gso);
+    bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 protected:
     bool HandleCapturePointEvent(Player * plr, uint32 eventId);
     void SummonFlightMaster(uint32 team);

@@ -1312,9 +1312,9 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGameObjectLocales();
     sObjectMgr->LoadItemLocales();
     sObjectMgr->LoadQuestLocales();
-    sObjectMgr->LoadNpcTextLocales();
+    sObjectMgr->LoadGossipTextLocales();
     sObjectMgr->LoadPageTextLocales();
-    sObjectMgr->LoadNpcOptionLocales();
+    sObjectMgr->LoadGossipMenuItemsLocales();
     sObjectMgr->SetDBCLocaleIndex(GetDefaultDbcLocale());        // Get once for all the locale index of DBC language (console/broadcasts)
 
     TC_LOG_INFO("server.loading", "Loading Page Texts..." );
@@ -1520,11 +1520,14 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading GameTeleports..." );
     sObjectMgr->LoadGameTele();
 
-    TC_LOG_INFO("server.loading", "Loading Npc Text Id..." );
-    sObjectMgr->LoadNpcTextId();                                 // must be after load Creature and NpcText
+    TC_LOG_INFO("server.loading", "Loading Npc gossips Id..." );
+    sObjectMgr->LoadCreatureGossip();                                 // must be after load Creature and NpcText
+
+    TC_LOG_INFO("server.loading", "Loading Npc gossip menus..." );
+    sObjectMgr->LoadGossipMenu();
 
     TC_LOG_INFO("server.loading", "Loading Npc Options..." );
-    sObjectMgr->LoadNpcOptions();
+    sObjectMgr->LoadGossipMenuItems();
 
     TC_LOG_INFO("server.loading", "Loading vendors..." );
     sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate

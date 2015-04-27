@@ -78,7 +78,7 @@ class GameObject;
 class WorldPacket;
 class Creature;
 class Unit;
-struct GossipOption;
+struct GossipMenuItems;
 
 class OutdoorPvP;
 class OutdoorPvPObjective
@@ -113,7 +113,7 @@ public:
 
     virtual bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
 
-    virtual bool CanTalkTo(Player * plr, Creature * c, GossipOption &gso);
+    virtual bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso);
 
     virtual bool HandleDropFlag(Player * plr, uint32 spellId);
 
@@ -215,7 +215,7 @@ public:
 
     virtual bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
 
-    virtual bool CanTalkTo(Player * plr, Creature * c, GossipOption &gso);
+    virtual bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso);
 protected:
     // the map of the objectives belonging to this outdoorpvp
     OutdoorPvPObjectiveSet m_OutdoorPvPObjectives;

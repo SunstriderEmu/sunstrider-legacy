@@ -40,7 +40,7 @@ class ChatCommand
         This is used to determine if CLI or IRC can use the command, because they don't have sessions
         */
         bool               noSessionNeeded; 
-        bool               AllowIRC;     //no effect if noSessionNeeded is set to false. If set to true, may be set back to false if erased by the command table value
+        bool               AllowIRC;     //no effect if noSessionNeeded is set to false. This is the default irc authorisation and may be replaced by the 'commands' table value
         bool (ChatHandler::*Handler)(const char* args);
         std::string        Help;
         ChatCommand *      ChildCommands;
@@ -279,8 +279,10 @@ class ChatHandler
         bool HandleReloadLootTemplatesQuestMailCommand(const char* args);
         bool HandleReloadLootTemplatesSkinningCommand(const char* args);
         bool HandleReloadTrinityStringCommand(const char* args);
-        bool HandleReloadNpcGossipCommand(const char* args);
-        bool HandleReloadNpcOptionCommand(const char* args);
+        bool HandleReloadGossipMenuCommand(const char* args);
+        bool HandleReloadGossipTextCommand(const char* args);
+        bool HandleReloadCreatureGossipCommand(const char* args);
+        bool HandleReloadGossipMenuOptionCommand(const char* args);
         bool HandleReloadNpcTrainerCommand(const char* args);
         bool HandleReloadNpcVendorCommand(const char* args);
         bool HandleReloadQuestAreaTriggersCommand(const char* args);
@@ -308,7 +310,7 @@ class ChatHandler
         bool HandleReloadLocalesCreatureCommand(const char* args);
         bool HandleReloadLocalesGameobjectCommand(const char* args);
         bool HandleReloadLocalesItemCommand(const char* args);
-        bool HandleReloadLocalesNpcTextCommand(const char* args);
+        bool HandleReloadLocalesGossipTextCommand(const char* args);
         bool HandleReloadLocalesPageTextCommand(const char* args);
         bool HandleReloadLocalesQuestCommand(const char* args);
         bool HandleReloadAuctionsCommand(const char* args);

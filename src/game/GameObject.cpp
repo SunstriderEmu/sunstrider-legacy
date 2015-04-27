@@ -205,12 +205,11 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
             SetGoAnimProgress(animprogress);
             break;
     }
-
     SetUInt32Value (GAMEOBJECT_ARTKIT, ArtKit);
 
     // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
-        m_charges = goinfo->spellcaster.charges;
+        m_charges = goinfo->GetCharges();
 
     //Notify the map's instance data.
     //Only works if you create the object in it, not if it is moves to that map.
@@ -219,6 +218,8 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     {
         ((InstanceMap*)map)->GetInstanceData()->OnObjectCreate(this);
     }
+    
+    LastUsedScriptID = GetGOInfo()->ScriptId;
 
     return true;
 }
@@ -240,9 +241,9 @@ void GameObject::Update(uint32 diff)
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
                     if (owner && owner->IsInCombat())
-                        m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
+                        m_cooldownTime = time(NULL) + GetGOInfo()->GetCooldown();
                     else if (GetEntry() == 180647)
-                        m_cooldownTime = time(NULL) + GetGOInfo()->trap.cooldown;
+                        m_cooldownTime = time(NULL) + GetGOInfo()->GetCooldown();
                     m_lootState = GO_READY;
                     break;
                 }
@@ -362,7 +363,7 @@ void GameObject::Update(uint32 diff)
 
                 if(!radius)
                 {
-                    if(goInfo->trap.cooldown != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
+                    if(goInfo->GetCooldown() != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
                     {
                         // try to read radius from trap spell
                         if(const SpellEntry *spellEntry = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
@@ -376,7 +377,7 @@ void GameObject::Update(uint32 diff)
                         if(m_respawnTime > 0)
                             break;
 
-                        radius = goInfo->trap.cooldown;       // battlegrounds gameobjects has data2 == 0 && data5 == 3
+                        radius = goInfo->GetCooldown();       // battlegrounds gameobjects has data2 == 0 && data5 == 3
                         IsBattlegroundTrap = true;
                     }
                 }
@@ -425,7 +426,7 @@ void GameObject::Update(uint32 diff)
                         if(SpellEntry* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
-                    m_cooldownTime = time(NULL) + (m_goInfo->trap.cooldown ? m_goInfo->trap.cooldown : 4);
+                    m_cooldownTime = time(NULL) + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() : 4);
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -832,24 +833,6 @@ GameObjectTemplate const *GameObject::GetGOInfo() const
     return m_goInfo;
 }
 
-uint32 GameObject::GetLootId(GameObjectTemplate const* ginfo)
-{
-    if (!ginfo)
-        return 0;
-
-    switch(ginfo->type)
-    {
-        case GAMEOBJECT_TYPE_CHEST:
-            return ginfo->chest.lootId;
-        case GAMEOBJECT_TYPE_FISHINGHOLE:
-            return ginfo->fishinghole.lootId;
-        case GAMEOBJECT_TYPE_FISHINGNODE:
-            return ginfo->fishnode.lootId;
-        default:
-            return 0;
-    }
-}
-
 /*********************************************************/
 /***                    QUEST SYSTEM                   ***/
 /*********************************************************/
@@ -979,7 +962,7 @@ bool GameObject::ActivateToQuest( Player *pTarget)const
         // scan GO chest with loot including quest items
         case GAMEOBJECT_TYPE_CHEST:
         {
-            if(LootTemplates_Gameobject.HaveQuestLootForPlayer(GetLootId(), pTarget))
+            if(LootTemplates_Gameobject.HaveQuestLootForPlayer(GetGOInfo()->GetLootId(), pTarget))
             {
                 //TODO: fix this hack
                 //look for battlegroundAV for some objects which are only activated after mine gots captured by own team
@@ -1123,8 +1106,8 @@ void GameObject::Use(Unit* user)
 
             Player* player = user->ToPlayer();
 
-            player->PrepareQuestMenu( GetGUID() );
-            player->SendPreparedQuest( GetGUID() );
+            player->PrepareGossipMenu(this, GetGOInfo()->questgiver.gossipID, true);
+            player->SendPreparedGossip(this);;
             return;
         }
         //Sitting: Wooden bench, chairs enzz

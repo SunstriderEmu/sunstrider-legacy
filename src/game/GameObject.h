@@ -359,6 +359,49 @@ struct GameObjectTemplate
             uint32 data[MAX_GAMEOBJECT_DATA];
         } raw;
     };
+
+    uint32 GetLootId() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_CHEST:       return chest.lootId;
+            case GAMEOBJECT_TYPE_FISHINGHOLE: return fishinghole.lootId;
+            case GAMEOBJECT_TYPE_FISHINGNODE: return fishnode.lootId;
+            default: return 0;
+        }
+    }
+
+    uint32 GetCharges() const                               // despawn at uses amount
+    {
+        switch (type)
+        {
+            //case GAMEOBJECT_TYPE_TRAP:        return trap.charges;
+            case GAMEOBJECT_TYPE_GUARDPOST:   return guardpost.charges;
+            case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.charges;
+            default: return 0;
+        }
+    }
+
+    uint32 GetGossipMenuId() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_QUESTGIVER:    return questgiver.gossipID;
+          //TrinityCore LK  case GAMEOBJECT_TYPE_GOOBER:        return goober.gossipID;
+            default: return 0;
+        }
+    }
+
+    uint32 GetCooldown() const                              // Cooldown preventing goober and traps to cast spell
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_TRAP:        return trap.cooldown;
+            case GAMEOBJECT_TYPE_GOOBER:      return goober.cooldown;
+            default: return 0;
+        }
+    }
+
     std::string AIName;
     uint32 ScriptId;
 };
@@ -485,8 +528,6 @@ class GameObject : public WorldObject
         bool LoadFromDB(uint32 guid, Map *map);
         void DeleteFromDB();
         void SetLootState(LootState state, Unit* unit = NULL);
-        static uint32 GetLootId(GameObjectTemplate const* info);
-        uint32 GetLootId() const { return GetLootId(GetGOInfo()); }
         uint32 GetLockId() const
         {
             if (manual_unlock)

@@ -69,7 +69,7 @@ struct GameTele
 };
 
 typedef std::unordered_map<uint32, GameTele > GameTeleMap;
-typedef std::list<GossipOption> CacheNpcOptionList;
+typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
 
 struct ScriptInfo
 {
@@ -139,7 +139,7 @@ typedef std::unordered_map<uint32,QuestLocale> QuestLocaleMap;
 typedef std::unordered_map<uint32,NpcTextLocale> NpcTextLocaleMap;
 typedef std::unordered_map<uint32,PageTextLocale> PageTextLocaleMap;
 typedef std::unordered_map<uint32,TrinityStringLocale> TrinityStringLocaleMap;
-typedef std::unordered_map<uint32,NpcOptionLocale> NpcOptionLocaleMap;
+typedef std::unordered_map<uint32,GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
 
@@ -252,7 +252,7 @@ struct PlayerCondition
 
 // NPC gossip text id
 typedef std::unordered_map<uint32, uint32> CacheNpcTextIdMap;
-typedef std::list<GossipOption> CacheNpcOptionList;
+typedef std::unordered_map<uint32, uint32> CacheGoTextIdMap;
 
 typedef std::unordered_map<uint32, VendorItemData> CacheVendorItemMap;
 typedef std::unordered_map<uint32, TrainerSpellData> CacheTrainerSpellMap;
@@ -460,12 +460,12 @@ class ObjectMgr
             return false;
         }
 
-        uint32 GetBattleMasterBG(uint32 entry) const
+        BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
         {
             BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
             if(itr != mBattleMastersMap.end())
                 return itr->second;
-            return 2;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
+            return BATTLEGROUND_WS;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
         }
 
         void AddGossipText(GossipText *pGText);
@@ -566,9 +566,9 @@ class ObjectMgr
         void LoadItemTemplates();
         void LoadItemLocales();
         void LoadQuestLocales();
-        void LoadNpcTextLocales();
+        void LoadGossipTextLocales();
         void LoadPageTextLocales();
-        void LoadNpcOptionLocales();
+        void LoadGossipMenuItemsLocales();
         void LoadInstanceTemplate();
         void LoadInstanceTemplateAddon();
 
@@ -599,8 +599,9 @@ class ObjectMgr
         void LoadWeatherZoneChances();
         void LoadGameTele();
 
-        void LoadNpcOptions();
-        void LoadNpcTextId();
+        void LoadGossipMenu();
+        void LoadGossipMenuItems();
+        void LoadCreatureGossip();
         void LoadVendors();
         void LoadTrainerSpell();
 
@@ -711,8 +712,8 @@ class ObjectMgr
         }
         NpcTextLocale const* GetNpcTextLocale(uint32 entry) const
         {
-            NpcTextLocaleMap::const_iterator itr = mNpcTextLocaleMap.find(entry);
-            if(itr==mNpcTextLocaleMap.end()) return NULL;
+            NpcTextLocaleMap::const_iterator itr = mGossipTextLocaleMap.find(entry);
+            if(itr==mGossipTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
         PageTextLocale const* GetPageTextLocale(uint32 entry) const
@@ -721,10 +722,12 @@ class ObjectMgr
             if(itr==mPageTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
-        NpcOptionLocale const* GetNpcOptionLocale(uint32 entry) const
+        GossipMenuItemsLocale const* GetNpcOptionLocale(uint32 entry) const
         {
-            NpcOptionLocaleMap::const_iterator itr = mNpcOptionLocaleMap.find(entry);
-            if(itr==mNpcOptionLocaleMap.end()) return NULL;
+            GossipMenuItemsLocaleContainer::const_iterator itr = _gossipMenuItemsLocaleStore.find(entry);
+            if(itr==_gossipMenuItemsLocaleStore.end()) 
+                return nullptr;
+
             return &itr->second;
         }
 
@@ -818,12 +821,38 @@ class ObjectMgr
         bool AddGameTele(GameTele& data);
         bool DeleteGameTele(const std::string& name);
 
-        CacheNpcOptionList const& GetNpcOptions() const { return m_mCacheNpcOptionList; }
-
-        uint32 GetNpcGossip(uint32 guid) const
+        GossipMenusMapBounds GetGossipMenusMapBounds(uint32 uiMenuId) const
         {
-            CacheNpcTextIdMap::const_iterator iter = m_mCacheNpcTextIdMap.find(guid);
-            if(iter == m_mCacheNpcTextIdMap.end())
+            return _gossipMenusStore.equal_range(uiMenuId);
+        }
+
+        GossipMenusMapBoundsNonConst GetGossipMenusMapBoundsNonConst(uint32 uiMenuId)
+        {
+            return _gossipMenusStore.equal_range(uiMenuId);
+        }
+
+        GossipMenuItemsMapBounds GetGossipMenuItemsMapBounds(uint32 uiMenuId) const
+        {
+            return _gossipMenuItemsStore.equal_range(uiMenuId);
+        }
+        GossipMenuItemsMapBoundsNonConst GetGossipMenuItemsMapBoundsNonConst(uint32 uiMenuId)
+        {
+            return _gossipMenuItemsStore.equal_range(uiMenuId);
+        }
+
+        uint32 GetNpcGossipMenu(uint32 guid) const
+        {
+            CacheNpcTextIdMap::const_iterator iter = m_mCacheNpcMenuIdMap.find(guid);
+            if(iter == m_mCacheNpcMenuIdMap.end())
+                return 0;
+
+            return iter->second;
+        }
+
+        uint32 GetGameobjectGossipMenu(uint32 guid) const
+        {
+            auto iter = m_mCacheGoMenuIdMap.find(guid);
+            if(iter == m_mCacheGoMenuIdMap.end())
                 return 0;
 
             return iter->second;
@@ -948,7 +977,7 @@ class ObjectMgr
 
         typedef std::unordered_map<uint32, GossipText*> GossipTextMap;
         typedef std::unordered_map<uint32, uint32> QuestAreaTriggerMap;
-        typedef std::unordered_map<uint32, uint32> BattleMastersMap;
+        typedef std::unordered_map<uint32, BattlegroundTypeId> BattleMastersMap;
         typedef std::unordered_map<uint32, std::string> ItemTextMap;
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
@@ -1043,10 +1072,10 @@ class ObjectMgr
         GameObjectLocaleMap mGameObjectLocaleMap;
         ItemLocaleMap mItemLocaleMap;
         QuestLocaleMap mQuestLocaleMap;
-        NpcTextLocaleMap mNpcTextLocaleMap;
+        NpcTextLocaleMap mGossipTextLocaleMap;
         PageTextLocaleMap mPageTextLocaleMap;
         TrinityStringLocaleMap mTrinityStringLocaleMap;
-        NpcOptionLocaleMap mNpcOptionLocaleMap;
+        GossipMenuItemsLocaleContainer _gossipMenuItemsLocaleStore;
         std::mutex _creatureRespawnTimeLock;
         RespawnTimes mCreatureRespawnTimes;
         std::mutex _goRespawnTimeLock;
@@ -1058,9 +1087,11 @@ class ObjectMgr
         // Storage for Conditions. First element (index 0) is reserved for zero-condition (nothing required)
         typedef std::vector<PlayerCondition> ConditionStore;
         ConditionStore mConditions;
-
-        CacheNpcOptionList m_mCacheNpcOptionList;
-        CacheNpcTextIdMap m_mCacheNpcTextIdMap;
+        
+        GossipMenusContainer _gossipMenusStore;
+        GossipMenuItemsContainer _gossipMenuItemsStore;
+        CacheGoTextIdMap m_mCacheGoMenuIdMap;
+        CacheNpcTextIdMap m_mCacheNpcMenuIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 

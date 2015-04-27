@@ -794,7 +794,8 @@ bool Object::PrintIndexError(uint32 index, bool set) const
     return false;
 }
 
-WorldObject::WorldObject()
+WorldObject::WorldObject() :
+    LastUsedScriptID(0)
 {
     m_positionX         = 0.0f;
     m_positionY         = 0.0f;

@@ -203,13 +203,13 @@ class Quest
         std::string GetRequestItemsText() const { return RequestItemsText; }
         std::string GetEndText() const { return EndText; }
         int32  GetRewOrReqMoney() const;
-        uint32 GetRewHonorableKills() const { return RewHonorableKills; }
-        uint32 GetRewMoneyMaxLevel() const { return RewMoneyMaxLevel; }
+        uint32 GetRewHonorableKills() const { return RewardHonorableKills; }
+        uint32 GetRewMoneyMaxLevel() const { return RewardMoneyMaxLevel; }
                                                             // use in XP calculation at client
-        uint32 GetRewSpell() const { return RewSpell; }
-        uint32 GetRewSpellCast() const { return RewSpellCast; }
-        uint32 GetRewMailTemplateId() const { return RewMailTemplateId; }
-        uint32 GetRewMailDelaySecs() const { return RewMailDelaySecs; }
+        uint32 GetRewSpell() const { return RewardSpell; }
+        uint32 GetRewSpellCast() const { return RewardSpellCast; }
+        uint32 GetRewMailTemplateId() const { return RewardMailTemplateId; }
+        uint32 GetRewMailDelaySecs() const { return RewardMailDelaySecs; }
         uint32 GetPointMapId() const { return PointMapId; }
         float  GetPointX() const { return PointX; }
         float  GetPointY() const { return PointY; }
@@ -226,27 +226,29 @@ class Quest
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
-        uint32 ReqItemId[QUEST_OBJECTIVES_COUNT];
-        uint32 ReqItemCount[QUEST_OBJECTIVES_COUNT];
-        uint32 ReqSourceId[QUEST_SOURCE_ITEM_IDS_COUNT];
-        uint32 ReqSourceCount[QUEST_SOURCE_ITEM_IDS_COUNT];
+        uint32 RequiredItemId[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredItemCount[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredSourceItemId[QUEST_SOURCE_ITEM_IDS_COUNT];
+        uint32 RequiredSourceItemCount[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 ReqSourceRef[QUEST_SOURCE_ITEM_IDS_COUNT];
-        int32  ReqCreatureOrGOId[QUEST_OBJECTIVES_COUNT];   // >0 Creature <0 Gameobject
-        uint32 ReqCreatureOrGOCount[QUEST_OBJECTIVES_COUNT];
+        int32  RequiredNpcOrGo[QUEST_OBJECTIVES_COUNT];   // >0 Creature <0 Gameobject
+        uint32 RequiredNpcOrGoCount[QUEST_OBJECTIVES_COUNT];
         uint32 ReqSpell[QUEST_OBJECTIVES_COUNT];
-        uint32 RewChoiceItemId[QUEST_REWARD_CHOICES_COUNT];
-        uint32 RewChoiceItemCount[QUEST_REWARD_CHOICES_COUNT];
-        uint32 RewItemId[QUEST_REWARDS_COUNT];
-        uint32 RewItemCount[QUEST_REWARDS_COUNT];
-        uint32 RewRepFaction[QUEST_REPUTATIONS_COUNT];
-        int32  RewRepValue[QUEST_REPUTATIONS_COUNT];
+        uint32 RewardChoiceItemId[QUEST_REWARD_CHOICES_COUNT];
+        uint32 RewardChoiceItemCount[QUEST_REWARD_CHOICES_COUNT];
+        uint32 RewardItemId[QUEST_REWARDS_COUNT];
+        uint32 RewardItemIdCount[QUEST_REWARDS_COUNT];
+        uint32 RewardRepFaction[QUEST_REPUTATIONS_COUNT];
+        int32  RewardRepValue[QUEST_REPUTATIONS_COUNT];
         uint32 DetailsEmote[QUEST_EMOTE_COUNT];
+        uint32 DetailsEmoteDelay[QUEST_EMOTE_COUNT];
         uint32 OfferRewardEmote[QUEST_EMOTE_COUNT];
+        uint32 OfferRewardEmoteDelay[QUEST_EMOTE_COUNT];
 
         uint32 GetReqItemsCount() const { return m_reqitemscount; }
         uint32 GetReqCreatureOrGOcount() const { return m_reqCreatureOrGOcount; }
-        uint32 GetRewChoiceItemsCount() const { return m_rewchoiceitemscount; }
-        uint32 GetRewItemsCount() const { return m_rewitemscount; }
+        uint32 GetRewardChoiceItemsCount() const { return m_rewchoiceitemscount; }
+        uint32 GetRewardItemsCount() const { return m_rewitemscount; }
 
         typedef std::vector<int32> PrevQuests;
         PrevQuests prevQuests;
@@ -295,13 +297,13 @@ class Quest
         std::string OfferRewardText;
         std::string RequestItemsText;
         std::string EndText;
-        uint32 RewHonorableKills;
-        int32  RewOrReqMoney;
-        uint32 RewMoneyMaxLevel;
-        uint32 RewSpell;
-        uint32 RewSpellCast;
-        uint32 RewMailTemplateId;
-        uint32 RewMailDelaySecs;
+        uint32 RewardHonorableKills;
+        int32  RewardOrReqMoney;
+        uint32 RewardMoneyMaxLevel;
+        uint32 RewardSpell;
+        uint32 RewardSpellCast;
+        uint32 RewardMailTemplateId;
+        uint32 RewardMailDelaySecs;
         uint32 PointMapId;
         float  PointX;
         float  PointY;

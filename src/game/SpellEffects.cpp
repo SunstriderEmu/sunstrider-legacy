@@ -3604,10 +3604,10 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
-        if (sScriptMgr->GOHello(player, gameObjTarget))
+        if (sScriptMgr->OnGossipHello(player, gameObjTarget))
             return;
             
-        gameObjTarget->AI()->GossipHello(player);
+        gameObjTarget->AI()->OnGossipHello(player);
 
         switch (gameObjTarget->GetGoType())
         {
@@ -3618,9 +3618,8 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                 return;
 
             case GAMEOBJECT_TYPE_QUESTGIVER:
-                // start or end quest
-                player->PrepareQuestMenu(guid);
-                player->SendPreparedQuest(guid);
+                player->PrepareGossipMenu(gameObjTarget, gameObjTarget->GetGOInfo()->questgiver.gossipID, true);
+                player->SendPreparedGossip(gameObjTarget);
                 return;
 
             case GAMEOBJECT_TYPE_SPELL_FOCUS:
@@ -3632,9 +3631,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_GOOBER:
                 // goober_scripts can be triggered if the player don't have the quest
                 if (gameObjTarget->GetGOInfo()->goober.eventId)
-                {
                     sWorld->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
-                }
 
                 // cast goober spell
                 if (gameObjTarget->GetGOInfo()->goober.questId)
@@ -3642,7 +3639,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                     if(player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         return;
 
-                sScriptMgr->GOHello(player, gameObjTarget);
+                sScriptMgr->OnGossipHello(player, gameObjTarget);
                 sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
@@ -3663,15 +3660,13 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_CHEST:
                 // TODO: possible must be moved to loot release (in different from linked triggering)
                 if (gameObjTarget->GetGOInfo()->chest.eventId)
-                {
                     sWorld->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
-                }
 
                 // triggering linked GO
                 if(uint32 trapEntry = gameObjTarget->GetGOInfo()->chest.linkedTrapId)
                     gameObjTarget->TriggeringLinkedGameObject(trapEntry,m_caster);
 
-                // Don't return, let loots been taken
+                // Don't return, let loots been taken   
         }
     }
 

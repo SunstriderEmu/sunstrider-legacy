@@ -429,40 +429,44 @@ void ObjectMgr::LoadCreatureLocales()
     TC_LOG_INFO("server.loading", ">> Loaded %u creature locale strings in %u ms", uint32(_creatureLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
-void ObjectMgr::LoadNpcOptionLocales()
+void ObjectMgr::LoadGossipMenuItemsLocales()
 {
-    mNpcOptionLocaleMap.clear();                              // need for reload case
+    uint32 oldMSTime = GetMSTime();
 
-    QueryResult result = WorldDatabase.Query("SELECT entry,"
+    _gossipMenuItemsLocaleStore.clear();                              // need for reload case
+
+    QueryResult result = WorldDatabase.Query("SELECT menu_id, id,"
         "option_text_loc1,box_text_loc1,option_text_loc2,box_text_loc2,"
         "option_text_loc3,box_text_loc3,option_text_loc4,box_text_loc4,"
         "option_text_loc5,box_text_loc5,option_text_loc6,box_text_loc6,"
         "option_text_loc7,box_text_loc7,option_text_loc8,box_text_loc8 "
-        "FROM locales_npc_option");
+        "FROM locales_gossip_menu_option");
 
     if(!result)
     {
-        TC_LOG_INFO("sql.sql",">> Loaded 0 npc_option locale strings. DB table `locales_npc_option` is empty.");
+        TC_LOG_INFO("sql.sql",">> Loaded 0 locales_gossip_menu_option locale strings. DB table `locales_gossip_menu_option` is empty.");
         return;
     }
 
-    do
+     do
     {
-        Field *fields = result->Fetch();
+        Field* fields = result->Fetch();
 
-        uint32 entry = fields[0].GetUInt32();
+        uint16 menuId   = fields[0].GetUInt16();
+        uint16 id       = fields[1].GetUInt16();
 
-        NpcOptionLocale& data = mNpcOptionLocaleMap[entry];
+        GossipMenuItemsLocale& data = _gossipMenuItemsLocaleStore[MAKE_PAIR32(menuId, id)];
 
         for (uint8 i = TOTAL_LOCALES - 1; i > 0; --i)
         {
             LocaleConstant locale = (LocaleConstant) i;
-            AddLocaleString(fields[1 + 2 * (i - 1)].GetString(), locale, data.OptionText);
-            AddLocaleString(fields[1 + 2 * (i - 1) + 1].GetString(), locale, data.BoxText);
+            AddLocaleString(fields[2 + 2 * (i - 1)].GetString(), locale, data.OptionText);
+            AddLocaleString(fields[2 + 2 * (i - 1) + 1].GetString(), locale, data.BoxText);
         }
-    } while (result->NextRow());
+    }
+    while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " npc_option locale strings", mNpcOptionLocaleMap.size() );
+    TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option locale strings in %u ms", uint32(_gossipMenuItemsLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::LoadCreatureTemplates()
@@ -3398,12 +3402,12 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->QuestFlags & QUEST_FLAGS_AUTO_REWARDED)
         {
-            // at auto-reward can be rewarded only RewChoiceItemId[0]
+            // at auto-reward can be rewarded only RewardChoiceItemId[0]
             for(int j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j )
             {
-                if(uint32 id = qinfo->RewChoiceItemId[j])
+                if(uint32 id = qinfo->RewardChoiceItemId[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewChoiceItemId%d` = %u but item from `RewChoiceItemId%d` can't be rewarded with quest flag QUEST_FLAGS_AUTO_REWARDED.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardChoiceItemId%d` = %u but item from `RewardChoiceItemId%d` can't be rewarded with quest flag QUEST_FLAGS_AUTO_REWARDED.",
                         qinfo->GetQuestId(),j+1,id,j+1);
                     // no changes, quest ignore this data
                 }
@@ -3595,12 +3599,12 @@ void ObjectMgr::LoadQuests()
 
         for(int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j )
         {
-            uint32 id = qinfo->ReqItemId[j];
+            uint32 id = qinfo->RequiredItemId[j];
             if(id)
             {
-                if(qinfo->ReqItemCount[j]==0)
+                if(qinfo->RequiredItemCount[j]==0)
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqItemId%d` = %u but `ReqItemCount%d` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredItemId%d` = %u but `RequiredItemCount%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
                     // no changes, quest can't be done for this requirement
                 }
@@ -3609,57 +3613,57 @@ void ObjectMgr::LoadQuests()
 
                 if(!sObjectMgr->GetItemTemplate(id))
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqItemId%d` = %u but item with entry %u does not exist, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredItemId%d` = %u but item with entry %u does not exist, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,id);
-                    qinfo->ReqItemCount[j] = 0;             // prevent incorrect work of quest
+                    qinfo->RequiredItemCount[j] = 0;             // prevent incorrect work of quest
                 }
             }
-            else if(qinfo->ReqItemCount[j]>0)
+            else if(qinfo->RequiredItemCount[j]>0)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `ReqItemId%d` = 0 but `ReqItemCount%d` = %u, quest can't be done.",
-                    qinfo->GetQuestId(),j+1,j+1,qinfo->ReqItemCount[j]);
-                qinfo->ReqItemCount[j] = 0;                 // prevent incorrect work of quest
+                TC_LOG_ERROR("sql.sql","Quest %u has `RequiredItemId%d` = 0 but `RequiredItemCount%d` = %u, quest can't be done.",
+                    qinfo->GetQuestId(),j+1,j+1,qinfo->RequiredItemCount[j]);
+                qinfo->RequiredItemCount[j] = 0;                 // prevent incorrect work of quest
             }
         }
 
         for(int j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; ++j )
         {
-            uint32 id = qinfo->ReqSourceId[j];
+            uint32 id = qinfo->RequiredSourceItemId[j];
             if(id)
             {
                 if(!sObjectMgr->GetItemTemplate(id))
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceId%d` = %u but item with entry %u does not exist, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredSourceItemId%d` = %u but item with entry %u does not exist, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,id);
                     // no changes, quest can't be done for this requirement
                 }
 
-                if(!qinfo->ReqSourceCount[j])
+                if(!qinfo->RequiredSourceItemCount[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceId%d` = %u but `ReqSourceCount%d` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredSourceItemId%d` = %u but `RequiredSourceItemCount%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
-                    qinfo->ReqSourceId[j] = 0;              // prevent incorrect work of quest
+                    qinfo->RequiredSourceItemId[j] = 0;              // prevent incorrect work of quest
                 }
 
                 if(!qinfo->ReqSourceRef[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceId%d` = %u but `ReqSourceRef%d` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredSourceItemId%d` = %u but `ReqSourceRef%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
-                    qinfo->ReqSourceId[j] = 0;              // prevent incorrect work of quest
+                    qinfo->RequiredSourceItemId[j] = 0;              // prevent incorrect work of quest
                 }
             }
             else
             {
-                if(qinfo->ReqSourceCount[j]>0)
+                if(qinfo->RequiredSourceItemCount[j]>0)
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceId%d` = 0 but `ReqSourceCount%d` = %u.",
-                        qinfo->GetQuestId(),j+1,j+1,qinfo->ReqSourceCount[j]);
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredSourceItemId%d` = 0 but `RequiredSourceItemCount%d` = %u.",
+                        qinfo->GetQuestId(),j+1,j+1,qinfo->RequiredSourceItemCount[j]);
                     // no changes, quest ignore this data
                 }
 
                 if(qinfo->ReqSourceRef[j]>0)
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceId%d` = 0 but `ReqSourceRef%d` = %u.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredSourceItemId%d` = 0 but `ReqSourceRef%d` = %u.",
                         qinfo->GetQuestId(),j+1,j+1,qinfo->ReqSourceRef[j]);
                     // no changes, quest ignore this data
                 }
@@ -3678,18 +3682,18 @@ void ObjectMgr::LoadQuests()
                     // no changes, quest can't be done for this requirement
                 }
                 else
-                if(!qinfo->ReqItemId[ref-1] && !qinfo->ReqSpell[ref-1])
+                if(!qinfo->RequiredItemId[ref-1] && !qinfo->ReqSpell[ref-1])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceRef%d` = %u but `ReqItemId%u` = 0 and `ReqSpellCast%u` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqSourceRef%d` = %u but `RequiredItemId%u` = 0 and `ReqSpellCast%u` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,ref,ref,ref);
                     // no changes, quest can't be done for this requirement
                 }
-                else if(qinfo->ReqItemId[ref-1] && qinfo->ReqSpell[ref-1])
+                else if(qinfo->RequiredItemId[ref-1] && qinfo->ReqSpell[ref-1])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqItemId%u` = %u and `ReqSpellCast%u` = %u, quest can't have both fields <> 0, then can't be done.",
-                        qinfo->GetQuestId(),ref,qinfo->ReqItemId[ref-1],ref,qinfo->ReqSpell[ref-1]);
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredItemId%u` = %u and `ReqSpellCast%u` = %u, quest can't have both fields <> 0, then can't be done.",
+                        qinfo->GetQuestId(),ref,qinfo->RequiredItemId[ref-1],ref,qinfo->ReqSpell[ref-1]);
                     // no changes, quest can't be done for this requirement
-                    qinfo->ReqSourceId[j] = 0;              // prevent incorrect work of quest
+                    qinfo->RequiredSourceItemId[j] = 0;              // prevent incorrect work of quest
                 }
             }
         }
@@ -3707,7 +3711,7 @@ void ObjectMgr::LoadQuests()
                     // no changes, quest can't be done for this requirement
                 }
 
-                if(!qinfo->ReqCreatureOrGOId[j])
+                if(!qinfo->RequiredNpcOrGo[j])
                 {
                     bool found = false;
                     for(int k = 0; k < 3; ++k)
@@ -3724,7 +3728,7 @@ void ObjectMgr::LoadQuests()
                     {
                         if(!qinfo->HasFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT))
                         {
-                            TC_LOG_ERROR("sql.sql","Spell (id: %u) have SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT for quest %u and ReqCreatureOrGOId%d = 0, but quest not have flag QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT. Quest flags or ReqCreatureOrGOId%d must be fixed, quest modified to enable objective.",spellInfo->Id,qinfo->QuestId,j+1,j+1);
+                            TC_LOG_ERROR("sql.sql","Spell (id: %u) have SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT for quest %u and RequiredNpcOrGo%d = 0, but quest not have flag QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT. Quest flags or RequiredNpcOrGo%d must be fixed, quest modified to enable objective.",spellInfo->Id,qinfo->QuestId,j+1,j+1);
 
                             // this will prevent quest completing without objective
                             const_cast<Quest*>(qinfo)->SetFlag(QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT);
@@ -3732,7 +3736,7 @@ void ObjectMgr::LoadQuests()
                     }
                     else
                     {
-                        TC_LOG_ERROR("sql.sql","Quest %u has `ReqSpellCast%d` = %u and ReqCreatureOrGOId%d = 0 but spell %u does not have SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT effect for this quest, quest can't be done.",
+                        TC_LOG_ERROR("sql.sql","Quest %u has `ReqSpellCast%d` = %u and RequiredNpcOrGo%d = 0 but spell %u does not have SPELL_EFFECT_QUEST_COMPLETE or SPELL_EFFECT_SEND_EVENT effect for this quest, quest can't be done.",
                             qinfo->GetQuestId(),j+1,id,j+1,id);
                         // no changes, quest can't be done for this requirement
                     }
@@ -3742,19 +3746,19 @@ void ObjectMgr::LoadQuests()
 
         for(int j = 0; j < QUEST_OBJECTIVES_COUNT; ++j )
         {
-            int32 id = qinfo->ReqCreatureOrGOId[j];
+            int32 id = qinfo->RequiredNpcOrGo[j];
             if(id < 0 && !GetGameObjectTemplate(-id))
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `ReqCreatureOrGOId%d` = %i but gameobject %u does not exist, quest can't be done.",
+                TC_LOG_ERROR("sql.sql","Quest %u has `RequiredNpcOrGo%d` = %i but gameobject %u does not exist, quest can't be done.",
                     qinfo->GetQuestId(),j+1,id,uint32(-id));
-                qinfo->ReqCreatureOrGOId[j] = 0;            // quest can't be done for this requirement
+                qinfo->RequiredNpcOrGo[j] = 0;            // quest can't be done for this requirement
             }
 
             if(id > 0 && !sObjectMgr->GetCreatureTemplate(id))
             {
-                TC_LOG_ERROR("FIXME","Quest %u has `ReqCreatureOrGOId%d` = %i but creature with entry %u does not exist, quest can't be done.",
+                TC_LOG_ERROR("FIXME","Quest %u has `RequiredNpcOrGo%d` = %i but creature with entry %u does not exist, quest can't be done.",
                     qinfo->GetQuestId(),j+1,id,uint32(id));
-                qinfo->ReqCreatureOrGOId[j] = 0;            // quest can't be done for this requirement
+                qinfo->RequiredNpcOrGo[j] = 0;            // quest can't be done for this requirement
             }
 
             if(id)
@@ -3763,149 +3767,149 @@ void ObjectMgr::LoadQuests()
 
                 qinfo->SetFlag(QUEST_TRINITY_FLAGS_KILL_OR_CAST | QUEST_TRINITY_FLAGS_SPEAKTO);
 
-                if(!qinfo->ReqCreatureOrGOCount[j])
+                if(!qinfo->RequiredNpcOrGoCount[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `ReqCreatureOrGOId%d` = %u but `ReqCreatureOrGOCount%d` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RequiredNpcOrGo%d` = %u but `RequiredNpcOrGoCount%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
                     // no changes, quest can be incorrectly done, but we already report this
                 }
             }
-            else if(qinfo->ReqCreatureOrGOCount[j]>0)
+            else if(qinfo->RequiredNpcOrGoCount[j]>0)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `ReqCreatureOrGOId%d` = 0 but `ReqCreatureOrGOCount%d` = %u.",
-                    qinfo->GetQuestId(),j+1,j+1,qinfo->ReqCreatureOrGOCount[j]);
+                TC_LOG_ERROR("sql.sql","Quest %u has `RequiredNpcOrGo%d` = 0 but `RequiredNpcOrGoCount%d` = %u.",
+                    qinfo->GetQuestId(),j+1,j+1,qinfo->RequiredNpcOrGoCount[j]);
                 // no changes, quest ignore this data
             }
         }
 
         for(int j = 0; j < QUEST_REWARD_CHOICES_COUNT; ++j )
         {
-            uint32 id = qinfo->RewChoiceItemId[j];
+            uint32 id = qinfo->RewardChoiceItemId[j];
             if(id)
             {
                 if(!sObjectMgr->GetItemTemplate(id))
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewChoiceItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardChoiceItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
                         qinfo->GetQuestId(),j+1,id,id);
-                    qinfo->RewChoiceItemId[j] = 0;          // no changes, quest will not reward this
+                    qinfo->RewardChoiceItemId[j] = 0;          // no changes, quest will not reward this
                 }
 
-                if(!qinfo->RewChoiceItemCount[j])
+                if(!qinfo->RewardChoiceItemCount[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewChoiceItemId%d` = %u but `RewChoiceItemCount%d` = 0, quest can't be done.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardChoiceItemId%d` = %u but `RewardChoiceItemCount%d` = 0, quest can't be done.",
                         qinfo->GetQuestId(),j+1,id,j+1);
                     // no changes, quest can't be done
                 }
             }
-            else if(qinfo->RewChoiceItemCount[j]>0)
+            else if(qinfo->RewardChoiceItemCount[j]>0)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewChoiceItemId%d` = 0 but `RewChoiceItemCount%d` = %u.",
-                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewChoiceItemCount[j]);
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardChoiceItemId%d` = 0 but `RewardChoiceItemCount%d` = %u.",
+                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewardChoiceItemCount[j]);
                 // no changes, quest ignore this data
             }
         }
 
         for(int j = 0; j < QUEST_REWARDS_COUNT; ++j )
         {
-            uint32 id = qinfo->RewItemId[j];
+            uint32 id = qinfo->RewardItemId[j];
             if(id)
             {
                 if(!sObjectMgr->GetItemTemplate(id))
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
                         qinfo->GetQuestId(),j+1,id,id);
-                    qinfo->RewItemId[j] = 0;                // no changes, quest will not reward this item
+                    qinfo->RewardItemId[j] = 0;                // no changes, quest will not reward this item
                 }
 
-                if(!qinfo->RewItemCount[j])
+                if(!qinfo->RewardItemIdCount[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewItemId%d` = %u but `RewItemCount%d` = 0, quest will not reward this item.",
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardItemId%d` = %u but `RewardItemIdCount%d` = 0, quest will not reward this item.",
                         qinfo->GetQuestId(),j+1,id,j+1);
                     // no changes
                 }
             }
-            else if(qinfo->RewItemCount[j]>0)
+            else if(qinfo->RewardItemIdCount[j]>0)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewItemId%d` = 0 but `RewItemCount%d` = %u.",
-                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewItemCount[j]);
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardItemId%d` = 0 but `RewardItemIdCount%d` = %u.",
+                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewardItemIdCount[j]);
                 // no changes, quest ignore this data
             }
         }
 
         for(int j = 0; j < QUEST_REPUTATIONS_COUNT; ++j)
         {
-            if(qinfo->RewRepFaction[j])
+            if(qinfo->RewardRepFaction[j])
             {
-                if(!qinfo->RewRepValue[j])
+                if(!qinfo->RewardRepValue[j])
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewRepFaction%d` = %u but `RewRepValue%d` = 0, quest will not reward this reputation.",
-                        qinfo->GetQuestId(),j+1,qinfo->RewRepValue[j],j+1);
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardRepFaction%d` = %u but `RewardRepValue%d` = 0, quest will not reward this reputation.",
+                        qinfo->GetQuestId(),j+1,qinfo->RewardRepValue[j],j+1);
                     // no changes
                 }
 
-                if(!sFactionStore.LookupEntry(qinfo->RewRepFaction[j]))
+                if(!sFactionStore.LookupEntry(qinfo->RewardRepFaction[j]))
                 {
-                    TC_LOG_ERROR("sql.sql","Quest %u has `RewRepFaction%d` = %u but raw faction (faction.dbc) %u does not exist, quest will not reward reputation for this faction.",
-                        qinfo->GetQuestId(),j+1,qinfo->RewRepFaction[j] ,qinfo->RewRepFaction[j] );
-                    qinfo->RewRepFaction[j] = 0;            // quest will not reward this
+                    TC_LOG_ERROR("sql.sql","Quest %u has `RewardRepFaction%d` = %u but raw faction (faction.dbc) %u does not exist, quest will not reward reputation for this faction.",
+                        qinfo->GetQuestId(),j+1,qinfo->RewardRepFaction[j] ,qinfo->RewardRepFaction[j] );
+                    qinfo->RewardRepFaction[j] = 0;            // quest will not reward this
                 }
             }
-            else if(qinfo->RewRepValue[j]!=0)
+            else if(qinfo->RewardRepValue[j]!=0)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewRepFaction%d` = 0 but `RewRepValue%d` = %u.",
-                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewRepValue[j]);
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardRepFaction%d` = 0 but `RewardRepValue%d` = %u.",
+                    qinfo->GetQuestId(),j+1,j+1,qinfo->RewardRepValue[j]);
                 // no changes, quest ignore this data
             }
         }
 
-        if(qinfo->RewSpell)
+        if(qinfo->RewardSpell)
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewSpell);
+            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpell);
 
             if(!spellInfo)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewSpell` = %u but spell %u does not exist, spell removed as display reward.",
-                    qinfo->GetQuestId(),qinfo->RewSpell,qinfo->RewSpell);
-                qinfo->RewSpell = 0;                        // no spell reward will display for this quest
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardSpell` = %u but spell %u does not exist, spell removed as display reward.",
+                    qinfo->GetQuestId(),qinfo->RewardSpell,qinfo->RewardSpell);
+                qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
             }
 
             else if(!SpellMgr::IsSpellValid(spellInfo))
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewSpell` = %u but spell %u is broken, quest can't be done.",
-                    qinfo->GetQuestId(),qinfo->RewSpell,qinfo->RewSpell);
-                qinfo->RewSpell = 0;                        // no spell reward will display for this quest
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardSpell` = %u but spell %u is broken, quest can't be done.",
+                    qinfo->GetQuestId(),qinfo->RewardSpell,qinfo->RewardSpell);
+                qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
             }
 
         }
 
-        if(qinfo->RewSpellCast)
+        if(qinfo->RewardSpellCast)
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewSpellCast);
+            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpellCast);
 
             if(!spellInfo)
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewSpellCast` = %u but spell %u does not exist, quest will not have a spell reward.",
-                    qinfo->GetQuestId(),qinfo->RewSpellCast,qinfo->RewSpellCast);
-                qinfo->RewSpellCast = 0;                    // no spell will be casted on player
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardSpellCast` = %u but spell %u does not exist, quest will not have a spell reward.",
+                    qinfo->GetQuestId(),qinfo->RewardSpellCast,qinfo->RewardSpellCast);
+                qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
             }
 
             else if(!SpellMgr::IsSpellValid(spellInfo))
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewSpellCast` = %u but spell %u is broken, quest can't be done.",
-                    qinfo->GetQuestId(),qinfo->RewSpellCast,qinfo->RewSpellCast);
-                qinfo->RewSpellCast = 0;                    // no spell will be casted on player
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardSpellCast` = %u but spell %u is broken, quest can't be done.",
+                    qinfo->GetQuestId(),qinfo->RewardSpellCast,qinfo->RewardSpellCast);
+                qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
             }
 
         }
 
-        if(qinfo->RewMailTemplateId)
+        if(qinfo->RewardMailTemplateId)
         {
-            if(!sMailTemplateStore.LookupEntry(qinfo->RewMailTemplateId))
+            if(!sMailTemplateStore.LookupEntry(qinfo->RewardMailTemplateId))
             {
-                TC_LOG_ERROR("sql.sql","Quest %u has `RewMailTemplateId` = %u but mail template  %u does not exist, quest will not have a mail reward.",
-                    qinfo->GetQuestId(),qinfo->RewMailTemplateId,qinfo->RewMailTemplateId);
-                qinfo->RewMailTemplateId = 0;               // no mail will send to player
-                qinfo->RewMailDelaySecs = 0;                // no mail will send to player
+                TC_LOG_ERROR("sql.sql","Quest %u has `RewardMailTemplateId` = %u but mail template  %u does not exist, quest will not have a mail reward.",
+                    qinfo->GetQuestId(),qinfo->RewardMailTemplateId,qinfo->RewardMailTemplateId);
+                qinfo->RewardMailTemplateId = 0;               // no mail will send to player
+                qinfo->RewardMailDelaySecs = 0;                // no mail will send to player
             }
         }
 
@@ -4733,7 +4737,7 @@ void ObjectMgr::LoadGossipText()
         "text5_0, text5_1, lang5, lang5, prob5, em5_0, em5_1, em5_2, em5_3, em5_4, em5_5, "
         "text6_0, text6_1, lang6, lang6, prob6, em6_0, em6_1, em6_2, em6_3, em6_4, em6_5, "
         "text7_0, text7_1, lang7, lang7, prob7, em7_0, em7_1, em7_2, em7_3, em7_4, em7_5 "
-        "FROM npc_text");
+        "FROM gossip_text");
 
     int count = 0;
     if( !result )
@@ -4786,11 +4790,11 @@ void ObjectMgr::LoadGossipText()
     
 }
 
-void ObjectMgr::LoadNpcTextLocales()
+void ObjectMgr::LoadGossipTextLocales()
 {
-    mNpcTextLocaleMap.clear();                              // need for reload case
+    mGossipTextLocaleMap.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry,"
+    QueryResult result = WorldDatabase.Query("SELECT ID,"
         "Text0_0_loc1,Text0_1_loc1,Text1_0_loc1,Text1_1_loc1,Text2_0_loc1,Text2_1_loc1,Text3_0_loc1,Text3_1_loc1,Text4_0_loc1,Text4_1_loc1,Text5_0_loc1,Text5_1_loc1,Text6_0_loc1,Text6_1_loc1,Text7_0_loc1,Text7_1_loc1,"
         "Text0_0_loc2,Text0_1_loc2,Text1_0_loc2,Text1_1_loc2,Text2_0_loc2,Text2_1_loc2,Text3_0_loc2,Text3_1_loc1,Text4_0_loc2,Text4_1_loc2,Text5_0_loc2,Text5_1_loc2,Text6_0_loc2,Text6_1_loc2,Text7_0_loc2,Text7_1_loc2,"
         "Text0_0_loc3,Text0_1_loc3,Text1_0_loc3,Text1_1_loc3,Text2_0_loc3,Text2_1_loc3,Text3_0_loc3,Text3_1_loc1,Text4_0_loc3,Text4_1_loc3,Text5_0_loc3,Text5_1_loc3,Text6_0_loc3,Text6_1_loc3,Text7_0_loc3,Text7_1_loc3,"
@@ -4799,11 +4803,11 @@ void ObjectMgr::LoadNpcTextLocales()
         "Text0_0_loc6,Text0_1_loc6,Text1_0_loc6,Text1_1_loc6,Text2_0_loc6,Text2_1_loc6,Text3_0_loc6,Text3_1_loc1,Text4_0_loc6,Text4_1_loc6,Text5_0_loc6,Text5_1_loc6,Text6_0_loc6,Text6_1_loc6,Text7_0_loc6,Text7_1_loc6,"
         "Text0_0_loc7,Text0_1_loc7,Text1_0_loc7,Text1_1_loc7,Text2_0_loc7,Text2_1_loc7,Text3_0_loc7,Text3_1_loc1,Text4_0_loc7,Text4_1_loc7,Text5_0_loc7,Text5_1_loc7,Text6_0_loc7,Text6_1_loc7,Text7_0_loc7,Text7_1_loc7, "
         "Text0_0_loc8,Text0_1_loc8,Text1_0_loc8,Text1_1_loc8,Text2_0_loc8,Text2_1_loc8,Text3_0_loc8,Text3_1_loc1,Text4_0_loc8,Text4_1_loc8,Text5_0_loc8,Text5_1_loc8,Text6_0_loc8,Text6_1_loc8,Text7_0_loc8,Text7_1_loc8 "
-        " FROM locales_npc_text");
+        " FROM locales_gossip_text");
 
     if(!result)
     {
-        TC_LOG_INFO("server.loading",">> Loaded 0 Quest locale strings. DB table `locales_npc_text` is empty.");
+        TC_LOG_INFO("server.loading",">> Loaded 0 gossip locale strings. DB table `locales_gossip_text` is empty.");
         
         return;
     }
@@ -4814,7 +4818,7 @@ void ObjectMgr::LoadNpcTextLocales()
 
         uint32 entry = fields[0].GetUInt32();
 
-        NpcTextLocale& data = mNpcTextLocaleMap[entry];
+        NpcTextLocale& data = mGossipTextLocaleMap[entry];
 
         for (uint8 i = MAX_LOCALE; i > 0; --i)
         {
@@ -4827,7 +4831,7 @@ void ObjectMgr::LoadNpcTextLocales()
         }
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " NpcText locale strings", mNpcTextLocaleMap.size());
+    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gossip text locale strings", mGossipTextLocaleMap.size());
     
 }
 
@@ -6785,7 +6789,7 @@ void ObjectMgr::LoadBattleMastersEntry()
         uint32 entry = fields[0].GetUInt32();
         uint32 bgTypeId  = fields[1].GetUInt32();
 
-        mBattleMastersMap[entry] = bgTypeId;
+        mBattleMastersMap[entry] = BattlegroundTypeId(bgTypeId);
 
     } while( result->NextRow() );
 
@@ -6817,7 +6821,7 @@ void ObjectMgr::LoadGameObjectForQuests()
             // scan GO chest with loot including quest items
             case GAMEOBJECT_TYPE_CHEST:
             {
-                uint32 loot_id = GameObject::GetLootId(&itr->second);
+                uint32 loot_id = itr->second.GetLootId();
 
                 // find quest loot for GO
                 if(LootTemplates_Gameobject.HaveQuestLootFor(loot_id))
@@ -7545,60 +7549,59 @@ void ObjectMgr::LoadVendors()
     
 }
 
-void ObjectMgr::LoadNpcTextId()
+void ObjectMgr::LoadCreatureGossip()
 {
-    m_mCacheNpcTextIdMap.clear();
+    m_mCacheNpcMenuIdMap.clear();
 
-    QueryResult result = WorldDatabase.Query("SELECT npc_guid, textid FROM npc_gossip");
+    QueryResult result = WorldDatabase.Query("SELECT npc_guid, menu_id FROM creature_gossip");
     if( !result )
     {
-        TC_LOG_ERROR("server.loading",">> Loaded `npc_gossip`, table is empty!");
+        TC_LOG_ERROR("server.loading",">> Loaded `creature_gossip`, table is empty!");
         
         return;
     }
 
     uint32 count = 0;
-    uint32 guid,textid;
+    uint32 guid,menuid;
     do
     {
         Field* fields = result->Fetch();
 
         guid   = fields[0].GetUInt32();
-        textid = fields[1].GetUInt32();
+        menuid = fields[1].GetUInt32();
 
         if (!GetCreatureData(guid))
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
+            TC_LOG_ERROR("sql.sql","Table `creature_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
             continue;
         }
-        if (!GetGossipText(textid))
+        //todo GOSSIP
+        /*if (!GetGossipMenuItemsMapBounds(menuid))
         {
-            TC_LOG_ERROR("sql.sql","Table `npc_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
+            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
             continue;
-        }
+        }*/
 
-        m_mCacheNpcTextIdMap[guid] = textid ;
+        m_mCacheNpcMenuIdMap[guid] = menuid ;
         ++count;
 
     } while (result->NextRow());
 
-    TC_LOG_INFO("server.loading", ">> Loaded %d NpcTextId ", count );
+    TC_LOG_INFO("server.loading", ">> Loaded %d creature gossips", count );
     
 }
 
-void ObjectMgr::LoadNpcOptions()
+void ObjectMgr::LoadGossipMenu()
 {
-    m_mCacheNpcOptionList.clear();                          // For reload case
+    uint32 oldMSTime = GetMSTime();
 
-    QueryResult result = WorldDatabase.Query(
-        //      0  1         2       3    4      5         6     7           8
-        "SELECT id,gossip_id,npcflag,icon,action,box_money,coded,option_text,box_text "
-        "FROM npc_option");
+    _gossipMenusStore.clear();
 
-    if( !result )
+    QueryResult result = WorldDatabase.Query("SELECT entry, text_id FROM gossip_menu");
+
+    if (!result)
     {
-        TC_LOG_ERROR("server.loading",">> Loaded `npc_option`, table is empty!");
-        
+        TC_LOG_ERROR("server.loading", ">> Loaded 0  gossip_menu entries. DB table `gossip_menu` is empty!");
         return;
     }
 
@@ -7608,25 +7611,110 @@ void ObjectMgr::LoadNpcOptions()
     {
         Field* fields = result->Fetch();
 
-        GossipOption go;
-        go.Id               = fields[0].GetUInt32();
-        go.GossipId         = fields[1].GetUInt32();
-        go.NpcFlag          = fields[2].GetUInt32();
-        go.Icon             = fields[3].GetUInt32();
-        go.Action           = fields[4].GetUInt32();
-        go.BoxMoney         = fields[5].GetUInt32();
-        go.Coded            = fields[6].GetUInt8()!=0;
-        go.OptionText       = fields[7].GetString();
-        go.BoxText          = fields[8].GetString();
+        GossipMenus gMenu;
 
-        m_mCacheNpcOptionList.push_back(go);
+        gMenu.entry             = fields[0].GetUInt16();
+        gMenu.text_id           = fields[1].GetUInt32();
+
+        if (!GetGossipText(gMenu.text_id))
+        {
+            TC_LOG_ERROR("sql.sql", "Table gossip_menu entry %u are using non-existing text_id %u", gMenu.entry, gMenu.text_id);
+            continue;
+        }
+
+        _gossipMenusStore.insert(GossipMenusContainer::value_type(gMenu.entry, gMenu));
 
         ++count;
+    }
+    while (result->NextRow());
 
-    } while (result->NextRow());
+    TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
 
-    TC_LOG_INFO("server.loading", ">> Loaded %d npc_option entries", count );
-    
+void ObjectMgr::LoadGossipMenuItems()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _gossipMenuItemsStore.clear();
+
+    QueryResult result = WorldDatabase.Query(
+        //      0        1   2            3            4                      5          6                   7               8              9          10         11        12
+        "SELECT menu_id, id, option_icon, option_text, OptionBroadcastTextID, option_id, npc_option_npcflag, action_menu_id, action_poi_id, box_coded, box_money, box_text, BoxBroadcastTextID "
+        "FROM gossip_menu_option ORDER BY menu_id, id");
+
+    if (!result)
+    {
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 gossip_menu_option entries. DB table `gossip_menu_option` is empty!");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        GossipMenuItems gMenuItem;
+
+        gMenuItem.MenuId                = fields[0].GetUInt16();
+        gMenuItem.OptionIndex           = fields[1].GetUInt16();
+        gMenuItem.OptionIcon            = fields[2].GetUInt32();
+        gMenuItem.OptionText            = fields[3].GetString();
+        gMenuItem.OptionBroadcastTextId = fields[4].GetUInt32();
+        gMenuItem.OptionType            = fields[5].GetUInt8();
+        gMenuItem.OptionNpcflag         = fields[6].GetUInt32();
+        gMenuItem.ActionMenuId          = fields[7].GetUInt32();
+        gMenuItem.ActionPoiId           = fields[8].GetUInt32();
+        gMenuItem.BoxCoded              = fields[9].GetBool();
+        gMenuItem.BoxMoney              = fields[10].GetUInt32();
+        gMenuItem.BoxText               = fields[11].GetString();
+        gMenuItem.BoxBroadcastTextId    = fields[12].GetUInt32();
+
+        if (gMenuItem.OptionIcon >= GOSSIP_ICON_MAX)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown icon id %u. Replacing with GOSSIP_ICON_CHAT", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionIcon);
+            gMenuItem.OptionIcon = GOSSIP_ICON_CHAT;
+        }
+
+        if (gMenuItem.OptionBroadcastTextId)
+        {
+            /*
+            //todo GOSSIP
+            if (!GetBroadcastText(gMenuItem.OptionBroadcastTextId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible OptionBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionBroadcastTextId);
+                gMenuItem.OptionBroadcastTextId = 0;
+            }
+            */
+        }
+
+        if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
+            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);
+
+        /*
+        //todo GOSSIP
+        if (gMenuItem.ActionPoiId && !GetPointOfInterest(gMenuItem.ActionPoiId))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing action_poi_id %u, ignoring", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.ActionPoiId);
+            gMenuItem.ActionPoiId = 0;
+        }
+
+        if (gMenuItem.BoxBroadcastTextId)
+        {
+            if (!GetBroadcastText(gMenuItem.BoxBroadcastTextId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible BoxBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.BoxBroadcastTextId);
+                gMenuItem.BoxBroadcastTextId = 0;
+            }
+        }
+        */
+
+        _gossipMenuItemsStore.insert(GossipMenuItemsContainer::value_type(gMenuItem.MenuId, gMenuItem));
+        ++count;
+    }
+    while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)

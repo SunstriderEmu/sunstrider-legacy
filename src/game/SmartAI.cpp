@@ -756,7 +756,7 @@ void SmartAI::SetSwim(bool swim)
         me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
 }
 
-void SmartAI::sGossipHello(Player* player)
+void SmartAI::sOnGossipHello(Player* player)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player);
 }
@@ -766,7 +766,7 @@ void SmartAI::sGossipSelect(Player* player, uint32 sender, uint32 action)
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_SELECT, player, sender, action);
 }
 
-void SmartAI::sGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
+void SmartAI::sOnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
 
 void SmartAI::sQuestAccept(Player* player, Quest const* quest)
 {
@@ -904,7 +904,7 @@ void SmartGameObjectAI::Reset()
 }
 
 // Called when a player opens a gossip dialog with the gameobject.
-bool SmartGameObjectAI::GossipHello(Player* player)
+bool SmartGameObjectAI::OnGossipHello(Player* player)
 {
     TC_LOG_DEBUG("FIXME","SmartGameObjectAI::GossipHello");
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, 0, 0, false, NULL, go);
@@ -912,14 +912,14 @@ bool SmartGameObjectAI::GossipHello(Player* player)
 }
 
 // Called when a player selects a gossip item in the gameobject's gossip menu.
-bool SmartGameObjectAI::GossipSelect(Player* player, uint32 sender, uint32 action)
+bool SmartGameObjectAI::OnGossipSelect(Player* player, uint32 sender, uint32 action)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_SELECT, player, sender, action, false, NULL, go);
     return false;
 }
 
 // Called when a player selects a gossip with a code in the gameobject's gossip menu.
-bool SmartGameObjectAI::GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/)
+bool SmartGameObjectAI::OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/)
 {
     return false;
 }

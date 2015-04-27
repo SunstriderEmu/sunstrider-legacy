@@ -1761,30 +1761,30 @@ void ScriptMgr::Unload()
 
 }
 
-bool ScriptMgr::GossipHello ( Player * player, Creature *_Creature )
+bool ScriptMgr::OnGossipHello ( Player * player, Creature *_Creature )
 {
     player->PlayerTalkClass->ClearMenus();
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if(!tmpscript || !tmpscript->pGossipHello)
+    if(!tmpscript || !tmpscript->pOnGossipHello)
         return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGossipHello(player,_Creature);
+    return tmpscript->pOnGossipHello(player,_Creature);
     
     CreatureScript* tmpscript2 = m_creatureScripts[_Creature->getScriptName()];
-    if(tmpscript2 && tmpscript2->pGossipHello) 
-        return tmpscript2->pGossipHello(player,_Creature);
+    if(tmpscript2 && tmpscript2->pOnGossipHello) 
+        return tmpscript2->pOnGossipHello(player,_Creature);
 }
 
 
-bool ScriptMgr::GossipSelect( Player *player, Creature *_Creature, uint32 sender, uint32 action )
+bool ScriptMgr::OnGossipSelect( Player *player, Creature *_Creature, uint32 sender, uint32 action )
 {
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if(!tmpscript || !tmpscript->pGossipSelect)
+    if(!tmpscript || !tmpscript->pOnGossipSelect)
         return false;
     
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGossipSelect(player,_Creature,sender,action);
+    return tmpscript->pOnGossipSelect(player,_Creature,sender,action);
      
     CreatureScript* tmpscript2 = m_creatureScripts[_Creature->getScriptName()];
     if(tmpscript2 && tmpscript2->pGossipSelect) 
@@ -1794,56 +1794,56 @@ bool ScriptMgr::GossipSelect( Player *player, Creature *_Creature, uint32 sender
 }
 
 
-bool ScriptMgr::GossipSelectWithCode( Player *player, Creature *_Creature, uint32 sender, uint32 action, const char* sCode )
+bool ScriptMgr::OnGossipSelectCode( Player *player, Creature *_Creature, uint32 sender, uint32 action, const char* sCode )
 {
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-     if(!tmpscript || !tmpscript->pGossipSelectWithCode)
+     if(!tmpscript || !tmpscript->pOnGossipSelectCode)
          return false;
      
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGossipSelectWithCode(player,_Creature,sender,action,sCode);
+    return tmpscript->pOnGossipSelectCode(player,_Creature,sender,action,sCode);
      
     CreatureScript* tmpscript2 = m_creatureScripts[_Creature->GetScriptName()];
-    if(tmpscript2 && tmpscript2->pGossipSelectWithCode) 
-        return tmpscript2->pGossipSelectWithCode(player,_Creature,sender,action,sCode);
+    if(tmpscript2 && tmpscript2->pOnGossipSelectCode) 
+        return tmpscript2->pOnGossipSelectCode(player,_Creature,sender,action,sCode);
 
     return false;
 }
 
 
-bool ScriptMgr::GOSelect( Player *player, GameObject *_GO, uint32 sender, uint32 action )
+bool ScriptMgr::OnGossipSelect( Player *player, GameObject *_GO, uint32 sender, uint32 action )
 {
     if(!_GO)
     return false;
 
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if(!tmpscript || !tmpscript->pGOSelect) return false;
+    if(!tmpscript || !tmpscript->pOnGossipSelect) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGOSelect(player,_GO,sender,action);
+    return tmpscript->pGOOnGossipSelect(player,_GO,sender,action);
 }
 
 
-bool ScriptMgr::GOSelectWithCode( Player *player, GameObject *_GO, uint32 sender, uint32 action, const char* sCode )
+bool ScriptMgr::OnGossipSelectCode( Player *player, GameObject *_GO, uint32 sender, uint32 action, const char* sCode )
 {
     if(!_GO)
     return false;
 
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if(!tmpscript || !tmpscript->pGOSelectWithCode) return false;
+    if(!tmpscript || !tmpscript->pOnGossipSelectCode) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGOSelectWithCode(player,_GO,sender,action,sCode);
+    return tmpscript->pGOOnGossipSelectCode(player,_GO,sender,action,sCode);
 }
 
 
 bool ScriptMgr::QuestAccept( Player *player, Creature *_Creature, Quest const *_Quest )
 {
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if (!tmpscript || !tmpscript->pQuestAccept) return false;
+    if (!tmpscript || !tmpscript->pOnQuestAccept) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pQuestAccept(player,_Creature,_Quest);
+    return tmpscript->pOnQuestAccept(player,_Creature,_Quest);
 }
 
 
@@ -1870,30 +1870,30 @@ bool ScriptMgr::QuestComplete( Player *player, Creature *_Creature, Quest const 
 bool ScriptMgr::ChooseReward( Player *player, Creature *_Creature, Quest const *_Quest, uint32 opt )
 {
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if (!tmpscript || !tmpscript->pChooseReward) return false;
+    if (!tmpscript || !tmpscript->pOnQuestReward) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pChooseReward(player,_Creature,_Quest,opt);
+    return tmpscript->pOnQuestReward(player,_Creature,_Quest,opt);
 }
 
 
-uint32 ScriptMgr::NPCDialogStatus( Player *player, Creature *_Creature )
+uint32 ScriptMgr::GetDialogStatus( Player *player, Creature *_Creature )
 {
     Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if (!tmpscript || !tmpscript->pNPCDialogStatus) return 100;
+    if (!tmpscript || !tmpscript->pGetDialogStatus) return 100;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pNPCDialogStatus(player,_Creature);
+    return tmpscript->pGetDialogStatus(player,_Creature);
 }
 
 
-uint32 ScriptMgr::GODialogStatus( Player *player, GameObject *_GO )
+uint32 ScriptMgr::GetDialogStatus( Player *player, GameObject *_GO )
 {
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pGODialogStatus) return 100;
+    if (!tmpscript || !tmpscript->pGetDialogStatus) return 100;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGODialogStatus(player,_GO);
+    return tmpscript->pGOGetDialogStatus(player,_GO);
 }
 
 
@@ -1917,33 +1917,33 @@ bool ScriptMgr::ItemQuestAccept( Player *player, Item *_Item, Quest const *_Ques
 }
 
 
-bool ScriptMgr::GOHello( Player *player, GameObject *_GO )
+bool ScriptMgr::OnGossipHello( Player *player, GameObject *_GO )
 {
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pGOHello) return false;
+    if (!tmpscript || !tmpscript->pOnGossipHello) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGOHello(player,_GO);
+    return tmpscript->pGOOnGossipHello(player,_GO);
 }
 
 
-bool ScriptMgr::GOQuestAccept( Player *player, GameObject *_GO, Quest const *_Quest )
+bool ScriptMgr::OnQuestAccept( Player *player, GameObject *_GO, Quest const *_Quest )
 {
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pGOQuestAccept) return false;
+    if (!tmpscript || !tmpscript->pOnQuestAccept) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGOQuestAccept(player,_GO,_Quest);
+    return tmpscript->pGOOnQuestAccept(player,_GO,_Quest);
 }
 
 
-bool ScriptMgr::GOChooseReward( Player *player, GameObject *_GO, Quest const *_Quest, uint32 opt )
+bool ScriptMgr::OnQuestReward( Player *player, GameObject *_GO, Quest const *_Quest, uint32 opt )
 {
     Script *tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pGOChooseReward) return false;
+    if (!tmpscript || !tmpscript->pOnQuestReward) return false;
 
     player->PlayerTalkClass->ClearMenus();
-    return tmpscript->pGOChooseReward(player,_GO,_Quest,opt);
+    return tmpscript->pGOOnQuestReward(player,_GO,_Quest,opt);
 }
 
 

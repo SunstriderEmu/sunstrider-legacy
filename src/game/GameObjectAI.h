@@ -43,9 +43,9 @@ class GameObjectAI
         
         static int Permissible(const GameObject* go);
         
-        virtual bool GossipHello(Player* player) {return false;}
-        virtual bool GossipSelect(Player* player, uint32 sender, uint32 action) {return false;}
-        virtual bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) {return false;}
+        virtual bool OnGossipHello(Player* player) {return false;}
+        virtual bool OnGossipSelect(Player* player, uint32 sender, uint32 action) {return false;}
+        virtual bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) {return false;}
         virtual bool QuestAccept(Player* player, Quest const* quest) {return false;}
         virtual bool QuestReward(Player* player, Quest const* quest, uint32 opt) {return false;}
         uint32 GetDialogStatus(Player* /*player*/) {return 100;}

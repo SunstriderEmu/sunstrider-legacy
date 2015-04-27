@@ -103,9 +103,7 @@ class GameEvent
         bool StartEvent(uint16 event_id, bool overwrite = false);
         void StopEvent(uint16 event_id, bool overwrite = false);
         void HandleQuestComplete(uint32 quest_id);  // called on world event type quest completions
-        void HandleWorldEventGossip(Player * plr, Creature * c);
         uint32 GetNPCFlag(Creature * cr);
-        uint32 GetNpcTextId(uint32 guid);
         /* Add a creature of given guid to an event (both in DB + in live memory). Return success.*/
         bool AddCreatureToEvent(uint32 guid, uint16 event_id);
         /* Add a gobject of given guid to an event (both in DB + in live memory). Return success. */
@@ -162,7 +160,7 @@ class GameEvent
         typedef std::pair<uint32 /*guid*/, uint32 /*npcflag*/> GuidNPCFlagPair;
         typedef std::list<GuidNPCFlagPair> NPCFlagList;
         typedef std::vector<NPCFlagList> GameEventNPCFlagMap;
-        typedef std::pair<uint16 /*event id*/, uint32 /*gossip id*/> EventNPCGossipIdPair;
+        typedef std::pair<uint16 /*event id*/, uint32 /*menu id*/> EventNPCGossipIdPair;
         typedef std::map<uint32 /*guid*/, EventNPCGossipIdPair> GuidEventNpcGossipIdMap;
         typedef std::vector<uint32> GameEventBitmask;
         GameEventQuestMap mGameEventCreatureQuests;
@@ -175,7 +173,6 @@ class GameEvent
         GameEventBitmask  mGameEventBattlegroundHolidays;
         QuestIdToEventConditionMap mQuestToEventConditions;
         GameEventNPCFlagMap mGameEventNPCFlags;
-        GuidEventNpcGossipIdMap mNPCGossipIds;
         ActiveEvents m_ActiveEvents;
         bool isSystemInit;
 };

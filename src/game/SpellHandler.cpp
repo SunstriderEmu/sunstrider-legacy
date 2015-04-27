@@ -321,10 +321,10 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     if (GetPlayer()->m_mover != GetPlayer())
         return;
 
-    if (sScriptMgr->GOHello(_player, obj))
+    if (sScriptMgr->OnGossipHello(_player, obj))
         return;
         
-    obj->AI()->GossipHello(_player);
+    obj->AI()->OnGossipHello(_player);
 
     obj->Use(_player);
 }

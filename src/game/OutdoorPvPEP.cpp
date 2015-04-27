@@ -696,43 +696,36 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
     {
         m_FlightMasterSpawned = team;
         DelCreature(EP_PWT_FLIGHTMASTER);
-        AddCreature(EP_PWT_FLIGHTMASTER,EP_PWT_FlightMaster.entry,team,EP_PWT_FlightMaster.map,EP_PWT_FlightMaster.x,EP_PWT_FlightMaster.y,EP_PWT_FlightMaster.z,EP_PWT_FlightMaster.o);
+        AddCreature(EP_PWT_FLIGHTMASTER,EP_PWT_FlightMaster.entry,team,EP_PWT_FlightMaster  .map,EP_PWT_FlightMaster.x,EP_PWT_FlightMaster.y,EP_PWT_FlightMaster.z,EP_PWT_FlightMaster.o);
         Creature * c = HashMapHolder<Creature>::Find(m_Creatures[EP_PWT_FLIGHTMASTER]);
         if(c)
         {
-            GossipOption gso;
-            gso.Action = GOSSIP_OPTION_OUTDOORPVP;
-            gso.GossipId = 0;
+            GossipMenuItems gso;
+/* TODO GOSSIP
+            gso.OptionType = GOSSIP_OPTION_OUTDOORPVP;
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_FLIGHT_NPT));
-            gso.Id = 50;
-            gso.Icon = 0;
-            gso.NpcFlag = 0;
+            gso.OptionIndex = 50;
             c->AddGossipOption(gso);
 
-            gso.Action = GOSSIP_OPTION_OUTDOORPVP;
-            gso.GossipId = 0;
+            gso.OptionType = GOSSIP_OPTION_OUTDOORPVP;
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_FLIGHT_EWT));
-            gso.Id = 50;
-            gso.Icon = 0;
-            gso.NpcFlag = 0;
+            gso.OptionIndex = 50;
             c->AddGossipOption(gso);
 
-            gso.Action = GOSSIP_OPTION_OUTDOORPVP;
-            gso.GossipId = 0;
+            gso.OptionType = GOSSIP_OPTION_OUTDOORPVP;
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_FLIGHT_CGT));
-            gso.Id = 50;
-            gso.Icon = 0;
-            gso.NpcFlag = 0;
+            gso.OptionIndex = 50;
             c->AddGossipOption(gso);
+            */
         }
     }
 }
 
-bool OutdoorPvPObjectiveEP_PWT::CanTalkTo(Player * p, Creature * c, GossipOption &gso)
+bool OutdoorPvPObjectiveEP_PWT::CanTalkTo(Player * p, Creature * c, GossipMenuItems const& gso)
 {
-    if( p->GetTeam() == m_FlightMasterSpawned &&
-        c->GetGUID() == m_Creatures[EP_PWT_FLIGHTMASTER] &&
-        gso.Id == 50 )
+    if( p->GetTeam() == m_FlightMasterSpawned
+        && c->GetGUID() == m_Creatures[EP_PWT_FLIGHTMASTER]
+      /* TODO GOSSIP  && gso.Id == 50 */)
         return true;
     return false;
 }
@@ -767,7 +760,7 @@ bool OutdoorPvPObjectiveEP_PWT::HandleGossipOption(Player *plr, uint64 guid, uin
             nodes[0] = src;
             nodes[1] = dst;
 
-            plr->PlayerTalkClass->CloseGossip();
+            plr->PlayerTalkClass->SendCloseGossip();
             plr->ActivateTaxiPathTo(nodes, cr);
             // leave the opvp, seems like moveinlineofsight isn't called when entering a taxi
             HandlePlayerLeave(plr);

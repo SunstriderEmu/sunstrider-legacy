@@ -314,11 +314,11 @@ void ConditionMgr::LoadConditions(bool isReload)
         LootTemplates_Prospecting.ResetConditions();
         LootTemplates_Spell.ResetConditions();*/
 
-        /*TC_LOG_INFO("FIXME","Re-Loading `gossip_menu` Table for Conditions!");
+        TC_LOG_INFO("misc","Re-Loading `gossip_menu` Table for Conditions!");
         sObjectMgr->LoadGossipMenu();
 
-        TC_LOG_INFO("FIXME","Re-Loading `gossip_menu_option` Table for Conditions!");
-        sObjectMgr->LoadGossipMenuItems();*/
+        TC_LOG_INFO("misc","Re-Loading `gossip_menu_option` Table for Conditions!");
+        sObjectMgr->LoadGossipMenuItems();
     }
 
     uint32 count = 0;

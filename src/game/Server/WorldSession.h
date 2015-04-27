@@ -321,7 +321,7 @@ class WorldSession
 
         void SendMeleeAttackStop(Unit const* enemy);
 
-        void SendBattlegGroundList( uint64 guid, uint32 bgTypeId );
+        void SendBattleGroundList( uint64 guid, uint32 bgTypeId );
 
         void SendTradeStatus(uint32 status);
         void SendCancelTrade();
@@ -425,7 +425,8 @@ class WorldSession
 
         // Locales
         LocaleConstant GetSessionDbcLocale() const { return m_sessionDbcLocale; }
-        const char *GetTrinityString(int32 entry) const;
+        LocaleConstant GetSessionDbLocaleIndex() const { return m_sessionDbLocaleIndex; }
+        char const* GetTrinityString(int32 entry) const;
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
@@ -974,6 +975,7 @@ class WorldSession
         bool m_playerSave;
         bool m_mailChange;
         LocaleConstant m_sessionDbcLocale;
+        LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
         //only lk
