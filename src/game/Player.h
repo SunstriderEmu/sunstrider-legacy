@@ -59,6 +59,9 @@ typedef std::deque<Mail*> PlayerMails;
 #define PLAYER_MAX_SKILLS       127
 #define PLAYER_MAX_DAILY_QUESTS 25
 
+#define REPUTATION_CAP 42999
+#define REPUTATION_BOTTOM -42999
+
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
 {
@@ -1953,8 +1956,6 @@ class Player : public Unit
         ReputationRank GetBaseReputationRank(const FactionEntry *factionEntry) const;
         ReputationRank ReputationToRank(int32 standing) const;
         const static int32 ReputationRank_Length[MAX_REPUTATION_RANK];
-        const static int32 Reputation_Cap    =  42999;
-        const static int32 Reputation_Bottom = -42000;
         bool ModifyFactionReputation(uint32 FactionTemplateId, int32 DeltaReputation);
         bool ModifyFactionReputation(FactionEntry const* factionEntry, int32 standing);
         bool ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 standing);

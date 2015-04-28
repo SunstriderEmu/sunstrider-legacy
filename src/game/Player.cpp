@@ -6207,7 +6207,7 @@ ReputationRank Player::GetReputationRank(uint32 faction) const
 
 ReputationRank Player::ReputationToRank(int32 standing) const
 {
-    int32 Limit = Reputation_Cap + 1;
+    int32 Limit = REPUTATION_CAP + 1;
     for (int i = MAX_REPUTATION_RANK-1; i >= MIN_REPUTATION_RANK; --i)
     {
         Limit -= ReputationRank_Length[i];
@@ -6274,11 +6274,11 @@ bool Player::ModifyOneFactionReputation(FactionEntry const* factionEntry, int32 
         int32 BaseRep = GetBaseReputation(factionEntry);
         int32 new_rep = BaseRep + itr->second.Standing + standing;
 
-        if (new_rep > Reputation_Cap)
-            new_rep = Reputation_Cap;
+        if (new_rep > REPUTATION_CAP)
+            new_rep = REPUTATION_CAP;
         else
-        if (new_rep < Reputation_Bottom)
-            new_rep = Reputation_Bottom;
+        if (new_rep < REPUTATION_BOTTOM)
+            new_rep = REPUTATION_BOTTOM;
 
         if(ReputationToRank(new_rep) <= REP_HOSTILE)
             SetFactionAtWar(&itr->second,true);
@@ -6360,11 +6360,11 @@ bool Player::SetOneFactionReputation(FactionEntry const* factionEntry, int32 sta
     FactionStateList::iterator itr = m_factions.find(factionEntry->reputationListID);
     if (itr != m_factions.end())
     {
-        if (standing > Reputation_Cap)
-            standing = Reputation_Cap;
+        if (standing > REPUTATION_CAP)
+            standing = REPUTATION_CAP;
         else
-        if (standing < Reputation_Bottom)
-            standing = Reputation_Bottom;
+        if (standing < REPUTATION_BOTTOM)
+            standing = REPUTATION_BOTTOM;
 
         int32 BaseRep = GetBaseReputation(factionEntry);
         itr->second.Standing = standing - BaseRep;
