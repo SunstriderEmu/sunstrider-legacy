@@ -141,6 +141,17 @@ enum GossipOptionIcon
     GOSSIP_ICON_MAX
 };
 
+struct PointOfInterest
+{
+    uint32 entry;
+    float x;
+    float y;
+    uint32 icon;
+    uint32 flags;
+    uint32 data;
+    std::string icon_name;
+};
+
 struct GossipMenuItems
 {
     GossipMenuItems() :
@@ -350,6 +361,11 @@ struct GossipMenuItemsLocale
 {
     std::vector<std::string> OptionText;
     std::vector<std::string> BoxText;
+};
+
+struct PointOfInterestLocale
+{
+    std::vector<std::string> IconName;
 };
 
 struct EquipmentInfo

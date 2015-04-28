@@ -1519,12 +1519,12 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading GameTeleports..." );
     sObjectMgr->LoadGameTele();
-
-    TC_LOG_INFO("server.loading", "Loading Npc gossips Id..." );
-    sObjectMgr->LoadCreatureGossip();                                 // must be after load Creature and NpcText
-
+    
     TC_LOG_INFO("server.loading", "Loading Npc gossip menus..." );
     sObjectMgr->LoadGossipMenu();
+
+    TC_LOG_INFO("server.loading", "Loading Npc gossips Id..." );
+    sObjectMgr->LoadCreatureGossip();                                 // must be after load Creature and menus
 
     TC_LOG_INFO("server.loading", "Loading Npc Options..." );
     sObjectMgr->LoadGossipMenuItems();

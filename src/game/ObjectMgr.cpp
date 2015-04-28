@@ -7575,12 +7575,14 @@ void ObjectMgr::LoadCreatureGossip()
             TC_LOG_ERROR("sql.sql","Table `creature_gossip` have not existed creature (GUID: %u) entry, ignore. ",guid);
             continue;
         }
-        //todo GOSSIP
-        /*if (!GetGossipMenuItemsMapBounds(menuid))
+
+        GossipMenuItemsMapBounds bounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuid);
+        /// if there are none.
+        if (bounds.first == bounds.second)
         {
-            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (GUID: %u) have wrong Textid (%u), ignore. ", guid, textid);
+            TC_LOG_ERROR("sql.sql","Table `creature_gossip` for creature (GUID: %u) have wrong menuid (%u), ignore. ", guid, menuid);
             continue;
-        }*/
+        }
 
         m_mCacheNpcMenuIdMap[guid] = menuid ;
         ++count;
@@ -7676,17 +7678,15 @@ void ObjectMgr::LoadGossipMenuItems()
             gMenuItem.OptionIcon = GOSSIP_ICON_CHAT;
         }
 
+        /** NYI - TrinityCore
         if (gMenuItem.OptionBroadcastTextId)
         {
-            /*
-            //todo GOSSIP
             if (!GetBroadcastText(gMenuItem.OptionBroadcastTextId))
             {
                 TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible OptionBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionBroadcastTextId);
                 gMenuItem.OptionBroadcastTextId = 0;
             }
-            */
-        }
+        } */
 
         if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
             TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);

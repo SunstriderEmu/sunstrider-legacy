@@ -140,6 +140,7 @@ typedef std::unordered_map<uint32,NpcTextLocale> NpcTextLocaleMap;
 typedef std::unordered_map<uint32,PageTextLocale> PageTextLocaleMap;
 typedef std::unordered_map<uint32,TrinityStringLocale> TrinityStringLocaleMap;
 typedef std::unordered_map<uint32,GossipMenuItemsLocale> GossipMenuItemsLocaleContainer;
+typedef std::unordered_map<uint32, PointOfInterestLocale> PointOfInterestLocaleContainer;
 
 typedef std::multimap<uint32,uint32> QuestRelations;
 
@@ -338,6 +339,8 @@ class ObjectMgr
 
         typedef std::unordered_map<uint32, WeatherZoneChances> WeatherZoneMap;
 
+        typedef std::unordered_map<uint32, PointOfInterest> PointOfInterestContainer;
+
         typedef std::unordered_map<uint32, PetCreateSpellEntry> PetCreateSpellMap;
 
         typedef std::vector<std::string> ScriptNameMap;
@@ -502,6 +505,15 @@ class ObjectMgr
         {
             RepOnKillMap::const_iterator itr = mRepOnKill.find(id);
             if(itr != mRepOnKill.end())
+                return &itr->second;
+            return NULL;
+        }
+
+        PointOfInterest const* GetPointOfInterest(uint32 id) const
+        {
+            //TODO GOSSIP : fill this from database
+            PointOfInterestContainer::const_iterator itr = _pointsOfInterestStore.find(id);
+            if (itr != _pointsOfInterestStore.end())
                 return &itr->second;
             return NULL;
         }
@@ -722,12 +734,18 @@ class ObjectMgr
             if(itr==mPageTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
-        GossipMenuItemsLocale const* GetNpcOptionLocale(uint32 entry) const
+        GossipMenuItemsLocale const* GetGossipMenuItemsLocale(uint32 entry) const
         {
             GossipMenuItemsLocaleContainer::const_iterator itr = _gossipMenuItemsLocaleStore.find(entry);
             if(itr==_gossipMenuItemsLocaleStore.end()) 
                 return nullptr;
 
+            return &itr->second;
+        }
+        PointOfInterestLocale const* GetPointOfInterestLocale(uint32 poi_id) const
+        {
+            PointOfInterestLocaleContainer::const_iterator itr = _pointOfInterestLocaleStore.find(poi_id);
+            if (itr == _pointOfInterestLocaleStore.end()) return NULL;
             return &itr->second;
         }
 
@@ -1076,6 +1094,7 @@ class ObjectMgr
         PageTextLocaleMap mPageTextLocaleMap;
         TrinityStringLocaleMap mTrinityStringLocaleMap;
         GossipMenuItemsLocaleContainer _gossipMenuItemsLocaleStore;
+        PointOfInterestLocaleContainer _pointOfInterestLocaleStore;
         std::mutex _creatureRespawnTimeLock;
         RespawnTimes mCreatureRespawnTimes;
         std::mutex _goRespawnTimeLock;
@@ -1090,6 +1109,7 @@ class ObjectMgr
         
         GossipMenusContainer _gossipMenusStore;
         GossipMenuItemsContainer _gossipMenuItemsStore;
+        PointOfInterestContainer _pointsOfInterestStore;
         CacheGoTextIdMap m_mCacheGoMenuIdMap;
         CacheNpcTextIdMap m_mCacheNpcMenuIdMap;
         CacheVendorItemMap m_mCacheVendorItemMap;

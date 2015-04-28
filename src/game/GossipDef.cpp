@@ -95,40 +95,19 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
 
         strOptionText = itr->second.OptionText;
         strBoxText = itr->second.BoxText;
-        /* //todo GOSSIP
-        BroadcastText const* optionBroadcastText = sObjectMgr->GetBroadcastText(itr->second.OptionBroadcastTextId);
-        BroadcastText const* boxBroadcastText = sObjectMgr->GetBroadcastText(itr->second.BoxBroadcastTextId);
-
-        /// OptionText
-        if (optionBroadcastText)
-            strOptionText = optionBroadcastText->GetText(GetLocale());
-        else
-            strOptionText = itr->second.OptionText;
-
-        /// BoxText
-        if (boxBroadcastText)
-            strBoxText = boxBroadcastText->GetText(GetLocale());
-        else
-            strBoxText = itr->second.BoxText;
 
         /// Check need of localization.
         if (GetLocale() != DEFAULT_LOCALE)
         {
-            if (!optionBroadcastText)
-            {
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuItemId)))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, GetLocale(), strOptionText);
-            }
+            /// Find localizations from database.
+            if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr-> GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuItemId)))
+                ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, GetLocale(), strOptionText);
 
-            if (!boxBroadcastText)
-            {
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuItemId)))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
-            }
+            /// Find localizations from database.
+            if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuItemId)))
+                ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, GetLocale(), strBoxText);
         }
-        */
+
         /// Add menu item with existing method. Menu item id -1 is also used in ADD_GOSSIP_ITEM macro.
         AddMenuItem(-1, itr->second.OptionIcon, strOptionText, sender, action, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);
     }
@@ -264,8 +243,9 @@ void PlayerMenu::SendCloseGossip()
 void PlayerMenu::SendPointOfInterest( float X, float Y, uint32 Icon, uint32 Flags, uint32 Data, char const * locName ) const
 {
     WorldPacket data( SMSG_GOSSIP_POI, (4+4+4+4+4+10) );    // guess size
-    data << Flags;
-    data << X << Y;
+    data << uint32(Flags);
+    data << float(X);
+    data << float(Y);
     data << uint32(Icon);
     data << uint32(Data);
     data << locName;
@@ -276,7 +256,6 @@ void PlayerMenu::SendPointOfInterest( float X, float Y, uint32 Icon, uint32 Flag
 
 void PlayerMenu::SendPointOfInterest(uint32 poiId) const
 {
-   /* //todo GOSSIP
    PointOfInterest const* poi = sObjectMgr->GetPointOfInterest(poiId);
     if (!poi)
     {
@@ -299,7 +278,6 @@ void PlayerMenu::SendPointOfInterest(uint32 poiId) const
     data << iconText;
 
     _session->SendPacket(&data);
-    */
 }
 
 /*********************************************************/

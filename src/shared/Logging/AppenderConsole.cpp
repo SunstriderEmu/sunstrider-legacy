@@ -18,7 +18,6 @@
 #include <sstream>
 
 #include "AppenderConsole.h"
-#include "Config.h"
 #include "Util.h"
 
 #if PLATFORM == PLATFORM_WINDOWS
