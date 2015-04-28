@@ -867,9 +867,6 @@ class Creature : public Unit
         uint32 m_corpseDelay;                               // (secs) delay between death and corpse disappearance
         float m_respawnradius;
 
-        bool m_gossipOptionLoaded;
-        GossipOptionList m_goptions;
-
         uint8 m_emoteState;
         bool m_IsPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem

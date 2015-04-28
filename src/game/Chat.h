@@ -359,7 +359,7 @@ class ChatHandler
         bool HandleDebugPlayerFlags(const char* args);
         bool HandleDebugDumpProfilingCommand(const char* args);
         bool HandleDebugClearProfilingCommand(const char* args);
-        bool HandleDebugSmartAIErrorsCommand(const char* args);
+        bool HandleDebugSmartAICommand(const char* args);
         bool HandleDebugOpcodeTestCommand(const char* args);
 
         bool HandleGUIDCommand(const char* args);

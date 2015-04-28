@@ -251,7 +251,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
         { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugDumpProfilingCommand,  "", NULL },
         { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
-        { "smartaierrors",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSmartAIErrorsCommand,  "", NULL },
+        { "smartai",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSmartAICommand,        "", NULL },
         { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };

@@ -37,6 +37,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "SmartScriptMgr.h"
+#include "SmartAI.h"
 
 bool ChatHandler::HandleYoloCommand(const char* /* args */)
 {
@@ -792,19 +793,20 @@ bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
+bool ChatHandler::HandleDebugSmartAICommand(const char* args)
 {
     uint32 entry = 0;
     uint32 guid = 0;
+    Creature* target = nullptr;
 
     if (!*args)
     {
         //if no arguments given, try getting selected creature
-        Creature* target = getSelectedCreature();
+        target = getSelectedCreature();
 
         if (!target)
         {
-            SendSysMessage("Select a creature or give an entry or a guid.");
+            SendSysMessage("Select a creature or give an entry or a guid (as a negative value).");
             return true;
         }
 
@@ -817,6 +819,20 @@ bool ChatHandler::HandleDebugSmartAIErrorsCommand(const char* args)
             entry = entryOrGuid;
         else
             guid = -entryOrGuid;
+    }
+
+    SendSysMessage("SmartAI infos :");
+    if(target)
+    {
+        if(target->GetAIName() == "SmartAI")
+        {
+            uint32 phase = dynamic_cast<SmartAI*>(target->AI())->GetScript()->GetPhase();
+            PSendSysMessage("Current phase: %u", phase);
+        } else {
+            SendSysMessage("Not SmartAI creature.");
+        }
+    } else {
+        SendSysMessage("No target selected.");
     }
 
     SendSysMessage("SmartAI errors :");

@@ -197,6 +197,8 @@ class SmartScript
             meOrigGUID = 0;
         }
 
+        uint32 GetPhase() { return mEventPhase; }
+
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker();

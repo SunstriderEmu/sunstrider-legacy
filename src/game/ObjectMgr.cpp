@@ -6359,6 +6359,52 @@ void ObjectMgr::LoadReputationOnKill()
     
 }
 
+void ObjectMgr::LoadPointsOfInterest()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _pointsOfInterestStore.clear();                              // need for reload case
+
+    uint32 count = 0;
+
+    //                                                  0   1  2   3      4     5       6
+    QueryResult result = WorldDatabase.Query("SELECT entry, x, y, icon, flags, data, icon_name FROM points_of_interest");
+
+    if (!result)
+    {
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 Points of Interest definitions. DB table `points_of_interest` is empty.");
+        return;
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 point_id = fields[0].GetUInt32();
+
+        PointOfInterest POI;
+        POI.entry = point_id;
+        POI.x = fields[1].GetFloat();
+        POI.y = fields[2].GetFloat();
+        POI.icon = fields[3].GetUInt32();
+        POI.flags = fields[4].GetUInt32();
+        POI.data = fields[5].GetUInt32();
+        POI.icon_name = fields[6].GetString();
+
+        if (!Trinity::IsValidMapCoord(POI.x, POI.y))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `points_of_interest` (Entry: %u) have invalid coordinates (X: %f Y: %f), ignored.", point_id, POI.x, POI.y);
+            continue;
+        }
+
+        _pointsOfInterestStore[point_id] = POI;
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u Points of Interest definitions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadWeatherZoneChances()
 {
     uint32 count = 0;
@@ -7576,7 +7622,7 @@ void ObjectMgr::LoadCreatureGossip()
             continue;
         }
 
-        GossipMenuItemsMapBounds bounds = sObjectMgr->GetGossipMenuItemsMapBounds(menuid);
+        GossipMenusMapBounds bounds = sObjectMgr->GetGossipMenusMapBounds(menuid);
         /// if there are none.
         if (bounds.first == bounds.second)
         {
@@ -7691,14 +7737,14 @@ void ObjectMgr::LoadGossipMenuItems()
         if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
             TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);
 
-        /*
-        //todo GOSSIP
         if (gMenuItem.ActionPoiId && !GetPointOfInterest(gMenuItem.ActionPoiId))
         {
             TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing action_poi_id %u, ignoring", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.ActionPoiId);
             gMenuItem.ActionPoiId = 0;
         }
-
+        
+        /*
+        // NYI - TrinityCore
         if (gMenuItem.BoxBroadcastTextId)
         {
             if (!GetBroadcastText(gMenuItem.BoxBroadcastTextId))

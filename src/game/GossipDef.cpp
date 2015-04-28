@@ -113,6 +113,26 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
     }
 }
 
+void GossipMenu::AddMenuItemTextID(uint8 icon, uint32 textID, uint32 sender, uint32 action)
+{
+    uint32 loc_idx = GetLocale();
+    NpcTextLocale const *ntl;
+
+    GossipText *pGossip;
+
+    std::string sItemText;
+    ntl = sObjectMgr->GetNpcTextLocale(textID);
+    if(ntl && ntl->Text_0[0].size() > loc_idx && !ntl->Text_0[0][loc_idx].empty())
+        sItemText = ntl->Text_0[0][loc_idx];
+    else {
+        pGossip = sObjectMgr->GetGossipText(textID);
+        if(pGossip)
+            sItemText = pGossip->Options[0].Text_0;
+    }
+
+    AddMenuItem(-1, icon, sItemText, sender, action, "", 0, false);
+}
+
 void GossipMenu::AddGossipMenuItemData(uint32 menuItemId, uint32 gossipActionMenuId, uint32 gossipActionPoi)
 {
     GossipMenuItemData& itemData = _menuItemData[menuItemId];
@@ -171,7 +191,7 @@ void PlayerMenu::ClearMenus()
     _questMenu.ClearMenu();
 }
 
-void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 npcGUID)
+void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 npcGUID)
 {
     _gossipMenu.SetSenderGUID(npcGUID);
 
@@ -558,7 +578,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << uint32(quest->GetRepObjectiveFaction());        // shown in quest log as part of quest objective
     data << uint32(quest->GetRepObjectiveValue());          // shown in quest log as part of quest objective
     
-        /* TODO LK //todo GOSSIP
+        /* TrinityCore LK
     data << uint32(quest->GetRepObjectiveFaction2());       // shown in quest log as part of quest objective OPPOSITE faction
     data << uint32(quest->GetRepObjectiveValue2());         // shown in quest log as part of quest objective OPPOSITE faction
     */

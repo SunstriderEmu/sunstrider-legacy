@@ -1458,7 +1458,7 @@ typedef std::map<int32, std::list<std::string> > SmartAIDBErrorMap;
 #define SMARTAI_DB_ERROR(entryOrGuid, str, ...) \
     { \
     TC_LOG_ERROR("sql.sql", str, __VA_ARGS__); \
-    LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
+    sSmartScriptMgr->LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
     }
 
 class SmartAIMgr
@@ -1490,6 +1490,9 @@ class SmartAIMgr
 
         //return an db error list for given entry or guid if given in negative
         std::list<std::string> const& GetErrorList(int32 entryOrGuid);
+
+        //SmartAI db errors are logged in these map to allow easy access to those later ingame via command (at the time of writing this : .debug smartaierrors)
+        void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
     private:
         //event stores
         SmartAIEventMap mEventMap[SMART_SCRIPT_TYPE_MAX];
@@ -1624,8 +1627,6 @@ class SmartAIMgr
         void LoadHelperStores();
         void UnLoadHelperStores();
 
-        //SmartAI db errors are logged in these map to allow easy access to those later ingame via command (at the time of writing this : .debug smartaierrors)
-        void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
         SmartAIDBErrorMap databaseErrors;
 
         CacheSpellContainerBounds GetSummonCreatureSpellContainerBounds(uint32 creatureEntry) const;

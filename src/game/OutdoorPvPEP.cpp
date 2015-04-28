@@ -701,7 +701,7 @@ void OutdoorPvPObjectiveEP_PWT::SummonFlightMaster(uint32 team)
         if(c)
         {
             GossipMenuItems gso;
-/* TODO GOSSIP
+            /* TODO GOSSIP
             gso.OptionType = GOSSIP_OPTION_OUTDOORPVP;
             gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_EP_FLIGHT_NPT));
             gso.OptionIndex = 50;
@@ -725,7 +725,7 @@ bool OutdoorPvPObjectiveEP_PWT::CanTalkTo(Player * p, Creature * c, GossipMenuIt
 {
     if( p->GetTeam() == m_FlightMasterSpawned
         && c->GetGUID() == m_Creatures[EP_PWT_FLIGHTMASTER]
-      /* TODO GOSSIP  && gso.Id == 50 */)
+       /* TODO GOSSIP && gso.Id == 50 */)
         return true;
     return false;
 }

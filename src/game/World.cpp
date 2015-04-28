@@ -1377,6 +1377,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature Reputation OnKill Data..." );
     sObjectMgr->LoadReputationOnKill();
 
+    TC_LOG_INFO("server.loading", "Loading Points Of Interest Data...");
+    sObjectMgr->LoadPointsOfInterest();
+
     TC_LOG_INFO("server.loading", "Loading Pet Create Spells..." );
     sObjectMgr->LoadPetCreateSpells();
 
@@ -1522,12 +1525,12 @@ void World::SetInitialWorldSettings()
     
     TC_LOG_INFO("server.loading", "Loading Npc gossip menus..." );
     sObjectMgr->LoadGossipMenu();
+    
+    TC_LOG_INFO("server.loading", "Loading Npc Options..." );
+    sObjectMgr->LoadGossipMenuItems();
 
     TC_LOG_INFO("server.loading", "Loading Npc gossips Id..." );
     sObjectMgr->LoadCreatureGossip();                                 // must be after load Creature and menus
-
-    TC_LOG_INFO("server.loading", "Loading Npc Options..." );
-    sObjectMgr->LoadGossipMenuItems();
 
     TC_LOG_INFO("server.loading", "Loading vendors..." );
     sObjectMgr->LoadVendors();                                   // must be after load CreatureTemplate and ItemTemplate

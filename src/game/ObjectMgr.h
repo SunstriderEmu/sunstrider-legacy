@@ -511,7 +511,6 @@ class ObjectMgr
 
         PointOfInterest const* GetPointOfInterest(uint32 id) const
         {
-            //TODO GOSSIP : fill this from database
             PointOfInterestContainer::const_iterator itr = _pointsOfInterestStore.find(id);
             if (itr != _pointsOfInterestStore.end())
                 return &itr->second;
@@ -607,6 +606,9 @@ class ObjectMgr
         void LoadFishingBaseSkillLevel();
 
         void LoadReputationOnKill();
+
+        void LoadPointsOfInterest();
+        void LoadQuestPOI();
 
         void LoadWeatherZoneChances();
         void LoadGameTele();

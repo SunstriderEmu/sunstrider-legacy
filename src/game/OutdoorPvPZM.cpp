@@ -392,7 +392,7 @@ void OutdoorPvPObjectiveZM_GraveYard::SetBeaconState(uint32 controlling_faction)
     UpdateTowerState();
 }
 
-bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso)
+bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player* plr, Creature* c, GossipMenuItems const& gso)
 {
     uint64 guid = c->GetGUID();
     std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
@@ -400,12 +400,12 @@ bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player * plr, Creature * c, Goss
     {
         if(itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == TEAM_ALLIANCE && m_BothControllingFaction == TEAM_ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
         {
-          //todo GOSSIP  gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_ALLIANCE));
+            //TODO GOSSIP gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_ALLIANCE));
             return true;
         }
         else if(itr->second == ZM_HORDE_FIELD_SCOUT && plr->GetTeam() == TEAM_HORDE && m_BothControllingFaction == TEAM_HORDE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_H)
         {
-          //todo GOSSIP  gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_HORDE));
+            //TODO GOSSIP gso.OptionText.assign(sObjectMgr->GetTrinityStringForDBCLocale(LANG_OPVP_ZM_GOSSIP_HORDE));
             return true;
         }
     }

@@ -127,21 +127,30 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 
 // Defined fuctions to use with player.
 
-// This fuction add's a menu item,
 // a - Icon Id
-// b - Text / TextId (from gossip_text)
+// b - Text string
 // c - Sender(this is to identify the current Menu with this item)
 // d - Action (identifys this Menu Item)
-// e - Text to be displayed in pop up box / TextId (from gossip_text)
+// e - Text to be displayed in pop up box
 // f - Money value in pop up box
 #define ADD_GOSSIP_ITEM(a, b, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, "", 0)
-#define ADD_GOSSIP_ITEM_DB(h, i, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(h, i, c, d)
 #define ADD_GOSSIP_ITEM_EXTENDED(a, b, c, d, e, f, g)   PlayerTalkClass->GetGossipMenu().AddMenuItem(-1, a, b, c, d, e, f, g)
+// a - menuId
+// b - menuItemId
+// c - Sender(this is to identify the current Menu with this item)
+// d - Action (identifys this Menu Item)
+#define ADD_GOSSIP_ITEM_DB(a, b, c, d)   PlayerTalkClass->GetGossipMenu().AddMenuItem(a, b, c, d)
+//This one is for compat purpose, prefer using a gossip menu in db
+// a - Icon Id
+// b - TextId (from gossip_text)
+// c - Sender(this is to identify the current Menu with this item)
+// d - Action (identifys this Menu Item)
+#define ADD_GOSSIP_ITEM_TEXTID(a, b, c, d) PlayerTalkClass->GetGossipMenu().AddMenuItemTextID(a, b, c, d)
 
 // This fuction Sends the current menu to show to client, a - NPCTEXTID(uint32) , b - npc guid(uint64)
-#define SEND_GOSSIP_MENU(a,b)      PlayerTalkClass->SendGossipMenu(a,b)
+#define SEND_GOSSIP_MENU_TEXTID(a,b)      PlayerTalkClass->SendGossipMenuTextID(a,b)
 // a : player , c : creature
-#define SEND_DEFAULT_GOSSIP_MENU(p, c)      p->PlayerTalkClass->SendGossipMenu(p->GetDefaultGossipMenuForSource(c), c->GetGUID())
+#define SEND_DEFAULT_GOSSIP_MENU(p, c) { p->PrepareGossipMenu(c, p->GetDefaultGossipMenuForSource(c), true); p->SendPreparedGossip(c); }
 
 // This fuction shows POI(point of interest) to client.
 // a - position X
