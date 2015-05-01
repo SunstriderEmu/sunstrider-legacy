@@ -1306,11 +1306,38 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     uint32 targetMap = e.action.teleport.ignoreMap ? (*itr)->GetMapId() : e.action.teleport.mapID;
                     (*itr)->ToPlayer()->TeleportTo(targetMap, e.target.x, e.target.y, e.target.z, e.target.o);
                 } else if (IsCreature(*itr))
-                    (*itr)->ToCreature()->Relocate(e.target.x, e.target.y, e.target.z, e.target.o);
+                    (*itr)->ToCreature()->NearTeleportTo(e.target.x, e.target.y, e.target.z, e.target.o);
 
                 if(e.action.teleport.useVisual)
                     if(Unit* u = (*itr)->ToUnit())
-                        me->CastSpell(u, 41232, true); //teleport visual
+                        me->CastSpell(u, 46614, true); //teleport visual
+            }
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_TELEPORT_ON_VICTIM:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            Unit* teleportOn = e.action.teleportOnVictim.onMe ? me : me->GetVictim();
+            if(!teleportOn)
+                break;
+
+            float x,y,z;
+            teleportOn->GetPosition(x,y,z);
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if(Unit* u = (*itr)->ToUnit())
+                {
+                    u->NearTeleportTo(x, y, z, u->GetOrientation());
+                    if(e.action.teleportOnVictim.useVisual)
+                        me->CastSpell(u, 46614, true); //teleport visual
+                }
+
             }
 
             delete targets;
