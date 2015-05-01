@@ -1302,9 +1302,15 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (IsPlayer(*itr))
-                    (*itr)->ToPlayer()->TeleportTo(e.action.teleport.mapID, e.target.x, e.target.y, e.target.z, e.target.o);
-                else if (IsCreature(*itr))
+                {
+                    uint32 targetMap = e.action.teleport.ignoreMap ? (*itr)->GetMapId() : e.action.teleport.mapID;
+                    (*itr)->ToPlayer()->TeleportTo(targetMap, e.target.x, e.target.y, e.target.z, e.target.o);
+                } else if (IsCreature(*itr))
                     (*itr)->ToCreature()->Relocate(e.target.x, e.target.y, e.target.z, e.target.o);
+
+                if(e.action.teleport.useVisual)
+                    if(Unit* u = (*itr)->ToUnit())
+                        me->CastSpell(u, 41232, true); //teleport visual
             }
 
             delete targets;

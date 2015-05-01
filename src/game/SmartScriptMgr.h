@@ -463,7 +463,7 @@ enum SMART_ACTION
     SMART_ACTION_SET_RUN                            = 59,     // 0/1
     SMART_ACTION_SET_FLY                            = 60,     // 0/1
     SMART_ACTION_SET_SWIM                           = 61,     // 0/1
-    SMART_ACTION_TELEPORT                           = 62,     // mapID,
+    SMART_ACTION_TELEPORT                           = 62,     // mapID, ignoreMap, useVisual (spell 41232)
     SMART_ACTION_STORE_VARIABLE_DECIMAL             = 63,     // varID, number
     SMART_ACTION_STORE_TARGET_LIST                  = 64,     // varID,
     SMART_ACTION_WP_RESUME                          = 65,     // none
@@ -812,6 +812,8 @@ struct SmartAction
         struct
         {
             uint32 mapID;
+            uint32 ignoreMap;
+            uint32 useVisual;
         } teleport;
 
         struct
