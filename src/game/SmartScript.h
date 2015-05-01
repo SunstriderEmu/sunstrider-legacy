@@ -137,6 +137,36 @@ class SmartScript
             return nullptr;
         }
 
+        void StoreCounter(uint32 id, uint32 value, uint32 reset)
+        {
+            CounterMap::const_iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+            {
+                if (reset == 0)
+                    value += GetCounterValue(id);
+                mCounterList.erase(id);
+            }
+
+            mCounterList.insert(std::make_pair(id, value));
+            ProcessEventsFor(SMART_EVENT_COUNTER_SET);
+        }
+
+        uint32 GetCounterId(uint32 id)
+        {
+            CounterMap::iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+                return itr->first;
+            return 0;
+        }
+
+        uint32 GetCounterValue(uint32 id)
+        {
+            CounterMap::iterator itr = mCounterList.find(id);
+            if (itr != mCounterList.end())
+                return itr->second;
+            return 0;
+        }
+
         GameObject* FindGameObjectNear(WorldObject* pSearchObject, uint32 guid) const
         {
             GameObject *pGameObject = nullptr;
@@ -203,6 +233,8 @@ class SmartScript
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker();
         uint64 mLastInvoker;
+        typedef std::unordered_map<uint32, uint32> CounterMap;
+        CounterMap mCounterList;
 
     private:
         void IncPhase(int32 p = 1)

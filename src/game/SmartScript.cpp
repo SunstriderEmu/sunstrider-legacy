@@ -81,6 +81,7 @@ SmartScript::~SmartScript()
         delete itr->second;
 
     delete mTargetStorage;
+    mCounterList.clear();
 }
 
 void SmartScript::OnReset()
@@ -97,6 +98,7 @@ void SmartScript::OnReset()
     }
     ProcessEventsFor(SMART_EVENT_RESET);
     mLastInvoker = 0;
+    mCounterList.clear();
 }
 
 void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellEntry* spell, GameObject* gob)
@@ -1280,13 +1282,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             delete targets;
             break;
         }
-        case SMART_ACTION_STORE_VARIABLE_DECIMAL:
-        {
-            if (mStoredDecimals.find(e.action.storeVar.id) != mStoredDecimals.end())
-                mStoredDecimals.erase(e.action.storeVar.id);
-            mStoredDecimals[e.action.storeVar.id] = e.action.storeVar.number;
-            break;
-        }
         case SMART_ACTION_STORE_TARGET_LIST:
         {
             ObjectList* targets = GetTargets(e, unit);
@@ -1365,6 +1360,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 break;
 
             CAST_AI(SmartAI, me->AI())->SetSwim(e.action.setSwim.swim);
+            break;
+        }
+        case SMART_ACTION_SET_COUNTER:
+        {
+            StoreCounter(e.action.setCounter.counterId, e.action.setCounter.value, e.action.setCounter.reset);
             break;
         }
         case SMART_ACTION_WP_START:
@@ -3315,6 +3315,72 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessTimedAction(e, e.event.friendlyHealthPct.repeatMin, e.event.friendlyHealthPct.repeatMax, target);
             break;
         }
+        case SMART_EVENT_DISTANCE_CREATURE:
+        {
+            if (!me)
+                return;
+
+            WorldObject* creature = NULL;
+
+            if (e.event.distance.guid != 0)
+            {
+                creature = FindCreatureNear(me, e.event.distance.guid);
+
+                if (!creature)
+                    return;
+
+                if (!me->IsInRange(creature, 0, (float)e.event.distance.dist))
+                    return;
+            }
+            else if (e.event.distance.entry != 0)
+            {
+                std::list<Creature*> list;
+                me->GetCreatureListWithEntryInGrid(list, e.event.distance.entry, (float)e.event.distance.dist);
+
+                if (!list.empty())
+                    creature = list.front();
+            }
+
+            if (creature)
+                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat);
+
+            break;
+        }
+        case SMART_EVENT_DISTANCE_GAMEOBJECT:
+        {
+            if (!me)
+                return;
+
+            WorldObject* gameobject = NULL;
+
+            if (e.event.distance.guid != 0)
+            {
+                gameobject = FindGameObjectNear(me, e.event.distance.guid);
+
+                if (!gameobject)
+                    return;
+
+                if (!me->IsInRange(gameobject, 0, (float)e.event.distance.dist))
+                    return;
+            }
+            else if (e.event.distance.entry != 0)
+            {
+                std::list<GameObject*> list;
+                me->GetGameObjectListWithEntryInGrid(list, e.event.distance.entry, (float)e.event.distance.dist);
+
+                if (!list.empty())
+                    gameobject = list.front();
+            }
+
+            if (gameobject)
+                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat);
+
+            break;
+        }
+        case SMART_EVENT_COUNTER_SET:
+            if (GetCounterId(e.event.counter.id) != 0 && GetCounterValue(e.event.counter.id) == e.event.counter.value)
+                ProcessTimedAction(e, e.event.counter.cooldownMin, e.event.counter.cooldownMax);
+            break;
         case SMART_EVENT_FRIENDLY_KILLED:
         {
             if(!unit || !me)
@@ -3351,6 +3417,10 @@ void SmartScript::InitTimer(SmartScriptHolder& e)
         case SMART_EVENT_IC_LOS:
         case SMART_EVENT_OOC_LOS:
             RecalcTimer(e, e.event.los.cooldownMin, e.event.los.cooldownMax);
+            break;
+        case SMART_EVENT_DISTANCE_CREATURE:
+        case SMART_EVENT_DISTANCE_GAMEOBJECT:
+            RecalcTimer(e, e.event.distance.repeat, e.event.distance.repeat);
             break;
         default:
             e.active = true;
@@ -3412,6 +3482,8 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
             case SMART_EVENT_TARGET_BUFFED:
             case SMART_EVENT_IS_BEHIND_TARGET:
             case SMART_EVENT_FRIENDLY_HEALTH_PCT:
+            case SMART_EVENT_DISTANCE_CREATURE:
+            case SMART_EVENT_DISTANCE_GAMEOBJECT:
             {
                 ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
