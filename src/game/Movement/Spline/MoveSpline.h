@@ -60,6 +60,8 @@ namespace Movement
 
         MoveSplineFlag  splineflags;
 
+        bool            interrupt; //finalize movement as soon as possible
+
         int32           time_passed;
         // currently duration mods are unused, but its _currently_
         //float           duration_mod;
@@ -88,7 +90,8 @@ namespace Movement
         MySpline const& _Spline() const { return spline; }
         int32 _currentSplineIdx() const { return point_Idx; }
         void _Finalize();
-        void _Interrupt() { splineflags.done = true; }
+        void _Interrupt();
+        bool IsInterrupting() { return interrupt; }
 
     public:
         void Initialize(const MoveSplineInitArgs&);

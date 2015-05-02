@@ -191,7 +191,7 @@ void MoveSpline::Initialize(MoveSplineInitArgs const& args)
 
 MoveSpline::MoveSpline() : m_Id(0), time_passed(0),
     vertical_acceleration(0.f), initialOrientation(0.f), effect_start_time(0), point_Idx(0), point_Idx_offset(0),
-    onTransport(false)
+    onTransport(false), interrupt(false)
 {
     splineflags.done = true;
 }
@@ -247,7 +247,16 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
         ms_time_diff = 0;
         return Result_Arrived;
     }
-
+    //interrupt as soon as possible
+    if(interrupt)
+    {
+        if(!isFalling()) //wait for fall to complete before finalizing
+        {
+            _Finalize();
+            ms_time_diff = 0;
+            return Result_Arrived;
+        }
+    }
     UpdateResult result = Result_None;
 
     int32 minimal_diff = std::min(ms_time_diff, segment_time_elapsed());
@@ -305,9 +314,16 @@ std::string MoveSpline::ToString() const
 
 void MoveSpline::_Finalize()
 {
+    interrupt = false;
     splineflags.done = true;
     point_Idx = spline.last() - 1;
     time_passed = Duration();
+}
+
+void MoveSpline::_Interrupt() 
+{ 
+    if(!Finalized())
+        interrupt = true; 
 }
 
 int32 MoveSpline::currentPathIdx() const

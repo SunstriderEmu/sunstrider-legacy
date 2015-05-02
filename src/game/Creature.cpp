@@ -130,6 +130,9 @@ CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unit
 
 bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
+    if(!m_owner.IsAlive()) //event can be executed after creature death
+        return true;
+
     Unit* victim = Unit::GetUnit(m_owner, m_victim);
     if (victim)
     {
@@ -478,6 +481,8 @@ void Creature::Update(uint32 diff)
     UpdateProhibitedSchools(diff);
 
     UpdateMovementFlags();
+    
+    Unit::Update(diff); //this may change m_deathState, so keep it before the switch
 
     switch(m_deathState)
     {
@@ -555,13 +560,6 @@ void Creature::Update(uint32 diff)
                 TC_LOG_DEBUG("entities.unit","Removing alive corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
             }
 
-            Unit::Update( diff );
-
-            // creature can be dead after Unit::Update call
-            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
-            if(!IsAlive())
-                break;
-                
             if(IsInCombat() && 
                 (IsWorldBoss() || GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_INSTANCE_BIND) &&
                 GetMap() && GetMap()->IsDungeon())
