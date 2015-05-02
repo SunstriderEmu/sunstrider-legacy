@@ -362,7 +362,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
     }
     if (e.event.event_phase_mask > SMART_EVENT_PHASE_ALL)
     {
-        SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: EntryOrGuid %d using event(%u) has invalid phase mask (%u), skipped.", e.entryOrGuid, e.event_id, e.event.event_phase_mask);
+        SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: EntryOrGuid %d using event(%u) has invalid phase mask (%u), skipped.", e.entryOrGuid, e.event_id, uint32(e.event.event_phase_mask));
         return false;
     }
     if (e.event.event_flags > SMART_EVENT_FLAGS_ALL)
