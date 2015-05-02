@@ -283,7 +283,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
 /**
  * change the entry of creature until respawn
  */
-bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
+bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 {
     CreatureTemplate const *normalInfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!normalInfo)
@@ -319,7 +319,7 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
         return false;
     }
 
-    uint32 display_id = sObjectMgr->ChooseDisplayId(team, GetCreatureTemplate(), data);
+    uint32 display_id = sObjectMgr->ChooseDisplayId(GetCreatureTemplate(), data);
     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
     if (!minfo)
     {
@@ -369,9 +369,9 @@ bool Creature::InitEntry(uint32 Entry, uint32 team, const CreatureData *data )
     return true;
 }
 
-bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData *data )
+bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 {
-    if(!InitEntry(Entry,team,data))
+    if(!InitEntry(Entry,data))
         return false;
 
     CreatureTemplate const* cInfo = GetCreatureTemplate();
@@ -750,14 +750,14 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     return true;
 }
 
-bool Creature::Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data)
+bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data)
 {
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
     //m_DBTableGuid = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
-    const bool bResult = CreateFromProto(guidlow, Entry, team, data);
+    const bool bResult = CreateFromProto(guidlow, Entry, data);
 
     if (bResult)
     {
@@ -1086,7 +1086,7 @@ void Creature::SelectLevel()
     SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, stats->RangedAttackPower);
 }
 
-bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const CreatureData *data)
+bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data)
 {
     CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(Entry);
     if(!cinfo)
@@ -1098,7 +1098,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, uint32 team, const 
 
     Object::_Create(guidlow, Entry, HIGHGUID_UNIT);
 
-    if(!UpdateEntry(Entry, team, data))
+    if(!UpdateEntry(Entry, data))
         return false;
 
     //Notify the map's instance data.
@@ -1136,8 +1136,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     m_DBTableGuid = guid;
     if (map->GetInstanceId() != 0) guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
 
-    uint16 team = 0;
-    if(!Create(guid,map,data->id,team,data))
+    if(!Create(guid,map,data->id,data))
         return false;
 
     Relocate(data->posX,data->posY,data->posZ,data->orientation);

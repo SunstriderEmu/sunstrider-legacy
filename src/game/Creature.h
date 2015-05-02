@@ -475,7 +475,7 @@ struct VendorItemData
 
     VendorItem* GetItem(uint32 slot) const
     {
-        if(slot>=m_items.size()) return NULL;
+        if(slot>=m_items.size()) return nullptr;
         return m_items[slot];
     }
     bool Empty() const { return m_items.empty(); }
@@ -552,7 +552,7 @@ class Creature : public Unit
         
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 Entry, uint32 team, const CreatureData *data = NULL);
+        bool Create (uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data = nullptr);
         //get data from SQL storage
         void LoadCreatureAddon();
         //reapply creature addon data to creature
@@ -564,7 +564,7 @@ class Creature : public Unit
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
 
         void Update( uint32 time );                         // overwrited Unit::Update
-        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
         bool IsPet() const { return m_IsPet; }
@@ -609,7 +609,7 @@ class Creature : public Unit
         bool isMoving();
         bool IsInEvadeMode() const;
 
-        bool AIM_Initialize(CreatureAI* ai = NULL);
+        bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 
         void WarnDeathToFriendly();
@@ -633,7 +633,7 @@ class Creature : public Unit
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=TEAM_ALLIANCE, const CreatureData* data=NULL);
+        bool UpdateEntry(uint32 entry, const CreatureData* data = nullptr);
         void UpdateMovementFlags();
 
         bool UpdateStats(Stats stat) override;
@@ -849,8 +849,8 @@ class Creature : public Unit
         void CheckForUnreachableTarget();
 
     protected:
-        bool CreateFromProto(uint32 guidlow,uint32 Entry,uint32 team, const CreatureData *data = NULL);
-        bool InitEntry(uint32 entry, uint32 team=TEAM_ALLIANCE, const CreatureData* data=NULL);
+        bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
+        bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;

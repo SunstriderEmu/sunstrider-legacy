@@ -2790,7 +2790,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
         if (m_target->GetTypeId()==TYPEID_PLAYER)
             team = (m_target->ToPlayer())->GetTeam();
 
-        uint32 display_id = sObjectMgr->ChooseDisplayId(team,ci);
+        uint32 display_id = sObjectMgr->ChooseDisplayId(ci);
         CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
 
         //m_target->RemoveAurasByType(SPELL_AURA_MOUNTED);
@@ -3208,7 +3208,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                     if (m_target->GetTypeId()==TYPEID_PLAYER)
                         team = (m_target->ToPlayer())->GetTeam();
 
-                    uint32 display_id = sObjectMgr->ChooseDisplayId(team,ci);
+                    uint32 display_id = sObjectMgr->ChooseDisplayId(ci);
                     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
 
                     m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,display_id);

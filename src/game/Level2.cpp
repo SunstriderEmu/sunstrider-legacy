@@ -987,11 +987,6 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     if (!charID)
         return false;
 
-    char* team = strtok(NULL, " ");
-    int32 teamval = 0;
-    if (team) { teamval = atoi(team); }
-    if (teamval < 0) { teamval = 0; }
-
     uint32 id  = atoi(charID);
 
     Player *chr = m_session->GetPlayer();
@@ -1034,7 +1029,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     }
 
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, id, (uint32)teamval))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, id))
     {
         delete pCreature;
         return false;
@@ -2790,7 +2785,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                 wpCreature->AddObjectToRemoveList();
                 // re-create
                 Creature* wpCreature2 = new Creature;
-                if (!wpCreature2->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, true), map, VISUAL_WAYPOINT, 0))
+                if (!wpCreature2->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, true), map, VISUAL_WAYPOINT))
                 {
                     PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
                     delete wpCreature2;

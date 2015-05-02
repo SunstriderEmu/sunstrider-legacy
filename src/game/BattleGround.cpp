@@ -1526,14 +1526,14 @@ void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
     }
 }
 
-Creature* Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime)
+Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y, float z, float o, uint32 respawntime)
 {
     Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceID());
     if(!map)
         return NULL;
 
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, entry, teamval))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, entry))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;
@@ -1602,7 +1602,7 @@ bool Battleground::AddSpiritGuide(uint32 type, float x, float y, float z, float 
     else
         entry = 13117;
 
-    Creature* pCreature = AddCreature(entry,type,team,x,y,z,o);
+    Creature* pCreature = AddCreature(entry,type,x,y,z,o);
     if(!pCreature)
     {
         TC_LOG_ERROR("bg.battleground","Can't create Spirit guide. Battleground not created!");

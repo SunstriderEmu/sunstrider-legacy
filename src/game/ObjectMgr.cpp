@@ -1018,7 +1018,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
     return NULL;
 }
 
-uint32 ObjectMgr::ChooseDisplayId(uint32 team, const CreatureTemplate *cinfo, const CreatureData *data)
+uint32 ObjectMgr::ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data)
 {
     // Load creature model (display id)
     uint32 display_id = 0;

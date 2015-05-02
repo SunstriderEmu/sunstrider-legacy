@@ -1479,15 +1479,14 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
 
-    uint32 team = 0;
-    if (GetTypeId()==TYPEID_PLAYER)
-        team = (this->ToPlayer())->GetTeam();
-
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id, team))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id))
     {
         delete pCreature;
         return NULL;
     }
+
+    //make sure the create has the correct creator
+    pCreature->SetCreatorGUID(this->GetGUID());
 
     if (x == 0.0f && y == 0.0f && z == 0.0f)
         GetClosePoint(x, y, z, pCreature->GetObjectSize());
@@ -1503,15 +1502,17 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     pCreature->SetHomePosition(x, y, z, ang);
     pCreature->Summon(spwtype, despwtime);
+    
+    if(pCreature->AI())
+        pCreature->AI()->IsSummonedBy(this->ToUnit());
+    if(pCreature->getAI())
+        pCreature->AI()->IsSummonedBy(this->ToCreature());
 
-    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
+    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
+    {
         (this->ToCreature())->AI()->JustSummoned(pCreature);
-        if(pCreature->AI())
-            pCreature->AI()->IsSummonedBy(this->ToUnit());
         if ((this->ToCreature())->getAI())
             (this->ToCreature())->getAI()->onSummon(pCreature);
-        if(pCreature->getAI())
-            pCreature->AI()->IsSummonedBy(this->ToCreature());
     }
 
     if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])

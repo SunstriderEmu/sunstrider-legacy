@@ -106,7 +106,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     return true;
 }
 
-bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive)
+bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay, bool setActive)
 {
     CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(entry);
     if(!cInfo)
@@ -114,7 +114,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
         return false;
     }
 
-    uint32 displayId = sObjectMgr->ChooseDisplayId(teamval, cInfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, NULL);
     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&displayId);
     if (!minfo)
         return false;
@@ -149,7 +149,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 teamval,
     if(!pMap)
         return true;
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(guid, pMap, entry, teamval))
+    if (!pCreature->Create(guid, pMap, entry))
     {
         TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
         delete pCreature;
@@ -191,7 +191,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
         return false;
 
     // create capture point creature
-    uint32 displayId = sObjectMgr->ChooseDisplayId(0, cInfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, NULL);
 
     uint32 creature_guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
 
@@ -267,7 +267,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     }
     // add creature...
     Creature* pCreature = new Creature;
-    if (!pCreature->Create(creature_guid, pMap, OPVP_TRIGGER_CREATURE_ENTRY, 0))
+    if (!pCreature->Create(creature_guid, pMap, OPVP_TRIGGER_CREATURE_ENTRY))
     {
         TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
         delete pCreature;

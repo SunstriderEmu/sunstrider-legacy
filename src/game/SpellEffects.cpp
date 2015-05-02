@@ -4041,7 +4041,6 @@ void Spell::EffectSummon(uint32 i)
     spawnCreature->SetUInt32Value(UNIT_NPC_FLAGS, 0);
     spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, 0);
     spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
-
     /*std::string name = owner->GetName();
     name.append(petTypeSuffix[spawnCreature->getPetType()]);*/
     spawnCreature->SetName(spawnCreature->GetNameForLocaleIdx(owner->GetSession()->GetSessionDbcLocale()));
@@ -6496,13 +6495,9 @@ void Spell::EffectSummonTotem(uint32 i)
         }
     }
 
-    uint32 team = 0;
-    if (m_caster->GetTypeId()==TYPEID_PLAYER)
-        team = (m_caster->ToPlayer())->GetTeam();
-
     Totem* pTotem = new Totem;
 
-    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i], team ))
+    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), m_caster->GetMap(), m_spellInfo->EffectMiscValue[i] ))
     {
         delete pTotem;
         return;

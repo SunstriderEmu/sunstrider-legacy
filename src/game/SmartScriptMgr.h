@@ -713,7 +713,6 @@ struct SmartAction
         struct
         {
             uint32 creature;
-            uint32 team;
         } updateTemplate;
 
         struct
