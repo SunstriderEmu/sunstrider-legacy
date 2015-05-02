@@ -498,7 +498,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     if(_session->GetClientBuild() == BUILD_335)
         data << float(0.0f);                                    // unk, honor multiplier?
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
-    data << int32(quest->GetRewSpellCast());                // cast spell
+    data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
     if(_session->GetClientBuild() == BUILD_335)
     {
@@ -779,15 +779,18 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     }
 
     data << uint32(quest->GetRewOrReqMoney());
-    data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
+
+    if(_session->GetClientBuild() == BUILD_335)
+        data << uint32(quest->XPValue(_session->GetPlayer()) * sWorld->GetRate(RATE_XP_QUEST));
 
     // rewarded honor points. Multiply with 10 to satisfy client
    // data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
     data << uint32(10*Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->GetLevel(), quest->GetRewHonorableKills()));
-    data << float(0.0f);                                    // unk, honor multiplier?
+    if(_session->GetClientBuild() == BUILD_335)
+        data << float(0.0f);                                    // unk, honor multiplier?
     data << uint32(0x08);                                   // unused by client?
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (cast if RewardSpellCast == 0)
-    data << int32(quest->GetRewSpellCast());                // cast spell
+    data << uint32(quest->GetRewSpellCast());                // cast spell
     data << uint32(0);                                        // unknown
     if(_session->GetClientBuild() == BUILD_335)
     {
