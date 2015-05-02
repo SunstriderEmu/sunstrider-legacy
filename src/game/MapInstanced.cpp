@@ -132,7 +132,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
     if (obj->GetTypeId() != TYPEID_PLAYER)
     {
         assert(obj->GetMapId() == GetId() && obj->GetInstanceId());
-        return FindBaseMap(obj->GetInstanceId());
+        return FindInstanceMap(obj->GetInstanceId());
     }
 
     Player *player = const_cast<Player*>(obj->ToPlayer());
@@ -140,7 +140,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 
     if (instanceId)
     {
-        if (Map *map = FindBaseMap(instanceId))
+        if (Map *map = FindInstanceMap(instanceId))
             return map;
     }
 
@@ -150,7 +150,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 
         if (instanceId)
         {
-            if (Map *map = FindBaseMap(instanceId))
+            if (Map *map = FindInstanceMap(instanceId))
                 return map;
             else
             {
@@ -167,7 +167,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
         if (!instanceId || player->IsGameMaster())
         {
             instanceId = pSave->GetInstanceId(); // go from outside to instance
-            if (Map *map = FindBaseMap(instanceId))
+            if (Map *map = FindInstanceMap(instanceId))
                 return map;
         }
         else if (instanceId != pSave->GetInstanceId()) // cannot go from one instance to another
@@ -185,6 +185,12 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
     }
 
     return NULL;
+}
+
+Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
+{
+    InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
+    return(i == m_InstancedMaps.end() ? NULL : i->second);
 }
 
 InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, uint8 difficulty)

@@ -4427,7 +4427,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     }
 
     //update visual
-    if(Map* map = sMapMgr->GetMap(target->GetMapId(),target))
+    if(Map* map = sMapMgr->CreateMap(target->GetMapId(),target))
     {
         map->Remove(target,false);
         map->Add(target);
@@ -7965,7 +7965,7 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     gy = atoi(gystr);
     unloadall = atoi(unloadallstr);
 
-    Map* map = sMapMgr->FindMap(mapid);
+    Map* map = sMapMgr->FindBaseNonInstanceMap(mapid);
     if (!map)
     {
         PSendSysMessage("Cannot find map id %u.", mapid);

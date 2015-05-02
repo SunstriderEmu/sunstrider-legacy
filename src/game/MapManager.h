@@ -42,8 +42,8 @@ class MapManager
             return &instance;
         }
 
-        Map* GetMap(uint32, const WorldObject* obj);
-        Map* FindMap(uint32 mapid) { return FindBaseMap(mapid); }
+        Map* FindBaseNonInstanceMap(uint32 mapId) const;
+        Map* CreateMap(uint32 id, const WorldObject* obj);
         Map* FindMap(uint32 mapid, uint32 instanceId);
 
         // only const version for outer users

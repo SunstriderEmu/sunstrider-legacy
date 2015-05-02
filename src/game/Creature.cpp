@@ -479,15 +479,15 @@ void Creature::Update(uint32 diff)
 
     UpdateMovementFlags();
 
-    switch( m_deathState )
+    switch(m_deathState)
     {
         case JUST_RESPAWNED:
             // Must not be called, see Creature::setDeathState JUST_RESPAWNED -> ALIVE promoting.
-            TC_LOG_ERROR("creature","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUIDLow(),GetEntry());
+            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_RESPAWNED (4)",GetGUIDLow(),GetEntry());
             break;
         case JUST_DIED:
             // Must not be called, see Creature::setDeathState JUST_DIED -> CORPSE promoting.
-            TC_LOG_ERROR("creature","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
+            TC_LOG_ERROR("entities.unit","Creature (GUIDLow: %u Entry: %u ) in wrong state: JUST_DEAD (1)",GetGUIDLow(),GetEntry());
             break;
         case DEAD:
         {
@@ -656,11 +656,6 @@ void Creature::Update(uint32 diff)
             }
             
             break;
-        }
-        case DEAD_FALLING:
-        {
-            if (!FallGround())
-                SetDeathState(JUST_DIED);
         }
         default:
             break;
@@ -1361,9 +1356,6 @@ void Creature::SetDeathState(DeathState s)
         if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
             ((InstanceMap*)map)->GetInstanceData()->OnCreatureDeath(this);
 
-        if (CanFly() && FallGround())
-            return;
-
         SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
 
@@ -1398,28 +1390,6 @@ void Creature::SetDeathState(DeathState s)
         InitCreatureAddon(true);
         Unit::SetDeathState(ALIVE);
     }
-}
-
-bool Creature::FallGround()
-{
-    // Let's abort after we called this function one time
-    if (GetDeathState() == DEAD_FALLING)
-        return false;
-
-    if(ToTemporarySummon() && ToTemporarySummon()->DespawnOnDeath())
-        return false;
-
-    float x, y, z;
-    GetPosition(x, y, z);
-    float ground_Z = GetMap()->GetHeight(x, y, z);
-    UpdateAllowedPositionZ(x, y, z);
-    if (fabs(ground_Z - z) < 0.1f)
-        return false;
-
-    Unit::SetDeathState(DEAD_FALLING);
-    GetMotionMaster()->MovePoint(0, x, y, ground_Z);
-    Relocate(x, y, ground_Z);
-    return true;
 }
 
 void Creature::Respawn()
@@ -2239,7 +2209,7 @@ time_t Creature::GetLinkedCreatureRespawnTime() const
             if(data->mapid == GetMapId())   // look up on the same map
                 targetMap = GetMap();
             else                            // it shouldn't be instanceable map here
-                targetMap = sMapMgr->FindMap(data->mapid);
+                targetMap = sMapMgr->FindBaseNonInstanceMap(data->mapid);
         }
         if(targetMap)
             return sObjectMgr->GetCreatureRespawnTime(targetGuid,targetMap->GetInstanceId());

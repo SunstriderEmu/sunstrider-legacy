@@ -295,7 +295,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
         {
             uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
-            Map * map = sMapMgr->FindMap(mapId);
+            Map * map = sMapMgr->FindBaseNonInstanceMap(mapId);
             if(map) 
             {
                 float x = itr->second->GetBattlegroundEntryPointX();

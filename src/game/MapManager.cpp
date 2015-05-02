@@ -36,11 +36,11 @@
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
-MapManager::MapManager() : i_gridCleanUpDelay(sWorld->getConfig(CONFIG_INTERVAL_GRIDCLEAN))
+MapManager::MapManager() : 
+    i_gridCleanUpDelay(sWorld->getConfig(CONFIG_INTERVAL_GRIDCLEAN)),
+    i_GridStateErrorCount(0),
+    i_MaxInstanceId(0)
 {
-    i_GridStateErrorCount = 0;
-    i_MaxInstanceId = 0;
-
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
@@ -94,31 +94,43 @@ Map* MapManager::CreateBaseMap(uint32 id)
         }
         else
         {
-            m = new Map(id, i_gridCleanUpDelay, 0, 0);
+            m = new Map(id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
         }
         i_maps[id] = m;
     }
 
-    assert(m != NULL);
+    assert(m != nullptr);
     return m;
 }
 
-Map* MapManager::GetMap(uint32 id, const WorldObject* obj)
+Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
 {
-    //if(!obj->IsInWorld()) TC_LOG_ERROR("FIXME","GetMap: called for map %d with object (typeid %d, guid %d, mapid %d, instanceid %d) who is not in world!", id, obj->GetTypeId(), obj->GetGUIDLow(), obj->GetMapId(), obj->GetInstanceId());
+    Map* map = FindBaseMap(mapId);
+    if (map && map->Instanceable())
+        return NULL;
+    return map;
+}
+
+Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
+{
     Map *m = CreateBaseMap(id);
 
-    if (m && obj && m->Instanceable()) m = ((MapInstanced*)m)->GetInstance(obj);
+    if (m && obj && m->Instanceable()) 
+        m = ((MapInstanced*)m)->GetInstance(obj);
 
     return m;
 }
 
 Map* MapManager::FindMap(uint32 mapid, uint32 instanceId)
 {
-    Map *map = FindMap(mapid);
-    if(!map) return NULL;
-    if(!map->Instanceable()) return instanceId == 0 ? map : NULL;
-    return ((MapInstanced*)map)->FindMap(instanceId);
+    Map *map = FindBaseMap(mapid);
+    if(!map) 
+        return nullptr;
+
+    if(!map->Instanceable()) 
+        return instanceId == 0 ? map : nullptr;
+
+    return ((MapInstanced*)map)->FindInstanceMap(instanceId);
 }
 
 /*

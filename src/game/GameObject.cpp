@@ -336,7 +336,7 @@ void GameObject::Update(uint32 diff)
                                 return;
                             }
                                                             // respawn timer
-                            sMapMgr->GetMap(GetMapId(), this)->Add(this);
+                            sMapMgr->CreateMap(GetMapId(), this)->Add(this);
                             break;
                     }
                 }
@@ -555,7 +555,7 @@ void GameObject::Refresh()
         return;
 
     if(isSpawned())
-        sMapMgr->GetMap(GetMapId(), this)->Add(this);
+        sMapMgr->CreateMap(GetMapId(), this)->Add(this);
 }
 
 void GameObject::AddUniqueUse(Player* player)

@@ -13275,18 +13275,20 @@ bool Unit::SetWalk(bool enable)
 
 bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
 {
+    if (disable)
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+
     if (disable == IsLevitating())
         return false;
 
     if (disable)
     {
         AddUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
     }
     else
     {
         RemoveUnitMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY);
-        if (!HasUnitMovementFlag(MOVEMENTFLAG_DESCENDING))
+        if (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
         {
             m_movementInfo.SetFallTime(0);
             AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
@@ -13311,13 +13313,15 @@ bool Unit::SetSwim(bool enable)
 
 bool Unit::SetCanFly(bool enable)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
+    if(enable)    
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+
+    if (enable == CanFly())
         return false;
 
     if (enable)
     {
         AddUnitMovementFlag(MOVEMENTFLAG_CAN_FLY);
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
     }
     else
     {

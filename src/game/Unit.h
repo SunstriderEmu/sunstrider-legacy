@@ -390,8 +390,7 @@ enum DeathState
     JUST_DIED      = 1,
     CORPSE         = 2, //dead and corpse still spawned
     DEAD           = 3, //dead and corpse disappeared
-    JUST_RESPAWNED = 4,
-    DEAD_FALLING   = 5
+    JUST_RESPAWNED = 4
 };
 
 enum UnitState

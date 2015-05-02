@@ -677,7 +677,6 @@ class Creature : public Unit
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
         void SetDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
-        bool FallGround();
 
         bool LoadFromDB(uint32 guid, Map *map);
         void SaveToDB();

@@ -5804,23 +5804,23 @@ void Player::SaveRecallPosition()
 
 void Player::SendMessageToSet(WorldPacket *data, bool self, bool to_possessor)
 {
-    sMapMgr->GetMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
+    sMapMgr->CreateMap(GetMapId(), this)->MessageBroadcast(this, data, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor)
 {
-    sMapMgr->GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
+    sMapMgr->CreateMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor);
 }
 
 void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only)
 {
-    sMapMgr->GetMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
+    sMapMgr->CreateMap(GetMapId(), this)->MessageDistBroadcast(this, data, dist, self, to_possessor, own_team_only);
 }
 
 void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 {
     assert(skipped_rcvr);
-    sMapMgr->GetMap(GetMapId(), this)->MessageBroadcast(skipped_rcvr, data, false, false);
+    sMapMgr->CreateMap(GetMapId(), this)->MessageBroadcast(skipped_rcvr, data, false, false);
 }
 
 void Player::SendDirectMessage(WorldPacket *data)
@@ -21855,8 +21855,8 @@ bool Player::ShouldGoToSecondaryArenaZone()
         uint32 mainMapId, secMapId;
         GetArenaZoneCoord(false, mainMapId, x, y, z, o);
         GetArenaZoneCoord(true, secMapId, x, y, z, o);
-        Map* mainMap = sMapMgr->FindMap(mainMapId);
-        Map* secMap = sMapMgr->FindMap(secMapId);
+        Map* mainMap = sMapMgr->FindBaseNonInstanceMap(mainMapId);
+        Map* secMap = sMapMgr->FindBaseNonInstanceMap(secMapId);
         if(mainMap && secMap && mainMap->GetPlayers().getSize() > secMap->GetPlayers().getSize())
                 return true;
     }

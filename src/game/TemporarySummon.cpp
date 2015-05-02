@@ -161,7 +161,7 @@ void TemporarySummon::Summon(TempSummonType type, uint32 lifetime)
     m_timer = lifetime;
     m_lifetime = lifetime;
 
-    sMapMgr->GetMap(GetMapId(), this)->Add(this->ToCreature());
+    sMapMgr->CreateMap(GetMapId(), this)->Add(this->ToCreature());
 
     AIM_Initialize();
 }

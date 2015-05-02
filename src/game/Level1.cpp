@@ -900,7 +900,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         }
         else if(cMap->IsDungeon())
         {
-            Map* pMap = sMapMgr->GetMap(_player->GetMapId(),_player);
+            Map* pMap = sMapMgr->CreateMap(_player->GetMapId(),_player);
 
             // we have to go to instance, and can go to player only if:
             //   1) we are in his group (either as leader or as member)
@@ -2549,7 +2549,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    Map* gmMap = sMapMgr->GetMap(m_session->GetPlayer()->GetMapId(),m_session->GetPlayer());
+    Map* gmMap = sMapMgr->CreateMap(m_session->GetPlayer()->GetMapId(),m_session->GetPlayer());
     bool to_instance =  gmMap->Instanceable();
 
     // we are in instance, and can summon only player in our group with us as lead
@@ -2579,7 +2579,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
 
         if (to_instance)
         {
-            Map* plMap = sMapMgr->GetMap(pl->GetMapId(),pl);
+            Map* plMap = sMapMgr->CreateMap(pl->GetMapId(),pl);
 
             if ( plMap->Instanceable() && plMap->GetInstanceId() != gmMap->GetInstanceId() )
             {

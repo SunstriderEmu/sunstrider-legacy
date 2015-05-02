@@ -110,7 +110,6 @@ void WaypointMovementGenerator<Creature>::DoFinalize(Creature* creature)
 void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 {
     creature->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
-   
     StartMoveNow(creature);
 }
 
@@ -128,9 +127,6 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature)
     {
         TC_LOG_DEBUG("maps.script", "Creature movement start script %u at point %u for " UI64FMTD ".", i_path->at(i_currentNode)->event_id, i_currentNode, creature->GetGUID());
         creature->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
-        //creature->GetMap()->ScriptsStart(sWaypointScripts, i_path-at(i_currentNode)->event_id, creature, NULL);
-        //note: disable "start" for mtmap
-        //DELETE ME AVEC CHANTIER
         sWorld->ScriptsStart(sWaypointScripts, i_path->at(i_currentNode)->event_id, creature, NULL, false);
     }
 
@@ -236,6 +232,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
                         transportPath = false;
                 }
 
+                creature->GetMotionMaster()->Initialize();
                 return false; //cause movement expire
             } else if (path_type == WP_PATH_TYPE_ROUND_TRIP) 
             {
@@ -436,7 +433,6 @@ void FlightPathMovementGenerator::DoFinalize(Player* player)
     }
 
     player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_TAXI_BENCHMARK);
-    player->SetUnitMovementFlags(player->GetUnitMovementFlags() &~ MOVEMENTFLAG_CAN_FLY);
 }
 
 #define PLAYER_FLIGHT_SPEED 32.0f
@@ -468,7 +464,7 @@ bool FlightPathMovementGenerator::DoUpdate(Player* player, uint32 /*diff*/)
         bool departureEvent = true;
         do
         {
-          // TODOMOV  DoEventIfAny(player, (*i_path)[i_currentNode], departureEvent);
+            DoEventIfAny(player, (*i_path)[i_currentNode], departureEvent);
             if (pointId == i_currentNode)
                 break;
             if (i_currentNode == _preloadTargetNode)
@@ -500,18 +496,17 @@ void FlightPathMovementGenerator::SetCurrentNodeAfterTeleport()
 
 void FlightPathMovementGenerator::DoEventIfAny(Player* player, TaxiPathNodeEntry const& node, bool departure)
 {
- /*TODOMOV   if (uint32 eventid = departure ? node.departureEventID : node.arrivalEventID)
+    if (uint32 eventid = departure ? node.departureEventID : node.arrivalEventID)
     {
         TC_LOG_DEBUG("maps.script", "Taxi %s event %u of node %u of path %u for player %s", departure ? "departure" : "arrival", eventid, node.index, node.path, player->GetName().c_str());
-         player->GetMap()->ScriptsStart(sEventScripts, eventid, player, player);
-    }*/
+       // TODOMOV player->GetMap()->ScriptsStart(sEventScripts, eventid, player, player);
+    }
 }
 
 bool FlightPathMovementGenerator::GetResetPos(Player*, float& x, float& y, float& z)
 {
-    /* TODOMOV
     const TaxiPathNodeEntry& node = (*i_path)[i_currentNode];
-    x = node.x; y = node.y; z = node.z; */
+    x = node.x; y = node.y; z = node.z;
     return true;
 }
 
@@ -528,7 +523,6 @@ void FlightPathMovementGenerator::InitEndGridInfo()
 
 void FlightPathMovementGenerator::PreloadEndGrid()
 {
-    /* TODOMOV
     // used to preload the final grid where the flightmaster is
     Map* endMap = sMapMgr->FindBaseNonInstanceMap(_endMapId);
 
@@ -540,7 +534,6 @@ void FlightPathMovementGenerator::PreloadEndGrid()
     }
     else
         TC_LOG_INFO("misc", "Unable to determine map to preload flightmaster grid");
-        */
 }
 
 std::string GetWaypointPathDirectionName(WaypointPathDirection dir)

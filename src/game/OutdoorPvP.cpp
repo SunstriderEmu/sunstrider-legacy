@@ -88,7 +88,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     m_Objects[type] = MAKE_NEW_GUID(guid, entry, HIGHGUID_GAMEOBJECT);
     m_ObjectTypes[m_Objects[type]]=type;
 
-    Map * pMap = sMapMgr->FindMap(map);
+    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
     if(!pMap)
         return true;
     GameObject * go = new GameObject;
@@ -145,7 +145,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, flo
     m_Creatures[type] = MAKE_NEW_GUID(guid, entry, HIGHGUID_UNIT);
     m_CreatureTypes[m_Creatures[type]] = type;
 
-    Map * pMap = sMapMgr->FindMap(map);
+    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
     if(!pMap)
         return true;
     Creature* pCreature = new Creature;
@@ -249,7 +249,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     m_NeutralValue = goinfo->raw.data[12];
 
     // add to map if map is already loaded
-    Map * pMap = sMapMgr->FindMap(map);
+    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
     if(!pMap)
         return true;
     // add GO...
@@ -313,7 +313,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
     // explicit removal from map
     // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
     // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
-    if(Map * map = sMapMgr->FindMap(cr->GetMapId()))
+    if(Map * map = sMapMgr->FindBaseNonInstanceMap(cr->GetMapId()))
         map->Remove(cr,false);
     // delete respawn time for this creature
     WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
@@ -371,7 +371,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
             // explicit removal from map
             // beats me why this is needed, but with the recent removal "cleanup" some creatures stay in the map if "properly" deleted
             // so this is a big fat workaround, if AddObjectToRemoveList and DoDelayedMovesAndRemoves worked correctly, this wouldn't be needed
-            if(Map * map = sMapMgr->FindMap(cr->GetMapId()))
+            if(Map * map = sMapMgr->FindBaseNonInstanceMap(cr->GetMapId()))
                 map->Remove(cr,false);
             // delete respawn time for this creature
             WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);

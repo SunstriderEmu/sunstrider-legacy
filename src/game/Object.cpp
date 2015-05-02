@@ -1421,22 +1421,22 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool /*fake*/, bool bToPossessor)
 {
-    Map* map = sMapMgr->GetMap(m_mapId, this);
+    Map* map = sMapMgr->CreateMap(m_mapId, this);
     if (!map)
         return;
 
-    sMapMgr->GetMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
+    sMapMgr->CreateMap(m_mapId, this)->MessageBroadcast(this, data, bToPossessor);
 }
 
 void WorldObject::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 {
     assert(skipped_rcvr);
-    sMapMgr->GetMap(m_mapId, this)->MessageBroadcast(skipped_rcvr, data, false, false);
+    sMapMgr->CreateMap(m_mapId, this)->MessageBroadcast(skipped_rcvr, data, false, false);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool /*bToSelf*/, bool bToPossessor)
 {
-    sMapMgr->GetMap(m_mapId, this)->MessageDistBroadcast(this, data, dist, bToPossessor);
+    sMapMgr->CreateMap(m_mapId, this)->MessageDistBroadcast(this, data, dist, bToPossessor);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -1448,7 +1448,7 @@ void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
 
 Map* WorldObject::_getMap()
 {
-    return m_map = sMapMgr->GetMap(GetMapId(), this);
+    return m_map = sMapMgr->CreateMap(GetMapId(), this);
 }
 
 Map* WorldObject::FindBaseMap()

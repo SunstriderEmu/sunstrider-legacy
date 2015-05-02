@@ -958,7 +958,7 @@ void Spell::EffectDummy(uint32 i)
                     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel());
                     pGameObj->SetSpellId(m_spellInfo->Id);
 
-                    sMapMgr->GetMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
+                    sMapMgr->CreateMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
@@ -2714,7 +2714,7 @@ void Spell::EffectTeleportUnits(uint32 i)
         (unitTarget->ToPlayer())->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
     else
     {
-        sMapMgr->GetMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
+        sMapMgr->CreateMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
         WorldPacket data;
         unitTarget->SendMessageToSet(&data, false);
         unitTarget->BuildHeartBeatMsg(&data);
@@ -6534,7 +6534,7 @@ void Spell::EffectSummonTotem(uint32 i)
             dy += _dy;
             Trinity::NormalizeMapCoord(dx);
             Trinity::NormalizeMapCoord(dy);
-            dz = sMapMgr->GetMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
+            dz = sMapMgr->CreateMap(mapid, unitTarget)->GetHeight(dx, dy, cz, useVmap);
            
             //Prevent climbing and go around object maybe 2.0f is to small? use 3.0f?
             if( (dz-cz) < 5.0f && (dz-cz) > -5.0f && (unitTarget->IsWithinLOS(dx, dy, dz)))
