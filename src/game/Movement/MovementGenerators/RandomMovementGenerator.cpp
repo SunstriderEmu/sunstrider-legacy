@@ -65,9 +65,12 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature* creature)
         destZ = respZ + distanceZ;
         float levelZ = map->GetWaterOrGroundLevel(destX, destY, destZ-2.0f);
 
+        float diff = destZ - levelZ;
         // Problem here, we must fly above the ground and water, not under. Let's try on next tick
-        if (levelZ >= destZ)
+        if (diff < 0)
             return;
+        else if (diff < 5.0f)
+            destZ += 5.0f; //just go a little higher, we don't want to brush the ground with our wings
     }
     //else if (is_water_ok)                                 // 3D system under water and above ground (swimming mode)
     else                                                    // 2D only
