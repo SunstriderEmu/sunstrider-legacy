@@ -60,7 +60,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         /** return true target position is within allowed distance of the owner */
         bool IsWithinAllowedDist(T* owner, float x, float y, float z);
         float GetAllowedDist(T* owner);
-        float GetOffset() { return offset; }
+        float GetOffset() { return i_offset; }
         void SetOffset(float offset);
     protected:
         /* Update target locaton */
