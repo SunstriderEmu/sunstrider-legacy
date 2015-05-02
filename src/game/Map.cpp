@@ -1413,7 +1413,7 @@ void Map::UnloadAll()
 }
 
 
-bool Map::getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
+bool Map::getObjectHitPos(PhaseMask phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float& ry, float& rz, float modifyDist)
 {
     G3D::Vector3 startPos = G3D::Vector3(x1, y1, z1);
     G3D::Vector3 dstPos = G3D::Vector3(x2, y2, z2);
@@ -1447,13 +1447,13 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
 }
 
 //use collisionFrom to help choosing the best height if multiple heights found (will try to select the one which has the closer collision)
-float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, Position* collisionFrom) const
+float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, Position* collisionFrom/*=nullptr*/) const
 {
     return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, collisionFrom), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));
 }
 
 //use collisionFrom to help choosing the best height if multiple heights found (will try to select the one which has the closer collision)
-float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist, Position* collisionFrom) const
+float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, Position* collisionFrom/*=nullptr*/) const
 {
     // Get map height
     float mapHeight = INVALID_HEIGHT;
@@ -1762,7 +1762,7 @@ uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
         return 0;
 }
 
-bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const
+bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask) const
 {
     return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2)
             && _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);

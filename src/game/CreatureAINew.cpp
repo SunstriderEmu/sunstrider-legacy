@@ -154,7 +154,7 @@ void CreatureAINew::doMeleeAttackIfReady()
     }
 }
 
-void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags, bool activeByDefault, uint32 phaseMask)
+void CreatureAINew::addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags, bool activeByDefault, PhaseMask phaseMask)
 {
     m_events[id] = new AIEvent(id, minTimer, maxTimer, flags, activeByDefault, phaseMask);
 }

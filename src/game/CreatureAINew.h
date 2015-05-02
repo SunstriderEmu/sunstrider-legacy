@@ -13,9 +13,9 @@ typedef struct aiEvent
     uint32 flagsByDefault;
     bool   active;
     bool   activeByDefault;
-    uint32 phaseMask;
+    PhaseMask phaseMask;
     
-    aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault, uint32 _phaseMask) :
+    aiEvent(uint32 _id, uint32 _minTimer, uint32 _maxTimer, uint32 _flags, bool _activeByDefault, PhaseMask _phaseMask) :
         id(_id), flags(_flags), flagsByDefault(_flags), activeByDefault(_activeByDefault), active(_activeByDefault), phaseMask(_phaseMask)
     {
         if (_minTimer > _maxTimer) {
@@ -47,7 +47,7 @@ typedef struct aiEvent
     
     bool isActiveInPhase(uint32 phase)
     {
-        if (phaseMask == 0)
+        if (phaseMask == (PhaseMask)0)
             return true;
 
         return ((phaseMask & (1 << phase)) != 0);
@@ -68,7 +68,7 @@ class CreatureAINew
         ~CreatureAINew();
         
         /* Events handling */
-        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = EVENT_FLAG_NONE, bool activeByDefault = true, uint32 phaseMask = 0);
+        void addEvent(uint8 id, uint32 minTimer, uint32 maxTimer, uint32 flags = EVENT_FLAG_NONE, bool activeByDefault = true, PhaseMask phaseMask = PhaseMask(0));
         void resetEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
         void resetEvent(uint8 id, uint32 timer) { resetEvent(id, timer, timer); }
         void scheduleEvent(uint8 id, uint32 minTimer, uint32 maxTimer);
@@ -88,7 +88,7 @@ class CreatureAINew
         void incrPhase();
         void decrPhase();
         uint8 getPhase() { return m_phase; }
-        uint32 phaseMaskForPhase(uint8 phase) { if (phase > 0) return (1 << phase); else return 0; }
+        PhaseMask phaseMaskForPhase(uint8 phase) { if (phase > 0) return PhaseMask(1 << phase); else return PhaseMask(0); }
 
         bool aiInCombat() { return inCombat; }
         void setAICombat(bool on) { inCombat = on; }

@@ -1162,7 +1162,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
         if(canSwim || waterWalk)
             baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, true, collisionFrom);
         else
-            ground_z = baseMap->GetHeight(x, y, z, true, collisionFrom);
+            ground_z = baseMap->GetHeight(PhaseMask(1), x, y, z, true, DEFAULT_HEIGHT_SEARCH, collisionFrom);
 
         if (ground_z == INVALID_HEIGHT)
             return;
@@ -1172,7 +1172,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
     }
     else
     {
-        float ground_z = baseMap->GetHeight(x, y, z, true, collisionFrom);
+        float ground_z = baseMap->GetHeight(PhaseMask(1), x, y, z, true, DEFAULT_HEIGHT_SEARCH, collisionFrom);
         if (z < ground_z && abs(z - ground_z) <= maxDist)
             z = ground_z;
     }

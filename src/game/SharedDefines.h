@@ -22,7 +22,10 @@
 #define TRINITY_SHAREDDEFINES_H
 
 #include "Define.h"
+#include <boost/serialization/strong_typedef.hpp>
 #include <cassert>
+
+BOOST_STRONG_TYPEDEF(uint32, PhaseMask)
 
 enum SpellEffIndex
 {

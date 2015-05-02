@@ -37,7 +37,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 
         void MovementInform(T*);
 
-        void unitSpeedChanged() { i_recalculateSpeed = true; }
+        void UnitSpeedChanged() { i_recalculateSpeed = true; }
 
         MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
 

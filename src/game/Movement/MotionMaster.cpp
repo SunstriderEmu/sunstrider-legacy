@@ -617,12 +617,12 @@ void MotionMaster::PropagateSpeedChange()
     /*Impl::container_type::iterator it = Impl::c.begin();
     for (; it != end(); ++it)
     {
-        (*it)->unitSpeedChanged();
+        (*it)->UnitSpeedChanged();
     }*/
     for (int i = 0; i <= _top; ++i)
     {
         if (Impl[i])
-            Impl[i]->unitSpeedChanged();
+            Impl[i]->UnitSpeedChanged();
     }
 }
 

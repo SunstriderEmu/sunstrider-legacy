@@ -162,7 +162,7 @@ enum SMART_EVENT
 struct SmartEvent
 {
     SMART_EVENT type;
-    uint32 event_phase_mask;
+    PhaseMask event_phase_mask;
     uint32 event_chance;
     uint32 event_flags;
     union
