@@ -38,13 +38,18 @@ template<class T, typename D>
 class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
+        /**
+        offset: Base distance between unit and target
+        */
         TargetedMovementGeneratorMedium(Unit* target, float offset, float angle) :
-            TargetedMovementGeneratorBase(target), i_path(NULL),
+            TargetedMovementGeneratorBase(target), i_path(nullptr),
             i_recheckDistance(0), i_offset(offset), i_angle(angle),
             i_recalculateTravel(false), i_targetReached(false)
-        {
+        { }
+        ~TargetedMovementGeneratorMedium()
+        { 
+            delete i_path; 
         }
-        ~TargetedMovementGeneratorMedium() { delete i_path; }
 
     public:
         bool DoUpdate(T*, uint32);
@@ -52,7 +57,13 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
 
         void UnitSpeedChanged() { i_recalculateTravel = true; }
         bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
+        /** return true target position is within allowed distance of the owner */
+        bool IsWithinAllowedDist(T* owner, float x, float y, float z);
+        float GetAllowedDist(T* owner);
+        float GetOffset() { return offset; }
+        void SetOffset(float offset);
     protected:
+        /* Update target locaton */
         void _setTargetLocation(T* owner, bool updateDestination);
 
         PathGenerator* i_path;

@@ -28,6 +28,12 @@
 #include "Transport.h"
 
 template<class T, typename D>
+void TargetedMovementGeneratorMedium<T, D>::SetOffset(float offset)
+{
+    this.offset = offset;
+}
+
+template<class T, typename D>
 void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool updateDestination)
 {
     if (!i_target.isValid() || !i_target->IsInWorld())
@@ -44,38 +50,11 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     if (updateDestination || !i_path)
     {
         if (!i_offset)
-        {
             // to nearest contact position
-            i_target->GetContactPoint(owner, x, y, z);
-        }
+            i_target->GetContactPoint(owner, x, y, z); 
         else
-        {
-            float dist;
-            float size;
-
-            // Pets need special handling.
-            // We need to subtract GetObjectSize() because it gets added back further down the chain
-            //  and that makes pets too far away. Subtracting it allows pets to properly
-            //  be (GetCombatReach() + i_offset) away.
-            // Only applies when i_target is pet's owner otherwise pets and mobs end up
-            //   doing a "dance" while fighting
-            if (owner->IsPet() && i_target->GetTypeId() == TYPEID_PLAYER)
-            {
-                dist = i_target->GetCombatReach();
-                size = i_target->GetCombatReach() - i_target->GetObjectSize();
-            }
-            else
-            {
-                dist = i_offset + 1.0f;
-                size = owner->GetObjectSize();
-            }
-
-            if (i_target->IsWithinDistInMap(owner, dist))
-                return;
-
             // to at i_offset distance from target and i_angle from target facing
-            i_target->GetClosePoint(x, y, z, size, i_offset, i_angle);
-        }
+            i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
     }
     else
     {
@@ -96,7 +75,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     bool result = i_path->CalculatePath(x, y, z, forceDest);
     if (!result || (i_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
     {
-        // Cant reach target
+        // Cant reach target, try again at next update
         i_recalculateTravel = true;
         return;
     }
@@ -115,6 +94,24 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         init.SetFacing(i_target.getTarget());
 
     init.Launch();
+}
+
+template<class T, typename D>
+bool TargetedMovementGeneratorMedium<T, D>::IsWithinAllowedDist(T* owner, float x, float y, float z)
+{
+    float allowedDist = GetAllowedDist(owner);
+
+    if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->CanFly())
+        return i_target->IsWithinDist3d(x, y, z, allowedDist);
+    else
+        return i_target->IsWithinDist2d(x, y, allowedDist);
+}
+
+template<class T, typename D>
+float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
+{
+    //More distance let have better performance, less distance let have more sensitive reaction at target move.
+    return owner->GetCombatReach() + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
 }
 
 template<class T, typename D>
@@ -154,32 +151,24 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
         return true;
     }
 
-    bool targetMoved = false;
     i_recheckDistance.Update(time_diff);
-    if (i_recheckDistance.Passed())
+    if (!i_recalculateTravel && i_recheckDistance.Passed())
     {
         i_recheckDistance.Reset(100);
-        //More distance let have better performance, less distance let have more sensitive reaction at target move.
-        float allowed_dist = owner->GetCombatReach() + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE);
         G3D::Vector3 dest = owner->movespline->FinalDestination();
 
         if (owner->movespline->onTransport)
             if (TransportBase* transport = owner->GetTransport())
                 transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
-
-        // First check distance
-        if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->CanFly())
-            targetMoved = !i_target->IsWithinDist3d(dest.x, dest.y, dest.z, allowed_dist);
-        else
-            targetMoved = !i_target->IsWithinDist2d(dest.x, dest.y, allowed_dist);
-
-        // then, if the target is in range, check also Line of Sight.
-        if (!targetMoved)
-            targetMoved = !i_target->IsWithinLOSInMap(owner);
+        
+        i_recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
+        // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
+        if (!i_recalculateTravel)
+            i_recalculateTravel = !i_target->IsWithinLOSInMap(owner);
     }
 
-    if (i_recalculateTravel || targetMoved)
-        _setTargetLocation(owner, targetMoved);
+    if (i_recalculateTravel)
+        _setTargetLocation(owner, i_recalculateTravel);
 
     if (owner->movespline->Finalized())
     {
