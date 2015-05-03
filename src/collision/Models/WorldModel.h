@@ -54,18 +54,18 @@ namespace VMAP
             ~WmoLiquid();
             WmoLiquid& operator=(const WmoLiquid &other);
             bool GetLiquidHeight(const G3D::Vector3 &pos, float &liqHeight) const;
-            LiquidType GetType() const { return iType; }
+            WmoLiquidType GetType() const { return iType; }
             float *GetHeightStorage() { return iHeight; }
             uint8 *GetFlagsStorage() { return iFlags; }
             uint32 GetFileSize();
             bool writeToFile(FILE* wf);
             static bool readFromFile(FILE* rf, WmoLiquid* &liquid);
         private:
-            WmoLiquid() : iTilesX(0), iTilesY(0), iCorner(), iType(MAP_LIQUID_TYPE_NO_WATER), iHeight(NULL), iFlags(NULL) { }
+            WmoLiquid() : iTilesX(0), iTilesY(0), iCorner(), iType(WMO_LIQUID_TYPE_NO_WATER), iHeight(NULL), iFlags(NULL) { }
             uint32 iTilesX;       //!< number of tiles in x direction, each
             uint32 iTilesY;
             G3D::Vector3 iCorner; //!< the lower corner
-            LiquidType iType;     //!< liquid type
+            WmoLiquidType iType;     //!< liquid type
             float *iHeight;       //!< (tilesX + 1)*(tilesY + 1) height values
             uint8 *iFlags;        //!< info if liquid tile is used
         public:
@@ -88,8 +88,8 @@ namespace VMAP
             bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
             bool IsInsideObject(const G3D::Vector3 &pos, const G3D::Vector3 &down, float &z_dist) const;
             bool GetLiquidLevel(const G3D::Vector3 &pos, float &liqHeight) const;
-            LiquidType GetLiquidType() const;
-            LiquidTypeMask GetLiquidTypeMask() const;
+            BaseLiquidType GroupModel::GetBaseLiquidType() const;
+            WmoLiquidType GetWMOLiquidType() const;
             bool writeToFile(FILE* wf);
             bool readFromFile(FILE* rf);
             const G3D::AABox& GetBound() const { return iBound; }

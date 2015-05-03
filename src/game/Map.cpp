@@ -1439,7 +1439,7 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
 
         LiquidData liquid_status;
 
-        ZLiquidStatus res = getLiquidStatus(x, y, ground_z, MAP_LIQUID_MASK_ALL, &liquid_status);
+        ZLiquidStatus res = getLiquidStatus(x, y, ground_z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
         return res ? liquid_status.level : ground_z;
     }
 
@@ -1678,16 +1678,16 @@ uint8 Map::GetTerrainType(float x, float y) const
         return 0;
 }
 
-ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data) const
+ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData* data) const
 {
     ZLiquidStatus result = LIQUID_MAP_NO_WATER;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     float liquid_level = INVALID_HEIGHT;
     float ground_level = INVALID_HEIGHT;
-    LiquidTypeMask liquid_type_mask = MAP_LIQUID_MASK_NO_WATER;
-    if (vmgr->GetLiquidLevel(GetId(), x, y, z, ReqLiquidType, liquid_level, ground_level, liquid_type_mask))
+    BaseLiquidType baseLiquidType = BASE_LIQUID_TYPE_NO_WATER;
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, reqBaseLiquidTypeMask, liquid_level, ground_level, baseLiquidType))
     {
-        TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f type mask: %u", liquid_level, ground_level, liquid_type_mask);
+        TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f base liquid type: %u", liquid_level, ground_level, uint32(baseLiquidType));
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {
@@ -1696,7 +1696,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
             {
                 data->level = liquid_level;
                 data->depth_level = ground_level;
-                data->typemask = liquid_type_mask;
+                data->baseLiquidType = baseLiquidType;
             }
 
             float delta = liquid_level - z;
@@ -1715,17 +1715,12 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
         LiquidData map_data;
-        ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, ReqLiquidType, &map_data);
+        ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, reqBaseLiquidTypeMask, &map_data);
         // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
         if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
         {
             if (data)
             {
-                /*
-                // hardcoded in client like this
-                if (GetId() == 530 && map_data.type == 2)
-                    map_data.type = 15;*/
-
                 *data = map_data;
             }
             return map_result;
@@ -1775,8 +1770,8 @@ bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const
     {
         LiquidData liquid_status;
         LiquidData *liquid_ptr = data ? data : &liquid_status;
-        if (getLiquidStatus(x, y, pZ, MAP_LIQUID_MASK_ALL, liquid_ptr))
-                return true;
+        if (getLiquidStatus(x, y, pZ, BASE_LIQUID_TYPE_MASK_ALL, liquid_ptr) != LIQUID_MAP_NO_WATER)
+            return true;
     }
     return false;
 }
@@ -1785,7 +1780,7 @@ bool Map::IsUnderWater(float x, float y, float z) const
 {
     if (const_cast<Map*>(this)->GetGrid(x, y))
     {
-        if (getLiquidStatus(x, y, z, MAP_LIQUID_MASK_WATER|MAP_LIQUID_MASK_OCEAN)&LIQUID_MAP_UNDER_WATER)
+        if (getLiquidStatus(x, y, z, BaseLiquidTypeMask(BASE_LIQUID_TYPE_MASK_WATER|BASE_LIQUID_TYPE_MASK_OCEAN)) == LIQUID_MAP_UNDER_WATER)
             return true;
     }
     return false;

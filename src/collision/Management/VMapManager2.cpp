@@ -257,7 +257,7 @@ namespace VMAP
         return false;
     }
 
-    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, uint8 reqLiquidType, float& level, float& floor, LiquidTypeMask& typeMask) const
+    bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, BaseLiquidTypeMask reqLiquidTypeMask, float& level, float& floor, BaseLiquidType& baseType) const
     {
         InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
         if (instanceTree != iInstanceMapTrees.end())
@@ -268,8 +268,9 @@ namespace VMAP
             {
                 floor = info.ground_Z;
                 ASSERT(floor < std::numeric_limits<float>::max());
-                typeMask = info.hitModel->GetLiquidTypeMask();  // entry from LiquidType.dbc
-                if (reqLiquidType && !(typeMask & reqLiquidType))
+                baseType = info.hitModel->GetBaseLiquidType();
+                uint32 typeMask = pow(2,uint32(baseType))-1;
+                if (reqLiquidTypeMask && !(reqLiquidTypeMask & typeMask))
                     return false;
                 if (info.hitInstance->GetLiquidLevel(pos, info, level))
                     return true;

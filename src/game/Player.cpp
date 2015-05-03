@@ -20996,7 +20996,7 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
 void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 {
     LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &liquid_status);
+    ZLiquidStatus res = m->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
     if (!res)
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
@@ -21007,15 +21007,15 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status.typemask)
+    if (uint32 type = liquid_status.baseLiquidType)
     {
-        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
-        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
+        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(type);
+        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != type)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
 
         if (liquid && liquid->SpellId)
         {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
+            if (res == LIQUID_MAP_UNDER_WATER || res == LIQUID_MAP_IN_WATER)
             {
                 if (!HasAura(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
@@ -21034,32 +21034,36 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
 
 
     // All liquids type - check under water position
-    if (liquid_status.typemask & MAP_LIQUID_MASK_ALL)
+    if (liquid_status.baseLiquidType != BASE_LIQUID_TYPE_NO_WATER)
     {
-        if (res & LIQUID_MAP_UNDER_WATER)
+        if (res == LIQUID_MAP_UNDER_WATER)
             m_MirrorTimerFlags |= UNDERWATER_INWATER;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
     }
 
     // Allow travel in dark water on taxi or transport
-    if ((liquid_status.typemask & MAP_LIQUID_MASK_DARK_WATER) && !IsInFlight() && !GetTransport())
+    if ((liquid_status.baseLiquidType == BASE_LIQUID_TYPE_DARK_WATER) && !IsInFlight() && !GetTransport())
         m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
     else
         m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
     // in lava check, anywhere in lava level
-    if (liquid_status.typemask & (MAP_LIQUID_MASK_MAGMA | MAP_LIQUID_MASK_WMO_LAVA))
+    if (liquid_status.baseLiquidType == BASE_LIQUID_TYPE_MAGMA)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (res == LIQUID_MAP_UNDER_WATER
+            || res == LIQUID_MAP_IN_WATER 
+            || res == LIQUID_MAP_WATER_WALK )
             m_MirrorTimerFlags |= UNDERWATER_INLAVA;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
     }
     // in slime check, anywhere in slime level
-    if (liquid_status.typemask & MAP_LIQUID_MASK_SLIME)
+    if (liquid_status.baseLiquidType == BASE_LIQUID_TYPE_SLIME)
     {
-        if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER | LIQUID_MAP_WATER_WALK))
+        if (res == LIQUID_MAP_UNDER_WATER 
+            || res == LIQUID_MAP_IN_WATER 
+            || res == LIQUID_MAP_WATER_WALK )
             m_MirrorTimerFlags |= UNDERWATER_INSLIME;
         else
             m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;

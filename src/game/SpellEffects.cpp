@@ -7397,6 +7397,8 @@ void Spell::EffectTransmitted(uint32 effIndex)
         // Hack for SSC
         if (area_id != 3607)
         {
+            ZLiquidStatus status = cMap->getLiquidStatus(fx, fy, fz + 1.0f, BaseLiquidTypeMask(BASE_LIQUID_TYPE_MASK_WATER|BASE_LIQUID_TYPE_MASK_OCEAN),&liqData);
+            if(status == LIQUID_MAP_NO_WATER)
                if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
             { // but this is not proper, we really need to ignore not materialized objects
                 SendCastResult(SPELL_FAILED_NOT_HERE);

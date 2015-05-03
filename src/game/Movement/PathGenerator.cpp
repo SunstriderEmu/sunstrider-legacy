@@ -211,7 +211,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, MAP_LIQUID_MASK_ALL, NULL);
+                ZLiquidStatus status = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, BASE_LIQUID_TYPE_MASK_ALL);
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -665,18 +665,18 @@ void PathGenerator::UpdateFilter()
 NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
-    ZLiquidStatus liquidStatus = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &data);
+    ZLiquidStatus liquidStatus = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &data);
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;
 
-    switch (data.typemask)
+    switch (data.baseLiquidType)
     {
-        case MAP_LIQUID_MASK_WATER:
-        case MAP_LIQUID_MASK_OCEAN:
+        case BASE_LIQUID_TYPE_WATER:
+        case BASE_LIQUID_TYPE_OCEAN:
             return NAV_WATER;
-        case MAP_LIQUID_MASK_MAGMA:
+        case BASE_LIQUID_TYPE_MAGMA:
             return NAV_MAGMA;
-        case MAP_LIQUID_MASK_SLIME:
+        case BASE_LIQUID_TYPE_SLIME:
             return NAV_SLIME;
         default:
             return NAV_GROUND;

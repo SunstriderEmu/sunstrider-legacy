@@ -475,7 +475,7 @@ uint8 GridMap::getTerrainType(float x, float y) const
 }
 
 // Get water state on map
-ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidType, LiquidData* data)
+ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data)
 {
     // Check water type (if no water return)
     if (!_liquidType && !_liquidFlags)
@@ -490,17 +490,20 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiqui
 
     // Check water type in cell
     int idx=(x_int>>3)*16 + (y_int>>3);
-    LiquidType type = _liquidEntry ? (LiquidType)_liquidEntry[idx] : (LiquidType)_liquidType;
-    if(type == 18)
-        type = MAP_LIQUID_TYPE_DARK_WATER;
-
-    LiquidTypeMask typemask = (LiquidTypeMask)(1 << (type-1));
-
-    if (typemask == 0)
+    MapLiquidType mapLiquidType = _liquidEntry ? (MapLiquidType)_liquidEntry[idx] : (MapLiquidType)_liquidType;
+    uint8 flags = _liquidFlags ? _liquidFlags[idx] : 0;
+    if(mapLiquidType == MAP_LIQUID_TYPE_NO_WATER)
         return LIQUID_MAP_NO_WATER;
 
+    //convert MapLiquidType to BaseLiquidType
+    BaseLiquidType baseLiquidType = BaseLiquidType(mapLiquidType);
+    //hackzzz. See comments above enum BaseLiquidType
+    if(mapLiquidType == MAP_LIQUID_TYPE_DARK_WATER)
+        baseLiquidType = BASE_LIQUID_TYPE_DARK_WATER;
+
     // Check req liquid type mask
-    if (ReqLiquidType && !(ReqLiquidType&typemask))
+    uint32 typeMask = pow(2,uint32(baseLiquidType))-1;
+    if (ReqLiquidTypeMask && !(ReqLiquidTypeMask & typeMask))
         return LIQUID_MAP_NO_WATER;
 
     // Check water level:
@@ -524,7 +527,7 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, uint8 ReqLiqui
     // All ok in water -> store data
     if (data)
     {
-        data->typemask = typemask;
+        data->baseLiquidType = baseLiquidType;
         data->level = liquid_level;
         data->depth_level = ground_level;
     }

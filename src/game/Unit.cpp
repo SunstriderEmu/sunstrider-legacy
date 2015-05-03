@@ -3321,7 +3321,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
 
     LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, MAP_LIQUID_MASK_ALL, &liquid_status);
+    ZLiquidStatus res = m->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
     if (!res)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
@@ -3332,10 +3332,10 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         return;
     }
 
-    if (uint32 liqEntry = liquid_status.typemask)
+    if (uint32 type = liquid_status.baseLiquidType)
     {
-        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(liqEntry);
-        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != liqEntry)
+        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(type);
+        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != type)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
 
         if (liquid && liquid->SpellId)
