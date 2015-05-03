@@ -88,7 +88,7 @@ namespace VMAP
             bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
             bool IsInsideObject(const G3D::Vector3 &pos, const G3D::Vector3 &down, float &z_dist) const;
             bool GetLiquidLevel(const G3D::Vector3 &pos, float &liqHeight) const;
-            BaseLiquidType GroupModel::GetBaseLiquidType() const;
+            BaseLiquidType GetBaseLiquidType() const;
             WmoLiquidType GetWMOLiquidType() const;
             bool writeToFile(FILE* wf);
             bool readFromFile(FILE* rf);
