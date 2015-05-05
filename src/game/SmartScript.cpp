@@ -1318,29 +1318,52 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             delete targets;
             break;
         }
-        case SMART_ACTION_TELEPORT_ON_VICTIM:
+        case SMART_ACTION_TELEPORT_ON_ME:
         {
             ObjectList* targets = GetTargets(e, unit);
             if (!targets)
                 break;
 
-            Unit* teleportOn = e.action.teleportOnVictim.onMe ? me : me->GetVictim();
-            if(!teleportOn)
-                break;
-
             float x,y,z;
-            teleportOn->GetPosition(x,y,z);
+            me->GetPosition(x,y,z);
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if(Unit* u = (*itr)->ToUnit())
                 {
                     u->NearTeleportTo(x, y, z, u->GetOrientation());
-                    if(e.action.teleportOnVictim.useVisual)
+                    if(e.action.teleportOnMe.useVisual)
                         me->CastSpell(u, 46614, true); //teleport visual
                 }
 
             }
+
+            delete targets;
+            break;
+        }
+        case SMART_ACTION_SELF_TELEPORT_ON_TARGET:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            bool foundTarget = false;
+            float x,y,z;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if(Unit* u = (*itr)->ToUnit())
+                {
+                    foundTarget = true;
+                    u->GetPosition(x,y,z);
+                    break;
+                }
+
+            }
+
+            me->NearTeleportTo(x, y, z, me->GetOrientation());
+            if(e.action.teleportSelfOnTarget.useVisual)
+                me->CastSpell(me, 46614, true); //teleport visual
 
             delete targets;
             break;
@@ -1560,12 +1583,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         slot[1] = e.action.equip.slot2;
                         slot[2] = e.action.equip.slot3;
                     //}
+#ifdef LICH_KING
                     if (!e.action.equip.mask || (e.action.equip.mask & 1))
                         npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 0, slot[0]);
                     if (!e.action.equip.mask || (e.action.equip.mask & 2))
                         npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, slot[1]);
                     if (!e.action.equip.mask || (e.action.equip.mask & 4))
                         npc->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, slot[2]);
+#endif
                 }
             }
 

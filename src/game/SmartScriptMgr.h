@@ -537,7 +537,8 @@ enum SMART_ACTION
     SMART_ACTION_SET_UNIT_FIELD_BYTES_2             = 150,    // bytes, target
     SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_2          = 151,    // bytes, target
     SMART_ACTION_LOAD_PATH                          = 152,    // path
-    SMART_ACTION_TELEPORT_ON_VICTIM                 = 153,    // inverse (target on me), useVisual (0/1)
+    SMART_ACTION_TELEPORT_ON_ME                     = 153,    // useVisual (0/1)
+    SMART_ACTION_SELF_TELEPORT_ON_TARGET            = 154,    // useVisual (0/1)
     SMART_ACTION_END                                     ,
 };
 
@@ -836,9 +837,13 @@ struct SmartAction
 
         struct
         {
-            uint32 onMe; // target on me
             uint32 useVisual;
-        } teleportOnVictim;
+        } teleportOnMe;
+
+        struct
+        {
+            uint32 useVisual;
+        } teleportSelfOnTarget;
 
         struct
         {
