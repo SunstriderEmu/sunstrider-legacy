@@ -2116,7 +2116,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     else
                         player->PlayerTalkClass->ClearMenus();
 
-                    player->SEND_GOSSIP_MENU_TEXTID(e.action.sendGossipMenu.gossipNpcTextId, GetBaseObject()->GetGUID());
+                    //default to default menu text if no text id given in action
+                    uint32 textId = e.action.sendGossipMenu.gossipNpcTextId;
+                    if (!textId)
+                        textId = player->GetDefaultGossipMenuForSource(GetBaseObject());
+
+                    player->SEND_GOSSIP_MENU_TEXTID(textId, GetBaseObject()->GetGUID());
                 }
             }
 
