@@ -256,8 +256,8 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     data << uint32(matchcount); //placeholder, will be overriden later
     data << uint32(displaycount);
 
-    //TODO: Guard Player map
-    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (security == SEC_PLAYER)

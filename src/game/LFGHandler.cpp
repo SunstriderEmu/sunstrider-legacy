@@ -32,8 +32,9 @@ static void AttemptJoin(Player* _player)
     if(!_player->m_lookingForGroup.canAutoJoin() || _player->GetGroup())
         return;
 
-    //TODO: Guard Player Map
-    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
+    auto lock = HashMapHolder<Player>::GetLock();
+    lock->lock();
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
@@ -90,8 +91,8 @@ static void AttemptAddMore(Player* _player)
     if(!_player->m_lookingForGroup.more.canAutoJoin())
         return;
 
-    //TODO: Guard Player map
-    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
@@ -264,8 +265,8 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
     data << uint32(0);                                      // count, placeholder
     data << uint32(0);                                      // count again, strange, placeholder
 
-    //TODO: Guard Player map
-    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
     {
         Player *plr = iter->second;
