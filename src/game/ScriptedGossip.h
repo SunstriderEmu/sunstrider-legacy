@@ -150,6 +150,7 @@ extern uint32 GetSkillLevel(Player *player,uint32 skill);
 // This fuction Sends the current menu to show to client, a - NPCTEXTID(uint32) , b - npc guid(uint64)
 #define SEND_GOSSIP_MENU_TEXTID(a,b)      PlayerTalkClass->SendGossipMenuTextID(a,b)
 // a : player , c : creature
+// Send the default menu of the creature. (/!\  WITHOUT the previously added options, this takes the options from database)
 #define SEND_DEFAULT_GOSSIP_MENU(p, c) { p->PrepareGossipMenu(c, p->GetDefaultGossipMenuForSource(c), true); p->SendPreparedGossip(c); }
 
 // This fuction shows POI(point of interest) to client.
