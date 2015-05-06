@@ -1406,7 +1406,6 @@ struct SmartScriptHolder
 typedef std::unordered_map<uint32, WayPoint*> WPPath;
 
 typedef std::list<WorldObject*> ObjectList;
-typedef std::list<uint64> GuidList;
 class ObjectGuidList
 {
     ObjectList* m_objectList;

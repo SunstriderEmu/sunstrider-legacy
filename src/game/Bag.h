@@ -62,7 +62,7 @@ class Bag : public Item
         // overwrite virtual Item::DeleteFromDB
         void DeleteFromDB();
 
-        void BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const;
+        void BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const override;
 
     protected:
 

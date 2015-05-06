@@ -640,7 +640,7 @@ void Creature::Update(uint32 diff)
             {
                 if (!IsInCombat())
                 {
-                    if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER))
+                    if(HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED))
                         SetUInt32Value(UNIT_DYNAMIC_FLAGS, GetCreatureTemplate()->dynamicflags);
                         
                     RegenerateHealth();
@@ -916,7 +916,7 @@ void Creature::SetLootRecipient(Unit *unit)
     {
         m_lootRecipient = 0;
         RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
+        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
         return;
     }
 
@@ -925,7 +925,7 @@ void Creature::SetLootRecipient(Unit *unit)
         return;
 
     m_lootRecipient = player->GetGUID();
-    SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
+    SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
 }
 
 void Creature::SaveToDB()
@@ -2240,7 +2240,7 @@ void Creature::AreaCombat()
     }
 }
 
-bool Creature::IsAllowedToLoot(uint64 guid)
+bool Creature::IsAllowedToLoot(uint64 guid) const
 {
     // Temporary fix for Sathrovarr (Kalecgos encounter - Sunwell Plateau)
     if (GetEntry() == 24892)

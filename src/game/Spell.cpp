@@ -3829,8 +3829,53 @@ SpellFailedReason Spell::CheckCast(bool strict)
     if(!target)
         target = m_caster;
     
+    if(m_caster == target)
+        if (m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF)
+            return SPELL_FAILED_BAD_TARGETS;
+
     if(target != m_caster)
     {
+        if (m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT)
+        {
+            if (target->IsInCombat())
+                return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
+            // player with active pet counts as a player in combat
+            else if (Player const* player = target->ToPlayer())
+                if (Pet* pet = player->GetPet())
+                    if (pet->GetVictim() && !pet->HasUnitState(UNIT_STATE_CONTROLLED))
+                        return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
+        }
+
+        bool ghostOnly = m_spellInfo->AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_GHOSTS;
+        if (ghostOnly != target->HasAuraType(SPELL_AURA_GHOST))
+        {
+            if (ghostOnly)
+                return SPELL_FAILED_TARGET_NOT_GHOST;
+            else
+                return SPELL_FAILED_BAD_TARGETS;
+        }
+        
+        /* Todo tappedby
+        // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
+            if (HasAttribute(SPELL_ATTR2_CANT_TARGET_TAPPED))
+                if (Creature const* targetCreature = unitTarget->ToCreature())
+                    if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(caster->ToPlayer()))
+                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+                        */
+
+        // Not allow disarm unarmed player
+        if (m_spellInfo->Mechanic == MECHANIC_DISARM)
+        {
+            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player const* player = unitTarget->ToPlayer();
+                if (!player->GetWeaponForAttack(BASE_ATTACK) || !player->IsUseEquipedWeapon(true))
+                    return SPELL_FAILED_TARGET_NO_WEAPONS;
+            }
+          /*  else if (!unitTarget->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID))
+                return SPELL_FAILED_TARGET_NO_WEAPONS; */
+        }
+
         // target state requirements (apply to non-self only), to allow cast affects to self like Dirty Deeds
         if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraState(m_spellInfo->TargetAuraState)))
             return SPELL_FAILED_TARGET_AURASTATE;
@@ -3896,7 +3941,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         }
 
         // check if target is in combat
-        if ((m_spellInfo->AttributesEx & SPELL_ATTR1_NOT_IN_COMBAT_TARGET) && target->IsInCombat())
+        if ((m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT) && target->IsInCombat())
         {
             return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }

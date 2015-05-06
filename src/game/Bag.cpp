@@ -179,13 +179,13 @@ void Bag::StoreItem( uint8 slot, Item *pItem, bool /*update*/ )
     }
 }
 
-void Bag::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const
+void Bag::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const
 {
-    Item::BuildCreateUpdateBlockForPlayer( data, target );
+    Item::BuildCreateUpdateBlockForPlayer(data, target);
 
     for (uint32 i = 0; i < GetBagSize(); ++i)
         if(m_bagslot[i])
-            m_bagslot[i]->BuildCreateUpdateBlockForPlayer( data, target );
+            m_bagslot[i]->BuildCreateUpdateBlockForPlayer(data, target);
 }
 
 // If the bag is empty returns true

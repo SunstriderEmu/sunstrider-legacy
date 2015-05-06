@@ -84,7 +84,6 @@ enum EUnitFields
     UNIT_FIELD_MAXPOWER5                      = OBJECT_END + 0x001B, // Size: 1, Type: INT, Flags: PUBLIC
     UNIT_FIELD_LEVEL                          = OBJECT_END + 0x001C, // Size: 1, Type: INT, Flags: PUBLIC
     UNIT_FIELD_FACTIONTEMPLATE                = OBJECT_END + 0x001D, // Size: 1, Type: INT, Flags: PUBLIC
-    UNIT_VIRTUAL_ITEM_SLOT_ID                 = OBJECT_END + 0x0031, // Size: 3, Type: INT, Flags: PUBLIC
     UNIT_FIELD_BYTES_0                        = OBJECT_END + 0x001E, // Size: 1, Type: BYTES, Flags: PUBLIC
     UNIT_VIRTUAL_ITEM_SLOT_DISPLAY            = OBJECT_END + 0x001F, // Size: 3, Type: INT, Flags: PUBLIC
     UNIT_VIRTUAL_ITEM_INFO                    = OBJECT_END + 0x0022, // Size: 6, Type: BYTES, Flags: PUBLIC

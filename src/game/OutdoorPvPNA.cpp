@@ -647,7 +647,6 @@ bool OutdoorPvPObjectiveNA::Update(uint32 diff)
             GameObject* flag = HashMapHolder<GameObject>::Find(m_CapturePoint);
             if (flag) {
                 flag->SetGoArtKit(artkit);
-                flag->SendUpdateObjectToAllExcept(NULL);
             }
 
             UpdateHalaaWorldState();

@@ -1177,6 +1177,10 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
     PROFILE;
     
+#ifdef LICH_KING
+    return; //no support yet
+#endif
+
     CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
@@ -1187,9 +1191,9 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     Player *plr = sObjectMgr->GetPlayer(guid);
     if(!plr)                                                // wrong player
         return;
-
-    uint32 talent_points = 0x3D;
-    uint32 guid_size = plr->GetPackGUID().wpos();
+    
+    uint32 talent_points = 0x3D; //bc talent count
+    uint32 guid_size = plr->GetPackGUID().size();
     WorldPacket data(SMSG_INSPECT_TALENT, guid_size+4+talent_points);
     data.append(plr->GetPackGUID());
     data << uint32(talent_points);

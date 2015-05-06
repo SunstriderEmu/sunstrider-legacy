@@ -291,6 +291,8 @@ class Item : public Object
         }
         bool hasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
 
+        void BuildUpdate(UpdateDataMapType&) override;
+
     protected:    
         ItemTemplate const* m_itemProto;
     private:

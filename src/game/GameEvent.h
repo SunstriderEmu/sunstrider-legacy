@@ -146,7 +146,6 @@ class GameEvent
         bool hasCreatureActiveEventExcept(uint32 creature_guid, uint16 event_id);
         bool hasGameObjectActiveEventExcept(uint32 go_guid, uint16 event_id);
     protected:
-        typedef std::list<uint32> GuidList;
         typedef std::vector<GuidList> GameEventGuidMap;
         typedef std::pair<uint32, ModelEquip> ModelEquipPair;
         typedef std::list<ModelEquipPair> ModelEquipList;

@@ -39,6 +39,7 @@
 #include "MoveSplineInit.h"
 #include "Transport.h"
 #include "ScriptedInstance.h"
+#include "UpdateFieldFlags.h"
 
 #include <math.h>
 
@@ -604,36 +605,46 @@ bool Unit::HasAuraType(AuraType auraType) const
     return (!m_modAuras[auraType].empty());
 }
 
-bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName  ,uint64 familyFlags) const
+bool Unit::HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,uint64 familyFlags) const
 {
-    if(!HasAuraType(auraType)) return false;
     AuraList const &auras = GetAurasByType(auraType);
     for(AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         if(SpellEntry const *iterSpellProto = (*itr)->GetSpellProto())
             if(iterSpellProto->SpellFamilyName == familyName && iterSpellProto->SpellFamilyFlags & familyFlags)
                 return true;
+
     return false;
 }
 
-bool Unit::HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 owner) const
+bool Unit::HasAuraTypeWithCaster(AuraType auraType, uint64 casterGUID) const
+{
+    AuraList const &auras = GetAurasByType(auraType);
+    for(auto itr : auras)
+        if(itr->GetCasterGUID() == casterGUID)
+            return true;
+
+    return false;
+}
+
+bool Unit::HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 casterGUID) const
 {
     for(auto itr : m_Auras)
     {
         if(    itr.second->GetId() == spellId
             && itr.second->GetEffIndex() == effIndex
-            && itr.second->GetCasterGUID() == owner)
+            && itr.second->GetCasterGUID() == casterGUID)
             return true;
     }
     return false;
 }
 
-bool Unit::HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 owner) const
+bool Unit::HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 casterGUID) const
 {
     for(auto itr : m_Auras)
     {
          if(   itr.second->GetId() == spellId
             && itr.second->GetEffIndex() == effIndex
-            && itr.second->GetCasterGUID() != owner)
+            && itr.second->GetCasterGUID() != casterGUID)
             return true;
     }
     return false;
@@ -719,7 +730,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if( pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled )
     {
         // Set tagging
-        if(!pVictim->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER) && !(pVictim->ToCreature())->IsPet())
+        if(!pVictim->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED) && !(pVictim->ToCreature())->IsPet())
         {
             //Set Loot
             switch(GetTypeId())
@@ -728,7 +739,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 {
                     (pVictim->ToCreature())->SetLootRecipient(this);
                     //Set tagged
-                    (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
+                    (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
                     break;
                 }
                 case TYPEID_UNIT:
@@ -736,7 +747,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                     if((this->ToCreature())->IsPet())
                     {
                         (pVictim->ToCreature())->SetLootRecipient(this->GetOwner());
-                        (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_OTHER_TAGGER);
+                        (pVictim->ToCreature())->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
                     }
                     break;
                 }
@@ -3035,6 +3046,184 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
     else
         value = GetUnitMeleeSkill(target);
    return value;
+}
+
+void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target) const
+{
+    if (!target)
+        return;
+
+    ByteBuffer fieldBuffer;
+
+    UpdateMask updateMask;
+    updateMask.SetCount(m_valuesCount);
+
+    uint32* flags = UnitUpdateFieldFlags;
+    uint32 visibleFlag = UF_FLAG_PUBLIC;
+
+    if (target == this)
+        visibleFlag |= UF_FLAG_PRIVATE;
+
+    Player* plr = GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (GetOwnerGUID() == target->GetGUID())
+        visibleFlag |= UF_FLAG_OWNER;
+
+    if (HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_SPECIALINFO))
+        if (HasAuraTypeWithCaster(SPELL_AURA_EMPATHY, target->GetGUID()))
+            visibleFlag |= UF_FLAG_SPECIAL_INFO;
+
+    if (plr && plr->IsInSameRaidWith(target))
+        visibleFlag |= UF_FLAG_PARTY_MEMBER;
+
+    Creature const* creature = ToCreature();
+    for (uint16 index = 0; index < m_valuesCount; ++index)
+    {
+        if (   _fieldNotifyFlags & flags[index]  //if the given flag was set to notify, if the given index is not set to UF_FLAG_NONE
+            || ((flags[index] & visibleFlag) & UF_FLAG_SPECIAL_INFO) //given index has UF_FLAG_SPECIAL_INFO and target has SPELL_AURA_EMPATHY on the target
+            || ((updateType == UPDATETYPE_VALUES ? _changesMask.GetBit(index) : m_uint32Values[index]) && (flags[index] & visibleFlag)) // flag has changed && flag is visible to player
+            || (index == UNIT_FIELD_AURASTATE && HasFlag(UNIT_FIELD_AURASTATE, PER_CASTER_AURA_STATE_MASK)) //if index UNIT_FIELD_AURASTATE && unit has some state (we always send update while the object has those)
+           )
+        {
+            updateMask.SetBit(index);
+
+            if (index == UNIT_NPC_FLAGS)
+            {
+                uint32 appendValue = m_uint32Values[UNIT_NPC_FLAGS];
+
+                //remove server custom flags (who do those even exists, remove if you got time for that)
+                appendValue &= ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP);
+             /* LK?  if (creature)
+                    if (!target->CanSeeSpellClickOn(creature))
+                        appendValue &= ~UNIT_NPC_FLAG_SPELLCLICK; */
+
+                fieldBuffer << uint32(appendValue);
+            }
+           /* //TODO SPELL
+           else if (index == UNIT_FIELD_AURASTATE)
+            {
+                // Check per caster aura states to not enable using a spell in client if specified aura is not by target
+                fieldBuffer << BuildAuraStateUpdateForTarget(target);
+            } */
+            // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
+            else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
+            {
+                // convert from float to uint32 and send
+                fieldBuffer << uint32(m_floatValues[index] < 0 ? 0 : m_floatValues[index]);
+            }
+            // there are some float values which may be negative or can't get negative due to other checks
+            else if ((index >= UNIT_FIELD_NEGSTAT0   && index <= UNIT_FIELD_NEGSTAT4) ||
+                (index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
+                (index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
+                (index >= UNIT_FIELD_POSSTAT0   && index <= UNIT_FIELD_POSSTAT4))
+            {
+                fieldBuffer << uint32(m_floatValues[index]);
+            }
+            // Gamemasters should be always able to select units - remove not selectable flag
+            else if (index == UNIT_FIELD_FLAGS)
+            {
+                uint32 appendValue = m_uint32Values[UNIT_FIELD_FLAGS];
+                if (target->IsGameMaster())
+                    appendValue &= ~UNIT_FLAG_NOT_SELECTABLE;
+
+                fieldBuffer << uint32(appendValue);
+            }
+            // use modelid_a if not gm, _h if gm for CREATURE_FLAG_EXTRA_TRIGGER creatures
+            else if (index == UNIT_FIELD_DISPLAYID)
+            {
+                uint32 displayId = m_uint32Values[UNIT_FIELD_DISPLAYID];
+                if (creature)
+                {
+                    CreatureTemplate const* cinfo = creature->GetCreatureTemplate();
+
+                    // this also applies for transform auras
+                    if (SpellEntry const* transform = sSpellMgr->GetSpellInfo(GetTransForm()))
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                            if (transform->EffectApplyAuraName[i] == SPELL_AURA_TRANSFORM)
+                                if (CreatureTemplate const* transformInfo = sObjectMgr->GetCreatureTemplate(transform->EffectMiscValue[i]))
+                                {
+                                    cinfo = transformInfo;
+                                    break;
+                                }
+
+                    if (cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
+                    {
+                        if (target->IsGameMaster())
+                        {
+                            if (cinfo->Modelid1)
+                                displayId = cinfo->Modelid1;    // Modelid1 is a visible model for gms
+                            else
+                                displayId = 17519;              // world visible trigger's model
+                        }
+                        else
+                        {
+                            if (cinfo->Modelid2)
+                                displayId = cinfo->Modelid2;    // Modelid2 is an invisible model for players
+                            else
+                                displayId = 11686;              // world invisible trigger's model
+                        }
+                    }
+                }
+
+                fieldBuffer << uint32(displayId);
+            }
+            // hide lootable animation for unallowed players
+            else if (index == UNIT_DYNAMIC_FLAGS)
+            {
+                uint32 dynamicFlags = m_uint32Values[UNIT_DYNAMIC_FLAGS] & ~(UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
+
+                if (creature)
+                {
+                    if (creature->hasLootRecipient())
+                    {
+                        dynamicFlags |= UNIT_DYNFLAG_TAPPED;
+                      /*TODO tappedby  if (creature->isTappedBy(target))
+                            dynamicFlags |= UNIT_DYNFLAG_TAPPED_BY_PLAYER; */
+                    }
+
+                    if (!target->IsAllowedToLoot(creature))
+                        dynamicFlags &= ~UNIT_DYNFLAG_LOOTABLE;
+                }
+
+                // unit UNIT_DYNFLAG_TRACK_UNIT should only be sent to caster of SPELL_AURA_MOD_STALKED auras
+                if (dynamicFlags & UNIT_DYNFLAG_TRACK_UNIT)
+                    if (!HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, target->GetGUID()))
+                        dynamicFlags &= ~UNIT_DYNFLAG_TRACK_UNIT;
+
+                fieldBuffer << dynamicFlags;
+            }
+            // FG: pretend that OTHER players in own group are friendly ("blue")
+            else if (index == UNIT_FIELD_BYTES_2 || index == UNIT_FIELD_FACTIONTEMPLATE)
+            {
+                if (/* IsControlledByPlayer() && */ target != this && IS_PLAYER_GUID(target->GetCharmerOrOwnerGUID()) && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && IsInRaidWith(target))
+                {
+                    FactionTemplateEntry const* ft1 = GetFactionTemplateEntry();
+                    FactionTemplateEntry const* ft2 = target->GetFactionTemplateEntry();
+                    if (ft1 && ft2 && !ft1->IsFriendlyTo(*ft2))
+                    {
+                        if (index == UNIT_FIELD_BYTES_2)
+                            // Allow targetting opposite faction in party when enabled in config
+                            fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_SANCTUARY /*| UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5*/) << 8)); // this flag is at uint8 offset 1 !!
+                        else
+                            // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
+                            fieldBuffer << uint32(target->GetFaction());
+                    }
+                    else
+                        fieldBuffer << m_uint32Values[index];
+                }
+                else
+                    fieldBuffer << m_uint32Values[index];
+            }
+            else
+            {
+                // send in current format (float as float, uint32 as uint32)
+                fieldBuffer << m_uint32Values[index];
+            }
+        }
+    }
+
+    *data << uint8(updateMask.GetBlockCount());
+    updateMask.AppendToPacket(data);
+    data->append(fieldBuffer);
 }
 
 void Unit::_DeleteAuras()
@@ -6813,7 +7002,7 @@ void Unit::SetPowerType(Powers new_powertype)
     }
 }
 
-FactionTemplateEntry const* Unit::getFactionTemplateEntry() const
+FactionTemplateEntry const* Unit::GetFactionTemplateEntry() const
 {
     FactionTemplateEntry const* entry = sFactionTemplateStore.LookupEntry(GetFaction());
     if(!entry)
@@ -6915,8 +7104,8 @@ bool Unit::IsHostileTo(Unit const* unit) const
     }
 
     // faction base cases
-    FactionTemplateEntry const* tester_faction = meOrMyOwner->getFactionTemplateEntry();
-    FactionTemplateEntry const* target_faction = target->getFactionTemplateEntry();
+    FactionTemplateEntry const* tester_faction = meOrMyOwner->GetFactionTemplateEntry();
+    FactionTemplateEntry const* target_faction = target->GetFactionTemplateEntry();
     if (!tester_faction || !target_faction)
         return false;
 
@@ -7028,8 +7217,8 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
     }
 
     // faction base cases
-    FactionTemplateEntry const*tester_faction = tester->getFactionTemplateEntry();
-    FactionTemplateEntry const*target_faction = target->getFactionTemplateEntry();
+    FactionTemplateEntry const*tester_faction = tester->GetFactionTemplateEntry();
+    FactionTemplateEntry const*target_faction = target->GetFactionTemplateEntry();
     if(!tester_faction || !target_faction)
         return false;
 
@@ -7070,7 +7259,7 @@ bool Unit::IsFriendlyTo(Unit const* unit) const
 
 bool Unit::IsHostileToPlayers() const
 {
-    FactionTemplateEntry const* my_faction = getFactionTemplateEntry();
+    FactionTemplateEntry const* my_faction = GetFactionTemplateEntry();
     if(!my_faction)
         return false;
 
@@ -7083,7 +7272,7 @@ bool Unit::IsHostileToPlayers() const
 
 bool Unit::IsNeutralToAll() const
 {
-    FactionTemplateEntry const* my_faction = getFactionTemplateEntry();
+    FactionTemplateEntry const* my_faction = GetFactionTemplateEntry();
     if(!my_faction)
         return true;
 
@@ -9402,12 +9591,18 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
             case MOVE_FLIGHT_BACK:
                 data.Initialize(MSG_MOVE_SET_FLIGHT_BACK_SPEED, 8+4+1+4+4+4+4+4+4+4);
                 break;
+#ifdef LICH_KING
+            case MOVE_PITCH_RATE:
+                data.Initialize(MSG_MOVE_SET_PITCH_RATE, 8+4+2+4+4+4+4+4+4+4);
+                break;
+#endif
             default:
-                TC_LOG_ERROR("FIXME","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
+                TC_LOG_ERROR("entities.unit","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
                 return;
         }
-
-        data.append(GetPackGUID()); //OLDMOV correct ? pas sur LK ?
+#ifndef LICH_KING
+        data.append(GetPackGUID()); //BC, removed with LK
+#endif
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);
@@ -9451,8 +9646,13 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
             case MOVE_FLIGHT_BACK:
                 data.Initialize(SMSG_FORCE_FLIGHT_BACK_SPEED_CHANGE, 16);
                 break;
+#ifdef LICH_KING
+            case MOVE_PITCH_RATE:
+                data.Initialize(SMSG_FORCE_PITCH_RATE_CHANGE, 16);
+                break;
+#endif
             default:
-                TC_LOG_ERROR("FIXME","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
+                TC_LOG_ERROR("entities.unit","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
                 return;
         }
         data.append(GetPackGUID());
@@ -13418,7 +13618,11 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
     *data << uint32(GetUnitMovementFlags());            // movement flags
+#ifdef LICH_KING
+    *data << uint16(GetExtraUnitMovementFlags());
+#else
     *data << uint8(0);                                  // 2.3.0, always set to 0
+#endif
     *data << uint32(GetMSTime());                       // time / counter
     *data << GetPositionX();
     *data << GetPositionY();

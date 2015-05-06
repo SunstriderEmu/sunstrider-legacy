@@ -29,6 +29,8 @@
 #include "ObjectDefines.h"
 #include "GridDefines.h"
 #include "Map.h"
+#include "ObjectGuid.h"
+#include "UpdateMask.h"
 
 class CreatureAI;
 
@@ -50,34 +52,6 @@ class CreatureAI;
 #define NOMINAL_MELEE_RANGE         5.0f
 #define MELEE_RANGE                 (NOMINAL_MELEE_RANGE - MIN_MELEE_REACH * 2) //center to center for players
 
-enum TypeMask
-{
-    TYPEMASK_OBJECT         = 0x0001,
-    TYPEMASK_ITEM           = 0x0002,
-    TYPEMASK_CONTAINER      = 0x0006,                       // TYPEMASK_ITEM | 0x0004
-    TYPEMASK_UNIT           = 0x0008,
-    TYPEMASK_PLAYER         = 0x0010,
-    TYPEMASK_GAMEOBJECT     = 0x0020,
-    TYPEMASK_DYNAMICOBJECT  = 0x0040,
-    TYPEMASK_CORPSE         = 0x0080,
-    TYPEMASK_AIGROUP        = 0x0100,
-    TYPEMASK_AREATRIGGER    = 0x0200
-};
-
-enum TypeID
-{
-    TYPEID_OBJECT        = 0,
-    TYPEID_ITEM          = 1,
-    TYPEID_CONTAINER     = 2,
-    TYPEID_UNIT          = 3,
-    TYPEID_PLAYER        = 4,
-    TYPEID_GAMEOBJECT    = 5,
-    TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7,
-    TYPEID_AIGROUP       = 8,
-    TYPEID_AREATRIGGER   = 9
-};
-
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
 enum TempSummonType
@@ -94,11 +68,9 @@ enum TempSummonType
 
 class WorldPacket;
 class UpdateData;
-class ByteBuffer;
 class WorldSession;
 class Creature;
 class Player;
-class UpdateMask;
 class InstanceData;
 class GameObject;
 class Transport;
@@ -362,7 +334,7 @@ class Object
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-        const ByteBuffer& GetPackGUID() const { return m_PackGUID; }
+        PackedGuid const& GetPackGUID() const { return m_PackGUID; }
         uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
 
@@ -372,57 +344,26 @@ class Object
         uint8 GetTypeId() const { return m_objectTypeId; }
         bool isType(uint16 mask) const { return (mask & m_objectType); }
 
-        virtual void BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
+        virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
         void SendUpdateToPlayer(Player* player);
 
-        void BuildValuesUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
-        void BuildOutOfRangeUpdateBlock( UpdateData *data ) const;
-        void BuildUpdate(UpdateDataMapType &);
-        void BuildMovementUpdateBlock(UpdateData* data, uint8 flags = 0) const;
-        void BuildMovementUpdate(ByteBuffer* data, uint8 flags) const;
+        void BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const;
+        void BuildOutOfRangeUpdateBlock(UpdateData *data) const;
+        void BuildMovementUpdateBlock(UpdateData* data, uint32 flags = 0) const;
 
-        virtual void DestroyForPlayer( Player *target ) const;
+        virtual void DestroyForPlayer(Player *target, bool onDeath = false) const;
 
-        const int32& GetInt32Value( uint16 index ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-            return m_int32Values[ index ];
-        }
-
-        const uint32& GetUInt32Value( uint16 index ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-            return m_uint32Values[ index ];
-        }
-
-        const uint64& GetUInt64Value( uint16 index ) const
-        {
-            ASSERT( index + 1 < m_valuesCount || PrintIndexError( index , false) );
-            return *((uint64*)&(m_uint32Values[ index ]));
-        }
-
-        const float& GetFloatValue( uint16 index ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-            return m_floatValues[ index ];
-        }
-
-        uint8 GetByteValue( uint16 index, uint8 offset) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-            ASSERT( offset < 4 );
-            return *(((uint8*)&m_uint32Values[ index ])+offset);
-        }
-
-        uint8 GetUInt16Value( uint16 index, uint8 offset) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-            ASSERT( offset < 2 );
-            return *(((uint16*)&m_uint32Values[ index ])+offset);
-        }
+        const int32& GetInt32Value( uint16 index ) const;
+        const uint32& GetUInt32Value( uint16 index ) const;
+        const uint64& GetUInt64Value( uint16 index ) const;
+        const float& GetFloatValue( uint16 index ) const;
+        const uint8& GetByteValue( uint16 index, uint8 offset) const;
+        const uint8& GetUInt16Value( uint16 index, uint8 offset) const;
+        uint64 GetGuidValue(uint16 index) const; //for TC compat
 
         void SetInt32Value(  uint16 index,        int32  value );
         void SetUInt32Value( uint16 index,       uint32  value );
+        void UpdateUInt32Value(uint16 index,     uint32 value);
         void SetUInt64Value( uint16 index, const uint64 &value );
         void SetFloatValue(  uint16 index,       float   value );
         void SetByteValue(   uint16 index, uint8 offset, uint8 value );
@@ -430,95 +371,34 @@ class Object
         void SetInt16Value(  uint16 index, uint8 offset, int16 value ) { SetUInt16Value(index,offset,(uint16)value); }
         void SetStatFloatValue( uint16 index, float value);
         void SetStatInt32Value( uint16 index, int32 value);
+        void SetGuidValue(uint16 index, uint64 value); //for TC compat
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModUInt64Value(uint16 index, int32 val, bool apply);
         void ApplyModPositiveFloatValue( uint16 index, float val, bool apply);
         void ApplyModSignedFloatValue( uint16 index, float val, bool apply);
+        void ApplyPercentModFloatValue(uint16 index, float val, bool apply);
 
-        void ApplyPercentModFloatValue(uint16 index, float val, bool apply)
-        {
-            float value = GetFloatValue(index);
-            ApplyPercentModFloatVar(value, val, apply);
-            SetFloatValue(index, value);
-        }
+        void SetFlag(uint16 index, uint32 newFlag);
+        void RemoveFlag(uint16 index, uint32 oldFlag);
+        void ToggleFlag(uint16 index, uint32 flag);
+        bool HasFlag(uint16 index, uint32 flag) const;
 
-        void SetFlag( uint16 index, uint32 newFlag );
-        void RemoveFlag( uint16 index, uint32 oldFlag );
+        void SetByteFlag(uint16 index, uint8 offset, uint8 newFlag);
+        void RemoveByteFlag(uint16 index, uint8 offset, uint8 newFlag);
+        void ToggleFlag(uint16 index, uint8 offset, uint8 flag );
+        bool HasByteFlag(uint16 index, uint8 offset, uint8 flag) const;
 
-        void ToggleFlag( uint16 index, uint32 flag)
-        {
-            if(HasFlag(index, flag))
-                RemoveFlag(index, flag);
-            else
-                SetFlag(index, flag);
-        }
-
-        bool HasFlag( uint16 index, uint32 flag ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-            return (m_uint32Values[ index ] & flag) != 0;
-        }
-
-        void SetByteFlag( uint16 index, uint8 offset, uint8 newFlag );
-        void RemoveByteFlag( uint16 index, uint8 offset, uint8 newFlag );
-
-        void ToggleFlag( uint16 index, uint8 offset, uint8 flag )
-        {
-            if(HasByteFlag(index, offset, flag))
-                RemoveByteFlag(index, offset, flag);
-            else
-                SetByteFlag(index, offset, flag);
-        }
-
-        bool HasByteFlag( uint16 index, uint8 offset, uint8 flag ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-            ASSERT( offset < 4 );
-            return (((uint8*)&m_uint32Values[index])[offset] & flag) != 0;
-        }
-
-        void ApplyModFlag( uint16 index, uint32 flag, bool apply)
-        {
-            if(apply) SetFlag(index,flag); else RemoveFlag(index,flag);
-        }
-
-        void SetFlag64( uint16 index, uint64 newFlag )
-        {
-            uint64 oldval = GetUInt64Value(index);
-            uint64 newval = oldval | newFlag;
-            SetUInt64Value(index,newval);
-        }
-
-        void RemoveFlag64( uint16 index, uint64 oldFlag )
-        {
-            uint64 oldval = GetUInt64Value(index);
-            uint64 newval = oldval & ~oldFlag;
-            SetUInt64Value(index,newval);
-        }
-
-        void ToggleFlag64( uint16 index, uint64 flag)
-        {
-            if(HasFlag64(index, flag))
-                RemoveFlag64(index, flag);
-            else
-                SetFlag64(index, flag);
-        }
-
-        bool HasFlag64( uint16 index, uint64 flag ) const
-        {
-            ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-            return (GetUInt64Value( index ) & flag) != 0;
-        }
-
-        void ApplyModFlag64( uint16 index, uint64 flag, bool apply)
-        {
-            if(apply) SetFlag64(index,flag); else RemoveFlag64(index,flag);
-        }
+        void ApplyModFlag(uint16 index, uint32 flag, bool apply);
+        void SetFlag64(uint16 index, uint64 newFlag);
+        void RemoveFlag64(uint16 index, uint64 oldFlag);
+        void ToggleFlag64(uint16 index, uint64 flag);
+        bool HasFlag64(uint16 index, uint64 flag) const;
+        void ApplyModFlag64(uint16 index, uint64 flag, bool apply);
 
         void ClearUpdateMask(bool remove);
-        void SendUpdateObjectToAllExcept(Player* exceptPlayer);
+        //void SendUpdateObjectToAllExcept(Player* exceptPlayer);
 
         bool LoadValues(const char* data);
 
@@ -526,39 +406,49 @@ class Object
 
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
+        virtual void BuildUpdate(UpdateDataMapType&) { }
+        void BuildFieldsUpdate(Player*, UpdateDataMapType &) const;
+
+        void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
+        void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= uint16(~flag); }
 
         // FG: some hacky helpers
         void ForceValuesUpdateAtIndex(uint32);
         
-        Player* ToPlayer(){ if(GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player*>(this); else return NULL; }
-        const Player* ToPlayer() const { if(GetTypeId() == TYPEID_PLAYER) return (const Player*)((Player*)this); else return NULL; }
-        Creature* ToCreature(){ if(GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
-        const Creature* ToCreature() const { if(GetTypeId() == TYPEID_UNIT) return (const Creature*)((Creature*)this); else return NULL; }
-        GameObject* ToGameObject(){ if(GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
-        const GameObject* ToGameObject() const { if(GetTypeId() == TYPEID_GAMEOBJECT) return (const GameObject*)((GameObject*)this); else return NULL; }
-        Unit* ToUnit(){ if(isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit*>(this); else return NULL; }
-        const Unit* ToUnit() const { if(isType(TYPEMASK_UNIT)) return (const Unit*)((Unit*)this); else return NULL; }
-        Corpse* ToCorpse() { if(isType(TYPEID_CORPSE)) return reinterpret_cast<Corpse*>(this); else return NULL; }
-        Corpse const* ToCorpse() const { if(isType(TYPEID_CORPSE)) return reinterpret_cast<Corpse const*>(this); else return NULL; }
-        DynamicObject* ToDynObject() { if(isType(TYPEID_DYNAMICOBJECT)) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
-        DynamicObject const* ToDynObject() const { if(isType(TYPEID_DYNAMICOBJECT)) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
+        Player* ToPlayer() { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player*>(this); else return NULL; }
+        Player const* ToPlayer() const { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player const*>(this); else return NULL; }
+
+        Creature* ToCreature() { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
+        Creature const* ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature const*>(this); else return NULL; }
+
+        Unit* ToUnit() { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit*>(this); else return NULL; }
+        Unit const* ToUnit() const { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit const*>(this); else return NULL; }
+
+        GameObject* ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
+        GameObject const* ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject const*>(this); else return NULL; }
+
+        Corpse* ToCorpse() { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse*>(this); else return NULL; }
+        Corpse const* ToCorpse() const { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse const*>(this); else return NULL; }
+
+        DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
+        DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
 
         //dont use, used by map only
         Cell const& GetCurrentCell() const { return _currentCell; }
         void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
     protected:
 
-        Object ( );
+        Object();
 
         void _InitValues();
-        void _Create (uint32 guidlow, uint32 entry, HighGuid guidhigh);
-        
-        void _LoadIntoDataFields(std::string const& data, uint32 startOffset, uint32 count);
+        void _Create(uint32 guidlow, uint32 entry, HighGuid guidhigh);
+        std::string _ConcatFields(uint16 startIndex, uint16 size) const;
+        void _LoadIntoDataField(std::string const& data, uint32 startOffset, uint32 count);
 
-        virtual void _SetUpdateBits(UpdateMask *updateMask, Player *target) const;
+        uint32 GetUpdateFieldData(Player const* target, uint32*& flags) const;
 
-        virtual void _SetCreateBits(UpdateMask *updateMask, Player *target) const;
-        void _BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask *updateMask, Player *target ) const;
+        void BuildMovementUpdate(ByteBuffer* data, uint16 flags) const;
+        virtual void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const;
 
         uint16 m_objectType;
 
@@ -572,9 +462,11 @@ class Object
             float  *m_floatValues;
         };
 
-        uint32 *m_uint32Values_mirror;
+        UpdateMask _changesMask;
 
         uint16 m_valuesCount;
+
+        uint16 _fieldNotifyFlags;
 
         bool m_objectUpdated;
 
@@ -584,7 +476,7 @@ class Object
 
         bool m_inWorld;
 
-        ByteBuffer m_PackGUID;
+        PackedGuid m_PackGUID;
 
         // for output helpfull error messages from asserts
         bool PrintIndexError(uint32 index, bool set) const;
@@ -755,6 +647,7 @@ class WorldObject : public Object, public WorldLocation
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
 
+        void BuildUpdate(UpdateDataMapType&) override;
     protected:
         explicit WorldObject();
         std::string m_name;

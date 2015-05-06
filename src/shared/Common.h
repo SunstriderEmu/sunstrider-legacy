@@ -134,7 +134,7 @@
 #define atoll _atoi64
 #define vsnprintf _vsnprintf
 #define strdup _strdup
-#define finite(X) _finite(X)
+#define llabs _abs64
 
 #else
 
@@ -143,9 +143,10 @@
 
 #endif
 
-inline float finiteAlways(float f) { return finite(f) ? f : 0.0f; }
+inline float finiteAlways(float f) { return std::isfinite(f) ? f : 0.0f; }
 
-#define atol(a) strtoul( a, NULL, 10)
+inline unsigned long atoul(char const* str) { return strtoul(str, nullptr, 10); }
+inline unsigned long long atoull(char const* str) { return strtoull(str, nullptr, 10); }
 
 #define STRINGIZE(a) #a
 

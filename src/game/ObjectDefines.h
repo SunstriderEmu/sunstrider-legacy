@@ -22,6 +22,7 @@
 #define TRINITY_OBJECTDEFINES_H
 
 #include "Define.h"
+#include "ObjectGuid.h"
 
 #ifndef UINT64_C
 	#define UINT64_C(x)  (x ## ULL)
@@ -70,24 +71,6 @@ uint16 PAIR32_LOPART(uint32 x)
 {
     return (uint16)(x & 0x0000FFFF);
 }
-
-//FIXME all below should be removed in favor of ObjectGuid class
-enum HighGuid
-{
-    HIGHGUID_PLAYER         = 0x0000,                       // blizz 0000
-    HIGHGUID_ITEM           = 0x4000,                       // blizz 4000
-    HIGHGUID_CONTAINER      = 0x4000,                       // blizz 4000
-    HIGHGUID_GAMEOBJECT     = 0xF110,                       // blizz F110
-    HIGHGUID_TRANSPORT      = 0xF120,                       // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
-    HIGHGUID_UNIT           = 0xF130,                       // blizz F130
-    HIGHGUID_PET            = 0xF140,                       // blizz F140
-    HIGHGUID_VEHICLE        = 0xF150,                       // blizz F550 LK
-    HIGHGUID_DYNAMICOBJECT  = 0xF100,                       // blizz F100
-    HIGHGUID_CORPSE         = 0xF101,                       // blizz F100
-    HIGHGUID_MO_TRANSPORT   = 0x1FC0,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
-    HIGHGUID_INSTANCE       = 0x1F40,                       // blizz 1F40 // LK only ?
-    HIGHGUID_GROUP          = 0x1F50                        // LK only ?
-};
 
 #define IS_EMPTY_GUID(Guid)          ( Guid == 0 )
 

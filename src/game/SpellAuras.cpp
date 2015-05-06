@@ -1050,7 +1050,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
 
         // Conflagrate aura state
         if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags & 4))
-            m_target->ModifyAuraState(AURA_STATE_IMMOLATE, true);
+            m_target->ModifyAuraState(AURA_STATE_CONFLAGRATE, true);
 
         if(GetSpellProto()->SpellFamilyName == SPELLFAMILY_DRUID
             && (GetSpellProto()->SpellFamilyFlags == 0x40 || GetSpellProto()->SpellFamilyFlags == 0x10))
@@ -1151,7 +1151,7 @@ void Aura::_RemoveAura()
                 }
             }
             if (!found)
-                m_target->ModifyAuraState(AURA_STATE_IMMOLATE, false);
+                m_target->ModifyAuraState(AURA_STATE_CONFLAGRATE, false);
         }
 
         // Swiftmend aura state
@@ -3301,7 +3301,7 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
         // Soul Shard only from non-grey units
         if( spellInfo->EffectItemType[m_effIndex] == 6265 &&
             (victim->GetLevel() <= Trinity::XP::GetGrayLevel(caster->GetLevel()) ||
-             (cr && (!(caster->ToPlayer())->isAllowedToLoot(cr) || cr->IsTotem() )) ) )
+             (cr && (!(caster->ToPlayer())->IsAllowedToLoot(cr) || cr->IsTotem() )) ) )
             return;
         ItemPosCountVec dest;
         uint8 msg = (caster->ToPlayer())->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, spellInfo->EffectItemType[m_effIndex], 1 );

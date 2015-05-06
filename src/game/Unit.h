@@ -1094,7 +1094,7 @@ class Unit : public WorldObject
         // faction template id
         uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
         void SetFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
-        FactionTemplateEntry const* getFactionTemplateEntry() const;
+        FactionTemplateEntry const* GetFactionTemplateEntry() const;
         bool IsHostileTo(Unit const* unit) const;
         bool IsHostileToPlayers() const;
         bool IsFriendlyTo(Unit const* unit) const;
@@ -1105,7 +1105,7 @@ class Unit : public WorldObject
         void GetRaidMember(std::list<Unit*> &units, float dist);
         bool IsContestedGuard() const
         {
-            if(FactionTemplateEntry const* entry = getFactionTemplateEntry())
+            if(FactionTemplateEntry const* entry = GetFactionTemplateEntry())
                 return entry->IsContestedGuardFaction();
 
             return false;
@@ -1210,6 +1210,7 @@ class Unit : public WorldObject
         uint32 GetAuraCount(uint32 spellId) const;
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
+        bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
         bool HasAura(uint32 spellId, uint32 effIndex = 0) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
         bool HasAuraWithMechanic(Mechanics mechanic) const;
@@ -1750,6 +1751,8 @@ class Unit : public WorldObject
 
     protected:
         explicit Unit ();
+
+        void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
         UnitAI *i_AI, *i_disabledAI;
 

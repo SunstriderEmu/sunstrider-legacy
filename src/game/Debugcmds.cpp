@@ -864,11 +864,11 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 
     uint64 pGuid = GetSession()->GetPlayer()->GetGUID();
     uint32 pGuidLow = GetSession()->GetPlayer()->GetGUIDLow();
-    ByteBuffer pPackGuid = GetSession()->GetPlayer()->GetPackGUID();
+    PackedGuid pPackGuid = GetSession()->GetPlayer()->GetPackGUID();
     
     uint64 tGuid = 0;
     uint32 tGuidLow = 0;
-    ByteBuffer tPackGuid;
+    PackedGuid tPackGuid;
     if(Unit const* t = getSelectedUnit())
     {
         tGuid = t->GetGUID();

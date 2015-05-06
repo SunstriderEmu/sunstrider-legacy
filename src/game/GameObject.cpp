@@ -43,6 +43,7 @@
 #include "CreatureAISelector.h"
 #include "TransportMgr.h"
 #include "Transport.h"
+#include "UpdateFieldFlags.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
@@ -95,6 +96,84 @@ GameObject::~GameObject()
 std::string GameObject::GetAIName() const
 {
     return sObjectMgr->GetGameObjectTemplate(GetEntry())->AIName;
+}
+
+void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target) const
+{
+    if (!target)
+        return;
+
+    bool forcedFlags = GetGoType() == GAMEOBJECT_TYPE_CHEST && GetGOInfo()->chest.groupLootRules; //todo loot && HasLootRecipient();
+    bool targetIsGM = target->IsGameMaster();
+
+    ByteBuffer fieldBuffer;
+
+    UpdateMask updateMask;
+    updateMask.SetCount(m_valuesCount);
+
+    uint32* flags = GameObjectUpdateFieldFlags;
+    uint32 visibleFlag = UF_FLAG_PUBLIC;
+    if (GetOwnerGUID() == target->GetGUID())
+        visibleFlag |= UF_FLAG_OWNER;
+
+    for (uint16 index = 0; index < m_valuesCount; ++index)
+    {
+        if (_fieldNotifyFlags & flags[index] ||
+            ((updateType == UPDATETYPE_VALUES ? _changesMask.GetBit(index) : m_uint32Values[index]) && (flags[index] & visibleFlag)) ||
+            (index == GAMEOBJECT_FLAGS && forcedFlags))
+        {
+            updateMask.SetBit(index);
+
+            //LK if (index == GAMEOBJECT_DYNAMIC)
+            if (index == GAMEOBJECT_DYN_FLAGS)
+            {
+                uint16 dynFlags = 0;
+               //LK int16 pathProgress = -1;
+                switch (GetGoType())
+                {
+                    case GAMEOBJECT_TYPE_QUESTGIVER:
+                        if (ActivateToQuest(target))
+                            dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                        break;
+                    case GAMEOBJECT_TYPE_CHEST:
+                    case GAMEOBJECT_TYPE_GOOBER:
+                        if (ActivateToQuest(target))
+                            dynFlags |= GO_DYNFLAG_LO_ACTIVATE | GO_DYNFLAG_LO_SPARKLE;
+                        else if (targetIsGM)
+                            dynFlags |= GO_DYNFLAG_LO_ACTIVATE;
+                        break;
+                    case GAMEOBJECT_TYPE_GENERIC:
+                        if (ActivateToQuest(target))
+                            dynFlags |= GO_DYNFLAG_LO_SPARKLE;
+                        break;
+                  /* LK case GAMEOBJECT_TYPE_MO_TRANSPORT:
+                        pathProgress = int16(float(m_goValue.Transport.PathProgress) / float(GetUInt32Value(GAMEOBJECT_LEVEL)) * 65535.0f);
+                        break; */
+                    default:
+                        break;
+                }
+
+                fieldBuffer << uint32(dynFlags);
+               //LK fieldBuffer << uint16(dynFlags);
+              //LK  fieldBuffer << int16(pathProgress);
+            }
+            else if (index == GAMEOBJECT_FLAGS)
+            {
+                uint32 flags = m_uint32Values[GAMEOBJECT_FLAGS];
+          /*TODO LOOT      if (GetGoType() == GAMEOBJECT_TYPE_CHEST)
+                    if (GetGOInfo()->chest.groupLootRules && !IsLootAllowedFor(target))
+                        flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE; */
+
+                fieldBuffer << flags;
+            }
+            else
+                fieldBuffer << m_uint32Values[index];                // other cases
+        }
+    }
+
+    *data << uint8(updateMask.GetBlockCount());
+    updateMask.AppendToPacket(data);
+    data->append(fieldBuffer);
 }
 
 void GameObject::AddToWorld()
@@ -265,10 +344,7 @@ void GameObject::Update(uint32 diff)
                             udata.BuildPacket(&packet);
                             (caster->ToPlayer())->GetSession()->SendPacket(&packet);
 
-                            WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM,8+4);
-                            data << GetGUID();
-                            data << (uint32)(0);
-                            (caster->ToPlayer())->SendMessageToSet(&data,true);
+                            SendCustomAnim(GetGoAnimProgress());
                         }
 
                         m_lootState = GO_READY;                 // can be successfully open with some chance

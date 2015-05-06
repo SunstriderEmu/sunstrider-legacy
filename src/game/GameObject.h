@@ -488,6 +488,8 @@ class GameObject : public WorldObject
         explicit GameObject();
         ~GameObject();
 
+        void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
+
         void AddToWorld();
         void RemoveFromWorld();
 

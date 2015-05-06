@@ -784,8 +784,8 @@ class Creature : public Unit
         Unit *SelectVictim(bool evade = true);
 
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
-        bool IsReputationGainDisabled() { return DisableReputationGain; }
-        bool IsDamageEnoughForLootingAndReward() { return m_PlayerDamageReq == 0; }
+        bool IsReputationGainDisabled() const { return DisableReputationGain; }
+        bool IsDamageEnoughForLootingAndReward() const { return m_PlayerDamageReq == 0; }
         void LowerPlayerDamageReq(uint32 unDamage)
         {
             if(m_PlayerDamageReq)
@@ -794,26 +794,26 @@ class Creature : public Unit
         void ResetPlayerDamageReq() { m_PlayerDamageReq = GetHealth() / 2; }
         uint32 m_PlayerDamageReq;
         
-        uint32 GetQuestPoolId() { return m_questPoolId; }
+        uint32 GetQuestPoolId() const { return m_questPoolId; }
         void SetQuestPoolId(uint32 id) { m_questPoolId = id; }
-        uint32 GetCreaturePoolId() { return m_creaturePoolId; }
+        uint32 GetCreaturePoolId() const { return m_creaturePoolId; }
         void SetCreaturePoolId(uint32 id) { m_creaturePoolId = id; }
         
         void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
-        bool IsAllowedToLoot(uint64 guid);
+        bool IsAllowedToLoot(uint64 guid) const;
         void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
         
         // Respawned since less than 5 secs
         bool HasJustRespawned() const { return (m_timeSinceSpawn < 5000); }
         void SetCorpseRemoveTime(uint32 removeTime) { m_corpseRemoveTime = removeTime; }
-        uint32 GetCorpseDelay() { return m_corpseDelay; }
+        uint32 GetCorpseDelay() const { return m_corpseDelay; }
         
         // Scripting tools
         bool IsBelowHPPercent(float percent);
         bool IsAboveHPPercent(float percent);
         bool IsBetweenHPPercent(float minPercent, float maxPercent);
         
-        bool IsBeingEscorted() { return m_isBeingEscorted; }
+        bool IsBeingEscorted() const { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }
 
         bool IsSummoned() const { return m_summoned; }

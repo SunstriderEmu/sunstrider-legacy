@@ -1105,9 +1105,6 @@ class Player : public Unit
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
-        static UpdateMask updateVisualBits;
-        static void InitVisibleBits();
-
         void AddToWorld();
         void RemoveFromWorld();
 
@@ -1842,8 +1839,8 @@ class Player : public Unit
         WorldSession* GetSession() const { return m_session; }
         void SetSession(WorldSession *s) { m_session = s; }
 
-        void BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const;
-        void DestroyForPlayer( Player *target ) const;
+        void BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const override;
+        void DestroyForPlayer(Player *target, bool onDeath = false) const override;
         void SendDelayResponse(const uint32);
         void SendLogXPGain(uint32 GivenXP,Unit* victim,uint32 RestXP);
 
@@ -2353,7 +2350,7 @@ class Player : public Unit
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
 
-        bool isAllowedToLoot(Creature* creature);
+        bool IsAllowedToLoot(Creature const* creature);
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
         bool HasTitle(uint32 bitIndex);

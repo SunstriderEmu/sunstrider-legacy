@@ -285,7 +285,7 @@ enum SpellCategory
 #define SPELL_ATTR1_NOT_BREAK_STEALTH           0x00000020            // 5 Not break stealth
 #define SPELL_ATTR1_CHANNELED_2                 0x00000040            // 6 channeled 2
 #define SPELL_ATTR1_NEGATIVE                    0x00000080            // 7
-#define SPELL_ATTR1_NOT_IN_COMBAT_TARGET        0x00000100            // 8 Spell req target not to be in combat state
+#define SPELL_ATTR1_CANT_TARGET_IN_COMBAT       0x00000100            // 8 Spell req target not to be in combat state
 #define SPELL_ATTR1_MELEE_COMBAT_START          0x00000200            // 9 player starts melee combat after this spell is cast
 #define SPELL_ATTR1_NO_THREAT                   0x00000400            // 10 no generates threat on cast 100% (old NO_INITIAL_AGGRO)
 #define SPELL_ATTR1_UNK11                       0x00000800            // 11
@@ -729,13 +729,15 @@ enum AuraState
     AURA_STATE_CRIT                         = 11,           // C   |
     AURA_STATE_FAERIE_FIRE                  = 12,           //  c t|
     AURA_STATE_HEALTHLESS_35_PERCENT        = 13,           // C T |
-    AURA_STATE_IMMOLATE                     = 14,           //   T |
+    AURA_STATE_CONFLAGRATE                     = 14,           //   T |
     AURA_STATE_SWIFTMEND                    = 15,           //   T |
     AURA_STATE_DEADLY_POISON                = 16,           //   T |
     AURA_STATE_FORBEARANCE                  = 17,           //  c t|
     AURA_STATE_WEAKENED_SOUL                = 18,           //    t|
     AURA_STATE_HYPOTHERMIA                  = 19            //  c  |
 };
+#define PER_CASTER_AURA_STATE_MASK (\
+    (1<<(AURA_STATE_CONFLAGRATE-1))|(1<<(AURA_STATE_DEADLY_POISON-1)))
 
 enum AuraRemoveMode
 {
@@ -1031,7 +1033,7 @@ enum GameObjectFlags
     GO_FLAG_LOCKED          = 0x00000002,                   //require key, spell, event, etc to be opened. Makes "Locked" appear in tooltip
     GO_FLAG_INTERACT_COND   = 0x00000004,                   //cannot interact (condition to interact)
     GO_FLAG_TRANSPORT       = 0x00000008,                   //any kind of transport? Object can transport (elevator, boat, car)
-    GO_FLAG_UNK1            = 0x00000010,                   //
+    GO_FLAG_NOT_SELECTABLE  = 0x00000010,                   //not selectable even in GM mode
     GO_FLAG_NODESPAWN       = 0x00000020,                   //never despawn, typically for doors, they just change state
     GO_FLAG_TRIGGERED       = 0x00000040                    //typically, summoned objects. Triggered by spell or other events
 };
@@ -1954,12 +1956,16 @@ enum TotemCategory
 
 enum UnitDynFlags
 {
+    UNIT_DYNFLAG_NONE              = 0x0000,
     UNIT_DYNFLAG_LOOTABLE          = 0x0001,
     UNIT_DYNFLAG_TRACK_UNIT        = 0x0002,
-    UNIT_DYNFLAG_OTHER_TAGGER      = 0x0004,
-    UNIT_DYNFLAG_ROOTED            = 0x0008,
+    UNIT_DYNFLAG_TAPPED            = 0x0004,
+    UNIT_DYNFLAG_TAPPED_BY_PLAYER  = 0x0008,
     UNIT_DYNFLAG_SPECIALINFO       = 0x0010,
-    UNIT_DYNFLAG_DEAD              = 0x0020
+    UNIT_DYNFLAG_DEAD              = 0x0020,
+    //LK only ?
+    UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0040,
+    UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST  = 0x0080,        // Lua_UnitIsTappedByAllThreatList
 };
 
 enum CorpseDynFlags

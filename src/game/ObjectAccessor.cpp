@@ -202,23 +202,6 @@ ObjectAccessor::SaveAllPlayers()
         itr->second->SaveToDB();
 }
 
-void ObjectAccessor::UpdateObject(Object* obj, Player* exceptPlayer)
-{
-    UpdateDataMapType update_players;
-    obj->BuildUpdate(update_players);
-
-    WorldPacket packet;
-    for(UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
-    {
-        if(iter->first == exceptPlayer)
-            continue;
-
-        iter->second.BuildPacket(&packet);
-        iter->first->GetSession()->SendPacket(&packet);
-        packet.clear();
-    }
-}
-
 void ObjectAccessor::AddUpdateObject(Object *obj)
 {
     std::lock_guard<std::mutex> lock(_objectLock);
@@ -229,32 +212,6 @@ void ObjectAccessor::RemoveUpdateObject(Object *obj)
 {
     std::lock_guard<std::mutex> lock(_objectLock);
     i_objects.erase(obj);
-}
-
-void ObjectAccessor::_buildUpdateObject(Object *obj, UpdateDataMapType &update_players)
-{
-    bool build_for_all = true;
-    Player *pl = NULL;
-    if( obj->isType(TYPEMASK_ITEM) )
-    {
-        Item *item = static_cast<Item *>(obj);
-        pl = item->GetOwner();
-        build_for_all = false;
-    }
-
-    if( pl != NULL )
-        _buildPacket(pl, obj, update_players);
-
-    // Capt: okey for all those fools who think its a real fix
-    //       THIS IS A TEMP FIX
-    if( build_for_all )
-    {
-        WorldObject * temp = dynamic_cast<WorldObject*>(obj);
-
-        //assert(dynamic_cast<WorldObject*>(obj)!=NULL);
-        if (temp)
-            _buildChangeObjectForPlayer(temp, update_players);
-    }
 }
 
 void ObjectAccessor::_buildPacket(Player *pl, Object *obj, UpdateDataMapType &update_players)
@@ -435,14 +392,12 @@ void ObjectAccessor::Update(uint32 diff)
 
     {
         std::lock_guard<std::mutex> lock(_objectLock);
-        while(!i_objects.empty())
+        while (!i_objects.empty())
         {
             Object* obj = *i_objects.begin();
+            ASSERT(obj && obj->IsInWorld());
             i_objects.erase(i_objects.begin());
-            if (!obj || !obj->IsInWorld())
-                continue;
-            _buildUpdateObject(obj, update_players);
-            obj->ClearUpdateMask(false);
+            obj->BuildUpdate(update_players);
         }
     }
 

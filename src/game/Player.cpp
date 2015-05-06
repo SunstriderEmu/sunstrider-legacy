@@ -272,8 +272,6 @@ uint32 PlayerTaxi::GetCurrentTaxiPath() const
 
 const int32 Player::ReputationRank_Length[MAX_REPUTATION_RANK] = {36000, 3000, 3000, 3000, 6000, 12000, 21000, 1000};
 
-UpdateMask Player::updateVisualBits;
-
 Player::Player (WorldSession *session) : 
     Unit(),
     m_bHasDelayedTeleport(false),
@@ -2068,20 +2066,23 @@ void Player::Regenerate(Powers power)
         {
             bool recentCast = IsUnderLastManaUseEffect();
             float ManaIncreaseRate = sWorld->GetRate(RATE_POWER_MANA);
+
+            if (GetLevel() < 15)
+                ManaIncreaseRate = sWorld->GetRate(RATE_POWER_MANA) * (2.066f - (GetLevel() * 0.066f));
+
             if (recentCast)
-            {
                 // Trinity Updates Mana in intervals of 2s, which is correct
                 addvalue = GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT) *  ManaIncreaseRate * 2.00f;
-            }
             else
-            {
                 addvalue = GetFloatValue(PLAYER_FIELD_MOD_MANA_REGEN) * ManaIncreaseRate * 2.00f;
-            }
         }   break;
         case POWER_RAGE:                                    // Regenerate rage
         {
-            float RageDecreaseRate = sWorld->GetRate(RATE_POWER_RAGE_LOSS);
-            addvalue = 30 * RageDecreaseRate;               // 3 rage by tick
+            if (!IsInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
+            {
+                float RageDecreaseRate = sWorld->GetRate(RATE_POWER_RAGE_LOSS);
+                addvalue = 30 * RageDecreaseRate;               // 3 rage by tick
+            }
         }   break;
         case POWER_ENERGY:                                  // Regenerate energy (rogue)
             addvalue = 20;
@@ -2099,6 +2100,17 @@ void Player::Regenerate(Powers power)
         for(AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
             if ((*i)->GetModifier()->m_miscvalue == power)
                 addvalue *= ((*i)->GetModifierValue() + 100) / 100.0f;
+    }
+
+    if (addvalue < 0.0f)
+    {
+        if (curValue == 0)
+            return;
+    }
+    else if (addvalue > 0.0f)
+    {
+        if (curValue == maxValue)
+            return;
     }
 
     if (power != POWER_RAGE)
@@ -3688,140 +3700,9 @@ Mail* Player::GetMail(uint32 id)
     return NULL;
 }
 
-void Player::_SetCreateBits(UpdateMask *updateMask, Player *target) const
-{
-    if(target == this)
-    {
-        Object::_SetCreateBits(updateMask, target);
-    }
-    else
-    {
-        for(uint16 index = 0; index < m_valuesCount; index++)
-        {
-            if(GetUInt32Value(index) != 0 && updateVisualBits.GetBit(index))
-                updateMask->SetBit(index);
-        }
-    }
-}
-
-void Player::_SetUpdateBits(UpdateMask *updateMask, Player *target) const
-{
-    if(target == this)
-    {
-        Object::_SetUpdateBits(updateMask, target);
-    }
-    else
-    {
-        Object::_SetUpdateBits(updateMask, target);
-        *updateMask &= updateVisualBits;
-    }
-}
-
-void Player::InitVisibleBits()
-{
-    updateVisualBits.SetCount(PLAYER_END);
-
-    // TODO: really implement OWNER_ONLY and GROUP_ONLY. Flags can be found in UpdateFields.h
-
-    updateVisualBits.SetBit(OBJECT_FIELD_GUID);
-    updateVisualBits.SetBit(OBJECT_FIELD_TYPE);
-    updateVisualBits.SetBit(OBJECT_FIELD_SCALE_X);
-
-    updateVisualBits.SetBit(UNIT_FIELD_CHARM);
-    updateVisualBits.SetBit(UNIT_FIELD_CHARM+1);
-
-    updateVisualBits.SetBit(UNIT_FIELD_SUMMON);
-    updateVisualBits.SetBit(UNIT_FIELD_SUMMON+1);
-
-    updateVisualBits.SetBit(UNIT_FIELD_CHARMEDBY);
-    updateVisualBits.SetBit(UNIT_FIELD_CHARMEDBY+1);
-
-    updateVisualBits.SetBit(UNIT_FIELD_TARGET);
-    updateVisualBits.SetBit(UNIT_FIELD_TARGET+1);
-
-    updateVisualBits.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
-    updateVisualBits.SetBit(UNIT_FIELD_CHANNEL_OBJECT+1);
-
-    updateVisualBits.SetBit(UNIT_FIELD_HEALTH);
-    updateVisualBits.SetBit(UNIT_FIELD_POWER1);
-    updateVisualBits.SetBit(UNIT_FIELD_POWER2);
-    updateVisualBits.SetBit(UNIT_FIELD_POWER3);
-    updateVisualBits.SetBit(UNIT_FIELD_POWER4);
-    updateVisualBits.SetBit(UNIT_FIELD_POWER5);
-
-    updateVisualBits.SetBit(UNIT_FIELD_MAXHEALTH);
-    updateVisualBits.SetBit(UNIT_FIELD_MAXPOWER1);
-    updateVisualBits.SetBit(UNIT_FIELD_MAXPOWER2);
-    updateVisualBits.SetBit(UNIT_FIELD_MAXPOWER3);
-    updateVisualBits.SetBit(UNIT_FIELD_MAXPOWER4);
-    updateVisualBits.SetBit(UNIT_FIELD_MAXPOWER5);
-
-    updateVisualBits.SetBit(UNIT_FIELD_LEVEL);
-    updateVisualBits.SetBit(UNIT_FIELD_FACTIONTEMPLATE);
-    updateVisualBits.SetBit(UNIT_FIELD_BYTES_0);
-    updateVisualBits.SetBit(UNIT_FIELD_FLAGS);
-    updateVisualBits.SetBit(UNIT_FIELD_FLAGS_2);
-    for(uint16 i = UNIT_FIELD_AURA; i < UNIT_FIELD_AURASTATE; ++i)
-        updateVisualBits.SetBit(i);
-    updateVisualBits.SetBit(UNIT_FIELD_AURASTATE);
-    updateVisualBits.SetBit(UNIT_FIELD_BASEATTACKTIME);
-    updateVisualBits.SetBit(UNIT_FIELD_BASEATTACKTIME + 1);
-    updateVisualBits.SetBit(UNIT_FIELD_BOUNDINGRADIUS);
-    updateVisualBits.SetBit(UNIT_FIELD_COMBATREACH);
-    updateVisualBits.SetBit(UNIT_FIELD_DISPLAYID);
-    updateVisualBits.SetBit(UNIT_FIELD_NATIVEDISPLAYID);
-    updateVisualBits.SetBit(UNIT_FIELD_MOUNTDISPLAYID);
-    updateVisualBits.SetBit(UNIT_FIELD_BYTES_1);
-    updateVisualBits.SetBit(UNIT_FIELD_PETNUMBER);
-    updateVisualBits.SetBit(UNIT_FIELD_PET_NAME_TIMESTAMP);
-    updateVisualBits.SetBit(UNIT_DYNAMIC_FLAGS);
-    updateVisualBits.SetBit(UNIT_CHANNEL_SPELL);
-    updateVisualBits.SetBit(UNIT_MOD_CAST_SPEED);
-    updateVisualBits.SetBit(UNIT_FIELD_BYTES_2);
-
-    updateVisualBits.SetBit(PLAYER_DUEL_ARBITER);
-    updateVisualBits.SetBit(PLAYER_DUEL_ARBITER+1);
-    updateVisualBits.SetBit(PLAYER_FLAGS);
-    updateVisualBits.SetBit(PLAYER_GUILDID);
-    updateVisualBits.SetBit(PLAYER_GUILDRANK);
-    updateVisualBits.SetBit(PLAYER_BYTES);
-    updateVisualBits.SetBit(PLAYER_BYTES_2);
-    updateVisualBits.SetBit(PLAYER_BYTES_3);
-    updateVisualBits.SetBit(PLAYER_DUEL_TEAM);
-    updateVisualBits.SetBit(PLAYER_GUILD_TIMESTAMP);
-
-    // PLAYER_QUEST_LOG_x also visible bit on official (but only on party/raid)...
-    for(uint16 i = PLAYER_QUEST_LOG_1_1; i < PLAYER_QUEST_LOG_25_2; i+=4)
-        updateVisualBits.SetBit(i);
-
-    //Players visible items are not inventory stuff
-    //431) = 884 (0x374) = main weapon
-    for(uint16 i = 0; i < EQUIPMENT_SLOT_END; i++)
-    {
-        // item creator
-        updateVisualBits.SetBit(PLAYER_VISIBLE_ITEM_1_CREATOR + (i*MAX_VISIBLE_ITEM_OFFSET) + 0);
-        updateVisualBits.SetBit(PLAYER_VISIBLE_ITEM_1_CREATOR + (i*MAX_VISIBLE_ITEM_OFFSET) + 1);
-
-        uint16 visual_base = PLAYER_VISIBLE_ITEM_1_0 + (i*MAX_VISIBLE_ITEM_OFFSET);
-
-        // item entry
-        updateVisualBits.SetBit(visual_base + 0);
-
-        // item enchantment IDs
-        for(uint8 j = 0; j < MAX_INSPECTED_ENCHANTMENT_SLOT; ++j)
-            updateVisualBits.SetBit(visual_base + 1 + j);
-
-        // random properties
-        updateVisualBits.SetBit(PLAYER_VISIBLE_ITEM_1_PROPERTIES + 0 + (i*MAX_VISIBLE_ITEM_OFFSET));
-        updateVisualBits.SetBit(PLAYER_VISIBLE_ITEM_1_PROPERTIES + 1 + (i*MAX_VISIBLE_ITEM_OFFSET));
-    }
-
-    updateVisualBits.SetBit(PLAYER_CHOSEN_TITLE);
-}
-
 void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target ) const
 {
-    for(int i = 0; i < EQUIPMENT_SLOT_END; i++)
+    for(uint8 i = 0; i < EQUIPMENT_SLOT_END; i++)
     {
         if(m_items[i] == NULL)
             continue;
@@ -3832,14 +3713,14 @@ void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target )
     if(target == this)
     {
 
-        for(int i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        for(uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
         {
             if(m_items[i] == NULL)
                 continue;
 
             m_items[i]->BuildCreateUpdateBlockForPlayer( data, target );
         }
-        for(int i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; i++)
+        for(uint8 i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; i++)
         {
             if(m_items[i] == NULL)
                 continue;
@@ -3851,33 +3732,33 @@ void Player::BuildCreateUpdateBlockForPlayer( UpdateData *data, Player *target )
     Unit::BuildCreateUpdateBlockForPlayer( data, target );
 }
 
-void Player::DestroyForPlayer( Player *target ) const
+void Player::DestroyForPlayer(Player *target, bool onDeath) const
 {
-    Unit::DestroyForPlayer( target );
+    Unit::DestroyForPlayer(target, onDeath);
 
-    for(int i = 0; i < INVENTORY_SLOT_BAG_END; i++)
+    for(uint8 i = 0; i < INVENTORY_SLOT_BAG_END; i++)
     {
         if(m_items[i] == NULL)
             continue;
 
-        m_items[i]->DestroyForPlayer( target );
+        m_items[i]->DestroyForPlayer(target);
     }
 
     if(target == this)
     {
-        for(int i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+        for(uint8 i = INVENTORY_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
         {
             if(m_items[i] == NULL)
                 continue;
 
-            m_items[i]->DestroyForPlayer( target );
+            m_items[i]->DestroyForPlayer(target);
         }
         for(int i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; i++)
         {
             if(m_items[i] == NULL)
                 continue;
 
-            m_items[i]->DestroyForPlayer( target );
+            m_items[i]->DestroyForPlayer(target);
         }
     }
 }
@@ -15499,7 +15380,7 @@ bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
     return true;
 }
 
-bool Player::isAllowedToLoot(Creature* creature)
+bool Player::IsAllowedToLoot(Creature const* creature)
 {
     if(creature->IsDead() && !creature->IsDamageEnoughForLootingAndReward())
        return false;
@@ -20299,7 +20180,7 @@ uint32 Player::GetBattlegroundQueueIdFromLevel() const
 
 float Player::GetReputationPriceDiscount( Creature const* pCreature ) const
 {
-    FactionTemplateEntry const* vendor_faction = pCreature->getFactionTemplateEntry();
+    FactionTemplateEntry const* vendor_faction = pCreature->GetFactionTemplateEntry();
     if(!vendor_faction)
         return 1.0f;
 

@@ -40,6 +40,8 @@ class Transport : public GameObject, public TransportBase
 
         void Update(uint32 diff) override;
 
+        void BuildUpdate(UpdateDataMapType& data_map) override;
+
         void AddPassenger(WorldObject* passenger);
         void RemovePassenger(WorldObject* passenger);
         PassengerSet const& GetPassengers() const { return _passengers; }
