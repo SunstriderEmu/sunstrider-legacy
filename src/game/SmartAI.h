@@ -234,14 +234,14 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
-        bool OnGossipHello(Player* player);
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action);
-        bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/);
-        bool QuestAccept(Player* player, Quest const* quest);
-        bool QuestReward(Player* player, Quest const* quest, uint32 opt);
-        void Destroyed(Player* player, uint32 eventId);
-        void SetData(uint32 id, uint32 value);
-        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
+        bool OnGossipHello(Player* player) override;
+        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override;
+        bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
+        bool QuestAccept(Player* player, Quest const* quest) override;
+        bool QuestReward(Player* player, Quest const* quest, uint32 opt) override;
+        void Destroyed(Player* player, uint32 eventId) override;
+        void SetData(uint32 id, uint32 value) override;
+        void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker); //FIXME
         void OnGameEvent(bool start, uint16 eventId); //FIXME
         void OnStateChanged(uint32 state, Unit* unit); //FIXME
         void EventInform(uint32 eventId); //FIXME
