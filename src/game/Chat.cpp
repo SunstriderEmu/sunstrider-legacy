@@ -820,6 +820,9 @@ ChatCommand * ChatHandler::getCommandTable()
 
 void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 {
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, nullptr, nullptr, msg, 0, channel);
+
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
@@ -830,8 +833,6 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
             {
                 if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
                 {
-                    WorldPacket data;
-                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, nullptr, nullptr, msg, 0, channel);
                     itr->second->GetSession()->SendPacket(&data);
                 }
             }
