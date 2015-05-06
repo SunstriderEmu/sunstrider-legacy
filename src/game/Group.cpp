@@ -1041,6 +1041,7 @@ void Group::Update(time_t diff)
 {
     PROFILE;
 
+    //change the leader if it has disconnect for a long time
     if (m_leaderLogoutTime) {
         time_t thisTime = time(NULL);
 

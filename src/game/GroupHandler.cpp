@@ -769,8 +769,8 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
         {
             if(auramask & (uint64(1) << i))
             {
-                uint32 updatedAura=player->GetUInt32Value(uint16(UNIT_FIELD_AURA + i));
-                *data << uint16(updatedAura);
+                uint32 updatedAura = player->GetUInt32Value(uint16(UNIT_FIELD_AURA + i));
+                *data << uint16(updatedAura); //LK uint32
                 *data << uint8(1);
             }
         }
@@ -852,7 +852,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
                 if(auramask & (uint64(1) << i))
                 {
                     uint32 updatedAura=pet->GetUInt32Value(uint16(UNIT_FIELD_AURA + i));
-                    *data << uint16(updatedAura);
+                    *data << uint16(updatedAura); //LK uint32
                     *data << uint8(1);
                 }
             }
@@ -876,6 +876,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
     if(!player)
     {
         WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3+4+2);
+        //LK data << uint8(0);
         data.appendPackGUID(Guid);
         data << (uint32) GROUP_UPDATE_FLAG_STATUS;
         data << (uint16) MEMBER_STATUS_OFFLINE;
@@ -884,20 +885,52 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
     }
 
     Pet *pet = player->GetPet();
+    Powers powerType = player->GetPowerType();
 
     WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4+2+2+2+1+2*6+8+1+8);
+    //LK data << uint8(0);
     data.append(player->GetPackGUID());
 
-    uint32 mask1 = 0x00040BFF;                              // common mask, real flags used 0x000040BFF
+    uint32 updateFlags = GROUP_UPDATE_FLAG_STATUS | GROUP_UPDATE_FLAG_CUR_HP
+        | GROUP_UPDATE_FLAG_MAX_HP
+        | GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER | GROUP_UPDATE_FLAG_LEVEL
+        | GROUP_UPDATE_FLAG_ZONE | GROUP_UPDATE_FLAG_POSITION | GROUP_UPDATE_FLAG_AURAS
+        | GROUP_UPDATE_FLAG_PET_NAME | GROUP_UPDATE_FLAG_PET_AURAS;
+
+    if (powerType != POWER_MANA)
+        updateFlags |= GROUP_UPDATE_FLAG_POWER_TYPE;
+
     if(pet)
-        mask1 = 0x7FFFFFFF;                                 // for hunters and other classes with pets
+        updateFlags &= 0x7FFFFFFF;                                 // for hunters and other classes with pets
+
+    uint16 playerStatus = MEMBER_STATUS_ONLINE;
+    if (player->IsPvP())
+        playerStatus |= MEMBER_STATUS_PVP;
+
+    if (!player->IsAlive())
+    {
+        if (player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
+            playerStatus |= MEMBER_STATUS_GHOST;
+        else
+            playerStatus |= MEMBER_STATUS_DEAD;
+    }
+
+    if (player->IsFFAPvP())
+        playerStatus |= MEMBER_STATUS_PVP_FFA;
+
+    if (player->IsAFK())
+        playerStatus |= MEMBER_STATUS_AFK;
+
+    if (player->IsDND())
+        playerStatus |= MEMBER_STATUS_DND;
 
     Powers powerType = player->GetPowerType();
-    data << (uint32) mask1;                                 // group update mask
-    data << (uint16) MEMBER_STATUS_ONLINE;                  // member's online status
+    data << (uint32)updateFlags;                                 // group update mask
+    data << (uint16)playerStatus;                  // member's online status
     data << (uint16) player->GetHealth();                   // GROUP_UPDATE_FLAG_CUR_HP
     data << (uint16) player->GetMaxHealth();                // GROUP_UPDATE_FLAG_MAX_HP
-    data << (uint8)  powerType;                             // GROUP_UPDATE_FLAG_POWER_TYPE
+    if (updateFlags & GROUP_UPDATE_FLAG_POWER_TYPE)
+        data << (uint8)  powerType;
     data << (uint16) player->GetPower(powerType);           // GROUP_UPDATE_FLAG_CUR_POWER
     data << (uint16) player->GetMaxPower(powerType);        // GROUP_UPDATE_FLAG_MAX_POWER
     data << (uint16) player->GetLevel();                    // GROUP_UPDATE_FLAG_LEVEL
