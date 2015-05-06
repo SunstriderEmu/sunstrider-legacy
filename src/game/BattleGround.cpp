@@ -793,12 +793,8 @@ void Battleground::SetStatus(uint32 Status)
         if (sWorld->getConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_WORLDONLY))
         {
             std::ostringstream msg;
-            msg << "|cffffff00[Annonceur BG] " << GetName() << "|r [" << GetMaxLevel() << "] " << "a commencé.";
-            //ugly hack to get a player just to get to the ChatHandler
-            HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
-            auto itr = m.begin();
-            if(itr->second)
-                ChatHandler(itr->second).SendMessageWithoutAuthor("world", msg.str().c_str());
+            msg << "|cffffff00[BG Announcer] " << GetName() << "|r [" << GetMaxLevel() << "] " << "started.";
+            ChatHandler::SendMessageWithoutAuthor("world", msg.str().c_str());
         } else
             sWorld->SendWorldText(LANG_BG_STARTED_ANNOUNCE_WORLD, GetName().c_str(), /*GetMinLevel(),*/ GetMaxLevel()); //Min level system is wrong and not complete
     }

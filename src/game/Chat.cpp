@@ -820,7 +820,8 @@ ChatCommand * ChatHandler::getCommandTable()
 
 void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 {
-    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())
