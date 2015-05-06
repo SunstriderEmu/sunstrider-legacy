@@ -3355,7 +3355,8 @@ void World::updateArenaLeadersTitles()
         return; //nothing to do
 
     //update all online players
-    HashMapHolder<Player>::MapType& onlinePlayers = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType& onlinePlayers = ObjectAccessor::GetPlayers();
     for (auto itr : onlinePlayers)
     {
         if(itr.second)
@@ -3799,11 +3800,14 @@ void World::UpdateMonitoring(uint32 diff)
     
     uint32 racesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     uint32 classesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
+    auto lock = HashMapHolder<Player>::GetLock();
+    lock->lock();
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
     for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr) {
         racesCount[itr->second->GetRace()]++;
         classesCount[itr->second->GetClass()]++;
     }
+    lock->unlock();
     
     ssraces << racesCount[1] << " " << racesCount[2] << " " << racesCount[3] << " ";
     ssraces << racesCount[4] << " " << racesCount[5] << " " << racesCount[6] << " ";

@@ -4910,7 +4910,8 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     }
 
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE (at_login & '%u') = '0'",atLogin,atLogin);
-    HashMapHolder<Player>::MapType const& plist = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& plist = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
         itr->second->SetAtLoginFlag(atLogin);
 
@@ -7467,14 +7468,14 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
 }
 bool ChatHandler::HandleZoneBuffCommand(const char* args)
 {
-    
     ARGS_CHECK
 
     char *bufid = strtok((char *)args, " ");
     if (!bufid)
         return false;
 
-    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     Player *p;
 
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
@@ -7488,7 +7489,6 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
 
 bool ChatHandler::HandleZoneMorphCommand(const char* args)
 {
-    
     ARGS_CHECK
 
     char *displid = strtok((char *)args, " ");
@@ -7499,7 +7499,8 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     uint16 display_id = (uint16)atoi((char *)args);
     uint8 faction_id = factid ? (uint8)atoi(factid) : 0;
 
-    HashMapHolder<Player>::MapType const& players = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     Player *p;
 
     for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
@@ -7648,7 +7649,8 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
         
     char const* channel = "pvp";
     
-    HashMapHolder<Player>::MapType& m = sObjectAccessor->GetPlayers();
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
     for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
     {
         if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())

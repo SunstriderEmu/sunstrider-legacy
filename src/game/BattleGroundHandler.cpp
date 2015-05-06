@@ -849,8 +849,8 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             else
                 msg << "Tag: [" << ttype << "] (1500-)";
 
-            ChatHandler(_player).SendMessageWithoutAuthor(channel, msg.str().c_str());
-            ChatHandler(_player).SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
+            ChatHandler::SendMessageWithoutAuthor(channel, msg.str().c_str());
+            ChatHandler::SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
         }
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
