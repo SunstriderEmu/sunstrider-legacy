@@ -44,6 +44,7 @@ class DynamicObject;
 class WorldObject;
 class Map;
 
+/** Static hash map */
 template <class T>
 class HashMapHolder
 {
@@ -150,51 +151,78 @@ class ObjectAccessor
             else return NULL;
         }
 
-        static Object*   GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
+        // thread-safe
+        static Object* GetObjectByTypeMask(Player const &, uint64, uint32 typemask);
+        // thread-safe
         static Creature* GetCreature(WorldObject const &, uint64);
+        // thread-safe
         static Creature* GetCreatureOrPetOrVehicle(WorldObject const &, uint64);
+        // thread-safe
         static Unit* GetUnit(WorldObject const &, uint64);
+        // thread-safe
         static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
+        // thread-safe
         static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
+        // thread-safe
         static GameObject* GetGameObject(WorldObject const &, uint64);
+        // thread-safe
         static DynamicObject* GetDynamicObject(Unit const &, uint64);
+        // thread-safe
         static Corpse* GetCorpse(WorldObject const &u, uint64 guid);
+        // thread-safe
         static Pet* GetPet(uint64 guid);
+        
+        /* Find a player in world by guid, thread-safe */
         static Player* FindPlayer(uint64);
+        /* Find a player in all connected players by guid, thread-safe.
+           /!\ Player may not be in world. */
         static Player* FindConnectedPlayer(uint64);
+        /* Find a unit in world by guid, thread-safe */
         static Unit* FindUnit(uint64);
 
+        /* Find a player in all connected players by name, thread-safe. */
         Player* FindPlayerByName(std::string const& name);
+        /* Find a player in all connected players by name, thread-safe.
+        /!\ Player may not be in world. */
         static Player* FindConnectedPlayerByName(std::string const& name);
 
-        // when using this, you must use the hashmapholder's lock
+        /* when using this, you must use the hashmapholder's lock
+         Example: boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+        */
         static HashMapHolder<Player>::MapType& GetPlayers()
         {
             return HashMapHolder<Player>::GetContainer();
         }
 
-        // when using this, you must use the hashmapholder's lock
+        /*when using this, you must use the hashmapholder's lock
+         Example: boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+        */
         static HashMapHolder<Creature>::MapType const& GetCreatures()
         {
             return HashMapHolder<Creature>::GetContainer();
         }
 
-        // when using this, you must use the hashmapholder's lock
+        /* when using this, you must use the hashmapholder's lock
+        Example: boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<GameObject>::GetLock());
+        */
         static HashMapHolder<GameObject>::MapType const& GetGameObjects()
         {
             return HashMapHolder<GameObject>::GetContainer();
         }
 
+        /** Add an object in hash map holder, thread-safe */
         template<class T> void AddObject(T *object)
         {
             HashMapHolder<T>::Insert(object);
         }
 
+        /** Removes an object from hash map holder, thread-safe */
         template<class T> void RemoveObject(T *object)
         {
             HashMapHolder<T>::Remove(object);
         }
 
+        /** Removes a player from hash map holder, thread-safe */
         void RemoveObject(Player *pl)
         {
             HashMapHolder<Player>::Remove(pl);
@@ -206,15 +234,23 @@ class ObjectAccessor
                 i_objects.erase(iter2);
         }
 
+        /** save all players in database, thread-safe */
         void SaveAllPlayers();
 
+        /** Mark object as updated, thread-safe */
         void AddUpdateObject(Object *obj);
+        /** Mark object as not updated, thread-safe */
         void RemoveUpdateObject(Object *obj);
 
+        /** Build and send ObjectFields updates of every objects for every players */
         void Update(uint32 diff);
 
         Corpse* GetCorpseForPlayerGUID(uint64 guid);
+        /** Remove a corpse from world, thread-safe */
         void RemoveCorpse(Corpse *corpse);
+        /** Add a corpse to work, thread-safe 
+        Don't delete the corpse pointer afterwards as is used in the object accessor. Corpse object will be deleted in ConvertCorpseForPlayer.
+        */
         void AddCorpse(Corpse* corpse);
         void AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map);
         Corpse* ConvertCorpseForPlayer(uint64 player_guid, bool insignia = false);
@@ -224,32 +260,17 @@ class ObjectAccessor
         void UnloadAll();
 
     private:
-        struct WorldObjectChangeAccumulator
-        {
-            UpdateDataMapType &i_updateDatas;
-            WorldObject &i_object;
-            std::set<uint64> plr_list;
-            WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) {}
-            void Visit(PlayerMapType &);
-            void Visit(CreatureMapType &);
-            void Visit(DynamicObjectMapType &);
-            void BuildPacket(Player* plr);
-            template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
-        };
-
-        friend struct WorldObjectChangeAccumulator;
-
-        static void _buildChangeObjectForPlayer(WorldObject *, UpdateDataMapType&);
-        static void _buildPacket(Player *, Object *, UpdateDataMapType &);
-        void _update(void);
-        
+        /** Set of updated objects. The object is deleted from this set when the updates have been sent. */
         std::set<Object *> i_objects;
+        /** List of every corpse currently in world  */
         Player2CorpsesMapType i_player2corpse;
 
+        /** Lock for i_objects */
         std::mutex _objectLock;
+        /** Lock for i_player2corpse */
         boost::shared_mutex _corpseLock;
 };
 
 #define sObjectAccessor ObjectAccessor::instance()
-#endif
 
+#endif

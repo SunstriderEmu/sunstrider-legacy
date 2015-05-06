@@ -167,16 +167,14 @@ ObjectAccessor::GetGameObject(WorldObject const &u, uint64 guid)
     return ret;
 }
 
-DynamicObject*
-ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
+DynamicObject* ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
 {
     DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)NULL);
     if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
     return ret;
 }
 
-Player*
-ObjectAccessor::FindPlayer(uint64 guid)
+Player* ObjectAccessor::FindPlayer(uint64 guid)
 {
     return GetObjectInWorld(guid, (Player*)NULL);
 }
@@ -186,14 +184,12 @@ Player* ObjectAccessor::FindConnectedPlayer(uint64 guid)
     return HashMapHolder<Player>::Find(guid);
 }
 
-Unit*
-ObjectAccessor::FindUnit(uint64 guid)
+Unit* ObjectAccessor::FindUnit(uint64 guid)
 {
     return GetObjectInWorld(guid, (Unit*)NULL);
 }
 
-void
-ObjectAccessor::SaveAllPlayers()
+void ObjectAccessor::SaveAllPlayers()
 {
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
 
@@ -214,40 +210,12 @@ void ObjectAccessor::RemoveUpdateObject(Object *obj)
     i_objects.erase(obj);
 }
 
-void ObjectAccessor::_buildPacket(Player *pl, Object *obj, UpdateDataMapType &update_players)
-{
-    UpdateDataMapType::iterator iter = update_players.find(pl);
-
-    if( iter == update_players.end() )
-    {
-        std::pair<UpdateDataMapType::iterator, bool> p = update_players.insert( UpdateDataValueType(pl, UpdateData()) );
-        assert(p.second);
-        iter = p.first;
-    }
-
-    obj->BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
-}
-
-void ObjectAccessor::_buildChangeObjectForPlayer(WorldObject *obj, UpdateDataMapType &update_players)
-{
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-    WorldObjectChangeAccumulator notifier(*obj, update_players);
-    TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
-    Map& map = *obj->GetMap();
-    cell.Visit(p, player_notifier, map, *obj, map.GetVisibilityDistance());
-}
-
-Pet*
-ObjectAccessor::GetPet(uint64 guid)
+Pet* ObjectAccessor::GetPet(uint64 guid)
 {
     return GetObjectInWorld(guid, (Pet*)NULL);
 }
 
-Corpse*
-ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
+Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
 
@@ -259,8 +227,7 @@ ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
     return iter->second;
 }
 
-void
-ObjectAccessor::RemoveCorpse(Corpse *corpse)
+void ObjectAccessor::RemoveCorpse(Corpse *corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
@@ -279,8 +246,7 @@ ObjectAccessor::RemoveCorpse(Corpse *corpse)
     i_player2corpse.erase(iter);
 }
 
-void
-ObjectAccessor::AddCorpse(Corpse *corpse)
+void ObjectAccessor::AddCorpse(Corpse *corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
@@ -295,8 +261,7 @@ ObjectAccessor::AddCorpse(Corpse *corpse)
     sObjectMgr->AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
-void
-ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
+void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
     for(Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
@@ -317,8 +282,7 @@ ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* ma
     }
 }
 
-Corpse*
-ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
+Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 {
     Corpse *corpse = GetCorpseForPlayerGUID(player_guid);
     if(!corpse)
@@ -344,7 +308,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
     corpse->DeleteFromDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 
-    Corpse *bones = NULL;
+    Corpse* bones = nullptr;
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia
     if (map && (insignia ||
@@ -388,8 +352,7 @@ ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
 void ObjectAccessor::Update(uint32 diff)
 {
     //build update for each objects
-    UpdateDataMapType update_players;
-
+    UpdateDataMapType update_players; //one UpdateData object per player
     {
         std::lock_guard<std::mutex> lock(_objectLock);
         while (!i_objects.empty())
@@ -408,61 +371,6 @@ void ObjectAccessor::Update(uint32 diff)
         iter->second.BuildPacket(&packet);
         iter->first->GetSession()->SendPacket(&packet);
         packet.clear();                                     // clean the string
-    }
-}
-
-void ObjectAccessor::WorldObjectChangeAccumulator::Visit(PlayerMapType &m)
-{
-    for(PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        BuildPacket(iter->GetSource());
-        if (!iter->GetSource()->GetSharedVisionList().empty())
-        {
-            for (auto itr : iter->GetSource()->GetSharedVisionList())
-            {
-                if(Player* p = FindPlayer(itr))
-                    BuildPacket(p);
-            }
-        }
-    }
-}
-
-void ObjectAccessor::WorldObjectChangeAccumulator::Visit(CreatureMapType &m)
-{
-    for(CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        if (!iter->GetSource()->GetSharedVisionList().empty())
-        {
-            SharedVisionList::const_iterator it = iter->GetSource()->GetSharedVisionList().begin();
-            for (auto itr : iter->GetSource()->GetSharedVisionList())
-            {
-                if(Player* p = FindPlayer(itr))
-                    BuildPacket(p);
-            }
-        }
-    }
-}
-
-void ObjectAccessor::WorldObjectChangeAccumulator::Visit(DynamicObjectMapType &m)
-{
-    for(DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        if (IS_PLAYER_GUID(iter->GetSource()->GetCasterGUID()))
-        {
-            Player* caster = iter->GetSource()->GetCaster()->ToPlayer();
-            if (caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->GetSource()->GetGUID())
-                BuildPacket(caster);
-        }
-    }
-}
-
-void ObjectAccessor::WorldObjectChangeAccumulator::BuildPacket(Player* plr)
-{
-    // Only send update once to a player
-    if (plr_list.find(plr->GetGUID()) == plr_list.end() && plr->HaveAtClient(&i_object))
-    {
-        ObjectAccessor::_buildPacket(plr, &i_object, i_updateDatas);
-        plr_list.insert(plr->GetGUID());
     }
 }
 

@@ -347,8 +347,18 @@ class Object
         virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
         void SendUpdateToPlayer(Player* player);
 
+        /**
+            Fill the update data with update(s) for given target (the updates are about the data of this object)
+        */
         void BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const;
+        /**
+            Mark this object for destroying at client in update data
+        */
         void BuildOutOfRangeUpdateBlock(UpdateData *data) const;
+        /**
+            Adds the movement update block data to update data
+            (not sure of how this should be used, update this comment if you know)
+        */
         void BuildMovementUpdateBlock(UpdateData* data, uint32 flags = 0) const;
 
         virtual void DestroyForPlayer(Player *target, bool onDeath = false) const;
@@ -407,7 +417,10 @@ class Object
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
         virtual void BuildUpdate(UpdateDataMapType&) { }
-        void BuildFieldsUpdate(Player*, UpdateDataMapType &) const;
+        /**
+           Add the player and update data for it to the given updateData map.
+        */
+        void BuildFieldsUpdate(Player*, UpdateDataMapType& data_map) const;
 
         void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
         void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= uint16(~flag); }
@@ -448,7 +461,10 @@ class Object
         uint32 GetUpdateFieldData(Player const* target, uint32*& flags) const;
 
         void BuildMovementUpdate(ByteBuffer* data, uint16 flags) const;
-        virtual void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const;
+        /**
+            Second step of filling updateData ByteBuffer with data from this object, for given target
+        */
+        virtual void BuildValuesUpdate(uint8 updatetype, ByteBuffer* updateData, Player* target) const;
 
         uint16 m_objectType;
 

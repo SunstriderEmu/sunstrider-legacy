@@ -45,6 +45,9 @@ enum OBJECT_UPDATE_FLAGS
     UPDATEFLAG_STATIONARY_POSITION  = 0x40
 };
 
+/**
+    Contains a list of changes of an object, for a given player
+*/
 class UpdateData
 {
     public:
@@ -53,7 +56,10 @@ class UpdateData
         void AddOutOfRangeGUID(std::set<uint64>& guids);
         void AddOutOfRangeGUID(const uint64 &guid);
         void AddUpdateBlock(const ByteBuffer &block);
-        bool BuildPacket(WorldPacket *packet, bool hasTransport = false);
+        /** Build a WorldPacket from this update data 
+            @packet an unitialized WorldPacket
+        */
+        bool BuildPacket(WorldPacket* packet, bool hasTransport = false);
         bool HasData() { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
 

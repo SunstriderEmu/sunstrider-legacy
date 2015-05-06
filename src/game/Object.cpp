@@ -256,7 +256,6 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) c
 void Object::BuildFieldsUpdate(Player* player, UpdateDataMapType& data_map) const
 {
     UpdateDataMapType::iterator iter = data_map.find(player);
-
     if (iter == data_map.end())
     {
         std::pair<UpdateDataMapType::iterator, bool> p = data_map.emplace(player, UpdateData());
@@ -2346,6 +2345,7 @@ Position::Position(const WorldObject* obj)
     Relocate(obj->GetPosition()); 
 }
 
+/** Fill UpdateData's for each player in range of given object */
 struct WorldObjectChangeAccumulator
 {
     UpdateDataMapType& i_updateDatas;
