@@ -1678,6 +1678,7 @@ class Unit : public WorldObject
         void SetFeared(bool apply);
         void SetConfused(bool apply);
         void SetStunned(bool apply);
+        /** Set as rooted, updates unit flags, stop spline movement and send update to players around */
         void SetRooted(bool apply);
 
         uint32 m_rootTimes;

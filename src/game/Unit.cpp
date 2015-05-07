@@ -12340,21 +12340,11 @@ void Unit::SetControlled(bool apply, UnitState state)
         {
             case UNIT_STATE_STUNNED:
                 SetStunned(true);
-                // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
-                if (HasUnitState(UNIT_STATE_FLEEING))
-                    SetFeared(false);
-
                 CastStop();
                 break;
             case UNIT_STATE_ROOT:
                 if (!HasUnitState(UNIT_STATE_STUNNED))
-                {
-                    // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
-                    if (HasUnitState(UNIT_STATE_FLEEING))
-                        SetFeared(false);
-
                     SetRooted(true);
-                }
                 break;
             case UNIT_STATE_CONFUSED:
                 if (!HasUnitState(UNIT_STATE_STUNNED))
@@ -12433,6 +12423,10 @@ void Unit::SetStunned(bool apply)
 {
     if (apply)
     {
+        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
+        if (HasUnitState(UNIT_STATE_FLEEING))
+            SetFeared(false);
+
         SetTarget(0);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
 
@@ -12481,6 +12475,10 @@ void Unit::SetRooted(bool apply)
 {
     if (apply)
     {
+        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
+        if (HasUnitState(UNIT_STATE_FLEEING))
+            SetFeared(false);
+
         if (m_rootTimes > 0) // blizzard internal check?
             m_rootTimes++;
 
