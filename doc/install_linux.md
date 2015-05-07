@@ -59,7 +59,7 @@ http://stackoverflow.com/questions/19171021/auto-authenticate-password-in-mysql
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
-You can skip this step by downloading the already extracted folders [dbc][dbc], [maps][maps], [vmaps][vmaps], [mmaps][mmaps], and put them into the `<root_install_folder>/data` folder.
+You can skip this step by downloading [the already extracted data folders][githubdata] and extracting them into your `<root_install_folder>/data` folder.
 
 Otherwise, if those files were missing, outdated, if if you want to do it by yourself, here are how to make them.
 
@@ -86,14 +86,8 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
 6. Move the directories `maps`, `dbc`, `vmaps` and `mmaps` from your game
   directory to your `<root_install_folder>`. You can delete the `Buildings` directory.
 
-[dbc]:
-http://www.sunstrider.cf/files/dbc.tar.bz2
-[maps]:
-http://www.sunstrider.cf/files/maps.tar.bz2
-[vmaps]:
-http://www.sunstrider.cf/files/vmaps.tar.bz2
-[mmaps]:
-http://www.sunstrider.cf/files/mmaps.tar.bz2
+[githubdata]:
+https://github.com/kelno/sunstrider/releases
 
 <!----------------------------------------------------------------------------->
 
