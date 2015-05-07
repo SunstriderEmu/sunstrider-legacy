@@ -97,7 +97,9 @@ http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
-Follow these steps after compiling the core.
+You can skip this step by downloading the already extracted folders [dbc][dbc], [maps][maps], [vmaps][vmaps], [mmaps][mmaps], and put them into the `<root_install_folder>/data` folder.
+
+Otherwise, if those files were missing, outdated, if if you want to do it by yourself, follow these steps after compiling the core.
 
 - Copy `dep/lib/<build>_release/libmySQL.dll` from the source directory to your 
   burning crusade install directory. (This dependency should be removed)
@@ -149,11 +151,18 @@ Follow these steps after compiling the core.
 - Rename `worldserver.conf.dist` from your server install directory to
   `worldserver.conf`.
 
-- Modify `authserver.conf` and `worldserver.conf` to put in your preferences. In
-  particular, you need to tweak the `***DatabaseInfo` options to be able to
-  access the database.
+- Update `authserver.conf` options:  
+	- **LoginDatabaseInfo**: See info in conf file
+	
+- Update `worldserver.conf` options:  
+	- **LoginDatabaseInfo**: See info in conf file
+	- **WorldDatabaseInfo**: See info in conf file
+	- **CharacterDatabaseInfo**: See info in conf file
+	- **LogsDatabaseInfo**: See info in conf file
+	- **DataDir**: Set this your data folder you just filled last step.
+	- **LogsDir***: Because you'll probably want logs. See info in conf file.
 
-Local realmlist entries are already configured for BC and LK, so you don't need
+Local realmlist entries are already configured in database for BC and LK, so you don't need
 to add one yourself for development. If you need to, just look at the structure
 of the `realmlist` table in the `auth` database.
 
