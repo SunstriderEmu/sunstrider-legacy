@@ -22,7 +22,6 @@
 #include "VMapDefinitions.h"
 
 #include <set>
-#include <iomanip>
 #include <sstream>
 #include <iomanip>
 
