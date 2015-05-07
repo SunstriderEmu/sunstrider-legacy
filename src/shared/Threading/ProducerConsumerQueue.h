@@ -68,11 +68,11 @@ public:
 
     void WaitAndPop(T& value)
     {
+        std::unique_lock<std::mutex> lock(_queueLock);
+
         // we could be using .wait(lock, predicate) overload here but some threading error analysis tools produce false positives
         while (_queue.empty() && !_shutdown)
             _condition.wait(lock);
-
-        _condition.wait(lock, [this]() { return !_queue.empty() || _shutdown; });
 
         if (_queue.empty() || _shutdown)
             return;
