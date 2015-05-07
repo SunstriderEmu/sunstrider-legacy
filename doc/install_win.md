@@ -66,16 +66,15 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.55.0/
    you don't already have an SQL client, you can install HeidiSQL when proposed
    to do so.
 
-2. Download the world database, e.g [this one][world_db], copy it to the `sql`
-   directory in the repository then rename it to `world.sql` (so that it is ignored
-   by Git and taken into account by the script at step 3).
+2. Download the last world database [here][world_db], copy it to the `sql`
+   directory in the repository then rename it to `world.sql` (so that it is ignored by Git and taken into account by the script at step 3).
 
 3. If this is a first-time setup, switch to the `sql` sub-directory of the
    repository, then run `mysql -u root -p < create_mysql.sql` then `mysql -u
    root -p < populate_mysql.sql`.
 
 4. Apply every 'world', 'char', 'auth' updates in the `sql/updates` directory,
-   applying them from the lowest revision to the highest.
+   applying them from the lowest date to the highest.
 
    Under bash, this can be achieved by running the `apply_updates.sh` script
    that is in the `sql` directory.
@@ -90,13 +89,13 @@ user and password in the `my.ini` file][my_ini].
 https://downloads.mariadb.org/
 
 [world_db]:
-http://www.sunstrider.cf/files/world_2015_04_08_r6592.sql.bz2
+https://github.com/kelno/sunstrider/releases
 
 [my_ini]:
 http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.html
 
 <!----------------------------------------------------------------------------->
-## Extracting maps, vmaps and dbc.
+## Extracting maps, vmaps and dbc
 
 Follow these steps after compiling the core.
 
