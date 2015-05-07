@@ -5201,13 +5201,14 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     {
         completedQuestsThisWeek = 0;
     }
+ /* DISABLED
     if (completedQuestsThisWeek >= 2 && !forceComplete) //TODO: set a config option here ?
     {
         //tell the GM that this player has reached the maximum quests complete for this week
         PSendSysMessage(LANG_REACHED_QCOMPLETE_LIMIT, player->GetName().c_str());
         SetSentErrorMessage(true);
         return true;
-    }
+    }*/
     // Add quest items for quests that require items
     for(uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
     {
