@@ -852,7 +852,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
     if (isAccountNameGiven)
     {
         targetAccountName = arg1;
-        if (!AccountMgr::normalizeString(targetAccountName))
+        if (!AccountMgr::normalizeString(targetAccountName) || !AccountMgr::GetId(targetAccountName))
         {
             PSendSysMessage(LANG_ACCOUNT_NOT_EXIST, targetAccountName.c_str());
             SetSentErrorMessage(true);
