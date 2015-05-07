@@ -97,7 +97,7 @@ http://www.avajava.com/tutorials/lessons/how-do-i-log-on-to-mysql-automatically.
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
-You can skip this step by downloading the already extracted folders [dbc][dbc], [maps][maps], [vmaps][vmaps], [mmaps][mmaps], and put them into the `<root_install_folder>/data` folder.
+You can skip this step by downloading [the already extracted data folders][githubdata] and extracting them into your `<install dir>/data` folder.
 
 Otherwise, if those files were missing, outdated, if if you want to do it by yourself, follow these steps after compiling the core.
 
@@ -132,6 +132,10 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
   directory to your server install location. This was the value of the
   `CMAKE_INSTALL_PREFIX` variable inside CMake. If you're not sure, you can
   re-run `cmake-gui` to check. You can delete the `Buildings` directory.
+
+
+[githubdata]:
+https://github.com/kelno/sunstrider/releases
 
 <!----------------------------------------------------------------------------->
 ## Install and Configure the Server

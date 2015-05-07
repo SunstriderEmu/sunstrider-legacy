@@ -207,7 +207,7 @@ class Item : public Object
 
         ItemTemplate const* GetProto() const { return m_itemProto; }
 
-        uint64 const& GetOwnerGUID()    const { return GetUInt64Value(ITEM_FIELD_OWNER); }
+        uint64 GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
         void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
         Player* GetOwner()const;
 

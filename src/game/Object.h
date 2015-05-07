@@ -330,7 +330,7 @@ class Object
             ClearUpdateMask(true);
         }
 
-        const uint64& GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }
+        uint64 GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
