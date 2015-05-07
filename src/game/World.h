@@ -707,7 +707,8 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
-        void RecordTimeDiff(const char * text, ...);
+        void ResetTimeDiffRecord();
+        void RecordTimeDiff(std::string const& text);
         
         CharacterNameData const* GetCharacterNameData(uint32 guid) const;
         void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
