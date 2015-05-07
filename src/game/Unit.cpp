@@ -10200,6 +10200,11 @@ uint32 Unit::GetCreatureType() const
         return (this->ToCreature())->GetCreatureTemplate()->type;
 }
 
+bool Unit::IsFFAPvP() const 
+{ 
+    return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP); 
+}
+
 /*#######################################
 ########                         ########
 ########       STAT SYSTEM       ########
