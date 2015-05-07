@@ -15,11 +15,12 @@ https://downloads.mariadb.org/mariadb/repositories/
 
 <sub>*Note that the folder structure I use here is merely a suggestion, but I will assume you're using it to keep these instructions simple*</sub>
 
-1. Create a root folder for your emulator installation. I will refer to this folder as <root_install_folder>.  
+1. Create a root folder for your emulator installation. I will refer to this folder as `<root_install_folder>`.  
 Inside, create the following folders :  
-	- build  
-	- data 
-2. Move this repository in the <root_install_folder> as a `sources` folder, so that the file you're currently reading should be in ` <root_install_folder>/sources/doc`.  
+	- **build**  
+	- **data** 
+	
+2. Move this repository in the `<root_install_folder>` as a `sources` folder, so that the file you're currently reading should be in ` <root_install_folder>/sources/doc`.  
 	In the `<root_install_folder>/build` folder, create a script containing :  
 
 		cmake -DCMAKE_INSTALL_PREFIX="<root_install_folder>"  ../sources
@@ -58,16 +59,16 @@ http://stackoverflow.com/questions/19171021/auto-authenticate-password-in-mysql
 <!----------------------------------------------------------------------------->
 ## Extracting maps, vmaps and dbc
 
-You can skip this step by downloading the already extracted folders [dbc][dbc], [maps][maps], [vmaps][vmaps], [mmaps][mmaps].
+You can skip this step by downloading the already extracted folders [dbc][dbc], [maps][maps], [vmaps][vmaps], [mmaps][mmaps], and put them into the `<root_install_folder>/data` folder.
 
 Otherwise, if those files were missing, outdated, if if you want to do it by yourself, here are how to make them.
 
 1. If everything compiled correctly, the following binaries should have been created in your `<root_install_folder>/bin` folder:  
 
-	- mapextractor
-	- vmap4extractor
-	- vmap4assembler
-	- mmaps_generator
+	- **mapextractor**
+	- **vmap4extractor**
+	- **vmap4assembler**
+	- **mmaps_generator**
 	
 	You'll need a WoW client to extract to use them. Copy all those binaries into the WoW 2.4.3 client folder.
 2. Run `mapextractor.exe` in the game directory. This will create two directories
@@ -83,7 +84,7 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
   directory.
 
 6. Move the directories `maps`, `dbc`, `vmaps` and `mmaps` from your game
-  directory to your <root_install_folder>. You can delete the `Buildings` directory.
+  directory to your `<root_install_folder>`. You can delete the `Buildings` directory.
 
 [dbc]:
 http://www.sunstrider.cf/files/dbc.tar.bz2
@@ -99,15 +100,21 @@ http://www.sunstrider.cf/files/mmaps.tar.bz2
 ## Install and Configure the Server
 
 1. The following files have been installed to your `<root_install_folder>/etc` folder :
-	- authserver.conf.dist
-	- worldserver.conf.dit
+	- **authserver.conf.dist**
+	- **worldserver.conf.dit**
 	
 	Rename those files as `authserver.conf` and `worldserver.conf`.
-2. Modify both files to put in your preferences. In
-  particular, you need to tweak the `***DatabaseInfo` options to be able to
-  access the database, the rest is fine with default values.
+2. Update `authserver.conf` options:  
+	- **LoginDatabaseInfo**: See info in conf file.
+3. Update `worldserver.conf` options:  
+	- **LoginDatabaseInfo**: See info in conf file.
+	- **WorldDatabaseInfo**: See info in conf file.
+	- **CharacterDatabaseInfo**: See info in conf file.
+	- **LogsDatabaseInfo**: See info in conf file.
+	- **DataDir**: Set this your `<root_install_folder>/data` folder.
+	- **LogsDir***: Because you'll probably want logs. See info in conf file. I suggest setting this `<root_install_folder>/logs` (create the folder yourself).
 
-Local realmlist entries are already configured for BC and LK, so you don't need
+Local realmlist entries are already configured in database for BC and LK, so you don't need
 to add one yourself for development. If you need to, just look at the structure
 of the `realmlist` table in the `auth` database.
 

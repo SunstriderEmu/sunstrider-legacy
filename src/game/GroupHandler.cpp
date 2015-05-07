@@ -924,7 +924,6 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
     if (player->IsDND())
         playerStatus |= MEMBER_STATUS_DND;
 
-    Powers powerType = player->GetPowerType();
     data << (uint32)updateFlags;                                 // group update mask
     data << (uint16)playerStatus;                  // member's online status
     data << (uint16) player->GetHealth();                   // GROUP_UPDATE_FLAG_CUR_HP
