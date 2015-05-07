@@ -363,24 +363,24 @@ class Object
 
         virtual void DestroyForPlayer(Player *target, bool onDeath = false) const;
 
-        const int32& GetInt32Value( uint16 index ) const;
-        const uint32& GetUInt32Value( uint16 index ) const;
-        const uint64& GetUInt64Value( uint16 index ) const;
-        const float& GetFloatValue( uint16 index ) const;
-        const uint8& GetByteValue( uint16 index, uint8 offset) const;
-        const uint8& GetUInt16Value( uint16 index, uint8 offset) const;
+        int32 GetInt32Value( uint16 index ) const;
+        uint32 GetUInt32Value( uint16 index ) const;
+        uint64 GetUInt64Value( uint16 index ) const;
+        float GetFloatValue( uint16 index ) const;
+        uint8 GetByteValue( uint16 index, uint8 offset) const;
+        uint16 GetUInt16Value(uint16 index, uint8 offset) const;
         uint64 GetGuidValue(uint16 index) const; //for TC compat
 
-        void SetInt32Value(  uint16 index,        int32  value );
-        void SetUInt32Value( uint16 index,       uint32  value );
-        void UpdateUInt32Value(uint16 index,     uint32 value);
-        void SetUInt64Value( uint16 index, const uint64 &value );
-        void SetFloatValue(  uint16 index,       float   value );
-        void SetByteValue(   uint16 index, uint8 offset, uint8 value );
-        void SetUInt16Value( uint16 index, uint8 offset, uint16 value );
-        void SetInt16Value(  uint16 index, uint8 offset, int16 value ) { SetUInt16Value(index,offset,(uint16)value); }
-        void SetStatFloatValue( uint16 index, float value);
-        void SetStatInt32Value( uint16 index, int32 value);
+        void SetInt32Value(uint16 index, int32 value);
+        void SetUInt32Value(uint16 index, uint32 value);
+        void UpdateUInt32Value(uint16 index, uint32 value);
+        void SetUInt64Value(uint16 index, uint64 value);
+        void SetFloatValue(uint16 index, float value);
+        void SetByteValue(uint16 index, uint8 offset, uint8 value);
+        void SetUInt16Value(uint16 index, uint8 offset, uint16 value);
+        void SetInt16Value(uint16 index, uint8 offset, int16 value) { SetUInt16Value(index, offset, (uint16)value); }
+        void SetStatFloatValue(uint16 index, float value);
+        void SetStatInt32Value(uint16 index, int32 value);
         void SetGuidValue(uint16 index, uint64 value); //for TC compat
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);

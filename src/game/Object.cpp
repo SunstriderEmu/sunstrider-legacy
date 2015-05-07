@@ -339,42 +339,42 @@ void Object::DestroyForPlayer(Player *target, bool onDeath /*= false*/) const
     target->GetSession()->SendPacket( &data );
 }
 
-const int32& Object::GetInt32Value( uint16 index ) const
+int32 Object::GetInt32Value(uint16 index) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-    return m_int32Values[ index ];
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    return m_int32Values[index];
 }
 
-const uint32& Object::GetUInt32Value( uint16 index ) const
+uint32 Object::GetUInt32Value(uint16 index) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-    return m_uint32Values[ index ];
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    return m_uint32Values[index];
 }
 
-const uint64& Object::GetUInt64Value( uint16 index ) const
+uint64 Object::GetUInt64Value(uint16 index) const
 {
-    ASSERT( index + 1 < m_valuesCount || PrintIndexError( index , false) );
-    return *((uint64*)&(m_uint32Values[ index ]));
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, false));
+    return *((uint64*)&(m_uint32Values[index]));
 }
 
-const float& Object::GetFloatValue( uint16 index ) const
+float Object::GetFloatValue(uint16 index) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false ) );
-    return m_floatValues[ index ];
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    return m_floatValues[index];
 }
 
-const uint8& Object::GetByteValue( uint16 index, uint8 offset) const
+uint8 Object::GetByteValue(uint16 index, uint8 offset) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-    ASSERT( offset < 4 );
-    return *(((uint8*)&m_uint32Values[ index ])+offset);
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    ASSERT(offset < 4);
+    return *(((uint8*)&m_uint32Values[index]) + offset);
 }
 
-const uint8& Object::GetUInt16Value( uint16 index, uint8 offset) const
+uint16 Object::GetUInt16Value(uint16 index, uint8 offset) const
 {
-    ASSERT( index < m_valuesCount || PrintIndexError( index , false) );
-    ASSERT( offset < 2 );
-    return *(((uint16*)&m_uint32Values[ index ])+offset);
+    ASSERT(index < m_valuesCount || PrintIndexError(index, false));
+    ASSERT(offset < 2);
+    return *(((uint16*)&m_uint32Values[index]) + offset);
 }
 
 uint64 Object::GetGuidValue(uint16 index) const
