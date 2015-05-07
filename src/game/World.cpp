@@ -1728,7 +1728,7 @@ void World::ResetTimeDiffRecord()
     if (m_updateTimeCount != 1)
         return;
 
-    m_currentTime = getMSTime();
+    m_currentTime = GetMSTime();
 }
 
 void World::RecordTimeDiff(std::string const& text)
@@ -1736,10 +1736,10 @@ void World::RecordTimeDiff(std::string const& text)
     if (m_updateTimeCount != 1)
         return;
 
-    uint32 thisTime = getMSTime();
-    uint32 diff = getMSTimeDiff(m_currentTime, thisTime);
+    uint32 thisTime = GetMSTime();
+    uint32 diff = GetMSTimeDiff(m_currentTime, thisTime);
 
-    if (diff > m_int_configs[CONFIG_MIN_LOG_UPDATE])
+    if (diff > m_configs[CONFIG_MIN_LOG_UPDATE])
         TC_LOG_INFO("misc", "Difftime %s: %u.", text.c_str(), diff);
 
     m_currentTime = thisTime;
