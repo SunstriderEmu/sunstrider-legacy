@@ -1490,7 +1490,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         return NULL;
     }
 
-    //make sure the create has the correct creator
+    //make sure the creature has the correct creator
     pCreature->SetCreatorGUID(this->GetGUID());
 
     if (x == 0.0f && y == 0.0f && z == 0.0f)

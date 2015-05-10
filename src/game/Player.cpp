@@ -16434,10 +16434,16 @@ void Player::SaveToDB(bool create /*=false*/)
                                                             //save, but in tavern/city
 
     // save state (after auras removing), if aura remove some flags then it must set it back by self)
+    // also get change mask and restore it afterwards so that the server don't think the fields are changed
+    bool updateFlag1 = _changesMask.GetBit(UNIT_FIELD_BYTES_1);
     uint32 tmp_bytes = GetUInt32Value(UNIT_FIELD_BYTES_1);
+    bool updateFlag2 = _changesMask.GetBit(UNIT_FIELD_BYTES_2);
     uint32 tmp_bytes2 = GetUInt32Value(UNIT_FIELD_BYTES_2);
+    bool updateFlag3 = _changesMask.GetBit(UNIT_FIELD_FLAGS);
     uint32 tmp_flags = GetUInt32Value(UNIT_FIELD_FLAGS);
+    bool updateFlag4 = _changesMask.GetBit(PLAYER_FLAGS);
     uint32 tmp_pflags = GetUInt32Value(PLAYER_FLAGS);
+    bool updateFlag5 = _changesMask.GetBit(UNIT_FIELD_DISPLAYID);
     uint32 tmp_displayid = GetDisplayId();
 
     // Set player sit state to standing on save, also stealth and shifted form
@@ -16626,11 +16632,16 @@ void Player::SaveToDB(bool create /*=false*/)
     CharacterDatabase.CommitTransaction(trans);
 
     // restore state (before aura apply, if aura remove flag then aura must set it ack by self)
-    SetDisplayId(tmp_displayid);
     SetUInt32Value(UNIT_FIELD_BYTES_1, tmp_bytes);
+    _changesMask.SetBit(UNIT_FIELD_BYTES_1, updateFlag1);
     SetUInt32Value(UNIT_FIELD_BYTES_2, tmp_bytes2);
+    _changesMask.SetBit(UNIT_FIELD_BYTES_2, updateFlag2);
     SetUInt32Value(UNIT_FIELD_FLAGS, tmp_flags);
+    _changesMask.SetBit(UNIT_FIELD_FLAGS, updateFlag3);
     SetUInt32Value(PLAYER_FLAGS, tmp_pflags);
+    _changesMask.SetBit(PLAYER_FLAGS, updateFlag4);
+    SetDisplayId(tmp_displayid);
+    _changesMask.SetBit(UNIT_FIELD_DISPLAYID, updateFlag5);
 
     // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
     // Wowarmory feeds

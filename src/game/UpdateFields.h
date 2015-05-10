@@ -90,9 +90,9 @@ enum EUnitFields
     UNIT_FIELD_FLAGS                          = OBJECT_END + 0x0028, // Size: 1, Type: INT, Flags: PUBLIC
     UNIT_FIELD_FLAGS_2                        = OBJECT_END + 0x0029, // Size: 1, Type: INT, Flags: PUBLIC
     UNIT_FIELD_AURA                           = OBJECT_END + 0x002A, // Size: 56, Type: INT, Flags: PUBLIC
-    UNIT_FIELD_AURAFLAGS                      = OBJECT_END + 0x0062, // Size: 14, Type: BYTES, Flags: PUBLIC
-    UNIT_FIELD_AURALEVELS                     = OBJECT_END + 0x0070, // Size: 14, Type: BYTES, Flags: PUBLIC
-    UNIT_FIELD_AURAAPPLICATIONS               = OBJECT_END + 0x007E, // Size: 14, Type: BYTES, Flags: PUBLIC
+    UNIT_FIELD_AURAFLAGS                      = OBJECT_END + 0x0062, // Size: 14, Type: BYTES, Flags: PUBLIC (8 bits per aura)
+    UNIT_FIELD_AURALEVELS                     = OBJECT_END + 0x0070, // Size: 14, Type: BYTES, Flags: PUBLIC (8 bits per aura)
+    UNIT_FIELD_AURAAPPLICATIONS               = OBJECT_END + 0x007E, // Size: 14, Type: BYTES, Flags: PUBLIC (8 bits per aura)
     UNIT_FIELD_AURASTATE                      = OBJECT_END + 0x008C, // Size: 1, Type: INT, Flags: PUBLIC
     UNIT_FIELD_BASEATTACKTIME                 = OBJECT_END + 0x008D, // Size: 2, Type: INT, Flags: PUBLIC
     UNIT_FIELD_RANGEDATTACKTIME               = OBJECT_END + 0x008F, // Size: 1, Type: INT, Flags: PRIVATE

@@ -66,7 +66,7 @@ class UpdateData
         std::set<uint64> const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
-        uint32 m_blockCount;
+        uint32 m_blockCount; //one per object updated
         std::set<uint64> m_outOfRangeGUIDs;
         ByteBuffer m_data;
 

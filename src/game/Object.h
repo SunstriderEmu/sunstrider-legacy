@@ -422,6 +422,7 @@ class Object
         */
         void BuildFieldsUpdate(Player*, UpdateDataMapType& data_map) const;
 
+        /** Force notify of all update fields having this flag. Don't forget to remove it afterwards. */
         void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
         void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= uint16(~flag); }
 

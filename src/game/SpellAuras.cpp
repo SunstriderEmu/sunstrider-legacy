@@ -1185,16 +1185,20 @@ void Aura::_RemoveAura()
 
 void Aura::SetAuraFlag(uint32 slot, bool add)
 {
-    uint32 index    = slot / 4;
-    uint32 byte     = (slot % 4) * 8;
-    uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
-    val &= ~((uint32)AFLAG_MASK << byte);
+    //which field index are we filling ? (there is 4 "aura flag slot" per field, one byte for each)
+    uint32 index    = slot / 4; 
+    //which byte are we filling in this field ?
+    uint32 byte = (slot % 4);
+    //total offset in this field
+    uint32 offset = byte * 8;
+
+    uint32 val = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
+    //clear old value in slot
+    val &= ~((uint32)AFLAG_MASK << offset);
     if(add)
     {
-        if (IsPositive())
-            val |= ((uint32)AFLAG_POSITIVE << byte);
-        else
-            val |= ((uint32)AFLAG_NEGATIVE << byte);
+        uint32 flag = IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE;
+        val |= flag << offset;
     }
     m_target->SetUInt32Value(UNIT_FIELD_AURAFLAGS + index, val);
 }

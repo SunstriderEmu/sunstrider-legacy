@@ -707,7 +707,9 @@ class World
         void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
         char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
 
+        /** Record current time to start from for the next RecordTimeDiff call */
         void ResetTimeDiffRecord();
+        /** Print time diff since last ResetTimeDiffRecord() or since last RecordTimeDiff() (this function also does the reset) */
         void RecordTimeDiff(std::string const& text);
         
         CharacterNameData const* GetCharacterNameData(uint32 guid) const;
