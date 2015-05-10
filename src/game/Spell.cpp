@@ -190,28 +190,13 @@ bool SpellCastTargets::read( WorldPacket * data, Unit *caster )
 
     // TARGET_FLAG_UNK2 is used for non-combat pets, maybe other?
     if( m_targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2) )
-    {
-        if(data->rpos()+8 > data->size())
-            return false;
-
-        *data >> m_unitTargetGUID;
-    }
+        data->readPackGUID(m_unitTargetGUID);
 
     if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK ))
-    {
-        if(data->rpos()+8 > data->size())
-            return false;
-
-        *data >> m_GOTargetGUID;
-    }
+        data->readPackGUID(m_GOTargetGUID);
 
     if(( m_targetMask & ( TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM )) && caster->GetTypeId() == TYPEID_PLAYER)
-    {
-        if(data->rpos()+8 > data->size())
-            return false;
-
-        *data >> m_itemTargetGUID;
-    }
+        data->readPackGUID(m_itemTargetGUID);
 
     if( m_targetMask & TARGET_FLAG_SOURCE_LOCATION )
     {
@@ -242,12 +227,7 @@ bool SpellCastTargets::read( WorldPacket * data, Unit *caster )
     }
 
     if( m_targetMask & (TARGET_FLAG_CORPSE | TARGET_FLAG_PVP_CORPSE ) )
-    {
-        if(data->rpos()+8 > data->size())
-            return false;
-
-        *data >> m_CorpseTargetGUID;
-    }
+        data->readPackGUID(m_CorpseTargetGUID);
 
     // find real units/GOs
     Update(caster);
@@ -3882,9 +3862,9 @@ SpellFailedReason Spell::CheckCast(bool strict)
         // Not allow disarm unarmed player
         if (m_spellInfo->Mechanic == MECHANIC_DISARM)
         {
-            if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+            if (target->GetTypeId() == TYPEID_PLAYER)
             {
-                Player const* player = unitTarget->ToPlayer();
+                Player const* player = target->ToPlayer();
                 if (!player->GetWeaponForAttack(BASE_ATTACK) || !player->IsUseEquipedWeapon(true))
                     return SPELL_FAILED_TARGET_NO_WEAPONS;
             }
@@ -3954,12 +3934,6 @@ SpellFailedReason Spell::CheckCast(bool strict)
         {
             SendInterrupted(2);
             return SPELL_FAILED_NOT_INFRONT;
-        }
-
-        // check if target is in combat
-        if ((m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT) && target->IsInCombat())
-        {
-            return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
         }
 
         // check if target is alive?
