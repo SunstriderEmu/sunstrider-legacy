@@ -30,21 +30,17 @@
 #include "GridNotifiers.h"
 #include "CellImpl.h"
 
-INSTANTIATE_SINGLETON_1(CreatureTextMgr);
-
 void CreatureTextMgr::LoadCreatureTexts()
 {
     mTextMap.clear(); // for reload case
     mTextRepeatMap.clear(); //reset all currently used temp texts
 
-    //PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_LOAD_CRETEXT);
-    //PreparedQueryResult result = WorldDatabase.Query(stmt);
-    QueryResult result = WorldDatabase.Query("SELECT entry, groupid, id, text_en, text_fr, type, language, probability, emote, duration, sound FROM creature_text");
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_CREATURE_TEXT);
+    PreparedQueryResult result = WorldDatabase.Query(stmt);
     
     if (!result)
     {
-        TC_LOG_INFO("FIXME"," ");
-        TC_LOG_INFO("FIXME",">> Loaded 0 Creature Texts. DB table `creature_texts` is empty.");
+        TC_LOG_INFO("server.loading",">> Loaded 0 Creature Texts. DB table `creature_texts` is empty.");
         return;
     }
 
@@ -59,30 +55,31 @@ void CreatureTextMgr::LoadCreatureTexts()
         temp.entry          = fields[0].GetUInt32();
         temp.group          = fields[1].GetUInt8();
         temp.id             = fields[2].GetUInt8();
-        temp.text_en        = fields[3].GetString();
-        temp.text_fr        = fields[4].GetString();
-        temp.type           = ChatType(fields[5].GetUInt8());
-        temp.lang           = Language(fields[6].GetUInt8());
-        temp.probability    = fields[7].GetFloat();
-        temp.emote          = Emote(fields[8].GetUInt32());
-        temp.duration       = fields[9].GetUInt32();
-        temp.sound          = fields[10].GetUInt32();
+        temp.text           = fields[3].GetString();
+        temp.type           = ChatType(fields[4].GetUInt8());
+        temp.lang           = Language(fields[5].GetUInt8());
+        temp.probability    = fields[6].GetFloat();
+        temp.emote          = Emote(fields[7].GetUInt32());
+        temp.duration       = fields[8].GetUInt32();
+        temp.sound          = fields[9].GetUInt32();
+        temp.BroadcastTextId = fields[10].GetUInt32();
+        temp.TextRange       = CreatureTextRange(fields[11].GetUInt8());
 
         if (temp.sound)
         {
             if (!sSoundEntriesStore.LookupEntry(temp.sound)){
-                TC_LOG_ERROR("FIXME","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Sound %u but sound does not exist.", temp.entry, temp.group, temp.sound);
+                TC_LOG_ERROR("sql.sql","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Sound %u but sound does not exist.", temp.entry, temp.group, temp.sound);
                 temp.sound = 0;
             }
         }
         if (!GetLanguageDescByID(temp.lang))
         {
-            TC_LOG_ERROR("FIXME","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` using Language %u but Language does not exist.", temp.entry, temp.group, uint32(temp.lang));
+            TC_LOG_ERROR("sql.sql","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` using Language %u but Language does not exist.", temp.entry, temp.group, uint32(temp.lang));
             temp.lang = LANG_UNIVERSAL;
         }
         if (temp.type >= MAX_CHAT_MSG_TYPE)
         {
-            TC_LOG_ERROR("FIXME","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this Chat Type does not exist.", temp.entry, temp.group, uint32(temp.type));
+            TC_LOG_ERROR("sql.sql","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this Chat Type does not exist.", temp.entry, temp.group, uint32(temp.type));
             temp.type = CHAT_TYPE_SAY;
         }
         /*if (temp.emote)
@@ -103,11 +100,10 @@ void CreatureTextMgr::LoadCreatureTexts()
         ++TextCount;
     } while (result->NextRow());
 
-    TC_LOG_INFO("FIXME"," ");
-    TC_LOG_INFO("FIXME",">> Loaded %u Creature Texts for %u Creatures.", TextCount, CreatureCount);
+    TC_LOG_INFO("server.loading",">> Loaded %u Creature Texts for %u Creatures.", TextCount, CreatureCount);
 }
 
-uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid, ChatType msgtype, Language language, TextRange range, uint32 sound, Team team, bool gmOnly, Player* srcPlr)
+uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid, ChatType msgtype, Language language, CreatureTextRange range, uint32 sound, Team team, bool gmOnly, Player* srcPlr)
 {
     if (!source)
         return 0;
@@ -115,7 +111,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     CreatureTextMap::const_iterator sList = mTextMap.find(source->GetEntry());
     if (sList == mTextMap.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find Text for Creature(%s) Entry %u in 'creature_text' table. Ignoring.",source->GetName().c_str(), source->GetEntry());
+        TC_LOG_ERROR("sql.sql","CreatureTextMgr: Could not find Text for Creature(%s) Entry %u in 'creature_text' table. Ignoring.",source->GetName().c_str(), source->GetEntry());
         return 0;
     }
 
@@ -123,7 +119,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     CreatureTextHolder::const_iterator itr = TextHolder.find(textGroup);
     if (itr == TextHolder.end())
     {
-        TC_LOG_ERROR("FIXME","CreatureTextMgr: Could not find TextGroup %u for Creature(%s) GuidLow %u Entry %u. Ignoring.",uint32(textGroup), source->GetName().c_str(), source->GetGUIDLow(), source->GetEntry());
+        TC_LOG_ERROR("sql.sql","CreatureTextMgr: Could not find TextGroup %u for Creature(%s) GuidLow %u Entry %u. Ignoring.",uint32(textGroup), source->GetName().c_str(), source->GetGUIDLow(), source->GetEntry());
         return 0;
     }
 
@@ -193,20 +189,20 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     if ((*iter).emote)
         SendEmote(source, (*iter).emote);
     
-    SendChatString(source, (*iter).text_en.c_str(), (*iter).text_fr.c_str(), finalType, finalLang, whisperGuid, range, team, gmOnly);
+    SendChatString(source, (*iter).text.c_str(), finalType, finalLang, whisperGuid, range, team, gmOnly);
     if (isEqualChanced || (!isEqualChanced && totalChance == 100.0f))
         SetRepeatId(source, textGroup, (*iter).id);
 
     return (*iter).duration;
 }
 
-void CreatureTextMgr::SendSound(Creature* source,uint32 sound, ChatType msgtype, uint64 whisperGuid, TextRange range, Team team, bool gmOnly)
+void CreatureTextMgr::SendSound(Creature* source,uint32 sound, ChatType msgtype, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly)
 {
     if (!sound || !source)
         return;
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(sound);
-    SendChatPacket(&data, &data, source, msgtype, whisperGuid, range, team, gmOnly);
+    SendChatPacket(&data, source, msgtype, whisperGuid, range, team, gmOnly);
 }
 
 void CreatureTextMgr::SendEmote(Creature* source, uint32 emote)
@@ -258,16 +254,14 @@ CreatureTextRepeatIds CreatureTextMgr::GetRepeatGroup(Creature* source, uint8 te
     return ids;
 }
 
-void CreatureTextMgr::SendChatString(WorldObject* source, char const* text_en, char const* text_fr, ChatType msgtype, Language language, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const
+void CreatureTextMgr::SendChatString(WorldObject* source, char const* text, ChatType msgtype, Language language, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly) const
 {
     if (!source)
        return;
 
-    WorldPacket data_en(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data_en, source, msgtype, text_en, language, whisperGuid);
-    WorldPacket data_fr(SMSG_MESSAGECHAT, 200);
-    BuildMonsterChat(&data_fr, source, msgtype, text_fr, language, whisperGuid);
-    SendChatPacket(&data_en, &data_fr, source, msgtype, whisperGuid, range, team, gmOnly);
+    WorldPacket data(SMSG_MESSAGECHAT, 200);
+    BuildMonsterChat(&data, source, msgtype, text, language, whisperGuid);
+    SendChatPacket(&data, source, msgtype, whisperGuid, range, team, gmOnly);
 }
 
 void CreatureTextMgr::BuildMonsterChat(WorldPacket* data, WorldObject* source, ChatType msgtype, char const* text, Language language, uint64 whisperGuid) const
@@ -328,7 +322,7 @@ void CreatureTextMgr::BuildMonsterChat(WorldPacket* data, WorldObject* source, C
     *data << (uint8)0; // ChatTag
 }
 
-void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr, WorldObject* source, ChatType msgtype, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const
+void CreatureTextMgr::SendChatPacket(WorldPacket* data, WorldObject* source, ChatType msgtype, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly) const
 {
     if (!source)
         return;
@@ -353,10 +347,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                     if (!player || !player->GetSession())
                         return;
                     
-                    if (player->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-                        player->GetSession()->SendPacket(data_fr);
-                    else
-                        player->GetSession()->SendPacket(data_en);
+                    player->GetSession()->SendPacket(data);
                     return;
                 }
             }
@@ -375,14 +366,10 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
                     if (itr->GetSource()->GetAreaId() == areaId && (!team || (team && itr->GetSource()->GetTeam() == team)) && (!gmOnly || itr->GetSource()->IsGameMaster()))
                     {
-                        if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
-                            data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
-                            data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID())); // TODO: Check GetName() (locale?)
+                        if (data->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
+                            data->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                         }
-                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-                            (itr->GetSource())->GetSession()->SendPacket(data_fr);
-                        else
-                            (itr->GetSource())->GetSession()->SendPacket(data_en);
+                        (itr->GetSource())->GetSession()->SendPacket(data);
                     }
             }
             return;
@@ -393,14 +380,10 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
                     if (itr->GetSource()->GetZoneId() == zoneId && (!team || (team && itr->GetSource()->GetTeam() == team)) && (!gmOnly || itr->GetSource()->IsGameMaster()))
                     {
-                        if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
-                            data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
-                            data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
+                        if (data->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
+                            data->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                         }
-                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-                            (itr->GetSource())->GetSession()->SendPacket(data_fr);
-                        else
-                            (itr->GetSource())->GetSession()->SendPacket(data_en);
+                        (itr->GetSource())->GetSession()->SendPacket(data);
                     }
             }
             return;
@@ -409,15 +392,11 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 Map::PlayerList const& pList = source->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator itr = pList.begin(); itr != pList.end(); ++itr)
                 {
-                    if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
-                        data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
-                        data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
+                    if (data->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
+                        data->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(itr->GetSource()->GetGUID()));
                     }
                     if (!team || ((team && itr->GetSource()->GetTeam() == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))) {
-                        if (itr->GetSource()->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-                            (itr->GetSource())->GetSession()->SendPacket(data_fr);
-                        else
-                            (itr->GetSource())->GetSession()->SendPacket(data_en);
+                        (itr->GetSource())->GetSession()->SendPacket(data);
                     }
                 }
             }
@@ -429,15 +408,11 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
                 {
                     if (Player* plr = (*iter).second->GetPlayer())
                     {
-                        if (data_en->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
-                            data_en->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(plr->GetGUID()));
-                            data_fr->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(plr->GetGUID()));
+                        if (data->GetOpcode() == SMSG_MESSAGECHAT) {//override whisperguid with actual player's guid
+                            data->put<uint64>(1+4+8+4+4+(int32)((source->GetName().size())+1), uint64(plr->GetGUID()));
                         }
                         if (plr->GetSession()  && (!team || (team && plr->GetTeam() == team)) && (!gmOnly || plr->IsGameMaster())) {
-                            if (plr->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-                                plr->GetSession()->SendPacket(data_fr);
-                            else
-                                plr->GetSession()->SendPacket(data_en);
+                            plr->GetSession()->SendPacket(data);
                         }
                     }
                 }
@@ -447,7 +422,7 @@ void CreatureTextMgr::SendChatPacket(WorldPacket* data_en, WorldPacket* data_fr,
         default:
             break;
     }
-    SendMessageToSetInRange(source, data_en, data_fr, dist);
+    SendMessageToSetInRange(source, data, dist);
 }
 
 bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
@@ -470,7 +445,50 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
     return true;
 }
 
-void CreatureTextMgr::SendMessageToSetInRange(WorldObject* source, WorldPacket* msg_en, WorldPacket* msg_fr, float dist) const
+std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, uint8 textGroup, uint32 id, LocaleConstant locale) const
+{
+    return "";
+  /* NYI
+    CreatureTextMap::const_iterator mapitr = mTextMap.find(entry);
+    if (mapitr == mTextMap.end())
+        return "";
+
+    CreatureTextHolder::const_iterator holderItr = mapitr->second.find(textGroup);
+    if (holderItr == mapitr->second.end())
+        return "";
+
+    CreatureTextGroup::const_iterator groupItr = holderItr->second.begin();
+    for (; groupItr != holderItr->second.end(); ++groupItr)
+        if (groupItr->id == id)
+            break;
+
+    if (groupItr == holderItr->second.end())
+        return "";
+
+    if (locale > MAX_LOCALE)
+        locale = DEFAULT_LOCALE;
+
+    std::string baseText = "";
+    BroadcastText const* bct = sObjectMgr->GetBroadcastText(groupItr->BroadcastTextId);
+
+    if (bct)
+        baseText = bct->GetText(locale, gender);
+    else
+        baseText = groupItr->text;
+
+    if (locale != DEFAULT_LOCALE && !bct)
+    {
+        LocaleCreatureTextMap::const_iterator locItr = mLocaleTextMap.find(CreatureTextId(entry, uint32(textGroup), id));
+        if (locItr != mLocaleTextMap.end())
+            ObjectMgr::GetLocaleString(locItr->second.Text, locale, baseText);
+    }
+
+    return baseText;
+    */
+}
+
+
+void CreatureTextMgr::SendMessageToSetInRange(WorldObject* source, WorldPacket* msg, float dist) const
 {
     CellPair p = Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY());
 
@@ -478,7 +496,7 @@ void CreatureTextMgr::SendMessageToSetInRange(WorldObject* source, WorldPacket* 
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::CreatureTextLocaleDo text_do(*source, msg_en, msg_fr, dist);
+    Trinity::CreatureTextLocaleDo text_do(*source, msg, dist);
     Trinity::PlayerWorker<Trinity::CreatureTextLocaleDo> text_worker(text_do);
     TypeContainerVisitor<Trinity::PlayerWorker<Trinity::CreatureTextLocaleDo>, WorldTypeMapContainer > message(text_worker);
     cell.Visit(p, message, *(source->GetMap()), *source, dist);

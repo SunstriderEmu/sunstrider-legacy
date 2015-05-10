@@ -77,7 +77,7 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
 bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
 {
     TC_LOG_INFO("command","Re-Loading Creature Texts...");
-    sCreatureTextMgr.LoadCreatureTexts();
+    sCreatureTextMgr->LoadCreatureTexts();
     SendGlobalGMSysMessage("Creature Texts reloaded.");
     return true;
 }

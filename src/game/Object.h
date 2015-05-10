@@ -717,13 +717,12 @@ namespace Trinity
     class CreatureTextLocaleDo
     {
         public:
-            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist);
+            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data, float dist);
             void operator()(Player* p);
         private:
             WorldObject& i_source;
             float i_dist;
-            WorldPacket* i_data_en;
-            WorldPacket* i_data_fr;
+            WorldPacket* i_data;
     };
 
 }

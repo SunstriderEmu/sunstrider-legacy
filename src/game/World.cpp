@@ -1573,7 +1573,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadFactionChangeReputGeneric();
     
     TC_LOG_INFO("server.loading","Loading Creature Texts...");
-    sCreatureTextMgr.LoadCreatureTexts();
+    sCreatureTextMgr->LoadCreatureTexts();
 
     ///- Load and initialize scripts
     TC_LOG_INFO("server.loading", "Loading Scripts..." );

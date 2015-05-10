@@ -1298,8 +1298,8 @@ namespace Trinity
         p->SendDirectMessage(data);
     }
 
-    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
-        : i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
+    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data, float dist)
+        : i_source(source), i_data(data), i_dist(dist)
     {
     }
         
@@ -1308,10 +1308,7 @@ namespace Trinity
         if (p->GetDistance(&i_source) > i_dist)
             return;
                 
-        if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-            p->SendDirectMessage(i_data_fr);
-        else
-            p->SendDirectMessage(i_data_en);
+        p->SendDirectMessage(i_data);
     }
 }
 
