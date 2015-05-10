@@ -494,7 +494,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         damage += int32(damage*0.25);
                 }
 
-                // Conflagrate - consumes immolate
+                // Conflagrate - consumes immolate 
                 if (m_spellInfo->TargetAuraState == AURA_STATE_CONFLAGRATE)
                 {
                     bool found = false;
@@ -510,6 +510,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             break;
                         }
                     }
+                    // FIXME - This check should be done earlier, at this point the effect is sent and the mana spent
                     if (!found) {
                         SendCastResult(SPELL_FAILED_TARGET_AURASTATE);
                         if (m_caster->GetTypeId() == TYPEID_PLAYER) {
