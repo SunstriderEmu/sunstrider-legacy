@@ -1895,12 +1895,11 @@ void World::Update(time_t diff)
     {
         m_timers[WUPDATE_SESSIONS].Reset();
 
-        RecordTimeDiff(NULL);
+        ResetTimeDiffRecord();
         UpdateSessions(diff);
         RecordTimeDiff("UpdateSessions");
 
         // Update groups
-        RecordTimeDiff(NULL);
         for (ObjectMgr::GroupSet::iterator itr = sObjectMgr->GetGroupSetBegin(); itr != sObjectMgr->GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
         RecordTimeDiff("UpdateGroups");
@@ -1944,7 +1943,7 @@ void World::Update(time_t diff)
         ///- Update objects when the timer has passed (maps, transport, creatures,...)
         sMapMgr->Update(diff);                // As interval = 0
 
-        RecordTimeDiff(NULL);
+        ResetTimeDiffRecord();
         ///- Process necessary scripts
         if (!m_scriptSchedule.empty())
             ScriptsProcess();
@@ -1953,13 +1952,10 @@ void World::Update(time_t diff)
         sBattlegroundMgr->Update(diff);
         RecordTimeDiff("UpdateBattlegroundMgr");
 
-
         sOutdoorPvPMgr->Update(diff);
         RecordTimeDiff("UpdateOutdoorPvPMgr");
 
     }
-
-    RecordTimeDiff(NULL);
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())
@@ -1977,6 +1973,7 @@ void World::Update(time_t diff)
     }
     
     // execute callbacks from sql queries that were queued recently
+    ResetTimeDiffRecord();
     ProcessQueryCallbacks();
     RecordTimeDiff("ProcessQueryCallbacks");
 

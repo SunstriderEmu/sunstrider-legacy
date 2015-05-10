@@ -45,12 +45,7 @@ MapManager::MapManager() :
 }
 
 MapManager::~MapManager()
-{
-    for(MapMapType::iterator iter=i_maps.begin(); iter != i_maps.end(); ++iter)
-        delete iter->second;
-
-    Map::DeleteStateMachine();
-}
+{ }
 
 void MapManager::Initialize()
 {
