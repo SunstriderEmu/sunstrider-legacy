@@ -576,7 +576,6 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
 }
 
 // CMSG_MOVE_KNOCK_BACK_ACK
-//Le format a l'air correct mais le client renvoie sa position au milieu du bump ce qui ruine l'anim
 void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");

@@ -1413,7 +1413,7 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
         return;
 
     data->Initialize(MSG_MOVE_HEARTBEAT, 32);
-    data->append(GetPackGUID());
+    *data << GetPackGUID();
     *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
     *data << uint8(0);                                      // 2.3.0
     *data << GetMSTime();                                   // time
@@ -2275,7 +2275,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         ASSERT(unit);
         if (Unit* victim = unit->GetVictim())
-            data->append(victim->GetPackGUID());
+            *data << victim->GetPackGUID();
         else
             *data << uint8(0);
     }

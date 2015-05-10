@@ -866,7 +866,7 @@ void Aura::UpdateAuraDuration()
         (m_target->ToPlayer())->SendDirectMessage(&data);
 
         data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint8(m_auraSlot);
         data << uint32(GetId());
         data << uint32(GetAuraMaxDuration());
@@ -903,7 +903,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
         return;
 
     WorldPacket data(SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE, (8+1+4+4+4));
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint8(m_auraSlot);
     data << uint32(GetId());
     data << uint32(GetAuraMaxDuration());                   // full
@@ -2822,7 +2822,7 @@ void Aura::HandleAuraWaterWalk(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_WATER_WALK, 8+4);
     else
         data.Initialize(SMSG_MOVE_LAND_WALK, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);
     m_target->SendMessageToSet(&data,true);
 }
@@ -2841,7 +2841,7 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
     else
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << (uint32)0;
     m_target->SendMessageToSet(&data,true);
 }
@@ -2860,7 +2860,7 @@ void Aura::HandleAuraHover(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
     else
         data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);
     m_target->SendMessageToSet(&data,true);
 }
@@ -3994,7 +3994,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
             ((Player*)m_target)->SetCanFly(false);
         }
 
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint32(0);                                      // unknown
         m_target->SendMessageToSet(&data, true);
 
@@ -5667,7 +5667,7 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
         ((Player*)m_target)->SetCanFly(false);
     }
 
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);                                      // unk
     m_target->SendMessageToSet(&data, true);
 }

@@ -2389,9 +2389,9 @@ void Unit::SendMeleeAttackStart(Unit* pVictim)
 void Unit::SendMeleeAttackStop(Unit* victim)
 {
     WorldPacket data( SMSG_ATTACKSTOP, (8+8+4));
-    data.append(GetPackGUID());
+    data << GetPackGUID();
     if (victim)
-        data.append(victim->GetPackGUID());
+        data << victim->GetPackGUID();
     else
         data << uint8(0);
 
@@ -4892,8 +4892,8 @@ void Unit::RemoveAllGameObjects()
 void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
 {
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
-    data.append(log->target->GetPackGUID());
-    data.append(log->attacker->GetPackGUID());
+    data << log->target->GetPackGUID();
+    data << log->attacker->GetPackGUID();
     data << uint32(log->SpellID);
     data << uint32(log->damage);                             //damage amount
     data << uint8 (log->schoolMask);                         //damage school
@@ -4910,8 +4910,8 @@ void Unit::SendSpellNonMeleeDamageLog(SpellNonMeleeDamage *log)
 void Unit::SendSpellNonMeleeDamageLog(Unit *target,uint32 SpellID,uint32 Damage, SpellSchoolMask damageSchoolMask,uint32 AbsorbedDamage, uint32 Resist,bool PhysicalDamage, uint32 Blocked, bool CriticalHit)
 {
     WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, (16+4+4+1+4+4+1+1+4+4+1)); // we guess size
-    data.append(target->GetPackGUID());
-    data.append(GetPackGUID());
+    data << target->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(Damage-AbsorbedDamage-Resist-Blocked);
     data << uint8(damageSchoolMask);                        // spell school
@@ -4954,8 +4954,8 @@ void Unit::SendAttackStateUpdate(CalcDamageInfo *damageInfo)
 {
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, (16+84));    // we guess size
     data << (uint32)damageInfo->HitInfo;
-    data.append(GetPackGUID());
-    data.append(damageInfo->target->GetPackGUID());
+    data << GetPackGUID();
+    data << damageInfo->target->GetPackGUID();
     data << (uint32)(damageInfo->damage);     // Full damage
 
     data << (uint8)1;                         // Sub damage count
@@ -4977,8 +4977,8 @@ void Unit::SendAttackStateUpdate(uint32 HitInfo, Unit *target, uint8 SwingType, 
 {
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, (16+45));    // we guess size
     data << (uint32)HitInfo;
-    data.append(GetPackGUID());
-    data.append(target->GetPackGUID());
+    data << GetPackGUID();
+    data << target->GetPackGUID();
     data << (uint32)(Damage-AbsorbDamage-Resist-BlockedAmount);
 
     data << (uint8)SwingType;                               // count?
@@ -7659,8 +7659,8 @@ void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool c
 {
     // we guess size
     WorldPacket data(SMSG_SPELLHEALLOG, (8+8+4+4+1));
-    data.append(pVictim->GetPackGUID());
-    data.append(GetPackGUID());
+    data << pVictim->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(Damage);
     data << uint8(critical ? 1 : 0);
@@ -7671,8 +7671,8 @@ void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool c
 void Unit::SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, Powers powertype)
 {
     WorldPacket data(SMSG_SPELLENERGIZELOG, (8+8+4+4+4+1));
-    data.append(pVictim->GetPackGUID());
-    data.append(GetPackGUID());
+    data << pVictim->GetPackGUID();
+    data << GetPackGUID();
     data << uint32(SpellID);
     data << uint32(powertype);
     data << uint32(Damage);
@@ -9601,7 +9601,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
                 return;
         }
 #ifndef LICH_KING
-        data.append(GetPackGUID()); //BC, removed with LK
+        data << GetPackGUID(); //BC, removed with LK
 #endif
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
@@ -9655,7 +9655,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
                 TC_LOG_ERROR("entities.unit","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
                 return;
         }
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << (uint32)0;                                  // moveEvent, NUM_PMOVE_EVTS = 0x39
         if (mtype == MOVE_RUN)
             data << uint8(0);                               // new 2.1.0
@@ -12441,7 +12441,7 @@ void Unit::SetStunned(bool apply)
             SetStandState(UNIT_STAND_STATE_STAND);
 
         WorldPacket data(SMSG_FORCE_MOVE_ROOT, 8);
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);
         SendMessageToSet(&data, true);
 
@@ -12462,7 +12462,7 @@ void Unit::SetStunned(bool apply)
         if (!HasUnitState(UNIT_STATE_ROOT))         // prevent moving if it also has root effect
         {
             WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 8+4);
-            data.append(GetPackGUID());
+            data << GetPackGUID();
             data << uint32(0);
             SendMessageToSet(&data, true);
 
@@ -12492,14 +12492,14 @@ void Unit::SetRooted(bool apply)
         if (GetTypeId() == TYPEID_PLAYER)
         {
             WorldPacket data(SMSG_FORCE_MOVE_ROOT, 10);
-            data.append(GetPackGUID());
+            data << GetPackGUID();
             data << m_rootTimes;
             SendMessageToSet(&data, true);
         }
         else
         {
             WorldPacket data(SMSG_SPLINE_MOVE_ROOT, 8);
-            data.append(GetPackGUID());
+            data << GetPackGUID();
             SendMessageToSet(&data, true);
         }
     }
@@ -12510,14 +12510,14 @@ void Unit::SetRooted(bool apply)
             if (GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_FORCE_MOVE_UNROOT, 10);
-                data.append(GetPackGUID());
+                data << GetPackGUID();
                 data << ++m_rootTimes;
                 SendMessageToSet(&data, true);
             }
             else
             {
                 WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
-                data.append(GetPackGUID());
+                data << GetPackGUID();
                 SendMessageToSet(&data, true);
             }
 
@@ -13694,7 +13694,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         GetSinCos(x, y, vsin, vcos);
 
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);                                      // counter
         data << float(vcos);                                    // x direction
         data << float(vsin);                                    // y direction
@@ -13717,7 +13717,7 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         float vsin = std::sin(angle+GetOrientation());
 
         WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-        data.append(GetPackGUID());
+        data << GetPackGUID();
         data << uint32(0);                                      // Sequence
         data << float(vcos);                                    // x direction
         data << float(vsin);                                    // y direction
@@ -13762,7 +13762,7 @@ void Unit::SendTeleportPacket(Position& pos)
         Relocate(&pos);
 
     WorldPacket data2(MSG_MOVE_TELEPORT, 38);
-    data2.append(GetPackGUID());
+    data2 << GetPackGUID();
     BuildMovementPacket(&data2);
     if (GetTypeId() == TYPEID_UNIT)
         Relocate(&oldPos);
@@ -13977,7 +13977,7 @@ void Unit::SendPeriodicAuraLog(SpellPeriodicAuraLogInfo* pInfo)
     Aura const* aura = pInfo->auraEff;
 
     WorldPacket data(SMSG_PERIODICAURALOG, 30);
-    data.append(GetPackGUID());
+    data << GetPackGUID();
     data.appendPackGUID(aura->GetCasterGUID());
     data << uint32(aura->GetId());                          // spellId
     data << uint32(1);                                      // count

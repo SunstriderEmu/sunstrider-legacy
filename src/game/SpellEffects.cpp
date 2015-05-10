@@ -2040,7 +2040,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
                         
                     WorldPacket data(SMSG_MOVE_KNOCK_BACK, 50);
-                    data.append(m_caster->GetPackGUID());
+                    data << m_caster->GetPackGUID();
                     data << GetMSTime();
                     data << float(cosf(m_caster->GetOrientation()+M_PI));
                     data << float(sinf(m_caster->GetOrientation()+M_PI));
@@ -3140,7 +3140,7 @@ void Spell::EffectPowerBurn(uint32 i)
     // first dword - target counter
     *m_effectExecuteData[effIndex] << uint32(1);
     // for each target?
-    m_effectExecuteData[effIndex]->append(unitTarget->GetPackGUID());
+    *m_effectExecuteData[effIndex] << unitTarget->GetPackGUID();
     *m_effectExecuteData[effIndex] << uint32(new_damage);
     *m_effectExecuteData[effIndex] << uint32(powertype);
     *m_effectExecuteData[effIndex] << float(multiplier);*/
@@ -4155,8 +4155,8 @@ void Spell::EffectDispel(uint32 i)
         {
             int32 count = success_list.size();
             WorldPacket data(SMSG_SPELLDISPELLOG, 8+8+4+1+4+count*5);
-            data.append(unitTarget->GetPackGUID());         // Victim GUID
-            data.append(m_caster->GetPackGUID());           // Caster GUID
+            data << unitTarget->GetPackGUID();         // Victim GUID
+            data << m_caster->GetPackGUID();           // Caster GUID
             data << uint32(m_spellInfo->Id);                // dispel spell id
             data << uint8(0);                               // not used
             data << uint32(count);                          // count
@@ -7204,7 +7204,7 @@ void Spell::EffectPlayerPull(uint32 i)
     float vcos = cos(unitTarget->GetAngle(m_caster));
 
     WorldPacket data(SMSG_MOVE_KNOCK_BACK, (8+4+4+4+4+4));
-    data.append(unitTarget->GetPackGUID());
+    data << unitTarget->GetPackGUID();
     data << uint32(0);                                      // Sequence
     data << float(vcos);                                    // x direction
     data << float(vsin);                                    // y direction
@@ -7673,8 +7673,8 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
         {
             int32 count = success_list.size();
             WorldPacket data(SMSG_SPELLSTEALLOG, 8+8+4+1+4+count*5);
-            data.append(unitTarget->GetPackGUID());  // Victim GUID
-            data.append(m_caster->GetPackGUID());    // Caster GUID
+            data << unitTarget->GetPackGUID();  // Victim GUID
+            data << m_caster->GetPackGUID();    // Caster GUID
             data << uint32(m_spellInfo->Id);         // dispel spell id
             data << uint8(0);                        // not used
             data << uint32(count);                   // count
