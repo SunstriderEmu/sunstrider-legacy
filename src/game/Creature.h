@@ -33,7 +33,7 @@
 #include <list>
 #include <string>
 
-struct SpellInfo;
+class SpellInfo;
 
 class CreatureAI;
 class CreatureAINew;

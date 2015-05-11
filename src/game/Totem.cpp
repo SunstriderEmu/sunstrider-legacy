@@ -186,7 +186,7 @@ bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 {
 /*    for (int i=0;i<3;i++)
     {
-        switch(spellInfo->EffectApplyAuraName[i])
+        switch(spellInfo->Effects[i].ApplyAuraName)
         {
             case SPELL_AURA_PERIODIC_DAMAGE:
             case SPELL_AURA_PERIODIC_LEECH:

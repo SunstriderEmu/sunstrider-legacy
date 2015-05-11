@@ -601,11 +601,11 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mecha
             continue;
 
         //Continue if we don't have the mana to actually cast this spell
-        if (TempSpell->ManaCost > m_creature->GetPower((Powers)TempSpell->powerType))
+        if (TempSpell->ManaCost > m_creature->GetPower((Powers)TempSpell->PowerType))
             continue;
 
         //Get the Range
-        TempRange = GetSpellRangeStore()->LookupEntry(TempSpell->rangeIndex);
+        TempRange = GetSpellRangeStore()->LookupEntry(TempSpell->RangeEntry->ID);
 
         //Spell has invalid range store so we can't use it
         if (!TempRange)
@@ -644,12 +644,12 @@ bool ScriptedAI::CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered)
         return false;
 
     //Check for power
-    if (!Triggered && m_creature->GetPower((Powers)Spell->powerType) < Spell->ManaCost)
+    if (!Triggered && m_creature->GetPower((Powers)Spell->PowerType) < Spell->ManaCost)
         return false;
 
     SpellRangeEntry const *TempRange = NULL;
 
-    TempRange = GetSpellRangeStore()->LookupEntry(Spell->rangeIndex);
+    TempRange = GetSpellRangeStore()->LookupEntry(Spell->RangeEntry->ID);
 
     //Spell has invalid range store so we can't use it
     if (!TempRange)
@@ -687,7 +687,7 @@ float GetSpellMaxRange(uint32 id)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
     if(!spellInfo) return 0;
-    SpellRangeEntry const *range = GetSpellRangeStore()->LookupEntry(spellInfo->rangeIndex);
+    SpellRangeEntry const *range = GetSpellRangeStore()->LookupEntry(spellInfo->RangeEntry->ID);
     if(!range) return 0;
     return range->maxRange;
 }
@@ -699,7 +699,7 @@ void FillSpellSummary()
     SpellInfo const* TempSpell;
 
     //for (int i=0; i < GetSpellStore()->GetNumRows(); i++ )
-    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         int i = itr->first;
         SpellSummary[i].Effects = 0;
@@ -713,67 +713,67 @@ void FillSpellSummary()
         for (int j=0; j<3; j++)
         {
             //Spell targets self
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER )
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_SELF-1);
 
             //Spell targets a single enemy
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_TARGET_ENEMY )
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_DEST_TARGET_ENEMY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_SINGLE_ENEMY-1);
 
             //Spell targets AoE at enemy
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_SRC_AREA_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_DEST_AREA_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_DYNOBJ_ENEMY )
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_ENEMY-1);
 
             //Spell targets an enemy
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_TARGET_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_SRC_AREA_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_DEST_AREA_ENEMY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_DEST_DYNOBJ_ENEMY )
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_DEST_TARGET_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_ENEMY-1);
 
             //Spell targets a single friend(or self)
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ALLY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_PARTY )
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_PARTY )
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_SINGLE_FRIEND-1);
 
             //Spell targets aoe friends
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER_AREA_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER)
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_AOE_FRIEND-1);
 
             //Spell targets any friend(or self)
-            if ( TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_ALLY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_TARGET_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_CASTER_AREA_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
-                TempSpell->EffectImplicitTargetA[j] == TARGET_SRC_CASTER)
+            if ( TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_TARGET_PARTY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_CASTER_AREA_PARTY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_UNIT_LASTTARGET_AREA_PARTY ||
+                TempSpell->Effects[j].TargetA.GetTarget() == TARGET_SRC_CASTER)
                 SpellSummary[i].Targets |= 1 << (SELECT_TARGET_ANY_FRIEND-1);
 
             //Make sure that this spell includes a damage effect
-            if ( TempSpell->Effect[j] == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                TempSpell->Effect[j] == SPELL_EFFECT_INSTAKILL ||
-                TempSpell->Effect[j] == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE ||
-                TempSpell->Effect[j] == SPELL_EFFECT_HEALTH_LEECH )
+            if ( TempSpell->Effects[j].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                TempSpell->Effects[j].Effect == SPELL_EFFECT_INSTAKILL ||
+                TempSpell->Effects[j].Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE ||
+                TempSpell->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH )
                 SpellSummary[i].Effects |= 1 << (SELECT_EFFECT_DAMAGE-1);
 
             //Make sure that this spell includes a healing effect (or an apply aura with a periodic heal)
-            if ( TempSpell->Effect[j] == SPELL_EFFECT_HEAL ||
-                TempSpell->Effect[j] == SPELL_EFFECT_HEAL_MAX_HEALTH ||
-                TempSpell->Effect[j] == SPELL_EFFECT_HEAL_MECHANICAL ||
-                (TempSpell->Effect[j] == SPELL_EFFECT_APPLY_AURA  && TempSpell->EffectApplyAuraName[j]== 8 ))
+            if ( TempSpell->Effects[j].Effect == SPELL_EFFECT_HEAL ||
+                TempSpell->Effects[j].Effect == SPELL_EFFECT_HEAL_MAX_HEALTH ||
+                TempSpell->Effects[j].Effect == SPELL_EFFECT_HEAL_MECHANICAL ||
+                (TempSpell->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA  && TempSpell->Effects[j].ApplyAuraName== 8 ))
                 SpellSummary[i].Effects |= 1 << (SELECT_EFFECT_HEALING-1);
 
             //Make sure that this spell applies an aura
-            if ( TempSpell->Effect[j] == SPELL_EFFECT_APPLY_AURA )
+            if ( TempSpell->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA )
                 SpellSummary[i].Effects |= 1 << (SELECT_EFFECT_AURA-1);
         }
     }
@@ -992,5 +992,5 @@ void LoadOverridenDBCData()
     // Black Temple : Illidan : Parasitic Shadowfiend Passive
     spellInfo = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(41913));
     if(spellInfo)
-        spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
+        spellInfo->Effects[0].ApplyAuraName = 4; // proc debuff, and summon infinite fiends
 }

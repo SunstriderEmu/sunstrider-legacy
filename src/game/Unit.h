@@ -39,6 +39,7 @@
 #include <list>
 
 class UnitAI;
+enum SpellCustomAttributes;
 
 #define WORLD_TRIGGER   12999
 
@@ -129,8 +130,7 @@ enum SpellValueMod
     SPELLVALUE_BASE_POINT1,
     SPELLVALUE_BASE_POINT2,
     SPELLVALUE_MAX_TARGETS,
-    // Radius index not radius in yards!
-    SPELLVALUE_RADIUS,
+    SPELLVALUE_MOD_RADIUS,
 };
 
 typedef std::pair<SpellValueMod, int32>     CustomSpellValueMod;
@@ -289,7 +289,7 @@ enum InventorySlot
 
 struct FactionTemplateEntry;
 struct Modifier;
-struct SpellInfo;
+class SpellInfo;
 struct SpellValue;
 
 class Aura;
@@ -1382,8 +1382,9 @@ class Unit : public WorldObject
         void RemoveRankAurasDueToSpell(uint32 spellId);
         bool RemoveNoStackAurasDueToAura(Aura *Aur);
         void RemoveAurasWithInterruptFlags(uint32 flags, uint32 except = 0, bool withChanneled = true);
+        //Attr0 only
         void RemoveAurasWithAttribute(uint32 flags);
-        void RemoveAurasWithCustomAttribute(uint32 flags);
+        void RemoveAurasWithCustomAttribute(SpellCustomAttributes flags);
 
         void RemoveAurasWithDispelType( DispelType type );
         bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool withPassive);

@@ -107,7 +107,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             if (SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId))
             {
-                if (IsNonCombatSpell(spellInfo))
+                if (!spellInfo->CanBeUsedInCombat())
                 {
                     pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT,pItem,NULL);
                     return;
@@ -380,14 +380,14 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
             spellInfo = actualSpellInfo;
-    } else if (spellInfo->EffectApplyAuraName[0] == SPELL_AURA_BIND_SIGHT) {
+    } else if (spellInfo->Effects[0].ApplyAuraName == SPELL_AURA_BIND_SIGHT) {
         //client doesn't send target if it's not in range, so we have to pick it from UNIT_FIELD_TARGET
         if(uint64 targetGUID = _player->GetUInt64Value(UNIT_FIELD_TARGET))
             if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGUID))
                 targets.setUnitTarget(target);
     }
     
-    if (spellInfo->AttributesEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG)
+    if (spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG))
     {
         if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
             return;
@@ -429,7 +429,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         return;
 
     // channeled spell case (it currently casted then)
-    if (IsChanneledSpell(spellInfo)) {
+    if (spellInfo->IsChanneled()) {
         if (Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL]) {
             if (spell->m_spellInfo->Id==spellId)
                 spell->cancel();

@@ -1055,7 +1055,7 @@ void SmartAIMgr::LoadHelperStores()
     uint32 oldMSTime = GetMSTime();
 
     SpellInfo const* spellInfo = NULL;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
-    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         uint32 id = itr->first;
         spellInfo = sSpellMgr->GetSpellInfo(id);
@@ -1064,14 +1064,14 @@ void SmartAIMgr::LoadHelperStores()
 
         for (uint32 j = 0; j < MAX_SPELL_EFFECTS; ++j)
         {
-            if (spellInfo->Effect[j] == SPELL_EFFECT_SUMMON)
-                SummonCreatureSpellStore.insert(std::make_pair(uint32(spellInfo->EffectMiscValue[j]), std::make_pair(id, SpellEffIndex(j))));
+            if (spellInfo->Effects[j].Effect == SPELL_EFFECT_SUMMON)
+                SummonCreatureSpellStore.insert(std::make_pair(uint32(spellInfo->Effects[j].MiscValue), std::make_pair(id, SpellEffIndex(j))));
 
-            else if (spellInfo->Effect[j] == SPELL_EFFECT_SUMMON_OBJECT_WILD)
-                SummonGameObjectSpellStore.insert(std::make_pair(uint32(spellInfo->EffectMiscValue[j]), std::make_pair(id, SpellEffIndex(j))));
+            else if (spellInfo->Effects[j].Effect == SPELL_EFFECT_SUMMON_OBJECT_WILD)
+                SummonGameObjectSpellStore.insert(std::make_pair(uint32(spellInfo->Effects[j].MiscValue), std::make_pair(id, SpellEffIndex(j))));
 
-            else if (spellInfo->Effect[j] == SPELL_EFFECT_KILL_CREDIT)
-                KillCreditSpellStore.insert(std::make_pair(uint32(spellInfo->EffectMiscValue[j]), std::make_pair(id, SpellEffIndex(j))));
+            else if (spellInfo->Effects[j].Effect == SPELL_EFFECT_KILL_CREDIT)
+                KillCreditSpellStore.insert(std::make_pair(uint32(spellInfo->Effects[j].MiscValue), std::make_pair(id, SpellEffIndex(j))));
         }
     }
 

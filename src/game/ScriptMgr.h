@@ -37,6 +37,7 @@ class WorldObject;
 class Transport;
 class Guild;
 class Group;
+class SpellInfo;
 class Spell;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)

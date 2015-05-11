@@ -40,7 +40,7 @@ struct Modifier
 };
 
 class Unit;
-struct SpellInfo;
+class SpellInfo;
 struct SpellModifier;
 struct ProcTriggerSpell;
 
@@ -227,8 +227,8 @@ class Aura
         Modifier const* GetModifier() const { return &m_modifier;}
         int32 GetModifierValuePerStack() const { return m_modifier.m_amount;}
         int32 GetModifierValue() const { return m_modifier.m_amount * m_stackAmount;}
-        int32 GetMiscValue() const { return m_spellProto->EffectMiscValue[m_effIndex];}
-        int32 GetMiscBValue() const { return m_spellProto->EffectMiscValueB[m_effIndex];}
+        int32 GetMiscValue() const { return m_spellProto->Effects[m_effIndex].MiscValue;}
+        int32 GetMiscBValue() const { return m_spellProto->Effects[m_effIndex].MiscValueB;}
         void SetModifierValuePerStack(int32 newAmount);
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 

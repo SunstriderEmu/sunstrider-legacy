@@ -762,18 +762,18 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
             bool targetfound = false;
             for (uint8 i = 0; i < 3; ++i)
             {
-                if (spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_SRC_AREA_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_SRC_AREA_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_DEST_AREA_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_DEST_AREA_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_NEARBY_ENTRY ||
-                    //spellProto->EffectImplicitTargetA[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
-                    //spellProto->EffectImplicitTargetB[i] == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_DEST_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_DEST_NEARBY_ENTRY ||
-                    spellProto->EffectImplicitTargetA[i] == TARGET_UNIT_CONE_ENTRY ||
-                    spellProto->EffectImplicitTargetB[i] == TARGET_UNIT_CONE_ENTRY)
+                if (spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_SRC_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_NEARBY_ENTRY ||
+                    //spellProto->Effects[i].TargetA.GetTarget() == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
+                    //spellProto->Effects[i].TargetB.GetTarget() == TARGET_GAMEOBJECT_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_DEST_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_DEST_NEARBY_ENTRY ||
+                    spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CONE_ENTRY ||
+                    spellProto->Effects[i].TargetB.GetTarget() == TARGET_UNIT_CONE_ENTRY)
                 {
                     targetfound = true;
                     break;
@@ -824,10 +824,10 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
 
                         for (int j = 0; j < 3; ++j)
                         {
-                            if (pSpellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ENEMY ||
-                                pSpellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_TARGET_ENEMY ||
-                                pSpellInfo->EffectImplicitTargetA[i] == TARGET_UNIT_TARGET_ANY ||
-                                pSpellInfo->EffectImplicitTargetB[i] == TARGET_UNIT_TARGET_ANY)
+                            if (pSpellInfo->Effects[i].TargetA.GetTarget()== TARGET_UNIT_TARGET_ENEMY ||
+                                pSpellInfo->Effects[i].TargetB.GetTarget() == TARGET_UNIT_TARGET_ENEMY ||
+                                pSpellInfo->Effects[i].TargetA.GetTarget()== TARGET_UNIT_TARGET_ANY ||
+                                pSpellInfo->Effects[i].TargetB.GetTarget() == TARGET_UNIT_TARGET_ANY)
                             {
                                 bIsItemSpellValid = true;
                                 break;

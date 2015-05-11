@@ -2711,7 +2711,8 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
 {
     //TC_LOG_INFO("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo) return 0;
+    if (!spellInfo) 
+        return 0;
     //TC_LOG_INFO("FIXME","Player::ApplySpellMod1");
     int32 totalpct = 0;
     int32 totalflat = 0;

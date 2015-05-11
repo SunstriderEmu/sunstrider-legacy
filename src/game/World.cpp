@@ -1290,7 +1290,31 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
 
-    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after spell templates loading
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." ); 
+    sSpellMgr->LoadSpellLearnSpells();
+    
+    TC_LOG_INFO("server.loading", "Loading SkillLineAbilityMultiMap Data..." );
+    sSpellMgr->LoadSkillLineAbilityMap();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." ); //must be after LoadSkillLineAbilityMap
+    sSpellMgr->LoadSpellChains();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
+    sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains
+
+    TC_LOG_INFO("server.loading", "Loading Spell Required Data..." );
+    sSpellMgr->LoadSpellRequired();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." );
+    sSpellMgr->LoadSpellElixirs();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." );
+    sSpellMgr->LoadSpellProcEvents();
+
+    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions...");
+    sSpellMgr->LoadSpellThreats();
+
+    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all spell entry alterations
     sSpellMgr->LoadSpellInfoStore();
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
@@ -1299,9 +1323,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading InstanceTemplate" );
     sObjectMgr->LoadInstanceTemplate();
     sObjectMgr->LoadInstanceTemplateAddon();
-
-    TC_LOG_INFO("server.loading", "Loading SkillLineAbilityMultiMap Data..." );
-    sSpellMgr->LoadSkillLineAbilityMap();
 
     ///- Clean up and pack instances
     TC_LOG_INFO("server.loading", "Cleaning up instances..." );
@@ -1325,27 +1346,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Game Object Templates..." );   // must be after LoadPageTexts
     sObjectMgr->LoadGameObjectTemplate();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." );
-    sSpellMgr->LoadSpellChains();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Required Data..." );
-    sSpellMgr->LoadSpellRequired();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." );
-    sSpellMgr->LoadSpellElixirs();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
-    sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains
-
-    TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." );
-    sSpellMgr->LoadSpellLearnSpells();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." );
-    sSpellMgr->LoadSpellProcEvents();
-
-    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions...");
-    sSpellMgr->LoadSpellThreats();
 
     TC_LOG_INFO("server.loading", "Loading NPC Texts..." );
     sObjectMgr->LoadGossipText();
@@ -1418,9 +1418,6 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Weather Data..." );
     sObjectMgr->LoadWeatherZoneChances();
-
-    TC_LOG_INFO("server.loading", "Loading spell extra attributes..." );
-    sSpellMgr->LoadSpellCustomAttr();
     
     TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList();
@@ -1464,7 +1461,7 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Overriding SpellItemEnchantment...");
     sSpellMgr->OverrideSpellItemEnchantment();
 
-    TC_LOG_INFO("server.loading", "Loading linked spells..." );
+    TC_LOG_INFO("server.loading", "Loading linked spells..." ); //must be loaded after spell info
     sSpellMgr->LoadSpellLinked();
 
     TC_LOG_INFO("server.loading", "Loading player Create Info & Level Stats..." );

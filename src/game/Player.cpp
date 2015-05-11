@@ -574,7 +574,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         return false;
     }
 
-    uint8 powertype = cEntry->powerType;
+    uint8 powertype = cEntry->PowerType;
 
     uint32 unitfield;
 
@@ -2805,8 +2805,8 @@ void Player::SendInitialSpells()
             cooldown = (itr->second.end-curTime)*1000;
 
         data << uint16(itr->second.itemid);                 // cast item id
-        data << uint16(sEntry->Category);                   // spell category
-        if(sEntry->Category)                                // may be wrong, but anyway better than nothing...
+        data << uint16(sEntry->Category->Id);                   // spell category
+        if(sEntry->Category->Id)                                // may be wrong, but anyway better than nothing...
         {
             data << uint32(0);                              // cooldown
             data << uint32(cooldown);                       // category cooldown
@@ -3817,9 +3817,9 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     SpellInfo const* spell = sSpellMgr->GetSpellInfo(trainer_spell->spell);
 
     // secondary prof. or not prof. spell
-    uint32 skill = spell->EffectMiscValue[1];
+    uint32 skill = spell->Effects[1].MiscValue;
 
-    if(spell->Effect[1] != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill))
+    if(spell->Effects[1].Effect != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill))
         return TRAINER_SPELL_GREEN;
 
     // check primary prof. limit
@@ -7495,7 +7495,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             if( m_extraAttacks && IsSpellHaveEffect(spellInfo, SPELL_EFFECT_ADD_EXTRA_ATTACKS) )
                 return;
 
-            float chance = spellInfo->procChance;
+            float chance = spellInfo->ProcChance;
 
             if(spellData.SpellPPMRate)
             {
@@ -15499,10 +15499,10 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             }
 
             // prevent wrong values of remaincharges
-            if(spellproto->procCharges)
+            if(spellproto->ProcCharges)
             {
-                if(remaincharges <= 0 || remaincharges > spellproto->procCharges)
-                    remaincharges = spellproto->procCharges;
+                if(remaincharges <= 0 || remaincharges > spellproto->ProcCharges)
+                    remaincharges = spellproto->ProcCharges;
             }
             else
                 remaincharges = -1;
@@ -15514,7 +15514,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             // Do not load SPELL_AURA_IGNORED auras
         bool abort = false;
             for (uint8 i = 0; i < 3; i++) {
-                if (spellproto->Effect[i] == SPELL_EFFECT_APPLY_AURA && spellproto->EffectApplyAuraName[i] == 221)
+                if (spellproto->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA && spellproto->Effects[i].ApplyAuraName == 221)
                     abort = true;
             }
 
@@ -16746,8 +16746,8 @@ void Player::_SaveAuras(SQLTransaction trans)
                     uint8 i;
                     // or apply at cast SPELL_AURA_MOD_SHAPESHIFT or SPELL_AURA_MOD_STEALTH auras
                     for (i = 0; i < 3; i++)
-                        if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_SHAPESHIFT ||
-                        spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_STEALTH)
+                        if (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT ||
+                        spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STEALTH)
                             break;
 
                     if (i == 3)
@@ -18277,7 +18277,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
         if(spellInfo->PreventionType != SPELL_PREVENTION_TYPE_SILENCE)
             continue;
 
-        if((idSchoolMask & GetSpellSchoolMask(spellInfo)) && GetSpellCooldownDelay(unSpellId) < unTimeMs )
+        if((idSchoolMask & spellInfo->GetSchoolMask()) && GetSpellCooldownDelay(unSpellId) < unTimeMs )
         {
             data << unSpellId;
             data << unTimeMs;                               // in m.secs
@@ -18317,8 +18317,8 @@ void Player::InitDataForForm(bool reapplyMods)
         default:                                            // 0, for example
         {
             ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(GetClass());
-            if(cEntry && cEntry->powerType < MAX_POWERS && uint32(GetPowerType()) != cEntry->powerType)
-                SetPowerType(Powers(cEntry->powerType));
+            if(cEntry && cEntry->PowerType < MAX_POWERS && uint32(GetPowerType()) != cEntry->PowerType)
+                SetPowerType(Powers(cEntry->PowerType));
             break;
         }
     }
@@ -18687,7 +18687,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     // if no cooldown found above then base at DBC data
     if (rec < 0 && catrec < 0)
     {
-        cat = spellInfo->Category;
+        cat = spellInfo->Category->Id;
         rec = spellInfo->RecoveryTime;
         catrec = spellInfo->CategoryRecoveryTime;
     }
@@ -18708,7 +18708,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     else
     {
         
-        bool autoRepeat = spellInfo->AttributesEx2 & SPELL_ATTR2_AUTOREPEAT_FLAG;
+        bool autoRepeat = spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG);
 
         // shoot spells used equipped item cooldown values already assigned in GetAttackTime(RANGED_ATTACK)
         // prevent 0 cooldowns set by another way
@@ -19758,12 +19758,12 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     for(int i=0; i < 3; ++i)
     {
         //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
-        uint32 triggerSpell = spellInfo->EffectTriggerSpell[i];
+        uint32 triggerSpell = spellInfo->Effects[i].TriggerSpell;
         if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(triggerSpell))
-            if(spellInfo->Effect[0] == SPELL_EFFECT_TRADE_SKILL)
+            if(spellInfo->Effects[0].Effect == SPELL_EFFECT_TRADE_SKILL)
                 continue;
 
-        if(spellInfo->Effect[i] == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->EffectTriggerSpell[i]))
+        if(spellInfo->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL && !HasSpell(spellInfo->Effects[i].TriggerSpell))
         {
             found = true;
             break;
@@ -19775,7 +19775,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         return;
 
     // prevent learn non first rank unknown profession and second specialization for same profession)
-    uint32 learned_0 = spellInfo->EffectTriggerSpell[0];
+    uint32 learned_0 = spellInfo->Effects[0].TriggerSpell;
     if( sSpellMgr->GetSpellRank(learned_0) > 1 && !HasSpell(learned_0) )
     {
         // not have first rank learned (unlearned prof?)
@@ -19788,7 +19788,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
             return;
 
         // specialization
-        if(learnedInfo->Effect[0]==SPELL_EFFECT_TRADE_SKILL && learnedInfo->Effect[1]==0)
+        if(learnedInfo->Effects[0].Effect==SPELL_EFFECT_TRADE_SKILL && learnedInfo->Effects[1].Effect==0)
         {
             // search other specialization for same prof
             for(PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
@@ -19801,7 +19801,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                     return;
 
                 // compare only specializations
-                if(itrInfo->Effect[0]!=SPELL_EFFECT_TRADE_SKILL || itrInfo->Effect[1]!=0)
+                if(itrInfo->Effects[0].Effect!=SPELL_EFFECT_TRADE_SKILL || itrInfo->Effects[1].Effect!=0)
                     continue;
 
                 // compare same chain spells
@@ -19851,9 +19851,9 @@ void Player::learnSkillRewardedSpells(uint32 skill_id )
         if (pAbility->classmask && !(pAbility->classmask & classMask))
             continue;
 
-        if (SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
+        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
         {
-            if(spellInfo->Effect[0] == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
+            if(spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
                 continue;
 
             // Ok need learn spell
@@ -20362,7 +20362,7 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
 
     //these need to be excepted else client wont properly show weapon/armor skills
     for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
-        if(spellInfo->Effect[i] == SPELL_EFFECT_PROFICIENCY)
+        if(spellInfo->Effects[i].Effect == SPELL_EFFECT_PROFICIENCY)
             return true;
 
     // scan other equipped items for same requirements (mostly 2 daggers/etc)
@@ -20441,7 +20441,7 @@ uint32 Player::GetResurrectionSpellId()
     for(AuraList::const_iterator itr = dummyAuras.begin(); itr != dummyAuras.end(); ++itr)
     {
         // Soulstone Resurrection                           // prio: 3 (max, non death persistent)
-        if( prio < 2 && (*itr)->GetSpellInfo()->SpellVisual == 99 && (*itr)->GetSpellInfo()->SpellIconID == 92 )
+        if (prio < 2 && (*itr)->GetSpellInfo()->HasVisual(99) && (*itr)->GetSpellInfo()->SpellIconID == 92)
         {
             switch((*itr)->GetId())
             {

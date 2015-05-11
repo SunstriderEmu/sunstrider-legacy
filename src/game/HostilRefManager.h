@@ -27,7 +27,7 @@
 class Unit;
 class ThreatManager;
 class HostilReference;
-struct SpellInfo;
+class SpellInfo;
 
 //=================================================
 

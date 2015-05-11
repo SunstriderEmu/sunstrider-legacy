@@ -147,7 +147,7 @@ struct ChrClassesEntry
 {
     uint32      ClassID;                                    // 0
                                                             // 1-2, unused
-    uint32      powerType;                                  // 3
+    uint32      PowerType;                                  // 3
                                                             // 4, unused
     //char*       name[16];                                 // 5-20 unused
     char*       name[16];                                   // 5-20 unused
@@ -678,7 +678,7 @@ struct SpellEntry
     uint32    BaseLevel;                                    // 32
     uint32    SpellLevel;                                   // 33
     uint32    DurationIndex;                                // 34
-    uint32    powerType;                                    // 35
+    uint32    PowerType;                                    // 35
     uint32    ManaCost;                                     // 36
     uint32    ManaCostPerlevel;                             // 37
     uint32    manaPerSecond;                                // 38
@@ -802,8 +802,8 @@ struct SpellThreatEntry
 struct SpellRadiusEntry
 {
     uint32    ID;
-    float     Radius;
-    float     Radius2;
+    float     RadiusMin;
+    float     RadiusMax;
 };
 
 struct SpellRangeEntry

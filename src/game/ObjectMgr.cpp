@@ -3716,8 +3716,8 @@ void ObjectMgr::LoadQuests()
                     bool found = false;
                     for(int k = 0; k < 3; ++k)
                     {
-                        if( spellInfo->Effect[k]==SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->EffectMiscValue[k])==qinfo->QuestId ||
-                            spellInfo->Effect[k]==SPELL_EFFECT_SEND_EVENT)
+                        if( spellInfo->Effects[k].Effect==SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->Effects[k].MiscValue)==qinfo->QuestId ||
+                            spellInfo->Effects[k].Effect==SPELL_EFFECT_SEND_EVENT)
                         {
                             found = true;
                             break;
@@ -3959,7 +3959,7 @@ void ObjectMgr::LoadQuests()
 
     // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
     //for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
-    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         uint32 i = itr->first;
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(i);
@@ -3968,10 +3968,10 @@ void ObjectMgr::LoadQuests()
 
         for(int j = 0; j < 3; ++j)
         {
-            if(spellInfo->Effect[j] != SPELL_EFFECT_QUEST_COMPLETE)
+            if(spellInfo->Effects[j].Effect != SPELL_EFFECT_QUEST_COMPLETE)
                 continue;
 
-            uint32 quest_id = spellInfo->EffectMiscValue[j];
+            uint32 quest_id = spellInfo->Effects[j].MiscValue;
 
             Quest const* quest = GetQuestTemplate(quest_id);
 
@@ -4354,10 +4354,10 @@ void ObjectMgr::LoadSpellScripts()
         for(int i=0; i<3; ++i)
         {
             // skip empty effects
-            if( !spellInfo->Effect[i] )
+            if( !spellInfo->Effects[i].Effect )
                 continue;
 
-            if( spellInfo->Effect[i] == SPELL_EFFECT_SCRIPT_EFFECT )
+            if( spellInfo->Effects[i].Effect == SPELL_EFFECT_SCRIPT_EFFECT )
             {
                 found =  true;
                 break;
@@ -4397,7 +4397,7 @@ void ObjectMgr::LoadEventScripts()
     }
     // Load all possible script entries from spells
     //for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
-    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         uint32 i = itr->first;
         SpellInfo const * spell = sSpellMgr->GetSpellInfo(i);
@@ -4405,10 +4405,10 @@ void ObjectMgr::LoadEventScripts()
         {
             for(int j=0; j<3; ++j)
             {
-                if( spell->Effect[j] == SPELL_EFFECT_SEND_EVENT )
+                if( spell->Effects[j].Effect == SPELL_EFFECT_SEND_EVENT )
                 {
-                    if (spell->EffectMiscValue[j])
-                        evt_scripts.insert(spell->EffectMiscValue[j]);
+                    if (spell->Effects[j].MiscValue)
+                        evt_scripts.insert(spell->Effects[j].MiscValue);
                 }
             }
         }
@@ -7145,7 +7145,7 @@ bool PlayerCondition::Meets(Player const * player) const
         {
             Unit::AuraMap const& auras = player->GetAuras();
             for(Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
-                if((itr->second->GetSpellInfo()->Attributes & 0x1000010) && itr->second->GetSpellInfo()->SpellVisual==3580)
+                if ((itr->second->GetSpellInfo()->Attributes & 0x1000010) && itr->second->GetSpellInfo()->HasVisual(3580))
                     return true;
             return false;
         }
@@ -8136,7 +8136,7 @@ void ObjectMgr::LoadSpellTemplates()
     do {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
-        std::map<uint32, SpellInfo*>::iterator itr = spellTemplates.find(id);
+        std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
         SpellEntry* spell = NULL;
         if (itr != spellTemplates.end()) { // Already existing
             spell = itr->second;
@@ -8179,7 +8179,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->BaseLevel = fields[31].GetUInt32();
         spell->SpellLevel = fields[32].GetUInt32();
         spell->DurationIndex = fields[33].GetUInt32();
-        spell->powerType = fields[34].GetUInt32();
+        spell->PowerType = fields[34].GetUInt32();
         spell->ManaCost = fields[35].GetUInt32();
         spell->ManaCostPerlevel = fields[36].GetUInt32();
         spell->manaPerSecond = fields[37].GetUInt32();
@@ -8204,7 +8204,7 @@ void ObjectMgr::LoadSpellTemplates()
             spell->EffectRealPointsPerLevel[i] = fields[i+75].GetFloat();
             spell->EffectBasePoints[i] = fields[i+78].GetInt32();
             spell->EffectMechanic[i] = fields[i+81].GetUInt32();
-            spell->EffectImplicitTargetA[i] = fields[i+84].GetUInt32();
+            spell->EffectImplicitTargetA[i]= fields[i+84].GetUInt32();
             spell->EffectImplicitTargetB[i] = fields[i+87].GetUInt32();
             spell->EffectRadiusIndex[i] = fields[i+90].GetUInt32();
             spell->EffectApplyAuraName[i] = fields[i+93].GetUInt32();
@@ -8288,9 +8288,9 @@ void ObjectMgr::LoadSpellTemplates()
     
 }
 
-SpellInfo* ObjectMgr::GetSpellTemplate(uint32 id)
+SpellEntry const* ObjectMgr::GetSpellTemplate(uint32 id) const
 {
-    std::map<uint32, SpellInfo*>::const_iterator itr = spellTemplates.find(id);
+    std::map<uint32, SpellEntry*>::const_iterator itr = spellTemplates.find(id);
     if (itr != spellTemplates.end())
         return itr->second;
         

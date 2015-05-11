@@ -53,15 +53,15 @@ void UnitAI::DoMeleeAttackIfReady()
 
 bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 {
-    if (me->HasUnitState(UNIT_STATE_CASTING))
+    if (me->HasUnitState(UNIT_STATE_CASTING) || !me->IsAttackReady())
         return true;
         
     if (!sSpellMgr->GetSpellInfo(spell))
         return true;
 
-    if (me->IsAttackReady())
+    if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell))
     {
-        if (me->IsWithinCombatRange(me->GetVictim(), GetSpellMaxRange(sSpellRangeStore.LookupEntry(sSpellMgr->GetSpellInfo(spell)->rangeIndex))))
+        if (me->IsWithinCombatRange(me->GetVictim(), spellInfo->GetMaxRange(false, me)))
         {
             me->CastSpell(me->GetVictim(), spell, false);
             me->ResetAttackTimer();

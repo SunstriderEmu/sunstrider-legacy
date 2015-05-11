@@ -30,36 +30,6 @@ class GameObject;
 class Aura;
 class SpellScript;
 
-enum SpellCastTargetFlags
-{
-    /*TARGET_FLAG_NONE             = 0x0000,
-    TARGET_FLAG_SWIMMER          = 0x0002,
-    TARGET_FLAG_ITEM             = 0x0010,
-    TARGET_FLAG_SOURCE_AREA      = 0x0020,
-    TARGET_FLAG_DEST_AREA        = 0x0040,
-    TARGET_FLAG_UNKNOWN          = 0x0080,
-    TARGET_FLAG_SELF             = 0x0100,
-    TARGET_FLAG_PVP_CORPSE       = 0x0200,
-    TARGET_FLAG_MASS_SPIRIT_HEAL = 0x0400,
-    TARGET_FLAG_BEAST_CORPSE     = 0x0402,
-    TARGET_FLAG_OBJECT           = 0x4000,
-    TARGET_FLAG_RESURRECTABLE    = 0x8000*/
-
-    TARGET_FLAG_SELF            = 0x00000000,
-    TARGET_FLAG_UNIT            = 0x00000002,               // pguid
-    TARGET_FLAG_ITEM            = 0x00000010,               // pguid
-    TARGET_FLAG_SOURCE_LOCATION = 0x00000020,               // 3 float
-    TARGET_FLAG_DEST_LOCATION   = 0x00000040,               // 3 float
-    TARGET_FLAG_OBJECT_UNK      = 0x00000080,               // ?
-    TARGET_FLAG_PVP_CORPSE      = 0x00000200,               // pguid
-    TARGET_FLAG_OBJECT          = 0x00000800,               // pguid
-    TARGET_FLAG_TRADE_ITEM      = 0x00001000,               // pguid
-    TARGET_FLAG_STRING          = 0x00002000,               // string
-    TARGET_FLAG_UNK1            = 0x00004000,               // ?
-    TARGET_FLAG_CORPSE          = 0x00008000,               // pguid
-    TARGET_FLAG_UNK2            = 0x00010000                // pguid
-};
-
 enum SpellCastFlags
 {
     CAST_FLAG_UNKNOWN0           = 0x00000001, // stucks spell highlight
@@ -192,16 +162,16 @@ struct SpellValue
 {
     explicit SpellValue(SpellInfo const *proto)
     {
-        for(uint32 i = 0; i < 3; ++i)
-        {
-            EffectBasePoints[i] = proto->EffectBasePoints[i];
-            EffectRadiusIndex[i] = proto->EffectRadiusIndex[i];
-        }
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            EffectBasePoints[i] = proto->Effects[i].BasePoints;
+
+        RadiusMod = 1.0f;
         MaxAffectedTargets = proto->MaxAffectedTargets;
     }
-    int32     EffectBasePoints[3];
-    uint32    MaxAffectedTargets;
-    uint32    EffectRadiusIndex[3];
+
+    uint32 MaxAffectedTargets;
+    int32 EffectBasePoints[MAX_SPELL_EFFECTS];
+    float RadiusMod;
 };
 
 enum SpellState
@@ -478,7 +448,7 @@ class Spell
 
         Unit* const m_caster;
 
-        SpellValue * const m_spellValue;
+        SpellValue* const m_spellValue;
 
         uint64 m_originalCasterGUID;                        // real source of cast (aura caster/etc), used for spell targets selection
                                                             // e.g. damage around area spell trigered by victim aura and damage enemies of aura caster
@@ -615,8 +585,6 @@ class Spell
         SpellInfo const* m_triggeredByAuraSpell;
 
         PathGenerator m_preGeneratedPath;
-
-        uint32 m_customAttr;
 };
 
 namespace Trinity
@@ -660,7 +628,7 @@ namespace Trinity
                     if ((itr->GetSource()->ToPlayer())->isSpectator())
                         continue;
                 } else {
-                    if(i_spell.m_spellInfo->AttributesEx3 & SPELL_ATTR3_PLAYERS_ONLY)
+                    if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR3_PLAYERS_ONLY))
                         continue;
                 }
 
@@ -673,7 +641,7 @@ namespace Trinity
                         if(!i_caster->IsFriendlyTo( itr->GetSource()))
                             continue;
 
-                        if((sSpellMgr->GetSpellCustomAttr(i_spell.m_spellInfo->Id) & SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource() )
+                        if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource())
                             continue;
 
                         break;

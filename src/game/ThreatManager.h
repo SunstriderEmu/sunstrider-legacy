@@ -33,7 +33,7 @@
 class Unit;
 class Creature;
 class ThreatManager;
-struct SpellInfo;
+class SpellInfo;
 
 //==============================================================
 // Class to calculate the real threat based

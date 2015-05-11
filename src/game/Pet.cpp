@@ -1528,10 +1528,10 @@ void Pet::_LoadAuras(uint32 timediff)
             }
 
             // prevent wrong values of remaincharges
-            if(spellproto->procCharges)
+            if(spellproto->ProcCharges)
             {
-                if(remaincharges <= 0 || remaincharges > spellproto->procCharges)
-                    remaincharges = spellproto->procCharges;
+                if(remaincharges <= 0 || remaincharges > spellproto->ProcCharges)
+                    remaincharges = spellproto->ProcCharges;
             }
             else
                 remaincharges = -1;
@@ -1542,7 +1542,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 
             bool abort = false;
             for (uint8 i = 0; i < 3; i++) { // Don't load these, they make the core crash sometimes
-                if (spellproto->EffectApplyAuraName[i] == SPELL_AURA_IGNORED)
+                if (spellproto->Effects[i].ApplyAuraName == SPELL_AURA_IGNORED)
                     abort = true;
             }
 
@@ -1592,9 +1592,9 @@ void Pet::_SaveAuras()
         // skip all auras from spell that apply at cast SPELL_AURA_MOD_SHAPESHIFT or pet area auras.
         for (int i = 0; i < 3; i++)
         {
-            if (spellInfo->EffectApplyAuraName[i] == SPELL_AURA_MOD_STEALTH ||
-                spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
-                spellInfo->Effect[i] == SPELL_EFFECT_APPLY_AREA_AURA_PET )
+            if (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STEALTH ||
+                spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
+                spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET )
                 continue;
         }
 
@@ -1782,16 +1782,16 @@ void Pet::InitPetCreateSpells()
             if(!learn_spellproto)
                 continue;
 
-            if(learn_spellproto->Effect[0] == SPELL_EFFECT_LEARN_SPELL || learn_spellproto->Effect[0] == SPELL_EFFECT_LEARN_PET_SPELL)
+            if(learn_spellproto->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL || learn_spellproto->Effects[0].Effect == SPELL_EFFECT_LEARN_PET_SPELL)
             {
-                petspellid = learn_spellproto->EffectTriggerSpell[0];
+                petspellid = learn_spellproto->Effects[0].TriggerSpell;
                 Unit* owner = GetOwner();
                 if(owner->GetTypeId() == TYPEID_PLAYER && !(owner->ToPlayer())->HasSpell(learn_spellproto->Id))
                 {
                     if(IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
                         (owner->ToPlayer())->learnSpell(learn_spellproto->Id);
                     else
-                        AddTeachSpell(learn_spellproto->EffectTriggerSpell[0], learn_spellproto->Id);
+                        AddTeachSpell(learn_spellproto->Effects[0].TriggerSpell, learn_spellproto->Id);
                 }
             }
             else
@@ -1802,8 +1802,8 @@ void Pet::InitPetCreateSpells()
             else
                 addSpell(petspellid);
 
-            SkillLineAbilityMap::const_iterator lower = sSpellMgr->GetBeginSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
-            SkillLineAbilityMap::const_iterator upper = sSpellMgr->GetEndSkillLineAbilityMap(learn_spellproto->EffectTriggerSpell[0]);
+            SkillLineAbilityMap::const_iterator lower = sSpellMgr->GetBeginSkillLineAbilityMap(learn_spellproto->Effects[0].TriggerSpell);
+            SkillLineAbilityMap::const_iterator upper = sSpellMgr->GetEndSkillLineAbilityMap(learn_spellproto->Effects[0].TriggerSpell);
 
             for(SkillLineAbilityMap::const_iterator _spell_idx = lower; _spell_idx != upper; ++_spell_idx)
             {

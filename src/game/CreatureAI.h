@@ -34,7 +34,7 @@ class Player;
 class Quest;
 class GameObject;
 class GameObjectAI;
-struct SpellInfo;
+class SpellInfo;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000

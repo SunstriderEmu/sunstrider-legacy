@@ -1545,10 +1545,10 @@ SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
         bool bcontinue = true;
         for(uint32 j=0;j<3;j++)
         {
-            if( (spellInfo->Effect[j] == SPELL_EFFECT_SCHOOL_DAMAGE )       ||
-                (spellInfo->Effect[j] == SPELL_EFFECT_INSTAKILL)            ||
-                (spellInfo->Effect[j] == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
-                (spellInfo->Effect[j] == SPELL_EFFECT_HEALTH_LEECH )
+            if( (spellInfo->Effects[j].Effect == SPELL_EFFECT_SCHOOL_DAMAGE )       ||
+                (spellInfo->Effects[j].Effect == SPELL_EFFECT_INSTAKILL)            ||
+                (spellInfo->Effects[j].Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
+                (spellInfo->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH )
                 )
             {
                 bcontinue = false;
@@ -1559,9 +1559,8 @@ SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
 
         if(spellInfo->ManaCost > GetPower(POWER_MANA))
             continue;
-        SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = spellInfo->GetMaxRange(false, this);
+        float minrange = spellInfo->GetMinRange(false);
         float dist = GetDistance(pVictim);
         //if(!isInFront( pVictim, range ) && spellInfo->AttributesEx )
         //    continue;
@@ -1593,7 +1592,7 @@ SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
         bool bcontinue = true;
         for(uint32 j=0;j<3;j++)
         {
-            if( (spellInfo->Effect[j] == SPELL_EFFECT_HEAL ) )
+            if( (spellInfo->Effects[j].Effect == SPELL_EFFECT_HEAL ) )
             {
                 bcontinue = false;
                 break;
@@ -1603,9 +1602,8 @@ SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
 
         if(spellInfo->ManaCost > GetPower(POWER_MANA))
             continue;
-        SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-        float range = GetSpellMaxRange(srange);
-        float minrange = GetSpellMinRange(srange);
+        float range = spellInfo->GetMaxRange(true, this);
+        float minrange = spellInfo->GetMinRange();
         float dist = GetDistance(pVictim);
         //if(!isInFront( pVictim, range ) && spellInfo->AttributesEx )
         //    continue;
@@ -1955,8 +1953,8 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
     if(cooldown)
         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/1000);
 
-    if(spellInfo->Category)
-        _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL));
+    if(spellInfo->Category->Id)
+        _AddCreatureCategoryCooldown(spellInfo->Category->Id, time(NULL));
 
     m_GlobalCooldown = spellInfo->StartRecoveryTime;
 }
@@ -1971,7 +1969,7 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
     if (spellInfo->StartRecoveryCategory > 0 && m_GlobalCooldown > 0)
         return true;
 
-    CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category);
+    CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category->Id);
     return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / 1000)) > time(NULL));
 }
 
@@ -2353,7 +2351,7 @@ void Creature::FocusTarget(Spell const* focusSpell, WorldObject const* target)
 
     _focusSpell = focusSpell;
     SetUInt64Value(UNIT_FIELD_TARGET, target->GetGUID());
-    if (focusSpell->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST)
+    if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         AddUnitState(UNIT_STATE_ROTATING);
 
     // Set serverside orientation if needed (needs to be after attribute check)
@@ -2372,7 +2370,7 @@ void Creature::ReleaseFocus(Spell const* focusSpell)
     else
         SetUInt64Value(UNIT_FIELD_TARGET, 0);
 
-    if (focusSpell->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST)
+    if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         ClearUnitState(UNIT_STATE_ROTATING);
 }
 

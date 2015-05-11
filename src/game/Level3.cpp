@@ -2813,9 +2813,8 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
     // Search in Spell.dbc
     //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
-    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (uint32 id = 0; id < sObjectMgr->GetSpellStore().size(); id++)
     {
-        uint32 id = itr->first;
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
         if(spellInfo)
         {
@@ -2844,7 +2843,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
             if(loc < TOTAL_LOCALES)
             {
                 bool known = target && target->HasSpell(id);
-                bool learn = (spellInfo->Effect[0] == SPELL_EFFECT_LEARN_SPELL);
+                bool learn = (spellInfo->Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL);
 
                 uint32 talentCost = GetTalentSpellCost(id);
 
@@ -2854,7 +2853,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
-                uint32 rank = talentCost ? talentCost : sSpellMgr->GetSpellRank(learn ? spellInfo->EffectTriggerSpell[0] : id);
+                uint32 rank = talentCost ? talentCost : sSpellMgr->GetSpellRank(learn ? spellInfo->Effects[0].TriggerSpell : id);
 
                 // send spell in "id - [name, rank N] [talent] [passive] [learn] [known]" format
                 std::ostringstream ss;
@@ -3619,7 +3618,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     {
         for(uint32 i = 0;i<3;i++)
         {
-            uint8 eff = spellInfo->Effect[i];
+            uint8 eff = spellInfo->Effects[i].Effect;
             if (eff>=TOTAL_SPELL_EFFECTS)
                 continue;
             if( IsAreaAuraEffect(eff)           ||
@@ -4645,7 +4644,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
         return false;
     }
 
-    uint8 powertype = cEntry->powerType;
+    uint8 powertype = cEntry->PowerType;
 
     uint32 unitfield;
     if(powertype == POWER_RAGE)
@@ -7269,7 +7268,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         {
             for(uint32 i = 0;i<3;i++)
             {
-                uint8 eff = spellInfo->Effect[i];
+                uint8 eff = spellInfo->Effects[i].Effect;
                 if (eff>=TOTAL_SPELL_EFFECTS)
                     continue;
                 if( eff == SPELL_EFFECT_APPLY_AREA_AURA_PARTY || eff == SPELL_EFFECT_APPLY_AURA ||

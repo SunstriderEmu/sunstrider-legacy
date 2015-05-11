@@ -27,7 +27,7 @@
 #include "ItemPrototype.h"
 #include "Transaction.h"
 
-struct SpellInfo;
+class SpellInfo;
 class Bag;
 
 struct ItemSetEffect

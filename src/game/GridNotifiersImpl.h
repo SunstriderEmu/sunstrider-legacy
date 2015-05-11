@@ -29,7 +29,7 @@
 #include "CreatureAI.h"
 #include "SpellAuras.h"
 #include "CreatureAINew.h"
-#include "SpellInfo.h
+#include "SpellInfo.h"
 
 inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
@@ -211,10 +211,10 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     if (i_dynobject.IsAffecting(target))
         return;
 
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(i_dynobject.GetSpellId());
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(i_dynobject.GetSpellId());
     uint32 eff_index  = i_dynobject.GetEffIndex();
-    if(spellInfo->EffectImplicitTargetB[eff_index] == TARGET_DEST_DYNOBJ_ALLY
-        || spellInfo->EffectImplicitTargetB[eff_index] == TARGET_UNIT_DEST_AREA_ALLY)
+    if(spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
+        || spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)
     {
         if(!i_check->IsFriendlyTo(target))
             return;
@@ -230,13 +230,13 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
                 return;
         }
 
-        if (   !(spellInfo->AttributesEx  & SPELL_ATTR1_NO_THREAT)
-            && !(spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO) )
+        if (   !(spellInfo->HasAttribute(SPELL_ATTR1_NO_THREAT))
+            && !(spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) )
            i_check->CombatStart(target);
     }
 
     // Check target immune to spell or aura
-    if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effect[eff_index], spellInfo->EffectMechanic[eff_index]))
+    if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effects[eff_index].Effect, spellInfo->Effects[eff_index].Mechanic))
         return;
     
     i_dynobject.AddAffected(target);

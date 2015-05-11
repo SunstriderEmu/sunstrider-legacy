@@ -159,7 +159,7 @@ void PetAI::UpdateAI(const uint32 diff)
             }
             else
             {
-                if (IsNonCombatSpell(spellInfo))
+                if (!spellInfo->CanBeUsedInCombat())
                     continue;
             }
 

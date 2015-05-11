@@ -25,6 +25,98 @@
 enum AuraType;
 class SpellInfo;
 
+
+enum SpellCustomAttributes
+{
+    //SPELL_ATTR0_CU_PLAYERS_ONLY      0x00000001,
+    SPELL_ATTR0_CU_CONE_BACK                     = 0x00000002,
+    SPELL_ATTR0_CU_CONE_LINE                     = 0x00000004,
+    SPELL_ATTR0_CU_SHARE_DAMAGE                  = 0x00000008,
+    SPELL_ATTR0_CU_AURA_HOT                      = 0x00000010,
+    SPELL_ATTR0_CU_AURA_DOT                      = 0x00000020,
+    SPELL_ATTR0_CU_AURA_CC                       = 0x00000040,
+    SPELL_ATTR0_CU_AURA_SPELL                    = 0x00000080,
+    SPELL_ATTR0_CU_DIRECT_DAMAGE                 = 0x00000100,
+    SPELL_ATTR0_CU_CHARGE                        = 0x00000200,
+    SPELL_ATTR0_CU_LINK_CAST                     = 0x00000400,
+    SPELL_ATTR0_CU_LINK_HIT                      = 0x00000800,
+    SPELL_ATTR0_CU_LINK_AURA                     = 0x00001000,
+    SPELL_ATTR0_CU_LINK_REMOVE                   = 0x00002000,
+    SPELL_ATTR0_CU_MOVEMENT_IMPAIR               = 0x00004000,
+    SPELL_ATTR0_CU_IGNORE_ARMOR                  = 0x00008000,
+    SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
+    SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL  = 0x00020000,
+    //SPELL_ATTR0_CU_IGNORE_CASTER_LOS             = 0x00040000,
+    SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00080000,     // Instead of original caster
+    SPELL_ATTR0_CU_CANT_BREAK_CC                 = 0x00100000,     // Damage done by these spells won't break crowd controls
+    SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00200000,
+    SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00400000,     // Auras removed when target enters an instance
+    SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          = 0x00800000,
+    //SPELL_ATTR0_CU_NO_SPELL_BONUS                = 0x01000000,     // DO NOT USE; use SPELL_ATTR3_NO_DONE_BONUS instead
+    SPELL_ATTR0_CU_CONE_180                      = 0x02000000,
+    SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET       = 0x04000000,
+};
+
+enum SpellCastTargetFlags
+{
+    /*TARGET_FLAG_NONE             = 0x0000,
+    TARGET_FLAG_SWIMMER          = 0x0002,
+    TARGET_FLAG_ITEM             = 0x0010,
+    TARGET_FLAG_SOURCE_AREA      = 0x0020,
+    TARGET_FLAG_DEST_AREA        = 0x0040,
+    TARGET_FLAG_UNKNOWN          = 0x0080,
+    TARGET_FLAG_SELF             = 0x0100,
+    TARGET_FLAG_PVP_CORPSE       = 0x0200,
+    TARGET_FLAG_MASS_SPIRIT_HEAL = 0x0400,
+    TARGET_FLAG_BEAST_CORPSE     = 0x0402,
+    TARGET_FLAG_OBJECT           = 0x4000,
+    TARGET_FLAG_RESURRECTABLE    = 0x8000*/
+
+    TARGET_FLAG_SELF            = 0x00000000,
+    TARGET_FLAG_UNIT            = 0x00000002,               // pguid
+    TARGET_FLAG_ITEM            = 0x00000010,               // pguid
+    TARGET_FLAG_SOURCE_LOCATION = 0x00000020,               // 3 float
+    TARGET_FLAG_DEST_LOCATION   = 0x00000040,               // 3 float
+    TARGET_FLAG_OBJECT_UNK      = 0x00000080,               // ?
+    TARGET_FLAG_PVP_CORPSE      = 0x00000200,               // pguid
+    TARGET_FLAG_OBJECT          = 0x00000800,               // pguid
+    TARGET_FLAG_TRADE_ITEM      = 0x00001000,               // pguid
+    TARGET_FLAG_STRING          = 0x00002000,               // string
+    TARGET_FLAG_UNK1            = 0x00004000,               // ?
+    TARGET_FLAG_CORPSE          = 0x00008000,               // pguid
+    TARGET_FLAG_UNK2            = 0x00010000                // pguid
+};
+
+// Spell clasification
+enum SpellSpecificType
+{
+    SPELL_NORMAL            = 0,
+    SPELL_SEAL              = 1,
+    SPELL_BLESSING          = 2,
+    SPELL_AURA              = 3,
+    SPELL_STING             = 4,
+    SPELL_CURSE             = 5,
+    SPELL_ASPECT            = 6,
+    SPELL_TRACKER           = 7,
+    SPELL_WARLOCK_ARMOR     = 8,
+    SPELL_MAGE_ARMOR        = 9,
+    SPELL_ELEMENTAL_SHIELD  = 10,
+    SPELL_MAGE_POLYMORPH    = 11,
+    SPELL_POSITIVE_SHOUT    = 12,
+    SPELL_JUDGEMENT         = 13,
+    SPELL_BATTLE_ELIXIR     = 14,
+    SPELL_GUARDIAN_ELIXIR   = 15,
+    SPELL_FLASK_ELIXIR      = 16,
+    SPELL_WARLOCK_CORRUPTION= 17,
+    SPELL_WELL_FED          = 18,
+    SPELL_DRINK             = 19,
+    SPELL_FOOD              = 20,
+    SPELL_CHARM             = 21,
+    SPELL_WARRIOR_ENRAGE    = 22,
+    SPELL_ARMOR_REDUCE      = 23,
+    SPELL_DRUID_MANGLE      = 24
+};
+
 class SpellImplicitTargetInfo
 {
 private:
@@ -114,6 +206,9 @@ public:
     bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
+    bool HasRadius() const;
+    //always use GetSpellModOwner() for caster
+    float CalcRadius(Unit* caster = NULL, Spell* = NULL) const;
 private:
     /*
     struct StaticData
@@ -229,6 +324,15 @@ public:
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
 
+    inline bool HasAttribute(SpellAttr0 attribute) const { return !!(Attributes & attribute); }
+    inline bool HasAttribute(SpellAttr1 attribute) const { return !!(AttributesEx & attribute); }
+    inline bool HasAttribute(SpellAttr2 attribute) const { return !!(AttributesEx2 & attribute); }
+    inline bool HasAttribute(SpellAttr3 attribute) const { return !!(AttributesEx3 & attribute); }
+    inline bool HasAttribute(SpellAttr4 attribute) const { return !!(AttributesEx4 & attribute); }
+    inline bool HasAttribute(SpellAttr5 attribute) const { return !!(AttributesEx5 & attribute); }
+    inline bool HasAttribute(SpellAttr6 attribute) const { return !!(AttributesEx6 & attribute); }
+    inline bool HasAttribute(SpellCustomAttributes customAttribute) const { return !!(AttributesCu & customAttribute); }
+
     bool IsAffectingArea() const;
     bool IsTargetingArea() const;
     bool IsAreaAuraEffect() const;
@@ -237,6 +341,7 @@ public:
     bool IsBreakingStealth() const;
     bool IsDeathPersistent() const;
     bool HasVisual(uint32 visual) const;
+    bool CanBeUsedInCombat() const;
 
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;
@@ -244,6 +349,19 @@ public:
     uint32 GetSpellMechanicMaskByEffectMask(uint32 effectMask) const;
     Mechanics GetEffectMechanic(uint8 effIndex) const;
     bool HasAnyEffectMechanic() const;
+
+    AuraStateType GetAuraState() const;
+    SpellSpecificType GetSpellSpecific() const;
+    SpellSpecificType GetSpellElixirSpecific() const;
+
+
+    float GetMinRange(bool positive = false) const;
+    //always use GetSpellModOwner() for caster
+    float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;
+
+private:
+    //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
+    void LoadCustomAttributes();
 };
 
 #endif // _SPELLINFO_H

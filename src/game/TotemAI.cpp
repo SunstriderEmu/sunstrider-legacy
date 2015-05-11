@@ -73,10 +73,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         return;
 
     // Get spell rangy
-    SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->rangeIndex);
-    float max_range = GetSpellMaxRange(srange);
-
-    // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
+    float max_range = spellInfo->GetMaxRange(false, me->GetSpellModOwner());
 
     // pointer to appropriate target if found any
     Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(i_totem, i_victimGuid) : NULL;
