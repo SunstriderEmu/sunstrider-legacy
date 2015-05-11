@@ -353,7 +353,7 @@ void Transport::UpdatePosition(float x, float y, float z, float o)
 {
     bool newActive = GetMap()->IsGridLoadedAt(x,y);
 
-    Cell oldCell(CellPair(GetPositionX(), GetPositionY()));
+    Cell oldCell(CellCoord(GetPositionX(), GetPositionY()));
 
     Relocate(x, y, z, o);
     UpdateModelPosition();
@@ -368,7 +368,7 @@ void Transport::UpdatePosition(float x, float y, float z, float o)
     */
     if (_staticPassengers.empty() && newActive) // 1.
         LoadStaticPassengers();
-    else if (!_staticPassengers.empty() && !newActive && oldCell.DiffGrid(Cell(CellPair(GetPositionX(), GetPositionY())))) // 3.
+    else if (!_staticPassengers.empty() && !newActive && oldCell.DiffGrid(Cell(CellCoord(GetPositionX(), GetPositionY())))) // 3.
         UnloadStaticPassengers();
     else
         UpdatePassengerPositions(_staticPassengers);

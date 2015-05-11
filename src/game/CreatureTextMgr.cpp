@@ -490,7 +490,7 @@ std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, 
 
 void CreatureTextMgr::SendMessageToSetInRange(WorldObject* source, WorldPacket* msg, float dist) const
 {
-    CellPair p = Trinity::ComputeCellPair(source->GetPositionX(), source->GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(source->GetPositionX(), source->GetPositionY());
 
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;

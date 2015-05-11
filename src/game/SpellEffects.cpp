@@ -3058,7 +3058,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 40328) {
         Creature *soulgrinder = m_caster->FindNearestCreature(23019, 10.0f, true);
         if (soulgrinder) {      // Fear all ghosts
-            /*CellPair pair(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
+            /*CellCoord pair(Trinity::ComputeCellCoord(m_caster->GetPositionX(), m_caster->GetPositionY()));
             Cell cell(pair);
             cell.data.Part.reserved = ALL_DISTRICT;
             cell.SetNoCreate();

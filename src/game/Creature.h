@@ -707,10 +707,13 @@ class Creature : public Unit
         float GetAttackDistance(Unit const* pl) const;
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
+        /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();
+        /** Actively call for help, does NOT check for faction, all friendly are eligibles */
+        void CallForHelp(float fRadius);
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         bool CanCallAssistance() { return !m_AlreadyCallAssistance; }
-        bool CanAssistTo(const Unit* u, const Unit* enemy) const;
+        bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction = true) const;
         void DoFleeToGetAssistance(float radius = 50);
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }

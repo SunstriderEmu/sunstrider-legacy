@@ -528,7 +528,7 @@ void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTarge
 
 void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)
 {
-    CellPair pair(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

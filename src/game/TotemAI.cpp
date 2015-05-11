@@ -86,7 +86,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         !i_totem.CanAttack(victim) || !i_totem.IsWithinDistInMap(victim, max_range) ||
         i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
     {
-        CellPair p(Trinity::ComputeCellPair(i_totem.GetPositionX(),i_totem.GetPositionY()));
+        CellCoord p(Trinity::ComputeCellCoord(i_totem.GetPositionX(),i_totem.GetPositionY()));
         Cell cell(p);
         cell.data.Part.reserved = ALL_DISTRICT;
 

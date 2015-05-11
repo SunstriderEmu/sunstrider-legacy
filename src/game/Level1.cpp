@@ -676,7 +676,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
             return false;
         }
     }
-    CellPair cell_val = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
+    CellCoord cell_val = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     Cell cell(cell_val);
 
     uint32 zone_id = obj->GetZoneId();

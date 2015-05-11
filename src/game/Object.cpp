@@ -1314,7 +1314,7 @@ namespace Trinity
 
 void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
 
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
@@ -1328,7 +1328,7 @@ void WorldObject::MonsterSay(int32 textId, uint32 language, uint64 TargetGuid)
 
 void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
 {
-    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
 
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
@@ -1342,7 +1342,7 @@ void WorldObject::MonsterYell(int32 textId, uint32 language, uint64 TargetGuid)
 
 void WorldObject::MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote)
 {
-    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
 
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
@@ -2135,7 +2135,7 @@ float WorldObject::GetObjectSize() const
 
 void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange)
 {
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -2149,7 +2149,7 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, ui
 
 void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange)
 {
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -2419,7 +2419,7 @@ struct WorldObjectChangeAccumulator
 
 void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
 {
-    CellPair p = Trinity::ComputeCellPair(GetPositionX(), GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
     cell.SetNoCreate();
     WorldObjectChangeAccumulator notifier(*this, data_map);

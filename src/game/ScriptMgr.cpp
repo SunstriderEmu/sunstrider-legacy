@@ -1537,7 +1537,7 @@ Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range)
 {
     Creature* pCreature = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(origin->GetPositionX(), origin->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(origin->GetPositionX(), origin->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

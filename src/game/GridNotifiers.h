@@ -794,6 +794,38 @@ namespace Trinity
             float i_range;
     };
 
+    // do attack at call of help to friendly creature
+    class CallOfHelpCreatureInRangeDo
+    {
+    public:
+        CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)
+            : i_funit(funit), i_enemy(enemy), i_range(range)
+        { }
+        void operator()(Creature* u)
+        {
+            if (u == i_funit)
+                return;
+
+            if (!u->CanAssistTo(i_funit, i_enemy, false))
+                return;
+
+            // too far
+            if (!u->IsWithinDistInMap(i_funit, i_range))
+                return;
+
+            // only if see assisted creature's enemy
+            if (!u->IsWithinLOSInMap(i_enemy))
+                return;
+
+            if (u->AI())
+                u->AI()->AttackStart(i_enemy);
+        }
+    private:
+        Unit* const i_funit;
+        Unit* const i_enemy;
+        float i_range;
+    };
+
     struct AnyDeadUnitCheck
     {
         bool operator()(Unit* u) { return !u->IsAlive(); }

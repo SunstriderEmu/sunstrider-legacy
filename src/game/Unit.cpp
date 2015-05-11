@@ -13210,7 +13210,7 @@ Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
 {
     Creature* pCreature = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -13229,7 +13229,7 @@ Player* Unit::FindPlayerInGrid(float range, bool isAlive)
 {
     Player* pPlayer = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -13248,7 +13248,7 @@ GameObject* Unit::FindGOInGrid(uint32 entry, float range)
 {
     GameObject* pGo = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

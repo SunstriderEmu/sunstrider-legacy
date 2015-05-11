@@ -85,7 +85,7 @@ class CreatureTextMgr
         void SetRepeatId(Creature* source, uint8 textGroup, uint8 id);
 
         void BuildMonsterChat(WorldPacket* data, WorldObject* source, ChatType msgtype, char const* text, Language language, uint64 whisperGuid) const;
-        void SendChatPacket(WorldPacket* data_en, WorldObject* source, ChatType msgtype, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly) const;
+        void SendChatPacket(WorldPacket* data, WorldObject* source, ChatType msgtype, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly) const;
         void SendMessageToSetInRange(WorldObject* source, WorldPacket* msg, float dist) const;
         
         CreatureTextMap mTextMap;

@@ -232,7 +232,7 @@ struct CoordPair
 };
 
 typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridPair;
-typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellPair;
+typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellCoord;
 
 namespace Trinity
 {
@@ -253,12 +253,12 @@ namespace Trinity
         return Compute<GridPair, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
     }
 
-    inline CellPair ComputeCellPair(float x, float y)
+    inline CellCoord ComputeCellCoord(float x, float y)
     {
-        return Compute<CellPair, CENTER_GRID_CELL_ID>(x, y, CENTER_GRID_CELL_OFFSET, SIZE_OF_GRID_CELL);
+        return Compute<CellCoord, CENTER_GRID_CELL_ID>(x, y, CENTER_GRID_CELL_OFFSET, SIZE_OF_GRID_CELL);
     }
 
-    inline CellPair ComputeCellPair(float x, float y, float &x_off, float &y_off)
+    inline CellCoord ComputeCellCoord(float x, float y, float &x_off, float &y_off)
     {
         double x_offset = (double(x) - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
         double y_offset = (double(y) - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
@@ -267,7 +267,7 @@ namespace Trinity
         int y_val = int(y_offset + CENTER_GRID_CELL_ID + 0.5);
         x_off = (float(x_offset) - x_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
         y_off = (float(y_offset) - y_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-        return CellPair(x_val, y_val);
+        return CellCoord(x_val, y_val);
     }
 
     inline void NormalizeMapCoord(float &c)

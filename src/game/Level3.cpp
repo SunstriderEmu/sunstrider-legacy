@@ -5972,7 +5972,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         return true;
     }
 
-    CellPair p(Trinity::ComputeCellPair(pl->GetPositionX(), pl->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -7537,7 +7537,7 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
         return false;
     }
 
-    CellPair p(Trinity::ComputeCellPair(player->GetPositionX(), player->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -7885,7 +7885,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
     float radius = 40.0f;
     //ExtractFloat(&args, radius);
 
-    CellPair pair(Trinity::ComputeCellPair( m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY()) );
+    CellCoord pair(Trinity::ComputeCellCoord( m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY()) );
     Cell cell(pair);
     cell.SetNoCreate();
 

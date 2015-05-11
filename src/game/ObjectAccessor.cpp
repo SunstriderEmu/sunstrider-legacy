@@ -237,7 +237,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
         return;
 
     // build mapid*cellid -> guid_set map
-    CellPair cell_pair = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
+    CellCoord cell_pair = Trinity::ComputeCellCoord(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
     sObjectMgr->DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
@@ -255,7 +255,7 @@ void ObjectAccessor::AddCorpse(Corpse *corpse)
     i_player2corpse[corpse->GetOwnerGUID()] = corpse;
 
     // build mapid*cellid -> guid_set map
-    CellPair cell_pair = Trinity::ComputeCellPair(corpse->GetPositionX(), corpse->GetPositionY());
+    CellCoord cell_pair = Trinity::ComputeCellCoord(corpse->GetPositionX(), corpse->GetPositionY());
     uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
     sObjectMgr->AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
@@ -376,7 +376,7 @@ void ObjectAccessor::Update(uint32 diff)
 
 void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 {
-    CellPair p = Trinity::ComputeCellPair(obj->GetPositionX(), obj->GetPositionY());
+    CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
     Cell cell(p);
 
     obj->GetMap()->UpdateObjectVisibility(obj,cell,p);

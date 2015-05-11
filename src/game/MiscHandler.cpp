@@ -1459,7 +1459,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
     uint8 apply;
     recvData >> apply;
 
-    CellPair pair;
+    CellCoord pair;
 
     switch(apply)
     {

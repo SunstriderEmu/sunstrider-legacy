@@ -2386,7 +2386,7 @@ void World::ScriptsProcess()
                 GameObject *go = NULL;
                 int32 time_to_despawn = step.script->datalong2<5 ? 5 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(summoner->GetPositionX(), summoner->GetPositionY()));
+                CellCoord p(Trinity::ComputeCellCoord(summoner->GetPositionX(), summoner->GetPositionY()));
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -2446,7 +2446,7 @@ void World::ScriptsProcess()
                 GameObject *door = NULL;
                 int32 time_to_close = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(caster->GetPositionX(), caster->GetPositionY()));
+                CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -2501,7 +2501,7 @@ void World::ScriptsProcess()
                 GameObject *door = NULL;
                 int32 time_to_open = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
-                CellPair p(Trinity::ComputeCellPair(caster->GetPositionX(), caster->GetPositionY()));
+                CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -2715,7 +2715,7 @@ void World::ScriptsProcess()
 
                 if(source) //using grid searcher
                 {
-                    CellPair p(Trinity::ComputeCellPair(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
+                    CellCoord p(Trinity::ComputeCellCoord(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
                     Cell cell(p);
                     cell.data.Part.reserved = ALL_DISTRICT;
 

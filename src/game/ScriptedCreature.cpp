@@ -887,7 +887,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
         return NULL;
     Creature* target = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(Finder->GetPositionX(), Finder->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(Finder->GetPositionX(), Finder->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -902,7 +902,7 @@ Unit* FindCreature(uint32 entry, float range, Unit* Finder)
 
 void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder)
 {
-    CellPair pair(Trinity::ComputeCellPair(Finder->GetPositionX(), Finder->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(Finder->GetPositionX(), Finder->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -920,7 +920,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
         return NULL;
     GameObject* target = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(Finder->GetPositionX(), Finder->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(Finder->GetPositionX(), Finder->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

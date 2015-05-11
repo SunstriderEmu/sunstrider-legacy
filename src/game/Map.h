@@ -241,7 +241,7 @@ class Map : public GridRefManager<NGridType>
 
         virtual bool RemoveBones(uint64 guid, float x, float y);
 
-        void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellPair cellpair);
+        void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellCoord cellpair);
 
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
@@ -532,7 +532,7 @@ template<class NOTIFIER>
 inline void
 Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -547,7 +547,7 @@ template<class NOTIFIER>
 inline void
 Map::VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -560,7 +560,7 @@ template<class NOTIFIER>
 inline void
 Map::VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
-    CellPair p(Trinity::ComputeCellPair(x, y));
+    CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

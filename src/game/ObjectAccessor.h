@@ -130,14 +130,14 @@ class ObjectAccessor
             T* obj = HashMapHolder<T>::Find(guid);
             if(!obj || obj->GetMapId() != mapid) return NULL;
 
-            CellPair p = Trinity::ComputeCellPair(x,y);
+            CellCoord p = Trinity::ComputeCellCoord(x,y);
             if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
                 TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
                 return NULL;
             }
 
-            CellPair q = Trinity::ComputeCellPair(obj->GetPositionX(),obj->GetPositionY());
+            CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(),obj->GetPositionY());
             if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
                 TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjecInWorld: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);

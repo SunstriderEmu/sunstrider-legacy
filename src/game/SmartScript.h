@@ -171,7 +171,7 @@ class SmartScript
         {
             GameObject *pGameObject = nullptr;
 
-            CellPair p(Trinity::ComputeCellPair(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
+            CellCoord p(Trinity::ComputeCellCoord(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
             Cell cell(p);
             cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -188,7 +188,7 @@ class SmartScript
         Creature* FindCreatureNear(WorldObject* pSearchObject, uint32 guid) const
         {
             Creature *crea = nullptr;
-            CellPair p(Trinity::ComputeCellPair(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
+            CellCoord p(Trinity::ComputeCellCoord(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
             Cell cell(p);
             cell.data.Part.reserved = ALL_DISTRICT;
 

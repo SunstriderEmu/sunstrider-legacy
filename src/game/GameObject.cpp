@@ -460,7 +460,7 @@ void GameObject::Update(uint32 diff)
 
                 bool NeedDespawn = (goInfo->trap.charges != 0);
 
-                CellPair p(Trinity::ComputeCellPair(GetPositionX(),GetPositionY()));
+                CellCoord p(Trinity::ComputeCellCoord(GetPositionX(),GetPositionY()));
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -1079,7 +1079,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     GameObject* trapGO = NULL;
     {
         // using original GO distance
-        CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+        CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
         Cell cell(p);
         cell.data.Part.reserved = ALL_DISTRICT;
 
@@ -1099,7 +1099,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
 {
     GameObject* ok = NULL;
 
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(),GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(),GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
@@ -1624,7 +1624,7 @@ Creature* GameObject::FindCreatureInGrid(uint32 entry, float range, bool isAlive
 {
     Creature* pCreature = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -1643,7 +1643,7 @@ GameObject* GameObject::FindGOInGrid(uint32 entry, float range)
 {
     GameObject* pGo = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -1662,7 +1662,7 @@ Player* GameObject::FindPlayerInGrid(float range, bool alive)
 {
     Player* pPlayer = NULL;
 
-    CellPair pair(Trinity::ComputeCellPair(this->GetPositionX(), this->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

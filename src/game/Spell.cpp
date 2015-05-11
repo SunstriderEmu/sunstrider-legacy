@@ -510,7 +510,7 @@ void Spell::FillTargetMap()
                         {
                             GameObject* go = NULL;
 
-                            CellPair pair(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            CellCoord pair(Trinity::ComputeCellCoord(m_targets.m_destX, m_targets.m_destY));
                             Cell cell(pair);
                             cell.data.Part.reserved = ALL_DISTRICT;
                             cell.SetNoCreate();
@@ -533,7 +533,7 @@ void Spell::FillTargetMap()
                         {
                             GameObject* go = NULL;
 
-                            CellPair pair(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            CellCoord pair(Trinity::ComputeCellCoord(m_targets.m_destX, m_targets.m_destY));
                             Cell cell(pair);
                             cell.data.Part.reserved = ALL_DISTRICT;
                             cell.SetNoCreate();
@@ -553,7 +553,7 @@ void Spell::FillTargetMap()
 
                             go = NULL;
 
-                            CellPair pair2(Trinity::ComputeCellPair(m_targets.m_destX, m_targets.m_destY));
+                            CellCoord pair2(Trinity::ComputeCellCoord(m_targets.m_destX, m_targets.m_destY));
                             Cell cell2(pair2);
                             cell2.data.Part.reserved = ALL_DISTRICT;
                             cell2.SetNoCreate();
@@ -5206,7 +5206,7 @@ SpellFailedReason Spell::CheckItems()
 
     if(m_spellInfo->RequiresSpellFocus)
     {
-        CellPair p(Trinity::ComputeCellPair(m_caster->GetPositionX(), m_caster->GetPositionY()));
+        CellCoord p(Trinity::ComputeCellCoord(m_caster->GetPositionX(), m_caster->GetPositionY()));
         Cell cell(p);
         cell.data.Part.reserved = ALL_DISTRICT;
 

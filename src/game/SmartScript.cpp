@@ -974,7 +974,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             }
             break;
         }
-        /*
         case SMART_ACTION_CALL_FOR_HELP:
         {
             if (me)
@@ -982,24 +981,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 me->CallForHelp((float)e.action.callHelp.range);
                 if (e.action.callHelp.withEmote)
                 {
-                    Trinity::BroadcastTextBuilder builder(me, CHAT_MSG_MONSTER_EMOTE, BROADCAST_TEXT_CALL_FOR_HELP);
-                    sCreatureTextMgr->SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE);
+                /*todo   Trinity::BroadcastTextBuilder builder(me, CHAT_MSG_MONSTER_EMOTE, BROADCAST_TEXT_CALL_FOR_HELP);
+                   sCreatureTextMgr->SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE); */
                 }
-                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_FOR_HELP: Creature %u", me->GetGUIDLow());
-            }
-            break;
-        }
-        */
-        case SMART_ACTION_CALL_FOR_HELP:
-        {
-            if (me)
-            {
-                me->CallAssistance(/*(float)e.action.callHelp.range*/);
-                if (e.action.callHelp.withEmote)
-                {
-                    //TODO
-                }
-                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_FOR_HELP: Creature %u", me->GetGUIDLow());
+                TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_CALL_FOR_HELP: Creature %u", me->GetGUIDLow());
             }
             break;
         }
@@ -3790,7 +3775,7 @@ uint32 SmartScript::DoChat(int8 id, uint64 whisperGuid)
 Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     if (!me) return NULL;
-    CellPair p(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -3809,7 +3794,7 @@ Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 void SmartScript::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
 {
     if (!me) return;
-    CellPair p(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -3825,7 +3810,7 @@ void SmartScript::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
 void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
 {
     if (!me) return;
-    CellPair p(Trinity::ComputeCellPair(me->GetPositionX(), me->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();

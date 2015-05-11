@@ -1671,7 +1671,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
     Creature* pCreature = NULL;
 
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -1689,7 +1689,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
 Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, bool furthest /* = false */) const
 {
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
@@ -1722,7 +1722,7 @@ void Creature::CallAssistance()
             std::list<Creature*> assistList;
 
             // Check near creatures for assistance
-            CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+            CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
             Cell cell(p);
             cell.data.Part.reserved = ALL_DISTRICT;
             cell.SetNoCreate();
@@ -1772,7 +1772,24 @@ void Creature::CallAssistance()
     }
 }
 
-bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
+void Creature::CallForHelp(float radius)
+{
+    if (radius <= 0.0f || !GetVictim() || IsPet() || IsCharmed())
+        return;
+
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    Trinity::CallOfHelpCreatureInRangeDo u_do(this, GetVictim(), radius);
+    Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(u_do);
+
+    TypeContainerVisitor<Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo>, GridTypeMapContainer >  grid_creature_searcher(worker);
+
+    cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+}
+
+bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /* = true */) const
 {
     // is it true?
     if(!HasReactState(REACT_AGGRESSIVE) || (HasJustRespawned() && !m_summoner)) //ignore justrespawned if summoned
@@ -1787,7 +1804,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy) const
         return false;
 
     // only from same creature faction
-    if(GetFaction() != u->GetFaction() )
+    if (checkFaction && GetFaction() != u->GetFaction())
         return false;
 
     // only free creature
@@ -2553,7 +2570,7 @@ void Creature::WarnDeathToFriendly()
     std::list< std::pair<Creature*,float> > warnList;
 
     // Check near creatures for assistance
-    CellPair p(Trinity::ComputeCellPair(GetPositionX(), GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
