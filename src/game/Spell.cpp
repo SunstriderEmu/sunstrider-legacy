@@ -2300,7 +2300,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     m_castOrientation = m_caster->GetOrientation();
 
     if(triggeredByAura)
-        m_triggeredByAuraSpell  = triggeredByAura->GetSpellProto();
+        m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
 
     // create and add update event for this spell
     SpellEvent* Event = new SpellEvent(this);
@@ -2580,7 +2580,7 @@ void Spell::cast(bool skipCheck)
     Unit::AuraList const& targetTriggers = m_caster->GetAurasByType(SPELL_AURA_ADD_TARGET_TRIGGER);
     for(Unit::AuraList::const_iterator i = targetTriggers.begin(); i != targetTriggers.end(); ++i)
     {
-        SpellInfo const *auraSpellInfo = (*i)->GetSpellProto();
+        SpellInfo const *auraSpellInfo = (*i)->GetSpellInfo();
         uint32 auraSpellIdx = (*i)->GetEffIndex();
         if (IsAffectedBy(auraSpellInfo, auraSpellIdx))
         {
@@ -3873,7 +3873,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         }
 
         // target state requirements (apply to non-self only), to allow cast affects to self like Dirty Deeds
-        if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraState(m_spellInfo->TargetAuraState)))
+        if(m_spellInfo->TargetAuraState && !target->HasAuraState(AuraStateType(m_spellInfo->TargetAuraState)))
             return SPELL_FAILED_TARGET_AURASTATE;
 
         if( !(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)
@@ -3975,9 +3975,9 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
     
     // caster state requirements
-    if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraState)))
+    if(m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraState)))
         return SPELL_FAILED_CASTER_AURASTATE;
-    if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraState(m_spellInfo->CasterAuraStateNot)))
+    if(m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraStateNot)))
         return SPELL_FAILED_CASTER_AURASTATE;
 
     // cancel autorepeat spells if cast start when moving
@@ -3995,7 +3995,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)
-    if(m_spellInfo->TargetAuraStateNot && target->HasAuraState(AuraState(m_spellInfo->TargetAuraStateNot)))
+    if(m_spellInfo->TargetAuraStateNot && target->HasAuraState(AuraStateType(m_spellInfo->TargetAuraStateNot)))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // Cant cast Ice block or Divine shield when under Cyclone
@@ -4853,11 +4853,11 @@ SpellFailedReason Spell::CheckCasterAuras() const
             {
                 if(itr->second)
                 {
-                    if( GetSpellMechanicMask(itr->second->GetSpellProto(), itr->second->GetEffIndex()) & mechanic_immune )
+                    if( GetSpellMechanicMask(itr->second->GetSpellInfo(), itr->second->GetEffIndex()) & mechanic_immune )
                         continue;
-                    if( GetSpellSchoolMask(itr->second->GetSpellProto()) & school_immune )
+                    if( GetSpellSchoolMask(itr->second->GetSpellInfo()) & school_immune )
                         continue;
-                    if( (1<<(itr->second->GetSpellProto()->Dispel)) & dispel_immune)
+                    if( (1<<(itr->second->GetSpellInfo()->Dispel)) & dispel_immune)
                         continue;
 
                     //Make a second check for spell failed so the right SPELL_FAILED message is returned.

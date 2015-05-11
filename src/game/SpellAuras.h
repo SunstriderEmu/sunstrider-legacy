@@ -232,7 +232,7 @@ class Aura
         void SetModifierValuePerStack(int32 newAmount);
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
-        SpellInfo const* GetSpellProto() const { return m_spellProto; }
+        SpellInfo const* GetSpellInfo() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellInfo const* info) const;
         uint32 GetId() const{ return m_spellProto->Id; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
@@ -280,7 +280,7 @@ class Aura
             uint8 slot = GetAuraSlot();
 
             // only aura in slot with charges and without stack limitation
-            if (slot < MAX_AURAS && m_procCharges >= 1 && GetSpellProto()->StackAmount==0)
+            if (slot < MAX_AURAS && m_procCharges >= 1 && GetSpellInfo()->StackAmount==0)
                 SetAuraApplication(slot, m_procCharges - 1);
         }
 

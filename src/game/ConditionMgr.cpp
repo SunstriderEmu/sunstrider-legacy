@@ -106,7 +106,7 @@ bool Condition::Meets(Player * player, Unit* targetOverride)
         {
             Unit::AuraMap const& auras = player->GetAuras();
             for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
-                if ((itr->second->GetSpellProto()->Attributes & 0x1000010) && itr->second->GetSpellProto()->SpellVisual == 3580)
+                if ((itr->second->GetSpellInfo()->Attributes & 0x1000010) && itr->second->GetSpellInfo()->SpellVisual == 3580)
                 {
                     condMeets = true;
                     break;

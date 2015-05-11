@@ -1116,6 +1116,70 @@ void SpellMgr::LoadSpellAffects()
     }
 }
 
+bool SpellMgr::HasAuraType(SpellEntry const* info, AuraType type) const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+        if (info->EffectApplyAuraName[i] == type)
+            return true;
+
+    return false;
+}
+
+AuraStateType SpellMgr::GetSpellAuraState(SpellInfo const* info) const
+{
+    if (GetSpellSpecific(info->Id) == SPELL_SEAL)
+        return AURA_STATE_JUDGEMENT;
+
+    // Conflagrate aura state
+    if (info->SpellFamilyName == SPELLFAMILY_WARLOCK && (info->SpellFamilyFlags & SPELLFAMILYFLAG_WARLOCK_IMMOLATE))
+        return AURA_STATE_CONFLAGRATE;
+
+    // Swiftmend state on Regrowth & Rejuvenation
+    if (info->SpellFamilyName == SPELLFAMILY_DRUID
+        && (info->SpellFamilyFlags & (SPELLFAMILYFLAG_DRUIDE_REJUVENATION | SPELLFAMILYFLAG_DRUIDE_REGROWTH)))
+        return AURA_STATE_SWIFTMEND;
+
+    // Deadly poison
+    if (info->SpellFamilyName == SPELLFAMILY_ROGUE && (info->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_DEADLYPOISON))
+        return AURA_STATE_DEADLY_POISON;
+
+    // Faerie Fire (druid versions)
+    if ((info->SpellFamilyName == SPELLFAMILY_DRUID &&
+        info->SpellFamilyFlags & SPELLFAMILYFLAG_DRUIDE_FAERIEFIRE)
+        || info->Id == 35325) //glowing blood (why ?)
+        return AURA_STATE_FAERIE_FIRE;
+
+    // Forbearance and Weakened Soul
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+    {
+        if (info->EffectApplyAuraName[i] == SPELL_AURA_MECHANIC_IMMUNITY)
+        {
+            if (info->EffectMiscValue[i] == MECHANIC_INVULNERABILITY)
+                return AURA_STATE_FORBEARANCE;
+            if (info->EffectMiscValue[i] == MECHANIC_SHIELD)
+                return AURA_STATE_WEAKENED_SOUL;
+        }
+    }
+
+    if (info->SpellFamilyName == SPELLFAMILY_WARRIOR
+        && (info->SpellFamilyFlags == SPELLFAMILYFLAG_WARRIOR_VICTORYRUSH))
+        return AURA_STATE_WARRIOR_VICTORY_RUSH;
+
+    switch (info->Id)
+    {
+    case 41425: // Hypothermia
+        return AURA_STATE_HYPOTHERMIA;
+    case 32216: // Victorious
+        return AURA_STATE_WARRIOR_VICTORY_RUSH;
+    case 1661: // Berserking (troll racial traits)
+        return AURA_STATE_BERSERKING;
+    default:
+        break;
+    }
+
+    return AURA_STATE_NONE;
+}
+
 bool SpellMgr::IsAffectedBySpell(SpellInfo const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
 {
     // false for spellInfo == NULL
