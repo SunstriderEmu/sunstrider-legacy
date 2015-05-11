@@ -33,7 +33,7 @@
 #include <list>
 #include <string>
 
-struct SpellEntry;
+struct SpellInfo;
 
 class CreatureAI;
 class CreatureAINew;
@@ -580,7 +580,7 @@ class Creature : public Unit
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool canResetTalentsOf(Player* pPlayer) const;
         bool IsOutOfThreatArea(Unit* pVictim) const;
-        bool IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges = false);
+        bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false);
                                                             // redefine Unit::IsImmunedToSpell
         bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
                                                             // redefine Unit::IsImmunedToSpellEffect
@@ -693,8 +693,8 @@ class Creature : public Unit
         void SetLootRecipient (Unit* unit);
         void AllLootRemovedFromCorpse();
 
-        SpellEntry const *reachWithSpellAttack(Unit *pVictim);
-        SpellEntry const *reachWithSpellCure(Unit *pVictim);
+        SpellInfo const* reachWithSpellAttack(Unit *pVictim);
+        SpellInfo const* reachWithSpellCure(Unit *pVictim);
 
         uint32 m_spells[CREATURE_MAX_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;

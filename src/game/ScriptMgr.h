@@ -207,7 +207,7 @@ class ScriptMgr
         void OnShutdown() {}
 
     //event handlers
-        bool OnSpellCast (Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellEntry const *spell);
+        bool OnSpellCast(Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellInfo const *spell);
         void OnServerStartup();
         void OnServerShutdown();
         void OnAreaChange(Player *pPlayer, AreaTableEntry const *pArea);

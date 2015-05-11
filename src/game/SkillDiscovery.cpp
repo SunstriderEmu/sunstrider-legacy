@@ -75,7 +75,7 @@ void LoadSkillDiscoveryTable()
 
             if(reqSkillOrSpell > 0)                         // spell case
             {
-                SpellEntry const* spellEntry = sSpellMgr->GetSpellInfo(reqSkillOrSpell);
+                SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(reqSkillOrSpell);
                 if( !spellEntry )
                 {
                     TC_LOG_ERROR("FIXME","Spell (ID: %u) have not existed spell (ID: %i) in `reqSpell` field in `skill_discovery_template` table",spellId,reqSkillOrSpell);

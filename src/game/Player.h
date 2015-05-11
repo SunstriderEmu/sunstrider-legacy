@@ -1270,7 +1270,7 @@ class Player : public Unit
         bool HasBankBagSlot( uint8 slot ) const;
         bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
         uint32 GetEmptyBagSlotsCount() const;
-        bool HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem = NULL);
+        bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = NULL);
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         uint8 CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
         uint8 CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
@@ -1642,7 +1642,7 @@ class Player : public Unit
         void AddSpellMod(SpellModifier* mod, bool apply);
         int32 GetTotalFlatMods(uint32 spellId, SpellModOp op);
         int32 GetTotalPctMods(uint32 spellId, SpellModOp op);
-        bool IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell const* spell = NULL);
+        bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = NULL);
         void RemoveSpellMods(Spell const* spell);
         void RestoreSpellMods(Spell const* spell);
@@ -1662,8 +1662,8 @@ class Player : public Unit
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
 
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
-        void SendCooldownEvent(SpellEntry const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
+        void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
+        void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs );
         void RemoveSpellCooldown(uint32 spell_id) { m_spellCooldowns.erase(spell_id); }
         void RemoveArenaSpellCooldowns();
@@ -1673,9 +1673,9 @@ class Player : public Unit
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
         // global cooldown
-        void AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, bool allowTinyCd = false);
-        bool HasGlobalCooldown(SpellEntry const *spellInfo) const;
-        void RemoveGlobalCooldown(SpellEntry const *spellInfo);
+        void AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd = false);
+        bool HasGlobalCooldown(SpellInfo const *spellInfo) const;
+        void RemoveGlobalCooldown(SpellInfo const *spellInfo);
 
         void setResurrectRequestData(uint64 guid, uint32 mapId, float X, float Y, float Z, uint32 health, uint32 mana)
         {
@@ -2030,10 +2030,10 @@ class Player : public Unit
         void InitDataForForm(bool reapplyMods = false);
 
         void ApplyItemEquipSpell(Item *item, bool apply, bool form_change = false);
-        void ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply, bool form_change = false);
+        void ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change = false);
         void UpdateEquipSpellsAtFormChange();
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo = NULL);
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellEntry const *spell = NULL);
+        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo = NULL);
+        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell = NULL);
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
@@ -2710,7 +2710,7 @@ void RemoveItemsSetItem(Player*player,ItemTemplate const *proto);
 template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
     //TC_LOG_INFO("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo) return 0;
     //TC_LOG_INFO("FIXME","Player::ApplySpellMod1");
     int32 totalpct = 0;

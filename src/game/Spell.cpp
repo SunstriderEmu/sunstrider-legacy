@@ -57,7 +57,7 @@ extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
 bool IsQuestTameSpell(uint32 spellId)
 {
-    SpellEntry const *spellproto = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
     return spellproto->Effect[0] == SPELL_EFFECT_THREAT
@@ -278,7 +278,7 @@ void SpellCastTargets::write ( WorldPacket * data )
         *data << m_strTarget;
 }
 
-Spell::Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
+Spell::Spell( Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
@@ -2580,11 +2580,11 @@ void Spell::cast(bool skipCheck)
     Unit::AuraList const& targetTriggers = m_caster->GetAurasByType(SPELL_AURA_ADD_TARGET_TRIGGER);
     for(Unit::AuraList::const_iterator i = targetTriggers.begin(); i != targetTriggers.end(); ++i)
     {
-        SpellEntry const *auraSpellInfo = (*i)->GetSpellProto();
+        SpellInfo const *auraSpellInfo = (*i)->GetSpellProto();
         uint32 auraSpellIdx = (*i)->GetEffIndex();
         if (IsAffectedBy(auraSpellInfo, auraSpellIdx))
         {
-            if(SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
+            if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(auraSpellInfo->EffectTriggerSpell[auraSpellIdx]))
             {
                 // Calculate chance at that moment (can be depend for example from combo points)
                 int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), NULL);
@@ -4164,7 +4164,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
+                SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -4187,7 +4187,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
-                SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
+                SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
 
                 if(!learn_spellproto)
                     return SPELL_FAILED_NOT_KNOWN;
@@ -5573,7 +5573,7 @@ void Spell::UpdatePointers()
     m_targets.Update(m_caster);
 }
 
-bool Spell::IsAffectedBy(SpellEntry const *spellInfo, uint32 effectId)
+bool Spell::IsAffectedBy(SpellInfo const *spellInfo, uint32 effectId)
 {
     return sSpellMgr->IsAffectedBySpell(m_spellInfo,spellInfo->Id,effectId,spellInfo->EffectItemType[effectId]);
 }

@@ -1460,7 +1460,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
     SetHealth(0);                                           // just for nice GM-mode view
 }
 
-bool Creature::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
+bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 {
     if (!spellInfo)
         return false;
@@ -1526,7 +1526,7 @@ bool Creature::IsSpellSchoolMaskProhibited(SpellSchoolMask idSchoolMask)
     return prohibited;
 }
 
-SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
+SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
 {
     if(!pVictim)
         return NULL;
@@ -1535,7 +1535,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
         if(!spellInfo)
         {
             TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spells[i]);
@@ -1574,7 +1574,7 @@ SpellEntry const *Creature::reachWithSpellAttack(Unit *pVictim)
     return NULL;
 }
 
-SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
+SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
 {
     if(!pVictim)
         return NULL;
@@ -1583,7 +1583,7 @@ SpellEntry const *Creature::reachWithSpellCure(Unit *pVictim)
     {
         if(!m_spells[i])
             continue;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
         if(!spellInfo)
         {
             TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spells[i]);
@@ -1906,7 +1906,7 @@ bool Creature::InitCreatureAddon(bool reload)
 
     for(auto id : m_creatureInfoAddon->auras)
     {
-        SpellEntry const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(id);
+        SpellInfo const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(id);
         if (!AdditionalSpellInfo)
         {
             TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),id);
@@ -1947,7 +1947,7 @@ void Creature::_AddCreatureCategoryCooldown(uint32 category, time_t apply_time)
 
 void Creature::AddCreatureSpellCooldown(uint32 spellid)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
     if(!spellInfo)
         return;
 
@@ -1963,7 +1963,7 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if(!spellInfo)
         return false;
 

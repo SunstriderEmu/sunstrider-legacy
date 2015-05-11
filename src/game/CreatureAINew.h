@@ -166,8 +166,8 @@ class CreatureAINew
         /* When summoned add despawns */
         virtual void onSummonDespawn(Creature* summoned) {}
         /* Hooks for spell */
-        virtual void onSpellPrepare(SpellEntry const* spell, Unit* target) {}
-        virtual void onHitBySpell(Unit* caster, SpellEntry const* spell) {}
+        virtual void onSpellPrepare(SpellInfo const* spell, Unit* target) {}
+        virtual void onHitBySpell(Unit* caster, SpellInfo const* spell) {}
         virtual void onSpellFinish(Unit* caster, uint32 spellId, Unit* target, bool ok) {}
 
         //Called at waypoint reached or PointMovement end

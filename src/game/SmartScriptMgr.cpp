@@ -406,7 +406,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             case SMART_EVENT_SPELLHIT_TARGET:
                 if (e.event.spellHit.spell)
                 {
-                    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
                     if (!spellInfo)
                     {
                         SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Spell entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.spellHit.spell);
@@ -1054,8 +1054,8 @@ void SmartAIMgr::LoadHelperStores()
 {
     uint32 oldMSTime = GetMSTime();
 
-    SpellEntry const* spellInfo = NULL;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    SpellInfo const* spellInfo = NULL;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 id = itr->first;
         spellInfo = sSpellMgr->GetSpellInfo(id);

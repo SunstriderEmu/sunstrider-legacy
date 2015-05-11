@@ -172,7 +172,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     uint32 summon_spell_id = fields[21].GetUInt32();
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(summon_spell_id);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(summon_spell_id);
 
     bool is_temporary_summoned = spellInfo && GetSpellDuration(spellInfo) > 0;
 
@@ -312,7 +312,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
             // patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
             // so overwrite old state
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
             if (spellInfo && spellInfo->AttributesEx & SPELL_ATTR1_UNAUTOCASTABLE_BY_PET) m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
         }
 
@@ -1505,7 +1505,7 @@ void Pet::_LoadAuras(uint32 timediff)
             int32 remaintime = (int32)fields[6].GetUInt32();
             int32 remaincharges = (int32)fields[7].GetUInt32();
 
-            SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(spellid);
+            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spellid);
             if(!spellproto)
             {
                 TC_LOG_ERROR("entities.pet","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
@@ -1583,7 +1583,7 @@ void Pet::_SaveAuras()
     for(AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
         Aura* aura = itr->second;
-        SpellEntry const *spellInfo = aura->GetSpellProto();
+        SpellInfo const *spellInfo = aura->GetSpellProto();
 
         //skip if passive
         if(aura->IsPassive())
@@ -1613,7 +1613,7 @@ void Pet::_SaveAuras()
 
 bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 slot_id, PetSpellType type)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
     {
         // do pet spell book cleanup
@@ -1778,7 +1778,7 @@ void Pet::InitPetCreateSpells()
             if(!CreateSpells->spellid[i])
                 break;
 
-            SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(CreateSpells->spellid[i]);
+            SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(CreateSpells->spellid[i]);
             if(!learn_spellproto)
                 continue;
 

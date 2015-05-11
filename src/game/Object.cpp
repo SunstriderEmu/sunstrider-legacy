@@ -1287,7 +1287,6 @@ namespace Trinity
 
             data = new WorldPacket(SMSG_MESSAGECHAT, 200);
 
-            // TODO: i_object.GetName() also must be localized?
             i_object.BuildMonsterChat(data,i_msgtype,text,i_language,i_object.GetNameForLocaleIdx(loc_idx).c_str(),i_targetGUID);
 
             i_data_cache[cache_idx] = data;

@@ -27,14 +27,14 @@
 #include "ItemPrototype.h"
 #include "Transaction.h"
 
-struct SpellEntry;
+struct SpellInfo;
 class Bag;
 
 struct ItemSetEffect
 {
     uint32 setid;
     uint32 item_count;
-    SpellEntry const *spells[8];
+    SpellInfo const *spells[8];
 };
 
 enum InventoryChangeFailure
@@ -226,7 +226,7 @@ class Item : public Object
         void SetInTrade(bool b = true) { mb_in_trade = b; }
         bool IsInTrade() const { return mb_in_trade; }
 
-        bool IsFitToSpellRequirements(SpellEntry const* spellInfo) const;
+        bool IsFitToSpellRequirements(SpellInfo const* spellInfo) const;
         bool IsLimitedToAnotherMapOrZone( uint32 cur_mapId, uint32 cur_zoneId) const;
         bool GemsFitSockets() const;
 

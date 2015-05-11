@@ -68,7 +68,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         return;
 
     // Search spell
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(i_totem.GetSpell());
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(i_totem.GetSpell());
     if (!spellInfo)
         return;
 

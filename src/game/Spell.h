@@ -190,7 +190,7 @@ class SpellCastTargets
 
 struct SpellValue
 {
-    explicit SpellValue(SpellEntry const *proto)
+    explicit SpellValue(SpellInfo const *proto)
     {
         for(uint32 i = 0; i < 3; ++i)
         {
@@ -340,7 +340,7 @@ class Spell
         void EffectRedirectThreat(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell( Unit* Caster, SpellEntry const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false );
+        Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false);
         ~Spell();
 
         //return SpellFailedReason
@@ -409,8 +409,8 @@ class Spell
         void HandleFlatThreat();
         //void HandleAddAura(Unit* Target);
 
-        const SpellEntry * const m_spellInfo;
-        int32 m_currentBasePoints[3];                       // cache SpellEntry::EffectBasePoints and use for set custom base points
+        const SpellInfo* const m_spellInfo;
+        int32 m_currentBasePoints[3];                       // cache SpellInfo::EffectBasePoints and use for set custom base points
         Item* m_CastItem;
         uint64 m_castItemGUID;
         uint8 m_cast_count;
@@ -425,7 +425,7 @@ class Spell
         {
             return m_spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
         }
-        static bool IsNextMeleeSwingSpell(SpellEntry const* spellInfo)
+        static bool IsNextMeleeSwingSpell(SpellInfo const* spellInfo)
         {
             return spellInfo && spellInfo->Attributes & (SPELL_ATTR0_ON_NEXT_SWING_1|SPELL_ATTR0_ON_NEXT_SWING_2);
         }
@@ -451,15 +451,15 @@ class Spell
         Unit* GetCaster() const { return m_caster; }
         Unit* GetOriginalCaster() const { return m_originalCaster; }
         int32 GetPowerCost() const { return m_powerCost; }
-        SpellEntry const* GetSpellInfo() const { return m_spellInfo; }
+        SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
 
         void UpdatePointers();                              // must be used at call Spell code after time delay (non triggered spell cast/update spell call/etc)
 
-        bool IsAffectedBy(SpellEntry const *spellInfo, uint32 effectId);
+        bool IsAffectedBy(SpellInfo const *spellInfo, uint32 effectId);
 
         bool CheckTargetCreatureType(Unit* target) const;
 
-        void AddTriggeredSpell(SpellEntry const* spell) { m_TriggerSpells.push_back(spell); }
+        void AddTriggeredSpell(SpellInfo const* spell) { m_TriggerSpells.push_back(spell); }
 
         void CleanupTargetList();
 
@@ -595,9 +595,9 @@ class Spell
         // -------------------------------------------
 
         //List For Triggered Spells
-        typedef std::vector<SpellEntry const*> TriggerSpells;
+        typedef std::vector<SpellInfo const*> TriggerSpells;
         TriggerSpells m_TriggerSpells;
-        typedef std::vector< std::pair<SpellEntry const*, int32> > ChanceTriggerSpells;
+        typedef std::vector< std::pair<SpellInfo const*, int32> > ChanceTriggerSpells;
         ChanceTriggerSpells m_ChanceTriggerSpells;
 
         uint32 m_spellState;
@@ -612,7 +612,7 @@ class Spell
         // if need this can be replaced by Aura copy
         // we can't store original aura link to prevent access to deleted auras
         // and in same time need aura data and after aura deleting.
-        SpellEntry const* m_triggeredByAuraSpell;
+        SpellInfo const* m_triggeredByAuraSpell;
 
         PathGenerator m_preGeneratedPath;
 

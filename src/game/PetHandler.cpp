@@ -196,7 +196,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                 return;
 
             // do not cast unknown spells
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellid );
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellid );
             if(!spellInfo)
             {
                 TC_LOG_ERROR("network","WORLD: unknown PET spell id %i\n", spellid);
@@ -715,7 +715,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
         return;
     }
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellid);
     if(!spellInfo)
     {
         TC_LOG_ERROR("network","WORLD: unknown PET spell id %i\n", spellid);

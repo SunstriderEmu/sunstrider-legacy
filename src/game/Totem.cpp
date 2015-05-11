@@ -168,10 +168,10 @@ Unit *Totem::GetOwner()
     return ObjectAccessor::GetUnit(*this, ownerid);
 }
 
-void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
+void Totem::SetTypeBySummonSpell(SpellInfo const * spellProto)
 {
     // Get spell casted by totem
-    SpellEntry const * totemSpell = sSpellMgr->GetSpellInfo(GetSpell());
+    SpellInfo const * totemSpell = sSpellMgr->GetSpellInfo(GetSpell());
     if (totemSpell)
     {
         // If spell have cast time -> so its active totem
@@ -182,7 +182,7 @@ void Totem::SetTypeBySummonSpell(SpellEntry const * spellProto)
         m_type = TOTEM_STATUE;                              //Jewelery statue
 }
 
-bool Totem::IsImmunedToSpell(SpellEntry const* spellInfo, bool useCharges)
+bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 {
 /*    for (int i=0;i<3;i++)
     {

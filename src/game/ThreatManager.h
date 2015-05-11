@@ -33,7 +33,7 @@
 class Unit;
 class Creature;
 class ThreatManager;
-struct SpellEntry;
+struct SpellInfo;
 
 //==============================================================
 // Class to calculate the real threat based
@@ -41,7 +41,7 @@ struct SpellEntry;
 class ThreatCalcHelper
 {
     public:
-        static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *threatSpell = NULL);
+        static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
 };
 
 //==============================================================
@@ -185,7 +185,7 @@ class ThreatManager
         void clearReferences();
         void clearCurrentVictim() { iCurrentVictim = nullptr; }
 
-        void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellEntry const *threatSpell = NULL);
+        void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
         void modifyThreatPercent(Unit *pVictim, int32 pPercent);
 
         float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false);

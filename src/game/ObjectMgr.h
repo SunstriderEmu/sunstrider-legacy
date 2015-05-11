@@ -622,8 +622,8 @@ class ObjectMgr
         void LoadGMTickets();
 
         void LoadSpellTemplates();
-        SpellEntry* GetSpellTemplate(uint32 id);
-        std::map<uint32, SpellEntry*>* GetSpellStore() { return &spellTemplates; }
+        SpellEntry const* GetSpellTemplate(uint32 id) const;
+        std::map<uint32, SpellEntry*> const& GetSpellStore() const { return spellTemplates; }
         uint32 GetMaxSpellId() { return maxSpellId; }
         
         void LoadAreaFlagsOverridenData();

@@ -26,6 +26,7 @@
 #include "Chat.h"
 #include "Spell.h"
 #include "BattleGroundMgr.h"
+#include "SpellInfo.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
@@ -230,9 +231,10 @@ SpellMgr::SpellMgr()
 
 SpellMgr::~SpellMgr()
 {
+    UnloadSpellInfoStore();
 }
 
-int32 GetSpellDuration(SpellEntry const *spellInfo)
+int32 GetSpellDuration(SpellInfo const *spellInfo)
 {
     if(!spellInfo)
         return 0;
@@ -242,7 +244,7 @@ int32 GetSpellDuration(SpellEntry const *spellInfo)
     return (du->Duration[0] == -1) ? -1 : abs(du->Duration[0]);
 }
 
-int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
+int32 GetSpellMaxDuration(SpellInfo const *spellInfo)
 {
     if(!spellInfo)
         return 0;
@@ -252,7 +254,7 @@ int32 GetSpellMaxDuration(SpellEntry const *spellInfo)
     return (du->Duration[2] == -1) ? -1 : abs(du->Duration[2]);
 }
 
-uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
+uint32 GetSpellCastTime(SpellInfo const* spellInfo, Spell const* spell)
 {
     SpellCastTimesEntry const *spellCastTimeEntry = sSpellCastTimesStore.LookupEntry(spellInfo->CastingTimeIndex);
 
@@ -289,7 +291,7 @@ uint32 GetSpellCastTime(SpellEntry const* spellInfo, Spell const* spell)
 
 bool IsPassiveSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return false;
     return (spellInfo->Attributes & SPELL_ATTR0_PASSIVE) != 0;
@@ -297,8 +299,8 @@ bool IsPassiveSpell(uint32 spellId)
 
 /*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
-    SpellEntry const *spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
+    SpellInfo const *spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
+    SpellInfo const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return false;
     if(spellInfo_1->Id == spellId_2) return false;
 
@@ -313,8 +315,8 @@ bool IsPassiveSpell(uint32 spellId)
 
 int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
 {
-    SpellEntry const*spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
-    SpellEntry const*spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
+    SpellInfo const*spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
+    SpellInfo const*spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return 0;
     if (spellId_1 == spellId_2) return 0;
 
@@ -325,7 +327,7 @@ int32 CompareAuraRanks(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, ui
 
 SpellSpecific GetSpellSpecific(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if(!spellInfo)
         return SPELL_NORMAL;
 
@@ -563,7 +565,7 @@ bool IsPositiveTarget(uint32 targetA, uint32 targetB)
 
 bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
 {
-    SpellEntry const *spellproto = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto)
         return false;
     // talents
@@ -688,7 +690,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
                     if(spellId != spellproto->EffectTriggerSpell[effIndex])
                     {
                         uint32 spellTriggeredId = spellproto->EffectTriggerSpell[effIndex];
-                        SpellEntry const *spellTriggeredProto = sSpellMgr->GetSpellInfo(spellTriggeredId);
+                        SpellInfo const *spellTriggeredProto = sSpellMgr->GetSpellInfo(spellTriggeredId);
 
                         if(spellTriggeredProto)
                         {
@@ -823,7 +825,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
 
 bool IsPositiveSpell(uint32 spellId, bool hostileTarget)
 {
-    SpellEntry const *spellproto = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
     // talents
@@ -838,7 +840,7 @@ bool IsPositiveSpell(uint32 spellId, bool hostileTarget)
     return true;
 }
 
-bool IsSingleTargetSpell(SpellEntry const *spellInfo)
+bool IsSingleTargetSpell(SpellInfo const *spellInfo)
 {
     // all other single target spells have if it has AttributesEx5
     if ( spellInfo->AttributesEx5 & SPELL_ATTR5_SINGLE_TARGET_SPELL )
@@ -860,7 +862,7 @@ bool IsSingleTargetSpell(SpellEntry const *spellInfo)
     return false;
 }
 
-bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellInfo2)
+bool IsSingleTargetSpells(SpellInfo const *spellInfo1, SpellInfo const *spellInfo2)
 {
     // TODO - need better check
     // Equal icon and spellfamily
@@ -885,7 +887,7 @@ bool IsSingleTargetSpells(SpellEntry const *spellInfo1, SpellEntry const *spellI
 
 bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
 {
-    SpellEntry const *spellproto = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
     for (int i = 0; i < 3; i++)
@@ -894,7 +896,7 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-SpellFailedReason GetErrorAtShapeshiftedCast (SpellEntry const *spellInfo, uint32 form)
+SpellFailedReason GetErrorAtShapeshiftedCast (SpellInfo const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
@@ -984,7 +986,7 @@ void SpellMgr::LoadSpellTargetPositions()
             continue;
         }
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(Spell_ID);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(Spell_ID);
         if(!spellInfo)
         {
             TC_LOG_ERROR("spell","Spell (ID:%u) listed in `spell_target_position` does not exist.",Spell_ID);
@@ -1037,7 +1039,7 @@ void SpellMgr::LoadSpellAffects()
         uint16 entry = fields[0].GetUInt16();
         uint8 effectId = fields[1].GetUInt8();
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(entry);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry);
 
         if (!spellInfo)
         {
@@ -1088,10 +1090,10 @@ void SpellMgr::LoadSpellAffects()
     TC_LOG_INFO("server.loading", ">> Loaded %u spell affect definitions", count );
 
     //for (uint32 id = 0; id < sSpellStore.GetNumRows(); ++id)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 id = itr->first;
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(id);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
         if (!spellInfo)
             continue;
 
@@ -1114,13 +1116,13 @@ void SpellMgr::LoadSpellAffects()
     }
 }
 
-bool SpellMgr::IsAffectedBySpell(SpellEntry const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
+bool SpellMgr::IsAffectedBySpell(SpellInfo const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
 {
     // false for spellInfo == NULL
     if (!spellInfo)
         return false;
 
-    SpellEntry const *affect_spell = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *affect_spell = sSpellMgr->GetSpellInfo(spellId);
     // false for affect_spell == NULL
     if (!affect_spell)
         return false;
@@ -1167,7 +1169,7 @@ void SpellMgr::LoadSpellProcEvents()
 
         uint16 entry = fields[0].GetUInt16();
 
-        const SpellEntry *spell = sSpellMgr->GetSpellInfo(entry);
+        const SpellInfo *spell = sSpellMgr->GetSpellInfo(entry);
         if (!spell)
         {
             TC_LOG_ERROR("server.loading","Spell %u listed in `spell_proc_event` does not exist", entry);
@@ -1209,7 +1211,7 @@ void SpellMgr::LoadSpellProcEvents()
     // Commented for now, as it still produces many errors (still quite many spells miss spell_proc_event)
     for (uint32 id = 0; id < sSpellStore.GetNumRows(); ++id)
     {
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(id);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
         if (!spellInfo)
             continue;
 
@@ -1240,7 +1242,7 @@ ProcFlags = proc flags generated from current event
 EventProcFlag = at which event should we proc (either from spell_proc_event or spell proto if no entry in the table)
 procExtra = extra info from current event
 */
-bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellEntry const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active)
+bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellInfo const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active)
 {
     // No extra req need
     uint32 procEvent_procEx = PROC_EX_NONE;
@@ -1374,7 +1376,7 @@ void SpellMgr::LoadSpellElixirs()
         uint16 entry = fields[0].GetUInt16();
         uint8 mask = fields[1].GetUInt8();
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(entry);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry);
 
         if (!spellInfo)
         {
@@ -1471,16 +1473,16 @@ void SpellMgr::LoadSpellEnchantProcData()
     TC_LOG_INFO("server.loading", ">> Loaded %u enchant proc data definitions", count);
 }
 
-bool SpellMgr::IsRankSpellDueToSpell(SpellEntry const *spellInfo_1,uint32 spellId_2) const
+bool SpellMgr::IsRankSpellDueToSpell(SpellInfo const *spellInfo_1,uint32 spellId_2) const
 {
-    SpellEntry const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
+    SpellInfo const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
     if(!spellInfo_1 || !spellInfo_2) return false;
     if(spellInfo_1->Id == spellId_2) return false;
 
     return GetFirstSpellInChain(spellInfo_1->Id)==GetFirstSpellInChain(spellId_2);
 }
 
-bool SpellMgr::canStackSpellRanks(SpellEntry const *spellInfo)
+bool SpellMgr::canStackSpellRanks(SpellInfo const *spellInfo)
 {
     //hack for faerie fire, client has wrong data in SkillLineAbility so let's send every rank
     if( spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x400)
@@ -1526,8 +1528,8 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 {
     //if(spellId_1 == spellId_2) // auras due to the same spell
     //    return false;
-    SpellEntry const *spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
-    SpellEntry const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
+    SpellInfo const *spellInfo_1 = sSpellMgr->GetSpellInfo(spellId_1);
+    SpellInfo const *spellInfo_2 = sSpellMgr->GetSpellInfo(spellId_2);
 
     if(!spellInfo_1 || !spellInfo_2)
         return false;
@@ -1634,7 +1636,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 }
 bool SpellMgr::IsProfessionSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if(!spellInfo)
         return false;
 
@@ -1648,7 +1650,7 @@ bool SpellMgr::IsProfessionSpell(uint32 spellId)
 
 bool SpellMgr::IsPrimaryProfessionSpell(uint32 spellId)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if(!spellInfo)
         return false;
 
@@ -1665,7 +1667,7 @@ bool SpellMgr::IsPrimaryProfessionFirstRankSpell(uint32 spellId) const
     return IsPrimaryProfessionSpell(spellId) && GetSpellRank(spellId)==1;
 }
 
-bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
+bool SpellMgr::IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 eff) const
 {
     return     spellInfo->EffectImplicitTargetA[eff] == TARGET_UNIT_NEARBY_ENTRY
             || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_NEARBY_ENTRY
@@ -1675,7 +1677,7 @@ bool SpellMgr::IsNearbyEntryEffect(SpellEntry const* spellInfo, uint8 eff) const
             || spellInfo->EffectImplicitTargetB[eff] == TARGET_UNIT_DEST_AREA_ENTRY;
 }
 
-SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spellInfo, uint32 playerLevel, bool hostileTarget) const
+SpellInfo const* SpellMgr::SelectAuraRankForPlayerLevel(SpellInfo const* spellInfo, uint32 playerLevel, bool hostileTarget) const
 {
     // ignore passive spells
     if(IsPassiveSpell(spellInfo->Id))
@@ -1700,7 +1702,7 @@ SpellEntry const* SpellMgr::SelectAuraRankForPlayerLevel(SpellEntry const* spell
 
     for(uint32 nextSpellId = spellInfo->Id; nextSpellId != 0; nextSpellId = GetPrevSpellInChain(nextSpellId))
     {
-        SpellEntry const *nextSpellInfo = sSpellMgr->GetSpellInfo(nextSpellId);
+        SpellInfo const *nextSpellInfo = sSpellMgr->GetSpellInfo(nextSpellId);
         if(!nextSpellInfo)
             break;
 
@@ -1828,7 +1830,7 @@ void SpellMgr::LoadSpellChains()
 
         if(mSkillLineAbilityMap.lower_bound(spell_id)->second->id!=ability_id)
             continue;
-        SpellEntry const *SpellInfo=sSpellMgr->GetSpellInfo(spell_id);
+        SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(spell_id);
         if (!SpellInfo)
             continue;
         std::string sRank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
@@ -1917,7 +1919,7 @@ void SpellMgr::LoadSpellChains()
         {
             for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
             {
-                SpellEntry const *SpellInfo=sSpellMgr->GetSpellInfo(itr2->second.Id);
+                SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(itr2->second.Id);
                 if (SpellInfo->SpellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
                 {
                     min_spell_lvl=SpellInfo->SpellLevel;
@@ -1997,10 +1999,10 @@ void SpellMgr::LoadSpellLearnSkills()
     // search auto-learned skills and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
     //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 spell = itr->first;
-        SpellEntry const* entry = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* entry = sSpellMgr->GetSpellInfo(spell);
 
         if(!entry)
             continue;
@@ -2075,10 +2077,10 @@ void SpellMgr::LoadSpellLearnSpells()
     // search auto-learned spells and add its to map also for use in unlearn spells/talents
     uint32 dbc_count = 0;
     //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 spell = itr->first;
-        SpellEntry const* entry = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* entry = sSpellMgr->GetSpellInfo(spell);
 
         if(!entry)
             continue;
@@ -2143,7 +2145,7 @@ void SpellMgr::LoadSpellScriptTarget()
         uint32 type        = fields[1].GetUInt32();
         uint32 targetEntry = fields[2].GetUInt32();
 
-        SpellEntry const* spellProto = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(spellId);
 
         if(!spellProto)
         {
@@ -2222,7 +2224,7 @@ void SpellMgr::LoadSpellScriptTarget()
     /* Disabled (lot errors at this moment)
     for(uint32 i = 1; i < sSpellStore.nCount; ++i)
     {
-        SpellEntry const * spellInfo = sSpellMgr->GetSpellInfo(i);
+        SpellInfo const * spellInfo = sSpellMgr->GetSpellInfo(i);
         if(!spellInfo)
             continue;
 
@@ -2277,7 +2279,7 @@ void SpellMgr::LoadSpellPetAuras()
         }
         else
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
             if (!spellInfo)
             {
                 TC_LOG_ERROR("FIXME","Spell %u listed in `spell_pet_auras` does not exist", spell);
@@ -2296,7 +2298,7 @@ void SpellMgr::LoadSpellPetAuras()
                 continue;
             }
 
-            SpellEntry const* spellInfo2 = sSpellMgr->GetSpellInfo(aura);
+            SpellInfo const* spellInfo2 = sSpellMgr->GetSpellInfo(aura);
             if (!spellInfo2)
             {
                 TC_LOG_ERROR("FIXME","Aura %u listed in `spell_pet_auras` does not exist", aura);
@@ -2343,8 +2345,8 @@ void SpellMgr::LoadSpellCustomAttr()
 {
     mSpellCustomAttr.resize(sObjectMgr->GetMaxSpellId() + 1);
 
-    SpellEntry* spellInfo;
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    SpellInfo* spellInfo;
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
         mSpellCustomAttr[i] = 0;
@@ -2447,7 +2449,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR1_NO_THREAT;
 
         /* X */
-        /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellEntry.Mechanic 
+        /* This code explicitly sets bleed effect mechanic of the direct damage effect of certain physical spells. MECHANIC_BLEED in the overall SpellInfo.Mechanic 
            is now ignored for direct damage effects since it is more often than not ignored by the official blizz servers. Because DD bleed is so unusual, this arrangement 
            has been made required by the bleed damage increase code. Also the ignore armor flag must be explicitly set here for any DD bleed spells.
         */
@@ -3372,7 +3374,7 @@ void SpellMgr::LoadSpellLinked()
         int32 effect = fields[1].GetInt32();
         int32 type = fields[2].GetInt32();
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(abs(trigger));
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(abs(trigger));
         if (!spellInfo)
         {
             TC_LOG_ERROR("FIXME","Spell %u listed in `spell_linked_spell` does not exist", abs(trigger));
@@ -3416,7 +3418,7 @@ void SpellMgr::LoadSpellLinked()
 }
 
 /// Some checks for spells, to prevent adding depricated/broken spells for trainers, spell book, etc
-bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
+bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
 {
     // not exist
     if(!spellInfo)
@@ -3452,7 +3454,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
             }
             case SPELL_EFFECT_LEARN_SPELL:
             {
-                SpellEntry const* spellInfo2 = sSpellMgr->GetSpellInfo(spellInfo->EffectTriggerSpell[i]);
+                SpellInfo const* spellInfo2 = sSpellMgr->GetSpellInfo(spellInfo->EffectTriggerSpell[i]);
                 if( !IsSpellValid(spellInfo2,pl,msg) )
                 {
                     if(msg)
@@ -3490,7 +3492,7 @@ bool SpellMgr::IsSpellValid(SpellEntry const* spellInfo, Player* pl, bool msg)
     return true;
 }
 
-bool IsSpellAllowedInLocation(SpellEntry const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id)
+bool IsSpellAllowedInLocation(SpellInfo const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id)
 {
     // normal case
     if( spellInfo->AreaId && spellInfo->AreaId != zone_id && spellInfo->AreaId != area_id )
@@ -3710,7 +3712,7 @@ void SpellMgr::LoadSkillLineAbilityMap()
     TC_LOG_INFO("server.loading",">> Loaded %u SkillLineAbility MultiMap", count);
 }
 
-DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellEntry const* spellproto, bool triggered)
+DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto, bool triggered)
 {
     // Explicit Diminishing Groups
     switch(spellproto->SpellFamilyName)
@@ -3885,12 +3887,7 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
     return DRTYPE_NONE;
 }
 
-SpellEntry* SpellMgr::GetSpellInfo(uint32 id)
-{
-    return sObjectMgr->GetSpellTemplate(id);
-}
-
-float SpellMgr::GetSpellThreatModPercent(SpellEntry const* spellInfo) const
+float SpellMgr::GetSpellThreatModPercent(SpellInfo const* spellInfo) const
 {
     if(spellInfo)
     {
@@ -3911,7 +3908,7 @@ float SpellMgr::GetSpellThreatModPercent(SpellEntry const* spellInfo) const
     return 1.0f;
 }
 
-int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
+int SpellMgr::GetSpellThreatModFlat(SpellInfo const* spellInfo) const
 {
     if(!spellInfo)
         return 0;
@@ -3931,7 +3928,7 @@ int SpellMgr::GetSpellThreatModFlat(SpellEntry const* spellInfo) const
             return 0;
 
         //get spell info and create a new adapted flatMod
-        SpellEntry const* spellInfoFirstInChain = sSpellMgr->GetSpellInfo(firstSpellId);
+        SpellInfo const* spellInfoFirstInChain = sSpellMgr->GetSpellInfo(firstSpellId);
         if(!spellInfoFirstInChain)
             return 0;
 
@@ -3953,7 +3950,7 @@ dwarfpriest :
 Taking this second one. And let's extend "snare effect" to "control effects".
 Also I'm assuming this is not checked in the attack table but is a plain check after this.
 */
-bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
+bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
 {
     if(!spell)
         return false;
@@ -3996,7 +3993,7 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellEntry const* spell)
 
 // can bloc all affects at once.
 // Rule for now : any physical non-direct damage spell is blocable.
-bool SpellMgr::isFullyBlockableSpell(SpellEntry const* spellInfo) const
+bool SpellMgr::isFullyBlockableSpell(SpellInfo const* spellInfo) const
 {
     if (!(spellInfo->SchoolMask & SPELL_SCHOOL_MASK_NORMAL))
         return false;
@@ -4028,4 +4025,25 @@ SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
             return &itr->second;
     }
     return NULL;
+}
+
+void SpellMgr::LoadSpellInfoStore()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    UnloadSpellInfoStore();
+    mSpellInfoMap.resize(sObjectMgr->GetSpellStore().size(), NULL);
+
+    for (auto i : sObjectMgr->GetSpellStore())
+        mSpellInfoMap[i.first] = new SpellInfo(i.second);
+
+    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo store in %u ms", GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::UnloadSpellInfoStore()
+{
+    for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+        delete mSpellInfoMap[i];
+
+    mSpellInfoMap.clear();
 }

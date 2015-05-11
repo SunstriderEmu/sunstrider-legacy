@@ -1767,7 +1767,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
         if (m_session->GetPlayer()->HasSpell(spell))
             continue;
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -1809,7 +1809,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
     {
         uint32 spell = atol((char const*)gmSpellList[gmSpellIter++]);
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
         {
             PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -1886,7 +1886,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
         if(!spellid)                                        // ??? none spells in talent
             continue;
 
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
         if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
             continue;
 
@@ -1975,7 +1975,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer()))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spell);
@@ -2813,10 +2813,10 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
     // Search in Spell.dbc
     //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 id = itr->first;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(id);
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
         if(spellInfo)
         {
             int loc = GetSessionDbcLocale();
@@ -3614,7 +3614,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     }
 
     uint32 spellID = (uint32)atoi(px);
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
     if(spellInfo)
     {
         for(uint32 i = 0;i<3;i++)
@@ -6372,7 +6372,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -6450,7 +6450,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -6585,7 +6585,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
     if(!spell)
         return false;
 
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
     if(!spellInfo)
         return false;
 
@@ -7264,7 +7264,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         //stop movement and disable spells
         uint32 spellID = 9454;
         //m_session->GetPlayer()->CastSpell(player,spellID,false);
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellID );
         if(spellInfo) //TODO: Change the duration of the aura to -1 instead of 5000000
         {
             for(uint32 i = 0;i<3;i++)
@@ -7683,7 +7683,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     Unit::AuraMap& tAuras = unit->GetAuras();
     for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
     {
-        SpellEntry const* spellProto = (*itr).second->GetSpellProto();
+        SpellInfo const* spellProto = (*itr).second->GetSpellProto();
         PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetEffIndex(), (*itr).second->GetModifierValue(), (*itr).second->IsActive() ? "" : "[inactive]");
     }
     

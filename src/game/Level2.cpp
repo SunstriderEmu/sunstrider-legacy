@@ -3727,7 +3727,7 @@ bool ChatHandler::HandleLearnAllCraftsCommand(const char* /*args*/)
                 if( skillLine->skillId != i || skillLine->forward_spellid )
                     continue;
 
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
                 if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
                     continue;
 
@@ -3798,7 +3798,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
                 if( skillLine->classmask && (skillLine->classmask & classmask) == 0)
                     continue;
 
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
                 if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
                     continue;
 
@@ -4100,7 +4100,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
     }
 
     // Check if spell is valid
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo))
     {
         PSendSysMessage(LANG_COMMAND_SPELL_BROKEN,spellId);

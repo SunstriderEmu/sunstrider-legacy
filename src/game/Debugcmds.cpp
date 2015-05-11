@@ -676,7 +676,7 @@ bool ChatHandler::HandleSpellInfoCommand(const char* args)
     if (!spellId)
         return false;
         
-    const SpellEntry* spell = sSpellMgr->GetSpellInfo(spellId);
+    const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellId);
     if (!spell)
         return false;
         

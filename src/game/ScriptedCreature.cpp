@@ -235,7 +235,7 @@ uint32 ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
     return DoCast((Unit*)NULL, spellId, triggered);
 }
 
-uint32 ScriptedAI::DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered)
+uint32 ScriptedAI::DoCastSpell(Unit* who,SpellInfo const *spellInfo, bool triggered)
 {
     //remove this?
     if (!who || m_creature->IsNonMeleeSpellCast(false))
@@ -545,7 +545,7 @@ void ScriptedAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets,
         targetList.resize(maxTargets);
 }
 
-SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
 {
     //No target so we can't cast
     if (!Target)
@@ -556,7 +556,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
         return nullptr;;
 
     //Using the extended script system we first create a list of viable spells
-    SpellEntry const* Spell[4];
+    SpellInfo const* Spell[4];
     Spell[0] = 0;
     Spell[1] = 0;
     Spell[2] = 0;
@@ -564,7 +564,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
 
     uint32 SpellCount = 0;
 
-    SpellEntry const* TempSpell;
+    SpellInfo const* TempSpell;
     SpellRangeEntry const* TempRange;
 
     //Check if each spell is viable(set it to null if not)
@@ -633,7 +633,7 @@ SpellEntry const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mech
     return Spell[rand()%SpellCount];
 }
 
-bool ScriptedAI::CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered)
+bool ScriptedAI::CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered)
 {
     //No target so we can't cast
     if (!Target || !Spell)
@@ -685,7 +685,7 @@ void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 ui
 
 float GetSpellMaxRange(uint32 id)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(id);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
     if(!spellInfo) return 0;
     SpellRangeEntry const *range = GetSpellRangeStore()->LookupEntry(spellInfo->rangeIndex);
     if(!range) return 0;
@@ -696,10 +696,10 @@ void FillSpellSummary()
 {
     SpellSummary = new TSpellSummary[sObjectMgr->GetMaxSpellId()+1];
 
-    SpellEntry const* TempSpell;
+    SpellInfo const* TempSpell;
 
     //for (int i=0; i < GetSpellStore()->GetNumRows(); i++ )
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         int i = itr->first;
         SpellSummary[i].Effects = 0;
@@ -987,10 +987,10 @@ void LoadOverridenSQLData()
 
 void LoadOverridenDBCData()
 {
-    SpellEntry *spellInfo;
+    SpellInfo *spellInfo;
 
     // Black Temple : Illidan : Parasitic Shadowfiend Passive
-    spellInfo = const_cast<SpellEntry*>(sSpellMgr->GetSpellInfo(41913));
+    spellInfo = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(41913));
     if(spellInfo)
         spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
 }

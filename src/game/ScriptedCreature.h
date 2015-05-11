@@ -20,7 +20,7 @@
 #define CAST_PET(a)     (SCRIPT_CAST_TYPE<Pet*>(a))
 #define CAST_AI(a,b)    (SCRIPT_CAST_TYPE<a*>(b))
 
-#define GET_SPELL(a)    (const_cast<SpellEntry*>(sSpellMgr->GetSpellInfo(a)))
+#define GET_SPELL(a)    (const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(a)))
 
 float GetSpellMaxRange(uint32 id);
 
@@ -73,7 +73,7 @@ struct ScriptedAI : public CreatureAI
     void EnterEvadeMode();
 
     // Called at any Damage from any attacker (before damage apply)
-    void DamageTaken(Unit *done_by, uint32 &damage) {}
+    void DamageTaken(Unit *done_by, uint32 &damage) override {}
     
     void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
 
@@ -81,34 +81,34 @@ struct ScriptedAI : public CreatureAI
     void UpdateAI(const uint32);
 
     //Called at creature death
-    void JustDied(Unit*){}
+    void JustDied(Unit*) override{}
 
     //Called at creature killing another unit
     void KilledUnit(Unit*){}
 
     // Called when the creature summon successfully other creature
-    void JustSummoned(Creature* ) {}
+    void JustSummoned(Creature*) override {}
 
     // Called when a summoned creature is despawned
-    void SummonedCreatureDespawn(Creature* /*unit*/) {}
+    void SummonedCreatureDespawn(Creature* /*unit*/) override {}
 
     // Called when hit by a spell
-    void SpellHit(Unit* caster, const SpellEntry*) {}
+    void SpellHit(Unit* caster, const SpellInfo*) override {}
 
     // Called when spell hits a target
-    void SpellHitTarget(Unit* target, const SpellEntry*) {}
+    void SpellHitTarget(Unit* target, const SpellInfo*) override {}
 
     // Called when creature is spawned or respawned (for reseting variables)
     void JustRespawned();
 
     //Called at waypoint reached or PointMovement end
-    void MovementInform(uint32, uint32){}
+    void MovementInform(uint32, uint32) override {}
 
     // Called when AI is temporarily replaced or put back when possess is applied or removed
-    void OnPossess(Unit* charmer, bool apply) {}
+    void OnPossess(Unit* charmer, bool apply) override {}
     
     // Called when creature finishes a spell cast
-    void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target, bool ok) {}
+    void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target, bool ok) override {}
 
     //*************
     // Variables
@@ -131,7 +131,7 @@ struct ScriptedAI : public CreatureAI
     void Reset() {}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
-    void EnterCombat(Unit*) {}
+    void EnterCombat(Unit*) override {}
 
     //*************
     //AI Helper Functions
@@ -151,7 +151,7 @@ struct ScriptedAI : public CreatureAI
     uint32 DoCastAOE(uint32 spellId, bool triggered = false);
 
     //Cast spell by spell info
-    uint32 DoCastSpell(Unit* who,SpellEntry const *spellInfo, bool triggered = false);
+    uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);
 
     //Creature say
     void DoSay(const char* text, uint32 language, Unit* target, bool SayEmote = false);
@@ -206,10 +206,10 @@ struct ScriptedAI : public CreatureAI
     void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 
     //Returns spells that meet the specified criteria from the creatures spell list
-    SpellEntry const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets,  uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
+    SpellInfo const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
     //Checks if you can cast the specified spell
-    bool CanCast(Unit* Target, SpellEntry const *Spell, bool Triggered = false);
+    bool CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered = false);
     
     void SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand = EQUIP_NO_CHANGE, int32 uiOffHand = EQUIP_NO_CHANGE, int32 uiRanged = EQUIP_NO_CHANGE);
 };

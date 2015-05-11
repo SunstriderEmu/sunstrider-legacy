@@ -442,7 +442,7 @@ void GameObject::Update(uint32 diff)
                     if(goInfo->GetCooldown() != 3)            // cast in other case (at some triggering/linked go/etc explicit call)
                     {
                         // try to read radius from trap spell
-                        if(const SpellEntry *spellEntry = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
+                        if(const SpellInfo *spellEntry = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             radius = GetSpellRadius(sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[0]));
 
                         if(!radius)
@@ -499,7 +499,7 @@ void GameObject::Update(uint32 diff)
                 {
                     CastSpell(trapTarget, goInfo->trap.spellId,GetOwnerGUID());
                     if(Unit* owner = GetOwner())
-                        if(SpellEntry* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
+                        if(SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
                     m_cooldownTime = time(NULL) + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() : 4);
@@ -1069,7 +1069,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     if(!trapInfo || trapInfo->type!=GAMEOBJECT_TYPE_TRAP)
         return;
 
-    SpellEntry const* trapSpell = sSpellMgr->GetSpellInfo(trapInfo->trap.spellId);
+    SpellInfo const* trapSpell = sSpellMgr->GetSpellInfo(trapInfo->trap.spellId);
     if(!trapSpell)                                          // checked at load already
         return;
 
@@ -1564,7 +1564,7 @@ void GameObject::Use(Unit* user)
     if(!spellId)
         return;
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spellId );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spellId );
     if(!spellInfo)
     {
         if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr->HandleCustomSpell(user->ToPlayer(),spellId,this))

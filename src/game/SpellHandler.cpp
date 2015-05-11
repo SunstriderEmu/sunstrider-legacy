@@ -105,7 +105,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         for(int i = 0; i < 5; ++i)
         {
-            if (SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId))
+            if (SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId))
             {
                 if (IsNonCombatSpell(spellInfo))
                 {
@@ -140,7 +140,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         {
             uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
 
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
             {
                 TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
@@ -171,7 +171,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
                 continue;
 
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
             if(!spellInfo)
             {
                 TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
@@ -348,7 +348,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     recvPacket >> spellId;
     recvPacket >> cast_count;
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
 
     if(!spellInfo)
     {
@@ -375,7 +375,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.getUnitTarget())
     {
-        SpellEntry const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
+        SpellInfo const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
@@ -420,7 +420,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
     uint32 spellId;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return;
 
@@ -459,7 +459,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
     recvPacket >> guid;
     recvPacket >> spellId;
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
     if(!spellInfo)
     {
         TC_LOG_ERROR("network", "WORLD: unknown PET spell id %u", spellId);
@@ -553,7 +553,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
             _player->CastSpell(_player,spellInfo,false,0);
 

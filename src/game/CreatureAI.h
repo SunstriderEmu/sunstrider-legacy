@@ -34,7 +34,7 @@ class Player;
 class Quest;
 class GameObject;
 class GameObjectAI;
-struct SpellEntry;
+struct SpellInfo;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
@@ -133,10 +133,10 @@ class CreatureAI : public UnitAI
         virtual void SummonedCreatureDespawn(Creature* /*unit*/) {}
 
         // Called when hit by a spell
-        virtual void SpellHit(Unit*, const SpellEntry*) {}
+        virtual void SpellHit(Unit*, const SpellInfo*) {}
 
         // Called when spell hits a target
-        virtual void SpellHitTarget(Unit* target, const SpellEntry*) {}
+        virtual void SpellHitTarget(Unit* target, const SpellInfo*) {}
 
         // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
         virtual void AttackedBy(Unit* /*attacker*/) { }
@@ -173,7 +173,7 @@ class CreatureAI : public UnitAI
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}
         
-        //called for friendly creatures death FOR UP TO 50m
+        //called for friendly creatures death FOR UP TO 60m
         virtual void FriendlyKilled(Creature const* c, float range) {}
 
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }

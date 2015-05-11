@@ -319,7 +319,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
-Aura::Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
+Aura::Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(NULL), m_effIndex(eff), m_caster_guid(0), m_target(target),
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
@@ -461,7 +461,7 @@ Aura::~Aura()
 {
 }
 
-AreaAura::AreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
+AreaAura::AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
 Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
     m_isAreaAura = true;
@@ -507,7 +507,7 @@ AreaAura::~AreaAura()
 {
 }
 
-PersistentAreaAura::PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) : 
+PersistentAreaAura::PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) : 
     Aura(spellproto, eff, currentBasePoints, target, caster, castItem)
 {
     m_isPersistent = true;
@@ -577,7 +577,7 @@ void PersistentAreaAura::Update(uint32 diff)
     }
 }
 
-Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem)
+Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem)
 {
     if (IsAreaAuraEffect(spellproto->Effect[eff]))
         return new AreaAura(spellproto, eff, currentBasePoints, target, caster, castItem);
@@ -779,7 +779,7 @@ void AreaAura::Update(uint32 diff)
                 if(!CheckTarget(*tIter))
                     continue;
 
-                if(SpellEntry const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->GetLevel(), caster->IsHostileTo(*tIter)))
+                if(SpellInfo const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(GetSpellProto(), (*tIter)->GetLevel(), caster->IsHostileTo(*tIter)))
                 {
                     //int32 actualBasePoints = m_currentBasePoints;
                     // recalculate basepoints for lower rank (all AreaAura spell not use custom basepoints?)
@@ -1247,7 +1247,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
     if(m_target->GetTypeId() != TYPEID_PLAYER || !Real)
         return;
 
-    SpellEntry const *spellInfo = GetSpellProto();
+    SpellInfo const *spellInfo = GetSpellProto();
     if(!spellInfo)
         return;
 
@@ -1307,7 +1307,7 @@ void Aura::HandleAddModifier(bool apply, bool Real)
         for(auto itr : auraMap)
         {
             Aura* aura = itr.second;
-            SpellEntry const *spellInfo = aura->GetSpellProto();
+            SpellInfo const *spellInfo = aura->GetSpellProto();
             if(!spellInfo)
                 continue;
             // only passive and permament auras-active auras should have amount set on spellcast and not be affected
@@ -1365,8 +1365,8 @@ void Aura::TriggerSpell()
 
     uint64 originalCasterGUID = GetCasterGUID();
 
-    SpellEntry const *triggeredSpellInfo = sSpellMgr->GetSpellInfo(trigger_spell_id);
-    SpellEntry const *auraSpellInfo = GetSpellProto();
+    SpellInfo const *triggeredSpellInfo = sSpellMgr->GetSpellInfo(trigger_spell_id);
+    SpellInfo const *auraSpellInfo = GetSpellProto();
     uint32 auraId = auraSpellInfo->Id;
 
     // specific code for cases with no trigger spell provided in field
@@ -2013,7 +2013,7 @@ void Aura::TriggerSpell()
                         Unit::AuraMap const& auras = target->GetAuras();
                         for(Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                         {
-                            SpellEntry const* spell = itr->second->GetSpellProto();
+                            SpellInfo const* spell = itr->second->GetSpellProto();
                             if( spell->SpellFamilyName == SPELLFAMILY_SHAMAN &&
                                 spell->SpellFamilyFlags & 0x0000000000000400L)
                                 return;
@@ -2508,7 +2508,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24659;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellMgr->GetSpellInfo(spellId);
+                    const SpellInfo *spell = sSpellMgr->GetSpellInfo(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2523,7 +2523,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 uint32 spellId = 24662;
                 if (apply)
                 {
-                    const SpellEntry *spell = sSpellMgr->GetSpellInfo(spellId);
+                    const SpellInfo *spell = sSpellMgr->GetSpellInfo(spellId);
                     if (!spell)
                         return;
                     for (int i=0; i < spell->StackAmount; ++i)
@@ -2745,7 +2745,7 @@ void Aura::HandleAuraPeriodicDummy(bool apply, bool Real)
     if(!Real)
         return;
 
-    SpellEntry const* spell = GetSpellProto();
+    SpellInfo const* spell = GetSpellProto();
     switch( spell->SpellFamilyName)
     {
         case SPELLFAMILY_ROGUE:
@@ -2992,7 +2992,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                         for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                         {
                             if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                             if (spellInfo && spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && spellInfo->SpellIconID == 139)
                                 Rage_val += m_target->CalculateSpellDamage(spellInfo,0,spellInfo->EffectBasePoints[0],m_target) * 10;
                         }
@@ -3296,7 +3296,7 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
         if(victim->GetHealth() > 0)
             return;
 
-        SpellEntry const *spellInfo = GetSpellProto();
+        SpellInfo const *spellInfo = GetSpellProto();
         if(spellInfo->EffectItemType[m_effIndex] == 0)
             return;
 
@@ -4087,7 +4087,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
         {
             next = iter;
             ++next;
-            SpellEntry const *spell = iter->second->GetSpellProto();
+            SpellInfo const *spell = iter->second->GetSpellProto();
             if (!( spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
                 && !iter->second->IsPositive()                                    // only remove negative spells
                 && spell->Id != GetId())
@@ -4243,7 +4243,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
             {
                 next = iter;
                 ++next;
-                SpellEntry const *spell = iter->second->GetSpellProto();
+                SpellInfo const *spell = iter->second->GetSpellProto();
                 if((GetSpellSchoolMask(spell) & school_mask)//Check for school mask
                     && !( spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)   //Spells unaffected by invulnerability
                     && !iter->second->IsPositive()          //Don't remove positive spells
@@ -4303,7 +4303,7 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
             {
                 next = iter;
                 ++next;
-                SpellEntry const *spell = iter->second->GetSpellProto();
+                SpellInfo const *spell = iter->second->GetSpellProto();
                 if (!( spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
                     && !iter->second->IsPositive())                                   // only remove negative spells
                 {
@@ -4584,7 +4584,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                     Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
                     for(Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                     {
-                        SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+                        SpellInfo const* itr_spell = (*itr)->GetSpellProto();
                         if(itr_spell && itr_spell->SpellFamilyName==SPELLFAMILY_ROGUE && (itr_spell->SpellFamilyFlags & 0x10000) && itr_spell->SpellVisual==5100)
                         {
                             found = true;
@@ -5546,7 +5546,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
                 if(itr->first==spellId || itr->first==spellId2) continue;
-                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if (!spellInfo || !(spellInfo->Attributes & ((1<<6) | (1<<7)))) continue;
                 if (spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, itr->first, true, NULL, this);
@@ -5554,7 +5554,7 @@ void Aura::HandleShapeshiftBoosts(bool apply)
             //LotP
             if ((m_target->ToPlayer())->HasSpell(17007))
             {
-                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(24932);
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(24932);
                 if (spellInfo && spellInfo->Stances & (1<<form))
                     m_target->CastSpell(m_target, 24932, true, NULL, this);
             }
@@ -5822,7 +5822,7 @@ void Aura::CleanupTriggeredSpells()
         bool canRemove = true;
         Unit::AuraMap const& auraMap = m_target->GetAuras();
         for (Unit::AuraMap::const_iterator itr = auraMap.begin(); itr != auraMap.end() && canRemove; ++itr) {
-            SpellEntry const* proto = itr->second->GetSpellProto();
+            SpellInfo const* proto = itr->second->GetSpellProto();
             if (proto && proto->SpellFamilyName == SPELLFAMILY_WARLOCK && proto->SpellFamilyFlags & 0x0000001000000402LL) {
                 if (GetId() != itr->second->GetId() && itr->second->GetCaster() && GetCaster() && itr->second->GetCaster() == GetCaster())
                     canRemove = false;
@@ -5832,7 +5832,7 @@ void Aura::CleanupTriggeredSpells()
         if (canRemove) {
             Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
             for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end();) {
-                SpellEntry const* itr_spell = (*itr)->GetSpellProto();
+                SpellInfo const* itr_spell = (*itr)->GetSpellProto();
                 if (itr_spell && itr_spell->SpellFamilyName == SPELLFAMILY_WARLOCK && (itr_spell->SpellFamilyFlags & 0x0000000080000000LL) ) {
                     m_target->RemoveAurasDueToSpell(itr_spell->Id);
                     itr = auras.begin();
@@ -5848,7 +5848,7 @@ void Aura::CleanupTriggeredSpells()
     if(!tSpellId)
         return;
 
-    SpellEntry const* tProto = sSpellMgr->GetSpellInfo(tSpellId);
+    SpellInfo const* tProto = sSpellMgr->GetSpellInfo(tSpellId);
     if(!tProto)
         return;
 
@@ -6159,7 +6159,7 @@ void Aura::PeriodicTick()
             m_target->SendPeriodicAuraLog(&pInfo);
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
-            SpellEntry const* spellProto = GetSpellProto();
+            SpellInfo const* spellProto = GetSpellProto();
 
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
@@ -6237,7 +6237,7 @@ void Aura::PeriodicTick()
                         {
                             Aura* aura = itr->second;
                             if (aura->IsPositive())continue;
-                            SpellEntry const* m_spell = aura->GetSpellProto();
+                            SpellInfo const* m_spell = aura->GetSpellProto();
                             if (m_spell->SpellFamilyName != SPELLFAMILY_WARLOCK)
                                 continue;
 
@@ -6282,7 +6282,7 @@ void Aura::PeriodicTick()
 
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
-            SpellEntry const* spellProto = GetSpellProto();
+            SpellInfo const* spellProto = GetSpellProto();
             float multiplier = spellProto->EffectValueMultiplier[GetEffIndex()] > 0 ? spellProto->EffectValueMultiplier[GetEffIndex()] : 1;
 
             // Set trigger flag
@@ -6382,7 +6382,7 @@ void Aura::PeriodicTick()
             m_target->GetHostilRefManager().threatAssist(pCaster, threat, GetSpellProto());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
-            SpellEntry const* spellProto = GetSpellProto();
+            SpellInfo const* spellProto = GetSpellProto();
             bool haveCastItem = GetCastItemGUID()!=0;
 
             // heal for caster damage
@@ -6605,7 +6605,7 @@ void Aura::PeriodicTick()
 
             gain = uint32(gain * GetSpellProto()->EffectValueMultiplier[GetEffIndex()]);
 
-            SpellEntry const* spellProto = GetSpellProto();
+            SpellInfo const* spellProto = GetSpellProto();
             //maybe has to be sent different to client, but not by SMSG_PERIODICAURALOG
             SpellNonMeleeDamage damageInfo(pCaster, m_target, spellProto->Id, spellProto->SchoolMask);
             //no SpellDamageBonus for burn mana
@@ -6634,7 +6634,7 @@ void Aura::PeriodicTick()
         case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
         {
             uint32 triggerSpellId = GetSpellProto()->EffectTriggerSpell[m_effIndex];
-            if (SpellEntry const* triggeredSpellInfo = GetSpellProto())
+            if (SpellInfo const* triggeredSpellInfo = GetSpellProto())
             {
                 if (Unit* triggerCaster = IsRequiringSelectedTarget(triggeredSpellInfo) ? GetCaster() : m_target)
                 {
@@ -6671,7 +6671,7 @@ void Aura::PeriodicTick()
                 Unit *caster = GetCaster();
                 if (caster)
                 {
-                    SpellEntry const *spellProto = GetSpellProto();
+                    SpellInfo const *spellProto = GetSpellProto();
                     if (spellProto)
                         m_target->GetHostilRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
                 }
@@ -6716,7 +6716,7 @@ void Aura::PeriodicTick()
 
 void Aura::PeriodicDummyTick()
 {
-    SpellEntry const* spell = GetSpellProto();
+    SpellInfo const* spell = GetSpellProto();
     switch (spell->Id)
     {
         // Drink
@@ -7129,7 +7129,7 @@ void Aura::HandleAuraIgnored(bool apply, bool Real)
         caster->getThreatManager().detauntFadeOut(m_target);
 }
 
-bool Aura::IsRequiringSelectedTarget(SpellEntry const* info) const
+bool Aura::IsRequiringSelectedTarget(SpellInfo const* info) const
 {
     for (uint8 i = 0 ; i < 3; ++i)
     {

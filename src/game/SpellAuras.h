@@ -40,7 +40,7 @@ struct Modifier
 };
 
 class Unit;
-struct SpellEntry;
+struct SpellInfo;
 struct SpellModifier;
 struct ProcTriggerSpell;
 
@@ -63,7 +63,7 @@ typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 
 class Aura
 {
-    friend Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
+    friend Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
     public:
         //aura handlers
@@ -232,8 +232,8 @@ class Aura
         void SetModifierValuePerStack(int32 newAmount);
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
-        SpellEntry const* GetSpellProto() const { return m_spellProto; }
-        bool IsRequiringSelectedTarget(SpellEntry const* info) const;
+        SpellInfo const* GetSpellProto() const { return m_spellProto; }
+        bool IsRequiringSelectedTarget(SpellInfo const* info) const;
         uint32 GetId() const{ return m_spellProto->Id; }
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
@@ -341,13 +341,13 @@ class Aura
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
-        Aura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
 
         Modifier m_modifier;
         SpellModifier *m_spellmod;
         uint32 m_effIndex;
-        SpellEntry const *m_spellProto;
-        int32 m_currentBasePoints;                          // cache SpellEntry::EffectBasePoints and use for set custom base points
+        SpellInfo const *m_spellProto;
+        int32 m_currentBasePoints;                          // cache SpellInfo::EffectBasePoints and use for set custom base points
         uint64 m_caster_guid;
         Unit* m_target;
         int32 m_maxduration;
@@ -392,7 +392,7 @@ class Aura
 class AreaAura : public Aura
 {
     public:
-        AreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~AreaAura();
         void Update(uint32 diff);
         bool CheckTarget(Unit *target);
@@ -405,7 +405,7 @@ class AreaAura : public Aura
 class PersistentAreaAura : public Aura
 {
     public:
-        PersistentAreaAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
         ~PersistentAreaAura();
         void Update(uint32 diff);
         void AddSource(DynamicObject* dynObj);
@@ -413,6 +413,6 @@ class PersistentAreaAura : public Aura
         std::list<uint64> sourceDynObjects;
 };
 
-Aura* CreateAura(SpellEntry const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
 #endif
 

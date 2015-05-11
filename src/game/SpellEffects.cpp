@@ -868,7 +868,7 @@ void Spell::EffectDummy(uint32 i)
                     damage = 12000; // maybe wrong value
                     damage /= count;
 
-                    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(42784);
+                    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(42784);
 
                      // now deal the damage
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
@@ -1118,7 +1118,7 @@ void Spell::EffectDummy(uint32 i)
                     for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                     {
                         uint32 classspell = itr->first;
-                        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
+                        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
 
                         if (spellInfo)
                         {
@@ -1817,7 +1817,7 @@ void Spell::EffectDummy(uint32 i)
                             continue;
 
                         uint32 classspell = itr->first;
-                        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
+                        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
 
                         if( spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
                             (GetSpellSchoolMask(spellInfo) & SPELL_SCHOOL_MASK_FROST) &&
@@ -1990,7 +1990,7 @@ void Spell::EffectDummy(uint32 i)
                                 if(pEnchant->type[s]!=ITEM_ENCHANTMENT_TYPE_COMBAT_SPELL)
                                     continue;
 
-                                SpellEntry const* combatEntry = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
+                                SpellInfo const* combatEntry = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
                                 if(!combatEntry || combatEntry->Dispel != DISPEL_POISON)
                                     continue;
 
@@ -2060,7 +2060,7 @@ void Spell::EffectDummy(uint32 i)
                     for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
                     {
                         uint32 classspell = itr->first;
-                        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
+                        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
 
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && GetSpellRecoveryTime(spellInfo) > 0 )
                         {
@@ -2123,7 +2123,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     uint32 spell_id = m_spellInfo->EffectBasePoints[i]+1;//m_currentBasePoints[i]+1;
-                    SpellEntry const* spell_proto = sSpellMgr->GetSpellInfo(spell_id);
+                    SpellInfo const* spell_proto = sSpellMgr->GetSpellInfo(spell_id);
                     if(!spell_proto)
                         return;
 
@@ -2240,7 +2240,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
                 }
 
-                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spell_id );
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spell_id );
 
                 if(!spellInfo)
                 {
@@ -2324,7 +2324,7 @@ void Spell::EffectDummy(uint32 i)
     //spells triggered by dummy effect should not miss
     if(spell_id)
     {
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( spell_id );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( spell_id );
 
         if(!spellInfo)
         {
@@ -2358,7 +2358,7 @@ void Spell::EffectTriggerSpellWithValue(uint32 i)
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
 
     // normal case
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if(!spellInfo)
     {
@@ -2373,7 +2373,7 @@ void Spell::EffectTriggerSpellWithValue(uint32 i)
 void Spell::EffectTriggerRitualOfSummoning(uint32 i)
 {
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if (!spellInfo) {
         TC_LOG_ERROR("FIXME","EffectTriggerRitualOfSummoning of spell %u: triggering unknown spell id %i", m_spellInfo->Id,triggered_spell_id);
@@ -2401,7 +2401,7 @@ void Spell::EffectForceCast(uint32 i)
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
 
     // normal case
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if(!spellInfo)
     {
@@ -2462,7 +2462,7 @@ void Spell::EffectTriggerSpell(uint32 i)
 
             // get highest rank of the Stealth spell
             bool found = false;
-            SpellEntry const *spellInfo;
+            SpellInfo const *spellInfo;
             const PlayerSpellMap& sp_list = (m_caster->ToPlayer())->GetSpellMap();
             for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr)
             {
@@ -2502,7 +2502,7 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Brittle Armor - (need add max stack of 24575 Brittle Armor)
         case 29284:
         {
-            const SpellEntry *spell = sSpellMgr->GetSpellInfo(24575);
+            const SpellInfo *spell = sSpellMgr->GetSpellInfo(24575);
             if (!spell)
                 return;
 
@@ -2513,7 +2513,7 @@ void Spell::EffectTriggerSpell(uint32 i)
         // Mercurial Shield - (need add max stack of 26464 Mercurial Shield)
         case 29286:
         {
-            const SpellEntry *spell = sSpellMgr->GetSpellInfo(26464);
+            const SpellInfo *spell = sSpellMgr->GetSpellInfo(26464);
             if (!spell)
                 return;
 
@@ -2535,7 +2535,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             for(Unit::AuraMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
             {
                 // remove all harmful spells on you...
-                SpellEntry const* spell = iter->second->GetSpellProto();
+                SpellInfo const* spell = iter->second->GetSpellProto();
                 if((spell->DmgClass == SPELL_DAMAGE_CLASS_MAGIC // only affect magic spells
                     || ((1<<spell->Dispel) & dispelMask))
                     // ignore positive and passive auras
@@ -2560,7 +2560,7 @@ void Spell::EffectTriggerSpell(uint32 i)
     }
 
     // normal case
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if(!spellInfo)
     {
@@ -2627,7 +2627,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[effect_idx];
 
     // normal case
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo( triggered_spell_id );
 
     if(!spellInfo)
     {
@@ -2936,7 +2936,7 @@ void Spell::EffectApplyAura(uint32 i)
         else if ((m_spellInfo->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH) && (m_spellInfo->AttributesEx2 & SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS))
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
-        SpellEntry const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(spellId);
         if (AdditionalSpellInfo)
         {
             // applied at target by target
@@ -3559,7 +3559,7 @@ void Spell::EffectEnergize(uint32 i)
                 if (itr->second & (ELIXIR_UNSTABLE_MASK | ELIXIR_SHATTRATH_MASK))
                     continue;
 
-                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if (spellInfo && (spellInfo->SpellLevel < m_spellInfo->SpellLevel || spellInfo->SpellLevel > unitTarget->GetLevel()))
                     continue;
 
@@ -4122,7 +4122,7 @@ void Spell::EffectDispel(uint32 i)
             // Random select buff for dispel
             Aura *aur = dispel_list[m_caster->GetMap()->urand(0, list_size-1)];
 
-            SpellEntry const* spellInfo = aur->GetSpellProto();
+            SpellInfo const* spellInfo = aur->GetSpellProto();
             // Base dispel chance
             // TODO: possible chance depend from spell level??
             int32 miss_chance = 0;
@@ -4163,7 +4163,7 @@ void Spell::EffectDispel(uint32 i)
             data << uint32(count);                          // count
             for (std::list<std::pair<uint32,uint64> >::iterator j = success_list.begin(); j != success_list.end(); ++j)
             {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(j->first);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(j->first);
                 data << uint32(spellInfo->Id);              // Spell Id
                 data << uint8(0);                           // 0 - dispelled !=0 cleansed
                 if(spellInfo->StackAmount!= 0)
@@ -4978,7 +4978,7 @@ void Spell::EffectLearnPetSpell(uint32 i)
     if(!pet->IsAlive())
         return;
 
-    SpellEntry const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
+    SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(m_spellInfo->EffectTriggerSpell[i]);
     if(!learn_spellproto)
         return;
 
@@ -5068,7 +5068,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                 Unit::AuraList const& list = unitTarget->GetAurasByType(SPELL_AURA_MOD_RESISTANCE);
                 for(Unit::AuraList::const_iterator itr=list.begin();itr!=list.end();++itr)
                 {
-                    SpellEntry const *proto = (*itr)->GetSpellProto();
+                    SpellInfo const *proto = (*itr)->GetSpellProto();
                     if(proto->SpellFamilyName == SPELLFAMILY_WARRIOR
                         && proto->SpellFamilyFlags == SPELLFAMILYFLAG_WARRIOR_SUNDERARMOR)
                     {
@@ -5102,7 +5102,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                         if(!itr->second->active || itr->second->disabled || itr->second->state == PLAYERSPELL_REMOVED)
                             continue;
 
-                        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                         if (!spellInfo)
                             continue;
 
@@ -6204,7 +6204,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 Unit::AuraList const& m_dummyAuras = m_caster->GetAurasByType(SPELL_AURA_DUMMY);
                 for(Unit::AuraList::const_iterator itr = m_dummyAuras.begin(); itr != m_dummyAuras.end(); ++itr)
                 {
-                    SpellEntry const *spellInfo = (*itr)->GetSpellProto();
+                    SpellInfo const *spellInfo = (*itr)->GetSpellProto();
 
                     // search seal (all seals have judgement's aura dummy spell id in 2 effect
                     if ( !spellInfo || !IsSealSpell((*itr)->GetSpellProto()) || (*itr)->GetEffIndex() != 2 )
@@ -6417,7 +6417,7 @@ void Spell::EffectStuck(uint32 /*i*/)
         return;
 
     // Stuck spell trigger Hearthstone cooldown
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(8690);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(8690);
     if(!spellInfo)
         return;
     Spell spell(pTarget,spellInfo,true,0);
@@ -7232,7 +7232,7 @@ void Spell::EffectDispelMechanic(uint32 i)
     {
         next = iter;
         ++next;
-        SpellEntry const *spell = sSpellMgr->GetSpellInfo(iter->second->GetSpellProto()->Id);
+        SpellInfo const *spell = sSpellMgr->GetSpellInfo(iter->second->GetSpellProto()->Id);
         if(spell->Mechanic == mechanic || spell->EffectMechanic[iter->second->GetEffIndex()] == mechanic)
         {
             unitTarget->RemoveAurasDueToSpell(spell->Id);
@@ -7286,7 +7286,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
         if(totem && totem->IsTotem())
         {
             uint32 spell_id = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if(spellInfo)
                 mana += spellInfo->ManaCost * damage / 100;
             ((Totem*)totem)->UnSummon();
@@ -7642,7 +7642,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             // Random select buff for dispel
             Aura *aur = steal_list[m_caster->GetMap()->urand(0, list_size-1)];
 
-            SpellEntry const* spellInfo = aur->GetSpellProto();
+            SpellInfo const* spellInfo = aur->GetSpellProto();
             int32 miss_chance = 0;
             // Apply dispel mod from aura caster
             if (Unit *caster = aur->GetCaster())
@@ -7681,7 +7681,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             data << uint32(count);                   // count
             for (std::list<std::pair<uint32,uint64> >::iterator j = success_list.begin(); j != success_list.end(); ++j)
             {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(j->first);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(j->first);
                 data << uint32(spellInfo->Id);       // Spell Id
                 data << uint8(0);                    // 0 - steals !=0 transfers
                 unitTarget->RemoveAurasDueToSpellBySteal(spellInfo->Id, j->second, m_caster);
@@ -7773,7 +7773,7 @@ void Spell::EffectForceCastWithValue(uint32 i)
     uint32 triggered_spell_id = m_spellInfo->EffectTriggerSpell[i];
 
     // normal case
-    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(triggered_spell_id);
 
     if (!spellInfo)
     {

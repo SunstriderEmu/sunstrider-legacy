@@ -1290,6 +1290,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
 
+    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after spell templates loading
+    sSpellMgr->LoadSpellInfoStore();
+
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();
 

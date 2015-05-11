@@ -93,7 +93,7 @@ void AddItemsSetItem(Player*player,Item *item)
         {
             if(!eff->spells[y])                             // free slot
             {
-                SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(set->spells[x]);
+                SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(set->spells[x]);
                 if(!spellInfo)
                 {
                     TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u in items set %u effects", set->spells[x],setid);
@@ -741,7 +741,7 @@ bool Item::IsBoundByEnchant() const
     return false;
 }
 
-bool Item::IsFitToSpellRequirements(SpellEntry const* spellInfo) const
+bool Item::IsFitToSpellRequirements(SpellInfo const* spellInfo) const
 {
     ItemTemplate const* proto = GetProto();
 

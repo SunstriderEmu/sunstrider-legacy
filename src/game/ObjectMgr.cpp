@@ -762,7 +762,7 @@ void ObjectMgr::LoadCreatureAddons()
         creatureAddon.auras.resize(tokens.size());
         for (Tokenizer::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
         {
-            SpellEntry const* AdditionalSpellInfo = sSpellMgr->GetSpellInfo(uint32(atol(*itr)));
+            SpellInfo const* AdditionalSpellInfo = sSpellMgr->GetSpellInfo(uint32(atol(*itr)));
             if (!AdditionalSpellInfo)
             {
                 TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has wrong spell %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(*itr)));
@@ -849,7 +849,7 @@ void ObjectMgr::LoadCreatureTemplateAddons()
         creatureAddon.auras.resize(tokens.size());
         for (Tokenizer::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
         {
-            SpellEntry const* AdditionalSpellInfo = sSpellMgr->GetSpellInfo(uint32(atol(*itr)));
+            SpellInfo const* AdditionalSpellInfo = sSpellMgr->GetSpellInfo(uint32(atol(*itr)));
             if (!AdditionalSpellInfo)
             {
                 TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has wrong spell %u defined in `auras` field in `creature_template_addon`.", entry, uint32(atol(*itr)));
@@ -2006,7 +2006,7 @@ void ObjectMgr::LoadItemTemplates()
             }
             else if (itemTemplate.Spells[1].SpellId != -1)
             {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(itemTemplate.Spells[1].SpellId);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itemTemplate.Spells[1].SpellId);
                 if (!spellInfo /*&& !DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, itemTemplate.Spells[1].SpellId, NULL) */)
                 {
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%d)", entry, 1+1, itemTemplate.Spells[1].SpellId);
@@ -2054,7 +2054,7 @@ void ObjectMgr::LoadItemTemplates()
 
                 if (itemTemplate.Spells[j].SpellId && itemTemplate.Spells[j].SpellId != -1)
                 {
-                    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(itemTemplate.Spells[j].SpellId);
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itemTemplate.Spells[j].SpellId);
                     if (!spellInfo /* && !DisableMgr::IsDisabledFor(DISABLE_TYPE_SPELL, itemTemplate.Spells[j].SpellId, NULL) */)
                     {
                         TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%d)", entry, j+1, itemTemplate.Spells[j].SpellId);
@@ -2382,7 +2382,7 @@ void ObjectMgr::LoadItemTemplates()
             }
             else
             {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[1].SpellId);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[1].SpellId);
                 if(!spellInfo)
                 {
                     TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,1+1,proto->Spells[1].SpellId);
@@ -2430,7 +2430,7 @@ void ObjectMgr::LoadItemTemplates()
 
                 if(proto->Spells[j].SpellId)
                 {
-                    SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[j].SpellId);
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[j].SpellId);
                     if(!spellInfo)
                     {
                         TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
@@ -3582,7 +3582,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->SrcSpell)
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->SrcSpell);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->SrcSpell);
             if(!spellInfo)
             {
                 TC_LOG_ERROR("sql.sql","Quest %u has `SrcSpell` = %u but spell %u doesn't exist, quest can't be done.",
@@ -3703,7 +3703,7 @@ void ObjectMgr::LoadQuests()
             uint32 id = qinfo->ReqSpell[j];
             if(id)
             {
-                SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(id);
+                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
                 if(!spellInfo)
                 {
                     TC_LOG_ERROR("sql.sql","Quest %u has `ReqSpellCast%d` = %u but spell %u does not exist, quest can't be done.",
@@ -3864,7 +3864,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewardSpell)
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpell);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpell);
 
             if(!spellInfo)
             {
@@ -3884,7 +3884,7 @@ void ObjectMgr::LoadQuests()
 
         if(qinfo->RewardSpellCast)
         {
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpellCast);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(qinfo->RewardSpellCast);
 
             if(!spellInfo)
             {
@@ -3959,10 +3959,10 @@ void ObjectMgr::LoadQuests()
 
     // check QUEST_TRINITY_FLAGS_EXPLORATION_OR_EVENT for spell with SPELL_EFFECT_QUEST_COMPLETE
     //for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(i);
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(i);
         if(!spellInfo)
             continue;
 
@@ -4341,7 +4341,7 @@ void ObjectMgr::LoadSpellScripts()
     // check ids
     for(ScriptMapMap::const_iterator itr = sSpellScripts.begin(); itr != sSpellScripts.end(); ++itr)
     {
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
 
         if(!spellInfo)
         {
@@ -4397,10 +4397,10 @@ void ObjectMgr::LoadEventScripts()
     }
     // Load all possible script entries from spells
     //for(uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
-    for (std::map<uint32, SpellEntry*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
+    for (std::map<uint32, SpellInfo*>::iterator itr = sObjectMgr->GetSpellStore()->begin(); itr != sObjectMgr->GetSpellStore()->end(); itr++)
     {
         uint32 i = itr->first;
-        SpellEntry const * spell = sSpellMgr->GetSpellInfo(i);
+        SpellInfo const * spell = sSpellMgr->GetSpellInfo(i);
         if (spell)
         {
             for(int j=0; j<3; ++j)
@@ -7509,7 +7509,7 @@ void ObjectMgr::LoadTrainerSpell()
             continue;
         }
 
-        SpellEntry const *spellinfo = sSpellMgr->GetSpellInfo(spell);
+        SpellInfo const *spellinfo = sSpellMgr->GetSpellInfo(spell);
         if(!spellinfo)
         {
             TC_LOG_ERROR("sql.sql","Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", entry,spell);
@@ -8136,7 +8136,7 @@ void ObjectMgr::LoadSpellTemplates()
     do {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
-        std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
+        std::map<uint32, SpellInfo*>::iterator itr = spellTemplates.find(id);
         SpellEntry* spell = NULL;
         if (itr != spellTemplates.end()) { // Already existing
             spell = itr->second;
@@ -8252,11 +8252,11 @@ void ObjectMgr::LoadSpellTemplates()
     } while (result->NextRow());
     
     for (std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.begin(); itr != spellTemplates.end(); itr++) {
-        SpellEntry const * spell = itr->second;
+        SpellEntry const* spell = itr->second;
         if(spell && spell->Category)
             sSpellsByCategoryStore[spell->Category].insert(itr->first);
 
-        // DBC not support uint64 fields but SpellEntry have SpellFamilyFlags mapped at 2 uint32 fields
+        // DBC not support uint64 fields but SpellInfo have SpellFamilyFlags mapped at 2 uint32 fields
         // uint32 field already converted to bigendian if need, but must be swapped for correct uint64 bigendian view
         #if TRINITY_ENDIAN == TRINITY_BIGENDIAN
         std::swap(*((uint32*)(&spell->SpellFamilyFlags)),*(((uint32*)(&spell->SpellFamilyFlags))+1));
@@ -8268,7 +8268,7 @@ void ObjectMgr::LoadSpellTemplates()
 
         if(!skillLine)
             continue;
-        SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
         if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) {
             for (unsigned int i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
             {
@@ -8288,9 +8288,9 @@ void ObjectMgr::LoadSpellTemplates()
     
 }
 
-SpellEntry* ObjectMgr::GetSpellTemplate(uint32 id)
+SpellInfo* ObjectMgr::GetSpellTemplate(uint32 id)
 {
-    std::map<uint32, SpellEntry*>::const_iterator itr = spellTemplates.find(id);
+    std::map<uint32, SpellInfo*>::const_iterator itr = spellTemplates.find(id);
     if (itr != spellTemplates.end())
         return itr->second;
         

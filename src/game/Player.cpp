@@ -839,7 +839,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
                         if (v[0] == "learn") {
                             uint32 spell = atol(v[1].c_str());
-                            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
                             if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
                                 continue;
                             }
@@ -2380,7 +2380,7 @@ void Player::SetGMVisible(bool on)
 
         SetVisibility(VISIBILITY_OFF);
 
-        SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(transparence_spell); //Transparency 50%
+        SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(transparence_spell); //Transparency 50%
         if (spellproto)
         {
             Aura* aura = CreateAura(spellproto, 0, NULL, this, NULL);
@@ -2793,7 +2793,7 @@ void Player::SendInitialSpells()
     data << uint16(spellCooldowns);
     for(SpellCooldowns::const_iterator itr=m_spellCooldowns.begin(); itr!=m_spellCooldowns.end(); ++itr)
     {
-        SpellEntry const *sEntry = sSpellMgr->GetSpellInfo(itr->first);
+        SpellInfo const *sEntry = sSpellMgr->GetSpellInfo(itr->first);
         if(!sEntry)
             continue;
 
@@ -2895,7 +2895,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
 
 bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint16 slot_id, bool disabled)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
     {
         // do character spell book cleanup (all characters)
@@ -3097,7 +3097,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             for( PlayerSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr )
             {
                 if(itr->second->state == PLAYERSPELL_REMOVED) continue;
-                SpellEntry const *i_spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+                SpellInfo const *i_spellInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if(!i_spellInfo) continue;
 
                 if( sSpellMgr->IsRankSpellDueToSpell(spellInfo,itr->first) )
@@ -3468,7 +3468,7 @@ void Player::RemoveArenaSpellCooldowns()
     {
         next = itr;
         ++next;
-        SpellEntry const * entry = sSpellMgr->GetSpellInfo(itr->first);
+        SpellInfo const * entry = sSpellMgr->GetSpellInfo(itr->first);
         // check if spellentry is present and if the cooldown is less than 15 mins
         if( entry &&
             entry->RecoveryTime <= 15 * MINUTE * 1000 &&
@@ -3814,7 +3814,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
         return TRAINER_SPELL_RED;
 
     // exist, already checked at loading
-    SpellEntry const* spell = sSpellMgr->GetSpellInfo(trainer_spell->spell);
+    SpellInfo const* spell = sSpellMgr->GetSpellInfo(trainer_spell->spell);
 
     // secondary prof. or not prof. spell
     uint32 skill = spell->EffectMiscValue[1];
@@ -5067,7 +5067,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             uint32 SkillValue = GetPureSkillValue(_spell_idx->second->skillId);
 
             // Alchemy Discoveries here
-            SpellEntry const* spellEntry = sSpellMgr->GetSpellInfo(spellid);
+            SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spellid);
             if(spellEntry && spellEntry->Mechanic==MECHANIC_DISCOVERY)
             {
                 if(uint32 discoveredSpell = GetSkillDiscoverySpell(_spell_idx->second->skillId, spellid, this))
@@ -5728,7 +5728,7 @@ void Player::CheckAreaExploreAndOutdoor()
         for (PlayerSpellMap::const_iterator itr = sp_list.begin(); itr != sp_list.end(); ++itr) {
             if (itr->second->state == PLAYERSPELL_REMOVED)
                 continue;
-            SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
             if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
                 continue;
             
@@ -7332,7 +7332,7 @@ void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
             continue;
 
         // check if it is valid spell
-        SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(spellData.SpellId);
+        SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spellData.SpellId);
         if(!spellproto)
             continue;
 
@@ -7340,7 +7340,7 @@ void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
     }
 }
 
-void Player::ApplyEquipSpell(SpellEntry const* spellInfo, Item* item, bool apply, bool form_change)
+void Player::ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change)
 {
     if(apply)
     {
@@ -7410,7 +7410,7 @@ void Player::UpdateEquipSpellsAtFormChange()
 
         for(uint32 y=0;y<8; ++y)
         {
-            SpellEntry const* spellInfo = eff->spells[y];
+            SpellInfo const* spellInfo = eff->spells[y];
             if(!spellInfo)
                 continue;
 
@@ -7419,7 +7419,7 @@ void Player::UpdateEquipSpellsAtFormChange()
         }
     }
 }
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellEntry const *spellInfo)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo)
 {
 
     if(spellInfo && ( (spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET) ||
@@ -7467,7 +7467,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     }
 }
 
-void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellEntry const *spell)
+void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell)
 {
     // Can do effect if any damage done to target
     if (procVictim & PROC_FLAG_TAKEN_ANY_DAMAGE)
@@ -7484,7 +7484,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
             if(spellData.SpellTrigger != ITEM_SPELLTRIGGER_CHANCE_ON_HIT)
                 continue;
 
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
             if(!spellInfo)
             {
                 TC_LOG_ERROR("entities.player","WORLD: unknown Item spellid %i", spellData.SpellId);
@@ -7553,7 +7553,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     continue;
             }
 
-            SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
+            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
             if (!spellInfo)
             {
                 TC_LOG_ERROR("entities.player","Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, pEnchant->spellid[s]);
@@ -10976,7 +10976,7 @@ void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
     ItemTemplate const* proto = pItem->GetProto();
     if(!proto) return;
 
-    auto CheckSpell = [&] (SpellEntry const* spellInfo) 
+    auto CheckSpell = [&] (SpellInfo const* spellInfo) 
     { 
         if (   !IsPassiveSpell(spellInfo->Id) 
             || proto->Class != spellInfo->EquippedItemClass //check only spells limited to this item class/subclass
@@ -10995,7 +10995,7 @@ void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
         if (itr.second->state == PLAYERSPELL_REMOVED)
             continue;
 
-        if(SpellEntry const* spellInfo = sSpellMgr->GetSpellInfo(itr.first))
+        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr.first))
             if(CheckSpell(spellInfo) && !HasAura(spellInfo->Id))
                 CastSpell(this, spellInfo->Id, true);
     }
@@ -11046,7 +11046,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     if (GetClass() == CLASS_ROGUE)
                         cooldownSpell = SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s;
 
-                    SpellEntry const* spellProto = sSpellMgr->GetSpellInfo(cooldownSpell);
+                    SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(cooldownSpell);
 
                     if (!spellProto)
                         TC_LOG_ERROR("entities.player","Weapon switch cooldown spell %u couldn't be found in Spell.dbc", cooldownSpell);
@@ -15476,7 +15476,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
                        continue;
             }
 
-            SpellEntry const* spellproto = sSpellMgr->GetSpellInfo(spellid);
+            SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(spellid);
             if(!spellproto)
             {
                 TC_LOG_ERROR("entities.player","Unknown aura (spellid %u, effindex %u), ignore.",spellid,effindex);
@@ -16735,7 +16735,7 @@ void Player::_SaveAuras(SQLTransaction trans)
             AuraMap::const_iterator itr2 = itr;
             // save previous spellEffectPair to db
             itr2--;
-            SpellEntry const *spellInfo = itr2->second->GetSpellProto();
+            SpellInfo const *spellInfo = itr2->second->GetSpellProto();
 
             //skip all auras from spells that are passive or need a shapeshift
             if (!(itr2->second->IsPassive() || itr2->second->IsRemovedOnShapeLost()))
@@ -17416,7 +17416,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
     {
         //returning of reagents only for players, so best done here
         uint32 spellId = pet ? pet->GetUInt32Value(UNIT_CREATED_BY_SPELL) : m_oldpetspell;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
         if(spellInfo)
         {
@@ -17808,7 +17808,7 @@ void Player::CharmSpellInitialize()
 
 int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo) return 0;
     int32 total = 0;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
@@ -17826,7 +17826,7 @@ int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 
 int32 Player::GetTotalPctMods(uint32 spellId, SpellModOp op)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo) return 0;
     int32 total = 0;
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
@@ -17842,7 +17842,7 @@ int32 Player::GetTotalPctMods(uint32 spellId, SpellModOp op)
     return total;
 }
 
-bool Player::IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell const* spell)
+bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell)
 {
     if (!mod || !spellInfo)
         return false;
@@ -18263,7 +18263,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
         if (itr->second->state == PLAYERSPELL_REMOVED)
             continue;
         uint32 unSpellId = itr->first;
-        SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(unSpellId);
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(unSpellId);
         if (!spellInfo)
         {
             ASSERT(spellInfo);
@@ -18656,7 +18656,7 @@ void Player::UpdatePvP(bool state, bool ovrride)
     }
 }
 
-void Player::AddSpellAndCategoryCooldowns(SpellEntry const* spellInfo, uint32 itemId, Spell* spell, bool infinityCooldown)
+void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell, bool infinityCooldown)
 {
     // init cooldown values
     uint32 cat   = 0;
@@ -18763,7 +18763,7 @@ void Player::AddSpellCooldown(uint32 spellid, uint32 itemid, time_t end_time)
     m_spellCooldowns[spellid] = sc;
 }
 
-void Player::SendCooldownEvent(SpellEntry const *spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
+void Player::SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId /*= 0*/, Spell* spell /*= NULL*/, bool setCooldown /*= true*/)
 {
     // start cooldowns at server side, if any
     if (setCooldown)
@@ -19749,7 +19749,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     if( !spell_id )
         return;
 
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if(!spellInfo)
         return;
 
@@ -19759,7 +19759,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
     {
         //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
         uint32 triggerSpell = spellInfo->EffectTriggerSpell[i];
-        if(SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(triggerSpell))
+        if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(triggerSpell))
             if(spellInfo->Effect[0] == SPELL_EFFECT_TRADE_SKILL)
                 continue;
 
@@ -19783,7 +19783,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
         if( !HasSpell(first_spell) )
             return;
 
-        SpellEntry const *learnedInfo = sSpellMgr->GetSpellInfo(learned_0);
+        SpellInfo const *learnedInfo = sSpellMgr->GetSpellInfo(learned_0);
         if(!learnedInfo)
             return;
 
@@ -19796,7 +19796,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
                 if(itr->second->state == PLAYERSPELL_REMOVED || itr->first==learned_0)
                     continue;
 
-                SpellEntry const *itrInfo = sSpellMgr->GetSpellInfo(itr->first);
+                SpellInfo const *itrInfo = sSpellMgr->GetSpellInfo(itr->first);
                 if(!itrInfo)
                     return;
 
@@ -19851,7 +19851,7 @@ void Player::learnSkillRewardedSpells(uint32 skill_id )
         if (pAbility->classmask && !(pAbility->classmask & classMask))
             continue;
 
-        if (SpellEntry* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
+        if (SpellInfo* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
         {
             if(spellInfo->Effect[0] == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
                 continue;
@@ -20355,7 +20355,7 @@ OutdoorPvP * Player::GetOutdoorPvP() const
     return sOutdoorPvPMgr->GetOutdoorPvPToZoneId(GetZoneId());
 }
 
-bool Player::HasItemFitToSpellRequirements(SpellEntry const* spellInfo, Item const* ignoreItem)
+bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem)
 {
     if(spellInfo->EquippedItemClass < 0)
         return true;
@@ -20413,7 +20413,7 @@ void Player::DisableItemDependentAurasAndCasts( Item * pItem )
     {
         Aura* aura = itr->second;
 
-        SpellEntry const* spellInfo = aura->GetSpellProto();
+        SpellInfo const* spellInfo = aura->GetSpellProto();
         
         if(   !aura->IsActive()
            || HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
@@ -21236,7 +21236,7 @@ void Player::UpdateCharmedAI()
     }
 }
 
-void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, bool allowTinyCd)
+void Player::AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd)
 {
     if(!spellInfo || !spellInfo->StartRecoveryTime)
         return;
@@ -21251,7 +21251,7 @@ void Player::AddGlobalCooldown(SpellEntry const *spellInfo, Spell const *spell, 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = (((cdTime<1000 || cdTime>2000) && !allowTinyCd) ? 1000 : cdTime);
 }
 
-bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
+bool Player::HasGlobalCooldown(SpellInfo const *spellInfo) const
 {
     if(!spellInfo)
         return false;
@@ -21260,7 +21260,7 @@ bool Player::HasGlobalCooldown(SpellEntry const *spellInfo) const
     return itr != m_globalCooldowns.end() && (itr->second > sWorld->GetUpdateTime());
 }
 
-void Player::RemoveGlobalCooldown(SpellEntry const *spellInfo)
+void Player::RemoveGlobalCooldown(SpellInfo const *spellInfo)
 {
     if(!spellInfo)
         return;

@@ -50,7 +50,7 @@ SpectatorAddonMsg::SpectatorAddonMsg()
 
 bool SpectatorAddonMsg::CanSandAura(uint32 auraID)
 {
-    SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(auraID);
+    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(auraID);
     if (!spellInfo)
         return false;
 

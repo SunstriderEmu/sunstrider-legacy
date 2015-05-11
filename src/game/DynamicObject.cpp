@@ -90,7 +90,7 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
 
     float visualRadius = radius;
     // For some reason visual size in client seems incorrect for some spells. Can't seem to find the proper rule.
-    if(SpellEntry const *spellInfo = sSpellMgr->GetSpellInfo(spellId))
+    if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId))
     {
         if(spellInfo->rangeIndex == 1 || spellInfo->SpellVisual == 10383)  //Personal range. Ice trap, consecration... + (Flamestrike : 10383)
             visualRadius = radius * 2.2;
