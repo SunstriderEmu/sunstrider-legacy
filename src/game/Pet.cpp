@@ -1583,7 +1583,7 @@ void Pet::_SaveAuras()
     for(AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
         Aura* aura = itr->second;
-        SpellEntry const *spellInfo = aura->GetSpellProto();
+        SpellEntry const *spellInfo = aura->GetSpellInfo();
 
         //skip if passive
         if(aura->IsPassive())

@@ -951,6 +951,10 @@ class Unit : public WorldObject
         typedef std::pair<uint32, uint8> spellEffectPair;
         typedef std::multimap< spellEffectPair, Aura*> AuraMap;
         typedef std::list<Aura *> AuraList;
+
+        typedef std::multimap<AuraStateType, Aura*> AuraStateAurasMap;
+        typedef std::pair<AuraStateAurasMap::const_iterator, AuraStateAurasMap::const_iterator> AuraStateAurasMapBounds;
+
         typedef std::list<DiminishingReturn> Diminishing;
         typedef std::set<AuraType> AuraTypeSet;
         typedef std::set<uint32> ComboPointHolderSet;
@@ -1602,8 +1606,9 @@ class Unit : public WorldObject
         DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
 
-        void ModifyAuraState(AuraState flag, bool apply);
-        bool HasAuraState(AuraState flag) const { return HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1)); }
+        void ModifyAuraState(AuraStateType flag, bool apply);
+        uint32 BuildAuraStateUpdateForTarget(Unit* target) const;
+        bool HasAuraState(AuraStateType flag, SpellEntry const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
         int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask, Unit* pVictim = NULL);
         int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
@@ -1791,6 +1796,7 @@ class Unit : public WorldObject
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;
+        AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];

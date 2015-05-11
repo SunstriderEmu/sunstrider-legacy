@@ -3190,7 +3190,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             (spell_id == 33948 && m_form == FORM_FLIGHT) ||
             (spell_id == 40121 && m_form == FORM_FLIGHT_EPIC) )
                                                             //Check CasterAuraStates
-            if (   (!spellInfo->CasterAuraState || HasAuraState(AuraState(spellInfo->CasterAuraState)))
+            if (   (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState)))
                 && HasItemFitToSpellRequirements(spellInfo) )
                 CastSpell(this, spell_id, true);
     }
@@ -7296,17 +7296,17 @@ void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
     //Apply all auras with SPELL_ATTR0_AFFECT_WEAPON only
     AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
     for(auto itr : auraCritList)
-        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
 
     AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
     for(auto itr : auraDamageFlatList)
-        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
 
     AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
     for(auto itr : auraDamagePCTList)
-        if(itr->GetSpellProto()->SchoolMask & SPELL_SCHOOL_NORMAL)
+        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
             HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
@@ -11007,7 +11007,7 @@ void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
         if(itr.second->IsActive())
             continue;
 
-        if(CheckSpell(itr.second->GetSpellProto()))
+        if(CheckSpell(itr.second->GetSpellInfo()))
             itr.second->ApplyModifier(true);
     }
 }
@@ -16735,7 +16735,7 @@ void Player::_SaveAuras(SQLTransaction trans)
             AuraMap::const_iterator itr2 = itr;
             // save previous spellEffectPair to db
             itr2--;
-            SpellEntry const *spellInfo = itr2->second->GetSpellProto();
+            SpellEntry const *spellInfo = itr2->second->GetSpellInfo();
 
             //skip all auras from spells that are passive or need a shapeshift
             if (!(itr2->second->IsPassive() || itr2->second->IsRemovedOnShapeLost()))
@@ -19341,8 +19341,8 @@ void Player::SendInitialVisiblePackets(Unit* target)
                                 if (aura->GetCaster())
                                     casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
                                 msg.SetPlayer(stream->GetName());
-                                msg.CreateAura(casterID, aura->GetSpellProto()->Id,
-                                               aura->IsPositive(), aura->GetSpellProto()->Dispel,
+                                msg.CreateAura(casterID, aura->GetSpellInfo()->Id,
+                                               aura->IsPositive(), aura->GetSpellInfo()->Dispel,
                                                aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
                                                aura->GetStackAmount(), false);
                                 msg.SendPacket(GetGUID());
@@ -20413,7 +20413,7 @@ void Player::DisableItemDependentAurasAndCasts( Item * pItem )
     {
         Aura* aura = itr->second;
 
-        SpellEntry const* spellInfo = aura->GetSpellProto();
+        SpellEntry const* spellInfo = aura->GetSpellInfo();
         
         if(   !aura->IsActive()
            || HasItemFitToSpellRequirements(spellInfo,pItem) // skip if not item dependent or have alternative item
@@ -20441,7 +20441,7 @@ uint32 Player::GetResurrectionSpellId()
     for(AuraList::const_iterator itr = dummyAuras.begin(); itr != dummyAuras.end(); ++itr)
     {
         // Soulstone Resurrection                           // prio: 3 (max, non death persistent)
-        if( prio < 2 && (*itr)->GetSpellProto()->SpellVisual == 99 && (*itr)->GetSpellProto()->SpellIconID == 92 )
+        if( prio < 2 && (*itr)->GetSpellInfo()->SpellVisual == 99 && (*itr)->GetSpellInfo()->SpellIconID == 92 )
         {
             switch((*itr)->GetId())
             {
@@ -20697,7 +20697,7 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
         for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
         {
             // use m_zoneUpdateId for speed: UpdateArea called from UpdateZone or instead UpdateZone in both cases m_zoneUpdateId up-to-date
-            if(!IsSpellAllowedInLocation(iter->second->GetSpellProto(),GetMapId(),m_zoneUpdateId,newArea))
+            if(!IsSpellAllowedInLocation(iter->second->GetSpellInfo(),GetMapId(),m_zoneUpdateId,newArea))
                 RemoveAura(iter);
             else
                 ++iter;

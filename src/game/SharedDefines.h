@@ -710,7 +710,7 @@ enum SpellEffects
 };
 
 // Spell aura states
-enum AuraState
+enum AuraStateType
 {   // (C) used in caster aura state     (T) used in target aura state
     // (c) used in caster aura state-not (t) used in target aura state-not
     AURA_STATE_NONE                         = 0,            // C   |
