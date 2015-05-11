@@ -63,11 +63,11 @@ class UpdateData
         bool HasData() { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
 
-        std::set<uint64> const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
+        GuidSet const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
         uint32 m_blockCount;
-        std::set<uint64> m_outOfRangeGUIDs;
+        GuidSet m_outOfRangeGUIDs;
         ByteBuffer m_data;
 
         void Compress(void* dst, uint32 *dst_size, void* src, int src_size);

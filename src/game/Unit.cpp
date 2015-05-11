@@ -9722,6 +9722,31 @@ void Unit::SetDeathState(DeathState s)
     m_deathState = s;
 }
 
+void Unit::SetOwnerGUID(uint64 owner) 
+{ 
+    if (GetOwnerGUID() == owner)
+        return;
+
+    SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner); 
+    if (!owner)
+        return;
+
+    // Update owner dependent fields
+    Player* player = ObjectAccessor::GetPlayer(*this, owner);
+    if (!player || !player->HaveAtClient(this)) // if player cannot see this unit yet, he will receive needed data with create object
+        return;
+
+    SetFieldNotifyFlag(UF_FLAG_OWNER);
+
+    UpdateData udata;
+    WorldPacket packet;
+    BuildValuesUpdateBlockForPlayer(&udata, player);
+    udata.BuildPacket(&packet);
+    player->SendDirectMessage(&packet);
+
+    RemoveFieldNotifyFlag(UF_FLAG_OWNER);
+}
+
 /*########################################
 ########                          ########
 ########       AGGRO SYSTEM       ########

@@ -416,9 +416,14 @@ class Object
 
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
+
+        /** 
+            Visits cells around the object, fill players UpdateData with updates from this object if needed
+        */
         virtual void BuildUpdate(UpdateDataMapType&) { }
         /**
-           Add the player and update data for it to the given updateData map.
+           Adds the player and update data for him to the given updateData map. 
+           Creates the update map for him if it doesn't exists, else exists the already existing one.
         */
         void BuildFieldsUpdate(Player*, UpdateDataMapType& data_map) const;
 

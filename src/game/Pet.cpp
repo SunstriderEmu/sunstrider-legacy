@@ -275,7 +275,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     InitStatsForLevel( petlevel);
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
     SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, fields[5].GetUInt32());
-    SetUInt64Value(UNIT_FIELD_CREATEDBY, owner->GetGUID());
+    SetCreatorGUID(owner->GetGUID());
 
     SetReactState( ReactStates( fields[6].GetUInt8() ));
     m_loyaltyPoints = fields[7].GetInt32();

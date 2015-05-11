@@ -4040,7 +4040,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     creatureTarget->SetHealth(0); // just for nice GM-mode view
 
     pet->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
-    pet->SetUInt64Value(UNIT_FIELD_CREATEDBY, player->GetGUID());
+    pet->SetCreatorGUID(player->GetGUID());
     pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, player->GetFaction());
 
     if(!pet->InitStatsForLevel(creatureTarget->GetLevel()))

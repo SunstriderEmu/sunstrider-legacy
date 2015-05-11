@@ -890,7 +890,7 @@ namespace Trinity
 
             bool operator()(Creature* u)
             {
-        if ( u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
+                if ( u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
                 {
                     i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
                     return true;

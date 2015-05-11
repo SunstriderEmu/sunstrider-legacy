@@ -115,11 +115,14 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
         buf << (uint8) UPDATETYPE_OUT_OF_RANGE_OBJECTS;
         buf << (uint32) m_outOfRangeGUIDs.size();
 
-        for(std::set<uint64>::const_iterator i = m_outOfRangeGUIDs.begin();
-            i != m_outOfRangeGUIDs.end(); i++)
+        for (auto i : m_outOfRangeGUIDs)
         {
+#ifdef LICH_KING
+            buf << i->WriteAsPacked();
+#else
             buf << (uint8)0xFF;
-            buf << (uint64) *i;
+            buf << (uint64)i;
+#endif
         }
     }
 

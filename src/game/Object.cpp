@@ -2358,18 +2358,20 @@ struct WorldObjectChangeAccumulator
         for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             source = iter->GetSource();
-
             BuildPacket(source);
 
+            //also add vision to player if he has shared vision with us
             if (!source->GetSharedVisionList().empty())
             {
+                //has player shared vision with us ?
                  for (auto it : source->GetSharedVisionList())
-                     if(Player* p =source->GetPlayer(it))
+                     if(Player* p = source->GetPlayer(it))
                          BuildPacket(p);
             }
         }
     }
 
+    //add vision from creatures whom we share vision with
     void Visit(CreatureMapType &m)
     {
         Creature* source = NULL;
@@ -2378,13 +2380,15 @@ struct WorldObjectChangeAccumulator
             source = iter->GetSource();
             if (!source->GetSharedVisionList().empty())
             {
+                //has player shared vision with us ?
                 for (auto it : source->GetSharedVisionList())
-                     if(Player* p =source->GetPlayer(it))
+                     if(Player* p = source->GetPlayer(it))
                          BuildPacket(p);
             }
         }
     }
 
+    //add vision from far sight dynamic objects
     void Visit(DynamicObjectMapType &m)
     {
         DynamicObject* source = NULL;

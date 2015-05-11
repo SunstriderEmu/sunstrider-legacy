@@ -351,8 +351,8 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
 
 void ObjectAccessor::Update(uint32 diff)
 {
-    //build update for each objects
-    UpdateDataMapType update_players; //one UpdateData object per player
+    //build updates for each objects
+    UpdateDataMapType update_players; //one UpdateData object per player, containing updates for all objects
     {
         std::lock_guard<std::mutex> lock(_objectLock);
         while (!i_objects.empty())
