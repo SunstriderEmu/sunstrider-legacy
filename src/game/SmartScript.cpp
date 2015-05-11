@@ -177,7 +177,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             mUseTextTimer = true;
 
-            sCreatureTextMgr.SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget ? talkTarget->GetGUID() : 0);
+            sCreatureTextMgr->SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget ? talkTarget->GetGUID() : 0);
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_TALK: talker: %s (GuidLow: %u), textGuid: %u",
                 talker->GetName().c_str(), talker->GetGUIDLow(), talkTarget ? talkTarget->GetGUIDLow() : 0);
             break;
@@ -190,11 +190,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 {
                     if (IsCreature(*itr))
-                        sCreatureTextMgr.SendChat((*itr)->ToCreature(), uint8(e.action.talk.textGroupID), IsPlayer(GetLastInvoker() ? GetLastInvoker() : 0));
+                        sCreatureTextMgr->SendChat((*itr)->ToCreature(), uint8(e.action.talk.textGroupID), IsPlayer(GetLastInvoker() ? GetLastInvoker() : 0));
                     else if (IsPlayer(*itr) && me)
                     {
                         Unit* templastInvoker = GetLastInvoker();
-                        sCreatureTextMgr.SendChat(me, uint8(e.action.talk.textGroupID), IsPlayer(templastInvoker ? templastInvoker : 0), CHAT_TYPE_END, LANG_ADDON, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, (*itr)->ToPlayer());
+                        sCreatureTextMgr->SendChat(me, uint8(e.action.talk.textGroupID), IsPlayer(templastInvoker ? templastInvoker : 0), CHAT_TYPE_END, LANG_ADDON, TEXT_RANGE_NORMAL, 0, TEAM_OTHER, false, (*itr)->ToPlayer());
                     }
                     TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SIMPLE_TALK: talker: %s (GuidLow: %u), textGroupId: %u",
                         (*itr)->GetName().c_str(), (*itr)->GetGUIDLow(), uint8(e.action.talk.textGroupID));
@@ -741,7 +741,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (e.action.flee.withEmote)
             {
                 TrinityStringTextBuilder builder(me, CHAT_MSG_MONSTER_EMOTE, LANG_FLEE, LANG_UNIVERSAL, NULL);
-                sCreatureTextMgr.SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE);
+                sCreatureTextMgr->SendChatPacket(me, builder, CHAT_MSG_MONSTER_EMOTE);
             }
             */
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_FLEE_FOR_ASSIST: Creature %u DoFleeToGetAssistance", me->GetGUIDLow());
@@ -2479,7 +2479,7 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
                 //phase 1: despawn after time on movepoint reached
                 AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_FORCE_DESPAWN, e.action.installTtemplate.param2, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, PhaseMask(1));
 
-                if (sCreatureTextMgr.TextExist(me->GetEntry(), (uint8)e.action.installTtemplate.param5))
+                if (sCreatureTextMgr->TextExist(me->GetEntry(), (uint8)e.action.installTtemplate.param5))
                     AddEvent(SMART_EVENT_MOVEMENTINFORM, 0, POINT_MOTION_TYPE, SMART_RANDOM_POINT, 0, 0, SMART_ACTION_TALK, e.action.installTtemplate.param5, 0, 0, 0, 0, 0, SMART_TARGET_NONE, 0, 0, 0, PhaseMask(1));
                 break;
             }
@@ -3042,7 +3042,8 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if (!me)
                 return;
             uint32 count = me->GetAuraCount(e.event.aura.spell);
-            if ((!e.event.aura.count && !count) || (e.event.aura.count && count >= e.event.aura.count))
+            if ((e.event.aura.count == 0 && count == 0)  //no count specified, assume at least one
+                || (e.event.aura.count && count >= e.event.aura.count)) //else check if at least count specified
                 ProcessTimedAction(e, e.event.aura.repeatMin, e.event.aura.repeatMax);
             break;
         }

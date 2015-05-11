@@ -116,7 +116,7 @@ namespace Movement
         move_spline.Initialize(args);
 
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data.append(unit->GetPackGUID());
+        data << unit->GetPackGUID();
         if (transport)
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
@@ -162,7 +162,7 @@ namespace Movement
         move_spline.Initialize(args);
 
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data.append(unit->GetPackGUID());
+        data << unit->GetPackGUID();
         if (transport)
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);

@@ -720,7 +720,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
             byteCount += GroupUpdateLength[i];
 
     data->Initialize(SMSG_PARTY_MEMBER_STATS, 8 + 4 + byteCount);
-    data->append(player->GetPackGUID());
+    *data << player->GetPackGUID();
     *data << (uint32) mask;
 
     if (mask & GROUP_UPDATE_FLAG_STATUS)
@@ -889,7 +889,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 
     WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4+2+2+2+1+2*6+8+1+8);
     //LK data << uint8(0);
-    data.append(player->GetPackGUID());
+    data << player->GetPackGUID();
 
     uint32 updateFlags = GROUP_UPDATE_FLAG_STATUS | GROUP_UPDATE_FLAG_CUR_HP
         | GROUP_UPDATE_FLAG_MAX_HP

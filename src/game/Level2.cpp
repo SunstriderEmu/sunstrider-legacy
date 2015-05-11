@@ -3012,7 +3012,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             wpCreature->LoadFromDB(wpCreature->GetDBTableGUIDLow(),map);
             map->Add(wpCreature);
             */
-            chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_DESPAWN,10);
+            chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
             /*if(target)
             {
                 wpCreature->SetDisplayId(target->GetDisplayId());

@@ -573,7 +573,7 @@ void CreatureAINew::setZoneInCombat(bool force)
 
 uint32 CreatureAINew::talk(uint8 groupid, uint64 targetGUID)
 {
-    return sCreatureTextMgr.SendChat(me, groupid, targetGUID);
+    return sCreatureTextMgr->SendChat(me, groupid, targetGUID);
 }
 
 void CreatureAINew::deleteFromThreatList(uint64 guid)

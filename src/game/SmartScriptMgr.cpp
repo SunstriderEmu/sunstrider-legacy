@@ -595,22 +595,6 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                     SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has pct value above 100, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
                     return false;
                 }
-
-                switch (e.GetTargetType())
-                {
-                    case SMART_TARGET_CREATURE_RANGE:
-                    case SMART_TARGET_CREATURE_GUID:
-                    case SMART_TARGET_CREATURE_DISTANCE:
-                    case SMART_TARGET_CLOSEST_CREATURE:
-                    case SMART_TARGET_CLOSEST_PLAYER:
-                    case SMART_TARGET_PLAYER_RANGE:
-                    case SMART_TARGET_PLAYER_DISTANCE:
-                    case SMART_TARGET_PLAYER_CASTING_DISTANCE:
-                        break;
-                    default:
-                        SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses invalid target_type %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.GetTargetType());
-                        return false;
-                }
                 break;
             case SMART_EVENT_DISTANCE_CREATURE:
                 if (e.event.distance.guid == 0 && e.event.distance.entry == 0)
@@ -695,45 +679,15 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                         return false;
                 }
             }
-            case SMART_EVENT_GO_STATE_CHANGED:
-            case SMART_EVENT_GO_EVENT_INFORM:
-            case SMART_EVENT_TIMED_EVENT_TRIGGERED:
-            case SMART_EVENT_INSTANCE_PLAYER_ENTER:
-            case SMART_EVENT_TRANSPORT_RELOCATE:
-            case SMART_EVENT_CHARMED:
-            case SMART_EVENT_CHARMED_TARGET:
-            case SMART_EVENT_CORPSE_REMOVED:
-            case SMART_EVENT_AI_INIT:
-            case SMART_EVENT_TRANSPORT_ADDPLAYER:
-            case SMART_EVENT_TRANSPORT_REMOVE_PLAYER:
-            case SMART_EVENT_AGGRO:
-            case SMART_EVENT_DEATH:
-            case SMART_EVENT_EVADE:
-            case SMART_EVENT_REACHED_HOME:
-            case SMART_EVENT_RESET:
-            case SMART_EVENT_QUEST_ACCEPTED:
-            case SMART_EVENT_QUEST_OBJ_COPLETETION:
-            case SMART_EVENT_QUEST_COMPLETION:
-            case SMART_EVENT_QUEST_REWARDED:
-            case SMART_EVENT_QUEST_FAIL:
-            case SMART_EVENT_JUST_SUMMONED:
-            case SMART_EVENT_WAYPOINT_START:
-            case SMART_EVENT_WAYPOINT_REACHED:
-            case SMART_EVENT_WAYPOINT_PAUSED:
-            case SMART_EVENT_WAYPOINT_RESUMED:
-            case SMART_EVENT_WAYPOINT_STOPPED:
-            case SMART_EVENT_WAYPOINT_ENDED:
-            case SMART_EVENT_GOSSIP_SELECT:
-            case SMART_EVENT_GOSSIP_HELLO:
-            case SMART_EVENT_JUST_CREATED:
-            case SMART_EVENT_FOLLOW_COMPLETED:
-            case SMART_EVENT_ON_SPELLCLICK:
-                break;
-            default:
-                SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Not handled event_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
-                return false;
         }
     }
+
+    if(e.GetEventType() >= SMART_EVENT_END)
+    {
+        SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Not handled event_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+        return false;
+    }
+
 
     switch (e.GetActionType())
     {
@@ -1058,85 +1012,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
             break;
         }
-        case SMART_ACTION_START_CLOSEST_WAYPOINT:
-        case SMART_ACTION_FOLLOW:
-        case SMART_ACTION_SET_ORIENTATION:
-        case SMART_ACTION_STORE_TARGET_LIST:
-        case SMART_ACTION_EVADE:
-        case SMART_ACTION_FLEE_FOR_ASSIST:
-        case SMART_ACTION_DIE:
-        case SMART_ACTION_SET_IN_COMBAT_WITH_ZONE:
-        case SMART_ACTION_SET_ACTIVE:
-        case SMART_ACTION_WP_RESUME:
-        case SMART_ACTION_KILL_UNIT:
-        case SMART_ACTION_SET_INVINCIBILITY_HP_LEVEL:
-        case SMART_ACTION_RESET_GOBJECT:
-        case SMART_ACTION_ATTACK_START:
-        case SMART_ACTION_THREAT_ALL_PCT:
-        case SMART_ACTION_THREAT_SINGLE_PCT:
-        case SMART_ACTION_SET_INST_DATA:
-        case SMART_ACTION_SET_INST_DATA64:
-        case SMART_ACTION_AUTO_ATTACK:
-        case SMART_ACTION_ALLOW_COMBAT_MOVEMENT:
-        case SMART_ACTION_CALL_FOR_HELP:
-        case SMART_ACTION_SET_DATA:
-        case SMART_ACTION_MOVE_FORWARD:
-        case SMART_ACTION_SET_VISIBILITY:
-        case SMART_ACTION_WP_PAUSE:
-        case SMART_ACTION_SET_FLY:
-        case SMART_ACTION_SET_RUN:
-        case SMART_ACTION_SET_SWIM:
-        case SMART_ACTION_FORCE_DESPAWN:
-        case SMART_ACTION_SET_INGAME_PHASE_MASK:
-        case SMART_ACTION_PLAYMOVIE:
-        case SMART_ACTION_SET_UNIT_FLAG:
-        case SMART_ACTION_REMOVE_UNIT_FLAG:
-        case SMART_ACTION_MOVE_TO_POS:
-        case SMART_ACTION_RESPAWN_TARGET:
-        case SMART_ACTION_CLOSE_GOSSIP:
-        case SMART_ACTION_EQUIP:
-        case SMART_ACTION_TRIGGER_TIMED_EVENT:
-        case SMART_ACTION_REMOVE_TIMED_EVENT:
-        case SMART_ACTION_OVERRIDE_SCRIPT_BASE_OBJECT:
-        case SMART_ACTION_RESET_SCRIPT_BASE_OBJECT:
-        case SMART_ACTION_ACTIVATE_GOBJECT:
-        case SMART_ACTION_CALL_SCRIPT_RESET:
-        case SMART_ACTION_SET_RANGED_MOVEMENT:
-        case SMART_ACTION_CALL_TIMED_ACTIONLIST:
-        case SMART_ACTION_SET_NPC_FLAG:
-        case SMART_ACTION_ADD_NPC_FLAG:
-        case SMART_ACTION_REMOVE_NPC_FLAG:
-        case SMART_ACTION_TALK:
-        case SMART_ACTION_SIMPLE_TALK:
-        case SMART_ACTION_CROSS_CAST:
-        case SMART_ACTION_CALL_RANDOM_TIMED_ACTIONLIST:
-        case SMART_ACTION_RANDOM_MOVE:
-        case SMART_ACTION_SET_UNIT_FIELD_BYTES_1:
-        case SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_1:
-        case SMART_ACTION_SET_UNIT_FIELD_BYTES_2:
-        case SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_2:
-        case SMART_ACTION_INTERRUPT_SPELL:
-        case SMART_ACTION_SEND_GO_CUSTOM_ANIM:
-        case SMART_ACTION_SET_DYNAMIC_FLAG:
-        case SMART_ACTION_ADD_DYNAMIC_FLAG:
-        case SMART_ACTION_REMOVE_DYNAMIC_FLAG:
-        case SMART_ACTION_JUMP_TO_POS:
-        case SMART_ACTION_SEND_GOSSIP_MENU:
-        case SMART_ACTION_GO_SET_LOOT_STATE:
-        case SMART_ACTION_SEND_TARGET_TO_TARGET:
-        case SMART_ACTION_SET_HOME_POS:
-        case SMART_ACTION_SET_HEALTH_REGEN:
-        case SMART_ACTION_SET_ROOT:
-        case SMART_ACTION_SET_GO_FLAG:
-        case SMART_ACTION_ADD_GO_FLAG:
-        case SMART_ACTION_REMOVE_GO_FLAG:
-        case SMART_ACTION_SUMMON_CREATURE_GROUP:
-        case SMART_ACTION_LOAD_PATH:
-        case SMART_ACTION_TELEPORT_ON_ME:
-            break;
-        default:
-            SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Not handled action_type(%u), event_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);
-            return false;
+    }
+
+    if(e.GetActionType() >= SMART_ACTION_END)
+    {
+        SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Not handled action_type(%u), event_type(%u), Entry %d SourceType %u Event %u, skipped.", e.GetActionType(), e.GetEventType(), e.entryOrGuid, e.GetScriptType(), e.event_id);
+        return false;
     }
 
     return true;

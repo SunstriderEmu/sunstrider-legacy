@@ -713,10 +713,11 @@ enum SpellEffects
 enum AuraState
 {   // (C) used in caster aura state     (T) used in target aura state
     // (c) used in caster aura state-not (t) used in target aura state-not
+    AURA_STATE_NONE                         = 0,            // C   |
     AURA_STATE_DEFENSE                      = 1,            // C   |
     AURA_STATE_HEALTHLESS_20_PERCENT        = 2,            // CcT |
     AURA_STATE_BERSERKING                   = 3,            // C T |
-    //AURA_STATE_UNKNOWN4                   = 4,            //  c t| some limitation to charge spells (?) and target test spells
+    //AURA_STATE_UNKNOWN4                   = 4,            //  c t| some limitation to charge spells (?) and target test spells (TC = AURA_STATE_FROZEN)
     AURA_STATE_JUDGEMENT                    = 5,            // C   |
     //AURA_STATE_UNKNOWN6                   = 6,            //     | not used
     AURA_STATE_HUNTER_PARRY                 = 7,            // C   |
@@ -729,15 +730,14 @@ enum AuraState
     AURA_STATE_CRIT                         = 11,           // C   |
     AURA_STATE_FAERIE_FIRE                  = 12,           //  c t|
     AURA_STATE_HEALTHLESS_35_PERCENT        = 13,           // C T |
-    AURA_STATE_CONFLAGRATE                     = 14,           //   T |
+    AURA_STATE_CONFLAGRATE                  = 14,           //   T |
     AURA_STATE_SWIFTMEND                    = 15,           //   T |
     AURA_STATE_DEADLY_POISON                = 16,           //   T |
     AURA_STATE_FORBEARANCE                  = 17,           //  c t|
     AURA_STATE_WEAKENED_SOUL                = 18,           //    t|
     AURA_STATE_HYPOTHERMIA                  = 19            //  c  |
 };
-#define PER_CASTER_AURA_STATE_MASK (\
-    (1<<(AURA_STATE_CONFLAGRATE-1))|(1<<(AURA_STATE_DEADLY_POISON-1)))
+#define PER_CASTER_AURA_STATE_MASK ( (1<<(AURA_STATE_CONFLAGRATE-1))|(1<<(AURA_STATE_DEADLY_POISON-1)) )
 
 enum AuraRemoveMode
 {

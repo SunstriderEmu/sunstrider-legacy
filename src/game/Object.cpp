@@ -1298,8 +1298,8 @@ namespace Trinity
         p->SendDirectMessage(data);
     }
 
-    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist)
-        : i_source(source), i_data_en(data_en), i_data_fr(data_fr), i_dist(dist)
+    CreatureTextLocaleDo::CreatureTextLocaleDo(WorldObject& source, WorldPacket* data, float dist)
+        : i_source(source), i_data(data), i_dist(dist)
     {
     }
         
@@ -1308,10 +1308,7 @@ namespace Trinity
         if (p->GetDistance(&i_source) > i_dist)
             return;
                 
-        if (p->GetSession()->GetSessionDbcLocale() == LOCALE_frFR)
-            p->SendDirectMessage(i_data_fr);
-        else
-            p->SendDirectMessage(i_data_en);
+        p->SendDirectMessage(i_data);
     }
 }
 
@@ -1413,7 +1410,7 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
         return;
 
     data->Initialize(MSG_MOVE_HEARTBEAT, 32);
-    data->append(GetPackGUID());
+    *data << GetPackGUID();
     *data << uint32(((Unit*)this)->GetUnitMovementFlags()); // movement flags
     *data << uint8(0);                                      // 2.3.0
     *data << GetMSTime();                                   // time
@@ -1490,7 +1487,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         return NULL;
     }
 
-    //make sure the create has the correct creator
+    //make sure the creature has the correct creator
     pCreature->SetCreatorGUID(this->GetGUID());
 
     if (x == 0.0f && y == 0.0f && z == 0.0f)
@@ -2275,7 +2272,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     {
         ASSERT(unit);
         if (Unit* victim = unit->GetVictim())
-            data->append(victim->GetPackGUID());
+            *data << victim->GetPackGUID();
         else
             *data << uint8(0);
     }

@@ -44,8 +44,7 @@ class UpdateMask
 
         ~UpdateMask() { delete[] _bits; }
 
-        void SetBit(uint32 index) { _bits[index] = 1; }
-        void UnsetBit(uint32 index) { _bits[index] = 0; }
+        void SetBit(uint32 index, bool set = true) { _bits[index] = uint8(set); }
         bool GetBit(uint32 index) const { return _bits[index] != 0; }
 
         void AppendToPacket(ByteBuffer* data)
@@ -117,8 +116,11 @@ class UpdateMask
         }
 
     private:
+        /** Total update field count for object, updated or not */
         uint32 _fieldCount;
-        uint32 _blockCount;
+        /** Or 'how much uint32 blocks do we need to fit one bit per field' */
+        uint32 _blockCount; 
+        /* Complete update mask, one bit per field */
         uint8* _bits;
 };
 

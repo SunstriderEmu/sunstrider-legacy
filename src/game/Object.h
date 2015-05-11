@@ -427,6 +427,7 @@ class Object
         */
         void BuildFieldsUpdate(Player*, UpdateDataMapType& data_map) const;
 
+        /** Force notify of all update fields having this flag. Don't forget to remove it afterwards. */
         void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
         void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= uint16(~flag); }
 
@@ -721,13 +722,12 @@ namespace Trinity
     class CreatureTextLocaleDo
     {
         public:
-            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data_en, WorldPacket* data_fr, float dist);
+            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data, float dist);
             void operator()(Player* p);
         private:
             WorldObject& i_source;
             float i_dist;
-            WorldPacket* i_data_en;
-            WorldPacket* i_data_fr;
+            WorldPacket* i_data;
     };
 
 }

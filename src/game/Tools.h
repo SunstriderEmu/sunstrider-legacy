@@ -23,7 +23,5 @@
 #include "Common.h"
 #include "WorldPacket.h"
 
-bool readGUID(WorldPacket & data, uint64& guid);
-void    writeGUID(WorldPacket & data, uint64 & guid);
 #endif
 

@@ -866,7 +866,7 @@ void Aura::UpdateAuraDuration()
         (m_target->ToPlayer())->SendDirectMessage(&data);
 
         data.Initialize(SMSG_SET_EXTRA_AURA_INFO, (8+1+4+4+4));
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint8(m_auraSlot);
         data << uint32(GetId());
         data << uint32(GetAuraMaxDuration());
@@ -903,7 +903,7 @@ void Aura::SendAuraDurationForCaster(Player* caster)
         return;
 
     WorldPacket data(SMSG_SET_EXTRA_AURA_INFO_NEED_UPDATE, (8+1+4+4+4));
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint8(m_auraSlot);
     data << uint32(GetId());
     data << uint32(GetAuraMaxDuration());                   // full
@@ -1185,16 +1185,20 @@ void Aura::_RemoveAura()
 
 void Aura::SetAuraFlag(uint32 slot, bool add)
 {
-    uint32 index    = slot / 4;
-    uint32 byte     = (slot % 4) * 8;
-    uint32 val      = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
-    val &= ~((uint32)AFLAG_MASK << byte);
+    //which field index are we filling ? (there is 4 "aura flag slot" per field, one byte for each)
+    uint32 index    = slot / 4; 
+    //which byte are we filling in this field ?
+    uint32 byte = (slot % 4);
+    //total offset in this field
+    uint32 offset = byte * 8;
+
+    uint32 val = m_target->GetUInt32Value(UNIT_FIELD_AURAFLAGS + index);
+    //clear old value in slot
+    val &= ~((uint32)AFLAG_MASK << offset);
     if(add)
     {
-        if (IsPositive())
-            val |= ((uint32)AFLAG_POSITIVE << byte);
-        else
-            val |= ((uint32)AFLAG_NEGATIVE << byte);
+        uint32 flag = IsPositive() ? AFLAG_POSITIVE : AFLAG_NEGATIVE;
+        val |= flag << offset;
     }
     m_target->SetUInt32Value(UNIT_FIELD_AURAFLAGS + index, val);
 }
@@ -2818,7 +2822,7 @@ void Aura::HandleAuraWaterWalk(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_WATER_WALK, 8+4);
     else
         data.Initialize(SMSG_MOVE_LAND_WALK, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);
     m_target->SendMessageToSet(&data,true);
 }
@@ -2837,7 +2841,7 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
     else
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << (uint32)0;
     m_target->SendMessageToSet(&data,true);
 }
@@ -2856,7 +2860,7 @@ void Aura::HandleAuraHover(bool apply, bool Real)
         data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
     else
         data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);
     m_target->SendMessageToSet(&data,true);
 }
@@ -3990,7 +3994,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
             ((Player*)m_target)->SetCanFly(false);
         }
 
-        data.append(m_target->GetPackGUID());
+        data << m_target->GetPackGUID();
         data << uint32(0);                                      // unknown
         m_target->SendMessageToSet(&data, true);
 
@@ -5663,7 +5667,7 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
         ((Player*)m_target)->SetCanFly(false);
     }
 
-    data.append(m_target->GetPackGUID());
+    data << m_target->GetPackGUID();
     data << uint32(0);                                      // unk
     m_target->SendMessageToSet(&data, true);
 }

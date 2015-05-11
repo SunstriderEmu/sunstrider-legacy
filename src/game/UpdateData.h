@@ -21,6 +21,7 @@
 #ifndef __UPDATEDATA_H
 #define __UPDATEDATA_H
 
+#include "ObjectGuid.h"
 class WorldPacket;
 
 enum OBJECT_UPDATE_TYPE
@@ -66,7 +67,7 @@ class UpdateData
         GuidSet const& GetOutOfRangeGUIDs() const { return m_outOfRangeGUIDs; }
 
     protected:
-        uint32 m_blockCount;
+        uint32 m_blockCount;  //one per object updated
         GuidSet m_outOfRangeGUIDs;
         ByteBuffer m_data;
 

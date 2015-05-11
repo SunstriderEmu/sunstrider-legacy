@@ -279,7 +279,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 
         ++number;
 
-        data.append(plr->GetPackGUID());                    // packed guid
+        data << plr->GetPackGUID();                    // packed guid
         data << plr->GetLevel();                            // level
         data << plr->GetZoneId();                           // current zone
         data << lfg_type;                                   // 0x00 - LFG, 0x01 - LFM
@@ -299,7 +299,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
                 Player *member = itr->GetSource();
                 if(member && member->GetGUID() != plr->GetGUID())
                 {
-                    data.append(member->GetPackGUID());     // packed guid
+                    data << member->GetPackGUID();     // packed guid
                     data << member->GetLevel();             // player level
                 }
             }
