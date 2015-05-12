@@ -3871,7 +3871,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
         // auto selection spell rank implemented in WorldSession::HandleCastSpellOpcode
         // this case can be triggered if rank not found (too low-level target for first rank)
-        if(m_caster->GetTypeId() == TYPEID_PLAYER && !IsPassiveSpell(m_spellInfo->Id) && !m_CastItem)
+        if(m_caster->GetTypeId() == TYPEID_PLAYER && !m_spellInfo->IsPassive() && !m_CastItem)
         {
             bool hostileTarget = m_caster->IsHostileTo(target);
             for(int i=0;i<3;i++)
@@ -3933,11 +3933,11 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
     if(sWorld->getConfig(CONFIG_VMAP_INDOOR_CHECK) && m_caster->GetTypeId() == TYPEID_PLAYER && VMAP::VMapFactory::createOrGetVMapManager()->isLineOfSightCalcEnabled())
     {
-        if(m_spellInfo->Attributes & SPELL_ATTR0_OUTDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
+        if(m_spellInfo->Attributes & SPELL_ATTR0_OUTDOORS_ONLY && !m_spellInfo->IsPassive() &&
                 !m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_OUTDOORS;
 
-        if(m_spellInfo->Attributes & SPELL_ATTR0_INDOORS_ONLY && !IsPassiveSpell(m_spellInfo->Id) &&
+        if(m_spellInfo->Attributes & SPELL_ATTR0_INDOORS_ONLY && !m_spellInfo->IsPassive() &&
                 m_caster->GetMap()->IsOutdoors(m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ()))
             return SPELL_FAILED_ONLY_INDOORS;
     }
@@ -4010,7 +4010,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
     // not let players cast spells at mount (and let do it to creatures)
     if( m_caster->IsMounted() && m_caster->GetTypeId()==TYPEID_PLAYER && !m_IsTriggeredSpell &&
-        !IsPassiveSpell(m_spellInfo->Id) && !(m_spellInfo->Attributes & SPELL_ATTR0_CASTABLE_WHILE_MOUNTED) )
+        !m_spellInfo->IsPassive() && !m_spellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_MOUNTED) )
     {
         if(m_caster->IsInFlight())
             return SPELL_FAILED_NOT_FLYING;
@@ -4019,7 +4019,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
 
     // always (except passive spells) check items (focus object can be required for any type casts)
-    if(!IsPassiveSpell(m_spellInfo->Id))
+    if(!m_spellInfo->IsPassive())
     {
         SpellFailedReason castResult = CheckItems();
         if(castResult != SPELL_CAST_OK)

@@ -2815,7 +2815,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
     //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
     for (uint32 id = 0; id < sObjectMgr->GetSpellStore().size(); id++)
     {
-        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
         if(spellInfo)
         {
             int loc = GetSessionDbcLocale();
@@ -2848,7 +2848,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
                 uint32 talentCost = GetTalentSpellCost(id);
 
                 bool talent = (talentCost > 0);
-                bool passive = IsPassiveSpell(id);
+                bool passive = spellInfo->IsPassive();
                 bool active = target && (target->HasAura(id,0) || target->HasAura(id,1) || target->HasAura(id,2));
 
                 // unit32 used to prevent interpreting uint8 as char at output

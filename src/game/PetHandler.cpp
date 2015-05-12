@@ -210,7 +210,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
             }
 
             // do not cast not learned spells
-            if(!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
+            if(!pet->HasSpell(spellid) || spellInfo->IsPassive())
                 return;
 
             pet->ClearUnitState(UNIT_STATE_FOLLOW);
@@ -667,8 +667,15 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
         return;
     }
 
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if(!spellInfo)
+    {
+        TC_LOG_ERROR("network","WORLD: unknown PET spell id %i\n", spellid);
+        return;
+    }
+
     // do not add not learned spells/ passive spells
-    if(!pet->HasSpell(spellid) || IsPassiveSpell(spellid))
+    if(!pet->HasSpell(spellid) || spellInfo->IsPassive())
         return;
 
     CharmInfo *charmInfo = pet->GetCharmInfo();
@@ -723,7 +730,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     }
 
     // do not cast not learned spells
-    if(!caster->HasSpell(spellid) || IsPassiveSpell(spellid))
+    if(!caster->HasSpell(spellid) || spellInfo->IsPassive())
         return;
 
     if (spellInfo->StartRecoveryCategory > 0) //Check if spell is affected by GCD

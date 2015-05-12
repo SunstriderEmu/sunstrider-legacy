@@ -285,12 +285,13 @@ uint32 GetSpellCastTime(SpellInfo const* spellInfo, Spell const* spell)
     return (castTime > 0) ? uint32(castTime) : 0;
 }
 
+/* If you already got spellInfo, use spellInfo->IsPassive, this is just a helper if you don't */
 bool IsPassiveSpell(uint32 spellId)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
         return false;
-    return (spellInfo->Attributes & SPELL_ATTR0_PASSIVE) != 0;
+    return spellInfo->IsPassive();
 }
 
 /*bool IsNoStackAuraDueToAura(uint32 spellId_1, uint32 effIndex_1, uint32 spellId_2, uint32 effIndex_2)
@@ -401,7 +402,7 @@ bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget)
     if (!spellproto)
         return false;
     // talents
-    if (IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
+    if (spellproto->IsPassive() && GetTalentSpellCost(spellId))
         return true;
 
     switch(spellId)
@@ -661,7 +662,7 @@ bool IsPositiveSpell(uint32 spellId, bool hostileTarget)
     if (!spellproto) return false;
 
     // talents
-    if(IsPassiveSpell(spellId) && GetTalentSpellCost(spellId))
+    if(spellproto->IsPassive() && GetTalentSpellCost(spellId))
         return true;
 
     // spells with at least one negative effect are considered negative
@@ -1316,7 +1317,7 @@ bool SpellMgr::canStackSpellRanks(SpellInfo const *spellInfo)
     //hack for faerie fire, client has wrong data in SkillLineAbility so let's send every rank
     if( spellInfo->SpellFamilyName == SPELLFAMILY_DRUID && spellInfo->SpellFamilyFlags == 0x400)
         return true; 
-    if(IsPassiveSpell(spellInfo->Id))
+    if(spellInfo->IsPassive())
         return false;
     if(spellInfo->PowerType != POWER_MANA && spellInfo->PowerType != POWER_HEALTH)
         return false;
@@ -1509,7 +1510,7 @@ bool SpellMgr::IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 eff) const
 SpellInfo const* SpellMgr::SelectAuraRankForPlayerLevel(SpellInfo const* spellInfo, uint32 playerLevel, bool hostileTarget) const
 {
     // ignore passive spells
-    if(IsPassiveSpell(spellInfo->Id))
+    if(spellInfo->IsPassive())
         return spellInfo;
 
     bool needRankSelection = false;

@@ -37,9 +37,8 @@
 #include "DBCStructure.h"
 #include "Util.h"
 #include <list>
-
+#include "SpellInfo.h"
 class UnitAI;
-enum SpellCustomAttributes;
 
 #define WORLD_TRIGGER   12999
 

@@ -24,7 +24,7 @@
 
 enum AuraType;
 class SpellInfo;
-
+class Spell;
 
 enum SpellCustomAttributes
 {
@@ -342,6 +342,7 @@ public:
     bool IsDeathPersistent() const;
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
+    bool IsPassive() const;
 
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;

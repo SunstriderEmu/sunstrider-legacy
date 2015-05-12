@@ -630,6 +630,11 @@ float SpellInfo::GetMaxRange(bool /* positive */, Unit* caster, Spell* spell) co
     return range;
 }
 
+bool SpellInfo::IsPassive() const
+{
+    return HasAttribute(SPELL_ATTR0_PASSIVE);
+}
+
 AuraStateType SpellInfo::GetAuraState() const
 {
     if (GetSpellSpecific() == SPELL_SEAL)
@@ -706,6 +711,15 @@ float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
 
     return radius;
 }
+
+
+
+
+
+
+
+
+
 
 void SpellInfo::LoadCustomAttributes()
 {

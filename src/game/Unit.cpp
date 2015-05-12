@@ -4080,7 +4080,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
         if (spellId==i_spellId)
             continue;
 
-        if(IsPassiveSpell(i_spellId))
+        if(i_spellProto->IsPassive())
         {
             if(IsPassiveStackableSpell(i_spellId))
                 continue;
@@ -4402,7 +4402,7 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
         SpellInfo const* spell = itr->second->GetSpellInfo();
         if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
         {
-            if (IsPassiveSpell(spell->Id) && !withPassive)
+            if (spell->IsPassive() && !withPassive)
                 ++itr;
             else {
                 RemoveAurasDueToSpell(spell->Id);
@@ -6655,7 +6655,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         ++next;
         if (!(*i).second) continue;
             aura_id = (*i).second->GetSpellInfo()->Id;
-            if ( IsPassiveSpell(aura_id) || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellInfo()->Id ) continue;
+            if ( (*i).second->GetSpellInfo()->IsPassive() || aura_id == trigger_spell_id || aura_id == triggeredByAura->GetSpellInfo()->Id ) continue;
         if (sSpellMgr->IsNoStackSpellDueToSpell(trigger_spell_id, (*i).second->GetSpellInfo()->Id, ((*i).second->GetCasterGUID() == GetGUID())))
             return false;
     }
@@ -7526,7 +7526,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                 {
                     if(itr->second->state == PLAYERSPELL_REMOVED) continue;
                     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-                    if (!spellInfo || !IsPassiveSpell(itr->first)) continue;
+                    if (!spellInfo || !spellInfo->IsPassive()) continue;
                     if (spellInfo->CasterAuraState == flag)
                         CastSpell(this, itr->first, true, NULL);
                 }
@@ -11010,7 +11010,11 @@ void CharmInfo::InitCharmCreateSpells()
         if(!spellId)
             continue;
 
-        if (IsPassiveSpell(spellId))
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if(!spellInfo)
+            continue;
+
+        if (spellInfo->IsPassive())
         {
             m_unit->CastSpell(m_unit, spellId, true);
             m_charmspells[x].active = ACT_PASSIVE;
@@ -11019,9 +11023,7 @@ void CharmInfo::InitCharmCreateSpells()
         {
             ActiveStates newstate;
             bool onlyselfcast = true;
-            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
 
-            if(!spellInfo) onlyselfcast = false;
             for(uint32 i = 0;i<3 && onlyselfcast;++i)       //non existent spell will not make any problems as onlyselfcast would be false -> break right away
             {
                 if(spellInfo->Effects[i].TargetA.GetTarget()!= TARGET_UNIT_CASTER && spellInfo->Effects[i].TargetA.GetTarget()!= 0)

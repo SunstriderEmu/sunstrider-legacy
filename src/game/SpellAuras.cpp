@@ -349,7 +349,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
             damage = m_currentBasePoints + 1;
     }
 
-    m_isPassive = IsPassiveSpell(GetId());
+    m_isPassive = GetSpellInfo()->IsPassive();
     m_positive = IsPositiveEffect(GetId(), m_effIndex, caster ? caster->IsHostileTo(target) : false);
 
     m_isSingleTargetAura = IsSingleTargetSpell(m_spellProto);

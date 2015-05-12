@@ -357,7 +357,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // not have spell or spell passive and not casted by client
-    if ( !_player->HasSpell (spellId) || IsPassiveSpell(spellId) )
+    if ( !_player->HasSpell (spellId) || spellInfo->IsPassive() )
     {
         //cheater? kick? ban?
         return;

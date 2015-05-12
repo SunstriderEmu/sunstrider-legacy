@@ -750,14 +750,16 @@ bool Pet::CanTakeMoreActiveSpells(uint32 spellid)
     uint8  activecount = 1;
     uint32 chainstartstore[ACTIVE_SPELLS_MAX];
 
-    if(IsPassiveSpell(spellid))
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if(spellInfo && spellInfo->IsPassive())
         return true;
 
     chainstartstore[0] = sSpellMgr->GetFirstSpellInChain(spellid);
 
     for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
     {
-        if(IsPassiveSpell(itr->first))
+        spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+        if(spellInfo && spellInfo->IsPassive())
             continue;
 
         uint32 chainstart = sSpellMgr->GetFirstSpellInChain(itr->first);
@@ -1656,10 +1658,10 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     PetSpell *newspell = new PetSpell;
     newspell->state = state;
     newspell->type = type;
-
+    
     if(active == ACT_DECIDE)                                //active was not used before, so we save it's autocast/passive state here
     {
-        if(IsPassiveSpell(spell_id))
+        if(spellInfo && spellInfo->IsPassive())
             newspell->active = ACT_PASSIVE;
         else
             newspell->active = ACT_DISABLED;
@@ -1703,7 +1705,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     newspell->slotId = tmpslot;
     m_spells[spell_id] = newspell;
 
-    if (IsPassiveSpell(spell_id))
+    if (spellInfo->IsPassive())
         CastSpell(this, spell_id, true);
     else if(state == PETSPELL_NEW)
     {
@@ -1788,7 +1790,8 @@ void Pet::InitPetCreateSpells()
                 Unit* owner = GetOwner();
                 if(owner->GetTypeId() == TYPEID_PLAYER && !(owner->ToPlayer())->HasSpell(learn_spellproto->Id))
                 {
-                    if(IsPassiveSpell(petspellid))          //learn passive skills when tamed, not sure if thats right
+                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(petspellid);
+                    if(spellInfo->IsPassive())          //learn passive skills when tamed, not sure if thats right
                         (owner->ToPlayer())->learnSpell(learn_spellproto->Id);
                     else
                         AddTeachSpell(learn_spellproto->Effects[0].TriggerSpell, learn_spellproto->Id);
@@ -1862,7 +1865,11 @@ uint32 Pet::resetTalentsCost() const
 
 void Pet::ToggleAutocast(uint32 spellid, bool apply)
 {
-    if(IsPassiveSpell(spellid))
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
+    if(!spellInfo)
+        return;
+
+    if(spellInfo->IsPassive())
         return;
 
     PetSpellMap::const_iterator itr = m_spells.find((uint16)spellid);
