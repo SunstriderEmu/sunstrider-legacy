@@ -1045,13 +1045,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
     {
         if(sSpellMgr->SpellTargetType[spellInfo->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET)
         {
-            /*SpellRangeEntry const* srange = sSpellRangeStore.LookupEntry(spellInfo->RangeEntry->ID);
-            if(srange && GetSpellMaxRange(srange) == 0.0f)
-            {
-                Victim = this;
-                break;
-            }
-            else */if(!Victim)
+            if(!Victim)
             {
                 TC_LOG_ERROR("spell","CastSpell: spell id %i by caster: %s %u) does not have unit target", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
                 return SPELL_FAILED_BAD_TARGETS;
@@ -3299,7 +3293,7 @@ void Unit::_UpdateAutoRepeatSpell()
     if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCast(false,false,true) )
     {
         // cancel wand shoot
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category->Id == 351)
+        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->GetCategory() == 351)
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         m_AutoRepeatFirstCast = true;
         return;
@@ -3350,7 +3344,7 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
 
             // break wand autorepeat
             if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
-                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category->Id == 351) // wand
+                 m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->GetCategory() == 351) // wand
                     InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 
             //delay autoshoot by 0,5s
@@ -3368,7 +3362,7 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
 
             // break wand autorepeat
             if ( m_currentSpells[CURRENT_AUTOREPEAT_SPELL] &&
-                m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Category->Id == 351 )
+                m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->GetCategory() == 351 )
                 InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 
             //delay autoshoot by 0,5s
@@ -3380,7 +3374,7 @@ void Unit::SetCurrentCastedSpell( Spell * pSpell )
         case CURRENT_AUTOREPEAT_SPELL:
         {
             // wand break other spells
-            if (pSpell->m_spellInfo->Category->Id == 351)
+            if (pSpell->m_spellInfo->GetCategory() == 351)
             {
                 // generic autorepeats break generic non-delayed and channeled non-delayed spells
                 InterruptSpell(CURRENT_GENERIC_SPELL,false);
@@ -4005,7 +3999,10 @@ bool Unit::AddAura(Aura *Aur)
             m_ccAuras.push_back(Aur);
         }
         if(AuraStateType aState = Aur->GetSpellInfo()->GetAuraState())
+        {
             m_auraStateAuras.insert(AuraStateAurasMap::value_type(aState, Aur));
+            ModifyAuraState(aState, true);
+        }
     }
 
     Aur->ApplyModifier(true,true);
@@ -4139,7 +4136,7 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
                 //some spells should be not removed by lower rank of them (totem, paladin aura)
                 if (!sameCaster
                     &&(spellProto->Effects[effIndex].Effect==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
-                    &&(spellProto->DurationEntry->ID==21)
+                    &&(spellProto->DurationEntry && spellProto->DurationEntry->ID == 21) //lolwhat ?
                     &&(sSpellMgr->IsRankSpellDueToSpell(spellProto, i_spellId))
                     &&(CompareAuraRanks(spellId, effIndex, i_spellId, i_effIndex) < 0))
                     return false;
@@ -4571,6 +4568,10 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             ++itr;
         }
     }
+    
+    // Remove aurastates only if were not found
+    if (!auraStateFound)
+        ModifyAuraState(auraState, false);
               
     // Set remove mode
     Aur->SetRemoveMode(mode);
@@ -7574,7 +7575,7 @@ uint32 Unit::BuildAuraStateUpdateForTarget(Unit* target) const
     return auraStates;
 }
 
-bool Unit::HasAuraState(AuraStateType flag, SpellEntry const* spellProto, Unit const* Caster) const
+bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit const* Caster) const
 {
     if (Caster)
     {
@@ -7774,7 +7775,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32
     }
 
     // Damage Done
-    uint32 CastingTime = !spellProto->IsChanneled() ? GetSpellCastTime(spellProto) : GetSpellDuration(spellProto);
+    uint32 CastingTime = !spellProto->IsChanneled() ? spellProto->CalcCastTime() : spellProto->GetDuration();
 
     // Taken/Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit  = SpellBaseDamageBonus(spellProto->GetSchoolMask())+BonusDamage;
@@ -7784,7 +7785,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32
     float DotFactor = 1.0f;
     if(damagetype == DOT)
     {
-        int32 DotDuration = GetSpellDuration(spellProto);
+        int32 DotDuration = spellProto->GetDuration();
         // 200% limit
         if(DotDuration > 0)
         {
@@ -8481,13 +8482,13 @@ uint32 Unit::SpellHealBenefitForHealingPower(SpellInfo const *spellProto, int he
 {
     if(healpower == 0) return 0;
 
-    uint32 CastingTime = GetSpellCastTime(spellProto);
+    uint32 CastingTime = spellProto->CalcCastTime();
 
     // Healing over Time spells
     float DotFactor = 1.0f;
     if(damagetype == DOT)
     {
-        int32 DotDuration = GetSpellDuration(spellProto);
+        int32 DotDuration = spellProto->GetDuration();
         if(DotDuration > 0)
         {
             // 200% limit
@@ -9336,20 +9337,25 @@ int32 Unit::ModifyHealth(int32 dVal)
     return gain;
 }
 
-// used only to calculate channeling time
-void Unit::ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell * spell)
+void Unit::ModSpellCastTime(SpellInfo const* spellInfo, int32 & castTime, Spell * spell)
 {
-    if (!spellProto || castTime<0)
+    if (!spellInfo || castTime < 0)
         return;
+
     //called from caster
     if(Player* modOwner = GetSpellModOwner())
-        modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CASTING_TIME, castTime, spell);
+        modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
 
-     if (spellProto->Attributes & SPELL_ATTR0_RANGED && !(spellProto->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG)))
-            castTime = int32 (float(castTime) * m_modAttackSpeedPct[RANGED_ATTACK]);
-     else 
-        if(spellProto->SpellFamilyName || (spellProto->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION)) )
-            castTime = int32( float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));
+    //magic spells
+    if (!(spellInfo->HasAttribute(SPELL_ATTR0_ABILITY) || spellInfo->HasAttribute(SPELL_ATTR0_TRADESPELL) || spellInfo->HasAttribute(SPELL_ATTR3_NO_DONE_BONUS)) &&
+        ((GetTypeId() == TYPEID_PLAYER && spellInfo->SpellFamilyName) || GetTypeId() == TYPEID_UNIT))
+    {
+        if(!spellInfo->IsChanneled() || spellInfo->HasAttribute(SPELL_ATTR5_HASTE_AFFECT_DURATION))
+            castTime = int32(float(castTime) * GetFloatValue(UNIT_MOD_CAST_SPEED));
+    }
+    //ranged attacks
+    else if (spellInfo->HasAttribute(SPELL_ATTR0_RANGED) && !spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG))
+        castTime = int32(float(castTime) * m_modAttackSpeedPct[RANGED_ATTACK]);
 }
 
 int32 Unit::ModifyPower(Powers power, int32 dVal)
@@ -10115,8 +10121,8 @@ int32 Unit::CalculateSpellDuration(SpellInfo const* spellProto, uint8 effect_ind
 
     uint8 comboPoints = unitPlayer ? unitPlayer->GetComboPoints() : 0;
 
-    int32 minduration = GetSpellDuration(spellProto);
-    int32 maxduration = GetSpellMaxDuration(spellProto);
+    int32 minduration = spellProto->GetDuration();
+    int32 maxduration = spellProto->GetMaxDuration();
 
     int32 duration;
 
@@ -11404,7 +11410,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
             case SPELL_AURA_MOD_CASTING_SPEED:
                 // Skip melee hits or instant cast spells
-                if (procSpell == NULL || GetSpellCastTime(procSpell) == 0)
+                if (procSpell == NULL || procSpell->CalcCastTime() == 0)
                     continue;
                 break;
             case SPELL_AURA_REFLECT_SPELLS_SCHOOL:
@@ -11826,8 +11832,8 @@ uint32 Unit::GetCastingTimeForBonus( SpellInfo const *spellProto, DamageEffectTy
                     case SPELL_AURA_PERIODIC_DAMAGE:
                     case SPELL_AURA_PERIODIC_HEAL:
                     case SPELL_AURA_PERIODIC_LEECH:
-                        if ( GetSpellDuration(spellProto) )
-                            overTime = GetSpellDuration(spellProto);
+                        if ( spellProto->GetDuration() )
+                            overTime = spellProto->GetDuration();
                         break;
                     default:
                         // -5% per additional effect
@@ -11846,9 +11852,11 @@ uint32 Unit::GetCastingTimeForBonus( SpellInfo const *spellProto, DamageEffectTy
     if ( overTime > 0 && CastingTime > 0 && DirectDamage )
     {
         // mainly for DoTs which are 3500 here otherwise
-        uint32 OriginalCastTime = GetSpellCastTime(spellProto);
-        if (OriginalCastTime > 7000) OriginalCastTime = 7000;
-        if (OriginalCastTime < 1500) OriginalCastTime = 1500;
+        uint32 OriginalCastTime = spellProto->CalcCastTime();
+        if (OriginalCastTime > 7000) 
+            OriginalCastTime = 7000;
+        if (OriginalCastTime < 1500)
+            OriginalCastTime = 1500;
         // Portion to Over Time
         float PtOT = (overTime / 15000.f) / ((overTime / 15000.f) + (OriginalCastTime / 3500.f));
 
@@ -12198,6 +12206,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     // find player: owner of controlled `this` or `this` itself maybe
     Player *player = GetCharmerOrOwnerPlayerOrPlayerItself();
+    Creature* creature = pVictim->ToCreature();
 
     bool bRewardIsAllowed = true;
     if(pVictim->GetTypeId() == TYPEID_UNIT)
@@ -12209,10 +12218,76 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     
     if(bRewardIsAllowed && pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->GetLootRecipient())
         player = (pVictim->ToCreature())->GetLootRecipient();
+
     // Reward player, his pets, and group/raid members
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
     if(bRewardIsAllowed && player && player!=pVictim)
     {
+        WorldPacket data(SMSG_PARTYKILLLOG, (8+8)); // send event PARTY_KILL
+        data << uint64(player->GetGUID()); // player with killing blow
+        data << uint64(pVictim->GetGUID()); // victim
+
+        Player* looter = player;
+        Group* group = player->GetGroup();
+
+        bool hasLooterGuid = false;
+
+        if (group)
+        {
+            group->BroadcastPacket(&data, group->GetMemberGroup(player->GetGUID()) != 0);
+
+            if (creature)
+            {
+                group->UpdateLooterGuid(creature, true);
+                if (group->GetLooterGuid())
+                {
+                    looter = ObjectAccessor::FindPlayer(group->GetLooterGuid());
+                    if (looter)
+                    {
+                        hasLooterGuid = true;
+                        creature->SetLootRecipient(looter);   // update creature loot recipient to the allowed looter.
+                    }
+                }
+            }
+        }
+        else
+        {
+            player->SendDirectMessage(&data);
+
+            if (creature)
+            {
+                WorldPacket data2(SMSG_LOOT_LIST, 8 + 1 + 1);
+                data2 << uint64(creature->GetGUID());
+                data2 << uint8(0); // unk1
+                data2 << uint8(0); // no group looter
+                player->SendMessageToSet(&data2, true);
+            }
+        }
+
+        // Generate loot before updating looter
+        if (creature)
+        {
+            Loot* loot = &creature->loot;
+
+            loot->clear();
+            if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
+                loot->FillLoot(lootid, LootTemplates_Creature, looter /*, false, false, creature->GetLootMode() */);
+
+            loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+
+            if (group)
+            {
+                if (hasLooterGuid)
+                    group->SendLooter(creature, looter);
+                else
+                    group->SendLooter(creature, NULL);
+
+                // Update round robin looter only if the creature had loot
+                if (!loot->empty())
+                    group->UpdateLooterGuid(creature);
+            }
+        }
+
         if(player->RewardPlayerAndGroupAtKill(pVictim))
             player->ProcDamageAndSpell(pVictim, PROC_FLAG_KILL_AND_GET_XP, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
         else
@@ -12309,14 +12384,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     {
         Creature *cVictim = pVictim->ToCreature();
         
-        if(GetTypeId() == TYPEID_PLAYER)
-        {
-            WorldPacket data(SMSG_PARTYKILLLOG, (8+8));
-            data << uint64(player->GetGUID()); //player with killing blow
-            data << uint64(pVictim->GetGUID()); //victim
-            SendMessageToSet(&data, true);
-        } 
-
         if(!cVictim->IsPet())
         {
             //save threat list before deleting it

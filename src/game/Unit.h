@@ -1606,9 +1606,12 @@ class Unit : public WorldObject
         DynamicObject *GetDynObject(uint32 spellId, uint32 effIndex);
         DynamicObject *GetDynObject(uint32 spellId);
 
+        /** Change aura state if not already at given value. Be careful not to remove a state if other auras have the same state also active, you can use the m_auraStateAuras to check for those. */
         void ModifyAuraState(AuraStateType flag, bool apply);
+        /** Get aura state for given target, needed since some aura state are relative to who casted what*/
         uint32 BuildAuraStateUpdateForTarget(Unit* target) const;
-        bool HasAuraState(AuraStateType flag, SpellEntry const* spellProto = nullptr, Unit const* Caster = nullptr) const;
+        /* Check if unit has at least one aura of given state; This just checks UNIT_FIELD_AURASTATE if no caster is given, or check in m_auraStateAuras if so (some state being caster dependant) */
+        bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
         int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask, Unit* pVictim = NULL);
         int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
@@ -1796,7 +1799,7 @@ class Unit : public WorldObject
         AuraList m_scAuras;                        // casted singlecast auras
         AuraList m_interruptableAuras;
         AuraList m_ccAuras;
-        AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
+        AuraStateAurasMap m_auraStateAuras;        // List of all auras affecting aura states, casted by who, Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];

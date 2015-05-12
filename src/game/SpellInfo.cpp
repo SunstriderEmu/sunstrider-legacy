@@ -18,6 +18,7 @@
 #include "SpellInfo.h"
 #include "DBCStores.h"
 #include "SpellAuraDefines.h"
+#include "Spell.h"
 
 SpellImplicitTargetInfo::SpellImplicitTargetInfo(uint32 target)
 {
@@ -230,7 +231,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
         case SPELLFAMILY_PALADIN:
         {
             //Collection of all the seal family flags. No other paladin spell has any of those.
-            if( SpellFamilyFlags & 0x4000A000200LL );
+            if( SpellFamilyFlags & 0x4000A000200LL )
                 return SPELL_SEAL;
 
             if (SpellFamilyFlags & 0x10000100LL)
@@ -362,10 +363,6 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ExcludeCasterAuraSpell = spellEntry->excludeCasterAuraSpell;
     ExcludeTargetAuraSpell = spellEntry->excludeTargetAuraSpell;
 #else
-    CasterAuraSpell = 0;
-    TargetAuraSpell = 0;
-    ExcludeCasterAuraSpell = 0;
-    ExcludeTargetAuraSpell = 0;
 #endif
     CastTimeEntry = spellEntry->CastingTimeIndex ? sSpellCastTimesStore.LookupEntry(spellEntry->CastingTimeIndex) : NULL;
     RecoveryTime = spellEntry->RecoveryTime;
@@ -390,8 +387,6 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ManaCostPercentage = spellEntry->ManaCostPercentage;
 #ifdef LICH_KING
     RuneCostID = spellEntry->runeCostID;
-#else
-    RuneCostID = 0;
 #endif
     RangeEntry = spellEntry->rangeIndex ? sSpellRangeStore.LookupEntry(spellEntry->rangeIndex) : NULL;
     Speed = spellEntry->speed;
@@ -448,6 +443,51 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     LoadCustomAttributes();
 }
 
+int32 SpellInfo::GetDuration() const
+{
+    if (!DurationEntry)
+        return 0;
+    return (DurationEntry->Duration[0] == -1) ? -1 : abs(DurationEntry->Duration[0]);
+}
+
+int32 SpellInfo::GetMaxDuration() const
+{
+    if (!DurationEntry)
+        return 0;
+    return (DurationEntry->Duration[2] == -1) ? -1 : abs(DurationEntry->Duration[2]);
+}
+
+uint32 SpellInfo::GetRecoveryTime() const
+{
+    return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;
+}
+
+uint32 SpellInfo::CalcCastTime(Spell* spell) const
+{
+    // not all spells have cast time index and this is all is pasiive abilities
+    if (!CastTimeEntry)
+        return 0;
+
+    int32 castTime = CastTimeEntry->CastTime;
+
+    //todo, remove hack !
+    if (spell && spell->m_spellInfo->Id == 8690) //heartstone
+        return castTime;
+
+    if (spell)
+        spell->GetCaster()->ModSpellCastTime(this, castTime, spell);
+
+    if (HasAttribute(SPELL_ATTR0_RANGED) && (!IsAutoRepeatRangedSpell()))
+        castTime += 500;
+
+    return (castTime > 0) ? uint32(castTime) : 0;
+}
+
+bool SpellInfo::IsAutoRepeatRangedSpell() const
+{
+    return HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG);
+}
+
 SpellInfo::~SpellInfo()
 {
     //TODO Spellinfo _UnloadImplicitTargetConditionLists();
@@ -488,20 +528,22 @@ uint32 SpellInfo::GetCategory() const
     return Category ? Category->Id : 0;
 }
 
-bool SpellInfo::HasEffect(SpellEffects effect, uint8 effIndex /* = -1 */) const
+bool SpellInfo::HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask) const
 {
-    assert(effIndex < MAX_SPELL_EFFECTS);
+    assert(effectMask <= SPELL_EFFECT_MASK_ALL);
 
-    if(effIndex == -1)
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
-        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (Effects[i].IsEffect(effect))
-                return true;
-    } else {
-        return Effects[effIndex].IsEffect(effect);
+        if( (effectMask & (1 << i)) && Effects[i].IsEffect(effect))
+            return true;
     }
 
     return false;
+}
+
+bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
+{
+    return HasEffectByEffectMask(effect, SPELL_EFFECT_MASK_ALL);
 }
 
 bool SpellInfo::HasAura(AuraType aura) const
@@ -581,7 +623,7 @@ uint32 SpellInfo::GetEffectMechanicMask(uint8 effIndex) const
     return mask;
 }
 
-uint32 SpellInfo::GetSpellMechanicMaskByEffectMask(uint32 effectMask) const
+uint32 SpellInfo::GetSpellMechanicMaskByEffectMask(SpellEffectMask effectMask) const
 {
     uint32 mask = 0;
     if (Mechanic)

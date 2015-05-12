@@ -181,7 +181,6 @@ void ScriptedAI::EnterEvadeMode()
     }
 
     InCombat = false;
-    m_creature->ResetAllowedToLootList();
     Reset();
 }
 
@@ -565,7 +564,6 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mecha
     uint32 SpellCount = 0;
 
     SpellInfo const* TempSpell;
-    SpellRangeEntry const* TempRange;
 
     //Check if each spell is viable(set it to null if not)
     for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
@@ -604,21 +602,14 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mecha
         if (TempSpell->ManaCost > m_creature->GetPower((Powers)TempSpell->PowerType))
             continue;
 
-        //Get the Range
-        TempRange = GetSpellRangeStore()->LookupEntry(TempSpell->RangeEntry->ID);
-
-        //Spell has invalid range store so we can't use it
-        if (!TempRange)
-            continue;
-
         //Check if the spell meets our range requirements
-        if (RangeMin && TempRange->maxRange < RangeMin)
+        if (RangeMin && RangeMin < TempSpell->GetMinRange())
             continue;
-        if (RangeMax && TempRange->maxRange > RangeMax)
+        if (RangeMax && RangeMax > TempSpell->GetMaxRange())
             continue;
 
         //Check if our target is in range
-        if (m_creature->IsWithinDistInMap(Target, TempRange->minRange) || !m_creature->IsWithinDistInMap(Target, TempRange->maxRange))
+        if (m_creature->IsWithinDistInMap(Target, TempSpell->GetMinRange()) || !m_creature->IsWithinDistInMap(Target, TempSpell->GetMaxRange()))
             continue;
 
         //All good so lets add it to the spell list
@@ -647,16 +638,8 @@ bool ScriptedAI::CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered)
     if (!Triggered && m_creature->GetPower((Powers)Spell->PowerType) < Spell->ManaCost)
         return false;
 
-    SpellRangeEntry const *TempRange = NULL;
-
-    TempRange = GetSpellRangeStore()->LookupEntry(Spell->RangeEntry->ID);
-
-    //Spell has invalid range store so we can't use it
-    if (!TempRange)
-        return false;
-
     //Unit is out of range of this spell
-    if (m_creature->GetDistance(Target) > TempRange->maxRange || m_creature->GetDistance(Target) < TempRange->minRange)
+    if (m_creature->GetDistance(Target) > Spell->GetMaxRange() || m_creature->GetDistance(Target) < Spell->GetMinRange())
         return false;
 
     return true;
@@ -681,15 +664,6 @@ void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 ui
     if (uiRanged >= 0)
         m_creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, uint32(uiRanged));
 #endif
-}
-
-float GetSpellMaxRange(uint32 id)
-{
-    SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(id);
-    if(!spellInfo) return 0;
-    SpellRangeEntry const *range = GetSpellRangeStore()->LookupEntry(spellInfo->RangeEntry->ID);
-    if(!range) return 0;
-    return range->maxRange;
 }
 
 void FillSpellSummary()

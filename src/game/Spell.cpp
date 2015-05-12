@@ -1303,7 +1303,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 caster->CastSpell(unit, i->first, true,NULL,NULL,NULL,true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
-                if (GetSpellDuration(i->first)==-1)
+                if (i->first->GetDuration() == -1)
                 {
                     // get duration from aura-only once
                     if (!_duration)
@@ -2314,7 +2314,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     prepareDataForTriggerSystem();
 
     // calculate cast time (calculated after first CheckCast to prevent charge counting for first CheckCast fail)
-    m_casttime = GetSpellCastTime(m_spellInfo, this);
+    m_casttime = m_spellInfo->CalcCastTime(this);
 
     // set timer base at cast time
     ReSetTimer();
@@ -2325,7 +2325,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
             {
                 SpectatorAddonMsg msg;
                 msg.SetPlayer(tmpPlayer->GetName());
-                msg.CastSpell(m_spellInfo->Id, GetSpellCastTime(m_spellInfo));
+                msg.CastSpell(m_spellInfo->Id, m_casttime);
                 tmpPlayer->SendSpectatorAddonMsgToBG(msg);
             }
 
@@ -2640,7 +2640,7 @@ void Spell::handle_immediate()
     // start channeling if applicable
     if(m_spellInfo->IsChanneled())
     {
-        int32 duration = GetSpellDuration(m_spellInfo);
+        int32 duration = m_spellInfo->GetDuration();
         if (duration)
         {
             //apply haste mods
@@ -2840,7 +2840,7 @@ void Spell::SendSpellCooldown()
     // if no cooldown found above then base at DBC data
     if(rec < 0 && catrec < 0)
     {
-        cat = m_spellInfo->Category->Id;
+        cat = m_spellInfo->GetCategory();
         rec = m_spellInfo->RecoveryTime;
         catrec = m_spellInfo->CategoryRecoveryTime;
     }
@@ -2927,7 +2927,7 @@ void Spell::update(uint32 difftime)
             }
 
             if(m_timer == 0 && !IsNextMeleeSwingSpell() && !IsAutoRepeat())
-                cast(m_spellInfo->CastTimeEntry->ID == 1);
+                cast(m_spellInfo->CalcCastTime(this) == 0);
         } break;
         case SPELL_STATE_CASTING:
         {
@@ -3983,7 +3983,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     // - with greater than 15 min CD without SPELL_ATTR4_USABLE_IN_ARENA flag
     // - with SPELL_ATTR4_NOT_USABLE_IN_ARENA flag
     if( (m_spellInfo->HasAttribute(SPELL_ATTR4_NOT_USABLE_IN_ARENA)) ||
-        GetSpellRecoveryTime(m_spellInfo) > 15 * MINUTE * IN_MILLISECONDS && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA)) )
+        m_spellInfo->GetRecoveryTime() > 15 * MINUTE * IN_MILLISECONDS && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA)) )
         if(MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId()))
             if(mapEntry->IsBattleArena())
                 return SPELL_FAILED_NOT_IN_ARENA;
@@ -4918,7 +4918,8 @@ SpellFailedReason Spell::CheckRange(bool strict)
     //float range_mod;
 
     // self cast doesn't need range checking -- also for Starshards fix
-    if (m_spellInfo->RangeEntry->ID == 1) return SPELL_CAST_OK;
+    if (m_casttime == 0) 
+        return SPELL_CAST_OK;
 
     // i do not know why we need this
     /*if (strict)                                             //add radius of caster
@@ -4928,7 +4929,17 @@ SpellFailedReason Spell::CheckRange(bool strict)
 
     float max_range = m_spellInfo->GetMaxRange(false, m_caster->GetSpellModOwner(), this);
     float min_range = m_spellInfo->GetMinRange();
-    uint32 range_type = m_spellInfo->RangeEntry->type;
+    uint32 range_type = 0;
+    
+    if (m_spellInfo->RangeEntry)
+    {
+        // check needed by 68766 51693 - both spells are cast on enemies and have 0 max range
+        // these are triggered by other spells - possibly we should omit range check in that case?
+        if (m_spellInfo->RangeEntry->ID == 1)
+            return SPELL_CAST_OK;
+
+        range_type = m_spellInfo->RangeEntry->type;
+    }
 
     Unit *target = m_targets.getUnitTarget();
 

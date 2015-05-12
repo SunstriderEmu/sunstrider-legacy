@@ -22,8 +22,6 @@
 
 #define GET_SPELL(a)    (const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(a)))
 
-float GetSpellMaxRange(uint32 id);
-
 class SummonList : public std::list<uint64>
 {
 public:

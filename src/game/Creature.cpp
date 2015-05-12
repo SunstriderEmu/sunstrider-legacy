@@ -1975,12 +1975,12 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
     if(!spellInfo)
         return;
 
-    uint32 cooldown = GetSpellRecoveryTime(spellInfo);
+    uint32 cooldown = spellInfo->GetRecoveryTime();
     if(cooldown)
         _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/1000);
 
-    if(spellInfo->Category->Id)
-        _AddCreatureCategoryCooldown(spellInfo->Category->Id, time(NULL));
+    if(spellInfo->GetCategory())
+        _AddCreatureCategoryCooldown(spellInfo->GetCategory(), time(NULL));
 
     m_GlobalCooldown = spellInfo->StartRecoveryTime;
 }
@@ -1995,7 +1995,7 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
     if (spellInfo->StartRecoveryCategory > 0 && m_GlobalCooldown > 0)
         return true;
 
-    CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category->Id);
+    CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->GetCategory());
     return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / 1000)) > time(NULL));
 }
 
@@ -2292,8 +2292,8 @@ void Creature::ConvertThreatListIntoPlayerListAtDeath()
     auto threatList = getThreatManager().getThreatList();
     for(auto itr : threatList)
     {
-        if(itr->getThreat() > 0 && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
-            m_playerInThreatListAtDeath
+        if(itr->getThreat() > 0.0f && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
+            m_playerInThreatListAtDeath.insert(itr->GetSource()->getOwner()->GetGUIDLow());
     }
 }
 

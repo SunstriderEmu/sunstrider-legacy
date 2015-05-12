@@ -121,6 +121,16 @@ enum SpellSpecificType
     SPELL_DRUID_MANGLE      = 24
 };
 
+enum SpellEffectMask
+{
+    SPELL_EFFECT_MASK_NONE = 0x0,
+    SPELL_EFFECT_MASK_1    = 0x1,
+    SPELL_EFFECT_MASK_2    = 0x2,
+    SPELL_EFFECT_MASK_3    = 0x4,
+
+    SPELL_EFFECT_MASK_ALL  = SPELL_EFFECT_MASK_1 | SPELL_EFFECT_MASK_2 | SPELL_EFFECT_MASK_3,
+};
+
 class SpellImplicitTargetInfo
 {
 private:
@@ -227,6 +237,7 @@ class SpellInfo
 {
 public:
     uint32 Id;
+    //can be null
     SpellCategoryEntry const* Category;
     uint32 Dispel;
     uint32 Mechanic;
@@ -249,12 +260,13 @@ public:
     uint32 TargetAuraState;
     uint32 CasterAuraStateNot;
     uint32 TargetAuraStateNot;
-    // LK --
+    /* LK
     uint32 CasterAuraSpell;
     uint32 TargetAuraSpell;
     uint32 ExcludeCasterAuraSpell;
     uint32 ExcludeTargetAuraSpell;
-    // -- LK
+    */
+    //can be null
     SpellCastTimesEntry const* CastTimeEntry;
     uint32 RecoveryTime;
     uint32 CategoryRecoveryTime;
@@ -269,6 +281,7 @@ public:
     uint32 MaxLevel;
     uint32 BaseLevel;
     uint32 SpellLevel;
+    //can be null
     SpellDurationEntry const* DurationEntry;
     uint32 PowerType;
     uint32 ManaCost;
@@ -276,7 +289,8 @@ public:
     uint32 ManaPerSecond;
     uint32 ManaPerSecondPerLevel;
     uint32 ManaCostPercentage;
-    uint32 RuneCostID; //LK
+    //uint32 RuneCostID; //LK
+    //can be null
     SpellRangeEntry const* RangeEntry;
     float  Speed;
     uint32 StackAmount;
@@ -324,7 +338,8 @@ public:
 
     uint32 GetCategory() const;
     /** -1 for all indexes */
-    bool HasEffect(SpellEffects effect, uint8 effIndex = -1) const;
+    bool HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask = SPELL_EFFECT_MASK_ALL) const;
+    bool HasEffect(SpellEffects effect, uint8 effectIndex = 0) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
 
@@ -357,10 +372,18 @@ public:
     bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
     bool _IsPositiveSpell() const;
 
+    uint32 CalcCastTime(Spell* spell = nullptr) const;
+    uint32 GetRecoveryTime() const;
+
+    int32 GetDuration() const;
+    int32 GetMaxDuration() const;
+
+    bool IsAutoRepeatRangedSpell() const;
+
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;
     uint32 GetEffectMechanicMask(uint8 effIndex) const;
-    uint32 GetSpellMechanicMaskByEffectMask(uint32 effectMask) const;
+    uint32 GetSpellMechanicMaskByEffectMask(SpellEffectMask effectMask) const;
     Mechanics GetEffectMechanic(uint8 effIndex) const;
     bool HasAnyEffectMechanic() const;
 

@@ -304,15 +304,6 @@ enum SpellLinkedType
     SPELL_LINK_REMOVE   = 0,
 };
 
-// Different spell properties
-uint32 GetSpellCastTime(SpellInfo const* spellInfo, Spell const* spell = NULL);
-//TODO spellinfo : remove me in factor of m_spellInfo->RangeEntry->maxRange;
-inline float GetSpellMaxRange(SpellRangeEntry const *range) { return (range ? range->maxRange : 0); }
-inline uint32 GetSpellRangeType(SpellRangeEntry const *range) { return (range ? range->type : 0); }
-inline uint32 GetSpellRecoveryTime(SpellInfo const *spellInfo) { return spellInfo->RecoveryTime > spellInfo->CategoryRecoveryTime ? spellInfo->RecoveryTime : spellInfo->CategoryRecoveryTime; }
-int32 GetSpellDuration(SpellInfo const *spellInfo);
-int32 GetSpellMaxDuration(SpellInfo const *spellInfo);
-
 inline bool IsSpellHaveEffect(SpellInfo const *spellInfo, SpellEffects effect)
 {
     for(int i= 0; i < 3; ++i)

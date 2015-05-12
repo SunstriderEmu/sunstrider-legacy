@@ -34,19 +34,20 @@
 #include "MapInstanced.h"
 #include "Util.h"
 
-Group::Group()
-{
-    m_leaderGuid        = 0;
-    m_mainTank          = 0;
-    m_mainAssistant     = 0;
-    m_groupType         = (GroupType)0;
-    m_bgGroup           = NULL;
-    m_lootMethod        = (LootMethod)0;
-    m_looterGuid        = 0;
-    m_lootThreshold     = ITEM_QUALITY_UNCOMMON;
-    m_subGroupsCounts   = NULL;
-    m_leaderLogoutTime  = 0;
+Group::Group() :
+    m_masterLooterGuid(0),
+    m_looterGuid(0),
+    m_mainAssistant(0),
+    m_leaderGuid(0),
+    m_mainTank(0),
+    m_bgGroup(nullptr),
+    m_lootMethod((LootMethod)0),
+    m_groupType((GroupType)0),
+    m_lootThreshold(ITEM_QUALITY_UNCOMMON),
+    m_subGroupsCounts(nullptr),
+    m_leaderLogoutTime(0)
 
+{
     for(int i=0; i<TARGETICONCOUNT; i++)
         m_targetIcons[i] = 0;
 }
@@ -93,6 +94,7 @@ bool Group::Create(const uint64 &guid, std::string const& name, SQLTransaction t
     m_lootMethod = GROUP_LOOT;
     m_lootThreshold = ITEM_QUALITY_UNCOMMON;
     m_looterGuid = guid;
+    m_masterLooterGuid = 0;
 
     m_difficulty = DIFFICULTY_NORMAL;
     if(!isBGGroup())
@@ -618,7 +620,7 @@ void Group::SendLooter(Creature* creature, Player* groupLooter)
     data << uint64(creature->GetGUID());
 
     if (GetLootMethod() == MASTER_LOOT && creature->loot.hasOverThresholdItem())
-        data << GetMasterLooterGuid().WriteAsPacked();
+        data << PackedGuid(GetMasterLooterGuid());
     else
         data << uint8(0);
 
@@ -1096,7 +1098,10 @@ void Group::SendUpdate()
         if(GetMembersCount()-1)
         {
             data << (uint8)m_lootMethod;                    // loot method
-            data << (uint64)m_looterGuid;                   // looter guid
+            if (m_lootMethod == MASTER_LOOT)
+                data << uint64(m_masterLooterGuid);         // master looter guid
+            else
+                data << uint64(0);
             data << (uint8)m_lootThreshold;                 // loot threshold
             data << (uint8)m_difficulty;                    // Heroic Mod Group
 

@@ -1819,7 +1819,7 @@ void Spell::EffectDummy(uint32 i)
 
                         if( spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
                             (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
-                            spellInfo->Id != 11958 && GetSpellRecoveryTime(spellInfo) > 0 )
+                            spellInfo->Id != 11958 && spellInfo->GetRecoveryTime() > 0 )
                         {
                             (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
@@ -2060,7 +2060,7 @@ void Spell::EffectDummy(uint32 i)
                         uint32 classspell = itr->first;
                         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
 
-                        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && GetSpellRecoveryTime(spellInfo) > 0 )
+                        if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && spellInfo->GetRecoveryTime() > 0 )
                         {
                             (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
@@ -3453,7 +3453,7 @@ void Spell::EffectPersistentAA(uint32 i)
     float radius = m_spellInfo->Effects[i].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
 
     Unit *caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     DynamicObject* dynObj = new DynamicObject;
 
     if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
@@ -4031,7 +4031,7 @@ void Spell::EffectSummon(uint32 i)
     else
         m_caster->GetClosePoint(x,y,z,owner->GetObjectSize());
 
-    Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, GetSpellDuration(m_spellInfo));
+    Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, m_spellInfo->GetDuration());
     if(!spawnCreature)
         return;
 
@@ -4168,7 +4168,7 @@ void Spell::EffectDispel(uint32 i)
 
             // On succes dispel
             // Devour Magic
-            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->Category->Id == SPELLCATEGORY_DEVOUR_MAGIC)
+            if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->GetCategory() == SPELLCATEGORY_DEVOUR_MAGIC)
             {
                 uint32 heal_spell = 0;
                 switch (m_spellInfo->Id)
@@ -4286,7 +4286,7 @@ void Spell::EffectAddFarsight(uint32 i)
     m_caster->RemoveAurasDueToSpell(6495); //sentry totem
 
     float radius = m_spellInfo->Effects[i].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     DynamicObject* dynObj = new DynamicObject;
     if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, 4, m_targets.m_destX, m_targets.m_destY, m_targets.m_destZ, duration, radius))
     {
@@ -4357,7 +4357,7 @@ void Spell::EffectSummonWild(uint32 i)
         else
             m_caster->GetClosePoint(px,py,pz,3.0f);
 
-        int32 duration = GetSpellDuration(m_spellInfo);
+        int32 duration = m_spellInfo->GetDuration();
 
         TempSummonType summonType = (duration == -1) ? TEMPSUMMON_CORPSE_TIMED_DESPAWN : TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN;
 
@@ -4476,12 +4476,12 @@ void Spell::EffectSummonGuardian(uint32 i)
     }
 
     // set timer for unsummon
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
 
     // Search old Guardian only for players (if casted spell not have duration or cooldown)
     // FIXME: some guardians have control spell applied and controlled by player and anyway player can't summon in this time
     //        so this code hack in fact
-    if(duration <= 0 || GetSpellRecoveryTime(m_spellInfo)==0)
+    if(duration <= 0 || m_spellInfo->GetRecoveryTime() ==0)
         if(caster->HasGuardianWithEntry(pet_entry))
             return;                                         // find old guardian, ignore summon
 
@@ -4562,7 +4562,7 @@ void Spell::EffectSummonPossessed(uint32 i)
     float x, y, z;
     m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
 
     Pet* pet = (m_caster->ToPlayer())->SummonPet(entry, x, y, z, m_caster->GetOrientation(), POSSESSED_PET, duration);
     if(!pet)
@@ -5062,7 +5062,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                     if(proto->SpellFamilyName == SPELLFAMILY_WARRIOR
                         && proto->SpellFamilyFlags == SPELLFAMILYFLAG_WARRIOR_SUNDERARMOR)
                     {
-                        int32 duration = GetSpellDuration(proto);
+                        int32 duration = proto->GetDuration();
                         (*itr)->SetAuraDuration(duration);
                         (*itr)->UpdateAuraDuration();
                         stack = (*itr)->GetStackAmount();
@@ -5333,7 +5333,7 @@ void Spell::EffectInterruptCast(uint32 i)
                 if(m_originalCaster)
                 {
                     int32 duration = m_originalCaster->CalculateSpellDuration(m_spellInfo, i, unitTarget);
-                    unitTarget->ProhibitSpellSchool(unitTarget->m_currentSpells[i]->m_spellInfo->GetSchoolMask(), duration/*GetSpellDuration(m_spellInfo)*/);
+                    unitTarget->ProhibitSpellSchool(unitTarget->m_currentSpells[i]->m_spellInfo->GetSchoolMask(), duration/*m_spellInfo->GetDuration()*/);
                 }
                 unitTarget->InterruptSpell(i,false);
             }
@@ -5370,7 +5370,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         return;
     }
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
@@ -6359,7 +6359,7 @@ void Spell::EffectDuel(uint32 i)
 
     pGameObj->SetUInt32Value(GAMEOBJECT_FACTION, m_caster->GetFaction() );
     pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel()+1 );
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
 
@@ -6583,7 +6583,7 @@ void Spell::EffectSummonTotem(uint32 i)
     pTotem->SetOwner(m_caster->GetGUID());
     pTotem->SetTypeBySummonSpell(m_spellInfo);              // must be after Create call where m_spells initilized
 
-    int32 duration=GetSpellDuration(m_spellInfo);
+    int32 duration=m_spellInfo->GetDuration();
     if(Player* modOwner = m_caster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id,SPELLMOD_DURATION, duration);
     pTotem->SetDuration(duration);
@@ -6638,7 +6638,7 @@ void Spell::EffectEnchantHeldItem(uint32 i)
     if (m_spellInfo->Effects[i].MiscValue)
     {
         uint32 enchant_id = m_spellInfo->Effects[i].MiscValue;
-        int32 duration = GetSpellDuration(m_spellInfo);          //Try duration index first ..
+        int32 duration = m_spellInfo->GetDuration();          //Try duration index first ..
         if(!duration)
             duration = damage;//+1;            //Base points after ..
         if(!duration)
@@ -6784,7 +6784,7 @@ void Spell::EffectSummonObject(uint32 i)
     }
 
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL,m_caster->GetLevel());
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     pGameObj->SetRespawnTime(duration > 0 ? duration/1000 : 0);
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
@@ -7110,7 +7110,7 @@ void Spell::EffectSummonCritter(uint32 i)
     critter->SetLevel(1);
 
     // set timer for unsummon
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
     if(duration > 0)
         critter->SetDuration(duration);
 
@@ -7429,7 +7429,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         return;
     }
 
-    int32 duration = GetSpellDuration(m_spellInfo);
+    int32 duration = m_spellInfo->GetDuration();
 
     switch(goinfo->type)
     {

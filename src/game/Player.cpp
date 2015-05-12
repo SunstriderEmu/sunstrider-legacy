@@ -2805,8 +2805,8 @@ void Player::SendInitialSpells()
             cooldown = (itr->second.end-curTime)*1000;
 
         data << uint16(itr->second.itemid);                 // cast item id
-        data << uint16(sEntry->Category->Id);                   // spell category
-        if(sEntry->Category->Id)                                // may be wrong, but anyway better than nothing...
+        data << uint16(sEntry->GetCategory());                   // spell category
+        if(sEntry->GetCategory())                                // may be wrong, but anyway better than nothing...
         {
             data << uint32(0);                              // cooldown
             data << uint32(cooldown);                       // category cooldown
@@ -15398,6 +15398,16 @@ bool Player::IsAllowedToLoot(Creature const* creature)
         return this == creature->GetLootRecipient();
     else if (thisGroup != creature->GetLootRecipientGroup())
         return false;
+    else //same group
+    {
+        //check if player was present at creature death if worldboss
+        if(creature->IsWorldBoss())
+            if(!creature->HadPlayerInThreatListAtDeath(this->GetGUID()))
+            {
+                TC_LOG_DEBUG("misc", "Player %u tried to loot creature %u, was in the right group but wasn't present in creature threat list.", this->GetGUIDLow(), creature->GetGUIDLow());
+                return false;
+            }
+    }
 
     switch (thisGroup->GetLootMethod())
     {
@@ -18712,7 +18722,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     // if no cooldown found above then base at DBC data
     if (rec < 0 && catrec < 0)
     {
-        cat = spellInfo->Category->Id;
+        cat = spellInfo->GetCategory();
         rec = spellInfo->RecoveryTime;
         catrec = spellInfo->CategoryRecoveryTime;
     }

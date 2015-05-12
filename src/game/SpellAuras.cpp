@@ -392,7 +392,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         }
     }
 
-    if(m_maxduration == -1 || m_isPassive && m_spellProto->DurationEntry->ID == 0)
+    if(m_maxduration == -1 || m_isPassive && m_spellProto->GetDuration() == 0)
         m_permanent = true;
 
     Player* modOwner = caster ? caster->GetSpellModOwner() : NULL;
@@ -4358,7 +4358,7 @@ void Aura::HandlePeriodicHeal(bool apply, bool Real)
                         Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                         for(Unit::AuraList::const_iterator k = classScripts.begin(); k != classScripts.end(); ++k)
                         {
-                            int32 tickcount = GetSpellDuration(m_spellProto) / m_spellProto->Effects[m_effIndex].Amplitude;
+                            int32 tickcount = m_spellProto->GetDuration() / m_spellProto->Effects[m_effIndex].Amplitude;
                             switch((*k)->GetModifier()->m_miscvalue)
                             {
                                 case 4953:                          // Increased Rejuvenation Healing - Harold's Rejuvenating Broach Aura
@@ -4546,7 +4546,7 @@ void Aura::HandlePeriodicDamage(bool apply, bool Real)
                         Unit::AuraList const& classScripts = caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
                         for(Unit::AuraList::const_iterator k = classScripts.begin(); k != classScripts.end(); ++k)
                         {
-                            int32 tickcount = GetSpellDuration(m_spellProto) / m_spellProto->Effects[m_effIndex].Amplitude;
+                            int32 tickcount = m_spellProto->GetDuration() / m_spellProto->Effects[m_effIndex].Amplitude;
                             switch((*k)->GetModifier()->m_miscvalue)
                             {
                                 case 5147:                  // Improved Consecration - Libram of the Eternal Rest
@@ -5736,13 +5736,13 @@ void Aura::CleanupTriggeredSpells()
     if(!tProto)
         return;
 
-    if(GetSpellDuration(tProto) != -1)
+    if(tProto->GetDuration() != -1)
         return;
 
     // needed for spell 43680, maybe others
     // TODO: is there a spell flag, which can solve this in a more sophisticated way?
     if(m_spellProto->Effects[GetEffIndex()].ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-            GetSpellDuration(m_spellProto) == m_spellProto->Effects[GetEffIndex()].Amplitude)
+            m_spellProto->GetDuration() == m_spellProto->Effects[GetEffIndex()].Amplitude)
         return;
     m_target->RemoveAurasDueToSpell(tSpellId);
 }

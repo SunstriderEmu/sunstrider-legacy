@@ -182,6 +182,7 @@ class Group
         const char * GetLeaderName() const { return m_leaderName.c_str(); }
         LootMethod    GetLootMethod() const { return m_lootMethod; }
         const uint64& GetLooterGuid() const { return m_looterGuid; }
+        const uint64& GetMasterLooterGuid() const { return m_masterLooterGuid; }
         ItemQualities GetLootThreshold() const { return m_lootThreshold; }
 
         // member manipulation methods
@@ -413,6 +414,7 @@ class Group
         LootMethod          m_lootMethod;
         ItemQualities       m_lootThreshold;
         uint64              m_looterGuid;
+        uint64              m_masterLooterGuid; //TODO : save in db
         Rolls               RollId;
         BoundInstancesMap   m_boundInstances[TOTAL_DIFFICULTIES];
         uint8*              m_subGroupsCounts;

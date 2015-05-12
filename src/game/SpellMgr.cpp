@@ -234,57 +234,6 @@ SpellMgr::~SpellMgr()
     UnloadSpellInfoStore();
 }
 
-int32 GetSpellDuration(SpellInfo const *spellInfo)
-{
-    if(!spellInfo)
-        return 0;
-    SpellDurationEntry const *du = sSpellDurationStore.LookupEntry(spellInfo->DurationEntry->ID);
-    if(!du)
-        return 0;
-    return (du->Duration[0] == -1) ? -1 : abs(du->Duration[0]);
-}
-
-int32 GetSpellMaxDuration(SpellInfo const *spellInfo)
-{
-    if(!spellInfo)
-        return 0;
-    SpellDurationEntry const *du = sSpellDurationStore.LookupEntry(spellInfo->DurationEntry->ID);
-    if(!du)
-        return 0;
-    return (du->Duration[2] == -1) ? -1 : abs(du->Duration[2]);
-}
-
-uint32 GetSpellCastTime(SpellInfo const* spellInfo, Spell const* spell)
-{
-    int32 castTime = spellInfo->CastTimeEntry->CastTime;
-    if(!castTime)
-        return 0;
-
-    if (spellInfo->Attributes & SPELL_ATTR0_RANGED && (!spell || !(spell->IsAutoRepeat())))
-        castTime += 500;
-
-    if (spell && spell->m_spellInfo->Id != 8690)
-    {
-        // TC_LOG_DEBUG("FIXME","GetSpellCastTime spell %u - castTime %u",spellInfo->Id,castTime);
-        if(Player* modOwner = spell->GetCaster()->GetSpellModOwner())
-            modOwner->ApplySpellMod(spellInfo->Id, SPELLMOD_CASTING_TIME, castTime, spell);
-
-        if( !(spellInfo->Attributes & (SPELL_ATTR0_ABILITY|SPELL_ATTR0_TRADESPELL)) )
-        {
-          //  TC_LOG_DEBUG("FIXME","Not ability. UNIT_MOD_CAST_SPEED = %f",spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
-            castTime = int32(castTime * spell->GetCaster()->GetFloatValue(UNIT_MOD_CAST_SPEED));
-        } else
-        {
-            if (spell->IsRangedSpell() && !spell->IsAutoRepeat()) {
-              //  TC_LOG_DEBUG("FIXME","Ranged spell. m_modAttackSpeedPct[RANGED_ATTACK] = %f",spell->GetCaster()->m_modAttackSpeedPct[RANGED_ATTACK]);
-                castTime = int32(castTime * spell->GetCaster()->m_modAttackSpeedPct[RANGED_ATTACK]);
-            }
-        }
-    }
-   // TC_LOG_DEBUG("FIXME","castTime2 = %i",castTime);
-    return (castTime > 0) ? uint32(castTime) : 0;
-}
-
 /* If you already got spellInfo, use spellInfo->IsPassive, this is just a helper if you don't */
 bool IsPassiveSpell(uint32 spellId)
 {
@@ -1381,7 +1330,7 @@ void SpellMgr::LoadSpellChains()
         SpellRankValue value;
         entry.SkillId=AbilityInfo->skillId;
         entry.SpellName=SpellInfo->SpellName[sWorld->GetDefaultDbcLocale()];
-        entry.DurationIndex=SpellInfo->DurationEntry->ID;
+        entry.DurationIndex= SpellInfo->DurationEntry ? SpellInfo->DurationEntry->ID : 0;
         entry.RangeIndex=SpellInfo->RangeEntry->ID;
         entry.ProcFlags=SpellInfo->ProcFlags;
         entry.SpellFamilyFlags=SpellInfo->SpellFamilyFlags;
