@@ -278,7 +278,7 @@ void SpellCastTargets::write ( WorldPacket * data )
         *data << m_strTarget;
 }
 
-Spell::Spell( Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck ) :
+Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID, Spell** triggeringContainer, bool skipCheck) :
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
@@ -377,30 +377,16 @@ Spell::Spell( Unit* Caster, SpellInfo const *info, bool triggered, uint64 origin
     m_canReflect = false;
     m_removeReflect = false;
 
-    if(   !(m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_BE_REDIRECTED)
-       && !(m_spellInfo->Attributes & SPELL_ATTR0_ABILITY)
-       && m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC 
-       && !IsAreaOfEffectSpell(m_spellInfo)
+    if(   m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MAGIC 
+       && !m_spellInfo->HasAttribute(SPELL_ATTR1_CANT_BE_REDIRECTED)
+       && !m_spellInfo->HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED)
+       && !m_spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
+       && !m_spellInfo->HasAttribute(SPELL_ATTR0_ABILITY)
+       && !m_spellInfo->IsPassive()
+       && !m_spellInfo->IsPositive()
+       //&& !IsAreaOfEffectSpell(m_spellInfo)
       )
-    {
-        for(int j=0;j<3;j++)
-        {
-            if (m_spellInfo->Effects[j].Effect==0)
-                continue;
-
-            else if(!IsPositiveTarget(m_spellInfo->Effects[j].TargetA.GetTarget(), m_spellInfo->Effects[j].TargetB.GetTarget()))
-                m_canReflect = true;
-            else if (m_IsTriggeredSpell)
-                m_canReflect = false;
-            else
-                m_canReflect = (m_spellInfo->AttributesEx & SPELL_ATTR1_NEGATIVE) ? true : false;
-
-            if(m_canReflect)
-                continue;
-            else
-                break;
-        }
-    }
+        m_canReflect = true;
 
     CleanupTargetList();
 }
@@ -713,12 +699,12 @@ void Spell::prepareHitProcData(uint32& procAttacker, uint32& procVictim, bool ho
             procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
             break;
         default:
-            if (IsPositiveSpell(m_spellInfo->Id,hostileTarget))          // Check for positive spell
+            if(m_spellInfo->IsPositive(hostileTarget))          // Check for positive spell
             {
                 procAttacker = PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL;
                 procVictim   = PROC_FLAG_TAKEN_POSITIVE_SPELL;
             }
-            else if (m_spellInfo->Id == 5019) // Wands
+            else if(m_spellInfo->Id == 5019) // Wands
             {
                 procAttacker = PROC_FLAG_SUCCESSFUL_RANGED_SPELL_HIT;
                 procVictim   = PROC_FLAG_TAKEN_RANGED_SPELL_HIT;
@@ -1147,7 +1133,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( !m_caster->IsFriendlyTo(unit) && !IsPositiveSpell(m_spellInfo->Id,hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
+    if( !m_caster->IsFriendlyTo(unit) && !m_spellInfo->IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
         if( !(m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)))
         {
@@ -1182,7 +1168,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     // Recheck immune (only for delayed spells)
     if(    m_spellInfo->Speed
         && !(m_spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
-        && !(m_spellInfo->AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)
+        && !(m_spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE))
         && (   unit->IsImmunedToDamage(m_spellInfo->GetSchoolMask(),true)
             || unit->IsImmunedToSpell(m_spellInfo,true) )
       )
@@ -1238,7 +1224,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             // for delayed spells ignore negative spells (after duel end) for friendly targets
             // TODO: this cause soul transfer bugged
-            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !IsPositiveSpell(m_spellInfo->Id) && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
+            if(m_spellInfo->Speed > 0.0f && unit->GetTypeId() == TYPEID_PLAYER && !m_spellInfo->IsPositive() && m_spellInfo->Id != 45034) // FIXME: Hack for Boundless Agony (Kalecgos)
             {
                 caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_EVADE);
                 m_damage = 0;
@@ -1588,11 +1574,11 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
             SpellScriptTarget::const_iterator upper = sSpellMgr->GetEndSpellScriptTarget(m_spellInfo->Id);
             if(lower == upper)
             {
-                TC_LOG_ERROR("FIXME","Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
+                TC_LOG_ERROR("sql.sql","Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
                 if(m_targets.getUnitTarget())
                     return m_targets.getUnitTarget(); //keep current target
                 //else search one nearby
-                if(IsPositiveSpell(m_spellInfo->Id,false))
+                if(m_spellInfo->IsPositive())
                     return SearchNearbyTarget(range, SPELL_TARGETS_ALLY);
                 else
                     return SearchNearbyTarget(range, SPELL_TARGETS_ENEMY);
@@ -2139,7 +2125,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 {
                     TC_LOG_ERROR("FIXME","Spell (ID: %u) (caster Entry: %u - DB GUID: %u) does not have record in `spell_script_target`.", m_spellInfo->Id, m_caster->GetEntry(), (m_caster->ToCreature() ? m_caster->ToCreature()->GetDBTableGUIDLow() : 0));
 
-                    if(IsPositiveEffect(m_spellInfo->Id, i))
+                    if(m_spellInfo->IsPositiveEffect(i))
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ALLY);
                     else
                         SearchAreaTarget(unitList, radius, pushType, SPELL_TARGETS_ENEMY);
@@ -3745,7 +3731,7 @@ void Spell::HandleFlatThreat()
         float threat = flatMod / targetListSize;;
 
         //apply threat to every negative targets
-        if(!IsPositiveSpell(m_spellInfo->Id,!m_caster->IsFriendlyTo(targetUnit)))
+        if(!m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(targetUnit)))
             targetUnit->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
         else //or assist threat if friendly target
             m_caster->GetHostilRefManager().threatAssist(targetUnit, threat, m_spellInfo);
@@ -3814,12 +3800,12 @@ SpellFailedReason Spell::CheckCast(bool strict)
         target = m_caster;
     
     if(m_caster == target)
-        if (m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF)
+        if (m_spellInfo->HasAttribute(SPELL_ATTR1_CANT_TARGET_SELF))
             return SPELL_FAILED_BAD_TARGETS;
 
     if(target != m_caster)
     {
-        if (m_spellInfo->AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT)
+        if (m_spellInfo->HasAttribute(SPELL_ATTR1_CANT_TARGET_IN_COMBAT))
         {
             if (target->IsInCombat())
                 return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
@@ -3876,7 +3862,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             bool hostileTarget = m_caster->IsHostileTo(target);
             for(int i=0;i<3;i++)
             {
-                if(IsPositiveEffect(m_spellInfo->Id, i, hostileTarget) && m_spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
+                if(m_spellInfo->IsPositiveEffect(i, hostileTarget) && m_spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
                     if(target->GetLevel() + 10 < m_spellInfo->SpellLevel)
                         return SPELL_FAILED_LOWLEVEL;
             }
@@ -3898,7 +3884,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         {
             // check correctness positive/negative cast target (pet cast real check and cheating check)
             bool hostileTarget = m_caster->IsHostileTo(target);
-            if(IsPositiveSpell(m_spellInfo->Id,hostileTarget))
+            if(m_spellInfo->IsPositive(hostileTarget))
             {
                 if(hostileTarget)
                     return SPELL_FAILED_BAD_TARGETS;
@@ -3979,7 +3965,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
     }
 
     // prevent casting at immune friendly target
-    if(IsPositiveSpell(m_spellInfo->Id, !m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
+    if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // target state requirements (not allowed state)
@@ -4799,7 +4785,7 @@ SpellFailedReason Spell::CheckCasterAuras() const
 
     //Check if the spell grants school or mechanic immunity.
     //We use bitmasks so the loop is done only once and not on every aura check below.
-    if ( m_spellInfo->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY )
+    if ( m_spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY) )
     {
         for(int i = 0;i < 3; i ++)
         {
@@ -4991,7 +4977,7 @@ int32 Spell::CalculatePowerCost()
         return 0;
 
     // Spell drain all exist power on cast (Only paladin lay of Hands)
-    if (m_spellInfo->AttributesEx & SPELL_ATTR1_DRAIN_ALL_POWER)
+    if (m_spellInfo->HasAttribute(SPELL_ATTR1_DRAIN_ALL_POWER))
     {
         // If power type - health drain all
         if (m_spellInfo->PowerType == POWER_HEALTH)
@@ -5647,7 +5633,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
         if((target->ToPlayer())->GetVisibility()==VISIBILITY_OFF)
             return false;
 
-        if((target->ToPlayer())->IsGameMaster() && !IsPositiveSpell(m_spellInfo->Id))
+        if((target->ToPlayer())->IsGameMaster() && !m_spellInfo->IsPositive())
             return false;
     }
 

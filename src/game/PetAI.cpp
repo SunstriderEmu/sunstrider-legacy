@@ -154,7 +154,7 @@ void PetAI::UpdateAI(const uint32 diff)
             // ignore some combinations of combat state and combat/noncombat spells
             if (!inCombat)
             {
-                if (!IsPositiveSpell(spellInfo->Id))
+                if (!spellInfo->IsPositive())
                     continue;
             }
             else

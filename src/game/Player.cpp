@@ -7553,7 +7553,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
                     continue;
             }
 
-            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pEnchant->spellid[s]);
             if (!spellInfo)
             {
                 TC_LOG_ERROR("entities.player","Player::CastItemCombatSpell Enchant %i, cast unknown spell %i", pEnchant->ID, pEnchant->spellid[s]);
@@ -7586,7 +7586,7 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
 
             if (roll_chance_f(chance))
             {
-                if(IsPositiveSpell(pEnchant->spellid[s],!IsFriendlyTo(target)))
+                if(spellInfo->IsPositive(!IsFriendlyTo(target)))
                     CastSpell(this, pEnchant->spellid[s], true, item);
                 else
                     CastSpell(target, pEnchant->spellid[s], true, item);
@@ -15490,7 +15490,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !IsPositiveEffect(spellid, effindex))
+            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex))
             {
                 if(remaintime  <= int32(timediff))
                     continue;

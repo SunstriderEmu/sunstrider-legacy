@@ -166,7 +166,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
                         return SPELL_FOOD;
             }
             // this may be a hack
-            else if((HasAttribute(SPELL_ATTR2_FOOD))
+            else if((HasAttribute(SPELL_ATTR2_FOOD_BUFF))
                 && !Category->Id)
                 return SPELL_WELL_FED;
 
@@ -488,11 +488,19 @@ uint32 SpellInfo::GetCategory() const
     return Category ? Category->Id : 0;
 }
 
-bool SpellInfo::HasEffect(SpellEffects effect) const
+bool SpellInfo::HasEffect(SpellEffects effect, uint8 effIndex /* = -1 */) const
 {
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        if (Effects[i].IsEffect(effect))
-            return true;
+    assert(effIndex < MAX_SPELL_EFFECTS);
+
+    if(effIndex == -1)
+    {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (Effects[i].IsEffect(effect))
+                return true;
+    } else {
+        return Effects[effIndex].IsEffect(effect);
+    }
+
     return false;
 }
 
@@ -635,6 +643,31 @@ bool SpellInfo::IsPassive() const
     return HasAttribute(SPELL_ATTR0_PASSIVE);
 }
 
+bool SpellInfo::IsPositive(bool hostileTarget /* = false */) const
+{
+    if(HasEffect(SPELL_EFFECT_DISPEL) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC))
+        return !hostileTarget;  // positive on friendly, negative on hostile
+
+    return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE);
+}
+
+bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false */) const
+{
+    if(HasEffect(SPELL_EFFECT_DISPEL, effIndex) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC, effIndex))
+        return !hostileTarget;  // positive on friendly, negative on hostile
+
+    switch (effIndex)
+    {
+        default:
+        case 0:
+            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF0);
+        case 1:
+            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF1);
+        case 2:
+            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF2);
+    }
+}
+
 AuraStateType SpellInfo::GetAuraState() const
 {
     if (GetSpellSpecific() == SPELL_SEAL)
@@ -712,15 +745,6 @@ float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
     return radius;
 }
 
-
-
-
-
-
-
-
-
-
 void SpellInfo::LoadCustomAttributes()
 {
     bool auraSpell = true;
@@ -787,6 +811,15 @@ void SpellInfo::LoadCustomAttributes()
                 break;
         }
     }
+
+    if (!_IsPositiveEffect(EFFECT_0, true))
+        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
+
+    if (!_IsPositiveEffect(EFFECT_1, true))
+        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
+
+    if (!_IsPositiveEffect(EFFECT_2, true))
+        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
 
     if(SpellVisual == 3879)
         AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
@@ -933,4 +966,334 @@ void SpellInfo::LoadCustomAttributes()
             AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
             break;
     }
+}
+
+bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
+{
+    // talents
+    if (IsPassive() && GetTalentSpellCost(Id))
+        return true;
+
+    switch(Id)
+    {
+        case 23333:                                         // BG spell
+        case 23335:                                         // BG spell
+        case 34976:                                         // BG spell
+        case 31579:                                         // Arcane Empowerment Rank1 talent aura with one positive and one negative (check not needed in wotlk)
+        case 31582:                                         // Arcane Empowerment Rank2
+        case 31583:                                         // Arcane Empowerment Rank3
+        case 38307:                                         // The Dark of Night
+        case 40477:                                         // Forceful Strike
+        case 38318:                                         // Transformation - Black Whelp
+        case 24732:                                         // Bat Costume
+        case 24740:                                         // Wisp Costume
+        case 43730:                                         // Electrified
+        case 37472:
+        case 45989:
+        case 20553:
+        case 45856:                                         // Breath: Haste
+        case 45860:                                         // Breath: Revitalize
+        case 45848:                                         // Shield of the Blue
+        case 45839:                                         // Vengeance of the Blue Flight
+        case 23505:                                         // Berserking (BG buff)
+        case 1462:                                          // Beast Lore
+        case 30877:                                         // Tag Murloc
+            return true;
+        case 1852:                                          // Silenced (GM)
+        case 46392:                                         // Focused Assault
+        case 46393:                                         // Brutal Assault
+        case 43437:                                         // Paralyzed
+        case 28441:                                         // not positive dummy spell
+        case 37675:                                         // Chaos Blast
+        case 41519:                                         // Mark of Stormrage
+        case 34877:                                         // Custodian of Time
+        case 34700:                                         // Allergic Reaction
+        case 31719:                                         // Suspension
+        case 43501:                                         // Siphon Soul (Malacrass)
+        case 30500:                                         // Death Coil (Nethekurse - Shattered Halls)
+        case 38065:                                         // Death Coil (Nexus Terror - Mana Tombs)
+        case 45661:                                         // Encapsulate (Felmyst - Sunwell Plateau)
+        case 45662:
+        case 45665:
+        case 47002:
+        case 41070:                                         // Death Coil (Shadowmoon Deathshaper - Black Temple)
+        case 40165:
+        case 40055:
+        case 40166:
+        case 40167:                                         // Introspection
+        case 46458:
+        case 16097:                                         // Hex
+        case 7103:
+        case 6945:                                          // Chest Pains
+        case 23182:
+        case 40695:                                         // Illidan - Caged
+        case 37108:                                         // Quest 10557
+        case 37966:
+        case 30529:
+        case 37463:
+        case 37461:
+        case 37462:
+        case 37465:
+        case 37453:
+        case 37498:
+        case 37427:
+        case 37406:
+        case 27861:
+        case 29214: // Wrath of the Plaguebringer
+        case 30421: //netherspite spell
+        case 30422: //netherspite spell
+        case 30423: //netherspite spell
+            return false;
+    }
+
+    switch(Effects[effIndex].Effect)
+    {
+        // Those are positive on friendly, negative on hostile, handled is IsPositive instead since we cannot give a static value here
+        /* case SPELL_EFFECT_DISPEL:
+        case SPELL_EFFECT_DISPEL_MECHANIC:
+            return true; */
+
+        // always positive effects (check before target checks that provided non-positive result in some case for positive effects)
+        case SPELL_EFFECT_HEAL:
+        case SPELL_EFFECT_LEARN_SPELL:
+        case SPELL_EFFECT_SKILL_STEP:
+        case SPELL_EFFECT_HEAL_PCT:
+        case SPELL_EFFECT_ENERGIZE_PCT:
+            return true;
+
+        case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
+            return false;
+            // non-positive aura use
+        case SPELL_EFFECT_APPLY_AURA:
+        case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
+        {
+            switch(Effects[effIndex].ApplyAuraName)
+            {
+                case SPELL_AURA_DUMMY:
+                {
+                    // dummy aura can be positive or negative dependent from casted spell
+                    switch(Id)
+                    {
+                        case 13139:                         // net-o-matic special effect
+                        case 23445:                         // evil twin
+                        case 38637:                         // Nether Exhaustion (red)
+                        case 38638:                         // Nether Exhaustion (green)
+                        case 38639:                         // Nether Exhaustion (blue)
+                            return false;
+                        default:
+                            break;
+                    }
+                }   break;
+                case SPELL_AURA_MOD_DAMAGE_DONE:            // dependent from bas point sign (negative -> negative)
+                case SPELL_AURA_MOD_STAT:
+                case SPELL_AURA_MOD_SKILL:
+                case SPELL_AURA_MOD_DODGE_PERCENT:
+                case SPELL_AURA_MOD_HEALING_DONE:
+                case SPELL_AURA_MOD_HEALING_PCT:
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_DONE:
+                {
+                    if(Effects[effIndex].BasePoints+int32(Effects[effIndex].BaseDice) < 0)
+                        return false;
+                    break;
+                }
+                case SPELL_AURA_MOD_DAMAGE_TAKEN:           // dependent from bas point sign (positive -> negative)
+                    if(Effects[effIndex].BasePoints+int32(Effects[effIndex].BaseDice) > 0)
+                        return false;
+                    break;
+                case SPELL_AURA_MOD_SPELL_CRIT_CHANCE:
+                    if(Effects[effIndex].BasePoints+int32(Effects[effIndex].BaseDice) > 0)
+                        return true;                        // some expected positive spells have SPELL_ATTR1_NEGATIVE
+                    break;
+                case SPELL_AURA_ADD_TARGET_TRIGGER:
+                    return true;
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                    if (deep)
+                    {
+                        if(Id != Effects[effIndex].TriggerSpell)
+                        {
+                            uint32 spellTriggeredId = Effects[effIndex].TriggerSpell;
+                            SpellInfo const *spellTriggeredProto = sSpellMgr->GetSpellInfo(spellTriggeredId);
+
+                            if(spellTriggeredProto)
+                            {
+                                // non-positive targets of main spell return early
+                                for(int i = 0; i < 3; ++i)
+                                {
+                                    // if non-positive trigger cast targeted to positive target this main cast is non-positive
+                                    // this will place this spell auras as debuffs
+                                    if(_IsPositiveTarget(spellTriggeredProto->Effects[effIndex].TargetA.GetTarget(),spellTriggeredProto->Effects[effIndex].TargetB.GetTarget()) && !spellTriggeredProto->IsPositiveEffect(i))
+                                        return false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case SPELL_AURA_PROC_TRIGGER_SPELL:
+                    // many positive auras have negative triggered spells at damage for example and this not make it negative (it can be canceled for example)
+                    break;
+                case SPELL_AURA_MOD_STUN:                   //have positive and negative spells, we can't sort its correctly at this moment.
+                    if(effIndex==0 && Effects[1].Effect==0 && Effects[2].Effect==0)
+                        return false;                       // but all single stun aura spells is negative
+
+                    // Petrification
+                    if(Id == 17624)
+                        return false;
+                    break;
+                case SPELL_AURA_MOD_PACIFY_SILENCE:
+                    if (Id == 24740)             // Wisp Costume
+                        return true;
+                    return false;
+                case SPELL_AURA_MOD_ROOT:
+                case SPELL_AURA_MOD_SILENCE:
+                case SPELL_AURA_GHOST:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_MOD_STALKED:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                    return false;
+                case SPELL_AURA_PERIODIC_DAMAGE:            // used in positive spells also.
+                    // part of negative spell if casted at self (prevent cancel)
+                    if(Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+                        return false;
+                    break;
+                case SPELL_AURA_MOD_DECREASE_SPEED:         // used in positive spells also
+                    // part of positive spell if casted at self
+                    if(Effects[effIndex].TargetA.GetTarget() != TARGET_UNIT_CASTER)
+                        return false;
+                    // but not this if this first effect (don't found batter check)
+                    if(Attributes & SPELL_ATTR0_NEGATIVE_1 && effIndex==0)
+                        return false;
+                    break;
+                case SPELL_AURA_TRANSFORM:
+                    // some spells negative
+                    switch(Id)
+                    {
+                        case 36897:                         // Transporter Malfunction (race mutation to horde)
+                        case 36899:                         // Transporter Malfunction (race mutation to alliance)
+                            return false;
+                    }
+                    break;
+                case SPELL_AURA_MOD_SCALE:
+                    // some spells negative
+                    switch(Id)
+                    {
+                        case 36900:                         // Soul Split: Evil!
+                        case 36901:                         // Soul Split: Good
+                        case 36893:                         // Transporter Malfunction (decrease size case)
+                        case 36895:                         // Transporter Malfunction (increase size case)
+                            return false;
+                    }
+                    break;
+                case SPELL_AURA_MECHANIC_IMMUNITY:
+                {
+                    // non-positive immunities
+                    switch(Effects[effIndex].MiscValue)
+                    {
+                        case MECHANIC_BANDAGE:
+                        case MECHANIC_SHIELD:
+                        case MECHANIC_MOUNT:
+                        case MECHANIC_INVULNERABILITY:
+                            return false;
+                        default:
+                            break;
+                    }
+                }   break;
+                case SPELL_AURA_ADD_FLAT_MODIFIER:          // mods
+                case SPELL_AURA_ADD_PCT_MODIFIER:
+                {
+                    // non-positive mods
+                    switch(Effects[effIndex].MiscValue)
+                    {
+                        case SPELLMOD_COST:                 // dependent from bas point sign (negative -> positive)
+                            if(Effects[effIndex].BasePoints+int32(Effects[effIndex].BaseDice) > 0)
+                            {
+                                if (!deep)
+                                {
+                                    bool negative = true;
+                                    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                                    {
+                                        if (i != effIndex)
+                                            if (_IsPositiveEffect(i, true))
+                                            {
+                                                negative = false;
+                                                break;
+                                            }
+                                    }
+                                    if (negative)
+                                        return false;
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }   break;
+                case SPELL_AURA_FORCE_REACTION:
+                    if(Id==42792)               // Recently Dropped Flag (prevent cancel)
+                        return false;
+                    break;
+                case SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN:
+                    if (Effects[effIndex].BasePoints+int32(Effects[effIndex].BaseDice) > 0)
+                        return false;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        }
+        
+        default:
+            break;
+    }
+
+    // non-positive targets
+    if(!_IsPositiveTarget(Effects[effIndex].TargetA.GetTarget(),Effects[effIndex].TargetB.GetTarget()))
+        return false;
+
+    if(HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
+       || HasAttribute(SPELL_ATTR0_NEGATIVE_1))
+        return false;
+
+    // negative spell if triggered spell is negative
+    if (!deep && !Effects[effIndex].ApplyAuraName && Effects[effIndex].TriggerSpell)
+    {
+        if (SpellInfo const* spellTriggeredProto = sSpellMgr->GetSpellInfo(Effects[effIndex].TriggerSpell))
+            if (!spellTriggeredProto->_IsPositiveSpell())
+                return false;
+    }
+
+    // ok, positive
+    return true;
+}
+
+bool SpellInfo::_IsPositiveTarget(uint32 targetA, uint32 targetB)
+{
+    // non-positive targets
+    switch (targetA)
+    {
+        case TARGET_UNIT_NEARBY_ENEMY:
+        case TARGET_UNIT_TARGET_ENEMY:
+        case TARGET_UNIT_SRC_AREA_ENEMY:
+        case TARGET_UNIT_DEST_AREA_ENEMY:
+        case TARGET_UNIT_CONE_ENEMY:
+//LK    case TARGET_UNIT_CONE_ENEMY_104:
+        case TARGET_DEST_DYNOBJ_ENEMY:
+        case TARGET_DEST_TARGET_ENEMY:
+            return false;
+        default:
+            break;
+    }
+    if (targetB)
+        return _IsPositiveTarget(targetB, 0);
+    return true;
+}
+
+bool SpellInfo::_IsPositiveSpell() const
+{
+    // spells with at least one negative effect are considered negative
+    // some self-applied spells have negative effects but in self casting case negative check ignored.
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (!_IsPositiveEffect(i, true))
+            return false;
+    return true;
 }

@@ -1370,7 +1370,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
         for(AuraMap::iterator itr = vAuras.begin(); itr != vAuras.end(); ++itr)
         {
             SpellInfo const *spellInfo = (*itr).second->GetSpellInfo();
-            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->HasAttribute(SPELL_ATTR3_CANT_MISS))
+            if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
             {
                 (*itr).second->SetAuraDuration((*itr).second->GetAuraMaxDuration());
                 (*itr).second->UpdateAuraDuration();
@@ -1646,7 +1646,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
         for(AuraMap::iterator itr = vAuras.begin(); itr != vAuras.end(); ++itr)
         {
             SpellInfo const *spellInfo = (*itr).second->GetSpellInfo();
-            if( spellInfo->HasAttribute(SPELL_ATTR3_CANT_MISS) && spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && ((*itr).second->GetCasterGUID() == GetGUID()) && spellInfo->Id != 41461) //Gathios judgement of blood (can't seem to find a general rule to avoid this hack)
+            if( spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT) && spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && ((*itr).second->GetCasterGUID() == GetGUID()) && spellInfo->Id != 41461) //Gathios judgement of blood (can't seem to find a general rule to avoid this hack)
             {
                 (*itr).second->SetAuraDuration((*itr).second->GetAuraMaxDuration());
                 (*itr).second->UpdateAuraDuration();
@@ -1750,7 +1750,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
          && (  !spellProto 
                || !sSpellMgr->IsBinaryMagicResistanceSpell(spellProto) 
                || !(spellProto->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
-               || !(spellProto->HasAttribute(SPELL_ATTR3_CANT_MISS)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
+               || !(spellProto->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
     {
         // Get base victim resistance for school
@@ -2509,6 +2509,11 @@ int32 Unit::GetMechanicResistChance(const SpellInfo *spell)
 // Melee based spells hit result calculations
 SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
 {
+    // Spells with SPELL_ATTR3_IGNORE_HIT_RESULT will additionally fully ignore
+    // resist and deflect chances
+    if (spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+        return SPELL_MISS_NONE;
+
     WeaponAttackType attType = BASE_ATTACK;
 
     if (spell->DmgClass == SPELL_DAMAGE_CLASS_RANGED)
@@ -2524,8 +2529,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
 
     bool canParry = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
     bool canDodge = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
-    bool canBlock = spell->HasAttribute(SPELL_ATTR3_UNK3) && !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
-    bool canMiss = !(spell->HasAttribute(SPELL_ATTR3_CANT_MISS));
+    bool canBlock = spell->HasAttribute(SPELL_ATTR3_BLOCKABLE_SPELL) && !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
+    bool canMiss = true;
 
     if (Player* player = ToPlayer())
     {
@@ -2639,20 +2644,17 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
 
     if (canBlock)
     {
-        if (sSpellMgr->isFullyBlockableSpell(spell))
+        if (pVictim->HasInArc(M_PI, this))
         {
-            if (pVictim->HasInArc(M_PI, this))
-            {
-                float blockChance = pVictim->GetUnitBlockChance();
-                blockChance -= (0.04*fullSkillDiff);
+            float blockChance = pVictim->GetUnitBlockChance();
+            blockChance -= (0.04*fullSkillDiff);
 
-                if (blockChance < 0.0)
-                    blockChance = 0.0;
+            if (blockChance < 0.0)
+                blockChance = 0.0;
 
-                tmp += blockChance * 100;
-                if (roll < tmp)
-                    return SPELL_MISS_BLOCK;
-            }
+            tmp += blockChance * 100;
+            if (roll < tmp)
+                return SPELL_MISS_BLOCK;
         }
     }
 
@@ -2683,7 +2685,7 @@ float Unit::GetAverageSpellResistance(Unit* caster, SpellSchoolMask damageSchool
 SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, Item* castItem)
 {
     // Can`t miss on dead target (on skinning for example)
-    if (!pVictim->IsAlive() || spell->HasAttribute(SPELL_ATTR3_CANT_MISS))
+    if (!pVictim->IsAlive() || spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
         return SPELL_MISS_NONE;
         
     // Always 1% resist chance. Send this as SPELL_MISS_MISS (this is not BC blizzlike, this was changed in WotLK).
@@ -2789,7 +2791,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
 
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
-    if (IsPositiveSpell(spell->Id,!IsFriendlyTo(pVictim)))
+    if (spell->IsPositive(!IsFriendlyTo(pVictim)))
         return SPELL_MISS_NONE;
 
     // Check for immune (use charges)
@@ -2833,7 +2835,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
     if(    sSpellMgr->IsBinaryMagicResistanceSpell(spell)
         && !(spell->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
-        && !(spell->HasAttribute(SPELL_ATTR3_CANT_MISS))  )
+        && !(spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))  )
     {
         float random = (float)rand()/(float)RAND_MAX;
         float resistChance = pVictim->GetAverageSpellResistance(this,(SpellSchoolMask)spell->SchoolMask);
@@ -3819,7 +3821,7 @@ bool Unit::AddAura(Aura *Aur)
     }
 
     if ((Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CONFUSE) || Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_CHARM) ||
-        Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN)) && (Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE))
+        Aur->DoesAuraApplyAuraName(SPELL_AURA_MOD_STUN)) && (Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_HEARTBEAT_RESIST_CHECK))
         m_justCCed = 2;
 
     SpellInfo const* aurSpellInfo = Aur->GetSpellInfo();
@@ -3997,7 +3999,7 @@ bool Unit::AddAura(Aura *Aur)
             m_interruptableAuras.push_back(Aur);
             AddInterruptMask(Aur->GetSpellInfo()->AuraInterruptFlags);
         }
-        if((Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE)
+        if((Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_HEARTBEAT_RESIST_CHECK)
             && (Aur->GetModifier()->m_auraname != SPELL_AURA_MOD_POSSESS)) //only dummy aura is breakable
         {
             m_ccAuras.push_back(Aur);
@@ -4400,7 +4402,7 @@ bool Unit::RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool 
     for(AuraMap::iterator itr = m_Auras.begin(); itr != m_Auras.end() && myCount > 0; )
     {
         SpellInfo const* spell = itr->second->GetSpellInfo();
-        if (spell->SpellFamilyName == spellFamilyName && IsPositiveSpell(spell->Id))
+        if (spell->SpellFamilyName == spellFamilyName && spell->IsPositive())
         {
             if (spell->IsPassive() && !withPassive)
                 ++itr;
@@ -4543,7 +4545,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             UpdateInterruptMask();
         }
 
-        if((Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE)
+        if((Aur->GetSpellInfo()->Attributes & SPELL_ATTR0_HEARTBEAT_RESIST_CHECK)
             && (Aur->GetModifier()->m_auraname != SPELL_AURA_MOD_POSSESS)) //only dummy aura is breakable
         {
             m_ccAuras.remove(Aur);
@@ -6392,7 +6394,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         if (procSpell && procSpell->Id == 755)
             return true;
         // Unsure
-        if (procSpell && IsPositiveSpell(procSpell->Id))
+        if (procSpell && procSpell->IsPositive())
             return true;
         break;
      }
@@ -6718,7 +6720,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         {
             if (procSpell->Id == 2096 || procSpell->Id == 10909)
                 return false;
-            if (IsPositiveSpell(procSpell->Id))
+            if (procSpell->IsPositive())
                 return false;
             break;
         }
@@ -6862,9 +6864,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     if ( target == NULL && pVictim)
     {
         // Do not allow proc negative spells on self
-        if (GetGUID()==pVictim->GetGUID() && !(IsPositiveSpell(trigger_spell_id) || (ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)) && !(procEx & PROC_EX_REFLECT))
+        if (GetGUID()==pVictim->GetGUID() && !(triggerEntry->IsPositive() || (ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL)) && !(procEx & PROC_EX_REFLECT))
             return false;
-        target = !(ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && IsPositiveSpell(trigger_spell_id) ? this : pVictim;
+        target = !(ProcFlags & PROC_FLAG_SUCCESSFUL_POSITIVE_SPELL) && triggerEntry->IsPositive() ? this : pVictim;
     }
 
     // default case
@@ -8283,7 +8285,7 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
             // taken
-            if (pVictim && !IsPositiveSpell(spellProto->Id,!IsFriendlyTo(pVictim)))
+            if (pVictim && !spellProto->IsPositive(!IsFriendlyTo(pVictim)))
             {
                 // Modify critical chance by victim SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE
                 crit_chance += pVictim->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_ATTACKER_SPELL_CRIT_CHANCE, schoolMask);
@@ -8733,15 +8735,20 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
         if(itr->type == spellInfo->Dispel)
             return true;
 
-    if( !(spellInfo->AttributesEx & SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) &&         // unaffected by school immunity
-        !(spellInfo->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)               // can remove immune (by dispell or immune it)
+    if( !(spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)) &&         // unaffected by school immunity
+        !(spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))               // can remove immune (by dispell or immune it)
         && (spellInfo->Id != 42292))
     {
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for(SpellImmuneList::const_iterator itr = schoolList.begin(); itr != schoolList.end(); ++itr)
-            if( !(IsPositiveSpell(itr->spellId) && IsPositiveSpell(spellInfo->Id)) &&
+        {
+            SpellInfo const* spellImmuneInfo = sSpellMgr->GetSpellInfo(itr->spellId);
+            if(!spellImmuneInfo)
+                continue;
+            if( !(spellImmuneInfo->IsPositive() && spellInfo->IsPositive()) && //at least one of the given spell and the immune spell is negative
                 (itr->type & spellInfo->GetSchoolMask()) )
                 return true;
+        }
     }
 
     SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
@@ -8979,7 +8986,7 @@ void Unit::ApplySpellDispelImmunity(const SpellInfo * spellProto, DispelType typ
 {
     ApplySpellImmune(spellProto->Id,IMMUNITY_DISPEL, type, apply);
 
-    if (apply && spellProto->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+    if (apply && spellProto->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
         RemoveAurasWithDispelType(type);
 }
 
@@ -11030,7 +11037,7 @@ void CharmInfo::InitCharmCreateSpells()
                     onlyselfcast = false;
             }
              
-            if(onlyselfcast || !IsPositiveSpell(spellId))   //only self cast and spells versus enemies are autocastable
+            if(onlyselfcast || !spellInfo->IsPositive())   //only self cast and spells versus enemies are autocastable
                 newstate = ACT_DISABLED;
             else
                 newstate = ACT_CAST;
@@ -13423,7 +13430,7 @@ void Unit::RestoreDisplayId()
             if (!handledAura)
                 handledAura = (*i);
             // prefer negative auras
-            if(!IsPositiveSpell((*i)->GetSpellInfo()->Id))
+            if(!(*i)->GetSpellInfo()->IsPositive())
             {
                 handledAura = (*i);
                 break;
@@ -13438,10 +13445,11 @@ void Unit::RestoreDisplayId()
         handledAura->ApplyModifier(false);
         handledAura->ApplyModifier(true);
     }
-    // we've found shapeshift
+
+    // no transform aura found, check for shapeshift
     else if (uint32 modelId = GetModelForForm(GetShapeshiftForm()))
         SetDisplayId(modelId);
-    // no auras found - set modelid to default
+    // nothing found - set modelid to default
     else
     {
         SetDisplayId(GetNativeDisplayId());

@@ -350,7 +350,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     }
 
     m_isPassive = GetSpellInfo()->IsPassive();
-    m_positive = IsPositiveEffect(GetId(), m_effIndex, caster ? caster->IsHostileTo(target) : false);
+    m_positive = GetSpellInfo()->IsPositiveEffect(m_effIndex, caster ? caster->IsHostileTo(target) : false);
 
     m_isSingleTargetAura = IsSingleTargetSpell(m_spellProto);
 
@@ -4008,7 +4008,7 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
     if(GetId()==42292)
         mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
 
-    if(apply && GetSpellInfo()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+    if(apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
     {
         Unit::AuraMap& Auras = m_target->GetAuras();
         for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
@@ -4124,7 +4124,7 @@ void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
 
 void Aura::HandleAuraModStateImmunity(bool apply, bool Real)
 {
-    if(apply && Real && GetSpellInfo()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+    if(apply && Real && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
     {
         Unit::AuraList const& auraList = m_target->GetAurasByType(AuraType(m_modifier.m_miscvalue));
         for(Unit::AuraList::const_iterator itr = auraList.begin(); itr != auraList.end();)
@@ -4149,10 +4149,10 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 
     m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,m_modifier.m_miscvalue,apply);
 
-    if(Real && apply && GetSpellInfo()->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+    if(Real && apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
     {
         bool hostileTarget = GetCaster() ? GetCaster()->IsFriendlyTo(m_target) : false;
-        if(IsPositiveSpell(GetId(),hostileTarget))                        //Only positive immunity removes auras
+        if(GetSpellInfo()->IsPositive(hostileTarget))                        //Only positive immunity removes auras
         {
             uint32 school_mask = m_modifier.m_miscvalue;
             Unit::AuraMap& Auras = m_target->GetAuras();
@@ -7059,7 +7059,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
         m_target->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
     }
 
-    if (apply && m_spellProto->AttributesEx & SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+    if (apply && m_spellProto->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
         for (std::list <AuraType>::iterator iter = immunity_list.begin(); iter != immunity_list.end(); ++iter)
             m_target->RemoveAurasByType(*iter);
 }

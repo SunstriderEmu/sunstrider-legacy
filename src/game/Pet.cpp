@@ -313,7 +313,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             // patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
             // so overwrite old state
             SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
-            if (spellInfo && spellInfo->AttributesEx & SPELL_ATTR1_UNAUTOCASTABLE_BY_PET) m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
+            if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET)) m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
         }
 
         //init teach spells
@@ -1521,7 +1521,7 @@ void Pet::_LoadAuras(uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !IsPositiveEffect(spellid, effindex))
+            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex))
             {
                 if(remaintime  <= int32(timediff))
                     continue;
@@ -1550,7 +1550,7 @@ void Pet::_LoadAuras(uint32 timediff)
 
             Unit* owner = GetOwner(); 
             // load negative auras only if player has recently dismissed his pet
-            if(owner && !owner->HasAura(SPELL_PET_RECENTLY_DISMISSED) && !IsPositiveEffect(spellid, effindex))
+            if(owner && !owner->HasAura(SPELL_PET_RECENTLY_DISMISSED) && !spellproto->IsPositiveEffect(effindex))
                 continue;
 
             if (abort)
@@ -1631,7 +1631,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     }
 
     // same spells don't have autocast option
-    if (spellInfo->AttributesEx & SPELL_ATTR1_UNAUTOCASTABLE_BY_PET)
+    if (spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET))
         active = ACT_CAST;
 
     PetSpellMap::iterator itr = m_spells.find(spell_id);

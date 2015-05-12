@@ -2931,7 +2931,7 @@ void Spell::EffectApplyAura(uint32 i)
             spellId = 41425;                                // Hypothermia
         else if (m_spellInfo->Mechanic == MECHANIC_BANDAGE) // Bandages
             spellId = 11196;                                // Recently Bandaged
-        else if ((m_spellInfo->AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH) && (m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS)))
+        else if ((m_spellInfo->HasAttribute(SPELL_ATTR1_NOT_BREAK_STEALTH)) && (m_spellInfo->HasAttribute(SPELL_ATTR2_NOT_RESET_AUTO_ACTIONS)))
             spellId = 23230;                                // Blood Fury - Healing Reduction
 
         SpellInfo const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(spellId);
@@ -4090,15 +4090,9 @@ void Spell::EffectDispel(uint32 i)
         {
             if(aur->GetSpellInfo()->Dispel == DISPEL_MAGIC)
             {
-                bool positive = true;
-                if (!aur->IsPositive())
-                    positive = false;
-                else
-                    positive = !(aur->GetSpellInfo()->AttributesEx & SPELL_ATTR1_NEGATIVE);
-
                 // do not remove positive auras if friendly target
                 //               negative auras if non-friendly target
-                if(positive == unitTarget->IsFriendlyTo(m_caster))
+                if(aur->IsPositive() == unitTarget->IsFriendlyTo(m_caster))
                     continue;
             }
             // Add every aura stack to dispel list
@@ -7042,7 +7036,7 @@ void Spell::EffectCharge(uint32 i)
         m_caster->GetMotionMaster()->MoveCharge(m_preGeneratedPath, speed);
 
     // not all charge effects used in negative spells
-    if ( !IsPositiveSpell(m_spellInfo->Id) && m_caster->GetTypeId() == TYPEID_PLAYER)
+    if ( !m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->Attack(target, true);
 }
 

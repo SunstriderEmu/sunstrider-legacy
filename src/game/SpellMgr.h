@@ -328,10 +328,6 @@ bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1, uint32 spellSpec2);
 bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1, uint32 spellSpec2);
 bool IsPassiveSpell(uint32 spellId);
 
-bool IsPositiveSpell(uint32 spellId, bool hostileTarget = true);
-bool IsPositiveEffect(uint32 spellId, uint32 effIndex, bool hostileTarget = true);
-bool IsPositiveTarget(uint32 targetA, uint32 targetB);
-
 bool IsSingleTargetSpell(SpellInfo const *spellInfo);
 bool IsSingleTargetSpells(SpellInfo const *spellInfo1, SpellInfo const *spellInfo2);
 
@@ -938,7 +934,6 @@ class SpellMgr
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
 
         bool IsBinaryMagicResistanceSpell(SpellInfo const* spell);
-        bool isFullyBlockableSpell(SpellInfo const* spellInfo) const;
 
         // Modifiers
     public:

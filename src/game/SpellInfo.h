@@ -46,15 +46,19 @@ enum SpellCustomAttributes
     SPELL_ATTR0_CU_IGNORE_ARMOR                  = 0x00008000,
     SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
     SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL  = 0x00020000,
-    //SPELL_ATTR0_CU_IGNORE_CASTER_LOS             = 0x00040000,
-    SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00080000,     // Instead of original caster
-    SPELL_ATTR0_CU_CANT_BREAK_CC                 = 0x00100000,     // Damage done by these spells won't break crowd controls
-    SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00200000,
-    SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00400000,     // Auras removed when target enters an instance
-    SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          = 0x00800000,
-    //SPELL_ATTR0_CU_NO_SPELL_BONUS                = 0x01000000,     // DO NOT USE; use SPELL_ATTR3_NO_DONE_BONUS instead
-    SPELL_ATTR0_CU_CONE_180                      = 0x02000000,
-    SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET       = 0x04000000,
+    SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00040000,     // Instead of original caster
+    SPELL_ATTR0_CU_CANT_BREAK_CC                 = 0x00080000,     // Damage done by these spells won't break crowd controls
+    SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00100000,
+    SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
+    SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
+    SPELL_ATTR0_CU_CONE_180                      = 0x00800000,
+    SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET       = 0x01000000,
+
+    SPELL_ATTR0_CU_NEGATIVE_EFF0                 = 0x02000000,
+    SPELL_ATTR0_CU_NEGATIVE_EFF1                 = 0x04000000,
+    SPELL_ATTR0_CU_NEGATIVE_EFF2                 = 0x08000000,
+
+    SPELL_ATTR0_CU_NEGATIVE                      = SPELL_ATTR0_CU_NEGATIVE_EFF0 | SPELL_ATTR0_CU_NEGATIVE_EFF1 | SPELL_ATTR0_CU_NEGATIVE_EFF2
 };
 
 enum SpellCastTargetFlags
@@ -222,7 +226,6 @@ private:
 class SpellInfo
 {
 public:
-
     uint32 Id;
     SpellCategoryEntry const* Category;
     uint32 Dispel;
@@ -320,7 +323,8 @@ public:
     ~SpellInfo();
 
     uint32 GetCategory() const;
-    bool HasEffect(SpellEffects effect) const;
+    /** -1 for all indexes */
+    bool HasEffect(SpellEffects effect, uint8 effIndex = -1) const;
     bool HasAura(AuraType aura) const;
     bool HasAreaAuraEffect() const;
 
@@ -343,6 +347,15 @@ public:
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
     bool IsPassive() const;
+    /** Some spells, such as dispells, can be positive or negative depending on target */
+    bool IsPositive(bool hostileTarget = false) const;
+    /** Some effects, such as dispells, can be positive or negative depending on target */
+    bool IsPositiveEffect(uint8 effIndex, bool hostileTarget = false) const;
+    /* Internal check, will try to deduce result from spell effects + lots of hardcoded id's
+    Use "deep" to enable recursive search in triggered spells
+    */
+    bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
+    bool _IsPositiveSpell() const;
 
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;
@@ -355,7 +368,6 @@ public:
     SpellSpecificType GetSpellSpecific() const;
     SpellSpecificType GetSpellElixirSpecific() const;
 
-
     float GetMinRange(bool positive = false) const;
     //always use GetSpellModOwner() for caster
     float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;
@@ -363,6 +375,7 @@ public:
 private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
     void LoadCustomAttributes();
+    static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
 };
 
 #endif // _SPELLINFO_H
