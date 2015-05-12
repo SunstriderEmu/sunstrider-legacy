@@ -3178,8 +3178,8 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                     if (creature->hasLootRecipient())
                     {
                         dynamicFlags |= UNIT_DYNFLAG_TAPPED;
-                      /*TODO tappedby  if (creature->isTappedBy(target))
-                            dynamicFlags |= UNIT_DYNFLAG_TAPPED_BY_PLAYER; */
+                        if (creature->isTappedBy(target))
+                            dynamicFlags |= UNIT_DYNFLAG_TAPPED_BY_PLAYER;
                     }
 
                     if (!target->IsAllowedToLoot(creature))
@@ -9861,9 +9861,6 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
     // Only mobs can manage threat lists
     if(CanHaveThreatList())
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
-        
-    if (ToCreature() && pVictim->ToPlayer() && ToCreature()->IsWorldBoss())
-        ToCreature()->AllowToLoot((pVictim->ToPlayer())->GetGUIDLow());
 }
 
 //======================================================================
@@ -12322,6 +12319,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
         if(!cVictim->IsPet())
         {
+            //save threat list before deleting it
+            if(cVictim->IsWorldBoss())
+                cVictim->ConvertThreatListIntoPlayerListAtDeath();
+
             cVictim->DeleteThreatList();
             if(!cVictim->GetFormation() || !cVictim->GetFormation()->isLootLinked(cVictim)) //the flag is set when whole group is dead for those with linked loot 
                 cVictim->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);

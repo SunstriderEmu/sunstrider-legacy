@@ -1002,7 +1002,7 @@ class ObjectMgr
         typedef std::set<uint32> TavernAreaTriggerSet;
         typedef std::set<uint32> GameObjectForQuestSet;
 
-        GroupSet            mGroupSet;
+        GroupSet            mGroupSet; //groups are identified by leader guid
         GuildMap            mGuildMap;
         ArenaTeamMap        mArenaTeamMap;
 

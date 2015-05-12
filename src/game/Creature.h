@@ -688,7 +688,9 @@ class Creature : public Unit
         bool lootForPickPocketed;
         bool lootForBody;
         Player *GetLootRecipient() const;
-        bool hasLootRecipient() const { return m_lootRecipient!=0; }
+        Group* GetLootRecipientGroup() const;
+        bool hasLootRecipient() const { return m_lootRecipient != 0 || m_lootRecipientGroup; }
+        bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
 
         void SetLootRecipient (Unit* unit);
         void AllLootRemovedFromCorpse();
@@ -802,10 +804,11 @@ class Creature : public Unit
         uint32 GetCreaturePoolId() const { return m_creaturePoolId; }
         void SetCreaturePoolId(uint32 id) { m_creaturePoolId = id; }
         
-        void AllowToLoot(uint64 guid) { m_allowedToLoot.push_back(guid); }
-        bool IsAllowedToLoot(uint64 guid) const;
-        void ResetAllowedToLootList() { m_allowedToLoot.clear(); }
-        
+        /** This is only filled for world bosses */
+        bool HadPlayerInThreatListAtDeath(uint64 guid) const;
+        void ConvertThreatListIntoPlayerListAtDeath();
+        std::set<uint32> const& GetThreatListAtDeath() const { return m_playerInThreatListAtDeath; }
+
         // Respawned since less than 5 secs
         bool HasJustRespawned() const { return (m_timeSinceSpawn < 5000); }
         void SetCorpseRemoveTime(uint32 removeTime) { m_corpseRemoveTime = removeTime; }
@@ -861,6 +864,9 @@ class Creature : public Unit
 
         uint32 m_lootMoney;
         uint64 m_lootRecipient;
+        uint32 m_lootRecipientGroup; //group identified by leader
+        /* This is only filled for worldbosses with every players with threat > 0  */
+        std::set<uint32> m_playerInThreatListAtDeath;
 
         /// Timers
         uint32 m_corpseRemoveTime;                          // (msecs)timer for death or corpse disappearance
@@ -899,7 +905,7 @@ class Creature : public Unit
         
         uint32 m_creaturePoolId;
         
-        std::vector<uint64> m_allowedToLoot;
+        //std::vector<uint64> m_allowedToLoot;
         
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
         

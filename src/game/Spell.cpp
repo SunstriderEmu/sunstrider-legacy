@@ -3825,13 +3825,11 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 return SPELL_FAILED_BAD_TARGETS;
         }
         
-        /* Todo tappedby
         // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
-            if (HasAttribute(SPELL_ATTR2_CANT_TARGET_TAPPED))
-                if (Creature const* targetCreature = unitTarget->ToCreature())
-                    if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(caster->ToPlayer()))
-                        return SPELL_FAILED_CANT_CAST_ON_TAPPED;
-                        */
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->HasAttribute(SPELL_ATTR2_CANT_TARGET_TAPPED))
+            if (Creature const* targetCreature = unitTarget->ToCreature())
+                if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(m_caster->ToPlayer()))
+                    return SPELL_FAILED_CANT_CAST_ON_TAPPED;
 
         // Not allow disarm unarmed player
         if (m_spellInfo->Mechanic == MECHANIC_DISARM)

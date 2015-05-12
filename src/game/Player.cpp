@@ -7958,13 +7958,14 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             return;
         }
         
+        /*
         if (creature->IsWorldBoss() && !creature->IsAllowedToLoot(GetGUIDLow()))
         {
             SendLootRelease(guid);
             return;
-        }
+        } */
 
-        loot   = &creature->loot;
+        loot = &creature->loot;
 
         if(loot_type == LOOT_PICKPOCKETING)
         {
@@ -15383,24 +15384,48 @@ bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
 bool Player::IsAllowedToLoot(Creature const* creature)
 {
     if(creature->IsDead() && !creature->IsDamageEnoughForLootingAndReward())
-       return false;
-
-    if(Player* recipient = creature->GetLootRecipient())
-    {
-        if (recipient == this)
-            return true;
-        if( Group* otherGroup = recipient->GetGroup())
-        {
-            Group* thisGroup = GetGroup();
-            if(!thisGroup)
-                return false;
-            return thisGroup == otherGroup;
-        }
         return false;
+
+    const Loot* loot = &creature->loot;
+    if (loot->isLooted()) // nothing to loot or everything looted.
+        return false;
+
+    /*if (loot->loot_type == LOOT_SKINNING)
+        return creature->GetSkinner() == GetGUID(); */
+
+    Group* thisGroup = GetGroup();
+    if (!thisGroup)
+        return this == creature->GetLootRecipient();
+    else if (thisGroup != creature->GetLootRecipientGroup())
+        return false;
+
+    switch (thisGroup->GetLootMethod())
+    {
+        case MASTER_LOOT:
+        case FREE_FOR_ALL:
+            return true;
+        case ROUND_ROBIN:
+            // may only loot if the player is the loot roundrobin player
+            // or if there are free/quest/conditional item for the player
+            if (loot->roundRobinPlayer == 0 || loot->roundRobinPlayer == GetGUID())
+                return true;
+
+            return loot->hasItemFor(this);
+        case GROUP_LOOT:
+        case NEED_BEFORE_GREED:
+            // may only loot if the player is the loot roundrobin player
+            // or item over threshold (so roll(s) can be launched)
+            // or if there are free/quest/conditional item for the player
+            if (loot->roundRobinPlayer == 0 || loot->roundRobinPlayer == GetGUID())
+                return true;
+
+            if (loot->hasOverThresholdItem())
+                return true;
+
+            return loot->hasItemFor(this);
     }
-    else
-        // prevent other players from looting if the recipient got disconnected
-        return !creature->hasLootRecipient();
+
+    return false;
 }
 
 void Player::_LoadActions(QueryResult result)

@@ -3233,8 +3233,9 @@ void Aura::HandleChannelDeathItem(bool apply, bool Real)
         // Soul Shard only from non-grey units
         if( spellInfo->Effects[m_effIndex].ItemType == 6265 &&
             (victim->GetLevel() <= Trinity::XP::GetGrayLevel(caster->GetLevel()) ||
-             (cr && (!(caster->ToPlayer())->IsAllowedToLoot(cr) || cr->IsTotem() )) ) )
+             (cr && !cr->IsTotem() && cr->isTappedBy(caster->ToPlayer())) ) )
             return;
+
         ItemPosCountVec dest;
         uint8 msg = (caster->ToPlayer())->CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, spellInfo->Effects[m_effIndex].ItemType, 1 );
         if( msg != EQUIP_ERR_OK )

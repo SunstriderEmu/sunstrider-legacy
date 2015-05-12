@@ -368,6 +368,63 @@ void Loot::RemoveItem(uint32 entry)
     removed_items.push_back(entry);
 }
 
+// return true if there is any FFA, quest or conditional item for the player.
+bool Loot::hasItemFor(Player* player) const
+{
+    QuestItemMap const& lootPlayerQuestItems = GetPlayerQuestItems();
+    QuestItemMap::const_iterator q_itr = lootPlayerQuestItems.find(player->GetGUIDLow());
+    if (q_itr != lootPlayerQuestItems.end())
+    {
+        QuestItemList* q_list = q_itr->second;
+        for (QuestItemList::const_iterator qi = q_list->begin(); qi != q_list->end(); ++qi)
+        {
+            const LootItem &item = quest_items[qi->index];
+            if (!qi->is_looted && !item.is_looted)
+                return true;
+        }
+    }
+
+    QuestItemMap const& lootPlayerFFAItems = GetPlayerFFAItems();
+    QuestItemMap::const_iterator ffa_itr = lootPlayerFFAItems.find(player->GetGUIDLow());
+    if (ffa_itr != lootPlayerFFAItems.end())
+    {
+        QuestItemList* ffa_list = ffa_itr->second;
+        for (QuestItemList::const_iterator fi = ffa_list->begin(); fi != ffa_list->end(); ++fi)
+        {
+            const LootItem &item = items[fi->index];
+            if (!fi->is_looted && !item.is_looted)
+                return true;
+        }
+    }
+
+    QuestItemMap const& lootPlayerNonQuestNonFFAConditionalItems = GetPlayerNonQuestNonFFAConditionalItems();
+    QuestItemMap::const_iterator nn_itr = lootPlayerNonQuestNonFFAConditionalItems.find(player->GetGUIDLow());
+    if (nn_itr != lootPlayerNonQuestNonFFAConditionalItems.end())
+    {
+        QuestItemList* conditional_list = nn_itr->second;
+        for (QuestItemList::const_iterator ci = conditional_list->begin(); ci != conditional_list->end(); ++ci)
+        {
+            const LootItem &item = items[ci->index];
+            if (!ci->is_looted && !item.is_looted)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+// return true if there is any item over the group threshold (i.e. not underthreshold).
+bool Loot::hasOverThresholdItem() const
+{
+    for (uint8 i = 0; i < items.size(); ++i)
+    {
+        if (!items[i].is_looted && !items[i].is_underthreshold && !items[i].freeforall)
+            return true;
+    }
+
+    return false;
+}
+
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
@@ -390,6 +447,9 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     Group * pGroup=loot_owner->GetGroup();
     if(!pGroup)
         return;
+
+    roundRobinPlayer = loot_owner->GetGUID();
+
     for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
         //fill the quest item map for every player in the recipient's group

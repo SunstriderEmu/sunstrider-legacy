@@ -166,7 +166,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 Creature::Creature() :
 Unit(),
-lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0),
+lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0), m_lootRecipientGroup(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
 m_emoteState(0), m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
@@ -900,10 +900,33 @@ bool Creature::canResetTalentsOf(Player* pPlayer) const
         && pPlayer->GetClass() == GetCreatureTemplate()->trainer_class;
 }
 
-Player *Creature::GetLootRecipient() const
+Player* Creature::GetLootRecipient() const
 {
-    if (!m_lootRecipient) return NULL;
-    else return ObjectAccessor::FindConnectedPlayer(m_lootRecipient);
+    if (!m_lootRecipient) 
+        return nullptr;
+
+    return ObjectAccessor::FindConnectedPlayer(m_lootRecipient);
+}
+
+Group* Creature::GetLootRecipientGroup() const
+{
+    if (!m_lootRecipient)
+        return nullptr;
+
+    return sObjectMgr->GetGroupByLeader(m_lootRecipientGroup);
+}
+
+// return true if this creature is tapped by the player or by a member of his group.
+bool Creature::isTappedBy(Player const* player) const
+{
+    if (player->GetGUID() == m_lootRecipient)
+        return true;
+
+    Group const* playerGroup = player->GetGroup();
+    if (!playerGroup || playerGroup != GetLootRecipientGroup()) // if we dont have a group we arent the recipient
+        return false;                                           // if creature doesnt have group bound it means it was solo killed by someone else
+
+    return true;
 }
 
 void Creature::SetLootRecipient(Unit *unit)
@@ -915,8 +938,8 @@ void Creature::SetLootRecipient(Unit *unit)
     if (!unit)
     {
         m_lootRecipient = 0;
-        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
-        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
+        m_lootRecipientGroup = 0;
+        RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE|UNIT_DYNFLAG_TAPPED);
         return;
     }
 
@@ -925,6 +948,9 @@ void Creature::SetLootRecipient(Unit *unit)
         return;
 
     m_lootRecipient = player->GetGUID();
+    if (Group* group = player->GetGroup())
+        m_lootRecipientGroup = group->GetLeaderGUID();
+
     SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TAPPED);
 }
 
@@ -1018,7 +1044,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     WorldDatabase.CommitTransaction(trans);
 
     if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_UNIT,m_DBTableGuid))
-        TC_LOG_ERROR("FIXME","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
+        TC_LOG_ERROR("server","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
 }
 
 void Creature::SelectLevel()
@@ -2255,17 +2281,20 @@ void Creature::AreaCombat()
     }
 }
 
-bool Creature::IsAllowedToLoot(uint64 guid) const
+bool Creature::HadPlayerInThreatListAtDeath(uint64 guid) const
 {
-    // Temporary fix for Sathrovarr (Kalecgos encounter - Sunwell Plateau)
-    if (GetEntry() == 24892)
-        return true;
-    for (std::vector<uint64>::const_iterator itr = m_allowedToLoot.begin(); itr != m_allowedToLoot.end(); itr++) {
-        if ((*itr) == guid)
-            return true;
+    auto itr = m_playerInThreatListAtDeath.find(GUID_LOPART(guid));
+    return itr == m_playerInThreatListAtDeath.end();
+}
+
+void Creature::ConvertThreatListIntoPlayerListAtDeath()
+{
+    auto threatList = getThreatManager().getThreatList();
+    for(auto itr : threatList)
+    {
+        if(itr->getThreat() > 0 && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
+            m_playerInThreatListAtDeath
     }
-    
-    return false;
 }
 
 bool Creature::IsBelowHPPercent(float percent)

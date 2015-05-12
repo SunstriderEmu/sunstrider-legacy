@@ -608,6 +608,28 @@ void Group::SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, 
     }
 }
 
+// notify group members which player is the allowed looter for the given creature
+//NOT BC TESTED
+void Group::SendLooter(Creature* creature, Player* groupLooter)
+{
+    ASSERT(creature);
+
+    WorldPacket data(SMSG_LOOT_LIST, (8+8));
+    data << uint64(creature->GetGUID());
+
+    if (GetLootMethod() == MASTER_LOOT && creature->loot.hasOverThresholdItem())
+        data << GetMasterLooterGuid().WriteAsPacked();
+    else
+        data << uint8(0);
+
+    if (groupLooter)
+        data << groupLooter->GetPackGUID();
+    else
+        data << uint8(0);
+
+    BroadcastPacket(&data, false);
+}
+
 void Group::SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r)
 {
     WorldPacket data(SMSG_LOOT_ALL_PASSED, (8+4+4+4+4));

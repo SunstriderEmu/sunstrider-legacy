@@ -224,8 +224,9 @@ struct Loot
     std::vector<uint32> removed_items;
     uint32 gold;
     uint8 unlootedCount;
+    uint64 roundRobinPlayer;                            // GUID of the player having the Round-Robin ownership for the loot. If 0, round robin owner has released.
 
-    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0) {}
+    Loot(uint32 _gold = 0) : gold(_gold), unlootedCount(0), roundRobinPlayer(0) {}
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
@@ -253,6 +254,7 @@ struct Loot
         quest_items.clear();
         gold = 0;
         unlootedCount = 0;
+        roundRobinPlayer = 0;
         i_LootValidatorRefManager.clearReferences();
     }
 
@@ -274,6 +276,9 @@ struct Loot
     void ClearRemovedItemsList() { removed_items.clear(); }
 
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
+    bool hasItemFor(Player* player) const;
+    bool hasOverThresholdItem() const;
+
     private:
         std::set<uint64> PlayersLooting;
         QuestItemMap PlayerQuestItems;

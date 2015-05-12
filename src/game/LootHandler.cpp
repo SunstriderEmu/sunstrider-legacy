@@ -384,8 +384,14 @@ void WorldSession::DoLootRelease( uint64 lguid )
             loot->clear();
         }
         else
+        {
             // not fully looted object
             go->SetLootState(GO_ACTIVATED);
+
+            // if the round robin player release, reset it.
+            if (player->GetGUID() == loot->roundRobinPlayer)
+                loot->roundRobinPlayer = 0;
+        }
     }
     else if (IS_CORPSE_GUID(lguid))        // ONLY remove insignia at BG
     {
@@ -453,6 +459,22 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
             pCreature->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
             loot->clear();
+        }
+        else
+        {
+            // if the round robin player release, reset it.
+            if (player->GetGUID() == loot->roundRobinPlayer)
+            {
+                loot->roundRobinPlayer = 0;
+
+                if (Group* group = player->GetGroup())
+                {
+                    group->SendLooter(creature, NULL);
+
+                    // force update of dynamic flags, otherwise other group's players still not able to loot.
+                    creature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
+                }
+            }
         }
     }
 
