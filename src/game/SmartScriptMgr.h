@@ -539,6 +539,7 @@ enum SMART_ACTION
     SMART_ACTION_LOAD_PATH                          = 152,    // path
     SMART_ACTION_TELEPORT_ON_ME                     = 153,    // useVisual (0/1)
     SMART_ACTION_SELF_TELEPORT_ON_TARGET            = 154,    // useVisual (0/1)
+    SMART_ACTION_ASSIST                             = 155,    // none
     SMART_ACTION_END                                     ,
 };
 

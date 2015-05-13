@@ -1151,6 +1151,31 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             delete targets;
             break;
         }
+        case SMART_ACTION_ASSIST:
+        {
+            if (!me)
+                break;
+
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            {
+                if (IsUnit(*itr))
+                {
+                    Unit* targetUnit = (*itr)->ToUnit();
+                    if(Unit* victim = targetUnit->GetVictim())
+                    {
+                        me->AI()->AttackStart(victim);
+                        break;
+                    }
+                }
+            }
+
+            delete targets;
+            break;
+        }
         case SMART_ACTION_SUMMON_CREATURE:
         {
             ObjectList* targets = GetTargets(e, unit);
