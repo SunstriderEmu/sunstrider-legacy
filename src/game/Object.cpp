@@ -1628,6 +1628,19 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     if(duration > 0)
         pet->SetDuration(duration);
+    
+    //scripts hooks
+    if(pet->AI())
+        pet->AI()->IsSummonedBy(this->ToUnit());
+    if(pet->getAI())
+        pet->AI()->IsSummonedBy(this->ToCreature());
+
+    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
+    {
+        (this->ToCreature())->AI()->JustSummoned(pet);
+        if ((this->ToCreature())->getAI())
+            (this->ToCreature())->getAI()->onSummon(pet);
+    }
 
     return pet;
 }
