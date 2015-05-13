@@ -3320,7 +3320,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     float rot3 = cos(o/2);
     
     if (Transport* trans = chr->GetTransport())
-    {/* it seems gobject on transports have been added on LK (to confirm)
+    {/* Gobjects on transports have been added on LK (to confirm)
         uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
         GameObjectData& data = sObjectMgr->NewGOData(guid);
         data.id = id;
@@ -3373,6 +3373,9 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
      
     // fill the gameobject data and save to the db
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
+
+    delete pGameObj;
+    pGameObj = new GameObject();
 
     // this will generate a new guid if the object is in an instance
     if(!pGameObj->LoadFromDB(db_lowGUID, map))
