@@ -5996,12 +5996,10 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
     WorldPacket data(12);
     if (strncmp(args, "on", 3) == 0)
     {
-        data.SetOpcode(SMSG_MOVE_SET_CAN_FLY);
         ((Player*)(unit))->SetCanFly(true);
     }
     else if (strncmp(args, "off", 4) == 0)
     {
-        data.SetOpcode(SMSG_MOVE_UNSET_CAN_FLY);
         ((Player*)(unit))->SetCanFly(false);
     }
     else
@@ -6009,9 +6007,6 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
         SendSysMessage(LANG_USE_BOL);
         return false;
     }
-    data << unit->GetPackGUID();
-    data << uint32(0);                                      // unknown
-    unit->SendMessageToSet(&data, true);
     PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName().c_str(), args);
     return true;
 }

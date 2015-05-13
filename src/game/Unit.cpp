@@ -13659,7 +13659,7 @@ bool Unit::SetWalk(bool enable)
 bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
 {
     if (disable)
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     if (disable == IsLevitating())
         return false;
@@ -13674,7 +13674,7 @@ bool Unit::SetDisableGravity(bool disable, bool /*packetOnly = false*/)
         if (!HasUnitMovementFlag(MOVEMENTFLAG_CAN_FLY))
         {
             m_movementInfo.SetFallTime(0);
-            AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+            AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
         }
     }
 
@@ -13697,7 +13697,7 @@ bool Unit::SetSwim(bool enable)
 bool Unit::SetCanFly(bool enable)
 {
     if(enable)    
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     if (enable == CanFly())
         return false;
@@ -13712,7 +13712,7 @@ bool Unit::SetCanFly(bool enable)
         if (!IsLevitating())
         {
             m_movementInfo.SetFallTime(0);
-            AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
+            AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
         }
     }
 
@@ -13734,13 +13734,13 @@ bool Unit::SetWaterWalking(bool enable, bool /*packetOnly = false */)
 
 bool Unit::SetFeatherFall(bool enable, bool /*packetOnly = false */)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW))
         return false;
 
     if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+        AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW);
     else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW);
 
     return true;
 }
@@ -13830,7 +13830,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
     *data << (uint32)m_movementInfo.fallTime;
 
     // 0x00001000
-    if (GetUnitMovementFlags() & MOVEMENTFLAG_FALLING)
+    if (GetUnitMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING)
     {
         *data << (float)m_movementInfo.jump.zspeed;
         *data << (float)m_movementInfo.jump.sinAngle;
@@ -13910,7 +13910,7 @@ void Unit::JumpTo(WorldObject* obj, float speedZ)
 
 bool Unit::IsFalling() const
 {
-    return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
+    return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
 }
 
 void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)

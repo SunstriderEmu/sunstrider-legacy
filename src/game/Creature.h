@@ -634,6 +634,12 @@ class Creature : public Unit
         bool HasSpell(uint32 spellID) const;
 
         bool UpdateEntry(uint32 entry, const CreatureData* data = nullptr);
+        /* 
+        Updates creatures movement flags according to current position
+        Remove flying movement flags if creature is not in air.
+        Add flying movement flags if creature can fly is in air and not flying.
+        Also set creature as swimming if in water
+        */
         void UpdateMovementFlags();
 
         bool UpdateStats(Stats stat) override;

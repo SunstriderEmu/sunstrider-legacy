@@ -622,8 +622,8 @@ enum MovementFlags
     MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,               // Used for flying on some creatures
     MOVEMENTFLAG_DISABLE_GRAVITY= 0x00000400,               // Unit appears suspended (swimming in the air) instead of falling
     MOVEMENTFLAG_ROOT           = 0x00000800,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
-    MOVEMENTFLAG_FALLING        = 0x00001000,               // damage dealt on that type of falling
-    MOVEMENTFLAG_FALLING_FAR    = 0x00002000,
+    MOVEMENTFLAG_JUMPING_OR_FALLING    = 0x00001000,        // TC: MOVEMENTFLAG_FALLING // damage dealt on that type of falling
+    MOVEMENTFLAG_FALLING_FAR           = 0x00002000,        // Falling under the map boundaries (clientside the camera will remain at the boundaries and let see the character fall below)
     MOVEMENTFLAG_PENDING_STOP          = 0x00004000,
     MOVEMENTFLAG_PENDING_STRAFE_STOP   = 0x00008000,
     MOVEMENTFLAG_PENDING_FORWARD       = 0x00010000,
@@ -639,13 +639,13 @@ enum MovementFlags
     MOVEMENTFLAG_SPLINE_ELEVATION      = 0x04000000,               // used for flight paths
     MOVEMENTFLAG_SPLINE_ENABLED        = 0x08000000,               // used for flight paths
     MOVEMENTFLAG_WATERWALKING          = 0x10000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_FALLING_SLOW          = 0x20000000,               // active rogue safe fall spell (passive)
+    MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW          = 0x20000000,               // active rogue safe fall spell (passive)
     MOVEMENTFLAG_HOVER                 = 0x40000000,               // hover, cannot jump
     
     /// @todo Check if PITCH_UP and PITCH_DOWN really belong here..
     MOVEMENTFLAG_MASK_MOVING =
         MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
-        MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
+        MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
         MOVEMENTFLAG_SPLINE_ELEVATION,
 
     MOVEMENTFLAG_MASK_TURNING =
@@ -660,7 +660,7 @@ enum MovementFlags
 
     /// Movement flags that have change status opcodes associated for players
     MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
-        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
+        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW | MOVEMENTFLAG_HOVER
 };
 
 #define UNIT_DEFAULT_HOVERHEIGHT 2.5f

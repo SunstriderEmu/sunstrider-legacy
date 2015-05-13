@@ -1486,9 +1486,6 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         return NULL;
     }
 
-    //make sure the creature has the correct creator
-    pCreature->SetCreatorGUID(this->GetGUID());
-
     if (x == 0.0f && y == 0.0f && z == 0.0f)
         GetClosePoint(x, y, z, pCreature->GetObjectSize());
 
@@ -2011,7 +2008,7 @@ void MovementInfo::Read(ByteBuffer& data)
 
     data >> fallTime;
 
-    if (HasMovementFlag(MOVEMENTFLAG_FALLING))
+    if (HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
     {
         data >> jump.zspeed;
         data >> jump.sinAngle;
@@ -2048,7 +2045,7 @@ void MovementInfo::Write(ByteBuffer& data) const
 
     data << fallTime;
 
-    if (HasMovementFlag(MOVEMENTFLAG_FALLING))
+    if (HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
     {
         data << jump.zspeed;
         data << jump.sinAngle;

@@ -1617,7 +1617,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
     return true;
 }
 
-//Edit Player Fly
+//Edit Player Fly speed
 bool ChatHandler::HandleModifyFlyCommand(const char* args)
 {
     ARGS_CHECK

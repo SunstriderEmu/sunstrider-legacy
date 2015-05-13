@@ -349,12 +349,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 if (delta_t > 15000.0f)
                     delta_t = 15000.0f;
 
-                //antiOFF fall-damage, MOVEMENTFLAG_UNK4 seted by client if player try movement when falling and unset in this case the MOVEMENTFLAG_FALLING flag.
+                //antiOFF fall-damage, MOVEMENTFLAG_UNK4 seted by client if player try movement when falling and unset in this case the MOVEMENTFLAG_JUMPING_OR_FALLING flag.
                 if ((plrMover->m_anti_beginfalltime == 0) &&
-                        (movementInfo.GetMovementFlags() & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) != 0) {
+                        (movementInfo.GetMovementFlags() & (MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) != 0) {
                     plrMover->m_anti_beginfalltime = CurTime;
                 } else if (plrMover->m_anti_beginfalltime != 0 &&
-                        ((movementInfo.GetMovementFlags() & (MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR)) == 0) &&
+                        ((movementInfo.GetMovementFlags() & (MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) == 0) &&
                         (movementInfo.GetMovementFlags() & MOVEMENTFLAG_SWIMMING) != 0) {
                     plrMover->m_anti_beginfalltime = 0;
                 }
@@ -379,7 +379,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 // Check for waterwalking
                 if (((movementInfo.GetMovementFlags() & MOVEMENTFLAG_WATERWALKING) != 0) &&
                         ((movementInfo.GetMovementFlags() ^ MOVEMENTFLAG_WATERWALKING) != 0) && // Client sometimes set waterwalk where it shouldn't do that...
-                        ((movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING) == 0) &&
+                        ((movementInfo.GetMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING) == 0) &&
                         plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ() - 6.0f) &&
                         !(plrMover->HasAuraType(SPELL_AURA_WATER_WALK) || plrMover->HasAuraType(SPELL_AURA_GHOST))) {
                     Anti__CheatOccurred(CurTime, "Water walking", 0.0f, NULL, 0.0f, (uint32)(movementInfo.GetMovementFlags()));
