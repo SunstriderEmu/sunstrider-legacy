@@ -2567,7 +2567,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     // Handle ranged attacks
     if (attType == RANGED_ATTACK) {
         // Wand attacks can't miss
-        if (spell->Category->Id == 351)
+        if (spell->GetCategory() == 351)
                return SPELL_MISS_NONE;
 
         // Other ranged attacks cannot be parried or dodged
