@@ -1763,7 +1763,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.MaxDurability  = uint32(fields[119].GetUInt16());
         itemTemplate.Area           = fields[120].GetUInt32();
         itemTemplate.Map            = uint32(fields[121].GetUInt16());
-        itemTemplate.BagFamily      = fields[123].GetUInt32();
+        itemTemplate.BagFamily      = fields[122].GetUInt32();
         itemTemplate.TotemCategory  = fields[123].GetUInt32();
 
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SOCKETS; ++i)
