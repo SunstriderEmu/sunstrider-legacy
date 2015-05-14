@@ -332,7 +332,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 /* I really don't care about movement-type yet (todo)
                 UnitMoveType move_type;
 
-                if (MovementFlags & MOVEMENTFLAG_FLYING) move_type = MOVE_FLY;
+                if (MovementFlags & MOVEMENTFLAG_PLAYER_FLYING) move_type = MOVE_FLY;
                 else if (MovementFlags & MOVEMENTFLAG_SWIMMING) move_type = MOVE_SWIM;
                 else if (MovementFlags & MOVEMENTFLAG_WALK_MODE) move_type = MOVE_WALK;
                 else move_type = MOVE_RUN;*/
@@ -390,7 +390,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 float Anti__MapZ = (Anti__FloorZ < -199900.0f) ? Anti__GroundZ : Anti__FloorZ;
 
                 if(!plrMover->CanFly() &&
-                    ((movementInfo.GetMovementFlags() & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_FLYING /*| MOVEMENTFLAG_FLYING2 | MOVEMENTFLAG_FLY_UP*/)) != 0) &&
+                    ((movementInfo.GetMovementFlags() & (MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_PLAYER_FLYING)) != 0) &&
                     !plrMover->GetBaseMap()->IsUnderWater(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY(), movementInfo.pos.GetPositionZ()-5.0f) &&
                     (Anti__MapZ==INVALID_HEIGHT || Anti__MapZ+5.0f < plrMover->GetPositionZ()) && Anti__MapZ >= -199900.0f)
                 {

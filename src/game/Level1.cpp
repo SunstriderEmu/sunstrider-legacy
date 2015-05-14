@@ -218,9 +218,7 @@ bool ChatHandler::HandleGMmodeCommand(const char* args)
         vMapManager->processCommand("stoplog");
         #endif
         return true;
-    }
-
-    if (argstr == "off")
+    } else  if (argstr == "off")
     {
         m_session->GetPlayer()->SetGameMaster(false);
         m_session->SendNotification(LANG_GM_OFF);

@@ -6928,7 +6928,7 @@ void Player::CheckDuelDistance(time_t currTime)
 
 bool Player::IsOutdoorPvPActive()
 {
-    return (IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld->IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_FLYING) && !IsInFlight());
+    return (IsAlive() && !HasInvisibilityAura() && !HasStealthAura() && (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) || sWorld->IsPvPRealm())  && !HasUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING) && !IsInFlight());
 }
 
 void Player::DuelComplete(DuelCompleteType type)
@@ -19595,7 +19595,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || IsInFlight())
-        AddUnitMovementFlag(MOVEMENTFLAG_FLYING);
+        AddUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
 
     SetMover(this);
 }
@@ -21916,9 +21916,9 @@ void Player::UpdateArenaTitles()
     */
 }
 
-bool Player::SetCanFly(bool apply)
+bool Player::SetFlying(bool apply)
 {
-    if (!Unit::SetCanFly(apply))
+    if (!Unit::SetFlying(apply))
         return false;
 
     WorldPacket data(apply ? SMSG_MOVE_SET_CAN_FLY : SMSG_MOVE_UNSET_CAN_FLY, 12);

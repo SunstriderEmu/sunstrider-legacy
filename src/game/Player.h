@@ -2208,7 +2208,7 @@ class Player : public Unit
         void HandleFall(MovementInfo const& movementInfo);
 
         bool SetDisableGravity(bool disable, bool packetOnly /* = false */);
-        bool SetCanFly(bool apply);
+        bool SetFlying(bool apply);
         bool SetWaterWalking(bool apply, bool packetOnly = false);
         bool SetFeatherFall(bool apply, bool packetOnly = false);
         bool SetHover(bool enable, bool packetOnly = false);

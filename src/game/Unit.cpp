@@ -13694,7 +13694,7 @@ bool Unit::SetSwim(bool enable)
     return true;
 }
 
-bool Unit::SetCanFly(bool enable)
+bool Unit::SetFlying(bool enable)
 {
     if(enable)    
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
@@ -13734,13 +13734,13 @@ bool Unit::SetWaterWalking(bool enable, bool /*packetOnly = false */)
 
 bool Unit::SetFeatherFall(bool enable, bool /*packetOnly = false */)
 {
-    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW))
+    if (enable == HasUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW))
         return false;
 
     if (enable)
-        AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW);
+        AddUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
     else
-        RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW);
+        RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING_SLOW);
 
     return true;
 }
@@ -13824,7 +13824,7 @@ void Unit::BuildMovementPacket(ByteBuffer *data) const
     }
 
     // 0x02200000
-    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)))
         *data << (float)m_movementInfo.pitch;
 
     *data << (uint32)m_movementInfo.fallTime;

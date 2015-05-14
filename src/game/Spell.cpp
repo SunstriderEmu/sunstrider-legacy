@@ -4913,27 +4913,16 @@ bool Spell::CanAutoCast(Unit* target)
     return false;                                           //target invalid
 }
 
+//check range and facing
 SpellFailedReason Spell::CheckRange(bool strict)
 {
-    //float range_mod;
-
-    // self cast doesn't need range checking -- also for Starshards fix
-    if (m_casttime == 0) 
-        return SPELL_CAST_OK;
-
-    // i do not know why we need this
-    /*if (strict)                                             //add radius of caster
-        range_mod = 1.25;
-    else                                                    //add radius of caster and ~5 yds "give"
-        range_mod = 6.25;*/
-
     float max_range = m_spellInfo->GetMaxRange(false, m_caster->GetSpellModOwner(), this);
     float min_range = m_spellInfo->GetMinRange();
     uint32 range_type = 0;
     
     if (m_spellInfo->RangeEntry)
     {
-        // check needed by 68766 51693 - both spells are cast on enemies and have 0 max range
+        // self cast doesn't need range checking
         // these are triggered by other spells - possibly we should omit range check in that case?
         if (m_spellInfo->RangeEntry->ID == 1)
             return SPELL_CAST_OK;

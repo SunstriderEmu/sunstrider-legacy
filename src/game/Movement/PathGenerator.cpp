@@ -32,22 +32,10 @@ PathGenerator::PathGenerator(const Unit* owner) :
     PathGenerator(Position(), owner->GetMapId(), owner->GetInstanceId(), PATHFIND_OPTION_NONE) //dummy position and options
 {
     //erase position and options
-    uint32 options = PATHFIND_OPTION_NONE;
     _sourceUnit = owner;
     _sourcePos.Relocate(owner);
-
-    if(owner->CanWalk())
-        options |= PATHFIND_OPTION_CANWALK;
-    if(owner->CanFly())
-        options |= PATHFIND_OPTION_CANFLY;
-    if(owner->CanSwim())
-        options |= PATHFIND_OPTION_CANSWIM;
-    if(owner->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING))
-        options |= PATHFIND_OPTION_IGNOREPATHFINDING;
-    if(owner->HasAuraType(SPELL_AURA_WATER_WALK))
-        options |= (PATHFIND_OPTION_WATERWALK);
-    _options = (PathOptions)options;
-
+    
+    UpdateOptions();
     //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUIDLow());
 
     CreateFilter();
@@ -72,6 +60,22 @@ PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 inst
     }
 
     CreateFilter();
+}
+
+void PathGenerator::UpdateOptions()
+{
+    uint32 options = PATHFIND_OPTION_NONE;
+    if(_sourceUnit->CanWalk())
+        options |= PATHFIND_OPTION_CANWALK;
+    if(_sourceUnit->CanFly())
+        options |= PATHFIND_OPTION_CANFLY;
+    if(_sourceUnit->CanSwim())
+        options |= PATHFIND_OPTION_CANSWIM;
+    if(_sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING))
+        options |= PATHFIND_OPTION_IGNOREPATHFINDING;
+    if(_sourceUnit->HasAuraType(SPELL_AURA_WATER_WALK))
+        options |= (PATHFIND_OPTION_WATERWALK);
+    _options = (PathOptions)options;
 }
 
 PathGenerator::~PathGenerator()

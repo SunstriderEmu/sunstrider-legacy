@@ -5996,11 +5996,11 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
     WorldPacket data(12);
     if (strncmp(args, "on", 3) == 0)
     {
-        ((Player*)(unit))->SetCanFly(true);
+        ((Player*)(unit))->SetFlying(true);
     }
     else if (strncmp(args, "off", 4) == 0)
     {
-        ((Player*)(unit))->SetCanFly(false);
+        ((Player*)(unit))->SetFlying(false);
     }
     else
     {

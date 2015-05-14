@@ -2016,7 +2016,7 @@ void MovementInfo::Read(ByteBuffer& data)
         data >> transport.time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)))
         data >> pitch;
 
     data >> fallTime;
@@ -2053,7 +2053,7 @@ void MovementInfo::Write(ByteBuffer& data) const
         data << transport.time;
     }
 
-    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)))
+    if (HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)))
         data << pitch;
 
     data << fallTime;

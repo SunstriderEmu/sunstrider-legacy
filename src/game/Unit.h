@@ -620,7 +620,8 @@ enum MovementFlags
     MOVEMENTFLAG_PITCH_DOWN     = 0x00000080,
     MOVEMENTFLAG_WALKING        = 0x00000100,               // Walking
     MOVEMENTFLAG_ONTRANSPORT    = 0x00000200,               // Used for flying on some creatures
-    MOVEMENTFLAG_DISABLE_GRAVITY= 0x00000400,               // Unit appears suspended (swimming in the air) instead of falling
+    /** Unit appears suspended (swimming in the air) instead of falling */
+    MOVEMENTFLAG_DISABLE_GRAVITY= 0x00000400,
     MOVEMENTFLAG_ROOT           = 0x00000800,               // Must not be set along with MOVEMENTFLAG_MASK_MOVING
     MOVEMENTFLAG_JUMPING_OR_FALLING    = 0x00001000,        // TC: MOVEMENTFLAG_FALLING // damage dealt on that type of falling
     MOVEMENTFLAG_FALLING_FAR           = 0x00002000,        // Falling under the map boundaries (clientside the camera will remain at the boundaries and let see the character fall below)
@@ -634,12 +635,14 @@ enum MovementFlags
     MOVEMENTFLAG_SWIMMING              = 0x00200000,               // appears with fly flag also
     MOVEMENTFLAG_ASCENDING             = 0x00400000,               // press "space" when flying
     MOVEMENTFLAG_DESCENDING            = 0x00800000,
-    MOVEMENTFLAG_CAN_FLY               = 0x01000000,               // Player can fly
-    MOVEMENTFLAG_FLYING                = 0x02000000,               // unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity
+    /** Player can fly. Seems to work on some degree on creatures. */
+    MOVEMENTFLAG_CAN_FLY               = 0x01000000,               
+    /** unit is actually flying. pretty sure this is only used for players. creatures use disable_gravity. This will crash the client in various and horrible ways if set on creatures. */
+    MOVEMENTFLAG_PLAYER_FLYING         = 0x02000000,               // 
     MOVEMENTFLAG_SPLINE_ELEVATION      = 0x04000000,               // used for flight paths
     MOVEMENTFLAG_SPLINE_ENABLED        = 0x08000000,               // used for flight paths
     MOVEMENTFLAG_WATERWALKING          = 0x10000000,               // prevent unit from falling through water
-    MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW          = 0x20000000,               // active rogue safe fall spell (passive)
+    MOVEMENTFLAG_FALLING_SLOW          = 0x20000000,            // active rogue safe fall spell (passive)
     MOVEMENTFLAG_HOVER                 = 0x40000000,               // hover, cannot jump
     
     /// @todo Check if PITCH_UP and PITCH_DOWN really belong here..
@@ -652,15 +655,15 @@ enum MovementFlags
         MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
 
     MOVEMENTFLAG_MASK_MOVING_FLY =
-        MOVEMENTFLAG_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
+        MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
 
     /// @todo if needed: add more flags to this masks that are exclusive to players
     MOVEMENTFLAG_MASK_PLAYER_ONLY =
-        MOVEMENTFLAG_FLYING,
+        MOVEMENTFLAG_PLAYER_FLYING,
 
     /// Movement flags that have change status opcodes associated for players
     MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE = MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT |
-        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_JUMPING_OR_FALLING_SLOW | MOVEMENTFLAG_HOVER
+        MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER
 };
 
 #define UNIT_DEFAULT_HOVERHEIGHT 2.5f
@@ -1498,7 +1501,7 @@ class Unit : public WorldObject
         virtual bool SetWalk(bool enable);
         virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
         virtual bool SetSwim(bool enable);
-        virtual bool SetCanFly(bool enable);
+        virtual bool SetFlying(bool enable);
         virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
         virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
         virtual bool SetHover(bool enable, bool packetOnly = false);
@@ -1523,7 +1526,7 @@ class Unit : public WorldObject
         virtual bool CanFly() const = 0;
         virtual bool CanWalk() const = 0;
         virtual bool CanSwim() const = 0;
-        bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
+        bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
         bool IsFalling() const;
 
         // Visibility system

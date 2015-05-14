@@ -1299,6 +1299,36 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleNpcFlyCommand(const char* args)
+{
+    Creature* pCreature = getSelectedCreature();
+    if(!pCreature)
+    {
+        SendSysMessage(LANG_SELECT_CREATURE);
+        return true;
+    }
+
+    ARGS_CHECK
+
+    std::string argstr = (char*)args;
+
+    if (argstr == "on")
+    {
+        pCreature->SetCanFly(true);
+        pCreature->UpdateMovementFlags();
+        PSendSysMessage("Creature is now fly-capable");
+        return true;
+    } else if (argstr == "off")
+    {
+        pCreature->SetCanFly(false);
+        pCreature->UpdateMovementFlags();
+        PSendSysMessage("Creature is now not fly-capable");
+        return true;
+    }
+
+    return false;
+}
+
 bool ChatHandler::HandleNpcGotoCommand(const char* args)
 {
     Creature* pCreature = getSelectedCreature();
@@ -1316,8 +1346,6 @@ bool ChatHandler::HandleNpcGotoCommand(const char* args)
 //move selected object
 bool ChatHandler::HandleMoveObjectCommand(const char* args)
 {
-    
-
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)

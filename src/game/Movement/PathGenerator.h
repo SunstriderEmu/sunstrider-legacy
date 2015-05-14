@@ -86,7 +86,8 @@ class PathGenerator
         PathType GetPathType() const { return _type; }
 
         uint32 GetOptions() { return _options; }
-        void SetOptions(uint32 options) { _options = PathOptions(options); }
+        /** Update fly/walk/swim options from the generator owner */
+        void UpdateOptions();
 
         bool SourceCanWalk()           { return _options & PATHFIND_OPTION_CANWALK;           }
         bool SourceCanFly()            { return _options & PATHFIND_OPTION_CANFLY;            }

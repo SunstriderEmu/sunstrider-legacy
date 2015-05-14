@@ -173,7 +173,7 @@ m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), 
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
-m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0)
+m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -359,6 +359,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 
     SetFloatValue(OBJECT_FIELD_SCALE_X, cinfo->scale);
 
+    SetCanFly(GetCreatureTemplate()->InhabitType & INHABIT_AIR);
     // checked at loading
     m_defaultMovementType = MovementGeneratorType(cinfo->MovementType);
     if(!m_respawnradius && m_defaultMovementType==RANDOM_MOTION_TYPE)
@@ -2447,9 +2448,9 @@ bool Creature::SetSwim(bool enable)
     return true;
 }
 
-bool Creature::SetCanFly(bool enable)
+bool Creature::SetFlying(bool enable)
 {
-    if (!Unit::SetCanFly(enable))
+    if (!Unit::SetFlying(enable))
         return false;
 
     if (!movespline->Initialized())
@@ -2536,13 +2537,13 @@ void Creature::UpdateMovementFlags()
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())
-            SetCanFly(true);
+            SetFlying(true);
         else
             SetDisableGravity(true);
     }
     else
     {
-        SetCanFly(false);
+        SetFlying(false);
         SetDisableGravity(false);
     }
 

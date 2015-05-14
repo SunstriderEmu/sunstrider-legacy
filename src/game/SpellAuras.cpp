@@ -3914,13 +3914,13 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
         WorldPacket data;
         if(apply)
         {
-            ((Player*)m_target)->SetCanFly(true);
+            ((Player*)m_target)->SetFlying(true);
             data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
         }
         else
         {
             data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-            ((Player*)m_target)->SetCanFly(false);
+            ((Player*)m_target)->SetFlying(false);
         }
 
         data << m_target->GetPackGUID();
@@ -5542,13 +5542,13 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
     WorldPacket data;
     if(apply)
     {
-        ((Player*)m_target)->SetCanFly(true);
+        ((Player*)m_target)->SetFlying(true);
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
     }
     else
     {
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-        ((Player*)m_target)->SetCanFly(false);
+        ((Player*)m_target)->SetFlying(false);
     }
 
     data << m_target->GetPackGUID();

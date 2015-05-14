@@ -836,12 +836,15 @@ class Creature : public Unit
 
         bool CanWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
         bool CanSwim() const { return GetCreatureTemplate()->InhabitType & INHABIT_WATER || IsPet(); }
-        bool CanFly() const override { return GetCreatureTemplate()->InhabitType & INHABIT_AIR; }
+        bool CanFly() const override { return m_canFly; }
 
         bool SetWalk(bool enable) override;
         bool SetDisableGravity(bool disable, bool packetOnly = false) override;
         bool SetSwim(bool enable) override;
-        bool SetCanFly(bool enable) override;
+        // /!\ This is TC SetCanFly
+        bool SetFlying(bool enable) override;
+        // /!\ Not TC SetCanFly
+        void SetCanFly(bool enable) { m_canFly = enable; }
         bool SetWaterWalking(bool enable, bool packetOnly = false) override;
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;
@@ -923,6 +926,7 @@ class Creature : public Unit
         bool m_summoned;
 
         uint32 m_unreachableTargetTime;
+        bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
     private:
         //WaypointMovementGenerator vars

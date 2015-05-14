@@ -1308,14 +1308,14 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." );
     sSpellMgr->LoadSpellElixirs();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." );
-    sSpellMgr->LoadSpellProcEvents();
-
     TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions...");
     sSpellMgr->LoadSpellThreats();
 
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all spell entry alterations
     sSpellMgr->LoadSpellInfoStore();
+    
+    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." ); //must be after spellInfo loading
+    sSpellMgr->LoadSpellProcEvents();
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
     sObjectMgr->LoadScriptNames();

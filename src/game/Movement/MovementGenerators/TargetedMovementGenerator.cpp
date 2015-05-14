@@ -67,6 +67,8 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
 
     if (!i_path)
         i_path = new PathGenerator(owner);
+    else
+        i_path->UpdateOptions();
 
     // allow pets to use shortcut if no path found when following their master
     bool forceDest = (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsPet()
