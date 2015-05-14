@@ -1552,22 +1552,21 @@ void SpellMgr::LoadSpellLearnSpells()
     //for(uint32 spell = 0; spell < sSpellStore.GetNumRows(); ++spell)
     for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
-        uint32 spell = itr->first;
-        SpellEntry const* entry = itr->second;
-
-        if(!entry)
+        uint32 spellId = itr->first;
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if(!spellInfo)
             continue;
 
         for(int i = 0; i < 3; ++i)
         {
-            if(entry->Effect[i] ==SPELL_EFFECT_LEARN_SPELL)
+            if(spellInfo->Effects[i].Effect ==SPELL_EFFECT_LEARN_SPELL)
             {
                 SpellLearnSpellNode dbc_node;
-                dbc_node.spell       = entry->EffectTriggerSpell[i];
+                dbc_node.spell       = spellInfo->Effects[i].TriggerSpell;
                 dbc_node.autoLearned = true;
 
-                SpellLearnSpellMap::const_iterator db_node_begin = GetBeginSpellLearnSpell(spell);
-                SpellLearnSpellMap::const_iterator db_node_end   = GetEndSpellLearnSpell(spell);
+                SpellLearnSpellMap::const_iterator db_node_begin = GetBeginSpellLearnSpell(spellId);
+                SpellLearnSpellMap::const_iterator db_node_end   = GetEndSpellLearnSpell(spellId);
 
                 bool found = false;
                 for(SpellLearnSpellMap::const_iterator itr = db_node_begin; itr != db_node_end; ++itr)
@@ -1575,7 +1574,7 @@ void SpellMgr::LoadSpellLearnSpells()
                     if(itr->second.spell == dbc_node.spell)
                     {
                         TC_LOG_ERROR("sql.sql","Spell %u auto-learn spell %u in spell.dbc then the record in `spell_learn_spell` is redundant, please fix DB.",
-                            spell,dbc_node.spell);
+                            spellId,dbc_node.spell);
                         found = true;
                         break;
                     }
@@ -1583,7 +1582,7 @@ void SpellMgr::LoadSpellLearnSpells()
 
                 if(!found)                                  // add new spell-spell pair if not found
                 {
-                    mSpellLearnSpells.insert(SpellLearnSpellMap::value_type(spell,dbc_node));
+                    mSpellLearnSpells.insert(SpellLearnSpellMap::value_type(spellId,dbc_node));
                     ++dbc_count;
                 }
             }

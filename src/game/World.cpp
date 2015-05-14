@@ -1290,31 +1290,31 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." ); 
-    sSpellMgr->LoadSpellLearnSpells();
-    
     TC_LOG_INFO("server.loading", "Loading SkillLineAbilityMultiMap Data..." );
     sSpellMgr->LoadSkillLineAbilityMap();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." ); //must be after LoadSkillLineAbilityMap
-    sSpellMgr->LoadSpellChains();
-
-    TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
-    sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains
 
     TC_LOG_INFO("server.loading", "Loading Spell Required Data..." );
     sSpellMgr->LoadSpellRequired();
 
-    TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." );
-    sSpellMgr->LoadSpellElixirs();
-
-    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions...");
-    sSpellMgr->LoadSpellThreats();
-
-    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all spell entry alterations
+    TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
     sSpellMgr->LoadSpellInfoStore();
     
-    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." ); //must be after spellInfo loading
+    TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." ); //must be after SpellInfo
+    sSpellMgr->LoadSpellElixirs();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Chain Data..." ); //must be after LoadSkillLineAbilityMap and after SpellInfo
+    sSpellMgr->LoadSpellChains();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
+    sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains and after SpellInfo
+    
+    TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." );  //must be after SpellInfo
+    sSpellMgr->LoadSpellLearnSpells();
+    
+    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions..."); //must be after SpellInfo
+    sSpellMgr->LoadSpellThreats();
+
+    TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." ); //must be after spellInfo
     sSpellMgr->LoadSpellProcEvents();
 
     TC_LOG_INFO("server.loading", "Loading Script Names...");
