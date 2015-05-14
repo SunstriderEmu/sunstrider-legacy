@@ -193,7 +193,11 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, uint64 whisp
     if (isEqualChanced || (!isEqualChanced && totalChance == 100.0f))
         SetRepeatId(source, textGroup, (*iter).id);
 
-    return (*iter).duration;
+    uint32 duration = iter->duration;
+    if(!duration) //no duration in db, calculate one ourselves
+        duration = iter->text.size() * 40; //1s per 25 characters
+
+    return duration;
 }
 
 void CreatureTextMgr::SendSound(Creature* source,uint32 sound, ChatType msgtype, uint64 whisperGuid, CreatureTextRange range, Team team, bool gmOnly)

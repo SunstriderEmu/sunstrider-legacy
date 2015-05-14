@@ -168,7 +168,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             mTalkerEntry = talker->GetEntry();
             mLastTextID = e.action.talk.textGroupID;
-            mTextTimer = e.action.talk.duration;
             Unit* talkTarget = NULL;
             if (IsPlayer(GetLastInvoker())) // used for $vars in texts and whisper target
                 talkTarget = GetLastInvoker();
@@ -177,7 +176,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             mUseTextTimer = true;
 
-            sCreatureTextMgr->SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget ? talkTarget->GetGUID() : 0);
+            mTextTimer = sCreatureTextMgr->SendChat(talker, uint8(e.action.talk.textGroupID), talkTarget ? talkTarget->GetGUID() : 0);
+            //if action specified a duration, erase the default duration
+            if(e.action.talk.duration)
+                mTextTimer = e.action.talk.duration;
+            
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_TALK: talker: %s (GuidLow: %u), textGuid: %u",
                 talker->GetName().c_str(), talker->GetGUIDLow(), talkTarget ? talkTarget->GetGUIDLow() : 0);
             break;

@@ -1709,11 +1709,14 @@ BuggyQuests.AutoComplete = 0
 #   IRC.Commands
 #       Enable ingame command to be available in IRC. (start command with ! instead of . )
 #       Default: 0 (Disabled)
+#   IRC.CharGUID
+#       Character name to show for in game message
 #
 ###################################################################################################################
 
 IRC.Enabled = 0
 IRC.Commands = 0
+IRC.CharGUID = 0
 
 ###############################################################################
 # WARDEN SETTINGS
