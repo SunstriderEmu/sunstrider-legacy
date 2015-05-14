@@ -268,7 +268,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand learnCommandTable[] =
     {
-        { "all",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleLearnAllCommand,            "", NULL },
+       //do not want {"all",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleLearnAllCommand,            "", NULL },
         { "all_gm",         SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleLearnAllGMCommand,          "", NULL },
         { "all_crafts",     SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleLearnAllCraftsCommand,      "", NULL },
         { "all_default",    SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleLearnAllDefaultCommand,     "", NULL },
@@ -442,6 +442,7 @@ ChatCommand * ChatHandler::getCommandTable()
     static ChatCommand castCommandTable[] =
     {
         { "back",           SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCastBackCommand,            "", NULL },
+        { "batch",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCastBatchCommand,           "", NULL },
         { "dist",           SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCastDistCommand,            "", NULL },
         { "self",           SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCastSelfCommand,            "", NULL },
         { "target",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCastTargetCommand,          "", NULL },

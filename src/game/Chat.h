@@ -538,6 +538,7 @@ class ChatHandler
         bool HandleLoadPDumpCommand(const char *args);
         bool HandleWritePDumpCommand(const char *args);
         bool HandleCastCommand(const char *args);
+        bool HandleCastBatchCommand(const char* args);
         bool HandleCastBackCommand(const char *args);
         bool HandleCastDistCommand(const char *args);
         bool HandleCastSelfCommand(const char *args);

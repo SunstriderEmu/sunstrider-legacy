@@ -6392,10 +6392,41 @@ bool ChatHandler::HandleCastCommand(const char* args)
     return true;
 }
 
+/** args : <spellid> <count> */
+bool ChatHandler::HandleCastBatchCommand(const char* args)
+{
+    Unit* target = getSelectedUnit();
+
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
+    // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+    uint32 spell = extractSpellIdFromLink((char*)args);
+    if(!spell || !sSpellMgr->GetSpellInfo(spell))
+        return false;
+
+    char* countStr = strtok(NULL, " ");
+    int count = 0;
+    if(countStr)
+    {
+        count = atoi(countStr);
+        if(count == 0)
+            return false;
+    }
+
+    for(int i = 0; i < count; i++)
+        m_session->GetPlayer()->CastSpell(target, spell, true);
+
+    return true;
+}
+
 bool ChatHandler::HandleCastBackCommand(const char* args)
 {
-    
-
     Unit* caster = getSelectedUnit();
 
     if(!caster)
