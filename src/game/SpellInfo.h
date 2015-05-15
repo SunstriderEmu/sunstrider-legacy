@@ -174,8 +174,8 @@ public:
     uint32    ApplyAuraName;
     uint32    Amplitude;
     int32     DieSides;
-    int32     BaseDice; //not LK
-    float     DicePerLevel; //not LK
+    int32     BaseDice; //not LK, present only on some test spells, ignore this
+    float     DicePerLevel; //not LK, not different from 0 on any spells, ignore this
     float     RealPointsPerLevel;
     int32     BasePoints;
     float     PointsPerComboPoint;
@@ -279,7 +279,7 @@ public:
     uint32 ProcChance;
     uint32 ProcCharges;
     uint32 MaxLevel;
-    uint32 BaseLevel;
+    uint32 BaseLevel; // = min level
     uint32 SpellLevel;
     //can be null
     SpellDurationEntry const* DurationEntry;

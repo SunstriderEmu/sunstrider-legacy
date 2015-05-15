@@ -10066,22 +10066,22 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
 
     uint8 comboPoints = unitPlayer ? unitPlayer->GetComboPoints() : 0;
 
+    //Cap caster level with MaxLevel (upper) and BaseLevel (lower), then get the difference between that level and the spell level
     int32 level = int32(GetLevel());
     if (level > (int32)spellProto->MaxLevel && spellProto->MaxLevel > 0)
         level = (int32)spellProto->MaxLevel;
     else if (level < (int32)spellProto->BaseLevel)
         level = (int32)spellProto->BaseLevel;
-    level-= (int32)spellProto->SpellLevel;
-
+    level -= (int32)spellProto->SpellLevel;
+    
+    /** Dice rolls are from 1 to DieSides */
     float basePointsPerLevel = spellProto->Effects[effect_index].RealPointsPerLevel;
-    float randomPointsPerLevel = spellProto->Effects[effect_index].DicePerLevel;
     int32 basePoints = int32(effBasePoints + level * basePointsPerLevel);
-    int32 randomPoints = int32(spellProto->Effects[effect_index].DieSides + level * randomPointsPerLevel);
     float comboDamage = spellProto->Effects[effect_index].PointsPerComboPoint;
+    int32 diceCount = spellProto->Effects[effect_index].BaseDice; //actually diceCount is always 0 or 1
+    int32 maxRoll = diceCount * spellProto->Effects[effect_index].DieSides;
 
-    // prevent random generator from getting confused by spells casted with Unit::CastCustomSpell
-    int32 randvalue = spellProto->Effects[effect_index].BaseDice >= randomPoints ? spellProto->Effects[effect_index].BaseDice:GetMap()->irand(spellProto->Effects[effect_index].BaseDice, randomPoints);
-    int32 value = basePoints + randvalue;
+    int32 value = basePoints + (diceCount ? irand(1, maxRoll) : 0);
     //random damage
     if(comboDamage != 0 && unitPlayer /*&& target && (target->GetGUID() == unitPlayer->GetComboTarget())*/)
         value += (int32)(comboDamage * comboPoints);
