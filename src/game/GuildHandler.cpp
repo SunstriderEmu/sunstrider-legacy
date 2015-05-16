@@ -55,7 +55,9 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    //not used in game, charts are used
+
+ /*   PROFILE;
     
     CHECK_PACKET_SIZE(recvPacket, 1);
 
@@ -75,7 +77,7 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    sObjectMgr->AddGuild(guild);
+    sObjectMgr->AddGuild(guild); */
 }
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
