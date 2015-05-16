@@ -392,7 +392,7 @@ class Aura
 class AreaAura : public Aura
 {
     public:
-        AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
         ~AreaAura();
         void Update(uint32 diff);
         bool CheckTarget(Unit *target);
@@ -401,18 +401,20 @@ class AreaAura : public Aura
         AreaAuraType m_areaAuraType;
 };
 
-/* PersistentAreaAura is removed if we can't find any sources dynobjects in range*/
+/* PersistentAreaAura are maintained by a list of multiple dynamic objects from the same caster.
+The aura is removed if we can't find any sources dynobjects in range.
+*/
 class PersistentAreaAura : public Aura
 {
     public:
-        PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
         ~PersistentAreaAura();
-        void Update(uint32 diff);
+        void Update(uint32 diff) override;
         void AddSource(DynamicObject* dynObj);
     public:
-        std::list<uint64> sourceDynObjects;
+        std::list<uint64> sourceDynObjects; //list of dynamic objects the aura originate from
 };
 
-Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
 #endif
 

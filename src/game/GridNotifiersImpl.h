@@ -241,11 +241,10 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     
     i_dynobject.AddAffected(target);
 
-    // Add source to an existing aura if any, else create one
+    // Add dynamic object as source to any existing aura, or create one if none found
     if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
     {
-        PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur);
-        if(pAur)
+        if(PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur))
         {
             pAur->AddSource(&i_dynobject);
             return;
@@ -253,6 +252,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     } else {
         PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
         pAur->AddSource(&i_dynobject);
+        //also refresh aura duration
         pAur->SetAuraDuration(i_dynobject.GetDuration());
         target->AddAura(pAur);
     }

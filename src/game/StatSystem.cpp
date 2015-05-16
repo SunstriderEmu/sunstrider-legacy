@@ -409,6 +409,7 @@ void Player::UpdateShieldBlockValue()
     SetUInt32Value(PLAYER_SHIELD_BLOCK, GetShieldBlockValue());
 }
 
+//TODO : This should not add attack power to wands
 void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target)
 {
     UnitMods unitMod;

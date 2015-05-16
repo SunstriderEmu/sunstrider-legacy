@@ -3790,6 +3790,7 @@ int32 Unit::GetMaxNegativeAuraModifierByMiscValue(AuraType auratype, int32 misc_
     return modifier;
 }
 
+/** Aura pointer will be deleted on aura remove in Unit::_DeleteAuras() */
 bool Unit::AddAura(Aura *Aur)
 {
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)

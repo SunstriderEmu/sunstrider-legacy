@@ -514,11 +514,8 @@ PersistentAreaAura::PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, 
 PersistentAreaAura::~PersistentAreaAura()
 {
    for(auto itr : sourceDynObjects)
-    {
-        DynamicObject* dynObj = ObjectAccessor::GetObjectInWorld(itr, (DynamicObject*)NULL);
-        if(dynObj)
+        if(DynamicObject* dynObj = ObjectAccessor::GetObjectInWorld(itr, (DynamicObject*)NULL))
             dynObj->RemoveAffected(m_target);
-    }
 }
 
 void PersistentAreaAura::AddSource(DynamicObject* dynObj)
@@ -538,40 +535,39 @@ void PersistentAreaAura::Update(uint32 diff)
         return;
     }
 
+    //check if aura is in range from at least one source
     bool inRange = false;
     for(std::list<uint64>::iterator itr = sourceDynObjects.begin(); itr != sourceDynObjects.end(); )
     {
         DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, *itr);
         if(!dynObj)
         {
+            //could not find dynamic object, it may have been deleted
             itr = sourceDynObjects.erase(itr);
             continue;
         } else {
-            itr++;
             if(m_target->IsWithinDistInMap(dynObj, dynObj->GetRadius()))
             {
                 inRange = true;
                 break;
             }
+            itr++;
         }
     }
 
-    //using temp pointers since these can be erased after Aura::Update 
-    Unit *tmp_target = m_target;
-    uint32 tmp_id = GetId(), tmp_index = GetEffIndex();
-    Unit* tmp_caster = GetCaster();
+    //using temp target pointer since it can be erased in Aura::Update 
+    Unit* target = m_target;
+    uint32 id = GetId();
+    uint32 effIndex = GetEffIndex();
 
     Aura::Update(diff);
 
     if(!inRange)
     {
-        tmp_target->RemoveAurasByCasterSpell(tmp_id,tmp_index,tmp_caster->GetGUID());
-        for(auto itr : sourceDynObjects)
-        {
-            DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, itr);
-            if(dynObj)
-                dynObj->RemoveAffected(tmp_target);
-        }
+        target->RemoveAurasByCasterSpell(id, effIndex, caster->GetGUID());
+        for(auto guid : sourceDynObjects)
+            if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, guid))
+                dynObj->RemoveAffected(target);
     }
 }
 
