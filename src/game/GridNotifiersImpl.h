@@ -187,32 +187,22 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
 {
-    if(!target->IsAlive() || target->IsInFlight() )
+    if(!target->IsAlive())
         return;
 
-    if(target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->IsTotem())
+    // (for not self casting case)
+    if(target != i_check && !target->IsAttackableByAOE())
         return;
 
     if (!i_dynobject.IsWithinDistInMap(target, i_dynobject.GetRadius()))
         return;
 
-    //Check targets for not_selectable unit flag and remove
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
-        return;
-
-    // Evade target
-    if( target->GetTypeId()==TYPEID_UNIT && (target->ToCreature())->IsInEvadeMode() )
-        return;
-
-    //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
-    if( target->GetTypeId()==TYPEID_PLAYER && target != i_check && (((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()) || (target->ToPlayer())->GetVisibility()==VISIBILITY_OFF) )
-        return;
-
     if (i_dynobject.IsAffecting(target))
         return;
-
+    
+    //return if target is friendly. Start combat if not.
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(i_dynobject.GetSpellId());
-    uint32 eff_index  = i_dynobject.GetEffIndex();
+    uint32 eff_index = i_dynobject.GetEffIndex();
     if(spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
         || spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)
     {
@@ -234,14 +224,14 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
             && !(spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) )
            i_check->CombatStart(target);
     }
+    
+    //return if already an area aura that can't stack with ours
 
     // Check target immune to spell or aura
     if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effects[eff_index].Effect, spellInfo->Effects[eff_index].Mechanic))
         return;
     
-    i_dynobject.AddAffected(target);
-
-    // Add dynamic object as source to any existing aura, or create one if none found
+    // Add dynamic object as source to any existing aura from the same caster, or create one if none found
     if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
     {
         if(PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur))
@@ -250,12 +240,14 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
             return;
         }
     } else {
-        PersistentAreaAura* pAur = new PersistentAreaAura(spellInfo, eff_index, NULL, target, i_check);
-        pAur->AddSource(&i_dynobject);
+        PersistentAreaAura* aura = new PersistentAreaAura(spellInfo, eff_index, nullptr, target, i_check);
+        aura->AddSource(&i_dynobject);
         //also refresh aura duration
-        pAur->SetAuraDuration(i_dynobject.GetDuration());
-        target->AddAura(pAur);
+        aura->SetAuraDuration(i_dynobject.GetDuration());
+        target->AddAura(aura);
     }
+
+    i_dynobject.AddAffected(target);
 }
 
 template<>

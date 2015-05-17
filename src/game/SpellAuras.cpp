@@ -564,6 +564,7 @@ void PersistentAreaAura::Update(uint32 diff)
 
     if(!inRange)
     {
+        //remove aura from target and remove affected target from dynobjects
         target->RemoveAurasByCasterSpell(id, effIndex, caster->GetGUID());
         for(auto guid : sourceDynObjects)
             if(DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*caster, guid))
