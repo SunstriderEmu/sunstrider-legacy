@@ -46,6 +46,48 @@ bool ChatHandler::HandleYoloCommand(const char* /* args */)
     return true;
 }
 
+/** Syntax: .debug batchmelee <count> [type]
+With type:
+0 - Basic attack
+1 - Left hand attack
+2 - Ranged attack
+*/
+bool ChatHandler::HandleDebugBatchMelee(const char* args)
+{
+    char* cCount = strtok((char*)args, " ");
+    if(!cCount)
+        return false;
+
+    uint32 count = atoi(cCount);
+    if(count == 0)
+        return false;
+
+    if(count > 5000)
+    {
+        PSendSysMessage("Plz stahp abusing");
+        return true;
+    }
+
+    WeaponAttackType type = BASE_ATTACK;
+    if(char* cType = strtok(NULL, ""))
+    {
+        type = WeaponAttackType(atoi(cType));
+        if(type > RANGED_ATTACK)
+            return false;
+    }
+
+    Player* p = m_session->GetPlayer();
+    if(Unit* victim = p->GetVictim())
+    {
+        for(uint32 i = 0; i < count; i++)
+            p->AttackerStateUpdate(victim, type);
+    } else {
+        PSendSysMessage("No victim");
+    }
+
+    return true;
+}
+
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
     Object *obj = getSelectedUnit();

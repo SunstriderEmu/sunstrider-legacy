@@ -210,6 +210,7 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand debugCommandTable[] =
     {
+        { "batchmelee",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBatchMelee,            "", NULL },
         { "inarc",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugInArcCommand,          "", NULL },
         { "spellfail",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSpellFailCommand,      "", NULL },
         { "setpoi",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSetPoiCommand,              "", NULL },
