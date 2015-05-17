@@ -4863,7 +4863,7 @@ void Spell::EffectTameCreature(uint32 /*i*/)
 
 void Spell::EffectSummonPet(uint32 i)
 {
-    Unit *owner = NULL;
+    Unit* owner = NULL;
     if(m_originalCaster)
     {
         if (m_originalCaster->GetTypeId() == TYPEID_PLAYER)
@@ -4882,7 +4882,7 @@ void Spell::EffectSummonPet(uint32 i)
 
     uint32 petentry = m_spellInfo->Effects[i].MiscValue;
 
-    Pet *OldSummon = owner->GetPet();
+    Pet* OldSummon = owner->GetPet();
 
     // if pet requested type already exist
     if( OldSummon )

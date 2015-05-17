@@ -149,15 +149,15 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND id = '%u'",ownerid, petnumber);
     else if(current)
         // current pet (slot 0)                   0   1      2      3        4      5    6           7              8        9           10    11    12       13         14       15            16      17              18        19                 20                 21              22
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND slot = '0'",ownerid );
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND slot = '%u'", ownerid, PET_SAVE_AS_CURRENT);
     else if(petentry)
         // known petentry entry (unique for summoned pet, but non unique for hunter pet (only from current or not stabled pets)
         //                                        0   1      2      3        4      5    6           7              8        9           10    11    12       13         14       15            16      17              18        19                 20                 21              22
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND entry = '%u' AND (slot = '0' OR slot = '3') ",ownerid, petentry );
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND entry = '%u' AND (slot = '%u' OR slot > '%u') ", ownerid, petentry, PET_SAVE_AS_CURRENT, PET_SAVE_LAST_STABLE_SLOT );
     else
         // any current or other non-stabled pet (for hunter "call pet")
         //                                        0   1      2      3        4      5    6           7              8        9           10    11    12       13         14       15            16      17              18        19                 20                 21              22
-        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND (slot = '0' OR slot = '3') ",ownerid);
+        result = CharacterDatabase.PQuery("SELECT id, entry, owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata, TeachSpelldata, savetime, resettalents_cost, resettalents_time, CreatedBySpell, PetType FROM character_pet WHERE owner = '%u' AND (slot = '%u' OR slot > '%u') ",ownerid, PET_SAVE_AS_CURRENT, PET_SAVE_LAST_STABLE_SLOT);
 
     if(!result)
         return false;
@@ -212,7 +212,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR("entities.pet","ERROR: Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
@@ -270,7 +270,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             SetPowerType(POWER_FOCUS);
             break;
         default:
-            TC_LOG_ERROR("FIXME","Pet have incorrect type (%u) for pet loading.",getPetType());
+            TC_LOG_ERROR("entities.pet","Pet have incorrect type (%u) for pet loading.",getPetType());
     }
     InitStatsForLevel( petlevel);
     SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
@@ -287,8 +287,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if(fields[10].GetUInt32() != 0)
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        trans->PAppend("UPDATE character_pet SET slot = '3' WHERE owner = '%u' AND slot = '0' AND id <> '%u'",ownerid, m_charmInfo->GetPetNumber());
-        trans->PAppend("UPDATE character_pet SET slot = '0' WHERE owner = '%u' AND id = '%u'",ownerid, m_charmInfo->GetPetNumber());
+        trans->PAppend("UPDATE character_pet SET slot = '%u' WHERE owner = '%u' AND slot = '0' AND id <> '%u'", PET_SAVE_NOT_IN_SLOT, ownerid, m_charmInfo->GetPetNumber());
+        trans->PAppend("UPDATE character_pet SET slot = '%u' WHERE owner = '%u' AND id = '%u'", PET_SAVE_AS_CURRENT, ownerid, m_charmInfo->GetPetNumber());
         CharacterDatabase.CommitTransaction(trans);
     }
 
@@ -452,7 +452,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
         // prevent existence another hunter pet in PET_SAVE_AS_CURRENT and PET_SAVE_NOT_IN_SLOT
         if(getPetType()==HUNTER_PET && (mode==PET_SAVE_AS_CURRENT||mode==PET_SAVE_NOT_IN_SLOT))
-            trans->PAppend("DELETE FROM character_pet WHERE owner = '%u' AND (slot = '0' OR slot = '3')", owner );
+            trans->PAppend("DELETE FROM character_pet WHERE owner = '%u' AND (slot = '%u' OR slot > '%u')", owner, PET_SAVE_AS_CURRENT, PET_SAVE_LAST_STABLE_SLOT );
         // save pet
         std::ostringstream ss;
         ss  << "INSERT INTO character_pet ( id, entry,  owner, modelid, level, exp, Reactstate, loyaltypoints, loyalty, trainpoint, slot, name, renamed, curhealth, curmana, curhappiness, abdata,TeachSpelldata,savetime,resettalents_cost,resettalents_time,CreatedBySpell,PetType) "
@@ -525,12 +525,11 @@ void Pet::SetDeathState(DeathState s)                       // overwrite virtual
         else
         {
             // pet corpse non lootable and non skinnable
-            SetUInt32Value( UNIT_DYNAMIC_FLAGS, 0x00 );
+            SetUInt32Value( UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE );
             RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
              //lose happiness when died and not in BG/Arena
-            MapEntry const* mapEntry = sMapStore.LookupEntry(GetMapId());
-            if(!mapEntry || (mapEntry->map_type != MAP_ARENA && mapEntry->map_type != MAP_BATTLEGROUND))
+            if (!GetMap()->IsBattlegroundOrArena())
                 ModifyPower(POWER_HAPPINESS, -HAPPINESS_LEVEL_SIZE);
 
             SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
@@ -836,7 +835,7 @@ int32 Pet::GetTPForSpell(uint32 spellid)
 uint32 Pet::GetMaxLoyaltyPoints(uint32 level)
 {
     if (!level) {
-        TC_LOG_ERROR("FIXME","CRASH ALERT: Called Pet::GetMaxLoyaltyPoints with level 0 for creature entry %u, owner %s (GUID %u). Incrementing it to prevent crash.", GetEntry(), GetOwner() ? GetOwner()->GetName().c_str() : "unknown", GetOwner() ? GetOwner()->GetGUIDLow() : 0);
+        TC_LOG_ERROR("entities.pet","CRASH ALERT: Called Pet::GetMaxLoyaltyPoints with level 0 for creature entry %u, owner %s (GUID %u). Incrementing it to prevent crash.", GetEntry(), GetOwner() ? GetOwner()->GetName().c_str() : "unknown", GetOwner() ? GetOwner()->GetGUIDLow() : 0);
         ++level;
     }
 
@@ -944,7 +943,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 {
     if(!creature)
     {
-        TC_LOG_ERROR("FIXME","CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
+        TC_LOG_ERROR("entities.pet","CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
         return false;
     }
     uint32 guid=sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
@@ -959,7 +958,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR("entities.pet","ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
@@ -967,7 +966,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     CreatureTemplate const *cinfo = GetCreatureTemplate();
     if(!cinfo)
     {
-        TC_LOG_ERROR("FIXME","ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
+        TC_LOG_ERROR("entities.pet","ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
         return false;
     }
 
@@ -1012,12 +1011,12 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
 {
     if(!entry)
     {
-        TC_LOG_ERROR("FIXME","Pet::CreateBaseAtCreatureEntry : null entry given");
+        TC_LOG_ERROR("entities.pet","Pet::CreateBaseAtCreatureEntry : null entry given");
         return false;
     }
     if(!spawnOn)
     {
-        TC_LOG_ERROR("FIXME","Pet::CreateBaseAtCreatureEntry : null unit given");
+        TC_LOG_ERROR("entities.pet","Pet::CreateBaseAtCreatureEntry : null unit given");
         return false;
     }
 
@@ -1033,7 +1032,7 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
+        TC_LOG_ERROR("entities.pet","ERROR: Pet (guidlow %d, entry %d) not created base at creature. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
         return false;
     }
@@ -1041,7 +1040,7 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
     CreatureTemplate const *cinfo = GetCreatureTemplate();
     if(!cinfo)
     {
-        TC_LOG_ERROR("FIXME","ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
+        TC_LOG_ERROR("entities.pet","ERROR: CreateBaseAtCreature() failed, creatureInfo is missing!");
         return false;
     }
 
@@ -1091,7 +1090,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
     Unit* owner = GetOwner();
     if(!owner)
     {
-        TC_LOG_ERROR("FIXME","ERROR: attempt to summon pet (Entry %u) without owner! Attempt terminated.", cinfo->Entry);
+        TC_LOG_ERROR("entities.pet","ERROR: attempt to summon pet (Entry %u) without owner! Attempt terminated.", cinfo->Entry);
         return false;
     }
 
@@ -1193,7 +1192,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             else                                            // not exist in DB, use some default fake data
             {
                 if (owner->GetTypeId() == TYPEID_PLAYER)
-                    TC_LOG_ERROR("FIXME","Summoned pet (Entry: %u) not have pet stats data in DB",cinfo->Entry);
+                    TC_LOG_ERROR("entities.pet","Summoned pet (Entry: %u) not have pet stats data in DB",cinfo->Entry);
 
                 // remove elite bonuses included in DB values
                 CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(petlevel, cinfo->unit_class);
@@ -1234,7 +1233,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             }
             else                                            // not exist in DB, use some default fake data
             {
-                TC_LOG_ERROR("FIXME","Hunter pet levelstats missing in DB");
+                TC_LOG_ERROR("entities.pet","Hunter pet levelstats missing in DB");
 
                 // remove elite bonuses included in DB values
                 CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(petlevel, cinfo->unit_class);
@@ -1326,7 +1325,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
             }
             break;
         default:
-            TC_LOG_ERROR("FIXME","Pet have incorrect type (%u) for levelup.", getPetType());
+            TC_LOG_ERROR("entities.pet","Pet have incorrect type (%u) for levelup.", getPetType());
             break;
     }
 
@@ -1402,7 +1401,7 @@ void Pet::_LoadSpellCooldowns()
 
             if(!sSpellMgr->GetSpellInfo(spell_id))
             {
-                TC_LOG_ERROR("FIXME","Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
+                TC_LOG_ERROR("entities.pet","Pet %u have unknown spell %u in `pet_spell_cooldown`, skipping.",m_charmInfo->GetPetNumber(),spell_id);
                 continue;
             }
 
@@ -1621,11 +1620,11 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
         // do pet spell book cleanup
         if(state == PETSPELL_UNCHANGED)                     // spell load case
         {
-            TC_LOG_ERROR("FIXME","Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.",spell_id);
+            TC_LOG_ERROR("entities.pet","Pet::addSpell: Non-existed in SpellStore spell #%u request, deleting for all pets in `pet_spell`.",spell_id);
             CharacterDatabase.PExecute("DELETE FROM pet_spell WHERE spell = '%u'",spell_id);
         }
         else
-            TC_LOG_ERROR("FIXME","Pet::addSpell: Non-existed in SpellStore spell #%u request.",spell_id);
+            TC_LOG_ERROR("entities.pet","Pet::addSpell: Non-existed in SpellStore spell #%u request.",spell_id);
 
         return false;
     }
