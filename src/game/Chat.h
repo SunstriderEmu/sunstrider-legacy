@@ -346,7 +346,7 @@ class ChatHandler
         bool HandleSendQuestInvalidMsgCommand(const char* args);
 
         bool HandleYoloCommand(const char* args);
-        bool HandleDebugBatchMelee(const char* args);
+        bool HandleDebugBatchAttack(const char* args);
         bool HandleDebugInArcCommand(const char* args);
         bool HandleDebugSpellFailCommand(const char* args);
         bool HandleDebugStealthLevel(const char* args);

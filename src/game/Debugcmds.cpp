@@ -46,13 +46,13 @@ bool ChatHandler::HandleYoloCommand(const char* /* args */)
     return true;
 }
 
-/** Syntax: .debug batchmelee <count> [type]
+/** Syntax: .debug batchattack <count> [type]
 With type:
 0 - Basic attack
-1 - Left hand attack
+1 - Offhand attack
 2 - Ranged attack
 */
-bool ChatHandler::HandleDebugBatchMelee(const char* args)
+bool ChatHandler::HandleDebugBatchAttack(const char* args)
 {
     char* cCount = strtok((char*)args, " ");
     if(!cCount)
@@ -79,8 +79,14 @@ bool ChatHandler::HandleDebugBatchMelee(const char* args)
     Player* p = m_session->GetPlayer();
     if(Unit* victim = p->GetVictim())
     {
-        for(uint32 i = 0; i < count; i++)
-            p->AttackerStateUpdate(victim, type);
+        if(type != RANGED_ATTACK)
+        {
+            for(uint32 i = 0; i < count; i++)
+                p->AttackerStateUpdate(victim, type);
+        } else {
+            for(uint32 i = 0; i < count; i++)
+                p->CastSpell(victim, 75, true); //shoot
+        }
     } else {
         PSendSysMessage("No victim");
     }
