@@ -1101,8 +1101,10 @@ class Unit : public WorldObject
         uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
         void SetFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
         FactionTemplateEntry const* GetFactionTemplateEntry() const;
+        //use this for npc's, npc neutral to players won't try to attack them until they're hit (and thus become hostile)
         bool IsHostileTo(Unit const* unit) const;
         bool IsHostileToPlayers() const;
+        //use this for players, player may be neutral to npc's but their attack should still hit them
         bool IsFriendlyTo(Unit const* unit) const;
         bool IsNeutralToAll() const;
         bool IsInPartyWith(Unit const* unit) const;
@@ -1233,7 +1235,14 @@ class Unit : public WorldObject
         bool IsPolymorphed() const;
 
         bool IsFrozen() const;
-
+        
+        /** Check the following :
+            Is Alive
+            Has not flag UNIT_FLAG_NON_ATTACKABLE or UNIT_FLAG_NOT_SELECTABLE or UNIT_FLAG_IMMUNE_TO_PC
+            Is not gamemaster or spectator or gm not visible
+            Is not totem or in evade mode
+            Is not in flight
+        */
         bool IsAttackableByAOE() const;
         bool CanAttack(Unit const* target, bool force = true) const;
         virtual bool IsInWater() const;

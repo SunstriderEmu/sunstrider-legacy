@@ -5025,7 +5025,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
     // multiple weapon dmg effect workaround
     // execute only the last weapon damage
     // and handle all effects at once
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; j < MAX_SPELL_EFFECTS; j++)
     {
         switch(m_spellInfo->Effects[j].Effect)
         {

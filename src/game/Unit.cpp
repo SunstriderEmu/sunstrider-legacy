@@ -7062,7 +7062,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
     if (unit->GetTypeId() == TYPEID_PLAYER && (((Player const*) unit)->IsGameMaster() || ((Player const*) unit)->isSpectator()))
         return false;
 
-    // always hostile to enemy
+    // always hostile to current victim
     if (GetVictim() == unit || unit->GetVictim() == this)
         return true;
 
@@ -7105,7 +7105,7 @@ bool Unit::IsHostileTo(Unit const* unit) const
         if (pTester->duel && pTester->duel->opponent == pTarget && pTester->duel->startTime != 0)
             return true;
 
-        // PvP Zone
+        // Duel area case
         if( (meOrMyOwner->ToPlayer() && meOrMyOwner->ToPlayer()->IsInDuelArea())
             || (pTarget->ToPlayer() && pTarget->ToPlayer()->IsInDuelArea())
           )
@@ -9283,15 +9283,25 @@ bool Unit::IsAttackableByAOE() const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return false;
 
-    if(GetTypeId()==TYPEID_PLAYER && ((this->ToPlayer())->IsGameMaster() || (this->ToPlayer())->isSpectator()))
+    if(Player const* p = ToPlayer())
+    {
+        if(   p->IsGameMaster()  
+           || p->isSpectator()
+           || p->GetVisibility() == VISIBILITY_OFF
+          )
         return false;
+    }
 
-    if(GetTypeId()==TYPEID_UNIT && (ToCreature())->IsTotem())
-        return false;
+    if(Creature const* c = ToCreature())
+    {
+        if(   c->IsTotem()
+           || c->IsInEvadeMode())
+            return false;
+    }
 
     if(IsInFlight())
         return false;
-
+    
     return true;
 }
 
