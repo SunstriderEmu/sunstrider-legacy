@@ -231,12 +231,13 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     if (target->IsImmunedToSpell(spellInfo) || target->IsImmunedToSpellEffect(spellInfo->Effects[eff_index].Effect, spellInfo->Effects[eff_index].Mechanic))
         return;
     
-    // Add dynamic object as source to any existing aura from the same caster, or create one if none found
+    // Add dynamic object as source to any existing aura from the same caster, or try to add one if none found
     if(Aura* aur = target->GetAuraByCasterSpell(spellInfo->Id,eff_index,i_check->GetGUID()))
     {
         if(PersistentAreaAura* pAur = dynamic_cast<PersistentAreaAura*>(aur))
         {
             pAur->AddSource(&i_dynobject);
+            i_dynobject.AddAffected(target);
             return;
         }
     } else {
@@ -244,10 +245,9 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
         aura->AddSource(&i_dynobject);
         //also refresh aura duration
         aura->SetAuraDuration(i_dynobject.GetDuration());
-        target->AddAura(aura);
+        if(target->AddAura(aura))
+            i_dynobject.AddAffected(target);
     }
-
-    i_dynobject.AddAffected(target);
 }
 
 template<>

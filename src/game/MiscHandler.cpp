@@ -1459,24 +1459,13 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
     uint8 apply;
     recvData >> apply;
 
-    CellCoord pair;
-
-    switch(apply)
+    _player->SetFarsightVision(apply);
+    if(apply)
     {
-        case 0:
-            _player->SetFarsightVision(false);
-            break;
-        case 1:
-            _player->SetFarsightVision(true);
-            //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
-            if(WorldObject* farSightTarget = _player->GetFarsightTarget())
-                if(farSightTarget->isType(TYPEMASK_UNIT))
-                    farSightTarget->ToUnit()->SetToNotify(); 
-            
-            break;
-        default:
-            TC_LOG_ERROR("FIXME","Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
-            return;
+        //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
+        if(WorldObject* farSightTarget = _player->GetFarsightTarget())
+            if(farSightTarget->isType(TYPEMASK_UNIT))
+                farSightTarget->ToUnit()->SetToNotify(); 
     }
     GetPlayer()->SetToNotify();
 }
