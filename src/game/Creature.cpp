@@ -1322,7 +1322,7 @@ void Creature::StartSuspiciousLook(Unit const* target)
     m_stealthWarningCooldown = SUSPICIOUS_LOOK_COOLDOWN;
 
     GetMotionMaster()->MoveSuspiciousLook(target, SUSPICIOUS_LOOK_DURATION);
-    //TODO sound
+    SendAIReaction(target, AI_REACTION_ALERT);
 }
 
 bool Creature::CanDoSuspiciousLook() const

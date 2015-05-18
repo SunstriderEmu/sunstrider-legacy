@@ -2105,12 +2105,13 @@ enum PetDiet
 #define GUILD_EVENTLOG_MAX_ENTRIES  100
 #define GUILD_MAX_RANKS             10
 
-enum AiReaction
+enum AIReaction
 {
-    AI_REACTION_UNK1    = 1,
-    AI_REACTION_AGGRO   = 2,
-    AI_REACTION_UNK3    = 3,
-    AI_REACTION_UNK4    = 4
+    AI_REACTION_ALERT    = 0,                               // pre-aggro (used in client packet handler)
+    AI_REACTION_FRIENDLY = 1,                               // (NOT used in client packet handler)
+    AI_REACTION_HOSTILE  = 2,                               // sent on every attack, triggers aggro sound (used in client packet handler)
+    AI_REACTION_AFRAID   = 3,                               // seen for polymorph (when AI not in control of self?) (NOT used in client packet handler)
+    AI_REACTION_DESTROY  = 4                                // used on object destroy (NOT used in client packet handler)
 };
 
 // Diminishing Returns Types

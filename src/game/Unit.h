@@ -1755,6 +1755,9 @@ class Unit : public WorldObject
 
         void PropagateSpeedChange() { GetMotionMaster()->PropagateSpeedChange(); }
 
+        //Send AI reaction to players around (this for example used to do the aggro sound)
+        void SendAIReaction(Unit const* target, AIReaction reaction);
+
         // reactive attacks
         void ClearAllReactives();
         void StartReactiveTimer( ReactiveType reactive ) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}

@@ -7383,11 +7383,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //    (m->ToCreature()_attacking)->AI()->AttackedBy(this);
 
     if (GetTypeId() == TYPEID_UNIT && !(ToCreature()->IsPet())) {
-        WorldPacket data(SMSG_AI_REACTION, 12);
-        data << uint64(GetGUID());
-        data << uint32(AI_REACTION_AGGRO); // Aggro sound
-        ((WorldObject*)this)->SendMessageToSet(&data, true);
-
+        SendAIReaction(this, AI_REACTION_HOSTILE);
         (ToCreature())->CallAssistance();
 
         // should not let player enter combat by right clicking target
@@ -11587,8 +11583,17 @@ void Unit::SendPetAIReaction(uint64 guid)
         return;
 
     WorldPacket data(SMSG_AI_REACTION, 12);
-    data << uint64(guid) << uint32(00000002);
+    data << uint64(guid);
+    data << uint32(AI_REACTION_HOSTILE);
     (owner->ToPlayer())->GetSession()->SendPacket(&data);
+}
+
+void Unit::SendAIReaction(Unit const* target, AIReaction reaction)
+{
+    WorldPacket data(SMSG_AI_REACTION, 12);
+    data << uint64(target->GetGUID());
+    data << uint32(reaction); 
+    SendMessageToSet(&data, true);
 }
 
 ///----------End of Pet responses methods----------
