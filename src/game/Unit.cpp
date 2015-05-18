@@ -3087,7 +3087,7 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
             {
                 uint32 appendValue = m_uint32Values[UNIT_NPC_FLAGS];
 
-                //remove server custom flags (who do those even exists, remove if you got time for that)
+                //remove server custom flags 
                 appendValue &= ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP);
              /* LK?  if (creature)
                     if (!target->CanSeeSpellClickOn(creature))
@@ -9803,7 +9803,7 @@ void Unit::SetDeathState(DeathState s)
     }
     else if(s == JUST_RESPAWNED)
     {
-        RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
+        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE); // clear skinnable for creature and player (at battleground)
     }
 
     m_deathState = s;
@@ -11985,7 +11985,7 @@ void Unit::SetContestedPvP(Player *attackedPlayer)
     {
         AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         // call MoveInLineOfSight for nearby contested guards
-        SetVisibility(GetVisibility());
+        SetToNotify();
     }
 }
 
@@ -12740,6 +12740,7 @@ void Unit::SetFeared(bool apply)
     if (Player* player = ToPlayer())
         player->SetClientControl(this, !apply);
 }
+
 void Unit::SetConfused(bool apply)
 {
     if (apply)
@@ -14090,7 +14091,7 @@ void Unit::SetFacingTo(float ori)
     init.Launch();
 }
 
-void Unit::SetFacingToObject(WorldObject* object)
+void Unit::SetFacingToObject(WorldObject const* object)
 {
     // never face when already moving
     if (!IsStopped())

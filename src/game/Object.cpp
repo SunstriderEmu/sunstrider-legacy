@@ -2084,7 +2084,9 @@ void Position::GetPositionOffsetTo(const Position & endPos, Position & retOffset
 
 float Position::GetAngle(const Position *obj) const
 {
-    if (!obj) return 0;
+    if (!obj) 
+        return 0;
+
     return GetAngle(obj->GetPositionX(), obj->GetPositionY());
 }
 

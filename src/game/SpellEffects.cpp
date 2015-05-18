@@ -4217,31 +4217,18 @@ void Spell::EffectPull(uint32 /*i*/)
 void Spell::EffectDistract(uint32 /*i*/)
 {
     // Check for possible target
-    if (!unitTarget || unitTarget->IsInCombat())
+    if(!unitTarget || unitTarget->IsInCombat())
         return;
 
     // target must be OK to do this
-    if( unitTarget->HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING ) )
+    if(unitTarget->HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING))
         return;
 
-    float angle = unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY);
+    unitTarget->SetFacingTo(unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY));
+    unitTarget->ClearUnitState(UNIT_STATE_MOVING);
 
-    if ( unitTarget->GetTypeId() == TYPEID_PLAYER )
-    {
-        // For players just turn them
-        WorldPacket data;
-        (unitTarget->ToPlayer())->SetPosition(unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), angle, false);
-    }
-    else
-    {
-        if(unitTarget->IsPet()) //no effect on pet
-            return;
-
-        // Set creature Distracted, Stop it, And turn it
-        unitTarget->SetOrientation(angle);
-        unitTarget->StopMoving();
-        unitTarget->GetMotionMaster()->MoveDistract(damage*1000);
-    }
+    if(unitTarget->GetTypeId() == TYPEID_UNIT)
+        unitTarget->GetMotionMaster()->MoveDistract(damage * IN_MILLISECONDS);
 }
 
 void Spell::EffectPickPocket(uint32 /*i*/)

@@ -23,5 +23,16 @@
 #include "Common.h"
 #include "WorldPacket.h"
 
+void DecreaseTimer(uint32& timer, uint32 const diff)
+{
+    if(timer > 0)
+    {
+        if(diff >= timer)
+            timer = 0;
+        else
+            timer -= diff;
+    }
+};
+
 #endif
 

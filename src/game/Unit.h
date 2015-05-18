@@ -592,6 +592,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_STABLEMASTER          = 0x00400000,       // 100%
     UNIT_NPC_FLAG_GUILD_BANKER          = 0x00800000,       // cause client to send 997 opcode
     UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click)
+    //TODO remove those two, these are serverside custom flags
     UNIT_NPC_FLAG_GUARD                 = 0x10000000,       // custom flag for guards
     UNIT_NPC_FLAG_OUTDOORPVP            = 0x20000000,       // custom flag for outdoor pvp creatures
 };
@@ -1518,7 +1519,7 @@ class Unit : public WorldObject
         void SetInFront(WorldObject const* target);
         void SetInFront(float x, float y);
         void SetFacingTo(float ori);
-        void SetFacingToObject(WorldObject* object);
+        void SetFacingToObject(WorldObject const* object);
 
         uint64 GetTarget() const { return GetUInt64Value(UNIT_FIELD_TARGET); }
         virtual void SetTarget(uint64 /*guid*/) = 0;
