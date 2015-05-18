@@ -45,7 +45,7 @@ void MotionMaster::Initialize()
         MovementGenerator *curr = top();
         pop();
         if (curr)
-            DirectDelete(curr);
+            DirectDelete(curr, true);
     }
 
     InitDefault();
@@ -101,7 +101,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
         for (size_t i = 0; i < _expList->size(); ++i)
         {
             MovementGenerator* mg = (*_expList)[i];
-            DirectDelete(mg);
+            DirectDelete(mg, false);
         }
 
         delete _expList;
@@ -127,7 +127,7 @@ void MotionMaster::DirectClean(bool reset)
     {
         MovementGenerator *curr = top();
         pop();
-        if (curr) DirectDelete(curr);
+        if (curr) DirectDelete(curr, true);
     }
 
     if (empty())
@@ -150,15 +150,17 @@ void MotionMaster::DelayedClean()
     }
 }
 
-void MotionMaster::DirectExpire(bool reset)
+//delete top movement generator if any, and re init top
+void MotionMaster::DirectExpire(bool reset, bool premature)
 {
     if (size() > 1)
     {
         MovementGenerator *curr = top();
         pop();
-        DirectDelete(curr);
+        DirectDelete(curr, premature);
     }
 
+    //set the new top
     while (!empty() && !top())
         --_top;
 
@@ -170,13 +172,13 @@ void MotionMaster::DirectExpire(bool reset)
         top()->Reset(_owner);
 }
 
-void MotionMaster::DelayedExpire()
+void MotionMaster::DelayedExpire(bool premature)
 {
     if (size() > 1)
     {
         MovementGenerator *curr = top();
         pop();
-        DelayedDelete(curr);
+        DelayedDelete(curr, premature);
     }
 
     while (!empty() && !top())
@@ -194,6 +196,9 @@ void MotionMaster::MoveIdle()
 
 void MotionMaster::MoveRandom(float spawndist)
 {
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
     if (_owner->GetTypeId() == TYPEID_UNIT)
     {
         TC_LOG_DEBUG("misc", "Creature (GUID: %u) start moving random", _owner->GetGUIDLow());
@@ -228,6 +233,9 @@ void MotionMaster::MoveTargetedHome()
 
 void MotionMaster::MoveConfused()
 {
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         TC_LOG_DEBUG("misc", "Player (GUID: %u) move confused", _owner->GetGUIDLow());
@@ -435,6 +443,7 @@ void MotionMaster::MoveCharge(float x, float y, float z, float speed, uint32 id,
     {
         TC_LOG_DEBUG("misc", "Creature (Entry: %u GUID: %u) charge point (X: %f Y: %f Z: %f)",
             _owner->GetEntry(), _owner->GetGUIDLow(), x, y, z);
+        //stop stealth detect warning if any, so that it does not restore orientation afterwards
         Mutate(new PointMovementGenerator<Creature>(id, x, y, z, generatePath, speed), MOTION_SLOT_CONTROLLED);
     }
 }
@@ -456,6 +465,9 @@ void MotionMaster::MoveCharge(PathGenerator const& path, float speed /*= SPEED_C
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)
 {
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         TC_LOG_ERROR("misc", "Player (GUID: %u) attempt to seek assistance", _owner->GetGUIDLow());
@@ -551,8 +563,8 @@ void MotionMaster::MoveDistract(uint32 timer)
             _owner->GetEntry(), _owner->GetGUIDLow(), timer);
     }
 
-    DistractMovementGenerator* mgen = new DistractMovementGenerator(timer);
-    Mutate(mgen, MOTION_SLOT_CONTROLLED);
+    float angle = _owner->GetAngle(x,y);
+    Mutate(new DistractMovementGenerator(_owner, angle, timer), MOTION_SLOT_CONTROLLED);
 }
 
 void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
@@ -561,9 +573,9 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     {
         Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
         if (_top == slot && (_cleanFlag & MMCF_UPDATE))
-            DelayedDelete(curr);
+            DelayedDelete(curr, true);
         else
-            DirectDelete(curr);
+            DirectDelete(curr, true);
     }
     else if (_top < slot)
     {
@@ -589,7 +601,7 @@ void MotionMaster::MovePath(uint32 path_id)
     /*while (!empty())
     {
         MovementGenerator *curr = top();
-        curr->Finalize(*_owner);
+        curr->Finalize(*_owner, true);
         pop();
         if (!isStatic(curr))
             delete curr;
@@ -648,15 +660,15 @@ void MotionMaster::InitTop()
     _needInit[_top] = false;
 }
 
-void MotionMaster::DirectDelete(_Ty curr)
+void MotionMaster::DirectDelete(_Ty curr, bool premature)
 {
     if (isStatic(curr))
         return;
-    curr->Finalize(_owner);
+    curr->Finalize(_owner, premature);
     delete curr;
 }
 
-void MotionMaster::DelayedDelete(_Ty curr)
+void MotionMaster::DelayedDelete(_Ty curr, bool premature)
 {
     TC_LOG_FATAL("misc", "Unit (Entry %u) is trying to delete its updating MG (Type %u)!", _owner->GetEntry(), curr->GetMovementGeneratorType());
     if (isStatic(curr))

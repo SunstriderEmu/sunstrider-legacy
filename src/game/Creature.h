@@ -724,6 +724,7 @@ class Creature : public Unit
         bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction = true) const;
         void DoFleeToGetAssistance(float radius = 50);
 
+
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
 

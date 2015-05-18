@@ -23,7 +23,7 @@
 #include "Common.h"
 #include "WorldPacket.h"
 
-void DecreaseTimer(uint32& timer, uint32 const diff)
+static void DecreaseTimer(uint32& timer, uint32 const diff)
 {
     if(timer > 0)
     {

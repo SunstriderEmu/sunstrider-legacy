@@ -26,7 +26,7 @@ class IdleMovementGenerator : public MovementGenerator
     public:
 
         void Initialize(Unit*);
-        void Finalize(Unit*) {  }
+        void Finalize(Unit*, bool) override {  }
         void Reset(Unit*);
         bool Update(Unit*, uint32) { return true; }
         MovementGeneratorType GetMovementGeneratorType() { return IDLE_MOTION_TYPE; }
@@ -40,7 +40,7 @@ class RotateMovementGenerator : public MovementGenerator
         explicit RotateMovementGenerator(uint32 time, RotateDirection direction) : m_duration(time), m_maxDuration(time), m_direction(direction) { }
 
         void Initialize(Unit*);
-        void Finalize(Unit*);
+        void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) { Initialize(owner); }
         bool Update(Unit*, uint32);
         MovementGeneratorType GetMovementGeneratorType() { return ROTATE_MOTION_TYPE; }
@@ -56,7 +56,7 @@ class DistractMovementGenerator : public MovementGenerator
         explicit DistractMovementGenerator(uint32 timer) : m_timer(timer) { }
 
         void Initialize(Unit*);
-        void Finalize(Unit*);
+        void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) { Initialize(owner); }
         bool Update(Unit*, uint32);
         MovementGeneratorType GetMovementGeneratorType() { return DISTRACT_MOTION_TYPE; }
@@ -72,7 +72,7 @@ class AssistanceDistractMovementGenerator : public DistractMovementGenerator
             DistractMovementGenerator(timer) { }
 
         MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_DISTRACT_MOTION_TYPE; }
-        void Finalize(Unit*);
+        void Finalize(Unit*, bool) override;
 };
 
 #endif

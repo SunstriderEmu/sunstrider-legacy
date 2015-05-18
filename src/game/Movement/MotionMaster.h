@@ -55,6 +55,7 @@ enum MovementGeneratorType
     NULL_MOTION_TYPE      = 17
 };
 
+//this determines priority between movement generators
 enum MovementSlot
 {
     MOTION_SLOT_IDLE,
@@ -131,8 +132,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
             return Impl[slot];
         }
 
-        void DirectDelete(_Ty curr);
-        void DelayedDelete(_Ty curr);
+        void DirectDelete(_Ty curr, bool premature = false);
+        void DelayedDelete(_Ty curr, bool premature = false);
 
         void UpdateMotion(uint32 diff);
         void Clear(bool reset = true)
@@ -156,10 +157,10 @@ class MotionMaster //: private std::stack<MovementGenerator *>
                     _cleanFlag |= MMCF_RESET;
                 else
                     _cleanFlag &= ~MMCF_RESET;
-                DelayedExpire();
+                DelayedExpire(false);
             }
             else
-                DirectExpire(reset);
+                DirectExpire(reset, false);
         }
 
         void MoveIdle();
@@ -190,7 +191,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveSeekAssistance(float x, float y, float z);
         void MoveSeekAssistanceDistract(uint32 timer);
         void MoveTaxiFlight(uint32 path, uint32 pathnode);
-        void MoveDistract(uint32 time);
+        void MoveDistract(float x, float y, uint32 time);
         void MovePath(uint32 path_id);
         void MoveRotate(uint32 time, RotateDirection direction);
 
@@ -206,8 +207,8 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void DirectClean(bool reset);
         void DelayedClean();
 
-        void DirectExpire(bool reset);
-        void DelayedExpire();
+        void DirectExpire(bool reset, bool premature = true);
+        void DelayedExpire(bool premature = true);
 
         typedef std::vector<_Ty> ExpireList;
         ExpireList* _expList;

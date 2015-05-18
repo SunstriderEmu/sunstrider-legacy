@@ -738,6 +738,12 @@ Whisper.MinLevel = 1
 ###################################################################################################################
 # CREATURE SETTINGS
 #
+#    MonsterSight
+#        Radius at which creature can "see" approaching units (!= will attack)
+#
+#    GuarderSight
+#        Radius for guards can "see" approaching units (!= will attack)
+#
 #    ThreatRadius
 #        Radius for creature to evade after being pulled away from combat start point
 #        If ThreatRadius is less than creature aggro radius then aggro radius will be used
@@ -793,6 +799,8 @@ Whisper.MinLevel = 1
 #
 ###################################################################################################################
 
+MonsterSight = 50
+GuarderSight = 50
 ThreatRadius = 60
 Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
