@@ -133,7 +133,7 @@ void CreatureAINew::onMoveInLoS(Unit* who)
         attackStart(who);
     else if (who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-        && me->CanAttack(who->GetVictim() == CAN_ATTACK_RESULT_OK))
+        && me->CanAttack(who->GetVictim()) == CAN_ATTACK_RESULT_OK)
         attackStart(who->GetVictim());
 }
 

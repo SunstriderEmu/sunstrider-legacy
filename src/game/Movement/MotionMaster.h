@@ -59,9 +59,9 @@ enum MovementGeneratorType
 //this determines priority between movement generators
 enum MovementSlot
 {
-    MOTION_SLOT_IDLE,
+    MOTION_SLOT_IDLE, //Default movement, is never deleted unless replaced by another
     MOTION_SLOT_ACTIVE,
-    MOTION_SLOT_CONTROLLED,
+    MOTION_SLOT_CONTROLLED, 
     MAX_MOTION_SLOT
 };
 

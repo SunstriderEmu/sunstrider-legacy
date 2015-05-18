@@ -308,9 +308,6 @@ class Map : public GridRefManager<NGridType>
           return mtRand.randExc(100.0);
         }
         
-        Creature* GetCreature(uint64 guid);
-        GameObject* GetGameObject(uint64 guid);
-
         void AddCreatureToPool(Creature*, uint32);
         void RemoveCreatureFromPool(Creature*, uint32);
         std::list<Creature*> GetAllCreaturesFromPool(uint32);

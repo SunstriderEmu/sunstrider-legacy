@@ -1322,22 +1322,27 @@ void Creature::StartSuspiciousLook(Unit const* target)
     m_stealthWarningCooldown = SUSPICIOUS_LOOK_COOLDOWN;
 
     GetMotionMaster()->MoveSuspiciousLook(target, SUSPICIOUS_LOOK_DURATION);
-    SendAIReaction(target, AI_REACTION_ALERT);
+    SendAIReaction(this, AI_REACTION_ALERT);
 }
 
-bool Creature::CanDoSuspiciousLook() const
+bool Creature::CanDoSuspiciousLook(Unit const* target) const
 {
     if(   IsInCombat()
        || IsWorldBoss()
-       || IsPet()
        || IsTotem()
-       || IsGuard())
+      )
         return false;
 
     // cooldown not ready
     if(m_stealthWarningCooldown > 0)
         return false;
-    
+
+    if(target->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    if(target->GetVisibility() != VISIBILITY_GROUP_STEALTH)
+        return false;
+
     //only with those movement generators, we don't want to start warning when fleeing, chasing, ...
     MovementGeneratorType currentMovementType = GetMotionMaster()->GetCurrentMovementGeneratorType();
     if(currentMovementType != IDLE_MOTION_TYPE

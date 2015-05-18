@@ -58,12 +58,11 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
         return;
 
     CanAttackResult result = me->CanAggro(who);
-    if(result == CAN_ATTACK_RESULT_OK)
+    if(result == CAN_ATTACK_RESULT_OK) {
+        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
-    else if(result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
-            && who->GetTypeId() == TYPEID_PLAYER
-            && who->GetVisibility() == VISIBILITY_GROUP_STEALTH
-            && me->CanDoSuspiciousLook())
+    } else if(result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+            && me->CanDoSuspiciousLook(who))
         me->StartSuspiciousLook(who);
     //check if must assist
     else if(who->GetVictim() && me->IsFriendlyTo(who)

@@ -105,7 +105,8 @@ struct Position
     float m_positionY;
     float m_positionZ;
     float m_orientation;
-
+    
+    //these functions only change the position at server, you need to use proper opcodes or set object to notify
     void Relocate(float x, float y)
         { m_positionX = x; m_positionY = y;}
     void Relocate(float x, float y, float z)
@@ -117,6 +118,7 @@ struct Position
     void Relocate(const Position *pos)
         { m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; m_orientation = pos->m_orientation; }
     void RelocateOffset(const Position &offset);
+    //use SetFacingTo to send proper update to client
     virtual void SetOrientation(float orientation)
         { m_orientation = orientation; }
 

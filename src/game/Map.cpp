@@ -2377,20 +2377,6 @@ Player* Map::GetPlayer(uint64 guid)
     return obj;
 }
 
-Creature * Map::GetCreature(uint64 guid)
-{
-    Creature * obj = HashMapHolder<Creature>::Find(guid);
-    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
-    return obj;
-}
-
-GameObject * Map::GetGameObject(uint64 guid)
-{
-    GameObject * obj = HashMapHolder<GameObject>::Find(guid);
-    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
-    return obj;
-}
-
 inline GridMap *Map::GetGrid(float x, float y)
 {
     // half opt method

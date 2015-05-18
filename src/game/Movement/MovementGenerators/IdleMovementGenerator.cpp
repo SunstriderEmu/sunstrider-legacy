@@ -88,19 +88,22 @@ DistractMovementGenerator::DistractMovementGenerator(Unit const* owner, float ta
 void DistractMovementGenerator::Initialize(Unit* owner)
 {
     owner->AddUnitState(UNIT_STATE_DISTRACTED);
-    owner->SetOrientation(targetOrientation);
+    owner->SetFacingTo(targetOrientation);
 }
 
 void DistractMovementGenerator::Finalize(Unit* owner, bool premature)
 {
     if(!premature)
-        owner->SetOrientation(originalOrientation);
+        owner->SetFacingTo(originalOrientation);
 
     owner->ClearUnitState(UNIT_STATE_DISTRACTED);
 }
 
-bool DistractMovementGenerator::Update(Unit* /*owner*/, uint32 time_diff)
+bool DistractMovementGenerator::Update(Unit* owner, uint32 time_diff)
 {
+    if(owner->IsInCombat())
+        return false;
+
     if (time_diff > m_timer)
         return false;
 
@@ -118,17 +121,25 @@ SuspiciousLookMovementGenerator::SuspiciousLookMovementGenerator(Unit const* own
 
 void SuspiciousLookMovementGenerator::Initialize(Unit* owner)
 {
-    owner->SetOrientation(targetOrientation);
+    owner->SetFacingTo(targetOrientation);
 }
 
 void SuspiciousLookMovementGenerator::Finalize(Unit* owner, bool premature) 
 {
     if(!premature)
-        owner->SetOrientation(originalOrientation); // "Hmm, must have been the wind"
+        owner->SetFacingTo(originalOrientation); // "Hmm, must have been the wind"
 }
 
 bool SuspiciousLookMovementGenerator::Update(Unit* owner, uint32 time_diff)
 {
+    //stop being suspicious if a control was applied, we've got other things to worry about
+    if(owner->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)
+        return false;
+    
+    //stop generator if creature entered combat, just to be sure
+    if(owner->IsInCombat())
+        return false;
+
     if (time_diff > m_timer)
         return false;
 

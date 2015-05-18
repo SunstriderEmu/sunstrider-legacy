@@ -487,16 +487,17 @@ void SmartAI::MoveInLineOfSight(Unit* who)
     if (me->HasReactState(REACT_PASSIVE) || AssistPlayerInCombat(who))
         return;
 
-    if (!CanAIAttack(who) || me->isCivilian())
+    if (!CanAIAttack(who))
         return;
 
-    if (!me->CanAttack(who) == CAN_ATTACK_RESULT_OK)
+    CanAttackResult result = me->CanAttack(who);
+    if (   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+        && me->CanDoSuspiciousLook(who))
+    {
+        me->StartSuspiciousLook(who);
+    } else if (result != CAN_ATTACK_RESULT_OK)
         return;
 
-    /*
-    if (!me->CanAggro(who, false) == CAN_ATTACK_RESULT_OK)
-        return;
-        */
     if (me->IsHostileTo(who))
     {
         float fAttackRadius = me->GetAttackDistance(who);
