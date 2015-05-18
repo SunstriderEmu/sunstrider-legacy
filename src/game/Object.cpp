@@ -1364,7 +1364,7 @@ void WorldObject::BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const*
     if (targetGuid && !IS_PLAYER_GUID(targetGuid)) {
         LocaleConstant loc_idx = sWorld->GetDefaultDbcLocale(); //FIXME, this do not localize for clients
         if (Map* map = GetMap()) {
-            if (Creature* target = map->GetCreatureInMap(targetGuid))
+            if (Creature* target = map->GetCreature(targetGuid))
                 targetName = target->GetName();
         }
     }

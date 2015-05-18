@@ -246,9 +246,9 @@ class Map : public GridRefManager<NGridType>
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
-        Player* GetPlayerInMap(uint64 guid);
-        Creature* GetCreatureInMap(uint64 guid);
-        GameObject* GetGameObjectInMap(uint64 guid);
+        Player* GetPlayer(uint64 guid);
+        Creature* GetCreature(uint64 guid);
+        GameObject* GetGameObject(uint64 guid);
         Transport* GetTransport(uint64 guid);
         DynamicObject* GetDynamicObject(uint64 guid);   
 

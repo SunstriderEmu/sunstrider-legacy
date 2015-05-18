@@ -1980,7 +1980,6 @@ Logger.server.authserver=3,Console Server
 Logger.spells=3,Console Server
 Logger.sql.dev=3,Console Server
 Logger.sql.driver=3,Console Server
-Logger.warden=3,Console Server
 
 #
 #    Log.Async.Enable

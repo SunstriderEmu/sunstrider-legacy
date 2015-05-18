@@ -2155,7 +2155,7 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
     {
         for(auto guid : itr->second)
         {
-            Creature* c = GetCreatureInMap(guid);
+            Creature* c = GetCreature(guid);
             if(c)
                 creatureList.push_back(c);
             else
@@ -2370,21 +2370,21 @@ void InstanceMap::Remove(Player *player, bool remove)
     SetResetSchedule(true);
 }
 
-Player* Map::GetPlayerInMap(uint64 guid)
+Player* Map::GetPlayer(uint64 guid)
 {
     Player * obj = HashMapHolder<Player>::Find(guid);
     if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
     return obj;
 }
 
-Creature * Map::GetCreatureInMap(uint64 guid)
+Creature * Map::GetCreature(uint64 guid)
 {
     Creature * obj = HashMapHolder<Creature>::Find(guid);
     if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
     return obj;
 }
 
-GameObject * Map::GetGameObjectInMap(uint64 guid)
+GameObject * Map::GetGameObject(uint64 guid)
 {
     GameObject * obj = HashMapHolder<GameObject>::Find(guid);
     if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
