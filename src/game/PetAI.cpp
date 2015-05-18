@@ -61,7 +61,7 @@ bool PetAI::_needToStop() const
     if (i_pet.IsNonMeleeSpellCast(false))
         return true;
 
-    return !i_pet.CanAttack(i_pet.GetVictim());
+    return i_pet.CanAttack(i_pet.GetVictim()) != CAN_ATTACK_RESULT_OK;
 }
 
 void PetAI::ResetMovement()

@@ -711,8 +711,14 @@ class Creature : public Unit
 
         bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsWithinSightDist(Unit const* u) const;
-        bool canStartAttack(Unit const* u) const;
+        CanAttackResult CanAggro(Unit const* u) const;
         float GetAttackDistance(Unit const* pl) const;
+        
+        /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/
+        //return true if the creature can do a suspicious look right now
+        bool CanDoSuspiciousLook() const;
+        //start lookup suspicously at target
+        void StartSuspiciousLook(Unit const* target);
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         /** Call assistance at short range (chain aggro mechanic) */
@@ -928,6 +934,8 @@ class Creature : public Unit
 
         uint32 m_unreachableTargetTime;
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
+
+        uint32 m_stealthWarningCooldown;
 
     private:
         //WaypointMovementGenerator vars

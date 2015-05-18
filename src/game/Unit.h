@@ -942,8 +942,43 @@ enum ReactiveType
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
+
 #define MAX_PLAYER_STEALTH_DETECT_RANGE 45.0f               // max distance for detection targets by player
-#define STEALTH_DETECTED_TIME 1500                          // time we force keeping already detected targets visible in ms
+/* distance in yards at which a creature will be in "warning" mode, look in direction of the player without attacking
+Not sure about this but: Creatures should only warn players, and bosses shouldn't warn at all. 
+Only on units hostile to players and able to attack him.
+*/
+#define STEALTH_DETECT_WARNING_RANGE 3.0f   
+//if in warning range, we can do the suspicious look.
+//time in ms between two warning, counting from warning start (= ignoring duration)
+#define SUSPICIOUS_LOOK_COOLDOWN 18000
+#define SUSPICIOUS_LOOK_DURATION 5000
+// SUSPICIOUS_LOOK_COOLDOWN must always be greater than SUSPICIOUS_LOOK_DURATION
+
+enum StealthDetectedStatus
+{
+    DETECTED_STATUS_NOT_DETECTED,
+    DETECTED_STATUS_WARNING, //almost detected
+    DETECTED_STATUS_DETECTED,    
+};
+
+enum CanAttackResult
+{
+    CAN_ATTACK_RESULT_OK,
+    CAN_ATTACK_RESULT_DEAD, //target is dead (really dead, not feign death)
+    CAN_ATTACK_RESULT_FEIGN_DEATH,
+    CAN_ATTACK_RESULT_CIVILIAN, //create is civilian
+    CAN_ATTACK_RESULT_NOT_ACCESSIBLE, //isInAccessiblePlaceFor
+    CAN_ATTACK_RESULT_TOO_FAR_Z, //target is higher than CREATURE_Z_ATTACK_RANGE
+    CAN_ATTACK_RESULT_TOO_FAR, //target is further than attack distance
+    CAN_ATTACK_RESULT_NOT_IN_LOS, //not in Line of Sight
+    CAN_ATTACK_RESULT_FRIENDLY, //target is friendly
+    CAN_ATTACK_RESULT_TARGET_FLAGS, //could not attack because of target flags
+    CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
+    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
+    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
+    CAN_ATTACK_RESULT_OTHERS, //all others reason
+};
 
 struct SpellProcEventEntry;                                 // used only privately
 
@@ -1245,7 +1280,7 @@ class Unit : public WorldObject
             Is not in flight
         */
         bool IsAttackableByAOE() const;
-        bool CanAttack(Unit const* target, bool force = true) const;
+        CanAttackResult CanAttack(Unit const* target, bool force = true) const;
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
@@ -1548,7 +1583,7 @@ class Unit : public WorldObject
         virtual bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool CanDetectInvisibilityOf(Unit const* u) const;
-        bool CanDetectStealthOf(Unit const* u, float distance) const;
+        StealthDetectedStatus CanDetectStealthOf(Unit const* u, float distance) const;
 
         // virtual functions for all world objects types
         bool IsVisibleForInState(Player const* u, bool inVisibleList) const;

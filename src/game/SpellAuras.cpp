@@ -779,7 +779,7 @@ void AreaAura::Update(uint32 diff)
                     (*tIter)->AddAura(aur);
 
                     if(m_areaAuraType == AREA_AURA_ENEMY && !(actualSpellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) )
-                        caster->CombatStart(*tIter);
+                        caster->SetInCombatWith(*tIter);
                 }
             }
         }

@@ -49,7 +49,7 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
         return;
     }
 
-    if (!_player->CanAttack(enemy)) {
+    if (_player->CanAttack(enemy) != CAN_ATTACK_RESULT_OK) {
         // stop attack state at client
         SendMeleeAttackStop(enemy);
         return;

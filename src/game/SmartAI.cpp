@@ -490,11 +490,11 @@ void SmartAI::MoveInLineOfSight(Unit* who)
     if (!CanAIAttack(who) || me->isCivilian())
         return;
 
-    if (!me->CanAttack(who))
+    if (!me->CanAttack(who) == CAN_ATTACK_RESULT_OK)
         return;
 
     /*
-    if (!me->CanStartAttack(who, false))
+    if (!me->CanAggro(who, false) == CAN_ATTACK_RESULT_OK)
         return;
         */
     if (me->IsHostileTo(who))

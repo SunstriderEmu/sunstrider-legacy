@@ -4224,11 +4224,10 @@ void Spell::EffectDistract(uint32 /*i*/)
     if(unitTarget->HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING))
         return;
 
-    unitTarget->SetFacingTo(unitTarget->GetAngle(m_targets.m_destX, m_targets.m_destY));
     unitTarget->ClearUnitState(UNIT_STATE_MOVING);
 
     if(unitTarget->GetTypeId() == TYPEID_UNIT)
-        unitTarget->GetMotionMaster()->MoveDistract(damage * IN_MILLISECONDS);
+        unitTarget->GetMotionMaster()->MoveDistract(m_targets.m_destX, m_targets.m_destY, damage * IN_MILLISECONDS);
 }
 
 void Spell::EffectPickPocket(uint32 /*i*/)

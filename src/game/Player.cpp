@@ -19223,7 +19223,7 @@ bool Player::CanSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
             return false;
 
         if(!(u->GetTypeId()==TYPEID_PLAYER && !IsHostileTo(u) && IsGroupVisibleFor(p))) //always visible if in group and not hostile
-            if(!CanDetectStealthOf(u, GetDistance(u)))
+            if(CanDetectStealthOf(u, GetDistance(u) != DETECTED_STATUS_DETECTED))
                 return false;
     }
 
@@ -21260,7 +21260,7 @@ void Player::UpdateCharmedAI()
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit *target = GetVictim();
-    if(!target || !charmer->CanAttack(target))
+    if(!target || charmer->CanAttack(target) != CAN_ATTACK_RESULT_OK)
     {
         target = charmer->SelectNearestTarget();
         if(!target)

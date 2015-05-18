@@ -9120,7 +9120,7 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
     if(who->GetTypeId() == TYPEID_PLAYER)
         SetContestedPvP(who->ToPlayer());
 
-    Player *me = GetCharmerOrOwnerPlayerOrPlayerItself();
+    Player* me = GetCharmerOrOwnerPlayerOrPlayerItself();
     if(updatePvP 
         && me && who->IsPvP()
         && (who->GetTypeId() != TYPEID_PLAYER
@@ -9232,46 +9232,54 @@ void Unit::ClearInCombat()
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
-// force to skip IsFriendlyTo && feign death checks
-bool Unit::CanAttack(Unit const* target, bool force /*= true*/) const
+// force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
+// force also ignore feign death
+CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
 {
     ASSERT(target);
 
     if (force) {
         if (IsFriendlyTo(target))
-            return false;
+            return CAN_ATTACK_RESULT_FRIENDLY;
     } else if (!IsHostileTo(target))
-        return false;
+        return CAN_ATTACK_RESULT_FRIENDLY;
 
     if(target->HasFlag(UNIT_FIELD_FLAGS,
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
-        return false;
+        return CAN_ATTACK_RESULT_TARGET_FLAGS;
 
     if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator())
        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
       ) 
-       return false; 
+       return CAN_ATTACK_RESULT_OTHERS; 
 
     // feign death case
     if (!force && target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH)) {
         if ((GetTypeId() != TYPEID_PLAYER && !GetOwner()) || (GetOwner() && GetOwner()->GetTypeId() != TYPEID_PLAYER))
-            return false;
+            return CAN_ATTACK_RESULT_FEIGN_DEATH;
         // if this == player or owner == player check other conditions
     } else if (!target->IsAlive()) // real dead case ~UNIT_FLAG2_FEIGN_DEATH && UNIT_STATE_DIED
-        return false;
+        return CAN_ATTACK_RESULT_DEAD;
     else if (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
-        return false;
+        return CAN_ATTACK_RESULT_OTHERS;
     
+    //Sathrovarr the Corruptor HACK
     if (target->GetEntry() == 24892 && IsPet())
-        return true;
+        return CAN_ATTACK_RESULT_OTHERS;
 
     if ((m_invisibilityMask || target->m_invisibilityMask) && !CanDetectInvisibilityOf(target))
-        return false;
+        return CAN_ATTACK_RESULT_CANNOT_DETECT_INVI;
 
-    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH && !CanDetectStealthOf(target, GetDistance(target)))
-        return false;
+    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
+    {
+        StealthDetectedStatus stealthDetectStatus = CanDetectStealthOf(target, GetDistance(target));
+        if(stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
+        else if(stealthDetectStatus == DETECTED_STATUS_WARNING)
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+    }
 
-    return true;
+    return CAN_ATTACK_RESULT_OK;
 }
 
 bool Unit::IsAttackableByAOE() const
@@ -9468,31 +9476,31 @@ bool Unit::CanDetectInvisibilityOf(Unit const* u) const
     return false;
 }
 
-bool Unit::CanDetectStealthOf(Unit const* target, float distance) const
+StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetDistance) const
 {
     if(GetTypeId() == TYPEID_PLAYER)
         if (ToPlayer()->isSpectator() && !sWorld->getConfig(CONFIG_ARENA_SPECTATOR_STEALTH))
-            return false;
+            return DETECTED_STATUS_NOT_DETECTED;
     
     if (!IsAlive())
-        return false;
+        return DETECTED_STATUS_NOT_DETECTED;
 
     if (HasAuraType(SPELL_AURA_DETECT_STEALTH))
-        return true;
+        return DETECTED_STATUS_DETECTED;
 
     AuraList const& auras = target->GetAurasByType(SPELL_AURA_MOD_STALKED); // Hunter mark
     for (AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
         if ((*iter)->GetCasterGUID() == GetGUID())
-            return true;
-
-    if(target->HasAura(18461,0)) //vanish dummy spell, 2.5s duration after vanish
-        return false;
+            return DETECTED_STATUS_DETECTED;
     
-    if (distance == 0.0f) //collision
-        return true;
+    if(target->HasAura(18461,0)) //vanish dummy spell, 2.5s duration after vanish
+        return DETECTED_STATUS_NOT_DETECTED;
+    
+    if (targetDistance == 0.0f) //collision
+        return DETECTED_STATUS_DETECTED;
 
     if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90° behind
-        return false;
+        return DETECTED_STATUS_NOT_DETECTED;
     
     //http://wolfendonkane.pagesperso-orange.fr/furtivite.html
     
@@ -9507,13 +9515,19 @@ bool Unit::CanDetectStealthOf(Unit const* target, float distance) const
     else if (visibleDistance < 2.5f)
         visibleDistance = 2.5f; //this can still be reduced with the following check
 
-    //reduce a bit visibility depending on angle
+    //reduce visibility distance depending on angle
     if(!HasInArc(M_PI,target)) //not in front (180°)
         visibleDistance = visibleDistance / 2;
     else if(!HasInArc(M_PI/2,target)) //not in 90° cone in front
         visibleDistance = visibleDistance / 1.5;
     
-    return distance < visibleDistance;
+    float diff = targetDistance - visibleDistance;
+    if(diff < 0.0f)
+        return DETECTED_STATUS_DETECTED;
+    else if (diff <= STEALTH_DETECT_WARNING_RANGE)
+        return DETECTED_STATUS_WARNING;
+    else // diff > STEALTH_DETECT_WARNING_RANGE
+        return DETECTED_STATUS_NOT_DETECTED;
 }
 
 void Unit::DestroyForNearbyPlayers()
@@ -10023,7 +10037,7 @@ Unit* Creature::SelectVictim(bool evade)
     {
         for(AttackerSet::const_iterator itr = m_attackers.begin(); itr != m_attackers.end(); ++itr)
         {
-            if( (*itr)->IsInMap(this) && CanAttack(*itr) && (*itr)->isInAccessiblePlaceFor(this->ToCreature()) )
+            if( (*itr)->IsInMap(this) && CanAttack(*itr) == CAN_ATTACK_RESULT_OK && (*itr)->isInAccessiblePlaceFor(this->ToCreature()) )
                 return NULL;
         }
     }*/

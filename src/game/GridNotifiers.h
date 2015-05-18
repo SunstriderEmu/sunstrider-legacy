@@ -744,7 +744,7 @@ namespace Trinity
             NearestAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
             bool operator()(Unit* u)
             {
-                if( i_funit->CanAttack(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+                if( i_funit->CanAttack(u) == CAN_ATTACK_RESULT_OK && i_obj->IsWithinDistInMap(u, i_range) &&
                     !i_funit->IsFriendlyTo(u) && u->IsVisibleForOrDetect(i_funit,false)  )
                 {
                     i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
@@ -777,7 +777,7 @@ namespace Trinity
             bool operator()(Unit* u)
             {
                 // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
-                if (!i_funit->CanAttack(u))
+                if (i_funit->CanAttack(u) != CAN_ATTACK_RESULT_OK)
                     return false;
                 if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->IsTotem())
                     return false;
@@ -865,12 +865,12 @@ namespace Trinity
 
                 if(m_force)
                 {
-                    if(!m_creature->CanAttack(u))
+                    if(m_creature->CanAttack(u) != CAN_ATTACK_RESULT_OK)
                         return false;
                 }
                 else
                 {
-                    if(!m_creature->canStartAttack(u))
+                    if(!m_creature->CanAggro(u))
                         return false;
                 }
 

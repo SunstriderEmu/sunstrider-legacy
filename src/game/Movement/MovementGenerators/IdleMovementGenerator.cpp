@@ -79,30 +79,6 @@ void RotateMovementGenerator::Finalize(Unit* unit, bool /* premature */)
       unit->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
 }
 
-AssistanceDistractMovementGenerator::AssistanceDistractMovementGenerator(uint32 timer) :
-    m_timer(timer)
-{ }
-
-void AssistanceDistractMovementGenerator::Initialize(Unit* owner)
-{
-    owner->AddUnitState(UNIT_STATE_DISTRACTED);
-}
-
-bool AssistanceDistractMovementGenerator::Update(Unit* /*owner*/, uint32 time_diff)
-{
-    if (time_diff > m_timer)
-        return false;
-
-    m_timer -= time_diff;
-    return true;
-}
-
-void AssistanceDistractMovementGenerator::Finalize(Unit* unit, bool /* premature */)
-{
-    unit->ClearUnitState(UNIT_STATE_DISTRACTED);
-    unit->ToCreature()->SetReactState(REACT_AGGRESSIVE);
-}
-
 DistractMovementGenerator::DistractMovementGenerator(Unit const* owner, float targetOrientation, uint32 timer) : 
     m_timer(timer), 
     originalOrientation(owner->GetOrientation()), 
@@ -124,6 +100,54 @@ void DistractMovementGenerator::Finalize(Unit* owner, bool premature)
 }
 
 bool DistractMovementGenerator::Update(Unit* /*owner*/, uint32 time_diff)
+{
+    if (time_diff > m_timer)
+        return false;
+
+    m_timer -= time_diff;
+    return true;
+}
+
+//SuspiciousLookMovementGenerator
+
+SuspiciousLookMovementGenerator::SuspiciousLookMovementGenerator(Unit const* owner, Unit const* target, uint32 timer) : 
+    m_timer(timer), 
+    originalOrientation(owner->GetOrientation()), 
+    targetOrientation(owner->GetAngle(target)) 
+{ }
+
+void SuspiciousLookMovementGenerator::Initialize(Unit* owner)
+{
+    owner->SetOrientation(targetOrientation);
+}
+
+void SuspiciousLookMovementGenerator::Finalize(Unit* owner, bool premature) 
+{
+    if(!premature)
+        owner->SetOrientation(originalOrientation); // "Hmm, must have been the wind"
+}
+
+bool SuspiciousLookMovementGenerator::Update(Unit* owner, uint32 time_diff)
+{
+    if (time_diff > m_timer)
+        return false;
+
+    m_timer -= time_diff;
+    return true;
+}
+
+// AssistanceDistractMovementGenerator
+
+AssistanceDistractMovementGenerator::AssistanceDistractMovementGenerator(uint32 timer) :
+    m_timer(timer)
+{ }
+
+void AssistanceDistractMovementGenerator::Initialize(Unit* owner)
+{
+    owner->AddUnitState(UNIT_STATE_DISTRACTED);
+}
+
+bool AssistanceDistractMovementGenerator::Update(Unit* /*owner*/, uint32 time_diff)
 {
     if (time_diff > m_timer)
         return false;

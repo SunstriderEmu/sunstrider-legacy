@@ -57,14 +57,23 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-    if(me->canStartAttack(who))
+    CanAttackResult result = me->CanAggro(who);
+    if(result == CAN_ATTACK_RESULT_OK)
         AttackStart(who);
+    else if(result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+            && who->GetTypeId() == TYPEID_PLAYER
+            && who->GetVisibility() == VISIBILITY_GROUP_STEALTH
+            && me->CanDoSuspiciousLook())
+        me->StartSuspiciousLook(who);
+    //check if must assist
     else if(who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
         && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER
-        && me->CanAttack(who->GetVictim())) {
+        && me->CanAttack(who->GetVictim()) == CAN_ATTACK_RESULT_OK) 
+    {
         if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
+            //contested guards don't assists anyone
             if (me->GetScriptName() == "guard_contested") {
                 if (who->GetVictim() && !who->GetVictim()->IsInCombat())
                     return;
@@ -111,7 +120,7 @@ void CreatureAI::AttackStartIfCan(Unit* victim)
         return;
 
     //Merge conflict : set CanStartAttack
-    if(me->CanAttack(victim))
+    if(me->CanAttack(victim) == CAN_ATTACK_RESULT_OK)
         AttackStart(victim);
 }
 
@@ -135,6 +144,6 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
         me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit *target = me->GetVictim();
-    if(!target || !charmer->CanAttack(target))
+    if(!target || charmer->CanAttack(target) != CAN_ATTACK_RESULT_OK)
         AttackStart(charmer->SelectNearestTarget());
 }

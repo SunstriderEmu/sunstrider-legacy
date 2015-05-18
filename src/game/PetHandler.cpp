@@ -114,7 +114,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     if(!TargetUnit)
                         return;
 
-                    if(!pet->CanAttack(TargetUnit))
+                    if(pet->CanAttack(TargetUnit) != CAN_ATTACK_RESULT_OK)
                         return;
 
                     // Not let attack through obstructions

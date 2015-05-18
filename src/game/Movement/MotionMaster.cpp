@@ -548,8 +548,24 @@ void MotionMaster::MoveTaxiFlight(uint32 path, uint32 pathnode)
     }
 }
 
-void MotionMaster::MoveDistract(uint32 timer)
+void MotionMaster::MoveSuspiciousLook(Unit const* target, uint32 timer)
 {
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
+    //return if already a generator in MOTION_SLOT_CONTROLLED
+    if (Impl[MOTION_SLOT_CONTROLLED])
+        return;
+
+    TC_LOG_DEBUG("misc", "Creature (Entry: %u GUID: %u) almost detected stealth of target %u (timer: %u)",
+        _owner->GetEntry(), _owner->GetGUIDLow(), target->GetGUID(), timer);
+
+    Mutate(new SuspiciousLookMovementGenerator(_owner, target, timer), MOTION_SLOT_CONTROLLED);
+}
+
+void MotionMaster::MoveDistract(float x, float y, uint32 timer)
+{
+    //return if already a generator in MOTION_SLOT_CONTROLLED
     if (Impl[MOTION_SLOT_CONTROLLED])
         return;
 

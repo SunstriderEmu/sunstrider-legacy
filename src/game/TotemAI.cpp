@@ -80,7 +80,7 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if( !victim ||
-        !i_totem.CanAttack(victim) || !i_totem.IsWithinDistInMap(victim, max_range) ||
+        i_totem.CanAttack(victim) != CAN_ATTACK_RESULT_OK || !i_totem.IsWithinDistInMap(victim, max_range) ||
         i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
     {
         CellCoord p(Trinity::ComputeCellCoord(i_totem.GetPositionX(),i_totem.GetPositionY()));

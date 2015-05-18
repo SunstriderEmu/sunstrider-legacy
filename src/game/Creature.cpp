@@ -55,6 +55,7 @@
 #include "MoveSpline.h"
 #include "Spell.h"
 #include "ScriptedInstance.h"
+#include "Tools.h"
 
 void TrainerSpellData::Clear()
 {
@@ -173,7 +174,8 @@ m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), 
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
 m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
-m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false)
+m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false),
+m_stealthWarningCooldown(0)
 {
     m_valuesCount = UNIT_END;
 
@@ -480,6 +482,7 @@ void Creature::Update(uint32 diff)
     }
 
     UpdateProhibitedSchools(diff);
+    DecreaseTimer(m_stealthWarningCooldown, diff);
 
     UpdateMovementFlags();
     
@@ -1299,12 +1302,10 @@ bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
         //do not know what is the use of this detect
-        if(!detect || !CanDetectStealthOf(u, GetDistance(u)))
+        if(!detect || CanDetectStealthOf(u, GetDistance(u) != DETECTED_STATUS_DETECTED))
             return false;
     }
 
-    // Now check is target visible with LoS
-    //return u->IsWithinLOS(GetPositionX(),GetPositionY(),GetPositionZ());
     return true;
 }
 
@@ -1313,18 +1314,62 @@ bool Creature::IsWithinSightDist(Unit const* u) const
     return IsWithinDistInMap(u, sWorld->getConfig(CONFIG_SIGHT_MONSTER));
 }
 
-bool Creature::canStartAttack(Unit const* who) const
+/**
+Hostile target is in stealth and in warn range
+*/
+void Creature::StartSuspiciousLook(Unit const* target)
 {
-    if(isCivilian()
-        || !who->isInAccessiblePlaceFor(this)
-        || !CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE
-        || !IsWithinDistInMap(who, GetAttackDistance(who)))
+    m_stealthWarningCooldown = SUSPICIOUS_LOOK_COOLDOWN;
+
+    GetMotionMaster()->MoveSuspiciousLook(target, SUSPICIOUS_LOOK_DURATION);
+    //TODO sound
+}
+
+bool Creature::CanDoSuspiciousLook() const
+{
+    if(   IsInCombat()
+       || IsWorldBoss()
+       || IsPet()
+       || IsTotem()
+       || IsGuard())
         return false;
 
-    if(!CanAttack(who, false))
+    // cooldown not ready
+    if(m_stealthWarningCooldown > 0)
         return false;
+    
+    //only with those movement generators, we don't want to start warning when fleeing, chasing, ...
+    MovementGeneratorType currentMovementType = GetMotionMaster()->GetCurrentMovementGeneratorType();
+    if(currentMovementType != IDLE_MOTION_TYPE
+       && currentMovementType != RANDOM_MOTION_TYPE
+       && currentMovementType != WAYPOINT_MOTION_TYPE)
+       return false;
 
-    return IsWithinLOSInMap(who);
+    return true;
+}
+
+CanAttackResult Creature::CanAggro(Unit const* who) const
+{
+    if(isCivilian())
+        return CAN_ATTACK_RESULT_CIVILIAN;
+
+    if(!who->isInAccessiblePlaceFor(this))
+        return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
+
+    if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
+        return CAN_ATTACK_RESULT_TOO_FAR_Z;
+
+    if(!IsWithinDistInMap(who, GetAttackDistance(who)))
+        return CAN_ATTACK_RESULT_TOO_FAR;
+
+    CanAttackResult result = CanAttack(who, false);
+    if(result != CAN_ATTACK_RESULT_OK)
+        return result;
+
+    if(!IsWithinLOSInMap(who))
+        return CAN_ATTACK_RESULT_NOT_IN_LOS;
+
+    return CAN_ATTACK_RESULT_OK;
 }
 
 float Creature::GetAttackDistance(Unit const* pl) const
@@ -1863,7 +1908,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     if(!pVictim->IsInMap(this))
         return true;
 
-    if(!CanAttack(pVictim))
+    if(CanAttack(pVictim) != CAN_ATTACK_RESULT_OK)
         return true;
 
     if(!pVictim->isInAccessiblePlaceFor(this))
@@ -2272,7 +2317,7 @@ void Creature::AreaCombat()
         for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
         {
             if (Player* i_pl = i->GetSource())
-                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanAttack(i_pl, false))
+                if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
                 {
                     SetInCombatWith(i_pl);
                     i_pl->SetInCombatWith(this);
