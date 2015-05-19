@@ -292,6 +292,14 @@ bool ChatHandler::HandleReloadQuestTemplateCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadCreatureModelInfoCommand(const char*)
+{
+    TC_LOG_INFO("command", "Re-Loading `creature_model_info`" );
+    sObjectMgr->LoadCreatureModelInfo();
+    SendGlobalGMSysMessage("DB table `creature_model_info` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadLootTemplatesCreatureCommand(const char*)
 {
     TC_LOG_INFO("command", "Re-Loading Loot Tables... (`creature_loot_template`)" );
