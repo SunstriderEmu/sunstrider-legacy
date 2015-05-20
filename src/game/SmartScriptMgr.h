@@ -155,6 +155,8 @@ enum SMART_EVENT
     //Custom sunstrider
     SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
     SMART_EVENT_VICTIM_NOT_IN_LOS        = 101,      // checkInterval, NOT (event triggers if can see instead)
+    SMART_EVENT_ATTACKED_UNIT_DIED       = 102,      // none
+    SMART_EVENT_ENTER_PHASE              = 103,      // phase
     
     
     SMART_EVENT_END                      ,
@@ -348,6 +350,11 @@ struct SmartEvent
             uint32 cooldownMin;
             uint32 cooldownMax;
         } behindTarget;
+
+        struct
+        {
+            uint32 changedTo;
+        } phaseChanged;
 
         struct
         {
@@ -1355,6 +1362,8 @@ const uint32 SmartAIEventMask[SMART_EVENT_END][2] =
     {SMART_EVENT_COUNTER_SET,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     {SMART_EVENT_FRIENDLY_KILLED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_VICTIM_NOT_IN_LOS,         SMART_SCRIPT_TYPE_MASK_CREATURE },
+    {SMART_EVENT_ATTACKED_UNIT_DIED,        SMART_SCRIPT_TYPE_MASK_CREATURE },
+    {SMART_EVENT_ENTER_PHASE,             SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
 };
 
 enum SmartEventFlags

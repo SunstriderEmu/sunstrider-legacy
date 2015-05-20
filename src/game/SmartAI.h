@@ -74,6 +74,9 @@ class SmartAI : public CreatureAI
         // Called when the creature kills a unit
         void KilledUnit(Unit* victim) override;
 
+        // Called when the attacked unit dies (not necesserily killed by us)
+        void AttackedUnitDied(Unit* /* attacked */) override;
+
         // Called when the creature summon successfully other creature
         void JustSummoned(Creature* creature) override;
 

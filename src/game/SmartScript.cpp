@@ -3100,7 +3100,15 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         case SMART_EVENT_GOSSIP_HELLO:
         case SMART_EVENT_FOLLOW_COMPLETED:
         case SMART_EVENT_ON_SPELLCLICK:
+        case SMART_EVENT_ATTACKED_UNIT_DIED:
             ProcessAction(e, unit, var0, var1, bvar, spell, gob);
+            break;
+        case SMART_EVENT_ENTER_PHASE:
+            if(var0 != e.event.phaseChanged.changedTo)
+                return;
+
+            ProcessAction(e, unit);
+
             break;
         case SMART_EVENT_IS_BEHIND_TARGET:
             {

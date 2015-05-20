@@ -625,6 +625,11 @@ void SmartAI::KilledUnit(Unit* victim)
     GetScript()->ProcessEventsFor(SMART_EVENT_KILL, victim);
 }
 
+void SmartAI::AttackedUnitDied(Unit* attacked)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_ATTACKED_UNIT_DIED, attacked);
+}
+
 void SmartAI::JustSummoned(Creature* creature)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_SUMMONED_UNIT, creature);

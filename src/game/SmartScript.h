@@ -239,15 +239,26 @@ class SmartScript
     private:
         void IncPhase(int32 p = 1)
         {
+            uint32 previous = mEventPhase;
+
             if (p >= 0)
                 mEventPhase += (uint32)p;
             else
                 DecPhase(abs(p));
+
+            if(mEventPhase != previous)
+                ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
         }
 
-        void DecPhase(int32 p = 1) { mEventPhase  -= (mEventPhase < (uint32)p ? (uint32)p - mEventPhase : (uint32)p); }
+        void DecPhase(int32 p = 1) { mEventPhase  -= (mEventPhase < (uint32)p ? (uint32)p - ((uint32)p - mEventPhase) : (uint32)p); }
         bool IsInPhase(PhaseMask phaseMask) const { return ((1 << (mEventPhase - 1)) & phaseMask) != 0; }
-        void SetPhase(uint32 p = 0) { mEventPhase = p; }
+        void SetPhase(uint32 p = 0) 
+        { 
+            uint32 previous = mEventPhase;
+            mEventPhase = p;
+            if(mEventPhase != previous)
+                ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
+        }
 
         SmartAIEventList mEvents;
         SmartAIEventList mInstallEvents;
