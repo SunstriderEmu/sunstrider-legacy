@@ -395,7 +395,7 @@ struct SmartEvent
         struct
         {
             uint32 repeat;
-            uint32 not; //invert event, triggers if can see
+            uint32 invert; //invert event, triggers if can see
         } victimNotInLoS;
 
         struct

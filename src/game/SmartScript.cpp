@@ -3501,7 +3501,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
                 return;
 
             bool withinLos = me->IsWithinLOSInMap(victim);
-            if(!e.event.victimNotInLoS.not) //normal case, triggers if cannot see
+            if(!e.event.victimNotInLoS.invert) //normal case, triggers if cannot see
             {
                 if(withinLos)
                     return;
