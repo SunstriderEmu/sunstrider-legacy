@@ -117,15 +117,15 @@ void PetAI::UpdateAI(const uint32 diff)
     {
         if(!i_pet.IsNonMeleeSpellCast(false))
         {
-            if(i_pet.IsInCombat() && i_pet.getAttackers().empty())
+            if(i_pet.IsInCombat() && i_pet.GetAttackers().empty())
             {
                _stopAttack();
             } else if(owner && i_pet.GetCharmInfo()) //no victim
             {
                 if(owner->IsInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
-                    AttackStart(owner->getAttackerForHelper());
+                    AttackStart(owner->GetAttackerForHelper());
                     if (me->getAI())
-                        me->getAI()->attackStart(owner->getAttackerForHelper());
+                        me->getAI()->attackStart(owner->GetAttackerForHelper());
                 }
                 else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STATE_FOLLOW))
                     i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);

@@ -3491,7 +3491,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
                 return;
 
             bool withinLos = me->IsWithinLOSInMap(victim);
-            if(!e.event.victimInLoS.not) //normal case, triggers if cannot see
+            if(!e.event.victimNotInLoS.not) //normal case, triggers if cannot see
             {
                 if(withinLos)
                     return;
@@ -3500,7 +3500,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
                     return;
             }
 
-            ProcessTimedAction(e, e.event.victimInLoS.repeat, e.event.victimInLoS.repeat);
+            ProcessTimedAction(e, e.event.victimNotInLoS.repeat, e.event.victimNotInLoS.repeat);
         }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
@@ -3526,6 +3526,8 @@ void SmartScript::InitTimer(SmartScriptHolder& e)
         case SMART_EVENT_DISTANCE_GAMEOBJECT:
             RecalcTimer(e, e.event.distance.repeat, e.event.distance.repeat);
             break;
+        case SMART_EVENT_VICTIM_NOT_IN_LOS:
+            RecalcTimer(e, e.event.victimNotInLoS.repeat, e.event.victimNotInLoS.repeat);
         default:
             e.active = true;
             break;

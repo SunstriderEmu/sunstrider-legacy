@@ -763,7 +763,7 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
         
     SendSysMessage("Attackers list:");
     char msg[256];
-    for (Unit::AttackerSet::const_iterator itr = target->getAttackers().begin(); itr != target->getAttackers().end(); ++itr) {
+    for (Unit::AttackerSet::const_iterator itr = target->GetAttackers().begin(); itr != target->GetAttackers().end(); ++itr) {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
             snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName().c_str(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
         else

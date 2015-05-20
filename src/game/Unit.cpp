@@ -426,7 +426,7 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
           //  TC_LOG_ERROR("FIXME","Creature entry %u has invalid combat_reach", (this->ToCreature())->GetEntry());
         combat_reach = DEFAULT_COMBAT_REACH;
     }
-    uint32 attacker_number = getAttackers().size();
+    uint32 attacker_number = GetAttackers().size();
     if(attacker_number > 0) --attacker_number;
     GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm()
                  , GetAngle(obj) + (attacker_number ? (M_PI/2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0));
@@ -12380,6 +12380,14 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if (ToCreature()->getAI()) {
                 ToCreature()->getAI()->onKill(pVictim);
             }
+
+            auto attackers = pVictim->GetAttackers();
+            for(auto attacker : attackers)
+            {
+                if(Creature* c = attacker->ToCreature())
+                    if(c->IsAIEnabled)
+                        c->AI()->AttackedUnitDied(pVictim);
+            }
         }
             
         if (GetTypeId() == TYPEID_PLAYER) {
@@ -12739,7 +12747,7 @@ void Unit::SetFeared(bool apply)
         if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
         if (!caster)
-            caster = getAttackerForHelper();
+            caster = GetAttackerForHelper();
 
        GetMotionMaster()->MoveFleeing(caster, fearAuras.empty() ? sWorld->getConfig(CONFIG_CREATURE_FAMILY_FLEE_DELAY) : 0);             // caster == NULL processed in MoveFleeing
     }

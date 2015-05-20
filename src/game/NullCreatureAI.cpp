@@ -23,7 +23,7 @@
 
 void PassiveAI::UpdateAI(const uint32)
 {
-    if(me->IsInCombat() && me->getAttackers().empty())
+    if(me->IsInCombat() && me->GetAttackers().empty())
         EnterEvadeMode();
 }
 

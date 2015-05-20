@@ -2157,7 +2157,7 @@ void Spell::EffectDummy(uint32 i)
                     // 31989 -> dummy effect (step 1) + dummy effect (step 2) -> 31709 (taunt like spell for each target)
 
                     // non-standard cast requirement check
-                    if (!unitTarget || unitTarget->getAttackers().empty())
+                    if (!unitTarget || unitTarget->GetAttackers().empty())
                     {
                         // clear cooldown at fail
                         if(m_caster->GetTypeId()==TYPEID_PLAYER)
@@ -2180,7 +2180,7 @@ void Spell::EffectDummy(uint32 i)
                         ihit->effectMask &= ~(1<<1);
 
                     // select up to 3 random targets
-                    Unit::AttackerSet const& attackers = unitTarget->getAttackers();
+                    Unit::AttackerSet const& attackers = unitTarget->GetAttackers();
                     std::set<Unit*> targetSet (attackers);
                     size_t setSize = targetSet.size();
                     while (setSize > 3)

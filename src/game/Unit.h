@@ -1043,7 +1043,7 @@ class Unit : public WorldObject
             if(itr != m_attackers.end())
                 m_attackers.erase(itr);
         }
-        Unit * getAttackerForHelper()                       // If someone wants to help, who to give them
+        Unit* GetAttackerForHelper()                       // If someone wants to help, who to give them
         {
             if (GetVictim() != NULL)
                 return GetVictim();
@@ -1057,7 +1057,7 @@ class Unit : public WorldObject
         void CastStop(uint32 except_spellid = 0);
         bool AttackStop();
         void RemoveAllAttackers();
-        AttackerSet const& getAttackers() const { return m_attackers; }
+        AttackerSet const& GetAttackers() const { return m_attackers; }
         bool IsAttackingPlayer() const;
         Unit* GetVictim() const { return m_attacking; }
         Unit* EnsureVictim() const
