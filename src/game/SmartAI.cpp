@@ -491,11 +491,12 @@ void SmartAI::MoveInLineOfSight(Unit* who)
         return;
 
     CanAttackResult result = me->CanAttack(who);
-    if (   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
-        && me->CanDoSuspiciousLook(who))
+    if(    result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+              && me->CanDoSuspiciousLook(who))
     {
         me->StartSuspiciousLook(who);
-    } else if (result != CAN_ATTACK_RESULT_OK)
+    } 
+    if (result != CAN_ATTACK_RESULT_OK)
         return;
 
     if (me->IsHostileTo(who))
