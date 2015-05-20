@@ -154,9 +154,10 @@ enum SMART_EVENT
 
     //Custom sunstrider
     SMART_EVENT_FRIENDLY_KILLED          = 100,      // maxRange, entry(0 any), guid(0 any)
+    SMART_EVENT_VICTIM_NOT_IN_LOS        = 101,      // checkInterval, NOT (event triggers if can see instead)
     
     
-    SMART_EVENT_END                      = 101,
+    SMART_EVENT_END                      ,
 };
 
 struct SmartEvent
@@ -383,6 +384,12 @@ struct SmartEvent
             uint32 dist;
             uint32 repeat;
         } distance;
+
+        struct
+        {
+            uint32 repeat;
+            uint32 not; //invert event, triggers if can see
+        } victimInLoS;
 
         struct
         {
@@ -1347,6 +1354,7 @@ const uint32 SmartAIEventMask[SMART_EVENT_END][2] =
     {SMART_EVENT_DISTANCE_GAMEOBJECT,       SMART_SCRIPT_TYPE_MASK_CREATURE },
     {SMART_EVENT_COUNTER_SET,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     {SMART_EVENT_FRIENDLY_KILLED,           SMART_SCRIPT_TYPE_MASK_CREATURE },
+    {SMART_EVENT_VICTIM_NOT_IN_LOS,         SMART_SCRIPT_TYPE_MASK_CREATURE },
 };
 
 enum SmartEventFlags

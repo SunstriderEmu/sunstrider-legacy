@@ -3481,6 +3481,27 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessAction(e, unit);
             break;
         }
+        case SMART_EVENT_VICTIM_NOT_IN_LOS:
+        {
+            if (!me)
+                return;
+            
+            Unit const* victim = me->GetVictim();
+            if(!victim)
+                return;
+
+            bool withinLos = me->IsWithinLOSInMap(victim);
+            if(!e.event.victimInLoS.not) //normal case, triggers if cannot see
+            {
+                if(withinLos)
+                    return;
+            } else { //triger if can see
+                if(!withinLos)
+                    return;
+            }
+
+            ProcessTimedAction(e, e.event.victimInLoS.repeat, e.event.victimInLoS.repeat);
+        }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
