@@ -951,7 +951,7 @@ Only on units hostile to players and able to attack him.
 #define STEALTH_DETECT_WARNING_RANGE 3.0f   
 //if in warning range, we can do the suspicious look.
 //time in ms between two warning, counting from warning start (= ignoring duration)
-#define SUSPICIOUS_LOOK_COOLDOWN 18000
+#define SUSPICIOUS_LOOK_COOLDOWN 16000
 #define SUSPICIOUS_LOOK_DURATION 5000
 // SUSPICIOUS_LOOK_COOLDOWN must always be greater than SUSPICIOUS_LOOK_DURATION
 
