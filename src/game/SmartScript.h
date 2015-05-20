@@ -250,7 +250,14 @@ class SmartScript
                 ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
         }
 
-        void DecPhase(int32 p = 1) { mEventPhase  -= (mEventPhase < (uint32)p ? (uint32)p - ((uint32)p - mEventPhase) : (uint32)p); }
+        void DecPhase(int32 p = 1) 
+        { 
+            if(mEventPhase > (uint32)p)
+                mEventPhase -= (uint32)p; 
+            else
+                mEventPhase = 0;
+        }
+
         bool IsInPhase(PhaseMask phaseMask) const { return ((1 << (mEventPhase - 1)) & phaseMask) != 0; }
         void SetPhase(uint32 p = 0) 
         { 
