@@ -1010,18 +1010,20 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
-                if (!IsCreature(*itr))
-                    continue;
-
-                if ((*itr)->ToUnit()->IsAlive() && IsSmart((*itr)->ToCreature()))
+                if (IsCreature(*itr))
                 {
-                    CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->SetDespawnTime(e.action.forceDespawn.delay + 1); // Next tick
-                    CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->StartDespawn();
+                    if ((*itr)->ToUnit()->IsAlive() && IsSmart((*itr)->ToCreature()))
+                    {
+                        CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->SetDespawnTime(e.action.forceDespawn.delay + 1); // Next tick
+                        CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->StartDespawn();
+                    }
+                    else
+                        me->ForcedDespawn(e.action.forceDespawn.delay);
+                } else if(IsGameObject(*itr)) {
+                    (*itr)->ToGameObject()->SetDespawnTimer(e.action.forceDespawn.delay);
                 }
-                else
-                    me->ForcedDespawn(e.action.forceDespawn.delay);
             }
-
+            
             delete targets;
             break;
         }
