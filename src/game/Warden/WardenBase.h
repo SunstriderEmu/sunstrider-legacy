@@ -46,11 +46,7 @@ enum WardenOpcodes
     WARDEN_SMSG_HASH_REQUEST                    = 5
 };
 
-#if defined(__GNUC__)
-#pragma pack(1)
-#else
 #pragma pack(push,1)
-#endif
 
 struct WardenModuleUse
 {
@@ -73,11 +69,7 @@ struct WardenHashRequest
     uint8 Seed[16];
 };
 
-#if defined(__GNUC__)
-#pragma pack()
-#else
 #pragma pack(pop)
-#endif
 
 struct ClientWardenModule
 {
