@@ -690,10 +690,11 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         }
 
         //Send scripted event call
-        if (Creature *pCreature = dynamic_cast<Creature *>(i_target)) {
-            sScriptMgr->ReceiveEmote(GetPlayer(),pCreature,text_emote);
-            pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
-        }
+        if(i_target)
+            if (Creature *pCreature = i_target->ToCreature()) {
+                sScriptMgr->ReceiveEmote(GetPlayer(),pCreature, text_emote);
+                pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
+            }
     }
 }
 

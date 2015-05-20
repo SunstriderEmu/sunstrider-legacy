@@ -2685,21 +2685,29 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         }
         case SMART_TARGET_CREATURE_DISTANCE:
         {
-            // will always return a valid pointer, even if empty list
-            ObjectList* units = GetWorldObjectsInDist((float)e.target.unitDistance.dist);
-            for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
+            std::list< Creature* > creatures;
+
+            CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
+            Cell cell(p);
+            cell.data.Part.reserved = ALL_DISTRICT;
+            cell.SetNoCreate();
+
+            Trinity::AllCreaturesInRange u_check(me, (float)e.target.unitDistance.dist);
+            Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange> searcher(creatures, u_check);
+            TypeContainerVisitor< Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange>, GridTypeMapContainer > grid_creature_searcher(searcher);
+            cell.Visit(p, grid_creature_searcher, *(me->GetMap()));
+
+            for(auto itr : creatures) 
             {
-                if (!IsCreature(*itr))
+                if (me && me == itr)
                     continue;
 
-                if (me && me == *itr)
+                if ((e.target.unitDistance.creature && itr->GetEntry() != e.target.unitDistance.creature))
                     continue;
 
-                if ((e.target.unitDistance.creature && (*itr)->ToCreature()->GetEntry() == e.target.unitDistance.creature) || !e.target.unitDistance.creature)
-                    l->push_back(*itr);
+                l->push_back(itr);
             }
-
-            delete units;
+            
             break;
         }
         case SMART_TARGET_GAMEOBJECT_DISTANCE:
