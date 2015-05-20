@@ -216,7 +216,7 @@ class ChatHandler
         bool HandleNpcFollowCommand(const char* args);
         bool HandleNpcInfoCommand(const char* args);
         bool HandleNpcMoveCommand(const char* args);
-        bool HandleNpcPlayEmoteCommand(const char* args);
+        bool HandleNpcSetEmoteStateCommand(const char* args);
         bool HandleNpcSayCommand(const char* args);
         bool HandleNpcSetModelCommand(const char* args);
         bool HandleNpcSetMoveTypeCommand(const char* args);
@@ -363,6 +363,7 @@ class ChatHandler
         bool HandleDebugClearProfilingCommand(const char* args);
         bool HandleDebugSmartAICommand(const char* args);
         bool HandleDebugOpcodeTestCommand(const char* args);
+        bool HandleDebugPlayEmoteCommand(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);

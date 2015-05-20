@@ -3790,16 +3790,19 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     return true;
 }
 
-// .npc playemote #emoteid [#permanent]
-bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
+// .npc setemotestate #emoteid [#permanent]
+bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
 {
-    char* cEmote = strtok((char*)args, " ");
+    char* cState = strtok((char*)args, " ");
     char* cPermanent = strtok((char*)NULL, " ");
 
-    if(!cEmote) return false;
-    uint32 emote = atoi(cEmote);
+    if(!cState) 
+        return false;
+
+    uint32 state = atoi(cState);
     uint8 permanent = 0;
-    if(cPermanent) permanent = atoi(cPermanent);
+    if(cPermanent) 
+        permanent = atoi(cPermanent);
 
     Creature* target = getSelectedCreature();
     if(!target)
@@ -3809,12 +3812,13 @@ bool ChatHandler::HandleNpcPlayEmoteCommand(const char* args)
         return false;
     }
 
-    target->SetUInt32Value(UNIT_NPC_EMOTESTATE,emote);
+    target->SetEmoteState(state);
+
     if(permanent)
     {
-        PSendSysMessage("Emote set as permanent (will stay after a reboot)");
-        if(emote)
-            WorldDatabase.PExecute("REPLACE INTO creature_addon(`guid`,`emote`) VALUES (%u,%u)", target->GetDBTableGUIDLow(), emote);
+        PSendSysMessage("Emote state set as permanent (will stay after a reboot)");
+        if(state)
+            WorldDatabase.PExecute("INSERT INTO creature_addon(`guid`,`emote`) VALUES (%u,%u) ON DUPLICATE KEY UPDATE emote = %u;", target->GetDBTableGUIDLow(), state, state);
         else
             WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetDBTableGUIDLow());
     }

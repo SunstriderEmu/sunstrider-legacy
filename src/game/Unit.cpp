@@ -1693,6 +1693,10 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     }
 }
 
+void Unit::SetEmoteState(uint32 state)
+{
+    SetUInt32Value(UNIT_NPC_EMOTESTATE, state);
+}
 
 void Unit::HandleEmoteCommand(uint32 emote_id)
 {
@@ -12964,7 +12968,7 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();
-    SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
+    SetEmoteState(0);
     HandleEmoteCommand(0);
 
     // Charmer stop charming

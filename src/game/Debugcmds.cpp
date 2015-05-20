@@ -895,6 +895,24 @@ bool ChatHandler::HandleDebugSmartAICommand(const char* args)
     return true;
 }
 
+/* Syntax: .debug playemote <emoteId> */
+bool ChatHandler::HandleDebugPlayEmoteCommand(const char* args)
+{
+    uint32 emote = atoi(args);
+
+    Unit* target = getSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    target->HandleEmoteCommand(emote);
+    PSendSysMessage("Playing emote %u on target", emote);
+    return true;
+}
+
 bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
 {
     Opcodes op = MSG_NULL_ACTION;

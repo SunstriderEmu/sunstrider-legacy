@@ -254,6 +254,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
         { "smartai",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSmartAICommand,        "", NULL },
         { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "", NULL },
+        { "playemote",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugPlayEmoteCommand,      "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
@@ -505,7 +506,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "flag",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcFlagCommand,             "", NULL },
         { "changeentry",    SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcChangeEntryCommand,      "", NULL },
         { "info",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcInfoCommand,             "", NULL },
-        { "playemote",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcPlayEmoteCommand,        "", NULL },
+        { "playemote",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetEmoteStateCommand,        "", NULL },
         { "follow",         SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcFollowCommand,           "", NULL },
         { "unfollow",       SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcUnFollowCommand,         "", NULL },
         { "whisper",        SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcWhisperCommand,          "", NULL },

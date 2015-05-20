@@ -1970,7 +1970,7 @@ bool Creature::InitCreatureAddon(bool reload)
         SetUInt32Value(UNIT_FIELD_BYTES_2, m_creatureInfoAddon->bytes2);
 
     if (m_creatureInfoAddon->emote != 0)
-        SetUInt32Value(UNIT_NPC_EMOTESTATE, m_creatureInfoAddon->emote);
+        SetEmoteState(m_creatureInfoAddon->emote);
 
     if (m_creatureInfoAddon->move_flags != 0)
         SetUnitMovementFlags(m_creatureInfoAddon->move_flags);
@@ -2636,9 +2636,9 @@ void Creature::CheckForUnreachableTarget()
 void Creature::ResetCreatureEmote()
 {
     if(CreatureAddon const* cAddon = GetCreatureAddon())
-        SetUInt32Value(UNIT_NPC_EMOTESTATE, cAddon->emote); 
+        SetEmoteState(cAddon->emote); 
     else
-        SetUInt32Value(UNIT_NPC_EMOTESTATE, 0); 
+        SetEmoteState(0); 
 
     SetStandState(UNIT_STAND_STATE_STAND);
 }
