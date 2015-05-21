@@ -16,21 +16,25 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "IdleMovementGenerator.h"
-#include "CreatureAI.h"
-#include "Creature.h"
+#ifndef TRINITY_ROTATEMOVEMENTGENERATOR_H
+#define TRINITY_ROTATEMOVEMENTGENERATOR_H
 
-IdleMovementGenerator si_idleMovement;
+#include "MovementGenerator.h"
 
-// StopMoving is needed to make unit stop if its last movement generator expires
-// But it should not be sent otherwise there are many redundent packets
-void IdleMovementGenerator::Initialize(Unit* owner)
+class RotateMovementGenerator : public MovementGenerator
 {
-    Reset(owner);
-}
+    public:
+        explicit RotateMovementGenerator(uint32 time, RotateDirection direction) : m_duration(time), m_maxDuration(time), m_direction(direction) { }
 
-void IdleMovementGenerator::Reset(Unit* owner)
-{
-    if (!owner->IsStopped())
-        owner->StopMoving();
-}
+        void Initialize(Unit*) override;
+        void Finalize(Unit*, bool) override;
+        void Reset(Unit* owner) override { Initialize(owner); }
+        bool Update(Unit*, uint32) override ;
+        MovementGeneratorType GetMovementGeneratorType() override { return ROTATE_MOTION_TYPE; }
+
+    private:
+        uint32 m_duration, m_maxDuration;
+        RotateDirection m_direction;
+};
+
+#endif //TRINITY_ROTATEMOVEMENTGENERATOR_H

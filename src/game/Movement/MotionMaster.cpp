@@ -28,6 +28,9 @@
 #include "TargetedMovementGenerator.h"
 #include "WaypointMovementGenerator.h"
 #include "RandomMovementGenerator.h"
+#include "RotateMovementGenerator.h"
+#include "DistractMovementGenerator.h"
+#include "SuspiciousLookMovementGenerator.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include <cassert>
