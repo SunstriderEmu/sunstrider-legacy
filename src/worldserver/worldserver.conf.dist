@@ -99,7 +99,7 @@ Locale = 0
 #
 #    PlayerLimit
 #        Maximum number of players in the world. Excluding Mods, GM's and Admins
-#        Default: 100
+#        Default: 0
 #                 0 (for infinite players)
 #                -1 (for Mods, GM's and Admins only)
 #                -2 (for GM's and Admins only)
@@ -185,7 +185,7 @@ Locale = 0
 #
 #    MapUpdate.Threads
 #        Number of threads to update maps.
-#        Default: 1
+#        Default: 4
 #
 #     GuidDistribution.NewMethod
 #          Enable new method for unit guid distribution, using an alternate range of guid for summoned unit. This is to prevent guid overflow.
@@ -200,7 +200,7 @@ Locale = 0
 UseProcessors = 0
 ProcessPriority = 1
 Compression = 1
-PlayerLimit = 100
+PlayerLimit = 0
 SaveRespawnTimeImmediately = 1
 MaxOverspeedPings = 2
 GridUnload = 1
@@ -219,7 +219,7 @@ TargetPosRecalculateRange = 1.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
-MapUpdate.Threads = 1
+MapUpdate.Threads = 4
 GuidDistribution.NewMethod = 1
 GuidDistribution.Proportion = 90
 

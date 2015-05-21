@@ -3,7 +3,8 @@
 
 #include "MovementGenerator.h"
 
-/** Look towards the target for given time, and restore orientation afterwards. Does not restore orientation on premature ending. */
+/** Look towards the target for given time, and restore orientation afterwards. 
+    Does not restore orientation on premature ending. */
 class SuspiciousLookMovementGenerator : public MovementGenerator
 {
     public:

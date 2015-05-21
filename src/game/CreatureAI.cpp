@@ -61,11 +61,12 @@ void CreatureAI::MoveInLineOfSight(Unit *who)
     if(result == CAN_ATTACK_RESULT_OK) {
         who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
-    } else if(result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
-            && me->CanDoSuspiciousLook(who))
+    } else if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+              && me->CanDoSuspiciousLook(who))
+    {
         me->StartSuspiciousLook(who);
-    //check if must assist
-    else if(who->GetVictim() && me->IsFriendlyTo(who)
+    } //check if must assist
+      else if(who->GetVictim() && me->IsFriendlyTo(who)
         && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
         && me->CanCallAssistance()
         && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER

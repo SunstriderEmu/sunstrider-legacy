@@ -715,7 +715,7 @@ class Creature : public Unit
         float GetAttackDistance(Unit const* pl) const;
         
         /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/
-        //return true if the creature can do a suspicious look right now
+        /* return true if the creature can do a suspicious look on target. This does NOT check for detection range, use CanAggro, CanAttack or CanDetectStealthOf results to ensure this distance is correct. */
         bool CanDoSuspiciousLook(Unit const* target) const;
         //start lookup suspicously at target
         void StartSuspiciousLook(Unit const* target);
