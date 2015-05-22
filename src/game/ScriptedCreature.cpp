@@ -933,22 +933,6 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     return pList;
 }
 
-/*void Scripted_NoMovementAI::MoveInLineOfSight(Unit *who)
-{
-    if( !m_creature->GetVictim() && m_creature->CanAttack(who) == CAN_ATTACK_RESULT_OK && ( m_creature->IsHostileTo( who )) && who->isInAccessiblePlaceFor(m_creature) )
-    {
-        if (!m_creature->CanFly() && m_creature->GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
-            return;
-
-        float attackRadius = m_creature->GetAttackDistance(who);
-        if( m_creature->IsWithinDistInMap(who, attackRadius) && m_creature->IsWithinLOSInMap(who) )
-        {
-            who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-            AttackStart(who);
-        }
-    }
-}*/
-
 void LoadOverridenSQLData()
 {
     GameObjectTemplate *goInfo;
@@ -961,10 +945,5 @@ void LoadOverridenSQLData()
 
 void LoadOverridenDBCData()
 {
-    SpellInfo *spellInfo;
 
-    // Black Temple : Illidan : Parasitic Shadowfiend Passive
-    spellInfo = const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(41913));
-    if(spellInfo)
-        spellInfo->Effects[0].ApplyAuraName = 4; // proc debuff, and summon infinite fiends
 }

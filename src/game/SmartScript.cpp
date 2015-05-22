@@ -706,23 +706,48 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_SET_EVENT_PHASE:
         {
-            if (!GetBaseObject())
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
                 break;
 
-            SetPhase(e.action.setEventPhase.phase);
-            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SET_EVENT_PHASE: Creature %u set event phase %u",
-                GetBaseObject()->GetGUIDLow(), e.action.setEventPhase.phase);
+            for (auto itr : *targets)
+            {
+                if(!IsUnit(itr))
+                    break;
+
+                Creature* c = itr->ToCreature();
+                if(!IsSmart(c))
+                    break;
+
+                ENSURE_AI(SmartAI, c->AI())->GetScript()->SetPhase(e.action.setEventPhase.phase);
+                TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SET_EVENT_PHASE: Creature %u set event phase %u",
+                    itr->GetGUIDLow(), e.action.setEventPhase.phase);
+            }
+
             break;
         }
         case SMART_ACTION_INC_EVENT_PHASE:
         {
-            if (!GetBaseObject())
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
                 break;
 
-            IncPhase(e.action.incEventPhase.inc);
-            DecPhase(e.action.incEventPhase.dec);
-            TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_INC_EVENT_PHASE: Creature %u inc event phase by %u, "
-                "decrease by %u", GetBaseObject()->GetGUIDLow(), e.action.incEventPhase.inc, e.action.incEventPhase.dec);
+            for (auto itr : *targets)
+            {
+                if(!IsUnit(itr))
+                    break;
+
+                Creature* c = itr->ToCreature();
+                if(!IsSmart(c))
+                    break;
+                    
+                ENSURE_AI(SmartAI, c->AI())->GetScript()->IncPhase(e.action.incEventPhase.inc);
+                ENSURE_AI(SmartAI, c->AI())->GetScript()->DecPhase(e.action.incEventPhase.dec);
+                    
+                TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_INC_EVENT_PHASE: Creature %u inc event phase by %u, "
+                    "decrease by %u", GetBaseObject()->GetGUIDLow(), e.action.incEventPhase.inc, e.action.incEventPhase.dec);
+            }
+
             break;
         }
         case SMART_ACTION_EVADE:

@@ -12,15 +12,16 @@
 #include "Creature.h"
 #include "CreatureAIImpl.h"
 
-#define SCRIPT_CAST_TYPE dynamic_cast
+#define CAST_AI(a,b)    (dynamic_cast<a*>(b))
+#define ENSURE_AI(a,b)  (EnsureAI<a>(b))
 
-#define CAST_PLR(a)     (SCRIPT_CAST_TYPE<Player*>(a))
-#define CAST_CRE(a)     (SCRIPT_CAST_TYPE<Creature*>(a))
-#define CAST_SUM(a)     (SCRIPT_CAST_TYPE<TempSummon*>(a))
-#define CAST_PET(a)     (SCRIPT_CAST_TYPE<Pet*>(a))
-#define CAST_AI(a,b)    (SCRIPT_CAST_TYPE<a*>(b))
-
-#define GET_SPELL(a)    (const_cast<SpellInfo*>(sSpellMgr->GetSpellInfo(a)))
+template<class T, class U>
+T* EnsureAI(U* ai)
+{
+    T* cast_ai = dynamic_cast<T*>(ai);
+    ASSERT(cast_ai);
+    return cast_ai;
+};
 
 class SummonList : public std::list<uint64>
 {

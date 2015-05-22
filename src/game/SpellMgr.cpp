@@ -1854,8 +1854,15 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+        case 41913: //Illidan SPELL_SHADOWFIEND_PASSIVE
+            spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
+            break;
+        case 37770:
+            spellInfo->Effect[0] = 2;
+            break;
         case 31344:  //SPELL_HOWL_OF_AZGALOR
             spellInfo->EffectRadiusIndex[0] = 12;//100yards instead of 50000?!
+            break;
         case 43734: //jan'alai SPELL_HATCH_EGG
             spellInfo->EffectImplicitTargetA[0] = 1;
             spellInfo->EffectImplicitTargetB[0] = 0;
