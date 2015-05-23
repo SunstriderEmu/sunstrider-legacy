@@ -1,6 +1,6 @@
 #! /bin/bash
 
-TRINITYDIR="/root/emu"
+TRINITYDIR="/home/tbc/emu"
 
 REALMBIN="authserver"
 WORLDBIN="worldserver"
@@ -70,6 +70,7 @@ start_world()
       #exec from dump folder
       cd "${DUMPDIR}"
 
+      ulimit -c unlimited
       #screen -d -m -S SunWorld sh -c 'bash -c "'$WORLDSTARTER'; exec bash" '
       $WORLDSTARTER > /dev/null 2>/$LOGSDIR/$STDERRFILENAME &
       log "WorldServer started"
@@ -112,6 +113,14 @@ status()
 
 clean_dumps()
 {
+  if [ -f $DUMPDIR/core ] ; then
+    cd $DUMPDIR
+    TARGETDUMPDIR=$DATEDIR'~'$WORLDPID
+    log "Saving core in $TARGETDUMPDIR"
+    mkdir -p $TARGETDUMPDIR
+    mv core $TARGETDUMPDIR 2> /dev/null
+  fi
+
   i=0
 
   for DUMP in $(ls -r $DUMPDIR) ; do

@@ -13,7 +13,7 @@
 #sunServer clean_dumps
 #Just make sure it's running and starting with the system.
 
-MAINTENANCEFILE=/root/emu/config/maintenance.conf
+MAINTENANCEFILE=/home/tbc/emu/config/maintenance.conf
 
 while true ; do
   if [ ! -f $MAITENANCEFILE ] || [ $(cat $MAINTENANCEFILE) -eq 0 ] ; then

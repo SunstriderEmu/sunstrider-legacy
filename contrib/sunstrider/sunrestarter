@@ -8,7 +8,7 @@
 # Description:       Start/Stop the Sunstrider restarter loop by changing the maintenance file status
 ### END INIT INFO
 
-SUNMAINTENANCEFILE=/root/emu/config/maintenance.conf
+SUNMAINTENANCEFILE=/home/tbc/emu/config/maintenance.conf
 
 case "${1:-''}" in
   'start')
