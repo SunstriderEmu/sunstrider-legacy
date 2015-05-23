@@ -1231,6 +1231,13 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
     }
 }
 
+void Creature::SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType)
+{
+    SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+slot, displayid);
+    SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot*2, ITEM_CLASS_WEAPON + subclass * 256);
+    SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + (slot*2)+1, inventoryType);
+}
+
 bool Creature::hasQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mCreatureQuestRelations;

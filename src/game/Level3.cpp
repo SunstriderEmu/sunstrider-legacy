@@ -3377,6 +3377,9 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
     return true;
 }
 
+/** Syntax: .npc addweapon #weaponId [#slot] 
+#slot = 0 : right hand, 1 : left hand, 2 : ranged
+*/
 bool ChatHandler::HandleAddWeaponCommand(const char* args)
 {
     ARGS_CHECK
@@ -3390,21 +3393,23 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     }
  
     char* pItemID = strtok((char*)args, " ");
-    char* pSlotID = strtok(NULL, " ");
+    char* pSlot = strtok(NULL, " ");
  
     if (!pItemID)
         return false;
  
-    uint32 slotID;
-    if (pSlotID)
-        slotID = atoi(pSlotID);
-    else
-        slotID = 1;
-   
+    WeaponSlot slot = WEAPON_SLOT_MAINHAND;
+    if (pSlot)
+    {
+        slot = WeaponSlot(atoi(pSlot));
+        if(slot > WEAPON_SLOT_RANGED)
+            return false;
+    }
+
     uint32 itemID = atoi(pItemID);
     if (itemID == 0)
     {
-        pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + (slotID-1), 0);
+        pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + slot, 0);
         return true;
     }
    
@@ -3422,16 +3427,16 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     switch(proto->InventoryType)
     {
         case INVTYPE_SHIELD:
-            slotID = 2;
+            slot = WEAPON_SLOT_OFFHAND;
             pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
             break;
         case INVTYPE_2HWEAPON:
         case INVTYPE_WEAPONMAINHAND:
         case INVTYPE_WEAPON:
         case INVTYPE_WEAPONOFFHAND:
-            if (slotID != 1 && slotID != 2)
+            if (slot != WEAPON_SLOT_MAINHAND && slot != WEAPON_SLOT_OFFHAND)
             {
-                PSendSysMessage("Emplacement %u invalide.",slotID);
+                PSendSysMessage("Given slot %u invalid.",slot);
                 return true;
             }
             pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
@@ -3439,21 +3444,17 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
         case INVTYPE_THROWN:
         case INVTYPE_RANGED:
         case INVTYPE_RANGEDRIGHT:
-            slotID = 3;
+            slot = WEAPON_SLOT_RANGED;
             pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_RANGED);
             break;
         default:
-            PSendSysMessage("Objet %u invalide.",itemID);
+            PSendSysMessage("Invalid object %u.",itemID);
             return true;
             break;
     }
-    uint32 equipinfo = proto->Class + proto->SubClass * 256;
-    pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + ((slotID-1) * 2) + 0, equipinfo);
-    pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + ((slotID-1) * 2) + 1, proto->InventoryType);
+    pCreature->SetWeapon(slot, proto->DisplayInfoID, (ItemSubclassWeapon)proto->SubClass, (InventoryType)proto->InventoryType);
  
-    pCreature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + (slotID-1), proto->DisplayInfoID);
- 
-    PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT,itemID,proto->Name1.c_str(),slotID);
+    PSendSysMessage(LANG_ITEM_ADDED_TO_SLOT,itemID,proto->Name1.c_str(),slot);
     return true;
 }
 

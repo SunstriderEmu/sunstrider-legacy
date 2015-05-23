@@ -222,12 +222,14 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_DUAL_WIELD      = 0x00200000,       // can dual wield
 };
 
-// GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
-#pragma pack(1)
-#else
+enum WeaponSlot
+{
+    WEAPON_SLOT_MAINHAND = 0,
+    WEAPON_SLOT_OFFHAND = 1,
+    WEAPON_SLOT_RANGED = 2,
+};
+
 #pragma pack(push,1)
-#endif
 
 // from `creature_template` table
 struct CreatureTemplate
@@ -449,12 +451,7 @@ enum ChatType
     CHAT_TYPE_END               = 255
 };
 
-// GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
-#if defined( __GNUC__ )
-#pragma pack()
-#else
 #pragma pack(pop)
-#endif
 
 // Vendors
 struct VendorItem
@@ -559,6 +556,8 @@ class Creature : public Unit
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
         void LoadEquipment(uint32 equip_entry, bool force=false);
+        //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
+        void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
