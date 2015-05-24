@@ -841,7 +841,49 @@ bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugSmartAICommand(const char* args)
+/** Syntax: .smartai errors [entryOrGuid] */
+bool ChatHandler::HandleSmartAIShowErrorsCommand(const char* args)
+{
+    uint32 entry = 0;
+    uint32 guid = 0;
+    Creature* target = nullptr;
+
+    if (!*args)
+    {
+        //if no arguments given, try getting selected creature
+        target = getSelectedCreature();
+
+        if (!target)
+        {
+            SendSysMessage("Select a creature or give an entry or a guid (as a negative value).");
+            return true;
+        }
+
+        guid = target->GetGUIDLow();
+        entry = target->GetEntry();
+    } else {
+        //arguments given, check if guid or entry
+        int entryOrGuid = atoi(args);
+        if(entryOrGuid > 0)
+            entry = entryOrGuid;
+        else
+            guid = -entryOrGuid;
+    }
+
+    SendSysMessage("SmartAI errors :");
+    auto errorList = sSmartScriptMgr->GetErrorList(-int32(guid)); //negative guid in argument
+    for(auto itr : errorList)
+        PSendSysMessage("%s", itr.c_str());
+
+    errorList = sSmartScriptMgr->GetErrorList(entry);
+    for(auto itr : errorList)
+        PSendSysMessage("%s", itr.c_str());
+
+    return true;
+}
+
+/** Syntax: .smartai debug [entryOrGuid] */
+bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
 {
     uint32 entry = 0;
     uint32 guid = 0;

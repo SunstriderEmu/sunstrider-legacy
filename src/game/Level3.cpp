@@ -643,6 +643,13 @@ bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
     return true;
 }
 
+bool ChatHandler::HandleReloadSmartWaypointsCommand(const char* args)
+{
+    sSmartWaypointMgr->LoadFromDB();
+    SendGlobalGMSysMessage("DB table `waypoints` reloaded. (SmartAI waypoints)");
+    return true;
+}
+
 bool ChatHandler::HandleReloadAutoAnnounceCommand(const char* args)
 {
     sWorld->LoadAutoAnnounce();

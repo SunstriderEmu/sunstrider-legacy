@@ -36,6 +36,7 @@ class SmartScript
         /* Strips the list depending on the given target flags and the target type
         */
         void FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster);
+        //May return null, must be deleted after usage
         ObjectList* GetTargets(SmartScriptHolder const& e, Unit* invoker = nullptr);
         //returns a NEW object list, the called must delete if after usage
         ObjectList* GetWorldObjectsInDist(float dist);

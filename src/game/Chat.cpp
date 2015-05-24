@@ -252,7 +252,6 @@ ChatCommand * ChatHandler::getCommandTable()
         { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,           "", NULL },
         { "profile",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugDumpProfilingCommand,  "", NULL },
         { "clearprofile",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugClearProfilingCommand, "", NULL },
-        { "smartai",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSmartAICommand,        "", NULL },
         { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "", NULL },
         { "playemote",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugPlayEmoteCommand,      "", NULL },
         { NULL,             0,                false, false, NULL,                                           "", NULL }
@@ -364,6 +363,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "spell_threats",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellThreatsCommand,            "", NULL },
         { "trinity_string",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadTrinityStringCommand,           "", NULL },
         { "waypoint_scripts",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadWpScriptsCommand,               "", NULL },
+        { "waypoints",                   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartWaypointsCommand,          "", NULL },
         { "",                            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCommand,                        "", NULL },
         { NULL,                          0,                 false, false, NULL,                                                     "", NULL }
     };
@@ -629,9 +629,9 @@ ChatCommand * ChatHandler::getCommandTable()
 
     static ChatCommand npcEventCommandTable[] =
     {
-        { "enable",        SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleEnableEventCommand,              "", NULL },
-        { "disable",       SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDisableEventCommand,             "", NULL },
-        { "schedule",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleScheduleEventCommand,            "", NULL },
+        { "enable",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleEnableEventCommand,              "", NULL },
+        { "disable",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDisableEventCommand,             "", NULL },
+        { "schedule",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleScheduleEventCommand,            "", NULL },
         { NULL,            0,                false, false, NULL,                                                "", NULL },
     
     };
@@ -645,6 +645,12 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,            0,               false, false, NULL,                                                "", NULL }
     };
 
+    static ChatCommand smartAICommandTable[] =
+    {
+        { "debug",         SEC_GAMEMASTER2, true,  true,  &ChatHandler::HandleSmartAIDebugCommand,             "", NULL },
+        { "errors",        SEC_GAMEMASTER2, true,  true,  &ChatHandler::HandleSmartAIShowErrorsCommand,        "", NULL },
+        { NULL,            0,               false, false, NULL,                                                "", NULL }
+    };
 
     static ChatCommand commandTable[] =
     {
@@ -761,6 +767,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "showarea",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleShowAreaCommand,            "", NULL },
         { "spectator",      SEC_PLAYER,       false, false, NULL,                                           "", spectateCommandTable },
         { "spellinfo",      SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleSpellInfoCommand,           "", NULL },
+        { "smartai",        SEC_GAMEMASTER3,  true,  true,  NULL,                                           "", smartAICommandTable },
         { "start",          SEC_PLAYER,       false, false, &ChatHandler::HandleStartCommand,               "", NULL },
         { "taxicheat",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleTaxiCheatCommand,           "", NULL },
         { "tele",           SEC_GAMEMASTER1,  true,  false, NULL,                                           "", teleCommandTable },

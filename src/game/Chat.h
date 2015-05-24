@@ -250,6 +250,7 @@ class ChatHandler
         bool HandleReloadAllLocalesCommand(const char* args);
         bool HandleReloadConfigCommand(const char* args);
         bool HandleReloadWpScriptsCommand(const char* args);
+        bool HandleReloadSmartWaypointsCommand(const char* args);
         bool HandleReloadAutoAnnounceCommand(const char* args);
         bool HandleReloadAreaTriggerTavernCommand(const char* args);
         bool HandleReloadAreaTriggerTeleportCommand(const char* args);
@@ -361,7 +362,8 @@ class ChatHandler
         bool HandleDebugPlayerFlags(const char* args);
         bool HandleDebugDumpProfilingCommand(const char* args);
         bool HandleDebugClearProfilingCommand(const char* args);
-        bool HandleDebugSmartAICommand(const char* args);
+        bool HandleSmartAIDebugCommand(const char* args);
+        bool HandleSmartAIShowErrorsCommand(const char* args);
         bool HandleDebugOpcodeTestCommand(const char* args);
         bool HandleDebugPlayEmoteCommand(const char* args);
 
