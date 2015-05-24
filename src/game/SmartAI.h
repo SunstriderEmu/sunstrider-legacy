@@ -219,6 +219,12 @@ class SmartAI : public CreatureAI
         bool AssistPlayerInCombat(Unit* who);
 
         uint32 mDespawnTime;
+        /**
+         // 0 - no despawn scheduled
+            1 -- proceed despawn at path end
+            2 -- set invisible when mDespawnTime reached 0, then set to 3
+            3 -- despawn when mDespawnTime reached 0
+        */
         uint32 mDespawnState;
         void UpdateDespawn(const uint32 diff);
         uint32 mEscortInvokerCheckTimer;

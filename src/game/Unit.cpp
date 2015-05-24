@@ -10106,7 +10106,7 @@ int32 Unit::CalculateSpellDamage(SpellInfo const* spellProto, uint8 effect_index
     int32 diceCount = spellProto->Effects[effect_index].BaseDice; //actually diceCount is always 0 or 1
     int32 maxRoll = diceCount * spellProto->Effects[effect_index].DieSides;
 
-    int32 value = basePoints + (diceCount ? irand(1, maxRoll) : 0);
+    int32 value = basePoints + (maxRoll ? irand(1, maxRoll) : 0);
     //random damage
     if(comboDamage != 0 && unitPlayer /*&& target && (target->GetGUID() == unitPlayer->GetComboTarget())*/)
         value += (int32)(comboDamage * comboPoints);
