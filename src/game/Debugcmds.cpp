@@ -916,23 +916,19 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     {
         if(target->GetAIName() == "SmartAI")
         {
-            uint32 phase = dynamic_cast<SmartAI*>(target->AI())->GetScript()->GetPhase();
+            SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript();
+
+            uint32 phase = smartScript->GetPhase();
             PSendSysMessage("Current phase: %u", phase);
+
+            uint32 lastProcessedActionId = smartScript->GetLastProcessedActionId();
+            PSendSysMessage("Last processed action: %u", lastProcessedActionId);
         } else {
             SendSysMessage("Not SmartAI creature.");
         }
     } else {
         SendSysMessage("No target selected.");
     }
-
-    SendSysMessage("SmartAI errors :");
-    auto errorList = sSmartScriptMgr->GetErrorList(-int32(guid)); //negative guid in argument
-    for(auto itr : errorList)
-        PSendSysMessage("%s", itr.c_str());
-
-    errorList = sSmartScriptMgr->GetErrorList(entry);
-    for(auto itr : errorList)
-        PSendSysMessage("%s", itr.c_str());
 
     return true;
 }

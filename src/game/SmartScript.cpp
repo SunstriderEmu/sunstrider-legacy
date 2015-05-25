@@ -55,24 +55,25 @@ class TrinityStringTextBuilder
         WorldObject* _target;
 };
 */
-SmartScript::SmartScript()
+SmartScript::SmartScript() :
+    go(nullptr),
+    me(nullptr),
+    trigger(nullptr),
+    mEventPhase(0),
+    mPathId(0),
+    mTargetStorage(new ObjectListMap()),
+    mTextTimer(0),
+    mLastTextID(0),
+    mUseTextTimer(false),
+    mTalkerEntry(0),
+    mTemplate(SMARTAI_TEMPLATE_BASIC),
+    meOrigGUID(0),
+    goOrigGUID(0),
+    mLastInvoker(0),
+    mScriptType(SMART_SCRIPT_TYPE_CREATURE),
+    isProcessingTimedActionList(false),
+    mLastProcessedActionId(0)
 {
-    go = NULL;
-    me = NULL;
-    trigger = NULL;
-    mEventPhase = 0;
-    mPathId = 0;
-    mTargetStorage = new ObjectListMap();
-    mTextTimer = 0;
-    mLastTextID = 0;
-    mUseTextTimer = false;
-    mTalkerEntry = 0;
-    mTemplate = SMARTAI_TEMPLATE_BASIC;
-    meOrigGUID = 0;
-    goOrigGUID = 0;
-    mLastInvoker = 0;
-    mScriptType = SMART_SCRIPT_TYPE_CREATURE;
-    isProcessingTimedActionList = false;
 }
 
 SmartScript::~SmartScript()
@@ -136,6 +137,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
     if (Unit* tempInvoker = GetLastInvoker())
         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: Invoker: %s (guidlow: %u)", tempInvoker->GetName().c_str(), tempInvoker->GetGUIDLow());
+    
+    mLastProcessedActionId = e.event_id;
 
     switch (e.GetActionType())
     {
@@ -1237,8 +1240,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             if (Creature* summon = GetBaseObject()->SummonCreature(e.action.summonCreature.creature, e.target.x, e.target.y, e.target.z, e.target.o, (TempSummonType)e.action.summonCreature.type, e.action.summonCreature.duration))
             {
-                if (unit && e.action.summonCreature.attackInvoker)
-                    summon->AI()->AttackStart(unit);
+                if (me && e.action.summonCreature.attackInvoker)
+                    summon->AI()->AttackStart(me);
                 if (e.action.summonCreature.attackVictim)
                     if(Unit* victim = me->ToUnit()->GetVictim())
                         summon->AI()->AttackStartIfCan(victim);

@@ -230,10 +230,13 @@ class SmartScript
 
         uint32 GetPhase() { return mEventPhase; }
 
+        uint32 GetLastProcessedActionId() { return mLastProcessedActionId; }
+
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder& e, uint32 entry);
         Unit* GetLastInvoker();
         uint64 mLastInvoker;
+        uint32 mLastProcessedActionId;
         typedef std::unordered_map<uint32, uint32> CounterMap;
         CounterMap mCounterList;
 
