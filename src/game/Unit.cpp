@@ -324,19 +324,22 @@ void Unit::Update( uint32 p_time )
     if (m_justCCed)
         m_justCCed--;
 
-    // update combat timer only for players and pets
-    if (IsInCombat() && (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->IsPet() || (this->ToCreature())->IsCharmed()))
+    if (IsInCombat())
     {
-        // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
-        // targets without stopping half way there and running off.
-        // These flags are reset after target dies or another command is given.
-        if( m_HostilRefManager.isEmpty() )
+        // update combat timer only for players and pets
+        if (GetTypeId() == TYPEID_PLAYER || (this->ToCreature())->IsPet() || (this->ToCreature())->IsCharmed())
         {
-            // m_CombatTimer set at aura start and it will be freeze until aura removing
-            if ( m_CombatTimer <= p_time )
-                ClearInCombat();
-            else
-                m_CombatTimer -= p_time;
+            // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
+            // targets without stopping half way there and running off.
+            // These flags are reset after target dies or another command is given.
+            if( m_HostilRefManager.isEmpty() )
+            {
+                // m_CombatTimer set at aura start and it will be freeze until aura removing
+                if ( m_CombatTimer <= p_time )
+                    ClearInCombat();
+                else
+                    m_CombatTimer -= p_time;
+            }
         }
     }
 
@@ -9096,6 +9099,9 @@ void Unit::SetInCombatWith(Unit* enemy)
 
 void Unit::CombatStart(Unit* target, bool updatePvP)
 {
+    if(HasUnitState(UNIT_STATE_EVADE) || target->HasUnitState(UNIT_STATE_EVADE))
+        return;
+
     if(!target->IsStandState()/* && !target->HasUnitState(UNIT_STATE_STUNNED)*/)
         target->SetStandState(PLAYER_STATE_NONE);
 
@@ -9999,7 +10005,38 @@ Unit* Creature::SelectVictim(bool evade)
     //otherwise enterevademode every update
 
     Unit* target = NULL;
-    //TC_LOG_INFO("%s SelectVictim1", GetName());
+    
+    // First checking if we have some taunt on us
+    AuraList const& tauntAuras = GetAurasByType(SPELL_AURA_MOD_TAUNT);
+    if (!tauntAuras.empty())
+    {
+        Unit* caster = tauntAuras.back()->GetCaster();
+
+        // The last taunt aura caster is alive an we are happy to attack him
+        if (caster && caster->IsAlive())
+            return GetVictim();
+        else if (tauntAuras.size() > 1)
+        {
+            // We do not have last taunt aura caster but we have more taunt auras,
+            // so find first available target
+
+            // Auras are pushed_back, last caster will be on the end
+            AuraList::const_iterator aura = --tauntAuras.end();
+            do
+            {
+                --aura;
+                caster = (*aura)->GetCaster();
+                if (caster && CanSeeOrDetect(caster, true) && /* IsValidAttackTarget */ CanAttack(caster) && caster->isInAccessiblePlaceFor(ToCreature()))
+                {
+                    target = caster;
+                    break;
+                }
+            } while (aura != tauntAuras.begin());
+        }
+        else
+            target = GetVictim();
+    }
+
     if(!m_ThreatManager.isThreatListEmpty())
     {
         //TC_LOG_INFO("%s SelectVictim2", GetName());
@@ -10015,19 +10052,22 @@ Unit* Creature::SelectVictim(bool evade)
 
     if(target)
     {
-        //TC_LOG_INFO("%s SelectVictim3", GetName());
-        SetInFront(target); 
-        return target;
+        if(CanAttack(target) == CAN_ATTACK_RESULT_OK)
+        {
+            //TC_LOG_INFO("%s SelectVictim3", GetName());
+            SetInFront(target); 
+            return target;
+        }
     }
     
     // Case where mob is being kited.
     // Mob may not be in range to attack or may have dropped target. In any case,
-    //  don't evade if damage received within the last 10 seconds
+    // don't evade if damage received within the last 10 seconds
     // Does not apply to world bosses to prevent kiting to cities
-    if (!IsWorldBoss() && !GetInstanceId()) {
+   /* if (!IsWorldBoss() && !GetInstanceId()) { 
         if (time(NULL) - GetLastDamagedTime() <= MAX_AGGRO_RESET_TIME)
             return target;
-    }
+    } */
 
     // last case when creature don't must go to evade mode:
     // it in combat but attacker not make any damage and not enter to aggro radius to have record in threat list
@@ -10052,8 +10092,8 @@ Unit* Creature::SelectVictim(bool evade)
             return target;
     }
     
-    if(m_attackers.size())
-        return NULL;
+    /* if(m_attackers.size())
+        return NULL; */
 
     if(m_invisibilityMask)
     {

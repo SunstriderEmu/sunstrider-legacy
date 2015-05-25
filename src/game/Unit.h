@@ -977,6 +977,8 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
     CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
     CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
+    CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
+    CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
     CAN_ATTACK_RESULT_OTHERS, //all others reason
 };
 

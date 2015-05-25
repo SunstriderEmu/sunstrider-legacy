@@ -42,11 +42,6 @@ AOEAI::AOEAI(Creature *c) : CreatureAI(c)
     me->SetDisplayId(11686);//invisible model,around a size of a player
 }
 
-bool AOEAI::CanAIAttack(const Unit *who) const
-{
-    return false;
-}
-
 void AOEAI::AttackStart(Unit *who)
 {
     

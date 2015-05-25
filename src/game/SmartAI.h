@@ -131,9 +131,6 @@ class SmartAI : public CreatureAI
         // Called when creature gets charmed by another unit
         void OnCharmed(Unit* charmer, bool apply) override;
 
-        // Called when victim is in line of sight
-        bool CanAIAttack(const Unit* who) const /*override */; //NYI
-
         // Used in scripts to share variables
         void DoAction(const int32 param = 0) override;
 
@@ -176,7 +173,7 @@ class SmartAI : public CreatureAI
 
         uint32 mEscortQuestID;
 
-        void SetDespawnTime (uint32 t)
+        void SetDespawnTime(uint32 t)
         {
             mDespawnTime = t;
             mDespawnState = t ? 1 : 0;
@@ -216,7 +213,6 @@ class SmartAI : public CreatureAI
         bool mCanCombatMove;
         bool mForcedPaused;
         uint32 mInvincibilityHpLevel;
-        bool AssistPlayerInCombat(Unit* who);
 
         uint32 mDespawnTime;
         /**

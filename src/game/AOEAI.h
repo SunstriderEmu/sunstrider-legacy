@@ -30,7 +30,6 @@ struct AOEAI : public CreatureAI
 {
     public:
         explicit AOEAI(Creature *c);
-        bool CanAIAttack(const Unit *who) const;
         void AttackStart(Unit *who);
         void UpdateAI(const uint32 diff);
 

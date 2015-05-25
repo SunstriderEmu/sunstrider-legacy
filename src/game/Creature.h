@@ -710,7 +710,10 @@ class Creature : public Unit
 
         bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
         bool IsWithinSightDist(Unit const* u) const;
-        CanAttackResult CanAggro(Unit const* u) const;
+        /* Return if creature can aggro and start attacking target, depending on faction, distance, LoS, if target is attackable, ...
+        @assistAggro check for assisting instead of standard aggro. This changes the allowed distance only.
+        */
+        CanAttackResult CanAggro(Unit const* u, bool assistAggro = false) const;
         float GetAttackDistance(Unit const* pl) const;
         
         /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/

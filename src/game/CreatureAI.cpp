@@ -46,42 +46,82 @@ void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
     sCreatureTextMgr->SendChat(me, id, WhisperGuid);
 }
 
-void CreatureAI::MoveInLineOfSight(Unit *who)
+bool CreatureAI::AssistPlayerInCombat(Unit* who)
 {
-    if(me->GetVictim())
-        return;
-        
+    if (!who)
+        return false;
+    
+    //not a player
+    if (!who->GetCharmerOrOwnerPlayerOrPlayerItself())
+        return false;
+
+    //only help friendly
+    if(!me->IsFriendlyTo(who))
+        return false;
+
+    if(!me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS)))
+        return false;
+
+    for(auto itr : who->GetAttackers())
+    {
+        //experimental (unknown) flag not present
+      /*  if (!(me->GetCreatureTemplate()->type_flags & 0x001000)) // CREATURE_TYPEFLAGS_AID_PLAYERS
+            return false; */
+
+        //contested guards don't assists if victim is not in combat (hacky)
+        if (me->GetScriptName() == "guard_contested") {
+            if (!itr->IsInCombat())
+                continue;
+        }
+
+        //too far away from player, can aggro target ?
+        if (me->CanAggro(itr, true) == CAN_ATTACK_RESULT_OK)
+        {
+            //already fighting someone?
+            if (!me->GetVictim())
+                AttackStart(itr);
+            else
+            {
+                itr->SetInCombatWith(me);
+                me->AddThreat(itr, 0.0f);
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void CreatureAI::MoveInLineOfSight(Unit* who)
+{
     if (me->getAI())
         return;
 
+    //if has just respawned and not a summon, wait a bit before reacting
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-    CanAttackResult result = me->CanAggro(who);
-    if(result == CAN_ATTACK_RESULT_OK) {
-        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
-        AttackStart(who);
-    } else if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
-              && me->CanDoSuspiciousLook(who))
+    if(AssistPlayerInCombat(who))
+        return;
+
+    CanAttackResult result = me->CanAggro(who, false);
+    if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
+       && me->CanDoSuspiciousLook(who))
     {
         me->StartSuspiciousLook(who);
-    } //check if must assist
-      else if(who->GetVictim() && me->IsFriendlyTo(who)
-        && me->IsWithinDistInMap(who, sWorld->getConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS))
-        && me->CanCallAssistance()
-        && who->GetVictim()->GetTypeId() != CREATURE_TYPE_CRITTER
-        && me->CanAttack(who->GetVictim()) == CAN_ATTACK_RESULT_OK) 
+    }
+
+    if(result != CAN_ATTACK_RESULT_OK) 
+        return;
+
+    //attack target if no current victim, else just enter combat with it
+    if (!me->GetVictim())
     {
-        if (who->GetTypeId() != TYPEID_UNIT || who->ToCreature()->CanCallAssistance()) {
-            //contested guards don't assists anyone
-            if (me->GetScriptName() == "guard_contested") {
-                if (who->GetVictim() && !who->GetVictim()->IsInCombat())
-                    return;
-            }
-            
-            me->SetNoCallAssistance(true);
-            AttackStart(who->GetVictim());
-        }
+        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+        AttackStart(who);
+    } else {
+        who->SetInCombatWith(me);
+        me->AddThreat(who, 0.0f);
     }
 }
 

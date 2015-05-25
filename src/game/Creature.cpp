@@ -1360,10 +1360,19 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
     return true;
 }
 
-CanAttackResult Creature::CanAggro(Unit const* who) const
+CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false */) const
 {
+    if(IsInEvadeMode())
+        return CAN_ATTACK_RESULT_SELF_EVADE;
+
     if(isCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
+
+    if(Creature const* c = who->ToCreature())
+    {
+        if(c->IsInEvadeMode())
+            return CAN_ATTACK_RESULT_TARGET_EVADE;
+    }
 
     if(!who->isInAccessiblePlaceFor(this))
         return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
@@ -1371,14 +1380,21 @@ CanAttackResult Creature::CanAggro(Unit const* who) const
     if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
         return CAN_ATTACK_RESULT_TOO_FAR_Z;
 
-    if(!IsWithinDistInMap(who, GetAttackDistance(who)))
-        return CAN_ATTACK_RESULT_TOO_FAR;
+    if(assistAggro)
+    {
+        if(!IsWithinSightDist(who))
+            return CAN_ATTACK_RESULT_TOO_FAR;
+    } else {
+        if(!IsWithinDistInMap(who, GetAttackDistance(who)))
+            return CAN_ATTACK_RESULT_TOO_FAR;
+    }
 
     CanAttackResult result = CanAttack(who, false);
     if(result != CAN_ATTACK_RESULT_OK)
         return result;
 
-    if(!IsWithinLOSInMap(who))
+    //ignore LoS for assist
+    if(!assistAggro && !IsWithinLOSInMap(who))
         return CAN_ATTACK_RESULT_NOT_IN_LOS;
 
     return CAN_ATTACK_RESULT_OK;
@@ -1406,18 +1422,15 @@ float Creature::GetAttackDistance(Unit const* pl) const
     // radius grow if playlevel < creaturelevel
     RetDistance -= (float)leveldif;
 
-    /*if(creaturelevel+5 <= sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
-    {*/
-        // detect range auras
-        RetDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE);
+    // detect range auras
+    RetDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE);
 
-        // detected range auras
-        RetDistance += pl->GetTotalAuraModifier(SPELL_AURA_MOD_DETECTED_RANGE);
-    //}
+    // detected range auras
+    RetDistance += pl->GetTotalAuraModifier(SPELL_AURA_MOD_DETECTED_RANGE);
 
-    // "Minimum Aggro Radius for a mob seems to be combat range (5 yards)"
-    if(RetDistance < 5)
-        RetDistance = 5;
+    //minimal distance
+    if(RetDistance < 2.0f)
+        RetDistance = 2.0f;
 
     return (RetDistance*aggroRate);
 }
