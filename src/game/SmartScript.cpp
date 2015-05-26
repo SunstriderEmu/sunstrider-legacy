@@ -741,7 +741,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     break;
 
                 Creature* c = itr->ToCreature();
-                if(!IsSmart(c))
+                if(!c || !IsSmart(c))
                     break;
                     
                 ENSURE_AI(SmartAI, c->AI())->GetScript()->IncPhase(e.action.incEventPhase.inc);
