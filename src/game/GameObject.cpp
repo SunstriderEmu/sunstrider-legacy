@@ -912,7 +912,7 @@ GameObjectTemplate const *GameObject::GetGOInfo() const
 /*********************************************************/
 /***                    QUEST SYSTEM                   ***/
 /*********************************************************/
-bool GameObject::hasQuest(uint32 quest_id) const
+bool GameObject::HasQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mGOQuestRelations;
     for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
@@ -1048,6 +1048,10 @@ bool GameObject::ActivateToQuest( Player *pTarget)const
                             return false;
                 return true;
             }
+
+            //some gobjects are activated even with no object for the quest
+            if(GetGOInfo()->chest.questId && pTarget->HasQuest(GetGOInfo()->chest.questId))
+                return true;
             break;
         }
         case GAMEOBJECT_TYPE_GOOBER:

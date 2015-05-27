@@ -416,7 +416,7 @@ class Object
 
         uint16 GetValuesCount() const { return m_valuesCount; }
 
-        virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
+        virtual bool HasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
 
         /** 

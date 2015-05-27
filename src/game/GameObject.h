@@ -615,7 +615,7 @@ class GameObject : public WorldObject
 
         Loot        loot;
 
-        bool hasQuest(uint32 quest_id) const;
+        bool HasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
         void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);

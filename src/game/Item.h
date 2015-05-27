@@ -284,7 +284,7 @@ class Item : public Object
             uState = state;
         }
 
-        bool hasQuest(uint32 quest_id) const
+        bool HasQuest(uint32 quest_id) const
         {
             ItemTemplate const *itemProto = GetProto();
             return itemProto && itemProto->StartQuest == quest_id;

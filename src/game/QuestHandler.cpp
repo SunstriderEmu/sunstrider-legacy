@@ -132,7 +132,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
     // no or incorrect quest giver
     if(!pObject
-        || (pObject->GetTypeId()!=TYPEID_PLAYER && !pObject->hasQuest(quest))
+        || (pObject->GetTypeId()!=TYPEID_PLAYER && !pObject->HasQuest(quest))
         || (pObject->GetTypeId()==TYPEID_PLAYER && !(pObject->ToPlayer())->CanShareQuest(quest))
         )
     {
@@ -259,7 +259,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 
     // Verify that the guid is valid and is a questgiver or involved in the requested quest
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM);
-    if(!pObject||!pObject->hasQuest(quest) && !pObject->hasInvolvedQuest(quest))
+    if(!pObject||!pObject->HasQuest(quest) && !pObject->hasInvolvedQuest(quest))
     {
         _player->PlayerTalkClass->SendCloseGossip();
         return;

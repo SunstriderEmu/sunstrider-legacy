@@ -760,7 +760,7 @@ class Creature : public Unit
 
         void SendZoneUnderAttackMessage(Player* attacker);
 
-        bool hasQuest(uint32 quest_id) const;
+        bool HasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id)  const;
 
         GridReference<Creature> &GetGridRef() { return m_gridRef; }

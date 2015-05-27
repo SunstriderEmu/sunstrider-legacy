@@ -1238,7 +1238,7 @@ void Creature::SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon s
     SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + (slot*2)+1, inventoryType);
 }
 
-bool Creature::hasQuest(uint32 quest_id) const
+bool Creature::HasQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mCreatureQuestRelations;
     for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
