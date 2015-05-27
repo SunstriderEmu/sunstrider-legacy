@@ -761,7 +761,7 @@ class Creature : public Unit
         void SendZoneUnderAttackMessage(Player* attacker);
 
         bool HasQuest(uint32 quest_id) const;
-        bool hasInvolvedQuest(uint32 quest_id)  const;
+        bool HasInvolvedQuest(uint32 quest_id)  const;
 
         GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }

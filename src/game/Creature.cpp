@@ -1249,7 +1249,7 @@ bool Creature::HasQuest(uint32 quest_id) const
     return false;
 }
 
-bool Creature::hasInvolvedQuest(uint32 quest_id) const
+bool Creature::HasInvolvedQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mCreatureQuestInvolvedRelations;
     for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)

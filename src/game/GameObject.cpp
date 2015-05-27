@@ -44,6 +44,7 @@
 #include "TransportMgr.h"
 #include "Transport.h"
 #include "UpdateFieldFlags.h"
+#include "ScriptMgr.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
@@ -923,7 +924,7 @@ bool GameObject::HasQuest(uint32 quest_id) const
     return false;
 }
 
-bool GameObject::hasInvolvedQuest(uint32 quest_id) const
+bool GameObject::HasInvolvedQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mGOQuestInvolvedRelations;
     for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
@@ -1163,6 +1164,9 @@ void GameObject::SwitchDoorOrButton(bool activate, bool alternative /* = false *
 
 void GameObject::Use(Unit* user)
 {
+    if(user->GetTypeId() == TYPEID_PLAYER)
+        sScriptMgr->OnUse(user->ToPlayer(), this);
+
     // by default spell caster is user
     Unit* spellCaster = user;
     uint32 spellId = 0;

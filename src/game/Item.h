@@ -289,7 +289,7 @@ class Item : public Object
             ItemTemplate const *itemProto = GetProto();
             return itemProto && itemProto->StartQuest == quest_id;
         }
-        bool hasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
+        bool HasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
 
         void BuildUpdate(UpdateDataMapType&) override;
 

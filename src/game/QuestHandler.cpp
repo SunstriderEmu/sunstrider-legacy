@@ -259,7 +259,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 
     // Verify that the guid is valid and is a questgiver or involved in the requested quest
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT|TYPEMASK_ITEM);
-    if(!pObject||!pObject->HasQuest(quest) && !pObject->hasInvolvedQuest(quest))
+    if(!pObject||!pObject->HasQuest(quest) && !pObject->HasInvolvedQuest(quest))
     {
         _player->PlayerTalkClass->SendCloseGossip();
         return;
@@ -311,7 +311,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
     if(!pObject)
         return;
 
-    if(!pObject->hasInvolvedQuest(quest))
+    if(!pObject->HasInvolvedQuest(quest))
         return;
 
     Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest);
@@ -362,7 +362,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
     recvData >> guid >> quest;
 
     Object* pObject = ObjectAccessor::GetObjectByTypeMask(*_player, guid,TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
-    if(!pObject||!pObject->hasInvolvedQuest(quest))
+    if(!pObject||!pObject->HasInvolvedQuest(quest))
         return;
 
     if ( _player->CanCompleteQuest( quest ) )
@@ -490,7 +490,7 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
         return;
 
     Object* object = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
-    if (!object || !object->hasInvolvedQuest(questID))
+    if (!object || !object->HasInvolvedQuest(questID))
         return;
 
     // some kind of WPE protection

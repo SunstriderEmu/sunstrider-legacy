@@ -1946,6 +1946,14 @@ bool ScriptMgr::OnQuestReward( Player *player, GameObject *_GO, Quest const *_Qu
     return tmpscript->pGOOnQuestReward(player,_GO,_Quest,opt);
 }
 
+bool ScriptMgr::OnUse(Player* player, GameObject* go)
+{
+    Script *tmpscript = m_scripts[go->GetGOInfo()->ScriptId];
+    if (!tmpscript || !tmpscript->pGoOnUse) 
+        return false;
+
+    return tmpscript->pGoOnUse(player,go);
+}
 
 bool ScriptMgr::AreaTrigger( Player *player, AreaTriggerEntry const* atEntry)
 {

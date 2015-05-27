@@ -96,7 +96,7 @@ struct GameObjectTemplate
             uint32 maxSuccessOpens;                         //5
             uint32 eventId;                                 //6 lootedEvent
             uint32 linkedTrapId;                            //7
-            uint32 questId;                                 //8 not used currently but store quest required for GO activation for player
+            uint32 questId;                                 //8 store quest required for GO activation for player
             uint32 level;                                   //9
             uint32 losOK;                                   //10
             uint32 leaveLoot;                               //11
@@ -616,7 +616,7 @@ class GameObject : public WorldObject
         Loot        loot;
 
         bool HasQuest(uint32 quest_id) const;
-        bool hasInvolvedQuest(uint32 quest_id) const;
+        bool HasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(Player *pTarget) const;
         void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);
         void ResetDoorOrButton();
