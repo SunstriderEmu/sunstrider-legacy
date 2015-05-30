@@ -228,7 +228,7 @@ void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
     Group  *group  = GetPlayer()->GetGroupInvite();
     if (!group) return;
 
-    Player *leader = sObjectMgr->GetPlayer(group->GetLeaderGUID());
+    Player *leader = ObjectAccessor::FindConnectedPlayer(group->GetLeaderGUID());
 
     /** error handling **/
     if(!leader || !leader->GetSession())
@@ -365,7 +365,7 @@ void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
     uint64 guid;
     recvData >> guid;
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::FindConnectedPlayer(guid);
 
     /** error handling **/
     if (!player || !group->IsLeader(GetPlayer()->GetGUID()) || player->GetGroup() != group)
