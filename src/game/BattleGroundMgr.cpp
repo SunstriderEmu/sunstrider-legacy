@@ -192,7 +192,7 @@ void BattlegroundQueue::AddPlayer(Player *plr, GroupQueueInfo *ginfo)
 
 void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
 {
-    Player *plr = sObjectMgr->GetPlayer(guid);
+    Player *plr = ObjectAccessor::FindConnectedPlayer(guid);
 
     int32 queue_id = 0;                                     // signed for proper for-loop finish
     QueuedPlayersMap::iterator itr;
@@ -285,7 +285,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
         {
             // remove next player, this is recursive
             // first send removal information
-            if(Player *plr2 = sObjectMgr->GetPlayer(group->Players.begin()->first))
+            if(Player *plr2 = ObjectAccessor::FindConnectedPlayer(group->Players.begin()->first))
             {
                 Battleground * bg = sBattlegroundMgr->GetBattlegroundTemplate(group->BgTypeId);
                 uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(group->BgTypeId,group->ArenaType);
@@ -321,7 +321,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, Battleground * b
             itr->second->LastInviteTime = GetMSTime();
 
             // get the player
-            Player* plr = sObjectMgr->GetPlayer(itr->first);
+            Player* plr = ObjectAccessor::FindConnectedPlayer(itr->first);
             // if offline, skip him
             if(!plr)
                 continue;
@@ -443,7 +443,7 @@ void BattlegroundQueue::BGEndedRemoveInvites(Battleground *bg)
                 }
 
                 // get the player
-                Player * plr = sObjectMgr->GetPlayer(itr2->first);
+                Player * plr = ObjectAccessor::FindConnectedPlayer(itr2->first);
                 if(!plr)
                 {
                     TC_LOG_ERROR("battleground","Player offline when trying to remove from GroupQueueInfo, this should never happen.");
@@ -863,7 +863,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
 bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    Player* plr = sObjectMgr->GetPlayer( m_PlayerGuid );
+    Player* plr = ObjectAccessor::FindConnectedPlayer( m_PlayerGuid );
 
     // player logged off (we should do nothing, he is correctly removed from queue in another procedure)
     if (!plr)
@@ -907,7 +907,7 @@ void BGQueueInviteEvent::Abort(uint64 /*e_time*/)
 
 bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    Player* plr = sObjectMgr->GetPlayer( m_PlayerGuid );
+    Player* plr = ObjectAccessor::FindConnectedPlayer( m_PlayerGuid );
     if (!plr)
         // player logged off (we should do nothing, he is correctly removed from queue in another procedure)
         return true;
@@ -1168,7 +1168,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
         *data << uint32(itr->second->KillingBlows);
         
         if (type) { // Arena
-            Player* player = sObjectMgr->GetPlayer(itr->first);
+            Player* player = ObjectAccessor::FindConnectedPlayer(itr->first);
             uint32 team = bg->GetPlayerTeam(itr->first);;
             
             if (player) {
@@ -1589,7 +1589,7 @@ void BattlegroundMgr::DistributeArenaPoints()
         CharacterDatabase.PExecute("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", plr_itr->second, plr_itr->first);
         
         // Add points if player is online
-        Player* pl = sObjectMgr->GetPlayer(plr_itr->first);
+        Player* pl = ObjectAccessor::FindConnectedPlayer(plr_itr->first);
         if (pl)
             pl->ModifyArenaPoints(plr_itr->second);
     }
