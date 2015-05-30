@@ -168,7 +168,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             }
             // this may be a hack
             else if((HasAttribute(SPELL_ATTR2_FOOD_BUFF))
-                && !Category->Id)
+                && !Category)
                 return SPELL_WELL_FED;
 
             switch(Id)
