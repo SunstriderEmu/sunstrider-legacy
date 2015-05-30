@@ -140,7 +140,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                         else
                         {
                             // 90% chance for pet and 100% chance for charmed creature
-                            pet->SendPetAIReaction(guid1);
+                            pet->SendPetAIReaction();
                         }
                     }
                     else                                    // charmed player
@@ -149,7 +149,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                             pet->AttackStop();
 
                         pet->Attack(TargetUnit,true);
-                        pet->SendPetAIReaction(guid1);
+                        pet->SendPetAIReaction();
                     }
 
                     break;
@@ -244,7 +244,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     pet->SendPetTalk((uint32)PET_TALK_SPECIAL_SPELL);
                 else
                 {
-                    pet->SendPetAIReaction(guid1);
+                    pet->SendPetAIReaction();
                 }
 
                 if( unit_target && !GetPlayer()->IsFriendlyTo(unit_target) && !pet->IsPossessed())
@@ -769,7 +769,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
                 if(p->getPetType() == SUMMON_PET && (urand(0, 100) < 10))
                     pet->SendPetTalk((uint32)PET_TALK_SPECIAL_SPELL);
                 else
-                    pet->SendPetAIReaction(guid);
+                    pet->SendPetAIReaction();
             }
         }
 

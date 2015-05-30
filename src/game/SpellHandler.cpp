@@ -315,7 +315,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
         return;
 
     if (!obj->IsWithinDistInMap(GetPlayer(), obj->GetInteractionDistance()))
-            return;
+        return;
 
     // ignore for remote control state
     if (GetPlayer()->m_mover != GetPlayer())
@@ -352,12 +352,12 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u", spellId);
+        TC_LOG_ERROR("network","WORLD: unknown spell id %u", spellId);
         return;
     }
 
     // not have spell or spell passive and not casted by client
-    if ( !_player->HasSpell (spellId) || spellInfo->IsPassive() )
+    if ( !_player->HasSpell(spellId) || spellInfo->IsPassive() )
     {
         //cheater? kick? ban?
         return;

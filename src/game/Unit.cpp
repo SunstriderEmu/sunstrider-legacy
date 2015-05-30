@@ -7390,7 +7390,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     //    (m->ToCreature()_attacking)->AI()->AttackedBy(this);
 
     if (GetTypeId() == TYPEID_UNIT && !(ToCreature()->IsPet())) {
-        SendAIReaction(this, AI_REACTION_HOSTILE);
+        SendAIReaction(AI_REACTION_HOSTILE);
         (ToCreature())->CallAssistance();
 
         // should not let player enter combat by right clicking target
@@ -11620,24 +11620,24 @@ void Unit::SendPetClearCooldown (uint32 spellid)
     (owner->ToPlayer())->GetSession()->SendPacket(&data);
 }
 
-void Unit::SendPetAIReaction(uint64 guid)
+void Unit::SendPetAIReaction()
 {
     Unit* owner = GetOwner();
     if(!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    WorldPacket data(SMSG_AI_REACTION, 12);
-    data << uint64(guid);
-    data << uint32(AI_REACTION_HOSTILE);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    SendAIReaction(AI_REACTION_HOSTILE, owner->ToPlayer());
 }
 
-void Unit::SendAIReaction(Unit const* target, AIReaction reaction)
+void Unit::SendAIReaction(AIReaction reaction, Player* target)
 {
     WorldPacket data(SMSG_AI_REACTION, 12);
-    data << uint64(target->GetGUID());
+    data << uint64(GetGUID());
     data << uint32(reaction); 
-    SendMessageToSet(&data, true);
+    if(target)
+        target->SendDirectMessage(&data);
+    else
+        SendMessageToSet(&data, true);
 }
 
 ///----------End of Pet responses methods----------

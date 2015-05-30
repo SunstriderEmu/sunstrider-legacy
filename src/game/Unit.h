@@ -1753,13 +1753,15 @@ class Unit : public WorldObject
         void SendPetTalk (uint32 pettalk);
         void SendPetSpellCooldown (uint32 spellid, time_t cooltime);
         void SendPetClearCooldown (uint32 spellid);
-        void SendPetAIReaction(uint64 guid);
+        //send AI_REACTION_HOSTILE (aggro sound) to owner if owner exists and is a player
+        void SendPetAIReaction();
         ///----------End of Pet responses methods----------
 
         void PropagateSpeedChange() { GetMotionMaster()->PropagateSpeedChange(); }
 
-        //Send AI reaction to players around (this for example used to do the aggro sound)
-        void SendAIReaction(Unit const* target, AIReaction reaction);
+        /* Send AI reaction to target, or to all players around if none given
+         (this for example used to do the aggro sound) */
+        void SendAIReaction(AIReaction reaction, Player* target = nullptr);
 
         // reactive attacks
         void ClearAllReactives();
