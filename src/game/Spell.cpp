@@ -4671,6 +4671,21 @@ SpellFailedReason Spell::CheckCast(bool strict)
 
                 break;
             }
+            case SPELL_AURA_WATER_WALK:
+            {
+                if (!m_targets.getUnitTarget())
+                    return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+
+                if (m_targets.getUnitTarget()->GetTypeId() == TYPEID_PLAYER)
+                {
+                    Player const* player = m_targets.getUnitTarget()->ToPlayer();
+                    
+                    // Player is not allowed to cast water walk on shapeshifted/mounted player 
+                    if (player->GetShapeshiftForm() != FORM_NONE || player->IsMounted())
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                break;
+            }
             case SPELL_AURA_PERIODIC_HEAL:
             {
                 if (m_spellInfo->Id == 20631 && m_caster->GetLevel() <= 50)

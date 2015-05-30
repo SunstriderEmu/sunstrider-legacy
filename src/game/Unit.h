@@ -1139,10 +1139,10 @@ class Unit : public WorldObject
         uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
         void SetFaction(uint32 faction) { SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, faction ); }
         FactionTemplateEntry const* GetFactionTemplateEntry() const;
-        //use this for npc's, npc neutral to players won't try to attack them until they're hit (and thus become hostile)
+        //Check if unit is "red" to this unit (not yellow or green)
         bool IsHostileTo(Unit const* unit) const;
         bool IsHostileToPlayers() const;
-        //use this for players, player may be neutral to npc's but their attack should still hit them
+        //check if unit is "green" to this unit, and can't be attacker. You should use this instead of IsHostileTo for player to check if they can target a given unit, since they can target either red or yellow targets.
         bool IsFriendlyTo(Unit const* unit) const;
         bool IsNeutralToAll() const;
         bool IsInPartyWith(Unit const* unit) const;
