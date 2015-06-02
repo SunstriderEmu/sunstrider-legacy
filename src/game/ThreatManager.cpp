@@ -245,10 +245,9 @@ void ThreatContainer::modifyThreatPercent(Unit *pVictim, int32 pPercent)
 {
     if(HostilReference* ref = getReferenceByTarget(pVictim))
     {
-        if(pPercent < -100)
+        if(pPercent < -100.0f)
         {
-            ref->removeReference();
-            delete ref;
+            ref->setThreat(0.0f);
         }
         else
             ref->addThreatPercent(pPercent);

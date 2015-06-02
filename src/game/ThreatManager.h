@@ -148,7 +148,8 @@ class ThreatContainer
         ~ThreatContainer() { clearReferences(); }
 
         HostilReference* addThreat(Unit* pVictim, float pThreat);
-
+        
+        //modify threat for victim. Do not remove from threat list in any case
         void modifyThreatPercent(Unit *pVictim, int32 percent);
 
         HostilReference* selectNextVictim(Creature* pAttacker, HostilReference* pCurrentVictim);
@@ -186,6 +187,7 @@ class ThreatManager
         void clearCurrentVictim() { iCurrentVictim = nullptr; }
 
         void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
+        //modify threat for victim. Do not remove from threat list in any case
         void modifyThreatPercent(Unit *pVictim, int32 pPercent);
 
         float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false);
