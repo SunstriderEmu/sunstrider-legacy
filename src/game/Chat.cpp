@@ -56,7 +56,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "mailchange",     SEC_GAMEMASTER2,    true,  false, &ChatHandler::HandleAccountMailChangeCommand,   "", NULL },
         //{ "onlinelist",     SEC_ADMINISTRATOR,  true,  false, &ChatHandler::HandleAccountOnlineListCommand,   "", NULL },
         { "set",            SEC_GAMEMASTER3,    true,  true,  NULL,                                           "", accountSetCommandTable },
-        { "",               SEC_PLAYER,         true,  false, &ChatHandler::HandleAccountCommand,             "", NULL },
+        { "",               SEC_PLAYER,         false, false, &ChatHandler::HandleAccountCommand,             "", NULL },
         { NULL,             0,                  false, false, NULL,                                           "", NULL }
     };
 
