@@ -15525,7 +15525,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex))
+            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex) || spellproto->HasAttribute(SPELL_ATTR4_EXPIRE_OFFLINE))
             {
                 if(remaintime  <= int32(timediff))
                     continue;

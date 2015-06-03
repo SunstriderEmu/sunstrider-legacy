@@ -391,7 +391,7 @@ enum SpellAttr4
 {
     SPELL_ATTR4_IGNORE_RESISTANCES         = 0x00000001,           // 0 spells with this attribute will completely ignore the target's resistance (these spells can't be resisted)
     SPELL_ATTR4_PROC_ONLY_ON_CASTER        = 0x00000002,           // 1 proc only on effects with TARGET_UNIT_CASTER?
-    SPELL_ATTR4_UNK2                       = 0x00000004,           // 2
+    SPELL_ATTR4_EXPIRE_OFFLINE             = 0x00000004,           // 2 Continues while logged out (Unsupported)
     SPELL_ATTR4_CANT_PROC_FROM_SELFCAST    = 0x00000008,           // 3 may be wrong
     SPELL_ATTR4_UNK4                       = 0x00000010,           // 4
     SPELL_ATTR4_UNK5                       = 0x00000020,           // 5
