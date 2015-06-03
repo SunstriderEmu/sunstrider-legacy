@@ -429,7 +429,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     {
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
         if (factionEntry)
-            if( !isCivilian() &&
+            if( !IsCivilian() &&
                 (factionEntry->team == TEAM_ALLIANCE || factionEntry->team == TEAM_HORDE) )
                 SetPvP(true);
     }
@@ -443,7 +443,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
     if(IsTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
         SetReactState(REACT_PASSIVE);
-    /*else if(isCivilian())
+    /*else if(IsCivilian())
         SetReactState(REACT_DEFENSIVE);*/
     else
         SetReactState(REACT_AGGRESSIVE);
@@ -1365,7 +1365,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
     if(IsInEvadeMode())
         return CAN_ATTACK_RESULT_SELF_EVADE;
 
-    if(isCivilian())
+    if(IsCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
 
     if(Creature const* c = who->ToCreature())
@@ -2518,7 +2518,7 @@ bool Creature::SetSwim(bool enable)
     return true;
 }
 
-bool Creature::SetFlying(bool enable)
+bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
 {
     if (!Unit::SetFlying(enable))
         return false;

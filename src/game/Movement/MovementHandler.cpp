@@ -396,7 +396,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 {
                     Anti__CheatOccurred(CurTime,"Fly hack",
                         ((uint8)(plrMover->HasAuraType(SPELL_AURA_FLY))) +
-                        ((uint8)(plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED))*2),
+                        ((uint8)(plrMover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))*2),
                         NULL,plrMover->GetPositionZ()-(Anti__MapZ+5.0f));
                 }
             }

@@ -979,6 +979,7 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
     CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
     CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
+    CAN_ATTACK_RESULT_SELF_UNIT_FLAGS, //create cannot attack because of own unit flags
     CAN_ATTACK_RESULT_OTHERS, //all others reason
 };
 
@@ -1549,7 +1550,7 @@ class Unit : public WorldObject
         virtual bool SetWalk(bool enable);
         virtual bool SetDisableGravity(bool disable, bool packetOnly = false);
         virtual bool SetSwim(bool enable);
-        virtual bool SetFlying(bool enable);
+        virtual bool SetFlying(bool enable, bool packetOnly = false);
         virtual bool SetWaterWalking(bool enable, bool packetOnly = false);
         virtual bool SetFeatherFall(bool enable, bool packetOnly = false);
         virtual bool SetHover(bool enable, bool packetOnly = false);

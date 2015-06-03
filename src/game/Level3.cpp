@@ -3369,7 +3369,7 @@ bool ChatHandler::HandleGetDistanceCommand(const char* /*args*/)
 {
     
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
 
     if(!pUnit)
     {
@@ -3469,7 +3469,7 @@ bool ChatHandler::HandleDieCommand(const char* /*args*/)
 {
     
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
 
     if(!target || !m_session->GetPlayer()->GetTarget())
     {
@@ -3491,7 +3491,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     
     ARGS_CHECK
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
 
     if(!target || !m_session->GetPlayer()->GetTarget())
     {
@@ -3620,7 +3620,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
     if (!px)
         return false;
 
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -3656,7 +3656,7 @@ bool ChatHandler::HandleUnAuraCommand(const char* args)
     if (!px)
         return false;
 
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -4159,7 +4159,7 @@ bool ChatHandler::HandleUpdateCommand(const char* args)
 
     char* pUpdateIndex = strtok((char*)args, " ");
 
-    Unit* chr = getSelectedUnit();
+    Unit* chr = GetSelectedUnit();
     if (chr == NULL)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -4263,7 +4263,7 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
     if (!cIndex || !cValue)
         return false;
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -4331,7 +4331,7 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
     if (!cIndex)
         return false;
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -4579,7 +4579,7 @@ bool ChatHandler::HandleDelTeleCommand(const char * args)
 
 bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 {
-    Unit *unit = getSelectedUnit();
+    Unit *unit = GetSelectedUnit();
     if(!unit)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -5976,7 +5976,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
     Player* pl = m_session->GetPlayer();
 
     // accept only explicitly selected target (not implicitly self targeting case)
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(pl->GetTarget() && target)
     {
         if(target->GetTypeId()!=TYPEID_UNIT)
@@ -6009,7 +6009,7 @@ bool ChatHandler::HandleFlyModeCommand(const char* args)
 {
     
 
-    Unit *unit = getSelectedUnit();
+    Unit *unit = GetSelectedUnit();
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
         unit = m_session->GetPlayer();
 
@@ -6145,7 +6145,7 @@ bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
     if(!newEntryNum)
         return false;
 
-    Unit* unit = getSelectedUnit();
+    Unit* unit = GetSelectedUnit();
     if(!unit || unit->GetTypeId() != TYPEID_UNIT)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
@@ -6213,7 +6213,7 @@ bool ChatHandler::HandleWritePDumpCommand(const char *args)
 
 bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
 {
-    Unit* unit = getSelectedUnit();
+    Unit* unit = GetSelectedUnit();
     if(!unit)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -6372,7 +6372,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
     
     ARGS_CHECK
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
 
     if(!target)
     {
@@ -6415,7 +6415,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
 /** args : <spellid> <count> */
 bool ChatHandler::HandleCastBatchCommand(const char* args)
 {
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
 
     if(!target)
     {
@@ -6447,7 +6447,7 @@ bool ChatHandler::HandleCastBatchCommand(const char* args)
 
 bool ChatHandler::HandleCastBackCommand(const char* args)
 {
-    Unit* caster = getSelectedUnit();
+    Unit* caster = GetSelectedUnit();
 
     if(!caster)
     {
@@ -6616,7 +6616,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args)
     
     ARGS_CHECK
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
 
     if(!target)
     {
@@ -7468,7 +7468,7 @@ bool ChatHandler::HandlePossessCommand(const char* args)
 {
     
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if(!pUnit)
         return false;
 
@@ -7480,7 +7480,7 @@ bool ChatHandler::HandleUnPossessCommand(const char* args)
 {
     
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if(!pUnit) pUnit = m_session->GetPlayer();
 
     pUnit->RemoveAurasByType(SPELL_AURA_MOD_CHARM);
@@ -7494,7 +7494,7 @@ bool ChatHandler::HandleBindSightCommand(const char* args)
 {
     
     
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if (!pUnit)
         return false;
 
@@ -7600,7 +7600,7 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
     
 
     if (!*args) {      // Command is applied on selected unit
-        Unit* pUnit = getSelectedUnit();
+        Unit* pUnit = GetSelectedUnit();
         if (!pUnit || pUnit == m_session->GetPlayer())
             return false;
         
@@ -7720,7 +7720,7 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
 {
     
 
-    Unit* unit = getSelectedUnit();
+    Unit* unit = GetSelectedUnit();
     if (!unit)
         unit = m_session->GetPlayer();
     
@@ -7739,7 +7739,7 @@ bool ChatHandler::HandleGetMoveFlagsCommand(const char* args)
 {
     
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if (!target)
         target = m_session->GetPlayer();
 
@@ -7752,7 +7752,7 @@ bool ChatHandler::HandleSetMoveFlagsCommand(const char* args)
 {
     ARGS_CHECK
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if (!target)
         target = m_session->GetPlayer();
 
@@ -7840,7 +7840,7 @@ bool ChatHandler::HandleSetTitleCommand(const char* args)
     uint32 titleId = atoi(args);
 
     if(CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId)) {
-        if (Player* plr = getSelectedUnit()->ToPlayer())
+        if (Player* plr = GetSelectedUnit()->ToPlayer())
             plr->SetTitle(titleEntry,true);
         else if (Player* plr = m_session->GetPlayer())
             plr->SetTitle(titleEntry,true);
@@ -8094,7 +8094,7 @@ bool ChatHandler::HandleEnableEventCommand(const char* args)
         
     int eventId = atoi(eventIdStr);
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if (!pUnit || pUnit == m_session->GetPlayer())
         return false;
 
@@ -8116,7 +8116,7 @@ bool ChatHandler::HandleDisableEventCommand(const char* args)
         
     int eventId = atoi(eventIdStr);
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if (!pUnit || pUnit == m_session->GetPlayer())
         return false;
 
@@ -8141,7 +8141,7 @@ bool ChatHandler::HandleScheduleEventCommand(const char* args)
     int eventId = atoi(eventIdStr);
     int timer = atoi(timerStr);
 
-    Unit* pUnit = getSelectedUnit();
+    Unit* pUnit = GetSelectedUnit();
     if (!pUnit || pUnit == m_session->GetPlayer())
         return false;
 

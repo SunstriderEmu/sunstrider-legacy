@@ -1369,7 +1369,7 @@ Player * ChatHandler::getSelectedPlayer()
     return sObjectMgr->GetPlayer(guid);
 }
 
-Unit* ChatHandler::getSelectedUnit()
+Unit* ChatHandler::GetSelectedUnit()
 {
     if(!m_session)
         return nullptr;

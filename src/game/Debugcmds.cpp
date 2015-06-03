@@ -96,7 +96,7 @@ bool ChatHandler::HandleDebugBatchAttack(const char* args)
 
 bool ChatHandler::HandleDebugInArcCommand(const char* /*args*/)
 {
-    Object *obj = getSelectedUnit();
+    Object *obj = GetSelectedUnit();
 
     if(!obj)
     {
@@ -128,7 +128,7 @@ bool ChatHandler::HandleDebugSpellFailCommand(const char* args)
 bool ChatHandler::HandleSetPoiCommand(const char* args)
 {
     Player *pPlayer = m_session->GetPlayer();
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -174,7 +174,7 @@ bool ChatHandler::HandleBuyErrorCommand(const char* args)
 
 bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 {
-    Unit *unit = getSelectedUnit();
+    Unit *unit = GetSelectedUnit();
     Player *player = NULL;
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
         player = m_session->GetPlayer();
@@ -627,7 +627,7 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
 
 bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
 {
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
     HostilReference* ref = target->GetHostilRefManager().getFirst();
@@ -694,7 +694,7 @@ bool ChatHandler::HandleRemoveLootItem(const char* args)
 
 bool ChatHandler::HandleDebugStealthLevel(const char* args)
 {
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if (!target)
         target = m_session->GetPlayer();
         
@@ -708,7 +708,7 @@ bool ChatHandler::HandleDebugStealthLevel(const char* args)
 
 bool ChatHandler::HandleDebugAttackDistance(const char* args)
 {
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if (!target || !target->ToCreature())
         return false;
         
@@ -757,7 +757,7 @@ bool ChatHandler::HandleDebugResetDailyQuests(const char* args)
 
 bool ChatHandler::HandleDebugShowAttackers(const char* args)
 {
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if (!target)
         return false;
         
@@ -792,7 +792,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
 
 bool ChatHandler::HandleDebugLoSCommand(const char* args)
 {
-    if (Unit* unit = getSelectedUnit())
+    if (Unit* unit = GetSelectedUnit())
         PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
     
     /*AreaTableEntry const* area;
@@ -938,7 +938,7 @@ bool ChatHandler::HandleDebugPlayEmoteCommand(const char* args)
 {
     uint32 emote = atoi(args);
 
-    Unit* target = getSelectedUnit();
+    Unit* target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -973,7 +973,7 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
     uint64 tGuid = 0;
     uint32 tGuidLow = 0;
     PackedGuid tPackGuid;
-    if(Unit const* t = getSelectedUnit())
+    if(Unit const* t = GetSelectedUnit())
     {
         tGuid = t->GetGUID();
         tGuidLow = t->GetGUIDLow();

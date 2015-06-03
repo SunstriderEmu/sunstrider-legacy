@@ -2790,15 +2790,14 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
     if (pVictim->IsImmunedToSpell(spell,true))
         return SPELL_MISS_IMMUNE;
 
+    // Check for immune (use charges)
+    if (!spell->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY  && pVictim->IsImmunedToDamage(spell->GetSchoolMask(),true))
+        return SPELL_MISS_IMMUNE;
+
     // All positive spells can`t miss
     // TODO: client not show miss log for this spells - so need find info for this in dbc and use it!
     if (spell->IsPositive(!IsFriendlyTo(pVictim)))
         return SPELL_MISS_NONE;
-
-    // Check for immune (use charges)
-    if (!(spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
-        && pVictim->IsImmunedToDamage(spell->GetSchoolMask(),true))
-        return SPELL_MISS_IMMUNE;
 
     if(this == pVictim)
         return SPELL_MISS_NONE;
@@ -9603,10 +9602,10 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet /*= true*/)
         case MOVE_FLIGHT:
         {
             if (IsMounted()) // Use on mount auras
-                main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+                main_speed_mod  = GetMaxPositiveAuraModifier(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
             else             // Use not mount (shapeshift for example) auras (should stack)
-                main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_SPEED_FLIGHT);
-            stack_bonus     = GetTotalAuraMultiplier(SPELL_AURA_MOD_FLIGHT_SPEED_ALWAYS);
+                main_speed_mod  = GetTotalAuraModifier(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+            stack_bonus     = GetTotalAuraMultiplier(SPELL_AURA_MOD_MOUNTED_FLIGHT_SPEED_ALWAYS);
             non_stack_bonus = (100.0 + GetMaxPositiveAuraModifier(SPELL_AURA_MOD_FLIGHT_SPEED_NOT_STACK))/100.0f;
             break;
         }
@@ -13777,7 +13776,7 @@ bool Unit::SetSwim(bool enable)
     return true;
 }
 
-bool Unit::SetFlying(bool enable)
+bool Unit::SetFlying(bool enable, bool packetOnly /* = false */)
 {
     if(enable)    
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
@@ -13957,6 +13956,9 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
         player->GetSession()->SendPacket(&data);
+
+        if (player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || player->HasAuraType(SPELL_AURA_FLY))
+            player->SetFlying(true, true);
     }
 }
 

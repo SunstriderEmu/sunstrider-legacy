@@ -1456,7 +1456,7 @@ bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
 //demorph player or unit
 bool ChatHandler::HandleDeMorphCommand(const char* /*args*/)
 {
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
 
@@ -1859,7 +1859,7 @@ bool ChatHandler::HandleMorphCommand(const char* args)
     if(!display_id)
         return false;
 
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
 
@@ -3463,7 +3463,7 @@ bool ChatHandler::HandleHonorAddKillCommand(const char* /*args*/)
 {
     
 
-    Unit *target = getSelectedUnit();
+    Unit *target = GetSelectedUnit();
     if(!target)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -4524,10 +4524,7 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
 
 bool ChatHandler::HandleMmapPathCommand(const char* args)
 {
-    
-
-#ifdef OLDMOV
-    if (!MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(m_session->GetPlayer()->GetMapId()))
+    if (!MMAP::MMapFactory::createOrGetMMapManager()->GetNavMesh(GetSession()->GetPlayer()->GetMapId()))
     {
         PSendSysMessage("NavMesh not loaded for current map.");
         return true;
@@ -4536,11 +4533,11 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     PSendSysMessage("mmap path:");
 
     // units
-    Player* player = m_session->GetPlayer();
-    Unit* target = getSelectedUnit();
+    Player* player = GetSession()->GetPlayer();
+    Unit* target = GetSelectedUnit();
     if (!player || !target)
     {
-        PSendSysMessage("Invalid target/source selection.");
+       PSendSysMessage("Invalid target/source selection.");
         return true;
     }
 
@@ -4555,34 +4552,29 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     player->GetPosition(x, y, z);
 
     // path
-    PathInfo path(target, x, y, z, useStraightPath);
-    PointPath pointPath = path.getFullPath();
-    PSendSysMessage("%s's path to %s:", target->GetName(), player->GetName().c_str());
-    PSendSysMessage("Building %s", useStraightPath ? "StraightPath" : "SmoothPath");
-    PSendSysMessage("length %i type %u", pointPath.size(), path.getPathType());
+    PathGenerator path(target);
+    path.SetUseStraightPath(useStraightPath);
+    bool result = path.CalculatePath(x, y, z);
 
-    PathNode start = path.getStartPosition();
-    PathNode next = path.getNextPosition();
-    PathNode end = path.getEndPosition();
-    PathNode actualEnd = path.getActualEndPosition();
+    Movement::PointsArray const& pointPath = path.GetPath();
+    PSendSysMessage("%s's path to %s:", target->GetName().c_str(), player->GetName().c_str());
+    PSendSysMessage("Building: %s", useStraightPath ? "StraightPath" : "SmoothPath");
+    PSendSysMessage("Result: %s - Length: %zu - Type: %u", (result ? "true" : "false"), pointPath.size(), path.GetPathType());
 
-    PSendSysMessage("start      (%.3f, %.3f, %.3f)", start.x, start.y, start.z);
-    PSendSysMessage("next       (%.3f, %.3f, %.3f)", next.x, next.y, next.z);
-    PSendSysMessage("end        (%.3f, %.3f, %.3f)", end.x, end.y, end.z);
-    PSendSysMessage("actual end (%.3f, %.3f, %.3f)", actualEnd.x, actualEnd.y, actualEnd.z);
+    G3D::Vector3 const &start = path.GetStartPosition();
+    G3D::Vector3 const &end = path.GetEndPosition();
+    G3D::Vector3 const &actualEnd = path.GetActualEndPosition();
+
+    PSendSysMessage("StartPosition     (%.3f, %.3f, %.3f)", start.x, start.y, start.z);
+    PSendSysMessage("EndPosition       (%.3f, %.3f, %.3f)", end.x, end.y, end.z);
+    PSendSysMessage("ActualEndPosition (%.3f, %.3f, %.3f)", actualEnd.x, actualEnd.y, actualEnd.z);
 
     if (!player->IsGameMaster())
         PSendSysMessage("Enable GM mode to see the path points.");
 
-    // this entry visible only to GM's with "gm on"
-    static const uint32 WAYPOINT_NPC_ENTRY = 1;
-    Creature* wp = NULL;
     for (uint32 i = 0; i < pointPath.size(); ++i)
-    {
-        wp = player->SummonCreature(WAYPOINT_NPC_ENTRY, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
-        // TODO: make creature not sink/fall
-    }
-#endif
+        player->SummonCreature(VISUAL_WAYPOINT, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+
     return true;
 }
 

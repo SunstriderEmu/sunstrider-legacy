@@ -634,7 +634,7 @@ bool ChatHandler::HandleGPSSCommand(const char* args)
     }
     else
     {
-        obj = getSelectedUnit();
+        obj = GetSelectedUnit();
 
         if(!obj)
         {
@@ -665,7 +665,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     }
     else
     {
-        obj = getSelectedUnit();
+        obj = GetSelectedUnit();
 
         if(!obj)
         {
@@ -1154,7 +1154,7 @@ bool ChatHandler::HandleModifyManaCommand(const char* args)
         return false;
     }
 
-    Unit* unit = getSelectedUnit();
+    Unit* unit = GetSelectedUnit();
     if (unit == NULL)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -1270,7 +1270,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 {
     ARGS_CHECK
 
-    Unit* u = getSelectedUnit();
+    Unit* u = GetSelectedUnit();
     if(!u)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -1659,7 +1659,7 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
         return false;
     }
 
-    Unit* u = getSelectedUnit();
+    Unit* u = GetSelectedUnit();
     if (u == NULL)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -2829,7 +2829,7 @@ bool ChatHandler::HandleDrunkCommand(const char* args)
     uint16 drunkMod = drunklevel * 0xFFFF / 100;
 
     //m_session->GetPlayer()->SetDrunkValue(drunkMod);
-    Unit *pUnit = getSelectedUnit();
+    Unit *pUnit = GetSelectedUnit();
     Player *plr;
     if (pUnit && pUnit->GetTypeId() == TYPEID_PLAYER)
         plr = reinterpret_cast<Player*>(pUnit);

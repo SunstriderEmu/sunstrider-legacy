@@ -570,7 +570,7 @@ class Creature : public Unit
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
         bool IsTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
-        bool isCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
+        bool IsCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool isTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
@@ -851,7 +851,7 @@ class Creature : public Unit
         bool SetDisableGravity(bool disable, bool packetOnly = false) override;
         bool SetSwim(bool enable) override;
         // /!\ This is TC SetCanFly
-        bool SetFlying(bool enable) override;
+        bool SetFlying(bool enable, bool packetOnly = false) override;
         // /!\ Not TC SetCanFly
         void SetCanFly(bool enable) { m_canFly = enable; }
         bool SetWaterWalking(bool enable, bool packetOnly = false) override;

@@ -2207,15 +2207,15 @@ class Player : public Unit
         void SetFallInformation(uint32 time, float z);
         void HandleFall(MovementInfo const& movementInfo);
 
-        bool SetDisableGravity(bool disable, bool packetOnly /* = false */);
-        bool SetFlying(bool apply);
-        bool SetWaterWalking(bool apply, bool packetOnly = false);
-        bool SetFeatherFall(bool apply, bool packetOnly = false);
-        bool SetHover(bool enable, bool packetOnly = false);
+        bool SetDisableGravity(bool disable, bool packetOnly /* = false */) override;
+        bool SetFlying(bool apply, bool packetOnly = false) override;
+        bool SetWaterWalking(bool apply, bool packetOnly = false) override;
+        bool SetFeatherFall(bool apply, bool packetOnly = false) override;
+        bool SetHover(bool enable, bool packetOnly = false) override;
 
-        bool CanFly() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
-        bool CanWalk() const { return true; }
-        bool CanSwim() const { return true; }
+        bool CanFly() const override { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_CAN_FLY); }
+        bool CanWalk() const override { return true; }
+        bool CanSwim() const override { return true; }
 
         void HandleDrowning(uint32 time_diff);
         void HandleFallDamage(MovementInfo& movementInfo);

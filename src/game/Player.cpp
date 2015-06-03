@@ -19594,7 +19594,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
-    if(HasAuraType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED) || IsInFlight())
+    if(HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || IsInFlight())
         AddUnitMovementFlag(MOVEMENTFLAG_PLAYER_FLYING);
 
     SetMover(this);
@@ -19612,9 +19612,9 @@ void Player::SendInitialPacketsAfterAddToMap()
     // same auras state lost at far teleport, send it one more time in this case also
     static const AuraType auratypes[] =
     {
-        SPELL_AURA_MOD_FEAR,     SPELL_AURA_TRANSFORM,                 SPELL_AURA_WATER_WALK,
-        SPELL_AURA_FEATHER_FALL, SPELL_AURA_HOVER,                     SPELL_AURA_SAFE_FALL,
-        SPELL_AURA_FLY,          SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED, SPELL_AURA_NONE
+        SPELL_AURA_MOD_FEAR,     SPELL_AURA_TRANSFORM,                         SPELL_AURA_WATER_WALK,
+        SPELL_AURA_FEATHER_FALL, SPELL_AURA_HOVER,                             SPELL_AURA_SAFE_FALL,
+        SPELL_AURA_FLY,          SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED, SPELL_AURA_NONE
     };
     for(AuraType const* itr = &auratypes[0]; itr && itr[0] != SPELL_AURA_NONE; ++itr)
     {
@@ -20703,7 +20703,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
     if( !IsGameMaster() &&
     GetVirtualMapForMapAndZone(GetMapId(),newZone) != 530)
     {
-        RemoveAurasByType(SPELL_AURA_MOD_INCREASE_FLIGHT_SPEED);
+        RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         RemoveAurasByType(SPELL_AURA_FLY);
     }
 
@@ -21916,9 +21916,9 @@ void Player::UpdateArenaTitles()
     */
 }
 
-bool Player::SetFlying(bool apply)
+bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
 {
-    if (!Unit::SetFlying(apply))
+    if (!packetOnly && !Unit::SetFlying(apply))
         return false;
 
     WorldPacket data(apply ? SMSG_MOVE_SET_CAN_FLY : SMSG_MOVE_UNSET_CAN_FLY, 12);
