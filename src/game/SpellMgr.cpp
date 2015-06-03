@@ -2522,15 +2522,15 @@ void SpellMgr::LoadSpellLinked()
             if(triggerSpellInfo)
                 switch(type)
                 {
-                    case 0: triggerSpellInfo->AttributesCu |= SPELL_ATTR0_CU_LINK_CAST; break;
-                    case 1: triggerSpellInfo->AttributesCu |= SPELL_ATTR0_CU_LINK_HIT;  break;
-                    case 2: triggerSpellInfo->AttributesCu |= SPELL_ATTR0_CU_LINK_AURA; break;
+                    case 0: triggerSpellInfo->AttributesCu |= SPELL_ATTR_CU_LINK_CAST; break;
+                    case 1: triggerSpellInfo->AttributesCu |= SPELL_ATTR_CU_LINK_HIT;  break;
+                    case 2: triggerSpellInfo->AttributesCu |= SPELL_ATTR_CU_LINK_AURA; break;
                 }
         }
         else
         {
             if(triggerSpellInfo)
-                triggerSpellInfo->AttributesCu |= SPELL_ATTR0_CU_LINK_REMOVE;
+                triggerSpellInfo->AttributesCu |= SPELL_ATTR_CU_LINK_REMOVE;
         }
 
         if(type) //we will find a better way when more types are needed

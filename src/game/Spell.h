@@ -641,7 +641,7 @@ namespace Trinity
                         if(!i_caster->IsFriendlyTo( itr->GetSource()))
                             continue;
 
-                        if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource())
+                        if(i_spell.m_spellInfo->HasAttribute(SPELL_ATTR_CU_AOE_CANT_TARGET_SELF) && i_caster == itr->GetSource())
                             continue;
 
                         break;

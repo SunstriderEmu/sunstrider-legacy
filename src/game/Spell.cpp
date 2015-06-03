@@ -1038,7 +1038,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
 
         float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(m_spellInfo);
 
-        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster)? m_caster : m_originalCaster;
+        Unit* threatTarget = (GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER) || !m_originalCaster)? m_caster : m_originalCaster;
         unitTarget->GetHostilRefManager().threatAssist(threatTarget, threat, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
@@ -1140,12 +1140,12 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         {
             m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
-        else if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AURA_CC))
+        else if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
         {
             if(!unit->IsStandState())
                 unit->SetStandState(PLAYER_STATE_NONE);
         }
-        else if (m_spellInfo->HasAttribute(SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT))
+        else if (m_spellInfo->HasAttribute(SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT))
         {
             m_caster->SetInCombatState(true);
         }
@@ -1218,7 +1218,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             }
             unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_HITBYSPELL);
 
-            if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_AURA_CC))
+            if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_AURA_CC))
                 unit->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_CAST);
         }
         else
@@ -1325,7 +1325,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         unit->AddAura(45348, unit); // "Flame Touched"
     }
 
-    if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_LINK_HIT))
+    if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_LINK_HIT))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id + SPELL_LINK_HIT)) 
         {
@@ -1795,11 +1795,11 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             break;
 
         case TARGET_TYPE_AREA_CONE:
-            if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_CONE_BACK))
+            if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_BACK))
                 pushType = PUSH_IN_BACK;
-            else if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_CONE_LINE))
+            else if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_LINE))
                 pushType = PUSH_IN_LINE;
-            else if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_CONE_180))
+            else if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_180))
                 pushType = PUSH_IN_FRONT_180;
             else
                 pushType = PUSH_IN_FRONT;
@@ -2547,7 +2547,7 @@ void Spell::cast(bool skipCheck)
     //SendCastResult(castResult);
     SendSpellGo();                                          // we must send smsg_spell_go packet before m_castItem delete in TakeCastItem()...
 
-    if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_DIRECT_DAMAGE))
+    if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_DIRECT_DAMAGE))
         CalculateDamageDoneForAllTargets();
 
     //handle SPELL_AURA_ADD_TARGET_TRIGGER auras
@@ -2568,7 +2568,7 @@ void Spell::cast(bool skipCheck)
         }
     }
 
-    if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_CHARGE))
+    if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CHARGE))
         EffectCharge(0);
 
     // Okay, everything is prepared. Now we need to distinguish between immediate and evented delayed spells
@@ -2603,7 +2603,7 @@ void Spell::cast(bool skipCheck)
         TakePower();
     }
 
-    if(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_LINK_CAST))
+    if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_LINK_CAST))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
@@ -2946,7 +2946,7 @@ void Spell::update(uint32 difftime)
                 }
 
                 // check if there are alive targets left
-                if (!IsAliveUnitPresentInTargetList() && !(m_spellInfo->HasAttribute(SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET)))
+                if (!IsAliveUnitPresentInTargetList() && !(m_spellInfo->HasAttribute(SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET)))
                 {
                     if (m_spellInfo->HasVisual(788) && m_spellInfo->SpellIconID == 113 && m_spellInfo->SpellFamilyName == 5) { // Drain soul exception, must remove aura on caster
                         if (m_caster->m_currentSpells[CURRENT_CHANNELED_SPELL])

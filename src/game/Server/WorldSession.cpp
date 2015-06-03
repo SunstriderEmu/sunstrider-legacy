@@ -684,8 +684,8 @@ void WorldSession::LogoutPlayer(bool Save)
 
         // remove player from the group if he is:
         // a) in group; b) not in raid group; c) logging out normally (not being kicked or disconnected)
-        //if(_player->GetGroup() && !_player->GetGroup()->isRaidGroup() && m_Socket)
-        //    _player->RemoveFromGroup();
+        if(_player->GetGroup() && !_player->GetGroup()->isRaidGroup() && m_Socket)
+            _player->RemoveFromGroup();
 
         ///- Remove the player from the world
         // the player may not be in the world when logging out
@@ -716,10 +716,10 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Send the 'logout complete' packet to the client
         WorldPacket data( SMSG_LOGOUT_COMPLETE, 0 );
         SendPacket( &data );
+        TC_LOG_DEBUG("network", "SESSION: Sent SMSG_LOGOUT_COMPLETE Message");
 
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
-        CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'",
-            GetAccountId());
+        CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'", GetAccountId());
     }
     
     //Hook for OnLogout Event

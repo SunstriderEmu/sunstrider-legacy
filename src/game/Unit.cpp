@@ -487,7 +487,7 @@ void Unit::RemoveMovementImpairingAuras()
 {
     for(AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end();)
     {
-        if(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_MOVEMENT_IMPAIR))
+        if(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_MOVEMENT_IMPAIR))
             RemoveAura(iter);
         else
             ++iter;
@@ -657,7 +657,7 @@ bool Unit::HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 casterGU
 void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if(!spellInfo || spellInfo->HasAttribute(SPELL_ATTR0_CU_CANT_BREAK_CC))
+    if(!spellInfo || spellInfo->HasAttribute(SPELL_ATTR_CU_CANT_BREAK_CC))
         return;
 
     // The chance to dispel an aura depends on the damage taken with respect to the casters level.
@@ -1311,7 +1311,7 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage *damageInfo, int32 dama
     }
 
 
-    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && !spellInfo->HasAttribute(SPELL_ATTR0_CU_IGNORE_ARMOR))
+    if( damageSchoolMask & SPELL_SCHOOL_MASK_NORMAL  && !spellInfo->HasAttribute(SPELL_ATTR_CU_IGNORE_ARMOR))
         damage = CalcArmorReducedDamage(pVictim, damage);
 
     // Calculate absorb resist
@@ -3870,13 +3870,13 @@ bool Unit::AddAura(Aura *Aur)
                     continue;
                 }
             }
-            else if (Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS)) {
+            else if (Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS)) {
                 stackModified=true;
                 Aur->SetStackAmount(i2->second->GetStackAmount());
                 if(Aur->GetStackAmount() < aurSpellInfo->StackAmount)
                     Aur->SetStackAmount(Aur->GetStackAmount()+1);
             }
-            else if (Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL)) {
+            else if (Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL)) {
                 ++i2;
                 continue;
             }
@@ -4015,7 +4015,7 @@ bool Unit::AddAura(Aura *Aur)
     Aur->ApplyModifier(true,true);
 
     uint32 id = Aur->GetId();
-    if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_LINK_AURA))
+    if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
             for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
@@ -4660,7 +4660,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
         // Remove Linked Auras
         uint32 id = Aur->GetId();
-        if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_LINK_REMOVE))
+        if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_REMOVE))
         {
             if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(-(int32)id))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
@@ -4669,7 +4669,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
                     else if(Unit* caster = Aur->GetCaster())
                         CastSpell(this, *itr, true, 0, 0, caster->GetGUID());
         }
-        if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR0_CU_LINK_AURA))
+        if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
         {
             if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)

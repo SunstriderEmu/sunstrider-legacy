@@ -690,7 +690,7 @@ bool SpellInfo::IsPositive(bool hostileTarget /* = false */) const
     if(HasEffect(SPELL_EFFECT_DISPEL) || HasEffect(SPELL_EFFECT_DISPEL_MECHANIC))
         return !hostileTarget;  // positive on friendly, negative on hostile
 
-    return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE);
+    return !HasAttribute(SPELL_ATTR_CU_NEGATIVE);
 }
 
 bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false */) const
@@ -702,11 +702,11 @@ bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false *
     {
         default:
         case 0:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF0);
+            return !HasAttribute(SPELL_ATTR_CU_NEGATIVE_EFF0);
         case 1:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF1);
+            return !HasAttribute(SPELL_ATTR_CU_NEGATIVE_EFF1);
         case 2:
-            return !HasAttribute(SPELL_ATTR0_CU_NEGATIVE_EFF2);
+            return !HasAttribute(SPELL_ATTR_CU_NEGATIVE_EFF2);
     }
 }
 
@@ -802,7 +802,7 @@ void SpellInfo::LoadCustomAttributes()
             }
     }
     if(auraSpell)
-        AttributesCu |= SPELL_ATTR0_CU_AURA_SPELL;
+        AttributesCu |= SPELL_ATTR_CU_AURA_SPELL;
 
     for(uint32 j = 0; j < 3; ++j)
     {
@@ -811,26 +811,26 @@ void SpellInfo::LoadCustomAttributes()
             case SPELL_AURA_PERIODIC_DAMAGE:
             case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
             case SPELL_AURA_PERIODIC_LEECH:
-                AttributesCu |= SPELL_ATTR0_CU_AURA_DOT;
+                AttributesCu |= SPELL_ATTR_CU_AURA_DOT;
                 break;
             case SPELL_AURA_PERIODIC_HEAL:
             case SPELL_AURA_OBS_MOD_HEALTH:
-                AttributesCu |= SPELL_ATTR0_CU_AURA_HOT;
+                AttributesCu |= SPELL_ATTR_CU_AURA_HOT;
                 break;
             case SPELL_AURA_MOD_ROOT:
-            //    AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
-                AttributesCu |= SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
+            //    AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                 break;
             case SPELL_AURA_MOD_DECREASE_SPEED:
-                AttributesCu |= SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
+                AttributesCu |= SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                 break;
             case SPELL_AURA_MOD_POSSESS:
             case SPELL_AURA_MOD_CONFUSE:
             case SPELL_AURA_MOD_CHARM:
             case SPELL_AURA_MOD_FEAR:
             case SPELL_AURA_MOD_STUN:
-                AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
-                AttributesCu &= ~SPELL_ATTR0_CU_MOVEMENT_IMPAIR;
+                AttributesCu |= SPELL_ATTR_CU_AURA_CC;
+                AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
                 break;
             default:
                 break;
@@ -844,47 +844,47 @@ void SpellInfo::LoadCustomAttributes()
             case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
             case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
             case SPELL_EFFECT_HEAL:
-                AttributesCu |= SPELL_ATTR0_CU_DIRECT_DAMAGE;
+                AttributesCu |= SPELL_ATTR_CU_DIRECT_DAMAGE;
                 break;
             case SPELL_EFFECT_CHARGE:
                 if(!Speed && !SpellFamilyName)
                     Speed = SPEED_CHARGE;
-                AttributesCu |= SPELL_ATTR0_CU_CHARGE;
+                AttributesCu |= SPELL_ATTR_CU_CHARGE;
                 break;
         }
     }
 
     if (!_IsPositiveEffect(EFFECT_0, true))
-        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
+        AttributesCu |= SPELL_ATTR_CU_NEGATIVE_EFF0;
 
     if (!_IsPositiveEffect(EFFECT_1, true))
-        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF1;
+        AttributesCu |= SPELL_ATTR_CU_NEGATIVE_EFF1;
 
     if (!_IsPositiveEffect(EFFECT_2, true))
-        AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF2;
+        AttributesCu |= SPELL_ATTR_CU_NEGATIVE_EFF2;
 
     if(SpellVisual == 3879)
-        AttributesCu |= SPELL_ATTR0_CU_CONE_BACK;
+        AttributesCu |= SPELL_ATTR_CU_CONE_BACK;
 
     switch (Id)
     {
          case 27003:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 31041: // Roar's Mangle
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 33745: // Rank 1 Lacerate (Druid)
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 379: //earth shield heal effect
         case 33076: //Prayer of mending
-            AttributesCu |= SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER;
+            AttributesCu |= SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER;
             break;
         case 26029: // dark glare
         case 37433: // spout
         case 43140: case 43215: // flame breath
-            AttributesCu |= SPELL_ATTR0_CU_CONE_LINE;
+            AttributesCu |= SPELL_ATTR_CU_CONE_LINE;
             break;
         case 24340: case 26558: case 28884:     // Meteor
         case 36837: case 38903: case 41276:     // Meteor
@@ -893,38 +893,38 @@ void SpellInfo::LoadCustomAttributes()
         case 35181:                             // Dive Bomb
         case 40810: case 43267: case 43268:     // Saber Lash
         case 42384:                             // Brutal Swipe
-            AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+            AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
             break;
         case 45150:                             // Meteor Slash
-            AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
+            AttributesCu |= SPELL_ATTR_CU_SHARE_DAMAGE;
             break;
         case 12723: // Sweeping Strikes proc
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 40327: // Atrophy
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 40902: //SPELL_AKAMA_SOUL_RETRIEVE
-            AttributesCu |= SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET;
+            AttributesCu |= SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET;
             break;
         case 45236:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45232:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45256:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45329: // Sacrolash Show nova
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 45347: // Sacrolash SPELL_DARK_TOUCHED
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 46771: // SPELL_FLAME_SEAR
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 15258:
         case 22959:
@@ -949,7 +949,7 @@ void SpellInfo::LoadCustomAttributes()
         case 11597:
         case 25225:
         case 40520: //shadow of akama slow aura from canalisations (spell 40401)
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 1120:
         case 8288:
@@ -958,32 +958,32 @@ void SpellInfo::LoadCustomAttributes()
         case 27217:
         case 41083: //Illidan's shadow demons Paralyze
         case 39123: //purple beam
-            AttributesCu |= SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL;
+            AttributesCu |= SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL;
             break;
         case 44335:
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 45271:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
          case 40845: //Fury
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
         case 41173:
         case 41093:
         case 41084:
         case 34580: //Impale
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 33619: // Reflective Shield
-            AttributesCu |= SPELL_ATTR0_CU_CANT_BREAK_CC;
+            AttributesCu |= SPELL_ATTR_CU_CANT_BREAK_CC;
             break;
         case 45248:
-            AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
+            AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
             break;
         case 39968: //najentus spine explosion
-            AttributesCu |= SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF;
+            AttributesCu |= SPELL_ATTR_CU_AOE_CANT_TARGET_SELF;
             break;
         case 23735:
         case 23736:
@@ -993,7 +993,7 @@ void SpellInfo::LoadCustomAttributes()
         case 23767:
         case 23768:
         case 23769:
-            AttributesCu |= SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER;
+            AttributesCu |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
             break;
         case 26102: // Sandblast (Ouro)
         case 19272:
@@ -1001,11 +1001,11 @@ void SpellInfo::LoadCustomAttributes()
         case 36654:
         case 38813:
         case 38814:
-            AttributesCu |= SPELL_ATTR0_CU_CONE_180;
+            AttributesCu |= SPELL_ATTR_CU_CONE_180;
             break;
         case 45770:
         case 19516:
-            AttributesCu |= SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS;
+            AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
     }
 }

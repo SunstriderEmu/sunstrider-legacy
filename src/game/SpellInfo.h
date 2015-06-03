@@ -28,37 +28,37 @@ class Spell;
 
 enum SpellCustomAttributes
 {
-    //SPELL_ATTR0_CU_PLAYERS_ONLY      0x00000001,
-    SPELL_ATTR0_CU_CONE_BACK                     = 0x00000002,
-    SPELL_ATTR0_CU_CONE_LINE                     = 0x00000004,
-    SPELL_ATTR0_CU_SHARE_DAMAGE                  = 0x00000008,
-    SPELL_ATTR0_CU_AURA_HOT                      = 0x00000010,
-    SPELL_ATTR0_CU_AURA_DOT                      = 0x00000020,
-    SPELL_ATTR0_CU_AURA_CC                       = 0x00000040,
-    SPELL_ATTR0_CU_AURA_SPELL                    = 0x00000080,
-    SPELL_ATTR0_CU_DIRECT_DAMAGE                 = 0x00000100,
-    SPELL_ATTR0_CU_CHARGE                        = 0x00000200,
-    SPELL_ATTR0_CU_LINK_CAST                     = 0x00000400,
-    SPELL_ATTR0_CU_LINK_HIT                      = 0x00000800,
-    SPELL_ATTR0_CU_LINK_AURA                     = 0x00001000,
-    SPELL_ATTR0_CU_LINK_REMOVE                   = 0x00002000,
-    SPELL_ATTR0_CU_MOVEMENT_IMPAIR               = 0x00004000,
-    SPELL_ATTR0_CU_IGNORE_ARMOR                  = 0x00008000,
-    SPELL_ATTR0_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
-    SPELL_ATTR0_CU_ONE_STACK_PER_CASTER_SPECIAL  = 0x00020000,
-    SPELL_ATTR0_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00040000,     // Instead of original caster
-    SPELL_ATTR0_CU_CANT_BREAK_CC                 = 0x00080000,     // Damage done by these spells won't break crowd controls
-    SPELL_ATTR0_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00100000,
-    SPELL_ATTR0_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
-    SPELL_ATTR0_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
-    SPELL_ATTR0_CU_CONE_180                      = 0x00800000,
-    SPELL_ATTR0_CU_CAN_CHANNEL_DEAD_TARGET       = 0x01000000,
+    //SPELL_ATTR_CU_PLAYERS_ONLY      0x00000001,
+    SPELL_ATTR_CU_CONE_BACK                     = 0x00000002,
+    SPELL_ATTR_CU_CONE_LINE                     = 0x00000004,
+    SPELL_ATTR_CU_SHARE_DAMAGE                  = 0x00000008,
+    SPELL_ATTR_CU_AURA_HOT                      = 0x00000010,
+    SPELL_ATTR_CU_AURA_DOT                      = 0x00000020,
+    SPELL_ATTR_CU_AURA_CC                       = 0x00000040,
+    SPELL_ATTR_CU_AURA_SPELL                    = 0x00000080,
+    SPELL_ATTR_CU_DIRECT_DAMAGE                 = 0x00000100,
+    SPELL_ATTR_CU_CHARGE                        = 0x00000200,
+    SPELL_ATTR_CU_LINK_CAST                     = 0x00000400,
+    SPELL_ATTR_CU_LINK_HIT                      = 0x00000800,
+    SPELL_ATTR_CU_LINK_AURA                     = 0x00001000,
+    SPELL_ATTR_CU_LINK_REMOVE                   = 0x00002000,
+    SPELL_ATTR_CU_MOVEMENT_IMPAIR               = 0x00004000,
+    SPELL_ATTR_CU_IGNORE_ARMOR                  = 0x00008000,
+    SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS       = 0x00010000,
+    SPELL_ATTR_CU_ONE_STACK_PER_CASTER_SPECIAL  = 0x00020000,
+    SPELL_ATTR_CU_THREAT_GOES_TO_CURRENT_CASTER = 0x00040000,     // Instead of original caster
+    SPELL_ATTR_CU_CANT_BREAK_CC                 = 0x00080000,     // Damage done by these spells won't break crowd controls
+    SPELL_ATTR_CU_PUT_ONLY_CASTER_IN_COMBAT     = 0x00100000,
+    SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
+    SPELL_ATTR_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
+    SPELL_ATTR_CU_CONE_180                      = 0x00800000,
+    SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET       = 0x01000000,
 
-    SPELL_ATTR0_CU_NEGATIVE_EFF0                 = 0x02000000,
-    SPELL_ATTR0_CU_NEGATIVE_EFF1                 = 0x04000000,
-    SPELL_ATTR0_CU_NEGATIVE_EFF2                 = 0x08000000,
+    SPELL_ATTR_CU_NEGATIVE_EFF0                 = 0x02000000,
+    SPELL_ATTR_CU_NEGATIVE_EFF1                 = 0x04000000,
+    SPELL_ATTR_CU_NEGATIVE_EFF2                 = 0x08000000,
 
-    SPELL_ATTR0_CU_NEGATIVE                      = SPELL_ATTR0_CU_NEGATIVE_EFF0 | SPELL_ATTR0_CU_NEGATIVE_EFF1 | SPELL_ATTR0_CU_NEGATIVE_EFF2
+    SPELL_ATTR_CU_NEGATIVE                      = SPELL_ATTR_CU_NEGATIVE_EFF0 | SPELL_ATTR_CU_NEGATIVE_EFF1 | SPELL_ATTR_CU_NEGATIVE_EFF2
 };
 
 enum SpellCastTargetFlags
