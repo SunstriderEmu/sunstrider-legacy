@@ -1362,8 +1362,13 @@ void Aura::TriggerSpell()
 //                    case 18347: break;
 //                    // Ranshalla Waiting
 //                    case 18953: break;
-//                    // Inferno
-//                    case 19695: break;
+                     /* OregonCore code 
+                     case 19695: // Baron Geddon Inferno
+                     {
+                         int32 damageForTick[8] = { 500, 500, 1000, 1000, 2000, 2000, 3000, 5000 };
+                         triggerTarget->CastCustomSpell(triggerTarget, 19698, &damageForTick[GetAuraTicks() - 1], NULL, NULL, true, NULL);
+                         return;
+                     }*/
 //                    // Frostwolf Muzzle DND
 //                    case 21794: break;
 //                    // Alterac Ram Collar DND
@@ -4292,8 +4297,7 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     // Murmur's Touch (Shockwave)
     else if (!apply && m_spellProto->Id == 38794)
         m_target->CastSpell(m_target, 33686, true, 0, this);
-        
-    // Windfury && Tremor && Earthbind totems
+    // Start periodic on next tick or at aura apply. Example: Windfury && Tremor && Earthbind totems
     else if (GetSpellInfo()->HasAttribute(SPELL_ATTR5_START_PERIODIC_AT_APPLY) && apply && Real) 
         m_periodicTimer = 0;
 

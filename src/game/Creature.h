@@ -723,6 +723,9 @@ class Creature : public Unit
         void StartSuspiciousLook(Unit const* target);
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
+        //select nearest alive player
+        Player* SelectNearestPlayer(float distance = 0) const;
+
         /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();
         /** Actively call for help, does NOT check for faction, all friendly are eligibles */

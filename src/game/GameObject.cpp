@@ -1665,25 +1665,6 @@ GameObject* GameObject::FindGOInGrid(uint32 entry, float range)
     return pGo;
 }
 
-Player* GameObject::FindPlayerInGrid(float range, bool alive)
-{
-    Player* pPlayer = NULL;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestPlayerInObjectRangeCheck go_check(*this, range, alive);
-    Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(pPlayer, go_check);
-
-    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck>, GridTypeMapContainer> player_searcher(searcher);
-
-    cell.Visit(pair, player_searcher, *GetMap(), *this, range);
-    
-    return pPlayer;
-}
-
 void GameObject::SendCustomAnim(uint32 anim)
 {
     WorldPacket data(SMSG_GAMEOBJECT_CUSTOM_ANIM, 8+4);

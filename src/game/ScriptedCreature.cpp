@@ -933,6 +933,18 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     return pList;
 }
 
+
+// SD2 grid searchers.
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive /*= true*/)
+{
+    return source->FindNearestCreature(entry, maxSearchRange, alive);
+}
+
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange)
+{
+    return source->FindNearestGameObject(entry, maxSearchRange);
+}
+
 void LoadOverridenSQLData()
 {
     GameObjectTemplate *goInfo;

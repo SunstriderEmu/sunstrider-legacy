@@ -424,6 +424,22 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
+    template<class Check>
+    struct PlayerLastSearcher
+    {
+        PhaseMask i_phaseMask;
+        Player* &i_object;
+        Check& i_check;
+
+        PlayerLastSearcher(WorldObject const* searcher, Player*& result, Check& check) : i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check)
+        {
+        }
+
+        void Visit(PlayerMapType& m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
+    };
+
     template<class Do>
     struct PlayerWorker
     {

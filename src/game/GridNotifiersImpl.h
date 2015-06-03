@@ -578,5 +578,18 @@ void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
     }
 }
 
+template<class Check>
+void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
+{
+    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    {
+        if (!itr->GetSource()->InSamePhase(i_phaseMask))
+            continue;
+
+        if (i_check(itr->GetSource()))
+            i_object = itr->GetSource();
+    }
+}
+
 #endif                                                      // TRINITY_GRIDNOTIFIERSIMPL_H
 

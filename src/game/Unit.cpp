@@ -9292,8 +9292,7 @@ bool Unit::IsAttackableByAOE() const
     if(!IsAlive())
         return false;
 
-    if(HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
+    if(HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return false;
 
     if(Player const* p = ToPlayer())
@@ -13451,25 +13450,6 @@ Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
     cell.Visit(pair, creature_searcher, *GetMap());
     
     return pCreature;
-}
-
-Player* Unit::FindPlayerInGrid(float range, bool isAlive)
-{
-    Player* pPlayer = NULL;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestPlayerInObjectRangeCheck creature_check(*this, isAlive, range);
-    Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(pPlayer, creature_check);
-
-    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::NearestPlayerInObjectRangeCheck>, GridTypeMapContainer> player_searcher(searcher);
-
-    cell.Visit(pair, player_searcher, *GetMap());
-    
-    return pPlayer;
 }
 
 GameObject* Unit::FindGOInGrid(uint32 entry, float range)

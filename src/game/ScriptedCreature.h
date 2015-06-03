@@ -237,5 +237,9 @@ struct NullCreatureAI : public ScriptedAI
     void UpdateAI(const uint32) {}
 };
 
+// SD2 grid searchers.
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
+
 #endif
 

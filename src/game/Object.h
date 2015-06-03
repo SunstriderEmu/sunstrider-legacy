@@ -562,6 +562,8 @@ class WorldObject : public Object, public WorldLocation
 
         //for trinitycore compatibility
         PhaseMask GetPhaseMask() const { return PhaseMask(1); }
+        bool InSamePhase(WorldObject const* obj) const { return true; }
+        bool InSamePhase(PhaseMask phasemask) const { return true; }
 
         InstanceData* GetInstanceData();
 

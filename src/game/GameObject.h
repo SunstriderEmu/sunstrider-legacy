@@ -663,7 +663,6 @@ class GameObject : public WorldObject
         
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
-        Player* FindPlayerInGrid(float range, bool alive);
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }

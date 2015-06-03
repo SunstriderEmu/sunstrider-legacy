@@ -5564,7 +5564,17 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             m_caster->CastSpell(m_caster,spell_id,true,NULL);
             return;
         }
+        /* Disabled: This is currently hardcoded in Nazan script
+        case 34653:                                 // Nazan Fireball
+        case 36920:                                 // Nazan Fireball (h)
+        {
+            if (!unitTarget)
+                return;
 
+            unitTarget->CastSpell(unitTarget, unitTarget->GetMap()->IsRegularDifficulty() ? 23971 : 30928, true, NULL, NULL, m_caster->GetObjectGuid());
+            return;
+        }
+        */
         // Healthstone creating spells
         case  6201:
         case  6202:

@@ -32,6 +32,7 @@
 #include "GameEvent.h"
 #include "ScriptedGossip.h"
 #include "Transport.h"
+#include "ScriptedCreature.h"
 
 /*
 class TrinityStringTextBuilder 
@@ -2858,38 +2859,21 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         }
         case SMART_TARGET_CLOSEST_CREATURE:
         {
-            Creature* target = NULL;
-            if (GetBaseObject()->GetTypeId() == TYPEID_UNIT)
-                target = me->FindCreatureInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
-            else
-                target = GetBaseObject()->ToGameObject()->FindCreatureInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
-                
-            if (target)
+            if (Creature* target = GetClosestCreatureWithEntry(baseObject, e.target.closest.entry, float(e.target.closest.dist ? e.target.closest.dist : 100), !e.target.closest.dead))
                 l->push_back(target);
             break;
         }
         case SMART_TARGET_CLOSEST_GAMEOBJECT:
         {
-            GameObject* target = NULL;
-            if (GetBaseObject()->GetTypeId() == TYPEID_UNIT)
-                target = me->FindGOInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
-            else
-                target = GetBaseObject()->ToGameObject()->FindGOInGrid(/*GetBaseObject(),*/e.target.closest.entry, (float)(e.target.closest.dist ? e.target.closest.dist : 100));
-                
-            if (target)
+            if (GameObject* target = GetClosestGameObjectWithEntry(baseObject, e.target.closest.entry, float(e.target.closest.dist ? e.target.closest.dist : 100)))
                 l->push_back(target);
             break;
         }
         case SMART_TARGET_CLOSEST_PLAYER:
         {
-            Player* target = NULL;
-            if (GetBaseObject()->GetTypeId() == TYPEID_UNIT)
-                target = me->FindPlayerInGrid((float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
-            else
-                target = GetBaseObject()->ToGameObject()->FindPlayerInGrid((float)(e.target.closest.dist ? e.target.closest.dist : 100), e.target.closest.dead ? false : true);
-                
-            if (target)
-                l->push_back(target);
+            if (me)
+                if (Player* target = me->SelectNearestPlayer(float(e.target.playerDistance.dist)))
+                    l->push_back(target);
             break;
         }
         case SMART_TARGET_OWNER_OR_SUMMONER:

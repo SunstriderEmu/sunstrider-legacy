@@ -1800,7 +1800,6 @@ class Unit : public WorldObject
 
         bool IsAIEnabled, NeedChangeAI;
              
-        Player* FindPlayerInGrid(float range, bool isAlive);
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         

@@ -2684,3 +2684,14 @@ void Creature::WarnDeathToFriendly()
         if(itr.first->IsAIEnabled)
             itr.first->AI()->FriendlyKilled(this, itr.second);    
 }
+
+Player* Creature::SelectNearestPlayer(float distance) const
+{
+    Player* target = NULL;
+
+    Trinity::NearestPlayerInObjectRangeCheck checker(*this, true, distance);
+    Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
+    VisitNearbyObject(distance, searcher);
+
+    return target;
+}
