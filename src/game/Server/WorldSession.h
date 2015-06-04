@@ -432,7 +432,7 @@ class WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
         void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
 
-        uint32 getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
+        uint32 GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
         std::atomic<int32> m_timeOutTime;
 

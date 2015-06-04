@@ -1549,7 +1549,7 @@ void Pet::_LoadAuras(uint32 timediff)
 
             Unit* owner = GetOwner(); 
             // load negative auras only if player has recently dismissed his pet
-            if(owner && !owner->HasAura(SPELL_PET_RECENTLY_DISMISSED) && !spellproto->IsPositiveEffect(effindex))
+            if(owner && !owner->HasAuraEffect(SPELL_PET_RECENTLY_DISMISSED) && !spellproto->IsPositiveEffect(effindex))
                 continue;
 
             if (abort)

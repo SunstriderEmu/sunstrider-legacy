@@ -453,7 +453,7 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         return;
 
     //prevent taking a base in Spirit form (bug abuse)
-    if( source->HasAura(27792, 0) || source->HasAura(27795, 0) )
+    if( source->HasAuraEffect(27792, 0) || source->HasAuraEffect(27795, 0) )
         return;
 
     uint8 node = BG_AB_NODE_STABLES;

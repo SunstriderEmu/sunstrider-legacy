@@ -894,10 +894,10 @@ uint32 WorldObject::GetAreaId() const
     return sMapMgr->GetBaseMap(m_mapId)->GetAreaId(m_positionX,m_positionY,m_positionZ);
 }
 
-InstanceData* WorldObject::GetInstanceData()
+InstanceScript* WorldObject::GetInstanceScript()
 {
     Map *map = GetMap();
-    return map->IsDungeon() ? ((InstanceMap*)map)->GetInstanceData() : NULL;
+    return map->IsDungeon() ? ((InstanceMap*)map)->GetInstanceScript() : NULL;
 }
 
                                                             //slow

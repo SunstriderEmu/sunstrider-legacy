@@ -34,11 +34,11 @@
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "Transport.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "UpdateFieldFlags.h"
 
 #include <math.h>
@@ -698,11 +698,11 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         return 0;
 
     // Kidney Shot
-    if (pVictim->HasAura(408) || pVictim->HasAura(8643)) {
+    if (pVictim->HasAuraEffect(408) || pVictim->HasAuraEffect(8643)) {
         Aura *aur = NULL;
-        if (pVictim->HasAura(408))
+        if (pVictim->HasAuraEffect(408))
             aur = pVictim->GetAura(408, 0);
-        else if (pVictim->HasAura(8643))
+        else if (pVictim->HasAuraEffect(8643))
             aur = pVictim->GetAura(8643, 0);
         if (aur) {
             Unit *ksCaster = aur->GetCaster();
@@ -718,7 +718,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
     
     // Spell 37224: This hack should be removed one day
-    if (HasAura(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
+    if (HasAuraEffect(37224) && spellProto && spellProto->SpellFamilyFlags == 0x1000000000LL && spellProto->SpellIconID == 2562)
         damage += 30;
     
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -1043,7 +1043,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
 
     SpellCastTargets targets;
     uint32 targetMask = spellInfo->Targets;
-    //if(targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2))
+    //if(targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNIT_MINIPET))
     for(int i = 0; i < 3; ++i)
     {
         if(sSpellMgr->SpellTargetType[spellInfo->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET)
@@ -2102,15 +2102,15 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
     // HACK: Warrior enrage not losing procCharges when dealing melee damage
     if (GetTypeId() == TYPEID_PLAYER) {
         uint32 enrageId = 0;
-        if (HasAura(12880))
+        if (HasAuraEffect(12880))
             enrageId = 12880;
-        else if (HasAura(14201))
+        else if (HasAuraEffect(14201))
             enrageId = 14201;
-        else if (HasAura(14202))
+        else if (HasAuraEffect(14202))
             enrageId = 14202;
-        else if (HasAura(14203))
+        else if (HasAuraEffect(14203))
             enrageId = 14203;
-        else if (HasAura(14204))
+        else if (HasAuraEffect(14204))
             enrageId = 14204;
             
         if (enrageId) {
@@ -3533,7 +3533,7 @@ void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
         {
             if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
             {
-                if (!HasAura(liquid->SpellId))
+                if (!HasAuraEffect(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
             }
             else
@@ -5511,7 +5511,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                 if (GetTypeId() != TYPEID_PLAYER)
                     return false;
   
-                if (!HasAura(37424))
+                if (!HasAuraEffect(37424))
                     return false;
 
                 target = this;
@@ -8315,7 +8315,7 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
                     }
                 }
                 // arcane potency
-                if (HasAura(12536,0) || HasAura(12043,0)) { // clearcasting or presence of mind
+                if (HasAuraEffect(12536,0) || HasAuraEffect(12043,0)) { // clearcasting or presence of mind
                     if (HasSpell(31571)) crit_chance+= 10.0f;
                     if (HasSpell(31572)) crit_chance+= 20.0f;
                     if (HasSpell(31573)) crit_chance+= 30.0f;
@@ -9111,7 +9111,7 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
         if (target->ToCreature()->getAI())
             target->ToCreature()->getAI()->attackStart(this);
         
-        if (ScriptedInstance* instance = ((ScriptedInstance*)target->GetInstanceData()))
+        if (InstanceScript* instance = ((InstanceScript*)target->GetInstanceScript()))
             instance->MonsterPulled(target->ToCreature(), this);
     }
     
@@ -9497,7 +9497,7 @@ StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetD
         if ((*iter)->GetCasterGUID() == GetGUID())
             return DETECTED_STATUS_DETECTED;
     
-    if(target->HasAura(18461,0)) //vanish dummy spell, 2.5s duration after vanish
+    if(target->HasAuraEffect(18461,0)) //vanish dummy spell, 2.5s duration after vanish
         return DETECTED_STATUS_NOT_DETECTED;
     
     if (targetDistance == 0.0f) //collision
@@ -12457,7 +12457,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->DuelComplete(DUEL_INTERUPTED);
         }
         
-        if (ScriptedInstance* instance = ((ScriptedInstance*)pVictim->GetInstanceData()))
+        if (InstanceScript* instance = ((InstanceScript*)pVictim->GetInstanceScript()))
             instance->PlayerDied(pVictim->ToPlayer());
     }
     else                                                // creature died
@@ -12523,7 +12523,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Dungeon specific stuff, only applies to players killing creatures
         if(cVictim->GetInstanceId())
         {
-            ScriptedInstance *pInstance = ((ScriptedInstance*)cVictim->GetInstanceData());
+            InstanceScript *pInstance = ((InstanceScript*)cVictim->GetInstanceScript());
             if (pInstance)
                 pInstance->OnCreatureKill(cVictim);
 
@@ -14337,7 +14337,7 @@ void Unit::LogBossDown(Creature* cVictim)
         {
             bossName = "Eredar Twins";
             bossNameFr = "Jumelles Eredar";
-            InstanceData *pInstance = (((InstanceMap*)(cVictim->GetMap()))->GetInstanceData());
+            InstanceScript *pInstance = (((InstanceMap*)(cVictim->GetMap()))->GetInstanceScript());
             if (pInstance && pInstance->GetData(4) != 3)
                 mustLog = false;
             break;

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "World.h"
 #include "ObjectMgr.h"
 #include "Language.h"
@@ -30,9 +30,7 @@
 #include "BattleGroundMgr.h"
 #include "GridNotifiers.h"
 
-INSTANTIATE_SINGLETON_1(GameEvent);
-
-bool GameEvent::CheckOneGameEvent(uint16 entry) const
+bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
     time_t currenttime = time(NULL);
     // if the state is conditions or nextphase, then the event should be active
@@ -65,7 +63,7 @@ bool GameEvent::CheckOneGameEvent(uint16 entry) const
         return false;
 }
 
-uint32 GameEvent::NextCheck(uint16 entry) const
+uint32 GameEventMgr::NextCheck(uint16 entry) const
 {
     time_t currenttime = time(NULL);
 
@@ -100,7 +98,7 @@ uint32 GameEvent::NextCheck(uint16 entry) const
         return delay;
 }
 
-bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
+bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
 {
     // Temp hack until game_event dependencies is implemented
     if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(12))
@@ -143,7 +141,7 @@ bool GameEvent::StartEvent( uint16 event_id, bool overwrite )
     }
 }
 
-void GameEvent::StopEvent( uint16 event_id, bool overwrite )
+void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 {
     bool serverwide_evt = mGameEvent[event_id].state != GAMEEVENT_NORMAL;
 
@@ -175,7 +173,7 @@ void GameEvent::StopEvent( uint16 event_id, bool overwrite )
     }
 }
 
-void GameEvent::LoadFromDB()
+void GameEventMgr::LoadFromDB()
 {
     //reload case
     
@@ -788,7 +786,7 @@ void GameEvent::LoadFromDB()
     }
 }
 
-uint32 GameEvent::GetNPCFlag(Creature * cr)
+uint32 GameEventMgr::GetNPCFlag(Creature * cr)
 {
     uint32 mask = 0;
     uint32 guid = cr->GetDBTableGUIDLow();
@@ -803,7 +801,7 @@ uint32 GameEvent::GetNPCFlag(Creature * cr)
     return mask;
 }
 
-uint32 GameEvent::Initialize()                              // return the next event delay in ms
+uint32 GameEventMgr::Initialize()                              // return the next event delay in ms
 {
     m_ActiveEvents.clear();
     uint32 delay = Update();
@@ -813,7 +811,7 @@ uint32 GameEvent::Initialize()                              // return the next e
     return delay;
 }
 
-uint32 GameEvent::Update()                                  // return the next event delay in ms
+uint32 GameEventMgr::Update()                                  // return the next event delay in ms
 {
     time_t currenttime = time(NULL);
     uint32 nextEventDelay = max_ge_check_delay;             // 1 day
@@ -844,14 +842,14 @@ uint32 GameEvent::Update()                                  // return the next e
                 // changed, save to DB the gameevent state, will be updated in next update cycle
                 SaveWorldEventStateToDB(itr);
 
-            //TC_LOG_DEBUG("gameevent","GameEvent %u is active",itr->first);
+            //TC_LOG_DEBUG("gameevent","GameEventMgr %u is active",itr->first);
             // queue for activation
             if (!IsActiveEvent(itr))
                 activate.insert(itr);
         }
         else
         {
-            //TC_LOG_DEBUG("gameevent","GameEvent %u is not active",itr->first);
+            //TC_LOG_DEBUG("gameevent","GameEventMgr %u is not active",itr->first);
             if (IsActiveEvent(itr))
                 deactivate.insert(itr);
             else
@@ -883,9 +881,9 @@ uint32 GameEvent::Update()                                  // return the next e
     return (nextEventDelay + 1) * 1000;                     // Add 1 second to be sure event has started/stopped at next call
 }
 
-void GameEvent::UnApplyEvent(uint16 event_id)
+void GameEventMgr::UnApplyEvent(uint16 event_id)
 {
-    TC_LOG_DEBUG("gameevent","GameEvent %u \"%s\" removed.", event_id, mGameEvent[event_id].description.c_str());
+    TC_LOG_DEBUG("gameevent","GameEventMgr %u \"%s\" removed.", event_id, mGameEvent[event_id].description.c_str());
     // un-spawn positive event tagged objects
     GameEventUnspawn(event_id);
     // spawn negative event tagget objects
@@ -903,7 +901,7 @@ void GameEvent::UnApplyEvent(uint16 event_id)
     UpdateBattlegroundSettings();
 }
 
-void GameEvent::ApplyNewEvent(uint16 event_id)
+void GameEventMgr::ApplyNewEvent(uint16 event_id)
 {
     switch(sWorld->getConfig(CONFIG_EVENT_ANNOUNCE))
     {
@@ -914,7 +912,7 @@ void GameEvent::ApplyNewEvent(uint16 event_id)
             break;
     }
 
-    TC_LOG_DEBUG("gameevent","GameEvent %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
+    TC_LOG_DEBUG("gameevent","GameEventMgr %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
 
     // spawn positive event tagget objects
     GameEventSpawn(event_id);
@@ -933,7 +931,7 @@ void GameEvent::ApplyNewEvent(uint16 event_id)
     UpdateBattlegroundSettings();
 }
 
-void GameEvent::UpdateEventNPCFlags(uint16 event_id)
+void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)
 {
     // go through the creatures whose npcflags are changed in the event
     for(auto itr : mGameEventNPCFlags[event_id])
@@ -956,7 +954,7 @@ void GameEvent::UpdateEventNPCFlags(uint16 event_id)
     }
 }
 
-void GameEvent::UpdateBattlegroundSettings()
+void GameEventMgr::UpdateBattlegroundSettings()
 {
     uint32 mask = 0;
     for(auto itr : m_ActiveEvents)
@@ -964,7 +962,7 @@ void GameEvent::UpdateBattlegroundSettings()
     sBattlegroundMgr->SetHolidayWeekends(mask);
 }
 
-void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
+void GameEventMgr::UpdateEventNPCVendor(uint16 event_id, bool activate)
 {
     for(auto itr : mGameEventVendors[event_id])
     {
@@ -975,7 +973,7 @@ void GameEvent::UpdateEventNPCVendor(uint16 event_id, bool activate)
     }
 }
 
-void GameEvent::SpawnCreature(uint32 guid)
+void GameEventMgr::SpawnCreature(uint32 guid)
 {
     // Add to correct cell
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
@@ -1002,7 +1000,7 @@ void GameEvent::SpawnCreature(uint32 guid)
     }
 }
 
-void GameEvent::SpawnGameObject(uint32 guid)
+void GameEventMgr::SpawnGameObject(uint32 guid)
 {
     // Add to correct cell
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
@@ -1030,13 +1028,13 @@ void GameEvent::SpawnGameObject(uint32 guid)
     }
 }
 
-void GameEvent::GameEventSpawn(int16 event_id)
+void GameEventMgr::GameEventSpawn(int16 event_id)
 {
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("gameevent","GameEvent::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("gameevent","GameEventMgr::GameEventSpawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1045,7 +1043,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("gameevent", "GameEvent::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventSpawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1053,7 +1051,7 @@ void GameEvent::GameEventSpawn(int16 event_id)
         SpawnGameObject(itr);
 }
 
-void GameEvent::UnspawnCreature(uint32 guid,uint16 event_id)
+void GameEventMgr::UnspawnCreature(uint32 guid,uint16 event_id)
 {
     // Remove the creature from grid
     if( CreatureData const* data = sObjectMgr->GetCreatureData(guid) )
@@ -1068,7 +1066,7 @@ void GameEvent::UnspawnCreature(uint32 guid,uint16 event_id)
     }
 }
 
-void GameEvent::UnspawnGameObject(uint32 guid)
+void GameEventMgr::UnspawnGameObject(uint32 guid)
 {
     // Remove the gameobject from grid
     if(GameObjectData const* data = sObjectMgr->GetGOData(guid))
@@ -1080,13 +1078,13 @@ void GameEvent::UnspawnGameObject(uint32 guid)
     }
 }
 
-void GameEvent::GameEventUnspawn(int16 event_id)
+void GameEventMgr::GameEventUnspawn(int16 event_id)
 {
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
     {
-        TC_LOG_ERROR("gameevent", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventCreatureGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventCreatureGuids.size());
         return;
     }
 
@@ -1100,7 +1098,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
 
     if(internal_event_id < 0 || internal_event_id >= mGameEventGameobjectGuids.size())
     {
-        TC_LOG_ERROR("gameevent", "GameEvent::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
+        TC_LOG_ERROR("gameevent", "GameEventMgr::GameEventUnspawn attempt access to out of range mGameEventGameobjectGuids element %i (size: %u)", internal_event_id, (uint32)mGameEventGameobjectGuids.size());
         return;
     }
 
@@ -1113,7 +1111,7 @@ void GameEvent::GameEventUnspawn(int16 event_id)
     }
 }
 
-void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
+void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
 {
     for(auto itr : mGameEventModelEquip[event_id])
     {
@@ -1190,7 +1188,7 @@ void GameEvent::ChangeEquipOrModel(int16 event_id, bool activate)
     }
 }
 
-bool GameEvent::hasCreatureQuestActiveEventExcept(uint32 quest_id, uint16 event_id)
+bool GameEventMgr::hasCreatureQuestActiveEventExcept(uint32 quest_id, uint16 event_id)
 {
     for(auto e_itr : m_ActiveEvents)
     {
@@ -1202,7 +1200,7 @@ bool GameEvent::hasCreatureQuestActiveEventExcept(uint32 quest_id, uint16 event_
     return false;
 }
 
-bool GameEvent::hasGameObjectQuestActiveEventExcept(uint32 quest_id, uint16 event_id)
+bool GameEventMgr::hasGameObjectQuestActiveEventExcept(uint32 quest_id, uint16 event_id)
 {
     for(auto e_itr : m_ActiveEvents)
     {
@@ -1213,7 +1211,7 @@ bool GameEvent::hasGameObjectQuestActiveEventExcept(uint32 quest_id, uint16 even
     }
     return false;
 }
-bool GameEvent::hasCreatureActiveEventExcept(uint32 creature_id, uint16 event_id)
+bool GameEventMgr::hasCreatureActiveEventExcept(uint32 creature_id, uint16 event_id)
 {
     for(auto e_itr : m_ActiveEvents)
     {
@@ -1227,7 +1225,7 @@ bool GameEvent::hasCreatureActiveEventExcept(uint32 creature_id, uint16 event_id
     }
     return false;
 }
-bool GameEvent::hasGameObjectActiveEventExcept(uint32 go_id, uint16 event_id)
+bool GameEventMgr::hasGameObjectActiveEventExcept(uint32 go_id, uint16 event_id)
 {
     for(auto e_itr : m_ActiveEvents)
     {
@@ -1242,7 +1240,7 @@ bool GameEvent::hasGameObjectActiveEventExcept(uint32 go_id, uint16 event_id)
     return false;
 }
 
-void GameEvent::UpdateEventQuests(uint16 event_id, bool Activate)
+void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
 {
     for (auto itr : mGameEventCreatureQuests[event_id])
     {
@@ -1295,12 +1293,12 @@ void GameEvent::UpdateEventQuests(uint16 event_id, bool Activate)
         }
     }}
 
-GameEvent::GameEvent()
+GameEventMgr::GameEventMgr()
 {
     isSystemInit = false;
 }
 
-void GameEvent::HandleQuestComplete(uint32 quest_id)
+void GameEventMgr::HandleQuestComplete(uint32 quest_id)
 {
     // translate the quest to event and condition
     QuestIdToEventConditionMap::iterator itr = mQuestToEventConditions.find(quest_id);
@@ -1346,7 +1344,7 @@ void GameEvent::HandleQuestComplete(uint32 quest_id)
     }
 }
 
-bool GameEvent::CheckOneGameEventConditions(uint16 event_id)
+bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
 {
     for(auto itr : mGameEvent[event_id].conditions)
         if(itr.second.done < itr.second.reqNum)
@@ -1363,7 +1361,7 @@ bool GameEvent::CheckOneGameEventConditions(uint16 event_id)
     return true;
 }
 
-void GameEvent::SaveWorldEventStateToDB(uint16 event_id)
+void GameEventMgr::SaveWorldEventStateToDB(uint16 event_id)
 {
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM game_event_save WHERE event_id = '%u'",event_id);
@@ -1374,7 +1372,7 @@ void GameEvent::SaveWorldEventStateToDB(uint16 event_id)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
+void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
 {
     for(auto itr : mGameEvent[event_id].conditions)
     {
@@ -1385,7 +1383,7 @@ void GameEvent::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
-bool GameEvent::AddCreatureToEvent(uint32 guid, uint16 event_id)
+bool GameEventMgr::AddCreatureToEvent(uint32 guid, uint16 event_id)
 { 
     if(!guid || !event_id || event_id >= mGameEvent.size())
         return false;
@@ -1419,7 +1417,7 @@ bool GameEvent::AddCreatureToEvent(uint32 guid, uint16 event_id)
 
     return true; 
 }
-bool GameEvent::AddGameObjectToEvent(uint32 guid, uint16 event_id)
+bool GameEventMgr::AddGameObjectToEvent(uint32 guid, uint16 event_id)
 {
     if(!guid || !event_id || event_id >= mGameEvent.size())
         return false;
@@ -1454,7 +1452,7 @@ bool GameEvent::AddGameObjectToEvent(uint32 guid, uint16 event_id)
     return true; 
 }
 
-bool GameEvent::RemoveCreatureFromEvent(uint32 guid)
+bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
 { 
     if(!guid)
         return false;
@@ -1485,7 +1483,7 @@ bool GameEvent::RemoveCreatureFromEvent(uint32 guid)
 
     return true;
 }
-bool GameEvent::RemoveGameObjectFromEvent(uint32 guid)
+bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
 { 
     if(!guid)
         return false;
@@ -1517,7 +1515,7 @@ bool GameEvent::RemoveGameObjectFromEvent(uint32 guid)
     return true;
 }
 
-bool GameEvent::CreateGameEvent(const char* name,int16& event_id)
+bool GameEventMgr::CreateGameEvent(const char* name,int16& event_id)
 { 
     if(!name)
     {
@@ -1554,7 +1552,7 @@ bool GameEvent::CreateGameEvent(const char* name,int16& event_id)
     return false; 
 }
 
-int16 GameEvent::GetCreatureEvent(uint32 guid)
+int16 GameEventMgr::GetCreatureEvent(uint32 guid)
 { 
     if(!guid)
         return 0;
@@ -1571,7 +1569,7 @@ int16 GameEvent::GetCreatureEvent(uint32 guid)
     return 0;
 }
 
-int16 GameEvent::GetGameObjectEvent(uint32 guid)
+int16 GameEventMgr::GetGameObjectEvent(uint32 guid)
 { 
     if(!guid)
         return 0;

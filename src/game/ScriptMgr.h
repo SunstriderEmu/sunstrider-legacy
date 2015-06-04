@@ -26,7 +26,7 @@ class Player;
 class Creature;
 class CreatureAI;
 class CreatureAINew;
-class InstanceData;
+class InstanceScript;
 class Quest;
 class Item;
 class GameObject;
@@ -82,7 +82,7 @@ struct Script
     bool (*pEffectDummyCreature )(Unit*, uint32, uint32, Creature*);
 
     CreatureAI* (*GetAI)(Creature*);
-    InstanceData* (*GetInstanceData)(Map*);
+    InstanceScript* (*GetInstanceData)(Map*);
 
     void RegisterSelf();
 };
@@ -240,7 +240,7 @@ class ScriptMgr
         //bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
         //bool EffectDummyGameObj(Unit *caster, uint32 spellId, uint32 effIndex, GameObject *gameObjTarget);
         //bool EffectDummyItem(Unit *caster, uint32 spellId, uint32 effIndex, Item *itemTarget);
-        InstanceData* CreateInstanceData(Map *map);
+        InstanceScript* CreateInstanceData(Map *map);
         bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
         bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
         

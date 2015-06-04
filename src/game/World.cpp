@@ -52,7 +52,7 @@
 #include "Management/VMapFactory.h"
 #include "Management/MMapManager.h"
 #include "GlobalEvents.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "InstanceSaveMgr.h"
@@ -1414,7 +1414,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadGameobjectRespawnTimes();
 
     TC_LOG_INFO("server.loading", "Loading Game Event Data...");
-    gameeventmgr.LoadFromDB();
+    sGameEventMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading Weather Data..." );
     sObjectMgr->LoadWeatherZoneChances();
@@ -1548,7 +1548,7 @@ void World::SetInitialWorldSettings()
     sCreatureGroupMgr.LoadCreatureFormations();
     
     TC_LOG_INFO("server.loading","Loading Conditions...");
-    sConditionMgr.LoadConditions();
+    sConditionMgr->LoadConditions();
 
     TC_LOG_INFO("server.loading", "Loading GM tickets...");
     sObjectMgr->LoadGMTickets();
@@ -1657,7 +1657,7 @@ void World::SetInitialWorldSettings()
     InitDailyQuestResetTime();
 
     TC_LOG_INFO("server.loading","Starting Game Event system..." );
-    uint32 nextGameEvent = gameeventmgr.Initialize();
+    uint32 nextGameEvent = sGameEventMgr->Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
 
     //TC_LOG_INFO("server.loading","Initialize AuctionHouseBot...");
@@ -1997,7 +1997,7 @@ void World::Update(time_t diff)
     if (m_timers[WUPDATE_EVENTS].Passed())
     {
         m_timers[WUPDATE_EVENTS].Reset();                   // to give time for Update() to be processed
-        uint32 nextGameEvent = gameeventmgr.Update();
+        uint32 nextGameEvent = sGameEventMgr->Update();
         m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
         m_timers[WUPDATE_EVENTS].Reset();
     }
@@ -2014,7 +2014,7 @@ void World::Update(time_t diff)
 void World::ForceGameEventUpdate()
 {
     m_timers[WUPDATE_EVENTS].Reset();                   // to give time for Update() to be processed
-    uint32 nextGameEvent = gameeventmgr.Update();
+    uint32 nextGameEvent = sGameEventMgr->Update();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
     m_timers[WUPDATE_EVENTS].Reset();
 }

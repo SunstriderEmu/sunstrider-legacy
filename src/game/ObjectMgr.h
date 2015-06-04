@@ -39,6 +39,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
 #include "Policies/Singleton.h"
+#include "ConditionMgr.h"
 
 #include <string>
 #include <map>
@@ -69,7 +70,6 @@ struct GameTele
 };
 
 typedef std::unordered_map<uint32, GameTele > GameTeleMap;
-typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
 
 struct ScriptInfo
 {
@@ -199,50 +199,52 @@ struct GraveYardData
 };
 typedef std::multimap<uint32,GraveYardData> GraveYardMap;
 
-enum ConditionType
+//TODO Old condition system, must be converted to conditions from ConditionMgr
+enum OldConditionType
 { // value1 value2 value3
-    CONDITION_NONE = 0, // 0 0 0 always true
-    CONDITION_AURA = 1, // spell_id effindex +referenceID true if has aura of spell_id with effect effindex
-    CONDITION_ITEM = 2, // item_id count +referenceID true if has #count of item_ids
-    CONDITION_ITEM_EQUIPPED = 3, // item_id 0 +referenceID true if has item_id equipped
-    CONDITION_ZONEID = 4, // zone_id 0 +referenceID true if in zone_id
-    CONDITION_REPUTATION_RANK = 5, // faction_id min_rank +referenceID true if has min_rank for faction_id
-    CONDITION_TEAM = 6, // player_team 0, +referenceID 469 - Alliance, 67 - Horde)
-    CONDITION_SKILL = 7, // skill_id skill_value +referenceID true if has skill_value for skill_id
-    CONDITION_QUESTREWARDED = 8, // quest_id 0 +referenceID true if quest_id was rewarded before
-    CONDITION_QUESTTAKEN = 9, // quest_id 0, +referenceID true while quest active
-    CONDITION_AD_COMMISSION_AURA = 10, // 0 0, +referenceID true while one from AD commission aura active
-    CONDITION_NO_AURA = 11, // spell_id effindex +referenceID true if does not have aura of spell_id with effect effindex
-    CONDITION_ACTIVE_EVENT = 12, // event_id 0 +referenceID true if event is active
-    CONDITION_INSTANCE_DATA = 13, // entry data +referenceID true if data is set in current instance
-    CONDITION_QUEST_NONE = 14, // quest_id 0 +referenceID true if doesn't have quest saved
-    CONDITION_CLASS = 15, // class 0 +referenceID true if player's class is equal to class
-    CONDITION_RACE = 16, // race 0 +referenceID true if player's race is equal to race
-    //CONDITION_ACHIEVEMENT = 17, // achievement_id 0 +referenceID true if achievement is complete
-    CONDITION_SPELL_SCRIPT_TARGET = 18, // SpellScriptTargetType, TargetEntry, 0
-    CONDITION_CREATURE_TARGET = 19, // creature entry 0 +referenceID true if current target is creature with value1 entry
-    CONDITION_TARGET_HEALTH_BELOW_PCT = 20, // 0-100 0 +referenceID true if target's health is below value1 percent, false if over or no target
-    CONDITION_TARGET_RANGE = 21, // minDistance maxDist +referenceID true if target is closer then minDist and further then maxDist or if max is 0 then max dist is infinit
-    CONDITION_MAPID = 22, // map_id 0 +referenceID true if in map_id
-    CONDITION_AREAID = 23, // area_id 0 +referenceID true if in area_id
-    CONDITION_ITEM_TARGET = 24, // ItemRequiredTargetType, TargetEntry, 0
-    CONDITION_QUEST_COMPLETE        = 28,                   // quest_id         0           +referenceID       true if player has quest_id with all objectives complete, but not yet rewarded
-    CONDITION_NEAR_CREATURE         = 29,                   // creature entry   distance    +referenceID       true if there is a creature of entry in range
-    CONDITION_NEAR_GAMEOBJECT       = 30,                   // gameobject entry distance    +referenceID       true if there is a gameobject of entry in range
+    CONDITION_OLD_NONE = 0, // 0 0 0 always true
+    CONDITION_OLD_AURA = 1, // spell_id effindex +referenceID true if has aura of spell_id with effect effindex
+    CONDITION_OLD_ITEM = 2, // item_id count +referenceID true if has #count of item_ids
+    CONDITION_OLD_ITEM_EQUIPPED = 3, // item_id 0 +referenceID true if has item_id equipped
+    CONDITION_OLD_ZONEID = 4, // zone_id 0 +referenceID true if in zone_id
+    CONDITION_OLD_REPUTATION_RANK = 5, // faction_id min_rank +referenceID true if has min_rank for faction_id
+    CONDITION_OLD_TEAM = 6, // player_team 0, +referenceID 469 - Alliance, 67 - Horde)
+    CONDITION_OLD_SKILL = 7, // skill_id skill_value +referenceID true if has skill_value for skill_id
+    CONDITION_OLD_QUESTREWARDED = 8, // quest_id 0 +referenceID true if quest_id was rewarded before
+    CONDITION_OLD_QUESTTAKEN = 9, // quest_id 0, +referenceID true while quest active
+    CONDITION_OLD_AD_COMMISSION_AURA = 10, // 0 0, +referenceID true while one from Argent Dawn commission aura active
+    CONDITION_OLD_NO_AURA = 11, // spell_id effindex +referenceID true if does not have aura of spell_id with effect effindex
+    CONDITION_OLD_ACTIVE_EVENT = 12, // event_id 0 +referenceID true if event is active
+    CONDITION_OLD_INSTANCE_DATA = 13, // entry data +referenceID true if data is set in current instance
+    CONDITION_OLD_QUEST_NONE = 14, // quest_id 0 +referenceID true if doesn't have quest saved
+    CONDITION_OLD_CLASS = 15, // class 0 +referenceID true if player's class is equal to class
+    CONDITION_OLD_RACE = 16, // race 0 +referenceID true if player's race is equal to race
+    //CONDITION_OLD_ACHIEVEMENT = 17, // achievement_id 0 +referenceID true if achievement is complete
+    CONDITION_OLD_SPELL_SCRIPT_TARGET = 18, // SpellScriptTargetType, TargetEntry, 0
+    CONDITION_OLD_CREATURE_TARGET = 19, // creature entry 0 +referenceID true if current target is creature with value1 entry
+    CONDITION_OLD_TARGET_HEALTH_BELOW_PCT = 20, // 0-100 0 +referenceID true if target's health is below value1 percent, false if over or no target
+    CONDITION_OLD_TARGET_RANGE = 21, // minDistance maxDist +referenceID true if target is closer then minDist and further then maxDist or if max is 0 then max dist is infinit
+    CONDITION_OLD_MAPID = 22, // map_id 0 +referenceID true if in map_id
+    CONDITION_OLD_AREAID = 23, // area_id 0 +referenceID true if in area_id
+    CONDITION_OLD_ITEM_TARGET = 24, // ItemRequiredTargetType, TargetEntry, 0
+    CONDITION_OLD_QUEST_COMPLETE        = 28,                   // quest_id         0           +referenceID       true if player has quest_id with all objectives complete, but not yet rewarded
+    CONDITION_OLD_NEAR_CREATURE         = 29,                   // creature entry   distance    +referenceID       true if there is a creature of entry in range
+    CONDITION_OLD_NEAR_GAMEOBJECT       = 30,                   // gameobject entry distance    +referenceID       true if there is a gameobject of entry in range
 };
 
-#define MAX_CONDITION 31 // maximum value in ConditionType enum
+#define MAX_CONDITION 31 // maximum value in OldConditionType enum
 
+//TODO Old condition system, must be converted to conditions from ConditionMgr
 struct PlayerCondition
 {
-    ConditionType condition;                                // additional condition type
-    uint32  value1;                                         // data for the condition - see ConditionType definition
+    OldConditionType condition;                                // additional condition type
+    uint32  value1;                                         // data for the condition - see OldConditionType definition
     uint32  value2;
 
     PlayerCondition(uint8 _condition = 0, uint32 _value1 = 0, uint32 _value2 = 0)
-        : condition(ConditionType(_condition)), value1(_value1), value2(_value2) {}
+        : condition(OldConditionType(_condition)), value1(_value1), value2(_value2) {}
 
-    static bool IsValid(ConditionType condition, uint32 value1, uint32 value2);
+    static bool IsValid(OldConditionType condition, uint32 value1, uint32 value2);
     // Checks correctness of values
     bool Meets(Player const * APlayer) const;               // Checks if the player meets the condition
     bool operator == (PlayerCondition const& lc) const
@@ -285,6 +287,69 @@ struct GM_Ticket
 typedef std::list<GM_Ticket*> GmTicketList;
 
 SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
+
+struct PointOfInterest
+{
+    uint32 entry;
+    float x;
+    float y;
+    uint32 icon;
+    uint32 flags;
+    uint32 data;
+    std::string icon_name;
+};
+
+struct GossipMenuItems
+{
+    GossipMenuItems() :
+        MenuId(0),
+        OptionIndex(0),
+        OptionIcon(0),
+        OptionText(""),
+        OptionBroadcastTextId(0),
+        OptionType(0),
+        OptionNpcflag(0),
+        ActionMenuId(0),
+        ActionPoiId(0),
+        BoxCoded(false),
+        BoxMoney(0),
+        BoxText(""),
+        BoxBroadcastTextId(0)
+    {}
+
+    uint32          MenuId;
+    uint32          OptionIndex;
+    uint8           OptionIcon;
+    std::string     OptionText;
+    uint32          OptionBroadcastTextId;
+    uint32          OptionType;
+    uint32          OptionNpcflag;
+    uint32          ActionMenuId;
+    uint32          ActionPoiId;
+    bool            BoxCoded;
+    uint32          BoxMoney;
+    std::string     BoxText;
+    uint32          BoxBroadcastTextId;
+    ConditionList   Conditions;
+};
+
+struct GossipMenus
+{
+    uint32          entry;
+    uint32          text_id;
+    ConditionList   conditions;
+};
+
+typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
+
+typedef std::list<GossipMenuItems> GossipOptionList;
+
+typedef std::multimap<uint32, GossipMenus> GossipMenusContainer;
+typedef std::pair<GossipMenusContainer::const_iterator, GossipMenusContainer::const_iterator> GossipMenusMapBounds;
+typedef std::pair<GossipMenusContainer::iterator, GossipMenusContainer::iterator> GossipMenusMapBoundsNonConst;
+typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
+typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
+typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
 
 #define MAX_PLAYER_NAME 12                                  // max allowed by client name length
 #define MAX_INTERNAL_PLAYER_NAME 15                         // max server internal player name length ( > MAX_PLAYER_NAME for support declined names )
@@ -819,7 +884,7 @@ class ObjectMgr
         // guild bank tabs
         uint32 GetGuildBankTabPrice(uint8 Index) const { return Index < GUILD_BANK_MAX_TABS ? mGuildBankTabPrice[Index] : 0; }
 
-        uint16 GetConditionId(ConditionType condition, uint32 value1, uint32 value2);
+        uint16 GetConditionId(OldConditionType condition, uint32 value1, uint32 value2);
         bool IsPlayerMeetToCondition(Player const* player, uint16 condition_id) const
         {
             if(condition_id >= mConditions.size())

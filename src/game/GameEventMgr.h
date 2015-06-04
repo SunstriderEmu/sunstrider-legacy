@@ -85,11 +85,20 @@ struct NPCVendorEntry
 };
 
 class Player;
-class GameEvent
+
+class GameEventMgr
 {
+   private:
+        GameEventMgr();
+        ~GameEventMgr() { };
+
     public:
-        GameEvent();
-        ~GameEvent() {};
+        static GameEventMgr* instance()
+        {
+            static GameEventMgr instance;
+            return &instance;
+        }
+
         typedef std::set<uint16> ActiveEvents;
         typedef std::vector<GameEventData> GameEventDataMap;
         ActiveEvents const& GetActiveEventList() const { return m_ActiveEvents; }
@@ -176,6 +185,7 @@ class GameEvent
         bool isSystemInit;
 };
 
-#define gameeventmgr Trinity::Singleton<GameEvent>::Instance()
+#define sGameEventMgr GameEventMgr::instance()
+
 #endif
 

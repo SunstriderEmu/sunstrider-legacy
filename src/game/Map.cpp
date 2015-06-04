@@ -25,7 +25,7 @@
 #include "Log.h"
 #include "GridStates.h"
 #include "CellImpl.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "Map.h"
 #include "GridNotifiersImpl.h"
 #include "Transport.h"

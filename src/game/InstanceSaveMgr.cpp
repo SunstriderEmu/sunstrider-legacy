@@ -39,7 +39,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "Group.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 
 INSTANTIATE_SINGLETON_1( InstanceSaveManager );
 
@@ -162,7 +162,7 @@ void InstanceSave::SaveToDB()
     if(map)
     {
         assert(map->IsDungeon());
-        InstanceData *iData = ((InstanceMap *)map)->GetInstanceData();
+        InstanceScript *iData = ((InstanceMap *)map)->GetInstanceScript();
         if(iData && iData->Save())
         {
             data = iData->Save();

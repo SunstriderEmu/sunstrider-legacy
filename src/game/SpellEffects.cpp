@@ -64,7 +64,7 @@
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
 #include "CreatureAINew.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -343,7 +343,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                 {
                     case 35354: //Hand of Death
                     {
-                        if(unitTarget && unitTarget->HasAura(38528,0)) //Protection of Elune
+                        if(unitTarget && unitTarget->HasAuraEffect(38528,0)) //Protection of Elune
                         {
                             damage = 0;
                         }
@@ -412,8 +412,8 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (!unitTarget)
                             return;
                             
-                        if (!unitTarget->HasAura(45345, 0)) {
-                            if (unitTarget->HasAura(45347, 0)) {
+                        if (!unitTarget->HasAuraEffect(45345, 0)) {
+                            if (unitTarget->HasAuraEffect(45347, 0)) {
                                 unitTarget->RemoveAurasDueToSpell(45347);
                                 unitTarget->CastSpell(unitTarget, 45345, true);
                             }
@@ -2838,7 +2838,7 @@ void Spell::EffectApplyAura(uint32 i)
         return;
 
     // Intervention shouldn't be used in a bg in preparation phase (possibility to get out of starting area with that spell)
-    if (m_spellInfo->Id == 3411 && m_caster->HasAura(44521))     // 44521 : bg preparation
+    if (m_spellInfo->Id == 3411 && m_caster->HasAuraEffect(44521))     // 44521 : bg preparation
         return;
 
     if (m_spellInfo->Id == 10803 || m_spellInfo->Id == 10804) //Summon Purple Tallstrider || Summon Turquoise Tallstrider
@@ -3047,7 +3047,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->CompleteQuest(9444);
     else if (m_spellInfo->Id == 24325) {
-        ScriptedInstance *pInstance = ((ScriptedInstance*)m_caster->GetInstanceData());
+        InstanceScript *pInstance = ((InstanceScript*)m_caster->GetInstanceScript());
         if (pInstance && (pInstance->GetData(29) == 1 || pInstance->GetData(29) == 3)) // Ghazranka has been down, don't spawn it another time
             return;
     }
@@ -3503,7 +3503,7 @@ void Spell::EffectEnergize(uint32 i)
         case 10057:
         case 10058:
         case 27103:
-            if (m_caster->HasAura(37447))
+            if (m_caster->HasAuraEffect(37447))
                 m_caster->CastSpell(m_caster, 37445, true);
             break;
         //Elune's Touch (30% AP)
@@ -5519,10 +5519,10 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // PX-238 Winter Wondervolt TRAP
         case 26275:
         {
-            if( unitTarget->HasAura(26272,0)
-             || unitTarget->HasAura(26157,0)
-             || unitTarget->HasAura(26273,0)
-             || unitTarget->HasAura(26274,0))
+            if( unitTarget->HasAuraEffect(26272,0)
+             || unitTarget->HasAuraEffect(26157,0)
+             || unitTarget->HasAuraEffect(26273,0)
+             || unitTarget->HasAuraEffect(26274,0))
                 return;
 
             uint32 iTmpSpellId;
@@ -5807,7 +5807,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
 
             // don't overwrite an existing aura
             for(uint8 i=0; i<5; i++)
-                if(unitTarget->HasAura(spellid+i, 0))
+                if(unitTarget->HasAuraEffect(spellid+i, 0))
                     return;
             unitTarget->CastSpell(unitTarget, spellid+m_caster->GetMap()->urand(0, 4), true);
             break;
@@ -5965,7 +5965,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         case 45151:
         {
             // Already Burning
-            if (unitTarget->HasAura(46394, 0))
+            if (unitTarget->HasAuraEffect(46394, 0))
                 return;
 
             if (unitTarget->IsPet())
@@ -6090,12 +6090,12 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             if (unitTarget)
             {
-                if(m_caster->HasAura(41469)) //SPELL_SEAL_OF_COMMAND
+                if(m_caster->HasAuraEffect(41469)) //SPELL_SEAL_OF_COMMAND
                 {
                     m_caster->RemoveAurasDueToSpell(41469);
                     m_caster->CastSpell(unitTarget,41470,false); //SPELL_JUDGEMENT_OF_COMMAND
                 }
-                else if (m_caster->HasAura(41459)) //SPELL_SEAL_OF_BLOOD
+                else if (m_caster->HasAuraEffect(41459)) //SPELL_SEAL_OF_BLOOD
                 {
                     m_caster->RemoveAurasDueToSpell(41459);
                     m_caster->CastSpell(unitTarget,41461,false); //SPELL_JUDGEMENT_OF_BLOOD
@@ -6123,7 +6123,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         //case 41126: unitTarget->CastSpell(unitTarget, 41131, true); break;
         case 45151: 
         {
-            if (unitTarget->HasAura(46394, 0))
+            if (unitTarget->HasAuraEffect(46394, 0))
                 return;
 
             if (unitTarget->IsPet())
@@ -6162,7 +6162,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // spell of Brutallus - Stomp
         case 45185:
         {
-            if(unitTarget->HasAura(46394, 0)) // spell of Brutallus - Burn
+            if(unitTarget->HasAuraEffect(46394, 0)) // spell of Brutallus - Burn
                 unitTarget->RemoveAurasDueToSpell(46394);
             break;
         }

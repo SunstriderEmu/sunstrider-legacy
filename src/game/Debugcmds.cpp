@@ -916,13 +916,14 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     {
         if(target->GetAIName() == "SmartAI")
         {
-            SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript();
+            if(SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript())
+            {
+                uint32 phase = smartScript->GetPhase();
+                PSendSysMessage("Current phase: %u", phase);
 
-            uint32 phase = smartScript->GetPhase();
-            PSendSysMessage("Current phase: %u", phase);
-
-            uint32 lastProcessedActionId = smartScript->GetLastProcessedActionId();
-            PSendSysMessage("Last processed action: %u", lastProcessedActionId);
+                uint32 lastProcessedActionId = smartScript->GetLastProcessedActionId();
+                PSendSysMessage("Last processed action: %u", lastProcessedActionId);
+            }
         } else {
             SendSysMessage("Not SmartAI creature.");
         }

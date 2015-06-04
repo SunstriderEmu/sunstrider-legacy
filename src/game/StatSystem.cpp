@@ -1076,7 +1076,7 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
                 if(sDamage > 0)
                     bonusDamage = sDamage * 0.0657f;
                 // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
-                if (owner->HasAura(37570))
+                if (owner->HasAuraEffect(37570))
                     SetStat(STAT_STAMINA, GetStat(STAT_STAMINA)+75);
             }
         }
@@ -1159,7 +1159,7 @@ void Pet::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool 
                 if(sDamage > 0)
                     bonusDamage = sDamage * 0.0657f;
                 // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
-                if (owner->HasAura(37570))
+                if (owner->HasAuraEffect(37570))
                     SetStat(STAT_STAMINA, GetStat(STAT_STAMINA)+75);
             }
         }

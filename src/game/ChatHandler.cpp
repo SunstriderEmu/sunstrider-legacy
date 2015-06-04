@@ -154,7 +154,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         }
     }
 
-   if (GetPlayer()->HasAura(1852,0) && type != CHAT_MSG_WHISPER)
+   if (GetPlayer()->HasAuraEffect(1852,0) && type != CHAT_MSG_WHISPER)
     {
         std::string msg="";
         recvData >> msg;
@@ -302,7 +302,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 }
             }
 
-            if (GetPlayer()->HasAura(1852,0) && !toPlayer->IsGameMaster())
+            if (GetPlayer()->HasAuraEffect(1852,0) && !toPlayer->IsGameMaster())
             {
                 SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName().c_str());
                 return;

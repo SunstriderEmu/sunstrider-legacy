@@ -141,67 +141,6 @@ enum GossipOptionIcon
     GOSSIP_ICON_MAX
 };
 
-struct PointOfInterest
-{
-    uint32 entry;
-    float x;
-    float y;
-    uint32 icon;
-    uint32 flags;
-    uint32 data;
-    std::string icon_name;
-};
-
-struct GossipMenuItems
-{
-    GossipMenuItems() :
-        MenuId(0),
-        OptionIndex(0),
-        OptionIcon(0),
-        OptionText(""),
-        OptionBroadcastTextId(0),
-        OptionType(0),
-        OptionNpcflag(0),
-        ActionMenuId(0),
-        ActionPoiId(0),
-        BoxCoded(false),
-        BoxMoney(0),
-        BoxText(""),
-        BoxBroadcastTextId(0)
-        //condition
-    {}
-
-    uint32          MenuId;
-    uint32          OptionIndex;
-    uint8           OptionIcon;
-    std::string     OptionText;
-    uint32          OptionBroadcastTextId;
-    uint32          OptionType;
-    uint32          OptionNpcflag;
-    uint32          ActionMenuId;
-    uint32          ActionPoiId;
-    bool            BoxCoded;
-    uint32          BoxMoney;
-    std::string     BoxText;
-    uint32          BoxBroadcastTextId;
-    //ConditionList   Conditions;
-};
-
-struct GossipMenus
-{
-    uint32          entry;
-    uint32          text_id;
-    //ConditionList   conditions;
-};
-
-
-typedef std::multimap<uint32, GossipMenus> GossipMenusContainer;
-typedef std::pair<GossipMenusContainer::const_iterator, GossipMenusContainer::const_iterator> GossipMenusMapBounds;
-typedef std::pair<GossipMenusContainer::iterator, GossipMenusContainer::iterator> GossipMenusMapBoundsNonConst;
-typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
-typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
-typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
-
 enum CreatureFlagsExtra
 {
     CREATURE_FLAG_EXTRA_INSTANCE_BIND   = 0x00000001,       // creature kill bind instance with killer and killer's group
@@ -526,8 +465,6 @@ struct TrainerSpellData
     void Clear();
     TrainerSpell const* Find(uint32 spell_id) const;
 };
-
-typedef std::list<GossipMenuItems> GossipOptionList;
 
 typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 

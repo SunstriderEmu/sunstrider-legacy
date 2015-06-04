@@ -393,7 +393,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     //Can not logout if...
     if( GetPlayer()->IsInCombat() ||                        //...is in combat
         GetPlayer()->duel         ||                        //...is in Duel
-        GetPlayer()->HasAura(9454,0)         ||             //...is frozen by GM via freeze command
+        GetPlayer()->HasAuraEffect(9454,0)         ||             //...is frozen by GM via freeze command
         GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_JUMPING_OR_FALLING))  //...is jumping ...is falling
     {
         WorldPacket data( SMSG_LOGOUT_RESPONSE, (2+4) ) ;

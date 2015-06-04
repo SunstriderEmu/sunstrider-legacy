@@ -49,12 +49,12 @@ struct BossInfo
     DoorSet roomDoor, passageDoor;
 };
 
-class InstanceData
+class ZoneScript
 {
     public:
 
-        explicit InstanceData(Map *map) : instance(map) {}
-        virtual ~InstanceData() {}
+        explicit ZoneScript(Map *map) : instance(map) {}
+        virtual ~ZoneScript() {}
 
         Map *instance;
 

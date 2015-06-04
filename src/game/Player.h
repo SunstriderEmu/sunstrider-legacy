@@ -1409,6 +1409,7 @@ class Player : public Unit
         bool SatisfyQuestRace( Quest const* qInfo, bool msg );
         bool SatisfyQuestReputation( Quest const* qInfo, bool msg );
         bool SatisfyQuestStatus( Quest const* qInfo, bool msg );
+        bool SatisfyQuestConditions(Quest const* qInfo, bool msg);
         bool SatisfyQuestTimed( Quest const* qInfo, bool msg );
         bool SatisfyQuestExclusiveGroup( Quest const* qInfo, bool msg );
         bool SatisfyQuestNextChain( Quest const* qInfo, bool msg );
@@ -1501,6 +1502,8 @@ class Player : public Unit
         static uint32 GetZoneIdFromDB(uint64 guid);
         static uint32 GetLevelFromDB(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid);
+
+        static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE; }
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/

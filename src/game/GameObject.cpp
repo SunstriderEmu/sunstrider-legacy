@@ -35,7 +35,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "BattleGround.h"
 #include "Util.h"
 #include "OutdoorPvPMgr.h"
@@ -205,8 +205,8 @@ void GameObject::RemoveFromWorld()
     if(IsInWorld())
     {
         if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-                ((InstanceMap*)map)->GetInstanceData()->OnObjectRemove(this);
+            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+                ((InstanceMap*)map)->GetInstanceScript()->OnObjectRemove(this);
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
@@ -294,9 +294,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     //Notify the map's instance data.
     //Only works if you create the object in it, not if it is moves to that map.
     //Normally non-players do not teleport to other maps.
-    if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
+    if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
     {
-        ((InstanceMap*)map)->GetInstanceData()->OnObjectCreate(this);
+        ((InstanceMap*)map)->GetInstanceScript()->OnObjectCreate(this);
     }
     
     LastUsedScriptID = GetGOInfo()->ScriptId;
@@ -1449,9 +1449,9 @@ void GameObject::Use(Unit* user)
                     return;
                     
                 if (info->entry == 181621) {
-                    if (caster->HasAura(18693))
+                    if (caster->HasAuraEffect(18693))
                         spellId = 34150;
-                    else if (caster->HasAura(18692))
+                    else if (caster->HasAuraEffect(18692))
                         spellId = 34149;
                 }
 

@@ -18,11 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "InstanceData.h"
+#include "ZoneScript.h"
 #include "Database/DatabaseEnv.h"
 #include "Map.h"
 
-void InstanceData::SaveToDB()
+void ZoneScript::SaveToDB()
 {
     if(!Save()) return;
     std::string data = Save();
@@ -30,17 +30,17 @@ void InstanceData::SaveToDB()
     CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
-void InstanceData::HandleGameObject(uint64 GUID, bool open, GameObject *go) 
+void ZoneScript::HandleGameObject(uint64 GUID, bool open, GameObject *go) 
 {            
     if(!go)
         go = instance->GetGameObject(GUID);
     if(go)
         go->SetGoState(open ? 0 : 1);
     else
-        TC_LOG_ERROR("FIXME","InstanceData: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
+        TC_LOG_ERROR("FIXME","ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
-void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
+void ZoneScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
     if (GameObject* pGo = instance->GetGameObject(uiGuid))
     {
@@ -56,7 +56,7 @@ void InstanceData::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
     }
 }
 
-bool InstanceData::IsEncounterInProgress() const
+bool ZoneScript::IsEncounterInProgress() const
 {
     for(std::vector<BossInfo>::const_iterator itr = bosses.begin(); itr != bosses.end(); ++itr)
         if(itr->state == IN_PROGRESS)
@@ -65,7 +65,7 @@ bool InstanceData::IsEncounterInProgress() const
     return false;
 }
 
-void InstanceData::AddBossRoomDoor(uint32 id, GameObject *door)
+void ZoneScript::AddBossRoomDoor(uint32 id, GameObject *door)
 {
     if(id < bosses.size())
     {
@@ -79,7 +79,7 @@ void InstanceData::AddBossRoomDoor(uint32 id, GameObject *door)
     }
 }
 
-void InstanceData::AddBossPassageDoor(uint32 id, GameObject *door)
+void ZoneScript::AddBossPassageDoor(uint32 id, GameObject *door)
 {
     if(id < bosses.size())
     {
@@ -93,7 +93,7 @@ void InstanceData::AddBossPassageDoor(uint32 id, GameObject *door)
     }
 }
 
-void InstanceData::RemoveBossRoomDoor(uint32 id, GameObject *door)
+void ZoneScript::RemoveBossRoomDoor(uint32 id, GameObject *door)
 {
     if(id < bosses.size())
     {
@@ -101,7 +101,7 @@ void InstanceData::RemoveBossRoomDoor(uint32 id, GameObject *door)
     }
 }
 
-void InstanceData::RemoveBossPassageDoor(uint32 id, GameObject *door)
+void ZoneScript::RemoveBossPassageDoor(uint32 id, GameObject *door)
 {
     if(id < bosses.size())
     {
@@ -109,7 +109,7 @@ void InstanceData::RemoveBossPassageDoor(uint32 id, GameObject *door)
     }
 }
 
-void InstanceData::SetBossState(uint32 id, EncounterState state)
+void ZoneScript::SetBossState(uint32 id, EncounterState state)
 {
     if(id < bosses.size())
     {
@@ -145,7 +145,7 @@ void InstanceData::SetBossState(uint32 id, EncounterState state)
     }
 }
 
-void InstanceData::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
+void ZoneScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
 {
     if (!uiGuid)
         return;

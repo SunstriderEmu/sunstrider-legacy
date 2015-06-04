@@ -679,7 +679,7 @@ void Aura::Update(uint32 diff)
 
 bool AreaAura::CheckTarget(Unit *target)
 {
-    if(target->HasAura(GetId(), m_effIndex))
+    if(target->HasAuraEffect(GetId(), m_effIndex))
         return false;
 
     // some special cases
@@ -801,7 +801,7 @@ void AreaAura::Update(uint32 diff)
         bool needFriendly = (m_areaAuraType == AREA_AURA_ENEMY ? false : true);
         if( !caster || caster->HasUnitState(UNIT_STATE_ISOLATED) ||
             !caster->IsWithinDistInMap(tmp_target, m_radius)    ||
-            !caster->HasAura(tmp_spellId, tmp_effIndex)         ||
+            !caster->HasAuraEffect(tmp_spellId, tmp_effIndex)         ||
             caster->IsFriendlyTo(tmp_target) != needFriendly
            )
         {
@@ -1272,12 +1272,12 @@ void Aura::HandleAddModifier(bool apply, bool Real)
      // Spiritual Attunement hack
     if(spellInfo->SpellFamilyName==SPELLFAMILY_PALADIN && (spellFamilyMask & 0x0000100000000000LL))
     {
-        if(m_target->HasAura(31785,0)) // rank 1
+        if(m_target->HasAuraEffect(31785,0)) // rank 1
         {
             m_target->RemoveAurasDueToSpell(31785);
             m_target->CastSpell(m_target,31785,true);
         }
-        if(m_target->HasAura(33776,0)) // rank 2
+        if(m_target->HasAuraEffect(33776,0)) // rank 2
         {
             m_target->RemoveAurasDueToSpell(33776);
             m_target->CastSpell(m_target,33776,true);
@@ -2118,7 +2118,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->AddThreat(caster, 10.0f);
                 return;
             case 10909: //Mind Vision
-                if (caster->HasAura(14751))
+                if (caster->HasAuraEffect(14751))
                     caster->RemoveAurasDueToSpell(14751);
                 break;
             case 7057:                                      // Haunting Spirits
@@ -2158,7 +2158,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 32014: //archimonde bump
             {
                 SetAuraDuration(GetAuraDuration()*3);
-                if (m_target->HasAura(31970))       // Archimonde fear, remove Fear before bump
+                if (m_target->HasAuraEffect(31970))       // Archimonde fear, remove Fear before bump
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
             }
@@ -3432,7 +3432,7 @@ void Aura::HandleModFear(bool apply, bool Real)
         return;
         
     // Archimonde: if player has Air Burst, don't apply fear
-    if (apply && m_target && m_target->HasAura(32014))
+    if (apply && m_target && m_target->HasAuraEffect(32014))
         return;
 
     //m_target->SetFeared(apply, GetCasterGUID(), GetId());
@@ -3583,7 +3583,7 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
         
     if (Unit *caster = GetCaster()) {
         // Handle Prohibit school effect before applying stun, or m_target is not casting anymore and prohibit fails
-        if (GetId() == 22570 && apply && caster->HasAura(44835))
+        if (GetId() == 22570 && apply && caster->HasAuraEffect(44835))
             caster->CastSpell(m_target, 32747, true);
     }
 
@@ -3934,7 +3934,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
             m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,MECHANIC_POLYMORPH,apply);
 
         // Dragonmaw Illusion (overwrite mount model, mounted aura already applied)
-        if( apply && m_target->HasAura(42016,0) && m_target->GetMountID())
+        if( apply && m_target->HasAuraEffect(42016,0) && m_target->GetMountID())
             m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,16314);
     }
 
@@ -4941,7 +4941,7 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         }
     }
     
-    if (!apply && GetId() == 30421 && !m_target->HasAura(30421))
+    if (!apply && GetId() == 30421 && !m_target->HasAuraEffect(30421))
         m_target->AddAura(38637, m_target);
 }
 
@@ -5303,7 +5303,7 @@ void Aura::HandleModDamagePercentDone(bool apply, bool Real)
             m_target->ApplyModSignedFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i,m_modifier.m_amount/100.0f,apply);
             
     //Netherspite (Karazhan) nether beam UGLY HACK
-    if (Real && !apply && GetId() == 30423 && !m_target->HasAura(30423) && !m_target->HasAura(30463))
+    if (Real && !apply && GetId() == 30423 && !m_target->HasAuraEffect(30423) && !m_target->HasAuraEffect(30463))
         m_target->AddAura(38639, m_target);
 }
 
@@ -5331,7 +5331,7 @@ void Aura::HandleModPowerCostPCT(bool apply, bool Real)
         if(m_modifier.m_miscvalue & (1<<i))
             m_target->ApplyModSignedFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i,amount,apply);
             
-    if (!apply && GetId() == 30422 && !m_target->HasAura(30422))
+    if (!apply && GetId() == 30422 && !m_target->HasAuraEffect(30422))
         m_target->AddAura(38638, m_target);
 }
 

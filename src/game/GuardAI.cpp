@@ -104,7 +104,7 @@ void GuardAI::EnterEvadeMode()
 
 void GuardAI::UpdateAI(const uint32 /*diff*/)
 {
-    if (i_creature.IsContestedGuard() && !i_creature.HasAura(18950,0))
+    if (i_creature.IsContestedGuard() && !i_creature.HasAuraEffect(18950,0))
         i_creature.CastSpell(&i_creature,18950,true);
 
     // update i_victimGuid if i_creature.GetVictim() !=0 and changed

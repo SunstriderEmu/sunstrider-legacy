@@ -62,9 +62,9 @@
 #include "Chat.h"
 #include "Spell.h"
 #include "SocialMgr.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "ConfigMgr.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
 #include "IRCMgr.h"
@@ -1965,7 +1965,7 @@ void Player::AddToWorld()
             m_items[i]->AddToWorld();
     }
     
-    if (HasAura(45717))
+    if (HasAuraEffect(45717))
         CastSpell(this, 45917, true);
         
     if (m_session->IsMailChanged()) {
@@ -2022,7 +2022,7 @@ void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attack
         addRage = damage/rageconversion*2.5;
 
         // Berserker Rage effect
-        if(HasAura(18499,0))
+        if(HasAuraEffect(18499,0))
             addRage *= 1.3;
     }
 
@@ -2262,7 +2262,7 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
     if(factionTemplate)
     {
         FactionEntry const* faction = sFactionStore.LookupEntry(factionTemplate->faction);
-        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY && !HasAura(29938,0) ) //needed for quest 9410 "A spirit guide"
+        if( faction->reputationListID >= 0 && GetReputationRank(faction) <= REP_UNFRIENDLY && !HasAuraEffect(29938,0) ) //needed for quest 9410 "A spirit guide"
             return NULL;
     }
 
@@ -5729,7 +5729,7 @@ void Player::CheckAreaExploreAndOutdoor()
             if (itr->second->state == PLAYERSPELL_REMOVED)
                 continue;
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
-            if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAura(itr->first))
+            if (!spellInfo || !IsNeedCastSpellAtOutdoor(spellInfo) || HasAuraEffect(itr->first))
                 continue;
             
             if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
@@ -9422,7 +9422,7 @@ Item* Player::GetItemOrItemWithGemEquipped( uint32 item ) const
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
@@ -10997,7 +10997,7 @@ void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
             continue;
 
         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr.first))
-            if(CheckSpell(spellInfo) && !HasAura(spellInfo->Id))
+            if(CheckSpell(spellInfo) && !HasAuraEffect(spellInfo->Id))
                 CastSpell(this, spellInfo->Id, true);
     }
 
@@ -12908,7 +12908,8 @@ bool Player::CanTakeQuest( Quest const *pQuest, bool msg )
         && SatisfyQuestSkillOrClass( pQuest, msg ) && SatisfyQuestReputation( pQuest, msg )
         && SatisfyQuestPreviousQuest( pQuest, msg ) && SatisfyQuestTimed( pQuest, msg )
         && SatisfyQuestNextChain( pQuest, msg ) && SatisfyQuestPrevChain( pQuest, msg )
-        && SatisfyQuestDay( pQuest, msg );
+        && SatisfyQuestDay( pQuest, msg )
+        && SatisfyQuestConditions(pQuest, msg);;
 }
 
 bool Player::CanAddQuest( Quest const *pQuest, bool msg )
@@ -13655,6 +13656,22 @@ bool Player::SatisfyQuestStatus( Quest const* qInfo, bool msg )
     {
         if( msg )
             SendCanTakeQuestResponse( INVALIDREASON_QUEST_ALREADY_ON );
+        return false;
+    }
+    return true;
+}
+
+bool Player::SatisfyQuestConditions(Quest const* qInfo, bool msg)
+{
+    ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, qInfo->GetQuestId());
+    if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+    {
+        if (msg)
+        {
+            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
+            TC_LOG_DEBUG("misc", "SatisfyQuestConditions: Sent INVALIDREASON_DONT_HAVE_REQ (questId: %u) because player does not meet conditions.", qInfo->GetQuestId());
+        }
+        TC_LOG_DEBUG("condition", "Player::SatisfyQuestConditions: conditions not met for quest %u", qInfo->GetQuestId());
         return false;
     }
     return true;
@@ -14467,7 +14484,7 @@ void Player::SendQuestComplete( uint32 quest_id )
 void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGiver )
 {
     uint32 questid = pQuest->GetQuestId();
-    gameeventmgr.HandleQuestComplete(questid);
+    sGameEventMgr->HandleQuestComplete(questid);
     WorldPacket data( SMSG_QUESTGIVER_QUEST_COMPLETE, (4+4+4+4+4+4+pQuest->GetRewardItemsCount()*8) );
     data << questid;
     data << uint32(0x03);
@@ -18395,7 +18412,16 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     Creature *pCreature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
+        TC_LOG_DEBUG("network", "WORLD: BuyItemFromVendor - %u not found or you can't interact with him.", vendorguid);
         SendBuyError( BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
+        return false;
+    }
+
+    ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(pCreature->GetEntry(), item);
+    if (!sConditionMgr->IsObjectMeetToConditions(this, pCreature, conditions))
+    {
+        TC_LOG_DEBUG("condition", "BuyItemFromVendor: conditions not met for creature entry %u item %u", pCreature->GetEntry(), item);
+        SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
         return false;
     }
 
@@ -19035,7 +19061,7 @@ void Player::ReportedAfkBy(Player* reporter)
         return;
 
     // check if player has 'Idle' or 'Inactive' debuff
-    if(m_bgAfkReporter.find(reporter->GetGUIDLow())==m_bgAfkReporter.end() && !HasAura(SPELL_AURA_PLAYER_IDLE,0) && !HasAura(SPELL_AURA_PLAYER_INACTIVE,0) && reporter->CanReportAfkDueToLimit())
+    if(m_bgAfkReporter.find(reporter->GetGUIDLow())==m_bgAfkReporter.end() && !HasAuraEffect(SPELL_AURA_PLAYER_IDLE,0) && !HasAuraEffect(SPELL_AURA_PLAYER_INACTIVE,0) && reporter->CanReportAfkDueToLimit())
     {
         m_bgAfkReporter.insert(reporter->GetGUIDLow());
         // 3 players have to complain to apply debuff
@@ -20720,7 +20746,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
         else if( GetRace() == RACE_NIGHTELF || GetRace() == RACE_DRAENEI )
             spellid = GetGender() == GENDER_FEMALE ? 35483 : 35482;
 
-        if(spellid && !HasAura(spellid,0) )
+        if(spellid && !HasAuraEffect(spellid,0) )
             CastSpell(this,spellid,true);
     }
 }
@@ -20748,7 +20774,7 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
         //if( GetDummyAura(40214) )
         if (GetReputationRank(1015) >= REP_NEUTRAL)
         {
-            if( !HasAura(42016,0) ) {
+            if( !HasAuraEffect(42016,0) ) {
                 CastSpell(this,42016,true);
                 CastSpell(this,40216,true);
             }
@@ -20944,7 +20970,7 @@ void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
         {
             if (res == LIQUID_MAP_UNDER_WATER || res == LIQUID_MAP_IN_WATER)
             {
-                if (!HasAura(liquid->SpellId))
+                if (!HasAuraEffect(liquid->SpellId))
                     CastSpell(this, liquid->SpellId, true);
             }
             else
@@ -21058,7 +21084,7 @@ void Player::HandleFall(MovementInfo const& movementInfo)
                     damage = GetMaxHealth();
 
                 // Gust of Wind
-                if (HasAura(43621))
+                if (HasAuraEffect(43621))
                     damage = GetMaxHealth()/2;
 
                 EnvironmentalDamage(DAMAGE_FALL, damage);
@@ -21170,7 +21196,7 @@ bool Player::isAllowUseBattlegroundObject()
              !isTotalImmunity() &&                              // not totally immuned
              !HasStealthAura() &&                             // not stealthed
              !HasInvisibilityAura() &&                        // not invisible
-             !HasAura(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
+             !HasAuraEffect(SPELL_RECENTLY_DROPPED_FLAG, 0) &&      // can't pickup
              IsAlive()                                        // live player
            );
 }
@@ -22198,8 +22224,8 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
     for (GossipMenuItemsContainer::const_iterator itr = menuItemBounds.first; itr != menuItemBounds.second; ++itr)
     {
         bool canTalk = true;
-      /*  if (!sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.Conditions))
-            continue; */
+        if (!sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.Conditions))
+            continue;
 
         if (Creature* creature = source->ToCreature())
         {
@@ -22505,7 +22531,7 @@ uint32 Player::GetGossipTextId(uint32 menuId, WorldObject* source)
 
     for (GossipMenusContainer::const_iterator itr = menuBounds.first; itr != menuBounds.second; ++itr)
     {
-      //  if (sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.conditions))
+        if (sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.conditions))
             textId = itr->second.text_id;
     }
 

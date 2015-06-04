@@ -508,13 +508,13 @@ void BattlegroundAV::Update(time_t diff)
             if(Player* plr = sObjectMgr->GetPlayer(itr->first)) {
                 for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
                     if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
-                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                        if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                 }
                 for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
                     if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
-                        if (!marshal->HasAura(GetAuraFromMarshalEntry(marshal->GetEntry())))
+                        if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                 }

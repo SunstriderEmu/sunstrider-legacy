@@ -766,6 +766,13 @@ void WorldSession::SendListInventory( uint64 vendorguid )
             if((crItem->proto->AllowableClass & _player->GetClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
                 continue;
 
+            ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(pCreature->GetEntry(), crItem->proto->ItemId);
+            if (!sConditionMgr->IsObjectMeetToConditions(_player, pCreature, conditions))
+            {
+                TC_LOG_DEBUG("condition", "SendListInventory: conditions not met for creature entry %u item %u", pCreature->GetEntry(), crItem->proto->ItemId);
+                continue;
+            }
+
             ++count;
 
             // reputation discount

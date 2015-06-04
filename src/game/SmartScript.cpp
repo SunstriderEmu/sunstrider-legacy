@@ -24,12 +24,12 @@
 #include "GridNotifiersImpl.h"
 #include "Cell.h"
 #include "CellImpl.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "GossipDef.h"
 #include "ScriptedCreature.h"
 #include "SmartScript.h"
 #include "SmartAI.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "ScriptedGossip.h"
 #include "Transport.h"
 #include "ScriptedCreature.h"
@@ -107,16 +107,16 @@ void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint3
 {
     for (SmartAIEventList::iterator i = mEvents.begin(); i != mEvents.end(); ++i)
     {
-        SMART_EVENT eventType = SMART_EVENT((*i).GetEventType());
+        SMART_EVENT eventType = SMART_EVENT(i->GetEventType());
         if (eventType == SMART_EVENT_LINK)//special handling
             continue;
 
-        if (eventType == e/* && (!(*i).event.event_phase_mask || IsInPhase((*i).event.event_phase_mask)) && !((*i).event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && (*i).runOnce)*/)
+        if (eventType == e/* && (!i->event.event_phase_mask || IsInPhase(i->event.event_phase_mask)) && !(i->event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && i->runOnce)*/)
         {
-            //ConditionList conds = sConditionMgr.GetConditionsForSmartEvent((*i).entryOrGuid, (*i).event_id, (*i).source_type);
-            //ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
+            ConditionList conds = sConditionMgr->GetConditionsForSmartEvent((*i).entryOrGuid, (*i).event_id, (*i).source_type);
+            ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
 
-            //if (sConditionMgr.IsObjectMeetToConditions(info, conds))
+            if (sConditionMgr->IsObjectMeetToConditions(info, conds))
                 ProcessEvent(*i, unit, var0, var1, bvar, spell, gob);
         }
     }
@@ -496,7 +496,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(*itr))
                     continue;
 
-                if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAura(e.action.cast.spell))
+                if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAuraEffect(e.action.cast.spell))
                 {
                     if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
                         me->InterruptNonMeleeSpells(false);
@@ -541,7 +541,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(*itr))
                     continue;
 
-                if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAura(e.action.cast.spell))
+                if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAuraEffect(e.action.cast.spell))
                 {
                     if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
                         tempLastInvoker->InterruptNonMeleeSpells(false);
@@ -939,7 +939,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!obj)
                 break;
 
-            ScriptedInstance* instance = ((ScriptedInstance*)obj->GetInstanceData());
+            InstanceScript* instance = ((InstanceScript*)obj->GetInstanceScript());
             if (!instance)
             {
                 TC_LOG_ERROR("scripts.ai","SmartScript: Event %u attempt to set instance data without instance script. EntryOrGuid %d", e.GetEventType(), e.entryOrGuid);
@@ -960,7 +960,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!obj)
                 break;
 
-            ScriptedInstance* instance = ((ScriptedInstance*)obj->GetInstanceData());
+            InstanceScript* instance = ((InstanceScript*)obj->GetInstanceScript());
             if (!instance)
             {
                 TC_LOG_ERROR("scripts.ai","SmartScript: Event %u attempt to set instance data without instance script. EntryOrGuid %d", e.GetEventType(), e.entryOrGuid);
@@ -1858,7 +1858,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (!IsUnit(*it))
                         continue;
 
-                    if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*it)->ToUnit()->HasAura(e.action.cast.spell))
+                    if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*it)->ToUnit()->HasAuraEffect(e.action.cast.spell))
                     {
                         if (!interruptedSpell && e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
                         {
@@ -2354,23 +2354,23 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_GAME_EVENT_STOP:
         {
             uint32 eventId = e.action.gameEventStop.id;
-            if (!gameeventmgr.IsActiveEvent(eventId))
+            if (!sGameEventMgr->IsActiveEvent(eventId))
             {
                 TC_LOG_ERROR("scripts.ai","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_STOP, inactive event (id: %u)", eventId);
                 break;
             }
-            gameeventmgr.StopEvent(eventId, true);
+            sGameEventMgr->StopEvent(eventId, true);
             break;
         }
         case SMART_ACTION_GAME_EVENT_START:
         {
             uint32 eventId = e.action.gameEventStart.id;
-            if (gameeventmgr.IsActiveEvent(eventId))
+            if (sGameEventMgr->IsActiveEvent(eventId))
             {
                 TC_LOG_ERROR("scripts.ai","SmartScript::ProcessAction: At case SMART_ACTION_GAME_EVENT_START, already activated event (id: %u)", eventId);
                 break;
             }
-            gameeventmgr.StartEvent(eventId, true);
+            sGameEventMgr->StartEvent(eventId, true);
             break;
         }
         case SMART_ACTION_START_CLOSEST_WAYPOINT:

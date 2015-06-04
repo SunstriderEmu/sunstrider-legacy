@@ -503,7 +503,7 @@ Unit* ScriptedAI::SelectUnit( uint32 position, float distNear, float distFar, bo
             || playerOnly && target->GetTypeId() != TYPEID_PLAYER
             || distNear && m_creature->IsWithinCombatRange(target, distNear)
             || distFar && !m_creature->IsWithinCombatRange(target, distFar)
-            || auraCheck && target->HasAura(spellId, effIndex)
+            || auraCheck && target->HasAuraEffect(spellId, effIndex)
             || exceptPossesed && target->IsPossessed()
             || exceptPossesed && target->IsPossessing()
             )
@@ -526,7 +526,7 @@ void ScriptedAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets,
 
     for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius)
-            && (!notHavingAuraId || !((*itr)->getTarget()->HasAura(notHavingAuraId, effIndex))) )
+            && (!notHavingAuraId || !((*itr)->getTarget()->HasAuraEffect(notHavingAuraId, effIndex))) )
             targetList.push_back((*itr)->getTarget());
 
     if (targetList.size() < maxTargets)

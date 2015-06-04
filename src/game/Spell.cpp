@@ -188,8 +188,7 @@ bool SpellCastTargets::read( WorldPacket * data, Unit *caster )
     if(m_targetMask == TARGET_FLAG_SELF)
         return true;
 
-    // TARGET_FLAG_UNK2 is used for non-combat pets, maybe other?
-    if( m_targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNK2) )
+    if( m_targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNIT_MINIPET) )
         data->readPackGUID(m_unitTargetGUID);
 
     if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK ))
@@ -238,7 +237,7 @@ void SpellCastTargets::write ( WorldPacket * data )
 {
     *data << uint32(m_targetMask);
 
-    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNK2 ) )
+    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNIT_MINIPET ) )
     {
         if(m_targetMask & TARGET_FLAG_UNIT)
         {
@@ -2628,7 +2627,7 @@ void Spell::cast(bool skipCheck)
     if ((m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x400000) // Pyro
             || (m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x180020)) // Frostbolt
     {
-        if (m_caster->ToPlayer() && m_caster->HasAura(12043))
+        if (m_caster->ToPlayer() && m_caster->HasAuraEffect(12043))
             m_caster->RemoveAurasDueToSpell(12043);
     }
     
@@ -3083,7 +3082,7 @@ void Spell::finish(bool ok, bool cancelChannel)
     if( m_spellInfo->Attributes & SPELL_ATTR0_STOP_ATTACK_TARGET )
         m_caster->AttackStop();
         
-    //if (ok && !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAura(43983) && m_spellInfo->PowerType == POWER_MANA)
+    //if (ok && !m_IsTriggeredSpell && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->HasAuraEffect(43983) && m_spellInfo->PowerType == POWER_MANA)
     //    m_caster->CastSpell(m_caster, 43137, true);
 }
 
@@ -3963,6 +3962,28 @@ SpellFailedReason Spell::CheckCast(bool strict)
             return SPELL_FAILED_MOVING;
     }
 
+    /* TC conditions
+    // check spell cast conditions from database
+    {
+        ConditionSourceInfo condInfo = ConditionSourceInfo(m_caster);
+        condInfo.mConditionTargets[1] = m_targets.GetObjectTarget();
+        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL, m_spellInfo->Id);
+        if (!conditions.empty() && !sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
+        {
+            // mLastFailedCondition can be NULL if there was an error processing the condition in Condition::Meets (i.e. wrong data for ConditionTarget or others)
+            if (condInfo.mLastFailedCondition && condInfo.mLastFailedCondition->ErrorType)
+            {
+                if (condInfo.mLastFailedCondition->ErrorType == SPELL_FAILED_CUSTOM_ERROR)
+                    m_customError = SpellCustomErrors(condInfo.mLastFailedCondition->ErrorTextId);
+                return SpellCastResult(condInfo.mLastFailedCondition->ErrorType);
+            }
+            if (!condInfo.mLastFailedCondition || !condInfo.mLastFailedCondition->ConditionTarget)
+                return SPELL_FAILED_CASTER_AURASTATE;
+            return SPELL_FAILED_BAD_TARGETS;
+        }
+    }
+    */
+
     // prevent casting at immune friendly target
     if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
@@ -3972,7 +3993,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
         return SPELL_FAILED_TARGET_AURASTATE;
 
     // Cant cast Ice block or Divine shield when under Cyclone
-    if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAura(33786))
+    if ((m_spellInfo->Id == 45438 || m_spellInfo->Id == 642) && m_caster->HasAuraEffect(33786))
         return SPELL_FAILED_CASTER_AURASTATE;
 
     // Spell casted only on battleground
@@ -4099,7 +4120,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 else if (m_spellInfo->Id == 19938)          // Awaken Peon
                 {
                     Unit *unit = m_targets.getUnitTarget();
-                    if(!unit || !unit->HasAura(17743, 0))
+                    if(!unit || !unit->HasAuraEffect(17743, 0))
                         return SPELL_FAILED_BAD_TARGETS;
                 }
                 else if (m_spellInfo->Id == 44997) { // Converting Sentry
@@ -4695,7 +4716,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
             }
             case SPELL_AURA_MOD_SCALE:
             {
-                if (m_spellInfo->Id == 36310 && m_targets.getUnitTarget()->HasAura(36310))
+                if (m_spellInfo->Id == 36310 && m_targets.getUnitTarget()->HasAuraEffect(36310))
                     return SPELL_FAILED_BAD_TARGETS;
                 else if (m_spellInfo->Id == 33111 && !(m_targets.getUnitTarget()->GetEntry() == 17400 || m_targets.getUnitTarget()->GetEntry() == 18894))
                     return SPELL_FAILED_BAD_TARGETS;
@@ -4900,7 +4921,7 @@ bool Spell::CanAutoCast(Unit* target)
         {
             if( m_spellInfo->StackAmount <= 1)
             {
-                if( target->HasAura(m_spellInfo->Id, j) )
+                if( target->HasAuraEffect(m_spellInfo->Id, j) )
                     return false;
             }
             else
@@ -4911,7 +4932,7 @@ bool Spell::CanAutoCast(Unit* target)
         }
         else if ( IsAreaAuraEffect( m_spellInfo->Effects[j].Effect ))
         {
-                if( target->HasAura(m_spellInfo->Id, j) )
+                if( target->HasAuraEffect(m_spellInfo->Id, j) )
                     return false;
         }
     }

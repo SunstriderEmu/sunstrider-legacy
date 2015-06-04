@@ -37,8 +37,8 @@ struct AreaTableEntry
 {
     uint32    ID;                                           // 0
     uint32    mapid;                                        // 1
-    uint32    parentArea;                                   // 2 Recursive. If this is a sub-area, it will link to its parent area. 
-    uint32    areaBit;                                      // 3, exploration related
+    uint32    parentArea;                                   // 2 Recursive. If this is a sub-area, it will link to its parent area. //TC = zone
+    uint32    areaBit;                                      // 3, exploration related //TC = exploreFlag
     uint32    flags;                                        // 4, unknown value but 312 for all cities
                                                             // 5-9 unused
     int32     area_level;                                   // 10

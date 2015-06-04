@@ -25,9 +25,9 @@
 #include "GridNotifiersImpl.h"
 #include "Cell.h"
 #include "CellImpl.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "ScriptedCreature.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 
 #include "SmartScriptMgr.h"
 
@@ -572,7 +572,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             case SMART_EVENT_GAME_EVENT_START:
             case SMART_EVENT_GAME_EVENT_END:
             {
-                GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+                GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
                 if (e.event.gameEvent.gameEventId >= events.size() || !events[e.event.gameEvent.gameEventId].isValid())
                     return false;
                 break;
@@ -972,7 +972,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         {
             uint32 eventId = e.action.gameEventStop.id;
 
-             GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+             GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
             if (eventId < 1 || eventId >= events.size())
             {
                 SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %u SourceType %u Event %u Action %u uses non-existent event, eventId %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.gameEventStop.id);
@@ -991,7 +991,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         {
             uint32 eventId = e.action.gameEventStart.id;
 
-             GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+             GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
             if (eventId < 1 || eventId >= events.size())
             {
                 SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %u SourceType %u Event %u Action %u uses non-existent event, eventId %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.gameEventStart.id);

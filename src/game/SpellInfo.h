@@ -86,9 +86,9 @@ enum SpellCastTargetFlags
     TARGET_FLAG_OBJECT          = 0x00000800,               // pguid
     TARGET_FLAG_TRADE_ITEM      = 0x00001000,               // pguid
     TARGET_FLAG_STRING          = 0x00002000,               // string
-    TARGET_FLAG_UNK1            = 0x00004000,               // ?
+    TARGET_FLAG_GAMEOBJECT_ITEM = 0x00004000,               // not sure. not sent, used with TARGET_GAMEOBJECT_ITEM_TARGET
     TARGET_FLAG_CORPSE          = 0x00008000,               // pguid
-    TARGET_FLAG_UNK2            = 0x00010000                // pguid
+    TARGET_FLAG_UNIT_MINIPET    = 0x00010000                // pguid, used to validate target (if non combat pet)
 };
 
 // Spell clasification
@@ -340,7 +340,7 @@ public:
     /** -1 for all indexes */
     bool HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask = SPELL_EFFECT_MASK_ALL) const;
     bool HasEffect(SpellEffects effect, uint8 effectIndex = 0) const;
-    bool HasAura(AuraType aura) const;
+    bool HasAuraEffect(AuraType aura) const;
     bool HasAreaAuraEffect() const;
 
     inline bool HasAttribute(SpellAttr0 attribute) const { return !!(Attributes & attribute); }

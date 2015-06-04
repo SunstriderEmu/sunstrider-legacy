@@ -65,7 +65,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
         {
             questStatus = sScriptMgr->GetDialogStatus(_player, cr_questgiver);
             if (questStatus > 6)
-                questStatus = getDialogStatus(_player, cr_questgiver, defstatus);
+                questStatus = GetQuestDialogStatus(_player, cr_questgiver, defstatus);
         }
         break;
     }
@@ -74,7 +74,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
         GameObject* go_questgiver = (GameObject*) questgiver;
         questStatus = sScriptMgr->GetDialogStatus(_player, go_questgiver);
         if (questStatus > 6)
-            questStatus = getDialogStatus(_player, go_questgiver, defstatus);
+            questStatus = GetQuestDialogStatus(_player, go_questgiver, defstatus);
         break;
     }
     default:
@@ -619,7 +619,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
     }
 }
 
-uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
+uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
 {
     PROFILE;
     
@@ -653,7 +653,12 @@ uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32
         uint32 result2 = 0;
         uint32 quest_id = i->second;
         Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
-        if ( !pQuest ) continue;
+        if ( !pQuest ) 
+            continue;
+
+        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, pQuest->GetQuestId());
+        if (!sConditionMgr->IsObjectMeetToConditions(pPlayer, conditions))
+            continue;
 
         QuestStatus status = pPlayer->GetQuestStatus( quest_id );
         if( (status == QUEST_STATUS_COMPLETE && !pPlayer->GetQuestRewardStatus(quest_id)) ||
@@ -677,6 +682,10 @@ uint32 WorldSession::getDialogStatus(Player *pPlayer, Object* questgiver, uint32
         uint32 quest_id = i->second;
         Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
         if ( !pQuest )
+            continue;
+
+        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK, pQuest->GetQuestId());
+        if (!sConditionMgr->IsObjectMeetToConditions(pPlayer, conditions))
             continue;
 
         QuestStatus status = pPlayer->GetQuestStatus( quest_id );
@@ -733,7 +742,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
             if( questStatus > 6 )
-                questStatus = getDialogStatus(_player, questgiver, defstatus);
+                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);
@@ -748,7 +757,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
             if( questStatus > 6 )
-                questStatus = getDialogStatus(_player, questgiver, defstatus);
+                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);

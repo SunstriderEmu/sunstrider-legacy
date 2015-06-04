@@ -33,7 +33,7 @@
 #include "ArenaTeam.h"
 #include "Transport.h"
 #include "Language.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "Spell.h"
 #include "Chat.h"
 #include "AccountMgr.h"
@@ -41,7 +41,7 @@
 #include "SpellAuras.h"
 #include "Util.h"
 #include "WaypointManager.h"
-#include "InstanceData.h" //for condition_instance_data
+#include "InstanceScript.h" //for condition_instance_data
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -769,7 +769,7 @@ void ObjectMgr::LoadCreatureAddons()
                 continue;
             }
 #ifdef LICH_KING
-            if (AdditionalSpellInfo->HasAura(SPELL_AURA_CONTROL_VEHICLE))
+            if (AdditionalSpellInfo->HasAuraEffect(SPELL_AURA_CONTROL_VEHICLE))
                 TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has SPELL_AURA_CONTROL_VEHICLE aura %u defined in `auras` field in `creature_addon`.", guid, uint32(atol(*itr)));
 #endif
             creatureAddon.auras[i++] = uint32(atol(*itr));
@@ -856,7 +856,7 @@ void ObjectMgr::LoadCreatureTemplateAddons()
                 continue;
             }
 #ifdef LICH_KING
-            if (AdditionalSpellInfo->HasAura(SPELL_AURA_CONTROL_VEHICLE))
+            if (AdditionalSpellInfo->HasAuraEffect(SPELL_AURA_CONTROL_VEHICLE))
                 TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has SPELL_AURA_CONTROL_VEHICLE aura %u defined in `auras` field in `creature_template_addon`.", entry, uint32(atol(*itr)));
 #endif
             creatureAddon.auras[i++] = uint32(atol(*itr));
@@ -1291,7 +1291,7 @@ void ObjectMgr::LoadCreatures()
             }
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System or transports themselves
+        if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System or transports themselves
             AddCreatureToGrid(guid, &data);
 
         ++count;
@@ -1383,7 +1383,7 @@ void ObjectMgr::LoadGameobjects()
             continue;
         }
 
-        if (gameEvent==0)                                   // if not this is to be managed by GameEvent System
+        if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System
             AddGameobjectToGrid(guid, &data);
 
         ++count;
@@ -7067,7 +7067,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
 
 // Searches for the same condition already in Conditions store
 // Returns Id if found, else adds it to Conditions and returns Id
-uint16 ObjectMgr::GetConditionId( ConditionType condition, uint32 value1, uint32 value2 )
+uint16 ObjectMgr::GetConditionId( OldConditionType condition, uint32 value1, uint32 value2 )
 {
     PlayerCondition lc = PlayerCondition(condition, value1, value2);
     for (uint16 i=0; i < mConditions.size(); ++i)
@@ -7117,33 +7117,33 @@ bool PlayerCondition::Meets(Player const * player) const
 
     switch (condition)
     {
-        case CONDITION_NONE:
+        case CONDITION_OLD_NONE:
             return true;                                    // empty condition, always met
-        case CONDITION_AURA:
-            return player->HasAura(value1, value2);
-        case CONDITION_ITEM:
+        case CONDITION_OLD_AURA:
+            return player->HasAuraEffect(value1, value2);
+        case CONDITION_OLD_ITEM:
             return player->HasItemCount(value1, value2);
-        case CONDITION_ITEM_EQUIPPED:
+        case CONDITION_OLD_ITEM_EQUIPPED:
             return player->GetItemOrItemWithGemEquipped(value1) != NULL;
-        case CONDITION_ZONEID:
+        case CONDITION_OLD_ZONEID:
             return player->GetZoneId() == value1;
-        case CONDITION_REPUTATION_RANK:
+        case CONDITION_OLD_REPUTATION_RANK:
         {
             FactionEntry const* faction = sFactionStore.LookupEntry(value1);
             return faction && player->GetReputationRank(faction) >= value2;
         }
-        case CONDITION_TEAM:
+        case CONDITION_OLD_TEAM:
             return player->GetTeam() == value1;
-        case CONDITION_SKILL:
+        case CONDITION_OLD_SKILL:
             return player->HasSkill(value1) && player->GetBaseSkillValue(value1) >= value2;
-        case CONDITION_QUESTREWARDED:
+        case CONDITION_OLD_QUESTREWARDED:
             return player->GetQuestRewardStatus(value1);
-        case CONDITION_QUESTTAKEN:
+        case CONDITION_OLD_QUESTTAKEN:
         {
             QuestStatus status = player->GetQuestStatus(value1);
             return (status == QUEST_STATUS_INCOMPLETE);
         }
-        case CONDITION_AD_COMMISSION_AURA:
+        case CONDITION_OLD_AD_COMMISSION_AURA:
         {
             Unit::AuraMap const& auras = player->GetAuras();
             for(Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
@@ -7151,15 +7151,15 @@ bool PlayerCondition::Meets(Player const * player) const
                     return true;
             return false;
         }
-        case CONDITION_NO_AURA:
-            return !player->HasAura(value1, value2);
-        case CONDITION_ACTIVE_EVENT:
-            return gameeventmgr.IsActiveEvent(value1);
-        case CONDITION_INSTANCE_DATA:
+        case CONDITION_OLD_NO_AURA:
+            return !player->HasAuraEffect(value1, value2);
+        case CONDITION_OLD_ACTIVE_EVENT:
+            return sGameEventMgr->IsActiveEvent(value1);
+        case CONDITION_OLD_INSTANCE_DATA:
         {
             Map *map = player->GetMap();
-            if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-                return ((InstanceMap*)map)->GetInstanceData()->GetData(value1) == value2;
+            if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+                return ((InstanceMap*)map)->GetInstanceScript()->GetData(value1) == value2;
         }
         default:
             return false;
@@ -7167,7 +7167,7 @@ bool PlayerCondition::Meets(Player const * player) const
 }
 
 // Verification of condition values validity
-bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 value2)
+bool PlayerCondition::IsValid(OldConditionType condition, uint32 value1, uint32 value2)
 {
     if( condition >= MAX_CONDITION)                         // Wrong condition type
     {
@@ -7177,7 +7177,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
 
     switch (condition)
     {
-        case CONDITION_AURA:
+        case CONDITION_OLD_AURA:
         {
             if(!sSpellMgr->GetSpellInfo(value1))
             {
@@ -7191,7 +7191,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_ITEM:
+        case CONDITION_OLD_ITEM:
         {
             ItemTemplate const *proto = sObjectMgr->GetItemTemplate(value1);
             if(!proto)
@@ -7201,7 +7201,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_ITEM_EQUIPPED:
+        case CONDITION_OLD_ITEM_EQUIPPED:
         {
             ItemTemplate const *proto = sObjectMgr->GetItemTemplate(value1);
             if(!proto)
@@ -7211,7 +7211,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_ZONEID:
+        case CONDITION_OLD_ZONEID:
         {
             AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(value1);
             if(!areaEntry)
@@ -7226,7 +7226,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_REPUTATION_RANK:
+        case CONDITION_OLD_REPUTATION_RANK:
         {
             FactionEntry const* factionEntry = sFactionStore.LookupEntry(value1);
             if(!factionEntry)
@@ -7236,7 +7236,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_TEAM:
+        case CONDITION_OLD_TEAM:
         {
             if (value1 != TEAM_ALLIANCE && value1 != TEAM_HORDE)
             {
@@ -7245,7 +7245,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_SKILL:
+        case CONDITION_OLD_SKILL:
         {
             SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(value1);
             if (!pSkill)
@@ -7260,8 +7260,8 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_QUESTREWARDED:
-        case CONDITION_QUESTTAKEN:
+        case CONDITION_OLD_QUESTREWARDED:
+        case CONDITION_OLD_QUESTTAKEN:
         {
             Quest const *Quest = sObjectMgr->GetQuestTemplate(value1);
             if (!Quest)
@@ -7273,7 +7273,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
                 TC_LOG_ERROR("condition","Quest condition has useless data in value2 (%u)!", value2);
             break;
         }
-        case CONDITION_AD_COMMISSION_AURA:
+        case CONDITION_OLD_AD_COMMISSION_AURA:
         {
             if(value1)
                 TC_LOG_ERROR("condition","Quest condition has useless data in value1 (%u)!", value1);
@@ -7281,7 +7281,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
                 TC_LOG_ERROR("condition","Quest condition has useless data in value2 (%u)!", value2);
             break;
         }
-        case CONDITION_NO_AURA:
+        case CONDITION_OLD_NO_AURA:
         {
             if(!sSpellMgr->GetSpellInfo(value1))
             {
@@ -7295,9 +7295,9 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_ACTIVE_EVENT:
+        case CONDITION_OLD_ACTIVE_EVENT:
         {
-            GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+            GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
             if(value1 >=events.size() || !events[value1].isValid())
             {
                 TC_LOG_ERROR("condition","Active event condition requires existed event id (%u), skipped", value1);
@@ -7305,7 +7305,7 @@ bool PlayerCondition::IsValid(ConditionType condition, uint32 value1, uint32 val
             }
             break;
         }
-        case CONDITION_INSTANCE_DATA:
+        case CONDITION_OLD_INSTANCE_DATA:
             //TODO: need some check
             break;
     }

@@ -39,14 +39,14 @@
 #include "Formulas.h"
 #include "SpellAuras.h"
 #include "WaypointMovementGenerator.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "BattleGround.h"
 #include "Util.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "OutdoorPvPMgr.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "CreatureGroups.h"
 #include "ScriptMgr.h"
 // apply implementation of the singletons
@@ -54,7 +54,7 @@
 #include "TemporarySummon.h"
 #include "MoveSpline.h"
 #include "Spell.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "Tools.h"
 
 void TrainerSpellData::Clear()
@@ -151,7 +151,7 @@ bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
                     assistant->AI()->AttackStart(victim);
                 }
 
-                if (ScriptedInstance* instance = ((ScriptedInstance*)assistant->GetInstanceData()))
+                if (InstanceScript* instance = ((InstanceScript*)assistant->GetInstanceScript()))
                     instance->MonsterPulled(assistant, victim);
             }
         }
@@ -228,8 +228,8 @@ void Creature::RemoveFromWorld()
     {
         uint64 guid = GetGUID();
         if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-                ((InstanceMap*)map)->GetInstanceData()->OnCreatureRemove(this);
+            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+                ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
         if(m_formation)
             sCreatureGroupMgr.RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
@@ -394,7 +394,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cInfo->faction);
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_WORLDEVENT)
-        SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag | gameeventmgr.GetNPCFlag(this));
+        SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag | sGameEventMgr->GetNPCFlag(this));
     else
         SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag);
 
@@ -477,8 +477,8 @@ void Creature::Update(uint32 diff)
             getAI()->onRespawn();
             
         Map *map = FindMap();
-        if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-            ((InstanceMap*)map)->GetInstanceData()->OnCreatureRespawn(this, GetEntry());
+        if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+            ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this, GetEntry());
     }
 
     UpdateProhibitedSchools(diff);
@@ -504,10 +504,10 @@ void Creature::Update(uint32 diff)
             {
                 Map* map = FindMap();
                 uint32 eventId = getInstanceEventId();
-                if (eventId != -1 && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceData()) {
-                    if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == NOT_STARTED)
+                if (eventId != -1 && map && map->IsRaid() && ((InstanceMap*)map)->GetInstanceScript()) {
+                    if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == NOT_STARTED)
                         Respawn(); // Respawn immediately
-                    else if ((((InstanceMap*)map)->GetInstanceData())->GetData(eventId) == IN_PROGRESS)
+                    else if ((((InstanceMap*)map)->GetInstanceScript())->GetData(eventId) == IN_PROGRESS)
                         SetRespawnTime(5*MINUTE); // Delay next respawn check (5 minutes)
                     else // event is DONE or SPECIAL, don't respawn until tag reset
                         SetRespawnTime(7*DAY);
@@ -1128,12 +1128,12 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData 
     //Only works if you create the object in it, not if it is moves to that map.
     //Normally non-players do not teleport to other maps.
     Map *map = FindMap();
-    if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
+    if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
     {
         // Workaround, I need position_x in OnCreatureCreate for Felmyst. I'll rewrite the hook with data as third parameter later
         if (data)
             m_positionX = data->posX;
-        ((InstanceMap*)map)->GetInstanceData()->OnCreatureCreate(this, Entry);
+        ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this, Entry);
     }
 
     return true;
@@ -1448,8 +1448,8 @@ void Creature::SetDeathState(DeathState s)
             SaveRespawnTime();
             
         Map *map = FindMap();
-        if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceData())
-            ((InstanceMap*)map)->GetInstanceData()->OnCreatureDeath(this);
+        if(map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+            ((InstanceMap*)map)->GetInstanceScript()->OnCreatureDeath(this);
 
         SetUInt64Value (UNIT_FIELD_TARGET,0);               // remove target selection in any cases (can be set at aura remove in Unit::setDeathState)
         SetUInt32Value(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_NONE);
@@ -2009,7 +2009,7 @@ bool Creature::InitCreatureAddon(bool reload)
         }
 
         // skip already applied aura
-        if(HasAura(id))
+        if(HasAuraEffect(id))
         {
             if(!reload)
                 TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetGUIDLow(),GetEntry(),id);

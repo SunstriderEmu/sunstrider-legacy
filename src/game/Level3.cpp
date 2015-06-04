@@ -53,13 +53,13 @@
 #include "ItemEnchantmentMgr.h"
 #include "BattleGroundMgr.h"
 #include "InstanceSaveMgr.h"
-#include "InstanceData.h"
+#include "InstanceScript.h"
 #include "ChannelMgr.h"
-#include "ScriptedInstance.h"
+#include "InstanceScript.h"
 #include "CreatureTextMgr.h"
 #include "ConditionMgr.h"
 #include "SmartAI.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "IRCMgr.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
@@ -728,7 +728,7 @@ bool ChatHandler::HandleReloadGameEventCommand(const char* args)
 {
     TC_LOG_INFO("command", "Re-Loading game events...");
 
-    gameeventmgr.LoadFromDB();
+    sGameEventMgr->LoadFromDB();
 
     SendGlobalGMSysMessage("DB table `game_event` reloaded.");
 
@@ -2864,7 +2864,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
                 bool talent = (talentCost > 0);
                 bool passive = spellInfo->IsPassive();
-                bool active = target && (target->HasAura(id,0) || target->HasAura(id,1) || target->HasAura(id,2));
+                bool active = target && (target->HasAuraEffect(id,0) || target->HasAuraEffect(id,1) || target->HasAuraEffect(id,2));
 
                 // unit32 used to prevent interpreting uint8 as char at output
                 // find rank of learned spell for learning spell, or talent rank
@@ -6751,14 +6751,14 @@ bool ChatHandler::HandleInstanceSaveDataCommand(const char * /*args*/)
         return false;
     }
 
-    if (!((InstanceMap*)map)->GetInstanceData())
+    if (!((InstanceMap*)map)->GetInstanceScript())
     {
         PSendSysMessage("Map has no instance data.");
         SetSentErrorMessage(true);
         return false;
     }
 
-    ((InstanceMap*)map)->GetInstanceData()->SaveToDB();
+    ((InstanceMap*)map)->GetInstanceScript()->SaveToDB();
     return true;
 }
 
@@ -7788,7 +7788,7 @@ bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
     
     Player *plr = m_session->GetPlayer();
     
-    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+    if (InstanceScript *pInstance = ((InstanceScript*)plr->GetInstanceScript()))
         pInstance->SetData(dataId, dataValue);
     else {
         PSendSysMessage("You are not in an instance.");
@@ -7810,7 +7810,7 @@ bool ChatHandler::HandleInstanceGetDataCommand(const char* args)
     
     Player *plr = m_session->GetPlayer();
     
-    if (ScriptedInstance *pInstance = ((ScriptedInstance*)plr->GetInstanceData()))
+    if (InstanceScript *pInstance = ((InstanceScript*)plr->GetInstanceScript()))
         PSendSysMessage("Instance data %u = %u.", dataId, pInstance->GetData(dataId));
     else {
         PSendSysMessage("You are not in an instance.");
@@ -7972,7 +7972,7 @@ bool ChatHandler::HandleMmapTestArea(const char* args)
 bool ChatHandler::HandleReloadConditions(const char* args)
 {
     TC_LOG_INFO("command","Re-Loading Conditions...");
-    sConditionMgr.LoadConditions(true);
+    sConditionMgr->LoadConditions(true);
     SendGlobalGMSysMessage("Conditions reloaded.");
     return true;
 }
@@ -8236,7 +8236,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
         return true;
     }
 
-    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+    int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureGUID);
 
     if (justShowInfo)
     {
@@ -8255,7 +8255,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
             return true;
         }
 
-        if(gameeventmgr.AddCreatureToEvent(creatureGUID, event))
+        if(sGameEventMgr->AddCreatureToEvent(creatureGUID, event))
             //PSendSysMessage("La creature (guid : %u) a été liée à l'event %i.",creatureGUID,event);
             PSendSysMessage("Creature (guid: %u) is now bound to the event %i.",creatureGUID,event);
         else
@@ -8295,14 +8295,14 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
         return true;
     } 
 
-    int16 currentEventId = gameeventmgr.GetCreatureEvent(creatureGUID);
+    int16 currentEventId = sGameEventMgr->GetCreatureEvent(creatureGUID);
 
     if (!currentEventId)
     {
         //PSendSysMessage("La creature (guid : %u) n'est liée à aucun event.",creatureGUID);
         PSendSysMessage("Creature (guid: %u) is not linked to any event.",creatureGUID);
     } else {
-        if(gameeventmgr.RemoveCreatureFromEvent(creatureGUID))
+        if(sGameEventMgr->RemoveCreatureFromEvent(creatureGUID))
             //PSendSysMessage("La creature (guid : %u) n'est plus liée à l'event %i.",creatureGUID,currentEventId);
             PSendSysMessage("Creature (guid: %u) is not anymore linked to the event %i.",creatureGUID,currentEventId);
         else
@@ -8343,7 +8343,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return true;
     }
 
-    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
     if(currentEventId)
     {
         //PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
@@ -8351,7 +8351,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         return true;
     }
 
-    if(gameeventmgr.AddGameObjectToEvent(gobGUID, event))
+    if(sGameEventMgr->AddGameObjectToEvent(gobGUID, event))
         //PSendSysMessage("Le gobject (guid : %u) a été lié à l'event %i.",gobGUID,event);
         PSendSysMessage("Gobject (guid: %u) is now linked to the event %i.",gobGUID,event);
     else
@@ -8381,13 +8381,13 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
         return true;
     } 
 
-    int16 currentEventId = gameeventmgr.GetGameObjectEvent(gobGUID);
+    int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
     if (!currentEventId)
     {
         //PSendSysMessage("Le gobject (guid : %u) n'est lié à aucun event.",gobGUID);
         PSendSysMessage("Gobject (guid: %u) is not linked to any event.",gobGUID);
     } else {
-        if(gameeventmgr.RemoveGameObjectFromEvent(gobGUID))
+        if(sGameEventMgr->RemoveGameObjectFromEvent(gobGUID))
             //PSendSysMessage("Le gobject (guid : %u) n'est plus lié à l'event %i.",gobGUID,currentEventId);
             PSendSysMessage("Gobject (guid: %u) is not linked anymore to the event %i.",gobGUID,currentEventId);
         else
@@ -8408,7 +8408,7 @@ bool ChatHandler::HandleEventCreateCommand(const char* args)
         return false;
 
     int16 createdEventId = 0;
-    bool success = gameeventmgr.CreateGameEvent(args,createdEventId);
+    bool success = sGameEventMgr->CreateGameEvent(args,createdEventId);
     if(success)
         PSendSysMessage("L'event \"%s\" (id: %i) a été créé.",args,createdEventId);
     else

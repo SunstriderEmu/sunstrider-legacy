@@ -71,7 +71,7 @@ class UpdateData;
 class WorldSession;
 class Creature;
 class Player;
-class InstanceData;
+class InstanceScript;
 class GameObject;
 class Transport;
 class WorldObject;
@@ -565,7 +565,7 @@ class WorldObject : public Object, public WorldLocation
         bool InSamePhase(WorldObject const* obj) const { return true; }
         bool InSamePhase(PhaseMask phasemask) const { return true; }
 
-        InstanceData* GetInstanceData();
+        InstanceScript* GetInstanceScript();
 
         std::string const& GetName() const { return m_name; }
         void SetName(const std::string& newname) { m_name=newname; }

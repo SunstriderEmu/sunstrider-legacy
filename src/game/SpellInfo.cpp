@@ -546,7 +546,7 @@ bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
     return HasEffectByEffectMask(effect, SPELL_EFFECT_MASK_ALL);
 }
 
-bool SpellInfo::HasAura(AuraType aura) const
+bool SpellInfo::HasAuraEffect(AuraType aura) const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if (Effects[i].IsAura(aura))

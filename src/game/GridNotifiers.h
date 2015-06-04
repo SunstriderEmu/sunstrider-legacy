@@ -868,7 +868,7 @@ namespace Trinity
         bool operator()(Unit* u)
         {
             if(u->IsAlive() && u->IsInCombat() && /*!i_obj->IsHostileTo(u)*/ i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                !(u->HasAura(i_spell, 0) || u->HasAura(i_spell, 1) || u->HasAura(i_spell, 2)))
+                !(u->HasAuraEffect(i_spell, 0) || u->HasAuraEffect(i_spell, 1) || u->HasAuraEffect(i_spell, 2)))
             {
                 return true;
             }
@@ -887,7 +887,7 @@ namespace Trinity
         bool operator()(Unit* u)
         {
             if (u->IsAlive() && !u->IsInCombat() && i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                !(u->HasAura(i_spell)) && i_obj != u)
+                !(u->HasAuraEffect(i_spell)) && i_obj != u)
             {
                 return true;
             }

@@ -24,6 +24,7 @@
 #include "ItemEnchantmentMgr.h"
 #include "ByteBuffer.h"
 #include "RefManager.h"
+#include "ConditionMgr.h"
 
 #include <map>
 #include <vector>
@@ -69,6 +70,7 @@ struct LootStoreItem
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
     uint16  conditionId :16;                                // additional loot condition Id
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
+    ConditionList conditions;                               // additional loot condition
 
     // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
     // displayid is filled in IsValid() which must be called after
@@ -87,7 +89,8 @@ struct LootItem
     uint32  itemid;
     uint32  randomSuffix;
     int32   randomPropertyId;
-    uint16  conditionId       :16;                          // allow compiler pack structure
+    ConditionList conditions;                               // additional loot condition
+    uint16  conditionId       :16;                          // old conditions, allow compiler pack structure
     uint8   count             : 8;
     bool    is_looted         : 1;
     bool    is_blocked        : 1;
@@ -121,7 +124,7 @@ class LootTemplate;
 
 typedef std::vector<QuestItem> QuestItemList;
 typedef std::map<uint32, QuestItemList *> QuestItemMap;
-typedef std::vector<LootStoreItem> LootStoreItemList;
+typedef std::list<LootStoreItem*> LootStoreItemList;
 typedef std::unordered_map<uint32, LootTemplate*> LootTemplateMap;
 
 typedef std::set<uint32> LootIdSet;
@@ -144,6 +147,8 @@ class LootStore
         bool HaveQuestLootForPlayer(uint32 loot_id,Player* player) const;
 
         LootTemplate const* GetLootFor(uint32 loot_id) const;
+        void ResetConditions();
+        LootTemplate* GetLootForConditionFill(uint32 loot_id);
 
         char const* GetName() const { return m_name; }
         char const* GetEntryName() const { return m_entryName; }
@@ -159,13 +164,18 @@ class LootStore
 class LootTemplate
 {
     class  LootGroup;                                       // A set of loot definitions for items (refs are not allowed inside)
-    typedef std::vector<LootGroup> LootGroups;
+    typedef std::vector<LootGroup*> LootGroups;
 
     public:
+        LootTemplate() { }
+        ~LootTemplate();
+
         // Adds an entry to the group (at loading stage)
-        void AddEntry(LootStoreItem& item);
+        void AddEntry(LootStoreItem* item);
         // Rolls for every item in the template and adds the rolled items the the loot
         void Process(Loot& loot, LootStore const& store, uint8 GroupId = 0) const;
+        void CopyConditions(const ConditionList& conditions);
+        void CopyConditions(LootItem* li) const;
 
         // True if template includes at least 1 quest drop entry
         bool HasQuestDrop(LootTemplateMap const& store, uint8 GroupId = 0) const;
@@ -175,6 +185,8 @@ class LootTemplate
         // Checks integrity of the template
         void Verify(LootStore const& store, uint32 Id) const;
         void CheckLootRefs(LootTemplateMap const& store, LootIdSet* ref_set) const;
+        bool addConditionItem(Condition* cond);
+        bool isReference(uint32 id);
         
     private:
         LootStoreItemList Entries;                          // not grouped only

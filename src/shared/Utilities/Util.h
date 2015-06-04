@@ -334,6 +334,38 @@ template <class C> typename C::value_type const& SelectRandomContainerElement(C 
 }
 #endif
 
+enum ComparisionType
+{
+    COMP_TYPE_EQ = 0,
+    COMP_TYPE_HIGH,
+    COMP_TYPE_LOW,
+    COMP_TYPE_HIGH_EQ,
+    COMP_TYPE_LOW_EQ,
+    COMP_TYPE_MAX
+};
+
+template <class T>
+bool CompareValues(ComparisionType type, T val1, T val2)
+{
+    switch (type)
+    {
+        case COMP_TYPE_EQ:
+            return val1 == val2;
+        case COMP_TYPE_HIGH:
+            return val1 > val2;
+        case COMP_TYPE_LOW:
+            return val1 < val2;
+        case COMP_TYPE_HIGH_EQ:
+            return val1 >= val2;
+        case COMP_TYPE_LOW_EQ:
+            return val1 <= val2;
+        default:
+            // incorrect parameter
+            ASSERT(false);
+            return false;
+    }
+}
+
 bool IsIPAddress(char const* ipaddress);
 uint32 CreatePIDFile(const std::string& filename);
 

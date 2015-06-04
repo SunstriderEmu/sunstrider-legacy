@@ -32,7 +32,7 @@
 #include "MapManager.h"
 #include "Language.h"
 #include "World.h"
-#include "GameEvent.h"
+#include "GameEventMgr.h"
 #include "SpellMgr.h"
 #include "AccountMgr.h"
 #include "WaypointManager.h"
@@ -219,7 +219,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 
     Player* pl = m_session->GetPlayer();
     QueryResult result;
-    GameEvent::ActiveEvents const& activeEventsList = gameeventmgr.GetActiveEventList();
+    GameEventMgr::ActiveEvents const& activeEventsList = sGameEventMgr->GetActiveEventList();
     if(*args)
     {
         int32 id = atoi((char*)args);
@@ -242,7 +242,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
         eventFilter << " AND (event IS NULL ";
         bool initString = true;
 
-        for (GameEvent::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
+        for (GameEventMgr::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
         {
             if (initString)
             {
@@ -3504,8 +3504,8 @@ bool ChatHandler::HandleLookupEventCommand(const char* args)
 
     uint32 counter = 0;
 
-    GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
+    GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
+    GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr->GetActiveEventList();
 
     for(uint32 id = 0; id < events.size(); ++id )
     {
@@ -3538,12 +3538,12 @@ bool ChatHandler::HandleEventActiveListCommand(const char* args)
 {
     uint32 counter = 0;
 
-    GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
+    GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
+    GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr->GetActiveEventList();
 
     char const* active = GetTrinityString(LANG_ACTIVE);
 
-    for(GameEvent::ActiveEvents::const_iterator itr = activeEvents.begin(); itr != activeEvents.end(); ++itr )
+    for(GameEventMgr::ActiveEvents::const_iterator itr = activeEvents.begin(); itr != activeEvents.end(); ++itr )
     {
         uint32 event_id = *itr;
         GameEventData const& eventData = events[event_id];
@@ -3573,7 +3573,7 @@ bool ChatHandler::HandleEventInfoCommand(const char* args)
 
     uint32 event_id = atoi(cId);
 
-    GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+    GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 
     if(event_id >=events.size())
     {
@@ -3590,14 +3590,14 @@ bool ChatHandler::HandleEventInfoCommand(const char* args)
         return false;
     }
 
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
+    GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr->GetActiveEventList();
     bool active = activeEvents.find(event_id) != activeEvents.end();
     char const* activeStr = active ? GetTrinityString(LANG_ACTIVE) : "";
 
     std::string startTimeStr = TimeToTimestampStr(eventData.start);
     std::string endTimeStr = TimeToTimestampStr(eventData.end);
 
-    uint32 delay = gameeventmgr.NextCheck(event_id);
+    uint32 delay = sGameEventMgr->NextCheck(event_id);
     time_t nextTime = time(NULL)+delay;
     std::string nextStr = nextTime >= eventData.start && nextTime < eventData.end ? TimeToTimestampStr(time(NULL)+delay) : "-";
 
@@ -3621,7 +3621,7 @@ bool ChatHandler::HandleEventStartCommand(const char* args)
 
     int32 event_id = atoi(cId);
 
-    GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+    GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 
     if(event_id < 1 || event_id >=events.size())
     {
@@ -3638,14 +3638,14 @@ bool ChatHandler::HandleEventStartCommand(const char* args)
         return false;
     }
 
-    if(gameeventmgr.IsActiveEvent(event_id))
+    if(sGameEventMgr->IsActiveEvent(event_id))
     {
         PSendSysMessage(LANG_EVENT_ALREADY_ACTIVE,event_id);
         SetSentErrorMessage(true);
         return false;
     }
 
-    gameeventmgr.StartEvent(event_id,true);
+    sGameEventMgr->StartEvent(event_id,true);
     return true;
 }
 
@@ -3660,7 +3660,7 @@ bool ChatHandler::HandleEventStopCommand(const char* args)
 
     int32 event_id = atoi(cId);
 
-    GameEvent::GameEventDataMap const& events = gameeventmgr.GetEventMap();
+    GameEventMgr::GameEventDataMap const& events = sGameEventMgr->GetEventMap();
 
     if(event_id < 1 || event_id >=events.size())
     {
@@ -3677,7 +3677,7 @@ bool ChatHandler::HandleEventStopCommand(const char* args)
         return false;
     }
 
-    GameEvent::ActiveEvents const& activeEvents = gameeventmgr.GetActiveEventList();
+    GameEventMgr::ActiveEvents const& activeEvents = sGameEventMgr->GetActiveEventList();
 
     if(activeEvents.find(event_id) == activeEvents.end())
     {
@@ -3686,7 +3686,7 @@ bool ChatHandler::HandleEventStopCommand(const char* args)
         return false;
     }
 
-    gameeventmgr.StopEvent(event_id,true);
+    sGameEventMgr->StopEvent(event_id,true);
     return true;
 }
 

@@ -1260,7 +1260,7 @@ class Unit : public WorldObject
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
-        bool HasAura(uint32 spellId, uint32 effIndex = 0) const
+        bool HasAuraEffect(uint32 spellId, uint32 effIndex = 0) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
         bool HasAuraWithMechanic(Mechanics mechanic) const;
         bool HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 owner) const;
