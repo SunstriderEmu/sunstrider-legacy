@@ -3821,6 +3821,7 @@ bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
     }
 
     target->SetEmoteState(state);
+    PSendSysMessage("Emote state set to %u", state);
 
     if(permanent)
     {
