@@ -1542,8 +1542,8 @@ class Player : public Unit
 
         QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
 
-        Unit *GetSelectedUnit() const;
-        Player *GetSelectedPlayer() const;
+        Unit* GetSelectedUnit() const;
+        Player* GetSelectedPlayer() const;
 
         void SetTarget(uint64 /*guid*/) override { } /// Used for serverside target changes, does not apply to players
         void SetSelection(uint64 guid) { SetUInt64Value(UNIT_FIELD_TARGET, guid); }

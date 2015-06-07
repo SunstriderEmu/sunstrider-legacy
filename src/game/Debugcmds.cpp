@@ -325,7 +325,7 @@ bool ChatHandler::HandleSendQuestPartyMsgCommand(const char* args)
 
 bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
 {
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
     if(!target)
         return false;
 
@@ -355,7 +355,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
     else if (state_str == "check_all") check_all = true;
     else return false;
 
-    Player* player = getSelectedPlayer();
+    Player* player = GetSelectedPlayer();
     if (!player) player = m_session->GetPlayer();
 
     if (!list_queue && !check_all)
@@ -598,7 +598,7 @@ bool ChatHandler::HandleDebugBattleGroundCommand(const char* )
 
 bool ChatHandler::HandleDebugThreatList(const char * args)
 {
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
     if(!target || target->IsTotem() || target->IsPet())
         return false;
 
@@ -681,7 +681,7 @@ bool ChatHandler::HandleDebugItemLevelSum(const char* args)
 bool ChatHandler::HandleRemoveLootItem(const char* args)
 {
     ARGS_CHECK
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
     if (!target)
         return false;
         
@@ -851,7 +851,7 @@ bool ChatHandler::HandleSmartAIShowErrorsCommand(const char* args)
     if (!*args)
     {
         //if no arguments given, try getting selected creature
-        target = getSelectedCreature();
+        target = GetSelectedCreature();
 
         if (!target)
         {
@@ -892,7 +892,7 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     if (!*args)
     {
         //if no arguments given, try getting selected creature
-        target = getSelectedCreature();
+        target = GetSelectedCreature();
 
         if (!target)
         {

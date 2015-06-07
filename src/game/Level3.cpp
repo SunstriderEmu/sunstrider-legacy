@@ -854,7 +854,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
 
     if (!arg3)
     {
-        if (!getSelectedPlayer())
+        if (!GetSelectedPlayer())
             return false;
         isAccountNameGiven = false;
     }
@@ -885,7 +885,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
     }
 
     // handler->getSession() == NULL only for console
-    targetAccountId = (isAccountNameGiven) ? AccountMgr::GetId(targetAccountName) : getSelectedPlayer()->GetSession()->GetAccountId();
+    targetAccountId = (isAccountNameGiven) ? AccountMgr::GetId(targetAccountName) : GetSelectedPlayer()->GetSession()->GetAccountId();
     int32 gmRealmID = (isAccountNameGiven) ? atoi(arg3) : atoi(arg2);
     uint32 playerSecurity;
     if (GetSession())
@@ -930,7 +930,7 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
     }
 
     rbac::RBACData* rbac = nullptr;
-    //rbac = isAccountNameGiven ? NULL : getSelectedPlayer()->GetSession()->GetRBACData(); //TODO RBAC
+    //rbac = isAccountNameGiven ? NULL : GetSelectedPlayer()->GetSession()->GetRBACData(); //TODO RBAC
     sAccountMgr->UpdateAccountAccess(rbac, targetAccountId, uint8(gm), gmRealmID);
 
     PSendSysMessage(LANG_YOU_CHANGE_SECURITY, targetAccountName.c_str(), gm);
@@ -1013,11 +1013,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
 
 bool ChatHandler::HandleMaxSkillCommand(const char* /*args*/)
 {
-    
-
-    Player* SelectedPlayer = getSelectedPlayer();
-    if(!SelectedPlayer)
-       SelectedPlayer = m_session->GetPlayer();
+    Player* SelectedPlayer = GetSelectedPlayerOrSelf();
 
     // each skills that have max skill value dependent from level seted to current level max skill value
     SelectedPlayer->UpdateSkillsToMaxSkillsForLevel();
@@ -1049,7 +1045,7 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
 
     int32 level = atol (level_p);
 
-    Player * target = getSelectedPlayer();
+    Player * target = GetSelectedPlayerOrSelf();
     if(!target)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1110,7 +1106,7 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
         max_id=max_id+1;
     }
 
-    Player* target = getSelectedPlayer();
+    Player* target = GetSelectedPlayerOrSelf();
     if(!target)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1133,9 +1129,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
 {
     
 
-    Player* target = getSelectedPlayer();
-    if(!target)
-        target = m_session->GetPlayer();
+    Player* target = GetSelectedPlayerOrSelf();
 
     if (!*args)
     {
@@ -1946,7 +1940,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
         player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player)
     {
@@ -1964,10 +1958,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
 
 bool ChatHandler::HandleLearnCommand(const char* args)
 {
-    
-
-    Player* targetPlayer = getSelectedPlayer();
-
+    Player* targetPlayer = GetSelectedPlayerOrSelf();
     if(!targetPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -2049,9 +2040,7 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
         count = 1;
 
     Player* pl = m_session->GetPlayer();
-    Player* plTarget = getSelectedPlayer();
-    if(!plTarget)
-        plTarget = pl;
+    Player* plTarget = GetSelectedPlayerOrSelf();
 
     TC_LOG_DEBUG("command",GetTrinityString(LANG_ADDITEM), itemId, count);
 
@@ -2128,9 +2117,7 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
     }
 
     Player* pl = m_session->GetPlayer();
-    Player* plTarget = getSelectedPlayer();
-    if(!plTarget)
-        plTarget = pl;
+    Player* plTarget = GetSelectedPlayerOrSelf();
 
     TC_LOG_DEBUG("command",GetTrinityString(LANG_ADDITEMSET), itemsetId);
 
@@ -2746,7 +2733,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args)
     ARGS_CHECK
 
     // can be NULL in console call
-    Player* target = getSelectedPlayer();
+    Player* target = GetSelectedPlayerOrSelf();
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -2813,7 +2800,7 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
     ARGS_CHECK
 
     // can be NULL at console call
-    Player* target = getSelectedPlayer();
+    Player* target = GetSelectedPlayerOrSelf();
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -2913,7 +2900,7 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
     ARGS_CHECK
 
     // can be NULL at console call
-    Player* target = getSelectedPlayer();
+    Player* target = GetSelectedPlayerOrSelf();
 
     std::string namepart = args;
     std::wstring wnamepart;
@@ -3391,7 +3378,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
 {
     ARGS_CHECK
  
-    Creature *pCreature = getSelectedCreature();
+    Creature *pCreature = GetSelectedCreature();
  
     if(!pCreature)
     {
@@ -3565,7 +3552,7 @@ bool ChatHandler::HandleModifyArenaCommand(const char * args)
 {
     ARGS_CHECK
 
-    Player *target = getSelectedPlayer();
+    Player *target = GetSelectedPlayerOrSelf();
     if(!target)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -3599,7 +3586,7 @@ bool ChatHandler::HandleReviveCommand(const char* args)
         SelectedPlayer = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
     }
     else
-        SelectedPlayer = getSelectedPlayer();
+        SelectedPlayer = GetSelectedPlayerOrSelf();
 
     if(!SelectedPlayer)
     {
@@ -3812,7 +3799,7 @@ bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
     if(cPermanent) 
         permanent = atoi(cPermanent);
 
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
     if(!target)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
@@ -3836,7 +3823,7 @@ bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
 
 bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
 {
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
 
     if(!target)
     {
@@ -3905,7 +3892,7 @@ bool ChatHandler::HandleExploreCheatCommand(const char* args)
 
     int flag = atoi((char*)args);
 
-    Player *chr = getSelectedPlayer();
+    Player *chr = GetSelectedPlayerOrSelf();
     if (chr == NULL)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -3964,7 +3951,7 @@ bool ChatHandler::HandleHoverCommand(const char* args)
 
 bool ChatHandler::HandleWaterwalkCommand(const char* args)
 {
-    Player *player = getSelectedPlayer();
+    Player *player = GetSelectedPlayerOrSelf();
     if(!player)
     {
         PSendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -4042,7 +4029,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     }
     else                                                    // player by selection
     {
-        chr = getSelectedPlayer();
+        chr = GetSelectedPlayerOrSelf();
 
         if (chr == NULL)
         {
@@ -4095,7 +4082,7 @@ bool ChatHandler::HandleShowAreaCommand(const char* args)
 
     int area = atoi((char*)args);
 
-    Player *chr = getSelectedPlayer();
+    Player *chr = GetSelectedPlayerOrSelf();
     if (chr == NULL)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -4126,7 +4113,7 @@ bool ChatHandler::HandleHideAreaCommand(const char* args)
 
     int area = atoi((char*)args);
 
-    Player *chr = getSelectedPlayer();
+    Player *chr = GetSelectedPlayerOrSelf();
     if (chr == NULL)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -4636,7 +4623,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
         player = sObjectMgr->GetPlayer(guid);
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player)
     {
@@ -4741,7 +4728,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
         player = sObjectMgr->GetPlayer(guid);
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player)
     {
@@ -4785,7 +4772,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
         player = sObjectMgr->GetPlayer(guid);
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player)
     {
@@ -4827,7 +4814,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
             playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player && !playerGUID)
     {
@@ -4876,7 +4863,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
             playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
     }
     else
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
 
     if(!player && !playerGUID)
     {
@@ -5046,7 +5033,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
 
 bool ChatHandler::HandleAddQuest(const char* args)
 {
-    Player* player = getSelectedPlayer();
+    Player* player = GetSelectedPlayerOrSelf();
     if(!player)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -5112,7 +5099,7 @@ bool ChatHandler::HandleAddQuest(const char* args)
 
 bool ChatHandler::HandleRemoveQuest(const char* args)
 {
-    Player* player = getSelectedPlayer();
+    Player* player = GetSelectedPlayerOrSelf();
     if(!player)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -5162,7 +5149,7 @@ bool ChatHandler::HandleRemoveQuest(const char* args)
 
 bool ChatHandler::HandleCompleteQuest(const char* args)
 {
-    Player* player = getSelectedPlayer();
+    Player* player = GetSelectedPlayerOrSelf();
     if(!player)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -5339,7 +5326,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     uint64 targetGUID;
     if(!*args) //if no name provided, check if we have a player on target
     {
-        player = getSelectedPlayer();
+        player = GetSelectedPlayerOrSelf();
         if(!player)
         {
             SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -6535,7 +6522,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
 {
     
 
-    Creature* caster = getSelectedCreature();
+    Creature* caster = GetSelectedCreature();
 
     if(!caster)
     {
@@ -6595,7 +6582,7 @@ bool ChatHandler::HandleComeToMeCommand(const char *args)
 
     uint32 newFlags = (uint32)strtoul(newFlagStr, NULL, 0);
 
-    Creature* caster = getSelectedCreature();
+    Creature* caster = GetSelectedCreature();
     if(!caster)
     {
         m_session->GetPlayer()->SetUnitMovementFlags(newFlags);
@@ -6659,8 +6646,7 @@ std::string GetTimeString(uint32 time)
 
 bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
 {
-    Player* player = getSelectedPlayer();
-    if (!player) player = m_session->GetPlayer();
+    Player* player = GetSelectedPlayerOrSelf();
     uint32 counter = 0;
     for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
     {
@@ -6703,8 +6689,7 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
     std::string cmd = args;
     if(cmd == "all")
     {
-        Player* player = getSelectedPlayer();
-        if (!player) player = m_session->GetPlayer();
+        Player* player = GetSelectedPlayerOrSelf();
         uint32 counter = 0;
         for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
         {
@@ -6837,7 +6822,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
 
     if(!szExp)
     {
-        Player* player = getSelectedPlayer();
+        Player* player = GetSelectedPlayerOrSelf();
         if(!player)
             return false;
 
@@ -7165,7 +7150,7 @@ bool ChatHandler::HandleModifyGenderCommand(const char *args)
 {
     ARGS_CHECK
 
-    Player *player = getSelectedPlayer();
+    Player *player = GetSelectedPlayerOrSelf();
 
     if(!player)
     {
@@ -7256,7 +7241,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
     char* TargetName = strtok((char*)args, " "); //get entered name
     if (!TargetName) //if no name entered use target
     {
-        player = getSelectedPlayer();
+        player = GetSelectedPlayer();
         if (player) //prevent crash with creature as target
         {
             name = player->GetName();
@@ -7341,7 +7326,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     char* TargetName = strtok((char*)args, " "); //get entered name
     if (!TargetName) //if no name entered use target
     {
-        player = getSelectedPlayer();
+        player = GetSelectedPlayer();
         if (player) //prevent crash with creature as target
         {
             name = player->GetName();
@@ -7672,7 +7657,7 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
     if (!poolId)
         return false;
         
-    Creature *creature = getSelectedCreature();
+    Creature *creature = GetSelectedCreature();
     if (!creature)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -8032,7 +8017,7 @@ bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
 {
     ARGS_CHECK
     
-    Creature* target = getSelectedCreature();
+    Creature* target = GetSelectedCreature();
     if (!target || (target && target->GetTypeId() != TYPEID_UNIT)) {
         PSendSysMessage("Vous devez sélectionner une créature.");
         return true;
@@ -8163,7 +8148,7 @@ bool ChatHandler::HandleNpcSetCombatDistanceCommand(const char* args)
         
     float distance = (float)atof(cDistance);
 
-    Creature *pCreature = getSelectedCreature();
+    Creature *pCreature = GetSelectedCreature();
     if(!pCreature)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
@@ -8189,7 +8174,7 @@ bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
         
     int allow = atoi(cAllow);
 
-    Creature *pCreature = getSelectedCreature();
+    Creature *pCreature = GetSelectedCreature();
     if(!pCreature)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
@@ -8225,7 +8210,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
 
     if(!creatureGUID)
     {
-        Creature* creature = getSelectedCreature();
+        Creature* creature = GetSelectedCreature();
         if(creature)
             creatureGUID = creature->GetDBTableGUIDLow();
     }
@@ -8279,7 +8264,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
     {
         creatureGUID = atoi(cCreatureGUID);
     } else { //else, try to get selected creature
-        creature = getSelectedCreature();
+        creature = GetSelectedCreature();
         if(!creature)
         {
             SendSysMessage(LANG_SELECT_CREATURE);

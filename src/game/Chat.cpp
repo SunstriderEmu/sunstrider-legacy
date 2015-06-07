@@ -1356,7 +1356,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
     return BuildChatPacket(data, chatType, language, senderGUID, receiverGUID, message, chatTag, senderName, receiverName, achievementId, gmMessage, channelName);
 }
 
-Player * ChatHandler::getSelectedPlayer()
+Player * ChatHandler::GetSelectedPlayer() const
 {
     if(!m_session)
         return nullptr;
@@ -1369,7 +1369,25 @@ Player * ChatHandler::getSelectedPlayer()
     return sObjectMgr->GetPlayer(guid);
 }
 
-Unit* ChatHandler::GetSelectedUnit()
+Player* ChatHandler::GetSelectedPlayerOrSelf() const
+{
+    if (!m_session)
+        return nullptr;
+
+    uint64 selected = m_session->GetPlayer()->GetTarget();
+    if (!selected)
+        return m_session->GetPlayer();
+
+    // first try with selected target
+    Player* targetPlayer = ObjectAccessor::FindPlayer(selected);
+    // if the target is not a player, then return self
+    if (!targetPlayer)
+        targetPlayer = m_session->GetPlayer();
+
+    return targetPlayer;
+}
+
+Unit* ChatHandler::GetSelectedUnit() const
 {
     if(!m_session)
         return nullptr;
@@ -1382,7 +1400,7 @@ Unit* ChatHandler::GetSelectedUnit()
     return ObjectAccessor::GetUnit(*m_session->GetPlayer(),guid);
 }
 
-Creature* ChatHandler::getSelectedCreature()
+Creature* ChatHandler::GetSelectedCreature() const
 {
     if(!m_session)
         return nullptr;
@@ -1680,8 +1698,8 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
     }
     else
     {
-        if(getSelectedPlayer())
-            plr = getSelectedPlayer();
+        if(GetSelectedPlayer())
+            plr = GetSelectedPlayer();
         else
             plr = m_session->GetPlayer();
 
@@ -1737,7 +1755,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
     }
     else
     {
-        Player* pl = getSelectedPlayer();
+        Player* pl = GetSelectedPlayer();
         // if allowed player pointer
         if (player)
             *player = pl;

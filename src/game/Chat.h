@@ -631,9 +631,10 @@ class ChatHandler
         bool HandleReportLagCommand(const char* args);
         bool HandleBattlegroundCommand(const char* args);
 
-        Player*   getSelectedPlayer();
-        Creature* getSelectedCreature();
-        Unit*     GetSelectedUnit();
+        Player*   GetSelectedPlayer() const;
+        Creature* GetSelectedCreature() const;
+        Unit*     GetSelectedUnit() const;
+        Player*   GetSelectedPlayerOrSelf() const;
         char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = NULL);
         uint32    extractSpellIdFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
