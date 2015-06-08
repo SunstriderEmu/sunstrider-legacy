@@ -526,6 +526,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "unlinkgameevent",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcUnlinkGameEventCommand,  "", NULL },
         { "goto",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGotoCommand,             "", NULL },
         { "fly",            SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcFlyCommand,              "", NULL },
+        { "near",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcNearCommand,             "", NULL },
 
         //{ TODO: fix or remove this commands
         { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "", NULL },

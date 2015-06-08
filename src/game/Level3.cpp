@@ -2451,10 +2451,47 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
     return true;
 }
 
+
+bool ChatHandler::HandleNpcNearCommand(const char* args)
+{
+    float distance = (!*args) ? 10 : atol(args);
+    uint32 count = 0;
+
+    Player* pl = m_session->GetPlayer();
+    QueryResult result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
+        "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
+        "FROM creature WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' ORDER BY order_",
+        pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),
+        pl->GetMapId(),pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),distance*distance);
+
+    if (result)
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+            uint32 guid = fields[0].GetUInt32();
+            uint32 entry = fields[1].GetUInt32();
+            float x = fields[2].GetFloat();
+            float y = fields[3].GetFloat();
+            float z = fields[4].GetFloat();
+            int mapid = fields[5].GetUInt16();
+
+            CreatureTemplate const * cInfo = sObjectMgr->GetCreatureTemplate(entry);
+            if(!cInfo)
+                continue;
+
+            PSendSysMessage("guid %u, id %u - |cffffffff|Hcreature:%d|h[%s X:%f Y:%f Z:%f MapId:%d]|h|r", guid, entry, guid, cInfo->Name.c_str(), x, y, z, mapid);
+
+            ++count;
+        } while (result->NextRow());
+    }
+
+    PSendSysMessage("Found near creatures (distance %u): %u",distance,count);
+    return true;
+}
+
 bool ChatHandler::HandleNearObjectCommand(const char* args)
 {
-    
-
     float distance = (!*args) ? 10 : atol(args);
     uint32 count = 0;
 

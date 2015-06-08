@@ -386,6 +386,7 @@ class ChatHandler
         bool HandleDelObjectCommand(const char* args);
         bool HandleMoveObjectCommand(const char* args);
         bool HandleNpcGotoCommand(const char* args);
+        bool HandleNpcNearCommand(const char* args);
         bool HandleNpcFlyCommand(const char* args);
         bool HandleTurnObjectCommand(const char* args);
         bool HandleObjectStateCommand(const char* args);
