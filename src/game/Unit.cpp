@@ -1199,7 +1199,7 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *cas
         return SPELL_FAILED_UNKNOWN;
     }
 
-    if(!(spellInfo->Targets & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK)))
+    if(!(spellInfo->Targets & ( TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_UNIT_ENEMY)))
     {
         TC_LOG_ERROR("spell","CastSpell: spell id %i by caster: %s %u) is not gameobject spell", spellId,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;

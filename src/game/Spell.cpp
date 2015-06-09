@@ -135,7 +135,7 @@ void SpellCastTargets::setGOTarget(GameObject *target)
 {
     m_GOTarget = target;
     m_GOTargetGUID = target->GetGUID();
-    //    m_targetMask |= TARGET_FLAG_OBJECT;
+    //    m_targetMask |= TARGET_FLAG_GAMEOBJECT;
 }
 
 void SpellCastTargets::setItemTarget(Item* item)
@@ -191,7 +191,7 @@ bool SpellCastTargets::read( WorldPacket * data, Unit *caster )
     if( m_targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNIT_MINIPET) )
         data->readPackGUID(m_unitTargetGUID);
 
-    if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK ))
+    if( m_targetMask & ( TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_UNIT_ENEMY ))
         data->readPackGUID(m_GOTargetGUID);
 
     if(( m_targetMask & ( TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM )) && caster->GetTypeId() == TYPEID_PLAYER)
@@ -225,7 +225,7 @@ bool SpellCastTargets::read( WorldPacket * data, Unit *caster )
         *data >> m_strTarget;
     }
 
-    if( m_targetMask & (TARGET_FLAG_CORPSE | TARGET_FLAG_PVP_CORPSE ) )
+    if( m_targetMask & TARGET_FLAG_CORPSE_MASK )
         data->readPackGUID(m_CorpseTargetGUID);
 
     // find real units/GOs
@@ -237,7 +237,7 @@ void SpellCastTargets::write ( WorldPacket * data )
 {
     *data << uint32(m_targetMask);
 
-    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_PVP_CORPSE | TARGET_FLAG_OBJECT | TARGET_FLAG_CORPSE | TARGET_FLAG_UNIT_MINIPET ) )
+    if( m_targetMask & ( TARGET_FLAG_UNIT | TARGET_FLAG_CORPSE_MASK | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_UNIT_MINIPET ) )
     {
         if(m_targetMask & TARGET_FLAG_UNIT)
         {
@@ -246,14 +246,14 @@ void SpellCastTargets::write ( WorldPacket * data )
             else
                 *data << uint8(0);
         }
-        else if( m_targetMask & ( TARGET_FLAG_OBJECT | TARGET_FLAG_OBJECT_UNK ) )
+        else if( m_targetMask & ( TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_UNIT_ENEMY ) )
         {
             if(m_GOTarget)
                 *data << m_GOTarget->GetPackGUID();
             else
                 *data << uint8(0);
         }
-        else if( m_targetMask & ( TARGET_FLAG_CORPSE | TARGET_FLAG_PVP_CORPSE ) )
+        else if( m_targetMask & TARGET_FLAG_CORPSE_MASK)
             data->appendPackGUID(m_CorpseTargetGUID);
         else
             *data << uint8(0);
@@ -395,9 +395,9 @@ Spell::~Spell()
     delete m_spellValue;
 }
 
-void Spell::FillTargetMap()
+void Spell::SelectSpellTargets()
 {
-    for(uint32 i = 0; i < 3; ++i)
+    for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         // not call for empty effect.
         // Also some spells use not used effect targets for store targets for dummy effect in triggered spells
@@ -605,14 +605,14 @@ void Spell::FillTargetMap()
                     if(Pet* pet = m_caster->GetPet())
                         AddUnitTarget(pet, i);
                     break;
-                /*case SPELL_EFFECT_ENCHANT_ITEM:
-                case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
-                case SPELL_EFFECT_DISENCHANT:
-                case SPELL_EFFECT_FEED_PET:
-                case SPELL_EFFECT_PROSPECTING:
-                    if(m_targets.getItemTarget())
-                        AddItemTarget(m_targets.getItemTarget(), i);
-                    break;*/
+                //case SPELL_EFFECT_ENCHANT_ITEM:
+                //case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
+                //case SPELL_EFFECT_DISENCHANT:
+                //case SPELL_EFFECT_FEED_PET:
+                //case SPELL_EFFECT_PROSPECTING:
+                //    if(m_targets.getItemTarget())
+                //        AddItemTarget(m_targets.getItemTarget(), i);
+                //    break;
                 case SPELL_EFFECT_APPLY_AURA:
                     switch(m_spellInfo->Effects[i].ApplyAuraName)
                     {
@@ -2525,7 +2525,7 @@ void Spell::cast(bool skipCheck)
         }
     }
 
-    FillTargetMap();
+    SelectSpellTargets();
 
     // Spell may be finished after target map check
     if(m_spellState == SPELL_STATE_FINISHED)                
@@ -4633,7 +4633,7 @@ SpellFailedReason Spell::CheckCast(bool strict)
                 if(m_caster->GetCharmerGUID())
                     return SPELL_FAILED_CHARMED;
 
-                // hack FillTargetMap is call after this so...
+                // hack SelectSpellTargets is call after this so...
                 if (m_spellInfo->Id == 34630) {
                     if (Creature* target = m_caster->FindNearestCreature(19849, 15.0f, true))
                         m_targets.setUnitTarget(target);
@@ -4960,7 +4960,7 @@ bool Spell::CanAutoCast(Unit* target)
 
     if(result == SPELL_CAST_OK || result == SPELL_FAILED_UNIT_NOT_INFRONT)
     {
-        FillTargetMap();
+        SelectSpellTargets();
         //check if among target units, our WANTED target is as well (->only self cast spells return false)
         for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
             if( ihit->targetGUID == targetguid )

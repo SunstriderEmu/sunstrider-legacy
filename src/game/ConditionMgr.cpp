@@ -1229,7 +1229,7 @@ bool ConditionMgr::addToGossipMenuItems(Condition* cond)
 
 bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
 {
-  /*  uint32 conditionEffMask = cond->SourceGroup;
+    uint32 conditionEffMask = cond->SourceGroup;
     SpellInfo* spellInfo = const_cast<SpellInfo*>(sSpellMgr->EnsureSpellInfo(cond->SourceEntry));
     std::list<uint32> sharedMasks;
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -1307,7 +1307,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
             break;
         }
     }
-    */
+
     return true;
 }
 
@@ -1547,7 +1547,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
 
             uint32 origGroup = cond->SourceGroup;
 
-          /*  for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
                 if (!((1 << i) & cond->SourceGroup))
                     continue;
@@ -1575,7 +1575,7 @@ bool ConditionMgr::isSourceTypeValid(Condition* cond)
                 TC_LOG_ERROR("sql.sql", "SourceEntry %u SourceGroup %u in `condition` table - spell %u does not have implicit targets of types: _AREA_, _CONE_, _NEARBY_ for effect %u, SourceGroup needs correction, ignoring.", cond->SourceEntry, origGroup, cond->SourceEntry, uint32(i));
                 cond->SourceGroup &= ~(1 << i);
             }
-            */
+            
             // all effects were removed, no need to add the condition at all
             if (!cond->SourceGroup)
                 return false;

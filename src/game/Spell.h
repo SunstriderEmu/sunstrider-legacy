@@ -352,7 +352,7 @@ class Spell
 
         void WriteSpellGoTargets( WorldPacket * data );
         void WriteAmmoToPacket( WorldPacket * data );
-        void FillTargetMap();
+        void SelectSpellTargets();
 
         void SetTargetMap(uint32 i, uint32 cur);
 
