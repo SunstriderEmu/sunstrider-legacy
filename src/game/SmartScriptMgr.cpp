@@ -141,7 +141,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         uint32 count = 0;
         temp.entryOrGuid = fields[count++].GetInt32();
 
-        if(temp.entryOrGuid == debugentryOrGuid)
+        if(debugentryOrGuid && temp.entryOrGuid == debugentryOrGuid)
         {
             TC_LOG_ERROR("sql.sql","debug");
         }

@@ -785,15 +785,26 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_CALL_GROUPEVENTHAPPENS:
         {
-            if (!unit)
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
                 break;
 
-            if (IsPlayer(unit) && GetBaseObject())
+            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
-                unit->ToPlayer()->GroupEventHappens(e.action.quest.quest, GetBaseObject());
-                TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
-                    unit->GetGUIDLow(), e.action.quest.quest);
+                if (IsPlayer(*itr) && GetBaseObject())
+                {
+                    (*itr)->ToPlayer()->GroupEventHappens(e.action.quest.quest, GetBaseObject());
+                    TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction: SMART_ACTION_CALL_GROUPEVENTHAPPENS: Player %u, group credit for quest %u",
+                        unit->GetGUIDLow(), e.action.quest.quest);
+                }
             }
+            /*
+            // Special handling for vehicles
+            if (Vehicle* vehicle = unit->GetVehicleKit())
+                for (SeatMap::iterator it = vehicle->Seats.begin(); it != vehicle->Seats.end(); ++it)
+                    if (Player* player = ObjectAccessor::FindPlayer(it->second.Passenger.Guid))
+                        player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
+            */
             break;
         }
         case SMART_ACTION_REMOVEAURASFROMSPELL:
@@ -3615,6 +3626,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
             case SMART_EVENT_FRIENDLY_HEALTH_PCT:
             case SMART_EVENT_DISTANCE_CREATURE:
             case SMART_EVENT_DISTANCE_GAMEOBJECT:
+            case SMART_EVENT_VICTIM_NOT_IN_LOS:
             {
                 ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
