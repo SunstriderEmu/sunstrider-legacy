@@ -1753,7 +1753,6 @@ class Unit : public WorldObject
         void SendPetActionFeedback (uint8 msg);
         void SendPetTalk (uint32 pettalk);
         void SendPetSpellCooldown (uint32 spellid, time_t cooltime);
-        void SendPetClearCooldown (uint32 spellid);
         //send AI_REACTION_HOSTILE (aggro sound) to owner if owner exists and is a player
         void SendPetAIReaction();
         ///----------End of Pet responses methods----------

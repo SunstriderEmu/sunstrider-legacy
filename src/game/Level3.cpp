@@ -3986,7 +3986,111 @@ bool ChatHandler::HandleHoverCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleWaterwalkCommand(const char* args)
+bool ChatHandler::HandleGodModeCheatCommand(const char *args)
+{
+    if (!m_session && !m_session->GetPlayer())
+        return false;
+
+    std::string argstr = (char*)args;
+
+    if (!*args)
+        argstr = (m_session->GetPlayer()->GetCommandStatus(CHEAT_GOD)) ? "off" : "on";
+
+    if (argstr == "off")
+    {
+        m_session->GetPlayer()->SetCommandStatusOff(CHEAT_GOD);
+        SendSysMessage("Godmode is OFF. You can take damage.");
+        return true;
+    }
+    else if (argstr == "on")
+    {
+        m_session->GetPlayer()->SetCommandStatusOn(CHEAT_GOD);
+        SendSysMessage("Godmode is ON. You won't take damage.");
+        return true;
+    }
+
+    return false;
+}
+
+bool ChatHandler::HandleCasttimeCheatCommand(const char *args)
+{
+    if (!m_session && !m_session->GetPlayer())
+        return false;
+
+    std::string argstr = (char*)args;
+
+    if (!*args)
+        argstr = (m_session->GetPlayer()->GetCommandStatus(CHEAT_CASTTIME)) ? "off" : "on";
+
+    if (argstr == "off")
+    {
+        m_session->GetPlayer()->SetCommandStatusOff(CHEAT_CASTTIME);
+        SendSysMessage("CastTime Cheat is OFF. Your spells will have a casttime.");
+        return true;
+    }
+    else if (argstr == "on")
+    {
+        m_session->GetPlayer()->SetCommandStatusOn(CHEAT_CASTTIME);
+        SendSysMessage("CastTime Cheat is ON. Your spells won't have a casttime.");
+        return true;
+    }
+
+    return false;
+}
+
+bool ChatHandler::HandleCoolDownCheatCommand(const char *args)
+{
+    if (!m_session && !m_session->GetPlayer())
+        return false;
+
+    std::string argstr = (char*)args;
+
+    if (!*args)
+        argstr = (m_session->GetPlayer()->GetCommandStatus(CHEAT_COOLDOWN)) ? "off" : "on";
+
+    if (argstr == "off")
+    {
+        m_session->GetPlayer()->SetCommandStatusOff(CHEAT_COOLDOWN);
+        SendSysMessage("Cooldown Cheat is OFF. You are on the global cooldown.");
+        return true;
+    }
+    else if (argstr == "on")
+    {
+        m_session->GetPlayer()->SetCommandStatusOn(CHEAT_COOLDOWN);
+        SendSysMessage("Cooldown Cheat is ON. You are not on the global cooldown.");
+        return true;
+    }
+
+    return false;
+}
+
+bool ChatHandler::HandlePowerCheatCommand(const char *args)
+{
+    if (!m_session && !m_session->GetPlayer())
+        return false;
+
+    std::string argstr = (char*)args;
+
+    if (!*args)
+        argstr = (m_session->GetPlayer()->GetCommandStatus(CHEAT_POWER)) ? "off" : "on";
+
+    if (argstr == "off")
+    {
+        m_session->GetPlayer()->SetCommandStatusOff(CHEAT_POWER);
+        SendSysMessage("Power Cheat is OFF. You need mana/rage/energy to use spells.");
+        return true;
+    }
+    else if (argstr == "on")
+    {
+        m_session->GetPlayer()->SetCommandStatusOn(CHEAT_POWER);
+        SendSysMessage("Power Cheat is ON. You don't need mana/rage/energy to use spells.");
+        return true;
+    }
+
+    return false;
+}
+
+bool ChatHandler::HandleWaterwalkCheatCommand(const char* args)
 {
     Player *player = GetSelectedPlayerOrSelf();
     if(!player)
@@ -4008,7 +4112,7 @@ bool ChatHandler::HandleWaterwalkCommand(const char* args)
 
     PSendSysMessage(LANG_YOU_SET_WATERWALK, args, player->GetName().c_str());
     if(needReportToTarget(player))
-        ChatHandler(player).PSendSysMessage(LANG_YOUR_WATERWALK_SET, args, GetName().c_str());
+        PSendSysMessage(LANG_YOUR_WATERWALK_SET, args, GetName().c_str());
     return true;
 
 }
@@ -8083,6 +8187,14 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
     sObjectMgr->LoadSpellTemplates();
     sSpellMgr->LoadSpellCustomAttr(); //re apply custom attr
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadItemExtendedCostCommand(const char*)
+{
+    TC_LOG_INFO( "command", "Re-Loading Item Extended Cost Table..." );
+    sObjectMgr->LoadItemExtendedCost();
+    SendGlobalGMSysMessage("DB table `item_extended_cost` reloaded.");
     return true;
 }
 

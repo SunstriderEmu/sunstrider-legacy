@@ -144,7 +144,6 @@ class ChatHandler
         bool HandleVisibleCommand(const char* args);
         bool HandleGPSCommand(const char* args);
         bool HandleGPSSCommand(const char* args);
-        bool HandleTaxiCheatCommand(const char* args);
         bool HandleWhispersCommand(const char* args);
         bool HandleNameTeleCommand(const char* args);
         bool HandleGroupTeleCommand(const char* args);
@@ -308,6 +307,7 @@ class ChatHandler
         bool HandleReloadSpellPetAurasCommand(const char* args);
         bool HandleReloadSpellDisabledCommand(const char* args);
         bool HandleReloadPageTextsCommand(const char* args);
+        bool HandleReloadItemExtendedCostCommand(const char*);
         bool HandleReloadItemEnchantementsCommand(const char* args);
         bool HandleReloadLocalesCreatureCommand(const char* args);
         bool HandleReloadLocalesGameobjectCommand(const char* args);
@@ -440,9 +440,7 @@ class ChatHandler
         bool HandleNearGraveCommand(const char* args);
         bool HandleActivateObjectCommand(const char* args);
         bool HandleSpawnTransportCommand(const char* args);
-        bool HandleExploreCheatCommand(const char* args);
         bool HandleHoverCommand(const char* args);
-        bool HandleWaterwalkCommand(const char* args);
         bool HandleMmapPathCommand(const char* args);
         bool HandleMmapLocCommand(const char* args);
         bool HandleMmapLoadedTilesCommand(const char* args);
@@ -631,6 +629,15 @@ class ChatHandler
         bool HandleSpellInfoCommand(const char* args);
         bool HandleReportLagCommand(const char* args);
         bool HandleBattlegroundCommand(const char* args);
+
+        //Cheat commands
+        bool HandlePowerCheatCommand(const char *args);
+        bool HandleCoolDownCheatCommand(const char *args);
+        bool HandleCasttimeCheatCommand(const char *args);
+        bool HandleGodModeCheatCommand(const char *args);
+        bool HandleExploreCheatCommand(const char* args);
+        bool HandleWaterwalkCheatCommand(const char* args);
+        bool HandleTaxiCheatCommand(const char* args);
 
         Player*   GetSelectedPlayer() const;
         Creature* GetSelectedCreature() const;

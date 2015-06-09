@@ -1022,6 +1022,16 @@ struct WowarmoryFeedEntry
 
 typedef std::vector<WowarmoryFeedEntry> WowarmoryFeeds;
 
+enum PlayerCommandStates
+{
+    CHEAT_NONE      = 0x00,
+    CHEAT_GOD       = 0x01,
+    CHEAT_CASTTIME  = 0x02,
+    CHEAT_COOLDOWN  = 0x04,
+    CHEAT_POWER     = 0x08,
+    CHEAT_WATERWALK = 0x10
+};
+
 class PlayerTaxi
 {
     public:
@@ -1192,6 +1202,11 @@ class Player : public Unit
         void GiveXP(uint32 xp, Unit* victim);
         void GiveLevel(uint32 level);
         void InitStatsForLevel(bool reapplyMods = false);
+
+        // .cheat command related
+        bool GetCommandStatus(uint32 command) const { return _activeCheats & command; }
+        void SetCommandStatusOn(uint32 command)     { _activeCheats |= command; }
+        void SetCommandStatusOff(uint32 command)    { _activeCheats &= ~command; }
 
         // Played Time Stuff
         time_t m_logintime;
@@ -1668,9 +1683,11 @@ class Player : public Unit
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs );
-        void RemoveSpellCooldown(uint32 spell_id) { m_spellCooldowns.erase(spell_id); }
+        void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
+        void SendClearCooldown(uint32 spell_id, Unit* target);
+
         void _LoadSpellCooldowns(QueryResult result);
         void _SaveSpellCooldowns(SQLTransaction trans);
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
@@ -2642,6 +2659,8 @@ class Player : public Unit
         // Temporarily removed pet cache
         uint32 m_temporaryUnsummonedPetNumber;
         uint32 m_oldpetspell;
+
+        uint32 _activeCheats; //mask from PlayerCommandStates
 
         uint64 m_miniPet;
         GuardianPetList m_guardianPets;

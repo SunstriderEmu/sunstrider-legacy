@@ -261,6 +261,10 @@ void Spell::EffectInstaKill(uint32 /*i*/)
     if( !unitTarget || !unitTarget->IsAlive() )
         return;
 
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        if (unitTarget->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+            return;
+
     // Demonic Sacrifice
     if(m_spellInfo->Id==18788 && unitTarget->GetTypeId()==TYPEID_UNIT)
     {
@@ -516,10 +520,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER) {
                             m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id);
                             
-                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                            data << uint32(m_spellInfo->Id);
-                            data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            m_caster->ToPlayer()->SendClearCooldown(m_spellInfo->Id, m_caster);
                         }
                         return;
                     }
@@ -1126,10 +1127,7 @@ void Spell::EffectDummy(uint32 i)
                             {
                                 (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
-                                WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                                data << uint32(classspell);
-                                data << uint64(m_caster->GetGUID());
-                                (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                                m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
                             }
                         } else { TC_LOG_ERROR("FIXME","EffectDummy: spellInfo for spell %u not found (case 14185)",classspell); }
                     }
@@ -1823,10 +1821,7 @@ void Spell::EffectDummy(uint32 i)
                         {
                             (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
-                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                            data << uint32(classspell);
-                            data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
                         }
                     }
                     return;
@@ -2067,10 +2062,7 @@ void Spell::EffectDummy(uint32 i)
                         {
                             (m_caster->ToPlayer())->RemoveSpellCooldown(classspell);
 
-                            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                            data << uint32(classspell);
-                            data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            m_caster->ToPlayer()->SendClearCooldown(classspell, m_caster);
                         }
                     }
                     return;

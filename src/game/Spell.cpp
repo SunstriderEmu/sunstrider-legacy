@@ -475,10 +475,7 @@ void Spell::FillTargetMap()
                                 {
                                     (m_caster->ToPlayer())->RemoveSpellCooldown(m_spellInfo->Id);
 
-                                    WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-                                    data << uint32(m_spellInfo->Id);
-                                    data << uint64(m_caster->GetGUID());
-                                    (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                                    m_caster->ToPlayer()->SendClearCooldown(m_spellInfo->Id, m_caster);
                                 }
 
                                 SendCastResult(SPELL_FAILED_NO_EDIBLE_CORPSES);
@@ -2316,6 +2313,14 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     // calculate cast time (calculated after first CheckCast to prevent charge counting for first CheckCast fail)
     m_casttime = m_spellInfo->CalcCastTime(this);
 
+    // Set cast time to 0 if .cheat casttime is enabled.
+
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_CASTTIME))
+            m_casttime = 0;
+    }
+
     // set timer base at cast time
     ReSetTimer();
 
@@ -2631,6 +2636,13 @@ void Spell::cast(bool skipCheck)
             m_caster->RemoveAurasDueToSpell(12043);
     }
     
+    // Clear spell cooldowns after every spell is cast if .cheat cooldown is enabled.
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_COOLDOWN))
+            m_caster->ToPlayer()->RemoveSpellCooldown(m_spellInfo->Id, true);
+    }
+
     SetExecutedCurrently(false);
 }
 
@@ -3608,6 +3620,13 @@ void Spell::TakePower()
 {
     if(m_CastItem || m_triggeredByAuraSpell)
         return;
+
+    //Don't take power if the spell is cast while .cheat power is enabled.
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (m_caster->ToPlayer()->GetCommandStatus(CHEAT_POWER))
+            return;
+    }
 
     bool hit = true;
     if(m_caster->GetTypeId() == TYPEID_PLAYER)

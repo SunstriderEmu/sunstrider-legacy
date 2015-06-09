@@ -730,6 +730,12 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             return 0;
     }
 
+    // Handler for god command
+
+    if(pVictim->GetTypeId() == TYPEID_PLAYER)
+        if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+            return 0;
+
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled )
     {
@@ -11603,18 +11609,6 @@ void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
     data << uint32(spellid);
     data << uint32(cooltime);
 
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
-}
-
-void Unit::SendPetClearCooldown (uint32 spellid)
-{
-    Unit* owner = GetOwner();
-    if(!owner || owner->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-    data << uint32(spellid);
-    data << uint64(GetGUID());
     (owner->ToPlayer())->GetSession()->SendPacket(&data);
 }
 
