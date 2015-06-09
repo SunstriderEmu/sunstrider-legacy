@@ -459,6 +459,8 @@ Player::Player (WorldSession *session) :
 
     m_isActive = true;
 
+    _activeCheats = CHEAT_NONE;
+
     m_farsightVision = false;
     
     // Experience Blocking
@@ -3459,6 +3461,13 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
         removeSpell(itr2->second.spell, disabled);
 }
 
+void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */) 
+{ 
+    m_spellCooldowns.erase(spell_id); 
+
+    if (update)
+        SendClearCooldown(spell_id, this);
+}
 void Player::RemoveArenaSpellCooldowns()
 {
     // remove cooldowns on spells that has < 15 min CD
@@ -3475,10 +3484,7 @@ void Player::RemoveArenaSpellCooldowns()
             entry->CategoryRecoveryTime <= 15 * MINUTE * 1000 )
         {
             // notify player
-            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-            data << uint32(itr->first);
-            data << GetGUID();
-            GetSession()->SendPacket(&data);
+            SendClearCooldown(itr->first, this);
             // remove cooldown
             m_spellCooldowns.erase(itr);
         }
@@ -3491,13 +3497,18 @@ void Player::RemoveAllSpellCooldown()
     {
         for(SpellCooldowns::const_iterator itr = m_spellCooldowns.begin();itr != m_spellCooldowns.end(); ++itr)
         {
-            WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
-            data << uint32(itr->first);
-            data << uint64(GetGUID());
-            GetSession()->SendPacket(&data);
+            SendClearCooldown(itr->first, this);
         }
         m_spellCooldowns.clear();
     }
+}
+
+void Player::SendClearCooldown(uint32 spell_id, Unit* target)
+{
+    WorldPacket data(SMSG_CLEAR_COOLDOWN, 4+8);
+    data << uint32(spell_id);
+    data << uint64(target->GetGUID());
+    SendDirectMessage(&data);
 }
 
 void Player::_LoadSpellCooldowns(QueryResult result)
@@ -18459,7 +18470,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
 
     if(crItem->ExtendedCost)
     {
-        ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
+        ItemExtendedCostEntry const* iece = sObjectMgr->GetItemExtendedCost(crItem->ExtendedCost);
         if(!iece)
         {
             TC_LOG_ERROR("entities.player","Item %u have wrong ExtendedCost field value %u", pProto->ItemId, crItem->ExtendedCost);
@@ -18549,7 +18560,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         ModifyMoney( -(int32)price );
         if(crItem->ExtendedCost)                            // case for new honor system
         {
-            ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
+            ItemExtendedCostEntry const* iece = sObjectMgr->GetItemExtendedCost(crItem->ExtendedCost);
             if(iece->reqhonorpoints)
                 ModifyHonorPoints( - int32(iece->reqhonorpoints * count));
             if(iece->reqarenapoints)
@@ -18594,7 +18605,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         ModifyMoney( -(int32)price );
         if(crItem->ExtendedCost)                            // case for new honor system
         {
-            ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
+            ItemExtendedCostEntry const* iece = sObjectMgr->GetItemExtendedCost(crItem->ExtendedCost);
             if(iece->reqhonorpoints)
                 ModifyHonorPoints( - int32(iece->reqhonorpoints));
             if(iece->reqarenapoints)
@@ -21074,6 +21085,9 @@ void Player::HandleFall(MovementInfo const& movementInfo)
         {
             uint32 damage = (uint32)(damageperc * GetMaxHealth()*sWorld->GetRate(RATE_DAMAGE_FALL));
         
+            if (GetCommandStatus(CHEAT_GOD))
+                damage = 0;
+
             float height = movementInfo.pos.m_positionZ;
             UpdateGroundPositionZ(movementInfo.pos.m_positionX, movementInfo.pos.m_positionY, height);
 
@@ -21300,6 +21314,9 @@ void Player::UpdateCharmedAI()
 void Player::AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd)
 {
     if(!spellInfo || !spellInfo->StartRecoveryTime)
+        return;
+
+    if (GetCommandStatus(CHEAT_COOLDOWN))
         return;
 
     uint32 cdTime = spellInfo->StartRecoveryTime;

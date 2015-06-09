@@ -98,4 +98,6 @@ void WorldDatabaseConnection::DoPrepareStatements()
     PrepareStatement(WORLD_SEL_WAYPOINT_PATH_TYPE, "SELECT pathType FROM waypoint_info WHERE id = ? LIMIT 1", CONNECTION_SYNCH);
     PrepareStatement(WORLD_REP_WAYPOINT_PATH_DIRECTION, "REPLACE INTO waypoint_info (id, pathDirection) VALUES (?, ?)", CONNECTION_ASYNC);
     PrepareStatement(WORLD_REP_WAYPOINT_PATH_TYPE, "REPLACE INTO waypoint_info (id, pathType) VALUES (?, ?)", CONNECTION_ASYNC);
+
+    PrepareStatement(WORLD_SEL_ITEM_EXTENDED_COST, "SELECT id, reqhonorpoints, reqarenapoints, reqitem0, reqitem1, reqitem2, reqitem3, reqitem4, reqitemcount0, reqitemcount1, reqitemcount2, reqitemcount3, reqitemcount4, reqpersonalarenarating FROM item_extended_cost", CONNECTION_SYNCH);
 }

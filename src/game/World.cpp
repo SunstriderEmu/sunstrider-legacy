@@ -1287,6 +1287,9 @@ void World::SetInitialWorldSettings()
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
 
+    TC_LOG_INFO("server.loading","Loading Item Extended Cost Data...");
+    sObjectMgr->LoadItemExtendedCost();
+
     TC_LOG_INFO("server.loading","Loading Spell templates...");
     sObjectMgr->LoadSpellTemplates();
 

@@ -96,7 +96,7 @@ DBCStorage <GtRegenMPPerSptEntry>         sGtRegenMPPerSptStore(GtRegenMPPerSptf
 DBCStorage <ItemEntry>                    sItemStore(Itemfmt);
 //DBCStorage <ItemCondExtCostsEntry> sItemCondExtCostsStore(ItemCondExtCostsEntryfmt);
 //DBCStorage <ItemDisplayInfoEntry> sItemDisplayInfoStore(ItemDisplayTemplateEntryfmt); -- not used currently
-DBCStorage <ItemExtendedCostEntry> sItemExtendedCostStore(ItemExtendedCostEntryfmt);
+//moved to db DBCStorage <ItemExtendedCostEntry> sItemExtendedCostStore(ItemExtendedCostEntryfmt);
 DBCStorage <ItemRandomPropertiesEntry> sItemRandomPropertiesStore(ItemRandomPropertiesfmt);
 DBCStorage <ItemRandomSuffixEntry> sItemRandomSuffixStore(ItemRandomSuffixfmt);
 DBCStorage <ItemSetEntry> sItemSetStore(ItemSetEntryfmt);
@@ -298,7 +298,7 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemStore,                dbcPath,"Item.dbc");
     //LoadDBC(availableDbcLocales,bad_dbc_files,sItemDisplayInfoStore,     dbcPath,"ItemDisplayInfo.dbc");     -- not used currently
     //LoadDBC(availableDbcLocales,bad_dbc_files,sItemCondExtCostsStore,    dbcPath,"ItemCondExtCosts.dbc");
-    LoadDBC(availableDbcLocales,bad_dbc_files,sItemExtendedCostStore,    dbcPath,"ItemExtendedCost.dbc");
+    //moved to db LoadDBC(availableDbcLocales,bad_dbc_files,sItemExtendedCostStore,    dbcPath,"ItemExtendedCost.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemRandomPropertiesStore,dbcPath,"ItemRandomProperties.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemRandomSuffixStore,    dbcPath,"ItemRandomSuffix.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sItemSetStore,             dbcPath,"ItemSet.dbc");
@@ -524,7 +524,6 @@ void LoadDBCStores(const std::string& dataPath)
         !sSkillLineAbilityStore.LookupEntry(17514) ||
         !sMapStore.LookupEntry(598)                ||
         !sGemPropertiesStore.LookupEntry(1127)     ||
-        !sItemExtendedCostStore.LookupEntry(2425)  ||
         !sCharTitlesStore.LookupEntry(71)          ||
         !sAreaStore.LookupEntry(1768)              )
     {

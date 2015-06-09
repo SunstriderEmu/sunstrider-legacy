@@ -432,7 +432,7 @@ struct ItemDisplayInfoEntry
 
 struct ItemExtendedCostEntry
 {
-    uint32      ID;                                         // 0 extended-cost entry id
+    //uint32      ID;                                         // 0 extended-cost entry id
     uint32      reqhonorpoints;                             // 1 required honor points
     uint32      reqarenapoints;                             // 2 required arena points
     uint32      reqitem[5];                                 // 3-7 required item id

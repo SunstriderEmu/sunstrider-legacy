@@ -7814,7 +7814,7 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
         return false;
     }
 
-    if(ExtendedCost && !sItemExtendedCostStore.LookupEntry(ExtendedCost))
+    if(ExtendedCost && !GetItemExtendedCost(ExtendedCost))
     {
         if(pl)
             ChatHandler(pl).PSendSysMessage(LANG_EXTENDED_COST_NOT_EXIST,ExtendedCost);
@@ -8107,6 +8107,54 @@ void ObjectMgr::RemoveGMTicket(uint64 ticketGuid, int64 source, bool permanently
   RemoveGMTicket(ticket, source, permanently);
 }
 
+void ObjectMgr::LoadItemExtendedCost()
+{
+    sItemExtendedCostStore.clear();
+
+    uint32 count = 0;
+
+    //        0         1              2                      4                   6                     8                             10                            12               13
+    //SELECT id, reqhonorpoints, reqarenapoints, reqitem0, reqitem1, reqitem2, reqitem3, reqitem4, reqitemcount0, reqitemcount1, reqitemcount2, reqitemcount3, reqitemcount4, reqpersonalarenarating FROM item_extended_cost
+    PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_ITEM_EXTENDED_COST);
+    if(PreparedQueryResult result = WorldDatabase.Query(stmt))
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+
+            uint32 fieldCount = 0;
+            uint32 id = fields[fieldCount++].GetUInt32();
+
+            ItemExtendedCostEntry entry;
+            entry.reqhonorpoints = fields[fieldCount++].GetUInt32();
+            entry.reqarenapoints = fields[fieldCount++].GetUInt32();
+            entry.reqitem[0] = fields[fieldCount++].GetUInt32();
+            entry.reqitem[1] = fields[fieldCount++].GetUInt32();
+            entry.reqitem[2] = fields[fieldCount++].GetUInt32();
+            entry.reqitem[3] = fields[fieldCount++].GetUInt32();
+            entry.reqitem[4] = fields[fieldCount++].GetUInt32();
+            entry.reqitemcount[0] = fields[fieldCount++].GetUInt32();
+            entry.reqitemcount[1] = fields[fieldCount++].GetUInt32();
+            entry.reqitemcount[2] = fields[fieldCount++].GetUInt32();
+            entry.reqitemcount[3] = fields[fieldCount++].GetUInt32();
+            entry.reqitemcount[4] = fields[fieldCount++].GetUInt32();
+            entry.reqpersonalarenarating = fields[fieldCount++].GetUInt32();
+
+            sItemExtendedCostStore[id] = std::move(entry);
+            count++;
+        } while (result->NextRow());
+    }
+    
+    if(GetItemExtendedCost(2425) == nullptr)
+    {
+        TC_LOG_ERROR("server.loading","item_extended_cost is empty or missing some entries, cannot continue");
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::abort();
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u item extended cost", count );
+}
+
 void ObjectMgr::LoadSpellTemplates()
 {
     uint32 count = 0;
@@ -8138,7 +8186,7 @@ void ObjectMgr::LoadSpellTemplates()
     do {
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
-        std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.find(id);
+        auto itr = spellTemplates.find(id);
         SpellEntry* spell = NULL;
         if (itr != spellTemplates.end()) { // Already existing
             spell = itr->second;
@@ -8253,7 +8301,7 @@ void ObjectMgr::LoadSpellTemplates()
         count++;
     } while (result->NextRow());
     
-    for (std::map<uint32, SpellEntry*>::iterator itr = spellTemplates.begin(); itr != spellTemplates.end(); itr++) {
+    for (auto itr = spellTemplates.begin(); itr != spellTemplates.end(); itr++) {
         SpellEntry const* spell = itr->second;
         if(spell && spell->Category)
             sSpellsByCategoryStore[spell->Category].insert(itr->first);
@@ -8292,7 +8340,7 @@ void ObjectMgr::LoadSpellTemplates()
 
 SpellEntry const* ObjectMgr::GetSpellTemplate(uint32 id) const
 {
-    std::map<uint32, SpellEntry*>::const_iterator itr = spellTemplates.find(id);
+    auto itr = spellTemplates.find(id);
     if (itr != spellTemplates.end())
         return itr->second;
         
@@ -8600,4 +8648,13 @@ void ObjectMgr::LoadCreatureClassLevelStats()
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u creature base stats in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+ItemExtendedCostEntry const* ObjectMgr::GetItemExtendedCost(uint32 id) const
+{
+    auto itr = sItemExtendedCostStore.find(id);
+    if(itr == sItemExtendedCostStore.end())
+        return nullptr;
+
+    return &(itr->second);
 }

@@ -260,6 +260,8 @@ typedef std::unordered_map<uint32, uint32> CacheGoTextIdMap;
 typedef std::unordered_map<uint32, VendorItemData> CacheVendorItemMap;
 typedef std::unordered_map<uint32, TrainerSpellData> CacheTrainerSpellMap;
 
+typedef std::unordered_map<uint32, ItemExtendedCostEntry> ItemExtendedStore;
+
 enum SkillRangeType
 {
     SKILL_RANGE_LANGUAGE,                                   // 300..300
@@ -350,6 +352,9 @@ typedef std::pair<GossipMenusContainer::iterator, GossipMenusContainer::iterator
 typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
 typedef std::pair<GossipMenuItemsContainer::const_iterator, GossipMenuItemsContainer::const_iterator> GossipMenuItemsMapBounds;
 typedef std::pair<GossipMenuItemsContainer::iterator, GossipMenuItemsContainer::iterator> GossipMenuItemsMapBoundsNonConst;
+
+
+typedef std::map<uint32, SpellEntry*> SpellEntryStore;
 
 #define MAX_PLAYER_NAME 12                                  // max allowed by client name length
 #define MAX_INTERNAL_PLAYER_NAME 15                         // max server internal player name length ( > MAX_PLAYER_NAME for support declined names )
@@ -467,6 +472,7 @@ class ObjectMgr
 
         ItemTemplate const* GetItemTemplate(uint32 id);
         ItemTemplateContainer const* GetItemTemplateStore() const { return &_itemTemplateStore; }
+        ItemExtendedCostEntry const* GetItemExtendedCost(uint32 id) const;
 
         InstanceTemplate const* GetInstanceTemplate(uint32 map);
         InstanceTemplateContainer const* GetInstanceTemplateStore() const { return &_instanceTemplateStore; }
@@ -641,6 +647,7 @@ class ObjectMgr
         void LoadGameobjectRespawnTimes();
         void LoadItemTemplates();
         void LoadItemLocales();
+        void LoadItemExtendedCost();
         void LoadQuestLocales();
         void LoadGossipTextLocales();
         void LoadPageTextLocales();
@@ -688,7 +695,7 @@ class ObjectMgr
 
         void LoadSpellTemplates();
         SpellEntry const* GetSpellTemplate(uint32 id) const;
-        std::map<uint32, SpellEntry*>& GetSpellStore() { return spellTemplates; }
+        SpellEntryStore& GetSpellStore() { return spellTemplates; }
         uint32 GetMaxSpellId() { return maxSpellId; }
         
         void LoadAreaFlagsOverridenData();
@@ -1182,7 +1189,9 @@ class ObjectMgr
         CacheVendorItemMap m_mCacheVendorItemMap;
         CacheTrainerSpellMap m_mCacheTrainerSpellMap;
 
-        std::map<uint32, SpellEntry*> spellTemplates;
+        ItemExtendedStore sItemExtendedCostStore;
+
+        SpellEntryStore spellTemplates;
         uint32 maxSpellId;
 
         std::set<uint32> _transportMaps; // Helper container storing map ids that are for transports only, loaded from gameobject_template
