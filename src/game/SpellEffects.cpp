@@ -1868,7 +1868,10 @@ void Spell::EffectDummy(uint32 i)
                     return;
 
                 spell_id = 20647;
-                bp = damage+int32(m_caster->GetPower(POWER_RAGE) * m_spellInfo->Effects[i].DamageMultiplier);
+                int32 rage = m_caster->GetPower(POWER_RAGE) - GetPowerCost();
+                if(rage < 0) 
+                    rage = 0; //should not happen but let's be sure
+                bp = damage + int32(rage * m_spellInfo->Effects[i].DamageMultiplier);
                 m_caster->SetPower(POWER_RAGE,0);
                 break;
             }
