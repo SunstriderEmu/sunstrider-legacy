@@ -1251,11 +1251,11 @@ void SpellInfo::LoadCustomAttributes()
             AttributesCu |= SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER;
             break;
         case 26102: // Sandblast (Ouro)
-        case 19272:
-        case 21333:
-        case 36654:
-        case 38813:
-        case 38814:
+        case 19272: // Lava Breath (Molten Core - Ancient Core Hound)
+        case 21333: // Lava Breath, from ?
+        case 36654: // Fel Breath (The Arcatraz - Soul Devourer)
+        case 38813: // Fel Breath (The Arcatraz - Soul Devourer) heroic
+        case 38814: // Lava Breath, from ?
             AttributesCu |= SPELL_ATTR_CU_CONE_180;
             break;
         case 45770:

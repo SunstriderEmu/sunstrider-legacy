@@ -179,6 +179,8 @@ struct GameObjectTemplate
             uint32 closeTextID;                             //15
             uint32 losOK;                                   //16 isBattlegroundObject
             uint32 allowMounted;                            //17
+            uint32 floatingTooltip;                         //18 NYI
+            uint32 gossipID;                                //19
         } goober;
         //11 GAMEOBJECT_TYPE_TRANSPORT
         struct
@@ -387,7 +389,7 @@ struct GameObjectTemplate
         switch (type)
         {
             case GAMEOBJECT_TYPE_QUESTGIVER:    return questgiver.gossipID;
-          //TrinityCore LK  case GAMEOBJECT_TYPE_GOOBER:        return goober.gossipID;
+            case GAMEOBJECT_TYPE_GOOBER:        return goober.gossipID;
             default: return 0;
         }
     }
