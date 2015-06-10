@@ -182,6 +182,7 @@ struct CreatureTemplate
     std::string Name;
     std::string SubName;
     std::string IconName;
+    uint32  GossipMenuId;
     uint32  minlevel;
     uint32  maxlevel;
     uint32  expansion;

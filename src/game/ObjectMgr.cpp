@@ -473,11 +473,11 @@ void ObjectMgr::LoadCreatureTemplates()
 {
     uint32 oldMSTime = GetMSTime();
 
-    //                                                 0          1                2           3       4
+    //                                                 
     QueryResult result = WorldDatabase.Query("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
-                                             //   5             7                    9               11              13
-                                             "modelid4, name, subname, IconName, minlevel, maxlevel, exp, faction, npcflag, speed, "
-                                             // 15
+                                             //   
+                                             "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed, "
+                                             //
                                              "scale, rank, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, dynamicflags, family,"
                                              //   
                                              "trainer_type, trainer_spell, trainer_class, trainer_race, type,"
@@ -531,6 +531,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.Name             = fields[f++].GetString();
     creatureTemplate.SubName          = fields[f++].GetString();
     creatureTemplate.IconName         = fields[f++].GetString();
+    creatureTemplate.GossipMenuId     = fields[f++].GetUInt32();
     creatureTemplate.minlevel         = fields[f++].GetUInt8();
     creatureTemplate.maxlevel         = fields[f++].GetUInt8();
     creatureTemplate.expansion        = fields[f++].GetUInt32();

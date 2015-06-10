@@ -22560,7 +22560,12 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
     switch (source->GetTypeId())
     {
         case TYPEID_UNIT:
-            return sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow());
+            // return menu for this particular guid if any
+            if(uint32 menuId = sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow()))
+                return menuId;
+
+            // else return menu from creature template
+            return source->ToCreature()->GetCreatureTemplate()->GossipMenuId;
         case TYPEID_GAMEOBJECT:
             return source->ToGameObject()->GetGOInfo()->GetGossipMenuId();
         default:
