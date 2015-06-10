@@ -8186,6 +8186,7 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
     TC_LOG_INFO("command","Re-loading spell templates...");
     sObjectMgr->LoadSpellTemplates();
     sSpellMgr->LoadSpellCustomAttr(); //re apply custom attr
+    sSpellMgr->LoadSpellInfoStore();
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
 }
