@@ -1532,12 +1532,12 @@ void Creature::Respawn()
             SetNativeDisplayId(displayID);
             SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
         }
-
-        //Call AI respawn virtual function
-        if (IsAIEnabled)
-            TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
     }
-    
+
+    //Call AI respawn virtual function
+    if (IsAIEnabled)
+        TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
+
     m_timeSinceSpawn = 0;
 }
 
