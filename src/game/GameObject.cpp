@@ -1589,26 +1589,25 @@ void GameObject::Use(Unit* user)
     spell->prepare(&targets);
 }
 
-void GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
+uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
 {
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
-    if(!trigger) return;
+    if(!trigger) 
+        return SPELL_FAILED_UNKNOWN;
 
-    trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
-    trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    //trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
+    trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if(Unit *owner = GetOwner())
     {
         trigger->SetFaction(owner->GetFaction());
-        trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
+        return trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
         trigger->SetFaction(14);
-        trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
+        return trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
     }
-    //trigger->SetDeathState(JUST_DIED);
-    //trigger->RemoveCorpse();
 }
 
 // overwrite WorldObject function for proper name localization

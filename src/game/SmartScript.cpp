@@ -484,9 +484,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_CAST:
         {
-            if (!me)
-                break;
-
             ObjectList* targets = GetTargets(e, unit);
             if (!targets)
                 break;
@@ -496,31 +493,38 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 if (!IsUnit(*itr))
                     continue;
 
-                if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAuraEffect(e.action.cast.spell))
+                if(me) //creature case
                 {
-                    if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
-                        me->InterruptNonMeleeSpells(false);
-
-                    uint32 result = me->CastSpell((*itr)->ToUnit(), e.action.cast.spell, (e.action.cast.flags & SMARTCAST_TRIGGERED));
-
-                    if (e.action.cast.flags & SMARTCAST_COMBAT_MOVE)
+                    if (!(e.action.cast.flags & SMARTCAST_AURA_NOT_PRESENT) || !(*itr)->ToUnit()->HasAuraEffect(e.action.cast.spell))
                     {
-                        // If cast flag SMARTCAST_COMBAT_MOVE is set combat movement will not be allowed
-                        // unless target is outside spell range, out of mana, or LOS.
+                        if (e.action.cast.flags & SMARTCAST_INTERRUPT_PREVIOUS)
+                            me->InterruptNonMeleeSpells(false);
 
-                        bool _allowMove = false;
-                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(e.action.cast.spell);
-                        if(result != SPELL_CAST_OK)
-                            _allowMove = true;
+                        uint32 result = me->CastSpell((*itr)->ToUnit(), e.action.cast.spell, (e.action.cast.flags & SMARTCAST_TRIGGERED));
 
-                        CAST_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
+                        if (e.action.cast.flags & SMARTCAST_COMBAT_MOVE)
+                        {
+                            // If cast flag SMARTCAST_COMBAT_MOVE is set combat movement will not be allowed
+                            // unless target is outside spell range, out of mana, or LOS.
+
+                            bool _allowMove = false;
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(e.action.cast.spell);
+                            if(result != SPELL_CAST_OK)
+                                _allowMove = true;
+
+                            CAST_AI(SmartAI, me->AI())->SetCombatMove(_allowMove);
+                        }
+
+                        TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u with result %u",
+                            me->GetGUIDLow(), e.action.cast.spell, (*itr)->GetGUIDLow(), e.action.cast.flags, result);
                     }
-
-                    TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Creature %u casts spell %u on target %u with castflags %u",
-                        me->GetGUIDLow(), e.action.cast.spell, (*itr)->GetGUIDLow(), e.action.cast.flags);
+                    else
+                        TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, (*itr)->GetGUID(), (*itr)->GetEntry(), uint32((*itr)->GetTypeId()));
+                } else if (go) { //gameobject case
+                    uint32 result = go->CastSpell((*itr)->ToUnit(), e.action.cast.spell);
+                    TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_CAST:: Gameobject %u casts spell %u on target %u with result %u",
+                        go->GetGUIDLow(), e.action.cast.spell, (*itr)->GetGUIDLow(), result);
                 }
-                else
-                    TC_LOG_DEBUG("scripts.ai","Spell %u not cast because it has flag SMARTCAST_AURA_NOT_PRESENT and the target (Guid: " UI64FMTD " Entry: %u Type: %u) already has the aura", e.action.cast.spell, (*itr)->GetGUID(), (*itr)->GetEntry(), uint32((*itr)->GetTypeId()));
             }
 
             delete targets;
