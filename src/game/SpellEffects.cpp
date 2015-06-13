@@ -3757,6 +3757,8 @@ void Spell::EffectOpenLock(uint32 /*i*/)
                 gameObjTarget->setManualUnlocked();
 
             SendLoot(guid, loottype);
+            if(gameObjTarget)
+                gameObjTarget->Use(player);
             return;
         }
     }
@@ -3819,7 +3821,9 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
     }
 
-    SendLoot(guid, loottype);
+    SendLoot(guid, loottype);    
+    if(gameObjTarget)
+        gameObjTarget->Use(player);
 }
 
 void Spell::EffectSummonChangeItem(uint32 i)

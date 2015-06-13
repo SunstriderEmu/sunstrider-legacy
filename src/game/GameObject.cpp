@@ -1269,6 +1269,18 @@ void GameObject::Use(Unit* user)
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
                     player->GetSession()->SendPacket(&data);
+                } else if (info->goober.gossipID)
+                {
+                    player->PrepareGossipMenu(this, info->goober.gossipID);
+                    player->SendPreparedGossip(this);
+                }
+
+                if (info->goober.eventId)
+                {
+                    TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
+                    //GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                    sWorld->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                   // EventInform(info->goober.eventId, user);
                 }
 
                 // possible quest objective for active quests
