@@ -337,6 +337,7 @@ struct SmartEvent
         {
             uint32 sender;
             uint32 action;
+            uint32 any; //ignore two first parameters
         } gossip;
 
         struct
