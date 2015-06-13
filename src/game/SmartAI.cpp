@@ -73,6 +73,8 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mInvincibilityHpLevel = 0;
 
     mJustReset = false;
+
+    m_preventMoveHome = false;
 }
 
 void SmartAI::UpdateDespawn(const uint32 diff)
@@ -449,7 +451,6 @@ void SmartAI::EnterEvadeMode()
     me->AddUnitState(UNIT_STATE_EVADE);
     me->DeleteThreatList();
     me->CombatStop(true);
-    me->InitCreatureAddon();
     me->SetLootRecipient(NULL);
     me->ResetPlayerDamageReq();
     me->SetLastDamagedTime(0);
@@ -457,6 +458,12 @@ void SmartAI::EnterEvadeMode()
     GetScript()->ProcessEventsFor(SMART_EVENT_EVADE);//must be after aura clear so we can cast spells from db
 
     SetRun(mRun);
+    
+    if(m_preventMoveHome)
+        return;
+    
+    me->InitCreatureAddon();
+
     if (HasEscortState(SMART_ESCORT_ESCORTING))
     {
         AddEscortState(SMART_ESCORT_RETURNING);

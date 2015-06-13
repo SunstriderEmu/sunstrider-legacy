@@ -555,6 +555,7 @@ enum SMART_ACTION
     SMART_ACTION_TELEPORT_ON_ME                     = 153,    // useVisual (0/1)
     SMART_ACTION_SELF_TELEPORT_ON_TARGET            = 154,    // useVisual (0/1)
     SMART_ACTION_ASSIST                             = 155,    // none
+    SMART_ACTION_PREVENT_MOVE_HOME                  = 156,    // prevent (0/1)
     SMART_ACTION_END                                     ,
 };
 
@@ -1049,6 +1050,11 @@ struct SmartAction
         {
             uint32 pathId; //Can be 0 to remove current path
         } setPath;
+
+        struct
+        {
+            uint32 prevent; // 0/1
+        } preventMoveHome;
 
         //! Note for any new future actions
         //! All parameters must have type uint32

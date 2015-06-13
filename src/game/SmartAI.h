@@ -186,6 +186,8 @@ class SmartAI : public CreatureAI
 
         void FriendlyKilled(Creature const* c, float range) override;
 
+        void SetPreventMoveHome(bool prevent) { m_preventMoveHome = prevent; }
+
     private:
         uint32 mFollowCreditType;
         uint32 mFollowArrivedTimer;
@@ -225,6 +227,7 @@ class SmartAI : public CreatureAI
         void UpdateDespawn(const uint32 diff);
         uint32 mEscortInvokerCheckTimer;
         bool mJustReset;
+        bool m_preventMoveHome;
 };
 
 class SmartGameObjectAI : public GameObjectAI
