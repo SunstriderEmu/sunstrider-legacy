@@ -553,6 +553,15 @@ void WorldSession::ProcessQueryCallbacks()
         _unstablePetCallback.FreeResult();
     }
 
+    //- HandleUnstablePet2
+    if (_unstablePetCallback2.IsReady())
+    {
+        std::pair<uint32,uint32> param = _unstablePetCallback2.GetParam();
+        _unstablePetCallback2.GetResult(result);
+        HandleUnstablePetCallback2(result, param.first, param.second);
+        _unstablePetCallback2.FreeResult();
+    }
+
     //- HandleStableSwapPet
     if (_stableSwapCallback.IsReady())
     {

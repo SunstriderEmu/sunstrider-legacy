@@ -7641,11 +7641,19 @@ Pet* Unit::GetPet() const
 {
     if(uint64 pet_guid = GetPetGUID())
     {
-        if(Pet* pet = ObjectAccessor::GetPet(*this,pet_guid))
+        if(!IS_PET_GUID(pet_guid))
+            return false;
+
+        Pet* pet = ObjectAccessor::GetPet(*this, pet_guid);
+
+        if (!pet)
+            return NULL;
+
+        if (IsInWorld() && pet)
             return pet;
 
-        TC_LOG_ERROR("FIXME","Unit::GetPet: Pet %u not exist.",GUID_LOPART(pet_guid));
-        const_cast<Unit*>(this)->SetPet(0);
+        //there may be a guardian in slot
+        //TC_LOG_ERROR("entities.pet","Unit::GetPet: Pet %u not exist.",GUID_LOPART(pet_guid));
     }
 
     return NULL;
@@ -7658,7 +7666,7 @@ Unit* Unit::GetCharm() const
         if(Unit* pet = ObjectAccessor::GetUnit(*this, charm_guid))
             return pet;
 
-        TC_LOG_ERROR("FIXME","Unit::GetCharm: Charmed creature %u not exist.",GUID_LOPART(charm_guid));
+        TC_LOG_ERROR("entities.pet","Unit::GetCharm: Charmed creature %u not exist.",GUID_LOPART(charm_guid));
         const_cast<Unit*>(this)->SetCharm(0);
     }
 

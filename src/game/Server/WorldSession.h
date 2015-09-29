@@ -653,7 +653,10 @@ class WorldSession
         void HandleStablePet(WorldPacket& recvPacket);
         void HandleStablePetCallback(PreparedQueryResult result);
         void HandleUnstablePet(WorldPacket& recvPacket);
+        //check if there is any pet in current slot
         void HandleUnstablePetCallback(PreparedQueryResult result, uint32 petId);
+        //actually unstable pet
+        void HandleUnstablePetCallback2(PreparedQueryResult result, uint32 petId, uint32 petEntry);
         void HandleBuyStableSlot(WorldPacket& recvPacket);
         void HandleStableRevivePet(WorldPacket& recvPacket);
         void HandleStableSwapPet(WorldPacket& recvPacket);
@@ -898,6 +901,7 @@ class WorldSession
         QueryCallback<PreparedQueryResult, CharacterRenameInfo*> _charRenameCallback;
         QueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
         QueryCallback<PreparedQueryResult, uint32> _unstablePetCallback;
+        QueryCallback<PreparedQueryResult, std::pair<uint32,uint32>> _unstablePetCallback2;
         QueryCallback<PreparedQueryResult, uint32> _stableSwapCallback;
         QueryCallback<PreparedQueryResult, uint64> _sendStabledPetCallback;
         QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
