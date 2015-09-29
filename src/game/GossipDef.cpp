@@ -861,9 +861,11 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGUID, 
 
     // Close Window after cancel
     data << uint32(closeOnCancel);
-
-    data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
-    data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum
+    
+    if(_session->GetClientBuild() == BUILD_335)
+        data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
+    
+    data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum ? Not sure
 
     // Required Money
     data << uint32(quest->GetRewOrReqMoney() < 0 ? -quest->GetRewOrReqMoney() : 0);
