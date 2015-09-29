@@ -485,7 +485,7 @@ void WorldSession::HandleReadItem( WorldPacket & recvData )
     //TC_LOG_DEBUG("FIXME","STORAGE: Read bag = %u, slot = %u", bag, slot);
     Item *pItem = _player->GetItemByPos( bag, slot );
 
-    if( pItem && pItem->GetProto()->PageText )
+    if( pItem && pItem->GetTemplate()->PageText )
     {
         WorldPacket data;
 
@@ -586,7 +586,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
             }
         }
 
-        ItemTemplate const *pProto = pItem->GetProto();
+        ItemTemplate const *pProto = pItem->GetTemplate();
         if( pProto )
         {
             if( pProto->SellPrice > 0 )
@@ -1124,7 +1124,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
     }
 
     // maybe not correct check  (it is better than nothing)
-    if(item->GetProto()->MaxCount>0)
+    if(item->GetTemplate()->MaxCount>0)
     {
         _player->SendEquipError( EQUIP_ERR_UNIQUE_CANT_BE_WRAPPED, item, NULL );
         return;
@@ -1193,16 +1193,16 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     GemPropertiesEntry const *GemProps[3];
     for(int i = 0; i < 3; ++i)                              //get geminfo from dbc storage
     {
-        GemProps[i] = (Gems[i]) ? sGemPropertiesStore.LookupEntry(Gems[i]->GetProto()->GemProperties) : NULL;
+        GemProps[i] = (Gems[i]) ? sGemPropertiesStore.LookupEntry(Gems[i]->GetTemplate()->GemProperties) : NULL;
     }
 
     for(int i = 0; i < 3; ++i)                              //check for hack maybe
     {
         // tried to put gem in socket where no socket exists / tried to put normal gem in meta socket
         // tried to put meta gem in normal socket
-        if( GemProps[i] && ( !itemTarget->GetProto()->Socket[i].Color ||
-            itemTarget->GetProto()->Socket[i].Color == SOCKET_COLOR_META && GemProps[i]->color != SOCKET_COLOR_META ||
-            itemTarget->GetProto()->Socket[i].Color != SOCKET_COLOR_META && GemProps[i]->color == SOCKET_COLOR_META ) )
+        if( GemProps[i] && ( !itemTarget->GetTemplate()->Socket[i].Color ||
+            itemTarget->GetTemplate()->Socket[i].Color == SOCKET_COLOR_META && GemProps[i]->color != SOCKET_COLOR_META ||
+            itemTarget->GetTemplate()->Socket[i].Color != SOCKET_COLOR_META && GemProps[i]->color == SOCKET_COLOR_META ) )
             return;
     }
 
@@ -1215,7 +1215,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     // check unique-equipped conditions
     for(int i = 0; i < 3; ++i)
     {
-        if (Gems[i] && (Gems[i]->GetProto()->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
+        if (Gems[i] && (Gems[i]->GetTemplate()->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
         {
             // for equipped item check all equipment for duplicate equipped gems
             if(itemTarget->IsEquipped())
@@ -1230,7 +1230,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
             // continue check for case when attempt add 2 similar unique equipped gems in one item.
             for (int j = 0; j < 3; ++j)
             {
-                if ((i != j) && (Gems[j]) && (Gems[i]->GetProto()->ItemId == Gems[j]->GetProto()->ItemId))
+                if ((i != j) && (Gems[j]) && (Gems[i]->GetTemplate()->ItemId == Gems[j]->GetTemplate()->ItemId))
                 {
                     _player->SendEquipError( EQUIP_ERR_ITEM_UNIQUE_EQUIPPABLE_SOCKETED, itemTarget, NULL );
                     return;
@@ -1244,7 +1244,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
                     if(!enchantEntry)
                         continue;
 
-                    if ((enchantEntry->GemID == Gems[i]->GetProto()->ItemId) && (i != j))
+                    if ((enchantEntry->GemID == Gems[i]->GetTemplate()->ItemId) && (i != j))
                     {
                         _player->SendEquipError( EQUIP_ERR_ITEM_UNIQUE_EQUIPPABLE_SOCKETED, itemTarget, NULL );
                         return;
@@ -1280,7 +1280,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     if(SocketBonusActivated ^ SocketBonusToBeActivated)     //if there was a change...
     {
         _player->ApplyEnchantment(itemTarget,BONUS_ENCHANTMENT_SLOT,false);
-        itemTarget->SetEnchantment(BONUS_ENCHANTMENT_SLOT, (SocketBonusToBeActivated ? itemTarget->GetProto()->socketBonus : 0), 0, 0);
+        itemTarget->SetEnchantment(BONUS_ENCHANTMENT_SLOT, (SocketBonusToBeActivated ? itemTarget->GetTemplate()->socketBonus : 0), 0, 0);
         _player->ApplyEnchantment(itemTarget,BONUS_ENCHANTMENT_SLOT,true);
         //it is not displayed, client has an inbuilt system to determine if the bonus is activated
     }

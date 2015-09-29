@@ -46,6 +46,13 @@
 #include "ScriptMgr.h"
 #include "IRCMgr.h"
 
+#ifdef PLAYERBOT
+
+#include "playerbot.h"
+#include "PlayerbotAIConfig.h"
+
+#endif
+
 class LoginQueryHolder : public SQLQueryHolder
 {
     private:
@@ -58,6 +65,80 @@ class LoginQueryHolder : public SQLQueryHolder
         uint32 GetAccountId() const { return m_accountId; }
         bool Initialize();
 };
+
+#ifdef PLAYERBOT
+
+class PlayerbotLoginQueryHolder : public LoginQueryHolder
+{
+private:
+    uint32 masterAccountId;
+    PlayerbotHolder* playerbotHolder;
+
+public:
+    PlayerbotLoginQueryHolder(PlayerbotHolder* playerbotHolder, uint32 masterAccount, uint32 accountId, uint64 guid)
+        : LoginQueryHolder(accountId, ObjectGuid(guid)), masterAccountId(masterAccount), playerbotHolder(playerbotHolder) { }
+
+public:
+    uint32 GetMasterAccountId() const { return masterAccountId; }
+    PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
+};
+
+void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
+{
+    // has bot already been added?x
+	Player* bot = sObjectMgr->GetPlayer(playerGuid);
+
+	if (bot && bot->IsInWorld())
+        return;
+
+    uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(ObjectGuid(playerGuid));
+    if (accountId == 0)
+        return;
+
+    PlayerbotLoginQueryHolder *holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
+    if(!holder->Initialize())
+    {
+        delete holder;                                      // delete all unprocessed queries
+        return;
+    }
+
+    QueryResultHolderFuture future = CharacterDatabase.DelayQueryHolder(holder);
+    future.get();
+
+    WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : NULL;
+    uint32 botAccountId = holder->GetAccountId();
+    WorldSession *botSession = new WorldSession(botAccountId, BUILD_243, NULL, SEC_PLAYER, 2, 0, LOCALE_enUS, 0, false);
+
+    botSession->HandlePlayerLogin(holder); // will delete lqh
+
+	bot = botSession->GetPlayer();
+	if (!bot)
+		return;
+
+	PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
+	bot->SetPlayerbotMgr(NULL);
+	delete mgr;
+	sRandomPlayerbotMgr.OnPlayerLogout(bot);
+
+    bool allowed = false;
+    if (botAccountId == masterAccount)
+        allowed = true;
+    else if (masterSession && sPlayerbotAIConfig.allowGuildBots && bot->GetGuildId() == masterSession->GetPlayer()->GetGuildId())
+        allowed = true;
+    else if (sPlayerbotAIConfig.IsInRandomAccountList(botAccountId))
+        allowed = true;
+
+    if (allowed)
+        OnBotLogin(bot);
+    else if (masterSession)
+    {
+        ChatHandler ch(masterSession);
+        ch.PSendSysMessage("You are not allowed to control bot %s...", bot->GetName().c_str());
+        LogoutPlayerBot(bot->GetGUID());
+    }
+}
+
+#endif
 
 bool LoginQueryHolder::Initialize()
 {
@@ -182,16 +263,19 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1+1+1+1+1+1+1);
 
-    std::string name;
-    uint8 race_,class_;
+    CharacterCreateInfo createInfo;
 
-    recvData >> name;
+    recvData >> createInfo.Name
+             >> createInfo.Race
+             >> createInfo.Class
+             >> createInfo.Gender
+             >> createInfo.Skin
+             >> createInfo.Face
+             >> createInfo.HairStyle
+             >> createInfo.HairColor
+             >> createInfo.FacialHair
+             >> createInfo.OutfitId;
 
-    // recheck with known string size
-    CHECK_PACKET_SIZE(recvData,(name.size()+1)+1+1+1+1+1+1+1+1+1);
-
-    recvData >> race_;
-    recvData >> class_;
     //still got data to extract for packet but lets perform some checks first
 
     if(GetSecurity() == SEC_PLAYER)
@@ -200,7 +284,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
         {
             bool disabled = false;
 
-            uint32 team = Player::TeamForRace(race_);
+            uint32 team = Player::TeamForRace(createInfo.Race);
             switch(team)
             {
                 case TEAM_ALLIANCE: disabled = mask & (1<<0); break;
@@ -215,13 +299,13 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
         }
     }
 
-    ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(class_);
-    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(race_);
+    ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(createInfo.Class);
+    ChrRacesEntry const* raceEntry = sChrRacesStore.LookupEntry(createInfo.Race);
 
     if( !classEntry || !raceEntry )
     {
         SendCharCreate(CHAR_CREATE_FAILED);
-        TC_LOG_ERROR("network","Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", class_, race_);
+        TC_LOG_ERROR("network","Class: %u or Race %u not found in DBC (Wrong DBC files?) or Cheater?", createInfo.Class, createInfo.Race);
         return;
     }
 
@@ -229,21 +313,21 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     if (raceEntry->addon > Expansion())
     {
         SendCharCreate(CHAR_CREATE_EXPANSION);
-        TC_LOG_ERROR("network","Not Expansion 1 account:[%d] but tried to Create character with expansion 1 race (%u)",GetAccountId(),race_);
+        TC_LOG_ERROR("network","Not Expansion 1 account:[%d] but tried to Create character with expansion 1 race (%u)",GetAccountId(),createInfo.Race);
         return;
     }
 
     // prevent character creating Expansion class without Expansion account
     // TODO: use possible addon field in ChrClassesEntry in next dbc version
-    if (Expansion() < 2 && class_ == CLASS_DEATH_KNIGHT)
+    if (Expansion() < 2 && createInfo.Class == CLASS_DEATH_KNIGHT)
     {
         SendCharCreate(CHAR_CREATE_EXPANSION);
-        TC_LOG_ERROR("network","Not Expansion 2 account:[%d] but tried to Create character with expansion 2 class (%u)",GetAccountId(),class_);
+        TC_LOG_ERROR("network","Not Expansion 2 account:[%d] but tried to Create character with expansion 2 class (%u)",GetAccountId(),createInfo.Class);
         return;
     }
 
     // prevent character creating with invalid name
-    if(!normalizePlayerName(name))
+    if(!normalizePlayerName(createInfo.Name))
     {
         SendCharCreate(CHAR_NAME_INVALID_CHARACTER);
         TC_LOG_ERROR("network","Account:[%d] but tried to Create character with empty [name] ",GetAccountId());
@@ -251,20 +335,20 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     }
 
     // check name limitations
-    ResponseCodes res = ObjectMgr::CheckPlayerName(name, true);
+    ResponseCodes res = ObjectMgr::CheckPlayerName(createInfo.Name, true);
     if (res != CHAR_NAME_SUCCESS)
     {
         SendCharCreate(res);
         return;
     }
 
-    if(GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(name))
+    if(GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(createInfo.Name))
     {
         SendCharCreate(CHAR_NAME_RESERVED);
         return;
     }
 
-    if(sObjectMgr->GetPlayerGUIDByName(name))
+    if(sObjectMgr->GetPlayerGUIDByName(createInfo.Name))
     {
         SendCharCreate(CHAR_CREATE_NAME_IN_USE);
         return;
@@ -306,7 +390,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
         QueryResult result2 = CharacterDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
         if(result2)
         {
-            uint32 team_= Player::TeamForRace(race_);
+            uint32 team_= Player::TeamForRace(createInfo.Race);
 
             Field* field = result2->Fetch();
             uint8 race = field[0].GetUInt32();
@@ -329,29 +413,25 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
             if (skipCinematics == 1)
             {
                 // TODO: check if cinematic already shown? (already logged in?; cinematic field)
-                while (race_ != race && result2->NextRow())
+                while (createInfo.Race != race && result2->NextRow())
                 {
                     field = result2->Fetch();
                     race = field[0].GetUInt32();
                 }
-                have_same_race = race_ == race;
+                have_same_race = createInfo.Race == race;
             }
         }
     }
-
-    // extract other data required for player creating
-    uint8 gender, skin, face, hairStyle, hairColor, facialHair, outfitId;
-    recvData >> gender >> skin >> face;
-    recvData >> hairStyle >> hairColor >> facialHair >> outfitId;
+    
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
+    stmt->setString(0, createInfo.Name);
 
     delete _charCreateCallback.GetParam();  // Delete existing if any, to make the callback chain reset to stage 0
-    _charCreateCallback.SetParam(new CharacterCreateInfo(name, race_, class_, gender, skin, face, hairStyle, hairColor, facialHair, outfitId, recvData));
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHECK_NAME);
-    stmt->setString(0, name);
+    _charCreateCallback.SetParam(new CharacterCreateInfo(std::move(createInfo)));
     _charCreateCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
 
     std::string IP_str = GetRemoteAddress();
-    TC_LOG_DEBUG("network","Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
+    TC_LOG_DEBUG("network","Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),createInfo.Name.c_str());
     //sLog->outChar("network","Account: %d (IP: %s) Create Character:[%s]",GetAccountId(),IP_str.c_str(),name.c_str());
 }
 
@@ -835,22 +915,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->CastSpell(pCurrChar, 20584, true, 0);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
         pCurrChar->CastSpell(pCurrChar, 8326, true, 0);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_AURA+41, 8326);
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_AURA+42, 20584);
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_AURAFLAGS+6, 238);
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_AURALEVELS+11, 514);
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_AURAAPPLICATIONS+11, 65535);
-        //pCurrChar->SetUInt32Value(UNIT_FIELD_DISPLAYID, 1825);
-        //if (pCurrChar->GetRace() == RACE_NIGHTELF)
-        //{
-        //    pCurrChar->SetSpeed(MOVE_RUN,  1.5f*1.2f, true);
-        //    pCurrChar->SetSpeed(MOVE_SWIM, 1.5f*1.2f, true);
-        //}
-        //else
-        //{
-        //    pCurrChar->SetSpeed(MOVE_RUN,  1.5f, true);
-        //    pCurrChar->SetSpeed(MOVE_SWIM, 1.5f, true);
-        //}
         pCurrChar->SetMovement(MOVE_WATER_WALK);
     }
 
@@ -924,7 +988,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     if(pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
     {
-        pCurrChar->resetTalents(true);
+        pCurrChar->ResetTalents(true);
         SendNotification(LANG_RESET_TALENTS);
     }
 
@@ -1014,6 +1078,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
     m_playerLoading = false;
     
+    #ifdef PLAYERBOT
+    if (!_player->GetPlayerbotAI())
+    {
+        _player->SetPlayerbotMgr(new PlayerbotMgr(_player));
+        sRandomPlayerbotMgr.OnPlayerLogin(_player);
+    }
+    #endif
+
     //Hook for OnLogin Event
     sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
 

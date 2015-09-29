@@ -1013,6 +1013,17 @@ void Group::SetTargetIcon(uint8 id, uint64 guid)
     BroadcastPacket(&data, true);
 }
 
+uint64 Group::GetTargetIcon(uint8 id)
+{
+    if(id >= TARGETICONCOUNT)
+    {
+        TC_LOG_ERROR("misc", "Group::GetTargetIcon called with wrong argument %u", id);
+        return 0;
+    }
+
+    return m_targetIcons[id];
+}
+
 void Group::GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level)
 {
     for(GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next())

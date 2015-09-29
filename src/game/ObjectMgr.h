@@ -69,7 +69,7 @@ struct GameTele
     std::wstring wnameLow;
 };
 
-typedef std::unordered_map<uint32, GameTele > GameTeleMap;
+typedef std::unordered_map<uint32, GameTele > GameTeleContainer;
 
 struct ScriptInfo
 {
@@ -417,7 +417,9 @@ class ObjectMgr
 
         std::unordered_map<uint32, uint32> TransportEventMap;
 
+        //Get player in world by high guid
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
+        //Get player in world by low guid
         Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HIGHGUID_PLAYER)); }
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
@@ -433,13 +435,9 @@ class ObjectMgr
         GroupSet::iterator GetGroupSetEnd()   { return mGroupSet.end(); }
 
 
-        Guild* _GetGuildByLeader(uint64 const&guid) const;
         bool IsGuildLeader(uint64 const&guid) const;
 
-        Guild* _GetGuildById(const uint32 GuildId) const;
-        Guild* _GetGuildByName(const std::string& guildname) const;
-        std::string _GetGuildNameById(const uint32 GuildId) const;
-
+        Guild* GetGuildByLeader(uint64 const&guid) const;
         Guild* GetGuildById(const uint32 GuildId);
         Guild* GetGuildByName(const std::string& guildname);
         std::string GetGuildNameById(const uint32 GuildId);
@@ -461,7 +459,7 @@ class ObjectMgr
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }
         ArenaTeamMap::iterator GetArenaTeamMapEnd()   { return mArenaTeamMap.end(); }
 
-        CreatureTemplateContainer const* GetCreatureTemplateStore() const { return &_creatureTemplateStore; }
+        CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
         CreatureTemplate const* GetCreatureTemplate( uint32 id );
         CreatureModelInfo const* GetCreatureModelInfo( uint32 modelid );
         CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID);
@@ -902,14 +900,14 @@ class ObjectMgr
 
         GameTele const* GetGameTele(uint32 id) const
         {
-            GameTeleMap::const_iterator itr = m_GameTeleMap.find(id);
+            GameTeleContainer::const_iterator itr = m_GameTeleMap.find(id);
             if(itr==m_GameTeleMap.end()) 
                 return nullptr;
 
             return &itr->second;
         }
         GameTele const* GetGameTele(const std::string& name) const;
-        GameTeleMap const& GetGameTeleMap() const { return m_GameTeleMap; }
+        GameTeleContainer const& GetGameTeleMap() const { return m_GameTeleMap; }
         bool AddGameTele(GameTele& data);
         bool DeleteGameTele(const std::string& name);
 
@@ -1107,7 +1105,7 @@ class ObjectMgr
 
         GraveYardMap        mGraveYardMap;
 
-        GameTeleMap         m_GameTeleMap;
+        GameTeleContainer   m_GameTeleMap;
 
         ScriptNameMap       m_scriptNames;
         
@@ -1204,7 +1202,7 @@ bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 sta
 uint32 GetAreaTriggerScriptId(uint32 trigger_id);
 uint32 GetScriptId(const char *name);
 ObjectMgr::ScriptNameMap& GetScriptNames();
-CreatureTemplate const* GetCreatureTemplateStore(uint32 entry);
+CreatureTemplate const* GetCreatureTemplates(uint32 entry);
 Quest const* GetQuestTemplateStore(uint32 entry);
 
 #endif

@@ -82,7 +82,7 @@ void PetAI::ResetMovement()
 void PetAI::_stopAttack()
 {
     if( !i_pet.IsAlive() )
-        i_pet.GetHostilRefManager().deleteReferences();
+        i_pet.GetHostileRefManager().deleteReferences();
 
     ResetMovement();
     i_pet.CombatStop();
@@ -206,7 +206,7 @@ void PetAI::UpdateAI(const uint32 diff)
             m_targetSpellStore.erase(m_targetSpellStore.begin() + index);
 
             SpellCastTargets targets;
-            targets.setUnitTarget( target );
+            targets.SetUnitTarget( target );
 
             if( !i_pet.HasInArc(M_PI, target) )
             {

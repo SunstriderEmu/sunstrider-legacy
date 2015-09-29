@@ -1596,7 +1596,7 @@ void GameObject::Use(Unit* user)
 
     // spell target is user of GO
     SpellCastTargets targets;
-    targets.setUnitTarget( user );
+    targets.SetUnitTarget( user );
 
     spell->prepare(&targets);
 }

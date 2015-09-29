@@ -175,27 +175,23 @@ class CharacterCreateInfo
     friend class WorldSession;
     friend class Player;
 
-    protected:
-        CharacterCreateInfo(std::string const& name, uint8 race, uint8 cclass, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId,
-        WorldPacket& data) : Name(name), Race(race), Class(cclass), Gender(gender), Skin(skin), Face(face), HairStyle(hairStyle), HairColor(hairColor), FacialHair(facialHair),
-        OutfitId(outfitId), Data(std::move(data)), CharCount(0)
-        { }
+    public:
 
         /// User specified variables
         std::string Name;
-        uint8 Race;
-        uint8 Class;
-        uint8 Gender;
-        uint8 Skin;
-        uint8 Face;
-        uint8 HairStyle;
-        uint8 HairColor;
-        uint8 FacialHair;
-        uint8 OutfitId;
+        uint8 Race       = 0;
+        uint8 Class      = 0;
+        uint8 Gender     = GENDER_NONE;
+        uint8 Skin       = 0;
+        uint8 Face       = 0;
+        uint8 HairStyle  = 0;
+        uint8 HairColor  = 0;
+        uint8 FacialHair = 0;
+        uint8 OutfitId   = 0;
         WorldPacket Data;
 
         /// Server side data
-        uint8 CharCount;
+        uint8 CharCount = 0;
 };
 
 struct CharacterRenameInfo
@@ -224,7 +220,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange);
+        WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange = false);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -821,6 +817,10 @@ class WorldSession
         void HandleBattlefieldLeaveOpcode( WorldPacket &recvData );
         void HandleBattlemasterJoinArena( WorldPacket &recvData );
         void HandleReportPvPAFK( WorldPacket &recvData );
+
+        #ifdef PLAYERBOT
+        void HandleBotPackets();
+        #endif
 
         void HandleWardenDataOpcode(WorldPacket& recvData);
         void HandleWorldTeleportOpcode(WorldPacket& recvData);

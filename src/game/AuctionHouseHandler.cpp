@@ -248,7 +248,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     if( GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
     {
         sLog->outCommand(GetAccountId(),"GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-            GetPlayerName().c_str(),GetAccountId(),it->GetProto()->Name1.c_str(),it->GetEntry(),it->GetCount());
+            GetPlayerName().c_str(),GetAccountId(),it->GetTemplate()->Name1.c_str(),it->GetEntry(),it->GetCount());
     }
 
     pl->ModifyMoney( -int32(deposit) );

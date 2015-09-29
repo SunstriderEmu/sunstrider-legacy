@@ -380,12 +380,12 @@ uint32 CreatureAINew::doCast(Unit* victim, uint32 spellId, bool triggered, bool 
 
 Unit* CreatureAINew::selectUnit(SelectAggroTarget target, uint32 position)
 {
-    std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
     if (position >= m_threatlist.size())
         return NULL;
 
     std::list<Unit*> targetList;
-    for (std::list<HostilReference*>::const_iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
+    for (std::list<HostileReference*>::const_iterator itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), false, 0.0f))
             targetList.push_back((*itr)->getTarget());
 
@@ -457,12 +457,12 @@ Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, f
 
 Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
-    std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())
         return NULL;
 
     std::list<Unit*> targetList;
-    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius))
             targetList.push_back((*itr)->getTarget());
 
@@ -503,11 +503,11 @@ Unit* CreatureAINew::selectUnit(SelectAggroTarget targetType, uint32 position, f
 
 void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly)
 {
-    std::list<HostilReference*> const& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*> const& threatlist = me->getThreatManager().getThreatList();
     if (threatlist.empty())
         return;
 
-    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius))
             targetList.push_back((*itr)->getTarget());
 
@@ -578,7 +578,7 @@ uint32 CreatureAINew::talk(uint8 groupid, uint64 targetGUID)
 
 void CreatureAINew::deleteFromThreatList(uint64 guid)
 {
-    for (std::list<HostilReference*>::iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr) {
+    for (std::list<HostileReference*>::iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr) {
         if((*itr)->getUnitGuid() == guid) {
             (*itr)->removeReference();
             break;
@@ -606,8 +606,8 @@ void CreatureAINew::doResetThreat()
     if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
         return;
 
-    std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator itr;
+    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator itr;
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr) {
         Unit* pUnit = NULL;

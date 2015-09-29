@@ -125,6 +125,16 @@ class ObjectAccessor
             return (Unit*)HashMapHolder<Creature>::Find(guid);
         }
 
+        // returns object if is in map
+        template<class T> static T* GetObjectInMap(ObjectGuid guid, Map* map, T* /*typeSpecifier*/)
+        {
+            ASSERT(map);
+            if (T * obj = GetObjectInWorld(guid, (T*)NULL))
+                if (obj->GetMap() == map)
+                    return obj;
+            return NULL;
+        }
+
         template<class T> static T* GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/)
         {
             T* obj = HashMapHolder<T>::Find(guid);
@@ -133,14 +143,14 @@ class ObjectAccessor
             CellCoord p = Trinity::ComputeCellCoord(x,y);
             if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
-                TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
+                TC_LOG_ERROR("misc","ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
                 return NULL;
             }
 
             CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(),obj->GetPositionY());
             if(q.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || q.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP )
             {
-                TC_LOG_ERROR("FIXME","ObjectAccessor::GetObjecInWorld: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
+                TC_LOG_ERROR("misc","ObjectAccessor::GetObjecInWorld: object " UI64FMTD " has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
                 return NULL;
             }
 

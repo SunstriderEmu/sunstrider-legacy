@@ -378,7 +378,7 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     return false;
 }
 
-SpellFailedReason GetErrorAtShapeshiftedCast(SpellInfo const *spellInfo, uint32 form)
+SpellCastResult GetErrorAtShapeshiftedCast(SpellInfo const *spellInfo, uint32 form)
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)

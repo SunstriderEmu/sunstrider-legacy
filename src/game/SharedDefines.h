@@ -240,6 +240,17 @@ enum SpellCategory
     SPELL_CATEGORY_DRINK            = 59,
 };
 
+const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
+{
+    0xff9d9d9d,        //GREY
+    0xffffffff,        //WHITE
+    0xff1eff00,        //GREEN
+    0xff0070dd,        //BLUE
+    0xffa335ee,        //PURPLE
+    0xffff8000,        //ORANGE
+    0xffe6cc80,        //LIGHT YELLOW
+};
+
 // ***********************************
 // Spell Attributes definitions
 // ***********************************
@@ -494,6 +505,9 @@ enum SpellAttr6
     SPELL_ATTR6_UNK30                           = 0x40000000,           // 30 not set in 2.4.2
     SPELL_ATTR6_UNK31                           = 0x80000000,           // 31 not set in 2.4.2
 };
+
+#define MIN_TALENT_SPECS        1
+#define MAX_TALENT_SPECS        2
 
 enum SheathTypes
 {
@@ -1275,19 +1289,19 @@ enum Emote
     EMOTE_STATE_POINT                  = 29,
     EMOTE_STATE_NONE                   = 30,
     EMOTE_ONESHOT_WOUND                = 33,
-    EMOTE_ONESHOT_WOUNDCRITICAL        = 34,
+    EMOTE_ONESHOT_WOUND_CRITICAL       = 34,
     EMOTE_ONESHOT_ATTACKUNARMED        = 35,
     EMOTE_ONESHOT_ATTACK1H             = 36,
     EMOTE_ONESHOT_ATTACK2HTIGHT        = 37,
     EMOTE_ONESHOT_ATTACK2HLOOSE        = 38,
-    EMOTE_ONESHOT_PARRYUNARMED         = 39,
-    EMOTE_ONESHOT_PARRYSHIELD          = 43,
-    EMOTE_ONESHOT_READYUNARMED         = 44,
+    EMOTE_ONESHOT_PARRY_UNARMED        = 39,
+    EMOTE_ONESHOT_PARRY_SHIELD         = 43,
+    EMOTE_ONESHOT_READY_UNARMED        = 44,
     EMOTE_ONESHOT_READY1H              = 45,
-    EMOTE_ONESHOT_READYBOW             = 48,
+    EMOTE_ONESHOT_READY_BOW            = 48,
     EMOTE_ONESHOT_SPELLPRECAST         = 50,
     EMOTE_ONESHOT_SPELLCAST            = 51,
-    EMOTE_ONESHOT_BATTLEROAR           = 53,
+    EMOTE_ONESHOT_BATTLE_ROAR          = 53,
     EMOTE_ONESHOT_SPECIALATTACK1H      = 54,
     EMOTE_ONESHOT_KICK                 = 60,
     EMOTE_ONESHOT_ATTACKTHROWN         = 61,
@@ -1296,20 +1310,20 @@ enum Emote
     EMOTE_ONESHOT_SALUTE               = 66,
     EMOTE_STATE_KNEEL                  = 68,
     EMOTE_STATE_USESTANDING            = 69,
-    EMOTE_ONESHOT_WAVE_NOSHEATHE       = 70,
-    EMOTE_ONESHOT_CHEER_NOSHEATHE      = 71,
-    EMOTE_ONESHOT_EAT_NOSHEATHE        = 92,
-    EMOTE_STATE_STUN_NOSHEATHE         = 93,
+    EMOTE_ONESHOT_WAVE_NO_SHEATHE      = 70,
+    EMOTE_ONESHOT_CHEER_NO_SHEATHE     = 71,
+    EMOTE_ONESHOT_EAT_NO_SHEATHE       = 92,
+    EMOTE_STATE_STUN_NO_SHEATHE        = 93,
     EMOTE_ONESHOT_DANCE                = 94,
-    EMOTE_ONESHOT_SALUTE_NOSHEATH      = 113,
-    EMOTE_STATE_USESTANDING_NOSHEATHE  = 133,
-    EMOTE_ONESHOT_LAUGH_NOSHEATHE      = 153,
-    EMOTE_STATE_WORK_NOSHEATHE         = 173,
+    EMOTE_ONESHOT_SALUTE_NO_SHEATH     = 113,
+    EMOTE_STATE_USESTANDING_NO_SHEATHE = 133,
+    EMOTE_ONESHOT_LAUGH_NO_SHEATHE     = 153,
+    EMOTE_STATE_WORK_NO_SHEATHE        = 173,
     EMOTE_STATE_SPELLPRECAST           = 193,
     EMOTE_ONESHOT_READYRIFLE           = 213,
     EMOTE_STATE_READYRIFLE             = 214,
-    EMOTE_STATE_WORK_NOSHEATHE_MINING  = 233,
-    EMOTE_STATE_WORK_NOSHEATHE_CHOPWOOD= 234,
+    EMOTE_STATE_WORK_NO_SHEATHE_MINING = 233,
+    EMOTE_STATE_WORK_NO_SHEATHE_CHOPWOOD= 234,
     EMOTE_zzOLDONESHOT_LIFTOFF         = 253,
     EMOTE_ONESHOT_LIFTOFF              = 254,
     EMOTE_ONESHOT_YES                  = 273,
@@ -1342,8 +1356,8 @@ enum Emote
     EMOTE_ONESHOT_CREATURE_SPECIAL     = 393,
     EMOTE_ONESHOT_JUMPLANDRUN          = 394,
     EMOTE_ONESHOT_JUMPEND              = 395,
-    EMOTE_ONESHOT_TALK_NOSHEATHE       = 396,
-    EMOTE_ONESHOT_POINT_NOSHEATHE      = 397,
+    EMOTE_ONESHOT_TALK_NO_SHEATHE      = 396,
+    EMOTE_ONESHOT_POINT_NO_SHEATHE     = 397,
     EMOTE_STATE_CANNIBALIZE            = 398,
     EMOTE_ONESHOT_JUMPSTART            = 399,
     EMOTE_STATE_DANCESPECIAL           = 400,
@@ -1780,6 +1794,8 @@ inline uint8 ClassByQuestSort(int32 QuestSort)
 
 enum SkillType
 {
+    SKILL_NONE                     = 0,
+
     SKILL_FROST                    = 6,
     SKILL_FIRE                     = 8,
     SKILL_ARMS                     = 26,
@@ -1838,7 +1854,7 @@ enum SkillType
     SKILL_PET_IMP                  = 188,
     SKILL_PET_FELHUNTER            = 189,
     SKILL_TAILORING                = 197,
-    SKILL_ENGINERING               = 202,
+    SKILL_ENGINEERING               = 202,
     SKILL_PET_SPIDER               = 203,
     SKILL_PET_VOIDWALKER           = 204,
     SKILL_PET_SUCCUBUS             = 205,
@@ -1917,10 +1933,46 @@ enum SkillType
     SKILL_PET_WARP_STALKER         = 766,
     SKILL_PET_RAVAGER              = 767,
     SKILL_PET_SERPENT              = 768,
-    SKILL_INTERNAL                 = 769
+    SKILL_INTERNAL                 = 769,
+
+#ifdef LICH_KING
+    SKILL_DK_BLOOD                 = 770,
+    SKILL_DK_FROST                 = 771,
+    SKILL_DK_UNHOLY                = 772,
+    SKILL_INSCRIPTION              = 773,
+    SKILL_PET_MOTH                 = 775,
+    SKILL_RUNEFORGING              = 776,
+    SKILL_MOUNTS                   = 777,
+    SKILL_COMPANIONS               = 778,
+    SKILL_PET_EXOTIC_CHIMAERA      = 780,
+    SKILL_PET_EXOTIC_DEVILSAUR     = 781,
+    SKILL_PET_GHOUL                = 782,
+    SKILL_PET_EXOTIC_SILITHID      = 783,
+    SKILL_PET_EXOTIC_WORM          = 784,
+    SKILL_PET_WASP                 = 785,
+    SKILL_PET_EXOTIC_RHINO         = 786,
+    SKILL_PET_EXOTIC_CORE_HOUND    = 787,
+    SKILL_PET_EXOTIC_SPIRIT_BEAST  = 788,
+#endif
+
+    MAX_SKILL_TYPE
 };
 
-#define MAX_SKILL_TYPE               770
+inline SkillType SkillByLockType(LockType locktype)
+{
+    switch (locktype)
+    {
+        case LOCKTYPE_PICKLOCK:    return SKILL_LOCKPICKING;
+        case LOCKTYPE_HERBALISM:   return SKILL_HERBALISM;
+        case LOCKTYPE_MINING:      return SKILL_MINING;
+        case LOCKTYPE_FISHING:     return SKILL_FISHING;
+#ifdef LICH_KING
+        case LOCKTYPE_INSCRIPTION: return SKILL_INSCRIPTION;
+#endif
+        default: break;
+    }
+    return SKILL_NONE;
+}
 
 inline uint32 SkillByQuestSort(int32 QuestSort)
 {
@@ -1931,7 +1983,7 @@ inline uint32 SkillByQuestSort(int32 QuestSort)
         case QUEST_SORT_BLACKSMITHING:  return SKILL_BLACKSMITHING;
         case QUEST_SORT_ALCHEMY:        return SKILL_ALCHEMY;
         case QUEST_SORT_LEATHERWORKING: return SKILL_LEATHERWORKING;
-        case QUEST_SORT_ENGINERING:     return SKILL_ENGINERING;
+        case QUEST_SORT_ENGINERING:     return SKILL_ENGINEERING;
         case QUEST_SORT_TAILORING:      return SKILL_TAILORING;
         case QUEST_SORT_COOKING:        return SKILL_COOKING;
         case QUEST_SORT_FIRST_AID:      return SKILL_FIRST_AID;
@@ -1953,7 +2005,7 @@ enum SkillCategory
 
 enum TotemCategory
 {
-    TC_SKINNING_SKIFE              = 1,
+    TC_SKINNING_KNIFE              = 1,
     TC_EARTH_TOTEM                 = 2,
     TC_AIR_TOTEM                   = 3,
     TC_FIRE_TOTEM                  = 4,

@@ -72,6 +72,11 @@
 #include "ScriptMgr.h"
 #include "AddonMgr.h"
 
+#ifdef PLAYERBOT
+#include "PlayerbotAIConfig.h"
+#include "RandomPlayerbotMgr.h"
+#endif
+
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
 volatile uint32 World::m_worldLoopCounter = 0;
@@ -1679,6 +1684,10 @@ void World::SetInitialWorldSettings()
 
     LoadCharacterNameData();
 
+    #ifdef PLAYERBOT
+    sPlayerbotAIConfig.Initialize();
+    #endif
+
     uint32 serverStartedTime = GetMSTimeDiffToNow(serverStartingTime);
     TC_LOG_INFO("server.loading","World initialized in %u.%u seconds.", (serverStartedTime / 1000), (serverStartedTime % 1000));
 }
@@ -1892,6 +1901,11 @@ void World::Update(time_t diff)
         ///-Handle expired auctions
         sAHMgr.Update();
     }
+
+    #ifdef PLAYERBOT
+    sRandomPlayerbotMgr.UpdateAI(diff);
+    sRandomPlayerbotMgr.UpdateSessions(diff);
+    #endif
 
     /// <li> Handle session updates when the timer has passed
     if (m_timers[WUPDATE_SESSIONS].Passed())
@@ -3206,6 +3220,10 @@ void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
         m_ShutdownTimer = time;
         ShutdownMsg(true, NULL, m_ShutdownReason);
     }
+
+    #ifdef PLAYERBOT
+    sRandomPlayerbotMgr.LogoutAllBots();
+    #endif
 
 //    sScriptMgr->OnShutdownInitiate(ShutdownExitCode(exitcode), ShutdownMask(options));
 }

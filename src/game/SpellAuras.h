@@ -290,7 +290,7 @@ class Aura
         void SetDeathPersistent(bool set) { m_isDeathPersist = set; }
 
         bool IsPermanent() const { return m_permanent; }
-        bool IsAreaAura() const { return m_isAreaAura; }
+        bool IsArea() const { return m_isAreaAura; }
         bool IsPeriodic() const { return m_isPeriodic; }
         bool IsTrigger() const { return m_isTrigger; }
         bool IsPassive() const { return m_isPassive; }
@@ -330,7 +330,7 @@ class Aura
         void PeriodicTick();
         void PeriodicDummyTick();
 
-        int32 GetStackAmount() {return m_stackAmount;}
+        int32 GetStackAmount() const {return m_stackAmount;}
         void SetStackAmount(int32 amount) {m_stackAmount=amount;}
 
         // Single cast aura helpers

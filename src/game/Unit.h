@@ -29,7 +29,7 @@
 #include "UpdateFields.h"
 #include "SharedDefines.h"
 #include "ThreatManager.h"
-#include "HostilRefManager.h"
+#include "HostileRefManager.h"
 #include "Movement/FollowerReference.h"
 #include "Movement/FollowerRefManager.h"
 #include "EventProcessor.h"
@@ -1295,7 +1295,7 @@ class Unit : public WorldObject
         void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage,Powers powertype);
         uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool isTriggeredSpell = false, bool useSpellDamage = true);
-        //returns SpellFailedReason
+        //returns SpellCastResult
         uint32 CastSpell(Unit* Victim, uint32 spellId, bool triggered, Item* castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0 );
         uint32 CastSpell(Unit* Victim,SpellInfo const* spellInfo, bool triggered, Item* castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0, bool skipHit = false);
         uint32 CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
@@ -1607,9 +1607,9 @@ class Unit : public WorldObject
         void TauntApply(Unit* pVictim);
         void TauntFadeOut(Unit *taunter);
         ThreatManager& getThreatManager() { return m_ThreatManager; }
-        void addHatedBy(HostilReference* pHostilReference) { m_HostilRefManager.insertFirst(pHostilReference); };
-        void removeHatedBy(HostilReference* /*pHostilReference*/ ) { /* nothing to do yet */ }
-        HostilRefManager& GetHostilRefManager() { return m_HostilRefManager; }
+        void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
+        void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
+        HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
         bool HasInThreatList(uint64 hostileGUID);
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
@@ -1905,7 +1905,7 @@ class Unit : public WorldObject
         // Manage all Units threatening us
 //        ThreatManager m_ThreatManager;
         // Manage all Units that are threatened by us
-        HostilRefManager m_HostilRefManager;
+        HostileRefManager m_HostileRefManager;
 
         FollowerRefManager m_FollowingRefManager;
 

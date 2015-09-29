@@ -42,6 +42,7 @@ struct GameObjectTemplate
     uint32  type;
     uint32  displayId;
     std::string name;
+    std::string IconName;
     std::string castBarCaption;
     uint32  faction;
     uint32  flags;
@@ -362,6 +363,8 @@ struct GameObjectTemplate
         } raw;
     };
 
+    //helpers 
+
     uint32 GetLootId() const
     {
         switch (type)
@@ -400,6 +403,25 @@ struct GameObjectTemplate
         {
             case GAMEOBJECT_TYPE_TRAP:        return trap.cooldown;
             case GAMEOBJECT_TYPE_GOOBER:      return goober.cooldown;
+            default: return 0;
+        }
+    }
+
+    uint32 GetLockId() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_DOOR:       return door.lockId;
+            case GAMEOBJECT_TYPE_BUTTON:     return button.lockId;
+            case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.lockId;
+            case GAMEOBJECT_TYPE_CHEST:      return chest.lockId;
+            case GAMEOBJECT_TYPE_TRAP:       return trap.lockId;
+            case GAMEOBJECT_TYPE_GOOBER:     return goober.lockId;
+            case GAMEOBJECT_TYPE_AREADAMAGE: return areadamage.lockId;
+            case GAMEOBJECT_TYPE_CAMERA:     return camera.lockId;
+            case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.lockId;
+            case GAMEOBJECT_TYPE_FISHINGHOLE:return fishinghole.lockId;
+            case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.lockId;
             default: return 0;
         }
     }
@@ -659,7 +681,7 @@ class GameObject : public WorldObject
 
         GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
-        //returns SpellFailedReason
+        //returns SpellCastResult
         uint32 CastSpell(Unit *target, uint32 spell, uint64 originalCaster = 0);
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;

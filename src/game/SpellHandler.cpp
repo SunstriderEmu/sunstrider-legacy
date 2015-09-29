@@ -71,7 +71,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     TC_LOG_DEBUG("network","WORLD: CMSG_USE_ITEM packet, bagIndex: %u, slot: %u, spell_count: %u , cast_count: %u, Item: %u, data length = %i", bagIndex, slot, spell_count, cast_count, pItem->GetEntry(), uint32(recvPacket.size()));
 
-    ItemTemplate const *proto = pItem->GetProto();
+    ItemTemplate const *proto = pItem->GetTemplate();
     if(!proto)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
@@ -117,7 +117,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     // check also  BIND_WHEN_PICKED_UP and BIND_QUEST_ITEM for .additem or .additemset case by GM (not binded at adding to inventory)
-    if( pItem->GetProto()->Bonding == BIND_WHEN_USE || pItem->GetProto()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetProto()->Bonding == BIND_QUEST_ITEM )
+    if( pItem->GetTemplate()->Bonding == BIND_WHEN_USE || pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP || pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM )
     {
         if (!pItem->IsSoulBound())
         {
@@ -136,9 +136,9 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         // no script or script not process request by self
 
         // special learning case
-        if(pItem->GetProto()->Spells[0].SpellId==SPELL_ID_GENERIC_LEARN)
+        if(pItem->GetTemplate()->Spells[0].SpellId==SPELL_ID_GENERIC_LEARN)
         {
-            uint32 learning_spell_id = pItem->GetProto()->Spells[1].SpellId;
+            uint32 learning_spell_id = pItem->GetTemplate()->Spells[1].SpellId;
 
             SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
             if(!spellInfo)
@@ -161,7 +161,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
         for(int i = 0; i < 5; ++i)
         {
-            _Spell const& spellData = pItem->GetProto()->Spells[i];
+            _Spell const& spellData = pItem->GetTemplate()->Spells[i];
 
             // no spell
             if(!spellData.SpellId)
@@ -220,7 +220,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    ItemTemplate const *proto = pItem->GetProto();
+    ItemTemplate const *proto = pItem->GetTemplate();
     if(!proto)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
@@ -258,8 +258,8 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
             for (int i = 0; i < 5; ++i) {
                 // type==1 This means lockInfo->key[i] is an item
                 bool found = false;
-                if (lockInfo->keytype[i]==LOCK_KEY_ITEM && lockInfo->key[i]) {
-                    if (pUser->HasItemCount(lockInfo->key[i], 1, false)) {
+                if (lockInfo->Type[i]==LOCK_KEY_ITEM && lockInfo->Index[i]) {
+                    if (pUser->HasItemCount(lockInfo->Index[i], 1, false)) {
                         found = true;
                         break;
                     }
@@ -373,9 +373,9 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
 
     // auto-selection buff level base at target level (in spellInfo)
-    if(targets.getUnitTarget())
+    if(targets.GetUnitTarget())
     {
-        SpellInfo const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.getUnitTarget()->GetLevel(),_player->IsHostileTo(targets.getUnitTarget()));
+        SpellInfo const *actualSpellInfo = sSpellMgr->SelectAuraRankForPlayerLevel(spellInfo,targets.GetUnitTarget()->GetLevel(),_player->IsHostileTo(targets.GetUnitTarget()));
 
         // if rank not found then function return NULL but in explicit cast case original spell can be casted and later failed with appropriate error message
         if(actualSpellInfo)
@@ -384,7 +384,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         //client doesn't send target if it's not in range, so we have to pick it from UNIT_FIELD_TARGET
         if(uint64 targetGUID = _player->GetUInt64Value(UNIT_FIELD_TARGET))
             if(Unit* target = ObjectAccessor::GetUnit(*_player, targetGUID))
-                targets.setUnitTarget(target);
+                targets.SetUnitTarget(target);
     }
     
     if (spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG))
@@ -624,7 +624,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
                 data << uint32(0);
             else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
-                data << uint32(item->GetProto()->DisplayInfoID);
+                data << uint32(item->GetTemplate()->DisplayInfoID);
             else
                 data << uint32(0);
         }

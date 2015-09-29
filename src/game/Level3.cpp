@@ -3061,7 +3061,7 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
 
     uint32 counter = 0;
 
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
         uint32 id = itr->second.Entry;
@@ -5015,7 +5015,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
 
     if(player)
     {
-        player->resetTalents(true);
+        player->ResetTalents(true);
 
         ChatHandler(player).SendSysMessage(LANG_RESET_TALENTS);
 
@@ -5165,7 +5165,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
         return false;
 
     if (reason)
-        sWorld->ShutdownServ (time, SHUTDOWN_MASK_IDLE, reason);
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_IDLE, reason);
     else
         sWorld->ShutdownServ(time,SHUTDOWN_MASK_IDLE,"");
         

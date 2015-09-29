@@ -1240,7 +1240,7 @@ void LoadLootTemplates_Creature()
 
     // remove real entries and check existence loot
 
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
         if(CreatureTemplate const* cInfo = &(itr->second))
@@ -1354,7 +1354,7 @@ void LoadLootTemplates_Pickpocketing()
     LootTemplates_Pickpocketing.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
         if(CreatureTemplate const* cInfo = &(itr->second))
@@ -1412,7 +1412,7 @@ void LoadLootTemplates_Skinning()
     LootTemplates_Skinning.LoadAndCollectLootIds(ids_set);
 
     // remove real entries and check existence loot
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
         if(CreatureTemplate const* cInfo = &(itr->second))

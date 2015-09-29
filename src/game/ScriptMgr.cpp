@@ -1899,7 +1899,7 @@ uint32 ScriptMgr::GetDialogStatus( Player *player, GameObject *_GO )
 
 bool ScriptMgr::ItemHello( Player *player, Item *_Item, Quest const *_Quest )
 {
-    Script *tmpscript = m_scripts[_Item->GetProto()->ScriptId];
+    Script *tmpscript = m_scripts[_Item->GetTemplate()->ScriptId];
     if (!tmpscript || !tmpscript->pItemHello) return false;
 
     player->PlayerTalkClass->ClearMenus();
@@ -1909,7 +1909,7 @@ bool ScriptMgr::ItemHello( Player *player, Item *_Item, Quest const *_Quest )
 
 bool ScriptMgr::ItemQuestAccept( Player *player, Item *_Item, Quest const *_Quest )
 {
-    Script *tmpscript = m_scripts[_Item->GetProto()->ScriptId];
+    Script *tmpscript = m_scripts[_Item->GetTemplate()->ScriptId];
     if (!tmpscript || !tmpscript->pItemQuestAccept) return false;
 
     player->PlayerTalkClass->ClearMenus();
@@ -1982,7 +1982,7 @@ CreatureAINew* ScriptMgr::getAINew(Creature* creature)
 
 bool ScriptMgr::ItemUse( Player *player, Item* _Item, SpellCastTargets const& targets)
 {
-    Script *tmpscript = m_scripts[_Item->GetProto()->ScriptId];
+    Script *tmpscript = m_scripts[_Item->GetTemplate()->ScriptId];
     if (!tmpscript || !tmpscript->pItemUse) return false;
 
     return tmpscript->pItemUse(player,_Item,targets);

@@ -1844,7 +1844,7 @@ void Pet::CheckLearning(uint32 spellid)
     }
 }
 
-uint32 Pet::resetTalentsCost() const
+uint32 Pet::ResetTalentsCost() const
 {
     uint32 days = (sWorld->GetGameTime() - m_resetTalentsTime)/DAY;
 

@@ -283,6 +283,7 @@ class Group
         }
 
         void SetTargetIcon(uint8 id, uint64 guid);
+        uint64 GetTargetIcon(uint8 id);
         void SetDifficulty(uint8 difficulty);
         uint8 GetDifficulty() { return m_difficulty; }
         uint16 InInstance();

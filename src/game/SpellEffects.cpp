@@ -2258,7 +2258,7 @@ void Spell::EffectDummy(uint32 i)
                             spell->m_currentBasePoints[1] = damage-1;
 
                             SpellCastTargets targets;
-                            targets.setItemTarget( item );
+                            targets.SetItemTarget( item );
                             spell->prepare(&targets);
                         }
                     }
@@ -2328,7 +2328,7 @@ void Spell::EffectDummy(uint32 i)
         Spell* spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID, NULL, true);
         if(bp) spell->m_currentBasePoints[0] = bp;
         SpellCastTargets targets;
-        targets.setUnitTarget(unitTarget);
+        targets.SetUnitTarget(unitTarget);
         spell->prepare(&targets);
     }
 
@@ -2377,7 +2377,7 @@ void Spell::EffectTriggerRitualOfSummoning(uint32 i)
     Spell *spell = new Spell(m_caster, spellInfo, true);
 
     SpellCastTargets targets;
-    targets.setUnitTarget( unitTarget);
+    targets.SetUnitTarget( unitTarget);
     spell->prepare(&targets);
 
     m_caster->SetCurrentCastedSpell(spell);
@@ -2667,7 +2667,7 @@ void Spell::EffectTriggerMissileSpell(uint32 effect_idx)
     Spell *spell = new Spell(m_caster, spellInfo, true, m_originalCasterGUID );
 
     SpellCastTargets targets;
-    targets.setDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
+    targets.SetDestination(m_targets.m_destX,m_targets.m_destY,m_targets.m_destZ);
     spell->m_CastItem = m_CastItem;
     spell->prepare(&targets, NULL);
 }
@@ -2701,7 +2701,7 @@ void Spell::EffectTeleportUnits(uint32 i)
     if (m_spellInfo->Id == 46473)
         orientation = 6.22f;
     else
-        orientation = m_targets.getUnitTarget() ? m_targets.getUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
+        orientation = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget()->GetOrientation() : unitTarget->GetOrientation();
 
     // Teleport
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
@@ -3275,7 +3275,7 @@ void Spell::EffectHealPct( uint32 /*i*/ )
         caster->SendHealSpellLog(unitTarget, m_spellInfo->Id, addhealth, false);
 
         int32 gain = unitTarget->ModifyHealth( int32(addhealth) );
-        unitTarget->GetHostilRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
+        unitTarget->GetHostileRefManager().threatAssist(m_caster, float(gain) * 0.5f, m_spellInfo);
 
         if(caster->GetTypeId()==TYPEID_PLAYER)
             if(Battleground *bg = (caster->ToPlayer())->GetBattleground())
@@ -3522,7 +3522,7 @@ void Spell::EffectEnergize(uint32 i)
 
     unitTarget->ModifyPower(power,damage);
     m_caster->SendEnergizeSpellLog(unitTarget, m_spellInfo->Id, damage, power);
-    m_caster->GetHostilRefManager().threatAssist(unitTarget, float(damage) * 0.5f, m_spellInfo, false, true);
+    m_caster->GetHostileRefManager().threatAssist(unitTarget, float(damage) * 0.5f, m_spellInfo, false, true);
 
     // Mad Alchemist's Potion
     if (m_spellInfo->Id == 45051)
@@ -3721,7 +3721,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
     else if(itemTarget)
     {
-        lockId = itemTarget->GetProto()->LockID;
+        lockId = itemTarget->GetTemplate()->LockID;
         guid = itemTarget->GetGUID();
     }
     else
@@ -3751,7 +3751,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     for(int i = 0; i < 5; ++i)
     {
         // type==1 This means lockInfo->key[i] is an item
-        if(lockInfo->keytype[i]==LOCK_KEY_ITEM && lockInfo->key[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->key[i])
+        if(lockInfo->Type[i]==LOCK_KEY_ITEM && lockInfo->Index[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->Index[i])
         {
             if (gameObjTarget && gameObjTarget->GetEntry() == 184849) // Mechanar Cache of the Legion
                 gameObjTarget->setManualUnlocked();
@@ -3872,8 +3872,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
             player->DestroyItem(m_CastItem->GetBagSlot(), m_CastItem->GetSlot(),true);
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
-            if(m_CastItem==m_targets.getItemTarget())
-                m_targets.setItemTarget(NULL);
+            if(m_CastItem==m_targets.GetItemTarget())
+                m_targets.SetItemTarget(NULL);
 
             m_CastItem = NULL;
 
@@ -3890,8 +3890,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
             player->DestroyItem(m_CastItem->GetBagSlot(), m_CastItem->GetSlot(),true);
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
-            if(m_CastItem==m_targets.getItemTarget())
-                m_targets.setItemTarget(NULL);
+            if(m_CastItem==m_targets.GetItemTarget())
+                m_targets.SetItemTarget(NULL);
 
             m_CastItem = NULL;
 
@@ -3908,8 +3908,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
             player->DestroyItem(m_CastItem->GetBagSlot(), m_CastItem->GetSlot(),true);
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
-            if(m_CastItem==m_targets.getItemTarget())
-                m_targets.setItemTarget(NULL);
+            if(m_CastItem==m_targets.GetItemTarget())
+                m_targets.SetItemTarget(NULL);
 
             m_CastItem = NULL;
 
@@ -4299,10 +4299,10 @@ void Spell::EffectSummonWild(uint32 i)
     // level of creature summoned using engineering item based at engineering skill level
     if(m_caster->GetTypeId()==TYPEID_PLAYER && m_CastItem)
     {
-        ItemTemplate const *proto = m_CastItem->GetProto();
-        if(proto && proto->RequiredSkill == SKILL_ENGINERING)
+        ItemTemplate const *proto = m_CastItem->GetTemplate();
+        if(proto && proto->RequiredSkill == SKILL_ENGINEERING)
         {
-            uint16 skill202 = (m_caster->ToPlayer())->GetSkillValue(SKILL_ENGINERING);
+            uint16 skill202 = (m_caster->ToPlayer())->GetSkillValue(SKILL_ENGINEERING);
             if(skill202)
             {
                 level = skill202/5;
@@ -4476,10 +4476,10 @@ void Spell::EffectSummonGuardian(uint32 i)
     // level of pet summoned using engineering item based at engineering skill level
     if(m_CastItem)
     {
-        ItemTemplate const *proto = m_CastItem->GetProto();
-        if(proto && proto->RequiredSkill == SKILL_ENGINERING)
+        ItemTemplate const *proto = m_CastItem->GetTemplate();
+        if(proto && proto->RequiredSkill == SKILL_ENGINEERING)
         {
-            uint16 skill202 = caster->GetSkillValue(SKILL_ENGINERING);
+            uint16 skill202 = caster->GetSkillValue(SKILL_ENGINEERING);
             if(skill202)
             {
                 level = skill202/5;
@@ -4637,7 +4637,7 @@ void Spell::EffectEnchantItemPerm(uint32 i)
         {
             sLog->outCommand(p_caster->GetSession()->GetAccountId(),"GM %s (Account: %u) enchanting(perm): %s (Entry: %d) for player: %s (Account: %u)",
                 p_caster->GetName().c_str(),p_caster->GetSession()->GetAccountId(),
-                itemTarget->GetProto()->Name1.c_str(),itemTarget->GetEntry(),
+                itemTarget->GetTemplate()->Name1.c_str(),itemTarget->GetEntry(),
                 item_owner->GetName().c_str(),item_owner->GetSession()->GetAccountId());
         }
 
@@ -4779,7 +4779,7 @@ void Spell::EffectEnchantItemTmp(uint32 i)
     {
         sLog->outCommand(p_caster->GetSession()->GetAccountId(),"GM %s (Account: %u) enchanting(temp): %s (Entry: %d) for player: %s (Account: %u)",
             p_caster->GetName().c_str(),p_caster->GetSession()->GetAccountId(),
-            itemTarget->GetProto()->Name1.c_str(),itemTarget->GetEntry(),
+            itemTarget->GetTemplate()->Name1.c_str(),itemTarget->GetEntry(),
             item_owner->GetName().c_str(),item_owner->GetSession()->GetAccountId());
     }
 
@@ -4986,7 +4986,7 @@ void Spell::EffectTaunt(uint32 /*i*/)
 
     //Set aggro victim to caster
     if( !unitTarget->getThreatManager().getOnlineContainer().empty() )
-        if(HostilReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
+        if(HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
             unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
 
     if((unitTarget->ToCreature())->IsAIEnabled) {
@@ -5065,7 +5065,7 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
                 }
 
                 float threat = 14 * stack;
-                m_targets.getUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
+                m_targets.GetUnitTarget()->AddThreat(m_caster, threat,(SpellSchoolMask)m_spellInfo->SchoolMask,m_spellInfo);
 
                 if(stack < 5)
                 {
@@ -5245,10 +5245,10 @@ void Spell::SpellDamageWeaponDmg(uint32 i)
         Item *pItem = (m_caster->ToPlayer())->GetWeaponForAttack( RANGED_ATTACK );
 
         // wands don't have ammo
-        if(!pItem  || pItem->IsBroken() || pItem->GetProto()->SubClass==ITEM_SUBCLASS_WEAPON_WAND)
+        if(!pItem  || pItem->IsBroken() || pItem->GetTemplate()->SubClass==ITEM_SUBCLASS_WEAPON_WAND)
             return;
 
-        if( pItem->GetProto()->InventoryType == INVTYPE_THROWN )
+        if( pItem->GetTemplate()->InventoryType == INVTYPE_THROWN )
         {
             if(pItem->GetMaxStackCount()==1)
             {
@@ -5478,13 +5478,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             Item* offItem = NULL;
             Item* rangedItem = NULL;
             if (mainItem = pCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
-                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, mainItem->GetProto()->DisplayInfoID);
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 0, mainItem->GetTemplate()->DisplayInfoID);
 
             if (offItem = pCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
-                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetProto()->DisplayInfoID);
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 1, offItem->GetTemplate()->DisplayInfoID);
 
             if (rangedItem = pCaster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
-                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, rangedItem->GetProto()->DisplayInfoID);
+                unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + 2, rangedItem->GetTemplate()->DisplayInfoID);
 
             break;
         }
@@ -6255,7 +6255,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         for(uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
         {
             if((*iter)->m_currentSpells[i]
-            && (*iter)->m_currentSpells[i]->m_targets.getUnitTargetGUID() == unitTarget->GetGUID())
+            && (*iter)->m_currentSpells[i]->m_targets.GetUnitTargetGUID() == unitTarget->GetGUID())
             {
                 (*iter)->InterruptSpell(i, true);
             }
@@ -6263,7 +6263,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     }
 
     unitTarget->CombatStop();
-    unitTarget->GetHostilRefManager().deleteReferences();   // stop all fighting
+    unitTarget->GetHostileRefManager().deleteReferences();   // stop all fighting
     // Vanish allows to remove all threat and cast regular stealth so other spells can be used
     if(m_spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE && (m_spellInfo->SpellFamilyFlags & SPELLFAMILYFLAG_ROGUE_VANISH))
     {
@@ -6662,7 +6662,7 @@ void Spell::EffectDisEnchant(uint32 /*i*/)
         return;
 
     Player* p_caster = m_caster->ToPlayer();
-    if(!itemTarget || !itemTarget->GetProto()->DisenchantID)
+    if(!itemTarget || !itemTarget->GetTemplate()->DisenchantID)
         return;
 
     p_caster->UpdateCraftSkill(m_spellInfo->Id);
@@ -6704,7 +6704,7 @@ void Spell::EffectFeedPet(uint32 i)
     if(!pet->IsAlive())
         return;
 
-    int32 benefit = pet->GetCurrentFoodBenefitLevel(itemTarget->GetProto()->ItemLevel);
+    int32 benefit = pet->GetCurrentFoodBenefitLevel(itemTarget->GetTemplate()->ItemLevel);
     if(benefit <= 0)
         return;
 
@@ -6995,7 +6995,7 @@ void Spell::EffectCharge(uint32 i)
         }
     }
 
-    Unit *target = m_targets.getUnitTarget();
+    Unit *target = m_targets.GetUnitTarget();
     if(!target)
         return;
         
@@ -7514,7 +7514,7 @@ void Spell::EffectProspecting(uint32 /*i*/)
         return;
 
     Player* p_caster = m_caster->ToPlayer();
-    if(!itemTarget || !(itemTarget->GetProto()->BagFamily & BAG_FAMILY_MASK_MINING_SUPP))
+    if(!itemTarget || !(itemTarget->GetTemplate()->BagFamily & BAG_FAMILY_MASK_MINING_SUPP))
         return;
 
     if(itemTarget->GetCount() < 5)
@@ -7523,7 +7523,7 @@ void Spell::EffectProspecting(uint32 /*i*/)
     if( sWorld->getConfig(CONFIG_SKILL_PROSPECTING))
     {
         uint32 SkillValue = p_caster->GetPureSkillValue(SKILL_JEWELCRAFTING);
-        uint32 reqSkillValue = itemTarget->GetProto()->RequiredSkillRank;
+        uint32 reqSkillValue = itemTarget->GetTemplate()->RequiredSkillRank;
         p_caster->UpdateGatherSkill(SKILL_JEWELCRAFTING, SkillValue, reqSkillValue);
     }
 

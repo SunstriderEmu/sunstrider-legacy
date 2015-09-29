@@ -2191,8 +2191,8 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
 
     std::ostringstream reply;
 
-    GameTeleMap const & teleMap = sObjectMgr->GetGameTeleMap();
-    for(GameTeleMap::const_iterator itr = teleMap.begin(); itr != teleMap.end(); ++itr)
+    GameTeleContainer const & teleMap = sObjectMgr->GetGameTeleMap();
+    for(GameTeleContainer::const_iterator itr = teleMap.begin(); itr != teleMap.end(); ++itr)
     {
         GameTele const* tele = &itr->second;
 

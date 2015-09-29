@@ -28,7 +28,7 @@
 
 void AddItemsSetItem(Player*player,Item *item)
 {
-    ItemTemplate const *proto = item->GetProto();
+    ItemTemplate const *proto = item->GetTemplate();
     uint32 setid = proto->ItemSet;
 
     ItemSetEntry const *set = sItemSetStore.LookupEntry(setid);
@@ -460,7 +460,7 @@ uint32 Item::GetSkill()
         0,SKILL_CLOTH,SKILL_LEATHER,SKILL_MAIL,SKILL_PLATE_MAIL,0,SKILL_SHIELD,0,0,0
     };
 
-    ItemTemplate const* proto = GetProto();
+    ItemTemplate const* proto = GetTemplate();
 
     switch (proto->Class)
     {
@@ -483,7 +483,7 @@ uint32 Item::GetSkill()
 
 uint32 Item::GetSpell()
 {
-    ItemTemplate const* proto = GetProto();
+    ItemTemplate const* proto = GetTemplate();
 
     switch (proto->Class)
     {
@@ -743,7 +743,7 @@ bool Item::IsBoundByEnchant() const
 
 bool Item::IsFitToSpellRequirements(SpellInfo const* spellInfo) const
 {
-    ItemTemplate const* proto = GetProto();
+    ItemTemplate const* proto = GetTemplate();
 
     if (spellInfo->EquippedItemClass != -1)                 // -1 == any item class
     {
@@ -811,7 +811,7 @@ bool Item::GemsFitSockets() const
     bool fits = true;
     for(uint32 enchant_slot = SOCK_ENCHANTMENT_SLOT; enchant_slot < SOCK_ENCHANTMENT_SLOT+3; ++enchant_slot)
     {
-        uint8 SocketColor = GetProto()->Socket[enchant_slot-SOCK_ENCHANTMENT_SLOT].Color;
+        uint8 SocketColor = GetTemplate()->Socket[enchant_slot-SOCK_ENCHANTMENT_SLOT].Color;
 
         uint32 enchant_id = GetEnchantmentId(EnchantmentSlot(enchant_slot));
         if(!enchant_id)
@@ -867,7 +867,7 @@ uint8 Item::GetGemCountWithID(uint32 GemID) const
 
 bool Item::IsLimitedToAnotherMapOrZone( uint32 cur_mapId, uint32 cur_zoneId) const
 {
-    ItemTemplate const* proto = GetProto();
+    ItemTemplate const* proto = GetTemplate();
     return proto && (proto->Map && proto->Map != cur_mapId || proto->Area && proto->Area != cur_zoneId );
 }
 
@@ -914,7 +914,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemTem
 
 Item* Item::CloneItem( uint32 count, Player const* player ) const
 {
-    Item* newItem = CreateItem( GetEntry(), count, player, GetProto() );
+    Item* newItem = CreateItem( GetEntry(), count, player, GetTemplate() );
     if(!newItem)
         return nullptr;
 

@@ -606,8 +606,8 @@ bool ChatHandler::HandleDebugThreatList(const char * args)
     if(args)
         limit = (uint32)atoi(args);
 
-    std::list<HostilReference*>& tlist = target->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator itr;
+    std::list<HostileReference*>& tlist = target->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator itr;
     uint32 cnt = 0;
     PSendSysMessage("Threat list of %s (guid %u)",target->GetName().c_str(), target->GetGUIDLow());
     for(itr = tlist.begin(); itr != tlist.end(); ++itr)
@@ -630,12 +630,12 @@ bool ChatHandler::HandleDebugHostilRefList(const char * /*args*/)
     Unit* target = GetSelectedUnit();
     if(!target)
         target = m_session->GetPlayer();
-    HostilReference* ref = target->GetHostilRefManager().getFirst();
+    HostileReference* ref = target->GetHostileRefManager().getFirst();
     uint32 cnt = 0;
     PSendSysMessage("Hostil reference list of %s (guid %u)",target->GetName().c_str(), target->GetGUIDLow());
     while(ref)
     {
-        if(Unit * unit = ref->GetSource()->getOwner())
+        if(Unit * unit = ref->GetSource()->GetOwner())
         {
             ++cnt;
             PSendSysMessage("   %u.   %s   (guid %u) - (entry %u) - threat %f",cnt,unit->GetName().c_str(), unit->GetGUIDLow(), unit->GetEntry(), ref->getThreat());
@@ -667,7 +667,7 @@ bool ChatHandler::HandleDebugItemByPos(const char* args)
         return true;
     }
     
-    PSendSysMessage("Item found! Name: %s, level: %u", item->GetProto()->Name1.c_str(), item->GetProto()->ItemLevel);
+    PSendSysMessage("Item found! Name: %s, level: %u", item->GetTemplate()->Name1.c_str(), item->GetTemplate()->ItemLevel);
     return true;
 }
 

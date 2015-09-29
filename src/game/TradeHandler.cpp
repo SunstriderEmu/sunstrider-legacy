@@ -140,9 +140,9 @@ void WorldSession::SendUpdateTrade()
 
         if(item)
         {
-            data << (uint32) item->GetProto()->ItemId;      // entry
+            data << (uint32) item->GetTemplate()->ItemId;      // entry
                                                             // display id
-            data << (uint32) item->GetProto()->DisplayInfoID;
+            data << (uint32) item->GetTemplate()->DisplayInfoID;
                                                             // stack count
             data << (uint32) item->GetUInt32Value(ITEM_FIELD_STACK_COUNT);
             data << (uint32) 0;                             // probably gift=1, created_by=0?
@@ -157,7 +157,7 @@ void WorldSession::SendUpdateTrade()
             data << (uint32) item->GetItemSuffixFactor();   // SuffixFactor
                                                             // random properties id
             data << (uint32) item->GetItemRandomPropertyId();
-            data << (uint32) item->GetProto()->LockID;      // lock id
+            data << (uint32) item->GetTemplate()->LockID;      // lock id
                                                             // max durability
             data << (uint32) item->GetUInt32Value(ITEM_FIELD_MAXDURABILITY);
                                                             // durability
@@ -195,7 +195,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 {
                     sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                        myItems[i]->GetProto()->Name1.c_str(),myItems[i]->GetEntry(),myItems[i]->GetCount(),
+                        myItems[i]->GetTemplate()->Name1.c_str(),myItems[i]->GetEntry(),myItems[i]->GetCount(),
                         _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId());
                 }
 
@@ -209,7 +209,7 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 {
                     sLog->outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
                         _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId(),
-                        hisItems[i]->GetProto()->Name1.c_str(),hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
+                        hisItems[i]->GetTemplate()->Name1.c_str(),hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
                         _player->GetName().c_str(),_player->GetSession()->GetAccountId());
                 }
 

@@ -53,6 +53,10 @@
 #include "PacketLog.h"
 #include "BattleGround.h"
 
+#ifdef PLAYERBOT
+#include "playerbot.h"
+#endif
+
 namespace {
 
 std::string const DefaultPlayerName = "<none>";
@@ -187,6 +191,16 @@ std::string const& WorldSession::GetPlayerName() const
 /// Send a packet to the client
 void WorldSession::SendPacket(WorldPacket* packet)
 {
+    #ifdef PLAYERBOT
+    // Playerbot mod: send packet to bot AI
+    if (GetPlayer()) {
+        if (GetPlayer()->GetPlayerbotAI())
+            GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(*packet);
+        else if (GetPlayer()->GetPlayerbotMgr())
+            GetPlayer()->GetPlayerbotMgr()->HandleMasterOutgoingPacket(*packet);
+    }
+    #endif
+
     if (!m_Socket)
         return;
 
@@ -259,6 +273,10 @@ void WorldSession::LogUnprocessedTail(WorldPacket* packet)
 /// Update the WorldSession (triggered by World update)
 bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 {
+    #ifdef PLAYERBOT
+    if (GetPlayer() && GetPlayer()->GetPlayerbotAI()) return true;
+    #endif
+
     /// Update Timeout timer.
     UpdateTimeOutTime(diff);
 
@@ -338,6 +356,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         sScriptMgr->OnPacketReceive(this, *packet);
                         (this->*opHandle.handler)(*packet);
                         LogUnprocessedTail(packet);
+
+                        #ifdef PLAYERBOT
+                        if (_player && _player->GetPlayerbotMgr())
+                            _player->GetPlayerbotMgr()->HandleMasterIncomingPacket(*packet);
+                        #endif
                     }
                     // lag can cause STATUS_LOGGEDIN opcodes to arrive after the player started a transfer
                     break;
@@ -417,6 +440,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         if (processedPackets > MAX_PROCESSED_PACKETS_IN_SAME_WORLDSESSION_UPDATE)
             break;
     }
+
+    #ifdef PLAYERBOT
+    if (GetPlayer() && GetPlayer()->GetPlayerbotMgr())
+        GetPlayer()->GetPlayerbotMgr()->UpdateSessions(0);
+    #endif
 
     if (m_Socket && m_Socket->IsOpen() && _Warden)
         _Warden->Update();
@@ -560,18 +588,25 @@ void WorldSession::LogoutPlayer(bool Save)
         if (uint64 lguid = GetPlayer()->GetLootGUID())
             DoLootRelease(lguid);
 
+        #ifdef PLAYERBOT
+        // Playerbot mod: log out all player bots owned by this toon
+        if (GetPlayer()->GetPlayerbotMgr())
+            GetPlayer()->GetPlayerbotMgr()->LogoutAllBots();
+        sRandomPlayerbotMgr.OnPlayerLogout(_player);
+        #endif
+
         ///- If the player just died before logging out, make him appear as a ghost
         //FIXME: logout must be delayed in case lost connection with client in time of combat
         if (_player->GetDeathTimer())
         {
-            _player->GetHostilRefManager().deleteReferences();
+            _player->GetHostileRefManager().deleteReferences();
             _player->BuildPlayerRepop();
             _player->RepopAtGraveyard();
         }
         else if (!_player->GetAttackers().empty())
         {
             _player->CombatStop();
-            _player->GetHostilRefManager().setOnlineOfflineState(false);
+            _player->GetHostileRefManager().setOnlineOfflineState(false);
             _player->RemoveAllAurasOnDeath();
 
             // build set of player who attack _player or who have pet attacking of _player
@@ -608,7 +643,6 @@ void WorldSession::LogoutPlayer(bool Save)
         {
             // this will kill character by SPELL_AURA_SPIRIT_OF_REDEMPTION
             _player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
-            //_player->SetDeathPvP(*); set at SPELL_AURA_SPIRIT_OF_REDEMPTION apply time
             _player->KillPlayer();
             _player->BuildPlayerRepop();
             _player->RepopAtGraveyard();
@@ -1565,3 +1599,16 @@ void WorldSession::HandleSpellClick(WorldPacket& recvData)
 
     unit->HandleSpellClick(_player);
 }
+
+#ifdef PLAYERBOT
+void WorldSession::HandleBotPackets()
+{
+    WorldPacket* packet;
+    while (_recvQueue.next(packet))
+    {
+        OpcodeHandler& opHandle = opcodeTable[packet->GetOpcode()];
+        (this->*opHandle.handler)(*packet);
+        delete packet;
+    }
+}
+#endif

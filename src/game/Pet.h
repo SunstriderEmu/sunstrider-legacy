@@ -238,7 +238,7 @@ class Pet : public Creature
 
         void InitPetCreateSpells();
         void CheckLearning(uint32 spellid);
-        uint32 resetTalentsCost() const;
+        uint32 ResetTalentsCost() const;
 
         void  SetTP(int32 TP);
         int32 GetDispTP();

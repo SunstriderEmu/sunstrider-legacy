@@ -159,7 +159,7 @@ bool WorldSocket::ReadDataHandler()
 
     uint16 opcode = uint16(header->cmd);
 
-    std::string opcodeName = GetOpcodeNameForLogging(opcode);
+   // std::string opcodeName = GetOpcodeNameForLogging(opcode);
 
     WorldPacket packet(opcode, std::move(_packetBuffer));
 

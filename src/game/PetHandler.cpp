@@ -236,7 +236,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                 if ((pet->ToCreature())->IsPet())
                     ((Pet*)pet)->CheckLearning(spellid);
 
-                unit_target = spell->m_targets.getUnitTarget();
+                unit_target = spell->m_targets.GetUnitTarget();
 
                 //10% chance to play special pet attack talk, else growl
                 //actually this only seems to happen on special spells, fire shield for imp, torment for voidwalker, but it's stupid to check every spell
@@ -607,7 +607,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    uint32 cost = pet->resetTalentsCost();
+    uint32 cost = pet->ResetTalentsCost();
 
     if (GetPlayer()->GetMoney() < cost)
     {
@@ -749,7 +749,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;
 
-    SpellFailedReason result = spell->PetCanCast(NULL);
+    SpellCastResult result = spell->PetCanCast(NULL);
     if (spellid == 33395) { //Water elemental Freeze
         result = spell->CheckRange(true);
     }

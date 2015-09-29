@@ -264,9 +264,11 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
     {
 
         std::string Name;
+        std::string IconName;
         std::string CastBarCaption;
 
         Name = info->name;
+        IconName = info->IconName;
         CastBarCaption = info->castBarCaption;
 
         LocaleConstant loc_idx = GetSessionDbcLocale();
@@ -288,10 +290,14 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << (uint32)info->displayId;
         data << Name;
         data << uint8(0) << uint8(0) << uint8(0);           // name2, name3, name4
-        data << uint8(0);                                   // 2.0.3, string
+        data << IconName;                                   // 2.0.3, string
         data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
         data << uint8(0);                                   // 2.0.3, probably string
         data.append(info->raw.data,24);
+        /* LICH_KING
+        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+            data << uint32(info->questItems[i]);              // itemId[6], quest drop
+        */
         SendPacket( &data );
     }
     else

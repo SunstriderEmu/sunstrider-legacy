@@ -3477,7 +3477,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
             for(uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             {
                 if((*iter)->m_currentSpells[i]
-                && (*iter)->m_currentSpells[i]->m_targets.getUnitTargetGUID() == m_target->GetGUID())
+                && (*iter)->m_currentSpells[i]->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
                 {
                     (*iter)->InterruptSpell(i, false);
                 }
@@ -3512,7 +3512,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         if(m_caster_guid==m_target->GetGUID() && m_target->m_currentSpells[CURRENT_GENERIC_SPELL])
             m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
         m_target->InterruptNonMeleeSpells(true);
-        m_target->GetHostilRefManager().deleteReferences();
+        m_target->GetHostileRefManager().deleteReferences();
     }
     else
     {
@@ -3857,7 +3857,7 @@ void Aura::HandleAuraModTotalThreat(bool apply, bool Real)
     else
         threatMod =  float(-GetModifierValue());
 
-    m_target->GetHostilRefManager().threatAssist(caster, threatMod);
+    m_target->GetHostileRefManager().threatAssist(caster, threatMod);
 }
 
 void Aura::HandleModTaunt(bool apply, bool Real)
@@ -6196,7 +6196,7 @@ void Aura::PeriodicTick()
             uint32 heal = pCaster->SpellHealingBonus(spellProto, uint32(new_damage * multiplier), DOT, pCaster);
 
             int32 gain = pCaster->ModifyHealth(heal);
-            pCaster->GetHostilRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
+            pCaster->GetHostileRefManager().threatAssist(pCaster, gain * 0.5f, spellProto);
 
             pCaster->SendHealSpellLog(pCaster, spellProto->Id, heal);
             break;
@@ -6264,7 +6264,7 @@ void Aura::PeriodicTick()
 
             float threat = float(gain) * 0.5f * sSpellMgr->GetSpellThreatModPercent(GetSpellInfo());
 
-            m_target->GetHostilRefManager().threatAssist(pCaster, threat, GetSpellInfo());
+            m_target->GetHostileRefManager().threatAssist(pCaster, threat, GetSpellInfo());
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellInfo const* spellProto = GetSpellInfo();
@@ -6423,7 +6423,7 @@ void Aura::PeriodicTick()
             int32 gain = m_target->ModifyPower(power,amount);
 
             if(Unit* pCaster = GetCaster())
-                m_target->GetHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
+                m_target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo(),false,true); //to confirm : threat from energize spells is not subject to threat modifiers
             break;
         }
         case SPELL_AURA_OBS_MOD_POWER:
@@ -6459,7 +6459,7 @@ void Aura::PeriodicTick()
             int32 gain = m_target->ModifyPower(powerType, amount);
 
             if(Unit* pCaster = GetCaster())
-                m_target->GetHostilRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo());
+                m_target->GetHostileRefManager().threatAssist(pCaster, float(gain) * 0.5f, GetSpellInfo());
             break;
         }
         case SPELL_AURA_POWER_BURN_MANA:
@@ -6558,7 +6558,7 @@ void Aura::PeriodicTick()
                 {
                     SpellInfo const *spellProto = GetSpellInfo();
                     if (spellProto)
-                        m_target->GetHostilRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
+                        m_target->GetHostileRefManager().threatAssist(caster, float(gain) * 0.5f, spellProto);
                 }
             }
             break;

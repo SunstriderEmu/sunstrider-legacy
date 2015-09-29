@@ -228,7 +228,7 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
         return;
 
     // not let enemies sign guild charter
-    if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(guild->GetLeader()))
+    if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(guild->GetLeaderGUID()))
         return;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -430,13 +430,13 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
         return;
     }
-    if(_player->GetGUID() == guild->GetLeader() && guild->GetMemberSize() > 1)
+    if(_player->GetGUID() == guild->GetLeaderGUID() && guild->GetMemberSize() > 1)
     {
         SendGuildCommandResult(GUILD_QUIT_S, "", GUILD_LEADER_LEAVE);
         return;
     }
 
-    if(_player->GetGUID() == guild->GetLeader())
+    if(_player->GetGUID() == guild->GetLeaderGUID())
     {
         guild->Disband();
         return;
@@ -474,7 +474,7 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
         return;
     }
-    if(GetPlayer()->GetGUID() != guild->GetLeader())
+    if(GetPlayer()->GetGUID() != guild->GetLeaderGUID())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
@@ -510,7 +510,7 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if( oldLeader->GetGUID() != guild->GetLeader())
+    if( oldLeader->GetGUID() != guild->GetLeaderGUID())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
@@ -683,7 +683,7 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    else if(GetPlayer()->GetGUID() != guild->GetLeader())
+    else if(GetPlayer()->GetGUID() != guild->GetLeaderGUID())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
@@ -731,7 +731,7 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if(GetPlayer()->GetGUID() != guild->GetLeader())
+    if(GetPlayer()->GetGUID() != guild->GetLeaderGUID())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
@@ -766,7 +766,7 @@ void WorldSession::HandleGuildDelRankOpcode(WorldPacket& /*recvPacket*/)
         return;
     }
 
-    else if(GetPlayer()->GetGUID() != guild->GetLeader())
+    else if(GetPlayer()->GetGUID() != guild->GetLeaderGUID())
     {
         SendGuildCommandResult(GUILD_INVITE_S, "", GUILD_PERMISSIONS);
         return;
@@ -862,7 +862,7 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if (guild->GetLeader() != GetPlayer()->GetGUID())
+    if (guild->GetLeaderGUID() != GetPlayer()->GetGUID())
     {
         //"Only guild leaders can create emblems."
         SendSaveGuildEmblem(ERR_GUILDEMBLEM_NOTGUILDMASTER);
@@ -1436,7 +1436,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                     {
                         sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                             _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                            pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
+                            pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                             GuildId);
                     }
                 }
@@ -1505,7 +1505,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         {
             sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                 _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),SplitedAmount,GuildId);
+                pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),SplitedAmount,GuildId);
         }
 
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -1531,7 +1531,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             {
                 sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                     _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
+                    pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
             }
 
@@ -1581,7 +1581,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             {
                 sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
                     _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetProto()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
+                    pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
                     GuildId);
             }
 

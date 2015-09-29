@@ -54,6 +54,12 @@ class SpectatorAddonMsg;
 class ArenaTeam;
 class Guild;
 
+#ifdef PLAYERBOT
+// Playerbot mod
+class PlayerbotAI;
+class PlayerbotMgr;
+#endif
+
 typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS       127
@@ -463,13 +469,13 @@ enum PlayerStateType
         PLAYER_STATE_DEAD
         PLAYER_STATE_KNEEL
         PLAYER_STATE_USESTANDING
-        PLAYER_STATE_STUN_NOSHEATHE
-        PLAYER_STATE_USESTANDING_NOSHEATHE
-        PLAYER_STATE_WORK_NOSHEATHE
+        PLAYER_STATE_STUN_NO_SHEATHE
+        PLAYER_STATE_USESTANDING_NO_SHEATHE
+        PLAYER_STATE_WORK_NO_SHEATHE
         PLAYER_STATE_SPELLPRECAST
         PLAYER_STATE_READYRIFLE
-        PLAYER_STATE_WORK_NOSHEATHE_MINING
-        PLAYER_STATE_WORK_NOSHEATHE_CHOPWOOD
+        PLAYER_STATE_WORK_NO_SHEATHE_MINING
+        PLAYER_STATE_WORK_NO_SHEATHE_CHOPWOOD
         PLAYER_STATE_AT_EASE
         PLAYER_STATE_READY1H
         PLAYER_STATE_SPELLKNEELSTART
@@ -1298,7 +1304,7 @@ class Player : public Unit
             if(!pItem)
                 return EQUIP_ERR_ITEM_NOT_FOUND;
             uint32 count = pItem->GetCount();
-            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetProto() : nullptr );
+            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetTemplate() : nullptr );
 
         }
         uint8 CanStoreItems( Item **pItem,int count) const;
@@ -1646,8 +1652,8 @@ class Player : public Unit
 
         uint32 GetFreeTalentPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS1); }
         void SetFreeTalentPoints(uint32 points) { SetUInt32Value(PLAYER_CHARACTER_POINTS1,points); }
-        bool resetTalents(bool no_cost = false);
-        uint32 resetTalentsCost() const;
+        bool ResetTalents(bool no_cost = false);
+        uint32 ResetTalentsCost() const;
         void InitTalentForLevel();
 
         uint32 GetFreePrimaryProffesionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }
@@ -2255,6 +2261,19 @@ class Player : public Unit
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
 
+        #ifdef PLAYERBOT
+        // A Player can either have a playerbotMgr (to manage its bots), or have playerbotAI (if it is a bot), or
+        // neither. Code that enables bots must create the playerbotMgr and set it using SetPlayerbotMgr.
+        // EquipmentSets& GetEquipmentSets() { return m_EquipmentSets; } //revmoed, not existing on BC
+        void SetPlayerbotAI(PlayerbotAI* ai) { m_playerbotAI=ai; }
+        PlayerbotAI* GetPlayerbotAI() { return m_playerbotAI; }
+        void SetPlayerbotMgr(PlayerbotMgr* mgr) { m_playerbotMgr=mgr; }
+        PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
+        void SetBotDeathTimer() { m_deathTimer = 0; }
+        //PlayerTalentMap& GetTalentMap(uint8 spec) { return *m_talents[spec]; }
+        //bool MinimalLoadFromDB( QueryResult result, uint32 guid );
+        #endif
+
         // Recall position
         uint32 m_recallMap;
         float  m_recallX;
@@ -2555,6 +2574,7 @@ class Player : public Unit
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
+        //TC PlayerTalentMap* m_talents[MAX_TALENT_SPECS];
         SpellCooldowns m_spellCooldowns;
         std::map<uint32, uint32> m_globalCooldowns; // whole start recovery category stored in one
 
@@ -2661,6 +2681,11 @@ class Player : public Unit
         uint32 m_oldpetspell;
 
         uint32 _activeCheats; //mask from PlayerCommandStates
+
+#ifdef PLAYERBOT
+        PlayerbotAI* m_playerbotAI;
+        PlayerbotMgr* m_playerbotMgr;
+#endif
 
         uint64 m_miniPet;
         GuardianPetList m_guardianPets;

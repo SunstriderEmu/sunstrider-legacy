@@ -37,7 +37,7 @@ struct ItemSetEffect
     SpellInfo const *spells[8];
 };
 
-enum InventoryChangeFailure
+enum InventoryResult
 {
     EQUIP_ERR_OK                                 = 0,
     EQUIP_ERR_CANT_EQUIP_LEVEL_I                 = 1,
@@ -205,7 +205,7 @@ class Item : public Object
 
         virtual bool Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *proto);
 
-        ItemTemplate const* GetProto() const { return m_itemProto; }
+        ItemTemplate const* GetTemplate() const { return m_itemProto; }
 
         uint64 GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
         void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
@@ -220,7 +220,7 @@ class Item : public Object
         virtual void DeleteFromDB();
         void DeleteFromInventoryDB(SQLTransaction trans);
 
-        bool IsBag() const { return GetProto()->InventoryType == INVTYPE_BAG; }
+        bool IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
         bool IsBroken() const { return GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0 && GetUInt32Value(ITEM_FIELD_DURABILITY) == 0; }
         bool CanBeTraded() const;
         void SetInTrade(bool b = true) { mb_in_trade = b; }
@@ -232,7 +232,7 @@ class Item : public Object
 
         uint32 GetCount() const { return GetUInt32Value (ITEM_FIELD_STACK_COUNT); }
         void SetCount(uint32 value) { SetUInt32Value (ITEM_FIELD_STACK_COUNT, value); }
-        uint32 GetMaxStackCount() const { return GetProto()->Stackable; }
+        uint32 GetMaxStackCount() const { return GetTemplate()->Stackable; }
         uint8 GetGemCountWithID(uint32 GemID) const;
 
         uint8 GetSlot() const {return m_slot;}
@@ -286,7 +286,7 @@ class Item : public Object
 
         bool HasQuest(uint32 quest_id) const
         {
-            ItemTemplate const *itemProto = GetProto();
+            ItemTemplate const *itemProto = GetTemplate();
             return itemProto && itemProto->StartQuest == quest_id;
         }
         bool HasInvolvedQuest(uint32 /*quest_id*/) const { return false; }

@@ -473,13 +473,13 @@ struct ItemSetEntry
     uint32    required_skill_value;                         // 52
 };
 
+#define MAX_LOCK_CASE 8
+
 struct LockEntry
 {
     uint32      ID;                                         // 0
-    uint32      keytype[5];                                 // 1-5
-                                                            // 6-8, not used
-    uint32      key[5];                                     // 9-13
-                                                            // 14-16, not used
+    uint32      Type[MAX_LOCK_CASE];                                 // 1-8 old "keytype"
+    uint32      Index[MAX_LOCK_CASE];                                     // 9-16 old "key"
     uint32      requiredminingskill;                        // 17
     uint32      requiredlockskill;                          // 18
                                                             // 19-32, not used

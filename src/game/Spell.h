@@ -105,24 +105,24 @@ class SpellCastTargets
             return *this;
         }
 
-        uint64 getUnitTargetGUID() const { return m_unitTargetGUID; }
-        Unit *getUnitTarget() const { return m_unitTarget; }
-        void setUnitTarget(Unit *target);
-        void setSrc(float x, float y, float z);
-        void setSrc(WorldObject *target);
-        void setDestination(float x, float y, float z, int32 mapId = -1);
-        void setDestination(WorldObject *target);
+        uint64 GetUnitTargetGUID() const { return m_unitTargetGUID; }
+        Unit* GetUnitTarget() const { return m_unitTarget; }
+        void SetUnitTarget(Unit *target);
+        void SetSrc(float x, float y, float z);
+        void SetSrc(WorldObject *target);
+        void SetDestination(float x, float y, float z, int32 mapId = -1);
+        void SetDestination(WorldObject *target);
 
-        uint64 getGOTargetGUID() const { return m_GOTargetGUID; }
-        GameObject *getGOTarget() const { return m_GOTarget; }
-        void setGOTarget(GameObject *target);
+        uint64 GetGOTargetGUID() const { return m_GOTargetGUID; }
+        GameObject* GetGOTarget() const { return m_GOTarget; }
+        void SetGOTarget(GameObject *target);
 
-        uint64 getCorpseTargetGUID() const { return m_CorpseTargetGUID; }
-        void setCorpseTarget(Corpse* corpse);
-        uint64 getItemTargetGUID() const { return m_itemTargetGUID; }
-        Item* getItemTarget() const { return m_itemTarget; }
-        uint32 getItemTargetEntry() const { return m_itemTargetEntry; }
-        void setItemTarget(Item* item);
+        uint64 GetCorpseTargetGUID() const { return m_CorpseTargetGUID; }
+        void SetCorpseTarget(Corpse* corpse);
+        uint64 GetItemTargetGUID() const { return m_itemTargetGUID; }
+        Item* GetItemTarget() const { return m_itemTarget; }
+        uint32 GetItemTargetEntry() const { return m_itemTargetEntry; }
+        void SetItemTarget(Item* item);
         void updateTradeSlotItem()
         {
             if(m_itemTarget && (m_targetMask & TARGET_FLAG_TRADE_ITEM))
@@ -313,7 +313,7 @@ class Spell
         Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false);
         ~Spell();
 
-        //return SpellFailedReason
+        //return SpellCastResult
         uint32 prepare(SpellCastTargets * targets, Aura* triggeredByAura = NULL);
         void cancel();
         void update(uint32 difftime);
@@ -323,8 +323,8 @@ class Spell
         void TakeReagents();
         void TakeCastItem();
         void TriggerSpell();
-        SpellFailedReason CheckCast(bool strict);
-        SpellFailedReason PetCanCast(Unit* target);
+        SpellCastResult CheckCast(bool strict);
+        SpellCastResult PetCanCast(Unit* target);
         bool CanAutoCast(Unit* target);
 
         // handlers
@@ -334,10 +334,10 @@ class Spell
         void _handle_immediate_phase();
         void _handle_finish_phase();
 
-        SpellFailedReason CheckItems();
-        SpellFailedReason CheckRange(bool strict);
-        SpellFailedReason CheckPower();
-        SpellFailedReason CheckCasterAuras() const;
+        SpellCastResult CheckItems();
+        SpellCastResult CheckRange(bool strict);
+        SpellCastResult CheckPower();
+        SpellCastResult CheckCasterAuras() const;
 
         int32 CalculateDamage(uint8 i, Unit* target) { return m_caster->CalculateSpellDamage(m_spellInfo,i,m_currentBasePoints[i],target); }
         int32 CalculatePowerCost();
@@ -360,10 +360,10 @@ class Spell
         void HandleHitTriggerAura();
         bool CheckTarget(Unit* target, uint32 eff);
 
-        void CheckSrc() { if(!m_targets.HasSrc()) m_targets.setSrc(m_caster); }
-        void CheckDst() { if(!m_targets.HasDst()) m_targets.setDestination(m_caster); }
+        void CheckSrc() { if(!m_targets.HasSrc()) m_targets.SetSrc(m_caster); }
+        void CheckDst() { if(!m_targets.HasDst()) m_targets.SetDestination(m_caster); }
 
-        void SendCastResult(SpellFailedReason result);
+        void SendCastResult(SpellCastResult result);
         void SendSpellStart();
         void SendSpellGo();
         void SendSpellCooldown();

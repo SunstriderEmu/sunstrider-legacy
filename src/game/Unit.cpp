@@ -142,7 +142,7 @@ bool IsPassiveStackableSpell( uint32 spellId )
 }
 
 Unit::Unit()
-: WorldObject(), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostilRefManager(this),
+: WorldObject(), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
 m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0)
@@ -332,7 +332,7 @@ void Unit::Update( uint32 p_time )
             // Check UNIT_STATE_MELEE_ATTACKING or UNIT_STATE_CHASE (without UNIT_STATE_FOLLOW in this case) so pets can reach far away
             // targets without stopping half way there and running off.
             // These flags are reset after target dies or another command is given.
-            if( m_HostilRefManager.isEmpty() )
+            if( m_HostileRefManager.isEmpty() )
             {
                 // m_CombatTimer set at aura start and it will be freeze until aura removing
                 if ( m_CombatTimer <= p_time )
@@ -1063,7 +1063,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
                 break;
         }
     }
-    targets.setUnitTarget(Victim);
+    targets.SetUnitTarget(Victim);
 
     if(targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
     {
@@ -1072,7 +1072,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
             TC_LOG_ERROR("spell","CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
             return SPELL_FAILED_BAD_TARGETS;
         }
-        targets.setDestination(Victim);
+        targets.SetDestination(Victim);
     }
 
     if (castItem)
@@ -1130,7 +1130,7 @@ uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Uni
                 break;
         }
     }
-    targets.setUnitTarget(Victim);
+    targets.SetUnitTarget(Victim);
 
     //check destination
     if(targetMask & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
@@ -1140,7 +1140,7 @@ uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Uni
             TC_LOG_ERROR("spell","CastSpell: spell id %i by caster: %s %u) does not have destination", spellInfo->Id,(GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
             return SPELL_FAILED_BAD_TARGETS;
         }
-        targets.setDestination(Victim);
+        targets.SetDestination(Victim);
     }
 
     if(!originalCaster && triggeredByAura)
@@ -1180,7 +1180,7 @@ uint32 Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
 
     SpellCastTargets targets;
-    targets.setDestination(x, y, z);
+    targets.SetDestination(x, y, z);
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
 }
@@ -1214,7 +1214,7 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *cas
     Spell *spell = new Spell(this, spellInfo, triggered, originalCaster );
 
     SpellCastTargets targets;
-    targets.setGOTarget(go);
+    targets.SetGOTarget(go);
     spell->m_CastItem = castItem;
     return spell->prepare(&targets, triggeredByAura);
 }
@@ -2542,7 +2542,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     if (Player* player = ToPlayer())
     {
         Item *tmpitem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-        if (!tmpitem || !tmpitem->GetProto()->Block)
+        if (!tmpitem || !tmpitem->GetTemplate()->Block)
             canBlock = false;
     }
 
@@ -2710,7 +2710,7 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
     {
         if(spell->MaxLevel != 0 && myLevel > spell->MaxLevel)
             myLevel = spell->MaxLevel;
-        else if(castItem->GetProto()->RequiredLevel && castItem->GetProto()->RequiredLevel < 40) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
+        else if(castItem->GetTemplate()->RequiredLevel && castItem->GetTemplate()->RequiredLevel < 40) //not sure about this but this is based on wowhead.com/item=1404 and seems probable to me
             myLevel = (myLevel > 60) ? 60: myLevel;
     }
     int32 targetLevel = int32(pVictim->GetLevelForTarget(this));
@@ -5944,10 +5944,10 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         return false;
                 }
                 Item *item = (this->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                float speed = (item ? item->GetProto()->Delay : BASE_ATTACK_TIME)/1000.0f;
+                float speed = (item ? item->GetTemplate()->Delay : BASE_ATTACK_TIME)/1000.0f;
 
                 float damageBasePoints;
-                if(item && item->GetProto()->InventoryType == INVTYPE_2HWEAPON)
+                if(item && item->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
                     // two hand weapon
                     damageBasePoints=1.20f*triggeredByAura->GetModifier()->m_amount * 1.2f * 1.03f * speed/100.0f + 1;
                 else
@@ -8040,7 +8040,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32
                 Item *item = (this->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
                 float wspeed = GetAttackTime(BASE_ATTACK)/1000.0f;
 
-                if( item && item->GetProto()->InventoryType == INVTYPE_2HWEAPON)
+                if( item && item->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
                    CastingTime = uint32(wspeed*3500*0.102f);
                 else
                    CastingTime = uint32(wspeed*3500*0.098f);
@@ -9791,7 +9791,7 @@ void Unit::SetDeathState(DeathState s)
     {
         CombatStop();
         DeleteThreatList();
-        GetHostilRefManager().deleteReferences();
+        GetHostileRefManager().deleteReferences();
         ClearComboPointHolders();                           // any combo points pointed to unit lost at it death
 
         if(IsNonMeleeSpellCast(false))
@@ -9986,8 +9986,8 @@ bool Unit::HasInThreatList(uint64 hostileGUID)
     if (!CanHaveThreatList())
         return false;
         
-    std::list<HostilReference*>& threatList = m_ThreatManager.getThreatList();
-    for (std::list<HostilReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr) {
+    std::list<HostileReference*>& threatList = m_ThreatManager.getThreatList();
+    for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr) {
         Unit* current = (*itr)->getTarget();
         if (current && current->GetGUID() == hostileGUID)
             return true;
@@ -10928,7 +10928,7 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
     CombatStop();
     ClearComboPointHolders();
     DeleteThreatList();
-    GetHostilRefManager().setOnlineOfflineState(false);
+    GetHostileRefManager().setOnlineOfflineState(false);
     RemoveAllGameObjects();
     RemoveAllDynObjects();
     GetMotionMaster()->Clear(false);                    // remove different non-standard movement generators.
@@ -11990,7 +11990,7 @@ float Unit::GetAPMultiplier(WeaponAttackType attType, bool normalized)
     if (!Weapon)
         return 2.4;                                         // fist attack
 
-    switch (Weapon->GetProto()->InventoryType)
+    switch (Weapon->GetTemplate()->InventoryType)
     {
         case INVTYPE_2HWEAPON:
             return 3.3;
@@ -12002,7 +12002,7 @@ float Unit::GetAPMultiplier(WeaponAttackType attType, bool normalized)
         case INVTYPE_WEAPONMAINHAND:
         case INVTYPE_WEAPONOFFHAND:
         default:
-            return Weapon->GetProto()->SubClass==ITEM_SUBCLASS_WEAPON_DAGGER ? 1.7 : 2.4;
+            return Weapon->GetTemplate()->SubClass==ITEM_SUBCLASS_WEAPON_DAGGER ? 1.7 : 2.4;
     }
 }
 
@@ -12149,14 +12149,14 @@ bool Unit::IsTriggeredAtSpellProcEvent(Aura* aura, SpellInfo const* procSpell, u
             if (!(this->ToPlayer())->IsUseEquipedWeapon(attType==BASE_ATTACK))
                 return false;
 
-            if(!item || item->IsBroken() || item->GetProto()->Class != ITEM_CLASS_WEAPON || !((1<<item->GetProto()->SubClass) & spellProto->EquippedItemSubClassMask))
+            if(!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_WEAPON || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
                 return false;
         }
         else if(spellProto->EquippedItemClass == ITEM_CLASS_ARMOR)
         {
             // Check if player is wearing shield
             Item *item = (this->ToPlayer())->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if(!item || item->IsBroken() || item->GetProto()->Class != ITEM_CLASS_ARMOR || !((1<<item->GetProto()->SubClass) & spellProto->EquippedItemSubClassMask))
+            if(!item || item->IsBroken() || item->GetTemplate()->Class != ITEM_CLASS_ARMOR || !((1<<item->GetTemplate()->SubClass) & spellProto->EquippedItemSubClassMask))
                 return false;
         }
     }
@@ -13102,7 +13102,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     CastStop();
     CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
-    GetHostilRefManager().deleteReferences();
+    GetHostileRefManager().deleteReferences();
     DeleteThreatList();
 
     if (_oldFactionId)
@@ -13196,7 +13196,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
 
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
-    GetHostilRefManager().deleteReferences();
+    GetHostileRefManager().deleteReferences();
     DeleteThreatList();
     SetCharmerGUID(0);
     RestoreFaction();

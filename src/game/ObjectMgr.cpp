@@ -194,22 +194,13 @@ Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
     return NULL;
 }
 
-Guild * ObjectMgr::_GetGuildById(const uint32 GuildId) const
+Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
 {
     GuildMap::const_iterator itr = mGuildMap.find(GuildId);
     if (itr != mGuildMap.end())
         return itr->second;
 
-    return NULL;
-}
-
-Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
-{
-    Guild *guild = _GetGuildById(GuildId);
-    if (guild)
-        return guild;
-
-    guild = new Guild;
+    Guild* guild = new Guild;
     if (guild->LoadGuildFromDB(GuildId)) {
         AddGuild(guild);
         return guild;
@@ -220,22 +211,13 @@ Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
     return NULL;
 }
 
-Guild * ObjectMgr::_GetGuildByName(const std::string& guildname) const
+Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
 {
     for(GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         if (itr->second->GetName() == guildname)
             return itr->second;
 
-    return NULL;
-}
-
-Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
-{
-    Guild *guild = _GetGuildByName(guildname);
-    if (guild)
-        return guild;
-
-    guild = new Guild;
+    Guild* guild = new Guild;
     if (guild->LoadGuildFromDB(guildname)) {
         AddGuild(guild);
         return guild;
@@ -246,20 +228,11 @@ Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
     return NULL;
 }
 
-std::string ObjectMgr::_GetGuildNameById(const uint32 GuildId) const
+std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
 {
     GuildMap::const_iterator itr = mGuildMap.find(GuildId);
     if (itr != mGuildMap.end())
         return itr->second->GetName();
-
-    return "";
-}
-
-std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
-{
-    std::string gname = _GetGuildNameById(GuildId);
-    if (gname.length() > 0)
-        return gname;
 
     Guild *guild = new Guild;
     if (guild->LoadGuildFromDB(GuildId)) {
@@ -272,10 +245,10 @@ std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
     return "";
 }
 
-Guild* ObjectMgr::_GetGuildByLeader(const uint64 &guid) const
+Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
 {
     for(GuildMap::const_iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
-        if (itr->second->GetLeader() == guid)
+        if (itr->second->GetLeaderGUID() == guid)
             return itr->second;
 
     return NULL;
@@ -1211,7 +1184,7 @@ void ObjectMgr::LoadCreatures()
 
     // build single time for check creature data
     std::set<uint32> heroicCreatures;
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
         if(CreatureTemplate const* cInfo = &itr->second)
             if(cInfo->difficulty_entry_1)
@@ -5983,6 +5956,7 @@ void ObjectMgr::LoadGameObjectTemplate()
         got.type           = uint32(fields[1].GetUInt8());
         got.displayId      = fields[2].GetUInt32();
         got.name           = fields[3].GetString();
+        got.IconName       = ""; //TODO
         got.castBarCaption = fields[4].GetString();
         got.faction        = uint32(fields[5].GetUInt16());
         got.flags          = fields[6].GetUInt32();
@@ -7410,7 +7384,7 @@ GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
 
     // Alternative first GameTele what contains wnameLow as substring in case no GameTele location found
     const GameTele* alt = nullptr;
-    for(GameTeleMap::const_iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
+    for(GameTeleContainer::const_iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
     {
         if(itr->second.wnameLow == wname)
             return &itr->second;
@@ -7425,7 +7399,7 @@ bool ObjectMgr::AddGameTele(GameTele& tele)
 {
     // find max id
     uint32 new_id = 0;
-    for(GameTeleMap::const_iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
+    for(GameTeleContainer::const_iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
         if(itr->first > new_id)
             new_id = itr->first;
 
@@ -7455,7 +7429,7 @@ bool ObjectMgr::DeleteGameTele(const std::string& name)
     // converting string that we try to find to lower case
     wstrToLower( wname );
 
-    for(GameTeleMap::iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
+    for(GameTeleContainer::iterator itr = m_GameTeleMap.begin(); itr != m_GameTeleMap.end(); ++itr)
     {
         if(itr->second.wnameLow == wname)
         {
@@ -7993,7 +7967,7 @@ ObjectMgr::ScriptNameMap & GetScriptNames()
     return sObjectMgr->GetScriptNames();
 }
 
-CreatureTemplate const* GetCreatureTemplateStore(uint32 entry)
+CreatureTemplate const* GetCreatureTemplates(uint32 entry)
 {
     return sObjectMgr->GetCreatureTemplate(entry);
 }
@@ -8638,7 +8612,7 @@ void ObjectMgr::LoadCreatureClassLevelStats()
     }
     while (result->NextRow());
 
-    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplateStore();
+    CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
     for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
     {
         for (uint16 lvl = itr->second.minlevel; lvl <= itr->second.maxlevel; ++lvl)

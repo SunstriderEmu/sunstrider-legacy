@@ -145,7 +145,7 @@ struct ScriptedAI : public CreatureAI
     //Stop attack of current victim
     void DoStopAttack();
 
-    //Cast spell by Id, return SpellFailedReason
+    //Cast spell by Id, return SpellCastResult
     uint32 DoCast(Unit* victim, uint32 spellId, bool triggered = false);
     uint32 DoCastAOE(uint32 spellId, bool triggered = false);
 

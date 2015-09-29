@@ -274,20 +274,20 @@ class Guild
         typedef std::vector<RankInfo> RankList;
 
         uint32 GetId(){ return Id; }
-        const uint64& GetLeader(){ return leaderGuid; }
-        std::string GetName(){ return name; }
-        std::string GetMOTD(){ return MOTD; }
-        std::string GetGINFO(){ return GINFO; }
+        const uint64& GetLeaderGUID() { return leaderGuid; }
+        std::string GetName() { return name; }
+        std::string GetMOTD() { return MOTD; }
+        std::string GetGINFO() { return GINFO; }
 
-        uint32 GetCreatedYear(){ return CreatedYear; }
-        uint32 GetCreatedMonth(){ return CreatedMonth; }
-        uint32 GetCreatedDay(){ return CreatedDay; }
+        uint32 GetCreatedYear() { return CreatedYear; }
+        uint32 GetCreatedMonth() { return CreatedMonth; }
+        uint32 GetCreatedDay() { return CreatedDay; }
 
-        uint32 GetEmblemStyle(){ return EmblemStyle; }
-        uint32 GetEmblemColor(){ return EmblemColor; }
-        uint32 GetBorderStyle(){ return BorderStyle; }
-        uint32 GetBorderColor(){ return BorderColor; }
-        uint32 GetBackgroundColor(){ return BackgroundColor; }
+        uint32 GetEmblemStyle() { return EmblemStyle; }
+        uint32 GetEmblemColor() { return EmblemColor; }
+        uint32 GetBorderStyle() { return BorderStyle; }
+        uint32 GetBorderColor() { return BorderColor; }
+        uint32 GetBackgroundColor() { return BackgroundColor; }
 
         void SetLeader(uint64 guid);
         bool AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans);

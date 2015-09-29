@@ -570,8 +570,8 @@ void Creature::Update(uint32 diff)
             {
                 if(m_areaCombatTimer < diff)
                 {
-                    std::list<HostilReference *> t_list = getThreatManager().getThreatList();
-                    for(std::list<HostilReference *>::iterator i = t_list.begin(); i != t_list.end(); ++i)
+                    std::list<HostileReference *> t_list = getThreatManager().getThreatList();
+                    for(std::list<HostileReference *>::iterator i = t_list.begin(); i != t_list.end(); ++i)
                         if((*i) && IS_PLAYER_GUID((*i)->getUnitGuid()))
                         {
                             AreaCombat();
@@ -1482,8 +1482,8 @@ void Creature::SetDeathState(DeathState s)
         ClearUnitState(uint32(UNIT_STATE_ALL_STATE & ~UNIT_STATE_IGNORE_PATHFINDING));
         Motion_Initialize();
         SetMeleeDamageSchool(SpellSchools(GetCreatureTemplate()->dmgschool));
-        InitCreatureAddon(true);
         Unit::SetDeathState(ALIVE);
+        InitCreatureAddon(true);
     }
 }
 
@@ -2364,7 +2364,7 @@ void Creature::ConvertThreatListIntoPlayerListAtDeath()
     for(auto itr : threatList)
     {
         if(itr->getThreat() > 0.0f && itr->getSourceUnit()->GetTypeId() == TYPEID_PLAYER)
-            m_playerInThreatListAtDeath.insert(itr->GetSource()->getOwner()->GetGUIDLow());
+            m_playerInThreatListAtDeath.insert(itr->GetSource()->GetOwner()->GetGUIDLow());
     }
 }
 

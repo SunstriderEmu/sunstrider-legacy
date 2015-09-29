@@ -299,9 +299,9 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
 
 Unit* ScriptedAI::SelectUnit(SelectAggroTarget target, uint32 position)
 {
-    std::list<HostilReference*>& m_threatlist = me->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator i = m_threatlist.begin();
-    std::list<HostilReference*>::reverse_iterator r = m_threatlist.rbegin();
+    std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator i = m_threatlist.begin();
+    std::list<HostileReference*>::reverse_iterator r = m_threatlist.rbegin();
 
     if (position >= m_threatlist.size() || !m_threatlist.size())
         return NULL;
@@ -363,12 +363,12 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
 
 Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
-    std::list<HostilReference*>& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())
         return NULL;
 
     std::list<Unit*> targetList;
-    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius, noTank))
             targetList.push_back((*itr)->getTarget());
 
@@ -411,10 +411,10 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
 {
     if(targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
-        std::list<HostilReference*> &m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostileReference*> &m_threatlist = m_creature->getThreatManager().getThreatList();
         if(m_threatlist.empty()) return NULL;
         std::list<Unit*> targetList;
-        std::list<HostilReference*>::iterator itr = m_threatlist.begin();
+        std::list<HostileReference*>::iterator itr = m_threatlist.begin();
         for(; itr!= m_threatlist.end(); ++itr)
         {
             Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
@@ -447,8 +447,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
     }
     else
     {
-        std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
-        std::list<HostilReference*>::iterator i;
+        std::list<HostileReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+        std::list<HostileReference*>::iterator i;
         Unit *target;
         while(position < m_threatlist.size())
         {
@@ -489,8 +489,8 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
 // selects random unit not having aura
 Unit* ScriptedAI::SelectUnit( uint32 position, float distNear, float distFar, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex)
 {
-    std::list<HostilReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator i;
+    std::list<HostileReference*> m_threatlist = m_creature->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator i;
     Unit *target;
     while(position < m_threatlist.size())
     {
@@ -520,11 +520,11 @@ Unit* ScriptedAI::SelectUnit( uint32 position, float distNear, float distFar, bo
 
 void ScriptedAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly, uint32 notHavingAuraId, uint8 effIndex)
 {
-    std::list<HostilReference*> const& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReference*> const& threatlist = me->getThreatManager().getThreatList();
     if (threatlist.empty())
         return;
 
-    for (std::list<HostilReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         if (checkTarget((*itr)->getTarget(), playersOnly, radius)
             && (!notHavingAuraId || !((*itr)->getTarget()->HasAuraEffect(notHavingAuraId, effIndex))) )
             targetList.push_back((*itr)->getTarget());
@@ -649,7 +649,7 @@ void ScriptedAI::SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand, int32 ui
 {
     if (bLoadDefault)
     {
-        if (CreatureTemplate const* pInfo = GetCreatureTemplateStore(m_creature->GetEntry()))
+        if (CreatureTemplate const* pInfo = GetCreatureTemplates(m_creature->GetEntry()))
             m_creature->LoadEquipment(pInfo->equipmentId,true);
 
         return;
@@ -799,8 +799,8 @@ void ScriptedAI::DoResetThreat()
         return;
     }
 
-    std::list<HostilReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
-    std::list<HostilReference*>::iterator itr;
+    std::list<HostileReference*>& m_threatlist = m_creature->getThreatManager().getThreatList();
+    std::list<HostileReference*>::iterator itr;
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
     {

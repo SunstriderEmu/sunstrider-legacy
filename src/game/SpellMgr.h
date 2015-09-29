@@ -34,7 +34,7 @@
 class Player;
 class Spell;
 
-enum SpellFailedReason
+enum SpellCastResult
 {
     SPELL_CAST_OK                               = -1,
     SPELL_FAILED_AFFECTING_COMBAT               = 0x00,
@@ -368,7 +368,7 @@ inline bool IsDispelSpell(SpellInfo const *spellInfo)
     return false;
 }
 
-SpellFailedReason GetErrorAtShapeshiftedCast (SpellInfo const *spellInfo, uint32 form);
+SpellCastResult GetErrorAtShapeshiftedCast (SpellInfo const *spellInfo, uint32 form);
 
 inline bool IsNeedCastSpellAtOutdoor(SpellInfo const* spellInfo)
 {

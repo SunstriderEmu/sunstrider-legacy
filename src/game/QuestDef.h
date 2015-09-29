@@ -131,6 +131,13 @@ enum __QuestFlags
     QUEST_FLAGS_AUTO_REWARDED  = 0x00000400,                // These quests are automatically rewarded on quest complete and they will never appear in quest log client side.
     QUEST_FLAGS_TBC_RACES      = 0x00000800,                // Not used currently: Blood elf/Draenei starting zone quests
     QUEST_FLAGS_DAILY          = 0x00001000,                // Used to know quest is Daily one
+#ifdef LICH_KING
+    QUEST_FLAGS_FLAGS_PVP               = 0x00002000,   // Having this quest in log forces PvP flag
+    QUEST_FLAGS_UNAVAILABLE             = 0x00004000,   // Used on quests that are not generically available
+    QUEST_FLAGS_WEEKLY                  = 0x00008000,
+#endif
+
+    //TODO move those flags into another variable
 
     // Trinity flags for set SpecialFlags in DB if required but used only at server
     QUEST_TRINITY_FLAGS_REPEATABLE           = 0x010000,     // Set by 1 in SpecialFlags from DB

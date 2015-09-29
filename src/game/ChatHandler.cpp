@@ -40,6 +40,10 @@
 #include "ScriptMgr.h"
 #include "IRCMgr.h"
 
+#ifdef PLAYERBOT
+#include "playerbot.h"
+#endif
+
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 {
     PROFILE;
@@ -308,7 +312,17 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 return;
             }
 
-            GetPlayer()->Whisper(msg, Language(lang),toPlayer);
+            #ifdef PLAYERBOT
+            // Playerbot mod: handle whispered command to bot
+            if (toPlayer->GetPlayerbotAI() && lang != LANG_ADDON)
+            {
+                toPlayer->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+                /* receiver->m_speakTime = 0;
+                receiver->m_speakCount = 0; */
+            }
+            else 
+            #endif
+                GetPlayer()->Whisper(msg, Language(lang),toPlayer);
         } break;
 
         case CHAT_MSG_PARTY:
@@ -343,6 +357,20 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             if (!group && (!(group = GetPlayer()->GetGroup()) || group->isBGGroup()))
                 return;
 
+            #ifdef PLAYERBOT
+            // Playerbot mod: broadcast message to bot members
+            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
+            {
+                Player* player = itr->GetSource();
+                if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
+                {
+                    player->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+                    /* GetPlayer()->m_speakTime = 0;
+                    GetPlayer()->m_speakCount = 0; */
+                }
+            }
+            #endif
+
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             group->BroadcastPacket(&data, false, group->GetMemberGroup(GetPlayer()->GetGUID()));
@@ -374,6 +402,19 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                         sIRCMgr->onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
                 }
+                #ifdef PLAYERBOT
+                // Playerbot mod: broadcast message to bot members
+                PlayerbotMgr *mgr = GetPlayer()->GetPlayerbotMgr();
+                if (mgr && lang != LANG_ADDON)
+                {
+                    for (PlayerBotMap::const_iterator it = mgr->GetPlayerBotsBegin(); it != mgr->GetPlayerBotsEnd(); ++it)
+                    {
+                        Player* const bot = it->second;
+                        if (bot->GetGuildId() == GetPlayer()->GetGuildId())
+                            bot->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+                    }
+                }
+                #endif
             }
 
             break;
@@ -428,6 +469,20 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             if (!group && !(group = GetPlayer()->GetGroup()) || group->isBGGroup() || !group->isRaidGroup())
                 return;
 
+            #ifdef PLAYERBOT
+            // Playerbot mod: broadcast message to bot members
+            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
+            {
+                Player* player = itr->GetSource();
+                if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
+                {
+                    player->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+                    /* GetPlayer()->m_speakTime = 0;
+                    GetPlayer()->m_speakCount = 0; */
+                }
+            }
+            #endif
+
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             group->BroadcastPacket(&data, false);
@@ -454,6 +509,20 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Group *group = GetPlayer()->GetOriginalGroup();
             if (!group && !(group = GetPlayer()->GetGroup()) || group->isBGGroup() || !group->isRaidGroup() || !group->IsLeader(GetPlayer()->GetGUID()))
                 return;
+
+            #ifdef PLAYERBOT
+            // Playerbot mod: broadcast message to bot members
+            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
+            {
+                Player* player = itr->GetSource();
+                if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
+                {
+                    player->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+            /*        GetPlayer()->m_speakTime = 0;
+                    GetPlayer()->m_speakCount = 0; */
+                }
+            }
+            #endif
 
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
@@ -558,6 +627,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             {
                 if(Channel *chn = cMgr->GetChannel(channel,_player))
                 {
+                    #ifdef PLAYERBOT
+                    // Playerbot mod: broadcast message to bot members
+                    if (_player->GetPlayerbotMgr() && lang != LANG_ADDON && chn->GetFlags() & 0x18)
+                    {
+                        _player->GetPlayerbotMgr()->HandleCommand(type, msg);
+                    }
+                    sRandomPlayerbotMgr.HandleCommand(type, msg, *_player);
+                    #endif
+
                     chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {

@@ -266,7 +266,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         }
                         else
                         {
-                            if (CreatureTemplate const* ci = GetCreatureTemplateStore(me->GetEntry()))
+                            if (CreatureTemplate const* ci = GetCreatureTemplates(me->GetEntry()))
                             {
                                 if ((*itr)->ToCreature()->GetFaction() != ci->faction)
                                 {
@@ -299,7 +299,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     //set model based on entry from creature_template
                     if (e.action.morphOrMount.creature)
                     {
-                        if (CreatureTemplate const* ci = GetCreatureTemplateStore(e.action.morphOrMount.creature))
+                        if (CreatureTemplate const* ci = GetCreatureTemplates(e.action.morphOrMount.creature))
                         {
                             uint32 displayId = ObjectMgr::ChooseDisplayId(ci);
                             (*itr)->ToCreature()->SetDisplayId(displayId);
@@ -431,8 +431,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_THREAT_ALL_PCT:
         {
             if (!me) return;
-            std::list<HostilReference*>& threatList = me->getThreatManager().getThreatList();
-            for (std::list<HostilReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
+            std::list<HostileReference*>& threatList = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::iterator i = threatList.begin(); i != threatList.end(); ++i)
                 if (Unit* target = Unit::GetUnit(*me,(*i)->getUnitGuid()))
                 {
                     me->getThreatManager().modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
@@ -1110,7 +1110,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (e.action.morphOrMount.creature > 0)
                     {
-                        if (CreatureTemplate const* cInfo = GetCreatureTemplateStore(e.action.morphOrMount.creature))
+                        if (CreatureTemplate const* cInfo = GetCreatureTemplates(e.action.morphOrMount.creature))
                         {
                             uint32 display_id = sObjectMgr->ChooseDisplayId(cInfo);
                             me->Mount(display_id);

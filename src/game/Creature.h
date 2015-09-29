@@ -111,7 +111,7 @@ enum Gossip_Guard_Skill
     GOSSIP_GUARD_SKILL_MINING       = 88,
     GOSSIP_GUARD_SKILL_SKINNING     = 89,
     GOSSIP_GUARD_SKILL_TAILORING    = 90,
-    GOSSIP_GUARD_SKILL_ENGINERING   = 91
+    GOSSIP_GUARD_SKILL_ENGINEERING   = 91
 };
 
 enum GossipOptionIcon
@@ -517,9 +517,9 @@ class Creature : public Unit
         bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
         bool canResetTalentsOf(Player* pPlayer) const;
         bool IsOutOfThreatArea(Unit* pVictim) const;
-        bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false);
+        bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false) override;
                                                             // redefine Unit::IsImmunedToSpell
-        bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
+        bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const override;
                                                             // redefine Unit::IsImmunedToSpellEffect
         void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/);
         void UpdateProhibitedSchools(uint32 const diff);
