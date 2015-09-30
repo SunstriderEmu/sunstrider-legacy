@@ -347,23 +347,21 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 
     uint32 textID;
     uint64 guid;
-    GossipText *pGossip;
-    std::string GossipStr;
 
     recvData >> textID;
-    TC_LOG_DEBUG("network","WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
+    TC_LOG_DEBUG("network", "WORLD: CMSG_NPC_TEXT_QUERY TextId: %u", textID);
 
     recvData >> guid;
-    GetPlayer()->SetTarget(guid);
+    //needed? GetPlayer()->SetTarget(guid);
 
-    pGossip = sObjectMgr->GetGossipText(textID);
+    GossipText const* gossip = sObjectMgr->GetGossipText(textID);
 
     WorldPacket data( SMSG_NPC_TEXT_UPDATE, 100 );          // guess size
     data << textID;
 
-    if (!pGossip)
+    if (!gossip)
     {
-        for(uint32 i = 0; i < 8; ++i)
+        for(uint32 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
             data << float(0);
             if(GetSessionDbcLocale() == LOCALE_frFR)
@@ -385,57 +383,57 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
     }
     else
     {
-        std::string Text_0[8], Text_1[8];
-        for (int i=0;i<MAX_GOSSIP_TEXT_OPTIONS;i++)
-        {
-            Text_0[i]=pGossip->Options[i].Text_0;
-            Text_1[i]=pGossip->Options[i].Text_1;
-        }
+        std::string text0[MAX_GOSSIP_TEXT_OPTIONS], text1[MAX_GOSSIP_TEXT_OPTIONS];
+        LocaleConstant locale = GetSessionDbLocaleIndex();
 
-        LocaleConstant loc_idx = GetSessionDbcLocale();
-        if (loc_idx >= 0)
+        for (uint8 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
-            NpcTextLocale const *nl = sObjectMgr->GetNpcTextLocale(textID);
-            if (nl)
+            BroadcastText const* bct = sObjectMgr->GetBroadcastText(gossip->Options[i].BroadcastTextID);
+            if (bct)
             {
-                for (int i=0;i<MAX_GOSSIP_TEXT_OPTIONS;i++)
+                text0[i] = bct->GetText(locale, GENDER_MALE, true);
+                text1[i] = bct->GetText(locale, GENDER_FEMALE, true);
+            }
+            else
+            {
+                text0[i] = gossip->Options[i].Text_0;
+                text1[i] = gossip->Options[i].Text_1;
+            }
+
+            if (locale != DEFAULT_LOCALE && !bct)
+            {
+                if (NpcTextLocale const* npcTextLocale = sObjectMgr->GetNpcTextLocale(textID))
                 {
-                    if (nl->Text_0[i].size() > loc_idx && !nl->Text_0[i][loc_idx].empty())
-                        Text_0[i]=nl->Text_0[i][loc_idx];
-                    if (nl->Text_1[i].size() > loc_idx && !nl->Text_1[i][loc_idx].empty())
-                        Text_1[i]=nl->Text_1[i][loc_idx];
+                    ObjectMgr::GetLocaleString(npcTextLocale->Text_0[i], locale, text0[i]);
+                    ObjectMgr::GetLocaleString(npcTextLocale->Text_1[i], locale, text1[i]);
                 }
             }
-        }
 
-        for (int i=0; i<MAX_GOSSIP_TEXT_OPTIONS; i++)
-        {
-            data << pGossip->Options[i].Probability;
+            data << gossip->Options[i].Probability;
 
-            if ( Text_0[i].empty() )
-                data << Text_1[i];
+            if (text0[i].empty())
+                data << text1[i];
             else
-                data << Text_0[i];
+                data << text0[i];
 
-            if ( Text_1[i].empty() )
-                data << Text_0[i];
+            if (text1[i].empty())
+                data << text0[i];
             else
-                data << Text_1[i];
+                data << text1[i];
 
-            data << pGossip->Options[i].Language;
+            data << gossip->Options[i].Language;
 
-            data << pGossip->Options[i].Emotes[0]._Delay;
-            data << pGossip->Options[i].Emotes[0]._Emote;
-
-            data << pGossip->Options[i].Emotes[1]._Delay;
-            data << pGossip->Options[i].Emotes[1]._Emote;
-
-            data << pGossip->Options[i].Emotes[2]._Delay;
-            data << pGossip->Options[i].Emotes[2]._Emote;
+            for (uint8 j = 0; j < MAX_GOSSIP_TEXT_EMOTES; ++j)
+            {
+                data << gossip->Options[i].Emotes[j]._Delay;
+                data << gossip->Options[i].Emotes[j]._Emote;
+            }
         }
     }
 
     SendPacket( &data );
+
+    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_NPC_TEXT_UPDATE");
 }
 
 void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )

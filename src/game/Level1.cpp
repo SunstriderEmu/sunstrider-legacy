@@ -122,8 +122,14 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     }
 
     uint64 receiver_guid= atol(receiver_str);
+    Player* targetPlayer = ObjectAccessor::FindPlayer(receiver_guid);
+    if(!targetPlayer)
+    {
+        SendSysMessage("Could not find player with that name.");
+        return true;
+    }
 
-    pCreature->Whisper(text,receiver_guid);
+    pCreature->Whisper(text,LANG_UNIVERSAL,targetPlayer);
 
     return true;
 }

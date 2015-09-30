@@ -108,7 +108,7 @@ class CreatureAINew
         void doModifyThreatPercent(Unit* unit, int32 pct);
         void doModifyThreat(Unit* unit, float threat);
         void setZoneInCombat(bool force = false);
-        uint32 talk(uint8 groupid, uint64 targetGUID = 0);
+        uint32 talk(uint8 groupid, WorldObject const* whisperTarget = nullptr);
         void deleteFromThreatList(uint64 guid);
         void deleteFromThreatList(Unit* target);
         bool isInMeleeRange();

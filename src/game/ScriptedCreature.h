@@ -56,7 +56,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
 struct ScriptedAI : public CreatureAI
 {
-    ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature), InCombat(false), IsFleeing(false) {}
+    ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature) {}
     ~ScriptedAI() {}
 
     //*************
@@ -116,12 +116,6 @@ struct ScriptedAI : public CreatureAI
     //Pointer to creature we are manipulating
     Creature* m_creature;
 
-    //Bool for if we are in combat or not
-    bool InCombat;
-
-    //For fleeing
-    bool IsFleeing;
-
     //*************
     //Pure virtual functions
     //*************
@@ -151,18 +145,6 @@ struct ScriptedAI : public CreatureAI
 
     //Cast spell by spell info
     uint32 DoCastSpell(Unit* who, SpellInfo const *spellInfo, bool triggered = false);
-
-    //Creature say
-    void DoSay(const char* text, uint32 language, Unit* target, bool SayEmote = false);
-
-    //Creature Yell
-    void DoYell(const char* text, uint32 language, Unit* target);
-
-    //Creature Text emote, optional bool for boss emote text
-    void DoTextEmote(const char* text, Unit* target, bool IsBossEmote = false);
-
-    //Creature whisper, optional bool for boss whisper
-    void DoWhisper(const char* text, Unit* reciever, bool IsBossWhisper = false);
 
     //Plays a sound to all nearby players
     void DoPlaySoundToSet(Unit* unit, uint32 sound);

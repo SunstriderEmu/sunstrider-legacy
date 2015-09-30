@@ -109,7 +109,7 @@ class CreatureAI : public UnitAI
         virtual ~CreatureAI() {}
 
         void AttackStartIfCan(Unit* victim);
-        void Talk(uint8 id, uint64 targetGuid = 0);
+        void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
 
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
         virtual bool AssistPlayerInCombat(Unit* who);

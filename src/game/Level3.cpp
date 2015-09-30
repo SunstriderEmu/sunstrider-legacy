@@ -78,6 +78,7 @@ bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
 {
     TC_LOG_INFO("command","Re-Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
+    sCreatureTextMgr->LoadCreatureTextLocales();
     SendGlobalGMSysMessage("Creature Texts reloaded.");
     return true;
 }
@@ -8427,7 +8428,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
     if(!data)
     {
         //PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
-        PSendSysMessage("Creature with guid %u not found.",creatureGUID);
+        PSendSysMessage("Creature with guid " UI64FMTD " not found.",creatureGUID);
         return true;
     } 
 

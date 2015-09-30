@@ -1230,13 +1230,6 @@ void GameObject::Use(Unit* user)
                     // calculate the distance between the player and this slot
                     float thisDistance = player->GetDistance2d(x_i, y_i);
 
-                    /* debug code. It will spawn a npc on each slot to visualize them.
-                    Creature* helper = player->SummonCreature(14496, x_i, y_i, GetPositionZ(), GetOrientation(), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
-                    std::ostringstream output;
-                    output << i << ": thisDist: " << thisDistance;
-                    helper->MonsterSay(output.str().c_str(), LANG_UNIVERSAL, 0);
-                    */
-
                     if(thisDistance <= lowestDist)
                     {
                         lowestDist = thisDistance;

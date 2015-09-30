@@ -147,7 +147,7 @@ bool Weather::ReGenerate()
     uint32 chance2 = chance1+ m_weatherChances->data[season].snowChance;
     uint32 chance3 = chance2+ m_weatherChances->data[season].stormChance;
 
-    uint32 rnd = urand(0, 99);
+    uint32 rnd = urand(1, 100);
     if(rnd <= chance1)
         m_type = WEATHER_TYPE_RAIN;
     else if(rnd <= chance2)
@@ -174,7 +174,7 @@ bool Weather::ReGenerate()
     else
     {
         // Severe change, but how severe?
-        rnd = urand(0, 99);
+        rnd = urand(1, 100);
         if (rnd < 50)
             m_grade = rand_norm() * 0.3333f + 0.3334f;
         else

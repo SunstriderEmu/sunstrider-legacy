@@ -1253,6 +1253,7 @@ class Unit : public WorldObject
         void CombatStart(Unit* target, bool updatePvP = true);
         void SetInCombatState(bool PvP, Unit* enemy = nullptr);
         void SetInCombatWith(Unit* enemy);
+        bool IsInCombatWith(Unit const* enemy) const;
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
@@ -1610,7 +1611,7 @@ class Unit : public WorldObject
         void addHatedBy(HostileReference* pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReference* /*pHostileReference*/ ) { /* nothing to do yet */ }
         HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
-        bool HasInThreatList(uint64 hostileGUID);
+        bool HasInThreatList(uint64 hostileGUID) const;
 
         Aura* GetAura(uint32 spellId, uint32 effindex);
         AuraMap      & GetAuras()       { return m_Auras; }
@@ -1815,6 +1816,31 @@ class Unit : public WorldObject
         // Part of Evade mechanics
         time_t GetLastDamagedTime() const { return _lastDamagedTime; }
         void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
+
+        virtual void Talk(std::string const& text, ChatMsg msgType, Language language, float textRange, WorldObject const* target);
+        virtual void Say(std::string const& text, Language language = LANG_UNIVERSAL, WorldObject const* target = nullptr);
+        virtual void Yell(std::string const& text, Language language = LANG_UNIVERSAL, WorldObject const* target = nullptr);
+        virtual void TextEmote(std::string const& text, WorldObject const* target = nullptr, bool isBossEmote = false);
+        virtual void Whisper(std::string const& text, Language language, Player* target, bool isBossWhisper = false);
+        virtual void ServerEmote(std::string const& text, bool isBossEmote = false);
+        virtual void YellToMap(std::string const& text, Language language = LANG_UNIVERSAL);
+        // textId: Id from broadcast_text
+        void Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target);
+        // textId: Id from broadcast_text
+        void Say(uint32 textId, WorldObject const* target = nullptr);
+        // textId: Id from broadcast_text
+        void Yell(uint32 textId, WorldObject const* target = nullptr);
+        // textId: Id from broadcast_text
+        void TextEmote(uint32 textId, WorldObject const* target = nullptr, bool isBossEmote = false);
+        // textId: Id from broadcast_text
+        void Whisper(uint32 textId, Player* target, bool isBossWhisper = false);
+
+        //retrocompatibility function, do not use. TextId's here are from script_texts or trinity_string
+        void old_Talk(uint32 textId, ChatMsg msgType, float textRange, uint64 targetGUID, uint32 language);
+        void old_Say(int32 textId, uint32 language, uint64 TargetGuid);
+        void old_Yell(int32 textId, uint32 language, uint64 TargetGuid);
+        void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
+        void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
 
     protected:
         explicit Unit ();

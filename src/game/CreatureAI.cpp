@@ -41,9 +41,9 @@ void CreatureAI::OnCharmed(Unit* charmer, bool apply)
 void PlayerAI::OnPossess(Unit* charmer, bool apply) {}
 void CreatureAI::OnPossess(Unit* charmer, bool apply) {}
 
-void CreatureAI::Talk(uint8 id, uint64 WhisperGuid)
+void CreatureAI::Talk(uint8 id, WorldObject const* whisperTarget /*= nullptr*/)
 {
-    sCreatureTextMgr->SendChat(me, id, WhisperGuid);
+    sCreatureTextMgr->SendChat(me, id, whisperTarget);
 }
 
 bool CreatureAI::AssistPlayerInCombat(Unit* who)
@@ -120,8 +120,11 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
     } else {
-        who->SetInCombatWith(me);
-        me->AddThreat(who, 0.0f);
+        if(!me->IsInCombatWith(who))
+        {
+            who->SetInCombatWith(me);
+            me->AddThreat(who, 0.0f);
+        }
     }
 }
 

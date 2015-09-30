@@ -954,7 +954,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceRadius",10);
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceDelay",1500);
     m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfigMgr->GetIntDefault("CreatureFamilyFleeDelay",7000);
-    m_configs[CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME] = sConfigMgr->GetIntDefault("CreatureMaxUnreachableTargetTime",10000);
+    m_configs[CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME] = sConfigMgr->GetIntDefault("CreatureMaxUnreachableTargetTime",15000);
 
     // note: disable value (-1) will assigned as 0xFFFFFFF, to prevent overflow at calculations limit it to max possible player level MAX_LEVEL(100)
     m_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] = sConfigMgr->GetIntDefault("Quests.LowLevelHideDiff", 4);
@@ -1339,6 +1339,10 @@ void World::SetInitialWorldSettings()
 //    TC_LOG_INFO("server.loading", "Packing instances..." );
 //    sInstanceSaveMgr->PackInstances();
 
+    TC_LOG_INFO("server.loading", "Loading Broadcast texts...");
+    sObjectMgr->LoadBroadcastTexts();
+    sObjectMgr->LoadBroadcastTextLocales();
+
     TC_LOG_INFO("server.loading", "Loading Localization strings..." );
     sObjectMgr->LoadCreatureLocales();
     sObjectMgr->LoadGameObjectLocales();
@@ -1582,6 +1586,9 @@ void World::SetInitialWorldSettings()
     
     TC_LOG_INFO("server.loading","Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
+
+    TC_LOG_INFO("server.loading", "Loading Creature Text Locales...");
+    sCreatureTextMgr->LoadCreatureTextLocales();
 
     ///- Load and initialize scripts
     TC_LOG_INFO("server.loading", "Loading Scripts..." );
@@ -2221,7 +2228,7 @@ void World::ScriptsProcess()
                 switch(step.script->datalong)
                 {
                     case 0:                                 // Say
-                        (source->ToCreature())->Say(step.script->dataint, LANG_UNIVERSAL, unit_target);
+                        (source->ToCreature())->old_Say(step.script->dataint, LANG_UNIVERSAL, unit_target);
                         break;
                     case 1:                                 // Whisper
                         if(!unit_target)
@@ -2229,13 +2236,13 @@ void World::ScriptsProcess()
                             TC_LOG_ERROR("scripts","SCRIPT_COMMAND_TALK attempt to whisper (%u) NULL, skipping.",step.script->datalong);
                             break;
                         }
-                        (source->ToCreature())->Whisper(step.script->dataint,unit_target);
+                        (source->ToCreature())->old_Whisper(step.script->dataint,unit_target);
                         break;
                     case 2:                                 // Yell
-                        (source->ToCreature())->Yell(step.script->dataint, LANG_UNIVERSAL, unit_target);
+                        (source->ToCreature())->old_Yell(step.script->dataint, LANG_UNIVERSAL, unit_target);
                         break;
                     case 3:                                 // Emote text
-                        (source->ToCreature())->TextEmote(step.script->dataint, unit_target);
+                        (source->ToCreature())->old_TextEmote(step.script->dataint, unit_target);
                         break;
                     default:
                         break;                              // must be already checked at load

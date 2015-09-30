@@ -238,6 +238,7 @@ class Group
 
         MemberSlotList const& GetMemberSlots() const { return m_memberSlots; }
         GroupReference* GetFirstMember() { return m_memberMgr.getFirst(); }
+        GroupReference const* GetFirstMember() const { return m_memberMgr.getFirst(); }
         uint32 GetMembersCount() const { return m_memberSlots.size(); }
         void GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level);
         uint8  GetMemberGroup(uint64 guid) const
@@ -296,6 +297,21 @@ class Group
         void SendUpdate();
         void Update(time_t diff);
         void UpdatePlayerOutOfRange(Player* pPlayer);
+
+        template<class Worker>
+        void BroadcastWorker(Worker& worker)
+        {
+            for (GroupReference* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
+                worker(itr->GetSource());
+        }
+
+        template<class Worker>
+        void BroadcastWorker(Worker const& worker) const
+        {
+            for (GroupReference const* itr = GetFirstMember(); itr != nullptr; itr = itr->next())
+                worker(itr->GetSource());
+        }
+
                                                             // ignore: GUID of player that will be ignored
         void BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int group=-1, uint64 ignore=0);
         void BroadcastReadyCheck(WorldPacket *packet);

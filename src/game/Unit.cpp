@@ -27,6 +27,7 @@
 #include "InstanceSaveMgr.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "ChatTextBuilder.h"
 #include "Path.h"
 #include "PathGenerator.h"
 #include "CreatureGroups.h"
@@ -7396,7 +7397,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
     if (GetTypeId() == TYPEID_UNIT && !(ToCreature()->IsPet())) {
         SendAIReaction(AI_REACTION_HOSTILE);
-        (ToCreature())->CallAssistance();
+        ToCreature()->CallAssistance();
 
         // should not let player enter combat by right clicking target
         SetInCombatWith(victim);
@@ -9110,6 +9111,11 @@ void Unit::SetInCombatWith(Unit* enemy)
     SetInCombatState(false, enemy);
 }
 
+bool Unit::IsInCombatWith(Unit const* enemy) const
+{
+    return HasInThreatList(enemy->GetGUID());
+}
+
 void Unit::CombatStart(Unit* target, bool updatePvP)
 {
     if(HasUnitState(UNIT_STATE_EVADE) || target->HasUnitState(UNIT_STATE_EVADE))
@@ -9989,12 +9995,12 @@ void Unit::TauntFadeOut(Unit *taunter)
     }
 }
 
-bool Unit::HasInThreatList(uint64 hostileGUID)
+bool Unit::HasInThreatList(uint64 hostileGUID) const
 {
     if (!CanHaveThreatList())
         return false;
         
-    std::list<HostileReference*>& threatList = m_ThreatManager.getThreatList();
+    auto& threatList = m_ThreatManager.getThreatList();
     for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr) {
         Unit* current = (*itr)->getTarget();
         if (current && current->GetGUID() == hostileGUID)
@@ -14358,4 +14364,164 @@ void Unit::LogBossDown(Creature* cVictim)
         if (mustLog)
             LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), bossName.c_str(), bossNameFr.c_str(), downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
     }
+}
+
+void Unit::Talk(std::string const& text, ChatMsg msgType, Language language, float textRange, WorldObject const* target)
+{
+    Trinity::CustomChatTextBuilder builder(this, msgType, text, language, target);
+    Trinity::LocalizedPacketDo<Trinity::CustomChatTextBuilder> localizer(builder);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::CustomChatTextBuilder> > worker(this, textRange, localizer);
+    VisitNearbyWorldObject(textRange, worker);
+}
+
+void Unit::Say(std::string const& text, Language language, WorldObject const* target /*= nullptr*/)
+{
+    Talk(text, CHAT_MSG_MONSTER_SAY, language, sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY), target);
+}
+
+void Unit::Yell(std::string const& text, Language language, WorldObject const* target /*= nullptr*/)
+{
+    Talk(text, CHAT_MSG_MONSTER_YELL, language, sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL), target);
+}
+
+void Unit::TextEmote(std::string const& text, WorldObject const* target /*= nullptr*/, bool isBossEmote /*= false*/)
+{
+    Talk(text, isBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, LANG_UNIVERSAL, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), target);
+}
+
+//todo: localize this
+void Unit::ServerEmote(std::string const& text, bool isBossEmote)
+{
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, isBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, LANG_UNIVERSAL, this, nullptr, text);
+    sWorld->SendGlobalMessage(&data);
+}
+
+//todo: localize this
+void Unit::YellToMap(std::string const& text, Language language)
+{
+    Map const* map = GetMap();
+    if(!map)
+        return;
+
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_MONSTER_YELL, language, this, nullptr, text);
+
+    Map::PlayerList const& players = map->GetPlayers();
+    if (!players.isEmpty()) {
+        for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr) {
+            if (Player* plr = itr->GetSource())
+                plr->GetSession()->SendPacket(&data);
+        }
+    }
+}
+
+void Unit::Whisper(std::string const& text, Language language, Player* target, bool isBossWhisper /*= false*/)
+{
+    if (!target)
+        return;
+
+    LocaleConstant locale = target->GetSession()->GetSessionDbLocaleIndex();
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, isBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, language, this, target, text, 0, "", locale);
+    target->SendDirectMessage(&data);
+}
+
+void Unit::Talk(uint32 textId, ChatMsg msgType, float textRange, WorldObject const* target)
+{
+    if (!sObjectMgr->GetBroadcastText(textId))
+    {
+        TC_LOG_ERROR("entities.unit", "Unit::Talk: `broadcast_text` was not %u found", textId);
+        return;
+    }
+
+    Trinity::BroadcastTextBuilder builder(this, msgType, textId, target);
+    Trinity::LocalizedPacketDo<Trinity::BroadcastTextBuilder> localizer(builder);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::BroadcastTextBuilder> > worker(this, textRange, localizer);
+    VisitNearbyWorldObject(textRange, worker);
+}
+
+void Unit::Say(uint32 textId, WorldObject const* target /*= nullptr*/)
+{
+    Talk(textId, CHAT_MSG_MONSTER_SAY, sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY), target);
+}
+
+void Unit::Yell(uint32 textId, WorldObject const* target /*= nullptr*/)
+{
+    Talk(textId, CHAT_MSG_MONSTER_YELL, sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL), target);
+}
+
+void Unit::TextEmote(uint32 textId, WorldObject const* target /*= nullptr*/, bool isBossEmote /*= false*/)
+{
+    Talk(textId, isBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), target);
+}
+
+void Unit::Whisper(uint32 textId, Player* target, bool isBossWhisper /*= false*/)
+{
+    if (!target)
+        return;
+
+    BroadcastText const* bct = sObjectMgr->GetBroadcastText(textId);
+    if (!bct)
+    {
+        TC_LOG_ERROR("entities.unit", "Unit::Whisper: `broadcast_text` was not %u found", textId);
+        return;
+    }
+
+    LocaleConstant locale = target->GetSession()->GetSessionDbLocaleIndex();
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, isBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, LANG_UNIVERSAL, this, target, bct->GetText(locale, GetGender()), 0, "", locale);
+    target->SendDirectMessage(&data);
+}
+
+void Unit::old_Talk(uint32 textId, ChatMsg msgType, float textRange, uint64 targetGUID, uint32 language)
+{
+    Unit* target = nullptr;
+    if(targetGUID)
+    {
+        target = GetUnit(*this, targetGUID);
+        if(!target)
+            TC_LOG_ERROR("entities.unit", "WorldObject::old_Talk: unit with guid " UI64FMTD " was not found. Defaulting to no target.", targetGUID);
+    }
+
+    Trinity::OldScriptTextBuilder builder(this, msgType, textId, Language(language), target);
+    Trinity::LocalizedPacketDo<Trinity::OldScriptTextBuilder> localizer(builder);
+    Trinity::PlayerDistWorker<Trinity::LocalizedPacketDo<Trinity::OldScriptTextBuilder> > worker(this, textRange, localizer);
+    VisitNearbyWorldObject(textRange, worker);
+}
+
+void Unit::old_Say(int32 textId, uint32 language, uint64 TargetGuid)
+{
+    old_Talk(textId, CHAT_MSG_MONSTER_SAY, sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY), TargetGuid, language);
+}
+
+void Unit::old_Yell(int32 textId, uint32 language, uint64 TargetGuid)
+{
+    old_Talk(textId, CHAT_MSG_MONSTER_YELL, sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL), TargetGuid, language);
+}
+
+void Unit::old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote)
+{
+    old_Talk(textId, IsBossEmote ? CHAT_MSG_RAID_BOSS_EMOTE : CHAT_MSG_MONSTER_EMOTE, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), TargetGuid, LANG_UNIVERSAL);
+}
+
+void Unit::old_Whisper(int32 textId, uint64 receiverGUID, bool IsBossWhisper)
+{
+    if (!receiverGUID)
+        return;
+
+    Player* target = GetPlayer(receiverGUID);
+    if(!target)
+    {
+        TC_LOG_ERROR("entities.unit", "WorldObject::old_Whisper: player with guid " UI64FMTD " was not found", receiverGUID);
+        return;
+    }
+
+    LocaleConstant locale = target->GetSession()->GetSessionDbLocaleIndex();
+
+    char const* text = sObjectMgr->GetTrinityString(textId,locale);
+
+    WorldPacket data;
+    ChatHandler::BuildChatPacket(data, IsBossWhisper ? CHAT_MSG_RAID_BOSS_WHISPER : CHAT_MSG_MONSTER_WHISPER, LANG_UNIVERSAL, this, target, text, 0, "", locale);
+    target->SendDirectMessage(&data);
 }

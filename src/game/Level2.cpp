@@ -2361,7 +2361,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
     target->LoadPath(pathid);
     target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
     target->GetMotionMaster()->Initialize();
-    target->Say("Path loaded.",0,0);
+    target->Say("Path loaded.",LANG_UNIVERSAL,0);
 
     return true;
 }
@@ -2409,7 +2409,7 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
             target->SetDefaultMovementType(IDLE_MOTION_TYPE);
             target->GetMotionMaster()->MoveTargetedHome();
             target->GetMotionMaster()->Initialize();
-            target->Say("Path unloaded.",0,0);
+            target->Say("Path unloaded.",LANG_UNIVERSAL,0);
             return true;
         }
         PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path. (1)");

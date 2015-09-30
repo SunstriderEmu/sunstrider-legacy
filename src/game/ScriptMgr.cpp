@@ -63,7 +63,6 @@ extern void AddSC_training_dummy();
 extern void AddSC_zone_silence();
 extern void AddSC_custom_example();
 extern void AddSC_custom_gossip_codebox();
-extern void AddSC_test();
 extern void AddSC_onevents();
 extern void AddSC_npc_lottery();
 extern void AddSC_theinform();
@@ -825,7 +824,6 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     AddSC_zone_silence();
     AddSC_custom_example();
     AddSC_custom_gossip_codebox();
-    AddSC_test();
     AddSC_onevents();
     AddSC_npc_lottery();
     AddSC_theinform();
@@ -1462,7 +1460,8 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
 //*********************************
 //*** Functions used globally ***
 
-void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
+//send text from script_texts table. Only there for retrocompatibity, use Unit::Say/Yell/Whispers ... functions instead.
+void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 {
     if (!pSource)
     {
@@ -1507,27 +1506,27 @@ void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target)
     switch((*i).second.Type)
     {
         case CHAT_TYPE_SAY:
-            pSource->MonsterSay(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            pSource->old_Say(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
             break;
         case CHAT_TYPE_YELL:
-            pSource->MonsterYell(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
+            pSource->old_Yell(textEntry, (*i).second.Language, target ? target->GetGUID() : 0);
             break;
         case CHAT_TYPE_TEXT_EMOTE:
-            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0);
+            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : 0);
             break;
         case CHAT_TYPE_BOSS_EMOTE:
-            pSource->MonsterTextEmote(textEntry, target ? target->GetGUID() : 0, true);
+            pSource->old_TextEmote(textEntry, target ? target->GetGUID() : 0, true);
             break;
         case CHAT_TYPE_WHISPER:
             {
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    pSource->MonsterWhisper(textEntry, target->GetGUID());
+                    pSource->old_Whisper(textEntry, target->GetGUID());
                 else error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
             }break;
         case CHAT_TYPE_BOSS_WHISPER:
             {
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
-                    pSource->MonsterWhisper(textEntry, target->GetGUID(), true);
+                    pSource->old_Whisper(textEntry, target->GetGUID(), true);
                 else error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
             }break;
     }

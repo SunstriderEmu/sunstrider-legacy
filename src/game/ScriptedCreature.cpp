@@ -106,12 +106,6 @@ void ScriptedAI::AttackStart(Unit* who, bool melee)
     {
         m_creature->AddThreat(who, 0.0f);
 
-        if (!InCombat)
-        {
-            InCombat = true;
-            EnterCombat(who);
-        }
-
         if(melee)
             DoStartMovement(who);
         else
@@ -128,11 +122,6 @@ void ScriptedAI::AttackStart(Unit* who)
     if (m_creature->Attack(who, melee))
     {
         m_creature->AddThreat(who, 0.0f);
-        if (!InCombat)
-        {
-            InCombat = true;
-            EnterCombat(who);
-        }
 
         if(IsCombatMovementAllowed())
         {
@@ -180,13 +169,11 @@ void ScriptedAI::EnterEvadeMode()
             m_creature->GetMotionMaster()->MoveTargetedHome();
     }
 
-    InCombat = false;
     Reset();
 }
 
 void ScriptedAI::JustRespawned()
 {
-    InCombat = false;
     Reset();
 }
 
@@ -242,37 +229,6 @@ uint32 ScriptedAI::DoCastSpell(Unit* who,SpellInfo const *spellInfo, bool trigge
 
     m_creature->StopMoving();
     return m_creature->CastSpell(who, spellInfo, triggered);
-}
-
-void ScriptedAI::DoSay(const char* text, uint32 language, Unit* target, bool SayEmote)
-{
-    if (target)
-    {
-        m_creature->Say(text, language, target->GetGUID());
-        if(SayEmote)
-            m_creature->HandleEmoteCommand(EMOTE_ONESHOT_TALK);
-    }
-    else m_creature->Say(text, language, 0);
-}
-
-void ScriptedAI::DoYell(const char* text, uint32 language, Unit* target)
-{
-    if (target) m_creature->Yell(text, language, target->GetGUID());
-    else m_creature->Yell(text, language, 0);
-}
-
-void ScriptedAI::DoTextEmote(const char* text, Unit* target, bool IsBossEmote)
-{
-    if (target) m_creature->TextEmote(text, target->GetGUID(), IsBossEmote);
-    else m_creature->TextEmote(text, 0, IsBossEmote);
-}
-
-void ScriptedAI::DoWhisper(const char* text, Unit* reciever, bool IsBossWhisper)
-{
-    if (!reciever || reciever->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    m_creature->Whisper(text, reciever->GetGUID(), IsBossWhisper);
 }
 
 void ScriptedAI::DoPlaySoundToSet(Unit* unit, uint32 sound)

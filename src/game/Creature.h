@@ -473,7 +473,15 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 #define CREATURE_Z_ATTACK_RANGE 3
 #define CREATURE_MAX_DEATH_WARN_RANGE 60.0f
 
+#ifdef LICH_KING
+#define MAX_VENDOR_ITEMS 150                                // Limitation in 3.x.x item count in SMSG_LIST_INVENTORY
+#else
 #define MAX_VENDOR_ITEMS 255                                // Limitation in item count field size in SMSG_LIST_INVENTORY
+#endif
+
+//used for handling non-repeatable random texts
+typedef std::vector<uint8> CreatureTextRepeatIds;
+typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
 class Creature : public Unit
 {
@@ -607,14 +615,6 @@ class Creature : public Unit
 
         void SetEmoteState(uint8 emote) { m_emoteState = emote; };
         void ResetCreatureEmote();
-        void Say(const char* text, uint32 language, uint64 TargetGuid) { MonsterSay(text,language,TargetGuid); }
-        void Yell(const char* text, uint32 language, uint64 TargetGuid) { MonsterYell(text,language,TargetGuid); }
-        void TextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote = false, float dist = 0, bool IsServerEmote = false) { MonsterTextEmote(text,TargetGuid,IsBossEmote,dist,IsServerEmote); }
-        void Whisper(const char* text, uint64 receiver, bool IsBossWhisper = false) { MonsterWhisper(text,receiver,IsBossWhisper); }
-        void Say(int32 textId, uint32 language, uint64 TargetGuid) { MonsterSay(textId,language,TargetGuid); }
-        void Yell(int32 textId, uint32 language, uint64 TargetGuid) { MonsterYell(textId,language,TargetGuid); }
-        void TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false) { MonsterTextEmote(textId,TargetGuid,IsBossEmote); }
-        void Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false) { MonsterWhisper(textId,receiver,IsBossWhisper); }
 
         // overwrite WorldObject function for proper name localization
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
@@ -806,6 +806,10 @@ class Creature : public Unit
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
 
+        CreatureTextRepeatIds GetTextRepeatGroup(uint8 textGroup);
+        void SetTextRepeatId(uint8 textGroup, uint8 id);
+        void ClearTextRepeatGroup(uint8 textGroup);
+
         void IncreaseUnreachableTargetTime(uint32 timediff) { m_unreachableTargetTime += timediff; }
         void ResetUnreachableTargetTime() { m_unreachableTargetTime = 0; }
         uint32 GetUnreachableTargetTime() { return m_unreachableTargetTime; }
@@ -894,6 +898,8 @@ class Creature : public Unit
         CreatureAddon const* m_creatureInfoAddon;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing
+
+        CreatureTextRepeatGroup m_textRepeat;
 };
 
 class AssistDelayEvent : public BasicEvent

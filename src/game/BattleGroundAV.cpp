@@ -91,7 +91,7 @@ void BattlegroundAV::HandleKillUnit(Creature *unit, Player *killer)
             SpawnBGObject(BG_AV_OBJECT_BURN_BUILDING_ALLIANCE+i,RESPAWN_IMMEDIATELY);
         Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
         if(creature)
-            YellToAll(creature,GetTrinityString(LANG_BG_AV_A_CAPTAIN_DEAD),LANG_UNIVERSAL);
+            creature->YellToMap(GetTrinityString(LANG_BG_AV_A_CAPTAIN_DEAD),LANG_UNIVERSAL);
 
     }
     else if ( entry == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0] )
@@ -110,7 +110,7 @@ void BattlegroundAV::HandleKillUnit(Creature *unit, Player *killer)
             SpawnBGObject(BG_AV_OBJECT_BURN_BUILDING_HORDE+i,RESPAWN_IMMEDIATELY);
         Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
         if(creature)
-            YellToAll(creature,GetTrinityString(LANG_BG_AV_H_CAPTAIN_DEAD),LANG_UNIVERSAL);
+            creature->YellToMap(GetTrinityString(LANG_BG_AV_H_CAPTAIN_DEAD),LANG_UNIVERSAL);
     }
     else if ( entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_N_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_A_4][0] || entry == BG_AV_CreatureInfo[AV_NPC_N_MINE_H_4][0])
         ChangeMineOwner(AV_NORTH_MINE,killer->GetTeam());
@@ -462,14 +462,14 @@ void BattlegroundAV::Update(time_t diff)
                     CastSpellOnTeam(AV_BUFF_A_CAPTAIN,TEAM_ALLIANCE);
                     Creature* creature = GetBGCreature(AV_CPLACE_MAX + 61);
                     if(creature)
-                        YellToAll(creature,LANG_BG_AV_A_CAPTAIN_BUFF,LANG_COMMON);
+                        creature->YellToMap(LANG_BG_AV_A_CAPTAIN_BUFF,LANG_COMMON);
                 }
                 else
                 {
                     CastSpellOnTeam(AV_BUFF_H_CAPTAIN,TEAM_HORDE);
                     Creature* creature = GetBGCreature(AV_CPLACE_MAX + 59); //TODO: make the captains a dynamic creature
                     if(creature)
-                        YellToAll(creature,LANG_BG_AV_H_CAPTAIN_BUFF,LANG_ORCISH);
+                        creature->YellToMap(LANG_BG_AV_H_CAPTAIN_BUFF,LANG_ORCISH);
                 }
                 m_CaptainBuffTimer[i] = 120000 + urand(0,4)* 60000; //as far as i could see, the buff is randomly so i make 2minutes (thats the duration of the buff itself) + 0-4minutes TODO get the right times
             }
@@ -799,7 +799,7 @@ void BattlegroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
 
     Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if(creature)
-        YellToAll(creature,buf,LANG_UNIVERSAL);
+        creature->YellToMap(buf,LANG_UNIVERSAL);
 }
 
 void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
@@ -874,16 +874,15 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
         m_Mine_Reclaim_Timer[mine]=AV_MINE_RECLAIM_TIMER;
     char buf[256];
         sprintf(buf, GetTrinityString(LANG_BG_AV_MINE_TAKEN), GetTrinityString(( mine == AV_NORTH_MINE ) ? LANG_BG_AV_MINE_NORTH : LANG_BG_AV_MINE_SOUTH), ( team == TEAM_ALLIANCE ) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
-        Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
-        if(creature)
-            YellToAll(creature,buf,LANG_UNIVERSAL);
+        if(Creature* creature = GetBGCreature(AV_CPLACE_HERALD))
+            creature->YellToMap(buf,LANG_UNIVERSAL);
     }
     else
     {
         if(mine==AV_SOUTH_MINE) //i think this gets called all the time
         {
-            Creature* creature = GetBGCreature(AV_CPLACE_MINE_S_3);
-            YellToAll(creature,LANG_BG_AV_S_MINE_BOSS_CLAIMS,LANG_UNIVERSAL);
+            if(Creature* creature = GetBGCreature(AV_CPLACE_MINE_S_3))
+                creature->YellToMap(LANG_BG_AV_S_MINE_BOSS_CLAIMS,LANG_UNIVERSAL);
         }
     }
     return;
@@ -1094,7 +1093,7 @@ void BattlegroundAV::EventPlayerDefendsPoint(Player* player, uint32 object)
     sprintf(buf, GetTrinityString(( IsTower(node) ) ? LANG_BG_AV_TOWER_DEFENDED : LANG_BG_AV_GRAVE_DEFENDED), GetNodeName(node),( team == TEAM_ALLIANCE ) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
     Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if(creature)
-        YellToAll(creature,buf,LANG_UNIVERSAL);
+        creature->YellToMap(buf,LANG_UNIVERSAL);
     //update the statistic for the defending player
     UpdatePlayerScore(player, ( IsTower(node) ) ? SCORE_TOWERS_DEFENDED : SCORE_GRAVEYARDS_DEFENDED, 1);
     if(IsTower(node))
@@ -1213,7 +1212,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
     sprintf(buf, ( IsTower(node) ) ? GetTrinityString(LANG_BG_AV_TOWER_ASSAULTED) : GetTrinityString(LANG_BG_AV_GRAVE_ASSAULTED), GetNodeName(node),  ( team == TEAM_ALLIANCE ) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE ));
     Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if(creature)
-        YellToAll(creature,buf,LANG_UNIVERSAL);
+        creature->YellToMap(buf,LANG_UNIVERSAL);
     //update the statistic for the assaulting player
     UpdatePlayerScore(player, ( IsTower(node) ) ? SCORE_TOWERS_ASSAULTED : SCORE_GRAVEYARDS_ASSAULTED, 1);
     PlaySoundToAll((team==TEAM_ALLIANCE)?AV_SOUND_ALLIANCE_ASSAULTS:AV_SOUND_HORDE_ASSAULTS);

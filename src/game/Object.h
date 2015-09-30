@@ -589,6 +589,8 @@ class WorldObject : public Object, public WorldLocation
         bool IsWithinDist3d(Position const* pos, float dist) const;
         bool IsWithinDist2d(float x, float y, float dist) const;
         bool IsWithinDist2d(Position const* pos, float dist) const;
+        // No check if same map. Use only if you will sure about placing both object at same map
+        bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const;
         bool IsWithinDistInMap(const WorldObject* obj, const float dist2compare, const bool is3D = true) const;
         bool IsWithinLOS(const float x, const float y, const float z ) const;
         bool IsWithinLOSInMap(const WorldObject* obj) const;
@@ -604,16 +606,6 @@ class WorldObject : public Object, public WorldLocation
         virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor = true);
         virtual void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
         void BuildHeartBeatMsg( WorldPacket *data ) const;
-
-        void MonsterSay(const char* text, uint32 language, uint64 TargetGuid);
-        void MonsterYell(const char* text, uint32 language, uint64 TargetGuid);
-        void MonsterTextEmote(const char* text, uint64 TargetGuid, bool IsBossEmote = false, float dist = 0, bool IsServerEmote = false);
-        void MonsterWhisper(const char* text, uint64 receiver, bool IsBossWhisper = false);
-        void MonsterSay(int32 textId, uint32 language, uint64 TargetGuid);
-        void MonsterYell(int32 textId, uint32 language, uint64 TargetGuid);
-        void MonsterTextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
-        void MonsterWhisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
-        void BuildMonsterChat(WorldPacket *data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid) const;
 
         void SendObjectDeSpawnAnim(uint64 guid);
 
@@ -689,6 +681,8 @@ class WorldObject : public Object, public WorldLocation
         uint32 m_InstanceId;
         Map    *m_map;
 
+        virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
+
         Map* _getMap();
         Map* FindBaseMap();
 
@@ -710,33 +704,6 @@ namespace Trinity
             const WorldObject* m_refObj;
             const bool m_ascending;
     };
-    class MessageChatLocaleCacheDo
-    {
-        public:
-            MessageChatLocaleCacheDo(WorldObject const& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID, float dist);
-            ~MessageChatLocaleCacheDo();
-            void operator()(Player* p);
-        private:
-            WorldObject const& i_object;
-            ChatMsg i_msgtype;
-            int32 i_textId;
-            uint32 i_language;
-            uint64 i_targetGUID;
-            float i_dist;
-            std::vector<WorldPacket*> i_data_cache;             // 0 = default, i => i-1 locale index
-    };
-
-    class CreatureTextLocaleDo
-    {
-        public:
-            CreatureTextLocaleDo(WorldObject& source, WorldPacket* data, float dist);
-            void operator()(Player* p);
-        private:
-            WorldObject& i_source;
-            float i_dist;
-            WorldPacket* i_data;
-    };
-
 }
 
 #endif

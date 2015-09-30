@@ -254,7 +254,7 @@ class ScriptMgr
 };
 
 //Generic scripting text function
-void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target = NULL);
+void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 
 Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range);
 

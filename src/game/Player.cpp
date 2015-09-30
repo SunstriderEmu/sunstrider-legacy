@@ -17672,69 +17672,79 @@ void Player::Uncharm()
     }
 }
 
-void Player::Say(const std::string& text, const Language language)
+void Player::Say(std::string const& text, Language language, WorldObject const* /*= nullptr*/)
 {
+    std::string _text(text);
+   // sScriptMgr->OnPlayerChat(this, CHAT_MSG_SAY, language, _text);
+
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_SAY, language, this, this, text);
-    SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY),true);
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_SAY, language, this, this, _text);
+    SendMessageToSetInRange(&data, sWorld->getConfig(CONFIG_LISTEN_RANGE_SAY), true);
 }
 
-void Player::Yell(const std::string& text, const Language language)
+void Player::Yell(std::string const& text, Language language, WorldObject const* /*= nullptr*/)
 {
+    std::string _text(text);
+  //  sScriptMgr->OnPlayerChat(this, CHAT_MSG_YELL, language, _text);
+
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_YELL, language, this, this, text);
-    SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL),true);
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_YELL, language, this, this, _text);
+    SendMessageToSetInRange(&data, sWorld->getConfig(CONFIG_LISTEN_RANGE_YELL), true);
 }
 
-void Player::TextEmote(const std::string& text)
+void Player::TextEmote(std::string const& text, WorldObject const* /*= nullptr*/, bool /*= false*/)
 {
+    std::string _text(text);
+   // sScriptMgr->OnPlayerChat(this, CHAT_MSG_EMOTE, LANG_UNIVERSAL, _text);
+
     WorldPacket data;
-    ChatHandler::BuildChatPacket(data, CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, text);
-    SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true, !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT), true );
+    ChatHandler::BuildChatPacket(data, CHAT_MSG_EMOTE, LANG_UNIVERSAL, this, this, _text);
+    SendMessageToSetInRange(&data, sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE), true, /* !GetSession()->HasPermission(rbac::RBAC_PERM_TWO_SIDE_INTERACTION_CHAT) */ !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT));
 }
 
-void Player::Whisper(const std::string& text, Language language, Player const* receiver)
+
+void Player::Whisper(std::string const& text, Language language, Player* target, bool /*= false*/)
 {
-    if (language != LANG_ADDON)                             // if not addon data
+    ASSERT(target);
+
+    bool isAddonMessage = (language == LANG_ADDON);
+
+    if (!isAddonMessage)                                   // if not addon data
         language = LANG_UNIVERSAL;                          // whispers should always be readable
 
    // sScriptMgr->OnPlayerChat(this, CHAT_MSG_WHISPER, language, _text, target);
 
     // when player you are whispering to is dnd, he cannot receive your message, unless you are in gm mode
-    if(!receiver->IsDND() || IsGameMaster())
+    if(!target->IsDND() || IsGameMaster())
     {
         WorldPacket data;
-        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, language, this, receiver, text);
-        receiver->GetSession()->SendPacket(&data);
+        ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, language, this, target, text);
+        target->GetSession()->SendPacket(&data);
 
         // Also send message to sender. Do not send for addon messages
         if (language != LANG_ADDON) {
-#ifdef LICH_KING
-            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, receiver, receiver, text);
-#else
-            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, receiver, receiver, text);
-#endif
+            ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, target, target, text);
             GetSession()->SendPacket(&data);
         }
     }
     else
     {
         // announce to player that player he is whispering to is dnd and cannot receive his message
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, receiver->GetName().c_str(), receiver->dndMsg.c_str());
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_DND, target->GetName().c_str(), target->dndMsg.c_str());
     }
 
-    if(!IsAcceptWhispers() && !IsGameMaster() && !receiver->IsGameMaster())
+    if(!IsAcceptWhispers() && !IsGameMaster() && !target->IsGameMaster())
     {
         SetAcceptWhispers(true);
         ChatHandler(this).SendSysMessage(LANG_COMMAND_WHISPERON);
     }
 
     // announce to player that player he is whispering to is afk
-    if(receiver->IsAFK() && language != LANG_ADDON)
-        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, receiver->GetName().c_str(), receiver->afkMsg.c_str());
+    if(target->IsAFK() && language != LANG_ADDON)
+        ChatHandler(this).PSendSysMessage(LANG_PLAYER_AFK, target->GetName().c_str(), target->afkMsg.c_str());
 
     // if player whisper someone, auto turn of dnd to be able to receive an answer
-    if(IsDND() && !receiver->IsGameMaster())
+    if(IsDND() && !target->IsGameMaster())
         ToggleDND();
 }
 
@@ -22381,19 +22391,36 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
         {
             std::string strOptionText, strBoxText;
 
-            strOptionText = itr->second.OptionText;
-            strBoxText = itr->second.BoxText;
-
+            BroadcastText const* optionBroadcastText = sObjectMgr->GetBroadcastText(itr->second.OptionBroadcastTextId);
+            BroadcastText const* boxBroadcastText = sObjectMgr->GetBroadcastText(itr->second.BoxBroadcastTextId);
+            
             LocaleConstant locale = GetSession()->GetSessionDbLocaleIndex();
+
+            if (optionBroadcastText)
+                strOptionText = optionBroadcastText->GetText(locale, GetGender());
+            else
+                strOptionText = itr->second.OptionText;
+
+            if (boxBroadcastText)
+                strBoxText = boxBroadcastText->GetText(locale, GetGender());
+            else
+                strBoxText = itr->second.BoxText;
+
             if (locale != DEFAULT_LOCALE)
             {
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, locale, strOptionText);
+                if (!optionBroadcastText)
+                {
+                    /// Find localizations from database.
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                        ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, locale, strOptionText);
+                }
 
-                /// Find localizations from database.
-                if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
-                    ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, locale, strBoxText);
+                if (!boxBroadcastText)
+                {
+                    /// Find localizations from database.
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                        ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, locale, strBoxText);
+                }
             }
 
             menu->GetGossipMenu().AddMenuItem(itr->second.OptionIndex, itr->second.OptionIcon, strOptionText, 0, itr->second.OptionType, strBoxText, itr->second.BoxMoney, itr->second.BoxCoded);

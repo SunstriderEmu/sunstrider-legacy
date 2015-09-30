@@ -457,6 +457,26 @@ namespace Trinity
     };
 
     template<class Do>
+    struct PlayerDistWorker
+    {
+        WorldObject const* i_searcher;
+        float i_dist;
+        Do& i_do;
+
+        PlayerDistWorker(WorldObject const* searcher, float _dist, Do& _do)
+            : i_searcher(searcher), i_dist(_dist), i_do(_do) { }
+
+        void Visit(PlayerMapType &m)
+        {
+            for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                if (itr->GetSource()->InSamePhase(i_searcher) && itr->GetSource()->IsWithinDistInMap(i_searcher, i_dist))
+                    i_do(itr->GetSource());
+        }
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
+    };
+    
+    template<class Do>
     struct CreatureWorker
     {
         Do& i_do;
@@ -959,6 +979,47 @@ namespace Trinity
             NearestPlayerInObjectRangeCheck(NearestPlayerInObjectRangeCheck const&);
     };
 
+    // Prepare using Builder localized packets with caching and send to player
+    template<class Builder>
+    class LocalizedPacketDo
+    {
+        public:
+            explicit LocalizedPacketDo(Builder& builder) : i_builder(builder) { }
+
+            ~LocalizedPacketDo()
+            {
+                for (size_t i = 0; i < i_data_cache.size(); ++i)
+                    delete i_data_cache[i];
+            }
+            void operator()(Player* p);
+
+        private:
+            Builder& i_builder;
+            std::vector<WorldPacket*> i_data_cache;         // 0 = default, i => i-1 locale index
+    };
+
+    // Prepare using Builder localized packets with caching and send to player
+    template<class Builder>
+    class LocalizedPacketListDo
+    {
+        public:
+            typedef std::vector<WorldPacket*> WorldPacketList;
+            explicit LocalizedPacketListDo(Builder& builder) : i_builder(builder) { }
+
+            ~LocalizedPacketListDo()
+            {
+                for (size_t i = 0; i < i_data_cache.size(); ++i)
+                    for (size_t j = 0; j < i_data_cache[i].size(); ++j)
+                        delete i_data_cache[i][j];
+            }
+            void operator()(Player* p);
+
+        private:
+            Builder& i_builder;
+            std::vector<WorldPacketList> i_data_cache;
+                                                            // 0 = default, i => i-1 locale index
+    };
+
     //CREATURES SEARCHERS
 
     class AllFriendlyCreaturesInGrid
@@ -1143,6 +1204,8 @@ namespace Trinity
             // prevent cloning this object
             NearestGeneralizedAssistCreatureInCreatureRangeCheck(NearestGeneralizedAssistCreatureInCreatureRangeCheck const&);
     };
+
+
 
     //GOBJECT SEARCHERS
 
