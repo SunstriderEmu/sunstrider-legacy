@@ -1344,6 +1344,12 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
     if(m_stealthWarningCooldown > 0)
         return false;
 
+    // If this unit isn't an NPC, is already distracted, is in combat, is confused, stunned or fleeing, do nothing
+    if (HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING | UNIT_STATE_DISTRACTED)
+        || IsCivilian() || HasReactState(REACT_PASSIVE)
+       )
+        return false;
+
     if(target->GetTypeId() != TYPEID_PLAYER)
         return false;
 

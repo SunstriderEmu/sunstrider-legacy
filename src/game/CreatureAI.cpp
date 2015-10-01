@@ -118,6 +118,13 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (!me->GetVictim())
     {
         who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+
+        if (me->HasUnitState(UNIT_STATE_DISTRACTED))
+        {
+            me->ClearUnitState(UNIT_STATE_DISTRACTED);
+            me->GetMotionMaster()->Clear();
+        }
+
         AttackStart(who);
     } else {
         if(!me->IsInCombatWith(who))
