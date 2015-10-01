@@ -613,7 +613,6 @@ class Creature : public Unit
         std::string getScriptName(); // New
         uint32 getInstanceEventId();
 
-        void SetEmoteState(uint8 emote) { m_emoteState = emote; };
         void ResetCreatureEmote();
 
         // overwrite WorldObject function for proper name localization
@@ -838,7 +837,6 @@ class Creature : public Unit
         uint32 m_corpseDelay;                               // (secs) delay between death and corpse disappearance
         float m_respawnradius;
 
-        uint8 m_emoteState;
         bool m_IsPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem
         ReactStates m_reactState;                           // for AI, not charmInfo

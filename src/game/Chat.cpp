@@ -121,7 +121,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "loadedtiles",    SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmapLoadedTilesCommand,     "", NULL },
         { "stats",          SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmapStatsCommand,           "", NULL },
         { "testarea",       SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmapTestArea,               "", NULL },
-        { "",               SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmap,                       "", NULL },
+        { "",               SEC_SUPERADMIN,      false, false, &ChatHandler::HandleMmap,                       "", NULL },
         { NULL,             0,                   false, false, NULL,                                           "", NULL }
     };
 
