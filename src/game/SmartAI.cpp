@@ -742,6 +742,9 @@ void SmartAI::SetCombatMove(bool on)
         }
         else if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != WAYPOINT_MOTION_TYPE)
         {
+            if (me->HasUnitState(UNIT_STATE_CONFUSED_MOVE | UNIT_STATE_FLEEING_MOVE))
+                return;
+
             me->GetMotionMaster()->MovementExpired();
             me->GetMotionMaster()->Clear(true);
             me->StopMoving();
