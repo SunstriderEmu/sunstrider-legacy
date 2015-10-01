@@ -1686,7 +1686,7 @@ class SmartAIMgr
             return true;
         }
 
-        //bool IsTextValid(SmartScriptHolder const& e, uint32 id);
+        bool IsTextValid(SmartScriptHolder const& e, uint32 id);
 
         // Helpers
         void LoadHelperStores();

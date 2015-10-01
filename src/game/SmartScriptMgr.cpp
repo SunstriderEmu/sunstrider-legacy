@@ -543,7 +543,8 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 break;
             }
             case SMART_EVENT_TEXT_OVER:
-                //if (e.event.textOver.textGroupID && !IsTextValid(e, e.event.textOver.textGroupID)) return false;// 0 is a valid text group!
+                if (!IsTextValid(e, e.event.textOver.textGroupID))
+                    return false;
                 break;
             case SMART_EVENT_LINK:
             {
@@ -691,6 +692,11 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
     switch (e.GetActionType())
     {
+        case SMART_ACTION_TALK:
+        case SMART_ACTION_SIMPLE_TALK:
+            if (!IsTextValid(e, e.action.talk.textGroupID))
+                return false;
+            break;
         case SMART_ACTION_SET_FACTION:
             if (e.action.faction.factionID && !sFactionTemplateStore.LookupEntry(e.action.faction.factionID))
             {
@@ -1023,32 +1029,53 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
     return true;
 }
 
-/*bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id) // unused
+bool SmartAIMgr::IsTextValid(SmartScriptHolder const& e, uint32 id)
 {
-    bool error = false;
+    if (e.GetScriptType() != SMART_SCRIPT_TYPE_CREATURE)
+        return true;
+
     uint32 entry = 0;
-    if (e.entryOrGuid >= 0)
-        entry = uint32(e.entryOrGuid);
-    else {
-        entry = uint32(abs(e.entryOrGuid));
-        CreatureData const* data = sObjectMgr->GetCreatureData(entry);
-        if (!data)
-        {
-            TC_LOG_ERROR("FIXME","SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Creature guid %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-            return false;
-        }
-        else
-            entry = data->id;
-    }
-    if (!entry || !sCreatureTextMgr->TextExist(entry, uint8(id)))
-        error = true;
-    if (error)
+
+    if (e.GetEventType() == SMART_EVENT_TEXT_OVER)
     {
-        TC_LOG_ERROR("FIXME","SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Text id %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.source_type, e.GetActionType(), id);
+        entry = e.event.textOver.creatureEntry;
+    }
+    else
+    {
+        switch (e.GetTargetType())
+        {
+            case SMART_TARGET_CREATURE_DISTANCE:
+            case SMART_TARGET_CREATURE_RANGE:
+            case SMART_TARGET_CLOSEST_CREATURE:
+                return true; // ignore
+            default:
+                if (e.entryOrGuid < 0)
+                {
+                    uint32 guid = -e.entryOrGuid;
+                    CreatureData const* data = sObjectMgr->GetCreatureData(guid);
+                    if (!data)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Creature guid %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), guid);
+                        SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Creature guid %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), guid);
+                        return false;
+                    }
+                    else
+                        entry = data->id;
+                }
+                else
+                    entry = uint32(e.entryOrGuid);
+                break;
+        }
+    }
+
+    if (!entry || !sCreatureTextMgr->TextExist(entry, uint8(id)))
+    {
+        TC_LOG_ERROR("sql.sql", "SmartAIMgr: Entry %d SourceType %u Event %u Action %u using non-existent Text id %d, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), id);
         return false;
     }
+
     return true;
-}*/
+}
 
 void SmartAIMgr::LoadHelperStores()
 {
