@@ -71,6 +71,7 @@
 #include "ConfigMgr.h"
 #include "ScriptMgr.h"
 #include "AddonMgr.h"
+#include "Management/VMapManager2.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAIConfig.h"
@@ -1247,6 +1248,12 @@ void World::SetInitialWorldSettings()
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
 
+    ///- Initialize VMapManager function pointers (to untangle game/collision circular deps)
+    if (VMAP::VMapManager2* vmmgr2 = dynamic_cast<VMAP::VMapManager2*>(VMAP::VMapFactory::createOrGetVMapManager()))
+    {
+        //vmmgr2->IsVMAPDisabledForPtr = &DisableMgr::IsVMAPDisabledFor;
+    }
+
     ///- Initialize config settings
     LoadConfigSettings();
     
@@ -1291,6 +1298,17 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Initialize data stores...");
     LoadDBCStores(m_dataPath);
     DetectDBCLang();
+
+    std::vector<uint32> mapIds;
+    for (uint32 mapId = 0; mapId < sMapStore.GetNumRows(); mapId++)
+        if (sMapStore.LookupEntry(mapId))
+            mapIds.push_back(mapId);
+
+    if (VMAP::VMapManager2* vmmgr2 = dynamic_cast<VMAP::VMapManager2*>(VMAP::VMapFactory::createOrGetVMapManager()))
+        vmmgr2->InitializeThreadUnsafe(mapIds);
+
+    MMAP::MMapManager* mmmgr = MMAP::MMapFactory::createOrGetMMapManager();
+    mmmgr->InitializeThreadUnsafe(mapIds);
 
     TC_LOG_INFO("server.loading","Loading Item Extended Cost Data...");
     sObjectMgr->LoadItemExtendedCost();
