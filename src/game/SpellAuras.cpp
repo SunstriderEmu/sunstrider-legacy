@@ -3456,7 +3456,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->SendMessageToSet(&data,true);
         */
 
-        Unit *lastmd = m_target->GetLastMisdirectionTarget();
+        Unit *lastmd = m_target->GetLastRedirectTarget();
         bool mdtarget_attacked = false;
 
         std::list<Unit*> targets;

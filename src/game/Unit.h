@@ -1786,7 +1786,7 @@ class Unit : public WorldObject
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
         {
-            m_reducedThreatPercent = pct;
+            m_redirectThreatPercent = pct;
             m_misdirectionTargetGUID = guid;
         }
 
@@ -1795,9 +1795,9 @@ class Unit : public WorldObject
             m_misdirectionLastTargetGUID = guid;
         }
 
-        uint32 GetReducedThreatPercent() { return m_reducedThreatPercent; }
-        Unit *GetMisdirectionTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
-        Unit *GetLastMisdirectionTarget() { return m_misdirectionLastTargetGUID ? GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; }
+        uint32 GetRedirectThreatPercent() { return m_redirectThreatPercent; }
+        Unit *GetRedirectThreatTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
+        Unit *GetLastRedirectTarget() { return m_misdirectionLastTargetGUID ? GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; }
 
         bool IsAIEnabled, NeedChangeAI;
              
@@ -1937,7 +1937,7 @@ class Unit : public WorldObject
 
         ComboPointHolderSet m_ComboPointHolders;
 
-        uint32 m_reducedThreatPercent;
+        uint32 m_redirectThreatPercent;
         uint64 m_misdirectionTargetGUID;
         uint64 m_misdirectionLastTargetGUID;
         

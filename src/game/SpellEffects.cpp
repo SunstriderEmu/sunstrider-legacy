@@ -4976,18 +4976,17 @@ void Spell::EffectTaunt(uint32 /*i*/)
     }
 
     // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if(unitTarget->getThreatManager().getCurrentVictim())
+    if (!unitTarget->getThreatManager().getOnlineContainer().empty())
     {
         float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
-        float itsThreat = unitTarget->getThreatManager().getCurrentVictim()->getThreat();
-        if(itsThreat > myThreat)
-            unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
-    }
+        float topThreat = unitTarget->getThreatManager().getOnlineContainer().getMostHated()->getThreat();
+        if (topThreat > myThreat)
+            unitTarget->getThreatManager().doAddThreat(m_caster, topThreat - myThreat);
 
-    //Set aggro victim to caster
-    if( !unitTarget->getThreatManager().getOnlineContainer().empty() )
+        //Set aggro victim to caster
         if(HostileReference* forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
             unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
+    }
 
     if((unitTarget->ToCreature())->IsAIEnabled) {
         (unitTarget->ToCreature())->AI()->AttackStart(m_caster);

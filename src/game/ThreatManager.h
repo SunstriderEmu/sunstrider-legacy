@@ -42,6 +42,7 @@ class ThreatCalcHelper
 {
     public:
         static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
+        static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = NULL);
 };
 
 //==============================================================
@@ -188,6 +189,9 @@ class ThreatManager
         void clearCurrentVictim() { iCurrentVictim = nullptr; }
 
         void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
+
+        void doAddThreat(Unit* victim, float threat);
+
         //modify threat for victim. Do not remove from threat list in any case
         void modifyThreatPercent(Unit *pVictim, int32 pPercent);
 

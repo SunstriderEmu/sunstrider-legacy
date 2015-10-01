@@ -34,21 +34,22 @@ HostileRefManager::~HostileRefManager()
 // The pVictim is hated than by them as well
 // use for buffs and healing threat functionality
 
-void HostileRefManager::threatAssist(Unit *pVictim, float pThreat, SpellInfo const *pThreatSpell, bool pSingleTarget, bool skipModifiers)
+void HostileRefManager::threatAssist(Unit* pVictim, float pThreat, SpellInfo const *pThreatSpell, bool pSingleTarget, bool skipModifiers)
 {
     HostileReference* ref;
 
     uint32 size = pSingleTarget ? 1 : getSize();            // if pSingleTarget do not devide threat
     ref = getFirst();
+    if(!skipModifiers)
+        pThreat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? pThreatSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
+    pThreat /= size;
     while(ref != NULL)
     {
-        if(!skipModifiers)
-            pThreat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? pThreatSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
-
-        if(pVictim == GetOwner())
-            ref->addThreat(float (pThreat) / size);          // It is faster to modify the threat durectly if possible
-        else
-            ref->GetSource()->addThreat(pVictim, float (pThreat) / size);
+        if (ThreatCalcHelper::isValidProcess(pVictim, ref->GetSource()->GetOwner(), pThreatSpell))
+            if(pVictim == GetOwner())
+                ref->addThreat(pThreat);          // It is faster to modify the threat directly if possible
+            else
+                ref->GetSource()->addThreat(pVictim, pThreat);
         ref = ref->next();
     }
 }
@@ -57,9 +58,7 @@ void HostileRefManager::threatAssist(Unit *pVictim, float pThreat, SpellInfo con
 
 void HostileRefManager::addThreatPercent(int32 pValue)
 {
-    HostileReference* ref;
-
-    ref = getFirst();
+    HostileReference* ref = getFirst();
     while(ref != NULL)
     {
         ref->addThreatPercent(pValue);
@@ -72,9 +71,7 @@ void HostileRefManager::addThreatPercent(int32 pValue)
 
 void HostileRefManager::setOnlineOfflineState(bool pIsOnline)
 {
-    HostileReference* ref;
-
-    ref = getFirst();
+    HostileReference* ref = getFirst();
     while(ref != NULL)
     {
         ref->setOnlineOfflineState(pIsOnline);

@@ -2385,8 +2385,8 @@ void Player::SetGameMaster(bool on)
         GetHostileRefManager().setOnlineOfflineState(true);
     }
 
-    //ObjectAccessor::UpdateVisibilityForPlayer(this);
     SetToNotify();
+    //todo: update UNIT_FIELD_FLAGS and visibility of nearby objects
 }
 
 void Player::SetGMVisible(bool on)

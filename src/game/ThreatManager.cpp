@@ -53,6 +53,49 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
     return pThreat;
 }
 
+bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell)
+{
+    //function deals with adding threat and adding players and pets into ThreatList
+    //mobs, NPCs, guards have ThreatList and HateOfflineList
+    //players and pets have only InHateListOf
+    //HateOfflineList is used co contain unattackable victims (in-flight, in-water, GM etc.)
+
+    if (!hatedUnit || !hatingUnit)
+        return false;
+
+    // not to self
+    if (hatedUnit == hatingUnit)
+        return false;
+
+    // not to GM
+    if (hatedUnit->GetTypeId() == TYPEID_PLAYER && 
+            (  hatedUnit->ToPlayer()->IsGameMaster()
+            || hatedUnit->ToPlayer()->isSpectator()
+            || hatedUnit->ToPlayer()->GetTransForm() == FORM_SPIRITOFREDEMPTION
+            )
+        )
+        return false;
+
+    // not to dead and not for dead
+    if (!hatedUnit->IsAlive() || !hatingUnit->IsAlive())
+        return false;
+
+    // not in same map or phase
+    if (!hatedUnit->IsInMap(hatingUnit) || !hatedUnit->InSamePhase(hatingUnit))
+        return false;
+
+    // spell not causing threat
+    if (threatSpell && threatSpell->HasAttribute(SPELL_ATTR1_NO_THREAT))
+        return false;
+
+    if(hatedUnit->isTotem())
+        return false;
+
+    ASSERT(hatingUnit->GetTypeId() == TYPEID_UNIT);
+
+    return true;
+}
+
 //============================================================
 //================= HostileReference ==========================
 //============================================================
@@ -375,42 +418,30 @@ void ThreatManager::clearReferences()
 
 //============================================================
 
-void ThreatManager::addThreat(Unit* pVictim, float pThreat, SpellSchoolMask schoolMask, SpellInfo const *pThreatSpell)
+void ThreatManager::addThreat(Unit* victim, float threat, SpellSchoolMask schoolMask, SpellInfo const *threatSpell)
 {
-    //function deals with adding threat and adding players and pets into ThreatList
-    //mobs, NPCs, guards have ThreatList and HateOfflineList
-    //players and pets have only InHateListOf
-    //HateOfflineList is used co contain unattackable victims (in-flight, in-water, GM etc.)
-
-    if (pVictim == GetOwner())                              // only for same creatures :)
+    if (!ThreatCalcHelper::isValidProcess(victim, GetOwner(), threatSpell))
         return;
 
-    if( !pVictim 
-     || (pVictim->GetTypeId() == TYPEID_PLAYER
-        && (pVictim->ToPlayer()->IsGameMaster() 
-           || pVictim->ToPlayer()->isSpectator()
-           || pVictim->ToPlayer()->GetTransForm() == FORM_SPIRITOFREDEMPTION)
-        )
-     || (pVictim->GetTypeId() != TYPEID_PLAYER
-        && pVictim->ToCreature()->IsTotem()
-        )      
-      )
-        return;
+    doAddThreat(victim, ThreatCalcHelper::calcThreat(victim, iOwner, threat, schoolMask, threatSpell));
+}
 
-    assert(GetOwner()->GetTypeId()== TYPEID_UNIT);
-
-    float threat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, schoolMask, pThreatSpell);
+void ThreatManager::doAddThreat(Unit* victim, float threat)
+{
+    uint32 redirectThreadPct = victim->GetRedirectThreatPercent();
 
     // must check > 0.0f, otherwise dead loop
-    if(threat > 0.0f && pVictim->GetReducedThreatPercent())
+    if (threat > 0.0f && redirectThreadPct)
     {
-        float reducedThreat = threat * pVictim->GetReducedThreatPercent() / 100;
-        threat -= reducedThreat;
-        if(Unit *unit = pVictim->GetMisdirectionTarget())
-            _addThreat(unit, reducedThreat);
+        if (Unit* redirectTarget = victim->GetRedirectThreatTarget())
+        {
+            float redirectThreat = CalculatePct(threat, redirectThreadPct);
+            threat -= redirectThreat;
+            _addThreat(redirectTarget, redirectThreat);
+        }
     }
 
-    _addThreat(pVictim, threat);
+    _addThreat(victim, threat);
 }
 
 void ThreatManager::_addThreat(Unit *pVictim, float threat)

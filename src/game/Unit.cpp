@@ -231,7 +231,7 @@ _lastDamagedTime(0), m_movesplineTimer(0)
         m_speed_rate[i] = 1.0f;
 
     m_charmInfo = NULL;
-    m_reducedThreatPercent = 0;
+    m_redirectThreatPercent = 0;
     m_misdirectionTargetGUID = 0;
     m_misdirectionLastTargetGUID = 0;
 

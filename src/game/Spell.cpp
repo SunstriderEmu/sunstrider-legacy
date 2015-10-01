@@ -3171,7 +3171,7 @@ void Spell::SendSpellStart()
     if(!IsNeedSendToClient())
         return;
 
-    uint32 castFlags = CAST_FLAG_UNKNOWN1;
+    uint32 castFlags = CAST_FLAG_UNKNOWN_1;
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
 
@@ -3205,11 +3205,11 @@ void Spell::SendSpellGo()
 
     Unit *target = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
 
-    uint32 castFlags = CAST_FLAG_UNKNOWN3;
+    uint32 castFlags = CAST_FLAG_UNKNOWN_9;
 
     // triggered spells with spell visual != 0 and not auto shot
     if( (m_IsTriggeredSpell && (m_spellInfo->HasAttribute(SPELL_ATTR4_AUTOSHOT)) == 0) || m_triggeredByAuraSpell)
-        castFlags |= CAST_FLAG_UNKNOWN0; 
+        castFlags |= CAST_FLAG_PENDING; 
 
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
