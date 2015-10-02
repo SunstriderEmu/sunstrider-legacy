@@ -611,7 +611,7 @@ void CreatureAINew::doResetThreat()
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr) {
         Unit* pUnit = NULL;
-        pUnit = Unit::GetUnit((*me), (*itr)->getUnitGuid());
+        pUnit = ObjectAccessor::GetUnit((*me), (*itr)->getUnitGuid());
         if (pUnit && doGetThreat(pUnit))
             doModifyThreatPercent(pUnit, -100);
     }

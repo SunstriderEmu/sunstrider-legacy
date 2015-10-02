@@ -172,15 +172,15 @@ class BattlegroundWS : public Battleground
         bool IsForceTimerDone;
 
         /* Battleground Events */
-        virtual void EventPlayerDroppedFlag(Player *Source);
-        virtual void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj);
-        virtual void EventPlayerCapturedFlag(Player *Source);
+        void EventPlayerDroppedFlag(Player *Source) override;
+        void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj) override;
+        void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType) override;
 
         void RemovePlayer(Player *plr, uint64 guid);
         void HandleAreaTrigger(Player *Source, uint32 Trigger);
         void HandleKillPlayer(Player *player, Player *killer);
         bool SetupBattleground();
-        virtual void ResetBGSubclass();
+        void ResetBGSubclass() override;
 
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);

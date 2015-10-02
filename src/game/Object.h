@@ -622,18 +622,19 @@ class WorldObject : public Object, public WorldLocation
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
         
-        void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange);
-        void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange);
+        void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
 
         Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
         Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->FindBaseMap(); }
         Map const* GetBaseMap() const;
-        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime);
-        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
+        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN,uint32 despwtime = 0) const;
+        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const;
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
-        Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true);
-        GameObject* FindNearestGameObject(uint32 entry, float range);
-        Player* FindNearestPlayer(float range);
+
+        Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
+        GameObject* FindNearestGameObject(uint32 entry, float range) const;
+        Player* FindNearestPlayer(float range) const;
         bool isActiveObject() const { return m_isActive; }
         /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.

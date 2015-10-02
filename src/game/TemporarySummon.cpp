@@ -179,10 +179,6 @@ void TemporarySummon::UnSummon()
     }
 }
 
-void TemporarySummon::SaveToDB()
-{
-}
-
 bool TemporarySummon::DespawnOnDeath()
 {
     if(  m_type == TEMPSUMMON_CORPSE_DESPAWN 

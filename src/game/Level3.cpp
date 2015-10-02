@@ -7748,7 +7748,7 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
             Field *fields = result->Fetch();
             uint32 creatureentry = fields[0].GetUInt32();
             uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HIGHGUID_UNIT);
-            Unit* pUnit = Unit::GetUnit(*plr, packedguid);
+            Unit* pUnit = ObjectAccessor::GetUnit(*plr, packedguid);
             if (!pUnit) {
                 PSendSysMessage("No unit found.");
                 return true;

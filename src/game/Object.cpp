@@ -1293,7 +1293,7 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(this);
 }
 
-Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime)
+Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime) const
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
 
@@ -1319,15 +1319,15 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     pCreature->Summon(spwtype, despwtime);
     
     if(pCreature->AI())
-        pCreature->AI()->IsSummonedBy(this->ToUnit());
+        pCreature->AI()->IsSummonedBy(((Unit*)this)->ToUnit());
     if(pCreature->getAI())
-        pCreature->AI()->IsSummonedBy(this->ToCreature());
+        pCreature->AI()->IsSummonedBy(((Unit*)this)->ToCreature());
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
     {
-        (this->ToCreature())->AI()->JustSummoned(pCreature);
-        if ((this->ToCreature())->getAI())
-            (this->ToCreature())->getAI()->onSummon(pCreature);
+        (((Unit*)this)->ToCreature())->AI()->JustSummoned(pCreature);
+        if ((((Unit*)this)->ToCreature())->getAI())
+            (((Unit*)this)->ToCreature())->getAI()->onSummon(pCreature);
     }
 
     if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
@@ -1524,7 +1524,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const
 {
     if(!IsInWorld())
         return NULL;
@@ -1571,7 +1571,7 @@ Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint3
     return summon;
 }
 
-Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive)
+Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive) const
 {
        Creature *creature = NULL;
        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(*this, entry, alive, range);
@@ -1580,7 +1580,7 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
        return creature;
 }
 
-GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range)
+GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 {
        GameObject *go = NULL;
        Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
@@ -1589,7 +1589,7 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range)
        return go;
 }
 
-Player* WorldObject::FindNearestPlayer(float range)
+Player* WorldObject::FindNearestPlayer(float range) const
 {
        Player* pl = NULL;
        Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
@@ -1961,7 +1961,7 @@ float WorldObject::GetObjectSize() const
     return ( m_valuesCount > UNIT_FIELD_COMBATREACH ) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
 }
 
-void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange)
+void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const
 {
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
@@ -1975,7 +1975,7 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, ui
     cell.Visit(pair, visitor, *(this->GetMap()));
 }
 
-void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange)
+void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const
 {
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
@@ -2190,7 +2190,7 @@ struct WorldObjectChangeAccumulator
             {
                 //has player shared vision with us ?
                  for (auto it : source->GetSharedVisionList())
-                     if(Player* p = source->GetPlayer(it))
+                     if(Player* p = ObjectAccessor::GetPlayer(*source, it))
                          BuildPacket(p);
             }
         }
@@ -2207,7 +2207,7 @@ struct WorldObjectChangeAccumulator
             {
                 //has player shared vision with us ?
                 for (auto it : source->GetSharedVisionList())
-                     if(Player* p = source->GetPlayer(it))
+                     if(Player* p = ObjectAccessor::GetPlayer(*source, it))
                          BuildPacket(p);
             }
         }

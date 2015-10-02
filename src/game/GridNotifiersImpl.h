@@ -30,6 +30,7 @@
 #include "SpellAuras.h"
 #include "CreatureAINew.h"
 #include "SpellInfo.h"
+#include "ObjectAccessor.h"
 
 inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
@@ -112,7 +113,7 @@ Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
         iter->GetSource()->UpdateVisibilityOf(&i_player);
 
         for (auto it : i_player.GetSharedVisionList())
-            if(Player* p = i_player.GetPlayer(it))
+            if(Player* p = ObjectAccessor::GetPlayer(i_player, it))
                 p->UpdateVisibilityOf(iter->GetSource());
 
         // Cancel Trade
@@ -136,7 +137,7 @@ Trinity::PlayerRelocationNotifier::Visit(CreatureMapType &m)
         i_player.UpdateVisibilityOf(iter->GetSource(),i_data,i_visibleNow);
 
         for (auto it : i_player.GetSharedVisionList())
-            if(Player* p = i_player.GetPlayer(it))
+            if(Player* p = ObjectAccessor::GetPlayer(i_player, it))
                 p->UpdateVisibilityOf(iter->GetSource());
 
         PlayerCreatureRelocationWorker(&i_player, iter->GetSource());
@@ -155,7 +156,7 @@ Trinity::CreatureRelocationNotifier::Visit(PlayerMapType &m)
         iter->GetSource()->UpdateVisibilityOf(&i_creature);
 
         for (auto it : i_creature.GetSharedVisionList())
-            if(Player* p = i_creature.GetPlayer(it))
+            if(Player* p = ObjectAccessor::GetPlayer(i_creature, it))
                 p->UpdateVisibilityOf(iter->GetSource());
         
         PlayerCreatureRelocationWorker(iter->GetSource(), &i_creature);
@@ -178,7 +179,7 @@ Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
             continue;
 
         for (auto it : i_creature.GetSharedVisionList())
-            if(Player* p = i_creature.GetPlayer(it))
+            if(Player* p = ObjectAccessor::GetPlayer(i_creature, it))
                 p->UpdateVisibilityOf(iter->GetSource());
 
         CreatureCreatureRelocationWorker(iter->GetSource(), &i_creature);

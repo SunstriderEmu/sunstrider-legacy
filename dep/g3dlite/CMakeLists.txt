@@ -1,48 +1,58 @@
-## Modified for MaNGOS project <http://getmangos.com>
-##
-## Permission is hereby granted, free of charge, to any person obtaining a copy
+# Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-########### next target ###############
 
-SET(g3dlite_STAT_SRCS
-    AABox.cpp
-    Box.cpp
-    Crypto.cpp
-    format.cpp
-    Matrix3.cpp
-    Plane.cpp
-    System.cpp
-    Triangle.cpp
-    Vector3.cpp
-    Vector4.cpp
-    debugAssert.cpp
-    fileutils.cpp
-    g3dmath.cpp
-    g3dfnmatch.cpp
-    prompt.cpp
-    stringutils.cpp
-    Any.cpp
-    BinaryFormat.cpp
-    BinaryInput.cpp
-    BinaryOutput.cpp
-    Capsule.cpp
-    CollisionDetection.cpp
-    CoordinateFrame.cpp
-    Cylinder.cpp
-    Line.cpp
-    LineSegment.cpp
-    Log.cpp
-    Matrix4.cpp
-    MemoryManager.cpp
-    Quat.cpp
-    Random.cpp
-    Ray.cpp
-    ReferenceCount.cpp
-    Sphere.cpp
-    TextInput.cpp
-    TextOutput.cpp
-    UprightFrame.cpp
-    Vector2.cpp
+set(g3dlib_STAT_SRCS
+  source/AABox.cpp
+  source/Any.cpp
+  source/AnyTableReader.cpp
+  source/BinaryFormat.cpp
+  source/BinaryInput.cpp
+  source/BinaryOutput.cpp
+  source/Box.cpp
+  source/Capsule.cpp
+  source/CollisionDetection.cpp
+  source/CoordinateFrame.cpp
+  source/Crypto.cpp
+  source/Cylinder.cpp
+  source/debugAssert.cpp
+  source/FileSystem.cpp
+  source/fileutils.cpp
+  source/format.cpp
+  source/g3dfnmatch.cpp
+  source/g3dmath.cpp
+  source/GThread.cpp
+  source/Line.cpp
+  source/LineSegment.cpp
+  source/Log.cpp
+  source/Matrix3.cpp
+  source/Matrix4.cpp
+  source/MemoryManager.cpp
+  source/PhysicsFrame.cpp
+  source/Plane.cpp
+  source/prompt.cpp
+  source/Quat.cpp
+  source/Random.cpp
+  source/Ray.cpp
+  source/RegistryUtil.cpp
+  source/Sphere.cpp
+  source/stringutils.cpp
+  source/System.cpp
+  source/TextInput.cpp
+  source/TextOutput.cpp
+  source/Triangle.cpp
+  source/uint128.cpp
+  source/UprightFrame.cpp
+  source/Vector2.cpp
+  source/Vector3.cpp
+  source/Vector4.cpp
 )
 
 if(WIN32)
@@ -56,8 +66,9 @@ else()
   )
 endif()
 
-add_library(g3dlite STATIC ${g3dlite_STAT_SRCS})
+add_library(g3dlib STATIC ${g3dlib_STAT_SRCS})
 
-target_link_libraries(g3dlite
+target_link_libraries(g3dlib
   ${ZLIB_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
 )

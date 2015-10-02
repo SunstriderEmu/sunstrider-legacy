@@ -875,7 +875,7 @@ void Spell::EffectDummy(uint32 i)
                     for(std::list<TargetInfo>::iterator ihit= m_UniqueTargetInfo.begin();ihit != m_UniqueTargetInfo.end();++ihit)
                         if(ihit->effectMask & (1<<i))
                             {
-                                Unit* casttarget = Unit::GetUnit((*unitTarget), ihit->targetGUID);
+                                Unit* casttarget = ObjectAccessor::GetUnit((*unitTarget), ihit->targetGUID);
                                 if(casttarget)
                                     m_caster->DealDamage(casttarget, damage, NULL, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, spellInfo, false);
                             }

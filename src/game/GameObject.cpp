@@ -266,7 +266,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
     SetDisplayId(goinfo->displayId);
 
-    m_model = GameObjectModel::Create(*this);
+    m_model = CreateModel();
     
     SetGoType(GameobjectTypes(goinfo->type));
     SetGoState(go_state);
@@ -569,7 +569,7 @@ void GameObject::Update(uint32 diff)
                     std::set<uint32>::iterator end = m_unique_users.end();
                     for (; it != end; it++)
                     {
-                        Unit* owner = Unit::GetUnit(*this, uint64(*it));
+                        Unit* owner = ObjectAccessor::GetUnit(*this, uint64(*it));
                         if (owner) owner->CastSpell(owner, spellId, false);
                     }
 
@@ -895,7 +895,7 @@ void GameObject::UpdateModel()
         if (GetMap()->ContainsGameObjectModel(*m_model))
             GetMap()->RemoveGameObjectModel(*m_model);
     delete m_model;
-    m_model = GameObjectModel::Create(*this);
+    m_model = CreateModel();
     if (m_model)
         GetMap()->InsertGameObjectModel(*m_model);
 }
@@ -1734,6 +1734,41 @@ float GameObject::GetInteractionDistance()
     }
 }
 
+void GameObject::UpdateModelPosition()
+{
+    if (!m_model)
+        return;
+
+    if (GetMap()->ContainsGameObjectModel(*m_model))
+    {
+        GetMap()->RemoveGameObjectModel(*m_model);
+        m_model->UpdatePosition();
+        GetMap()->InsertGameObjectModel(*m_model);
+    }
+}
+
+class GameObjectModelOwnerImpl : public GameObjectModelOwnerBase
+{
+public:
+    explicit GameObjectModelOwnerImpl(GameObject const* owner) : _owner(owner) { }
+
+    virtual bool IsSpawned() const override { return _owner->isSpawned(); }
+    virtual uint32 GetDisplayId() const override { return _owner->GetDisplayId(); }
+    virtual uint32 GetPhaseMask() const override { return _owner->GetPhaseMask(); }
+    virtual G3D::Vector3 GetPosition() const override { return G3D::Vector3(_owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ()); }
+    virtual float GetOrientation() const override { return _owner->GetOrientation(); }
+    virtual float GetScale() const override { return _owner->GetObjectScale(); }
+    virtual void DebugVisualizeCorner(G3D::Vector3 const& corner) const override { _owner->SummonCreature(1, corner.x, corner.y, corner.z, 0, TEMPSUMMON_MANUAL_DESPAWN); }
+
+private:
+    GameObject const* _owner;
+};
+
+GameObjectModel* GameObject::CreateModel()
+{
+    return GameObjectModel::Create(Trinity::make_unique<GameObjectModelOwnerImpl>(this));
+}
+
 void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3 /*=0.0f*/)
 {
     static double const atan_pow = atan(pow(2.0f, -20.0f));
@@ -1762,19 +1797,6 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
 
     SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rotation2);
     SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rotation3);
-}
-
-void GameObject::UpdateModelPosition()
-{
-    if (!m_model)
-        return;
-
-    if (GetMap()->ContainsGameObjectModel(*m_model))
-    {
-        GetMap()->RemoveGameObjectModel(*m_model);
-        m_model->Relocate(*this);
-        GetMap()->InsertGameObjectModel(*m_model);
-    }
 }
 
 bool GameObject::AIM_Initialize()

@@ -271,7 +271,7 @@ Unit::~Unit()
     {
         for (auto itr : m_sharedVision)
         {
-            if(Player* p = GetPlayer(itr))
+            if(Player* p = ObjectAccessor::GetPlayer(*this, itr))
             {
                 if (p->isSpectator() && p->getSpectateFrom())
                 {
@@ -5632,7 +5632,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     // Remove our seed aura before casting
                     RemoveAurasByCasterSpell(triggeredByAura->GetId(),casterGuid);
                     // Cast finish spell
-                    if(Unit* caster = GetUnit(*this, casterGuid))
+                    if(Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
                         caster->CastSpell(this, 27285, true, castItem);
                     return true;                            // no hidden cooldown
                 }
@@ -5659,7 +5659,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                     RemoveAurasDueToSpell(triggeredByAura->GetId());
 
                     // Cast finish spell (triggeredByAura already not exist!)
-                    if(Unit* caster = GetUnit(*this, casterGuid))
+                    if(Unit* caster = ObjectAccessor::GetUnit(*this, casterGuid))
                         caster->CastSpell(this, 32865, true, castItem);
                     return true;                            // no hidden cooldown
                 }
@@ -7481,7 +7481,7 @@ void Unit::CombatStopWithPets(bool cast)
     {
         GuardianPetList const& guardians = (this->ToPlayer())->GetGuardians();
         for(GuardianPetList::const_iterator itr = guardians.begin(); itr != guardians.end(); ++itr)
-            if(Unit* guardian = Unit::GetUnit(*this,*itr))
+            if(Unit* guardian = ObjectAccessor::GetUnit(*this,*itr))
                 guardian->CombatStop(cast);
     }
 }
@@ -8257,7 +8257,7 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
         uint32 owner_guid = GetOwnerGUID();
         if(IS_PLAYER_GUID(owner_guid))
         {
-            Player* owner = GetPlayer(owner_guid);
+            Player* owner = ObjectAccessor::GetPlayer(*this, owner_guid);
             Creature* c = ToCreature();
             if(owner && c && c->IsTotem())
                 return owner->IsSpellCrit(pVictim,spellProto,schoolMask,attackType);
@@ -10345,21 +10345,6 @@ void Unit::ApplyDiminishingAura( DiminishingGroup group, bool apply )
 
         break;
     }
-}
-
-Unit* Unit::GetUnit(WorldObject& object, uint64 guid)
-{
-    return ObjectAccessor::GetUnit(object,guid);
-}
-
-Player* Unit::GetPlayer(uint64 guid)
-{
-    return ObjectAccessor::FindPlayer(guid);
-}
-
-Creature* Unit::GetCreature(WorldObject& object, uint64 guid)
-{
-    return ObjectAccessor::GetCreature(object, guid);
 }
 
 bool Unit::IsVisibleForInState( Player const* u, bool inVisibleList ) const
@@ -12450,10 +12435,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
             for (uint8 slot = 0; slot < MAX_TOTEM; slot++) {
-                if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot[slot]))
+                if (Creature* totem = ObjectAccessor::GetCreature(*this, m_TotemSlot[slot]))
                     totem->AI()->MasterKilledUnit(pVictim);
             }
-            if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
+            if (Creature* totem = ObjectAccessor::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
                 totem->AI()->MasterKilledUnit(pVictim);
         }
 
@@ -12500,10 +12485,10 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
             for (uint8 slot = 0; slot < MAX_TOTEM; slot++) {
-                if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot[slot]))
+                if (Creature* totem = ObjectAccessor::GetCreature(*this, m_TotemSlot[slot]))
                     totem->AI()->MasterKilledUnit(pVictim);
             }
-            if (Creature* totem = Unit::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
+            if (Creature* totem = ObjectAccessor::GetCreature(*this, m_TotemSlot254)) // Slot for some quest totems
                 totem->AI()->MasterKilledUnit(pVictim);
         }
 
@@ -13439,6 +13424,20 @@ void Unit::AddAura(uint32 spellId, Unit* target)
             }
         }
     }
+}
+
+Unit* Unit::GetRedirectThreatTarget() 
+{ 
+    return m_misdirectionTargetGUID ? ObjectAccessor::GetUnit(*this, m_misdirectionTargetGUID) : NULL; 
+}
+Unit* Unit::GetLastRedirectTarget() 
+{ 
+    return m_misdirectionLastTargetGUID ? ObjectAccessor::GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; 
+}
+
+Unit* Unit::GetSummoner() const
+{ 
+    return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; 
 }
 
 Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
@@ -14479,7 +14478,7 @@ void Unit::old_Talk(uint32 textId, ChatMsg msgType, float textRange, uint64 targ
     Unit* target = nullptr;
     if(targetGUID)
     {
-        target = GetUnit(*this, targetGUID);
+        target = ObjectAccessor::GetUnit(*this, targetGUID);
         if(!target)
             TC_LOG_ERROR("entities.unit", "WorldObject::old_Talk: unit with guid " UI64FMTD " was not found. Defaulting to no target.", targetGUID);
     }
@@ -14510,7 +14509,7 @@ void Unit::old_Whisper(int32 textId, uint64 receiverGUID, bool IsBossWhisper)
     if (!receiverGUID)
         return;
 
-    Player* target = GetPlayer(receiverGUID);
+    Player* target = ObjectAccessor::FindPlayer(receiverGUID);
     if(!target)
     {
         TC_LOG_ERROR("entities.unit", "WorldObject::old_Whisper: player with guid " UI64FMTD " was not found", receiverGUID);

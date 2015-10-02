@@ -32,9 +32,9 @@ class TemporarySummon : public Creature
         void Update(uint32 time);
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();
-        void SaveToDB();
+        void SaveToDB(uint32 mapid, uint8 spawnMask) override { }
         TempSummonType GetSummonType() { return m_type; }
-        Unit* GetSummoner() const { return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; }
+        Unit* GetSummoner() const override { return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; }
         bool DespawnOnDeath();
     private:
         TempSummonType m_type;

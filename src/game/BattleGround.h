@@ -431,7 +431,7 @@ class Battleground
         /* these functions will return true event is possible, but false if player is bugger */
         virtual void EventPlayerDroppedFlag(Player* /*player*/) {}
         virtual void EventPlayerClickedOnFlag(Player* /*player*/, GameObject* /*target_obj*/) {}
-        virtual void EventPlayerCapturedFlag(Player* /*player*/) {}
+        virtual void EventPlayerCapturedFlag(Player* /*player*/, uint32 /* BgObjectType */) {}
         void EventPlayerLoggedOut(Player* player);
 
         /* Death related */

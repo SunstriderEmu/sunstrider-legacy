@@ -726,11 +726,12 @@ class GameObject : public WorldObject
         bool manual_unlock;
         
         bool AIM_Initialize();
+        GameObjectModel* CreateModel();
+        void UpdateModel();                                 // updates model in case displayId were changed
+
     private:
         GameObjectAI* m_AI;
         GridReference<GameObject> m_gridRef;
-        
-        void UpdateModel();                                 // updates model in case displayId were changed
 };
 #endif
 

@@ -76,7 +76,7 @@ void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
 
     //TC_LOG_DEBUG("FIXME", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
 
-    GetPlayer()->SetSheath(sheathed);
+    GetPlayer()->SetSheath(SheathState(sheathed));
 }
 
 void WorldSession::SendMeleeAttackStop(Unit const* enemy)

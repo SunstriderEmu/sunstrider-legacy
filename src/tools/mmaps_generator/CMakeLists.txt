@@ -43,7 +43,7 @@ add_executable(mmaps_generator ${mmap_gen_sources})
 
 target_link_libraries(mmaps_generator
   collision
-  g3dlite
+  g3dlib
   Recast
   Detour
   format

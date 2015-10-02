@@ -260,7 +260,7 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     m_BothFlagsKept = false;
 }
 
-void BattlegroundWS::EventPlayerCapturedFlag(Player *Source)
+void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType)
 {
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -647,12 +647,12 @@ void BattlegroundWS::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 3646:                                          // Alliance Flag spawn
             if(m_FlagState[BG_TEAM_HORDE] && !m_FlagState[BG_TEAM_ALLIANCE])
                 if(GetHordeFlagPickerGUID() == Source->GetGUID())
-                    EventPlayerCapturedFlag(Source);
+                    EventPlayerCapturedFlag(Source, 0);
             break;
         case 3647:                                          // Horde Flag spawn
             if(m_FlagState[BG_TEAM_ALLIANCE] && !m_FlagState[BG_TEAM_HORDE])
                 if(GetAllianceFlagPickerGUID() == Source->GetGUID())
-                    EventPlayerCapturedFlag(Source);
+                    EventPlayerCapturedFlag(Source, 0);
             break;
         case 3649:                                          // unk1
         case 3688:                                          // unk2

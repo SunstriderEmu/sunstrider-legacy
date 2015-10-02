@@ -330,7 +330,7 @@ class BattlegroundEY : public Battleground
         virtual void EventPlayerDroppedFlag(Player *Source);
 
     private:
-        void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType);
+        void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType) override;
         void EventTeamCapturedPoint(Player *Source, uint32 Point);
         void EventTeamLostPoint(Player *Source, uint32 Point);
         void UpdatePointsCount(uint32 Team);

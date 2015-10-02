@@ -1,39 +1,42 @@
 project(Sunstrider)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.9)
 
 # Don't escape preprocessor definitions automatically.
 cmake_policy(SET CMP0005 OLD)
+if(POLICY CMP0043)
+  cmake_policy(SET CMP0043 OLD) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
+endif(POLICY CMP0043)
+
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+# Set RPATH-handing (CMake parameters)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${LIBSDIR}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# set macro-directory
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
 include(CheckIncludeFiles)
-include(cmake/CheckPlatform.cmake)
-include(cmake/FindMySql.cmake)
-include(cmake/FindPostgreSql.cmake)
-include(cmake/FindReadline.cmake)
-include(cmake/ConfigureBoost.cmake)
-include(cmake/FindPCHSupport.cmake)
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY)
-add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+include(CheckPlatform)
+include(PlatformRelatedSettings)
 
-option(DO_DEBUG "Debug mode (No optimization and debug symbols)" 0)
-option(DO_WARN "Enable all compilation warnings" 0)
-option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 1)
-option(PLAYERBOT "Include playerbot system (DO NOT USE, WIP, not compiling)" 0)
-option(PROFILING "Build-in profiling system" 0)
+include(FindMySql)
+include(FindReadline)
+include(ConfigureBoost)
+include(FindPCHSupport)
 
-if(NOT CONF_DIR)
-	set(CONF_DIR ${CMAKE_INSTALL_PREFIX}/etc)
-endif(NOT CONF_DIR)
+# set default buildoptions and print them
+include(cmake/options.cmake)
 
-set(LIBSDIR ${CMAKE_INSTALL_PREFIX}/lib)
-
-message("* Will install to: ${CMAKE_INSTALL_PREFIX}")
 if(UNIX)
-	message("* With config dir at: ${CONF_DIR}")
-message("* Libs install dir at: ${LIBSDIR}")
-endif(UNIX)
+	find_package(ZLIB)
+	set(ZLIB ${ZLIB_LIBRARY})
+	find_package(BZip2)
+else()
+endif()
 
 find_package(OpenSSL)
 
@@ -44,18 +47,6 @@ else(OPENSSL_FOUND)
 message(SEND_ERROR "** OpenSSL library not found! Sunstrider cannot be compiled!")
 return()
 endif(OPENSSL_FOUND)
-
-if(UNIX)
-	find_package(ZLIB)
-	set(ZLIB ${ZLIB_LIBRARY})
-	find_package(BZip2)
-else()
-	# Package overloads
-	set(BZIP2_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/dep/bzip2")
-	set(ZLIB_INCLUDE_DIR " ${PROJECT_SOURCE_DIR}/dep/zlib")
-	set(BZIP2_LIBRARIES "bzip2")
-	set(ZLIB_LIBRARIES "zlib")
-endif()
 
 find_package(Git) 
 FIND_MYSQL()
@@ -70,30 +61,9 @@ if (WIN32)
 	endif()
 endif()
 
-message("-- Miscellaneus options:")
-
 if(DO_DEBUG)
-    message("* Debug mode ON")
-    if(UNIX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -ggdb")
-    elseif(WIN32)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od /Ob0")
-    endif()
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
-
-if(DO_WARN)
-    message("* All warnings mode")
-    if(UNIX)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wfatal-errors -Wextra")
-    elseif(WIN32 AND MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Wall")
-    endif()
-endif(DO_WARN)
-
-if(UNIX)
-    message("* Building with readline")
-endif()
 
 if(UNIX)
   FIND_READLINE()
@@ -107,36 +77,29 @@ if(UNIX)
   endif(READLINE_FOUND)
 endif(UNIX)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-
-if(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_TRINITY_SCRIPT_CONFIG='\"${CONF_DIR}/worldserver.conf\"'")
-elseif(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /openmp /bigobj ")
-endif ()
+#if(UNIX)
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_TRINITY_SCRIPT_CONFIG='\"${CONF_DIR}/worldserver.conf\"'")
+#elseif(WIN32)
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /openmp /bigobj")
+#endif ()
 
 if(PROFILING)
-    message(STATUS "Built-in profiling enabled")
     add_definitions(-DPROFILING)
-else()
-    message(STATUS "Built-in profiling disabled")
 endif()
 
 if(PLAYERBOT)
-    message(STATUS "Playerbot enabled")
     add_definitions(-DPLAYERBOT)
-else()
-    message(STATUS "Playerbot disabled")
 endif()
 
+# Find revision ID and hash of the sourcetree
+include(cmake/genrev.cmake)
 
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${LIBSDIR}")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+# print out the results before continuing
+include(cmake/showoptions.cmake)
 
+# add dependencies
 add_subdirectory(dep)
+
+# add core sources
 add_subdirectory(src)
-add_subdirectory(sql)
-add_subdirectory(contrib)

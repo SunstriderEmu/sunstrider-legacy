@@ -37,7 +37,7 @@ void SummonList::DespawnEntry(uint32 entry)
 {
     for(auto itr = begin(); itr != end();)
     {
-        if(Creature *summon = Unit::GetCreature(*m_creature, *itr))
+        if(Creature *summon = ObjectAccessor::GetCreature(*m_creature, *itr))
         {
             if(summon->GetEntry() == entry)
             {
@@ -56,7 +56,7 @@ void SummonList::DespawnAll(bool withoutWorldBoss)
 {
     for(iterator i = begin(); i != end(); ++i)
     {
-        if(Creature *summon = Unit::GetCreature(*m_creature, *i))
+        if(Creature *summon = ObjectAccessor::GetCreature(*m_creature, *i))
         {
             if (withoutWorldBoss && summon->IsWorldBoss())
                 continue;
@@ -266,13 +266,13 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget target, uint32 position)
     {
         case SELECT_TARGET_RANDOM:
             advance(i, position + (rand()%(m_threatlist.size() - position)));
-            return Unit::GetUnit((*me), (*i)->getUnitGuid());
+            return ObjectAccessor::GetUnit((*me), (*i)->getUnitGuid());
         case SELECT_TARGET_TOPAGGRO:
             advance(i, position);
-            return Unit::GetUnit((*me), (*i)->getUnitGuid());
+            return ObjectAccessor::GetUnit((*me), (*i)->getUnitGuid());
         case SELECT_TARGET_BOTTOMAGGRO:
             advance(r, position);
-            return Unit::GetUnit((*me),(*r)->getUnitGuid());
+            return ObjectAccessor::GetUnit((*me),(*r)->getUnitGuid());
         default:
             break;
     }
@@ -373,7 +373,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
         std::list<HostileReference*>::iterator itr = m_threatlist.begin();
         for(; itr!= m_threatlist.end(); ++itr)
         {
-            Unit *target = Unit::GetUnit(*m_creature, (*itr)->getUnitGuid());
+            Unit *target = ObjectAccessor::GetUnit(*m_creature, (*itr)->getUnitGuid());
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || target->GetTransForm() == FORM_SPIRITOFREDEMPTION
@@ -422,7 +422,7 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
                     advance(i, position + rand()%(m_threatlist.size() - position));
             }
 
-            target = Unit::GetUnit(*m_creature,(*i)->getUnitGuid());
+            target = ObjectAccessor::GetUnit(*m_creature,(*i)->getUnitGuid());
             if(!target
                 || playerOnly && target->GetTypeId() != TYPEID_PLAYER
                 || target->GetTransForm() == FORM_SPIRITOFREDEMPTION
@@ -453,7 +453,7 @@ Unit* ScriptedAI::SelectUnit( uint32 position, float distNear, float distFar, bo
         i = m_threatlist.begin();
         advance(i, position + rand()%(m_threatlist.size() - position));
  
-        target = Unit::GetUnit(*m_creature,(*i)->getUnitGuid());
+        target = ObjectAccessor::GetUnit(*m_creature,(*i)->getUnitGuid());
         if(!target
             || !target->IsAlive()
             || playerOnly && target->GetTypeId() != TYPEID_PLAYER
@@ -761,7 +761,7 @@ void ScriptedAI::DoResetThreat()
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
     {
         Unit* pUnit = NULL;
-        pUnit = Unit::GetUnit((*m_creature), (*itr)->getUnitGuid());
+        pUnit = ObjectAccessor::GetUnit((*m_creature), (*itr)->getUnitGuid());
         if(pUnit && DoGetThreat(pUnit))
             DoModifyThreatPercent(pUnit, -100);
     }

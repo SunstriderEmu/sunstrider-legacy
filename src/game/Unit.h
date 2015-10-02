@@ -1716,10 +1716,6 @@ class Unit : public WorldObject
         float CalculateLevelPenalty(SpellInfo const* spellProto) const;
         void ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell * spell);
 
-        static Unit* GetUnit(WorldObject& object, uint64 guid);
-        static Player* GetPlayer(uint64 guid);
-        static Creature* GetCreature(WorldObject& object, uint64 guid);
-
         void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
         void RemoveFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }
 
@@ -1796,8 +1792,8 @@ class Unit : public WorldObject
         }
 
         uint32 GetRedirectThreatPercent() { return m_redirectThreatPercent; }
-        Unit *GetRedirectThreatTarget() { return m_misdirectionTargetGUID ? GetUnit(*this, m_misdirectionTargetGUID) : NULL; }
-        Unit *GetLastRedirectTarget() { return m_misdirectionLastTargetGUID ? GetUnit(*this, m_misdirectionLastTargetGUID) : NULL; }
+        Unit *GetRedirectThreatTarget();
+        Unit *GetLastRedirectTarget();
 
         bool IsAIEnabled, NeedChangeAI;
              
@@ -1808,7 +1804,7 @@ class Unit : public WorldObject
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
-        virtual Unit* GetSummoner() { return m_summoner ? Unit::GetUnit(*this, m_summoner) : NULL; }
+        virtual Unit* GetSummoner() const;
         uint64 GetSummonerGUID() { return m_summoner; }
         
         bool IsJustCCed() { return (m_justCCed > 0); }

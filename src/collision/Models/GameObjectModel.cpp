@@ -89,9 +89,9 @@ GameObjectModel::~GameObjectModel()
         ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->releaseModelInstance(name);
 }
 
-bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info)
+bool GameObjectModel::initialize(std::unique_ptr<GameObjectModelOwnerBase> modelOwner)
 {
-    ModelList::const_iterator it = model_list.find(info.Displayid);
+    ModelList::const_iterator it = model_list.find(modelOwner->GetDisplayId());
     if (it == model_list.end())
         return false;
 
@@ -109,15 +109,12 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
         return false;
 
     name = it->second.name;
-    //flags = VMAP::MOD_M2;
-    //adtId = 0;
-    //ID = 0;
-    iPos = Vector3(go.GetPositionX(), go.GetPositionY(), go.GetPositionZ());
-    phasemask = go.GetPhaseMask();
-    iScale = go.GetObjectScale();
+    iPos = modelOwner->GetPosition();
+    phasemask = modelOwner->GetPhaseMask();
+    iScale = modelOwner->GetScale();
     iInvScale = 1.f / iScale;
 
-    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(go.GetOrientation(), 0, 0);
+    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(modelOwner->GetOrientation(), 0, 0);
     iInvRot = iRotation.inverse();
     // transform bounding box:
     mdl_box = AABox(mdl_box.low() * iScale, mdl_box.high() * iScale);
@@ -131,22 +128,18 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     for (int i = 0; i < 8; ++i)
     {
         Vector3 pos(iBound.corner(i));
-        go.SummonCreature(1, pos.x, pos.y, pos.z, 0, TEMPSUMMON_MANUAL_DESPAWN);
+        modelOwner->DebugVisualizeCorner(pos);
     }
 #endif
 
-    owner = &go;
+    owner = std::move(modelOwner);
     return true;
 }
 
-GameObjectModel* GameObjectModel::Create(const GameObject& go)
+GameObjectModel* GameObjectModel::Create(std::unique_ptr<GameObjectModelOwnerBase> modelOwner)
 {
-    const GameObjectDisplayInfoEntry* info = sGameObjectDisplayInfoStore.LookupEntry(go.GetDisplayId());
-    if (!info)
-        return NULL;
-
     GameObjectModel* mdl = new GameObjectModel();
-    if (!mdl->initialize(go, *info))
+    if (!mdl->initialize(std::move(modelOwner)))
     {
         delete mdl;
         return NULL;
@@ -157,7 +150,7 @@ GameObjectModel* GameObjectModel::Create(const GameObject& go)
 
 bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const
 {
-    if (!(phasemask & ph_mask) || !owner->isSpawned())
+    if (!(phasemask & ph_mask) || !owner->IsSpawned())
         return false;
 
     float time = ray.intersectionTime(iBound);
@@ -177,12 +170,12 @@ bool GameObjectModel::intersectRay(const G3D::Ray& ray, float& MaxDist, bool Sto
     return hit;
 }
 
-bool GameObjectModel::Relocate(const GameObject& go)
+bool GameObjectModel::UpdatePosition()
 {
     if (!iModel)
         return false;
 
-    ModelList::const_iterator it = model_list.find(go.GetDisplayId());
+    ModelList::const_iterator it = model_list.find(owner->GetDisplayId());
     if (it == model_list.end())
         return false;
 
@@ -194,9 +187,9 @@ bool GameObjectModel::Relocate(const GameObject& go)
         return false;
     }
 
-    iPos = Vector3(go.GetPositionX(), go.GetPositionY(), go.GetPositionZ());
+    iPos = owner->GetPosition();
 
-    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(go.GetOrientation(), 0, 0);
+    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(owner->GetOrientation(), 0, 0);
     iInvRot = iRotation.inverse();
     // transform bounding box:
     mdl_box = AABox(mdl_box.low() * iScale, mdl_box.high() * iScale);
@@ -210,7 +203,7 @@ bool GameObjectModel::Relocate(const GameObject& go)
     for (int i = 0; i < 8; ++i)
     {
         Vector3 pos(iBound.corner(i));
-        go.SummonCreature(1, pos.x, pos.y, pos.z, 0, TEMPSUMMON_MANUAL_DESPAWN);
+        owner->DebugVisualizeCorner(pos);
     }
 #endif
 

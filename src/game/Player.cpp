@@ -8790,7 +8790,7 @@ void Player::SetVirtualItemSlot( uint8 i, Item* item)
     }
 }
 
-void Player::SetSheath( uint32 sheathed )
+void Player::SetSheath( SheathState sheathed )
 {
     switch (sheathed)
     {

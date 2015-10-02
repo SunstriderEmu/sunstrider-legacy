@@ -109,7 +109,7 @@ worldserver
 Detour
 collision
 format
-g3dlite
+g3dlib
 game
 irc
 scripts

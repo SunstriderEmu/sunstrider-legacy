@@ -581,7 +581,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
                 uint32 creatureentry = fields[0].GetUInt32();
 
                 uint64 packedguid = MAKE_NEW_GUID(guid, creatureentry, HIGHGUID_UNIT);
-                if (Unit *cre = Unit::GetUnit((*_player), packedguid)) {
+                if (Unit *cre = ObjectAccessor::GetUnit((*_player), packedguid)) {
                     PSendSysMessage("Creature found, you are now teleported on its current location!");
 
                     // stop flight if need

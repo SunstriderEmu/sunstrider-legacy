@@ -37,7 +37,7 @@ endif()
 
 target_link_libraries(vmap4assembler
   collision
-  g3dlite
+  g3dlib
   ${ZLIB_LIBRARIES}
 )
 

@@ -19,7 +19,6 @@
 #define SocketMgr_h__
 
 #include "AsyncAcceptor.h"
-#include "config.h"
 #include "Errors.h"
 #include "NetworkThread.h"
 #include <boost/asio/ip/tcp.hpp>
