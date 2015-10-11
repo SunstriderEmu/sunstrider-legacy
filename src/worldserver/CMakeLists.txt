@@ -35,7 +35,7 @@ endif()
 
 INCLUDE_DIRECTORIES(  
     ${CMAKE_BINARY_DIR}
-	${CMAKE_SOURCE_DIR}/dep/cppformat
+    ${CMAKE_SOURCE_DIR}/dep/cppformat
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_SOURCE_DIR}/dep/gsoap
     ${CMAKE_SOURCE_DIR}/dep/include
@@ -100,7 +100,8 @@ endif()
 SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 IF (UNIX)
-    SET(UNIX_LIBS gomp malloc ${CMAKE_INSTALL_RPATH}/libircclient.so)
+    #this should be changed, see comments is CMakeLists from irc project
+    SET(UNIX_LIBS gomp malloc ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
 ENDIF()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)

@@ -1297,7 +1297,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if(roll_chance_i(i->second))
             {
-                caster->CastSpell(unit, i->first, true,NULL,NULL,NULL,true);
+                caster->CastSpell(unit, i->first, true, NULL, NULL, 0, true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (i->first->GetDuration() == -1)

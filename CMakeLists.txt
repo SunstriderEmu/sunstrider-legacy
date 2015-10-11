@@ -10,6 +10,9 @@ endif(POLICY CMP0043)
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
+#install sunstrider compiled libraries to this directory
+set(SUNLIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
+
 # Set RPATH-handing (CMake parameters)
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
@@ -23,6 +26,7 @@ include(CheckIncludeFiles)
 include(CheckPlatform)
 include(PlatformRelatedSettings)
 
+include(FindThreads)
 include(FindMySql)
 include(FindReadline)
 include(ConfigureBoost)

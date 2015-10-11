@@ -21,6 +21,7 @@
 
 #include "Creature.h"
 #include "SharedDefines.h"
+#include "GridNotifiers.h"
 
 enum CreatureTextRange
 {

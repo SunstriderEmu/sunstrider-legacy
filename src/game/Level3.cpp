@@ -8428,7 +8428,7 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
     if(!data)
     {
         //PSendSysMessage("Creature avec le guid %u introuvable.",creatureGUID);
-        PSendSysMessage("Creature with guid " UI64FMTD " not found.",creatureGUID);
+        PSendSysMessage("Creature with guid %u not found.",creatureGUID);
         return true;
     } 
 

@@ -18472,7 +18472,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
     Creature *pCreature = GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!pCreature)
     {
-        TC_LOG_DEBUG("network", "WORLD: BuyItemFromVendor - %u not found or you can't interact with him.", vendorguid);
+        TC_LOG_DEBUG("network", "WORLD: BuyItemFromVendor - " UI64FMTD " not found or you can't interact with him.", vendorguid);
         SendBuyError( BUY_ERR_DISTANCE_TOO_FAR, NULL, item, 0);
         return false;
     }

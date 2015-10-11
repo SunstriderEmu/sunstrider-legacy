@@ -556,8 +556,8 @@ void MotionMaster::MoveSuspiciousLook(Unit const* target, uint32 timer)
     if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
-    TC_LOG_DEBUG("misc", "Creature (Entry: %u GUID: %u) almost detected target %u (timer: %u)",
-        _owner->GetEntry(), _owner->GetGUIDLow(), target->GetGUID(), timer);
+    TC_LOG_DEBUG("misc", "Creature (Entry: %u GUID: " UI64FMTD ") almost detected target " UI64FMTD " (timer: %u)",
+        _owner->GetEntry(), _owner->GetGUID(), target->GetGUID(), timer);
 
     Mutate(new SuspiciousLookMovementGenerator(_owner, target, timer), MOTION_SLOT_ACTIVE);
 }

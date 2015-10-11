@@ -13,7 +13,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/include
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-  ${CMAKE_SOURCE_DIR}/dep/src/g3dlite/
   ${CMAKE_SOURCE_DIR}/src/framework
   ${CMAKE_SOURCE_DIR}/src/framework/Platform
   ${CMAKE_SOURCE_DIR}/src/game
@@ -30,11 +29,6 @@ include_directories(
 )
 
 add_executable(vmap4assembler VMapAssembler.cpp)
-
-if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-  set_target_properties(vmap4assembler PROPERTIES LINK_FLAGS "-framework Carbon")
-endif()
-
 target_link_libraries(vmap4assembler
   collision
   g3dlib

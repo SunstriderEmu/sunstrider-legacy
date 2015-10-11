@@ -29,15 +29,18 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
 )
 
-#custom libircclient project, probably still a bit dirty (read: if you can make it cleaner do it)
+#custom libircclient project, still a bit dirty (read: if you can make it cleaner do it)
 IF ( UNIX )
 ExternalProject_Add(libircclient
-    SOURCE_DIR ${CMAKE_SOURCE_DIR}/dep/libircclient
-    INSTALL_DIR ${CMAKE_INSTALL_RPATH}
+    SOURCE_DIR ${CMAKE_BINARY_DIR}
+    INSTALL_DIR ${SUNLIBDIR}
     CONFIGURE_COMMAND 
-    #set prefix to any folder (we don't use any of these), and libdir to CMAKE_INSTALL_RPATH. This variable is defined in the root CMake file and is where the project lib are installed, and where the linker will look for it (defined in worldserver cmake).
-        cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR} && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} 
-        --libdir=${CMAKE_INSTALL_RPATH} --enable-openssl --enable-shared
+    #This lib is only linked by worldserver.
+    #problem is: before the install step, the library isn't there (it's in build/libircclient/src) and worldserver can't link it. 
+    #so actually the worldserver links it in its build folder. FIXME.
+    cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR}
+      && chmod 700 ${CMAKE_BINARY_DIR}/libircclient/configure
+      && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} --libdir=${SUNLIBDIR} --enable-openssl --enable-shared
     BINARY_DIR ${CMAKE_BINARY_DIR}/libircclient
     BUILD_COMMAND ${MAKE}) 
     #todo custom clean
@@ -63,7 +66,7 @@ ENDIF()
 target_link_libraries(
     irc
     ${MYSQL_LIBRARY}
-	#the next one contains nothing on linux
+    #the next one contains nothing on linux
     ${LIBIRCCLIENT_LIB_WIN}
     ${Boost_LIBRARIES}
 )

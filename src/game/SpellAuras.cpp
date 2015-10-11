@@ -3278,7 +3278,7 @@ void Aura::HandleFarSight(bool apply, bool Real)
     if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    (caster->ToPlayer())->SetFarSight(apply ? m_target->GetGUID() : NULL);
+    (caster->ToPlayer())->SetFarSight(apply ? m_target->GetGUID() : 0);
 }
 
 void Aura::HandleAuraTrackCreatures(bool apply, bool Real)
