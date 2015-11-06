@@ -1703,6 +1703,12 @@ enum CreatureFamily
 enum CreatureTypeFlags
 {
     CREATURE_TYPEFLAGS_TAMEABLE       = 0x0001,
+    CREATURE_TYPEFLAGS_GHOST          = 0x0002,
+    CREATURE_TYPEFLAGS_BOSS           = 0x0004,
+    CREATURE_TYPEFLAGS_UNK3           = 0x0008,
+    CREATURE_TYPEFLAGS_UNK4           = 0x0010,
+    CREATURE_TYPEFLAGS_UNK5           = 0x0020,
+    CREATURE_TYPEFLAGS_UNK6           = 0x0040,
     CREATURE_TYPEFLAGS_DEAD_INTERACT  = 0x0080,       // Player can interact with the creature if its dead (not player dead)
     CREATURE_TYPEFLAGS_HERBLOOT       = 0x0100,       // Can be looted by herbalist
     CREATURE_TYPEFLAGS_MININGLOOT     = 0x0200,       // Can be looted by miner

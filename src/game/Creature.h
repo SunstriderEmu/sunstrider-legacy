@@ -546,7 +546,7 @@ class Creature : public Unit
             if(IsPet())
                 return false;
 
-            return GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS;
+            return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_BOSS);
         }
 
         uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
