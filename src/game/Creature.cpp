@@ -732,7 +732,9 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     Motion_Initialize();
 
-    if(i_AI) delete i_AI;
+    if(i_AI) 
+        delete i_AI;
+
     i_AI = ai ? ai : FactorySelector::selectAI(this);
     IsAIEnabled = true;     // Keep this when getting rid of old system
     i_AI->InitializeAI();
@@ -740,6 +742,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     // New system
     if (m_AI)
         delete m_AI;
+
     m_AI = sScriptMgr->getAINew(this);
     if (getAI())
         m_AI->initialize();

@@ -13,7 +13,6 @@
 #include "GridNotifiers.h"
 
 #include "SmartScriptMgr.h"
-//#include "SmartAI.h"
 
 class SmartScript
 {
@@ -103,10 +102,10 @@ class SmartScript
         bool IsSmart(Creature* c = nullptr)
         {
             bool smart = true;
-            if (c && c->GetAIName() != "SmartAI")
+            if (c && c->GetAIName() != SMARTAI_AI_NAME)
                 smart = false;
 
-            if (!me || me->GetAIName() != "SmartAI")
+            if (!me || me->GetAIName() != SMARTAI_AI_NAME)
                 smart = false;
 
             if (!smart)

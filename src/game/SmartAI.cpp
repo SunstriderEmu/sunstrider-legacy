@@ -513,7 +513,7 @@ void SmartAI::JustRespawned()
 
 int SmartAI::Permissible(const Creature* creature)
 {
-    if (creature->GetAIName() == "SmartAI")
+    if (creature->GetAIName() == SMARTAI_AI_NAME)
         return PERMIT_BASE_SPECIAL;
     return PERMIT_BASE_NO;
 }

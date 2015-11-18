@@ -554,6 +554,8 @@ class Creature : public Unit
         bool isMoving();
         bool IsInEvadeMode() const;
 
+        //remove previous AI, reselect a new one and initilalize it. Also reset movement.
+        //@ai assign this AI
         bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 

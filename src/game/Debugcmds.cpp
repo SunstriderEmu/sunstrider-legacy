@@ -914,7 +914,7 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     SendSysMessage("SmartAI infos :");
     if(target)
     {
-        if(target->GetAIName() == "SmartAI")
+        if(target->GetAIName() == SMARTAI_AI_NAME)
         {
             if(SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript())
             {

@@ -348,7 +348,7 @@ ChatCommand * ChatHandler::getCommandTable()
         { "skill_extra_item_template",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSkillExtraItemTemplateCommand,  "", NULL },
         { "skill_fishing_base_level",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSkillFishingBaseLevelCommand,   "", NULL },
         { "skinning_loot_template",      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesSkinningCommand,   "", NULL },
-        { "smart_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartAI,                        "", NULL },
+        { "smart_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartAICommand,                 "", NULL },
         { "spell_affect",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellAffectCommand,             "", NULL },
         { "spell_disabled",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellDisabledCommand,           "", NULL },
         { "spell_elixir",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellElixirCommand,             "", NULL },

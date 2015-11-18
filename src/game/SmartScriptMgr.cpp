@@ -165,7 +165,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
                         continue;
                     }
 
-                    if (creatureInfo->AIName != "SmartAI")
+                    if (creatureInfo->AIName != SMARTAI_AI_NAME)
                     {
                         SMARTAI_DB_ERROR(temp.entryOrGuid, "SmartAIMgr::LoadSmartAIFromDB: Creature entry (%u) is not using SmartAI, skipped loading.", uint32(temp.entryOrGuid));
                         continue;
@@ -1148,4 +1148,16 @@ CacheSpellContainerBounds SmartAIMgr::GetSummonGameObjectSpellContainerBounds(ui
 CacheSpellContainerBounds SmartAIMgr::GetKillCreditSpellContainerBounds(uint32 killCredit) const
 {
     return KillCreditSpellStore.equal_range(killCredit);
+}
+
+void SmartAIMgr::ReloadCreaturesScripts(bool forceAll)
+{
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+    auto creatures = sObjectAccessor->GetCreatures();
+    for (auto pair : creatures)
+    {
+        Creature* c = pair.second;
+        if(c->GetAIName() == SMARTAI_AI_NAME)
+            c->AIM_Initialize();
+    }
 }

@@ -47,10 +47,8 @@
 #include "IRCMgr.h"
 
 #ifdef PLAYERBOT
-
 #include "playerbot.h"
 #include "PlayerbotAIConfig.h"
-
 #endif
 
 class LoginQueryHolder : public SQLQueryHolder

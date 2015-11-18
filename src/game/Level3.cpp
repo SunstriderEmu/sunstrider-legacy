@@ -7640,6 +7640,7 @@ bool ChatHandler::HandleUnbindSightCommand(const char* args)
     m_session->GetPlayer()->StopCastingBindSight();
     return true;
 }
+
 bool ChatHandler::HandleZoneBuffCommand(const char* args)
 {
     ARGS_CHECK
@@ -8105,11 +8106,25 @@ bool ChatHandler::HandleReloadConditions(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleReloadSmartAI(const char* /*args*/)
+/* Usage: .reload smart_scripts [reload existing creatures]
+[reload existing creatures] default to false
+*/
+bool ChatHandler::HandleReloadSmartAICommand(const char* args)
 {
-    TC_LOG_INFO("command","Re-Loading SmartAI Scripts...");
+    bool reloadExistingCreatures = false;
+    char* cReloadExistingCreatures = strtok((char*)args, "");
+    if (cReloadExistingCreatures)
+        reloadExistingCreatures = bool(atoi(cReloadExistingCreatures));
+
+    TC_LOG_INFO("command","Re-Loading SmartAI Scripts... with reloadExistingCreatures = %u", uint32(reloadExistingCreatures));
     sSmartScriptMgr->LoadSmartAIFromDB();
     SendGlobalGMSysMessage("SmartAI Scripts reloaded.");
+
+    if (reloadExistingCreatures)
+    {
+        sSmartScriptMgr->ReloadCreaturesScripts();
+        SendGlobalGMSysMessage("Reloaded SmartAI scripts from existing creatures. /!\\ This is an experimental feature.");
+    }
     return true;
 }
 

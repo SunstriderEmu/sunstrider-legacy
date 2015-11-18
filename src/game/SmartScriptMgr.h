@@ -11,8 +11,7 @@
 #include "CreatureTextMgr.h"
 #include "Spell.h"
 
-//#include "SmartScript.h"
-//#include "SmartAI.h"
+#define SMARTAI_AI_NAME "SmartAI"
 
 struct WayPoint
 {
@@ -1558,6 +1557,11 @@ class SmartAIMgr
 
         //SmartAI db errors are logged in these map to allow easy access to those later ingame via command (at the time of writing this : .debug smartaierrors)
         void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
+
+        //DEV SERVER USE ONLY
+        //Reload every creature SmartAI scripts. This may cause a server freeze while executing. This will also probably cause memory leaks.
+        //NYI @forceAll Reload all smartAI scripts instead of the one that changed
+        void ReloadCreaturesScripts(bool forceAll = false);
     private:
         //event stores
         SmartAIEventMap mEventMap[SMART_SCRIPT_TYPE_MAX];

@@ -54,7 +54,7 @@ namespace AIRegistry
         (new CreatureAIFactory<PossessedAI>("PossessedAI"))->RegisterSelf();
         (new CreatureAIFactory<AOEAI>("AOEAI"))->RegisterSelf();
         (new CreatureAIFactory<ArcherAI>("ArcherAI"))->RegisterSelf();
-        (new CreatureAIFactory<SmartAI>("SmartAI"))->RegisterSelf();
+        (new CreatureAIFactory<SmartAI>(SMARTAI_AI_NAME))->RegisterSelf();
         
         (new GameObjectAIFactory<GameObjectAI>("GameObjectAI"))->RegisterSelf();
         (new GameObjectAIFactory<SmartGameObjectAI>("SmartGameObjectAI"))->RegisterSelf();
