@@ -233,8 +233,8 @@ class Quest
 
         // multiple values
         std::string ObjectiveText[QUEST_OBJECTIVES_COUNT];
-        uint32 RequiredItemId[QUEST_OBJECTIVES_COUNT];
-        uint32 RequiredItemCount[QUEST_OBJECTIVES_COUNT];
+        uint32 RequiredItemId[QUEST_OBJECTIVES_COUNT]; //TODO LK, 6 items here
+        uint32 RequiredItemCount[QUEST_OBJECTIVES_COUNT]; //TODO LK, 6 items here
         uint32 RequiredSourceItemId[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 RequiredSourceItemCount[QUEST_SOURCE_ITEM_IDS_COUNT];
         uint32 ReqSourceRef[QUEST_SOURCE_ITEM_IDS_COUNT];

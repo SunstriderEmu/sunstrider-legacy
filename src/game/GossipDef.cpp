@@ -888,7 +888,11 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGUID, 
     data << uint32(quest->GetRewOrReqMoney() < 0 ? -quest->GetRewOrReqMoney() : 0);
 
     data << uint32(quest->GetReqItemsCount());
+#ifdef LICH_KING
     for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+#else
+    for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+#endif
     {
         if (!quest->RequiredItemId[i])
             continue;
