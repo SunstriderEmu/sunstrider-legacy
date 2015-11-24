@@ -474,7 +474,7 @@ enum SMART_ACTION
     SMART_ACTION_SET_IN_COMBAT_WITH_ZONE            = 38,     // No Params
     SMART_ACTION_CALL_FOR_HELP                      = 39,     // Radius, With Emote
     SMART_ACTION_SET_SHEATH                         = 40,     // Sheath (0-unarmed, 1-melee, 2-ranged)
-    SMART_ACTION_FORCE_DESPAWN                      = 41,     // timer
+    SMART_ACTION_FORCE_DESPAWN                      = 41,     // timer. Target creatures must have SmartAI. No such restrictions on target gobjects.
     SMART_ACTION_SET_INVINCIBILITY_HP_LEVEL         = 42,     // MinHpValue(+pct, -flat)
     SMART_ACTION_MOUNT_TO_ENTRY_OR_MODEL            = 43,     // Creature_template entry(param1) OR ModelId (param2) (or 0 for both to dismount)
     SMART_ACTION_SET_INGAME_PHASE_MASK              = 44,     // mask

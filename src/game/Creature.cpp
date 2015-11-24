@@ -456,6 +456,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_SPELL_SLOW)
         ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_HASTE_SPELLS, true);
 
+    //TrinityCore has this LoadCreatureAddon();
     UpdateMovementFlags();
     return true;
 }
