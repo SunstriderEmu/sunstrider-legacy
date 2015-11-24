@@ -24,7 +24,6 @@
 
 #include "Define.h"
 #include "Policies/Singleton.h"
-#include "zthread/Mutex.h"
 #include <list>
 #include <map>
 #include "Database/DatabaseEnv.h"
