@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -72,11 +72,11 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
         axis = d.primaryAxis();
         split = 0.5f * (gridBox.lo[axis] + gridBox.hi[axis]);
         // partition L/R subsets
-        clipL = -G3D::inf();
-        clipR = G3D::inf();
+        clipL = -G3D::finf();
+        clipR = G3D::finf();
         rightOrig = right; // save this for later
-        float nodeL = G3D::inf();
-        float nodeR = -G3D::inf();
+        float nodeL = G3D::finf();
+        float nodeR = -G3D::finf();
         for (int i = left; i <= right;)
         {
             int obj = dat.indices[i];
@@ -187,13 +187,13 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
                     stats.updateInner();
                     tempTree[nodeIndex + 0] = (prevAxis << 30) | nextIndex;
                     tempTree[nodeIndex + 1] = floatToRawIntBits(prevClip);
-                    tempTree[nodeIndex + 2] = floatToRawIntBits(G3D::inf());
+                    tempTree[nodeIndex + 2] = floatToRawIntBits(G3D::finf());
                 } else {
                     // create a node with a right child
                     // write leaf node
                     stats.updateInner();
                     tempTree[nodeIndex + 0] = (prevAxis << 30) | (nextIndex - 3);
-                    tempTree[nodeIndex + 1] = floatToRawIntBits(-G3D::inf());
+                    tempTree[nodeIndex + 1] = floatToRawIntBits(-G3D::finf());
                     tempTree[nodeIndex + 2] = floatToRawIntBits(prevClip);
                 }
                 // count stats for the unused leaf

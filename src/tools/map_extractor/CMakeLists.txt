@@ -12,10 +12,13 @@
 file(GLOB_RECURSE sources *.cpp *.h)
  
 set(include_Dirs
-    ${CMAKE_SOURCE_DIR}/src/server/shared
-    ${CMAKE_SOURCE_DIR}/dep/libmpq
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/dep/libmpq
     ${CMAKE_CURRENT_SOURCE_DIR}/loadlib
+    ${CMAKE_SOURCE_DIR}/src/shared
+	${CMAKE_SOURCE_DIR}/src/shared/Utilities
+	${CMAKE_SOURCE_DIR}/src/framework/Platform
+	${CMAKE_SOURCE_DIR}/dep/cppformat
 )
 
 if( WIN32 )
@@ -32,9 +35,12 @@ add_executable(mapextractor
 )
 
 target_link_libraries(mapextractor
+  shared
+  format
   mpq
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}
+  ${Boost_LIBRARIES}
 )
 
 if( UNIX )
