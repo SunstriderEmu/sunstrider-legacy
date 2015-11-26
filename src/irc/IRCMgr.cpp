@@ -494,7 +494,7 @@ void IRCMgr::onReportSpam(std::string const& spammerName, uint32 spammerGUID)
         irc_cmd_msg(((IRCServer*)(*itr)->server)->session, (*itr)->name.c_str(), msg.str().c_str());
 }
 
-void IRCHandler::SendSysMessage(const char *str)
+void IRCHandler::SendSysMessage(const char *str, bool /* escapeCharacters */)
 {
     if(ircSession && channel)
     {

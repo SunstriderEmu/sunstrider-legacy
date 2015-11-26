@@ -60,11 +60,6 @@ class ChatHandler
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message, uint32 achievementId = 0, std::string const& channelName = "", LocaleConstant locale = DEFAULT_LOCALE);
 
-        void FillSystemMessageData( WorldPacket *data, const char* message )
-        {
-            BuildChatPacket(*data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, message);
-        }
-
         static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
         
         // function with different implementation for chat/console
@@ -74,12 +69,22 @@ class ChatHandler
         virtual bool isAvailable(ChatCommand const& cmd) const;
         virtual bool needReportToTarget(Player* chr) const;
 
-        virtual const char *GetTrinityString(int32 entry) const;
+        virtual const char* GetTrinityString(int32 entry) const;
+        std::string GetTrinityStringVA(int32 entry, ...) const;
 
-        virtual void SendSysMessage(  const char *str);
-        void SendSysMessage(          int32     entry);
-        void PSendSysMessage(         const char *format, ...) ATTR_PRINTF(2,3);
-        void PSendSysMessage(         int32     entry, ...  );
+        virtual void SendSysMessage(char const* str, bool escapeCharacters = false);
+        void SendSysMessage(int32 entry);
+        
+        template<typename... Args>
+        void PSendSysMessage(const char* fmt, Args&&... args)
+        {
+            SendSysMessage(Trinity::StringFormat(fmt, std::forward<Args>(args)...).c_str());
+        }
+        template<typename... Args>
+        void PSendSysMessage(uint32 entry, Args&&... args)
+        {
+            SendSysMessage(PGetParseString(entry, std::forward<Args>(args)...).c_str());
+        }
         std::string PGetParseString(int32 entry, ...);
 
         int ParseCommands(const char* text);
@@ -678,7 +683,7 @@ class CliHandler : public ChatHandler
         const char *GetTrinityString(int32 entry) const override;
         bool isAvailable(ChatCommand const& cmd) const override;
         bool HasPermission(uint32 /*permission*/) const override { return true; }
-        void SendSysMessage(const char *str) override;
+        void SendSysMessage(const char *str, bool escapeCharacters = false) override;
         std::string GetNameLink() const override;
         bool needReportToTarget(Player* chr) const override;
         LocaleConstant GetSessionDbcLocale() const override;

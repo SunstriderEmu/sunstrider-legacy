@@ -86,7 +86,7 @@ namespace Trinity
             {
                 char const* text = sObjectMgr->GetTrinityString(_textId,locale);
 
-                ChatHandler::BuildChatPacket(*data, _msgType, _lang, _source, _target, text, 0, "", locale);
+                return ChatHandler::BuildChatPacket(*data, _msgType, _lang, _source, _target, text, 0, "", locale);
             }
 
         private:

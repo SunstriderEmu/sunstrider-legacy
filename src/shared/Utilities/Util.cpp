@@ -26,6 +26,12 @@
 #include <boost/thread/tss.hpp>
 #include <cstdarg>
 
+#if COMPILER == COMPILER_GNU
+  #include <sys/socket.h>
+  #include <netinet/in.h>
+  #include <arpa/inet.h>
+#endif
+
 static boost::thread_specific_ptr<SFMTRand> sfmtRand;
 
 static SFMTRand* GetRng()

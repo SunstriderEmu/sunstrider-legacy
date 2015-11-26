@@ -333,6 +333,8 @@ bool IsSingleTargetSpell(SpellInfo const *spellInfo)
     {
         case SPELL_JUDGEMENT:
             return true;
+        default:
+            break;
     }
 
     // single target triggered spell.
@@ -361,6 +363,8 @@ bool IsSingleTargetSpells(SpellInfo const *spellInfo1, SpellInfo const *spellInf
         case SPELL_MAGE_POLYMORPH:
             if(spellInfo2->GetSpellSpecific() == spec1)
                 return true;
+            break;
+        default:
             break;
     }
 
@@ -534,9 +538,9 @@ void SpellMgr::LoadSpellAffects()
         }
 
         if( spellInfo->Effects[effectId].Effect != SPELL_EFFECT_APPLY_AURA ||
-            spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_FLAT_MODIFIER &&
+            (spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_FLAT_MODIFIER &&
             spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_PCT_MODIFIER  &&
-            spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_TARGET_TRIGGER )
+            spellInfo->Effects[effectId].ApplyAuraName != SPELL_AURA_ADD_TARGET_TRIGGER) )
         {
             TC_LOG_ERROR("server.loading","Spell %u listed in `spell_affect` have not SPELL_AURA_ADD_FLAT_MODIFIER (%u) or SPELL_AURA_ADD_PCT_MODIFIER (%u) or SPELL_AURA_ADD_TARGET_TRIGGER (%u) for effect index (%u)", entry,SPELL_AURA_ADD_FLAT_MODIFIER,SPELL_AURA_ADD_PCT_MODIFIER,SPELL_AURA_ADD_TARGET_TRIGGER,effectId);
             continue;
@@ -1239,14 +1243,15 @@ struct SpellRankEntry
 
     bool operator()(const SpellRankEntry & _Left,const SpellRankEntry & _Right)const
     {
+        //behold the most ugly ternary operator ever
         return (_Left.SkillId != _Right.SkillId ? _Left.SkillId < _Right.SkillId
             : (strcmp(_Left.SpellName, _Right.SpellName) != 0) ? ((strcmp(_Left.SpellName, _Right.SpellName) < 0) ? true : false)
-            : _Left.ProcFlags!=_Right.ProcFlags ? _Left.ProcFlags < _Right.ProcFlags
-            : _Left.SpellFamilyFlags!=_Right.SpellFamilyFlags ? _Left.SpellFamilyFlags < _Right.SpellFamilyFlags
-            : (_Left.SpellVisual!=_Right.SpellVisual) && (!_Left.SpellVisual || !_Right.SpellVisual) ? _Left.SpellVisual < _Right.SpellVisual
-            : (_Left.ManaCost!=_Right.ManaCost) && (!_Left.ManaCost || !_Right.ManaCost) ? _Left.ManaCost < _Right.ManaCost
-            : (_Left.DurationIndex!=_Right.DurationIndex) && (!_Left.DurationIndex || !_Right.DurationIndex)? _Left.DurationIndex < _Right.DurationIndex
-            : (_Left.RangeIndex!=_Right.RangeIndex) && (!_Left.RangeIndex || !_Right.RangeIndex || _Left.RangeIndex==1 || !_Right.RangeIndex==1) ? _Left.RangeIndex < _Right.RangeIndex
+            : _Left.ProcFlags != _Right.ProcFlags ? _Left.ProcFlags < _Right.ProcFlags
+            : _Left.SpellFamilyFlags != _Right.SpellFamilyFlags ? _Left.SpellFamilyFlags < _Right.SpellFamilyFlags
+            : (_Left.SpellVisual != _Right.SpellVisual) && (!_Left.SpellVisual || !_Right.SpellVisual) ? _Left.SpellVisual < _Right.SpellVisual
+            : (_Left.ManaCost != _Right.ManaCost) && (!_Left.ManaCost || !_Right.ManaCost) ? _Left.ManaCost < _Right.ManaCost
+            : (_Left.DurationIndex != _Right.DurationIndex) && (!_Left.DurationIndex || !_Right.DurationIndex)? _Left.DurationIndex < _Right.DurationIndex
+            : (_Left.RangeIndex != _Right.RangeIndex) && (!_Left.RangeIndex || !_Right.RangeIndex || _Left.RangeIndex == 1 || (!_Right.RangeIndex) == 1) ? _Left.RangeIndex < _Right.RangeIndex
             : _Left.TargetAuraState < _Right.TargetAuraState
             );
     }
@@ -1281,7 +1286,7 @@ void SpellMgr::LoadSpellChains()
         ChainedSpells.push_back(AbilityInfo->forward_spellid);
     }
 
-    std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry> RankMap;
+    std::multimap<SpellRankEntry, SpellRankValue, SpellRankEntry> RankMap;
 
     for (uint32 ability_id=0;ability_id<sSkillLineAbilityStore.GetNumRows();ability_id++)
     {
@@ -1312,18 +1317,20 @@ void SpellMgr::LoadSpellChains()
         std::string sRank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
         if(sRank.empty())
             continue;
+        
         //exception to polymorph spells-make pig and turtle other chain than sheep
         if ((SpellInfo->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellInfo->SpellFamilyFlags & 0x1000000) && (SpellInfo->SpellIconID!=82))
             continue;
             
-        switch (SpellInfo->Id) {
-        case 13819:
-        case 34769:
-        case 25046:
-        case 28730:
-            continue;
-        default:
-            break;
+        switch (SpellInfo->Id) 
+        {
+            case 13819:
+            case 34769:
+            case 25046:
+            case 28730:
+                continue;
+            default:
+                break;
         }
 
         SpellRankEntry entry;
@@ -1340,12 +1347,12 @@ void SpellMgr::LoadSpellChains()
 
         for (;;)
         {
-            AbilityInfo=mSkillLineAbilityMap.lower_bound(spell_id)->second;
-            value.Id=spell_id;
-            value.Rank=SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
+            AbilityInfo = mSkillLineAbilityMap.lower_bound(spell_id)->second;
+            value.Id = spell_id;
+            value.Rank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
             RankMap.insert(std::pair<SpellRankEntry, SpellRankValue>(entry,value));
             spell_id=AbilityInfo->forward_spellid;
-            SpellInfo=sSpellMgr->GetSpellInfo(spell_id);
+            SpellInfo = sSpellMgr->GetSpellInfo(spell_id);
             if (!SpellInfo)
                 break;
         }
@@ -1355,7 +1362,7 @@ void SpellMgr::LoadSpellChains()
 
     for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr = RankMap.begin();itr!=RankMap.end();)
     {
-        SpellRankEntry entry=itr->first;
+        SpellRankEntry entry = itr->first;
         //trac errors in extracted data
         std::multimap<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator> RankErrorMap;
         for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)

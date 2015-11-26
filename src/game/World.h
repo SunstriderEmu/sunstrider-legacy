@@ -781,7 +781,7 @@ class World
         std::string m_newCharString;
 
         float rate_values[MAX_RATES];
-        uint32 m_configs[CONFIG_VALUE_COUNT];
+        int32 m_configs[CONFIG_VALUE_COUNT];
         int32 m_playerLimit;
         AccountTypes m_allowedSecurityLevel;
         LocaleConstant m_defaultDbcLocale;                     // from config for one from loaded DBC locales

@@ -553,6 +553,8 @@ void GameObject::Update(uint32 diff)
                         }
                     }
                     break;
+                default:
+                    break;
             }// m_despawnTime ?
             break;
         }

@@ -3692,8 +3692,8 @@ void ObjectMgr::LoadQuests()
                     bool found = false;
                     for(int k = 0; k < 3; ++k)
                     {
-                        if( spellInfo->Effects[k].Effect==SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->Effects[k].MiscValue)==qinfo->QuestId ||
-                            spellInfo->Effects[k].Effect==SPELL_EFFECT_SEND_EVENT)
+                        if( (spellInfo->Effects[k].Effect==SPELL_EFFECT_QUEST_COMPLETE && uint32(spellInfo->Effects[k].MiscValue)==qinfo->QuestId)
+                                || spellInfo->Effects[k].Effect==SPELL_EFFECT_SEND_EVENT)
                         {
                             found = true;
                             break;
@@ -5243,7 +5243,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
         {
             // if find graveyard at different map from where entrance placed (or no entrance data), use any first
             if (!mapEntry || mapEntry->entrance_map < 0 || mapEntry->entrance_map != entry->map_id ||
-                mapEntry->entrance_x == 0 && mapEntry->entrance_y == 0)
+                ((mapEntry->entrance_x == 0) && (mapEntry->entrance_y == 0)))
             {
                 // not have any corrdinates for check distance anyway
                 entryFar = entry;
@@ -7281,6 +7281,9 @@ bool PlayerCondition::IsValid(OldConditionType condition, uint32 value1, uint32 
         }
         case CONDITION_OLD_INSTANCE_DATA:
             //TODO: need some check
+            break;
+        default:
+            return true;
             break;
     }
     return true;

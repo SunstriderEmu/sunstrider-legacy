@@ -57,7 +57,7 @@ bool Player::UpdateStats(Stats stat)
         case STAT_AGILITY:
             UpdateArmor();
             UpdateAttackPowerAndDamage(true);
-            if(GetClass() == CLASS_ROGUE || GetClass() == CLASS_HUNTER || GetClass() == CLASS_DRUID && m_form==FORM_CAT)
+            if(GetClass() == CLASS_ROGUE || GetClass() == CLASS_HUNTER || (GetClass() == CLASS_DRUID && m_form == FORM_CAT))
                 UpdateAttackPowerAndDamage();
 
             UpdateAllCritPercentages();
@@ -925,7 +925,7 @@ void Pet::UpdateResistances(uint32 school)
 
         Unit *owner = GetOwner();
         // hunter and warlock pets gain 40% of owner's resistance
-        if(owner && (getPetType() == HUNTER_PET || getPetType() == SUMMON_PET && owner->GetClass() == CLASS_WARLOCK))
+        if(owner && (getPetType() == HUNTER_PET || (getPetType() == SUMMON_PET && owner->GetClass() == CLASS_WARLOCK)))
             value += float(CalculatePct(owner->GetResistance(SpellSchools(school)), 40));
 
         SetResistance(SpellSchools(school), int32(value));
@@ -942,7 +942,7 @@ void Pet::UpdateArmor()
 
     Unit *owner = GetOwner();
     // hunter and warlock pets gain 35% of owner's armor value
-    if(owner && (getPetType() == HUNTER_PET || getPetType() == SUMMON_PET && owner->GetClass() == CLASS_WARLOCK))
+    if(owner && (getPetType() == HUNTER_PET || (getPetType() == SUMMON_PET && owner->GetClass() == CLASS_WARLOCK)))
         bonus_armor = 0.35f * float(owner->GetArmor());
 
     value  = GetModifierValue(unitMod, BASE_VALUE);

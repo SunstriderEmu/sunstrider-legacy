@@ -206,7 +206,7 @@ bool OutdoorPvPTF::Update(uint32 diff)
 {
     bool changed = false;
 
-    if(changed = OutdoorPvP::Update(diff))
+    if((changed = OutdoorPvP::Update(diff)))
     {
         if(m_AllianceTowersControlled == TF_TOWER_NUM)
         {

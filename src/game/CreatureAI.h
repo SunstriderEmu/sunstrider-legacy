@@ -218,7 +218,8 @@ enum Permitions
 
 typedef FactoryHolder<CreatureAI> CreatureAICreator;
 typedef FactoryHolder<CreatureAI>::FactoryHolderRegistry CreatureAIRegistry;
-typedef FactoryHolder<CreatureAI>::FactoryHolderRepository CreatureAIRepository;
+
+#define sCreatureAIRegistry CreatureAIRegistry::instance()
 
 //GO
 struct SelectableGameObjectAI : public FactoryHolder<GameObjectAI>, public Permissible<GameObject>
@@ -246,6 +247,8 @@ GameObjectAIFactory<REAL_GO_AI>::Create(void *data) const
 
 typedef FactoryHolder<GameObjectAI> GameObjectAICreator;
 typedef FactoryHolder<GameObjectAI>::FactoryHolderRegistry GameObjectAIRegistry;
-typedef FactoryHolder<GameObjectAI>::FactoryHolderRepository GameObjectAIRepository;
+
+#define sGameObjectAIRegistry GameObjectAIRegistry::instance()
+
 #endif
 

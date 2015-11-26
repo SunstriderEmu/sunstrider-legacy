@@ -237,27 +237,28 @@ namespace Movement
 
         //generate path from destination to next point
         const Position nextPos { nextDestination.x, nextDestination.y, nextDestination.z };
-      /*  PathGenerator nextPath(nextPos,unit->GetMapId(),unit->GetInstanceId(),path.GetOptions()); //use same options here
-        result = nextPath.CalculatePath(nextDestination.x, nextDestination.y, nextDestination.z, forceDestination);
+      //  PathGenerator nextPath(nextPos,unit->GetMapId(),unit->GetInstanceId(),path.GetOptions()); //use same options here
+        //result = nextPath.CalculatePath(nextDestination.x, nextDestination.y, nextDestination.z, forceDestination);
 
         // if failed generating second path, return to default behavior
-        if (!result || (nextPath.GetPathType() & PATHFIND_NOPATH)) 
-        {
-            MovebyPath(path.GetPath());
-            return;
-        }*/
+        //if (!result || (nextPath.GetPathType() & PATHFIND_NOPATH)) 
+       // {
+        //    MovebyPath(path.GetPath());
+        //    return;
+        //}
         //we succeeded to generate both path, lets contact those, without nextPath first point
-    /*    Movement::PointsArray newPath;
+    //    Movement::PointsArray newPath;
         //newPath.reserve(path.GetPath().size() + nextPath.GetPath().size()-1 );
-        newPath.reserve(path.GetPath().size() +1 );
-        newPath.insert(newPath.end(),path.GetPath().begin(),path.GetPath().end());
+     //   newPath.reserve(path.GetPath().size() +1 );
+     //   newPath.insert(newPath.end(),path.GetPath().begin(),path.GetPath().end());
         //newPath.insert(newPath.end(),nextPath.GetPath().begin()+1,nextPath.GetPath().end());
-        G3D::Vector3 vec { nextPos.m_positionX, nextPos.m_positionY, nextPos.m_positionZ };
-        newPath.push_back(vec);
+     //   G3D::Vector3 vec { nextPos.m_positionX, nextPos.m_positionY, nextPos.m_positionZ };
+     //   newPath.push_back(vec);
 
-        //we're good to go !
-        MovebyPath(newPath);
-    }*/
+     //   //we're good to go !
+      //  MovebyPath(newPath);
+   // }
+     * */
 
     Vector3 TransportPathTransform::operator()(Vector3 input)
     {

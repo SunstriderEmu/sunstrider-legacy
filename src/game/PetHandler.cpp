@@ -626,7 +626,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
     for(uint8 i = 0; i < 10; i++)
     {
-        if(charmInfo->GetActionBarEntry(i)->SpellOrAction && charmInfo->GetActionBarEntry(i)->Type == ACT_ENABLED || charmInfo->GetActionBarEntry(i)->Type == ACT_DISABLED)
+        if((charmInfo->GetActionBarEntry(i)->SpellOrAction && charmInfo->GetActionBarEntry(i)->Type == ACT_ENABLED) || charmInfo->GetActionBarEntry(i)->Type == ACT_DISABLED)
             charmInfo->GetActionBarEntry(i)->SpellOrAction = 0;
     }
 

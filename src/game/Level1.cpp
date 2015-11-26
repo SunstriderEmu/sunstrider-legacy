@@ -510,7 +510,7 @@ bool ChatHandler::HandleGMTicketUnAssignCommand(const char* args)
   }
 
   SendTicket(ticket, 0, false, false, false, true, true);
-  std::string str = (LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName().c_str());
+  std::string str = GetTrinityStringVA(LANG_COMMAND_TICKETLISTUNASSIGNED, cplr->GetName().c_str());
   SendGlobalGMSysMessage(str.c_str());
 
   ticket->assignedToGM = 0;
@@ -720,7 +720,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
 
         if (map->GetAreaInfo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), mogpFlags, adtId, rootId, groupId))
         {
-            if (wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId))
+            if ((wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId)))
                 PSendSysMessage(LANG_GPS_WMO_DATA, wmoEntry->Id, wmoEntry->Flags, mogpFlags);
         }
     }

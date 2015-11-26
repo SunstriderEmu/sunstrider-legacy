@@ -666,6 +666,9 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,               false, false, NULL,                                               "", NULL }
     };
 
+   /**
+    * The values here may be overwritten by the database and are here as defaults.
+    */
     static ChatCommand commandTable[] =
     {
         { "account",        SEC_PLAYER,       true,  false, NULL,                                           "", accountCommandTable },
@@ -800,37 +803,45 @@ ChatCommand * ChatHandler::getCommandTable()
         { NULL,             0,                false, false, NULL,                                           "", NULL }
     };
 
+    /**
+     * Values in database take precedence over default values in command table
+     */
     if(load_command_table)
     {
         load_command_table = false;
 
-        QueryResult result = WorldDatabase.Query("SELECT name,security,help,ircAllowed FROM command");
+        QueryResult result = WorldDatabase.Query("SELECT name, security, help, ircAllowed FROM command");
         if (result)
         {
             do
             {
                 Field *fields = result->Fetch();
                 std::string name = fields[0].GetString();
+                
+                auto loadCommand = [&](uint32 i)
+                {
+                    commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
+                    commandTable[i].Help = fields[2].GetString();
+                    commandTable[i].AllowIRC = fields[3].GetBool();
+                    //note that command with AllowIRC set to true still aren't allowed on irc if noSessionNeeded is set to false.
+                };
+                
                 for(uint32 i = 0; commandTable[i].Name != NULL; i++)
                 {
                     if (name == commandTable[i].Name)
                     {
-                        commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
-                        commandTable[i].Help = fields[2].GetString();
-                        commandTable[i].AllowIRC = fields[3].GetBool(); //command with AllowIRC set still aren't allowed if noSessionNeeded is set to false
+                        loadCommand(i); 
                     }
-                    if(commandTable[i].ChildCommands != NULL)
+                    if(commandTable[i].ChildCommands)
                     {
-                        ChatCommand *ptable = commandTable[i].ChildCommands;
-                        for(uint32 j = 0; ptable[j].Name != NULL; j++)
+                        ChatCommand* childTable = commandTable[i].ChildCommands;
+                        for(uint32 j = 0; childTable[j].Name != NULL; j++)
                         {
-                            // first case for "" named subcommand
-                            if (ptable[j].Name[0]=='\0' && name == commandTable[i].Name ||
-                                name == fmtstring("%s %s", commandTable[i].Name, ptable[j].Name) )
+                            if (     ((childTable[j].Name[0]== '\0') && (name == commandTable[i].Name)) // for "" named subcommand
+                                  || (name == fmtstring("%s %s", commandTable[i].Name, childTable[j].Name))
+                               )
                             {
-                                ptable[j].SecurityLevel = (uint16)fields[1].GetUInt16();
-                                ptable[j].Help = fields[2].GetString();
-                                ptable[j].AllowIRC = fields[3].GetBool();  //command with AllowIRC set still aren't allowed if noSessionNeeded is set to false
+                                loadCommand(j); 
                             }
                         }
                     }
@@ -864,9 +875,20 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
     }
 }
 
-const char *ChatHandler::GetTrinityString(int32 entry) const
+const char* ChatHandler::GetTrinityString(int32 entry) const
 {
     return m_session->GetTrinityString(entry);
+}
+
+std::string ChatHandler::GetTrinityStringVA(int32 entry, ...) const
+{
+    const char *format = GetTrinityString(entry);
+    va_list ap;
+    char str [1024];
+    va_start(ap, entry);
+    vsnprintf(str, 1024, format, ap );
+    va_end(ap);
+    return str;
 }
 
 bool ChatHandler::isAvailable(ChatCommand const& cmd) const
@@ -935,17 +957,37 @@ bool ChatHandler::hasStringAbbr(const char* name, const char* part)
     return true;
 }
 
-void ChatHandler::SendSysMessage(const char *str)
+void ChatHandler::SendSysMessage(const char *str, bool escapeCharacters)
 {
     WorldPacket data;
 
     // need copy to prevent corruption by strtok call in LineFromMessage original string
-    char* buf = strdup(str);
-    char* pos = buf;
+    char* buf;
+    char* pos;
 
-    while(char* line = LineFromMessage(pos))
+    if (escapeCharacters && strchr(str, '|'))
     {
-        FillSystemMessageData(&data, line);
+        size_t startPos = 0;
+        std::ostringstream o;
+        while (const char* charPos = strchr(str + startPos, '|'))
+        {
+            o.write(str + startPos, charPos - str - startPos);
+            o << "||";
+            startPos = charPos - str + 1;
+        }
+        o.write(str + startPos, strlen(str) - startPos);
+        buf = strdup(o.str().c_str());
+    }
+    else
+    {
+        buf = strdup(str);
+    }
+
+    pos = buf;
+
+    while (char* line = LineFromMessage(pos))
+    {
+        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
         m_session->SendPacket(&data);
     }
 
@@ -963,7 +1005,7 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
 
     while(char* line = LineFromMessage(pos))
     {
-        FillSystemMessageData(&data, line);
+        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
         sWorld->SendGlobalMessage(&data);
     }
 
@@ -987,7 +1029,7 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
 
     while(char* line = LineFromMessage(pos))
     {
-        FillSystemMessageData(&data, line);
+        BuildChatPacket(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
         sWorld->SendGlobalGMMessage(&data);
     }
     free(buf);
@@ -1002,27 +1044,6 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
 void ChatHandler::SendSysMessage(int32 entry)
 {
     SendSysMessage(GetTrinityString(entry));
-}
-
-void ChatHandler::PSendSysMessage(int32 entry, ...)
-{
-    const char *format = GetTrinityString(entry);
-    va_list ap;
-    char str [1024];
-    va_start(ap, entry);
-    vsnprintf(str,1024,format, ap );
-    va_end(ap);
-    SendSysMessage(str);
-}
-
-void ChatHandler::PSendSysMessage(const char *format, ...)
-{
-    va_list ap;
-    char str [1024];
-    va_start(ap, format);
-    vsnprintf(str,1024,format, ap );
-    va_end(ap);
-    SendSysMessage(str);
 }
 
 bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcmd)
@@ -1124,7 +1145,7 @@ int ChatHandler::ParseCommands(const char* text)
     /// chat case (.command or !command format)
     if(m_session)
     {
-        if(text[0] != '!' && text[0] != '.')
+        if( (text[0] != '!') && (text[0] != '.') )
             return 0;
     }
 
@@ -1134,7 +1155,7 @@ int ChatHandler::ParseCommands(const char* text)
     // original `text` can't be used. It content destroyed in command code processing.
 
     /// ignore messages starting with many . or !
-    if(text[0] == '.' && text[1] == '.' || text[0] == '!' && text[1] == '!')
+    if((text[0] == '.' && text[1] == '.') || (text[0] == '!' && text[1] == '!'))
         return 0;
 
     /// skip first . or ! (in console allowed use command with . and ! and without its)
@@ -1658,7 +1679,7 @@ bool CliHandler::isAvailable(ChatCommand const& cmd) const
     return cmd.noSessionNeeded;
 }
 
-void CliHandler::SendSysMessage(const char *str)
+void CliHandler::SendSysMessage(const char *str, bool escapeCharacters)
 {
     m_print(m_callbackArg, str);
     m_print(m_callbackArg, "\r\n");

@@ -68,7 +68,7 @@ message(STATUS "MSVC: Disabled POSIX warnings")
 # C4351: new behavior: elements of array 'x' will be default initialized
 # C4091: 'typedef ': ignored on left of '' when no variable is declared
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4351 /wd4091")
-if(NOT WITH_WARNINGS)
+if(NOT DO_WARN)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /wd4619 /wd4512")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /wd4619 /wd4512")
   message(STATUS "MSVC: Disabled generic compiletime warnings")
@@ -86,5 +86,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm500" CACHE STRING "" FORCE)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /we4263 /we4264")
 
 if(DO_DEBUG)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od /Ob0")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od /Ob0")
 endif(DO_DEBUG)

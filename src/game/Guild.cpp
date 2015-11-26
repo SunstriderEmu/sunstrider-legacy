@@ -1571,7 +1571,7 @@ void Guild::LoadGuildBankEventLogFromDB()
             delete NewEvent;
             continue;
         }
-        if (NewEvent->isMoneyEvent() && m_GuildBankEventLog_Money.size() >= GUILD_BANK_MAX_LOGS
+        if ((NewEvent->isMoneyEvent() && m_GuildBankEventLog_Money.size() >= GUILD_BANK_MAX_LOGS)
                 || m_GuildBankEventLog_Item[TabId].size() >= GUILD_BANK_MAX_LOGS)
         {
             delete NewEvent;

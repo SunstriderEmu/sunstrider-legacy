@@ -708,39 +708,39 @@ void BattlegroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
             Creature *cr = HashMapHolder<Creature>::Find(m_BgCreatures[AV_CPLACE_A_MARSHAL_SOUTH + tmp]);
             if (cr) {
                 uint32 auraToRemove = 0;
-                uint8 faction = 0;
+                uint32 faction = 0;
                 switch (cr->GetEntry()) {
                 case 14762:
                     auraToRemove = 45828;
-                    faction = (uint8)TEAM_ALLIANCE;
+                    faction = (uint32)TEAM_ALLIANCE;
                     break;
                 case 14763:
                     auraToRemove = 45829;
-                    faction = (uint8)TEAM_ALLIANCE;
+                    faction = (uint32)TEAM_ALLIANCE;
                     break;
                 case 14764:
                     auraToRemove = 45831;
-                    faction = (uint8)TEAM_ALLIANCE;
+                    faction = (uint32)TEAM_ALLIANCE;
                     break;
                 case 14765:
                     auraToRemove = 45830;
-                    faction = (uint8)TEAM_ALLIANCE;
+                    faction = (uint32)TEAM_ALLIANCE;
                     break;
                 case 14773:
                     auraToRemove = 45822;
-                    faction = (uint8)TEAM_HORDE;
+                    faction = (uint32)TEAM_HORDE;
                     break;
                 case 14776:
                     auraToRemove = 45823;
-                    faction = (uint8)TEAM_HORDE;
+                    faction = (uint32)TEAM_HORDE;
                     break;
                 case 14772:
                     auraToRemove = 45826;
-                    faction = (uint8)TEAM_HORDE;
+                    faction = (uint32)TEAM_HORDE;
                     break;
                 case 14777:
                     auraToRemove = 45824;
-                    faction = (uint8)TEAM_HORDE;
+                    faction = (uint32)TEAM_HORDE;
                     break;
                 default:
                     break;
@@ -981,8 +981,10 @@ const uint32 BattlegroundAV::GetObjectThroughNode(BG_AV_Nodes node)
     else if ( m_Nodes[node].Owner == TEAM_HORDE )
     {
         if( m_Nodes[node].State == POINT_ASSAULTED )
+        {
             if( node <= BG_AV_NODES_STONEHEART_BUNKER )
                 return node+22;
+        }
         else if ( m_Nodes[node].State == POINT_CONTROLED )
         {
             if( node <= BG_AV_NODES_FROSTWOLF_HUT )

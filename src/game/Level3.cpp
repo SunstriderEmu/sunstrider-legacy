@@ -829,8 +829,8 @@ bool ChatHandler::HandleReloadAuctionsCommand(const char* args)
 {
     ///- Reload dynamic data tables from the database
     TC_LOG_INFO( "command", "Re-Loading Auctions..." );
-    sAHMgr.LoadAuctionItems();
-    sAHMgr.LoadAuctions();
+    sAuctionMgr->LoadAuctionItems();
+    sAuctionMgr->LoadAuctions();
     SendGlobalGMSysMessage("Auctions reloaded.");
     return true;
 }
@@ -2487,7 +2487,7 @@ bool ChatHandler::HandleNpcNearCommand(const char* args)
         } while (result->NextRow());
     }
 
-    PSendSysMessage("Found near creatures (distance %u): %u",distance,count);
+    PSendSysMessage("Found near creatures (distance %f): %u",distance,count);
     return true;
 }
 
@@ -3264,11 +3264,11 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
 
     if (!plGuid)
-        false;
+        return false;
 
     // player's guild membership checked in AddMember before add
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    if (!targetGuild->AddMember (plGuid,targetGuild->GetLowestRank (), trans))
+    if (!targetGuild->AddMember(plGuid,targetGuild->GetLowestRank (), trans))
         return false;
     CharacterDatabase.CommitTransaction(trans);
 
@@ -5083,7 +5083,7 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
     int32 time = atoi (time_str);
 
     ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if((time == 0 && (time_str[0]!='0' || time_str[1]!='\0')) || time < 0)
         return false;
 
     //if (exitcode_str)
@@ -5120,7 +5120,7 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
     int32 time = atoi (time_str);
 
     ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if((time == 0 && (time_str[0]!='0' || time_str[1]!='\0')) || time < 0)
         return false;
 
     if (reason)
@@ -5141,11 +5141,11 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
     int32 time = atoi (time_str);
 
     ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if((time == 0 && (time_str[0]!='0' || time_str[1]!='\0')) || time < 0)
         return false;
 
     if (reason)
-        sWorld->ShutdownServ (time, SHUTDOWN_MASK_RESTART, reason);
+        sWorld->ShutdownServ(time, SHUTDOWN_MASK_RESTART, reason);
     else
         sWorld->ShutdownServ(time,SHUTDOWN_MASK_RESTART|SHUTDOWN_MASK_IDLE,"");
         
@@ -5162,7 +5162,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
     int32 time = atoi (time_str);
 
     ///- Prevent interpret wrong arg value as 0 secs shutdown time
-    if(time == 0 && (time_str[0]!='0' || time_str[1]!='\0') || time < 0)
+    if((time == 0 && (time_str[0]!='0' || time_str[1]!='\0')) || time < 0)
         return false;
 
     if (reason)
@@ -5350,7 +5350,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     {
         completedQuestsThisWeek = 0;
     }
- /* DISABLED
+ /* Limit validations per week : DISABLED
     if (completedQuestsThisWeek >= 2 && !forceComplete) //TODO: set a config option here ?
     {
         //tell the GM that this player has reached the maximum quests complete for this week
@@ -5380,23 +5380,23 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
     for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        uint32 creature = pQuest->RequiredNpcOrGo[i];
+        int32 creatureOrGo = pQuest->RequiredNpcOrGo[i];
         uint32 creaturecount = pQuest->RequiredNpcOrGoCount[i];
 
         if(uint32 spell_id = pQuest->ReqSpell[i])
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creature,0,spell_id);
+                player->CastedCreatureOrGO(creatureOrGo,0,spell_id);
         }
-        else if(creature > 0)
+        else if(creatureOrGo > 0)
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->KilledMonster(creature,0);
+                player->KilledMonster(creatureOrGo,0);
         }
-        else if(creature < 0)
+        else if(creatureOrGo < 0)
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->CastedCreatureOrGO(creature,0,0);
+                player->CastedCreatureOrGO(creatureOrGo,0,0);
         }
     }
 
@@ -7085,7 +7085,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         }
 
         uint32 item_count = itemCountStr ? atoi(itemCountStr) : 1;
-        if(item_count < 1 || item_proto->MaxCount && item_count > item_proto->MaxCount)
+        if(item_count < 1 || (item_proto->MaxCount && item_count > item_proto->MaxCount))
         {
             PSendSysMessage(LANG_COMMAND_INVALID_ITEM_COUNT, item_count,item_id);
             SetSentErrorMessage(true);

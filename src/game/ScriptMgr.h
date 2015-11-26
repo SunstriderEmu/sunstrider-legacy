@@ -256,8 +256,6 @@ class ScriptMgr
 //Generic scripting text function
 void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 
-Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range);
-
 #if COMPILER == COMPILER_GNU
 #define FUNC_PTR(name,callconvention,returntype,parameters)    typedef returntype(*name)parameters __attribute__ ((callconvention));
 #else

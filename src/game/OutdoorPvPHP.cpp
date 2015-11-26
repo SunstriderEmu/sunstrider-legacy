@@ -114,7 +114,7 @@ void OutdoorPvPHP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 bool OutdoorPvPHP::Update(uint32 diff)
 {
     bool changed = false;
-    if(changed = OutdoorPvP::Update(diff))
+    if((changed = OutdoorPvP::Update(diff)))
     {
         if(m_AllianceTowersControlled == 3)
             BuffTeam(TEAM_ALLIANCE);

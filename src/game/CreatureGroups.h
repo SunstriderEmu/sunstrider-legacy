@@ -39,6 +39,12 @@ struct FormationInfo
 class CreatureGroupManager
 {
     public:
+        static CreatureGroupManager* instance()
+        {
+            static CreatureGroupManager instance;
+            return &instance;
+        }
+        
         void AddCreatureToGroup(uint32 group_id, Creature *creature);
         void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
         void LoadCreatureFormations();
@@ -90,6 +96,6 @@ class CreatureGroup
         void Update(uint32 diff);
 };
 
-#define sCreatureGroupMgr Trinity::Singleton<CreatureGroupManager>::Instance()
+#define sCreatureGroupMgr CreatureGroupManager::instance()
 
 #endif

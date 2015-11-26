@@ -30,7 +30,7 @@
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T, D>::SetOffset(float offset)
 {
-    this.offset = offset;
+    this->i_offset = offset;
 }
 
 template<class T, typename D>

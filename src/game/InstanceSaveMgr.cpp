@@ -41,8 +41,6 @@
 #include "Group.h"
 #include "InstanceScript.h"
 
-INSTANTIATE_SINGLETON_1( InstanceSaveManager );
-
 InstanceSaveManager::InstanceSaveManager() : lock_instLists(false)
 {
 }

@@ -695,7 +695,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if (IsAIEnabled)
             ToCreature()->AI()->DamageDealt(pVictim, damage, damagetype);
 
-    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
     // Kidney Shot
@@ -835,6 +835,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                 break;
             }
             case RANGED_ATTACK:
+            default:
                 break;
         }
     }
@@ -1348,7 +1349,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     if(!this || !pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return;
 
     SpellInfo const *spellProto = sSpellMgr->GetSpellInfo(damageInfo->SpellID);
@@ -1602,7 +1603,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     if(!this || !pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->IsInFlight() || pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -2064,7 +2065,7 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
     if (ToPlayer() && ToPlayer()->isSpectator())
         return;
 
-    if(!extra && HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
+    if((!extra && HasUnitState(UNIT_STATE_CANNOT_AUTOATTACK)) || HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED) )
         return;
 
     if (!pVictim->IsAlive())
@@ -3051,6 +3052,7 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
             case BASE_ATTACK:   value+=uint32((this->ToPlayer())->GetRatingBonusValue(CR_WEAPON_SKILL_MAINHAND));break;
             case OFF_ATTACK:    value+=uint32((this->ToPlayer())->GetRatingBonusValue(CR_WEAPON_SKILL_OFFHAND));break;
             case RANGED_ATTACK: value+=uint32((this->ToPlayer())->GetRatingBonusValue(CR_WEAPON_SKILL_RANGED));break;
+            default: break;
         }
     }
     else
@@ -4025,11 +4027,13 @@ bool Unit::AddAura(Aura *Aur)
     if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
+        {
             for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                 if(*itr < 0)
                     ApplySpellImmune(id, IMMUNITY_ID, -(*itr), true);
                 else if(Unit* caster = Aur->GetCaster())
                     caster->AddAura(*itr, this);
+        }
     }
 
     return true;
@@ -4670,20 +4674,24 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_REMOVE))
         {
             if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(-(int32)id))
+            {
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                     if(*itr < 0)
                         RemoveAurasDueToSpell(-(*itr));
                     else if(Unit* caster = Aur->GetCaster())
                         CastSpell(this, *itr, true, 0, 0, caster->GetGUID());
+            }
         }
         if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
         {
             if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))
+            {
                 for(std::vector<int32>::const_iterator itr = spell_triggered->begin(); itr != spell_triggered->end(); ++itr)
                     if(*itr < 0)
                         ApplySpellImmune(id, IMMUNITY_ID, -(*itr), false);
                     else
                         RemoveAurasDueToSpell(*itr);
+            }
         }
     }
 
@@ -4709,7 +4717,7 @@ void Unit::RemoveAllAurasExcept(uint32 spellId)
     AuraMap::iterator iter = m_Auras.begin();
     while (iter != m_Auras.end())
     {
-        if(!iter->second->GetId() == spellId)
+        if(!(iter->second->GetId() == spellId))
             RemoveAura(iter);
         else 
             iter++;
@@ -5090,7 +5098,7 @@ bool Unit::HandleHasteAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     }
 
     // default case
-    if(!target || target!=this && !target->IsAlive())
+    if(!target || (target!=this && !target->IsAlive()))
         return false;
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(triggered_spell_id))
@@ -5383,7 +5391,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
                         break;
                     }
                     return false;
-                }/**/
+                } */
                 // Sunwell Exalted Caster Neck (Shattered Sun Pendant of Acumen neck)
                 // cast 45479 Light's Wrath if Exalted by Aldor
                 // cast 45429 Arcane Bolt if Exalted by Scryers
@@ -6353,7 +6361,7 @@ bool Unit::HandleDummyAuraProc(Unit *pVictim, uint32 damage, Aura* triggeredByAu
     }
 
     // default case
-    if(!target || target!=this && !target->IsAlive())
+    if(!target || (target != this && !target->IsAlive()))
         return false;
 
     if( cooldown && GetTypeId()==TYPEID_PLAYER && (this->ToPlayer())->HasSpellCooldown(triggered_spell_id))
@@ -6852,7 +6860,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Enlightenment (trigger only from mana cost spells)
         case 35095:
         {
-            if(!procSpell || procSpell->PowerType != POWER_MANA || procSpell->ManaCost==0 && procSpell->ManaCostPercentage==0 && procSpell->ManaCostPerlevel==0)
+            if(!procSpell || (procSpell->PowerType != POWER_MANA) || (procSpell->ManaCost==0 && procSpell->ManaCostPercentage==0 && procSpell->ManaCostPerlevel==0 ))
                 return false;
             break;
         }
@@ -6885,7 +6893,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
     }
 
     // default case
-    if(!target || target!=this && (!target->IsAlive() || !target->IsAttackableByAOE()))
+    if(!target || (target != this && (!target->IsAlive() || !target->IsAttackableByAOE())))
         return false;
 
     // apply spell cooldown before casting to prevent triggering spells with SPELL_EFFECT_ADD_EXTRA_ATTACKS if spell has hidden cooldown
@@ -7643,12 +7651,12 @@ Pet* Unit::GetPet() const
     if(uint64 pet_guid = GetPetGUID())
     {
         if(!IS_PET_GUID(pet_guid))
-            return false;
+            return nullptr;
 
         Pet* pet = ObjectAccessor::GetPet(*this, pet_guid);
 
         if (!pet)
-            return NULL;
+            return nullptr;
 
         if (IsInWorld() && pet)
             return pet;
@@ -7657,7 +7665,7 @@ Pet* Unit::GetPet() const
         //TC_LOG_ERROR("entities.pet","Unit::GetPet: Pet %u not exist.",GUID_LOPART(pet_guid));
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Unit* Unit::GetCharm() const
@@ -7919,7 +7927,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32
     for(int j = 0; j < 3; ++j)
     {
         if( spellProto->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH ||
-            spellProto->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellProto->Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH )
+            (spellProto->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellProto->Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH ))
         {
             CastingTime /= 2;
             break;
@@ -7942,7 +7950,7 @@ uint32 Unit::SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32
             // Darkmoon Card: Vengeance - 0.1%
             else if (spellProto->HasVisual(9850) && spellProto->SpellIconID == 2230)
             {
-                CastingTime = 3.5;
+                CastingTime = 3500;
             }
         case SPELLFAMILY_MAGE:
             // Ignite - do not modify, it is (8*Rank)% damage of procing Spell
@@ -8538,7 +8546,7 @@ uint32 Unit::SpellHealBenefitForHealingPower(SpellInfo const *spellProto, int he
     for(int j = 0; j < 3; ++j)
     {
         if( spellProto->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH ||
-            spellProto->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellProto->Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH )
+            (spellProto->Effects[j].Effect == SPELL_EFFECT_APPLY_AURA && spellProto->Effects[j].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH ))
         {
             CastingTime = 0;
             break;
@@ -9273,7 +9281,7 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return CAN_ATTACK_RESULT_TARGET_FLAGS;
 
-    if(target->GetTypeId()==TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator())
+    if(   (target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
       ) 
        return CAN_ATTACK_RESULT_OTHERS; 
@@ -9523,7 +9531,7 @@ StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetD
     if (targetDistance == 0.0f) //collision
         return DETECTED_STATUS_DETECTED;
 
-    if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90° behind
+    if (!HasInArc(M_PI/2.0f*3.0f, target)) // can't see 90ï¿½ behind
         return DETECTED_STATUS_NOT_DETECTED;
     
     //http://wolfendonkane.pagesperso-orange.fr/furtivite.html
@@ -9540,9 +9548,9 @@ StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetD
         visibleDistance = 2.5f; //this can still be reduced with the following check
 
     //reduce visibility distance depending on angle
-    if(!HasInArc(M_PI,target)) //not in front (180°)
+    if(!HasInArc(M_PI,target)) //not in front (180ï¿½)
         visibleDistance = visibleDistance / 2;
-    else if(!HasInArc(M_PI/2,target)) //not in 90° cone in front
+    else if(!HasInArc(M_PI/2,target)) //not in 90ï¿½ cone in front
         visibleDistance = visibleDistance / 1.5;
     
     float diff = targetDistance - visibleDistance;
@@ -10880,6 +10888,7 @@ uint32 Unit::GetCreatePowers( Powers power ) const
         case POWER_FOCUS:     return (GetTypeId()==TYPEID_PLAYER || !((Creature const*)this)->IsPet() || ((Pet const*)this)->getPetType()!=HUNTER_PET ? 0 : 100);
         case POWER_ENERGY:    return 100;
         case POWER_HAPPINESS: return (GetTypeId()==TYPEID_PLAYER || !((Creature const*)this)->IsPet() || ((Pet const*)this)->getPetType()!=HUNTER_PET ? 0 : 1050000);
+        default:              break;
     }
 
     return 0;
@@ -12024,7 +12033,7 @@ void Unit::SetContestedPvP(Player *attackedPlayer)
 {
     Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
 
-    if(!player || attackedPlayer && (attackedPlayer == player || player->duel && player->duel->opponent == attackedPlayer))
+    if(!player || (attackedPlayer && (attackedPlayer == player || (player->duel && (player->duel->opponent == attackedPlayer)))))
         return;
 
     player->SetContestedPvPTimer(30000);
@@ -13033,7 +13042,7 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
     }
 
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
-    if(GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet())
+    if(GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet()))
     {
         CharmInfo *charmInfo = InitCharmInfo();
         if(possess)
@@ -13269,7 +13278,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         }
     }
 
-    if(GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet())
+    if(GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet()))
     {
         DeleteCharmInfo();
     }

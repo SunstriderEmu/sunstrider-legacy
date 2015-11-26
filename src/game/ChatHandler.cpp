@@ -262,9 +262,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
 
             Player* toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
-            uint32 tSecurity = GetSecurity();
-            uint32 pSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
-            if(!toPlayer || tSecurity == SEC_PLAYER && pSecurity > SEC_PLAYER && !toPlayer->IsAcceptWhispers())
+            uint32 playerSecurity = GetSecurity();
+            uint32 targetSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
+            //stop here if target player not found
+            //prevent sending whisps to gm not accepting whispers
+            if(!toPlayer || ((playerSecurity == SEC_PLAYER) && (targetSecurity > SEC_PLAYER) && !toPlayer->IsAcceptWhispers()) )
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
                 data<<to;
@@ -278,13 +280,14 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
 
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
-            if (pSecurity == SEC_PLAYER && 
-                GetPlayer()->GetSession()->GetSecurity() <= SEC_PLAYER && 
+            if (targetSecurity == SEC_PLAYER && 
+                playerSecurity == SEC_PLAYER && 
                 GetPlayer()->GetLevel() < sWorld->getConfig(CONFIG_WHISPER_MINLEVEL) && 
                 lang != LANG_ADDON &&
-                GetPlayer()->GetTotalPlayedTime() < DAY)
+                GetPlayer()->GetTotalPlayedTime() < 1 * DAY)
             {
-                ChatHandler(this).PSendSysMessage("Vous devez atteindre le niveau %u ou avoir un temps de jeu total de 24h pour pouvoir chuchoter aux autres joueurs.", sWorld->getConfig(CONFIG_WHISPER_MINLEVEL));
+                //"Vous devez atteindre le niveau %u ou avoir un temps de jeu total de 24h pour pouvoir chuchoter aux autres joueurs."
+                ChatHandler(this).PSendSysMessage("You must reached level %u or have at least 24 hours of played to be able to whisper other players.", sWorld->getConfig(CONFIG_WHISPER_MINLEVEL));
                 break;
             }
 
@@ -293,7 +296,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
             }
 
-            if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && tSecurity == SEC_PLAYER && pSecurity == SEC_PLAYER )
+            if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && playerSecurity == SEC_PLAYER && targetSecurity == SEC_PLAYER )
             {
                 uint32 sidea = GetPlayer()->GetTeam();
                 uint32 sideb = toPlayer->GetTeam();
@@ -446,47 +449,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             break;
         }
         case CHAT_MSG_RAID:
-        {
-            std::string msg="";
-            recvData >> msg;
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            // if player is in battleground, he cannot say to battleground members by /raid
-            Group *group = GetPlayer()->GetOriginalGroup();
-            // so if player hasn't OriginalGroup and his player->GetGroup() is BG raid or his group isn't raid, then return
-            if (!group && !(group = GetPlayer()->GetGroup()) || group->isBGGroup() || !group->isRaidGroup())
-                return;
-
-            #ifdef PLAYERBOT
-            // Playerbot mod: broadcast message to bot members
-            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
-            {
-                Player* player = itr->GetSource();
-                if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
-                {
-                    player->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
-                    /* GetPlayer()->m_speakTime = 0;
-                    GetPlayer()->m_speakCount = 0; */
-                }
-            }
-            #endif
-
-            WorldPacket data;
-            ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
-            group->BroadcastPacket(&data, false);
-        } break;
         case CHAT_MSG_RAID_LEADER:
         {
             std::string msg="";
@@ -495,7 +457,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             if(msg.empty())
                 break;
 
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+            if ((ChatHandler(this).ParseCommands(msg.c_str())) > 0)
                 break;
 
             // strip invisible characters for non-addon messages
@@ -505,9 +467,19 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             if(msg.empty())
                 break;
 
-            // if player is in battleground, he cannot say to battleground members by /raid
-            Group *group = GetPlayer()->GetOriginalGroup();
-            if (!group && !(group = GetPlayer()->GetGroup()) || group->isBGGroup() || !group->isRaidGroup() || !group->IsLeader(GetPlayer()->GetGUID()))
+            // if player is in battleground group, he cannot talk to battleground members by /raid, even if this is a raid group.
+            // Players can be simultaneously in a battleground group and original groups. Prefer original if both exists.
+            Group* targetGroup = nullptr;
+            Group* originalGroup = GetPlayer()->GetOriginalGroup();
+            Group* currentGroup = GetPlayer()->GetGroup();
+            
+            if(originalGroup && originalGroup->isRaidGroup() && !originalGroup->isBGGroup())
+                targetGroup = originalGroup;
+            else if(currentGroup && currentGroup->isRaidGroup() && !currentGroup->isBGGroup())
+                targetGroup = currentGroup;
+            
+            //no valid group found
+            if(!targetGroup)
                 return;
 
             #ifdef PLAYERBOT
@@ -518,7 +490,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
                 {
                     player->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
-            /*        GetPlayer()->m_speakTime = 0;
+                 /*   GetPlayer()->m_speakTime = 0;
                     GetPlayer()->m_speakCount = 0; */
                 }
             }
@@ -526,7 +498,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
-            group->BroadcastPacket(&data, false);
+            targetGroup->BroadcastPacket(&data, false);
         } break;
         case CHAT_MSG_RAID_WARNING:
         {

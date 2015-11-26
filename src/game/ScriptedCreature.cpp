@@ -375,10 +375,10 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
         {
             Unit *target = ObjectAccessor::GetUnit(*m_creature, (*itr)->getUnitGuid());
             if(!target
-                || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || target->GetTransForm() == FORM_SPIRITOFREDEMPTION
-                || distNear && m_creature->IsWithinCombatRange(target, distNear) 
-                || distFar && !m_creature->IsWithinCombatRange(target, distFar)
+                || (playerOnly && target->GetTypeId() != TYPEID_PLAYER)
+                || (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
+                || (distNear && m_creature->IsWithinCombatRange(target, distNear)) 
+                || (distFar && !m_creature->IsWithinCombatRange(target, distFar))
               )
             {
                 continue;
@@ -424,10 +424,10 @@ Unit* ScriptedAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
 
             target = ObjectAccessor::GetUnit(*m_creature,(*i)->getUnitGuid());
             if(!target
-                || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-                || target->GetTransForm() == FORM_SPIRITOFREDEMPTION
-                || distNear && m_creature->IsWithinCombatRange(target, distNear) 
-                || distFar && !m_creature->IsWithinCombatRange(target, distFar)
+                || (playerOnly && target->GetTypeId() != TYPEID_PLAYER)
+                || (target->GetTransForm() == FORM_SPIRITOFREDEMPTION)
+                || (distNear && m_creature->IsWithinCombatRange(target, distNear)) 
+                || (distFar && !m_creature->IsWithinCombatRange(target, distFar))
               )
             {
                 m_threatlist.erase(i);
@@ -456,12 +456,12 @@ Unit* ScriptedAI::SelectUnit( uint32 position, float distNear, float distFar, bo
         target = ObjectAccessor::GetUnit(*m_creature,(*i)->getUnitGuid());
         if(!target
             || !target->IsAlive()
-            || playerOnly && target->GetTypeId() != TYPEID_PLAYER
-            || distNear && m_creature->IsWithinCombatRange(target, distNear)
-            || distFar && !m_creature->IsWithinCombatRange(target, distFar)
-            || auraCheck && target->HasAuraEffect(spellId, effIndex)
-            || exceptPossesed && target->IsPossessed()
-            || exceptPossesed && target->IsPossessing()
+            || (playerOnly && target->GetTypeId() != TYPEID_PLAYER)
+            || (distNear && m_creature->IsWithinCombatRange(target, distNear))
+            || (distFar && !m_creature->IsWithinCombatRange(target, distFar))
+            || (auraCheck && target->HasAuraEffect(spellId, effIndex))
+            || (exceptPossesed && target->IsPossessed())
+            || (exceptPossesed && target->IsPossessing())
             )
         {
             m_threatlist.erase(i);

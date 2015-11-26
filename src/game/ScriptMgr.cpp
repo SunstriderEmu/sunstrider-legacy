@@ -6,7 +6,6 @@
 #include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ObjectMgr.h"
-#include "Policies/SingletonImp.h"
 #include "Spell.h"
 #include "ConfigMgr.h"
 #include "ScriptMgr.h"
@@ -1530,25 +1529,6 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
                 else error_log("TSCR: DoScriptText entry %i cannot whisper without target unit (TYPEID_PLAYER).", textEntry);
             }break;
     }
-}
-
-Creature* SelectCreatureInGrid(Creature* origin, uint32 entry, float range)
-{
-    Creature* pCreature = NULL;
-
-    CellCoord pair(Trinity::ComputeCellCoord(origin->GetPositionX(), origin->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*origin, entry, true, range);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher, *(origin->GetMap()));
-
-    return pCreature;
 }
 
 //*********************************

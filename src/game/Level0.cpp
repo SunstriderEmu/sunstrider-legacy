@@ -185,11 +185,14 @@ bool ChatHandler::HandleSaveCommand(const char* /*args*/)
         return true;
     }
 
-    // save or plan save after 20 sec (logout delay) if current next save time more this value and _not_ output any messages to prevent cheat planning
+    // save if player was saved less than 20s ago or if no save interval is set
     uint32 save_interval = sWorld->getConfig(CONFIG_INTERVAL_SAVE);
-    if(save_interval==0 || save_interval > 20*1000 && player->GetSaveTimer() <= save_interval - 20*1000)
+    if(save_interval ==0
+      || ( save_interval > 20*SECOND*IN_MILLISECONDS && player->GetSaveTimer() <= (save_interval- 20*SECOND*IN_MILLISECONDS) ))
         player->SaveToDB();
 
+    //no output to prevent cheat
+    
     return true;
 }
 
@@ -203,8 +206,10 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
     {
         AccountTypes itr_sec = (AccountTypes)itr->second->GetSession()->GetSecurity();
 
-        if ((itr->second->IsGameMaster() || itr_sec > SEC_PLAYER && itr_sec <= sWorld->getConfig(CONFIG_GM_LEVEL_IN_GM_LIST)) &&
-            (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())))
+        //if target has gm mode enabled or has a listable gm account level
+        //and target is visible to player (this check disabled if no session)
+        if ((itr->second->IsGameMaster() || (itr_sec > SEC_PLAYER && itr_sec <= sWorld->getConfig(CONFIG_GM_LEVEL_IN_GM_LIST))) 
+            && (!m_session || itr->second->IsVisibleGloballyFor(m_session->GetPlayer())))
         {
             if(first)
             {
@@ -2044,7 +2049,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Act like auctions are expired
-    sAHMgr.RemoveAllAuctionsOf(plr->GetGUIDLow());
+    sAuctionMgr->RemoveAllAuctionsOf(plr->GetGUIDLow());
     plr->RemoveAllAuras();
 
     // Remove instance tag

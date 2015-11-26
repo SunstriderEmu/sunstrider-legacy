@@ -37,7 +37,6 @@
 #include "UpdateData.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
-#include "Policies/SingletonImp.h"
 #include "Totem.h"
 #include "Creature.h"
 #include "Formulas.h"
@@ -392,7 +391,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
         }
     }
 
-    if(m_maxduration == -1 || m_isPassive && m_spellProto->GetDuration() == 0)
+    if(m_maxduration == -1 || (m_isPassive && m_spellProto->GetDuration() == 0))
         m_permanent = true;
 
     Player* modOwner = caster ? caster->GetSpellModOwner() : NULL;
@@ -948,15 +947,15 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
         case SPELL_AURA_OBS_MOD_POWER:
         {
             m_periodicTimer = m_amplitude;//m_modifier.periodictime;
-        }
-        break;
+        } break;
         case SPELL_AURA_MOD_REGEN:
         case SPELL_AURA_MOD_POWER_REGEN:
         case SPELL_AURA_MOD_MANA_REGEN_FROM_STAT:
         {
             m_amplitude = 5000;
             m_periodicTimer = m_amplitude;
-        }
+        } break;
+        default:
             break;
     }
 
@@ -2969,6 +2968,8 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
                     m_target->CastSpell(m_target,37325,true,NULL,dummy);
                 break;
             }
+            default:
+                break;
         }
     }
 

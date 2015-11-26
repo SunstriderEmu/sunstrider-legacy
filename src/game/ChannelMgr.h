@@ -94,19 +94,19 @@ class ChannelMgr
         }
 };
 
-class AllianceChannelMgr : public ChannelMgr {};
-class HordeChannelMgr    : public ChannelMgr {};
-
 inline ChannelMgr* channelMgr(uint32 team)
 {
+    static ChannelMgr allianceChannelMgr;
+    static ChannelMgr hordeChannelMgr;
+    
     if (sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
                                                             //For Test,No Seprate Faction
-        return &Trinity::Singleton<AllianceChannelMgr>::Instance();
+        return &allianceChannelMgr;
 
-    if(team==TEAM_ALLIANCE)
-        return &Trinity::Singleton<AllianceChannelMgr>::Instance();
-    if(team==TEAM_HORDE)
-        return &Trinity::Singleton<HordeChannelMgr>::Instance();
+    if(team == TEAM_ALLIANCE)
+        return &allianceChannelMgr;
+    if(team == TEAM_HORDE)
+        return &hordeChannelMgr;
     return NULL;
 }
 #endif

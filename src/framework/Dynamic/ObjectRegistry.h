@@ -36,6 +36,12 @@ class ObjectRegistry
     public:
         typedef std::map<Key, T *> RegistryMapType;
 
+        static ObjectRegistry<T, Key>* instance()
+        {
+            static ObjectRegistry<T, Key> instance;
+            return &instance;
+        }
+        
         /// Returns a registry item
         const T* GetRegistryItem(Key key) const
         {

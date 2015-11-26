@@ -35,7 +35,6 @@
 #include "LootMgr.h"
 #include "Chat.h"
 #include "ScriptCalls.h"
-#include <zlib/zlib.h>
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "Object.h"
@@ -54,6 +53,8 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_REPOP_REQUEST Message");
+
     if(GetPlayer()->IsAlive()||GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
@@ -64,7 +65,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     // release spirit after he's killed but before he is updated
     if(GetPlayer()->GetDeathState() == JUST_DIED)
     {
-        TC_LOG_ERROR("FIXME","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
+        TC_LOG_ERROR("network","HandleRepopRequestOpcode: got request after player %s(%d) was killed and before he was updated", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         GetPlayer()->KillPlayer();
     }
 
@@ -174,6 +175,8 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 {
     PROFILE;
     
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_WHO Message");
+
     CHECK_PACKET_SIZE(recvData,4+4+1+1+4+4+4+4);
 
     uint32 level_min, level_max, racemask, classmask, zones_count, str_count;
@@ -387,6 +390,8 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
 {
     PROFILE;
     
+    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_REQUEST Message, security - %u", GetSecurity());
+
     if (uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
 
@@ -518,7 +523,7 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
     uint32 newZone;
     recvData >> newZone;
 
-    TC_LOG_DEBUG("FIXME","WORLD: Recvd ZONE_UPDATE: %u", newZone);
+    TC_LOG_DEBUG("network","WORLD: Recvd ZONE_UPDATE: %u", newZone);
 
     GetPlayer()->UpdateZone(newZone);
 
@@ -598,6 +603,7 @@ void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
     
     uint32 unk;
     recvData >> unk; // TODO
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_CONTACT_LIST - Unk: %d", unk);
     _player->GetSocial()->SendSocialList();
 }
 
@@ -765,6 +771,8 @@ void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 8);
 
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_DEL_IGNORE");
+
     uint64 ignoreGUID;
 
     recvData >> ignoreGUID;
@@ -814,7 +822,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
     
     CHECK_PACKET_SIZE(recvData,8);
 
-    TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_RECLAIM_CORPSE");
+    TC_LOG_DEBUG("network","WORLD: Received CMSG_RECLAIM_CORPSE");
     if (GetPlayer()->IsAlive())
         return;
 
@@ -857,7 +865,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
     
     CHECK_PACKET_SIZE(recvData,8+1);
 
-    TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_RESURRECT_RESPONSE");
+    TC_LOG_DEBUG("network","WORLD: Received CMSG_RESURRECT_RESPONSE");
 
     if(GetPlayer()->IsAlive())
         return;
@@ -887,9 +895,10 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     CHECK_PACKET_SIZE(recvData,4);
 
     uint32 triggerId;
-
     recvData >> triggerId;
     
+    TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
+
     if(GetPlayer()->IsGameMaster())
         SendAreaTriggerMessage("Entered areatrigger %u.", triggerId);
 
@@ -899,13 +908,13 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     AreaTriggerEntry const* atEntry = sAreaTriggerStore.LookupEntry(triggerId);
     if(!atEntry)
     {
-        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName().c_str(),GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("network","Player '%s' (GUID: %u) send unknown (by DBC) Area Trigger ID:%u",GetPlayer()->GetName().c_str(),GetPlayer()->GetGUIDLow(), triggerId);
         return;
     }
 
     if (GetPlayer()->GetMapId()!=atEntry->mapid)
     {
-        TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName().c_str(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUIDLow(), triggerId);
+        TC_LOG_ERROR("network","Player '%s' (GUID: %u) too far (trigger map: %u player map: %u), ignore Area Trigger ID: %u", GetPlayer()->GetName().c_str(), atEntry->mapid, GetPlayer()->GetMapId(), GetPlayer()->GetGUIDLow(), triggerId);
         return;
     }
 
@@ -920,7 +929,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
         float dist = pl->GetDistance(atEntry->x,atEntry->y,atEntry->z);
         if(dist > atEntry->radius + delta)
         {
-            TC_LOG_ERROR("FIXME","Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
+            TC_LOG_ERROR("network","Player '%s' (GUID: %u) too far (radius: %f distance: %f), ignore Area Trigger ID: %u",
                 pl->GetName().c_str(), pl->GetGUIDLow(), atEntry->radius, dist, triggerId);
             return;
         }
@@ -1000,12 +1009,103 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleUpdateAccountData(WorldPacket &/*recvData*/)
 {
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
     // TODO
+    /* TC CODE
+
+    uint32 type, timestamp, decompressedSize;
+    recvData >> type >> timestamp >> decompressedSize;
+
+    TC_LOG_DEBUG("network", "UAD: type %u, time %u, decompressedSize %u", type, timestamp, decompressedSize);
+
+    if (type > NUM_ACCOUNT_DATA_TYPES)
+    return;
+
+    if (decompressedSize == 0)                               // erase
+    {
+    SetAccountData(AccountDataType(type), 0, "");
+
+    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+    data << uint32(type);
+    data << uint32(0);
+    SendPacket(&data);
+
+    return;
+    }
+
+    if (decompressedSize > 0xFFFF)
+    {
+    recvData.rfinish();                   // unnneded warning spam in this case
+    TC_LOG_ERROR("network", "UAD: Account data packet too big, size %u", decompressedSize);
+    return;
+    }
+
+    ByteBuffer dest;
+    dest.resize(decompressedSize);
+
+    uLongf realSize = decompressedSize;
+    if (uncompress(dest.contents(), &realSize, recvData.contents() + recvData.rpos(), recvData.size() - recvData.rpos()) != Z_OK)
+    {
+    recvData.rfinish();                   // unnneded warning spam in this case
+    TC_LOG_ERROR("network", "UAD: Failed to decompress account data");
+    return;
+    }
+
+    recvData.rfinish();                       // uncompress read (recvData.size() - recvData.rpos())
+
+    std::string adata;
+    dest >> adata;
+
+    SetAccountData(AccountDataType(type), timestamp, adata);
+
+    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA_COMPLETE, 4+4);
+    data << uint32(type);
+    data << uint32(0);
+    SendPacket(&data);
+
+    */
 }
 
 void WorldSession::HandleRequestAccountData(WorldPacket& /*recvData*/)
 {
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_REQUEST_ACCOUNT_DATA");
     // TODO
+
+    /* TC CODE
+
+    uint32 type;
+    recvData >> type;
+
+    TC_LOG_DEBUG("network", "RAD: type %u", type);
+
+    if (type >= NUM_ACCOUNT_DATA_TYPES)
+    return;
+
+    AccountData* adata = GetAccountData(AccountDataType(type));
+
+    uint32 size = adata->Data.size();
+
+    uLongf destSize = compressBound(size);
+
+    ByteBuffer dest;
+    dest.resize(destSize);
+
+    if (size && compress(dest.contents(), &destSize, (uint8 const*)adata->Data.c_str(), size) != Z_OK)
+    {
+    TC_LOG_DEBUG("network", "RAD: Failed to compress account data");
+    return;
+    }
+
+    dest.resize(destSize);
+
+    WorldPacket data(SMSG_UPDATE_ACCOUNT_DATA, 8+4+4+4+destSize);
+    data << uint64(_player ? _player->GetGUID() : ObjectGuid::Empty);
+    data << uint32(type);                                   // type (0-7)
+    data << uint32(adata->Time);                            // unix time
+    data << uint32(size);                                   // decompressed length
+    data.append(dest);                                      // compressed data
+    SendPacket(&data);
+    */
 }
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
@@ -1017,6 +1117,8 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
     uint8 button, misc, type;
     uint16 action;
     recvData >> button >> action >> misc >> type;
+
+    TC_LOG_DEBUG("network", "CMSG_SET_ACTION_BUTTON Button: %u", button);
 
     if (action == 0)
         GetPlayer()->removeActionButton(button);
@@ -1034,22 +1136,24 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
             GetPlayer()->addActionButton(button,action,type,misc);
         }
         else
-            TC_LOG_ERROR( "FIXME", "MISC: Unknown action button type %u for action %u into button %u", type, action, button );
+            TC_LOG_ERROR( "network", "MISC: Unknown action button type %u for action %u into button %u", type, action, button );
     }
 }
 
 void WorldSession::HandleCompleteCinematic( WorldPacket & /*recvData*/ )
 {
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_COMPLETE_CINEMATIC");
     // TODO
 }
 
 void WorldSession::HandleNextCinematicCamera( WorldPacket & /*recvData*/ )
 {
-    // TODO
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
 }
 
 void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & /*recvData*/ )
 {
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
     // TODO
 
     /*
@@ -1058,7 +1162,7 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & /*recvData*/ )
         uint32 time_skipped;
         recvData >> guid;
         recvData >> time_skipped;
-        TC_LOG_DEBUG("FIXME", "WORLD: CMSG_MOVE_TIME_SKIPPED" );
+        TC_LOG_DEBUG("network", "WORLD: CMSG_MOVE_TIME_SKIPPED" );
 
         /// TODO
         must be need use in Trinity
@@ -1076,10 +1180,13 @@ void WorldSession::HandleFeatherFallAck(WorldPacket & recvData)
     recvData.rfinish();
 }
 
-void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recvData*/)
+void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 {
     PROFILE;
     
+    recvData.rfinish();                       // prevent warnings spam
+
+    TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
     /*
         CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
 
@@ -1098,20 +1205,22 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket&/* recvData*/)
         recvData >> movementInfo;
 
         // TODO for later may be we can use for anticheat
-        TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);
-        TC_LOG_DEBUG("FIXME","unknown1 " UI64FMTD,unknown1);
-        TC_LOG_DEBUG("FIXME","unknown2 %u",unknown2);
-        TC_LOG_DEBUG("FIXME","X %f",PositionX);
-        TC_LOG_DEBUG("FIXME","Y %f",PositionY);
-        TC_LOG_DEBUG("FIXME","Z %f",PositionZ);
-        TC_LOG_DEBUG("FIXME","O %f",Orientation);
+        TC_LOG_DEBUG("network","Guid " UI64FMTD,guid);
+        TC_LOG_DEBUG("network","unknown1 " UI64FMTD,unknown1);
+        TC_LOG_DEBUG("network","unknown2 %u",unknown2);
+        TC_LOG_DEBUG("network","X %f",PositionX);
+        TC_LOG_DEBUG("network","Y %f",PositionY);
+        TC_LOG_DEBUG("network","Z %f",PositionZ);
+        TC_LOG_DEBUG("network","O %f",Orientation);
     */
 }
 
-void WorldSession::HandleMoveRootAck(WorldPacket&/* recvData*/)
+void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 {
     PROFILE;
-    
+
+    // no used
+    recvData.rfinish();                       // prevent warnings spam
     /*
         CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
 
@@ -1130,13 +1239,13 @@ void WorldSession::HandleMoveRootAck(WorldPacket&/* recvData*/)
         recvData >> movementInfo;
 
         // for later may be we can use for anticheat
-        TC_LOG_DEBUG("FIXME","Guid " UI64FMTD,guid);
-        TC_LOG_DEBUG("FIXME","unknown1 " UI64FMTD,unknown1);
-        TC_LOG_DEBUG("FIXME","unknown1 %u",unknown2);
-        TC_LOG_DEBUG("FIXME","X %f",PositionX);
-        TC_LOG_DEBUG("FIXME","Y %f",PositionY);
-        TC_LOG_DEBUG("FIXME","Z %f",PositionZ);
-        TC_LOG_DEBUG("FIXME","O %f",Orientation);
+        TC_LOG_DEBUG("network","Guid " UI64FMTD,guid);
+        TC_LOG_DEBUG("network","unknown1 " UI64FMTD,unknown1);
+        TC_LOG_DEBUG("network","unknown1 %u",unknown2);
+        TC_LOG_DEBUG("network","X %f",PositionX);
+        TC_LOG_DEBUG("network","Y %f",PositionY);
+        TC_LOG_DEBUG("network","Z %f",PositionZ);
+        TC_LOG_DEBUG("network","O %f",Orientation);
     */
 }
 
@@ -1147,13 +1256,12 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
     CHECK_PACKET_SIZE(recvData,1);
 
     uint8 ActionBar;
-
     recvData >> ActionBar;
 
     if(!GetPlayer())                                        // ignore until not logged (check needed because STATUS_AUTHED)
     {
         if(ActionBar!=0)
-            TC_LOG_ERROR("FIXME","WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(ActionBar));
+            TC_LOG_ERROR("network","WorldSession::HandleSetActionBar in not logged state with value: %u, ignored",uint32(ActionBar));
         return;
     }
 
@@ -1280,7 +1388,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
     if(!player)
     {
-        TC_LOG_ERROR("FIXME","InspectHonorStats: WTF, player not found...");
+        TC_LOG_ERROR("network","InspectHonorStats: WTF, player not found...");
         return;
     }
 
@@ -1304,10 +1412,14 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     // Received opcode CMSG_WORLD_TELEPORT
     // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
 
-    //TC_LOG_DEBUG("FIXME","Received opcode CMSG_WORLD_TELEPORT");
+    TC_LOG_DEBUG("network","Received opcode CMSG_WORLD_TELEPORT");
 
-    if(GetPlayer()->IsInFlight())
+    if (GetPlayer()->IsInFlight())
+    {
+        TC_LOG_DEBUG("network", "Player '%s' (GUID: %u) in flight, ignore worldport command.",
+            GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow());
         return;
+    }
 
     uint32 time;
     uint32 mapid;
@@ -1323,6 +1435,9 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     recvData >> PositionZ;
     recvData >> Orientation;                               // o (3.141593 = 180 degrees)
 
+    TC_LOG_DEBUG("network", "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f",
+        GetPlayer()->GetName().c_str(), time, mapid, PositionX, PositionY, PositionZ, Orientation);
+
     if (GetSecurity() >= SEC_GAMEMASTER3)
         GetPlayer()->TeleportTo(mapid,PositionX,PositionY,PositionZ,Orientation);
     else
@@ -1334,6 +1449,8 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
     PROFILE;
     
     CHECK_PACKET_SIZE(recvData, 1);
+
+    TC_LOG_DEBUG("network", "Received opcode CMSG_WHOIS");
 
     std::string charname;
     recvData >> charname;
@@ -1383,6 +1500,9 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
     WorldPacket data(SMSG_WHOIS, msg.size()+1);
     data << msg;
     _player->GetSession()->SendPacket(&data);
+
+    TC_LOG_DEBUG("network", "Received whois command from player %s for character %s",
+        GetPlayer()->GetName().c_str(), charname.c_str());
 }
 
 void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
@@ -1390,6 +1510,8 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     PROFILE;
     
     CHECK_PACKET_SIZE(recvData, 1+8);
+
+    TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
 
     uint8 ComplaintType;                                        // 0 - mail, 1 - chat
     uint64 spammer_guid;
@@ -1427,6 +1549,9 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
         if (Player* spammer = sObjectMgr->GetPlayer(spammer_guid))
             spammer->addSpamReport(_player->GetGUID(), description.c_str());
     }
+
+    TC_LOG_DEBUG("network", "REPORT SPAM: type %u, " UI64FMTD ", unk1 %u, unk2 %u, unk3 %u, unk4 %u, message %s",
+        ComplaintType, spammer_guid, unk1, unk2, unk3, unk4, description.c_str());
 }
 
 void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
@@ -1434,6 +1559,8 @@ void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
     PROFILE;
     
     CHECK_PACKET_SIZE(recvData, 4);
+
+    TC_LOG_DEBUG("network", "CMSG_REALM_SPLIT");
 
     uint32 Decision;
     std::string split_date = "01/01/01";
@@ -1456,16 +1583,22 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 1);
 
+    TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
+
     uint8 apply;
     recvData >> apply;
 
     _player->SetFarsightVision(apply);
     if(apply)
     {
+        TC_LOG_DEBUG("network", "Added FarSight " UI64FMTD " to player %u", _player->GetGuidValue(PLAYER_FARSIGHT), _player->GetGUIDLow());
+
         //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
-        if(WorldObject* farSightTarget = _player->GetFarsightTarget())
-            if(farSightTarget->isType(TYPEMASK_UNIT))
-                farSightTarget->ToUnit()->SetToNotify(); 
+        WorldObject* farSightTarget = _player->GetFarsightTarget();
+        if(farSightTarget && farSightTarget->isType(TYPEMASK_UNIT))
+            farSightTarget->ToUnit()->SetToNotify(); 
+        else
+            TC_LOG_ERROR("network", "Player %s (%u) requests non-existing seer " UI64FMTD, _player->GetName().c_str(), _player->GetGUIDLow(), _player->GetGuidValue(PLAYER_FARSIGHT));
     }
     GetPlayer()->SetToNotify();
 }
@@ -1476,11 +1609,13 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData, 4);
 
+    TC_LOG_DEBUG("network", "CMSG_SET_TITLE");
+
     int32 title;
     recvData >> title;
 
     // -1 at none
-    if(title > 0 && title < 128)
+    if(title > 0 && title < MAX_TITLE_INDEX)
     {
        if(!GetPlayer()->HasTitle(title))
             return;
@@ -1530,7 +1665,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 
     if(mode > DIFFICULTY_HEROIC)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
+        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
         return;
     }
 
@@ -1538,7 +1673,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     Map *map = _player->GetMap();
     if(map && map->IsDungeon())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
+        TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
         return;
     }
 
@@ -1603,7 +1738,7 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)
 {
     /*
-        TC_LOG_DEBUG("FIXME","WORLD: CMSG_REQUEST_PET_INFO");
+        TC_LOG_DEBUG("network","WORLD: CMSG_REQUEST_PET_INFO");
         recvData.hexlike();
     */
 }

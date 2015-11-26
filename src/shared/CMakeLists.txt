@@ -32,44 +32,43 @@ set(shared_STAT_SRCS
   ${sources_localdir}
 )
 
-IF(UNIX)
-add_definitions(-fopenmp)
-ELSEIF(WIN32 AND MSVC)
-add_definitions(/openmp)
+IF(WIN32 AND MSVC)
+    add_definitions(/openmp)
 ENDIF()
+
 add_library(shared STATIC 
-${shared_STAT_SRCS}
+    ${shared_STAT_SRCS}
 )
 
 add_dependencies(shared revision.h)
 
 target_link_libraries(
-shared
+    shared
 )
 
 INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/dep/cppformat
-${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-${CMAKE_SOURCE_DIR}/dep/SFMT
-${CMAKE_SOURCE_DIR}/src/framework
-${CMAKE_SOURCE_DIR}/src/framework/Platform
-${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-${CMAKE_SOURCE_DIR}/dep/include
-${CMAKE_SOURCE_DIR}/dep/zlib
-${CMAKE_CURRENT_SOURCE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}/Configuration
-${CMAKE_CURRENT_SOURCE_DIR}/Cryptography
-${CMAKE_CURRENT_SOURCE_DIR}/Database
-${CMAKE_CURRENT_SOURCE_DIR}/DataStores
-${CMAKE_CURRENT_SOURCE_DIR}/Debugging
-${CMAKE_CURRENT_SOURCE_DIR}/Dynamic
-${CMAKE_CURRENT_SOURCE_DIR}/Logging
-${CMAKE_CURRENT_SOURCE_DIR}/Networking
-${CMAKE_CURRENT_SOURCE_DIR}/Packets
-${CMAKE_CURRENT_SOURCE_DIR}/Threading
-${CMAKE_CURRENT_SOURCE_DIR}/Utilities
-${OPENSSL_INCLUDE_DIR}
-${MYSQL_INCLUDE_DIR}
-#next one for revision.h
-${CMAKE_BINARY_DIR}
+    ${CMAKE_SOURCE_DIR}/dep/cppformat
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+    ${CMAKE_SOURCE_DIR}/dep/SFMT
+    ${CMAKE_SOURCE_DIR}/src/framework
+    ${CMAKE_SOURCE_DIR}/src/framework/Platform
+    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
+    ${CMAKE_SOURCE_DIR}/dep/include
+    ${CMAKE_SOURCE_DIR}/dep/zlib
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/Configuration
+    ${CMAKE_CURRENT_SOURCE_DIR}/Cryptography
+    ${CMAKE_CURRENT_SOURCE_DIR}/Database
+    ${CMAKE_CURRENT_SOURCE_DIR}/DataStores
+    ${CMAKE_CURRENT_SOURCE_DIR}/Debugging
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dynamic
+    ${CMAKE_CURRENT_SOURCE_DIR}/Logging
+    ${CMAKE_CURRENT_SOURCE_DIR}/Networking
+    ${CMAKE_CURRENT_SOURCE_DIR}/Packets
+    ${CMAKE_CURRENT_SOURCE_DIR}/Threading
+    ${CMAKE_CURRENT_SOURCE_DIR}/Utilities
+    ${OPENSSL_INCLUDE_DIR}
+    ${MYSQL_INCLUDE_DIR}
+    #next one for revision.h
+    ${CMAKE_BINARY_DIR}
 )

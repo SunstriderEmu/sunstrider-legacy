@@ -90,6 +90,8 @@ void WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
             path_type = WP_PATH_TYPE_LOOP;
         }
         break;
+    default:
+        break;
     }
 
     StartMoveNow(creature);

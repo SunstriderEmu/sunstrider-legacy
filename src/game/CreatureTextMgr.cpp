@@ -20,7 +20,6 @@
 #include "DatabaseEnv.h"
 #include "CreatureTextMgr.h"
 #include "ObjectMgr.h"
-#include "Policies/SingletonImp.h"
 #include "World.h"
 #include "Object.h"
 #include "WorldPacket.h"

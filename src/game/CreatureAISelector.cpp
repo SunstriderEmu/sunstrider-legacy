@@ -22,15 +22,10 @@
 #include "CreatureAIImpl.h"
 #include "CreatureAISelector.h"
 #include "NullCreatureAI.h"
-#include "Policies/SingletonImp.h"
 #include "MovementGenerator.h"
 #include "ScriptCalls.h"
 #include "Pet.h"
 #include "ScriptMgr.h"
-
-INSTANTIATE_SINGLETON_1(CreatureAIRegistry);
-INSTANTIATE_SINGLETON_1(MovementGeneratorRegistry);
-INSTANTIATE_SINGLETON_1(GameObjectAIRegistry);
 
 namespace FactorySelector
 {
@@ -44,7 +39,6 @@ namespace FactorySelector
             if(CreatureAI* scriptedAI = sScriptMgr->GetAI(creature))
                 return scriptedAI;
 
-        CreatureAIRegistry &ai_registry(CreatureAIRepository::Instance());
         assert( creature->GetCreatureTemplate() != NULL );
         CreatureTemplate const *cinfo=creature->GetCreatureTemplate();
 
@@ -54,19 +48,19 @@ namespace FactorySelector
 
         // Always PetAI for hunter pets
         if(creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
-            ai_factory = ai_registry.GetRegistryItem("PetAI");
+            ai_factory = sCreatureAIRegistry->GetRegistryItem("PetAI");
         else if( !ainame.empty())  // select by script name
-            ai_factory = ai_registry.GetRegistryItem( ainame.c_str() );
+            ai_factory = sCreatureAIRegistry->GetRegistryItem( ainame.c_str() );
         else if(!ai_factory) // else try to select AI by NPC flags
         {
             if( creature->IsGuard() )
-                ai_factory = ai_registry.GetRegistryItem("GuardAI");
+                ai_factory = sCreatureAIRegistry->GetRegistryItem("GuardAI");
             else if(creature->IsTotem())
-                ai_factory = ai_registry.GetRegistryItem("TotemAI");
+                ai_factory = sCreatureAIRegistry->GetRegistryItem("TotemAI");
             else if(creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
-                ai_factory = ai_registry.GetRegistryItem("NullCreatureAI");
+                ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
             else if(creature->GetCreatureType() == CREATURE_TYPE_CRITTER)
-                ai_factory = ai_registry.GetRegistryItem("CritterAI");
+                ai_factory = sCreatureAIRegistry->GetRegistryItem("CritterAI");
         }
 
         // Else select by permit check
@@ -74,7 +68,7 @@ namespace FactorySelector
         {
             int best_val = -1;
             typedef CreatureAIRegistry::RegistryMapType RMT;
-            RMT const &l = ai_registry.GetRegisteredItems();
+            RMT const &l = sCreatureAIRegistry->GetRegisteredItems();
             for( RMT::const_iterator iter = l.begin(); iter != l.end(); ++iter)
             {
                 const CreatureAICreator *factory = iter->second;
@@ -97,7 +91,7 @@ namespace FactorySelector
 
     MovementGenerator* selectMovementGenerator(Creature *creature)
     {
-        MovementGeneratorRegistry &mv_registry(MovementGeneratorRepository::Instance());
+        MovementGeneratorRegistry& mv_registry(*MovementGeneratorRegistry::instance());
         assert( creature->GetCreatureTemplate() != NULL );
         const MovementGeneratorCreator *mv_factory = mv_registry.GetRegistryItem( creature->GetDefaultMovementType());
 
@@ -127,9 +121,8 @@ namespace FactorySelector
     GameObjectAI* SelectGameObjectAI(GameObject *go)
     {
         const GameObjectAICreator *ai_factory = NULL;
-        GameObjectAIRegistry& ai_registry(GameObjectAIRepository::Instance());
-
-        ai_factory = ai_registry.GetRegistryItem(go->GetAIName());
+        
+        ai_factory = sGameObjectAIRegistry->GetRegistryItem(go->GetAIName());
 
         //future goAI types go here
 

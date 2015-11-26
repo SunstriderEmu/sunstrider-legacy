@@ -2130,6 +2130,7 @@ void Player::Regenerate(Powers power)
             break;
         case POWER_FOCUS:
         case POWER_HAPPINESS:
+        default:
             break;
     }
 
@@ -2447,9 +2448,9 @@ bool Player::IsGroupVisibleFor(Player* p) const
 
 bool Player::IsInSameGroupWith(Player const* p) const
 {
-    return  p==this || GetGroup() != NULL &&
+    return  p==this || (GetGroup() != NULL &&
         GetGroup() == p->GetGroup() &&
-        GetGroup()->SameSubGroup(this->ToPlayer(), p->ToPlayer());
+        GetGroup()->SameSubGroup(this->ToPlayer(), p->ToPlayer()));
 }
 
 ///- If the player is invited, remove him. If the group if then only 1 person, disband the group.
@@ -3221,7 +3222,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             spell_id != 5420 && spell_id != 5419 && spell_id != 7376 &&
             spell_id != 7381 && spell_id != 21156 && spell_id != 21009 &&
             spell_id != 21178 && spell_id != 33948 && spell_id != 40121 ) ||
-            m_form != 0 && (spellInfo->Stances & (1<<(m_form-1))) ||
+            (m_form != 0 && (spellInfo->Stances & (1<<(m_form-1)))) ||
             (spell_id ==  5420 && m_form == FORM_TREE) ||
             (spell_id ==  5419 && m_form == FORM_TRAVEL) ||
             (spell_id ==  7376 && m_form == FORM_DEFENSIVESTANCE) ||
@@ -3288,9 +3289,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
 
             if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
                 // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
-                pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0 ||
+                (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
                 // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
-                pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0 )
+                (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 switch(GetSkillRangeType(pSkill,_spell_idx->second->racemask!=0))
                 {
@@ -3362,7 +3363,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     if (itr == m_spells.end())
         return;
 
-    if(itr->second->state == PLAYERSPELL_REMOVED || disabled && itr->second->disabled)
+    if(itr->second->state == PLAYERSPELL_REMOVED || (disabled && itr->second->disabled))
         return;
 
     // unlearn non talent higher ranks (recursive)
@@ -3475,9 +3476,9 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
 
             if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
                 // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
-                pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0 ||
+                (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
                 // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
-                pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0 )
+                (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 // not reset skills for professions, class and racial abilities
                 if( (pSkill->categoryId==SKILL_CATEGORY_SECONDARY || pSkill->categoryId==SKILL_CATEGORY_PROFESSION) &&
@@ -4545,7 +4546,7 @@ void Player::RepopAtGraveyard()
 
     bool inDuelArea = IsInDuelArea();
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if(!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
+    if((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -5005,6 +5006,8 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
                 UpdateExpertise(OFF_ATTACK);
             }
             break;
+        default:
+            break;
     }
 }
 
@@ -5040,6 +5043,8 @@ void Player::UpdateHasteRating(CombatRating cr, int32 value, bool apply)
     case CR_HASTE_SPELL:
         ApplyCastTimePercentMod(oldMod,false); 
         ApplyCastTimePercentMod(newMod,true);
+        break;
+    default:
         break;
     }
 }
@@ -5246,6 +5251,8 @@ void Player::UpdateWeaponSkill (WeaponAttackType attType)
                 UpdateSkill(tmpitem->GetSkill(),weapon_skill_gain);
             break;
         }
+        default:
+            break;
     }
     UpdateAllCritPercentages();
 }
@@ -9166,10 +9173,10 @@ Item* Player::GetItemByPos( uint16 pos ) const
 
 Item* Player::GetItemByPos( uint8 bag, uint8 slot ) const
 {
-    if( bag == INVENTORY_SLOT_BAG_0 && ( slot < BANK_SLOT_BAG_END || slot >= KEYRING_SLOT_START && slot < KEYRING_SLOT_END ) )
+    if( bag == INVENTORY_SLOT_BAG_0 && ( slot < BANK_SLOT_BAG_END || (slot >= KEYRING_SLOT_START && slot < KEYRING_SLOT_END) ) )
         return m_items[slot];
-    else if(bag >= INVENTORY_SLOT_BAG_START && bag < INVENTORY_SLOT_BAG_END
-        || bag >= BANK_SLOT_BAG_START && bag < BANK_SLOT_BAG_END )
+    else if((bag >= INVENTORY_SLOT_BAG_START && bag < INVENTORY_SLOT_BAG_END)
+        || (bag >= BANK_SLOT_BAG_START && bag < BANK_SLOT_BAG_END) )
     {
         Bag *pBag = (Bag*)GetItemByPos( INVENTORY_SLOT_BAG_0, bag );
         if ( pBag )
@@ -9551,7 +9558,7 @@ uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountV
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
 
             // prevent cheating
-            if(slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END || slot >= PLAYER_SLOT_END)
+            if((slot >= BUYBACK_SLOT_START && slot < BUYBACK_SLOT_END) || slot >= PLAYER_SLOT_END)
                 return EQUIP_ERR_ITEM_DOESNT_GO_INTO_BAG;
         }
         else
@@ -10931,7 +10938,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
 
         if( pItem->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP ||
             pItem->GetTemplate()->Bonding == BIND_QUEST_ITEM ||
-            pItem->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos) )
+            (pItem->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos)) )
             pItem->SetBinding( true );
 
         if( bag == INVENTORY_SLOT_BAG_0 )
@@ -10977,7 +10984,7 @@ Item* Player::_StoreItem( uint16 pos, Item *pItem, uint32 count, bool clone, boo
     {
         if( pItem2->GetTemplate()->Bonding == BIND_WHEN_PICKED_UP ||
             pItem2->GetTemplate()->Bonding == BIND_QUEST_ITEM ||
-            pItem2->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos) )
+            (pItem2->GetTemplate()->Bonding == BIND_WHEN_EQUIPED && IsBagPos(pos)) )
             pItem2->SetBinding( true );
 
         pItem2->SetCount( pItem2->GetCount() + count );
@@ -12239,7 +12246,7 @@ void Player::UpdateItemDuration(uint32 time, bool realtimeonly)
         Item* item = *itr;
         ++itr;                                              // current element can be erased in UpdateDuration
 
-        if (realtimeonly && item->GetTemplate()->Duration < 0 || !realtimeonly)
+        if (realtimeonly && (item->GetTemplate()->Duration < 0 || !realtimeonly))
             item->UpdateDuration(this,time);
     }
 }
@@ -13643,8 +13650,8 @@ bool Player::SatisfyQuestPreviousQuest( Quest const* qInfo, bool msg )
 
                     // alternative quest from group also must be active
                     if( i_exstatus == mQuestStatus.end() ||
-                        i_exstatus->second.m_status != QUEST_STATUS_INCOMPLETE &&
-                        (i_prevstatus->second.m_status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId)) )
+                        (i_exstatus->second.m_status != QUEST_STATUS_INCOMPLETE &&
+                        (i_prevstatus->second.m_status != QUEST_STATUS_COMPLETE || GetQuestRewardStatus(prevId))) )
                     {
                         if( msg )
                             SendCanTakeQuestResponse( INVALIDREASON_DONT_HAVE_REQ );
@@ -13978,7 +13985,8 @@ void Player::SetQuestStatus( uint32 quest_id, QuestStatus status )
 
 void Player::AutoCompleteQuest( Quest const* qInfo )
 {
-    if(!qInfo) return;
+    if(!qInfo) 
+        return;
 
     // Add quest items for quests that require items
     for (uint8 x = 0; x < QUEST_OBJECTIVES_COUNT; ++x)
@@ -14005,23 +14013,23 @@ void Player::AutoCompleteQuest( Quest const* qInfo )
     // All creature/GO slain/casted (not required, but otherwise it will display "Creature slain 0/10")
     for(uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
     {
-        uint32 creature = qInfo->RequiredNpcOrGo[i];
-        uint32 creaturecount = qInfo->RequiredNpcOrGoCount[i];
+        int32 creatureOrGo = qInfo->RequiredNpcOrGo[i];
+        uint32 creatureOrGocount = qInfo->RequiredNpcOrGoCount[i];
 
         if(uint32 spell_id = qInfo->ReqSpell[i])
         {
-            for(uint16 z = 0; z < creaturecount; ++z)
-                CastedCreatureOrGO(creature,0,spell_id);
+            for(uint16 z = 0; z < creatureOrGocount; ++z)
+                CastedCreatureOrGO(creatureOrGo,0,spell_id);
         }
-        else if(creature > 0)
+        else if(creatureOrGo > 0)
         {
-            for(uint16 z = 0; z < creaturecount; ++z)
-                KilledMonster(creature,0);
+            for(uint16 z = 0; z < creatureOrGocount; ++z)
+                KilledMonster(creatureOrGo,0);
         }
-        else if(creature < 0)
+        else if(creatureOrGo < 0)
         {
-            for(uint16 z = 0; z < creaturecount; ++z)
-                CastedCreatureOrGO(creature,0,0);
+            for(uint16 z = 0; z < creatureOrGocount; ++z)
+                CastedCreatureOrGO(creatureOrGo,0,0);
         }
     }
 
@@ -14859,7 +14867,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     m_name = fields[LOAD_DATA_NAME].GetString();
 
     // check name limitations
-    if(!ObjectMgr::CheckPlayerName(m_name) || GetSession()->GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(m_name))
+    if(!ObjectMgr::CheckPlayerName(m_name) || (GetSession()->GetSecurity() == SEC_PLAYER && sObjectMgr->IsReservedName(m_name)))
     {
         CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE guid ='%u'", uint32(AT_LOGIN_RENAME),guid);
         return false;
@@ -15592,7 +15600,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             }
 
             // negative effects should continue counting down after logout
-            if (remaintime != -1 && !spellproto->IsPositiveEffect(effindex) || spellproto->HasAttribute(SPELL_ATTR4_EXPIRE_OFFLINE))
+            if ((remaintime != -1 && !spellproto->IsPositiveEffect(effindex)) || spellproto->HasAttribute(SPELL_ATTR4_EXPIRE_OFFLINE))
             {
                 if(remaintime  <= int32(timediff))
                     continue;
@@ -16000,9 +16008,10 @@ void Player::_LoadQuestStatus(QueryResult result)
 
                 // add to quest log
                 if( slot < MAX_QUEST_LOG_SIZE &&
-                    ( questStatusData.m_status==QUEST_STATUS_INCOMPLETE ||
-                    questStatusData.m_status==QUEST_STATUS_COMPLETE &&
-                    (!questStatusData.m_rewarded || pQuest->IsDaily()) ) )
+                    ( questStatusData.m_status == QUEST_STATUS_INCOMPLETE ||
+                    (questStatusData.m_status == QUEST_STATUS_COMPLETE &&
+                    (!questStatusData.m_rewarded || pQuest->IsDaily())) ) 
+                  )
                 {
                     SetQuestSlot(slot,quest_id,quest_time);
 
@@ -17118,6 +17127,8 @@ void Player::_SaveSkills(SQLTransaction trans)
                 trans->PAppend("UPDATE character_skills SET value = '%u',max = '%u'WHERE guid = '%u' AND skill = '%u' ",
                     value, max, GetGUIDLow(), itr->first );
                 break;
+            default:
+                break;
         };
         itr->second.uState = SKILL_UNCHANGED;
 
@@ -17758,7 +17769,7 @@ void Player::PetSpellInitialize()
 
         CreatureTemplate const *cinfo = pet->GetCreatureTemplate();
 
-        if(pet->isControlled() && (pet->getPetType() == HUNTER_PET || cinfo && cinfo->type == CREATURE_TYPE_DEMON && GetClass() == CLASS_WARLOCK))
+        if(pet->isControlled() && (pet->getPetType() == HUNTER_PET || (cinfo && cinfo->type == CREATURE_TYPE_DEMON && GetClass() == CLASS_WARLOCK)))
         {
             for(PetSpellMap::iterator itr = pet->m_spells.begin();itr != pet->m_spells.end();++itr)
             {
@@ -20868,8 +20879,8 @@ void Player::UpdateCorpseReclaimDelay()
 {
     bool pvp = m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH;
 
-    if( pvp && !sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP) ||
-        !pvp && !sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE) )
+    if( (pvp && !sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP)) ||
+        (!pvp && !sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)) )
         return;
 
     time_t now = time(NULL);
@@ -20905,8 +20916,8 @@ void Player::SendCorpseReclaimDelay(bool load)
             return;
 
         uint32 count;
-        if( pvp && sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP) ||
-           !pvp && sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE) )
+        if( (pvp && sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVP)) ||
+           (!pvp && sWorld->getConfig(CONFIG_DEATH_CORPSE_RECLAIM_DELAY_PVE)) )
         {
             count = (m_deathExpireTime-corpse->GetGhostTime())/DEATH_EXPIRE_STEP;
             if(count>=MAX_DEATH_COUNT)
@@ -21761,9 +21772,6 @@ void Player::UpdateKnownPvPTitles()
     uint32 bit_index;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
     uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
-
-    if (honor_kills < 0)
-        return;
 
     for (int i = HKRANK01; i != HKRANKMAX; ++i)
     {

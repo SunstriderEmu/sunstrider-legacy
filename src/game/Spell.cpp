@@ -41,7 +41,6 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "CellImpl.h"
-#include "Policies/SingletonImp.h"
 #include "SharedDefines.h"
 #include "Tools.h"
 #include "LootMgr.h"
@@ -1077,7 +1076,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             caster != unitTarget && unitTarget->IsAlive())
         {
             // Redirect damage to caster if victim alive
-            m_caster->CastCustomSpell(m_caster, 32409, uint32(0), NULL, NULL, true);
+            m_caster->CastCustomSpell(m_caster, 32409, nullptr, nullptr, nullptr, true);
             if (m_caster->ToPlayer())
                 m_caster->ToPlayer()->m_swdBackfireDmg = m_damage;
             //breakcompile;   // Build damage packet directly here and fake spell damage
@@ -1244,7 +1243,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 
     // Get Data Needed for Diminishing Returns, some effects may have multiple auras, so this must be done on spell hit, not aura add
-    if(m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell))
+    if((m_diminishGroup = GetDiminishingReturnsGroupForSpell(m_spellInfo, m_triggeredByAuraSpell)))
     {
         m_diminishLevel = unit->GetDiminishing(m_diminishGroup);
         // send immunity message if target is immune
@@ -1499,8 +1498,8 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
 
             if(cur->GetDistance(*next) > chainSpellJumpRadius)
                 break;
-            while(m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
-                && !m_caster->isInFront(*next, max_range)
+            while((m_spellInfo->DmgClass == SPELL_DAMAGE_CLASS_MELEE
+                && !m_caster->isInFront(*next, max_range))
                 || !m_caster->CanSeeOrDetect(*next, false)
                 || !cur->IsWithinLOSInMap(*next)
                 || ((m_spellInfo->HasAttribute(SPELL_ATTR6_CANT_TARGET_CROWD_CONTROLLED)) && (!(*next)->CanFreeMove() || (*next)->IsPolymorphed())))
@@ -1555,7 +1554,7 @@ void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const u
 
     Trinity::SpellNotifierCreatureAndPlayer notifier(*this, TagUnitMap, radius, type, TargetType, entry, x, y, z);
     if((m_spellInfo->HasAttribute(SPELL_ATTR3_PLAYERS_ONLY))
-        || TargetType == SPELL_TARGETS_ENTRY && !entry)
+        || (TargetType == SPELL_TARGETS_ENTRY && !entry))
         m_caster->GetMap()->VisitWorld(x, y, radius, notifier);
     else
         m_caster->GetMap()->VisitAll(x, y, radius, notifier);
@@ -2610,7 +2609,9 @@ void Spell::cast(bool skipCheck)
     if(m_spellInfo->HasAttribute(SPELL_ATTR_CU_LINK_CAST))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(m_spellInfo->Id))
+        {
             for(std::vector<int32>::const_iterator i = spell_triggered->begin(); i != spell_triggered->end(); ++i)
+            {
                 if(*i < 0)
                     m_caster->RemoveAurasDueToSpell(-(*i));
                 else
@@ -2627,6 +2628,8 @@ void Spell::cast(bool skipCheck)
                         m_caster->CastSpell(m_caster, *i, true);
                     }
                 }
+            }
+        }
     }
 
     if ((m_spellInfo->SpellFamilyName == 3 && m_spellInfo->SpellFamilyFlags == 0x400000) // Pyro
@@ -3800,7 +3803,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         return SPELL_CAST_OK;
 
     // check cooldowns to prevent cheating
-    if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id) || strict && (m_caster->ToPlayer())->HasGlobalCooldown(m_spellInfo)))
+    if(!m_IsTriggeredSpell && m_caster->GetTypeId()==TYPEID_PLAYER && ((m_caster->ToPlayer())->HasSpellCooldown(m_spellInfo->Id) || (strict && (m_caster->ToPlayer())->HasGlobalCooldown(m_spellInfo))))
     {
        //triggered spells shouldn't be casted (cooldown check in handleproctriggerspell)
        // if(m_triggeredByAuraSpell)
@@ -4024,7 +4027,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     // - with greater than 15 min CD without SPELL_ATTR4_USABLE_IN_ARENA flag
     // - with SPELL_ATTR4_NOT_USABLE_IN_ARENA flag
     if( (m_spellInfo->HasAttribute(SPELL_ATTR4_NOT_USABLE_IN_ARENA)) ||
-        m_spellInfo->GetRecoveryTime() > 15 * MINUTE * IN_MILLISECONDS && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA)) )
+        (m_spellInfo->GetRecoveryTime() > 15 * MINUTE * IN_MILLISECONDS && !(m_spellInfo->HasAttribute(SPELL_ATTR4_USABLE_IN_ARENA))) )
         if(MapEntry const* mapEntry = sMapStore.LookupEntry(m_caster->GetMapId()))
             if(mapEntry->IsBattleArena())
                 return SPELL_FAILED_NOT_IN_ARENA;
@@ -4058,7 +4061,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_AFFECTING_COMBAT;  
 
         // block non combat spells while we got in air projectiles
-        if( !m_IsTriggeredSpell && m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
+        if( !m_IsTriggeredSpell && (m_caster->HasDelayedSpell() || m_caster->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]) )
             return SPELL_FAILED_DONT_REPORT;
     }
 
@@ -4325,10 +4328,10 @@ SpellCastResult Spell::CheckCast(bool strict)
 
                 if( m_caster->GetTypeId() != TYPEID_PLAYER  // only players can open locks, gather etc.
                     // we need a go target in case of TARGET_GAMEOBJECT_TARGET
-                    || m_spellInfo->Effects[i].TargetA.GetTarget()== TARGET_GAMEOBJECT_TARGET && !m_targets.GetGOTarget()
+                    || (m_spellInfo->Effects[i].TargetA.GetTarget() == TARGET_GAMEOBJECT_TARGET && !m_targets.GetGOTarget())
                     // we need a go target, or an openable item target in case of TARGET_GAMEOBJECT_ITEM_TARGET
-                    || m_spellInfo->Effects[i].TargetA.GetTarget()== TARGET_GAMEOBJECT_ITEM_TARGET && !m_targets.GetGOTarget() &&
-                    (!m_targets.GetItemTarget() || !m_targets.GetItemTarget()->GetTemplate()->LockID || m_targets.GetItemTarget()->GetOwner() != m_caster ) )
+                    || (m_spellInfo->Effects[i].TargetA.GetTarget()== TARGET_GAMEOBJECT_ITEM_TARGET && !m_targets.GetGOTarget() &&
+                       (!m_targets.GetItemTarget() || !m_targets.GetItemTarget()->GetTemplate()->LockID || m_targets.GetItemTarget()->GetOwner() != m_caster )) )
                     return SPELL_FAILED_BAD_TARGETS;
 
                 // In Battleground players can use only flags and banners
@@ -5798,7 +5801,7 @@ void Spell::HandleHitTriggerAura()
 bool Spell::IsNeedSendToClient() const
 {
     return m_spellInfo->SpellVisual!=0 || m_spellInfo->IsChanneled() ||
-        m_spellInfo->Speed > 0.0f || !m_triggeredByAuraSpell && !m_IsTriggeredSpell;
+        m_spellInfo->Speed > 0.0f || (!m_triggeredByAuraSpell && !m_IsTriggeredSpell);
 }
 
 bool Spell::HaveTargetsForEffect( uint8 effect ) const

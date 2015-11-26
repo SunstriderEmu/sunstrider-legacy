@@ -24,7 +24,6 @@
 #include "Define.h"
 #include "TypeList.h"
 #include "ObjectRegistry.h"
-#include "Policies/SingletonImp.h"
 
 /** FactoryHolder holds a factory object of a specific type
  */
@@ -33,14 +32,13 @@ class FactoryHolder
 {
     public:
         typedef ObjectRegistry<FactoryHolder<T, Key >, Key > FactoryHolderRegistry;
-        typedef Trinity::Singleton<FactoryHolderRegistry > FactoryHolderRepository;
 
         FactoryHolder(Key k) : i_key(k) {}
         virtual ~FactoryHolder() {}
         inline Key key() const { return i_key; }
 
-        void RegisterSelf(void) { FactoryHolderRepository::Instance().InsertItem(this, i_key); }
-        void DeregisterSelf(void) { FactoryHolderRepository::Instance().RemoveItem(this, false); }
+        void RegisterSelf(void) { FactoryHolderRegistry::instance()->InsertItem(this, i_key); }
+        void DeregisterSelf(void) { FactoryHolderRegistry::instance()->RemoveItem(this, false); }
 
         /// Abstract Factory create method
         virtual T* Create(void *data = NULL) const = 0;

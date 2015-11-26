@@ -73,7 +73,15 @@ class PackedGuid;
 
 struct PackedGuidReader
 {
-    explicit PackedGuidReader(uint64 guid) : GuidPtr(&guid) { }
+    explicit PackedGuidReader(uint64 guid) 
+    { 
+        GuidPtr = new uint64();
+        *GuidPtr = guid;
+    }
+    ~PackedGuidReader() 
+    {
+        delete GuidPtr;
+    }
     uint64* GuidPtr;
 };
 

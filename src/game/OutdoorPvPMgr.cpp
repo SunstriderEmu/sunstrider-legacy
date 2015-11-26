@@ -24,7 +24,6 @@
 #include "OutdoorPvPSI.h"
 #include "OutdoorPvPEP.h"
 #include "Player.h"
-#include "Policies/SingletonImp.h"
 
 OutdoorPvPMgr::OutdoorPvPMgr()
 {

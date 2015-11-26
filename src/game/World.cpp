@@ -633,8 +633,8 @@ void World::LoadConfigSettings(bool reload)
     if(reload)
     {
         uint32 val = sConfigMgr->GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
-        if(val!=m_configs[CONFIG_SOCKET_SELECTTIME])
-            TC_LOG_ERROR("server.loading","SocketSelectTime option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[DEFAULT_SOCKET_SELECT_TIME]);
+        if(val != m_configs[CONFIG_SOCKET_SELECTTIME])
+            TC_LOG_ERROR("server.loading","SocketSelectTime option can't be changed at worldserver.conf reload, using current value (%u).", m_configs[CONFIG_SOCKET_SELECTTIME]);
     }
     else
         m_configs[CONFIG_SOCKET_SELECTTIME] = sConfigMgr->GetIntDefault("SocketSelectTime", DEFAULT_SOCKET_SELECT_TIME);
@@ -1264,15 +1264,16 @@ void World::SetInitialWorldSettings()
     sObjectMgr->SetHighestGuids();
 
     ///- Check the existence of the map files for all races' startup areas.
-    if(   !MapManager::ExistMapAndVMap(0,-6240.32f, 331.033f)
-        ||!MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)
-        ||!MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)
-        ||!MapManager::ExistMapAndVMap(1,-618.518f,-4251.67f)
-        ||!MapManager::ExistMapAndVMap(0, 1676.35f, 1677.45f)
-        ||!MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
-        ||!MapManager::ExistMapAndVMap(1,-2917.58f,-257.98f)
-        ||m_configs[CONFIG_EXPANSION] && (
-        !MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f) ) )
+    if(    !MapManager::ExistMapAndVMap(0,-6240.32f, 331.033f)
+        || !MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)
+        || !MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)
+        || !MapManager::ExistMapAndVMap(1,-618.518f,-4251.67f)
+        || !MapManager::ExistMapAndVMap(0, 1676.35f, 1677.45f)
+        || !MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
+        || !MapManager::ExistMapAndVMap(1,-2917.58f,-257.98f)
+        || (m_configs[CONFIG_EXPANSION] 
+           && (!MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f)) ) 
+      )
     {
         TC_LOG_ERROR("server.loading", "Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the worldserver.conf file.", m_dataPath.c_str(), m_dataPath.c_str());
         exit(1);
@@ -1529,8 +1530,8 @@ void World::SetInitialWorldSettings()
 
     ///- Load dynamic data tables from the database
     TC_LOG_INFO("server.loading", "Loading Auctions..." );
-    sAHMgr.LoadAuctionItems();
-    sAHMgr.LoadAuctions();
+    sAuctionMgr->LoadAuctionItems();
+    sAuctionMgr->LoadAuctions();
 
 //    TC_LOG_INFO("server.loading", "Loading Guilds..." );
 //    sObjectMgr->LoadGuilds();
@@ -1575,7 +1576,7 @@ void World::SetInitialWorldSettings()
     sSmartWaypointMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading Creature Formations..." );
-    sCreatureGroupMgr.LoadCreatureFormations();
+    sCreatureGroupMgr->LoadCreatureFormations();
     
     TC_LOG_INFO("server.loading","Loading Conditions...");
     sConditionMgr->LoadConditions();
@@ -1924,7 +1925,7 @@ void World::Update(time_t diff)
             sObjectMgr->ReturnOrDeleteOldMails(true);
         }
         ///-Handle expired auctions
-        sAHMgr.Update();
+        sAuctionMgr->Update();
     }
 
     #ifdef PLAYERBOT

@@ -451,7 +451,7 @@ bool OutdoorPvPObjectiveNA::HandleCustomSpell(Player* plr, uint32 spellId, GameO
 
 int32 OutdoorPvPObjectiveNA::HandleOpenGo(Player* plr, uint64 guid)
 {
-    uint32 retval = OutdoorPvPObjective::HandleOpenGo(plr, guid);
+    int32 retval = OutdoorPvPObjective::HandleOpenGo(plr, guid);
     if (retval >= 0) {
         const go_type* gos = NULL;
         if (m_ControllingFaction == TEAM_ALLIANCE)

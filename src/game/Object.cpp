@@ -213,6 +213,8 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                 case GAMEOBJECT_TYPE_TRANSPORT:
                     flags |= UPDATEFLAG_TRANSPORT;
                     break;
+                default:
+                    break;
             }
         }
 
@@ -1425,6 +1427,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             SetPet(pet);
             PetSpellInitialize();
             break;
+        default:
+            break;
     }
 
     if(petType == SUMMON_PET)
@@ -1515,6 +1519,8 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
             pet->InitPetCreateSpells();
             SetPet(pet);
+            break;
+        default:
             break;
     }
 

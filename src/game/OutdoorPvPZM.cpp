@@ -150,7 +150,7 @@ bool OutdoorPvPObjectiveZM_Beacon::Update(uint32 diff)
 bool OutdoorPvPZM::Update(uint32 diff)
 {
     bool changed = false;
-    if(changed = OutdoorPvP::Update(diff))
+    if((changed = OutdoorPvP::Update(diff)))
     {
         if(m_AllianceTowersControlled == ZM_NUM_BEACONS)
             m_GraveYard->SetBeaconState(TEAM_ALLIANCE);
@@ -276,7 +276,7 @@ bool OutdoorPvPObjectiveZM_GraveYard::Update(uint32 diff)
 
 int32 OutdoorPvPObjectiveZM_GraveYard::HandleOpenGo(Player *plr, uint64 guid)
 {
-    uint32 retval = OutdoorPvPObjective::HandleOpenGo(plr, guid);
+    int32 retval = OutdoorPvPObjective::HandleOpenGo(plr, guid);
     if(retval>=0)
     {
         if(plr->HasAuraEffect(ZM_BATTLE_STANDARD_A,0) && m_GraveYardState != ZM_GRAVEYARD_A)

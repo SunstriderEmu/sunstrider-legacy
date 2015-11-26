@@ -49,8 +49,6 @@
 #include "GameEventMgr.h"
 #include "CreatureGroups.h"
 #include "ScriptMgr.h"
-// apply implementation of the singletons
-#include "Policies/SingletonImp.h"
 #include "TemporarySummon.h"
 #include "MoveSpline.h"
 #include "Spell.h"
@@ -196,11 +194,11 @@ Creature::~Creature()
     if(i_AI)
     {
         delete i_AI;
-        i_AI = NULL;
+        i_AI = nullptr;
     }
 
     if(m_uint32Values)
-        TC_LOG_DEBUG("FIXME","Deconstruct Creature Entry = %u", GetEntry());
+        TC_LOG_DEBUG("entities.unit","Deconstruct Creature Entry = %u", GetEntry());
 }
 
 void Creature::AddToWorld()
@@ -231,7 +229,7 @@ void Creature::RemoveFromWorld()
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
         if(m_formation)
-            sCreatureGroupMgr.RemoveCreatureFromGroup(m_formation, this);
+            sCreatureGroupMgr->RemoveCreatureFromGroup(m_formation, this);
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
         Unit::RemoveFromWorld();
@@ -258,7 +256,7 @@ void Creature::SearchFormation()
 
     CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())
-        sCreatureGroupMgr.AddCreatureToGroup(frmdata->second->leaderGUID, this);
+        sCreatureGroupMgr->AddCreatureToGroup(frmdata->second->leaderGUID, this);
 
 }
 
@@ -747,6 +745,12 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     m_AI = sScriptMgr->getAINew(this);
     if (getAI())
         m_AI->initialize();
+    
+#ifdef LICH_KING
+    // Initialize vehicle
+    if (GetVehicleKit())
+        GetVehicleKit()->Reset();
+#endif
     
     return true;
 }
@@ -1967,14 +1971,14 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
     uint32 ThreatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
 
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
-    return ( length > (ThreatRadius > AttackDist ? ThreatRadius : AttackDist));
+    return ( length > ((ThreatRadius > AttackDist) ? ThreatRadius : AttackDist));
 }
 
 void Creature::LoadCreatureAddon()
 {
     if (m_DBTableGuid)
     {
-        if(m_creatureInfoAddon = sObjectMgr->GetCreatureAddon(m_DBTableGuid))
+        if((m_creatureInfoAddon = sObjectMgr->GetCreatureAddon(m_DBTableGuid)))
             return;
     }
 
@@ -2641,7 +2645,7 @@ bool Creature::IsInEvadeMode() const
 //Do not know if this works or not, moving creature to another map is very dangerous
 void Creature::FarTeleportTo(Map* map, float X, float Y, float Z, float O)
 {
-    //TODOMOV okay tout ça ?
+    //TODOMOV okay tout ï¿½a ?
     CleanupsBeforeDelete(false);
     GetMap()->Remove(this,false);
     Relocate(X, Y, Z, O);

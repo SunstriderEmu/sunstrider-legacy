@@ -80,13 +80,6 @@ if(UNIX)
   endif(READLINE_FOUND)
 endif(UNIX)
 
-#if(UNIX)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_TRINITY_SCRIPT_CONFIG='\"${CONF_DIR}/worldserver.conf\"'")
-#elseif(WIN32)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /openmp /bigobj")
-#endif ()
-
 if(PROFILING)
   add_definitions(-DPROFILING)
 endif()

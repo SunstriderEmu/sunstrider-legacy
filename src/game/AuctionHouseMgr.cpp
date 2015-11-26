@@ -31,10 +31,6 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 
-#include "Policies/SingletonImp.h"
-
-INSTANTIATE_SINGLETON_1( AuctionHouseMgr );
-
 AuctionHouseMgr::AuctionHouseMgr()
 {
 }
@@ -515,7 +511,7 @@ void AuctionHouseObject::Update()
             ///- Either cancel the auction if there was no bidder
             if (itr->second->bidder == 0)
             {
-                sAHMgr.SendAuctionExpiredMail( itr->second );
+                sAuctionMgr->SendAuctionExpiredMail( itr->second );
             }
             ///- Or perform the transaction
             else
@@ -523,13 +519,13 @@ void AuctionHouseObject::Update()
                 //we should send an "item sold" message if the seller is online
                 //we send the item to the winner
                 //we send the money to the seller
-                sAHMgr.SendAuctionSuccessfulMail( itr->second );
-                sAHMgr.SendAuctionWonMail( itr->second );
+                sAuctionMgr->SendAuctionSuccessfulMail( itr->second );
+                sAuctionMgr->SendAuctionWonMail( itr->second );
             }
 
             ///- In any case clear the auction
             itr->second->DeleteFromDB();
-            sAHMgr.RemoveAItem(itr->second->item_guidlow);
+            sAuctionMgr->RemoveAItem(itr->second->item_guidlow);
             delete itr->second;
             RemoveAuction(itr->first);
         }
@@ -549,7 +545,7 @@ void AuctionHouseObject::RemoveAllAuctionsOf(uint32 ownerGUID)
             ///- Either cancel the auction if there was no bidder
             if (itr->second->bidder == 0)
             {
-                sAHMgr.SendAuctionExpiredMail( itr->second );
+                sAuctionMgr->SendAuctionExpiredMail( itr->second );
             }
             ///- Or perform the transaction
             else
@@ -557,13 +553,13 @@ void AuctionHouseObject::RemoveAllAuctionsOf(uint32 ownerGUID)
                 //we should send an "item sold" message if the seller is online
                 //we send the item to the winner
                 //we send the money to the seller
-                sAHMgr.SendAuctionSuccessfulMail( itr->second );
-                sAHMgr.SendAuctionWonMail( itr->second );
+                sAuctionMgr->SendAuctionSuccessfulMail( itr->second );
+                sAuctionMgr->SendAuctionWonMail( itr->second );
             }
 
             ///- In any case clear the auction
             itr->second->DeleteFromDB();
-            sAHMgr.RemoveAItem(itr->second->item_guidlow);
+            sAuctionMgr->RemoveAItem(itr->second->item_guidlow);
             delete itr->second;
             RemoveAuction(itr->first);
         }
@@ -623,7 +619,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
     for (AuctionEntryMap::const_iterator itr = AuctionsMap.begin();itr != AuctionsMap.end();++itr)
     {
         AuctionEntry *Aentry = itr->second;
-        Item *item = sAHMgr.GetAItem(Aentry->item_guidlow);
+        Item *item = sAuctionMgr->GetAItem(Aentry->item_guidlow);
         if (!item)
             continue;
 
@@ -641,7 +637,9 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
         if (quality != (0xffffffff) && proto->Quality != quality)
             continue;
 
-        if( levelmin != (0x00) && (proto->RequiredLevel < levelmin || levelmax != (0x00) && proto->RequiredLevel > levelmax ) )
+        if(    ( levelmin && (proto->RequiredLevel < levelmin) )
+            || ( levelmax && (proto->RequiredLevel > levelmax) ) 
+          )
             continue;
 
         if( usable != (0x00) && player->CanUseItem( item ) != EQUIP_ERR_OK )
@@ -667,7 +665,7 @@ void AuctionHouseObject::BuildListAuctionItems(WorldPacket& data, Player* player
 //this function inserts to WorldPacket auction's data
 bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
 {
-    Item *pItem = sAHMgr.GetAItem(item_guidlow);
+    Item *pItem = sAuctionMgr->GetAItem(item_guidlow);
     if (!pItem)
     {
         TC_LOG_ERROR("auctionHouse", "Auction to item %u, that doesn't exist !!!!", item_guidlow);

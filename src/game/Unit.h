@@ -1797,6 +1797,7 @@ class Unit : public WorldObject
 
         bool IsAIEnabled, NeedChangeAI;
              
+        //TODO: these should be removed in favor of WorldObject::FindNearestCreature and FindNearestGameObject
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         
@@ -1843,7 +1844,8 @@ class Unit : public WorldObject
 
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
-        UnitAI *i_AI, *i_disabledAI;
+        UnitAI* i_AI;
+        UnitAI* i_disabledAI;
 
         void _UpdateSpells(uint32 time);
         void _DeleteAuras();

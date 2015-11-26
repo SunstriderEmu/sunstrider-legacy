@@ -3,7 +3,6 @@
 
 #include <Common.h>
 #include <libircclient.h>
-#include "Policies/SingletonImp.h"
 #include "Log.h"
 
 #include "Common.h"
@@ -99,7 +98,7 @@ public:
     // overwrite functions
     const char *GetTrinityString(int32 entry) const;
     bool isAvailable(ChatCommand const& cmd) const;
-    void SendSysMessage(const char *str);
+    void SendSysMessage(const char *str, bool escapeCharacters = false) override;
     std::string const GetName() const override;
     bool needReportToTarget(Player* chr) const;
 

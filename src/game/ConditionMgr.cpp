@@ -349,6 +349,9 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
                         case RELATION_CREATED_BY:
                             condMeets = unit->GetCreatorGUID() == toUnit->GetGUID();
                             break;
+                        default:
+                            condMeets = true;
+                            break;
                     }
                 }
             }

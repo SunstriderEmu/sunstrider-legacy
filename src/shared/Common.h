@@ -153,6 +153,7 @@ inline unsigned long long atoull(char const* str) { return strtoull(str, nullptr
 
 enum TimeConstants
 {
+    SECOND = 1,
     MINUTE = 60,
     HOUR   = MINUTE*60,
     DAY    = HOUR*24,

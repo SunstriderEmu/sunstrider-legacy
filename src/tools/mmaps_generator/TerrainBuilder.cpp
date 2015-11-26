@@ -709,7 +709,7 @@ namespace MMAP
                         vertsY = tilesY + 1;
                         uint8* flags = liquid->GetFlagsStorage();
                         float* data = liquid->GetHeightStorage();
-                        uint8 type = NAV_EMPTY;
+                        uint8 type;
 
                         // convert liquid type to NavTerrain
                         switch (liquid->GetType())
@@ -723,6 +723,9 @@ namespace MMAP
                             break;
                         case 3:
                             type = NAV_SLIME;
+                            break;
+                        default:
+                            type = NAV_EMPTY;
                             break;
                         }
 
