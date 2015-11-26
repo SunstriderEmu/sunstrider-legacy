@@ -40,3 +40,7 @@ if(PROFILING)
 else()
     message("*Built-in profiling:      No")
 endif()
+
+if(DO_DEBUG)
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+endif(DO_DEBUG)
