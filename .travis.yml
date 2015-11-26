@@ -1,27 +1,45 @@
 language: cpp
 compiler:
-  - g++
+  - clang
 
 git:
   depth: 50
+
+branch:
+  only:
+    - sun
   
 sudo: required
 
 before_install:
   - echo "yes" | sudo add-apt-repository ppa:boost-latest/ppa
   - echo "yes" | sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  - echo "yes" | sudo add-apt-repository 'deb http://llvm.org/apt/precise/ llvm-toolchain-precise-3.5 main'
+  - wget -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+  - sudo apt-get install python-software-properties
+  - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
+  - sudo add-apt-repository 'deb [arch=amd64,i386] http://mariadb.cu.be/repo/5.5/ubuntu precise main'
   - sudo apt-get -qq update
-  - sudo apt-get install gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch
-  - sudo apt-get install libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 git
-  - sudo apt-get install libmysqlclient-dev libmysql++-dev
-  - sudo apt-get install libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 20
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 20
+  - sudo apt-get install -qq gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch clang-3.5
+  - sudo apt-get install -qq libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0 git
+  - sudo apt-get install -qq mariadb-server libmariadbdclient-dev libmariadbd-dev
+  - sudo apt-get install -qq libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
+  - export CC=clang-3.5 CXX=clang++-3.5
   
 install:
+  - mysql -uroot -e 'create database test_mysql'
+  - cd ..
   - mkdir bin
   - cd bin
-  - cmake ../ -DCMAKE_INSTALL_PREFIX="/home/travis"
+  - cmake ../sunstrider
+  - cd ../sunstrider
 
 script:
+  - pwd
+  - $CXX --version
+  - mysql -uroot < sql/create_mysql.sql
+  - mysql -utrinity -ptrinity auth < sql/auth.sql
+  - mysql -utrinity -ptrinity characters < sql/characters.sql
+  - mysql -utrinity -ptrinity logs < sql/logs.sql
+  - cd ../bin
   - make -j 10

@@ -86,6 +86,12 @@ variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, 
 /// Launch the Sunstrider server
 extern int main(int argc, char **argv)
 {
+#if defined(__has_feature)
+#  if __has_feature(address_sanitizer)
+printf("Running with -fsanitize=address");
+#  endif
+#endif
+    
     ///- Command line parsing to get the configuration file name
     std::string configFile = _WORLD_SERVER_CONFIG;
     std::string configService;
