@@ -815,33 +815,34 @@ ChatCommand * ChatHandler::getCommandTable()
         {
             do
             {
-                Field *fields = result->Fetch();
-                std::string name = fields[0].GetString();
+                Field* fields = result->Fetch();
+                std::string fullName = fields[0].GetString();
                 
-                auto loadCommand = [&](uint32 i)
+                auto loadCommand = [&fields](ChatCommand table[], uint32 i)
                 {
-                    commandTable[i].SecurityLevel = (uint16)fields[1].GetUInt16();
-                    commandTable[i].Help = fields[2].GetString();
-                    commandTable[i].AllowIRC = fields[3].GetBool();
+                    table[i].SecurityLevel = (uint16)fields[1].GetUInt16();
+                    table[i].Help = fields[2].GetString();
+                    table[i].AllowIRC = fields[3].GetBool();
                     //note that command with AllowIRC set to true still aren't allowed on irc if noSessionNeeded is set to false.
                 };
                 
                 for(uint32 i = 0; commandTable[i].Name != NULL; i++)
                 {
-                    if (name == commandTable[i].Name)
+                    if (fullName == commandTable[i].Name)
                     {
-                        loadCommand(i); 
+                        loadCommand(commandTable, i);
                     }
-                    if(commandTable[i].ChildCommands)
+                    
+                    if(ChatCommand* childTable = commandTable[i].ChildCommands)
                     {
-                        ChatCommand* childTable = commandTable[i].ChildCommands;
                         for(uint32 j = 0; childTable[j].Name != NULL; j++)
                         {
-                            if (     ((childTable[j].Name[0]== '\0') && (name == commandTable[i].Name)) // for "" named subcommand
-                                  || (name == fmtstring("%s %s", commandTable[i].Name, childTable[j].Name))
+                            if (     (   (fullName == commandTable[i].Name) 
+                                      && (childTable[j].Name[0] == '\0'   ) ) // for "" named subcommand
+                                  || (fullName == fmtstring("%s %s", commandTable[i].Name, childTable[j].Name))
                                )
                             {
-                                loadCommand(j); 
+                                loadCommand(childTable, j);
                             }
                         }
                     }
@@ -1092,6 +1093,8 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand *table, const char* text, co
                 return true;
 
             Player* player = m_session->GetPlayer();
+
+            //log command
             if (!AccountMgr::IsPlayerAccount(m_session->GetSecurity()))
             {
                 uint64 guid = player->GetTarget();
