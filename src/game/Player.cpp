@@ -4690,8 +4690,6 @@ void Player::HandleBaseModValue(BaseModGroup modGroup, BaseModType modType, floa
         return;
     }
 
-    float val = 1.0f;
-
     if (modType == FLAT_MOD)
         m_auraBaseMod[modGroup][modType] += apply ? amount : -amount;
     else // PCT_MOD
@@ -6516,7 +6514,6 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
 
     uint64 victim_guid = 0;
     uint32 victim_rank = 0;
-    time_t now = time(NULL);
 
     // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
     UpdateHonorFields();
@@ -15051,7 +15048,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
             if(currentBg && currentBg->IsPlayerInBattleground(GetGUID()))
             {
                 uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(currentBg->GetTypeID(), currentBg->GetArenaType());
-                uint32 queueSlot = AddBattlegroundQueueId(bgQueueTypeId);
+                AddBattlegroundQueueId(bgQueueTypeId);
 
                 SetBattlegroundId(currentBg->GetInstanceID());
                 SetBGTeam(bgteam);
@@ -21771,7 +21768,6 @@ void Player::UpdateKnownPvPTitles()
 {
     uint32 bit_index;
     uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
-    uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
 
     for (int i = HKRANK01; i != HKRANKMAX; ++i)
     {
@@ -21881,7 +21877,6 @@ void Player::TeleportToArenaZone(bool secondary)
 /* true if the player threshold is reached and there is more player in the main zone than the secondary */
 bool Player::ShouldGoToSecondaryArenaZone()
 {
-    bool teleportToSecondaryZone = false;
     uint32 onlinePlayers = sWorld->GetActiveSessionCount();
     uint32 repartitionTheshold = sWorld->getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD);
 

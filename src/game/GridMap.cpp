@@ -491,7 +491,7 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidType
     // Check water type in cell
     int idx=(x_int>>3)*16 + (y_int>>3);
     MapLiquidType mapLiquidType = _liquidEntry ? (MapLiquidType)_liquidEntry[idx] : (MapLiquidType)_liquidType;
-    uint8 flags = _liquidFlags ? _liquidFlags[idx] : 0;
+    //uint8 flags = _liquidFlags ? _liquidFlags[idx] : 0;
     if(mapLiquidType == MAP_LIQUID_TYPE_NO_WATER)
         return LIQUID_MAP_NO_WATER;
 

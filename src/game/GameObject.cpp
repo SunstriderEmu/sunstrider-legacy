@@ -160,12 +160,12 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
             }
             else if (index == GAMEOBJECT_FLAGS)
             {
-                uint32 flags = m_uint32Values[GAMEOBJECT_FLAGS];
+                uint32 _flags = m_uint32Values[GAMEOBJECT_FLAGS];
           /*TODO LOOT      if (GetGoType() == GAMEOBJECT_TYPE_CHEST)
                     if (GetGOInfo()->chest.groupLootRules && !IsLootAllowedFor(target))
                         flags |= GO_FLAG_LOCKED | GO_FLAG_NOT_SELECTABLE; */
 
-                fieldBuffer << flags;
+                fieldBuffer << _flags;
             }
             else
                 fieldBuffer << m_uint32Values[index];                // other cases
@@ -499,7 +499,7 @@ void GameObject::Update(uint32 diff)
                 if (trapTarget)
                 {
                     CastSpell(trapTarget, goInfo->trap.spellId,GetOwnerGUID());
-                    if(Unit* owner = GetOwner())
+                    if(owner)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
@@ -755,7 +755,6 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     }
 
     uint32 entry = data->id;
-    uint32 map_id = data->mapid;
     float x = data->posX;
     float y = data->posY;
     float z = data->posZ;
@@ -1778,8 +1777,8 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
     double f_rot1 = std::sin(GetOrientation() / 2.0f);
     double f_rot2 = std::cos(GetOrientation() / 2.0f);
 
-    int64 i_rot1 = int64(f_rot1 / atan_pow *(f_rot2 >= 0 ? 1.0f : -1.0f));
-    int64 rotation = (i_rot1 << 43 >> 43) & 0x00000000001FFFFF;
+    //int64 i_rot1 = int64(f_rot1 / atan_pow *(f_rot2 >= 0 ? 1.0f : -1.0f));
+    //int64 rotation = (i_rot1 << 43 >> 43) & 0x00000000001FFFFF;
 
     //float f_rot2 = std::sin(0.0f / 2.0f);
     //int64 i_rot2 = f_rot2 / atan(pow(2.0f, -20.0f));

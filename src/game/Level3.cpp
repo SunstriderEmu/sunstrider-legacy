@@ -2100,7 +2100,6 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
 
 bool ChatHandler::HandleAddItemSetCommand(const char* args)
 {
-    
     ARGS_CHECK
 
     char* cId = extractKeyFromLink((char*)args,"Hitemset"); // number or [name] Shift-click form |color|Hitemset:itemset_id|h[name]|h|r
@@ -2127,7 +2126,6 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
     ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
     {
-        uint32 id = itr->first;
         ItemTemplate const *pProto = &(itr->second);
         if (!pProto)
             continue;
@@ -3876,7 +3874,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     uint32 nativeid = target->GetNativeDisplayId();
     uint32 Entry = target->GetEntry();
     CreatureTemplate const* cInfo = target->GetCreatureTemplate();
-    CreatureData const* cData = sObjectMgr->GetCreatureData(target->GetDBTableGUIDLow());
+    //CreatureData const* cData = sObjectMgr->GetCreatureData(target->GetDBTableGUIDLow());
 
     int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
     if(curRespawnDelay < 0)
@@ -5204,7 +5202,6 @@ bool ChatHandler::HandleAddQuest(const char* args)
     ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
     for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
     {
-        uint32 id = itr->first;
         ItemTemplate const *pProto = &(itr->second);
         if (!pProto)
             continue;
@@ -7223,8 +7220,6 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         SetSentErrorMessage(true);
         return false;
     }
-
-    uint32 mailId = sObjectMgr->GenerateMailID();
 
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;

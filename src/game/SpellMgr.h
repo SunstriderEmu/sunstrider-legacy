@@ -307,7 +307,7 @@ enum SpellLinkedType
 inline bool IsSpellHaveEffect(SpellInfo const *spellInfo, SpellEffects effect)
 {
     for(int i= 0; i < 3; ++i)
-        if(spellInfo->Effects[i].Effect==effect)
+        if(spellInfo->Effects[i].Effect == uint32(effect))
             return true;
     return false;
 }
@@ -582,9 +582,9 @@ class PetAura
                 return itr->second;
             else
             {
-                std::map<uint16, uint16>::const_iterator itr = auras.find(0);
-                if(itr != auras.end())
-                    return itr->second;
+                std::map<uint16, uint16>::const_iterator itr2 = auras.find(0);
+                if(itr2 != auras.end())
+                    return itr2->second;
                 else
                     return 0;
             }

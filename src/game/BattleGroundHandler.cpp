@@ -77,7 +77,7 @@ void WorldSession::SendBattleGroundList( uint64 guid, uint32 bgTypeId )
 
 void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup)
 {
-    Group * grp;
+    Group* grp = nullptr;
 
     // can do this, since it's battleground, not arena
     uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(bgTypeId, 0);
@@ -89,11 +89,11 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
     // get bg instance or bg template if instance not found
     Battleground * bg = 0;
     if(instanceId)
-        Battleground *bg = sBattlegroundMgr->GetBattleground(instanceId);
+        bg = sBattlegroundMgr->GetBattleground(instanceId);
 
     if(!bg && !(bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId)))
     {
-        TC_LOG_ERROR("FIXME","Battleground: no available bg / template found");
+        TC_LOG_ERROR("bg.battleground","Battleground: no available bg / template found");
         return;
     }
 
@@ -196,7 +196,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
 
     if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
     {
-        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
+        TC_LOG_ERROR("bg.battleground","Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
         return;
     }
 
@@ -287,7 +287,7 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 
     if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
     {
-        TC_LOG_ERROR("FIXME","Battleground: invalid bgtype received: %u.", bgTypeId);
+        TC_LOG_ERROR("bg.battleground","Battleground: invalid bgtype received: %u.", bgTypeId);
         return;
     }
 
@@ -356,7 +356,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 else
                 {
                     // get the bg we're invited to
-                    Battleground * bg = sBattlegroundMgr->GetBattleground(itrPlayerStatus->second.GroupInfo->IsInvitedToBGInstanceGUID);
+                    bg = sBattlegroundMgr->GetBattleground(itrPlayerStatus->second.GroupInfo->IsInvitedToBGInstanceGUID);
                     status = STATUS_WAIT_JOIN;
                 }
 
@@ -393,7 +393,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
     // if action == 1, then instanceId is _required_
     if(!instanceId && action == 1)
     {
-        TC_LOG_ERROR("FIXME","Battleground: instance not found.");
+        TC_LOG_ERROR("bg.battleground","Battleground: instance not found.");
         return;
     }
 
@@ -405,7 +405,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
     if(!bg)
     {
-        TC_LOG_ERROR("FIXME","Battleground: bg not found.");
+        TC_LOG_ERROR("bg.battleground","Battleground: bg not found.");
         return;
     }
 
@@ -499,7 +499,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 SendPacket(&data);
                 break;
             default:
-                TC_LOG_ERROR("FIXME","Battleground port: unknown action %u", action);
+                TC_LOG_ERROR("bg.battleground","Battleground port: unknown action %u", action);
                 break;
         }
     }
@@ -743,7 +743,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             arenatype = ARENA_TYPE_5v5;
             break;
         default:
-            TC_LOG_ERROR("FIXME","Unknown arena type %u at HandleBattlemasterJoinArena()", type);
+            TC_LOG_ERROR("bg.battleground","Unknown arena type %u at HandleBattlemasterJoinArena()", type);
             return;
     }
 
@@ -757,7 +757,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     Battleground* bg = NULL;
     if( !(bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA)) )
     {
-        TC_LOG_ERROR("FIXME","Battleground: template bg (all arenas) not found");
+        TC_LOG_ERROR("bg.battleground","Battleground: template bg (all arenas) not found");
         return;
     }
 
@@ -828,16 +828,20 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         {
             // Announce arena tags on a dedicated channel
             std::ostringstream msg;
-            char const* channel;
-            char const* pvpchannel = "pvp";
-            char const* ttype;
+            std::string channel;
+            std::string pvpchannel = "pvp";
+            std::string ttype;
             switch (arenatype) {
                 case 2: ttype = "2v2"; channel = "2v2"; break;
                 case 3: ttype = "3v3"; channel = "3v3"; break;
                 case 5: ttype = "5v5"; channel = "5v5"; break;
-                default: TC_LOG_ERROR("FIXME","Invalid arena type.");
+                default: 
+                    ttype = "?";
+                    TC_LOG_ERROR("bg.battleground","Invalid arena type.");
+                    break;
             }
 
+            //print rank approximation
             //msg << "TAG: [" << ttype << "] (" << arenaRating/50*50 << " - " << ((arenaRating/50)+1)*50 << ")";
 
             if (arenaRating >= 2200)
@@ -849,8 +853,10 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             else
                 msg << "Tag: [" << ttype << "] (1500-)";
 
-            ChatHandler::SendMessageWithoutAuthor(channel, msg.str().c_str());
-            ChatHandler::SendMessageWithoutAuthor(pvpchannel, msg.str().c_str());
+            if(!channel.empty())
+                ChatHandler::SendMessageWithoutAuthor(channel.c_str(), msg.str().c_str());
+
+            ChatHandler::SendMessageWithoutAuthor(pvpchannel.c_str(), msg.str().c_str());
         }
 
         // if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
@@ -913,7 +919,7 @@ void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 
     if(!reportedPlayer)
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleReportPvPAFK: player reported by %s not found.",_player->GetName().c_str());
+        TC_LOG_ERROR("bg.battleground","WorldSession::HandleReportPvPAFK: player reported by %s not found.",_player->GetName().c_str());
         return;
     }
 

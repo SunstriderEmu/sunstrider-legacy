@@ -39,7 +39,8 @@ endif()
 add_definitions(-D_BUILD_DIRECTIVE=\\"$(ConfigurationName)\\")
 
 # multithreaded compiling on VS
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+# Exception Handling Model: The exception-handling model that catches C++ exceptions only 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP /EHsc")
 
 # /Zc:throwingNew.
 # When you specify Zc:throwingNew on the command line, it instructs the compiler to assume
@@ -67,23 +68,32 @@ message(STATUS "MSVC: Disabled POSIX warnings")
 # Ignore specific warnings
 # C4351: new behavior: elements of array 'x' will be default initialized
 # C4091: 'typedef ': ignored on left of '' when no variable is declared
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4351 /wd4091")
-if(NOT DO_WARN)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /wd4619 /wd4512")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /wd4619 /wd4512")
-  message(STATUS "MSVC: Disabled generic compiletime warnings")
+# C4820: "..bytes padding added after data member.."
+# C4706: assignment within conditional expression
+# C4100: unreferenced formal parameter
+# C4577: 'noexcept' used with no exception handling mode specified
+# C4505: unreferenced local function has been removed
+# C4456 : declaration of 'itr' hides previous local declaration
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4351 /wd4091 /wd4820 /wd4706 /wd4100 /wd4577 /wd4505 /wd4456 ")
+if(DO_WARN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+  message(STATUS "MSVC: Enabled level 4 warnings")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4996 /wd4355 /wd4244 /wd4985 /wd4267 /wd4619 /wd4512 /wd4838")
 endif()
 
+# Enable and treat as errors the following warnings to easily detect virtual function signature failures:
+# 'function' : member function does not override any base class virtual member function
+# 'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /we4263 /we4264")
+message(STATUS "MSVC: Disabled generic compiletime warnings")
+  
 # Specify the maximum PreCompiled Header memory allocation limit
 # Fixes a compiler-problem when using PCH - the /Ym flag is adjusted by the compiler in MSVC2012, hence we need to set an upper limit with /Zm to avoid discrepancies)
 # (And yes, this is a verified , unresolved bug with MSVC... *sigh*)
 string(REGEX REPLACE "/Zm[0-9]+ *" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zm500" CACHE STRING "" FORCE)
 
-# Enable and treat as errors the following warnings to easily detect virtual function signature failures:
-# 'function' : member function does not override any base class virtual member function
-# 'virtual_function' : no override available for virtual member function from base 'class'; function is hidden
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /we4263 /we4264")
 
 if(DO_DEBUG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Od /Ob0")

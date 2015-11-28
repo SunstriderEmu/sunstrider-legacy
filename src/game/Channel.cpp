@@ -629,8 +629,6 @@ void Channel::Say(uint64 playerGUID, const char *what, Language lang)
         if(!plr)
             return;
 
-        uint32 messageLength = strlen(what) + 1;
-
         WorldPacket data;
         ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, lang, plr, nullptr, what, 0, m_name);
         SendToAll(&data, !players[playerGUID].IsModerator() ? playerGUID : false);

@@ -922,7 +922,7 @@ void ObjectMgr::LoadEquipmentTemplates()
             continue;
         }
         */
-        uint8 id = fields[1].GetUInt8();
+        //uint8 id = fields[1].GetUInt8();
         
         EquipmentInfo& equipmentInfo = _equipmentInfoStore[entry];
 
@@ -6821,8 +6821,6 @@ void ObjectMgr::LoadBattleMastersEntry()
 
 void ObjectMgr::LoadGameObjectForQuests()
 {
-    uint32 oldMSTime = GetMSTime();
-
     _gameObjectForQuestStore.clear();                         // need for reload case
 
     if (sObjectMgr->GetGameObjectTemplateStore()->empty())

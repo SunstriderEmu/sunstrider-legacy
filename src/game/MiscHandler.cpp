@@ -1636,7 +1636,7 @@ void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
     recvData >> counter >> time_;
 
     // time_ seems always more than GetMSTime()
-    uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
+    // uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )

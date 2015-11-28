@@ -488,8 +488,6 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     if (m_QueuedGroups[queue_id].empty())
         return;
 
-    uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(bgTypeId, arenatype);
-
     //battleground with free slot for player should be always the last in this queue
     BGFreeSlotQueueType::iterator itr, next;
     for (itr = sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[bgTypeId].end(); itr = next)

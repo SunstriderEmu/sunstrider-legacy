@@ -573,7 +573,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                     if (!haveSameRace)
                         haveSameRace = createInfo->Race == accRace;
 
-                    uint8 acc_class = field[2].GetUInt8();
+                    //uint8 acc_class = field[2].GetUInt8();
                 }
             }
             /*
@@ -1300,8 +1300,6 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     uint32 guidLow      = fields[0].GetUInt32();
     std::string oldname = fields[1].GetString();
-
-    uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("UPDATE characters set name = '%s', at_login = at_login & ~ %u WHERE guid ='%u'", renameInfo->Name.c_str(), uint32(AT_LOGIN_RENAME), guidLow);

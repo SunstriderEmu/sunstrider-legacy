@@ -224,7 +224,6 @@ void Creature::RemoveFromWorld()
     ///- Remove the creature from the accessor
     if(IsInWorld())
     {
-        uint64 guid = GetGUID();
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
@@ -1065,8 +1064,6 @@ void Creature::SelectLevel()
     if(!cInfo)
         return;
 
-    uint32 rank = IsPet()? 0 : cInfo->rank;
-
     // level
     uint32 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
     uint32 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
@@ -1077,8 +1074,6 @@ void Creature::SelectLevel()
 
     // health
     uint32 health = stats->GenerateHealth(cInfo);
-
-    float rellevel = maxlevel == minlevel ? 0 : (float(level - minlevel))/(maxlevel - minlevel);
 
     SetCreateHealth(health);
     SetMaxHealth(health);

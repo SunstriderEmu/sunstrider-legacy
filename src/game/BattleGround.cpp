@@ -728,7 +728,6 @@ void Battleground::EndBattleground(uint32 winner)
         sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
         plr->GetSession()->SendPacket(&data);
 
-        uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
         plr->GetSession()->SendPacket(&data);
     }

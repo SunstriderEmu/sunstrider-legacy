@@ -1158,12 +1158,12 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
         }
         else                                                // If not spawned
         {
-            CreatureData const* data = sObjectMgr->GetCreatureData(itr.first);
+            data = sObjectMgr->GetCreatureData(itr.first);
             if (data && activate)
             {
                 CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(data->id);
                 uint32 display_id = sObjectMgr->ChooseDisplayId(cinfo,data);
-                CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
+                sObjectMgr->GetCreatureModelRandomGender(&display_id);
                 if (data->equipmentId == 0)
                     itr.second.equipement_id_prev = cinfo->equipmentId;
                 else if (data->equipmentId != -1)

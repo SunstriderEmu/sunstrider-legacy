@@ -36,9 +36,9 @@ else()
 endif()
 
 if(PROFILING)
-    message("*Built-in profiling:      Yes")
+    message("* Built-in profiling:     Yes")
 else()
-    message("*Built-in profiling:      No")
+    message("* Built-in profiling:     No")
 endif()
 
 if(DO_DEBUG)

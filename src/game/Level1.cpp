@@ -904,7 +904,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         }
         else if(cMap->IsDungeon())
         {
-            Map* pMap = sMapMgr->CreateMap(_player->GetMapId(),_player);
+            sMapMgr->CreateMap(_player->GetMapId(),_player);
 
             // we have to go to instance, and can go to player only if:
             //   1) we are in his group (either as leader or as member)
@@ -2354,7 +2354,6 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         return false;
     }
 
-    uint32 mailId = sObjectMgr->GenerateMailID();
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
 

@@ -32,9 +32,9 @@ set(shared_STAT_SRCS
   ${sources_localdir}
 )
 
-IF(WIN32 AND MSVC)
+if(WIN32 AND MSVC)
     add_definitions(/openmp)
-ENDIF()
+endif()
 
 add_library(shared STATIC 
     ${shared_STAT_SRCS}

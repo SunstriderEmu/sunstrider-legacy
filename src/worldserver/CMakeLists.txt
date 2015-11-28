@@ -81,7 +81,7 @@ INCLUDE_DIRECTORIES(
 
 add_executable(worldserver ${worldserver_SRCS})
 
-IF ( UNIX )
+if ( UNIX )
 add_definitions(
 -D_WORLD_SERVER_CONFIG='"${CONF_DIR}/worldserver.conf"'
 )
@@ -93,7 +93,7 @@ if( UNIX )
   set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 endif()
 
-IF ( WIN32 )
+if ( WIN32 )
 	set(worldserver_LINK_FLAGS ${worldserver_LINK_FLAGS} "/LARGEADDRESSAWARE")
 endif()
 

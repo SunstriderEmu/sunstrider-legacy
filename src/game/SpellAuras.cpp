@@ -525,8 +525,6 @@ void PersistentAreaAura::AddSource(DynamicObject* dynObj)
 
 void PersistentAreaAura::Update(uint32 diff)
 {
-    bool remove = false;
-
     Unit *caster = GetCaster();
     if(!caster)
     {
@@ -2139,7 +2137,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     
                 if (m_target->GetEntry() == 18881 || m_target->GetEntry() == 18865)
                 {
-                    GameObject* elemPower = caster->ToPlayer()->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), (m_target->GetPositionZ() + 2.5f), m_target->GetOrientation(), 0, 0, 0, 0, (m_target->ToCreature())->GetRespawnTime()-time(NULL));
+                    /* GameObject* elemPower = */ caster->ToPlayer()->SummonGameObject(183933, m_target->GetPositionX(), m_target->GetPositionY(), (m_target->GetPositionZ() + 2.5f), m_target->GetOrientation(), 0, 0, 0, 0, (m_target->ToCreature())->GetRespawnTime()-time(NULL));
                     //elemPower->SetLootState(GO_READY);
                 }
                 return;
@@ -2724,7 +2722,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
             team = (m_target->ToPlayer())->GetTeam();
 
         uint32 display_id = sObjectMgr->ChooseDisplayId(ci);
-        CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
+        sObjectMgr->GetCreatureModelRandomGender(&display_id);
 
         //m_target->RemoveAurasByType(SPELL_AURA_MOUNTED);
         bool flying = false;
@@ -3144,7 +3142,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
                         team = (m_target->ToPlayer())->GetTeam();
 
                     uint32 display_id = sObjectMgr->ChooseDisplayId(ci);
-                    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
+                    sObjectMgr->GetCreatureModelRandomGender(&display_id);
 
                     m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,display_id);
                 }
@@ -5778,10 +5776,6 @@ void Aura::HandleSchoolAbsorb(bool apply, bool Real)
             // remove pet if any
             (m_target->ToPlayer())->RemovePet(NULL,PET_SAVE_AS_CURRENT, true);
             
-            uint32 health = m_target->GetHealth();
-
-            //ghost->AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT + MOVEMENTFLAG_DISABLE_GRAVITY);
-
             // immunity for body
             m_target->CastSpell(m_target, 40282, true);
 

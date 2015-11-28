@@ -482,8 +482,6 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
     data << uint64 (guid);
 
-    Pet* pet = _player->GetPet();
-
     size_t wpos = data.wpos();
     data << uint8(0);                                       // place holder for slot show number
 

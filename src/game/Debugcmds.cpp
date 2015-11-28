@@ -363,7 +363,9 @@ bool ChatHandler::HandleGetItemState(const char* args)
                 continue;
 
             Item *item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-            if (!item) continue;
+            if (!item) 
+                continue;
+
             if (!item->IsBag())
             {
                 if (item->GetState() == state)
@@ -371,10 +373,10 @@ bool ChatHandler::HandleGetItemState(const char* args)
             }
             else
             {
-                Bag *bag = (Bag*)item;
+                Bag* bag = (Bag*)item;
                 for (uint8 j = 0; j < bag->GetBagSize(); ++j)
                 {
-                    Item* item = bag->GetItemByPos(j);
+                    item = bag->GetItemByPos(j);
                     if (item && item->GetState() == state)
                         PSendSysMessage("bag: 255 slot: %d guid: %d owner: %d", item->GetSlot(), item->GetGUIDLow(), GUID_LOPART(item->GetOwnerGUID()));
                 }
@@ -418,7 +420,8 @@ bool ChatHandler::HandleGetItemState(const char* args)
                 continue;
 
             Item *item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
-            if (!item) continue;
+            if (!item) 
+                continue;
 
             if (item->GetSlot() != i)
             {
@@ -470,8 +473,9 @@ bool ChatHandler::HandleGetItemState(const char* args)
                 Bag *bag = (Bag*)item;
                 for (uint8 j = 0; j < bag->GetBagSize(); ++j)
                 {
-                    Item* item = bag->GetItemByPos(j);
-                    if (!item) continue;
+                    item = bag->GetItemByPos(j);
+                    if (!item) 
+                        continue;
 
                     if (item->GetSlot() != j)
                     {

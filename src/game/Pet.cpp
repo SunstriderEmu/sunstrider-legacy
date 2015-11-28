@@ -88,7 +88,7 @@ Pet::Pet(PetType type) : Creature()
     m_auraUpdateMask = 0;
 
     // pets always have a charminfo, even if they are not actually charmed
-    CharmInfo* charmInfo = InitCharmInfo();
+    InitCharmInfo();
 
     if(type == MINI_PET || type == POSSESSED_PET)                                    // always passive
         SetReactState(REACT_PASSIVE);
@@ -196,14 +196,17 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         return false;
     }
 
-    //Shadowfiend hack
+    //Shadowfiend hack, try to spawn it close to target
     float px, py, pz;
     if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) {
         target = sObjectAccessor->GetObjectInWorld(owner->ToPlayer()->GetTarget(), (Unit*)NULL);
         if (target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
             target->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-        else
+        else {
+            //spawn at owner instead
+            owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
             target = NULL;
+        }
     }
     else
         owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
@@ -1604,7 +1607,7 @@ void Pet::_SaveAuras()
 
         trans->PAppend("INSERT INTO pet_aura (guid,caster_guid,spell,effect_index,stackcount,amount,maxduration,remaintime,remaincharges)"
             "VALUES ('%u', '" UI64FMTD "', '%u', '%u', '%u', '%d', '%d', '%d', '%d')",
-            m_charmInfo->GetPetNumber(), aura->GetCasterGUID(),(uint32)aura->GetId(), (uint32)aura->GetEffIndex(), 
+            m_charmInfo->GetPetNumber(), casterGUID,(uint32)aura->GetId(), (uint32)aura->GetEffIndex(),
             (uint32)aura->GetStackAmount(), aura->GetModifier()->m_amount,int(aura->GetAuraMaxDuration()),
             int(aura->GetAuraDuration()),int(aura->m_procCharges));
     }

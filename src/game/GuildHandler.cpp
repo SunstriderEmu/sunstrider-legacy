@@ -1180,7 +1180,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     if (BankToBank)
     {
         // empty operation
-        if(BankTab==BankTabDst && BankTabSlot==BankTabSlotDst)
+        if(BankTab == BankTabDst && BankTabSlot==BankTabSlotDst)
             return;
 
         Item *pItemSrc = pGuild->GetItem(BankTab, BankTabSlot);

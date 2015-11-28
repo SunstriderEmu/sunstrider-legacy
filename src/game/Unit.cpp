@@ -4078,8 +4078,6 @@ bool Unit::RemoveNoStackAurasDueToAura(Aura *Aur)
     uint32 spellId = Aur->GetId();
     uint32 effIndex = Aur->GetEffIndex();
 
-    SpellSpecificType spellId_spec = spellProto->GetSpellSpecific();
-
     AuraMap::iterator i,next;
     for (i = m_Auras.begin(); i != m_Auras.end(); i = next)
     {
@@ -4596,7 +4594,6 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 
     // Statue unsummoned at aura remove
     Totem* statue = NULL;
-    bool channeled = false;
     if(Aur->GetAuraDuration() && !Aur->IsPersistent() && AurSpellInfo->IsChanneled())
     {
         if(!caster)                                         // can be already located for IsSingleTargetSpell case
@@ -10393,8 +10390,6 @@ bool Unit::HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, f
         return false;
     }
 
-    float val = 1.0f;
-
     switch(modifierType)
     {
         case BASE_VALUE:
@@ -11412,7 +11407,6 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
         Aura *triggeredByAura = i->triggeredByAura;
         Modifier const* auraModifier = triggeredByAura->GetModifier();
         SpellInfo const *spellInfo = triggeredByAura->GetSpellInfo();
-        uint32 effIndex = triggeredByAura->GetEffIndex();
         bool useCharges = triggeredByAura->m_procCharges > 0;
         // For players set spell cooldown if need
         uint32 cooldown = 0;
@@ -13711,7 +13705,6 @@ void Unit::HandleParryRush()
 
     uint32 timeLeft = GetAttackTimer(BASE_ATTACK);
     uint32 attackTime = GetAttackTime(BASE_ATTACK);
-    float percentTimeLeft = timeLeft / (float)attackTime;
 
     int newAttackTime = timeLeft - (int)(0.4*attackTime);
     float newPercentTimeLeft = newAttackTime / (float)attackTime;

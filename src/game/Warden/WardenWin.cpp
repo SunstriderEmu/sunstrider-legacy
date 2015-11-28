@@ -190,7 +190,7 @@ void WardenWin::RequestData()
         MemCheck.assign(WardenDataStorage.MemCheckIds.begin(), WardenDataStorage.MemCheckIds.end());
 
     ServerTicks = GetMSTime();
-    uint32 maxid = WardenDataStorage.InternalDataID;
+    //uint32 maxid = WardenDataStorage.InternalDataID;
     uint32 id;
     uint8 type;
     WardenData *wd;
@@ -350,8 +350,6 @@ void WardenWin::HandleData(ByteBuffer &buff)
 
         uint32 newClientTicks;
         buff >> newClientTicks;
-        uint32 ticksNow = GetMSTime();
-        uint32 ourTicks = newClientTicks + (ticksNow - ServerTicks);
     }
 
     WardenDataResult *rs;

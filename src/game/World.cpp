@@ -129,12 +129,12 @@ World::World()
     m_updateTimeCount = 0;
     m_updateTimeMon = 0;
     
-    uint32 fastTdCount = 0;
-    uint32 fastTdSum = 0;
-    uint32 fastTd = 0;
-    uint32 avgTdCount = 0;
-    uint32 avgTdSum = 0;
-    uint32 avgTd = 0;
+    fastTdCount = 0;
+    fastTdSum = 0;
+    fastTd = 0;
+    avgTdCount = 0;
+    avgTdSum = 0;
+    avgTd = 0;
 
     m_isClosed = false;
 }
@@ -231,7 +231,7 @@ void World::AddSession(WorldSession* s)
 }
 
 void
-World::AddSession_ (WorldSession* s)
+World::AddSession_(WorldSession* s)
 {
     PROFILE;
     
@@ -270,7 +270,6 @@ World::AddSession_ (WorldSession* s)
 
     uint32 Sessions = GetActiveAndQueuedSessionCount ();
     uint32 pLimit = GetPlayerAmountLimit ();
-    uint32 QueueSize = GetQueueSize (); //number of players in the queue
 
     //so we don't count the user trying to
     //login as a session and queue the socket that we are using

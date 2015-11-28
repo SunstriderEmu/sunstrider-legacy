@@ -131,9 +131,9 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
     uint32 activeClientsNum = sWorld->GetActiveSessionCount();
-    uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
+//    uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
     uint32 maxActiveClientsNum = sWorld->GetMaxActiveSessionCount();
-    uint32 maxQueuedClientsNum = sWorld->GetMaxQueuedSessionCount();
+//    uint32 maxQueuedClientsNum = sWorld->GetMaxQueuedSessionCount();
     std::string str = secsToTimeString(sWorld->GetUptime());
 
     PSendSysMessage(_FULLVERSION);
@@ -828,8 +828,6 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
 
 bool ChatHandler::HandleRecupCommand(const char* args)
 {
-    
-
     Player *player = m_session->GetPlayer();
     uint64 account_id = m_session->GetAccountId();
     uint32 pGUID = player->GetGUID();
@@ -890,7 +888,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* at this point, recup data is assumed to be valid and we can fetch commands to execute */
 
-    int level = 70 - player->GetLevel();
     /* Now free
     query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
 
@@ -1202,7 +1199,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
         if (v[0] == "teleport") {
             char telename[8] = {0};
             strncpy(telename, v[1].c_str(), 7);
-            GameTele const* tele = extractGameTeleFromLink(telename);
+            //GameTele const* tele = extractGameTeleFromLink(telename);
 
             /*if (!tele) {
                 PSendSysMessage(LANG_COMMAND_TELE_NOTFOUND);
@@ -1603,7 +1600,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 m_account = m_session->GetAccountId();
     uint32 m_class = plr->GetClass();
     uint32 m_race = plr->GetRace();
-    uint8 m_gender = plr->GetGender();
+//    uint8 m_gender = plr->GetGender();
     uint64 m_fullGUID = plr->GetGUID();
     
     // Target values

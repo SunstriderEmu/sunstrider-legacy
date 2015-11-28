@@ -399,6 +399,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
     {
         if(!this->IsHordeFlagPickedup())
             return;
+
         if(GetHordeFlagPickerGUID() == Source->GetGUID())
         {
             SetHordeFlagPicker(0);
@@ -418,6 +419,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
     {
         if(!this->IsAllianceFlagPickedup())
             return;
+
         if(GetAllianceFlagPickerGUID() == Source->GetGUID())
         {
             SetAllianceFlagPicker(0);
@@ -564,7 +566,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         //target_obj->Delete();
     }
 
-    if (!type)
+    if (!type || !message)
         return;
 
     WorldPacket data;

@@ -1526,7 +1526,7 @@ inline const char* LookupOpcodeName(uint16 id)
 {
     if (id >= NUM_MSG_TYPES)
         return "Received unknown opcode, it's more than max!";
-    const char* name = opcodeTable[id].name;
+
     return opcodeTable[id].name;
 }
 

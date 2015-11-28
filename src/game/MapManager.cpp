@@ -215,7 +215,7 @@ void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
 
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
 {
-    bool remove_result = CreateBaseMap(mapid)->RemoveBones(guid, x, y);
+    CreateBaseMap(mapid)->RemoveBones(guid, x, y);
 }
 
 void MapManager::Update(time_t diff)

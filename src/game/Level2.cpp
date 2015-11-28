@@ -1571,8 +1571,6 @@ bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
     if(wait < 0)
         wait = 0;
 
-    Player* player = m_session->GetPlayer();
-
     // update movement type
     WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", WAYPOINT_MOTION_TYPE,lowguid);
     if(pCreature && pCreature->GetWaypointPathId())
@@ -2282,7 +2280,6 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
     }
 
     Player* player = m_session->GetPlayer();
-    Map *map = player->GetMap();
 
     WorldDatabase.PExecute("INSERT INTO waypoint_data (id, point, position_x, position_y, position_z) VALUES ('%u','%u','%f', '%f', '%f')",
         pathid, point+1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
@@ -2437,7 +2434,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
     char* arg_id = strtok(NULL, " ");
 
     if(arg_id)
-        uint32 id = atoi(arg_id);
+        id = atoi(arg_id);
 
     if(id)
     {
@@ -2979,7 +2976,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         do
         {
             Field *fields = result->Fetch();
-            uint32 point    = fields[0].GetUInt32();
+           // uint32 point    = fields[0].GetUInt32();
             float x         = fields[1].GetFloat();
             float y         = fields[2].GetFloat();
             float z         = fields[3].GetFloat();
@@ -2987,8 +2984,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             uint32 id = VISUAL_WAYPOINT;
 
             Player *chr = m_session->GetPlayer();
-            Map *map = chr->GetMap();
-            /*float o = chr->GetOrientation();
+            /*Map *map = chr->GetMap();
+            float o = chr->GetOrientation();
 
             Creature* wpCreature = new Creature;
             if (!wpCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, true), map, id, 0))
@@ -3048,8 +3045,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
         Player *chr = m_session->GetPlayer();
         //float o = chr->GetOrientation();
-        Map *map = chr->GetMap();
-        /*
+        /*Map *map = chr->GetMap();
+        
         Creature* pCreature = new Creature;
         if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true),map, id, 0))
         {
@@ -3108,8 +3105,8 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 
         Player *chr = m_session->GetPlayer();
         //float o = chr->GetOrientation();
-        Map *map = chr->GetMap();
-        /*
+        /*Map *map = chr->GetMap();
+        
         Creature* pCreature = new Creature;
         if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, id, 0))
         {
@@ -3261,7 +3258,6 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
         return true;
     }
 
-    Player* target = NULL;
     uint64 targetGUID = 0;
     std::string stringName = playerName;
 
@@ -3760,8 +3756,6 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
 
     if(!Utf8toWStr(args,wnamepart))
         return false;
-
-    uint32 counter = 0;                                     // Counter for figure out that we found smth.
 
     // converting string that we try to find to lower case
     wstrToLower( wnamepart );

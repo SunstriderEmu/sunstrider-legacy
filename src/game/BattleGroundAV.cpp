@@ -374,10 +374,10 @@ void BattlegroundAV::Update(time_t diff)
             SpawnBGObject(BG_AV_OBJECT_AURA_N_SNOWFALL_GRAVE,RESPAWN_IMMEDIATELY);
 
             //creatures
-            for(BG_AV_Nodes i= BG_AV_NODES_FIRSTAID_STATION; i < BG_AV_NODES_MAX; ++i )
+            for(BG_AV_Nodes j = BG_AV_NODES_FIRSTAID_STATION; j < BG_AV_NODES_MAX; ++j )
             {
                 if(m_Nodes[i].Owner)
-                PopulateNode(i);
+                    PopulateNode(j);
             }
             //all creatures which don't get despawned through the script are static
             for(i=0; i < AV_STATICCPLACE_MAX; i++ )
@@ -430,12 +430,12 @@ void BattlegroundAV::Update(time_t diff)
             // Add auras to marshals/warmasters
             for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr) {
                 if(Player* plr = sObjectMgr->GetPlayer(itr->first)) {
-                    for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
-                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr)))
+                    for (std::vector<uint64>::iterator itr2 = m_allianceMarshals.begin(); itr2 != m_allianceMarshals.end(); itr2++) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr2)))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
-                    for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
-                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr)))
+                    for (std::vector<uint64>::iterator itr2 = m_hordeMarshals.begin(); itr2 != m_hordeMarshals.end(); itr2++) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr2)))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                     break;
@@ -926,7 +926,7 @@ void BattlegroundAV::PopulateNode(BG_AV_Nodes node)
     }
     for(uint8 i=0; i<4; i++)
     {
-        Creature* cr = AddAVCreature(creatureid,c_place+i);
+        AddAVCreature(creatureid,c_place+i);
     }
 }
 void BattlegroundAV::DePopulateNode(BG_AV_Nodes node)

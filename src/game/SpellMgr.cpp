@@ -1500,9 +1500,7 @@ void SpellMgr::LoadSpellLearnSkills()
                 else
                     dbc_node.value    = (entry->Effects[i].BasePoints+1)*75;
                 dbc_node.maxvalue = (entry->Effects[i].BasePoints+1)*75;
-
-                SpellLearnSkillNode const* db_node = GetSpellLearnSkill(spellId);
-
+                
                 mSpellLearnSkills[spellId] = dbc_node;
                 ++dbc_count;
                 break;

@@ -4545,8 +4545,6 @@ void Spell::EffectSummonPossessed(uint32 i)
     if(m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    uint32 level = m_caster->GetLevel();
-
     float x, y, z;
     m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
 
@@ -7001,7 +6999,7 @@ void Spell::EffectCharge(uint32 i)
     if(!target)
         return;
         
-    uint32 triggeredSpellId = 0, triggeredSpellId2 = 0;
+    uint32 triggeredSpellId = 0;
     switch (i) {
     case 0:
         if (m_spellInfo->Effects[1].Effect == SPELL_EFFECT_TRIGGER_SPELL)

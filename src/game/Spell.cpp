@@ -3178,8 +3178,6 @@ void Spell::SendSpellStart()
     if(IsRangedSpell())
         castFlags |= CAST_FLAG_AMMO;
 
-    Unit *target = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
-
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
     if(m_CastItem)
         data << m_CastItem->GetPackGUID();
@@ -3205,8 +3203,6 @@ void Spell::SendSpellGo()
     // not send invisible spell casting
     if(!IsNeedSendToClient())
         return;
-
-    Unit *target = m_targets.GetUnitTarget() ? m_targets.GetUnitTarget() : m_caster;
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_9;
 
@@ -5790,7 +5786,6 @@ void Spell::HandleHitTriggerAura()
                     target = hitTarget;
                     m_targets.SetUnitTarget(target);
                     AddUnitTarget(target, 0);
-                    uint64 targetGUID = target->GetGUID();
                     return;
                 }
             }

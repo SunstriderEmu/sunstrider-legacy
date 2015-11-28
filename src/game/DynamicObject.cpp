@@ -113,10 +113,10 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     if (Transport* transport = caster->GetTransport())
     {
         SetTransport(transport);
-        float x, y, z, o;
-        pos.GetPosition(x, y, z, o);
-        transport->CalculatePassengerOffset(x, y, z, &o);
-        m_movementInfo.transport.pos.Relocate(x, y, z, o);
+        float _x, _y, _z, _o;
+        pos.GetPosition(_x, _y, _z, _o);
+        transport->CalculatePassengerOffset(_x, _y, _z, &_o);
+        m_movementInfo.transport.pos.Relocate(_x, _y, _z, _o);
 
         // This object must be added to transport before adding to map for the client to properly display it
         transport->AddPassenger(this);

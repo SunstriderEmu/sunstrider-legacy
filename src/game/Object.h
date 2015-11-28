@@ -271,7 +271,7 @@ struct MovementInfo
     void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
     bool HasMovementFlag(uint32 flag) const { return flags & flag; }
 
-    void SetFallTime(uint32 time) { fallTime = time; }
+    void SetFallTime(uint32 _time) { fallTime = _time; }
 };
 
 inline ByteBuffer& operator<< (ByteBuffer& buf, MovementInfo const& mi)

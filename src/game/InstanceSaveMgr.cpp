@@ -218,7 +218,7 @@ void InstanceSaveManager::_DelHelper(CharacterDatabaseWorkerPool &db, const char
     va_list ap;
     char szQueryTail [MAX_QUERY_LEN];
     va_start(ap, queryTail);
-    int res = vsnprintf( szQueryTail, MAX_QUERY_LEN, queryTail, ap );
+    vsnprintf( szQueryTail, MAX_QUERY_LEN, queryTail, ap );
     va_end(ap);
 
     QueryResult result = db.PQuery("SELECT %s FROM %s %s", fields, table, szQueryTail);
@@ -242,8 +242,6 @@ void InstanceSaveManager::_DelHelper(CharacterDatabaseWorkerPool &db, const char
 
 void InstanceSaveManager::CleanupInstances()
 {
-    uint64 now = (uint64)time(NULL);
-
     // load reset times and clean expired instances
     sInstanceSaveMgr->LoadResetTimes();
 
@@ -637,7 +635,7 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, bool warn, uint32 timeLe
     MapInstanced::InstancedMaps::iterator mitr;
     for(mitr = instMaps.begin(); mitr != instMaps.end(); ++mitr)
     {
-        Map *map = mitr->second;
+        Map* map = mitr->second;
         if(!map->IsDungeon()) continue;
         if(warn) ((InstanceMap*)map)->SendResetWarnings(timeLeft);
         else ((InstanceMap*)map)->Reset(INSTANCE_RESET_GLOBAL);
