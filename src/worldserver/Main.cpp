@@ -88,7 +88,7 @@ extern int main(int argc, char **argv)
 {
 #if defined(__has_feature)
 #  if __has_feature(address_sanitizer)
-printf("Running with -fsanitize=address flag\n");
+       printf("Running with -fsanitize=address flag\n");
 #  endif
 #endif
     

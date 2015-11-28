@@ -1,32 +1,29 @@
 /*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published by the
+ * Free Software Foundation; either version 2 of the License, or (at your
+ * option) any later version.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+ * more details.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * You should have received a copy of the GNU General Public License along
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef TRINITY_OBJECTREGISTRY_H
 #define TRINITY_OBJECTREGISTRY_H
 
 #include "Define.h"
-#include "Policies/Singleton.h"
 
 #include <string>
-#include <vector>
 #include <map>
+#include <vector>
 
 /** ObjectRegistry holds all registry item of the same type
  */
@@ -34,14 +31,14 @@ template<class T, class Key = std::string>
 class ObjectRegistry
 {
     public:
-        typedef std::map<Key, T *> RegistryMapType;
+        typedef std::map<Key, T*> RegistryMapType;
 
         static ObjectRegistry<T, Key>* instance()
         {
             static ObjectRegistry<T, Key> instance;
             return &instance;
         }
-        
+
         /// Returns a registry item
         const T* GetRegistryItem(Key key) const
         {
@@ -50,12 +47,12 @@ class ObjectRegistry
         }
 
         /// Inserts a registry item
-        bool InsertItem(T *obj, Key key, bool override = false)
+        bool InsertItem(T *obj, Key key, bool _override = false)
         {
             typename RegistryMapType::iterator iter = i_registeredObjects.find(key);
-            if( iter != i_registeredObjects.end() )
+            if ( iter != i_registeredObjects.end() )
             {
-                if( !override )
+                if ( !_override )
                     return false;
                 delete iter->second;
                 i_registeredObjects.erase(iter);
@@ -69,9 +66,9 @@ class ObjectRegistry
         void RemoveItem(Key key, bool delete_object = true)
         {
             typename RegistryMapType::iterator iter = i_registeredObjects.find(key);
-            if( iter != i_registeredObjects.end() )
+            if ( iter != i_registeredObjects.end() )
             {
-                if( delete_object )
+                if ( delete_object )
                     delete iter->second;
                 i_registeredObjects.erase(iter);
             }
@@ -88,7 +85,7 @@ class ObjectRegistry
         {
             unsigned int sz = l.size();
             l.resize(sz + i_registeredObjects.size());
-            for(typename RegistryMapType::const_iterator iter = i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)
+            for (typename RegistryMapType::const_iterator iter = i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)
                 l[sz++] = iter->first;
             return i_registeredObjects.size();
         }
@@ -99,18 +96,15 @@ class ObjectRegistry
             return i_registeredObjects;
         }
 
-    private:
-        RegistryMapType i_registeredObjects;
-        friend class Trinity::OperatorNew<ObjectRegistry<T, Key> >;
-
-        // protected for friend use since it should be a singleton
-        ObjectRegistry() {}
+        ObjectRegistry() { }
         ~ObjectRegistry()
         {
-            for(typename RegistryMapType::iterator iter=i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)
+            for (typename RegistryMapType::iterator iter=i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)
                 delete iter->second;
             i_registeredObjects.clear();
         }
+    private:
+        RegistryMapType i_registeredObjects;
 };
-#endif
 
+#endif
