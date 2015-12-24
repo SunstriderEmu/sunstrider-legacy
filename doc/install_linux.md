@@ -3,7 +3,7 @@
 <!----------------------------------------------------------------------------->
 ## Requirements
 
-1. Get the right mariadb repository [here][mariadbrepository] (version 5.x). Mysql is also supported but you may encounter problems when importing the database.
+1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). Mysql is also supported but you may encounter problems when importing the database.
 
 2. sudo apt-get install g++ gcc make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
 

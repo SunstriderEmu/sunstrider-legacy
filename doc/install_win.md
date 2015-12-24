@@ -61,7 +61,7 @@ http://sourceforge.net/projects/boost/files/boost-binaries/1.58.0/
 <!----------------------------------------------------------------------------->
 ## Setting Up The DB
 
-1. Download [MariaDB][maria_db] (5.5 series) and install it. Be sure to note
+1. Download [MariaDB][maria_db] 10.x series) and install it. Be sure to note
    down your root password, and the port you select if it not the default. If
    you don't already have an SQL client, you can install HeidiSQL when proposed
    to do so.

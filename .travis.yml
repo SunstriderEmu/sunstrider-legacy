@@ -20,7 +20,7 @@ before_install:
   - sudo service mysql stop
   - sudo apt-get install python-software-properties
   - sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xcbcb082a1bb943db
-  - sudo add-apt-repository 'deb [arch=amd64,i386] http://ftp.osuosl.org/pub/mariadb/repo/5.5/ubuntu precise main'
+  - sudo add-apt-repository 'deb [arch=amd64,i386] http://ftp.osuosl.org/pub/mariadb/repo/10.1/ubuntu precise main'
   - sudo apt-get -qq update
   - echo "Y" | sudo apt-get install -qq mariadb-server libmariadbclient-dev libmariadbd-dev
   - sudo apt-get install -qq gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch clang-3.5
