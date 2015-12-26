@@ -9654,6 +9654,14 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet /*= true*/)
             // TODO: possible affect only on MOVE_RUN
             if(int32 normalization = GetMaxPositiveAuraModifier(SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED))
             {
+                //avoid reducing speed for creatures immune to snare or daze
+                if (Creature* creature = ToCreature())
+                {
+                    uint32 immuneMask = creature->GetCreatureTemplate()->MechanicImmuneMask;
+                    if (immuneMask & (1 << MECHANIC_SNARE) || immuneMask & (1 << MECHANIC_DAZE))
+                        break;
+                }
+
                 // Use speed from aura
                 float max_speed = normalization / baseMoveSpeed[mtype];
                 if (speed > max_speed)
