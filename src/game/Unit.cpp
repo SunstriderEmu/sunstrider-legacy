@@ -2002,6 +2002,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // only split damage if not damaging yourself
     if(pVictim != this)
     {
+        //split damage flag
         AuraList const& vSplitDamageFlat = pVictim->GetAurasByType(SPELL_AURA_SPLIT_DAMAGE_FLAT);
         for(AuraList::const_iterator i = vSplitDamageFlat.begin(), next; i != vSplitDamageFlat.end() && RemainingDamage >= 0; i = next)
         {
@@ -2024,14 +2025,20 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
 
             RemainingDamage -= currentAbsorb;
 
+            // check if caster is immune to damage
+            if (caster->IsImmunedToDamage(schoolMask))
+            {
+                pVictim->SendSpellMiss(caster, (*i)->GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
+                continue;
+            }
+
             SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellInfo()->Id, currentAbsorb, schoolMask, 0, 0, false, 0, false);
 
             CleanDamage cleanDamage = CleanDamage(currentAbsorb, BASE_ATTACK, MELEE_HIT_NORMAL);
             DealDamage(caster, currentAbsorb, &cleanDamage, DOT, schoolMask, (*i)->GetSpellInfo(), false);
         }
 
-
-
+        //split damage percent
         AuraList const& vSplitDamagePct = pVictim->GetAurasByType(SPELL_AURA_SPLIT_DAMAGE_PCT);
         for(AuraList::const_iterator i = vSplitDamagePct.begin(), next; i != vSplitDamagePct.end() && RemainingDamage >= 0; i = next)
         {
@@ -2049,6 +2056,13 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             int32 splitted = int32(RemainingDamage * (*i)->GetModifier()->m_amount / 100.0f);
 
             RemainingDamage -= splitted;
+
+            // check if caster is immune to damage
+            if (caster->IsImmunedToDamage(schoolMask))
+            {
+                pVictim->SendSpellMiss(caster, (*i)->GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
+                continue;
+            }
 
             SendSpellNonMeleeDamageLog(caster, (*i)->GetSpellInfo()->Id, splitted, schoolMask, 0, 0, false, 0, false);
 
