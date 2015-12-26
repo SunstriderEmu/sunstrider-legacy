@@ -546,8 +546,12 @@ void SmartAI::EnterCombat(Unit* enemy)
 void SmartAI::JustDied(Unit* killer)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_DEATH, killer);
-    if (HasEscortState(SMART_ESCORT_ESCORTING))
-        EndPath(true);
+	if (HasEscortState(SMART_ESCORT_ESCORTING))
+	{
+		EndPath(true);
+		me->StopMoving(); //force stop
+		me->GetMotionMaster()->MoveIdle();
+	}
 }
 
 void SmartAI::KilledUnit(Unit* victim)
