@@ -94,13 +94,13 @@ Object::~Object( )
         {
             ///- Do NOT call RemoveFromWorld here, if the object is a player it will crash
             TC_LOG_ERROR("misc","Object::~Object - guid=" UI64FMTD ", typeid=%d deleted but still in world!!", GetGUID(), GetTypeId());
-            assert(false);
+            ABORT();
         }
 
         if (m_objectUpdated)
         {
             TC_LOG_FATAL("misc", "Object::~Object " UI64FMTD " deleted but still in update list!!", GetGUID());
-            ASSERT(false);
+            ABORT();
         }
 
         delete [] m_uint32Values;

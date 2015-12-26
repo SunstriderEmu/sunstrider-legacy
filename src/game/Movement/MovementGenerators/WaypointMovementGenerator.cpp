@@ -579,7 +579,7 @@ void FlightPathMovementGenerator::InitEndGridInfo()
     if (nodeCount == 0)
     {
         TC_LOG_ERROR("misc", "FlightPathMovementGenerator::InitEndGridInfo(): FATAL: Flight path has 0 nodes!");
-        ASSERT(false);
+        ABORT();
         return;
     }
 

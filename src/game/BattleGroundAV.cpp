@@ -959,7 +959,7 @@ const BG_AV_Nodes BattlegroundAV::GetNodeThroughObject(uint32 object)
         return BG_AV_NODES_SNOWFALL_GRAVE;
     
     TC_LOG_ERROR("FIXME","BattlegroundAV: ERROR! GetPlace got a wrong object :(");
-    assert(false);
+    ABORT();
     return BG_AV_Nodes(0);
 }
 
@@ -997,7 +997,7 @@ const uint32 BattlegroundAV::GetObjectThroughNode(BG_AV_Nodes node)
         return BG_AV_OBJECT_FLAG_N_SNOWFALL_GRAVE;
     
     TC_LOG_ERROR("FIXME","BattlegroundAV: Error! GetPlaceNode couldn't resolve node %i",node);
-    assert(false);
+    ABORT();
     return 0;
 }
 

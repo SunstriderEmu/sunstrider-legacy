@@ -1020,7 +1020,7 @@ class ArgVisitor {
   Result visit(const Arg &arg) {
     switch (arg.type) {
     default:
-      assert(false);
+      ABORT();
       return Result();
     case Arg::INT:
       return FMT_DISPATCH(visit_int(arg.int_value));

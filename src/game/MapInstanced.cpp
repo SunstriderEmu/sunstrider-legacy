@@ -203,13 +203,13 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     if(!entry)
     {
         TC_LOG_ERROR("maps","CreateInstance: no entry for map %d", GetId());
-        assert(false);
+        ABORT();
     }
     const InstanceTemplate * iTemplate = sObjectMgr->GetInstanceTemplate(GetId());
     if(!iTemplate)
     {
         TC_LOG_ERROR("maps","CreateInstance: no instance template for map %d", GetId());
-        assert(false);
+        ABORT();
     }
 
     // some instances only have one difficulty

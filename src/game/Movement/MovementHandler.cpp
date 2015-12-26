@@ -95,7 +95,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         {
             // the player must always be able to teleport home
             TC_LOG_ERROR("network","WORLD: failed to teleport player %s (%d) to homebind location %d,%f,%f,%f,%f!", GetPlayer()->GetName().c_str(), GetPlayer()->GetGUIDLow(), GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
-            assert(false);
+            ABORT();
         }
         return;
     }

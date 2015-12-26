@@ -48,38 +48,38 @@ WardenBase::~WardenBase()
 
 void WardenBase::Init(WorldSession *pClient, BigNumber *K)
 {
-    ASSERT(false);
+    ABORT();
 }
 
 ClientWardenModule *WardenBase::GetModuleForClient(WorldSession *session)
 {
-    ASSERT(false);
+    ABORT();
     return NULL;
 }
 
 void WardenBase::InitializeModule()
 {
-    ASSERT(false);
+    ABORT();
 }
 
 void WardenBase::RequestHash()
 {
-    ASSERT(false);
+    ABORT();
 }
 
 void WardenBase::HandleHashResult(ByteBuffer &buff)
 {
-    ASSERT(false);
+    ABORT();
 }
 
 void WardenBase::RequestData()
 {
-    ASSERT(false);
+    ABORT();
 }
 
 void WardenBase::HandleData(ByteBuffer &buff)
 {
-    ASSERT(false);
+    ABORT();
 }
 
 void WardenBase::SendModuleToClient()

@@ -13128,7 +13128,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     {
 //        TC_LOG_FATAL("entities.unit", "Unit::RemoveCharmedBy: this: " UI64FMTD " true charmer: " UI64FMTD " false charmer: " UI64FMTD,
 //            GetGUID(), GetCharmerGUID(), charmer->GetGUID());
-//        ASSERT(false);
+//        ABORT();
         return;
     }
 

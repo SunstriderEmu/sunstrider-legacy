@@ -945,7 +945,7 @@ void fmt::internal::PrintfFormatter<Char>::format(
       break;
     }
     default:
-      assert(false);
+      ABORT();
       break;
     }
   }

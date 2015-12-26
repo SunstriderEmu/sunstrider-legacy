@@ -1887,7 +1887,7 @@ inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
     if(x >= MAX_NUMBER_OF_GRIDS || y >= MAX_NUMBER_OF_GRIDS)
     {
         TC_LOG_ERROR("maps","map::setNGrid() Invalid grid coordinates found: %d, %d!",x,y);
-        assert(false);
+        ABORT();
     }
     i_grids[x][y] = grid;
 }
@@ -1912,7 +1912,7 @@ void Map::AddObjectToSwitchList(WorldObject *obj, bool on)
     else if(itr->second != on)
         i_objectsToSwitch.erase(itr);
     else
-        assert(false);
+        ABORT();
 }
 
 void Map::RemoveAllObjectsInRemoveList()
@@ -2216,7 +2216,7 @@ bool InstanceMap::CanEnter(Player *player)
     if(player->GetMapRef().getTarget() == this)
     {
 //        TC_LOG_ERROR("maps","InstanceMap::CanEnter - player %s(%u) already in map %d,%d,%d!", player->GetName(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
-//        assert(false);
+//        ABORT();
         return false;
     }
 
@@ -2270,7 +2270,7 @@ bool InstanceMap::Add(Player *player)
             if(playerBind->save != mapSave)
             {
                 //TC_LOG_ERROR("maps","InstanceMap::Add: player %s(%d) is permanently bound to instance %d,%d,%d,%d,%d,%d but he is being put in instance %d,%d,%d,%d,%d,%d", player->GetName(), player->GetGUIDLow(), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset());
-                assert(false);
+                ABORT();
             }
         }
         else
@@ -2287,7 +2287,7 @@ bool InstanceMap::Add(Player *player)
                     TC_LOG_ERROR("maps","InstanceMap::Add: do not let player %s enter instance otherwise crash will happen", player->GetName().c_str());
                     return false;
                     //player->UnbindInstance(GetId(), GetSpawnMode());
-                    //assert(false);
+                    //ABORT();
                 }
                 // bind to the group or keep using the group save
                 if(!groupBind)
@@ -2306,7 +2306,7 @@ bool InstanceMap::Add(Player *player)
                             TC_LOG_ERROR("maps","GroupBind save players: %d, group count: %d", groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount());
                         else
                             TC_LOG_ERROR("maps","GroupBind save NULL");
-                        assert(false);
+                        ABORT();
                     }
                     // if the group/leader is permanently bound to the instance
                     // players also become permanently bound when they enter
@@ -2577,7 +2577,7 @@ bool BattlegroundMap::CanEnter(Player * player)
     if(player->GetMapRef().getTarget() == this)
     {
         TC_LOG_ERROR("maps","BGMap::CanEnter - player %u already in map!", player->GetGUIDLow());
-        assert(false);
+        ABORT();
         return false;
     }
 

@@ -495,7 +495,7 @@ Unit *caster, Item* castItem) : Aura(spellproto, eff, currentBasePoints, target,
             break;
         default:
             TC_LOG_ERROR("FIXME","Wrong spell effect in AreaAura constructor");
-            ASSERT(false);
+            ABORT();
             break;
     }
 }
@@ -6979,7 +6979,7 @@ void Aura::UnregisterSingleCastAura()
         else
         {
             TC_LOG_ERROR("FIXME","Couldn't find the caster of the single target aura, may crash later!");
-            assert(false);
+            ABORT();
         }
         m_isSingleTargetAura = false;
     }

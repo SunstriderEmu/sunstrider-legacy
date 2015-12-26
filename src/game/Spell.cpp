@@ -2433,7 +2433,7 @@ void Spell::cancel()
                     }
                 }
             }
-            //assert(false);
+            //ABORT();
         } break;
 
         default:
