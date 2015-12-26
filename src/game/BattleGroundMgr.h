@@ -26,7 +26,7 @@
 #include "BattleGround.h"
 
 //TODO it is not possible to have this structure, because we should have BattlegroundSet for each queue
-//so i propose to change this type to array 1..BATTLEGROUND_TYPE_TOTAL of sets or maps..
+//so i propose to change this type to array 1..MAX_BATTLEGROUND_TYPE_ID of sets or maps..
 typedef std::map<uint32, Battleground*> BattlegroundSet;
 //typedef std::map<uint32, BattlegroundQueue*> BattlegroundQueueSet;
 typedef std::deque<Battleground*> BGFreeSlotQueueType;
@@ -225,7 +225,7 @@ class BattlegroundMgr
         //these queues are instantiated when creating BattlegroundMrg
         BattlegroundQueue m_BattlegroundQueues[BATTLEGROUND_QUEUE_TYPES_TOTAL]; // public, because we need to access them in BG handler code
 
-        BGFreeSlotQueueType BGFreeSlotQueue[BATTLEGROUND_TYPE_TOTAL];
+        BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPE_ID];
 
         void SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *bg, uint64 guid);
 

@@ -20312,7 +20312,7 @@ uint32 Player::GetBattlegroundQueueIdFromLevel() const
     else
         return level/10 - 1;                                // 20..29 -> 1, 30-39 -> 2, ...
     /*
-    assert(bgTypeId < BATTLEGROUND_TYPE_TOTAL);
+    assert(bgTypeId < MAX_BATTLEGROUND_TYPE_ID);
     Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
     assert(bg);
     return (GetLevel() - bg->GetMinLevel()) / 10;*/

@@ -194,7 +194,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
     recvData >> instanceId;                                // instance id, 0 if First Available selected
     recvData >> joinAsGroup;                               // join as group
 
-    if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
+    if(bgTypeId >= MAX_BATTLEGROUND_TYPE_ID)
     {
         TC_LOG_ERROR("bg.battleground","Battleground: invalid bgtype received. possible cheater? player guid %u",_player->GetGUIDLow());
         return;
@@ -285,7 +285,7 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
     uint32 bgTypeId;
     recvData >> bgTypeId;                                  // id from DBC
 
-    if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
+    if(bgTypeId >= MAX_BATTLEGROUND_TYPE_ID)
     {
         TC_LOG_ERROR("bg.battleground","Battleground: invalid bgtype received: %u.", bgTypeId);
         return;
@@ -316,7 +316,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
     recvData >> type >> unk2 >> bgTypeId >> unk >> action;
 
-    if(bgTypeId >= BATTLEGROUND_TYPE_TOTAL)
+    if(bgTypeId >= MAX_BATTLEGROUND_TYPE_ID)
     {
         TC_LOG_ERROR("network","Battleground: invalid bgtype received: %u.", bgTypeId);
         // update battleground slots for the player to fix his UI and sent data.

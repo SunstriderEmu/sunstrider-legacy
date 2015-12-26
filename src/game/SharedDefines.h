@@ -2448,9 +2448,9 @@ enum BattlegroundTypeId
     BATTLEGROUND_RB             = 32  // Random Battleground
 };
 #ifdef LICH_KING
-#define BATTLEGROUND_TYPE_TOTAL 33
+#define MAX_BATTLEGROUND_TYPE_ID 33
 #else
-#define BATTLEGROUND_TYPE_TOTAL 9
+#define MAX_BATTLEGROUND_TYPE_ID 9
 #endif
 
 #define MAX_BATTLEGROUND_QUEUE_RANGES 7                           // for level ranges 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70+

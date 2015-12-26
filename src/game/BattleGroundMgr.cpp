@@ -982,7 +982,7 @@ void BattlegroundMgr::DeleteAllBattlegrounds()
     }
 
     // destroy template battlegrounds that listed only in queues (other already terminated)
-    for(uint32 bgTypeId = 0; bgTypeId < BATTLEGROUND_TYPE_TOTAL; ++bgTypeId)
+    for(uint32 bgTypeId = 0; bgTypeId < MAX_BATTLEGROUND_TYPE_ID; ++bgTypeId)
     {
         // ~Battleground call unregistring BG from queue
         while(!BGFreeSlotQueue[bgTypeId].empty())
@@ -1800,7 +1800,7 @@ void BattlegroundMgr::UpdateAllQueues()
 
 void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
 {
-    for(uint32 bgtype = 1; bgtype <= 8; ++bgtype)
+    for(uint32 bgtype = 1; bgtype < MAX_BATTLEGROUND_TYPE_ID; ++bgtype)
     {
         if(Battleground * bg = GetBattlegroundTemplate(bgtype))
         {
