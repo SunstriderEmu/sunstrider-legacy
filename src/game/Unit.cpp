@@ -14216,6 +14216,10 @@ float Unit::GetPositionZMinusOffset() const
 
 bool Unit::IsInDisallowedMountForm() const
 {
+    if (SpellInfo const* transformSpellInfo = sSpellMgr->GetSpellInfo(GetTransForm()))
+        if (transformSpellInfo->HasAttribute(SPELL_ATTR0_CASTABLE_WHILE_MOUNTED))
+            return false;
+
     if (ShapeshiftForm form = GetShapeshiftForm())
     {
         SpellShapeshiftEntry const* shapeshift = sSpellShapeshiftStore.LookupEntry(form);
