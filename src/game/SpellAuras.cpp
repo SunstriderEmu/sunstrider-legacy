@@ -4928,37 +4928,36 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         if(apply)
         {
             m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetModifierValue()), apply);
-            m_target->ModifyHealth(m_modifier.m_amount);
+            m_target->ModifyHealth(m_modifier.m_amount); //shouldn't it be GetModifierValue ?
         }
-        else
-        {
-            if (int32(m_target->GetHealth()) > m_modifier.m_amount)
-                m_target->ModifyHealth(-m_modifier.m_amount);
-            else
-                m_target->SetHealth(1);
+		else
+		{
+			if (m_target->GetHealth() > 0)
+			{
+				int32 value = std::min<int32>(m_target->GetHealth() - 1, m_modifier.m_amount);  //shouldn't it be GetModifierValue ?
+				m_target->ModifyHealth(-value);
+			}
+
             m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetModifierValue()), apply);
         }
     }
     
+	//HACK
     if (!apply && GetId() == 30421 && !m_target->HasAuraEffect(30421))
         m_target->AddAura(38637, m_target);
 }
 
 void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool Real)
 {
-    uint32 oldhealth = m_target->GetHealth();
-    double healthPercentage = (double)oldhealth / (double)m_target->GetMaxHealth();
+    double healthPercentage = m_target->GetHealthPct();
 
     m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(m_modifier.m_amount), apply);
 
-    // refresh percentage
-    if(oldhealth > 0)
+	// Unit will keep hp% after MaxHealth being modified if unit is alive.
+    if(m_target->GetHealth() > 0)
     {
-        uint32 newhealth = uint32(ceil((double)m_target->GetMaxHealth() * healthPercentage));
-        if(newhealth==0)
-            newhealth = 1;
-
-        m_target->SetHealth(newhealth);
+		uint32 newHealth = std::max<uint32>(m_target->CountPctFromMaxHealth(int32(healthPercentage)), 1);
+        m_target->SetHealth(newHealth);
     }
 }
 
@@ -4996,10 +4995,16 @@ void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
 
 void Aura::HandleAuraModIncreaseHealthPercent(bool apply, bool /*Real*/)
 {
-    float oldHPPercentValue = m_target->GetHealthPct() / 100;
+	float percent = m_target->GetHealthPct();
+
     m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_PCT, float(GetModifierValue()), apply);
-    //also update current HP
-    m_target->SetHealth(oldHPPercentValue * m_target->GetMaxHealth());
+
+	// Unit will keep hp% after MaxHealth being modified if unit is alive.
+	if (m_target->GetHealth() > 0)
+	{
+		uint32 newHealth = std::max<uint32>(m_target->CountPctFromMaxHealth(int32(percent)), 1);
+		m_target->SetHealth(newHealth);
+	}
 }
 
 /********************************/
@@ -7119,4 +7124,19 @@ void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
 void Aura::SetModifierValuePerStack(int32 newAmount)
 {
     m_modifier.m_amount = newAmount;
+}
+
+int32 Aura::GetMiscValue() const 
+{ 
+	return m_spellProto->Effects[m_effIndex].MiscValue; 
+}
+
+int32 Aura::GetMiscBValue() const 
+{ 
+	return m_spellProto->Effects[m_effIndex].MiscValueB; 
+}
+
+uint32 Aura::GetId() const
+{ 
+	return m_spellProto->Id; 
 }

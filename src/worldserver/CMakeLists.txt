@@ -20,20 +20,20 @@ set(worldserver_SRCS
 )
 
 if( WIN32 )
-  set(worldserver_SRCS
-    ${worldserver_SRCS}
-    ${sources_windows_Debugging}
-  )
-  if ( MSVC )
     set(worldserver_SRCS
-      ${worldserver_SRCS}
-      worldserver.rc
+        ${worldserver_SRCS}
+        ${sources_windows_Debugging}
     )
-  endif()
+    if ( MSVC )
+        set(worldserver_SRCS
+        ${worldserver_SRCS}
+        worldserver.rc
+    )
+    endif()
 endif()
 
 
-INCLUDE_DIRECTORIES(  
+include_directories(  
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/dep/cppformat
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
@@ -83,26 +83,26 @@ add_executable(worldserver ${worldserver_SRCS})
 
 if ( UNIX )
 add_definitions(
--D_WORLD_SERVER_CONFIG='"${CONF_DIR}/worldserver.conf"'
+    -D_WORLD_SERVER_CONFIG='"${CONF_DIR}/worldserver.conf"'
 )
 endif()
 
 add_dependencies(worldserver revision.h game scripts irc)
 
 if( UNIX )
-  set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
+    set(worldserver_LINK_FLAGS "-pthread ${worldserver_LINK_FLAGS}")
 endif()
 
 if ( WIN32 )
 	set(worldserver_LINK_FLAGS ${worldserver_LINK_FLAGS} "/LARGEADDRESSAWARE")
 endif()
 
-SET_TARGET_PROPERTIES(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
+set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
-IF (UNIX)
+if (UNIX)
     #this should be changed, see comments is CMakeLists from irc project
-    SET(UNIX_LIBS gomp malloc ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
-ENDIF()
+    set(UNIX_LIBS gomp malloc ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
+endif()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 target_link_libraries(

@@ -227,14 +227,14 @@ class Aura
         Modifier const* GetModifier() const { return &m_modifier;}
         int32 GetModifierValuePerStack() const { return m_modifier.m_amount;}
         int32 GetModifierValue() const { return m_modifier.m_amount * m_stackAmount;}
-        int32 GetMiscValue() const { return m_spellProto->Effects[m_effIndex].MiscValue;}
-        int32 GetMiscBValue() const { return m_spellProto->Effects[m_effIndex].MiscValueB;}
+		int32 GetMiscValue() const;
+		int32 GetMiscBValue() const;
         void SetModifierValuePerStack(int32 newAmount);
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
         bool IsRequiringSelectedTarget(SpellInfo const* info) const;
-        uint32 GetId() const{ return m_spellProto->Id; }
+		uint32 GetId() const;
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
