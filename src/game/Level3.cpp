@@ -1018,6 +1018,7 @@ bool ChatHandler::HandleMaxSkillCommand(const char* /*args*/)
 
     // each skills that have max skill value dependent from level seted to current level max skill value
     SelectedPlayer->UpdateSkillsToMaxSkillsForLevel();
+    SendSysMessage("Max skills set to target");
     return true;
 }
 

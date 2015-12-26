@@ -143,7 +143,7 @@ class CreatureAI : public UnitAI
 
         // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
         virtual void AttackedBy(Unit* /*attacker*/) { }
-        virtual bool IsEscorted() { return false; }
+        virtual bool IsEscorted() const { return false; }
         virtual void AttackedUnitDied(Unit* /* attacked */) { }
 
         // Called when vitim entered water and creature can not enter water
