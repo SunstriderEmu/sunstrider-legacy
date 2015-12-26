@@ -812,6 +812,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             */
             break;
         }
+
+        case SMART_ACTION_COMBAT_STOP:
+        {
+            if (!me)
+                break;
+
+            me->CombatStop(true);
+            TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_COMBAT_STOP: %u CombatStop", me->GetGUIDLow());
+            break;
+        } 
         case SMART_ACTION_REMOVEAURASFROMSPELL:
         {
             ObjectList* targets = GetTargets(e, unit);
