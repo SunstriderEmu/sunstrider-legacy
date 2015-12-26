@@ -249,7 +249,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
                 Player* playerGroup = itr->GetSource();
                 if(!playerGroup)
                     continue;
-                if (player->GetDistance2d(playerGroup) < sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
+                if (player->IsAtGroupRewardDistance(playerGroup))
                     playersNear.push_back(playerGroup);
             }
 
@@ -521,7 +521,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         return;
     }
 
-    if (_player->GetDistance(target) > sWorld->getConfig(CONFIG_GROUP_XP_DISTANCE))
+    if (_player->IsAtGroupRewardDistance(target))
     {
         _player->SendLootError(lootguid, LOOT_ERROR_TOO_FAR); 
         return;
