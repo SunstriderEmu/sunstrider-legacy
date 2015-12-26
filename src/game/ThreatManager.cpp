@@ -546,6 +546,12 @@ void ThreatManager::detauntFadeOut(Unit *pDetaunter)
 
 void ThreatManager::setCurrentVictim(HostileReference* pHostileReference)
 {
+#ifdef LICH_KING
+    if (pHostileReference && pHostileReference != iCurrentVictim)
+    {
+        iOwner->SendChangeCurrentVictimOpcode(pHostileReference);
+    }
+#endif
     iCurrentVictim = pHostileReference;
 }
 
