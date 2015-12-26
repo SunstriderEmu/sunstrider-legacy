@@ -980,6 +980,7 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
     CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
     CAN_ATTACK_RESULT_SELF_UNIT_FLAGS, //create cannot attack because of own unit flags
+    CAN_ATTACK_RESULT_IMMUNE_TO_TARGET, //Combat disabled with target because of own flags
     CAN_ATTACK_RESULT_OTHERS, //all others reason
 };
 
