@@ -4928,13 +4928,13 @@ void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
         if(apply)
         {
             m_target->HandleStatModifier(UNIT_MOD_HEALTH, TOTAL_VALUE, float(GetModifierValue()), apply);
-            m_target->ModifyHealth(m_modifier.m_amount); //shouldn't it be GetModifierValue ?
+            m_target->ModifyHealth(GetModifierValue());
         }
 		else
 		{
 			if (m_target->GetHealth() > 0)
 			{
-				int32 value = std::min<int32>(m_target->GetHealth() - 1, m_modifier.m_amount);  //shouldn't it be GetModifierValue ?
+				int32 value = std::min<int32>(m_target->GetHealth() - 1, GetModifierValue());  //shouldn't it be GetModifierValue ?
 				m_target->ModifyHealth(-value);
 			}
 
