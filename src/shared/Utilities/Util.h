@@ -91,6 +91,18 @@ inline T CalculatePct(T base, U pct)
     return T(base * static_cast<float>(pct) / 100.0f);
 }
 
+template <class T, class U>
+inline T AddPct(T &base, U pct)
+{
+    return base += CalculatePct(base, pct);
+}
+
+template <class T, class U>
+inline T ApplyPct(T &base, U pct)
+{
+    return base = CalculatePct(base, pct);
+}
+
 inline void ApplyModUInt32Var(uint32& var, int32 val, bool apply)
 {
     int32 cur = var;

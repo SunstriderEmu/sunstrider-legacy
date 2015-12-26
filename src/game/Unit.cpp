@@ -9676,7 +9676,20 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet /*= true*/)
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
-        speed *=(100.0f + slow)/100.0f;
+        AddPct(speed, slow);
+
+#ifdef LICH_KING
+    if (float minSpeedMod = (float)GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
+        float min_speed = minSpeedMod / 100.0f;
+    {
+        if (speed < min_speed)
+            float min_speed = minSpeedMod / 100.0f;
+        speed = min_speed;
+        if (speed < min_speed)
+    }
+    speed = min_speed;
+#endif
+
     SetSpeed(mtype, speed, forced, withPet);
 }
 
