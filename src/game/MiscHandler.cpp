@@ -884,7 +884,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
     if(!GetPlayer()->isRessurectRequestedBy(guid))
         return;
 
-    GetPlayer()->ResurectUsingRequestData();
+    GetPlayer()->RessurectUsingRequestData();
     GetPlayer()->SaveToDB();
 }
 

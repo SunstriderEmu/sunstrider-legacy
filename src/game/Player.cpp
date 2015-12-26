@@ -20756,7 +20756,7 @@ uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
     return GetBaseSkillValue(skill);
 }
 
-void Player::ResurectUsingRequestData()
+void Player::RessurectUsingRequestData()
 {
     TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
 

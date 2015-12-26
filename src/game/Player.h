@@ -1721,9 +1721,9 @@ class Player : public Unit
             m_resurrectMana = mana;
         };
         void clearResurrectRequestData() { setResurrectRequestData(0,0,0.0f,0.0f,0.0f,0,0); }
-        bool isRessurectRequestedBy(uint64 guid) const { return m_resurrectGUID == guid; }
+        bool isRessurectRequestedBy(uint64 guid) const { return m_resurrectGUID != 0 && m_resurrectGUID == guid; }
         bool isRessurectRequested() const { return m_resurrectGUID != 0; }
-        void ResurectUsingRequestData();
+        void RessurectUsingRequestData();
 
         int getCinematic()
         {
