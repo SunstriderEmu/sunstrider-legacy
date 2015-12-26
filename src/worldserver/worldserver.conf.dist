@@ -422,28 +422,32 @@ Anticheat.Movement.Warn = true
 #
 #    AllFlightPaths
 #        Players will start with all flight paths (Note: ALL flight paths, not only player's team)
-#        Default: 0 (true)
-#                 1 (false)
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
+#
+#    InstantFlightPaths
+#    Default: 0 (Disabled)
+#                1 (Enabled)
 #
 #    AlwaysMaxSkillForLevel
 #        Players will automatically gain max level dependent (weapon/defense) skill when logging in, leveling up etc.
-#        Default: 0 (true)
-#                 1 (false)
+#        Default: 0 (Disabled)
+#                 1 (Enabled)
 #
 #    ActivateWeather
 #        Activate weather system
-#        Default: 1 (true)
-#                 0 (false)
+#        Default: 1 (Enabled)
+#                 0 (Disabled)
 #
 #    Battleground.CastDeserter
 #        Cast or not Deserter spell at player who leave battleground in progress
-#        Default: 1 (true)
-#                 0 (false)
+#        Default: 1 (Disabled)
+#                 0 (Enabled)
 #
 #    Battleground.QueueAnnouncer.Enable
 #        Enable queue announcer posting to chat
-#        Default: 1 (true)
-#                 0 (false)
+#        Default: 1 (Disabled)
+#                 0 (Enabled)
 #
 #    Battleground.QueueAnnouncer.PlayerOnly
 #        Enable queue announcer posting to chat
@@ -634,6 +638,7 @@ StartArenaPoints = 0
 InstantLogout = 1
 GroupLeaderReconnectPeriod = 180
 AllFlightPaths = 0
+InstantFlightPaths = 0
 AlwaysMaxSkillForLevel = 0
 ActivateWeather = 1
 Battleground.CastDeserter = 1

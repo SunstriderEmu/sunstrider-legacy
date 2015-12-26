@@ -26,21 +26,12 @@ WaypointMgr::WaypointMgr() { }
 
 WaypointMgr::~WaypointMgr()
 {
-    ClearStore();
-}
-
-void WaypointMgr::ClearStore()
-{
     for (WaypointPathContainer::iterator itr = _waypointStore.begin(); itr != _waypointStore.end(); ++itr)
     {
-        auto nodes = itr->second.nodes;
-        while(!nodes.empty())
-        {
-            delete nodes.back();
-            nodes.pop_back();
-        }
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
 
-        itr->second.nodes.clear();
+        itr->second.clear();
     }
 
     _waypointStore.clear();
@@ -87,7 +78,7 @@ void WaypointMgr::Load()
         wp->event_id = fields[8].GetUInt32();
         wp->event_chance = fields[9].GetInt16();
 
-        path.nodes.push_back(wp);
+        path.push_back(wp);
         ++count;
     } while (result->NextRow());
 
@@ -100,6 +91,8 @@ void WaypointMgr::Load()
 
             uint32 pathId = fields[0].GetUInt32();
             WaypointPath& path = _waypointStore[pathId];
+            if (path.empty())
+                TC_LOG_ERROR("sql.sql", "Found waypoint_info data for empty path %u", pathId);
 
             path.pathType = fields[1].GetUInt16();
             path.pathDirection = fields[2].GetUInt8();
@@ -112,12 +105,13 @@ void WaypointMgr::Load()
 
 void WaypointMgr::ReloadPath(uint32 id)
 {
-    if(_waypointStore.find(id) != _waypointStore.end())
+    WaypointPathContainer::iterator itr = _waypointStore.find(id);
+    if (itr != _waypointStore.end())
     {
-        //Don't remove the vector, there may be pointers to it elsewhere
-        _waypointStore[id].nodes.clear(); 
-        _waypointStore[id].pathType = 0;
-        _waypointStore[id].pathDirection = 0;
+        for (WaypointPath::const_iterator it = itr->second.begin(); it != itr->second.end(); ++it)
+            delete *it;
+
+        _waypointStore.erase(itr);
     }
     
     QueryResult result = WorldDatabase.PQuery("SELECT point, position_x, position_y, position_z, orientation, move_type, delay, action, action_chance FROM waypoint_data WHERE id = %u ORDER BY point",id);
@@ -150,7 +144,7 @@ void WaypointMgr::ReloadPath(uint32 id)
         wp->event_id = fields[7].GetUInt32();
         wp->event_chance = fields[8].GetUInt8();
 
-        path.nodes.push_back(wp);
+        path.push_back(wp);
     }
     while (result->NextRow());
 

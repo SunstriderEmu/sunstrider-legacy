@@ -1090,6 +1090,7 @@ class PlayerTaxi
             m_TaxiDestinations.pop_front();
             return GetTaxiDestination();
         }
+        std::deque<uint32> const& GetPath() const { return m_TaxiDestinations; }
         bool empty() const { return m_TaxiDestinations.empty(); }
     private:
         TaxiMask m_taximask;
@@ -1193,6 +1194,7 @@ class Player : public Unit
         bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc = NULL, uint32 spellid = 0);
         bool ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid = 0);
         void CleanupAfterTaxiFlight();
+        void ContinueTaxiFlight();
                                                             // mount_id can be used in scripting calls
         bool IsAcceptWhispers() const { return m_ExtraFlags & PLAYER_EXTRA_ACCEPT_WHISPERS; }
         void SetAcceptWhispers(bool on) { if(on) m_ExtraFlags |= PLAYER_EXTRA_ACCEPT_WHISPERS; else m_ExtraFlags &= ~PLAYER_EXTRA_ACCEPT_WHISPERS; }

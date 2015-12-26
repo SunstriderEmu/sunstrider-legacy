@@ -27,7 +27,6 @@
 
 #include "MovementGenerator.h"
 #include "WaypointManager.h"
-#include "Path.h"
 
 #include "Player.h"
 
@@ -68,7 +67,6 @@ class PathMovementBase
         virtual ~PathMovementBase() { };
 
         // template pattern, not defined .. override required
-        void LoadPath(T &);
         uint32 GetCurrentNode() const { return i_currentNode; }
 
     protected:
@@ -85,7 +83,7 @@ Default type is WP_PATH_TYPE_LOOP.
 */
 template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
-    public PathMovementBase<Creature, WaypointPathNodes const*>
+    public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
         WaypointMovementGenerator(uint32 _path_id = 0);
@@ -94,8 +92,6 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         void DoFinalize(Creature*);
         void DoReset(Creature*);
         bool DoUpdate(Creature*, uint32 diff);
-
-        WaypointPathNodes const& GetPath() { return *i_path; }
 
         void MovementInform(Creature*);
 
@@ -151,30 +147,30 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
  * and hence generates ground and activities for the player.
  */
 class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, FlightPathMovementGenerator >,
-    public PathMovementBase<Player, TaxiPathNodeList const*>
+    public PathMovementBase<Player, TaxiPathNodeList>
 {
     public:
-        explicit FlightPathMovementGenerator(TaxiPathNodeList const& pathnodes, uint32 startNode = 0)
+        explicit FlightPathMovementGenerator(uint32 startNode = 0)
         {
-            i_path = &pathnodes;
             i_currentNode = startNode;
             _endGridX = 0.0f;
             _endGridY = 0.0f;
             _endMapId = 0;
             _preloadTargetNode = 0;
         }
+        void LoadPath(Player* player);
         void DoInitialize(Player*);
         void DoReset(Player*);
         void DoFinalize(Player*);
         bool DoUpdate(Player*, uint32);
         MovementGeneratorType GetMovementGeneratorType() { return FLIGHT_MOTION_TYPE; }
 
-        TaxiPathNodeList const& GetPath() { return *i_path; }
+        TaxiPathNodeList const& GetPath() { return i_path; }
         uint32 GetPathAtMapEnd() const;
-        bool HasArrived() const { return (i_currentNode >= i_path->size()); }
+        bool HasArrived() const { return (i_currentNode >= i_path.size()); }
         void SetCurrentNodeAfterTeleport();
         void SkipCurrentNode() { ++i_currentNode; }
-        void DoEventIfAny(Player* player, TaxiPathNodeEntry const& node, bool departure);
+        void DoEventIfAny(Player* player, TaxiPathNodeEntry const* node, bool departure);
 
         bool GetResetPos(Player*, float& x, float& y, float& z);
 
@@ -186,5 +182,13 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
         float _endGridY;                //! Y coord of last node location
         uint32 _endMapId;               //! map Id of last node location
         uint32 _preloadTargetNode;      //! node index where preloading starts
+
+        struct TaxiNodeChangeInfo
+        {
+            uint32 PathIndex;
+            int32 Cost;
+        };
+
+        std::deque<TaxiNodeChangeInfo> _pointsForPathSwitch;    //! node indexes and costs where TaxiPath changes
 };
 #endif

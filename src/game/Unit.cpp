@@ -28,7 +28,6 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ChatTextBuilder.h"
-#include "Path.h"
 #include "PathGenerator.h"
 #include "CreatureGroups.h"
 #include "PetAI.h"

@@ -44,14 +44,13 @@ struct WaypointData
 
 typedef std::vector<WaypointData*> WaypointPathNodes;
 
-struct WaypointPath
+struct WaypointPath : public std::vector<WaypointData*>
 {
     WaypointPath() :
         pathType(0),
         pathDirection(0)
     {}
 
-    WaypointPathNodes nodes;
     uint16 pathType;
     uint8 pathDirection;
 };
@@ -87,7 +86,6 @@ class WaypointMgr
         // Only allow instantiation from ACE_Singleton
         WaypointMgr();
         ~WaypointMgr();
-        void ClearStore();
 
         WaypointPathContainer _waypointStore;
 };

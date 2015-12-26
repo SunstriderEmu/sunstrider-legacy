@@ -71,7 +71,7 @@ ReactorAI::EnterEvadeMode()
 {
     if( !i_creature.IsAlive() )
     {
-        TC_LOG_DEBUG("FIXME","Creature stoped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("entities.unit","Creature stoped attacking cuz his dead [guid=%u]", i_creature.GetGUIDLow());
         i_creature.GetMotionMaster()->MovementExpired();
         i_creature.GetMotionMaster()->MoveIdle();
         i_victimGuid = 0;
@@ -84,19 +84,19 @@ ReactorAI::EnterEvadeMode()
 
     if( !victim  )
     {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("entities.unit","Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim->HasStealthAura() )
     {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his victim is stealth [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("entities.unit","Creature stopped attacking cuz his victim is stealth [guid=%u]", i_creature.GetGUIDLow());
     }
     else if( victim->IsInFlight() )
     {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking cuz his victim is fly away [guid=%u]", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("entities.unit","Creature stopped attacking cuz his victim is fly away [guid=%u]", i_creature.GetGUIDLow());
     }
     else
     {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking due to target %s [guid=%u]", victim->IsAlive() ? "out run him" : "is dead", i_creature.GetGUIDLow());
+        TC_LOG_DEBUG("entities.unit","Creature stopped attacking due to target %s [guid=%u]", victim->IsAlive() ? "out run him" : "is dead", i_creature.GetGUIDLow());
     }
 
     i_creature.RemoveAllAuras();

@@ -18250,6 +18250,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     // fill destinations path tail
     uint32 sourcepath = 0;
     uint32 totalcost = 0;
+    uint32 firstcost = 0;
 
     uint32 prevnode = sourcenode;
     uint32 lastnode = 0;
@@ -18268,6 +18269,8 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
         }
 
         totalcost += cost;
+        if (i == 1)
+            firstcost = cost;
 
         if (prevnode == sourcenode)
             sourcepath = path;
@@ -18327,24 +18330,35 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
     }
 
     //Checks and preparations done, DO FLIGHT
-    ModifyMoney(-(int32)totalcost);
+#ifdef LICH_KING
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_FLIGHT_PATHS_TAKEN, 1);
+#endif
 
     // prevent stealth flight
     //RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
-    /*
-    if (sWorld->getConfig(CONFIG_INSTANT_TAXI))
+
+    if (sWorld->getBoolConfig(CONFIG_INSTANT_TAXI))
     {
-        TaxiNodesEntry const* lastPathNode = sTaxiNodesStore.LookupEntry(nodes[nodes.size()-1]);
+        TaxiNodesEntry const* lastPathNode = sTaxiNodesStore.LookupEntry(nodes[nodes.size() - 1]);
         ASSERT(lastPathNode);
         m_taxi.ClearTaxiDestinations();
+        ModifyMoney(-(int32)totalcost);
+#ifdef LICH_KING
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TRAVELLING, totalcost);
+#endif
         TeleportTo(lastPathNode->map_id, lastPathNode->x, lastPathNode->y, lastPathNode->z, GetOrientation());
         return false;
     }
     else
-    {*/
+    {
+        ModifyMoney(-(int32)firstcost);
+#ifdef LICH_KING
+        UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TRAVELLING, firstcost);
+#endif
         GetSession()->SendActivateTaxiReply(ERR_TAXIOK);
         GetSession()->SendDoFlight(mount_display_id, sourcepath);
-   // }
+    }
+
     return true;
 }
 
@@ -18369,6 +18383,62 @@ void Player::CleanupAfterTaxiFlight()
     Dismount();
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
     GetHostileRefManager().setOnlineOfflineState(true);
+}
+
+void Player::ContinueTaxiFlight()
+{
+    uint32 sourceNode = m_taxi.GetTaxiSource();
+    if (!sourceNode)
+        return;
+
+    TC_LOG_DEBUG("entities.unit", "WORLD: Restart character %u taxi flight", GetGUIDLow());
+
+    uint32 mountDisplayId = sObjectMgr->GetTaxiMountDisplayId(sourceNode, GetTeam(), true);
+    if (!mountDisplayId)
+        return;
+
+    uint32 path = m_taxi.GetCurrentTaxiPath();
+
+    // search appropriate start path node
+    uint32 startNode = 0;
+
+    TaxiPathNodeList const& nodeList = sTaxiPathNodesByPath[path];
+
+    float distPrev = MAP_SIZE*MAP_SIZE;
+    float distNext =
+        (nodeList[0]->LocX - GetPositionX())*(nodeList[0]->LocX - GetPositionX()) +
+        (nodeList[0]->LocY - GetPositionY())*(nodeList[0]->LocY - GetPositionY()) +
+        (nodeList[0]->LocZ - GetPositionZ())*(nodeList[0]->LocZ - GetPositionZ());
+
+    for (uint32 i = 1; i < nodeList.size(); ++i)
+    {
+        TaxiPathNodeEntry const* node = nodeList[i];
+        TaxiPathNodeEntry const* prevNode = nodeList[i - 1];
+
+        // skip nodes at another map
+        if (node->MapID != GetMapId())
+            continue;
+
+        distPrev = distNext;
+
+        distNext =
+            (node->LocX - GetPositionX())*(node->LocX - GetPositionX()) +
+            (node->LocY - GetPositionY())*(node->LocY - GetPositionY()) +
+            (node->LocZ - GetPositionZ())*(node->LocZ - GetPositionZ());
+
+        float distNodes =
+            (node->LocX - prevNode->LocX)*(node->LocX - prevNode->LocX) +
+            (node->LocY - prevNode->LocY)*(node->LocY - prevNode->LocY) +
+            (node->LocZ - prevNode->LocZ)*(node->LocZ - prevNode->LocZ);
+
+        if (distNext + distPrev < distNodes)
+        {
+            startNode = i;
+            break;
+        }
+    }
+
+    GetSession()->SendDoFlight(mountDisplayId, path, startNode);
 }
 
 void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )

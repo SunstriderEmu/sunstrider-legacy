@@ -23,7 +23,7 @@
 #include "TransportMgr.h"
 #include "Item.h"
 
-#include "DBCfmt.cpp"
+#include "DBCfmt.h"
 
 #include <map>
 
@@ -472,7 +472,7 @@ void LoadDBCStores(const std::string& dataPath)
     // fill data
     for (uint32 i = 1; i < sTaxiPathNodeStore.GetNumRows(); ++i)
         if (TaxiPathNodeEntry const* entry = sTaxiPathNodeStore.LookupEntry(i))
-            sTaxiPathNodesByPath[entry->PathID].set(entry->NodeIndex, entry);
+            sTaxiPathNodesByPath[entry->PathID][entry->NodeIndex] = entry;
 
     LoadDBC(availableDbcLocales,bad_dbc_files,sTotemCategoryStore,       dbcPath,"TotemCategory.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sTransportAnimationStore,  dbcPath,"TransportAnimation.dbc");

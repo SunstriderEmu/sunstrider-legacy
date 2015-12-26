@@ -426,5 +426,21 @@ static float GetDistance(float x, float y, float x2, float y2)
     return ( dist > 0 ? dist : 0);     
 };
 
+//return true of timer reached 0
+static bool DecreaseTimer(uint32& timer, uint32 const diff)
+{
+    if (timer > 0)
+    {
+        if (diff >= timer)
+            timer = 0;
+        else
+        {
+            timer -= diff;
+            return false;
+        }
+    }
+    return true;
+};
+
 #endif
 

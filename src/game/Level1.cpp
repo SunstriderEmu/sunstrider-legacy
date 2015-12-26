@@ -1427,14 +1427,8 @@ bool ChatHandler::HandleModifyTalentCommand (const char* args)
 //Enable On\OFF all taxi paths
 bool ChatHandler::HandleTaxiCheatCommand(const char* args)
 {
-    if (!*args)
-    {
-        SendSysMessage(LANG_USE_BOL);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    std::string argstr = (char*)args;
+    //default to "on" if no input specified
+    std::string argstr = *args ? (char*)args : "on";
 
     Player *chr = GetSelectedPlayerOrSelf();
 

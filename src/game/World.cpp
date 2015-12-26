@@ -823,6 +823,7 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_configs[CONFIG_ALL_TAXI_PATHS] = sConfigMgr->GetBoolDefault("AllFlightPaths", false);
+    m_configs[CONFIG_INSTANT_TAXI]   = sConfigMgr->GetBoolDefault("InstantFlightPaths", false);
 
     m_configs[CONFIG_INSTANCE_IGNORE_LEVEL] = sConfigMgr->GetBoolDefault("Instance.IgnoreLevel", false);
     m_configs[CONFIG_INSTANCE_IGNORE_RAID]  = sConfigMgr->GetBoolDefault("Instance.IgnoreRaid", false);

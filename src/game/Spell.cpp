@@ -42,7 +42,6 @@
 #include "ObjectAccessor.h"
 #include "CellImpl.h"
 #include "SharedDefines.h"
-#include "Tools.h"
 #include "LootMgr.h"
 #include "Management/VMapFactory.h"
 #include "BattleGround.h"

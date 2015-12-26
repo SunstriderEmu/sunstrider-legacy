@@ -26,7 +26,6 @@
 #include "ArcherAI.h"
 #include "GuardAI.h"
 #include "PetAI.h"
-#include "PossessedAI.h"
 #include "TotemAI.h"
 #include "SmartAI.h"
 #include "GameObjectAI.h"

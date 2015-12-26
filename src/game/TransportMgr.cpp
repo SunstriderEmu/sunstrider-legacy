@@ -113,7 +113,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     Movement::PointsArray splinePath, allPoints;
     bool mapChange = false;
     for (size_t i = 0; i < path.size(); ++i)
-        allPoints.push_back(G3D::Vector3(path[i].x, path[i].y, path[i].z));
+        allPoints.push_back(G3D::Vector3(path[i]->LocX, path[i]->LocY, path[i]->LocZ));
 
     // Add extra points to allow derivative calculations for all path nodes
     allPoints.insert(allPoints.begin(), allPoints.front().lerp(allPoints[1], -0.2f));
@@ -129,8 +129,8 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     {
         if (!mapChange)
         {
-            TaxiPathNodeEntry const& node_i = path[i];
-            if (i != path.size() - 1 && (node_i.actionFlag & 1 || node_i.MapID != path[i + 1].MapID))
+            TaxiPathNodeEntry const* node_i = path[i];
+            if (i != path.size() - 1 && (node_i->actionFlag & 1 || node_i->MapID != path[i + 1]->MapID))
             {
                 keyFrames.back().Teleport = true;
                 mapChange = true;
@@ -143,7 +143,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
                 k.InitialOrientation = Position::NormalizeOrientation(atan2(h.y, h.x) + M_PI);
 
                 keyFrames.push_back(k);
-                splinePath.push_back(G3D::Vector3(node_i.x, node_i.y, node_i.z));
+                splinePath.push_back(G3D::Vector3(node_i->LocX, node_i->LocY, node_i->LocZ));
                 transport->mapsUsed.insert(k.Node->MapID);
             }
         }
@@ -364,9 +364,9 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
     // ...at first waypoint
     TaxiPathNodeEntry const* startNode = tInfo->keyFrames.begin()->Node;
     uint32 mapId = startNode->MapID;
-    float x = startNode->x;
-    float y = startNode->y;
-    float z = startNode->z;
+    float x = startNode->LocX;
+    float y = startNode->LocY;
+    float z = startNode->LocZ;
     float o = tInfo->keyFrames.begin()->InitialOrientation;
 
     // initialize the gameobject base

@@ -53,7 +53,6 @@
 #include "MoveSpline.h"
 #include "Spell.h"
 #include "InstanceScript.h"
-#include "Tools.h"
 
 void TrainerSpellData::Clear()
 {

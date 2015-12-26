@@ -18,6 +18,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#ifndef DBCFMT_H
+#define DBCFMT_H
+ 
 const char AreaTableEntryfmt[]="iiinixxxxxissssssssssssssssxiiiiifx";
 const char AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 const char AreaTriggerEntryfmt[]="niffffffff";
@@ -89,3 +92,4 @@ const char WorldMapAreaEntryfmt[]="xinxffffi";
 const char WMOAreaTableEntryfmt[]="niiixxxxxiixxxxxxxxxxxxxxxxx";
 const char WorldSafeLocsEntryfmt[]="nifffxxxxxxxxxxxxxxxxx";
 
+#endif // DBCFMT_H
