@@ -925,9 +925,9 @@ struct TaxiPathEntry
 struct TaxiPathNodeEntry
 {
                                                             // 0        m_ID
-    uint32    path;                                         // 1        m_PathID
-    uint32    index;                                        // 2        m_NodeIndex
-    uint32    mapid;                                        // 3        m_ContinentID
+    uint32    PathID;                                       // 1        m_PathID
+    uint32    NodeIndex;                                    // 2        m_NodeIndex
+    uint32    MapID;                                        // 3        m_ContinentID
     float     x;                                            // 4        m_LocX
     float     y;                                            // 5        m_LocY
     float     z;                                            // 6        m_LocZ

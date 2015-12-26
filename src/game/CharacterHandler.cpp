@@ -938,7 +938,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             TaxiPathNodeEntry const& prevNode = nodeList[i-1];
 
             // skip nodes at another map
-            if(node.mapid != pCurrChar->GetMapId())
+            if(node.MapID != pCurrChar->GetMapId())
                 continue;
 
             distPrev = distNext;

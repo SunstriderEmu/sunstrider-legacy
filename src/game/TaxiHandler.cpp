@@ -215,7 +215,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
     recvData >> movementInfo;
     GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
-   //LK? recvData.read_skip<uint32>();                          // unk
+   //LK? recvData.read_skip<uint32>();                          // spline id
 
     // in taxi flight packet received in 2 case:
     // 1) end taxi path in far (multi-node) flight

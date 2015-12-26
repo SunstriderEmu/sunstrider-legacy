@@ -130,7 +130,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
         if (!mapChange)
         {
             TaxiPathNodeEntry const& node_i = path[i];
-            if (i != path.size() - 1 && (node_i.actionFlag & 1 || node_i.mapid != path[i + 1].mapid))
+            if (i != path.size() - 1 && (node_i.actionFlag & 1 || node_i.MapID != path[i + 1].MapID))
             {
                 keyFrames.back().Teleport = true;
                 mapChange = true;
@@ -144,7 +144,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
 
                 keyFrames.push_back(k);
                 splinePath.push_back(G3D::Vector3(node_i.x, node_i.y, node_i.z));
-                transport->mapsUsed.insert(k.Node->mapid);
+                transport->mapsUsed.insert(k.Node->MapID);
             }
         }
         else
@@ -363,7 +363,7 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
 
     // ...at first waypoint
     TaxiPathNodeEntry const* startNode = tInfo->keyFrames.begin()->Node;
-    uint32 mapId = startNode->mapid;
+    uint32 mapId = startNode->MapID;
     float x = startNode->x;
     float y = startNode->y;
     float z = startNode->z;
