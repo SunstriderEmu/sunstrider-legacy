@@ -2087,8 +2087,8 @@ bool ChatHandler::HandleTeleCommand(const char * args)
         return false;
     }
 
-    MapEntry const * me = sMapStore.LookupEntry(tele->mapId);
-    if(!me || me->IsBattlegroundOrArena())
+    MapEntry const * map = sMapStore.LookupEntry(tele->mapId);
+    if (!map || (map->IsBattlegroundOrArena() && (_player->GetMapId() != tele->mapId || !_player->IsGameMaster())))
     {
         SendSysMessage(LANG_CANNOT_TELE_TO_BG);
         SetSentErrorMessage(true);
