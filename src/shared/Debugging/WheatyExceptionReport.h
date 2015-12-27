@@ -3,10 +3,13 @@
 
 #if PLATFORM == PLATFORM_WINDOWS && !defined(__MINGW32__)
 
+#include <winnt.h>
+#include <winternl.h>
 #include <dbghelp.h>
 #include <set>
 #include <stdlib.h>
 #include <stack>
+#include <mutex>
 #define countof  _countof
 
 #define WER_MAX_ARRAY_ELEMENTS_COUNT 10
@@ -172,12 +175,14 @@ class WheatyExceptionReport
 
         static char * DumpTypeIndex(char *, DWORD64, DWORD, unsigned, DWORD_PTR, bool &, const char*, char*, bool, bool);
 
-        static void FormatOutputValue(char * pszCurrBuffer, BasicType basicType, DWORD64 length, PVOID pAddress, size_t bufferSize);
+        static void FormatOutputValue(char * pszCurrBuffer, BasicType basicType, DWORD64 length, PVOID pAddress, size_t bufferSize, size_t countOverride = 0);
 
         static BasicType GetBasicType(DWORD typeIndex, DWORD64 modBase);
         static DWORD_PTR DereferenceUnsafePointer(DWORD_PTR address);
 
         static int __cdecl _tprintf(const TCHAR * format, ...);
+        static int __cdecl stackprintf(const TCHAR * format, va_list argptr);
+        static int __cdecl heapprintf(const TCHAR * format, va_list argptr);
 
         static bool StoreSymbol(DWORD type , DWORD_PTR offset);
         static void ClearSymbols();
@@ -191,6 +196,11 @@ class WheatyExceptionReport
         static HANDLE m_hProcess;
         static SymbolPairs symbols;
         static std::stack<SymbolDetail> symbolDetails;
+        static bool stackOverflowException;
+        static bool alreadyCrashed;
+        static std::mutex alreadyCrashedLock;
+        typedef NTSTATUS(NTAPI* pRtlGetVersion)(PRTL_OSVERSIONINFOW lpVersionInformation);
+        static pRtlGetVersion RtlGetVersion;
 
         static char* PushSymbolDetail(char* pszCurrBuffer);
         static char* PopSymbolDetail(char* pszCurrBuffer);

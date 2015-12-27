@@ -1,3 +1,8 @@
+set(sources_windows_Debugging
+  ${CMAKE_SOURCE_DIR}/src/shared/Debugging/WheatyExceptionReport.cpp
+  ${CMAKE_SOURCE_DIR}/src/shared/Debugging/WheatyExceptionReport.h
+)
+
 add_subdirectory(authserver)
 add_subdirectory(collision)
 add_subdirectory(framework)
