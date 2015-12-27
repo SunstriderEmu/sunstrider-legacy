@@ -1345,7 +1345,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
 
     Unit *pVictim = damageInfo->target;
 
-    if(!this || !pVictim)
+    if(!pVictim)
         return;
 
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
@@ -1406,7 +1406,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     damageInfo->procEx           = PROC_EX_NONE;
     damageInfo->hitOutCome       = MELEE_HIT_EVADE;
 
-    if(!this || !pVictim)
+    if(!pVictim)
         return;
     if(!this->IsAlive() || !pVictim->IsAlive())
         return;
@@ -1599,7 +1599,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     if (!damageInfo) return;
     Unit *pVictim = damageInfo->target;
 
-    if(!this || !pVictim)
+    if(!pVictim)
         return;
 
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
@@ -6438,7 +6438,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
      else if (auraSpellInfo->Id == 27522 || auraSpellInfo->Id == 46939)   // Black bow of the Betrayer
      {
          // On successful melee or ranged attack gain $29471s1 mana and if possible drain $27526s1 mana from the target.
-         if (this && this->IsAlive())
+         if (this->IsAlive())
              CastSpell(this, 29471, true, castItem, triggeredByAura);
          if (pVictim && pVictim->IsAlive()) {
              //CastSpell(pVictim, 27526, true, castItem, triggeredByAura);

@@ -6287,11 +6287,11 @@ void Spell::EffectAddComboPoints(uint32 /*i*/)
         
     //HACK
     if (m_spellInfo->Id == 15250) {
-        m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, this);
+        m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, true);
         return;
     }
 
-    m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, this);
+    m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, false);
 }
 
 void Spell::EffectDuel(uint32 i)

@@ -128,7 +128,7 @@ namespace VMAP
                 return getMapFileName(mapId);
             }
             virtual bool existsMap(const char* basePath, unsigned int mapId, int x, int y);
-        public:
+
             void getInstanceMapTree(InstanceTreeMap &instanceMapTree);
 
             typedef bool(*IsVMAPDisabledForFn)(uint32 entry, uint8 flags);

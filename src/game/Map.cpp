@@ -634,7 +634,7 @@ void Map::RelocationNotify()
         unit->m_Notified = true;
         unit->m_IsInNotifyList = false;
         
-        float dist = abs(unit->GetPositionX() - unit->oldX) + abs(unit->GetPositionY() - unit->oldY);
+        float dist = std::fabs(unit->GetPositionX() - unit->oldX) + std::fabs(unit->GetPositionY() - unit->oldY);
         
         if(dist > 10.0f)
         {

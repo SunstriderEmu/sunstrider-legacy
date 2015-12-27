@@ -1191,7 +1191,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
     else
     {
         float ground_z = baseMap->GetHeight(PhaseMask(1), x, y, z, true, DEFAULT_HEIGHT_SEARCH);
-        if (z < ground_z && abs(z - ground_z) <= maxDist)
+        if (z < ground_z && std::fabs(z - ground_z) <= maxDist)
             z = ground_z;
     }
 }
