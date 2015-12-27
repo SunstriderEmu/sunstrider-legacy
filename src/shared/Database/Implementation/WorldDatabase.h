@@ -115,6 +115,8 @@ enum WorldDatabaseStatements
 class WorldDatabaseConnection : public MySQLConnection
 {
 public:
+    typedef WorldDatabaseStatements Statements;
+
     //- Constructors for sync and async connections
     WorldDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) { }
     WorldDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) { }

@@ -550,6 +550,8 @@ enum CharacterDatabaseStatements
 class CharacterDatabaseConnection : public MySQLConnection
 {
 public:
+    typedef CharacterDatabaseStatements Statements;
+
     //- Constructors for sync and async connections
     CharacterDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) { }
     CharacterDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) { }

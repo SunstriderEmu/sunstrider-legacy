@@ -121,6 +121,8 @@ enum LoginDatabaseStatements
 class LoginDatabaseConnection : public MySQLConnection
 {
 public:
+    typedef LoginDatabaseStatements Statements;
+
     //- Constructors for sync and async connections
     LoginDatabaseConnection(MySQLConnectionInfo& connInfo) : MySQLConnection(connInfo) { }
     LoginDatabaseConnection(ProducerConsumerQueue<SQLOperation*>* q, MySQLConnectionInfo& connInfo) : MySQLConnection(q, connInfo) { }

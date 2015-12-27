@@ -49,10 +49,9 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     if(pl == pl->duel->initiator || !plTarget || pl == plTarget || pl->duel->startTime != 0 || plTarget->duel->startTime != 0)
         return;
 
-    //TC_LOG_DEBUG("FIXME", "WORLD: received CMSG_DUEL_ACCEPTED" );
-    TC_LOG_DEBUG("FIXME","Player 1 is: %u (%s)", pl->GetGUIDLow(),pl->GetName().c_str());
-    TC_LOG_DEBUG("FIXME","Player 2 is: %u (%s)", plTarget->GetGUIDLow(),plTarget->GetName().c_str());
+    TC_LOG_DEBUG("network.opcodes", "WORLD: received CMSG_DUEL_ACCEPTED. P1 %u vs P2 %u.", pl->GetGUIDLow(), plTarget->GetGUIDLow());
 
+    //reset cooldown in duel area
     if(pl->IsInDuelArea())
     {
         pl->RemoveArenaSpellCooldowns();
