@@ -28,6 +28,10 @@
 #include "QueryResult.h"
 #include "QueryHolder.h"
 #include "AdhocStatement.h"
+#include "StringFormat.h"
+
+#include <mysqld_error.h>
+#include <memory>
 
 #define MIN_MYSQL_SERVER_VERSION 50100u
 #define MIN_MYSQL_CLIENT_VERSION 50100u
@@ -447,7 +451,7 @@ class DatabaseWorkerPool
                 else if (type == IDX_SYNCH)
                     t = new T(*_connectionInfo);
                 else
-                    ABORT();
+                    ASSERT(false);
 
                 _connections[type][i] = t;
                 ++_connectionCount[type];
@@ -458,7 +462,7 @@ class DatabaseWorkerPool
                 {
                     if (mysql_get_server_version(t->GetHandle()) < MIN_MYSQL_SERVER_VERSION)
                     {
-                        TC_LOG_ERROR("sql.driver", "TrinityCore does not support MySQL versions below 5.1");
+                        TC_LOG_ERROR("sql.driver", "Sunstrider does not support MySQL versions below 5.1");
                         res = false;
                     }
                 }

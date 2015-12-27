@@ -22,7 +22,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/game/Server
   ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
-  ${CMAKE_SOURCE_DIR}/dep/include
+  ${CMAKE_SOURCE_DIR}/dep/
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include
   ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
