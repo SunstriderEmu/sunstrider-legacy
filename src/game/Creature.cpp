@@ -876,7 +876,7 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
 
 bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
 {
-    if(!isBattleMaster())
+    if(!IsBattleMaster())
         return false;
 
     uint32 bgTypeId = sObjectMgr->GetBattleMasterBG(GetEntry());

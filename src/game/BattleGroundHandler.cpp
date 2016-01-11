@@ -50,7 +50,7 @@ void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
     if(!unit)
         return;
 
-    if(!unit->isBattleMaster())                             // it's not battlemaster
+    if(!unit->IsBattleMaster())                             // it's not battlemaster
         return;
 
     // Stop the npc if moving
@@ -204,7 +204,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
     if(!unit)
         return;
 
-    if(!unit->isBattleMaster())                             // it's not battlemaster
+    if(!unit->IsBattleMaster())                             // it's not battlemaster
         return;
 
     _HandleBattlegroundJoin(bgTypeId,instanceId,joinAsGroup);
@@ -684,7 +684,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     if(!unit)
         return;
 
-    if(!unit->isBattleMaster())                             // it's not battle master
+    if(!unit->IsBattleMaster())                             // it's not battle master
         return;
         
     if (isRated && !sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_RATED_ENABLE)) {

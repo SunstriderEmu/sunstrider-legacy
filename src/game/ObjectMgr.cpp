@@ -4690,6 +4690,16 @@ void ObjectMgr::AddGossipText(GossipText *pGText)
     mGossipText[pGText->Text_ID] = pGText;
 }
 
+BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
+{
+    BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
+    if (itr != mBattleMastersMap.end())
+        return itr->second;
+
+    TC_LOG_WARN("misc", "ObjectMgr::GetGossipText could not found battleground type %u, defaulting to warsong gulch", entry);
+    return BATTLEGROUND_WS;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
+}
+
 GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
 {
     GossipTextMap::const_iterator itr;
@@ -6791,7 +6801,7 @@ void ObjectMgr::LoadBattleMastersEntry()
 {
     mBattleMastersMap.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query( "SELECT entry,bg_template FROM battlemaster_entry" );
+    QueryResult result = WorldDatabase.Query( "SELECT entry, bg_template FROM battlemaster_entry" );
 
     uint32 count = 0;
 
