@@ -2009,7 +2009,7 @@ Allow.IP.Based.Action.Logging = 0
 #        Example:     "./world.pid" - (Enabled)
 #        Default:     ""            - (Disabled)
 
-PidFile = "world.pid"
+PidFile = "worldserver.pid"
 
 #
 #    PacketLogFile
