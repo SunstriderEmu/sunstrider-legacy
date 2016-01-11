@@ -4697,7 +4697,7 @@ BattlegroundTypeId ObjectMgr::GetBattleMasterBG(uint32 entry) const
         return itr->second;
 
     TC_LOG_WARN("misc", "ObjectMgr::GetGossipText could not found battleground type %u, defaulting to warsong gulch", entry);
-    return BATTLEGROUND_WS;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
+    return BATTLEGROUND_WS;
 }
 
 GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
