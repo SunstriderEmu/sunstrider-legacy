@@ -574,13 +574,7 @@ class ObjectMgr
             return false;
         }
 
-        BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
-        {
-            BattleMastersMap::const_iterator itr = mBattleMastersMap.find(entry);
-            if(itr != mBattleMastersMap.end())
-                return itr->second;
-            return BATTLEGROUND_WS;                                       //BATTLEGROUND_WS - i will not add include only for constant usage!
-        }
+        BattlegroundTypeId GetBattleMasterBG(uint32 entry) const;
 
         void AddGossipText(GossipText *pGText);
         GossipText *GetGossipText(uint32 Text_ID);

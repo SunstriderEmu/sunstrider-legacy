@@ -22657,7 +22657,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_BATTLEFIELD:
         {
-            BattlegroundTypeId bgTypeId = sObjectMgr->GetBattleMasterBG(GetEntry());
+            BattlegroundTypeId bgTypeId = sObjectMgr->GetBattleMasterBG(source->GetEntry());
 
             if (bgTypeId == BATTLEGROUND_TYPE_NONE)
             {
