@@ -856,7 +856,7 @@ void SpellMgr::LoadSpellElixirs()
     {
         Field *fields = result->Fetch();
 
-        uint16 entry = fields[0].GetUInt16();
+        uint16 entry = fields[0].GetUInt32();
         uint8 mask = fields[1].GetUInt8();
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry);

@@ -2842,7 +2842,7 @@ void ObjectMgr::LoadPlayerInfo()
                 continue;
             }
 
-            uint32 current_level = fields[1].GetUInt32();
+            uint32 current_level = fields[1].GetUInt8();
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
