@@ -701,12 +701,12 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("MaxPlayerLevel", 60);
+        uint32 val = sConfigMgr->GetIntDefault("MaxPlayerLevel", 70);
         if(val!=m_configs[CONFIG_MAX_PLAYER_LEVEL])
             TC_LOG_ERROR("server.loading","MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
     }
     else
-        m_configs[CONFIG_MAX_PLAYER_LEVEL] = sConfigMgr->GetIntDefault("MaxPlayerLevel", 60);
+        m_configs[CONFIG_MAX_PLAYER_LEVEL] = sConfigMgr->GetIntDefault("MaxPlayerLevel", 70);
 
     if(m_configs[CONFIG_MAX_PLAYER_LEVEL] > MAX_LEVEL)
     {
