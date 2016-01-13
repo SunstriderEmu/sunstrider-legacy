@@ -2740,7 +2740,7 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            TC_LOG_ERROR("player.loading", "Error loading player starting spells or empty table.");
+            TC_LOG_ERROR("sql.sql", "Error loading player starting spells or empty table.");
         }
         else
         {
@@ -2782,7 +2782,7 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            TC_LOG_ERROR( "player.loading","Error loading `playercreateinfo_action` table or empty table.");
+            TC_LOG_ERROR( "server.loading","Error loading `playercreateinfo_action` table or empty table.");
         }
         else
         {
@@ -2814,7 +2814,7 @@ void ObjectMgr::LoadPlayerInfo()
             }
             while( result->NextRow() );
 
-            TC_LOG_INFO("player.loading", ">> Loaded %u player create actions", count );
+            TC_LOG_INFO("server.loading", ">> Loaded %u player create actions", count );
         }
     }
 
@@ -2827,7 +2827,7 @@ void ObjectMgr::LoadPlayerInfo()
 
         if (!result)
         {
-            TC_LOG_ERROR( "player.loading", "Error loading `player_classlevelstats` table or empty table.");
+            TC_LOG_ERROR( "server.loading", "Error loading `player_classlevelstats` table or empty table.");
             exit(1);
         }
 
@@ -2838,7 +2838,7 @@ void ObjectMgr::LoadPlayerInfo()
             uint32 current_class = fields[0].GetUInt32();
             if(current_class >= MAX_CLASSES)
             {
-                TC_LOG_ERROR("FIXME","Wrong class %u in `player_classlevelstats` table, ignoring.",current_class);
+                TC_LOG_ERROR("sql.sql","Wrong class %u in `player_classlevelstats` table, ignoring.",current_class);
                 continue;
             }
 
@@ -2846,9 +2846,13 @@ void ObjectMgr::LoadPlayerInfo()
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
-                    TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.",STRONG_MAX_LEVEL,current_level);
+                    TC_LOG_ERROR("sql.sql","Wrong (> %u) level %u in `player_classlevelstats` table, ignoring.", STRONG_MAX_LEVEL,current_level);
                 else
                     TC_LOG_DEBUG("sql.sql","Unused (> MaxPlayerLevel in Trinityd.conf) level %u in `player_classlevelstats` table, ignoring.",current_level);
+                continue;
+            }
+            else if (current_level == 0) {
+                TC_LOG_ERROR("sql.sql", "Wrong level 0 in `player_classlevelstats` table, ignoring.");
                 continue;
             }
 
