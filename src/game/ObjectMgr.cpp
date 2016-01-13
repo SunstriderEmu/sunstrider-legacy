@@ -4557,9 +4557,9 @@ void ObjectMgr::LoadInstanceTemplate()
         InstanceTemplate instanceTemplate;
 
         instanceTemplate.parent = fields[1].GetUInt32();
-        instanceTemplate.maxPlayers = fields[2].GetUInt32();
+        instanceTemplate.maxPlayers = fields[2].GetUInt8();
         instanceTemplate.reset_delay = fields[3].GetUInt32();
-        instanceTemplate.access_id = fields[4].GetUInt32();
+        instanceTemplate.access_id = fields[4].GetUInt64();
         instanceTemplate.startLocX = fields[5].GetFloat();
         instanceTemplate.startLocY = fields[6].GetFloat();
         instanceTemplate.startLocZ = fields[7].GetFloat();
@@ -4631,7 +4631,7 @@ void ObjectMgr::LoadInstanceTemplateAddon()
     {
         Field* fields = result->Fetch();
 
-        uint16 mapID = fields[0].GetUInt16();
+        uint16 mapID = fields[0].GetUInt32();
 
         if (!MapManager::IsValidMAP(mapID, false))
         {

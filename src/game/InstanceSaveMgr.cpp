@@ -413,7 +413,7 @@ void InstanceSaveManager::LoadResetTimes()
         do
         {
             Field *fields = result->Fetch();
-            uint32 mapid = fields[0].GetUInt32();
+            uint32 mapid = fields[0].GetUInt16();
             if(!sObjectMgr->GetInstanceTemplate(mapid))
             {
                 TC_LOG_ERROR("misc","InstanceSaveManager::LoadResetTimes: invalid mapid %u in instance_reset!", mapid);
