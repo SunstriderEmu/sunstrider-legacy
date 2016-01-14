@@ -77,7 +77,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetUInt8() on non-tinyint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -96,7 +95,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetInt8() on non-tinyint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -115,7 +113,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetUInt16() on non-smallint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -134,7 +131,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetInt16() on non-smallint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -153,7 +149,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetUInt32() on non-(medium)int field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -172,7 +167,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetInt32() on non-(medium)int field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -191,7 +185,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetUInt64() on non-bigint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -210,7 +203,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetInt64() on non-bigint field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0;
         }
 #endif
 
@@ -229,7 +221,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetFloat() on non-float field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0.0f;
         }
 #endif
 
@@ -248,7 +239,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Warning: GetDouble() on non-double/non-decimal field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return 0.0f;
         }
 #endif
 
@@ -267,7 +257,6 @@ public:
         {
             TC_LOG_WARN("sql.sql", "Error: GetCString() on numeric field %s.%s (%s.%s) at index %u. Using type: %s.",
                 meta.TableAlias, meta.Alias, meta.TableName, meta.Name, meta.Index, meta.Type);
-            return NULL;
         }
 #endif
         return static_cast<char const*>(data.value);
