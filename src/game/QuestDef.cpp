@@ -30,10 +30,10 @@ Quest::Quest(Field * questRecord)
     SkillOrClass = questRecord[3].GetInt16();
     MinLevel = questRecord[4].GetUInt8();
     QuestLevel = questRecord[5].GetUInt8();
-    Type = (QuestTypes)(questRecord[6].GetUInt8());
+    Type = (QuestTypes)(questRecord[6].GetUInt16());
     RequiredRaces = questRecord[7].GetUInt16();
     RequiredSkillValue = questRecord[8].GetUInt16();
-    RepObjectiveFaction = questRecord[9].GetUInt32();
+    RepObjectiveFaction = questRecord[9].GetUInt16();
     RepObjectiveValue = questRecord[10].GetInt32();
     RequiredMinRepFaction = questRecord[11].GetUInt16();
     RequiredMinRepValue = questRecord[12].GetInt32();

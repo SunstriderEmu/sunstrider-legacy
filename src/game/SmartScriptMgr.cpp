@@ -209,7 +209,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         temp.event_id = fields[count++].GetUInt16();
         temp.link = fields[count++].GetUInt16();
         temp.event.type = (SMART_EVENT)fields[count++].GetUInt8();
-        temp.event.event_phase_mask = fields[count++].GetUInt8();
+        temp.event.event_phase_mask = fields[count++].GetUInt16();
         temp.event.event_chance = fields[count++].GetUInt8();
         temp.event.event_flags = fields[count++].GetUInt8();
 

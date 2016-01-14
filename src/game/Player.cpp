@@ -2935,7 +2935,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
     }
 }
 
-bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint16 slot_id, bool disabled)
+bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint32 slot_id, bool disabled)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
@@ -14953,7 +14953,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     InitPrimaryProffesions();                               // to max set before any spell loaded
 
     // init saved position, and fix it later if problematic
-    uint32 transGUIDLow = fields[LOAD_DATA_TRANSGUID].GetUInt32();
+    uint32 transGUIDLow = fields[LOAD_DATA_TRANSGUID].GetUInt64();
     if(sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld->getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD))
     {
         float x,y,z,o;
@@ -14976,7 +14976,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     
     m_lastGenderChange = fields[LOAD_DATA_LAST_GENDER_CHANGE].GetUInt64();
     
-    m_customXp = fields[LOAD_DATA_CUSTOM_XP].GetFloat();
+    m_customXp = fields[LOAD_DATA_CUSTOM_XP].GetDouble();
     // Check value
     if (m_customXp < 1.0f || m_customXp > sWorld->GetRate(RATE_XP_KILL))
         m_customXp = 0;
@@ -15175,7 +15175,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     uint16 newDrunkenValue = uint16(soberFactor*(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFE));
     SetDrunkValue(newDrunkenValue);
 
-    m_cinematic = fields[LOAD_DATA_CINEMATIC].GetUInt32();
+    m_cinematic = fields[LOAD_DATA_CINEMATIC].GetUInt8();
     m_Played_time[0]= fields[LOAD_DATA_TOTALTIME].GetUInt32();
     m_Played_time[1]= fields[LOAD_DATA_LEVELTIME].GetUInt32();
 
@@ -15190,9 +15190,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     m_taxi.LoadTaxiMask( fields[LOAD_DATA_TAXIMASK].GetCString() );          // must be before InitTaxiNodesForLevel
 
-    uint32 extraflags = fields[LOAD_DATA_EXTRA_FLAGS].GetUInt32();
+    uint32 extraflags = fields[LOAD_DATA_EXTRA_FLAGS].GetUInt16();
 
-    m_stableSlots = fields[LOAD_DATA_STABLE_SLOTS].GetUInt32();
+    m_stableSlots = fields[LOAD_DATA_STABLE_SLOTS].GetUInt8();
     if(m_stableSlots > 2)
     {
         TC_LOG_ERROR("entities.player","Player can have not more 2 stable slots, but have in DB %u",uint32(m_stableSlots));
@@ -15248,9 +15248,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     //speed collect rest bonus in offline, in logout, in tavern, city (section/in hour)
     float bubble1 = 0.125;
     
-    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt32() > 0)
+    if((int32)fields[LOAD_DATA_LOGOUT_TIME].GetUInt64() > 0)
     {
-        float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt32() > 0
+        float bubble = fields[LOAD_DATA_IS_LOGOUT_RESTING].GetUInt8() > 0
             ? bubble1*sWorld->GetRate(RATE_REST_OFFLINE_IN_TAVERN_OR_CITY)
             : bubble0*sWorld->GetRate(RATE_REST_OFFLINE_IN_WILDERNESS);
 
@@ -16150,7 +16150,7 @@ void Player::_LoadSpells(QueryResult result)
         {
             Field *fields = result->Fetch();
 
-            addSpell(fields[0].GetUInt16(), fields[2].GetBool(), false, true, fields[1].GetUInt16(), fields[3].GetBool());
+            addSpell(fields[0].GetUInt32(), fields[2].GetBool(), false, true, fields[1].GetUInt32(), fields[3].GetBool());
         }
         while( result->NextRow() );
     }
@@ -16475,7 +16475,7 @@ bool Player::_LoadHomeBind(QueryResult result)
     {
         Field *fields = result->Fetch();
         m_homebindMapId = fields[0].GetUInt32();
-        m_homebindAreaId = fields[1].GetUInt16();
+        m_homebindAreaId = fields[1].GetUInt32();
         m_homebindX = fields[2].GetFloat();
         m_homebindY = fields[3].GetFloat();
         m_homebindZ = fields[4].GetFloat();
@@ -21503,9 +21503,9 @@ void Player::_LoadSkills(QueryResult result)
         {
             Field *fields = result->Fetch();
 
-            uint16 skill    = fields[0].GetUInt16();
-            uint16 value    = fields[1].GetUInt16();
-            uint16 max      = fields[2].GetUInt16();
+            uint16 skill    = fields[0].GetUInt32();
+            uint16 value    = fields[1].GetUInt32();
+            uint16 max      = fields[2].GetUInt32();
 
             SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
             if(!pSkill)

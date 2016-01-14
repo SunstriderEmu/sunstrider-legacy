@@ -149,14 +149,14 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
         _initRaidSubGroupsCounter();
 
     m_difficulty = (*result)[14].GetUInt8();
-    m_mainTank = (*result)[0].GetUInt64();
+    m_mainTank = (*result)[0].GetUInt32();
     m_mainAssistant = (*result)[1].GetUInt64();
     m_lootMethod = (LootMethod)(*result)[2].GetUInt8();
     m_looterGuid = MAKE_NEW_GUID((*result)[3].GetUInt32(), 0, HIGHGUID_PLAYER);
-    m_lootThreshold = (ItemQualities)(*result)[4].GetUInt16();
+    m_lootThreshold = (ItemQualities)(*result)[4].GetUInt8();
 
     for(int i=0; i<TARGETICONCOUNT; i++)
-        m_targetIcons[i] = (*result)[5+i].GetUInt64();
+        m_targetIcons[i] = (*result)[5+i].GetUInt32();
 
     if(loadMembers)
     {
@@ -166,7 +166,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
 
         do
         {
-            LoadMemberFromDB((*result)[0].GetUInt32(), (*result)[2].GetUInt8(), (*result)[1].GetBool());
+            LoadMemberFromDB((*result)[0].GetUInt32(), (*result)[2].GetUInt16(), (*result)[1].GetBool());
         } while( result->NextRow() );
 
         // group too small

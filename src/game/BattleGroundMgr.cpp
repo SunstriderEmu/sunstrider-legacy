@@ -1474,16 +1474,16 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         MinLvl = bl->minlvl;
         MaxLvl = bl->maxlvl;
 
-        if(fields[1].GetUInt32())
+        if(fields[1].GetUInt16())
             MinPlayersPerTeam = fields[1].GetUInt32();
 
-        if(fields[2].GetUInt32())
+        if(fields[2].GetUInt16())
             MaxPlayersPerTeam = fields[2].GetUInt32();
 
-        if(fields[3].GetUInt32())
+        if(fields[3].GetUInt8())
             MinLvl = fields[3].GetUInt32();
 
-        if(fields[4].GetUInt32())
+        if(fields[4].GetUInt8())
             MaxLvl = fields[4].GetUInt32();
 
         start1 = fields[5].GetUInt32();

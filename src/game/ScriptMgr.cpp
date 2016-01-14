@@ -701,7 +701,7 @@ void ScriptMgr::LoadDatabase()
     // Gather Additional data from Script Texts
     result = WorldDatabase.PQuery("SELECT entry, sound, type, language, emote FROM script_texts");
 
-    TC_LOG_INFO("FIXME","TSCR: Loading Script Texts additional data...");
+    TC_LOG_INFO("server.loading","TSCR: Loading Script Texts additional data...");
     if (result)
     {
         uint32 count = 0;
@@ -714,8 +714,8 @@ void ScriptMgr::LoadDatabase()
             int32 i             = fields[0].GetInt32();
             temp.SoundId        = fields[1].GetInt32();
             temp.Type           = fields[2].GetInt32();
-            temp.Language       = fields[3].GetInt32();
-            temp.Emote          = fields[4].GetInt32();
+            temp.Language       = fields[3].GetInt8();
+            temp.Emote          = fields[4].GetInt16();
 
             if (i >= 0)
             {

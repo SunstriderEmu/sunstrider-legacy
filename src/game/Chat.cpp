@@ -820,7 +820,7 @@ ChatCommand * ChatHandler::getCommandTable()
                 
                 auto loadCommand = [&fields](ChatCommand table[], uint32 i)
                 {
-                    table[i].SecurityLevel = (uint16)fields[1].GetUInt16();
+                    table[i].SecurityLevel = (uint32)fields[1].GetUInt8();
                     table[i].Help = fields[2].GetString();
                     table[i].AllowIRC = fields[3].GetBool();
                     //note that command with AllowIRC set to true still aren't allowed on irc if noSessionNeeded is set to false.

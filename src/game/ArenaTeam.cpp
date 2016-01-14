@@ -172,7 +172,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
     Id = fields[0].GetUInt32();
     Name = fields[1].GetString();
     CaptainGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
-    Type = fields[3].GetUInt32();
+    Type = fields[3].GetUInt8();
     BackgroundColor = fields[4].GetUInt32();
     EmblemStyle = fields[5].GetUInt32();
     EmblemColor = fields[6].GetUInt32();

@@ -1617,7 +1617,7 @@ void SpellMgr::LoadSpellScriptTarget()
         Field *fields = result->Fetch();
 
         uint32 spellId     = fields[0].GetUInt32();
-        uint32 type        = fields[1].GetUInt32();
+        uint32 type        = fields[1].GetUInt8();
         uint32 targetEntry = fields[2].GetUInt32();
 
         SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(spellId);

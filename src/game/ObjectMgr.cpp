@@ -1213,7 +1213,7 @@ void ObjectMgr::LoadCreatures()
         data.curmana        = fields[13].GetUInt32();
         data.movementType   = fields[14].GetUInt8();
         data.spawnMask      = fields[15].GetUInt8();
-        int16 gameEvent     = fields[16].GetInt16();
+        int32 gameEvent     = fields[16].GetInt32();
         data.poolId         = fields[17].GetUInt32();
 
         std::string scriptname = fields[18].GetString();
@@ -2508,11 +2508,11 @@ void ObjectMgr::LoadPetLevelInfo()
             uint32 creature_id = fields[0].GetUInt32();
             if(!sObjectMgr->GetCreatureTemplate(creature_id))
             {
-                TC_LOG_ERROR("FIXME","Wrong creature id %u in `pet_levelstats` table, ignoring.",creature_id);
+                TC_LOG_ERROR("sql.sql","Wrong creature id %u in `pet_levelstats` table, ignoring.",creature_id);
                 continue;
             }
 
-            uint32 current_level = fields[1].GetUInt32();
+            uint32 current_level = fields[1].GetUInt8();
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
@@ -2537,7 +2537,7 @@ void ObjectMgr::LoadPetLevelInfo()
 
             pLevelInfo->health = fields[2].GetUInt16();
             pLevelInfo->mana   = fields[3].GetUInt16();
-            pLevelInfo->armor  = fields[9].GetUInt16();
+            pLevelInfo->armor  = fields[9].GetUInt32();
 
             for (int i = 0; i < MAX_STATS; i++)
                 pLevelInfo->stats[i] = fields[i+4].GetUInt16();
@@ -2917,21 +2917,21 @@ void ObjectMgr::LoadPlayerInfo()
         {
             Field* fields = result->Fetch();
 
-            uint32 current_race = fields[0].GetUInt32();
+            uint32 current_race = fields[0].GetUInt8();
             if(current_race >= MAX_RACES)
             {
                 TC_LOG_ERROR("sql.sql","Wrong race %u in `player_levelstats` table, ignoring.",current_race);
                 continue;
             }
 
-            uint32 current_class = fields[1].GetUInt32();
+            uint32 current_class = fields[1].GetUInt8();
             if(current_class >= MAX_CLASSES)
             {
                 TC_LOG_ERROR("sql.sql","Wrong class %u in `player_levelstats` table, ignoring.",current_class);
                 continue;
             }
 
-            uint32 current_level = fields[2].GetUInt32();
+            uint32 current_level = fields[2].GetUInt8();
             if(current_level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
                 if(current_level > STRONG_MAX_LEVEL)        // hardcoded level maximum
@@ -6163,7 +6163,7 @@ void ObjectMgr::LoadExplorationBaseXP()
     do
     {
         Field *fields = result->Fetch();
-        uint32 level  = fields[0].GetUInt32();
+        uint32 level  = fields[0].GetUInt8();
         uint32 basexp = fields[1].GetUInt32();
         mBaseXPTable[level] = basexp;
         ++count;
@@ -6304,14 +6304,14 @@ void ObjectMgr::LoadReputationOnKill()
         uint32 creature_id = fields[0].GetUInt32();
 
         ReputationOnKillEntry repOnKill;
-        repOnKill.repfaction1          = fields[1].GetUInt32();
-        repOnKill.repfaction2          = fields[2].GetUInt32();
+        repOnKill.repfaction1          = fields[1].GetUInt16();
+        repOnKill.repfaction2          = fields[2].GetUInt16();
         repOnKill.is_teamaward1        = fields[3].GetBool();
         repOnKill.reputation_max_cap1  = fields[4].GetUInt8();
-        repOnKill.repvalue1            = fields[5].GetInt16();
+        repOnKill.repvalue1            = fields[5].GetInt32();
         repOnKill.is_teamaward2        = fields[6].GetBool();
         repOnKill.reputation_max_cap2  = fields[7].GetUInt8();
-        repOnKill.repvalue2            = fields[8].GetInt16();
+        repOnKill.repvalue2            = fields[8].GetInt32();
         repOnKill.team_dependent       = fields[9].GetUInt8();
 
         if(!GetCreatureTemplate(creature_id))
@@ -7033,7 +7033,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
     {
         Field *fields = result->Fetch();
         uint32 entry  = fields[0].GetUInt32();
-        int32 skill   = fields[1].GetInt32();
+        int32 skill   = fields[1].GetInt16();
 
         AreaTableEntry const* fArea = GetAreaEntryByAreaID(entry);
         if(!fArea)
@@ -7516,9 +7516,9 @@ void ObjectMgr::LoadTrainerSpell()
         TrainerSpell* pTrainerSpell = new TrainerSpell();
         pTrainerSpell->spell         = spell;
         pTrainerSpell->spellcost     = fields[2].GetUInt32();
-        pTrainerSpell->reqskill      = fields[3].GetUInt32();
-        pTrainerSpell->reqskillvalue = fields[4].GetUInt32();
-        pTrainerSpell->reqlevel      = fields[5].GetUInt32();
+        pTrainerSpell->reqskill      = fields[3].GetUInt16();
+        pTrainerSpell->reqskillvalue = fields[4].GetUInt16();
+        pTrainerSpell->reqlevel      = fields[5].GetUInt8();
 
         if(!pTrainerSpell->reqlevel)
             pTrainerSpell->reqlevel = spellinfo->SpellLevel;
@@ -7568,7 +7568,7 @@ void ObjectMgr::LoadVendors()
             TC_LOG_ERROR("sql.sql","Table `npc_vendor` for Vendor (Entry: %u) have in item list non-existed item (%u), ignore",entry,item_id);
             continue;
         }
-        uint32 maxcount     = fields[2].GetUInt32();
+        uint32 maxcount     = fields[2].GetUInt8();
         uint32 incrtime     = fields[3].GetUInt32();
         uint32 ExtendedCost = fields[4].GetUInt32();
 
@@ -7702,7 +7702,7 @@ void ObjectMgr::LoadGossipMenuItems()
         gMenuItem.OptionBroadcastTextId = fields[4].GetUInt32();
         gMenuItem.OptionType            = fields[5].GetUInt8();
         gMenuItem.OptionNpcflag         = fields[6].GetUInt32();
-        gMenuItem.ActionMenuId          = fields[7].GetUInt32();
+        gMenuItem.ActionMenuId          = fields[7].GetUInt16();
         gMenuItem.ActionPoiId           = fields[8].GetUInt32();
         gMenuItem.BoxCoded              = fields[9].GetBool();
         gMenuItem.BoxMoney              = fields[10].GetUInt32();
@@ -8011,17 +8011,17 @@ void ObjectMgr::LoadGMTickets()
   {
     Field *fields = result->Fetch();
     ticket = new GM_Ticket;
-    ticket->guid = fields[0].GetUInt64();
-    ticket->playerGuid = fields[1].GetUInt64();
+    ticket->guid = fields[0].GetUInt32();
+    ticket->playerGuid = fields[1].GetUInt32();
     ticket->message = fields[2].GetString();
-    ticket->createtime = fields[3].GetUInt64();
+    ticket->createtime = fields[3].GetUInt32();
     ticket->map = fields[4].GetUInt32();
     ticket->pos_x = fields[5].GetFloat();
     ticket->pos_y = fields[6].GetFloat();
     ticket->pos_z = fields[7].GetFloat();
-    ticket->timestamp = fields[8].GetUInt64();
-    ticket->closed = fields[9].GetUInt64();
-    ticket->assignedToGM = fields[10].GetUInt64();
+    ticket->timestamp = fields[8].GetUInt32();
+    ticket->closed = fields[9].GetUInt32();
+    ticket->assignedToGM = fields[10].GetUInt32();
     ticket->comment = fields[11].GetString();
     ++count;
 
