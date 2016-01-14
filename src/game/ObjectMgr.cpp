@@ -448,7 +448,7 @@ void ObjectMgr::LoadCreatureTemplates()
 
     //                                                 
     QueryResult result = WorldDatabase.Query("SELECT entry, difficulty_entry_1, modelid1, modelid2, modelid3, "
-                                             //   
+                                             //   5
                                              "modelid4, name, subname, IconName, gossip_menu_id, minlevel, maxlevel, exp, faction, npcflag, speed, "
                                              //
                                              "scale, rank, dmgschool, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, unit_class, unit_flags, dynamicflags, family,"
@@ -507,7 +507,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.GossipMenuId     = fields[f++].GetUInt32();
     creatureTemplate.minlevel         = fields[f++].GetUInt8();
     creatureTemplate.maxlevel         = fields[f++].GetUInt8();
-    creatureTemplate.expansion        = fields[f++].GetUInt32();
+    creatureTemplate.expansion        = fields[f++].GetUInt16();
     creatureTemplate.faction          = fields[f++].GetUInt16();
     creatureTemplate.npcflag          = fields[f++].GetUInt32();
     creatureTemplate.speed            = fields[f++].GetFloat();
@@ -1199,7 +1199,7 @@ void ObjectMgr::LoadCreatures()
         CreatureData& data = mCreatureDataMap[guid];
 
         data.id             = fields[ 1].GetUInt32();
-        data.mapid          = fields[ 2].GetUInt32();
+        data.mapid          = fields[ 2].GetUInt16();
         data.displayid      = fields[ 3].GetUInt32();
         data.equipmentId    = fields[ 4].GetUInt32();
         data.posX           = fields[ 5].GetFloat();
@@ -1218,7 +1218,7 @@ void ObjectMgr::LoadCreatures()
 
         std::string scriptname = fields[18].GetString();
         data.scriptName = scriptname;
-        data.instanceEventId = fields[19].GetUInt32();
+        data.instanceEventId = fields[19].GetUInt64();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
@@ -1334,7 +1334,7 @@ void ObjectMgr::LoadGameobjects()
         GameObjectData& data = mGameObjectDataMap[guid];
 
         data.id             = fields[ 1].GetUInt32();
-        data.mapid          = fields[ 2].GetUInt32();
+        data.mapid          = fields[ 2].GetUInt16();
         data.posX           = fields[ 3].GetFloat();
         data.posY           = fields[ 4].GetFloat();
         data.posZ           = fields[ 5].GetFloat();
@@ -1344,8 +1344,8 @@ void ObjectMgr::LoadGameobjects()
         data.rotation2      = fields[ 9].GetFloat();
         data.rotation3      = fields[10].GetFloat();
         data.spawntimesecs  = fields[11].GetInt32();
-        data.animprogress   = fields[12].GetUInt32();
-        data.go_state       = fields[13].GetUInt32();
+        data.animprogress   = fields[12].GetUInt8();
+        data.go_state       = fields[13].GetUInt8();
         data.ArtKit         = 0;
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
@@ -2604,9 +2604,9 @@ void ObjectMgr::LoadPlayerInfo()
         {
             Field* fields = result->Fetch();
 
-            uint32 current_race     = fields[0].GetUInt32();
-            uint32 current_class    = fields[1].GetUInt32();
-            uint32 mapId            = fields[2].GetUInt32();
+            uint32 current_race     = fields[0].GetUInt8();
+            uint32 current_class    = fields[1].GetUInt8();
+            uint32 mapId            = fields[2].GetUInt16();
             uint32 areaId           = fields[3].GetUInt32();
             float  positionX        = fields[4].GetFloat();
             float  positionY        = fields[5].GetFloat();
@@ -2748,14 +2748,14 @@ void ObjectMgr::LoadPlayerInfo()
             {
                 Field* fields = result->Fetch();
 
-                uint32 current_race = fields[0].GetUInt32();
+                uint32 current_race = fields[0].GetUInt8();
                 if(current_race >= MAX_RACES)
                 {
                     TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo_spell` table, ignoring.",current_race);
                     continue;
                 }
 
-                uint32 current_class = fields[1].GetUInt32();
+                uint32 current_class = fields[1].GetUInt8();
                 if(current_class >= MAX_CLASSES)
                 {
                     TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo_spell` table, ignoring.",current_class);
@@ -2763,7 +2763,7 @@ void ObjectMgr::LoadPlayerInfo()
                 }
 
                 PlayerInfo* pInfo = &playerInfo[current_race][current_class];
-                pInfo->spell.push_back(CreateSpellPair(fields[2].GetUInt16(), fields[3].GetUInt8()));
+                pInfo->spell.push_back(CreateSpellPair(fields[2].GetUInt32(), fields[3].GetUInt8()));
 
                 ++count;
             }
@@ -2790,14 +2790,14 @@ void ObjectMgr::LoadPlayerInfo()
             {
                 Field* fields = result->Fetch();
 
-                uint32 current_race = fields[0].GetUInt32();
+                uint32 current_race = fields[0].GetUInt8();
                 if(current_race >= MAX_RACES)
                 {
                     TC_LOG_ERROR("sql.sql","Wrong race %u in `playercreateinfo_action` table, ignoring.",current_race);
                     continue;
                 }
 
-                uint32 current_class = fields[1].GetUInt32();
+                uint32 current_class = fields[1].GetUInt8();
                 if(current_class >= MAX_CLASSES)
                 {
                     TC_LOG_ERROR("sql.sql","Wrong class %u in `playercreateinfo_action` table, ignoring.",current_class);
@@ -2835,7 +2835,7 @@ void ObjectMgr::LoadPlayerInfo()
         {
             Field* fields = result->Fetch();
 
-            uint32 current_class = fields[0].GetUInt32();
+            uint32 current_class = fields[0].GetUInt8();
             if(current_class >= MAX_CLASSES)
             {
                 TC_LOG_ERROR("sql.sql","Wrong class %u in `player_classlevelstats` table, ignoring.",current_class);
@@ -5165,7 +5165,7 @@ void ObjectMgr::LoadGraveyardZones()
 
         uint32 safeLocId = fields[0].GetUInt32();
         uint32 zoneId = fields[1].GetUInt32();
-        uint32 team   = fields[2].GetUInt32();
+        uint32 team   = fields[2].GetUInt16();
 
         WorldSafeLocsEntry const* entry = sWorldSafeLocsStore.LookupEntry(safeLocId);
         if(!entry)
@@ -5422,7 +5422,7 @@ void ObjectMgr::LoadAreaTriggerTeleports()
         AreaTrigger at;
 
         at.access_id                = fields[1].GetUInt32();
-        at.target_mapId             = fields[2].GetUInt32();
+        at.target_mapId             = fields[2].GetUInt16();
         at.target_X                 = fields[3].GetFloat();
         at.target_Y                 = fields[4].GetFloat();
         at.target_Z                 = fields[5].GetFloat();
@@ -5482,7 +5482,7 @@ void ObjectMgr::LoadAccessRequirements()
         AccessRequirement ar;
 
         ar.levelMin                 = fields[1].GetUInt8();
-        ar.levelMax                 = fields[2].GetUInt32();
+        ar.levelMax                 = fields[2].GetUInt8();
         ar.item                     = fields[3].GetUInt32();
         ar.item2                    = fields[4].GetUInt32();
         ar.heroicKey                = fields[5].GetUInt32();
@@ -6307,11 +6307,11 @@ void ObjectMgr::LoadReputationOnKill()
         repOnKill.repfaction1          = fields[1].GetUInt32();
         repOnKill.repfaction2          = fields[2].GetUInt32();
         repOnKill.is_teamaward1        = fields[3].GetBool();
-        repOnKill.reputation_max_cap1  = fields[4].GetUInt32();
-        repOnKill.repvalue1            = fields[5].GetInt32();
+        repOnKill.reputation_max_cap1  = fields[4].GetUInt8();
+        repOnKill.repvalue1            = fields[5].GetInt16();
         repOnKill.is_teamaward2        = fields[6].GetBool();
-        repOnKill.reputation_max_cap2  = fields[7].GetUInt32();
-        repOnKill.repvalue2            = fields[8].GetInt32();
+        repOnKill.reputation_max_cap2  = fields[7].GetUInt8();
+        repOnKill.repvalue2            = fields[8].GetInt16();
         repOnKill.team_dependent       = fields[9].GetUInt8();
 
         if(!GetCreatureTemplate(creature_id))
@@ -6418,9 +6418,9 @@ void ObjectMgr::LoadWeatherZoneChances()
 
         for(int season = 0; season < WEATHER_SEASONS; ++season)
         {
-            wzc.data[season].rainChance  = fields[season * (MAX_WEATHER_TYPE-1) + 1].GetUInt32();
-            wzc.data[season].snowChance  = fields[season * (MAX_WEATHER_TYPE-1) + 2].GetUInt32();
-            wzc.data[season].stormChance = fields[season * (MAX_WEATHER_TYPE-1) + 3].GetUInt32();
+            wzc.data[season].rainChance  = fields[season * (MAX_WEATHER_TYPE-1) + 1].GetUInt8();
+            wzc.data[season].snowChance  = fields[season * (MAX_WEATHER_TYPE-1) + 2].GetUInt8();
+            wzc.data[season].stormChance = fields[season * (MAX_WEATHER_TYPE-1) + 3].GetUInt8();
 
             if(wzc.data[season].rainChance > 100)
             {

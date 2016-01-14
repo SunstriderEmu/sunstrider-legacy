@@ -196,7 +196,7 @@ void GameEventMgr::LoadFromDB()
 
         Field *fields = result->Fetch();
 
-        uint32 max_event_id = fields[0].GetUInt16();
+        uint32 max_event_id = fields[0].GetUInt32();
 
         mGameEvent.resize(max_event_id+1);
     }
@@ -217,7 +217,7 @@ void GameEventMgr::LoadFromDB()
         ++count;
         Field *fields = result->Fetch();
 
-        uint16 event_id = fields[0].GetUInt16();
+        uint16 event_id = fields[0].GetUInt32();
         if(event_id==0)
         {
             TC_LOG_ERROR("gameevent","`game_event` game event id (%i) is reserved and can't be used.",event_id);
@@ -265,7 +265,7 @@ void GameEventMgr::LoadFromDB()
         {
             Field *fields = result->Fetch();
 
-            uint16 event_id = fields[0].GetUInt16();
+            uint32 event_id = fields[0].GetUInt32();
 
             if(event_id >= mGameEvent.size())
             {
@@ -304,7 +304,7 @@ void GameEventMgr::LoadFromDB()
         {
             Field *fields = result->Fetch();
 
-            uint16 event_id = fields[0].GetUInt16();
+            uint32 event_id = fields[0].GetUInt32();
 
             if(event_id >= mGameEvent.size())
             {
@@ -315,7 +315,7 @@ void GameEventMgr::LoadFromDB()
 
             if(mGameEvent[event_id].state != GAMEEVENT_NORMAL)
             {
-                uint16 prerequisite_event = fields[1].GetUInt16();
+                uint32 prerequisite_event = fields[1].GetUInt32();
                 if(prerequisite_event >= mGameEvent.size())
                 {
                     TC_LOG_ERROR("gameevent","`game_event_prerequisite` game event prerequisite id (%i) is out of range compared to max event id in `game_event`",prerequisite_event);
@@ -480,7 +480,7 @@ void GameEventMgr::LoadFromDB()
 
             uint32 id       = fields[0].GetUInt32();
             uint32 quest    = fields[1].GetUInt32();
-            uint16 event_id = fields[2].GetUInt16();
+            uint16 event_id = fields[2].GetUInt32();
 
             if(event_id >= mGameEventCreatureQuests.size())
             {
@@ -549,7 +549,7 @@ void GameEventMgr::LoadFromDB()
             Field *fields = result->Fetch();
 
             uint32 quest     = fields[0].GetUInt32();
-            uint16 event_id  = fields[1].GetUInt16();
+            uint32 event_id  = fields[1].GetUInt32();
             uint32 condition = fields[2].GetUInt32();
             float num       = fields[3].GetFloat();
 
@@ -585,7 +585,7 @@ void GameEventMgr::LoadFromDB()
         {
             Field *fields = result->Fetch();
 
-            uint16 event_id  = fields[0].GetUInt16();
+            uint16 event_id  = fields[0].GetUInt32();
             uint32 condition = fields[1].GetUInt32();
 
             if(event_id >= mGameEvent.size())
@@ -596,8 +596,8 @@ void GameEventMgr::LoadFromDB()
 
             mGameEvent[event_id].conditions[condition].reqNum = fields[2].GetFloat();
             mGameEvent[event_id].conditions[condition].done = 0;
-            mGameEvent[event_id].conditions[condition].max_world_state = fields[3].GetUInt32();
-            mGameEvent[event_id].conditions[condition].done_world_state = fields[4].GetUInt32();
+            mGameEvent[event_id].conditions[condition].max_world_state = fields[3].GetUInt16();
+            mGameEvent[event_id].conditions[condition].done_world_state = fields[4].GetUInt16();
 
             ++count;
 
@@ -667,7 +667,7 @@ void GameEventMgr::LoadFromDB()
             Field *fields = result->Fetch();
 
             uint32 guid     = fields[0].GetUInt32();
-            uint16 event_id = fields[1].GetUInt16();
+            uint16 event_id = fields[1].GetUInt32();
             uint32 npcflag  = fields[2].GetUInt32();
 
             if(event_id >= mGameEvent.size())
@@ -767,7 +767,7 @@ void GameEventMgr::LoadFromDB()
         {
             Field *fields = result->Fetch();
 
-            uint16 event_id = fields[0].GetUInt16();
+            uint16 event_id = fields[0].GetUInt32();
 
             if(event_id >= mGameEvent.size())
             {

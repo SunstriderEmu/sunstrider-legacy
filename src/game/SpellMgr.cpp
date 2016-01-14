@@ -452,7 +452,7 @@ void SpellMgr::LoadSpellTargetPositions()
 
         SpellTargetPosition st;
 
-        st.target_mapId       = fields[1].GetUInt32();
+        st.target_mapId       = fields[1].GetUInt16();
         st.target_X           = fields[2].GetFloat();
         st.target_Y           = fields[3].GetFloat();
         st.target_Z           = fields[4].GetFloat();
@@ -1741,9 +1741,9 @@ void SpellMgr::LoadSpellPetAuras()
     {
         Field *fields = result->Fetch();
 
-        uint16 spell = fields[0].GetUInt16();
-        uint16 pet = fields[1].GetUInt16();
-        uint16 aura = fields[2].GetUInt16();
+        uint16 spell = fields[0].GetUInt32();
+        uint16 pet = fields[1].GetUInt32();
+        uint16 aura = fields[2].GetUInt32();
 
         SpellPetAuraMap::iterator itr = mSpellPetAuraMap.find(spell);
         if(itr != mSpellPetAuraMap.end())
@@ -2506,7 +2506,7 @@ void SpellMgr::LoadSpellLinked()
 
         int32 trigger = fields[0].GetInt32();
         int32 effect = fields[1].GetInt32();
-        int32 type = fields[2].GetInt32();
+        int32 type = fields[2].GetInt8();
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(abs(trigger));
         if (!spellInfo)
