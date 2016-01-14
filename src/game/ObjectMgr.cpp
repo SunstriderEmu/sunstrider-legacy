@@ -1655,18 +1655,18 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.ItemId                    = entry;
         itemTemplate.Class                     = uint32(fields[1].GetUInt8());
         itemTemplate.SubClass                  = uint32(fields[2].GetUInt8());
-        itemTemplate.SoundOverrideSubclass     = int32(fields[3].GetInt8());
+        itemTemplate.SoundOverrideSubclass     = int32(fields[3].GetInt32());
         itemTemplate.Name1                     = fields[4].GetString();
         itemTemplate.DisplayInfoID             = fields[5].GetUInt32();
         itemTemplate.Quality                   = uint32(fields[6].GetUInt8());
         itemTemplate.Flags                     = fields[7].GetUInt32();
         itemTemplate.BuyCount                  = uint32(fields[8].GetUInt8());
-        itemTemplate.BuyPrice                  = int32(fields[9].GetInt64());
+        itemTemplate.BuyPrice                  = int32(fields[9].GetUInt32());
         itemTemplate.SellPrice                 = fields[10].GetUInt32();
         itemTemplate.InventoryType             = uint32(fields[11].GetUInt8());
         itemTemplate.AllowableClass            = fields[12].GetUInt32();
         itemTemplate.AllowableRace             = fields[13].GetUInt32();
-        itemTemplate.ItemLevel                 = uint32(fields[14].GetUInt16());
+        itemTemplate.ItemLevel                 = uint32(fields[14].GetUInt8());
         itemTemplate.RequiredLevel             = uint32(fields[15].GetUInt8());
         itemTemplate.RequiredSkill             = uint32(fields[16].GetUInt16());
         itemTemplate.RequiredSkillRank         = uint32(fields[17].GetUInt16());
@@ -1675,8 +1675,8 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.RequiredCityRank          = fields[20].GetUInt32();
         itemTemplate.RequiredReputationFaction = uint32(fields[21].GetUInt16());
         itemTemplate.RequiredReputationRank    = uint32(fields[22].GetUInt16());
-        itemTemplate.MaxCount                  = fields[23].GetUInt32();
-        itemTemplate.Stackable                 = fields[24].GetUInt32();
+        itemTemplate.MaxCount                  = fields[23].GetUInt16();
+        itemTemplate.Stackable                 = fields[24].GetUInt16();
         itemTemplate.ContainerSlots            = uint32(fields[25].GetUInt8());
 #ifdef LICH_KING
         for (uint8 i = 0; i < itemTemplate.StatsCount; ++i)
@@ -1716,7 +1716,7 @@ void ObjectMgr::LoadItemTemplates()
         {
             itemTemplate.Spells[i].SpellId               = fields[71 + i*7  ].GetInt32();
             itemTemplate.Spells[i].SpellTrigger          = uint32(fields[72 + i*7].GetUInt8());
-            itemTemplate.Spells[i].SpellCharges          = int32(fields[73 + i*7].GetInt16());
+            itemTemplate.Spells[i].SpellCharges          = int32(fields[73 + i*7].GetInt8());
             itemTemplate.Spells[i].SpellPPMRate          = fields[74 + i*7].GetFloat();
             itemTemplate.Spells[i].SpellCooldown         = fields[75 + i*7].GetInt32();
             itemTemplate.Spells[i].SpellCategory         = uint32(fields[76 + i*7].GetUInt16());
@@ -1740,7 +1740,7 @@ void ObjectMgr::LoadItemTemplates()
         itemTemplate.Area           = fields[120].GetUInt32();
         itemTemplate.Map            = uint32(fields[121].GetUInt16());
         itemTemplate.BagFamily      = fields[122].GetUInt32();
-        itemTemplate.TotemCategory  = fields[123].GetUInt32();
+        itemTemplate.TotemCategory  = fields[123].GetUInt8();
 
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SOCKETS; ++i)
         {
@@ -4756,7 +4756,7 @@ void ObjectMgr::LoadGossipText()
 
             pGText->Options[i].BroadcastTextID  = fields[cic++].GetUInt32();
 
-            pGText->Options[i].Language         = fields[cic++].GetUInt32();
+            pGText->Options[i].Language         = fields[cic++].GetUInt8();
             pGText->Options[i].Probability      = fields[cic++].GetFloat();
 
             for (uint8 j = 0; j < MAX_GOSSIP_TEXT_EMOTES; ++j)

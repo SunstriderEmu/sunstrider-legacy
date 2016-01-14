@@ -946,7 +946,7 @@ void SpellMgr::LoadSpellEnchantProcData()
 
         spe.customChance = fields[1].GetUInt32();
         spe.PPMChance = fields[2].GetFloat();
-        spe.procEx = fields[3].GetUInt32();
+        spe.procEx = fields[3].GetFloat();
 
         mSpellEnchantProcEventMap[enchantId] = spe;
 
@@ -1529,10 +1529,10 @@ void SpellMgr::LoadSpellLearnSpells()
     {
         Field *fields = result->Fetch();
 
-        uint32 spell_id    = fields[0].GetUInt32();
+        uint32 spell_id    = fields[0].GetUInt16();
 
         SpellLearnSpellNode node;
-        node.spell      = fields[1].GetUInt32();
+        node.spell      = fields[1].GetUInt16();
         node.autoLearned= false;
 
         if(!sSpellMgr->GetSpellInfo(spell_id))
