@@ -713,7 +713,7 @@ void ScriptMgr::LoadDatabase()
 
             int32 i             = fields[0].GetInt32();
             temp.SoundId        = fields[1].GetInt32();
-            temp.Type           = fields[2].GetInt32();
+            temp.Type           = fields[2].GetInt8();
             temp.Language       = fields[3].GetInt8();
             temp.Emote          = fields[4].GetInt16();
 

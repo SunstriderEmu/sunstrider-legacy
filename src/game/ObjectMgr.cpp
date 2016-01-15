@@ -6304,8 +6304,8 @@ void ObjectMgr::LoadReputationOnKill()
         uint32 creature_id = fields[0].GetUInt32();
 
         ReputationOnKillEntry repOnKill;
-        repOnKill.repfaction1          = fields[1].GetUInt16();
-        repOnKill.repfaction2          = fields[2].GetUInt16();
+        repOnKill.repfaction1          = fields[1].GetUInt8();
+        repOnKill.repfaction2          = fields[2].GetUInt8();
         repOnKill.is_teamaward1        = fields[3].GetBool();
         repOnKill.reputation_max_cap1  = fields[4].GetUInt8();
         repOnKill.repvalue1            = fields[5].GetInt32();
