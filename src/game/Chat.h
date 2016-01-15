@@ -33,17 +33,17 @@ struct GameTele;
 class ChatCommand
 {
     public:
-        const char *       Name;
-        uint32             SecurityLevel;                   // function pointer required correct align (use uint32)
+        const char *                  Name;
+        uint32                        SecurityLevel;                   // function pointer required correct align (use uint32)
         /**
         Only set this to true if the command doesn't use the session.
         This is used to determine if CLI or IRC can use the command, because they don't have sessions
         */
-        bool               noSessionNeeded; 
-        bool               AllowIRC;     //no effect if noSessionNeeded is set to false. This is the default irc authorisation and may be replaced by the 'commands' table value
+        bool                          noSessionNeeded; 
+        bool                          AllowIRC;     //no effect if noSessionNeeded is set to false. This is the default irc authorisation and may be replaced by the 'commands' table value
         bool (ChatHandler::*Handler)(const char* args);
-        std::string        Help;
-        ChatCommand *      ChildCommands;
+        std::string                   Help;
+        std::vector<ChatCommand>      ChildCommands;
 };
 
 class ChatHandler
@@ -90,7 +90,7 @@ class ChatHandler
         int ParseCommands(const char* text);
 
         virtual std::string const GetName() const;
-        static ChatCommand* getCommandTable();
+        static std::vector<ChatCommand> const& getCommandTable();
         
         WorldSession* GetSession() { return m_session; }
 
@@ -111,12 +111,13 @@ class ChatHandler
         void SendGlobalGMSysMessage(const char *str);
     protected:
         explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
+        static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand, bool allowIRC);
 
-        bool hasStringAbbr(const char* name, const char* part);
+        bool hasStringAbbr(const char* name, const char* part) const;
 
-        bool ExecuteCommandInTable(ChatCommand *table, const char* text, const std::string& fullcommand);
-        bool ShowHelpForCommand(ChatCommand *table, const char* cmd);
-        bool ShowHelpForSubCommands(ChatCommand *table, char const* cmd, char const* subcmd);
+        bool ExecuteCommandInTable(std::vector<ChatCommand> const& table, const char* text, const std::string& fullcommand);
+        bool ShowHelpForCommand(std::vector<ChatCommand> const& table, const char* cmd);
+        bool ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd);
 
         bool HandleAccountCommand(const char* args);
         bool HandleAccountCreateCommand(const char* args);
