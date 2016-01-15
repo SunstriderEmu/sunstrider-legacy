@@ -41,7 +41,7 @@ enum TrinityStrings
     LANG_NO_CMD                         = 6,
     LANG_NO_SUBCMD                      = 7,
     LANG_SUBCMDS_LIST                   = 8,
-    LANG_AVIABLE_CMD                    = 9,
+    LANG_AVAILABLE_CMD                  = 9,
     LANG_CMD_SYNTAX                     = 10,
     LANG_ACCOUNT_LEVEL                  = 11,
     LANG_CONNECTED_USERS                = 12,

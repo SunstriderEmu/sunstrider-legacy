@@ -104,7 +104,7 @@ bool IRCMgr::configure()
             channel->server = server;
             channel->enabled = false;
             
-            uint32 type = fields2[3].GetUInt32();
+            uint32 type = fields2[3].GetUInt8();
             switch (type) {
             case CHAN_TYPE_CHANNEL_ALLIANCE:
             {

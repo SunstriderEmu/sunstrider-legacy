@@ -1648,7 +1648,7 @@ class Player : public Unit
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
-        bool addSpell(uint32 spell_id, bool active, bool learning = true, bool loading = false, uint16 slot_id=SPELL_WITHOUT_SLOT_ID, bool disabled = false);
+        bool addSpell(uint32 spell_id, bool active, bool learning = true, bool loading = false, uint32 slot_id=SPELL_WITHOUT_SLOT_ID, bool disabled = false);
         void learnSpell(uint32 spell_id);
         void removeSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();

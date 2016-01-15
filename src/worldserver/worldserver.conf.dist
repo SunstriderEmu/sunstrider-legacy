@@ -1938,7 +1938,7 @@ Appender.Profiling=2,1,0,Profiling.log
 Logger.root=5,Console Server
 Logger.server=3,Console Server
 Logger.commands.gm=3,Console GM
-Logger.sql.sql=5,Console DBErrors
+Logger.sql.sql=4,Console DBErrors
 Logger.debug.grid=0,Console Server
 Logger.debug.creature=0,Console Server
 Logger.FIXME=3,Console Server
@@ -2009,7 +2009,7 @@ Allow.IP.Based.Action.Logging = 0
 #        Example:     "./world.pid" - (Enabled)
 #        Default:     ""            - (Disabled)
 
-PidFile = "world.pid"
+PidFile = "worldserver.pid"
 
 #
 #    PacketLogFile

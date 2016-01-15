@@ -67,7 +67,7 @@ BindIP = "0.0.0.0"
 #        Example:     "./authserver.pid"  - (Enabled)
 #        Default:     ""                  - (Disabled)
 
-PidFile = ""
+PidFile = "./authserver.pid"
 
 #
 #    UseProcessors

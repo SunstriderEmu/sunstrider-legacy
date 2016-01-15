@@ -73,11 +73,11 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
     {
         ++count;
         Field *fields = result->Fetch();
-        uint8 type = fields[0].GetUInt8();
+        uint32 type = fields[0].GetUInt32();
         uint32 id = GenerateInternalDataID();
         WardenData *wd = new WardenData();
         wd->Type = type;
-        wd->id = fields[6].GetUInt16();
+        wd->id = fields[6].GetUInt32();
         wd->comment = fields[7].GetString();
         wd->action = fields[8].GetUInt8();
 
@@ -103,7 +103,7 @@ void CWardenDataStorage::LoadWardenDataResult(bool reload)
         if (type == MEM_CHECK || type == PAGE_CHECK_A || type == PAGE_CHECK_B || type == PROC_CHECK)
         {
             wd->Address = fields[3].GetUInt32();
-            wd->Length = fields[4].GetUInt8();
+            wd->Length = fields[4].GetUInt32();
         }
 
         // PROC_CHECK support missing

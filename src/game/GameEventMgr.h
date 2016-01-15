@@ -46,7 +46,7 @@ struct GameEventFinishCondition
 
 struct GameEventQuestToEventConditionNum
 {
-    uint16 event_id;
+    uint32 event_id;
     uint32 condition;
     float num;
 };

@@ -452,7 +452,7 @@ void SpellMgr::LoadSpellTargetPositions()
 
         SpellTargetPosition st;
 
-        st.target_mapId       = fields[1].GetUInt32();
+        st.target_mapId       = fields[1].GetUInt16();
         st.target_X           = fields[2].GetFloat();
         st.target_Y           = fields[3].GetFloat();
         st.target_Z           = fields[4].GetFloat();
@@ -661,8 +661,8 @@ void SpellMgr::LoadSpellProcEvents()
 
         SpellProcEventEntry spe;
 
-        spe.schoolMask      = fields[1].GetUInt32();
-        spe.spellFamilyName = fields[2].GetUInt32();
+        spe.schoolMask      = fields[1].GetUInt8();
+        spe.spellFamilyName = fields[2].GetUInt16();
         spe.spellFamilyMask = fields[3].GetUInt64();
         spe.ProcFlags       = fields[4].GetUInt32();
         spe.procEx          = fields[5].GetUInt32();
@@ -856,7 +856,7 @@ void SpellMgr::LoadSpellElixirs()
     {
         Field *fields = result->Fetch();
 
-        uint16 entry = fields[0].GetUInt16();
+        uint16 entry = fields[0].GetUInt32();
         uint8 mask = fields[1].GetUInt8();
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry);
@@ -946,7 +946,7 @@ void SpellMgr::LoadSpellEnchantProcData()
 
         spe.customChance = fields[1].GetUInt32();
         spe.PPMChance = fields[2].GetFloat();
-        spe.procEx = fields[3].GetUInt32();
+        spe.procEx = fields[3].GetFloat();
 
         mSpellEnchantProcEventMap[enchantId] = spe;
 
@@ -1529,10 +1529,10 @@ void SpellMgr::LoadSpellLearnSpells()
     {
         Field *fields = result->Fetch();
 
-        uint32 spell_id    = fields[0].GetUInt32();
+        uint32 spell_id    = fields[0].GetUInt16();
 
         SpellLearnSpellNode node;
-        node.spell      = fields[1].GetUInt32();
+        node.spell      = fields[1].GetUInt16();
         node.autoLearned= false;
 
         if(!sSpellMgr->GetSpellInfo(spell_id))
@@ -1617,7 +1617,7 @@ void SpellMgr::LoadSpellScriptTarget()
         Field *fields = result->Fetch();
 
         uint32 spellId     = fields[0].GetUInt32();
-        uint32 type        = fields[1].GetUInt32();
+        uint32 type        = fields[1].GetUInt8();
         uint32 targetEntry = fields[2].GetUInt32();
 
         SpellInfo const* spellProto = sSpellMgr->GetSpellInfo(spellId);
@@ -1741,9 +1741,9 @@ void SpellMgr::LoadSpellPetAuras()
     {
         Field *fields = result->Fetch();
 
-        uint16 spell = fields[0].GetUInt16();
-        uint16 pet = fields[1].GetUInt16();
-        uint16 aura = fields[2].GetUInt16();
+        uint16 spell = fields[0].GetUInt32();
+        uint16 pet = fields[1].GetUInt32();
+        uint16 aura = fields[2].GetUInt32();
 
         SpellPetAuraMap::iterator itr = mSpellPetAuraMap.find(spell);
         if(itr != mSpellPetAuraMap.end())
@@ -2506,7 +2506,7 @@ void SpellMgr::LoadSpellLinked()
 
         int32 trigger = fields[0].GetInt32();
         int32 effect = fields[1].GetInt32();
-        int32 type = fields[2].GetInt32();
+        int32 type = fields[2].GetInt8();
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(abs(trigger));
         if (!spellInfo)
