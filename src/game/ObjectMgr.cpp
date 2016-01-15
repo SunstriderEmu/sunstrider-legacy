@@ -582,6 +582,8 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) have `difficulty_entry_1`=%u but creature entry %u have heroic entry also.",i,cInfo->difficulty_entry_1,cInfo->difficulty_entry_1);
         }*/
 
+        if(heroicInfo)
+        {
         if(cInfo->npcflag != heroicInfo->npcflag)
         {
             TC_LOG_ERROR("sql.sql","Creature (Entry: %u) listed in `creature_template_substitution` has different `npcflag` in heroic mode.",i);
@@ -609,6 +611,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         /*
         hasHeroicEntries.insert(i);
         heroicEntries.insert(cInfo->difficulty_entry_1);**/
+        }
     }
 
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
