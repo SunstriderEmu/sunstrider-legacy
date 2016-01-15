@@ -1,1 +1,0 @@
-/home/suncore/scripts/backup_logs.sh
