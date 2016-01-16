@@ -17988,7 +17988,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod
     return sSpellMgr->IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
 }
 
-void Player::AddSpellMod(SpellModifier* mod, bool apply)
+void Player::AddSpellMod(SpellModifier*& mod, bool apply)
 {
     uint16 Opcode= (mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER;
 
@@ -18020,6 +18020,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             --m_SpellModRemoveCount;
         m_spellMods[mod->op].remove(mod);
         delete mod;
+        mod = nullptr;
     }
 }
 
