@@ -739,6 +739,7 @@ class Creature : public Unit
         uint32 GetCurrentWaypointID(){return m_waypointID;}
         void UpdateWaypointID(uint32 wpID){m_waypointID = wpID;}
 
+        //check if creature is present in a formation from CreatureGroupManager, and adds it to it if one is found
         void SearchFormation();
         CreatureGroup *GetFormation(){return m_formation;}
         void SetFormation(CreatureGroup *formation) {m_formation = formation;}

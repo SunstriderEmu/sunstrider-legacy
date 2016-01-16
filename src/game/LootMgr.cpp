@@ -77,6 +77,7 @@ void LootStore::Clear()
 {
     for (LootTemplateMap::const_iterator itr=m_LootTemplates.begin(); itr != m_LootTemplates.end(); ++itr)
         delete itr->second;
+
     m_LootTemplates.clear();
 }
 
@@ -134,8 +135,12 @@ void LootStore::LoadLootTable()
 
         LootStoreItem* storeitem = new LootStoreItem(item, chanceOrQuestChance, group, conditionId, mincountOrRef, maxcount);
 
-        if (!storeitem->IsValid(*this,entry))            // Validity checks
+        if (!storeitem->IsValid(*this, entry))            // Validity checks
+        {
+            delete storeitem;
+            storeitem = nullptr;
             continue;
+        }
 
         // Looking for the template of the entry
                                                         // often entries are put together

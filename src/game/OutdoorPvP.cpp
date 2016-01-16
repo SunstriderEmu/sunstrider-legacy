@@ -405,6 +405,8 @@ OutdoorPvP::OutdoorPvP()
 OutdoorPvP::~OutdoorPvP()
 {
     DeleteSpawns();
+    for (OutdoorPvPObjective* itr : m_OutdoorPvPObjectives)
+        delete itr;
 }
 
 void OutdoorPvP::HandlePlayerEnterZone(Player * plr, uint32 zone)

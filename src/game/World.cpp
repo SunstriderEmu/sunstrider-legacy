@@ -1706,6 +1706,7 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Cleaning up old logs...");
     if(m_configs[CONFIG_MONITORING_ENABLED])
         CleanupOldMonitorLogs(); 
+
     CleanupOldLogs();
 
     LoadCharacterNameData();

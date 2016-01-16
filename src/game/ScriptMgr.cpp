@@ -21,10 +21,6 @@ class CreatureScript;
 # define _TRINITY_SCRIPT_CONFIG  "worldserver.conf"
 #endif // _TRINITY_SCRIPT_CONFIG
 
-//*** Global data ***
-int num_sc_scripts;
-Script *m_scripts[MAX_SCRIPTS];
-
 // String text additional data, used in TextMap
 struct StringTextData
 {
@@ -39,9 +35,6 @@ struct StringTextData
 // Text Maps
 std::unordered_map<int32, StringTextData> TextMap;
 
-//*** End Global data ***
-
-void FillSpellSummary();
 void LoadOverridenSQLData();
 void LoadOverridenDBCData();
 
@@ -752,24 +745,6 @@ void ScriptMgr::LoadDatabase()
     }
 }
 
-struct TSpellSummary {
-    uint8 Targets;                                          // set of enum SelectTarget
-    uint8 Effects;                                          // set of enum SelectEffect
-}extern *SpellSummary;
-
-
-void ScriptsFree()
-{
-    // Free Spell Summary
-    delete []SpellSummary;
-
-    // Free resources before library unload
-    for(int i=0;i<num_sc_scripts;i++)
-        delete m_scripts[i];
-
-    num_sc_scripts = 0;
-}
-
 ScriptMgr::ScriptMgr()
 {
     
@@ -777,7 +752,23 @@ ScriptMgr::ScriptMgr()
 
 ScriptMgr::~ScriptMgr()
 {
-    
+    ClearScripts();
+}
+
+void ScriptMgr::ClearScripts()
+{
+    if(spellSummary)
+        delete[] spellSummary;
+
+    //in reload case, delete all previous scripts
+    for (int i = 0; i < MAX_SCRIPTS; i++)
+    {
+        if (m_scripts[i])
+        {
+            delete m_scripts[i];
+            m_scripts[i] = nullptr;
+        }
+    }
 }
 
 void ScriptMgr::ScriptsInit(char const* cfg_file)
@@ -801,10 +792,9 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
 
     TC_LOG_INFO("server.loading","TSCR: Loading C++ scripts\n");
 
-    for(int i=0;i<MAX_SCRIPTS;i++)
-        m_scripts[i]=NULL;
+    ClearScripts();
 
-    FillSpellSummary();
+    sScriptMgr->FillSpellSummary();
 
     // -- Scripts to be added --
 
@@ -1534,16 +1524,23 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 //*********************************
 //*** Functions used internally ***
 
-void Script::RegisterSelf()
+bool ScriptMgr::RegisterScript(std::string name, Script* script)
 {
-    int id = GetScriptId(Name.c_str());
-    if(id)
+    int id = GetScriptId(name.c_str());
+    if (id)
     {
-        m_scripts[id] = this;
+        m_scripts[id] = script;
         ++num_sc_scripts;
+        return true;
     }
-    else
-        TC_LOG_ERROR("scripts","TrinityScript: RegisterSelf, but script named %s does not have ScriptName assigned in database.",(this)->Name.c_str());
+
+    TC_LOG_WARN("scripts", "TrinityScript: RegisterScript, but script named %s does not have ScriptName assigned in database.", name.c_str());
+    return false;
+}
+
+bool Script::RegisterSelf()
+{
+    return sScriptMgr->RegisterScript(Name, this);
 }
 
 //********************************
@@ -1733,11 +1730,6 @@ void ScriptMgr::OnPlayerCreate(Player* player)
 char const* ScriptMgr::ScriptsVersion()
 {
     return "Default Trinity scripting library";
-}
-
-void ScriptMgr::Unload()
-{
-
 }
 
 bool ScriptMgr::OnGossipHello ( Player * player, Creature *_Creature )

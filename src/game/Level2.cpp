@@ -4268,7 +4268,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
         return false;
 
     Player *chr = m_session->GetPlayer();
-    FormationInfo *group_member;
+    FormationInfo* group_member;
 
     group_member                  = new FormationInfo;
     group_member->follow_angle    = pCreature->GetAngle(chr) - chr->GetOrientation();
@@ -4277,7 +4277,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     group_member->leaderGUID      = leaderGUID;
     group_member->groupAI         = 2; // Assist other member of the group by default
 
-    CreatureGroupMap[lowguid] = group_member;
+    sCreatureGroupMgr->AddGroupMember(lowguid, group_member);
     pCreature->SearchFormation();
 
     WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%f', '%u')",

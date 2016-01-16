@@ -250,8 +250,9 @@ void Creature::SearchFormation()
 
     uint32 lowguid = GetDBTableGUIDLow();
     if(!lowguid)
-    return;
+        return;
 
+    auto CreatureGroupMap = sCreatureGroupMgr->GetGroupMap();
     CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())
         sCreatureGroupMgr->AddCreatureToGroup(frmdata->second->leaderGUID, this);

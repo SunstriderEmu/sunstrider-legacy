@@ -36,6 +36,8 @@ struct FormationInfo
     bool linkedLoot;
 };
 
+typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
+
 class CreatureGroupManager
 {
     public:
@@ -44,15 +46,26 @@ class CreatureGroupManager
             static CreatureGroupManager instance;
             return &instance;
         }
+
+        ~CreatureGroupManager();
         
         void AddCreatureToGroup(uint32 group_id, Creature *creature);
         void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
         void LoadCreatureFormations();
+
+        void AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member);
+
+        CreatureGroupInfoType const& GetGroupMap()
+        {
+            return CreatureGroupMap;
+        };
+
+    private:
+        CreatureGroupInfoType CreatureGroupMap;
+
+        void Clear(); //clear memory from CreatureGroupMap
 };
 
-typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
-
-extern CreatureGroupInfoType    CreatureGroupMap;
 
 #define RESPAWN_TIMER 15000
 
