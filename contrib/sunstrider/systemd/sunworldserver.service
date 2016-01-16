@@ -1,1 +1,27 @@
-/lib/systemd/system/sunworldserver.service
+[Unit]
+Description=Suntrider World Server
+
+Wants=network.target
+After=network.target
+
+[Service]
+User=suncore
+Group=suncore
+
+WorkingDirectory=/srv/suncore/dumps
+#remove core dumps and logs older than last 5 runs
+ExecStartPre=/usr/sbin/logrotate --force -s /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf
+ExecStartPre=ls -1tr | head -n -5 | xargs -d '\n' rm -f
+ExecStart=/srv/suncore/bin/worldserver
+
+Restart=always
+RestartSec=3
+
+Storage=external
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
+
+[Journal]
+SystemMaxUse=40M

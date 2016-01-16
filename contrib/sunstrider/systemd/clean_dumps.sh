@@ -1,1 +1,0 @@
-/home/suncore/scripts/clean_dumps.sh
