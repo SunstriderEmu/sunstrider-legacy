@@ -254,8 +254,7 @@ extern int main(int argc, char **argv)
 
     //sInstanceSaveMgr->Unload();
     sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
-    sObjectAccessor->UnloadAll();             // unload 'i_player2corpse' storage and remove from world
-    sScriptMgr->Unload();
+    sObjectAccessor->UnloadAll();
     sOutdoorPvPMgr->Die();
 
     // set server offline

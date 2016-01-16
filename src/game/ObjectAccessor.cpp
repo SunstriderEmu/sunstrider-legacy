@@ -74,7 +74,13 @@ namespace Trinity
 }
 
 ObjectAccessor::ObjectAccessor() {}
-ObjectAccessor::~ObjectAccessor() {}
+ObjectAccessor::~ObjectAccessor() 
+{
+    for (auto itr : i_player2corpse)
+        delete itr.second;
+
+    i_player2corpse.clear();
+}
 
 Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const &u, uint64 guid)
 {
@@ -243,10 +249,11 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     sObjectMgr->DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
     corpse->RemoveFromWorld();
 
+    delete iter->second;
     i_player2corpse.erase(iter);
 }
 
-void ObjectAccessor::AddCorpse(Corpse *corpse)
+void ObjectAccessor::AddCorpse(Corpse* corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 

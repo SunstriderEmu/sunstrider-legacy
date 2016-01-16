@@ -176,6 +176,7 @@ ObjectMgr::~ObjectMgr()
 
     for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         delete itr->second;
+
     mGuildMap.clear();
 
     for (CacheVendorItemMap::iterator itr = m_mCacheVendorItemMap.begin(); itr != m_mCacheVendorItemMap.end(); ++itr)
@@ -183,6 +184,13 @@ ObjectMgr::~ObjectMgr()
 
     for (CacheTrainerSpellMap::iterator itr = m_mCacheTrainerSpellMap.begin(); itr != m_mCacheTrainerSpellMap.end(); ++itr)
         itr->second.Clear();
+
+    for (auto itr : spellTemplates)
+    {
+        SpellEntry* entry = itr.second;
+        delete entry;
+        entry = nullptr;
+    }
 }
 
 Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const

@@ -26,7 +26,24 @@
 
 #define MAX_DESYNC 1.5f
 
-CreatureGroupInfoType   CreatureGroupMap;
+CreatureGroupManager::~CreatureGroupManager()
+{
+    Clear();
+}
+
+void CreatureGroupManager::Clear()
+{
+    for (auto itr : CreatureGroupMap)
+        delete itr.second;
+
+    //Clear existing map
+    CreatureGroupMap.clear();
+}
+
+void CreatureGroupManager::AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member)
+{
+    CreatureGroupMap[creature_lowguid] = group_member;
+}
 
 void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member)
 {
@@ -65,8 +82,7 @@ void CreatureGroupManager::RemoveCreatureFromGroup(CreatureGroup *group, Creatur
 
 void CreatureGroupManager::LoadCreatureFormations()
 {
-    //Clear existing map
-    CreatureGroupMap.clear();
+    Clear();
 
     //Check Integrity of the table
     QueryResult result = WorldDatabase.PQuery("SELECT MAX(`leaderGUID`) FROM `creature_formations`");
@@ -89,7 +105,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     Field *fields;
     uint32 total_records = result->GetRowCount();
 
-    FormationInfo *group_member;
+    FormationInfo* group_member;
     //Loading data...
     do
     {
@@ -136,7 +152,7 @@ void CreatureGroup::AddMember(Creature *member)
     if(member->GetDBTableGUIDLow() == m_groupID)
         m_leader = member;
 
-    m_members[member] = CreatureGroupMap.find(member->GetDBTableGUIDLow())->second;
+    m_members[member] = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow())->second;
     member->SetFormation(this);
 }
 
@@ -154,8 +170,9 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
     if(!member || !target)
         return;
 
-    const CreatureGroupInfoType::iterator fInfo = CreatureGroupMap.find(member->GetDBTableGUIDLow());
-    if(fInfo == CreatureGroupMap.end() || !fInfo->second)
+    CreatureGroupInfoType const& groupMap = sCreatureGroupMgr->GetGroupMap();
+    CreatureGroupInfoType::const_iterator fInfo = groupMap.find(member->GetDBTableGUIDLow());
+    if(fInfo == groupMap.end() || !fInfo->second)
         return;
 
     uint8 groupAI = fInfo->second->groupAI;
