@@ -1737,9 +1737,6 @@ class Player : public Unit
             m_cinematic = cine;
         }
 
-        void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
-        void InitWowarmoryFeeds();
-
         void addActionButton(uint8 button, uint16 action, uint8 type, uint8 misc);
         void removeActionButton(uint8 button);
         void SendInitialActionButtons();
