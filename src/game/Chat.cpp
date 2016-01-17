@@ -161,7 +161,10 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 
     static std::vector<ChatCommand> ircCommandtable =
     {
-        { "reconnect",      SEC_GAMEMASTER3,     true,  false, &ChatHandler::HandleIRCReconnectCommand,        "" },
+        { "reconnect",      SEC_ADMINISTRATOR,   true,  false, &ChatHandler::HandleIRCReconnectCommand,        "" },
+        { "join",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCJoinCommand,             "" },
+        { "part",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCPartCommand,             "" },
+        { "quit",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCQuitCommand,             "" },
     };
     
     static std::vector<ChatCommand> mmapCommandTable =
@@ -197,7 +200,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "rep",            SEC_GAMEMASTER2,      false, false, &ChatHandler::HandleModifyRepCommand,           "" },
         { "arena",          SEC_GAMEMASTER2,      false, false, &ChatHandler::HandleModifyArenaCommand,         "" },
         { "drunk",          SEC_GAMEMASTER1,      false, false, &ChatHandler::HandleDrunkCommand,               "" },
-        { "standstate",     SEC_GAMEMASTER2,      false, false, &ChatHandler::HandleStandStateCommand,          "" },
         { "morph",          SEC_GAMEMASTER2,      false, false, &ChatHandler::HandleMorphCommand,               "" },
         { "gender",         SEC_GAMEMASTER3,      false, false, &ChatHandler::HandleModifyGenderCommand,        "" },
     };
@@ -521,7 +523,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "spawndist",      SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcSpawnDistCommand,        "" },
         { "spawntime",      SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcSpawnTimeCommand,        "" },
         { "factionid",      SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcFactionIdCommand,        "" },
-        { "addmove",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcAddMoveCommand,          "" },
         { "setmovetype",    SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcSetMoveTypeCommand,      "" },
         { "move",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcMoveCommand,             "" },
         { "changelevel",    SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleChangeLevelCommand,         "" },
@@ -673,8 +674,8 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "casttime",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCasttimeCheatCommand,           "" },
         { "cooldown",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCoolDownCheatCommand,           "" },
         { "power",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePowerCheatCommand,              "" },
-        { "taxicheat",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleTaxiCheatCommand,               "" },
-        { "explorecheat",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleExploreCheatCommand,            "" },
+        { "taxi",           SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleTaxiCheatCommand,               "" },
+        { "explore",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleExploreCheatCommand,            "" },
         { "waterwalk",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleWaterwalkCheatCommand,          "" },
     };
 

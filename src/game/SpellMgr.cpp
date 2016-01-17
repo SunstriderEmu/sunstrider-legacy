@@ -650,7 +650,7 @@ void SpellMgr::LoadSpellProcEvents()
     {
         Field *fields = result->Fetch();
 
-        uint16 entry = fields[0].GetUInt16();
+        uint16 entry = fields[0].GetUInt32();
 
         const SpellInfo *spell = sSpellMgr->GetSpellInfo(entry);
         if (!spell)
@@ -676,7 +676,7 @@ void SpellMgr::LoadSpellProcEvents()
         {
             if (spe.ProcFlags == 0)
             {
-                TC_LOG_ERROR("server.loading","Spell %u listed in `spell_proc_event` probally not triggered spell", entry);
+                TC_LOG_ERROR("sql.sql","Spell %u listed in `spell_proc_event` probably not triggered spell", entry);
                 continue;
             }
             customProc++;
@@ -1529,10 +1529,10 @@ void SpellMgr::LoadSpellLearnSpells()
     {
         Field *fields = result->Fetch();
 
-        uint32 spell_id    = fields[0].GetUInt16();
+        uint32 spell_id    = fields[0].GetUInt32();
 
         SpellLearnSpellNode node;
-        node.spell      = fields[1].GetUInt16();
+        node.spell      = fields[1].GetUInt32();
         node.autoLearned= false;
 
         if(!sSpellMgr->GetSpellInfo(spell_id))

@@ -245,7 +245,8 @@ class ScriptMgr
         bool OnQuestReward(Player* pPlayer, GameObject* pGO, Quest const* pQuest, uint32 opt);
         bool OnUse(Player* pPlayer, GameObject* pGO);
         bool AreaTrigger(Player* pPlayer,AreaTriggerEntry const* atEntry);
-        CreatureAI* GetAI(Creature* pCreature);
+        //use scriptId to override script, else this uses script in database
+        CreatureAI* GetAI(Creature* pCreature, uint32 scriptId = 0);
         bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         //bool ItemExpire(Player* pPlayer, ItemTemplate const * pItemProto);
         //bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);

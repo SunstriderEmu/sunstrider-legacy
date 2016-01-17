@@ -558,6 +558,7 @@ class Creature : public Unit
         //@ai assign this AI
         bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
+        bool InitCustomScript(uint32 scriptId);
 
         void WarnDeathToFriendly();
 

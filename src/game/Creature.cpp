@@ -719,12 +719,22 @@ void Creature::RegenerateHealth()
     ModifyHealth(addvalue);
 }
 
+bool Creature::InitCustomScript(uint32 scriptId)
+{
+    CreatureAI* ai = sScriptMgr->GetAI(this, scriptId);
+    if (!ai)
+        return false;
+
+    AIM_Initialize(ai);
+    return true;
+}
+
 bool Creature::AIM_Initialize(CreatureAI* ai)
 {
     // make sure nothing can change the AI during AI update
     if(m_AI_locked)
     {
-        TC_LOG_ERROR("FIXME","AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetDBTableGUIDLow());
+        TC_LOG_ERROR("scripts","AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetDBTableGUIDLow());
         return false;
     }
 
@@ -2210,7 +2220,6 @@ uint32 Creature::getInstanceEventId()
 uint32 Creature::GetScriptId()
 {
     return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
-    //return m_scriptId ? NULL : ObjectMgr::GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
 std::string Creature::GetAIName() const

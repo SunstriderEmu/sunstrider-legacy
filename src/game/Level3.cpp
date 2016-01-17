@@ -2452,7 +2452,6 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
     return true;
 }
 
-
 bool ChatHandler::HandleNpcNearCommand(const char* args)
 {
     float distance = (!*args) ? 10 : atol(args);
@@ -8645,6 +8644,24 @@ bool ChatHandler::HandleIRCReconnectCommand(const char* /* args */)
    sIRCMgr->connect();
 
    return true;
+}
+
+bool ChatHandler::HandleIRCJoinCommand(const char* /* args */)
+{
+    PSendSysMessage("NYI");
+    return true;
+}
+
+bool ChatHandler::HandleIRCPartCommand(const char* /* args */)
+{
+    PSendSysMessage("NYI");
+    return true;
+}
+
+bool ChatHandler::HandleIRCQuitCommand(const char* /* args */)
+{
+    PSendSysMessage("NYI");
+    return true;
 }
 
 /* Syntax : .path type <pathid> [type] 

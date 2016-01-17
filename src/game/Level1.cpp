@@ -588,7 +588,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
 
 bool ChatHandler::HandleGMTicketReloadCommand(const char*)
 {
-  sObjectMgr->LoadGMTickets();
+    sObjectMgr->LoadGMTickets();
     return true;
 }
 

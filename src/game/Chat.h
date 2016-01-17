@@ -213,7 +213,6 @@ class ChatHandler
         bool HandleModifyGenderCommand(const char* args);
 
         bool HandleNpcAddCommand(const char* args);
-        bool HandleNpcAddMoveCommand(const char* args);
         bool HandleNpcChangeEntryCommand(const char *args);
         bool HandleNpcDeleteCommand(const char* args);
         bool HandleNpcFactionIdCommand(const char* args);
@@ -434,7 +433,6 @@ class ChatHandler
         bool HandleGameObjectCommand(const char* args);
         bool HandleAnimCommand(const char* args);
         bool HandlePlaySoundCommand(const char* args);
-        bool HandleStandStateCommand(const char* args);
         bool HandleDieCommand(const char* args);
         bool HandleDamageCommand(const char *args);
         bool HandleReviveCommand(const char* args);
@@ -614,7 +612,13 @@ class ChatHandler
         bool HandleUnbindSightCommand(const char* args);
         bool HandleRemoveLootItem(const char* args);
         bool HandleDebugPvPAnnounce(const char* args);
+
+        //IRC
         bool HandleIRCReconnectCommand(const char* args);
+        //NYI
+        bool HandleIRCJoinCommand(const char* args);
+        bool HandleIRCPartCommand(const char* args);
+        bool HandleIRCQuitCommand(const char* args);
 
         bool HandleNpcSetCombatDistanceCommand(const char* args);
         bool HandleNpcAllowCombatMovementCommand(const char* args);

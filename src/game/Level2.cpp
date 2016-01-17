@@ -1532,62 +1532,6 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
     return true;
 }
 
-//add move for creature
-bool ChatHandler::HandleNpcAddMoveCommand(const char* args)
-{
-    ARGS_CHECK
-
-    char* guid_str = strtok((char*)args, " ");
-    char* wait_str = strtok((char*)NULL, " ");
-
-    uint32 lowguid = atoi((char*)guid_str);
-
-    Creature* pCreature = NULL;
-
-    /* FIXME: impossible without entry
-    if(lowguid)
-        pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HIGHGUID_UNIT));
-    */
-
-    // attempt check creature existence by DB data
-    if(!pCreature)
-    {
-        CreatureData const* data = sObjectMgr->GetCreatureData(lowguid);
-        if(!data)
-        {
-            PSendSysMessage(LANG_COMMAND_CREATGUIDNOTFOUND, lowguid);
-            SetSentErrorMessage(true);
-            return false;
-        }
-    }
-    else
-    {
-        // obtain real GUID for DB operations
-        lowguid = pCreature->GetDBTableGUIDLow();
-    }
-
-    int wait = wait_str ? atoi(wait_str) : 0;
-
-    if(wait < 0)
-        wait = 0;
-
-    // update movement type
-    WorldDatabase.PExecute("UPDATE creature SET MovementType = '%u' WHERE guid = '%u'", WAYPOINT_MOTION_TYPE,lowguid);
-    if(pCreature && pCreature->GetWaypointPathId())
-    {
-        pCreature->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
-        pCreature->GetMotionMaster()->Initialize();
-        if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
-        {
-            pCreature->SetDeathState(JUST_DIED);
-            pCreature->Respawn();
-        }
-        pCreature->SaveToDB();
-    }
-
-    return true;
-}
-
 /**
  * Set the movement type for an NPC.<br/>
  * <br/>
@@ -3398,17 +3342,6 @@ bool ChatHandler::HandleAnimCommand(const char* args)
 
     uint32 anim_id = atoi((char*)args);
     m_session->GetPlayer()->HandleEmoteCommand(anim_id);
-    return true;
-}
-
-//change standstate
-bool ChatHandler::HandleStandStateCommand(const char* args)
-{
-    ARGS_CHECK
-
-    uint32 anim_id = atoi((char*)args);
-    m_session->GetPlayer( )->SetUInt32Value( UNIT_NPC_EMOTESTATE , anim_id );
-
     return true;
 }
 

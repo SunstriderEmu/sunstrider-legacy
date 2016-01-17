@@ -1927,16 +1927,26 @@ bool ScriptMgr::OnUse(Player* player, GameObject* go)
 
 bool ScriptMgr::AreaTrigger( Player *player, AreaTriggerEntry const* atEntry)
 {
-    Script *tmpscript = m_scripts[GetAreaTriggerScriptId(atEntry->id)];
+    Script* tmpscript = m_scripts[GetAreaTriggerScriptId(atEntry->id)];
     if (!tmpscript || !tmpscript->pAreaTrigger) return false;
 
     return tmpscript->pAreaTrigger(player, atEntry);
 }
 
-CreatureAI* ScriptMgr::GetAI(Creature *_Creature)
+CreatureAI* ScriptMgr::GetAI(Creature *_Creature, uint32 scriptId)
 {
-    Script *tmpscript = m_scripts[_Creature->GetScriptId()];
-    if (!tmpscript || !tmpscript->GetAI) return NULL;
+    if (scriptId >= MAX_SCRIPTS)
+    {
+        TC_LOG_ERROR("scripts", "ScriptMgr::GetAI called with scriptId %u. Max id is %u", scriptId, MAX_SCRIPTS);
+        return nullptr;
+    }
+
+    if (scriptId == 0)
+        scriptId = _Creature->GetScriptId();
+
+    Script* tmpscript = m_scripts[scriptId];
+    if (!tmpscript || !tmpscript->GetAI) 
+        return nullptr;
     
     return tmpscript->GetAI(_Creature);
 }
