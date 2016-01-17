@@ -1214,9 +1214,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
     
-
-    m_configs[CONFIG_ARMORY_ENABLE] = sConfigMgr->GetBoolDefault("Armory.Enable", true);
-
     if (int32 clientCacheId = sConfigMgr->GetIntDefault("ClientCacheVersion", 0))
     {
         // overwrite DB/old value
@@ -1706,6 +1703,7 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Cleaning up old logs...");
     if(m_configs[CONFIG_MONITORING_ENABLED])
         CleanupOldMonitorLogs(); 
+
     CleanupOldLogs();
 
     LoadCharacterNameData();

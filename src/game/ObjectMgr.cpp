@@ -176,6 +176,7 @@ ObjectMgr::~ObjectMgr()
 
     for (GuildMap::iterator itr = mGuildMap.begin(); itr != mGuildMap.end(); ++itr)
         delete itr->second;
+
     mGuildMap.clear();
 
     for (CacheVendorItemMap::iterator itr = m_mCacheVendorItemMap.begin(); itr != m_mCacheVendorItemMap.end(); ++itr)
@@ -183,6 +184,13 @@ ObjectMgr::~ObjectMgr()
 
     for (CacheTrainerSpellMap::iterator itr = m_mCacheTrainerSpellMap.begin(); itr != m_mCacheTrainerSpellMap.end(); ++itr)
         itr->second.Clear();
+
+    for (auto itr : spellTemplates)
+    {
+        SpellEntry* entry = itr.second;
+        delete entry;
+        entry = nullptr;
+    }
 }
 
 Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
@@ -6307,8 +6315,8 @@ void ObjectMgr::LoadReputationOnKill()
         uint32 creature_id = fields[0].GetUInt32();
 
         ReputationOnKillEntry repOnKill;
-        repOnKill.repfaction1          = fields[1].GetUInt8();
-        repOnKill.repfaction2          = fields[2].GetUInt8();
+        repOnKill.repfaction1          = fields[1].GetUInt32();
+        repOnKill.repfaction2          = fields[2].GetUInt32();
         repOnKill.is_teamaward1        = fields[3].GetBool();
         repOnKill.reputation_max_cap1  = fields[4].GetUInt8();
         repOnKill.repvalue1            = fields[5].GetInt32();

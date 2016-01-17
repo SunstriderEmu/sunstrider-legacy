@@ -4033,12 +4033,11 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     trans->PAppend("DELETE FROM character_pet WHERE owner = '%u'",guid);
     trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u'",guid);
     trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'",guid);
-    trans->PAppend("DELETE FROM armory_character_stats WHERE guid = '%u'",guid);
-    trans->PAppend("DELETE FROM character_feed_log WHERE guid = '%u'",guid);
     CharacterDatabase.CommitTransaction(trans);
 
     //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
-    if(updateRealmChars) sWorld->UpdateRealmCharCount(accountId);
+    if(updateRealmChars) 
+        sWorld->UpdateRealmCharCount(accountId);
 }
 
 void Player::SetMovement(PlayerMovementType pType)
@@ -16751,31 +16750,6 @@ void Player::SaveToDB(bool create /*=false*/)
     SetDisplayId(tmp_displayid);
     _changesMask.SetBit(UNIT_FIELD_DISPLAYID, updateFlag5);
 
-    // Place this code AFTER CharacterDatabase.CommitTransaction(); to avoid some character saving errors.
-    // Wowarmory feeds
-    if (sWorld->getConfig(CONFIG_ARMORY_ENABLE))
-    {
-        std::ostringstream sWowarmory;
-        for (WowarmoryFeeds::iterator iter = m_wowarmory_feeds.begin(); iter < m_wowarmory_feeds.end(); ++iter) {
-            sWowarmory << "INSERT IGNORE INTO character_feed_log (guid,type,data,date,counter,difficulty,item_guid,item_quality) VALUES ";
-            //                      guid                    type                        data                    date                            counter                   difficulty                        item_guid                      item_quality
-            sWowarmory << "(" << (*iter).guid << ", " << (*iter).type << ", " << (*iter).data << ", " << uint64((*iter).date) << ", " << (*iter).counter << ", " << uint32((*iter).difficulty) << ", " << (*iter).item_guid << ", " << (*iter).item_quality <<  ");";
-            CharacterDatabase.PExecute(sWowarmory.str().c_str());
-            sWowarmory.str("");
-        }
-        // Clear old saved feeds from storage - they are not required for server core.
-        InitWowarmoryFeeds();
-        // Character stats
-        std::ostringstream ps;
-        time_t t = time(NULL);
-        CharacterDatabase.PExecute("DELETE FROM armory_character_stats WHERE guid = %u", GetGUIDLow());
-        ps << "INSERT INTO armory_character_stats (guid, data, save_date) VALUES (" << GetGUIDLow() << ", '";
-        for (uint16 i = 0; i < m_valuesCount; ++i)
-            ps << GetUInt32Value(i) << " ";
-        ps << "', " << uint64(t) << ");";
-        CharacterDatabase.PExecute(ps.str().c_str());
-    }
-
     // save pet (hunter pet level and experience and all type pets health/mana).
     if(Pet* pet = GetPet())
         pet->SavePetToDB(PET_SAVE_AS_CURRENT);
@@ -17988,7 +17962,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod
     return sSpellMgr->IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
 }
 
-void Player::AddSpellMod(SpellModifier* mod, bool apply)
+void Player::AddSpellMod(SpellModifier*& mod, bool apply)
 {
     uint16 Opcode= (mod->type == SPELLMOD_FLAT) ? SMSG_SET_FLAT_SPELL_MODIFIER : SMSG_SET_PCT_SPELL_MODIFIER;
 
@@ -18020,6 +17994,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
             --m_SpellModRemoveCount;
         m_spellMods[mod->op].remove(mod);
         delete mod;
+        mod = nullptr;
     }
 }
 
@@ -22295,45 +22270,6 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
 bool Player::IsPetNeedBeTemporaryUnsummoned() const
 {
     return !IsInWorld() || !IsAlive() || IsMounted() /*+in flight*/;
-}
-
-void Player::InitWowarmoryFeeds() {
-    // Clear feeds
-    m_wowarmory_feeds.clear();
-}
-
-void Player::CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality) {
-    /*
-        1 - TYPE_ACHIEVEMENT_FEED
-        2 - TYPE_ITEM_FEED
-        3 - TYPE_BOSS_FEED
-    */
-    if (GetGUIDLow() == 0)
-    {
-        TC_LOG_DEBUG("server.loading", "[Wowarmory]: player is not initialized, unable to create log entry!");
-        return;
-    }
-    if (type <= 0 || type > 3)
-    {
-        TC_LOG_DEBUG("server.loading", "[Wowarmory]: unknown feed type: %d, ignore.", type);
-        return;
-    }
-    if (data == 0)
-    {
-        TC_LOG_DEBUG("server.loading", "[Wowarmory]: empty data (GUID: %u), ignore.", GetGUIDLow());
-        return;
-    }
-    WowarmoryFeedEntry feed;
-    feed.guid = GetGUIDLow();
-    feed.type = type;
-    feed.data = data;
-    feed.difficulty = type == 3 ? GetMap()->IsHeroic() : 0; 
-    feed.item_guid  = item_guid;
-    feed.item_quality = item_quality;
-    feed.counter = 0;
-    feed.date = time(NULL);
-    TC_LOG_DEBUG("server.loading", "[Wowarmory]: create wowarmory feed (GUID: %u, type: %d, data: %u).", feed.guid, feed.type, feed.data);
-    m_wowarmory_feeds.push_back(feed);
 }
 
 /*********************************************************/

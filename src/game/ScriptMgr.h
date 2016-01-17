@@ -84,7 +84,13 @@ struct Script
     CreatureAI* (*GetAI)(Creature*);
     InstanceScript* (*GetInstanceData)(Map*);
 
-    void RegisterSelf();
+    //returns if registration succeeded
+    bool RegisterSelf();
+};
+
+struct TSpellSummary {
+    uint8 Targets;                                          // set of enum SelectTarget
+    uint8 Effects;                                          // set of enum SelectEffect
 };
 
 class ScriptMgr
@@ -92,6 +98,8 @@ class ScriptMgr
     private:
         ScriptMgr();
         ~ScriptMgr();
+
+        void ClearScripts();
     public:
         static ScriptMgr* instance()
         {
@@ -103,9 +111,16 @@ class ScriptMgr
         void LoadDatabase();
         char const* ScriptsVersion();    
 
-    public: /* Unloading */
+        /* Add given script to m_script list if the script is used in database.
+          Return wheter the script was added.
+          Pointer script* will be freed upon ScriptMgr deletion.
+        **/
+        bool RegisterScript(std::string name, Script* script);
+        void FillSpellSummary();
 
-        void Unload();
+        TSpellSummary* GetSpellSummary() { return spellSummary; }
+
+    public:
 
         std::string GetConfigValueStr(char const* option);
         int32 GetConfigValueInt32(char const* option);
@@ -244,13 +259,21 @@ class ScriptMgr
         bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
         bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
         
-        CreatureAINew* getAINew(Creature* creature);
         
+        //script system by thumsoul
+        CreatureAINew* getAINew(Creature* creature);
+        //script system by thumsoul
         void addScript(CreatureScript* cscript) { m_creatureScripts[cscript->getName()] = cscript; }
         
     private:
         typedef std::map<std::string, CreatureScript*> CreatureScriptMap;
         CreatureScriptMap m_creatureScripts;
+
+        int num_sc_scripts;
+        Script* m_scripts[MAX_SCRIPTS] = { nullptr };
+
+        //summary array
+        TSpellSummary* spellSummary;
 };
 
 //Generic scripting text function

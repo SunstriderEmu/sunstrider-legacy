@@ -1672,7 +1672,8 @@ class Player : public Unit
         PlayerSpellMap const& GetSpellMap() const { return m_spells; }
         PlayerSpellMap      & GetSpellMap()       { return m_spells; }
 
-        void AddSpellMod(SpellModifier* mod, bool apply);
+        //delete mod pointer on unapply
+        void AddSpellMod(SpellModifier*& mod, bool apply);
         int32 GetTotalFlatMods(uint32 spellId, SpellModOp op);
         int32 GetTotalPctMods(uint32 spellId, SpellModOp op);
         bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = NULL);
@@ -1735,9 +1736,6 @@ class Player : public Unit
         {
             m_cinematic = cine;
         }
-
-        void CreateWowarmoryFeed(uint32 type, uint32 data, uint32 item_guid, uint32 item_quality);
-        void InitWowarmoryFeeds();
 
         void addActionButton(uint8 button, uint16 action, uint8 type, uint8 misc);
         void removeActionButton(uint8 button);
