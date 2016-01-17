@@ -238,7 +238,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         newmember.personal_rating = fields[5].GetUInt32();
         
         // Put the player in the team
-        members.push_back(newmember);
+        members.push_back(std::move(newmember));
 
     }while( result->NextRow() );
 }

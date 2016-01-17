@@ -191,6 +191,13 @@ ObjectMgr::~ObjectMgr()
         delete entry;
         entry = nullptr;
     }
+
+    for (auto itr : mArenaTeamMap)
+    {
+        delete itr.second;
+        itr.second = nullptr;
+    }
+    
 }
 
 Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const

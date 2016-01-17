@@ -46,6 +46,17 @@ ConfVersion=2014090901
 #                     1 - (WorldDatabase.WorkerThreads)
 #                     1 - (CharacterDatabase.WorkerThreads)
 #                     1 - (LogsDatabase.WorkerThreads)
+#
+#    LoginDatabase.SynchThreads
+#    WorldDatabase.SynchThreads
+#    CharacterDatabase.SynchThreads
+#    LogsDatabase.SynchThreads
+#        Description: The amount of MySQL connections spawned to handle.
+#        Default:     1 - (LoginDatabase.WorkerThreads)
+#                     1 - (WorldDatabase.WorkerThreads)
+#                     2 - (CharacterDatabase.WorkerThreads)
+#                     1 - (LogsDatabase.WorkerThreads)
+#
 #    WorldServerPort
 #        Default WorldServerPort
 #
@@ -63,8 +74,12 @@ CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 LogsDatabaseInfo      = "127.0.0.1;3306;trinity;trinity;logs"
 LoginDatabase.WorkerThreads     = 1
 WorldDatabase.WorkerThreads     = 1
-CharacterDatabase.WorkerThreads = 1
+CharacterDatabase.WorkerThreads = 2
 LogsDatabase.WorkerThreads = 1
+LoginDatabase.SynchThreads     = 1
+WorldDatabase.SynchThreads     = 1
+CharacterDatabase.SynchThreads = 2
+LogsDatabase.SynchThreads = 1
 MaxPingTime = 30
 WorldServerPort = 8085
 BindIP = "0.0.0.0"

@@ -46,7 +46,6 @@ LootStore LootTemplates_QuestMail(    "quest_mail_loot_template",   "quest id");
 LootStore LootTemplates_Reference(    "reference_loot_template",    "reference id");
 LootStore LootTemplates_Skinning(     "skinning_loot_template",     "creature skinning id");
 
-
 class LootTemplate::LootGroup                               // A set of loot definitions for items (refs are not allowed)
 {
     public:

@@ -496,6 +496,7 @@ class ObjectMgr
         ArenaTeam* _GetArenaTeamByCaptain(uint64 const& guid) const;
         bool IsArenaTeamCaptain(uint64 const& guid) const;
 
+        //Add a team to the team list. Given team object will be destroyed upon ObjectMgr destruction.
         void AddArenaTeam(ArenaTeam* arenaTeam);
         void RemoveArenaTeam(uint32 Id);
         ArenaTeamMap::iterator GetArenaTeamMapBegin() { return mArenaTeamMap.begin(); }

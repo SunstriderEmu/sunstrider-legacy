@@ -244,7 +244,7 @@ extern int main(int argc, char **argv)
 
     sScriptMgr->OnShutdown();
 
-    sWorld->KickAll();                                       // save and kick all players
+    sWorld->KickAll();                                     // save and kick all players
     sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
 
     // unload battleground templates before different singletons destroyed

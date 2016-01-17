@@ -83,9 +83,6 @@ struct Script
 
     CreatureAI* (*GetAI)(Creature*);
     InstanceScript* (*GetInstanceData)(Map*);
-
-    //returns if registration succeeded
-    bool RegisterSelf();
 };
 
 struct TSpellSummary {
@@ -111,11 +108,10 @@ class ScriptMgr
         void LoadDatabase();
         char const* ScriptsVersion();    
 
-        /* Add given script to m_script list if the script is used in database.
-          Return wheter the script was added.
-          Pointer script* will be freed upon ScriptMgr deletion.
+        /* Add given script to m_script list if the script is used in database. DO NOT use script afterwards as this function may delete it.
+          Pointer script* will be freed upon ScriptMgr deletion, or immediately if registering failed
         **/
-        bool RegisterScript(std::string name, Script* script);
+        void RegisterScript(Script*& script);
         void FillSpellSummary();
 
         TSpellSummary* GetSpellSummary() { return spellSummary; }

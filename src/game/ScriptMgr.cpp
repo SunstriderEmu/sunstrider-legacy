@@ -769,6 +769,8 @@ void ScriptMgr::ClearScripts()
             m_scripts[i] = nullptr;
         }
     }
+
+    TC_LOG_INFO("scripts", "\n>> ScriptMgr: Cleared all core scripts.");
 }
 
 void ScriptMgr::ScriptsInit(char const* cfg_file)
@@ -1524,23 +1526,20 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 //*********************************
 //*** Functions used internally ***
 
-bool ScriptMgr::RegisterScript(std::string name, Script* script)
+void ScriptMgr::RegisterScript(Script*& script)
 {
-    int id = GetScriptId(name.c_str());
+    int id = GetScriptId(script->Name.c_str());
     if (id)
     {
         m_scripts[id] = script;
         ++num_sc_scripts;
-        return true;
+        return;
     }
 
-    TC_LOG_WARN("scripts", "TrinityScript: RegisterScript, but script named %s does not have ScriptName assigned in database.", name.c_str());
-    return false;
-}
+    TC_LOG_WARN("scripts", "TrinityScript: RegisterScript, but script named %s does not have ScriptName assigned in database. Script has been removed from memory.", script->Name.c_str());
 
-bool Script::RegisterSelf()
-{
-    return sScriptMgr->RegisterScript(Name, this);
+    delete script;
+    script = nullptr;
 }
 
 //********************************
@@ -1729,7 +1728,7 @@ void ScriptMgr::OnPlayerCreate(Player* player)
 
 char const* ScriptMgr::ScriptsVersion()
 {
-    return "Default Trinity scripting library";
+    return "Sunstrider scripting library";
 }
 
 bool ScriptMgr::OnGossipHello ( Player * player, Creature *_Creature )
