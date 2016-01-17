@@ -9,9 +9,9 @@ User=suncore
 Group=suncore
 
 WorkingDirectory=/srv/suncore/dumps
-#remove core dumps and logs older than last 5 runs
-ExecStartPre=/usr/sbin/logrotate --force -s /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf
-ExecStartPre=ls -1tr | head -n -5 | xargs -d '\n' rm -f
+#remove core dumps and logs older than last 5 runs. 
+ExecStartPre=/srv/suncore/sources/contrib/sunstrider/systemd/logrotate.sh /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf
+ExecStartPre=bash -c "ls -1tr | head -n -5 | xargs -d '\n' rm -f"
 ExecStart=/srv/suncore/bin/worldserver
 
 Restart=always
