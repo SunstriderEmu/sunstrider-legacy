@@ -124,11 +124,11 @@ void AuthCrypt::EncryptSend(uint8 *data, size_t len)
 
 void AuthCrypt::SetKey(BigNumber *bn)
 {
-    uint8* key = new uint8[SHA_DIGEST_LENGTH];
+    uint8 *key = new uint8[SHA_DIGEST_LENGTH];
     GenerateKey(key, bn);
     _key.resize(SHA_DIGEST_LENGTH);
     std::copy(key, key + SHA_DIGEST_LENGTH, _key.begin());
-    delete[] key;
+    delete key;
 }
 
 AuthCrypt::~AuthCrypt()
