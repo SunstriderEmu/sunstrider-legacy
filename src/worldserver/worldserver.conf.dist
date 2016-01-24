@@ -1975,25 +1975,26 @@ Logger.entities.player.loading=3,Console Server
 Logger.entities.player.skills=3,Console Server
 Logger.entities.transport=3,Console Server
 Logger.entities.unit=3,Console Server
-Logger.entities.vehicle=3,Console Server
+#Logger.entities.vehicle=3,Console Server
 Logger.gameevent=3,Console Server
 Logger.guild=3,Console Server
-Logger.lfg=3,Console Server
+#Logger.lfg=3,Console Server
 Logger.loot=3,Console Server
 Logger.maps.script=3,Console Server
 Logger.maps=3,Console Server
 Logger.misc=3,Console Server
 Logger.network=3,Console Server
-Logger.network.soap=3,Console Server
+#Logger.network.soap=3,Console Server
 Logger.outdoorpvp=3,Console Server
-Logger.pool=3,Console Server
-Logger.rbac=3,Console Server
+#Logger.pool=3,Console Server
+#Logger.rbac=3,Console Server
 Logger.scripts=3,Console Server
 Logger.scripts.ai=3,Console Server
 Logger.server.authserver=3,Console Server
 Logger.spells=3,Console Server
 Logger.sql.dev=3,Console Server
 Logger.sql.driver=3,Console Server
+Logger.vmap=3,Console Server
 
 #
 #    Log.Async.Enable

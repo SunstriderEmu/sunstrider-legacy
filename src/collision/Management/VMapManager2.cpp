@@ -187,6 +187,7 @@ namespace VMAP
         bool collision1; //collision from given position
         bool collision2; //collision from 6.0f higher
         float hitX1, hitX2, hitY1, hitY2, hitZ1, hitZ2;
+
         collision1 = getObjectHitPos(mapId, x1, y1, z1, x2, y2, z2, hitX1, hitY1, hitZ1, modifyDist);
         if(!collision1) //no collision from original position, we're okay
         {
@@ -197,26 +198,42 @@ namespace VMAP
         }
         //collision occured, let's try from higher (do not set too high, else this will cause problem with places with multiple floors)
         collision2 = getObjectHitPos(mapId, x1, y1, z1+4.0f, x2, y2, z2, hitX2, hitY2, hitZ2, modifyDist);
-        
-        //check if the second collision doesn't get us too high (this is in most case incorrect)
-        if(collision2)
-            if(hitZ2 > z2 + 3.0f)
-                collision2 = false;
-                
-        if(!collision2) //no collision from there, okay too
+        if (collision2)
+        {
+            //exclude collision2 if it is to high
+            if (hitZ2 > (z2 + 3.0f))
+            {
+                rx = hitX1;
+                ry = hitY1;
+                rz = hitZ1;
+                return true;
+            }
+        }
+        else //no collision from there, okay too
         {
             rx = x2;
             ry = y2;
             rz = z2;
             return false;
         }
-        //both collided, get the one which got further
+
+        //at this point both collided, get the one which got further
         float dist1 = GetDistance(x1,y1,hitX1,hitY1);
         float dist2 = GetDistance(x1,y1,hitX2,hitY2);
 
-        rx = dist1 > dist2 ? hitX1 : hitX2;
-        ry = dist1 > dist2 ? hitY1 : hitY2;
-        rz = dist1 > dist2 ? hitZ1 : hitZ2;
+        if (   (dist1 > dist2) //if dist1 collided further
+            || (std::fabs(dist1 - dist2) < 2.0f) ) //if collisions points were close, prefer collision1. This helps avoiding getting a position 1-2m higher in case where we tried to get a collision when against the wall.
+        {
+            rx = hitX1;
+            ry = hitY1;
+            rz = hitZ1;
+        }
+        else {
+            rx = hitX2;
+            rx = hitY2;
+            rz = hitZ2;
+        }
+
         return true;
     }
     /**
