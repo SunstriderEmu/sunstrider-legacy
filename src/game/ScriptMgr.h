@@ -46,43 +46,39 @@ class Spell;
 
 struct Script
 {
-    Script() :
-        pOnGossipHello(NULL), pOnQuestAccept(NULL), pOnGossipSelect(NULL), pOnGossipSelectCode(NULL), pGOOnGossipSelect(NULL), pGOOnGossipSelectCode(NULL), 
-        pQuestSelect(NULL), pQuestComplete(NULL), pGetDialogStatus(NULL), pGOGetDialogStatus(NULL), pOnQuestReward(NULL),
-        pItemHello(NULL), pGOOnGossipHello(NULL), pAreaTrigger(NULL), pItemQuestAccept(NULL), pGOOnQuestAccept(NULL),
-        pGOOnQuestReward(NULL), pReceiveEmote(NULL), pItemUse(NULL), GetAI(NULL), GetInstanceData(NULL), pEffectDummyCreature(NULL)
+    Script()
     {}
 
     std::string Name;
 
     //Methods to be scripted
-    void (*pOnLogin             )(Player*);
-    void (*pOnLogout            )(Player*);
-    void (*pOnPVPKill           )(Player*, Player*);
-    bool (*pOnGossipHello       )(Player*, Creature*);
-    bool (*pOnQuestAccept       )(Player*, Creature*, Quest const* );
-    bool (*pOnGossipSelect      )(Player*, Creature*, uint32 , uint32 );
-    bool (*pOnGossipSelectCode  )(Player*, Creature*, uint32 , uint32 , const char* );
-    bool (*pGOOnGossipSelect    )(Player*, GameObject*, uint32 , uint32 );
-    bool (*pGOOnGossipSelectCode)(Player*, GameObject*, uint32 , uint32 , const char* );
-    bool (*pQuestSelect         )(Player*, Creature*, Quest const* );
-    bool (*pQuestComplete       )(Player*, Creature*, Quest const* );
-    uint32 (*pGetDialogStatus   )(Player*, Creature* );
-    uint32 (*pGOGetDialogStatus )(Player*, GameObject * _GO );
-    bool (*pOnQuestReward       )(Player*, Creature*, Quest const*, uint32 );
-    bool (*pItemHello           )(Player*, Item*, Quest const* );
-    bool (*pGOOnGossipHello     )(Player*, GameObject* );
-    bool (*pAreaTrigger         )(Player*, AreaTriggerEntry const* );
-    bool (*pItemQuestAccept     )(Player*, Item *, Quest const* );
-    bool (*pGoOnUse             )(Player*, GameObject*);
-    bool (*pGOOnQuestAccept     )(Player*, GameObject*, Quest const* );
-    bool (*pGOOnQuestReward     )(Player*, GameObject*, Quest const*, uint32 );
-    bool (*pReceiveEmote        )(Player*, Creature*, uint32 );
-    bool (*pItemUse             )(Player*, Item*, SpellCastTargets const& );
-    bool (*pEffectDummyCreature )(Unit*, uint32, uint32, Creature*);
+    void (*pOnLogin             )(Player*)                                                = nullptr;
+    void (*pOnLogout            )(Player*)                                                = nullptr;
+    void (*pOnPVPKill           )(Player*, Player*)                                       = nullptr;
+    bool (*pOnGossipHello       )(Player*, Creature*)                                     = nullptr;
+    bool (*pOnQuestAccept       )(Player*, Creature*, Quest const* )                      = nullptr;
+    bool (*pOnGossipSelect      )(Player*, Creature*, uint32 , uint32 )                   = nullptr;
+    bool (*pOnGossipSelectCode  )(Player*, Creature*, uint32 , uint32 , const char* )     = nullptr;
+    bool (*pGOOnGossipSelect    )(Player*, GameObject*, uint32 , uint32 )                 = nullptr;
+    bool (*pGOOnGossipSelectCode)(Player*, GameObject*, uint32 , uint32 , const char* )   = nullptr;
+    bool (*pQuestSelect         )(Player*, Creature*, Quest const* )                      = nullptr;
+    bool (*pQuestComplete       )(Player*, Creature*, Quest const* )                      = nullptr;
+    uint32 (*pGetDialogStatus   )(Player*, Creature* )                                    = nullptr;
+    uint32 (*pGOGetDialogStatus )(Player*, GameObject * _GO )                             = nullptr;
+    bool (*pOnQuestReward       )(Player*, Creature*, Quest const*, uint32 )              = nullptr;
+    bool (*pItemHello           )(Player*, Item*, Quest const* )                          = nullptr;
+    bool (*pGOOnGossipHello     )(Player*, GameObject* )                                  = nullptr;
+    bool (*pAreaTrigger         )(Player*, AreaTriggerEntry const* )                      = nullptr;
+    bool (*pItemQuestAccept     )(Player*, Item *, Quest const* )                         = nullptr;
+    bool (*pGoOnUse             )(Player*, GameObject*)                                   = nullptr;
+    bool (*pGOOnQuestAccept     )(Player*, GameObject*, Quest const* )                    = nullptr;
+    bool (*pGOOnQuestReward     )(Player*, GameObject*, Quest const*, uint32 )            = nullptr;
+    bool (*pReceiveEmote        )(Player*, Creature*, uint32 )                            = nullptr;
+    bool (*pItemUse             )(Player*, Item*, SpellCastTargets const& )               = nullptr;
+    bool (*pEffectDummyCreature )(Unit*, uint32, uint32, Creature*)                       = nullptr;
 
-    CreatureAI* (*GetAI)(Creature*);
-    InstanceScript* (*GetInstanceData)(Map*);
+    CreatureAI* (*GetAI)(Creature*)                                                       = nullptr;
+    InstanceScript* (*GetInstanceData)(Map*)                                              = nullptr;
 };
 
 struct TSpellSummary {

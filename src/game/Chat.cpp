@@ -884,6 +884,9 @@ bool ChatHandler::isAvailable(ChatCommand const& cmd) const
 
 bool ChatHandler::hasStringAbbr(const char* name, const char* part) const
 {
+    if (!name)
+        return false;
+
     // non "" command
     if( *name )
     {
