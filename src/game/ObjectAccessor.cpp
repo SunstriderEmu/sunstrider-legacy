@@ -249,7 +249,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     sObjectMgr->DeleteCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID());
     corpse->RemoveFromWorld();
 
-    delete iter->second;
+   // delete iter->second;
     i_player2corpse.erase(iter);
 }
 
