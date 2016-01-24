@@ -1681,7 +1681,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        TC_LOG_ERROR("FIXME","WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_ERROR("vmap","WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
 
@@ -1690,6 +1690,9 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     if(!keepZ)
         UpdateAllowedPositionZ(destx, desty, destz, dist);
 
+    TC_LOG_DEBUG("vmap", "WorldObject::MovePositionToFirstCollision: Called with %f,%f. Target Z set to %f.", destx, desty, destz);
+    
+    // check static collision (terrain + WMO + MDX ?)
     bool col = VMAP::VMapFactory::createOrGetVMapManager()->getLeapHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
 
     // collision occured
@@ -1699,6 +1702,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         destx -= CONTACT_DISTANCE * std::cos(angle);
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
+        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Static collision occured at %f, %f, %f", destx, desty, destz);
     }
 
     // check dynamic collision
@@ -1710,25 +1714,27 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         destx -= CONTACT_DISTANCE * std::cos(angle);
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
+        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Dynamic collision occured at %f, %f, %f", destx, desty, destz);
     }
 
     float step = dist / 10.0f;
 
     for (uint8 j = 0; j < 10; ++j)
     {
-        // do not allow too big z changes
+        // do not allow too big z changes. I too much changes, try again to get a position a little bit closer.
         if (fabs(pos.m_positionZ - destz) > 7.5f)
         {
             destx -= step * std::cos(angle);
             desty -= step * std::sin(angle);
-            destz = pos.m_positionZ; //reset destz
+            destz = pos.m_positionZ; //reset destz at each step before updating it
             if(!keepZ)
-                UpdateAllowedPositionZ(destx, desty, destz, 500.0f);
+                UpdateAllowedPositionZ(destx, desty, destz, 50.0f);
         }
         // we have correct destz now
         else
         {
             pos.Relocate(destx, desty, destz);
+            TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Found a suitable position after %u steps", j);
             break;
         }
     }
@@ -1737,6 +1743,8 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     Trinity::NormalizeMapCoord(pos.m_positionY);
     UpdateAllowedPositionZ(destx, desty, pos.m_positionZ, dist);
     pos.SetOrientation(GetOrientation());
+
+    TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Final target: %f, %f, %f", destx, desty, destz);
 }
 
 bool Position::HasInArc(float arc, const Position *obj, float border) const
