@@ -816,12 +816,12 @@ bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
     switch(GetCreatureTemplate()->trainer_type)
     {
         case TRAINER_TYPE_CLASS:
-            if(pPlayer->GetClass()!=GetCreatureTemplate()->trainer_race)
+            if(pPlayer->GetClass()!=GetCreatureTemplate()->trainer_class)
             {
                 if(msg)
                 {
                     pPlayer->PlayerTalkClass->ClearMenus();
-                    switch(GetCreatureTemplate()->trainer_race)
+                    switch(GetCreatureTemplate()->trainer_class)
                     {
                         case CLASS_DRUID:  pPlayer->PlayerTalkClass->SendGossipMenuTextID( 4913,GetGUID()); break;
                         case CLASS_HUNTER: pPlayer->PlayerTalkClass->SendGossipMenuTextID(10090,GetGUID()); break;
