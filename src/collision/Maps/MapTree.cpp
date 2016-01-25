@@ -137,10 +137,6 @@ namespace VMAP
     }
 
     //=========================================================
-    /**
-    If intersection is found within pMaxDist, sets pMaxDist to intersection distance and returns true.
-    Else, pMaxDist is not modified and returns false;
-    */
 
     bool StaticMapTree::getIntersectionTime(const G3D::Ray& pRay, float &pMaxDist, bool pStopAtFirstHit) const
     {
@@ -173,10 +169,6 @@ namespace VMAP
         return true;
     }
     //=========================================================
-    /**
-    When moving from pos1 to pos2 check if we hit an object. Return true and the position if we hit one
-    Return the hit pos or the original dest pos
-    */
 
     bool StaticMapTree::getObjectHitPos(const Vector3& pPos1, const Vector3& pPos2, Vector3& pResultHitPos, float pModifyDist) const
     {
@@ -223,18 +215,32 @@ namespace VMAP
 
     //=========================================================
 
+    float getClosest(float closestTo, float val1, float val2)
+    {
+        return std::fabs(closestTo - val1) < std::fabs(closestTo - val2) ? val1 : val2;
+    }
+
     float StaticMapTree::getHeight(const Vector3& pPos, float maxSearchDist) const
     {
-        float height = G3D::inf();
+        float heightUp = G3D::inf();
+        float heightDown = G3D::inf();
 
         Vector3 down = Vector3(0, 0, -1);
         G3D::Ray rayDown(pPos, down);   // direction down with length of 1
-        float maxDist = maxSearchDist;
-        if (getIntersectionTime(rayDown, maxDist, false))
+        Vector3 up = Vector3(0, 0, 1);
+        G3D::Ray rayUp(pPos, up);   // direction up with length of 1
+
+        float hitDist = maxSearchDist;
+        if (getIntersectionTime(rayDown, hitDist, false))
         {
-            height = pPos.z - maxDist;
+            heightDown = pPos.z - hitDist;
         }
-        return(height);
+        hitDist = maxSearchDist;
+        if (getIntersectionTime(rayDown, hitDist, false))
+        {
+            heightUp = pPos.z + hitDist;
+        }
+        return getClosest(pPos.z, heightDown, heightUp);
     }
 
     //=========================================================

@@ -57,6 +57,10 @@ namespace VMAP
             std::string iBasePath;
 
         private:
+            /**
+            If intersection is found within pMaxDist, sets pMaxDist to intersection distance and returns true.
+            Else, pMaxDist is not modified and returns false;
+            */
             bool getIntersectionTime(const G3D::Ray& pRay, float &pMaxDist, bool pStopAtFirstHit) const;
             //bool containsLoadedMapTile(unsigned int pTileIdent) const { return(iLoadedMapTiles.containsKey(pTileIdent)); }
         public:
@@ -69,7 +73,14 @@ namespace VMAP
             ~StaticMapTree();
 
             bool isInLineOfSight(const G3D::Vector3& pos1, const G3D::Vector3& pos2) const;
+            /**
+            When moving from pos1 to pos2 check if we hit an object. Return true and the position if we hit one
+            Return the hit pos or the original dest pos
+            */
             bool getObjectHitPos(const G3D::Vector3& pos1, const G3D::Vector3& pos2, G3D::Vector3& pResultHitPos, float pModifyDist) const;
+            /** Return closest z position for given position within maxSearchDist (search up and down)
+            Returns G3D::inf() if no z found
+            */
             float getHeight(const G3D::Vector3& pPos, float maxSearchDist) const;
             bool getAreaInfo(G3D::Vector3 &pos, uint32 &flags, int32 &adtId, int32 &rootId, int32 &groupId) const;
             bool GetLocationInfo(const G3D::Vector3 &pos, LocationInfo &info) const;

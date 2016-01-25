@@ -1479,7 +1479,7 @@ float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchD
     float vmapHeight = VMAP_INVALID_HEIGHT_VALUE;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     if (vmgr->isHeightCalcEnabled())
-        vmapHeight = vmgr->getHeight(GetId(), x, y, z + 2.0f, maxSearchDist);   // look from a bit higher pos to find the floor
+        vmapHeight = vmgr->getHeight(GetId(), x, y, z, maxSearchDist);
     
     // no valid vmap height found, we're done, return map height
     if(vmapHeight == VMAP_INVALID_HEIGHT_VALUE)

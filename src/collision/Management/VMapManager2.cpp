@@ -200,8 +200,9 @@ namespace VMAP
         collision2 = getObjectHitPos(mapId, x1, y1, z1+4.0f, x2, y2, z2, hitX2, hitY2, hitZ2, modifyDist);
         if (collision2)
         {
-            //exclude collision2 if it is to high
-            if (hitZ2 > (z2 + 3.0f))
+            //exclude collision2 if it is to high. The further the larger the difference allowed. For example here, at distance 20 the max delta is 12.0f.
+            float maxAllowedDistance = GetDistance(x1, y1, hitX2, hitY2) * 0.6f;
+            if (hitZ2 > (z2 + maxAllowedDistance))
             {
                 rx = hitX1;
                 ry = hitY1;
@@ -230,16 +231,13 @@ namespace VMAP
         }
         else {
             rx = hitX2;
-            rx = hitY2;
+            ry = hitY2;
             rz = hitZ2;
         }
 
         return true;
     }
-    /**
-    get the hit position and return true if we hit something
-    otherwise the result pos will be the dest pos
-    */
+    
     bool VMapManager2::getObjectHitPos(unsigned int mapId, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist)
     {
         if (isLineOfSightCalcEnabled() && !IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LOS))
@@ -267,6 +265,7 @@ namespace VMAP
     }
 
     /**
+    Return closest z position for given coordinates within maxSearchDist (search up and down)
     get height or INVALID_HEIGHT if no height available
     */
 
