@@ -421,6 +421,7 @@ class ChatHandler
         bool HandleBanListIPCommand(const char* args);
         bool HandleGoXYCommand(const char* args);
         bool HandleGoXYZCommand(const char* args);
+        bool HandleGoXYZOCommand(const char* args);
         bool HandleGoZoneXYCommand(const char* args);
         bool HandleGoGridCommand(const char* args);
         bool HandleAddWeaponCommand(const char* args);

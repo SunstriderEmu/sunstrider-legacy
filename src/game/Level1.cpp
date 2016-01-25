@@ -2698,6 +2698,53 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
     return true;
 }
 
+bool ChatHandler::HandleGoXYZOCommand(const char* args)
+{
+    ARGS_CHECK
+
+        Player* _player = m_session->GetPlayer();
+
+    char* px = strtok((char*)args, " ");
+    char* py = strtok(NULL, " ");
+    char* pz = strtok(NULL, " ");
+    char* po = strtok(NULL, " ");
+    char* pmapid = strtok(NULL, " ");
+
+    if (!px || !py || !pz || !po)
+        return false;
+
+    float x = (float)atof(px);
+    float y = (float)atof(py);
+    float z = (float)atof(pz);
+    float o = (float)atof(po);
+    uint32 mapid;
+    if (pmapid)
+        mapid = (uint32)atoi(pmapid);
+    else
+        mapid = _player->GetMapId();
+
+    if (!MapManager::IsValidMapCoord(mapid, x, y, z))
+    {
+        PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, mapid);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    // stop flight if need
+    if (_player->IsInFlight())
+    {
+        _player->GetMotionMaster()->MovementExpired();
+        _player->CleanupAfterTaxiFlight();
+    }
+    // save only in non-flight case
+    else
+        _player->SaveRecallPosition();
+
+    _player->TeleportTo(mapid, x, y, z, o);
+
+    return true;
+}
+
 //teleport at coordinates
 bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 {

@@ -574,6 +574,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "zonexy",         SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleGoZoneXYCommand,            "" },
         { "xy",             SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleGoXYCommand,                "" },
         { "xyz",            SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleGoXYZCommand,               "" },
+        { "xyzo",           SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleGoXYZOCommand,              "" },
         { "at",             SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleGoATCommand,                "" },
         { "",               SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleGoXYZCommand,               "" },
     };
