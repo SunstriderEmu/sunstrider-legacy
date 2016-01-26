@@ -52,7 +52,7 @@ public:
                          float pModifyDist) const;
 
     /**
-    Returns closest z found at given position within maxSearchDist
+    Returns closest z position downwards within maxSearchDist
     Returns -G3D::finf() if nothing found
     */
     float getHeight(float x, float y, float z, float maxSearchDist, PhaseMask phasemask) const;

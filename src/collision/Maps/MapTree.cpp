@@ -215,32 +215,18 @@ namespace VMAP
 
     //=========================================================
 
-    float getClosest(float closestTo, float val1, float val2)
-    {
-        return std::fabs(closestTo - val1) < std::fabs(closestTo - val2) ? val1 : val2;
-    }
-
     float StaticMapTree::getHeight(const Vector3& pPos, float maxSearchDist) const
     {
-        float heightUp = G3D::inf();
-        float heightDown = G3D::inf();
+        float height = G3D::inf();
 
         Vector3 down = Vector3(0, 0, -1);
         G3D::Ray rayDown(pPos, down);   // direction down with length of 1
-        Vector3 up = Vector3(0, 0, 1);
-        G3D::Ray rayUp(pPos, up);   // direction up with length of 1
-
-        float hitDist = maxSearchDist;
-        if (getIntersectionTime(rayDown, hitDist, false))
+        float maxDist = maxSearchDist;
+        if (getIntersectionTime(rayDown, maxDist, false))
         {
-            heightDown = pPos.z - hitDist;
+            height = pPos.z - maxDist;
         }
-        hitDist = maxSearchDist;
-        if (getIntersectionTime(rayDown, hitDist, false))
-        {
-            heightUp = pPos.z + hitDist;
-        }
-        return getClosest(pPos.z, heightDown, heightUp);
+        return(height);
     }
 
     //=========================================================

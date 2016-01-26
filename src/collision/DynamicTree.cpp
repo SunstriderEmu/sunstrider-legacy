@@ -248,22 +248,13 @@ bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, flo
 
 float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, PhaseMask phasemask) const
 {
-    float hitDown = -G3D::finf();
-    float hitUp = -G3D::finf();
-    float hitDist = maxSearchDist;
-    G3D::Vector3 vectorDown(x, y, z);
-    G3D::Ray rayDown(vectorDown, G3D::Vector3(0, 0, -1));
+    G3D::Vector3 v(x, y, z);
+    G3D::Ray r(v, G3D::Vector3(0, 0, -1));
     DynamicTreeIntersectionCallback callback(phasemask);
-    impl->intersectZAllignedRay(rayDown, callback, hitDist);
-    if (callback.didHit())
-        hitDown = vectorDown.z - hitDist;
+    impl->intersectZAllignedRay(r, callback, maxSearchDist);
 
-    hitDist = maxSearchDist;
-    G3D::Vector3 vectorUp(x, y, z);
-    G3D::Ray rayUp(vectorUp, G3D::Vector3(0, 0, -1));
-    impl->intersectZAllignedRay(rayUp, callback, hitDist);
     if (callback.didHit())
-        hitUp = vectorUp.z - hitDist;
-
-    return std::fabs(z - hitDown) < std::fabs(z - hitUp) ? hitDown : hitUp;
+        return v.z - maxSearchDist;
+    else
+        return -G3D::finf();
 }

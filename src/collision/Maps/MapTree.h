@@ -78,7 +78,7 @@ namespace VMAP
             Return the hit pos or the original dest pos
             */
             bool getObjectHitPos(const G3D::Vector3& pos1, const G3D::Vector3& pos2, G3D::Vector3& pResultHitPos, float pModifyDist) const;
-            /** Return closest z position for given position within maxSearchDist (search up and down)
+            /** Return closest z position DOWNWARDS for given position within maxSearchDist (search up and down)
             Returns G3D::inf() if no z found
             */
             float getHeight(const G3D::Vector3& pPos, float maxSearchDist) const;
