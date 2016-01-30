@@ -342,7 +342,7 @@ void AuctionHouseMgr::LoadAuctions()
     }
 
     Field *fields = result->Fetch();
-    uint32 AuctionCount=fields[0].GetUInt32();
+    uint32 AuctionCount=fields[0].GetUInt64();
 
     if(!AuctionCount)
     {

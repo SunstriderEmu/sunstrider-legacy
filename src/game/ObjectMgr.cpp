@@ -1236,7 +1236,7 @@ void ObjectMgr::LoadCreatures()
 
         std::string scriptname = fields[18].GetString();
         data.scriptName = scriptname;
-        data.instanceEventId = fields[19].GetUInt64();
+        data.instanceEventId = fields[19].GetDouble();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
@@ -4649,7 +4649,7 @@ void ObjectMgr::LoadInstanceTemplateAddon()
     {
         Field* fields = result->Fetch();
 
-        uint16 mapID = fields[0].GetUInt32();
+        uint16 mapID = fields[0].GetUInt16();
 
         if (!MapManager::IsValidMAP(mapID, false))
         {
@@ -7377,7 +7377,7 @@ void ObjectMgr::LoadGameTele()
         gt.position_y     = fields[2].GetFloat();
         gt.position_z     = fields[3].GetFloat();
         gt.orientation    = fields[4].GetFloat();
-        gt.mapId          = fields[5].GetUInt32();
+        gt.mapId          = fields[5].GetUInt16();
         gt.name           = fields[6].GetString();
 
         if(!MapManager::IsValidMapCoord(gt.mapId,gt.position_x,gt.position_y,gt.position_z,gt.orientation))

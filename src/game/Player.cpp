@@ -1634,7 +1634,7 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
     *p_data << uint8(playerBytes2 & 0xFF);                      // facial hair
     
     *p_data << uint8(fields[7].GetUInt8());                     // level
-    *p_data << uint32(fields[8].GetUInt16());                   // zone
+    *p_data << uint32(fields[8].GetUInt32());                   // zone
     *p_data << uint32(fields[9].GetUInt32());                   // map
 
     *p_data << fields[10].GetFloat();                            // x
@@ -4035,7 +4035,6 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     trans->PAppend("DELETE FROM character_skills WHERE guid = '%u'",guid);
     CharacterDatabase.CommitTransaction(trans);
 
-    //LoginDatabase.PExecute("UPDATE realmcharacters SET numchars = numchars - 1 WHERE acctid = %d AND realmid = %d", accountId, realmID);
     if(updateRealmChars) 
         sWorld->UpdateRealmCharCount(accountId);
 }
@@ -14967,7 +14966,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         SetMapId(fields[LOAD_DATA_MAP].GetUInt32()); 
     }
 
-    SetDifficulty(fields[LOAD_DATA_DUNGEON_DIFF].GetUInt32());                  // may be changed in _LoadGroup
+    SetDifficulty(fields[LOAD_DATA_DUNGEON_DIFF].GetUInt8());                  // may be changed in _LoadGroup
     
 
     // Experience Blocking
@@ -15875,7 +15874,7 @@ void Player::_LoadMailInit(QueryResult resultUnread, QueryResult resultDelivery)
     if (resultUnread)
     {
         Field *fieldMail = resultUnread->Fetch();
-        unReadMails = fieldMail[0].GetUInt8();
+        unReadMails = fieldMail[0].GetUInt64();
     }
 
     // store nearest delivery time (it > 0 and if it < current then at next player update SendNewMaill will be called)

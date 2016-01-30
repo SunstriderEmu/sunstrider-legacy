@@ -341,7 +341,7 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
     {
         Field *fields = result->Fetch();
         MemberSlot newmember;
-        newmember.RankId = fields[1].GetUInt32();
+        newmember.RankId = fields[1].GetUInt8();
         uint64 guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
         // Player does not exist
@@ -396,9 +396,9 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
         Field *fields = result->Fetch();
 
         plName = fields[0].GetString();
-        plLevel = fields[1].GetUInt32();
+        plLevel = fields[1].GetUInt8();
         plZone = fields[2].GetUInt32();
-        plClass = fields[3].GetUInt32();
+        plClass = fields[3].GetUInt8();
 
         if(plLevel<1||plLevel>STRONG_MAX_LEVEL)             // can be at broken `data` field
         {

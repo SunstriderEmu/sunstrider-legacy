@@ -520,7 +520,7 @@ void SpellMgr::LoadSpellAffects()
     {
         Field *fields = result->Fetch();
 
-        uint16 entry = fields[0].GetUInt16();
+        uint16 entry = fields[0].GetUInt32();
         uint8 effectId = fields[1].GetUInt8();
 
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(entry);

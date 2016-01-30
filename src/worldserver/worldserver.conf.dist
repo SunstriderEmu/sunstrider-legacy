@@ -966,6 +966,7 @@ GM.AllowFriend      = 0
 #        Visible distance for gameobject, dynobject, bodies, corpses, bones
 #        (players/unit visibility distance is only determined by Visibility.Distance.Continents/Instances/BGArenas)
 #        Min limit is iteraction distance (5)
+#        Max 323
 #
 #    Visibility.Distance.InFlight
 #        Visible distance for player in flight
@@ -1731,6 +1732,7 @@ BuggyQuests.AutoComplete = 0
 #   IRC.Commands
 #       Enable ingame command to be available in IRC. (start command with ! instead of . )
 #       Default: 0 (Disabled)
+#
 #   IRC.CharGUID
 #       Character name to show for in game message
 #

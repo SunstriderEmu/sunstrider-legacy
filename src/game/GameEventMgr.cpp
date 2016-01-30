@@ -229,8 +229,8 @@ void GameEventMgr::LoadFromDB()
         pGameEvent.start        = time_t(starttime);
         uint64 endtime          = fields[2].GetUInt64();
         pGameEvent.end          = time_t(endtime);
-        pGameEvent.occurence    = fields[3].GetUInt32();
-        pGameEvent.length       = fields[4].GetUInt32();
+        pGameEvent.occurence    = fields[3].GetUInt64();
+        pGameEvent.length       = fields[4].GetUInt64();
         pGameEvent.description  = fields[5].GetString();
         pGameEvent.state        = (GameEventState)(fields[6].GetUInt8());
         pGameEvent.nextstart    = 0;
@@ -354,13 +354,13 @@ void GameEventMgr::LoadFromDB()
             Field *fields = result->Fetch();
 
             uint32 guid    = fields[0].GetUInt32();
-            int16 event_id = fields[1].GetInt16();
+            int32 event_id = fields[1].GetInt32();
 
             int32 internal_event_id = mGameEvent.size() + event_id - 1;
 
             if(internal_event_id < 0 || internal_event_id >= mGameEventCreatureGuids.size())
             {
-                TC_LOG_ERROR("sql.sql","`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`",event_id);
+                TC_LOG_ERROR("sql.sql","`game_event_creature` game event id (%i) is out of range compared to max event id in `game_event`", event_id);
                 continue;
             }
 
