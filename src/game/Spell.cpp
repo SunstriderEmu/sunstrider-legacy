@@ -1836,7 +1836,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 default:                            angle = rand_norm()*2*M_PI; break;
             }
 
-            Position pos = m_caster->GetFirstCollisionPosition(dist, angle);
+                Position pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle);
             m_targets.SetDestination(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
             break;
         }
@@ -4257,7 +4257,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!target)
                     return SPELL_FAILED_DONT_REPORT;
 
-                Position pos = target->GetFirstCollisionPosition(target->GetObjectSize(), target->GetRelativeAngle(m_caster));
+                Position pos = target->GetFirstWalkableCollisionPosition(target->GetObjectSize(), target->GetRelativeAngle(m_caster));
                 m_preGeneratedPath.SetPathLengthLimit(m_spellInfo->GetMaxRange(false, m_caster) *1.4f);
                 bool result = m_preGeneratedPath.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize(), false, false);
 
@@ -4273,7 +4273,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     uint16 pathSize = m_preGeneratedPath.GetPath().size();
                     G3D::Vector3 beforeLastPointV = m_preGeneratedPath.GetPath()[pathSize-2];
                     const Position beforeLastPointP { beforeLastPointV.x, beforeLastPointV.y, beforeLastPointV.z, 0.0f };
-                    const Position newLastPoint = target->GetFirstCollisionPosition(CONTACT_DISTANCE*3, target->GetRelativeAngle(&beforeLastPointP));
+                    const Position newLastPoint = target->GetFirstWalkableCollisionPosition(CONTACT_DISTANCE*3, target->GetRelativeAngle(&beforeLastPointP));
                     //Recreate a path to this point
                     result = m_preGeneratedPath.CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetObjectSize(), false, false);
                 }

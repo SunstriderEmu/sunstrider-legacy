@@ -1187,6 +1187,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
 
         if (fabs(z - ground_z) < maxDist) //if difference is within max dist
             z = ground_z;
+        //else, no ground found, keep the z position as is
     }
     else
     {
@@ -1631,10 +1632,10 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
 }
 
 // angle = relative angle from current orientation
-Position WorldObject::GetFirstCollisionPosition(float dist, float angle, bool keepZ)
+Position WorldObject::GetFirstWalkableCollisionPosition(float dist, float angle, bool keepZ)
 {
     Position pos = GetPosition();
-    MovePositionToFirstCollision(pos, dist, angle, keepZ);
+    MovePositionToFirstWalkableCollision(pos, dist, angle, keepZ);
     return pos;
 }
 
@@ -1671,7 +1672,7 @@ float NormalizeZforCollision(WorldObject* obj, float x, float y, float z)
     return helper;
 }
 
-void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float angle, bool keepZ)
+void WorldObject::MovePositionToFirstWalkableCollision(Position &pos, float dist, float angle, bool keepZ)
 {
     angle += GetOrientation();
     float destx, desty, destz;
@@ -1681,19 +1682,18 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
     {
-        TC_LOG_ERROR("vmap","WorldObject::MovePositionToFirstCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
+        TC_LOG_ERROR("vmap","WorldObject::MovePositionToFirstWalkableCollision invalid coordinates X: %f and Y: %f were passed!", destx, desty);
         return;
     }
-
     
     destz = pos.m_positionZ;
     if(!keepZ)
         UpdateAllowedPositionZ(destx, desty, destz, dist);
 
-    TC_LOG_DEBUG("vmap", "WorldObject::MovePositionToFirstCollision: Called with %f,%f. Target Z set to %f.", destx, desty, destz);
+    TC_LOG_DEBUG("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Called with %f,%f. Target Z set to %f.", destx, desty, destz);
     
     // check static collision (terrain + WMO + MDX ?)
-    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getLeapHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
+    bool col = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), pos.m_positionX, pos.m_positionY, pos.m_positionZ + 0.5f, destx, desty, destz + 0.5f, destx, desty, destz, -0.5f);
 
     // collision occured
     if (col)
@@ -1702,7 +1702,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         destx -= CONTACT_DISTANCE * std::cos(angle);
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
-        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Static collision occured at %f, %f, %f", destx, desty, destz);
+        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Static collision occured at %f, %f, %f", destx, desty, destz);
     }
 
     // check dynamic collision
@@ -1714,7 +1714,7 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         destx -= CONTACT_DISTANCE * std::cos(angle);
         desty -= CONTACT_DISTANCE * std::sin(angle);
         dist = sqrt((pos.m_positionX - destx)*(pos.m_positionX - destx) + (pos.m_positionY - desty)*(pos.m_positionY - desty));
-        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Dynamic collision occured at %f, %f, %f", destx, desty, destz);
+        TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Dynamic collision occured at %f, %f, %f", destx, desty, destz);
     }
 
     float step = dist / 10.0f;
@@ -1734,17 +1734,19 @@ void WorldObject::MovePositionToFirstCollision(Position &pos, float dist, float 
         else
         {
             pos.Relocate(destx, desty, destz);
-            TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Found a suitable position after %u steps", j);
+            TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Found a suitable position after %u steps", j);
             break;
         }
     }
 
     Trinity::NormalizeMapCoord(pos.m_positionX);
     Trinity::NormalizeMapCoord(pos.m_positionY);
-    UpdateAllowedPositionZ(destx, desty, pos.m_positionZ, dist);
+    if (!keepZ)
+        UpdateAllowedPositionZ(destx, desty, pos.m_positionZ, dist);
+
     pos.SetOrientation(GetOrientation());
 
-    TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstCollision: Final target: %f, %f, %f", destx, desty, destz);
+    TC_LOG_TRACE("vmap", "WorldObject::MovePositionToFirstWalkableCollision: Final target: %f, %f, %f", destx, desty, destz);
 }
 
 bool Position::HasInArc(float arc, const Position *obj, float border) const

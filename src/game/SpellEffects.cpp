@@ -6567,7 +6567,7 @@ void Spell::EffectSummonTotem(uint32 i)
 
     pTotem->Relocate(dx, dy, dz, m_caster->GetOrientation());
     */
-    Position pos = m_caster->GetFirstCollisionPosition(4.5f, angle);
+    Position pos = m_caster->GetFirstWalkableCollisionPosition(4.5f, angle);
     pTotem->Relocate(pos);
 
     if(slot < MAX_TOTEM)
@@ -7025,7 +7025,7 @@ void Spell::EffectCharge(uint32 i)
     // Spell is not using explicit target - no generated path
     if (m_preGeneratedPath.GetPathType() == PATHFIND_BLANK)
     {
-        Position pos = unitTarget->GetFirstCollisionPosition(unitTarget->GetObjectSize(), unitTarget->GetRelativeAngle(m_caster));
+        Position pos = unitTarget->GetFirstWalkableCollisionPosition(unitTarget->GetObjectSize(), unitTarget->GetRelativeAngle(m_caster));
         m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speed);
     }
     else

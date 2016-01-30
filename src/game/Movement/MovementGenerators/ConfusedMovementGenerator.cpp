@@ -83,7 +83,7 @@ bool ConfusedMovementGenerator<T>::DoUpdate(T* unit, uint32 diff)
 
             Position pos;
             pos.Relocate(i_x, i_y, i_z);
-            unit->MovePositionToFirstCollision(pos, dest, 0.0f);
+            unit->MovePositionToFirstWalkableCollision(pos, dest, 0.0f);
 
             PathGenerator path(unit);
             path.SetPathLengthLimit(30.0f);

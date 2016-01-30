@@ -82,7 +82,7 @@ typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 
 struct Position
 {
-    Position(float x = 0, float y = 0, float z = 0, float o = 0)
+    Position(float x = 0.0f, float y = 0.0f, float z = 0.0f, float o = 0.0f)
         : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
 
     Position(const WorldObject* obj);
@@ -536,8 +536,13 @@ class WorldObject : public Object, public WorldLocation
             // angle to face `obj` to `this` using distance includes size of `obj`
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
         }
-        Position GetFirstCollisionPosition(float dist, float angle, bool keepZ = false);
-        void MovePositionToFirstCollision(Position &pos, float dist, float angle, bool keepZ = false);
+        /* get first collision position with ground or valid terrain under it. Trinity name : GetFirstCollisionPosition
+           angle = relative angle from current orientation */
+        Position GetFirstWalkableCollisionPosition(float dist, float angle, bool keepZ = false);
+        /** move to first collision position with ground or valid terrain under it
+            angle = relative angle from current orientation
+        */
+        void MovePositionToFirstWalkableCollision(Position &pos, float dist, float angle, bool keepZ = false);
         Position GetRandomNearPosition(float radius);
         Position GetNearPosition(float dist, float angle);
 
@@ -625,7 +630,9 @@ class WorldObject : public Object, public WorldLocation
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
 
+        //Get unit map. Will create map if it is not created yet.
         Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
+        //Get unit map. May return null if map is not created yet.
         Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->FindBaseMap(); }
         Map const* GetBaseMap() const;
         Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN,uint32 despwtime = 0) const;
