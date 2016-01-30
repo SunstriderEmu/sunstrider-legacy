@@ -1639,7 +1639,7 @@ bool ChatHandler::needReportToTarget(Player* chr) const
 
 LocaleConstant ChatHandler::GetSessionDbcLocale() const
 {
-    return m_session->GetSessionDbcLocale();
+    return m_session ? m_session->GetSessionDbcLocale() : LOCALE_enUS;
 }
 
 const char *CliHandler::GetTrinityString(int32 entry) const

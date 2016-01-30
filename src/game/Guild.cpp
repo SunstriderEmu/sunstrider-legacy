@@ -382,33 +382,33 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     if(pl)
     {
         accountId = pl->GetSession()->GetAccountId();
-        plName  = pl->GetName();
-        plLevel = pl->GetLevel();
-        plClass = pl->GetClass();
-        plZone  = pl->GetZoneId();
+        plName  =   pl->GetName();
+        plLevel =   pl->GetLevel();
+        plClass =   pl->GetClass();
+        plZone  =   pl->GetZoneId();
     }
     else
     {
-        QueryResult result = CharacterDatabase.PQuery("SELECT name,level,zone,class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+        QueryResult result = CharacterDatabase.PQuery("SELECT name, level, zone, class FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
         if(!result)
             return false;                                   // player doesn't exist
 
         Field *fields = result->Fetch();
 
-        plName = fields[0].GetString();
+        plName =  fields[0].GetString();
         plLevel = fields[1].GetUInt8();
-        plZone = fields[2].GetUInt32();
+        plZone =  fields[2].GetUInt32();
         plClass = fields[3].GetUInt8();
 
         if(plLevel<1||plLevel>STRONG_MAX_LEVEL)             // can be at broken `data` field
         {
-            TC_LOG_ERROR("FIXME","Player (GUID: %u) has a broken data in field `characters`.`data`.",GUID_LOPART(guid));
+            TC_LOG_ERROR("sql.sql","Player (GUID: %u) has a broken data in field `characters`.`data`.",GUID_LOPART(guid));
             return false;
         }
 
         if(!plZone)
         {
-            TC_LOG_ERROR("FIXME","Player (GUID: %u) has broken zone-data",GUID_LOPART(guid));
+            TC_LOG_ERROR("sql.sql","Player (GUID: %u) has broken zone-data",GUID_LOPART(guid));
             //here it will also try the same, to get the zone from characters-table, but additional it tries to find
             plZone = Player::GetZoneIdFromDB(guid);
             //the zone through xy coords.. this is a bit redundant, but
@@ -417,7 +417,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 
         if(plClass<CLASS_WARRIOR||plClass>=MAX_CLASSES)     // can be at broken `class` field
         {
-            TC_LOG_ERROR("FIXME","Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
+            TC_LOG_ERROR("sql.sql","Player (GUID: %u) has a broken data in field `characters`.`class`.",GUID_LOPART(guid));
             return false;
         }
     }

@@ -1450,10 +1450,6 @@ float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*
     return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));
 }
 
-/* Returns closest height for given position, search in map height.
-@checkVMap serach in vmap height as well. If both map and vmap heights were found, the closest one will be returned
-Returns INVALID_HEIGHT if no height found at position or if height is further than maxSearchDist
-*/
 float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/) const
 {
     // find raw .map surface under Z coordinates

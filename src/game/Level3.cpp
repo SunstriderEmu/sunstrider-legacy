@@ -2850,8 +2850,6 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
 
     uint32 counter = 0;                                     // Counter for figure out that we found smth.
 
-    // Search in Spell.dbc
-    //for (uint32 id = 0; id < sSpellStore.GetNumRows(); id++)
     for (uint32 id = 0; id < sObjectMgr->GetSpellStore().size(); id++)
     {
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
@@ -2862,14 +2860,12 @@ bool ChatHandler::HandleGetSpellInfoCommand(const char* args)
             if(name.empty())
                 continue;
 
+            //if name is not valid, try every locales until we find one valid
             if (!Utf8FitTo(name, wnamepart))
             {
                 loc = 0;
                 for(; loc < TOTAL_LOCALES; ++loc)
                 {
-                    if(GetSessionDbcLocale())
-                        continue;
-
                     name = spellInfo->SpellName[loc];
                     if(name.empty())
                         continue;
