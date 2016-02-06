@@ -251,7 +251,8 @@ class SmartGameObjectAI : public GameObjectAI
         void SetData(uint32 id, uint32 value) override;
         void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker); //FIXME
         void OnGameEvent(bool start, uint16 eventId); //FIXME
-        void OnStateChanged(uint32 state, Unit* unit); //FIXME
+        void OnStateChanged(GOState state, Unit* unit) override;
+        void OnLootStateChanged(LootState state, Unit* unit) override;
         void EventInform(uint32 eventId); //FIXME
 
     private:

@@ -3408,6 +3408,15 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         {
             if (e.event.goStateChanged.state != var0)
                 return;
+
+            ProcessAction(e, unit, var0, var1);
+            break;
+        }
+        case SMART_EVENT_GO_LOOT_STATE_CHANGED:
+        {
+            if (((1 << var0) & e.event.goLootStateChanged.stateMask) == 0)
+                return;
+
             ProcessAction(e, unit, var0, var1);
             break;
         }

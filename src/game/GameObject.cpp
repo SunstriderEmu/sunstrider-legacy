@@ -269,7 +269,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     m_model = CreateModel();
     
     SetGoType(GameobjectTypes(goinfo->type));
-    SetGoState(go_state);
+    SetGoState(GOState(go_state));
 
     switch (goinfo->type)
     {
@@ -822,6 +822,10 @@ void GameObject::DeleteFromDB()
 void GameObject::SetLootState(LootState state, Unit* unit)
 {
     m_lootState = state;
+
+    if(AI())
+        AI()->OnLootStateChanged(state, unit);
+
     /*if (m_model)
     {
         // startOpen determines whether we are going to add or remove the LoS on activation
@@ -845,9 +849,12 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     }*/
 }
 
-void GameObject::SetGoState(uint32 state)
+void GameObject::SetGoState(GOState state)
 {
     SetUInt32Value(GAMEOBJECT_STATE, state);
+    if(AI())
+        AI()->OnStateChanged(state, nullptr);
+
     if (m_model && !IsTransport())
     {
         if (!IsInWorld())
@@ -893,9 +900,13 @@ void GameObject::UpdateModel()
     if (!IsInWorld())
         return;
     if (m_model)
+    {
         if (GetMap()->ContainsGameObjectModel(*m_model))
             GetMap()->RemoveGameObjectModel(*m_model);
-    delete m_model;
+
+        delete m_model;
+    }
+
     m_model = CreateModel();
     if (m_model)
         GetMap()->InsertGameObjectModel(*m_model);

@@ -1445,6 +1445,11 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
     return INVALID_HEIGHT;
 }
 
+bool Map::GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, float maxSearchDist) const
+{
+    return false; //TODO
+}
+
 float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/) const
 {
     return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));

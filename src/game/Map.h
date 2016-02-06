@@ -182,6 +182,7 @@ class Map : public GridRefManager<NGridType>
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         //Returns INVALID_HEIGHT if nothing found
         float GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
+        bool GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
         void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}

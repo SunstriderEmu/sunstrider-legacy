@@ -349,7 +349,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
         return false;
     }
     // in SMART_SCRIPT_TYPE_TIMED_ACTIONLIST all event types are overriden by core
-    if (e.GetScriptType() != SMART_SCRIPT_TYPE_TIMED_ACTIONLIST && !(SmartAIEventMask[e.event.type][1] & SmartAITypeMask[e.GetScriptType()][1]))
+    if (e.GetScriptType() != SMART_SCRIPT_TYPE_TIMED_ACTIONLIST && !(SmartAIEventMask.at(e.event.type) & SmartAITypeMask.at(e.GetScriptType())))
     {
         SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: EntryOrGuid %d, event type %u can not be used for Script type %u", e.entryOrGuid, e.GetEventType(), e.GetScriptType());
         return false;

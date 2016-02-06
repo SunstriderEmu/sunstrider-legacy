@@ -68,8 +68,7 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
     return 10;                                              // unknown
 }
 
-Object::Object( ) :
-    m_PackGUID(sizeof(uint64)+1)
+Object::Object() : m_PackGUID(sizeof(uint64)+1)
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
@@ -1629,6 +1628,39 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     Trinity::NormalizeMapCoord(x);
     Trinity::NormalizeMapCoord(y);
     UpdateGroundPositionZ(x, y, z);
+}
+
+bool WorldObject::GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float moveBackDistance)
+{
+    float vmapHit_x, vmapHit_y, vmapHit_z;
+    float mapHit_x, mapHit_y, mapHit_z;
+
+    bool colVMap = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, vmapHit_x, vmapHit_y, vmapHit_z, moveBackDistance);
+    bool colMap = GetMap()->getObjectHitPos(GetPhaseMask(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, mapHit_x, mapHit_y, mapHit_z, moveBackDistance);
+
+    if (colVMap && !colMap)
+    {
+        resultPos.Relocate(vmapHit_x, vmapHit_y, vmapHit_z);
+        return true;
+    }
+    if (!colVMap && colMap)
+    {
+        resultPos.Relocate(mapHit_x, mapHit_y, mapHit_z);
+        return true;
+    }
+    if (colVMap && colMap)
+    {
+        if(GetDistance(vmapHit_x, vmapHit_y, vmapHit_z) < GetDistance(mapHit_x, mapHit_y, mapHit_z))
+            resultPos.Relocate(vmapHit_x, vmapHit_y, vmapHit_z);
+        else
+            resultPos.Relocate(mapHit_x, mapHit_y, mapHit_z);
+
+        return true;
+    }
+
+    resultPos.Relocate(x, y, z);
+    //no collision at all
+    return false;
 }
 
 // angle = relative angle from current orientation

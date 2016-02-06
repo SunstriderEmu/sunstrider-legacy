@@ -1821,14 +1821,21 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             else if(cur == TARGET_DEST_CASTER_RANDOM)
               dist = objSize + (dist - objSize) * m_caster->GetMap()->rand_norm();
 
+            bool calcPos = true;
+            Position pos;
+
             switch(cur)
             {
+                //special case for leap
+                case TARGET_DEST_CASTER_FRONT_LEAP:
+                    pos = m_caster->GetLeapPosition(dist);
+                    calcPos = false;
+                    break;
                 case TARGET_DEST_CASTER_FRONT_LEFT: angle = -M_PI/4;    break;
                 case TARGET_DEST_CASTER_BACK_LEFT:  angle = -3*M_PI/4;  break;
                 case TARGET_DEST_CASTER_BACK_RIGHT: angle = 3*M_PI/4;   break;
                 case TARGET_DEST_CASTER_FRONT_RIGHT:angle = M_PI/4;     break;
                 case TARGET_DEST_CASTER_SUMMON:
-                case TARGET_DEST_CASTER_FRONT_LEAP:
                 case TARGET_DEST_CASTER_FRONT:      angle = 0.0f;       break;
                 case TARGET_DEST_CASTER_BACK:       angle = M_PI;       break;
                 case TARGET_DEST_CASTER_RIGHT:      angle = M_PI/2;     break;
@@ -1836,7 +1843,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 default:                            angle = rand_norm()*2*M_PI; break;
             }
 
-                Position pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle);
+            if(calcPos)
+                pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle);
+
             m_targets.SetDestination(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
             break;
         }

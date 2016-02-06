@@ -2205,7 +2205,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
     result=CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM character_inventory WHERE item_template='%u'",item_id);
     if(result)
     {
-        inv_count = (*result)[0].GetUInt32();
+        inv_count = (*result)[0].GetUInt64();
     }
 
     result=CharacterDatabase.PQuery(
@@ -2416,7 +2416,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM gameobject WHERE id='%u'",go_id);
     if(result)
     {
-        obj_count = (*result)[0].GetUInt32();
+        obj_count = (*result)[0].GetUInt64();
     }
 
     if(m_session)
@@ -2560,7 +2560,7 @@ bool ChatHandler::HandleObjectStateCommand(const char* args)
     if(state < 0)
         gobj->SendObjectDeSpawnAnim(gobj->GetGUID());
     else
-        gobj->SetGoState(state);
+        gobj->SetGoState(GOState(state));
 
     return true;
 

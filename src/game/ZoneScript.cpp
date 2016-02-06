@@ -35,7 +35,7 @@ void ZoneScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
     if(!go)
         go = instance->GetGameObject(GUID);
     if(go)
-        go->SetGoState(open ? 0 : 1);
+        go->SetGoState(GOState(open ? 0 : 1));
     else
         TC_LOG_ERROR("FIXME","ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }

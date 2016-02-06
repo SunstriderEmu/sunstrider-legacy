@@ -340,7 +340,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
                 uint32 go_max = go->GetGOInfo()->chest.maxSuccessOpens;
 
                 // only vein pass this check
-                if(go_min != 0 && go_max > go_min)
+                if (go_min != 0 && go_max > go_min)
                 {
                     float amount_rate = sWorld->GetRate(RATE_MINING_AMOUNT);
                     float min_amount = go_min*amount_rate;
@@ -349,53 +349,53 @@ void WorldSession::DoLootRelease( uint64 lguid )
                     go->AddUse();
                     float uses = float(go->GetUseCount());
 
-                    if(uses < max_amount)
+                    if (uses < max_amount)
                     {
-                        if(uses >= min_amount)
+                        if (uses >= min_amount)
                         {
                             float chance_rate = sWorld->GetRate(RATE_MINING_NEXT);
 
                             int32 ReqValue = 175;
                             LockEntry const *lockInfo = sLockStore.LookupEntry(go->GetGOInfo()->chest.lockId);
-                            if(lockInfo)
+                            if (lockInfo)
                                 ReqValue = lockInfo->requiredminingskill;
-                            float skill = float(player->GetSkillValue(SKILL_MINING))/(ReqValue+25);
-                            double chance = pow(0.8*chance_rate,4*(1/double(max_amount))*double(uses));
-                            if(roll_chance_f(100*chance+skill))
+                            float skill = float(player->GetSkillValue(SKILL_MINING)) / (ReqValue + 25);
+                            double chance = pow(0.8*chance_rate, 4 * (1 / double(max_amount))*double(uses));
+                            if (roll_chance_f(100 * chance + skill))
                             {
-                                go->SetLootState(GO_READY);
+                                go->SetLootState(GO_READY, player);
                             }
                             else                            // not have more uses
-                                go->SetLootState(GO_JUST_DEACTIVATED);
+                                go->SetLootState(GO_JUST_DEACTIVATED, player);
                         }
                         else                                // 100% chance until min uses
-                            go->SetLootState(GO_READY);
+                            go->SetLootState(GO_READY, player);
                     }
                     else                                    // max uses already
-                        go->SetLootState(GO_JUST_DEACTIVATED);
+                        go->SetLootState(GO_JUST_DEACTIVATED, player);
                 }
                 else                                        // not vein
-                    go->SetLootState(GO_JUST_DEACTIVATED);
+                    go->SetLootState(GO_JUST_DEACTIVATED, player);
             }
             else if (go->GetGoType() == GAMEOBJECT_TYPE_FISHINGHOLE)
             {                                               // The fishing hole used once more
                 go->AddUse();                               // if the max usage is reached, will be despawned in next tick
                 if (go->GetUseCount()>=irand(go->GetGOInfo()->fishinghole.minSuccessOpens,go->GetGOInfo()->fishinghole.maxSuccessOpens))
                 {
-                    go->SetLootState(GO_JUST_DEACTIVATED);
+                    go->SetLootState(GO_JUST_DEACTIVATED, player);
                 }
                 else
-                    go->SetLootState(GO_READY);
+                    go->SetLootState(GO_READY, player);
             }
             else // not chest (or vein/herb/etc)
-                go->SetLootState(GO_JUST_DEACTIVATED);
+                go->SetLootState(GO_JUST_DEACTIVATED, player);
 
             loot->clear();
         }
         else
         {
             // not fully looted object
-            go->SetLootState(GO_ACTIVATED);
+            go->SetLootState(GO_ACTIVATED, player);
 
             // if the round robin player release, reset it.
             if (player->GetGUID() == loot->roundRobinPlayer)

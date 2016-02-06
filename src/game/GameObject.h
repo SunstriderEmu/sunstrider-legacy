@@ -599,7 +599,7 @@ class GameObject : public WorldObject
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetUInt32Value(GAMEOBJECT_TYPE_ID)); }
         void SetGoType(GameobjectTypes type) { SetUInt32Value(GAMEOBJECT_TYPE_ID, type); }
         uint32 GetGoState() const { return GetUInt32Value(GAMEOBJECT_STATE); }
-        void SetGoState(uint32 state);
+        void SetGoState(GOState state);
         uint32 GetGoArtKit() const { return GetUInt32Value(GAMEOBJECT_ARTKIT); }
         void SetGoArtKit(uint32 artkit);
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }

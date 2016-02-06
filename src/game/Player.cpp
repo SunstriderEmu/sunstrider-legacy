@@ -7917,7 +7917,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             if(loot_type == LOOT_FISHING)
                 go->getFishLoot(loot);
 
-            go->SetLootState(GO_ACTIVATED);
+            go->SetLootState(GO_ACTIVATED, this);
         }
     }
     else if (IS_ITEM_GUID(guid))
