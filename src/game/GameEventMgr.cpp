@@ -1382,9 +1382,13 @@ void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
-bool GameEventMgr::AddCreatureToEvent(uint32 guid, uint16 event_id)
+bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
 { 
-    if(!guid || !event_id || event_id >= mGameEvent.size())
+    if(!guid || !event_id)
+        return false;
+
+    if ((event_id > 0 && event_id >= int32(mGameEvent.size()))
+        || (event_id < 0 && -event_id >= int32(mGameEvent.size())))
         return false;
 
     //Check if creature already linked to an event
@@ -1416,9 +1420,13 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, uint16 event_id)
 
     return true; 
 }
-bool GameEventMgr::AddGameObjectToEvent(uint32 guid, uint16 event_id)
+bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
 {
-    if(!guid || !event_id || event_id >= mGameEvent.size())
+    if(!guid || !event_id)
+        return false;
+
+    if (   (event_id > 0 && event_id >= int32(mGameEvent.size()))
+        || (event_id < 0 && -event_id >= int32(mGameEvent.size())))
         return false;
 
     //Check if creature already linked to an event
@@ -1461,7 +1469,7 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
     if (!event_id)
         return false;
 
-    //Add to gameevent creature map
+    //remove to gameevent creature map
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
     GuidList& crelist = mGameEventCreatureGuids[internal_event_id];
     crelist.remove(guid);

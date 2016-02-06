@@ -8500,7 +8500,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
         PSendSysMessage("Gobject (guid: %u) is now linked to the event %i.",gobGUID,event);
     else
         //PSendSysMessage("Erreur : Le gobject (guid : %u) n'a pas pu être lié à l'event %d (event inexistant ?).",gobGUID,event);
-        PSendSysMessage("Error: gobject (guid: %u) could not be linked to the event %d (event nonexistent).",gobGUID,event);
+        PSendSysMessage("Error: gobject (guid: %u) could not be linked to the event %d (event nonexistent?).",gobGUID,event);
 
     return true;
 }

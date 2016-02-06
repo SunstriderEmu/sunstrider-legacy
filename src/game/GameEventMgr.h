@@ -113,10 +113,14 @@ class GameEventMgr
         void StopEvent(uint16 event_id, bool overwrite = false);
         void HandleQuestComplete(uint32 quest_id);  // called on world event type quest completions
         uint32 GetNPCFlag(Creature * cr);
-        /* Add a creature of given guid to an event (both in DB + in live memory). Return success.*/
-        bool AddCreatureToEvent(uint32 guid, uint16 event_id);
-        /* Add a gobject of given guid to an event (both in DB + in live memory). Return success. */
-        bool AddGameObjectToEvent(uint32 guid, uint16 event_id);
+        /* Add a creature of given guid to an event (both in DB + in live memory). Return success.
+        Event can be negative to have the creature spawned when event is inactive.
+        */
+        bool AddCreatureToEvent(uint32 guid, int16 event_id);
+        /* Add a gobject of given guid to an event (both in DB + in live memory). 
+        Event can be negative to have the gameobject spawned when event is inactive.
+        Return success. */
+        bool AddGameObjectToEvent(uint32 guid, int16 event_id);
         /* Remove a creature of given guid from all events (both in DB + in live memory). Return success. */
         bool RemoveCreatureFromEvent(uint32 guid);
         /* Remove a gameobject of given guid from all events (both in DB + in live memory). Return success. */
