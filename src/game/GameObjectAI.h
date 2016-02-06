@@ -26,8 +26,8 @@
 #include "GameObject.h"
 
 //class GameObject;
-enum GOState;
-enum LootState;
+enum GOState: uint32;
+enum LootState: uint32;
 
 class GameObjectAI
 {

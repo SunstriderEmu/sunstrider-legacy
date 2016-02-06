@@ -452,7 +452,7 @@ struct GameObjectLocale
 };
 
 // client side GO show states
-enum GOState
+enum GOState: uint32
 {
     GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
@@ -490,7 +490,7 @@ struct GameObjectData
 // For bobber:      GO_NOT_READY  ->GO_READY (close)->GO_ACTIVATED (open) ->GO_JUST_DEACTIVATED-><deleted>
 // For door(closed):[GO_NOT_READY]->GO_READY (close)->GO_ACTIVATED (open) ->GO_JUST_DEACTIVATED->GO_READY(close) -> ...
 // For door(open):  [GO_NOT_READY]->GO_READY (open) ->GO_ACTIVATED (close)->GO_JUST_DEACTIVATED->GO_READY(open)  -> ...
-enum LootState
+enum LootState: uint32
 {
     GO_NOT_READY = 0,
     GO_READY,                                               // can be ready but despawned, and then not possible activate until spawn
