@@ -2458,9 +2458,12 @@ bool ChatHandler::HandleNpcNearCommand(const char* args)
     uint32 count = 0;
 
     Player* pl = m_session->GetPlayer();
-    QueryResult result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
+    QueryResult result = WorldDatabase.PQuery("SELECT c.guid, id, position_x, position_y, position_z, map, gec.event, "
         "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
-        "FROM creature WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' ORDER BY order_",
+        "FROM creature c " 
+        "LEFT JOIN game_event_creature gec ON g.guid = gec.guid "
+        "WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' " 
+        "ORDER BY order_",
         pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),
         pl->GetMapId(),pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),distance*distance);
 
@@ -2475,12 +2478,15 @@ bool ChatHandler::HandleNpcNearCommand(const char* args)
             float y = fields[3].GetFloat();
             float z = fields[4].GetFloat();
             int mapid = fields[5].GetUInt16();
+            int linked_event = fields[6].GetInt16();
 
             CreatureTemplate const * cInfo = sObjectMgr->GetCreatureTemplate(entry);
             if(!cInfo)
                 continue;
 
             PSendSysMessage("guid %u, id %u - |cffffffff|Hcreature:%d|h[%s X:%f Y:%f Z:%f MapId:%d]|h|r", guid, entry, guid, cInfo->Name.c_str(), x, y, z, mapid);
+            if (linked_event)
+                PSendSysMessage("Linked event: %i", linked_event);
 
             ++count;
         } while (result->NextRow());
@@ -2496,9 +2502,12 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
     uint32 count = 0;
 
     Player* pl = m_session->GetPlayer();
-    QueryResult result = WorldDatabase.PQuery("SELECT guid, id, position_x, position_y, position_z, map, "
+    QueryResult result = WorldDatabase.PQuery("SELECT g.guid, id, position_x, position_y, position_z, map, geg.event, "
         "(POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ "
-        "FROM gameobject WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' ORDER BY order_",
+        "FROM gameobject g "
+        "LEFT JOIN game_event_gameobject geg ON g.guid = geg.guid "
+        "WHERE map='%u' AND (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) <= '%f' "
+        "ORDER BY order_",
         pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),
         pl->GetMapId(),pl->GetPositionX(), pl->GetPositionY(), pl->GetPositionZ(),distance*distance);
 
@@ -2513,6 +2522,7 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
             float y = fields[3].GetFloat();
             float z = fields[4].GetFloat();
             int mapid = fields[5].GetUInt16();
+            int linked_event = fields[6].GetInt16();
 
             GameObjectTemplate const * gInfo = sObjectMgr->GetGameObjectTemplate(entry);
 
@@ -2520,6 +2530,8 @@ bool ChatHandler::HandleNearObjectCommand(const char* args)
                 continue;
 
             PSendSysMessage(LANG_GO_LIST_CHAT, guid, entry, guid, gInfo->name.c_str(), x, y, z, mapid);
+            if (linked_event)
+                PSendSysMessage("Linked event: %i", linked_event);
 
             ++count;
         } while (result->NextRow());
