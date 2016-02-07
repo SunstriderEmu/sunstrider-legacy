@@ -1401,14 +1401,14 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
     crelist.push_back(guid);
 
     //Save in db
-    WorldDatabase.PQuery("REPLACE INTO game_event_creature VALUES (%u,%i)",guid,event_id);
+    WorldDatabase.PQuery("REPLACE INTO game_event_creature (guid, event) VALUES (%u,%i)",guid,event_id);
 
     //Spawn/Despawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
     if(data)
     {
         Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
-        if(IsActiveEvent(event_id))
+        if(ShouldHaveObjectsSpawned(event_id))
         {
             if(!c || !c->IsInWorld())
                 SpawnCreature(guid);
@@ -1439,14 +1439,14 @@ bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
     crelist.push_back(guid);
 
     //Save in db
-    WorldDatabase.PQuery("REPLACE INTO game_event_gameobject VALUES (%u,%i)",guid,event_id);
+    WorldDatabase.PQuery("REPLACE INTO game_event_gameobject (guid, event) VALUES (%u,%i)",guid,event_id);
 
     //Spawn/Despawn IG if needed
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
     if(data)
     {
         GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
-        if(IsActiveEvent(event_id))
+        if (ShouldHaveObjectsSpawned(event_id))
         {
             if(!go || !go->IsInWorld())
                 SpawnGameObject(guid);
@@ -1487,7 +1487,7 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
     if(data)
     {
         Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
-        if(!IsActiveEvent(event_id) && (!c || !c->IsInWorld()))
+        if(ShouldHaveObjectsSpawned(event_id) && (!c || !c->IsInWorld()))
         {
             SpawnCreature(guid);
         }
@@ -1523,7 +1523,7 @@ bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
     if(data)
     {
         GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
-        if(!IsActiveEvent(event_id) && (!go || !go->IsInWorld()))
+        if(ShouldHaveObjectsSpawned(event_id) && (!go || !go->IsInWorld()))
         {
             SpawnGameObject(guid);
         }
@@ -1601,4 +1601,10 @@ int16 GameEventMgr::GetGameObjectEvent(uint32 guid)
         }
     }
     return 0;
+}
+
+bool GameEventMgr::ShouldHaveObjectsSpawned(int16 event_id)
+{
+    bool activeEvent = IsActiveEvent(std::abs(event_id));
+    return event_id > 0 ? activeEvent : !activeEvent;
 }

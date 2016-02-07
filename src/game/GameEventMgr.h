@@ -135,6 +135,11 @@ class GameEventMgr
         int16 GetCreatureEvent(uint32 guid);
         /* Return an event_id if a given gameobject is linked to game_event system, null otherwise. Can be negative (despawned when event is enabled and vice versa). */
         int16 GetGameObjectEvent(uint32 guid);
+
+        /* just a helper function returning wheter object of this event should be spawned depending if event is active or not
+        Negative events can be used here too.
+        */
+        bool ShouldHaveObjectsSpawned(int16 event_id);
     private:
         void SendWorldStateUpdate(Player * plr, uint16 event_id);
         void AddActiveEvent(uint16 event_id) { m_ActiveEvents.insert(event_id); }
