@@ -1401,7 +1401,7 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
     crelist.push_back(guid);
 
     //Save in db
-    WorldDatabase.PQuery("REPLACE INTO game_event_creature VALUES (%u,%u)",guid,event_id);
+    WorldDatabase.PQuery("REPLACE INTO game_event_creature VALUES (%u,%i)",guid,event_id);
 
     //Spawn/Despawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
@@ -1439,7 +1439,7 @@ bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
     crelist.push_back(guid);
 
     //Save in db
-    WorldDatabase.PQuery("REPLACE INTO game_event_gameobject VALUES (%u,%u)",guid,event_id);
+    WorldDatabase.PQuery("REPLACE INTO game_event_gameobject VALUES (%u,%i)",guid,event_id);
 
     //Spawn/Despawn IG if needed
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
@@ -1471,6 +1471,11 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
 
     //remove to gameevent creature map
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    if (internal_event_id >= mGameEventCreatureGuids.size())
+    {
+        TC_LOG_ERROR("gameevent", "RemoveCreatureFromEvent: Tried to access invalid internal_event_id %i", internal_event_id);
+        return false;
+    }
     GuidList& crelist = mGameEventCreatureGuids[internal_event_id];
     crelist.remove(guid);
 
@@ -1500,8 +1505,13 @@ bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
     if (!event_id)
         return false;
 
-    //Add to gameevent creature map
+    //Remove to gameevent creature map
     int32 internal_event_id = mGameEvent.size() + event_id - 1;
+    if (internal_event_id >= mGameEventGameobjectGuids.size())
+    {
+        TC_LOG_ERROR("gameevent", "RemoveGameObjectFromEvent: Tried to access invalid internal_event_id %i", internal_event_id);
+        return false;
+    }
     GuidList& crelist = mGameEventGameobjectGuids[internal_event_id];
     crelist.remove(guid);
 
