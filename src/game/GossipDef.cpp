@@ -229,6 +229,7 @@ void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 npcGUID)
         data << item.BoxMessage;                        // accept text (related to money) pop up box, 2.0.3
     }
 
+    //save this pos for later, fill it at the end
     size_t count_pos = data.wpos();
     data << uint32(0);                                  // max count 0x20
     uint32 count = 0;

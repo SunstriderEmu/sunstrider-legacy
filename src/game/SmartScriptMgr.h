@@ -1099,7 +1099,7 @@ enum SMARTAI_TARGETS
     SMART_TARGET_HOSTILE_RANDOM_NOT_TOP         = 6,    // Any random target except top threat
     SMART_TARGET_ACTION_INVOKER                 = 7,    // Unit who caused this Event to occur
     SMART_TARGET_POSITION                       = 8,    // use xyz from event params
-    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist (returns only alive creatures)
+    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist
     SMART_TARGET_CREATURE_GUID                  = 10,   // guid, entry
     SMART_TARGET_CREATURE_DISTANCE              = 11,   // CreatureEntry(0any), maxDist
     SMART_TARGET_STORED                         = 12,   // id, uses pre-stored target(list)
