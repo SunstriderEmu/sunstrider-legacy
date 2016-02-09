@@ -308,7 +308,7 @@ namespace VMAP
 
     bool VMapManager2::GetLiquidLevel(uint32 mapId, float x, float y, float z, BaseLiquidTypeMask reqLiquidTypeMask, float& level, float& floor, BaseLiquidType& baseType) const
     {
-        if (!IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LIQUIDSTATUS))
+        if (IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LIQUIDSTATUS))
             return false;
 
         InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
