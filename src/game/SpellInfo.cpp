@@ -738,6 +738,12 @@ uint32 SpellInfo::CalcCastTime(Spell* spell) const
     return (castTime > 0) ? uint32(castTime) : 0;
 }
 
+
+bool SpellInfo::HasInitialAggro() const
+{
+    return !(HasAttribute(SPELL_ATTR1_NO_THREAT) || HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO));
+}
+
 bool SpellInfo::IsAutoRepeatRangedSpell() const
 {
     return HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG);

@@ -221,8 +221,7 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
                 return;
         }
 
-        if (   !(spellInfo->HasAttribute(SPELL_ATTR1_NO_THREAT))
-            && !(spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) )
+        if (  spellInfo->HasInitialAggro() )
            i_check->CombatStart(target);
     }
     

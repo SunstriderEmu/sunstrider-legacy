@@ -457,6 +457,7 @@ public:
     int32 GetMaxDuration() const;
 
     bool IsAutoRepeatRangedSpell() const;
+    bool HasInitialAggro() const;
 
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;

@@ -1130,7 +1130,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     //set target in combat with caster
     if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !m_spellInfo->IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
-        if( !(m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)))
+        if(m_spellInfo->HasInitialAggro())
         {
             m_caster->CombatStart(unit,!m_IsTriggeredSpell); //A triggered spell should not be considered as a pvp action
         }
@@ -1232,7 +1232,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 caster->SetContestedPvP();
                 //caster->UpdatePvP(true);
             }
-            if( unit->IsInCombat() && !(m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) )
+            if( unit->IsInCombat() && m_spellInfo->HasInitialAggro())
             {
                 //threat to current caster instead of original caster
                 m_caster->SetInCombatState(unit->GetCombatTimer() > 0, unit);
@@ -3734,8 +3734,7 @@ void Spell::TakeReagents()
 
 void Spell::HandleFlatThreat()
 {
-    if ((m_spellInfo->AttributesEx  & SPELL_ATTR1_NO_THREAT) ||
-        (m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)))
+    if (m_spellInfo->HasAttribute(SPELL_ATTR1_NO_THREAT))
         return;
 
     int32 flatMod = sSpellMgr->GetSpellThreatModFlat(m_spellInfo);
