@@ -221,12 +221,12 @@ uint16 GridMap::getArea(float x, float y) const
     return _areaMap[lx*16 + ly];
 }
 
-float GridMap::getHeightFromFlat(float /*x*/, float /*y*/) const
+float GridMap::getHeightFromFlat(float /*x*/, float /*y*/, bool /*walkableOnly*/) const
 {
     return _gridHeight;
 }
 
-float GridMap::getHeightFromFloat(float x, float y) const
+float GridMap::getHeightFromFloat(float x, float y, bool walkableOnly) const
 {
     if (!m_V8 || !m_V9)
         return _gridHeight;
@@ -308,7 +308,7 @@ float GridMap::getHeightFromFloat(float x, float y) const
     return a * x + b * y + c;
 }
 
-float GridMap::getHeightFromUint8(float x, float y) const
+float GridMap::getHeightFromUint8(float x, float y, bool walkableOnly) const
 {
     if (!m_uint8_V8 || !m_uint8_V9)
         return _gridHeight;
@@ -375,7 +375,7 @@ float GridMap::getHeightFromUint8(float x, float y) const
     return (float)((a * x) + (b * y) + c)*_gridIntHeightMultiplier + _gridHeight;
 }
 
-float GridMap::getHeightFromUint16(float x, float y) const
+float GridMap::getHeightFromUint16(float x, float y, bool walkableOnly) const
 {
     if (!m_uint16_V8 || !m_uint16_V9)
         return _gridHeight;
@@ -396,7 +396,7 @@ float GridMap::getHeightFromUint16(float x, float y) const
     {
         if (x > y)
         {
-            // 1 triangle (h1, h2, h5 points)
+            // triangle 1 (h1, h2, h5 points)
             int32 h1 = V9_h1_ptr[  0];
             int32 h2 = V9_h1_ptr[129];
             int32 h5 = 2 * m_uint16_V8[x_int*128 + y_int];
@@ -406,7 +406,7 @@ float GridMap::getHeightFromUint16(float x, float y) const
         }
         else
         {
-            // 2 triangle (h1, h3, h5 points)
+            // triangle 2 (h1, h3, h5 points)
             int32 h1 = V9_h1_ptr[0];
             int32 h3 = V9_h1_ptr[1];
             int32 h5 = 2 * m_uint16_V8[x_int*128 + y_int];
@@ -419,7 +419,7 @@ float GridMap::getHeightFromUint16(float x, float y) const
     {
         if (x > y)
         {
-            // 3 triangle (h2, h4, h5 points)
+            // triangle 3 (h2, h4, h5 points)
             int32 h2 = V9_h1_ptr[129];
             int32 h4 = V9_h1_ptr[130];
             int32 h5 = 2 * m_uint16_V8[x_int*128 + y_int];
@@ -429,7 +429,7 @@ float GridMap::getHeightFromUint16(float x, float y) const
         }
         else
         {
-            // 4 triangle (h3, h4, h5 points)
+            // triangle 4 (h3, h4, h5 points)
             int32 h3 = V9_h1_ptr[  1];
             int32 h4 = V9_h1_ptr[130];
             int32 h5 = 2 * m_uint16_V8[x_int*128 + y_int];
@@ -439,6 +439,7 @@ float GridMap::getHeightFromUint16(float x, float y) const
         }
     }
     // Calculate height
+
     return (float)((a * x) + (b * y) + c)*_gridIntHeightMultiplier + _gridHeight;
 }
 

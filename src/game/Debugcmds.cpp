@@ -933,6 +933,34 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     return true;
 }
 
+/* Syntax: .debug mapheight [walkableOnly] [teleport] */
+bool ChatHandler::HandleDebugMapHeight(const char* args)
+{
+    bool walkableOnly = false;
+    bool teleport = false;
+
+    char* sWalkableOnly = strtok((char*)args, " ");
+    char* sTeleport = strtok(NULL, " ");
+    if(sWalkableOnly)
+        walkableOnly = atoi(sWalkableOnly);
+    if(sTeleport)
+        teleport = atoi(sTeleport);
+
+    Player* p = GetSession()->GetPlayer();
+    float mapHeight = p->GetMap()->GetHeight(PhaseMask(1), p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), true, 100.0f, walkableOnly);
+    if (mapHeight == INVALID_HEIGHT)
+    {
+        SendSysMessage("No valid height found within 100 yards below");
+        return true;
+    }
+
+    PSendSysMessage("Map height found at Z: %f", mapHeight);
+    if (teleport)
+        p->TeleportTo(p->GetMapId(), p->GetPositionX(), p->GetPositionY(), mapHeight, p->GetOrientation());
+
+    return true;
+}
+
 /* Syntax: .debug playemote <emoteId> */
 bool ChatHandler::HandleDebugPlayEmoteCommand(const char* args)
 {

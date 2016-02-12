@@ -536,12 +536,13 @@ class WorldObject : public Object, public WorldLocation
             // angle to face `obj` to `this` using distance includes size of `obj`
             GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
         }
+        
         /* Get first collision. Checks static & dynamic positions.
         ignoreContactDistance = false : move back CONTACT_DISTANCE at collision
         resultPos is set at collision or at destination if no collision happened
         Returns wheter a collision happened
         */
-        bool GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float moveBackDistance = CONTACT_DISTANCE);
+        bool GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float modifyDist = -CONTACT_DISTANCE);
         /* get first collision position with ground or valid terrain under it. Trinity name : GetFirstCollisionPosition
            angle = relative angle from current orientation */
         Position GetFirstWalkableCollisionPosition(float dist, float angle, bool keepZ = false);

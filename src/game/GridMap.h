@@ -92,13 +92,13 @@ class GridMap
     bool loadHeightData(FILE* in, uint32 offset, uint32 size);
     bool loadLiquidData(FILE* in, uint32 offset, uint32 size);
 
-    // Get height functions and pointers
-    typedef float (GridMap::*GetHeightPtr) (float x, float y) const;
+    // Get height functions and pointers. walkableOnly NYI
+    typedef float (GridMap::*GetHeightPtr) (float x, float y, bool walkableOnly) const;
     GetHeightPtr _gridGetHeight;
-    float getHeightFromFloat(float x, float y) const;
-    float getHeightFromUint16(float x, float y) const;
-    float getHeightFromUint8(float x, float y) const;
-    float getHeightFromFlat(float x, float y) const;
+    float getHeightFromFloat(float x, float y, bool walkableOnly = false) const;
+    float getHeightFromUint16(float x, float y, bool walkableOnly = false) const;
+    float getHeightFromUint8(float x, float y, bool walkableOnly = false) const;
+    float getHeightFromFlat(float x, float y, bool walkableOnly = false) const;
     
 public:
     GridMap();
@@ -107,7 +107,7 @@ public:
     void unloadData();
 
     uint16 getArea(float x, float y) const;
-    inline float getHeight(float x, float y) const {return (this->*_gridGetHeight)(x, y);}
+    inline float getHeight(float x, float y, bool walkableOnly = false) const {return (this->*_gridGetHeight)(x, y, walkableOnly);}
     float getLiquidLevel(float x, float y) const;
     uint8 getTerrainType(float x, float y) const;
     ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data = 0);

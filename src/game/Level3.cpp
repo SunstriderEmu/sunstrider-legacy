@@ -3260,7 +3260,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     if (!normalizePlayerName (plName))
     {
         SendSysMessage (LANG_PLAYER_NOT_FOUND);
-        SetSentErrorMessage (true);
+        SetSentErrorMessage(true);
         return false;
     }
 
@@ -3271,12 +3271,20 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
         plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
 
     if (!plGuid)
+    {
+        SendSysMessage("Guild not found");
+        SetSentErrorMessage(true);
         return false;
+    }
 
     // player's guild membership checked in AddMember before add
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    if (!targetGuild->AddMember(plGuid,targetGuild->GetLowestRank (), trans))
+    if (!targetGuild->AddMember(plGuid, targetGuild->GetLowestRank(), trans))
+    {
+        SendSysMessage("Could not add to guild (Is player already in a guild?)");
+        SetSentErrorMessage(true);
         return false;
+    }
     CharacterDatabase.CommitTransaction(trans);
 
     return true;

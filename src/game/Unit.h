@@ -1326,7 +1326,6 @@ class Unit : public WorldObject
         void SendSpellDamageResist(Unit* target, uint32 spellId, bool debug = false);
         void SendSpellDamageImmune(Unit* target, uint32 spellId);
 
-        bool GetClosestAllowedHeight(float x, float y, float& height, bool waterWalk = false, float maxSearchDist = DEFAULT_HEIGHT_SEARCH);
         /* (used mainly for blink spell) */
         Position GetLeapPosition(float dist);
         void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);

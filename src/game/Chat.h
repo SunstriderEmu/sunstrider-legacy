@@ -371,6 +371,7 @@ class ChatHandler
         bool HandleSmartAIShowErrorsCommand(const char* args);
         bool HandleDebugOpcodeTestCommand(const char* args);
         bool HandleDebugPlayEmoteCommand(const char* args);
+        bool HandleDebugMapHeight(const char* args);
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);

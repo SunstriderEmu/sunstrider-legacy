@@ -1450,19 +1450,19 @@ bool Map::GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, flo
     return false; //TODO
 }
 
-float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/) const
+float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /*= false*/) const
 {
-    return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask));
+    return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
 }
 
-float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/) const
+float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /* = false */) const
 {
     // find raw .map surface under Z coordinates
     float mapHeight = INVALID_HEIGHT;
     float mapHeightDist = 0.0f;
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
-        float gridHeight = gmap->getHeight(x, y);
+        float gridHeight = gmap->getHeight(x, y, walkableOnly);
         // if valid map height found, check for max search distance
         if (gridHeight > INVALID_HEIGHT)
         {

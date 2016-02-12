@@ -68,8 +68,10 @@ class PathGenerator
         explicit PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options);
         ~PathGenerator();
 
-        // Calculate the path from owner to given destination
+        /* Calculate the path from owner to given destination
         // return: true if new path was calculated, false otherwise (no change needed)
+        use forceDest to force path to arrive at given destination (path may then follow terrain on a part of the path only)
+        */
         bool CalculatePath(float destX, float destY, float destZ, bool forceDest = false, bool straightLine = false);
 
         // option setters - use optional

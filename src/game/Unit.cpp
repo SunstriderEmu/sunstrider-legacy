@@ -14565,56 +14565,17 @@ void Unit::old_Whisper(int32 textId, uint64 receiverGUID, bool IsBossWhisper)
     target->SendDirectMessage(&data);
 }
 
+/*
+Logic:
+Search a ground under default target, then a bit higher.
+Repeat this closer and closer until we found a valid target location.
+A valid target location is a location either in LoS or accessible by path
 
-/* Check downwards and upwards for the closest walkable height. 
-NYI: waterWalk enable water surfaces to be valid heights
-return true if found height. If false, height is unchanged.
+//to improve: water handling in loop (position in water are valid heights if you can swim)
+//to improve: you're not suppose to be able to go on non walkable slopes
 */
-bool Unit::GetClosestAllowedHeight(float x, float y, float& height, bool /* waterWalk */, float maxSearchDist)
-{
-    // search downwards
-    float mapHeightDown = GetMap()->GetHeight(PhaseMask(1), x, y, height, true, maxSearchDist);
-    float heightDown = mapHeightDown;
-    /*if (waterWalk)
-    {
-        //get water level as new height if water is higher than map level
-        float waterLevelDown = INVALID_HEIGHT;
-        if (GetMap()->GetLiquidLevelBelow(x, y, height, waterLevelDown, maxSearchDist))
-            if (waterLevelDown > heightDown)
-                heightDown = waterLevelDown;
-    }
-    */
-
-    // Search upwards.
-    float heightUp = INVALID_HEIGHT;
-    //search incrementally with a variable step count depending on maxSearchDist. ~ one more step per 5 units.
-    uint8 stepCount = maxSearchDist / 5 + 1;
-    float stepLenght = maxSearchDist / float(stepCount);
-    float currentSearchHeight = height;
-    for (int i = 0; i < stepCount; i++)
-    {
-        heightUp = GetMap()->GetHeight(PhaseMask(1), x, y, currentSearchHeight, true, stepLenght + 0.1f); //0.1f so that steps overlap just a tiny little bit, just to be sure
-        if (heightUp != INVALID_HEIGHT)
-            break;
-        currentSearchHeight += stepLenght; //next step search a bit higher
-    }
-
-    //Get closer height found
-    float finalHeight = std::fabs(height - heightDown) < std::fabs(height - heightUp) ? heightDown : heightUp;
-    if (finalHeight != INVALID_HEIGHT)
-    {
-        height = finalHeight;
-        return true;
-    }
-
-    //nothing found
-    return false;
-}
-
 Position Unit::GetLeapPosition(float dist)
 {
-    bool canSwim = CanSwim();
-    bool waterWalk = HasAuraType(SPELL_AURA_WATER_WALK);
     Position currentPos = GetPosition();
     float angle = GetOrientation();
     float destx, desty, destz; //work variables
@@ -14622,7 +14583,8 @@ Position Unit::GetLeapPosition(float dist)
     desty = currentPos.m_positionY + dist * std::sin(angle);
     destz = currentPos.m_positionZ;
     Position defaultTarget(destx, desty, destz); //position in front
-    Position targetPos(defaultTarget);
+    Position targetPos(currentPos);
+    bool foundValidDest = false;
 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
@@ -14631,75 +14593,90 @@ Position Unit::GetLeapPosition(float dist)
         return currentPos;
     }
 
-    // 1 - Get a valid destination
-
     //replace this by dichotomic search ?
     uint8 maxSteps = 10;
     float stepLength = dist / float(maxSteps);
     //search for the closest valid target height, step by step closer
-    for (uint8 i = 1; i <= maxSteps; i++)
+    //replace this by dichotomic search ?
+    for (uint8 i = 0; i < maxSteps; i++)
     {
-        //if destination is in water and we can swim, okay
-        if (canSwim && GetBaseMap()->IsInWater(destx, desty, destz))
-            break;
+        float maxSearchDist = (dist - i * stepLength) / 2.0f + GetObjectSize()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
+        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Searching for valid target, step %i. maxSearchDist = %f.", i, maxSearchDist);
 
-        float maxSearchDist = dist / 2.0f / float(i); //allow smaller z diff at close range, greater z diff at long range
-        if (GetClosestAllowedHeight(destx, desty, destz, waterWalk, maxSearchDist))
+        //start with higher check then lower
+        for (int8 j = 1; j >= 0; j--)
         {
-            break; //correct height found, stop searching here
+            //search at given z then at z + maxSearchDist
+            float mapHeight = GetMap()->GetHeight(PhaseMask(1), destx, desty, destz + j * maxSearchDist / 2, true, maxSearchDist, true);
+            if (mapHeight != INVALID_HEIGHT)
+            {
+                //if no collision
+                if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetObjectSize()))
+                {
+                    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                    //GetCollisionPosition already set targetPos to destx, desty, destz
+                    foundValidDest = true;
+                    goto exitloopfounddest;
+                }
+
+                //if is accessible by path (allow just a bit longer than a straight line)
+                float distToTarget = GetExactDistance(destx, desty, mapHeight);
+                PathGenerator path(this);
+                path.SetPathLengthLimit(distToTarget - 4.0f); //this is a hack to help with the imprecision of this check into the path generator
+                if (path.CalculatePath(destx, desty, mapHeight, false, false)
+                    && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) == 0)
+                    )
+                {
+                    //additional internal validity hack to compensate for mmap imprecision. Check if path last two points are in Los
+                    Movement::PointsArray points = path.GetPath();
+                    if (points.size() >= 2) //if shorter than that the LoS check from before should be valid anyway, noneed for else
+                    {
+                        G3D::Vector3 lastPoint = points[points.size()-1];
+                        G3D::Vector3 beforeLastPoint = points[points.size()-2];
+                        Position tempposition(beforeLastPoint.x, beforeLastPoint.y, beforeLastPoint.z + 1.5f);
+                        if (!GetCollisionPosition(tempposition, lastPoint.x, lastPoint.y, lastPoint.z + 1.5f, targetPos))
+                        {
+                            if (mapHeight != INVALID_HEIGHT)
+                            {
+                                targetPos.Relocate(destx, desty, mapHeight + 1.0f);
+                                TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                                foundValidDest = true;
+                                goto exitloopfounddest;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
-        //could not find valid height for this step, set target x and y a little closer for next iteration
-        if (i == maxSteps)
-        {
-            TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not find any leap destination after %u steps", i);
-            //reset dest variables so that we continue with default target position
-            destx = defaultTarget.GetPositionX();
-            desty = defaultTarget.GetPositionY();
-            desty = defaultTarget.GetPositionY();
-            break;
-        }
-
-        //try closer at next step
+        //no valid dest found, try closer at next step
+        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition No valid dest found at this iteration");
         destx -= stepLength * std::cos(angle);
         desty -= stepLength * std::sin(angle);
     }
 
-    Trinity::NormalizeMapCoord(destx);
-    Trinity::NormalizeMapCoord(desty);
-    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Target point set at %f %f %f", destx, desty, destz);
-
-    //at this point we found our destination, let's try to leap to it
-
-    // 2 - Check if we're in LoS with this point. If so, TP there.
-
-    if (!GetCollisionPosition(currentPos, destx, desty, destz, targetPos, CONTACT_DISTANCE * 2))
+    //No valid dest found
+    if (!foundValidDest)
     {
-        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Target point was in LoS");
-        return targetPos;
-    }
-    //else, GetCollisionPosition will still have updated pos to the first collision
-
-    // 3 - Check if point is accessible by pathfinding
-
-    float distToTarget = GetDistance(destx, desty, destz);
-    PathGenerator path(this);
-    path.SetPathLengthLimit(distToTarget *1.1f);
-    if (path.CalculatePath(destx, desty, destz, false, false)
-        && ((path.GetPathType() & (PATHFIND_SHORT|PATHFIND_NOPATH|PATHFIND_INCOMPLETE)) == 0)
-       )
-    {
-        targetPos.Relocate(destx, desty, destz);
-        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Target point was accessible by path");
-        return targetPos;
+        if (CanSwim() && GetMap()->IsUnderWater(POSITION_GET_X_Y_Z(&defaultTarget)))
+        {
+            targetPos = defaultTarget;
+        }
+        else if (this->IsFalling())
+        {
+            //try to find a ground not far
+            float mapHeight = GetMap()->GetHeight(PhaseMask(1), currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
+            if (mapHeight != INVALID_HEIGHT)
+                targetPos.m_positionZ = mapHeight + 1.0f;
+        }
+        targetPos = currentPos;
+        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, stay at current position %f %f %f", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
     }
 
-    // 4 - Not in LoS and no path found, just go to the first collision in front of us
-    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, get to first collision point");
+exitloopfounddest:
+    Trinity::NormalizeMapCoord(targetPos.m_positionX);
+    Trinity::NormalizeMapCoord(targetPos.m_positionY);
+    Trinity::NormalizeMapCoord(targetPos.m_positionZ);
 
-    GetCollisionPosition(currentPos, POSITION_GET_X_Y_Z(&defaultTarget), targetPos, CONTACT_DISTANCE * 2);
-
-    //reloc a bit higher to avoid falling undermap
-    targetPos.Relocate(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ() + 1.0f);
     return targetPos;
 }

@@ -1630,13 +1630,13 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
-bool WorldObject::GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float moveBackDistance)
+bool WorldObject::GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float modifyDist)
 {
     float vmapHit_x, vmapHit_y, vmapHit_z;
     float mapHit_x, mapHit_y, mapHit_z;
 
-    bool colVMap = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, vmapHit_x, vmapHit_y, vmapHit_z, moveBackDistance);
-    bool colMap = GetMap()->getObjectHitPos(GetPhaseMask(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, mapHit_x, mapHit_y, mapHit_z, moveBackDistance);
+    bool colVMap = VMAP::VMapFactory::createOrGetVMapManager()->getObjectHitPos(GetMapId(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, vmapHit_x, vmapHit_y, vmapHit_z, modifyDist);
+    bool colMap = GetMap()->getObjectHitPos(GetPhaseMask(), from.m_positionX, from.m_positionY, from.m_positionZ + 0.5f, x, y, z, mapHit_x, mapHit_y, mapHit_z, modifyDist);
 
     if (colVMap && !colMap)
     {
