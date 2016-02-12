@@ -4542,15 +4542,15 @@ void Player::RepopAtGraveyard()
 
     AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
 
-    bool inDuelArea = IsInDuelArea();
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257) || inDuelArea)
+    if((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || (zone && GetPositionZ() < zone->maxDepth) || (zone && zone->ID == 2257))
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
-        if(inDuelArea)
-            return; //stay where we are
     }
+
+    if (IsInDuelArea())
+        return; //stay where we are
 
     WorldSafeLocsEntry const *ClosestGrave = NULL;
 
