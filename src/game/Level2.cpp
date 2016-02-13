@@ -46,6 +46,7 @@
 #include "Transport.h"
 #include "CharacterDatabase.h"
 #include "LoginDatabase.h"
+#include "ArenaTeam.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "Management/MMapManager.h"                         // for mmap manager
@@ -77,10 +78,10 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     char *mutereason = strtok(NULL, "");
     std::string mutereasonstr;
-    if(!mutereason)
-        mutereasonstr = "Non précisée.";
-    else
-        mutereasonstr = mutereason;
+    if (!mutereason)
+        return false;
+    
+    mutereasonstr = mutereason;
         
     uint32 notspeaktime = (uint32) atoi(timetonotspeak);
 
@@ -858,63 +859,17 @@ bool ChatHandler::HandleNameCommand(const char* args)
     uint32 id = atoi(args);
 
     Creature* pCreature = GetSelectedCreature();
-
     if(!pCreature)
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         return true;
     }
 
-    //pCreature->SetName(args);
-    pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, id);
+    if (CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(id))
+        pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, id);
+    else
+        PSendSysMessage("Creature template with id %u not found", id);
 
-    //pCreature->SaveToDB();
-
-    return true;
-}
-
-bool ChatHandler::HandleSubNameCommand(const char* /*args*/)
-{
-    /* Temp. disabled
-
-    ARGS_CHECK
-
-    if(strlen((char*)args)>75)
-    {
-
-        PSendSysMessage(LANG_TOO_LONG_SUBNAME, strlen((char*)args)-75);
-        return true;
-    }
-
-    for (uint8 i = 0; i < strlen(args); i++)
-    {
-        if(!isalpha(args[i]) && args[i]!=' ')
-        {
-            SendSysMessage(LANG_CHARS_ONLY);
-            return false;
-        }
-    }
-    uint64 guid;
-    guid = m_session->GetPlayer()->GetTarget();
-    if (guid == 0)
-    {
-        SendSysMessage(LANG_NO_SELECTION);
-        return true;
-    }
-
-    Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
-
-    if(!pCreature)
-    {
-        SendSysMessage(LANG_SELECT_CREATURE);
-        return true;
-    }
-
-    uint32 idname = sObjectMgr->AddCreatureSubName(pCreature->GetName(),args,pCreature->GetUInt32Value(UNIT_FIELD_DISPLAYID));
-    pCreature->SetUInt32Value(OBJECT_FIELD_ENTRY, idname);
-
-    pCreature->SaveToDB();
-    */
     return true;
 }
 
@@ -957,11 +912,11 @@ bool ChatHandler::HandleItemMoveCommand(const char* args)
 bool ChatHandler::HandleNpcAddCommand(const char* args)
 {
     ARGS_CHECK
-    char* charID = strtok((char*)args, " ");
-    if (!charID)
+    char* cId = strtok((char*)args, " ");
+    if (!cId)
         return false;
 
-    uint32 id  = atoi(charID);
+    uint32 id  = atoi(cId);
 
     Player *chr = m_session->GetPlayer();
     float x = chr->GetPositionX();
@@ -3198,7 +3153,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
     uint8 type = atoi(cType);
     if(type != 2 && type != 3 && type != 5)
     {
-        PSendSysMessage("Type d'équipe invalide (doit être 2, 3 ou 5).");
+        PSendSysMessage("Invalid team type (must be 2, 3 or 5).");
         return true;
     }
 
@@ -3208,21 +3163,30 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
     targetGUID = sObjectMgr->GetPlayerGUIDByName(stringName);
     if(!targetGUID)
     {
-        PSendSysMessage("Joueur introuvable.");
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
         return true;
     }
 
     uint32 arenateamid = Player::GetArenaTeamIdFromDB(targetGUID,type);
     if(!arenateamid)
     {
-        PSendSysMessage("Equipe introuvable (avez vous bien mis le bon type ?).");
+        PSendSysMessage("Team not found. Also double check your team type.");
         return true;
     }
 
     CharacterDatabase.PQuery("UPDATE arena_team SET name = '%s' WHERE arenateamid = '%u'", newName, arenateamid);
     // + Update within memory ?
 
-    PSendSysMessage("Nom de la team %u changé en \"%s\"",arenateamid,newName);
+    PSendSysMessage("Team (id %u) name changed to \"%s\"", arenateamid, newName);
+
+    ArenaTeam* team = sObjectMgr->GetArenaTeamById(arenateamid);
+    if (team)
+    {
+        team->SetName(newName);
+    }
+    else {
+        PSendSysMessage("Could not change team name in current memory, the change will be effective only at next server start");
+    }
 
     return true;
 }
@@ -4303,7 +4267,10 @@ bool ChatHandler::HandleChanBan(const char* args)
     
     uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
     if (!accountid)
-        return false;       // TODO: display error message
+    {
+        PSendSysMessage("No account found for player name: %s.", charNamestr.c_str());
+        return true;
+    }
     
     char* duration = strtok (NULL," ");
     if (!duration || !atoi(duration))
@@ -4311,10 +4278,13 @@ bool ChatHandler::HandleChanBan(const char* args)
 
     char* reason = strtok (NULL,"");
     std::string reasonstr;
-    if(!reason)
-        reasonstr = "<Non précisée>";
-    else
-        reasonstr = reason;
+    if (!reason)
+    {
+        SendSysMessage("You must specify a reason.");
+        return false;
+    }
+    
+    reasonstr = reason;
         
     LogsDatabase.EscapeString(reasonstr);
         

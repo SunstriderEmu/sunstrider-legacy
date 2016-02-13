@@ -145,6 +145,7 @@ class ArenaTeam
         static uint8 GetSlotByType(uint32 type);
         const uint64& GetCaptain() const  { return CaptainGuid; }
         std::string const& GetName() const       { return Name; }
+        void SetName(std::string const& name) { Name = name; }
         const ArenaTeamStats& GetStats() const { return stats; }
         void SetStats(uint32 stat_type, uint32 value);
         uint32 GetRating() const          { return stats.rating; }
