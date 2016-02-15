@@ -30,6 +30,7 @@
 #include "SocialMgr.h"
 #include "Util.h"
 #include "ConfigMgr.h"
+#include "AccountMgr.h"
 
 Guild::Guild()
 {
@@ -108,6 +109,16 @@ bool Guild::create(uint64 lGuid, std::string gname)
     CharacterDatabase.CommitTransaction(trans);
     
     return true;
+}
+
+bool Guild::AddMember(uint64 plGuid, uint32 plRank)
+{
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    bool returnValue = AddMember(plGuid, plRank, trans);
+    if(returnValue) //do not commit empty trans
+        CharacterDatabase.CommitTransaction(trans);
+
+    return returnValue;
 }
 
 bool Guild::AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans)
@@ -258,7 +269,8 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
         // check no members case (disbanded)
         if(members.empty())
             return false;
-            TC_LOG_INFO("FIXME","Pom5");
+
+        TC_LOG_INFO("FIXME","Pom5");
     }
 
     m_bankloaded = false;
@@ -454,6 +466,16 @@ void Guild::SetLeader(uint64 guid)
 
 void Guild::DelMember(uint64 guid, bool isDisbanding)
 {
+    //enforce CONFIG_GM_FORCE_GUILD
+    uint32 GMForceGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
+    if(GetId() == GMForceGuildId)
+    {
+        uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+        uint32 memberSecurity = sAccountMgr->GetSecurity(accountId);
+        if (memberSecurity > SEC_PLAYER)
+            return;
+    }
+
     if(leaderGuid == guid && !isDisbanding)
     {
         MemberSlot* oldLeader = NULL;

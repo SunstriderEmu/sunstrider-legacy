@@ -3311,20 +3311,31 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
-        glId   = targetPlayer->GetGuildId ();
+        glId   = targetPlayer->GetGuildId();
     }
     else
     {
-        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
-        glId = Player::GetGuildIdFromDB (plGuid);
+        plGuid = sObjectMgr->GetPlayerGUIDByName(plName.c_str ());
+        glId = Player::GetGuildIdFromDB(plGuid);
     }
 
-    if (!plGuid || !glId)
-        return false;
+    if (!plGuid)
+    {
+        PSendSysMessage("Could not found any player with name %s", plName.c_str());
+        return true;
+    }
+    if (!glId)
+    {
+        PSendSysMessage("Could not find any guild for player %s", plName.c_str());
+        return true;
+    }
 
     Guild* targetGuild = sObjectMgr->GetGuildById (glId);
     if (!targetGuild)
-        return false;
+    {
+        SendSysMessage("Could not find guild %u", glId);
+        return true;
+    }
 
     targetGuild->DelMember (plGuid);
 
@@ -3371,7 +3382,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     if (newrank > targetGuild->GetLowestRank ())
         return false;
 
-    targetGuild->ChangeRank (plGuid,newrank);
+    targetGuild->ChangeRank(plGuid, newrank);
 
     return true;
 }
@@ -3398,6 +3409,14 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
 
     if (!targetGuild)
         return false;
+
+
+    uint32 GMForceGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
+    if (targetGuild->GetId() == GMForceGuildId)
+    {
+        SendSysMessage("Cannot delete gm guild");
+        return true;
+    }
 
     targetGuild->Disband ();
     PSendSysMessage("Guild deleted.");

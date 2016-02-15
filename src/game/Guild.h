@@ -290,6 +290,7 @@ class Guild
         uint32 GetBackgroundColor() { return BackgroundColor; }
 
         void SetLeader(uint64 guid);
+        bool AddMember(uint64 plGuid, uint32 plRank);
         bool AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans);
         void ChangeRank(uint64 guid, uint32 newRank);
         void DelMember(uint64 guid, bool isDisbanding=false);

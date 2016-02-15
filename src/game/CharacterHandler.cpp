@@ -810,16 +810,34 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     //QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
     QueryResult resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
 
+    uint32 guildId = 0;
     if(resultGuild)
     {
         Field *fields = resultGuild->Fetch();
-        pCurrChar->SetInGuild(fields[0].GetUInt32());
+        guildId = fields[0].GetUInt32();
+        pCurrChar->SetInGuild(guildId);
         pCurrChar->SetRank(fields[1].GetUInt8());
     }
     else if(pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
     {
         pCurrChar->SetInGuild(0);
         pCurrChar->SetRank(0);
+    }
+
+    //force gm player in guild if needed
+    uint32 GMForcedGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
+    if (GetSecurity() > SEC_PLAYER && GMForcedGuildId && GMForcedGuildId != guildId)
+    {
+        //remove from current guild if any
+        if  (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
+            currentGuild->DelMember(pCurrChar->GetGUID());
+
+        if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
+        {
+            gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank());
+            pCurrChar->SetInGuild(GMForcedGuildId);
+            pCurrChar->SetRank(gmGuild->GetLowestRank());
+        }
     }
 
     if(pCurrChar->GetGuildId() != 0)
