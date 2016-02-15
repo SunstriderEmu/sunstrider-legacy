@@ -69,6 +69,8 @@
 #include "SpectatorAddon.h"
 #include "IRCMgr.h"
 #include "ScriptMgr.h"
+#include "LogsDatabaseAccessor.h"
+
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
 #include "GuildTaskMgr.h"
@@ -3943,7 +3945,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             Field *fields = resultMail->Fetch();
 
             uint32 mail_id       = fields[0].GetUInt32();
-            uint16 mailTemplateId= fields[1].GetUInt16();
+            uint16 mailTemplateId= fields[1].GetUInt32();
             uint32 sender        = fields[2].GetUInt32();
             std::string subject  = fields[3].GetString();
             uint32 itemTextId    = fields[4].GetUInt32();
@@ -6696,7 +6698,7 @@ void Player::ModifyArenaPoints( int32 value )
         SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, GetArenaPoints() < sWorld->getConfig(CONFIG_MAX_ARENA_POINTS) - value ? GetArenaPoints() + value : sWorld->getConfig(CONFIG_MAX_ARENA_POINTS));
 }
 
-Guild* Player::GetGuild()
+Guild* Player::GetGuild() const
 {
     uint32 guildId = GetGuildId();
     return guildId ? sObjectMgr->GetGuildById(guildId) : NULL;
@@ -10120,7 +10122,7 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint8 Player::CanStoreItems( Item **pItems,int count) const
+uint8 Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
 {
     Item    *pItem2;
 
@@ -10171,7 +10173,7 @@ uint8 Player::CanStoreItems( Item **pItems,int count) const
     // check free space for all items
     for (int k=0;k<count;k++)
     {
-        Item  *pItem = pItems[k];
+        Item * pItem = items[k];
 
         // no item
         if (!pItem)  continue;
@@ -15910,7 +15912,7 @@ void Player::_LoadMail()
             m->COD = fields[10].GetUInt32();
             m->checked = fields[11].GetUInt32();
             m->stationery = fields[12].GetUInt8();
-            m->mailTemplateId = fields[13].GetInt16();
+            m->mailTemplateId = fields[13].GetInt32();
 
             if(m->mailTemplateId && !sMailTemplateStore.LookupEntry(m->mailTemplateId))
             {
@@ -16945,7 +16947,7 @@ void Player::_SaveInventory(SQLTransaction trans)
             if (result) {
                 Field* fields = result->Fetch();
                 banuname = fields[0].GetString();
-                sWorld->BanAccount(BAN_ACCOUNT, banuname, "0", "auto ban on dupe", "Big Brother");
+                sWorld->BanAccount(SANCTION_BAN_ACCOUNT, banuname, "0", "auto ban on dupe", "Internal check", nullptr);
             }
         }
 
@@ -18685,6 +18687,8 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             GetSession()->SendPacket(&data);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
+
+            //TODO logs LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_BUY, this, pItem, pCreature);
         }
     }
     else if( IsEquipmentPos( bag, slot ) )
@@ -21963,7 +21967,7 @@ void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
     }
 }
 
-uint8 Player::GetGladiatorRank()
+uint8 Player::GetGladiatorRank() const
 {
     for(auto itr : sWorld->confGladiators)
     {

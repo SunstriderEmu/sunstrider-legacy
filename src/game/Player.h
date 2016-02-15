@@ -1316,7 +1316,7 @@ class Player : public Unit
             return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetTemplate() : nullptr );
 
         }
-        uint8 CanStoreItems( Item **pItem,int count) const;
+        uint8 CanStoreItems( std::vector<Item*> const& items, uint32 count) const;
         uint8 CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const *proto = nullptr ) const;
         uint8 CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading = true ) const;
         uint8 CanUnequipItems( uint32 item, uint32 count ) const;
@@ -1786,12 +1786,12 @@ class Player : public Unit
         void SetInGuild(uint32 GuildId) { SetUInt32Value(PLAYER_GUILDID, GuildId); }
         void SetRank(uint32 rankId){ SetUInt32Value(PLAYER_GUILDRANK, rankId); }
         void SetGuildIdInvited(uint32 GuildId) { m_GuildIdInvited = GuildId; }
-        uint32 GetGuildId() { return GetUInt32Value(PLAYER_GUILDID);  }
-        Guild* GetGuild();
+        uint32 GetGuildId() const { return GetUInt32Value(PLAYER_GUILDID);  }
+        Guild* GetGuild() const;
         static uint32 GetGuildIdFromDB(uint64 guid);
-        uint32 GetRank(){ return GetUInt32Value(PLAYER_GUILDRANK); }
+        uint32 GetRank() const { return GetUInt32Value(PLAYER_GUILDRANK); }
         static uint32 GetRankFromDB(uint64 guid);
-        int GetGuildIdInvited() { return m_GuildIdInvited; }
+        int GetGuildIdInvited() const { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
 
         // Arena Team
@@ -1799,17 +1799,17 @@ class Player : public Unit
         {
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6), ArenaTeamId);
         }
-        uint32 GetArenaTeamId(uint8 slot) { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
+        uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
         static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
-        uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
-        uint8 GetGladiatorRank();
+        uint32 GetArenaTeamIdInvited() const { return m_ArenaTeamIdInvited; }
+        uint8 GetGladiatorRank() const;
         void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
 
         void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
-        uint8 GetDifficulty() { return m_dungeonDifficulty; }
+        uint8 GetDifficulty() const { return m_dungeonDifficulty; }
 
         bool UpdateSkill(uint32 skill_id, uint32 step);
         bool UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step);
@@ -1821,10 +1821,10 @@ class Player : public Unit
         uint32 GetBaseDefenseSkillValue() const { return GetBaseSkillValue(SKILL_DEFENSE); }
         uint32 GetBaseWeaponSkillValue(WeaponAttackType attType) const;
 
-        uint32 GetSpellByProto(ItemTemplate *proto);
+        uint32 GetSpellByProto(ItemTemplate *proto) const;
 
-        float GetHealthBonusFromStamina();
-        float GetManaBonusFromIntellect();
+        float GetHealthBonusFromStamina() const;
+        float GetManaBonusFromIntellect() const;
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();

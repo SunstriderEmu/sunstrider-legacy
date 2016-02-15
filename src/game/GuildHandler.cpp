@@ -29,6 +29,7 @@
 #include "MapManager.h"
 #include "GossipDef.h"
 #include "SocialMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
@@ -1032,19 +1033,14 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
 
     CharacterDatabase.CommitTransaction(trans);
 
-    // logging money
-    if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
-    {
-        sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
-            _player->GetName().c_str(),_player->GetSession()->GetAccountId(),money,GuildId);
-    }
-
     // log
     pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_MONEY, uint8(0), GetPlayer()->GetGUIDLow(), money);
 
     pGuild->DisplayGuildBankTabsInfo(this);
     pGuild->DisplayGuildBankContent(this, 0);
     pGuild->DisplayGuildBankMoneyUpdate();
+
+    LogsDatabaseAccessor::GuildMoneyTransfer(GetPlayer(), GuildId, money);
 }
 
 void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
@@ -1096,6 +1092,8 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
     pGuild->DisplayGuildBankTabsInfo(this);
     pGuild->DisplayGuildBankContent(this, 0);
     pGuild->DisplayGuildBankMoneyUpdate();
+
+    LogsDatabaseAccessor::GuildMoneyTransfer(GetPlayer(), GuildId, -int32(money));
 }
 
 void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
@@ -1368,6 +1366,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
             pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
             CharacterDatabase.CommitTransaction(trans);
+
+            LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pNewItem->GetGUID(), pNewItem->GetEntry(), pNewItem->GetCount());
         }
         else                                                // Bank -> Char swap with slot (move)
         {
@@ -1389,6 +1389,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
                 CharacterDatabase.CommitTransaction(trans);
+
+                LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
             }
             else                                            // Bank <-> Char swap items
             {
@@ -1429,23 +1431,16 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 if(remRight <= 0)
                     return;
 
-                if(pItemChar)
+                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
+                LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
+                if (pItemChar)
                 {
-                    // logging item move to bank
-                    if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
-                    {
-                        sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                            _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                            pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
-                            GuildId);
-                    }
+                    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+                    LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
                 }
 
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
-                if(pItemChar)
-                    pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
 
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 pGuild->RemoveItem(BankTab, BankTabSlot, trans);
                 if(pItemChar)
                 {
@@ -1460,6 +1455,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
                 CharacterDatabase.CommitTransaction(trans);
+
             }
         }
         pGuild->DisplayGuildBankContentUpdate(BankTab,BankTabSlot);
@@ -1499,17 +1495,10 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemChar, NULL );
             return;
         }
-
-        // logging item move to bank (before items merge
-        if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
-        {
-            sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),SplitedAmount,GuildId);
-        }
-
+       
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), SplitedAmount);
+        LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), SplitedAmount);
 
         pl->ItemRemovedQuestCheck( pItemChar->GetEntry(), SplitedAmount );
         pItemChar->SetCount(pItemChar->GetCount()-SplitedAmount);
@@ -1519,6 +1508,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         CharacterDatabase.CommitTransaction(trans);
 
         pGuild->DisplayGuildBankContentUpdate(BankTab,dest);
+
     }
     else                                                    // Char -> Bank swap with empty or non-empty (move)
     {
@@ -1526,17 +1516,10 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         uint8 msg = pGuild->CanStoreItem(BankTab,BankTabSlot,dest,pItemChar->GetCount(),pItemChar,false);
         if( msg == EQUIP_ERR_OK )                           // merge
         {
-            // logging item move to bank
-            if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
-            {
-                sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
-                    GuildId);
-            }
+            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+            LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             pl->MoveItemFromInventory(PlayerBag, PlayerSlot, true);
             pItemChar->DeleteFromInventoryDB(trans);
@@ -1546,6 +1529,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             CharacterDatabase.CommitTransaction(trans);
 
             pGuild->DisplayGuildBankContentUpdate(BankTab,dest);
+
         }
         else                                                // Char <-> Bank swap items (posible NULL bank item)
         {
@@ -1576,19 +1560,15 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                     return;
             }
 
-            // logging item move to bank
-            if(_player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE))
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            if (pItemBank)
             {
-                sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u )",
-                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                    pItemChar->GetTemplate()->Name1.c_str(),pItemChar->GetEntry(),pItemChar->GetCount(),
-                    GuildId);
+                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
+                LogsDatabaseAccessor::GuildBankItemTransfer(pl, false, pItemBank->GetGUID(), pItemBank->GetEntry(), pItemBank->GetCount());
             }
 
-            SQLTransaction trans = CharacterDatabase.BeginTransaction();
-            if(pItemBank)
-                pGuild->LogBankEvent(GUILD_BANK_LOG_WITHDRAW_ITEM, BankTab, pl->GetGUIDLow(), pItemBank->GetEntry(), pItemBank->GetCount());
             pGuild->LogBankEvent(GUILD_BANK_LOG_DEPOSIT_ITEM, BankTab, pl->GetGUIDLow(), pItemChar->GetEntry(), pItemChar->GetCount());
+            LogsDatabaseAccessor::GuildBankItemTransfer(pl, true, pItemChar->GetGUID(), pItemChar->GetEntry(), pItemChar->GetCount());
 
             pl->MoveItemFromInventory(PlayerBag, PlayerSlot, true);
             pItemChar->DeleteFromInventoryDB(trans);
@@ -1599,8 +1579,10 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             if(pItemBank)
                 pl->MoveItemToInventory(iDest,pItemBank,true);
             pl->SaveInventoryAndGoldToDB(trans);
-            if(pItemBank)
+            if (pItemBank)
+            {
                 pGuild->MemberItemWithdraw(BankTab, pl->GetGUIDLow());
+            }
             CharacterDatabase.CommitTransaction(trans);
 
             pGuild->DisplayGuildBankContentUpdate(BankTab,gDest);

@@ -152,7 +152,6 @@ enum WorldConfigs
     CONFIG_GM_WISPERING_TO,
     CONFIG_GM_LEVEL_IN_GM_LIST,
     CONFIG_GM_LEVEL_IN_WHO_LIST,
-    CONFIG_GM_LOG_TRADE,
     CONFIG_START_GM_LEVEL,
     CONFIG_ALLOW_GM_GROUP,
     CONFIG_ALLOW_GM_FRIEND,
@@ -236,16 +235,46 @@ enum WorldConfigs
     CONFIG_NUMTHREADS,
     
     CONFIG_WORLDCHANNEL_MINLEVEL,
+
     CONFIG_VMAP_INDOOR_CHECK,
     CONFIG_VMAP_INDOOR_INST_CHECK,
     CONFIG_BOOL_MMAP_ENABLED,
     
+    //logs duration in days. -1 to keep forever. 0 to disable logging. 
+    CONFIG_LOG_BG_STATS,
+    CONFIG_LOG_BOSS_DOWNS,
+    CONFIG_LOG_CHAR_DELETE,
+    CONFIG_GM_LOG_CHAR_DELETE,
+    CONFIG_LOG_CHAR_CHAT,
+    CONFIG_GM_LOG_CHAR_CHAT,
+    CONFIG_LOG_CHAR_GUILD_MONEY,
+    CONFIG_GM_LOG_CHAR_GUILD_MONEY,
+    CONFIG_LOG_CHAR_ITEM_DELETE,
+    CONFIG_GM_LOG_CHAR_ITEM_DELETE,
+    CONFIG_LOG_CHAR_ITEM_GUILD_BANK,
+    CONFIG_GM_LOG_CHAR_ITEM_GUILD_BANK,
+    CONFIG_LOG_CHAR_ITEM_VENDOR,
+    CONFIG_GM_LOG_CHAR_ITEM_VENDOR,
+    CONFIG_LOG_CHAR_ITEM_ENCHANT,
+    CONFIG_GM_LOG_CHAR_ITEM_ENCHANT,
+    CONFIG_LOG_CHAR_ITEM_AUCTION,
+    CONFIG_GM_LOG_CHAR_ITEM_AUCTION,
+    CONFIG_LOG_CHAR_ITEM_TRADE,
+    CONFIG_GM_LOG_CHAR_ITEM_TRADE,
+    CONFIG_LOG_CHAR_MAIL,
+    CONFIG_GM_LOG_CHAR_MAIL,
+    CONFIG_LOG_CHAR_RENAME,
+    CONFIG_GM_LOG_CHAR_RENAME,
+    CONFIG_LOG_GM_COMMANDS,
+    CONFIG_LOG_SANCTIONS,
+
     CONFIG_MAX_AVERAGE_TIMEDIFF,
     
     CONFIG_PLAYER_GENDER_CHANGE_DELAY,
 
     CONFIG_MONITORING_ENABLED,
     CONFIG_MONITORING_UPDATE,
+    CONFIG_MONITORING_KEEP_DURATION,
     
     CONFIG_MYSQL_BUNDLE_LOGINDB,
     CONFIG_MYSQL_BUNDLE_CHARDB,
@@ -358,16 +387,6 @@ enum Rates
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
     MAX_RATES
-};
-
-/// Sanctions types
-enum SanctionType
-{
-    SANCTION_MUTE           = 0,
-    SANCTION_BAN_ACCOUNT    = 1,
-    SANCTION_BAN_IP         = 2,
-    SANCTION_CHANBAN        = 3,
-    SANCTION_SHUN           = 4
 };
 
 /// Type of server
@@ -649,9 +668,12 @@ class World
         bool KickPlayer(const std::string& playerName);
         void KickAll();
         void KickAllLess(AccountTypes sec);
-        BanReturn BanAccount(BanMode mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author);
-        BanReturn BanAccount(BanMode mode, std::string const& nameOrIP, uint32 duration_secs, std::string const& reason, std::string const& author);
-        bool RemoveBanAccount(BanMode mode, std::string nameOrIP);
+        //author_session can be null
+        BanReturn BanAccount(SanctionType mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author, WorldSession const* author_session);
+        //author_session can be null
+        BanReturn BanAccount(SanctionType mode, std::string const& nameOrIP, uint32 duration_secs, std::string const& reason, std::string const& author, WorldSession const* author_session);
+        // unbanAuthor can be null
+        bool RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSession const* unbanAuthor);
 
         void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target, bool start = true);
         void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
@@ -724,8 +746,6 @@ class World
         bool IsPhishing(std::string msg);
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
-        void CleanupOldMonitorLogs();
-        void CleanupOldLogs();
         void LoadAutoAnnounce();
         
         std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };

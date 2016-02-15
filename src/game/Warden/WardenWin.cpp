@@ -573,7 +573,7 @@ void WardenWin::HandleData(ByteBuffer &buff)
             if (result) {
                 Field* fields = result->Fetch();
                 banuname = fields[0].GetString();
-                sWorld->BanAccount(BAN_ACCOUNT, banuname, sWorld->GetWardenBanTime(), ban_reason.str(), "Warden");
+                sWorld->BanAccount(SANCTION_BAN_ACCOUNT, banuname, sWorld->GetWardenBanTime(), ban_reason.str(), "Warden", nullptr);
             }
         }
         if (kick)

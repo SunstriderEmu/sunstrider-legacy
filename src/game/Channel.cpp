@@ -60,7 +60,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         if (result) {
             do {
                 Field *fields = result->Fetch();
-                gmbanned[fields[0].GetUInt64()] = fields[1].GetUInt64();
+                gmbanned[fields[0].GetUInt32()] = fields[1].GetUInt32();
             } while (result->NextRow());
         }
         

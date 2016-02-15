@@ -1075,7 +1075,8 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     PSendSysMessage(LANG_RECUP_PHASE2_SUCCESS);
 
     std::string subject = "Welcome!";
-    uint32 itemTextId = sObjectMgr->CreateItemText("Bonjour à vous et bienvenue sur WoW Mania !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.wowmania.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe WoW Mania.");
+    uint32 itemTextId = sObjectMgr->CreateItemText("Bonjour à vous et bienvenue sur Sunstrider !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.sunstrider.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe Sunstrider.");
+
     WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
 
     player->SaveToDB();
@@ -1533,45 +1534,52 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint64 account_id = m_session->GetAccountId();
     QueryResult result = NULL;
     Field* fields = NULL;
-    bool force = (cForce && strcmp(cForce,"forcer") == 0);
+    bool force = (cForce && strcmp(cForce,"force") == 0);
     
     if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
-        //PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
-        PSendSysMessage("Race/Faction change is deactivated.");
+        //TODO translate
+        PSendSysMessage("Le changement de race/faction est actuellement désactivé.");
+        //PSendSysMessage("Race/Faction change is deactivated.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (!m_session->GetPlayer()->IsAlive()) {
-        //PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
-        PSendSysMessage("You must be alive to perform race or faction change.");
+        //TODO translate
+        PSendSysMessage("Vous devez être en vie pour effectuer un changement de race ou faction.");
+        //PSendSysMessage("You must be alive to perform race or faction change.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->IsInCombat()) {
+        //TODO translate
         PSendSysMessage("Impossible en combat.");
+        //SendSysMessage("Cannot do this in combat.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetBattleground()) {
-        //PSendSysMessage("Impossible en champ de bataille ou en arène.");
-        PSendSysMessage("Impossible in battleground or arena.");
+        //TODO translate
+        PSendSysMessage("Impossible en champ de bataille ou en arène.");
+        //PSendSysMessage("Impossible in battleground or arena.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetGroup()) {
-        //PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
-        PSendSysMessage("Please leave your group to perform the change.");
+        //TODO translate
+        PSendSysMessage("Veuillez quitter votre groupe pour effectuer le changement.");
+        //PSendSysMessage("Please leave your group to perform the change.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (m_session->GetPlayer()->GetInstanceId() != 0) {
-        //PSendSysMessage("Impossible en instance.");
-        PSendSysMessage("Impossible in instance.");
+        //TODO translate
+        PSendSysMessage("Impossible en instance.");
+        //PSendSysMessage("Impossible in instance.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1585,8 +1593,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     result = CharacterDatabase.PQuery("SELECT guid, account, race, gender, playerBytes, playerBytes2 FROM characters WHERE name = '%s'", safeTargetName.c_str());
     
     if (!result) {
-        //PSendSysMessage("Personnage cible non trouvé.");
-        PSendSysMessage("Targeted character not found.");
+        //TODO translate
+        PSendSysMessage("Personnage cible non trouvé.");
+        //PSendSysMessage("Targeted character not found.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1612,15 +1621,17 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     uint32 t_playerBytes2 = fields[5].GetUInt32();
     
     if (m_guid == t_guid) {
-        //PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum au lieu de faire n'importe quoi !");
-        PSendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
+        //TODO translate
+        PSendSysMessage("Vous avez essayé de lancer un changement sur vous-même. Merci d'aller lire le post explicatif sur le forum !");
+        //PSendSysMessage("You tried to perform a change on yourself. Please read the dedicated post on the forums.");
         SetSentErrorMessage(true);
         return false;
     }
     
     if (!force && m_account != t_account) {
-        //PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
-        PSendSysMessage("The model character must be on your account.");
+        //TODO translate
+        PSendSysMessage("Le personnage modèle doit être présent sur votre compte.");
+        //PSendSysMessage("The model character must be on your account.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1642,8 +1653,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     PlayerInfo const* targetInfo = sObjectMgr->GetPlayerInfo(t_race, m_class);
     if (!targetInfo) {
-        //PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
-        PSendSysMessage("The targeted character's race is incompatible with your class.");
+        //TODO translate
+        PSendSysMessage("La race du personnage cible est incompatible avec votre classe.");
+        //PSendSysMessage("The targeted character's race is incompatible with your class.");
         SetSentErrorMessage(true);
         return false;
     }
@@ -1657,8 +1669,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         {
             if(!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H)) 
             {
-                //PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
-                PSendSysMessage("Faction change from Alliance to Horde is deactivated.");
+                //TODO translate
+                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Alliance -> Horde.");
+                //PSendSysMessage("Faction change from Alliance to Horde is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -1667,8 +1680,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         {
             if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A)) 
             {
-                //PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
-                PSendSysMessage("Faction change from Horde to Alliance is deactivated.");
+                //TODO translate
+                PSendSysMessage("Le changement de faction n'est actuellement pas autorisé dans le sens Horde -> Alliance.");
+                //PSendSysMessage("Faction change from Horde to Alliance is deactivated.");
                 SetSentErrorMessage(true);
                 return false;
             }
@@ -1701,8 +1715,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     if (factionChange) {
         Guild* guild = sObjectMgr->GetGuildById(plr->GetGuildId());
         if (guild) {
-            //PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
-            PSendSysMessage("You must leave your guild to perform faction change.");
+            //TODO translate
+            PSendSysMessage("Vous êtes actuellement dans une guilde. Veuillez la quitter pour effectuer le changement de faction.");
+            //PSendSysMessage("You must leave your guild to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -1713,8 +1728,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         result = CharacterDatabase.PQuery("SELECT arena_team_member.arenaTeamId FROM arena_team_member JOIN arena_team ON arena_team_member.arenaTeamId = arena_team.arenaTeamId WHERE guid = %u", plr->GetGUIDLow());
 
         if (result) {
-            //PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
-            PSendSysMessage("You must leave your arena team(s) to perform faction change.");
+            //TODO translate
+            PSendSysMessage("Vous êtes actuellement dans une ou plusieurs équipes d'arène. Veuillez les quitter pour effectuer le changement de faction.");
+            //PSendSysMessage("You must leave your arena team(s) to perform faction change.");
             SetSentErrorMessage(true);
             return false;
         }
@@ -1829,6 +1845,9 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 plr->SwapFactionReputation(from, to);
         } while (result->NextRow());
     }
+
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
     if (factionChange) {
         for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->factionchange_reput_generic.begin(); it != sObjectMgr->factionchange_reput_generic.end(); ++it) {
             uint32 faction_alliance = it->first;
@@ -1927,14 +1946,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             plr->StoreNewItem(dest, item_alliance, count, true);
                         else {
                             if (Item* newItem = Item::CreateItem(item_alliance, count, plr)) {
-                                SQLTransaction trans = CharacterDatabase.BeginTransaction();
                                 newItem->SaveToDB(trans);
-                                CharacterDatabase.CommitTransaction(trans);
 
                                 MailItemsInfo mi;
                                 mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -1955,14 +1972,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                             plr->StoreNewItem(dest, item_horde, count, true);
                         else {
                             if (Item* newItem = Item::CreateItem(item_horde, count, plr)) {
-                                SQLTransaction trans = CharacterDatabase.BeginTransaction();
                                 newItem->SaveToDB(trans);
-                                CharacterDatabase.CommitTransaction(trans);
 
                                 MailItemsInfo mi;
                                 mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                                 std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                                WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                                WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                             }
                         }
                     }
@@ -2008,6 +2023,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             }
         } while (result->NextRow());
     }
+
     result = WorldDatabase.PQuery("SELECT item2, item1 FROM player_factionchange_items_race_specific WHERE race2 = %u AND race1 = %u", m_race, t_race);
     if (result) {
         do {
@@ -2030,14 +2046,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                         plr->StoreNewItem(dest, to, count, true);
                     else {
                         if (Item* newItem = Item::CreateItem(to, count, plr)) {
-                            SQLTransaction trans = CharacterDatabase.BeginTransaction();
                             newItem->SaveToDB(trans);
-                            CharacterDatabase.CommitTransaction(trans);
 
                             MailItemsInfo mi;
                             mi.AddItem(newItem->GetGUIDLow(), newItem->GetEntry(), newItem);
                             std::string subject = GetSession()->GetTrinityString(LANG_NOT_EQUIPPED_ITEM);
-                            WorldSession::SendMailTo(plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+                            WorldSession::SendMailTo(trans, plr, MAIL_NORMAL, MAIL_STATIONERY_GM, plr->GetGUIDLow(), plr->GetGUIDLow(), subject, 0, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
                         }
                     }
                 }
@@ -2046,7 +2060,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
     
     // Act like auctions are expired
-    sAuctionMgr->RemoveAllAuctionsOf(plr->GetGUIDLow());
+    sAuctionMgr->RemoveAllAuctionsOf(trans, plr->GetGUIDLow());
     plr->RemoveAllAuras();
 
     // Remove instance tag
@@ -2062,9 +2076,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
-        CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
+        trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
     }
-    
+
+    CharacterDatabase.CommitTransaction(trans);
+
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;
     

@@ -4871,8 +4871,8 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->expire_time = (time_t)fields[6].GetUInt64();
         m->deliver_time = 0;
         m->COD = fields[7].GetUInt32();
-        m->checked = fields[8].GetUInt32();
-        m->mailTemplateId = fields[9].GetInt16();
+        m->checked = fields[8].GetUInt8();
+        m->mailTemplateId = fields[9].GetInt32();
 
         Player *pl = 0;
         if (serverUp)
@@ -5763,18 +5763,25 @@ uint32 ObjectMgr::GenerateItemTextID()
     return m_ItemTextId++;
 }
 
-uint32 ObjectMgr::CreateItemText(std::string text)
+uint32 ObjectMgr::CreateItemText(SQLTransaction& charTrans, std::string const& text)
 {
     uint32 newItemTextId = GenerateItemTextID();
     //insert new itempage to container
-    mItemTexts[ newItemTextId ] = text;
+    mItemTexts[newItemTextId] = text;
     //save new itempage
-    CharacterDatabase.EscapeString(text);
+    std::string escapedText(text);
+    CharacterDatabase.EscapeString(escapedText);
     //any Delete query needed, itemTextId is maximum of all ids
-    std::ostringstream query;
-    query << "INSERT INTO item_text (id,text) VALUES ( '" << newItemTextId << "', '" << text << "')";
-    CharacterDatabase.Execute(query.str().c_str());         //needs to be run this way, because mail body may be more than 1024 characters
+    charTrans->PAppend("INSERT INTO item_text(id, text) VALUES(%u, \"%s\")", newItemTextId, escapedText.c_str());
     return newItemTextId;
+}
+
+uint32 ObjectMgr::CreateItemText(std::string const& text)
+{
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    uint32 id = CreateItemText(trans, text);
+    CharacterDatabase.CommitTransaction(trans);
+    return id;
 }
 
 uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)

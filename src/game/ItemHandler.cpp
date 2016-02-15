@@ -30,6 +30,7 @@
 #include "UpdateData.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 void WorldSession::HandleSplitItemOpcode( WorldPacket & recvData )
 {
@@ -301,7 +302,8 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
         return;
     }
 
-    LogsDatabase.PExecute("INSERT INTO item_delete (playerguid,entry,count,time) VALUES (%u,%u,%u,%u);",_player->GetGUIDLow(),pItem->GetEntry(),pItem->GetCount(),time(NULL));
+    LogsDatabaseAccessor::CharacterItemDelete(_player, pItem);
+
     if(count)
     {
         uint32 i_count = count;
@@ -596,7 +598,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
                     Item *pNewItem = pItem->CloneItem( count, _player );
                     if (!pNewItem)
                     {
-                        TC_LOG_ERROR("FIXME","WORLD: HandleSellItemOpcode - could not create clone of item %u; count = %u", pItem->GetEntry(), count );
+                        TC_LOG_ERROR("network.opcode","WORLD: HandleSellItemOpcode - could not create clone of item %u; count = %u", pItem->GetEntry(), count );
                         _player->SendSellError( SELL_ERR_CANT_SELL_ITEM, pCreature, itemguid, 0);
                         return;
                     }
@@ -610,6 +612,8 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
                     _player->AddItemToBuyBackSlot( pNewItem );
                     if( _player->IsInWorld() )
                         pNewItem->SendUpdateToPlayer( _player );
+
+                    LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_SELL, _player, pNewItem, pCreature);
                 }
                 else
                 {
@@ -617,6 +621,8 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
                     _player->RemoveItem( pItem->GetBagSlot(), pItem->GetSlot(), true);
                     pItem->RemoveFromUpdateQueueOf(_player);
                     _player->AddItemToBuyBackSlot( pItem );
+
+                    LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_SELL, _player, pItem, pCreature);
                 }
 
                 _player->ModifyMoney( pProto->SellPrice * count );
@@ -671,6 +677,8 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
             _player->RemoveItemFromBuyBackSlot( slot, false );
             _player->ItemAddedQuestCheck( pItem->GetEntry(), pItem->GetCount());
             _player->StoreItem( dest, pItem, true );
+
+            LogsDatabaseAccessor::BuyOrSellItemToVendor(LogsDatabaseAccessor::TRANSACTION_BUYBACK, _player, pItem, pCreature);
         }
         else
             _player->SendEquipError( msg, pItem, NULL );

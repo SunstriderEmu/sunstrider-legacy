@@ -712,9 +712,9 @@ void WorldSession::LogoutPlayer(bool Save)
             for(int j = BUYBACK_SLOT_START; j < BUYBACK_SLOT_END; j++)
             {
                 eslot = j - BUYBACK_SLOT_START;
-                _player->SetUInt64Value(PLAYER_FIELD_VENDORBUYBACK_SLOT_1+eslot*2,0);
-                _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1+eslot,0);
-                _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1+eslot,0);
+                _player->SetUInt64Value(PLAYER_FIELD_VENDORBUYBACK_SLOT_1+eslot*2, 0);
+                _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1+eslot, 0);
+                _player->SetUInt32Value(PLAYER_FIELD_BUYBACK_TIMESTAMP_1+eslot, 0);
             }
             _player->SaveToDB();
         }
@@ -1197,16 +1197,16 @@ bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) co
             return false;
         case POLICY_BAN:
         {
-            BanMode bm = (BanMode)sWorld->getIntConfig(CONFIG_PACKET_SPOOF_BANMODE);
+            SanctionType bm = (SanctionType)sWorld->getIntConfig(CONFIG_PACKET_SPOOF_BANMODE);
             uint32 duration = sWorld->getIntConfig(CONFIG_PACKET_SPOOF_BANDURATION); // in seconds
             std::string nameOrIp = "";
             switch (bm)
             {
-                case BAN_CHARACTER: // not supported, ban account
-                case BAN_ACCOUNT: (void)sAccountMgr->GetName(Session->GetAccountId(), nameOrIp); break;
-                case BAN_IP: nameOrIp = Session->GetRemoteAddress(); break;
+                case SANCTION_BAN_CHARACTER: // not supported, ban account
+                case SANCTION_BAN_ACCOUNT:   sAccountMgr->GetName(Session->GetAccountId(), nameOrIp); break;
+                case SANCTION_BAN_IP:        nameOrIp = Session->GetRemoteAddress();                  break;
             }
-            sWorld->BanAccount(bm, nameOrIp, duration, "DOS (Packet Flooding/Spoofing", "Server: AutoDOS");
+            sWorld->BanAccount(bm, nameOrIp, duration, "DOS (Packet Flooding/Spoofing", "Server: AutoDOS", nullptr);
             TC_LOG_INFO("network", "AntiDOS: Player automatically banned for %u seconds.", duration);
             Session->KickPlayer();
             return false;

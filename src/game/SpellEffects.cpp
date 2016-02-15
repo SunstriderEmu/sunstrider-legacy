@@ -65,6 +65,7 @@
 #include "GameObjectAI.h"
 #include "CreatureAINew.h"
 #include "InstanceScript.h"
+#include "LogsDatabaseAccessor.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -4634,13 +4635,7 @@ void Spell::EffectEnchantItemPerm(uint32 i)
         if(!item_owner)
             return;
 
-        if(item_owner!=p_caster && p_caster->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
-        {
-            sLog->outCommand(p_caster->GetSession()->GetAccountId(),"GM %s (Account: %u) enchanting(perm): %s (Entry: %d) for player: %s (Account: %u)",
-                p_caster->GetName().c_str(),p_caster->GetSession()->GetAccountId(),
-                itemTarget->GetTemplate()->Name1.c_str(),itemTarget->GetEntry(),
-                item_owner->GetName().c_str(),item_owner->GetSession()->GetAccountId());
-        }
+        LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUIDLow(), itemTarget->GetEntry(), enchant_id, true);
 
         // remove old enchanting before applying new if equipped
         item_owner->ApplyEnchantment(itemTarget,PERM_ENCHANTMENT_SLOT,false);
@@ -4776,13 +4771,7 @@ void Spell::EffectEnchantItemTmp(uint32 i)
     if(!item_owner)
         return;
 
-    if(item_owner!=p_caster && p_caster->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
-    {
-        sLog->outCommand(p_caster->GetSession()->GetAccountId(),"GM %s (Account: %u) enchanting(temp): %s (Entry: %d) for player: %s (Account: %u)",
-            p_caster->GetName().c_str(),p_caster->GetSession()->GetAccountId(),
-            itemTarget->GetTemplate()->Name1.c_str(),itemTarget->GetEntry(),
-            item_owner->GetName().c_str(),item_owner->GetSession()->GetAccountId());
-    }
+    LogsDatabaseAccessor::Enchantment(p_caster, item_owner, itemTarget->GetGUIDLow(), itemTarget->GetEntry(), enchant_id, false);
 
     // remove old enchanting before applying new if equipped
     item_owner->ApplyEnchantment(itemTarget,TEMP_ENCHANTMENT_SLOT,false);

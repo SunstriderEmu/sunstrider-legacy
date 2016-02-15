@@ -2351,13 +2351,13 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
 
-    uint32 messagetype = MAIL_NORMAL;
+    MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
     Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;

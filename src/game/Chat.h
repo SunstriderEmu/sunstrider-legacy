@@ -375,7 +375,6 @@ class ChatHandler
 
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
-        bool HandleSubNameCommand(const char* args);
         bool HandleItemMoveCommand(const char* args);
         bool HandleDeMorphCommand(const char* args);
         bool HandleAddVendorItemCommand(const char* args);
@@ -569,7 +568,7 @@ class ChatHandler
         bool HandleChanUnban(const char* args);
         bool HandleChanInfoBan(const char* args);
 
-        // Commandes pour WoW Mania
+        // WoW Mania Commands
         bool HandleBuyInShopCommand(const char* args); 
         bool HandleViewCreditsCommand(const char* args);
         bool HandleRecupCommand(const char* args);
@@ -665,9 +664,9 @@ class ChatHandler
         // Utility methods for commands
         bool LookupPlayerSearchCommand(QueryResult result, int32 limit);
         bool HandleBanListHelper(QueryResult result);
-        bool HandleBanHelper(BanMode mode,char const* args);
+        bool HandleBanHelper(SanctionType mode,char const* args);
         bool HandleBanInfoHelper(uint32 accountid, char const* accountname);
-        bool HandleUnBanHelper(BanMode mode,char const* args);
+        bool HandleUnBanHelper(SanctionType mode, char const* args);
 
         bool HandleEnableEventCommand(const char* args);
         bool HandleDisableEventCommand(const char* args);

@@ -36,6 +36,7 @@
 #include "ChannelMgr.h"
 #include "IRCMgr.h"
 #include "AccountMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 bool ChatHandler::load_command_table = true;
 
@@ -556,10 +557,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "goto",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGotoCommand,             "" },
         { "fly",            SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcFlyCommand,              "" },
         { "near",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcNearCommand,             "" },
+        { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "" },
 
         //{ TODO: fix or remove this commands
-        { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "" },
-        { "subname",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleSubNameCommand,             "" },
         { "seteventid",     SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetInstanceEventCommand, "" },
         //}
 
@@ -721,7 +721,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "dismount",       SEC_PLAYER,       false, false, &ChatHandler::HandleDismountCommand,            "" },
         { "distance",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetDistanceCommand,         "" },
         { "event",          SEC_GAMEMASTER2,  false, true,  NULL,                                           "", eventCommandTable },
-        { "faction",        SEC_PLAYER,       false, false, &ChatHandler::HandleRaceOrFactionChange,        "" },
+        { "changefaction",  SEC_PLAYER,       false, false, &ChatHandler::HandleRaceOrFactionChange,        "" },
         { "flusharenapoints",SEC_GAMEMASTER3, false, false, &ChatHandler::HandleFlushArenaPointsCommand,    "" },
         { "freeze",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleFreezeCommand,              "" },
         { "getmoveflags",   SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGetMoveFlagsCommand,        "" },
@@ -1063,39 +1063,9 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
         // table[i].Name == "" is special case: send original command to handler
         if((this->*(table[i].Handler))(strlen(table[i].Name)!=0 ? text : oldtext))
         {
-            if (!m_session) // ignore console
-                return true;
-
-            Player* player = m_session->GetPlayer();
-
             //log command
-            if (!AccountMgr::IsPlayerAccount(m_session->GetSecurity()))
-            {
-                uint64 guid = player->GetTarget();
-                uint32 areaId = player->GetAreaId();
-                std::string areaName = "Unknown";
-                std::string zoneName = "Unknown";
-                if (AreaTableEntry const* area = GetAreaEntryByAreaID(areaId))
-                {
-                    int locale = GetSessionDbcLocale();
-                    areaName = area->area_name[locale];
-                    if(area->parentArea)
-                    {
-                        if (AreaTableEntry const* zone = GetAreaEntryByAreaID(area->parentArea))
-                            zoneName = zone->area_name[locale];
-                    } else
-                        zoneName = areaName; //no parent area = the area is the zone (can an area have parents on two levels ? If so this is incorrect)
-                }
-
-                sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Guid: %u) (Account: %u) X: %f Y: %f Z: %f Map: %u (%s) Area: %u (%s) Zone: %s Selected %s: %s (GUID: %u)]",
-                    fullcmd.c_str(), player->GetName().c_str(), GUID_LOPART(player->GetGUID()),
-                    m_session->GetAccountId(), player->GetPositionX(), player->GetPositionY(),
-                    player->GetPositionZ(), player->GetMapId(),
-                    player->GetMap() ? player->GetMap()->GetMapName() : "Unknown",
-                    areaId, areaName.c_str(), zoneName.c_str(), GetLogNameForGuid(guid),
-                    (player->GetSelectedUnit()) ? player->GetSelectedUnit()->GetName().c_str() : "",
-                    GUID_LOPART(guid));
-            }
+            Unit const* target = m_session ? (m_session->GetPlayer() ? m_session->GetPlayer()->GetSelectedUnit() : nullptr) : nullptr;
+            LogsDatabaseAccessor::GMCommand(m_session, target, fullcmd);
         }
         // some commands have custom error messages. Don't send the default one in these cases.
         else if(!sentErrorMessage)

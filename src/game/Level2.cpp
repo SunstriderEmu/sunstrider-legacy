@@ -47,6 +47,7 @@
 #include "CharacterDatabase.h"
 #include "LoginDatabase.h"
 #include "ArenaTeam.h"
+#include "LogsDatabaseAccessor.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "Management/MMapManager.h"                         // for mmap manager
@@ -66,17 +67,17 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 {
     ARGS_CHECK
 
-    char *charname = strtok((char*)args, " ");
+    char* charname = strtok((char*)args, " ");
     if (!charname)
         return false;
 
     std::string cname = charname;
 
-    char *timetonotspeak = strtok(NULL, " ");
+    char* timetonotspeak = strtok(NULL, " ");
     if(!timetonotspeak)
         return false;
 
-    char *mutereason = strtok(NULL, "");
+    char* mutereason = strtok(NULL, "");
     std::string mutereasonstr;
     if (!mutereason)
         return false;
@@ -124,16 +125,17 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         return false;
     }
 
-    time_t mutetime = time(NULL) + notspeaktime*60;
+    uint32 duration = notspeaktime*MINUTE;
+    time_t mutetime = time(NULL) + duration;
 
     if (chr)
         chr->GetSession()->m_muteTime = mutetime;
         
     // Prevent SQL injection
     LogsDatabase.EscapeString(mutereasonstr);
+    LoginDatabase.PExecute("UPDATE account SET mutetime = " UI64FMTD " WHERE id = '%u'", uint64(mutetime), account_id );
 
-    LoginDatabase.PExecute("UPDATE account SET mutetime = " UI64FMTD " WHERE id = '%u'",uint64(mutetime), account_id );
-    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " UI64FMTD ", \"%s\")", account_id, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_MUTE), notspeaktime*60, uint64(time(NULL)), mutereasonstr.c_str());
+    LogsDatabaseAccessor::Sanction(m_session, account_id, 0, SANCTION_MUTE_ACCOUNT, duration, mutereasonstr);
 
     if(chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notspeaktime, mutereasonstr.c_str());
@@ -206,6 +208,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
     }
 
     LoginDatabase.PExecute("UPDATE account SET mutetime = '0' WHERE id = '%u'", account_id );
+    LogsDatabaseAccessor::RemoveSanction(m_session, account_id, 0, "", SANCTION_MUTE_ACCOUNT);
 
     if(chr)
         ChatHandler(chr).PSendSysMessage(LANG_YOUR_CHAT_ENABLED);
@@ -1377,8 +1380,9 @@ bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
         return false;
     }
 
-     LoginDatabase.PExecute("UPDATE account SET email='%s', email_temp=NULL, email_ts='0' WHERE id=%u", mail, targetAccountId);
-     PSendSysMessage("Email changé.");
+     LoginDatabase.PExecute("UPDATE account SET email='%s', newMail=NULL, newMailTS='0' WHERE id=%u", mail, targetAccountId);
+     //TODO translate
+     PSendSysMessage("Mail changed.");
      return true;
 }
 
@@ -4291,8 +4295,8 @@ bool ChatHandler::HandleChanBan(const char* args)
     uint32 durationSecs = TimeStringToSecs(duration);
     
     CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
-    LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " UI64FMTD ", \"%s\")", accountid, m_session ? m_session->GetPlayer()->GetGUIDLow() : 0, uint32(SANCTION_CHANBAN), durationSecs, uint64(time(NULL)), reasonstr.c_str());
-
+    LogsDatabaseAccessor::Sanction(m_session, accountid, 0, SANCTION_CHAN_BAN, durationSecs, reasonstr);
+ 
     PSendSysMessage("You banned %s from World channed with the reason: %s.", charNamestr.c_str(), reasonstr.c_str());
 
     Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str());
@@ -4303,7 +4307,9 @@ bool ChatHandler::HandleChanBan(const char* args)
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
             chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
             chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
-            ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
+            //TODO translate
+            //ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
+            ChatHandler(player).PSendSysMessage("Vous avez été banni du channel world avec la raison suivante : %s", reasonstr.c_str());
         }
     }
     
@@ -4330,7 +4336,11 @@ bool ChatHandler::HandleChanUnban(const char* args)
     
     uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
     if (!accountid)
-        return false;       // TODO: display error message
+    {
+        PSendSysMessage("No account found for player %s.", charNamestr.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
         
     CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u AND expire > %lu", time(NULL), accountid, time(NULL));
     
@@ -4341,10 +4351,16 @@ bool ChatHandler::HandleChanUnban(const char* args)
                 chn->RemoveGMBan(accountid);
         }
     }
+
+    LogsDatabaseAccessor::RemoveSanction(m_session, accountid, 0, "", SANCTION_CHAN_BAN);
  
     PSendSysMessage("Player %s is unbanned.", charNamestr.c_str());
     if (Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str()))
-        ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");   
+    {
+        //TODO translate
+        //ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");
+        ChatHandler(player).PSendSysMessage("Vous êtes maintenant débanni du channel world.");
+    }
     
     return true;
 }
@@ -4369,7 +4385,11 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
     
     uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
     if (!accountid)
-        return false;       // TODO: display error message
+    {
+        PSendSysMessage("No account found for player %s", charNamestr.c_str());
+        SetSentErrorMessage(true);
+        return false;
+    }
         
     QueryResult result = CharacterDatabase.PQuery("SELECT reason, FROM_UNIXTIME(expire), expire FROM channel_ban WHERE accountid = %u AND channel = '%s'", accountid, channelNamestr.c_str());
     if (result) {
@@ -4377,14 +4397,15 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
             Field *fields = result->Fetch();
             std::string reason = fields[0].GetString();
             std::string expiredate = fields[1].GetString();
-            time_t expiretimestamp = time_t(fields[2].GetUInt64());
+            time_t expiretimestamp = time_t(fields[2].GetUInt32());
 
             PSendSysMessage("Reason: \"%s\" - Expires in: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(NULL)) ? "(actif)" : "");
         } while (result->NextRow());
     }
     else {
         PSendSysMessage("No ban on this player.");
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
     
     return true;
@@ -4406,7 +4427,8 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     if (!player || !target)
     {
        PSendSysMessage("Invalid target/source selection.");
-        return true;
+       SetSentErrorMessage(true);
+       return false;
     }
 
     char* para = strtok((char*)args, " ");
@@ -4595,8 +4617,9 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
         
     if (targetPet->getPetType() != HUNTER_PET)
     {
-        SendSysMessage("Must select hunter pet");
-        return true;
+        SendSysMessage("Must select a hunter pet");
+        SetSentErrorMessage(true);
+        return false;
     }
     
     Unit *owner = targetPet->GetOwner();

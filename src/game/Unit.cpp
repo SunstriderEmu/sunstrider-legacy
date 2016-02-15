@@ -40,6 +40,7 @@
 #include "Transport.h"
 #include "InstanceScript.h"
 #include "UpdateFieldFlags.h"
+#include "LogsDatabaseAccessor.h"
 
 #include <math.h>
 
@@ -14340,7 +14341,7 @@ void Unit::LogBossDown(Creature* cVictim)
         }
         else
             mustLog = false; // Don't log solo'ing
-
+        
         std::string bossName = cVictim->GetNameForLocaleIdx(LOCALE_enUS);
         std::string bossNameFr = cVictim->GetNameForLocaleIdx(LOCALE_frFR);
         const char* guildname = "-"; //we'll have to replace this by wathever we want on the website
@@ -14401,7 +14402,7 @@ void Unit::LogBossDown(Creature* cVictim)
         }
 
         if (mustLog)
-            LogsDatabase.PQuery("INSERT INTO boss_down (boss_entry, boss_name, boss_name_fr, guild_id, guild_name, time, guild_percentage, leaderGuid) VALUES (%u, \"%s\", \"%s\", %u, \"%s\", %u, %.2f, %u)", cVictim->GetEntry(), bossName.c_str(), bossNameFr.c_str(), downByGuildId, guildname, time(NULL), guildPercentage, leaderGuid);
+            LogsDatabaseAccessor::BossDown(cVictim, bossName, bossNameFr, downByGuildId, guildname, guildPercentage, leaderGuid);
     }
 }
 

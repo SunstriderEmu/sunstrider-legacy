@@ -914,11 +914,6 @@ Channel.SilentlyGMJoin = 0
 #                 2 (only gamemasters)
 #        Default: 3 (anyone)
 #
-#    GM.LogTrade
-#        Include GM trade and trade slot enchanting operations in GM log if it enable
-#        Default: 1 (include)
-#                 0 (not include)
-#
 #    GM.StartLevel
 #        GM starting level (1-255)
 #        Default: 1
@@ -940,7 +935,6 @@ GM.Chat             = 2
 GM.WhisperingTo     = 2
 GM.InGMList.Level   = 3
 GM.InWhoList.Level  = 3
-GM.LogTrade         = 1
 GM.StartLevel       = 70
 GM.AllowInvite      = 0
 GM.AllowFriend      = 0
@@ -1802,6 +1796,9 @@ Warden.BanTime = "180d"
 #       Monitoring system update intervall
 #       Default: 20000 (milliseconds)
 #
+#    Monitor.KeepDuration
+#		 Keep monitoring data for this much days. 0 to keep forever.
+#
 #    Monitor.path = "/home/trinitycore/monitor"
 #    Monitor.players = "players"
 #    Monitor.timediff = "timediff"
@@ -1819,7 +1816,7 @@ Warden.BanTime = "180d"
 
 Monitor.enabled = 0
 Monitor.update = 20000
-
+Monitor.KeepDuration = 0
 
 ###################################################################################################
 # PACKET SPOOF PROTECTION SETTINGS
@@ -2006,6 +2003,43 @@ Logger.vmap=3,Console Server
 
 Log.Async.Enable = 0
 
+#
+#	DBLog.*
+#		Description: Duration in days for various database logs.
+#		Default:		0  - (Disable)
+#						x  - (Enabled and keep for x days)
+#						-1 - (Enabled and keep forever)
+#	DBLog.gm.*
+#		Description: This overrides the base variant for gm's only. If base variant is already enabled for a longer time, this has no effect.
+#
+
+DBLog.bgstats = -1
+DBLog.BossDowns = -1
+DBLog.char.Delete = -1
+DBLog.gm.char.Delete = -1
+DBLog.char.Chat = 30
+DBLog.gm.char.Chat = -1
+DBLog.char.GuildMoney = 30
+DBLog.gm.char.GuildMoney = -1
+DBLog.char.item.Delete = 30
+DBLog.gm.char.item.Delete = -1
+DBLog.char.item.GuildBank = 30
+DBLog.gm.char.item.GuildBank = -1
+DBLog.char.item.vendor = 30
+DBLog.gm.char.item.vendor = -1
+DBLog.char.item.auction = 30
+DBLog.gm.char.item.auction = -1
+DBLog.char.item.trade = 30
+DBLog.gm.char.item.trade = -1
+DBLog.char.item.enchant = 30
+DBLog.gm.char.item.enchant = -1
+DBLog.char.mail = 30
+DBLog.gm.char.mail = -1
+DBLog.char.rename = 30
+DBLog.gm.char.rename = -1
+DBLog.GMCommands = -1
+DBLog.sanctions = -1
+	
 #
 #    Allow.IP.Based.Action.Logging
 #        Description: Logs actions, e.g. account login and logout to name a few, based on IP of

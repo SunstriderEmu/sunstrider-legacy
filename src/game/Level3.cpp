@@ -3921,7 +3921,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
             PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name.c_str());
 
-    PSendSysMessage("Mouvement flag: %u", target->GetUnitMovementFlags());
+    PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
     {
         SendSysMessage(LANG_NPCINFO_VENDOR);
@@ -5561,20 +5561,20 @@ bool ChatHandler::HandleTotalCount(const char* args)
 
 bool ChatHandler::HandleBanAccountCommand(const char* args)
 {
-    return HandleBanHelper(BAN_ACCOUNT,args);
+    return HandleBanHelper(SANCTION_BAN_ACCOUNT,args);
 }
 
 bool ChatHandler::HandleBanCharacterCommand(const char* args)
 {
-    return HandleBanHelper(BAN_CHARACTER,args);
+    return HandleBanHelper(SANCTION_BAN_CHARACTER,args);
 }
 
 bool ChatHandler::HandleBanIPCommand(const char* args)
 {
-    return HandleBanHelper(BAN_IP,args);
+    return HandleBanHelper(SANCTION_BAN_IP,args);
 }
 
-bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
+bool ChatHandler::HandleBanHelper(SanctionType mode, const char* args)
 {
     char* cnameOrIP = strtok ((char*)args, " ");
     if (!cnameOrIP)
@@ -5592,7 +5592,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
 
     switch(mode)
     {
-        case BAN_ACCOUNT:
+        case SANCTION_BAN_ACCOUNT:
             if(!AccountMgr::normalizeString(nameOrIP))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameOrIP.c_str());
@@ -5600,7 +5600,7 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
                 return false;
             }
             break;
-        case BAN_CHARACTER:
+        case SANCTION_BAN_CHARACTER:
             if(!normalizePlayerName(nameOrIP))
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5608,13 +5608,13 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
                 return false;
             }
             break;
-        case BAN_IP:
+        case SANCTION_BAN_IP:
             if(!IsIPAddress(nameOrIP.c_str()))
                 return false;
             break;
     }
 
-    switch(sWorld->BanAccount(mode, nameOrIP, duration, reason,m_session ? m_session->GetPlayerName() : ""))
+    switch(sWorld->BanAccount(mode, nameOrIP, duration, reason, m_session ? m_session->GetPlayerName() : "", m_session))
     {
         case BAN_SUCCESS:
             if(atoi(duration)>0)
@@ -5630,10 +5630,10 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
                 default:
                     PSendSysMessage(LANG_BAN_NOTFOUND,"account",nameOrIP.c_str());
                     break;
-                case BAN_CHARACTER:
+                case SANCTION_BAN_CHARACTER:
                     PSendSysMessage(LANG_BAN_NOTFOUND,"character",nameOrIP.c_str());
                     break;
-                case BAN_IP:
+                case SANCTION_BAN_IP:
                     PSendSysMessage(LANG_BAN_NOTFOUND,"ip",nameOrIP.c_str());
                     break;
             }
@@ -5646,20 +5646,20 @@ bool ChatHandler::HandleBanHelper(BanMode mode, const char* args)
 
 bool ChatHandler::HandleUnBanAccountCommand(const char* args)
 {
-    return HandleUnBanHelper(BAN_ACCOUNT,args);
+    return HandleUnBanHelper(SANCTION_BAN_ACCOUNT,args);
 }
 
 bool ChatHandler::HandleUnBanCharacterCommand(const char* args)
 {
-    return HandleUnBanHelper(BAN_CHARACTER,args);
+    return HandleUnBanHelper(SANCTION_BAN_CHARACTER,args);
 }
 
 bool ChatHandler::HandleUnBanIPCommand(const char* args)
 {
-    return HandleUnBanHelper(BAN_IP,args);
+    return HandleUnBanHelper(SANCTION_BAN_IP,args);
 }
 
-bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
+bool ChatHandler::HandleUnBanHelper(SanctionType mode, const char* args)
 {
     char* cnameOrIP = strtok ((char*)args, " ");
     if(!cnameOrIP)
@@ -5669,7 +5669,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
 
     switch(mode)
     {
-        case BAN_ACCOUNT:
+        case SANCTION_BAN_ACCOUNT:
             if(!AccountMgr::normalizeString(nameOrIP))
             {
                 PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,nameOrIP.c_str());
@@ -5677,7 +5677,7 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
                 return false;
             }
             break;
-        case BAN_CHARACTER:
+        case SANCTION_BAN_CHARACTER:
             if(!normalizePlayerName(nameOrIP))
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5685,13 +5685,13 @@ bool ChatHandler::HandleUnBanHelper(BanMode mode, const char* args)
                 return false;
             }
             break;
-        case BAN_IP:
+        case SANCTION_BAN_IP:
             if(!IsIPAddress(nameOrIP.c_str()))
                 return false;
             break;
     }
 
-    if(sWorld->RemoveBanAccount(mode,nameOrIP))
+    if(sWorld->RemoveBanAccount(mode,nameOrIP, m_session))
         PSendSysMessage(LANG_UNBAN_UNBANNED,nameOrIP.c_str());
     else
         PSendSysMessage(LANG_UNBAN_ERROR,nameOrIP.c_str());
@@ -5810,6 +5810,55 @@ bool ChatHandler::HandleBanInfoIPCommand(const char* args)
     return true;
 }
 
+bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
+{
+    QueryResult result = LoginDatabase.PQuery("SELECT mutetime FROM account WHERE id = %u", accountid);
+    //mutetime here is actually timestamp before player can speak again
+    if (!result) {
+        chatHandler.PSendSysMessage("No active sanction on this account.");
+        return true;
+    }
+    else {
+        Field* fields = result->Fetch();
+        uint64 unmuteTime = fields[0].GetUInt64();
+
+        chatHandler.PSendSysMessage("Active sanction on this account. Unban time: %s", TimeToTimestampStr(unmuteTime));
+    }
+
+    chatHandler.PSendSysMessage("Detailed mute list :");
+    //PrepareStatement(LOGS_SEL_SANCTION_MUTE_ACCOUNT, "SELECT author_account, author_guid, target_account, duration, time, reason, IP FROM gm_sanction WHERE target_account = ? AND type = 5", CONNECTION_SYNCH); //5 is SANCTION_MUTE_ACCOUNT
+    PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_SEL_SANCTION_MUTE_ACCOUNT);
+    stmt->setUInt32(0, accountid);
+    PreparedQueryResult result2 = LogsDatabase.Query(stmt);
+
+    if (!result2) {
+        chatHandler.PSendSysMessage("No sanction logged on this account.");
+        return true;
+    }
+
+    do {
+        Field* fields = result2->Fetch();
+
+        uint32 authorAccount = fields[0].GetUInt32();
+        uint32 authorGUID = fields[1].GetUInt32();
+        uint32 targetAccount = fields[2].GetUInt32();
+        uint32 duration = fields[3].GetUInt32();
+        uint64 muteTime = fields[4].GetUInt32();
+        std::string reason = fields[5].GetString();
+        std::string authorIP = fields[6].GetString();
+        uint64 unbantimestamp = muteTime + (duration * MINUTE);
+        std::string authorname;
+        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
+            authorname = nameData->m_name;
+        else
+            authorname = "<Unknown>";
+
+        chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (at %s)%s.", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+    } while (result2->NextRow());
+
+    return true;
+}
+
 bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
 {
     ARGS_CHECK
@@ -5833,30 +5882,7 @@ bool ChatHandler::HandleMuteInfoAccountCommand(const char* args)
         return true;
     }
     
-    QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = %u", accountid, uint32(SANCTION_MUTE));
-    if (!result) {
-        PSendSysMessage("No sanction on this account.");
-        return true;
-    }
-    
-    do {
-        Field* fields = result->Fetch();
-        uint32 duration = fields[0].GetUInt32();
-        std::string reason = fields[1].GetString();
-        uint32 authorGUID = fields[2].GetUInt32();
-        std::string unbanstr = fields[3].GetString();
-        uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
-        std::string authorname;
-        std::string displayName;
-        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
-            authorname = nameData->m_name;
-        else
-            authorname = "<Unknown>";
-
-        PSendSysMessage("Account %u: Mute %s for %s by %s (%s)%s.", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), reason.c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
-    } while (result->NextRow());
-    
-    return true;
+    return MuteInfoForAccount(*this, accountid);
 }
 
 bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
@@ -5880,38 +5906,8 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         SetSentErrorMessage(true);
         return false;
     }
-
-    std::string accountname;
-    if(!sAccountMgr->GetName(accountid,accountname))
-    {
-        PSendSysMessage(LANG_BANINFO_NOCHARACTER);
-        return true;
-    }
     
-    QueryResult result = LogsDatabase.PQuery("SELECT duration, reason, author, FROM_UNIXTIME(time), time FROM sanctions WHERE acctid = %d AND type = 0", accountid);
-    if (!result) {
-        //PSendSysMessage("Aucune sanction pour le compte de ce personnage.");
-        PSendSysMessage("No sanction found for this character.");
-        return true;
-    }
-    
-    do {
-        Field* fields = result->Fetch();
-        std::string reason = fields[1].GetString();
-        uint32 duration = fields[0].GetUInt32();
-        uint32 authorGUID = fields[2].GetUInt32();
-        std::string unbanstr = fields[3].GetString();
-        uint64 unbantimestamp = fields[4].GetUInt64() + (duration * 60);
-        std::string authorname;
-        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
-            authorname = nameData->m_name;
-        else
-            authorname = "<Unknown>";
-
-        PSendSysMessage("Account %d: Mute %s by \"%s\" for %s (%s)%s.", accountid, secsToTimeString(fields[0].GetUInt32()).c_str(), reason.c_str(), authorname.c_str(), unbanstr.c_str(), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
-    } while (result->NextRow());
-    
-    return true;
+    return MuteInfoForAccount(*this, accountid);
 }
 
 bool ChatHandler::HandleBanListCharacterCommand(const char* args)
@@ -7140,7 +7136,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
 
-    uint32 messagetype = MAIL_NORMAL;
+    MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 
@@ -7160,7 +7156,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     }
     CharacterDatabase.CommitTransaction(trans);
 
-    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, &mi, 0, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -7241,7 +7237,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
     // from console show not existed sender
     uint32 sender_guidlo = m_session ? m_session->GetPlayer()->GetGUIDLow() : 0;
 
-    uint32 messagetype = MAIL_NORMAL;
+    MailMessageType messagetype = MAIL_NORMAL;
     uint32 stationery = MAIL_STATIONERY_GM;
     uint32 itemTextId = !text.empty() ? sObjectMgr->CreateItemText( text ) : 0;
 

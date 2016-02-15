@@ -2379,12 +2379,15 @@ enum ResponseCodes
     CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME            = 0x5A,
 };
 
-/// Ban function modes
-enum BanMode
+/// Sanctions function modes. These are fixed since they are inserted and read in database.
+enum SanctionType : uint32
 {
-    BAN_ACCOUNT,
-    BAN_CHARACTER,
-    BAN_IP
+    SANCTION_BAN_ACCOUNT     = 1,
+    SANCTION_BAN_CHARACTER   = 2,
+    SANCTION_BAN_IP          = 3,
+    SANCTION_MUTE_CHARACTER  = 4,
+    SANCTION_MUTE_ACCOUNT    = 5,
+    SANCTION_CHAN_BAN        = 6,
 };
 
 /// Ban function return codes

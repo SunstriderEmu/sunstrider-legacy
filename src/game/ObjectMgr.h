@@ -763,7 +763,8 @@ class ObjectMgr
 
         bool IsInTemporaryGuidRange(uint32 type, uint32 guid);
 
-        uint32 CreateItemText(std::string text);
+        uint32 CreateItemText(SQLTransaction& charTrans, std::string const& text);
+        uint32 CreateItemText(std::string const& text);
         std::string GetItemText( uint32 id )
         {
             ItemTextMap::const_iterator itr = mItemTexts.find( id );

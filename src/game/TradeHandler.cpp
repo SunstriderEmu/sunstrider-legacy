@@ -29,6 +29,7 @@
 #include "Item.h"
 #include "SocialMgr.h"
 #include "Language.h"
+#include "LogsDatabaseAccessor.h"
 
 enum TradeStatus
 {
@@ -41,11 +42,11 @@ enum TradeStatus
     TRADE_STATUS_NO_TARGET      = 6,
     TRADE_STATUS_BACK_TO_TRADE  = 7,
     TRADE_STATUS_TRADE_COMPLETE = 8,
-    // 9?
+    TRADE_STATUS_TRADE_REJECTED = 9,
     TRADE_STATUS_TARGET_TO_FAR  = 10,
     TRADE_STATUS_WRONG_FACTION  = 11,
     TRADE_STATUS_CLOSE_WINDOW   = 12,
-    // 13?
+    TRADE_STATUS_UNK_13         = 13,
     TRADE_STATUS_IGNORE_YOU     = 14,
     TRADE_STATUS_YOU_STUNNED    = 15,
     TRADE_STATUS_TARGET_STUNNED = 16,
@@ -175,7 +176,7 @@ void WorldSession::SendUpdateTrade()
 //==============================================================
 // transfer the items to the players
 
-void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
+void WorldSession::moveItems(std::vector<Item*> myItems, std::vector<Item*> hisItems)
 {
     for(int i=0; i<TRADE_SLOT_TRADED_COUNT; i++)
     {
@@ -190,29 +191,11 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
             // A roll back is not possible after we stored it
             if(myItems[i])
             {
-                // logging
-                if( _player->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
-                {
-                    sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                        myItems[i]->GetTemplate()->Name1.c_str(),myItems[i]->GetEntry(),myItems[i]->GetCount(),
-                        _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId());
-                }
-
                 // store
                 _player->pTrader->MoveItemToInventory( traderDst, myItems[i], true, true);
             }
             if(hisItems[i])
             {
-                // logging
-                if( _player->pTrader->GetSession()->GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
-                {
-                    sLog->outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId(),
-                        hisItems[i]->GetTemplate()->Name1.c_str(),hisItems[i]->GetEntry(),hisItems[i]->GetCount(),
-                        _player->GetName().c_str(),_player->GetSession()->GetAccountId());
-                }
-
                 // store
                 _player->MoveItemToInventory( playerDst, hisItems[i], true, true);
             }
@@ -224,21 +207,21 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
             if(myItems[i])
             {
                 if(!traderCanTrade)
-                    TC_LOG_ERROR("FIXME","trader can't store item: %u",myItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Trader %u can't store item: %u", _player->GetGUIDLow(), myItems[i]->GetGUIDLow());
                 if(_player->CanStoreItem( NULL_BAG, NULL_SLOT, playerDst, myItems[i], false ) == EQUIP_ERR_OK)
                     _player->MoveItemToInventory(playerDst, myItems[i], true, true);
                 else
-                    TC_LOG_ERROR("FIXME","Player can't take item back: %u",myItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Player %u can't take item back: %u", _player->GetGUIDLow(), myItems[i]->GetGUIDLow());
             }
             // return the already removed items to the original owner
             if(hisItems[i])
             {
                 if(!playerCanTrade)
-                    TC_LOG_ERROR("FIXME","player can't store item: %u",hisItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Player %u can't store item: %u", _player->GetGUIDLow(), hisItems[i]->GetGUIDLow());
                 if(_player->pTrader->CanStoreItem( NULL_BAG, NULL_SLOT, traderDst, hisItems[i], false ) == EQUIP_ERR_OK)
                     _player->pTrader->MoveItemToInventory(traderDst, hisItems[i], true, true);
                 else
-                    TC_LOG_ERROR("FIXME","trader can't take item back: %u",hisItems[i]->GetGUIDLow());
+                    TC_LOG_FATAL("FIXME","Trader %u can't take item back: %u", _player->GetGUIDLow(), hisItems[i]->GetGUIDLow());
             }
         }
     }
@@ -250,9 +233,10 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 {
     PROFILE;
     
-    Item *myItems[TRADE_SLOT_TRADED_COUNT]  = { NULL, NULL, NULL, NULL, NULL, NULL };
-    Item *hisItems[TRADE_SLOT_TRADED_COUNT] = { NULL, NULL, NULL, NULL, NULL, NULL };
-    bool myCanCompleteTrade=true,hisCanCompleteTrade=true;
+    std::vector<Item*> myItems(TRADE_SLOT_TRADED_COUNT, nullptr);
+    std::vector<Item*> hisItems(TRADE_SLOT_TRADED_COUNT, nullptr);
+    bool myCanCompleteTrade = true;
+    bool hisCanCompleteTrade = true;
 
     if ( !GetPlayer()->pTrader )
         return;
@@ -275,7 +259,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         if (result) {
             Field* fields = result->Fetch();
             banuname = fields[0].GetString();
-            sWorld->BanAccount(BAN_ACCOUNT, banuname, "0", "Tentative de cheat durant un échange entre joueurs", "Warden");
+            sWorld->BanAccount(SANCTION_BAN_ACCOUNT, banuname, "0", "Trying to cheat during a trade with a player (Putting more gold in trade than the the player currently has)", "Internal check", nullptr);
         }
         _player->pTrader->GetSession( )->SendNotification(LANG_NOT_ENOUGH_GOLD);
         SendTradeStatus(TRADE_STATUS_BACK_TO_TRADE);
@@ -334,7 +318,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         }
 
         // test if item will fit in each inventory
-        hisCanCompleteTrade =  (_player->pTrader->CanStoreItems( myItems,TRADE_SLOT_TRADED_COUNT )== EQUIP_ERR_OK);
+        hisCanCompleteTrade =  (_player->pTrader->CanStoreItems( myItems, TRADE_SLOT_TRADED_COUNT )== EQUIP_ERR_OK);
         myCanCompleteTrade = (_player->CanStoreItems( hisItems,TRADE_SLOT_TRADED_COUNT ) == EQUIP_ERR_OK);
 
         // clear 'in-trade' flag
@@ -380,24 +364,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         // execute trade: 2. store
         moveItems(myItems, hisItems);
 
-        // logging money
-        if(sWorld->getConfig(CONFIG_GM_LOG_TRADE))
-        {
-            if( _player->GetSession()->GetSecurity() > SEC_PLAYER && _player->tradeGold > 0)
-            {
-                sLog->outCommand(_player->GetSession()->GetAccountId(),"GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
-                    _player->GetName().c_str(),_player->GetSession()->GetAccountId(),
-                    _player->tradeGold,
-                    _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId());
-            }
-            if( _player->pTrader->GetSession()->GetSecurity() > SEC_PLAYER && _player->pTrader->tradeGold > 0)
-            {
-                sLog->outCommand(_player->pTrader->GetSession()->GetAccountId(),"GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
-                    _player->pTrader->GetName().c_str(),_player->pTrader->GetSession()->GetAccountId(),
-                    _player->pTrader->tradeGold,
-                    _player->GetName().c_str(),_player->GetSession()->GetAccountId());
-            }
-        }
+        sLogsDatabaseAccessor->CharacterTrade(_player, _player->pTrader, myItems, hisItems, _player->tradeGold, _player->pTrader->tradeGold);
 
         // update money
         _player->ModifyMoney( -int32(_player->tradeGold) );

@@ -769,7 +769,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
     }
     if(sWorld->GetMvAnticheatBan() & 1)
     {
-        sWorld->BanAccount(BAN_CHARACTER,player,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat");
+        sWorld->BanAccount(SANCTION_BAN_CHARACTER,player,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat", nullptr);
     }
     if(sWorld->GetMvAnticheatBan() & 2)
     {
@@ -780,7 +780,7 @@ bool WorldSession::Anti__ReportCheat(const char* Reason,float Speed,const char* 
             Field *fields = result->Fetch();
             std::string LastIP = fields[0].GetString();
             if(!LastIP.empty())
-                sWorld->BanAccount(BAN_IP,LastIP,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat");
+                sWorld->BanAccount(SANCTION_BAN_IP,LastIP,sWorld->GetMvAnticheatBanTime(),"Cheat","Anticheat", nullptr);
         }
     }
     return true;

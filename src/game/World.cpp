@@ -72,6 +72,7 @@
 #include "ScriptMgr.h"
 #include "AddonMgr.h"
 #include "Management/VMapManager2.h"
+#include "LogsDatabaseAccessor.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAIConfig.h"
@@ -855,7 +856,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GM_WISPERING_TO]      = sConfigMgr->GetIntDefault("GM.WhisperingTo",2);
     m_configs[CONFIG_GM_LEVEL_IN_GM_LIST]  = sConfigMgr->GetIntDefault("GM.InGMList.Level", SEC_GAMEMASTER3);
     m_configs[CONFIG_GM_LEVEL_IN_WHO_LIST] = sConfigMgr->GetIntDefault("GM.InWhoList.Level", SEC_GAMEMASTER3);
-    m_configs[CONFIG_GM_LOG_TRADE]         = sConfigMgr->GetBoolDefault("GM.LogTrade", false);
     m_configs[CONFIG_START_GM_LEVEL]       = sConfigMgr->GetIntDefault("GM.StartLevel", 1);
     m_configs[CONFIG_ALLOW_GM_GROUP]       = sConfigMgr->GetBoolDefault("GM.AllowInvite", false);
     m_configs[CONFIG_ALLOW_GM_FRIEND]      = sConfigMgr->GetBoolDefault("GM.AllowFriend", false);
@@ -872,6 +872,33 @@ void World::LoadConfigSettings(bool reload)
     }
 
     m_configs[CONFIG_GROUP_VISIBILITY] = sConfigMgr->GetIntDefault("Visibility.GroupMode",0);
+
+    m_configs[CONFIG_LOG_BG_STATS] = sConfigMgr->GetIntDefault("DBLog.bgstats", -1);
+    m_configs[CONFIG_LOG_BOSS_DOWNS] = sConfigMgr->GetIntDefault("DBLog.BossDowns", -1);
+    m_configs[CONFIG_LOG_CHAR_DELETE] = sConfigMgr->GetIntDefault("DBLog.char.Delete", -1);
+    m_configs[CONFIG_GM_LOG_CHAR_DELETE] = sConfigMgr->GetIntDefault("DBLog.gm.char.Delete", -1);
+    m_configs[CONFIG_LOG_CHAR_CHAT] = sConfigMgr->GetIntDefault("DBLog.char.Chat", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_CHAT] = sConfigMgr->GetIntDefault("DBLog.gm.char.Chat", -1);
+    m_configs[CONFIG_LOG_CHAR_GUILD_MONEY] = sConfigMgr->GetIntDefault("DBLog.char.GuildMoney", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_GUILD_MONEY] = sConfigMgr->GetIntDefault("DBLog.gm.char.GuildMoney", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_DELETE] = sConfigMgr->GetIntDefault("DBLog.char.item.Delete", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_DELETE] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.Delete", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_GUILD_BANK] = sConfigMgr->GetIntDefault("DBLog.char.item.GuildBank", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_GUILD_BANK] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.GuildBank", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_VENDOR] = sConfigMgr->GetIntDefault("DBLog.char.item.vendor", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_VENDOR] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.vendor", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_AUCTION] = sConfigMgr->GetIntDefault("DBLog.char.item.auction", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_AUCTION] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.auction", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_TRADE] = sConfigMgr->GetIntDefault("DBLog.char.item.trade", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_TRADE] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.trade", -1);
+    m_configs[CONFIG_LOG_CHAR_ITEM_ENCHANT] = sConfigMgr->GetIntDefault("DBLog.char.item.enchant", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_ITEM_ENCHANT] = sConfigMgr->GetIntDefault("DBLog.gm.char.item.enchant", -1);
+    m_configs[CONFIG_LOG_CHAR_MAIL] = sConfigMgr->GetIntDefault("DBLog.char.mail", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_MAIL] = sConfigMgr->GetIntDefault("DBLog.gm.char.mail", -1);
+    m_configs[CONFIG_LOG_CHAR_RENAME] = sConfigMgr->GetIntDefault("DBLog.char.rename", 30);
+    m_configs[CONFIG_GM_LOG_CHAR_RENAME] = sConfigMgr->GetIntDefault("DBLog.gm.char.rename", -1);
+    m_configs[CONFIG_LOG_GM_COMMANDS] = sConfigMgr->GetIntDefault("DBLog.GMCommands", -1);
+    m_configs[CONFIG_LOG_SANCTIONS] = sConfigMgr->GetIntDefault("DBLog.sanctions", -1);
 
     m_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfigMgr->GetIntDefault("MailDeliveryDelay",HOUR);
 
@@ -1135,6 +1162,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.enabled", false);
     m_configs[CONFIG_MONITORING_UPDATE] = sConfigMgr->GetIntDefault("Monitor.update", 20000);
+    m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDuration", 0);
 
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
     char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
@@ -1189,9 +1217,9 @@ void World::LoadConfigSettings(bool reload)
     
     //packet spoof punishment
     m_configs[CONFIG_PACKET_SPOOF_POLICY] = sConfigMgr->GetIntDefault("PacketSpoof.Policy", (uint32)WorldSession::DosProtection::POLICY_KICK);
-    m_configs[CONFIG_PACKET_SPOOF_BANMODE] = sConfigMgr->GetIntDefault("PacketSpoof.BanMode", (uint32)BAN_ACCOUNT);
-    if (m_configs[CONFIG_PACKET_SPOOF_BANMODE] == BAN_CHARACTER || m_configs[CONFIG_PACKET_SPOOF_BANMODE] > BAN_IP)
-        m_configs[CONFIG_PACKET_SPOOF_BANMODE] = BAN_ACCOUNT;
+    m_configs[CONFIG_PACKET_SPOOF_BANMODE] = sConfigMgr->GetIntDefault("PacketSpoof.BanMode", (uint32)SANCTION_BAN_ACCOUNT);
+    if (m_configs[CONFIG_PACKET_SPOOF_BANMODE] == SANCTION_BAN_CHARACTER || m_configs[CONFIG_PACKET_SPOOF_BANMODE] > SANCTION_BAN_IP)
+        m_configs[CONFIG_PACKET_SPOOF_BANMODE] = SANCTION_BAN_ACCOUNT;
 
     m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfigMgr->GetIntDefault("Spam.Report.Threshold", 3);
     m_configs[CONFIG_SPAM_REPORT_PERIOD] = sConfigMgr->GetIntDefault("Spam.Report.Period", 120); // In seconds
@@ -1702,9 +1730,9 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading","Cleaning up old logs...");
     if(m_configs[CONFIG_MONITORING_ENABLED])
-        CleanupOldMonitorLogs(); 
+        sLogsDatabaseAccessor->CleanupOldMonitorLogs();
 
-    CleanupOldLogs();
+    sLogsDatabaseAccessor->CleanupOldLogs();
 
     LoadCharacterNameData();
 
@@ -3090,7 +3118,7 @@ bool World::KickPlayer(const std::string& playerName)
 }
 
 /// Ban an account or ban an IP address, duration is in seconds if positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 duration_secs, std::string const& _reason, std::string const& author)
+BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uint32 duration_secs, std::string const& _reason, std::string const& author, WorldSession const* author_session)
 {
     std::string nameOrIP(_nameOrIP);
     LoginDatabase.EscapeString(nameOrIP);
@@ -3099,6 +3127,8 @@ BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 d
     std::string safe_author=author;
     LoginDatabase.EscapeString(safe_author);
 
+    AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
+
     QueryResult resultAccounts = NULL;                     //used for kicking
     
     uint32 authorGUID = sObjectMgr->GetPlayerLowGUIDByName(safe_author);
@@ -3106,16 +3136,16 @@ BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 d
     ///- Update the database with ban information
     switch(mode)
     {
-        case BAN_IP:
+        case SANCTION_BAN_IP:
             //No SQL injection as strings are escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
             LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
             break;
-        case BAN_ACCOUNT:
+        case SANCTION_BAN_ACCOUNT:
             //No SQL injection as string is escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE username = '%s'",nameOrIP.c_str());
             break;
-        case BAN_CHARACTER:
+        case SANCTION_BAN_CHARACTER:
             //No SQL injection as string is escaped
             resultAccounts = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'",nameOrIP.c_str());
             break;
@@ -3125,7 +3155,7 @@ BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 d
 
     if(!resultAccounts)
     {
-        if(mode==BAN_IP)
+        if(mode== SANCTION_BAN_IP)
             return BAN_SUCCESS;                             // ip correctly banned but nobody affected (yet)
         else
             return BAN_NOTFOUND;                                // Nobody to ban
@@ -3136,18 +3166,19 @@ BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 d
     {
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
-        LoginDatabase.PExecute("UPDATE account SET email_temp = '', email_ts = 0 WHERE id = %u",account);
+        //also reset mail change
+        LoginDatabase.PExecute("UPDATE account SET newMail = '', newMailTS = 0 WHERE id = %u",account);
 
-        if(mode!=BAN_IP)
+        if(mode!= SANCTION_BAN_IP)
         {
             //No SQL injection as strings are escaped
             LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
                 account,duration_secs,safe_author.c_str(),reason.c_str());
-            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " UI64FMTD ", \"%s\")", account, authorGUID, uint32(SANCTION_BAN_ACCOUNT), duration_secs, uint64(time(NULL)), reason.c_str());
+            LogsDatabaseAccessor::Sanction(author_session, account, 0, SANCTION_BAN_ACCOUNT, duration_secs, reason);
         }
         else {
             // Log ip ban for each account on that IP
-            LogsDatabase.PExecute("INSERT INTO sanctions VALUES (%u, %u, %u, %u, " UI64FMTD ", \"%s\")", account, authorGUID, uint32(SANCTION_BAN_IP), duration_secs, uint64(time(NULL)), reason.c_str());
+            LogsDatabaseAccessor::Sanction(author_session, account, 0, SANCTION_BAN_IP, duration_secs, reason);
         }
 
         if (WorldSession* sess = FindSession(account))
@@ -3160,26 +3191,29 @@ BanReturn World::BanAccount(BanMode mode, std::string const& _nameOrIP, uint32 d
 }
 
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
-BanReturn World::BanAccount(BanMode mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author)
+//Todo: Drop "author" in favor of session
+BanReturn World::BanAccount(SanctionType mode, std::string const& nameOrIP, std::string const& duration, std::string const& reason, std::string const& author, WorldSession const* author_session)
 {
     uint32 duration_secs = TimeStringToSecs(duration);
-    return BanAccount(mode, nameOrIP, duration_secs, reason, author);
+    return BanAccount(mode, nameOrIP, duration_secs, reason, author, author_session);
 }
 
 /// Remove a ban from an account or IP address
-bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
+bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSession const* unbanAuthor)
 {
-    if (mode == BAN_IP)
+    if (mode == SANCTION_BAN_IP)
     {
         LoginDatabase.EscapeString(nameOrIP);
         LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameOrIP.c_str());
+
+        LogsDatabaseAccessor::RemoveSanction(unbanAuthor, 0, 0, nameOrIP, SANCTION_BAN_IP);
     }
     else
     {
         uint32 account = 0;
-        if (mode == BAN_ACCOUNT)
+        if (mode == SANCTION_BAN_ACCOUNT)
             account = sAccountMgr->GetId (nameOrIP);
-        else if (mode == BAN_CHARACTER)
+        else if (mode == SANCTION_BAN_CHARACTER)
             account = sObjectMgr->GetPlayerAccountIdByPlayerName (nameOrIP);
 
         if (!account)
@@ -3187,6 +3221,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 
         //NO SQL injection as account is uint32
         LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+        LogsDatabaseAccessor::RemoveSanction(unbanAuthor, account, 0, "", mode);
     }
     return true;
 }
@@ -3521,36 +3556,6 @@ void World::ResetDailyQuests()
             }
         }
     }
-}
-
-void World::CleanupOldMonitorLogs()
-{
-    TC_LOG_DEBUG("FIXME","Cleaning old logs from monitoring system. ( > 1 month old)");
-    
-    time_t now = time(NULL);
-    time_t limit = now - (1 * MONTH);
-    
-    SQLTransaction trans = LogsDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM mon_players WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_timediff WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_maps WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_races WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM mon_classes WHERE time < %u", limit);
-    LogsDatabase.CommitTransaction(trans);
-}
-
-void World::CleanupOldLogs()
-{
-    TC_LOG_DEBUG("FIXME","Cleaning old logs for deleted chars and items. ( > 1 month old)");
-
-    time_t now = time(NULL);
-    time_t limit = now - (1 * MONTH);
-    
-    SQLTransaction trans = LogsDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM char_delete WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM item_delete WHERE time < %u", limit);
-    trans->PAppend("DELETE FROM item_mail WHERE time < %u",   limit);
-    LogsDatabase.CommitTransaction(trans);
 }
 
 void World::InitNewDataForQuestPools()

@@ -170,9 +170,9 @@ class ObjectAccessor
         // thread-safe
         static Unit* GetUnit(WorldObject const &, uint64);
         // thread-safe
-        static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
+        inline static Pet* GetPet(Unit const &, uint64 guid) { return GetPet(guid); }
         // thread-safe
-        static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
+        inline static Player* GetPlayer(Unit const &, uint64 guid) { return FindPlayer(guid); }
         // thread-safe
         static GameObject* GetGameObject(WorldObject const &, uint64);
         // thread-safe
@@ -183,6 +183,7 @@ class ObjectAccessor
         static Pet* GetPet(uint64 guid);
         
         /* Find a player in world by guid, thread-safe */
+        static Player* FindPlayer(uint32);
         static Player* FindPlayer(uint64);
         /* Find a player in all connected players by guid, thread-safe.
            /!\ Player may not be in world. */

@@ -68,8 +68,8 @@ struct AuctionEntry
     uint32 GetAuctionCut() const;
     uint32 GetAuctionOutBid() const;
     bool BuildAuctionInfo(WorldPacket & data) const;
-    void DeleteFromDB() const;
-    void SaveToDB() const;
+    void DeleteFromDB(SQLTransaction& trans) const;
+    void SaveToDB(SQLTransaction& trans) const;
 };
 
 //this class is used as auctionhouse instance
@@ -107,7 +107,7 @@ class AuctionHouseObject
         return AuctionsMap.erase(id) ? true : false;
     }
     
-    void RemoveAllAuctionsOf(uint32 ownerGUID);
+    void RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID);
 
     void Update();
 
@@ -151,13 +151,13 @@ class AuctionHouseMgr
         }
 
         //auction messages
-        void SendAuctionWonMail( AuctionEntry * auction );
-        void SendAuctionSalePendingMail( AuctionEntry * auction );
-        void SendAuctionSuccessfulMail( AuctionEntry * auction );
-        void SendAuctionExpiredMail( AuctionEntry * auction );
+        void SendAuctionWonMail( SQLTransaction& trans, AuctionEntry * auction );
+        void SendAuctionSalePendingMail(SQLTransaction& trans, AuctionEntry * auction );
+        void SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEntry * auction );
+        void SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry * auction );
         static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item *pItem);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
-        void RemoveAllAuctionsOf(uint32 ownerGUID);
+        void RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID);
 
     public:
       //load first auction items, because of check if item exists, when loading

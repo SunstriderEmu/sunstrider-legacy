@@ -21,6 +21,7 @@
 #include "ArenaTeam.h"
 #include "Chat.h"
 #include "World.h"
+#include "LogsDatabaseAccessor.h"
 
 ArenaTeam::ArenaTeam()
 {

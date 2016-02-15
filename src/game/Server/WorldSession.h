@@ -43,6 +43,7 @@ struct MovementInfo;
 class WardenBase;
 class BigNumber;
 struct AddonInfo;
+enum MailMessageType : uint32;
 
 class Creature;
 class Item;
@@ -265,7 +266,7 @@ class WorldSession
         std::string GetPlayerInfo() const;
 
         void SetSecurity(uint32 security) { _security = security; }
-        std::string const& GetRemoteAddress() { return m_Address; }
+        std::string const& GetRemoteAddress() const { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
 
@@ -368,7 +369,8 @@ class WorldSession
                                                             //used with item_page table
         bool SendItemInfo( uint32 itemid, WorldPacket data );
         static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
-        static void SendMailTo(Player* receiver, uint8 messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
+        static void SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
+        static void SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
 
         //return item name for player local, or default to english if not found
         std::string GetLocalizedItemName(const ItemTemplate* proto);
@@ -940,7 +942,7 @@ class WorldSession
 
     private:
         // private trade methods
-        void moveItems(Item* myItems[], Item* hisItems[]);
+        void moveItems(std::vector<Item*> myItems, std::vector<Item*> hisItems);
 
         // logging helper
         void LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason);

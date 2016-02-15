@@ -185,6 +185,11 @@ Player* ObjectAccessor::FindPlayer(uint64 guid)
     return GetObjectInWorld(guid, (Player*)NULL);
 }
 
+Player* ObjectAccessor::FindPlayer(uint32 guidLow)
+{
+    return FindPlayer(MAKE_PAIR64(guidLow, HIGHGUID_PLAYER));
+}
+
 Player* ObjectAccessor::FindConnectedPlayer(uint64 guid)
 {
     return HashMapHolder<Player>::Find(guid);

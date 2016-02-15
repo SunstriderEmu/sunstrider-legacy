@@ -39,6 +39,7 @@
 #include "Util.h"
 #include "ScriptMgr.h"
 #include "IRCMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -58,7 +59,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
     if(type >= MAX_CHAT_MSG_TYPE)
     {
-        TC_LOG_ERROR("FIXME","CHAT: Wrong message type received: %u", type);
+        TC_LOG_ERROR("network.opcode","CHAT: Wrong message type received: %u", type);
         return;
     }
 
@@ -71,6 +72,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         SendNotification(LANG_UNKNOWN_LANGUAGE);
         return;
     }
+
     if(langDesc->skill_id != 0 && !_player->HasSkill(langDesc->skill_id))
     {
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
@@ -159,7 +161,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
     }
 
    if (GetPlayer()->HasAuraEffect(1852,0) && type != CHAT_MSG_WHISPER)
-    {
+   {
         std::string msg="";
         recvData >> msg;
         if (ChatHandler(this).ParseCommands(msg.c_str()) == 0)
@@ -167,52 +169,61 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             SendNotification(GetTrinityString(LANG_GM_SILENCE), GetPlayer()->GetName().c_str());
             return;
         }
-    }
+   }
+    
+   std::string msg = "";
+   std::string to = "";
 
-    switch(type)
-    {
+   if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_CHANNEL)
+       recvData >> to;
+
+   recvData >> msg;
+
+   // strip invisible characters for non-addon messages
+   if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
+       stripLineInvisibleChars(msg);
+
+   //message can only be empty for those types
+   if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND && msg.empty())
+       return;
+
+   if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+       return;
+
+   if (sWorld->IsPhishing(msg)) {
+       sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
+       return;
+   }
+
+    /* Is this to prevent linking fake items ?
+    if (strncmp(msg.c_str(), "|cff", 4) == 0) {
+        char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
+        if (cEntry) {
+            if (uint32 entry = atoi(cEntry)) {
+                ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
+                if (!proto)
+                    break;
+            }
+            else
+                break;
+        }
+    }
+    */
+
+   Player* toPlayer = nullptr;
+   uint32 logChannelId = 0;
+
+   switch(type)
+   {
         case CHAT_MSG_SAY:
         case CHAT_MSG_EMOTE:
         case CHAT_MSG_YELL:
         {
-            std::string msg = "";
-            recvData >> msg;
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-            
             if (GetPlayer()->isSpectator())
             {
-                SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur");
+                //TODO translate
+                SendNotification("Vous ne pouvez pas effectuer cette action lorsque vous êtes spectateur.");
                 return;
-            }
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-                
-            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
-                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (cEntry) {
-                    if (uint32 entry = atoi(cEntry)) {
-                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
-                        if (!proto)
-                            break;
-                    }
-                    else
-                        break;
-                }
-            }
-
-            if (sWorld->IsPhishing(msg)) {
-                sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
-                break;
             }
 
             if(type == CHAT_MSG_SAY)
@@ -225,34 +236,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
         case CHAT_MSG_WHISPER:
         {
-            std::string to, msg;
-            recvData >> to;
-            CHECK_PACKET_SIZE(recvData,4+4+(to.size()+1)+1);
-            recvData >> msg;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-                
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
-            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
-                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (cEntry) {
-                    if (uint32 entry = atoi(cEntry)) {
-                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
-                        if (!proto)
-                            break;
-                    }
-                    else
-                        break;
-                }
-            }
-
             if(!normalizePlayerName(to))
             {
                 WorldPacket data(SMSG_CHAT_PLAYER_NOT_FOUND, (to.size()+1));
@@ -261,7 +244,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
             }
 
-            Player* toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
+            toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
             uint32 playerSecurity = GetSecurity();
             uint32 targetSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
             //stop here if target player not found
@@ -274,8 +257,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 return;
             }
 
-            
-            // gm shoudln't send whisper addon message while invisible
+            // gm shoudln't send whisper addon message while invisible (this may help with players knowing a gamemaster is around in some case where both have addons)
             if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->IsGameMaster())
                 break;
 
@@ -288,11 +270,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             {
                 //"Vous devez atteindre le niveau %u ou avoir un temps de jeu total de 24h pour pouvoir chuchoter aux autres joueurs."
                 ChatHandler(this).PSendSysMessage("You must reached level %u or have at least 24 hours of played to be able to whisper other players.", sWorld->getConfig(CONFIG_WHISPER_MINLEVEL));
-                break;
-            }
-
-            if (sWorld->IsPhishing(msg)) {
-                sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), toPlayer->GetGUIDLow(), msg);
                 break;
             }
 
@@ -333,27 +310,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         case CHAT_MSG_PARTY_LEADER:
 #endif
         {
-            std::string msg = "";
-            recvData >> msg;
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            if (sWorld->IsPhishing(msg)) {
-                sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
-                break;
-            }
-
             // if player is in battleground, he cannot say to battleground members by /p
             Group *group = GetPlayer()->GetOriginalGroup();
             // so if player hasn't OriginalGroup and his player->GetGroup() is BG raid, then return
@@ -377,69 +333,42 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             group->BroadcastPacket(&data, false, group->GetMemberGroup(GetPlayer()->GetGUID()));
+
+            logChannelId = group->GetLeaderGUID();
         }
         break;
         case CHAT_MSG_GUILD:
         {
-            std::string msg = "";
-            recvData >> msg;
+            uint32 guildId = GetPlayer()->GetGuildId();
+            if (!guildId)
+                return;
 
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            if (GetPlayer()->GetGuildId())
-            {
-                Guild *guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
-                if (guild) {
-                    guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
-                    if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
-                        sIRCMgr->onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
-                }
-                #ifdef PLAYERBOT
-                // Playerbot mod: broadcast message to bot members
-                PlayerbotMgr *mgr = GetPlayer()->GetPlayerbotMgr();
-                if (mgr && lang != LANG_ADDON)
-                {
-                    for (PlayerBotMap::const_iterator it = mgr->GetPlayerBotsBegin(); it != mgr->GetPlayerBotsEnd(); ++it)
-                    {
-                        Player* const bot = it->second;
-                        if (bot->GetGuildId() == GetPlayer()->GetGuildId())
-                            bot->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
-                    }
-                }
-                #endif
+            Guild *guild = sObjectMgr->GetGuildById(guildId);
+            if (guild) {
+                guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
+                    sIRCMgr->onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
             }
+            #ifdef PLAYERBOT
+            // Playerbot mod: broadcast message to bot members
+            PlayerbotMgr *mgr = GetPlayer()->GetPlayerbotMgr();
+            if (mgr && lang != LANG_ADDON)
+            {
+                for (PlayerBotMap::const_iterator it = mgr->GetPlayerBotsBegin(); it != mgr->GetPlayerBotsEnd(); ++it)
+                {
+                    Player* const bot = it->second;
+                    if (bot->GetGuildId() == GetPlayer()->GetGuildId())
+                        bot->GetPlayerbotAI()->HandleCommand(type, msg, *GetPlayer());
+                }
+            }
+            #endif
+
+            logChannelId = guildId;
 
             break;
         }
         case CHAT_MSG_OFFICER:
         {
-            std::string msg = "";
-            recvData >> msg;
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
             if (GetPlayer()->GetGuildId())
             {
                 Guild *guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
@@ -451,22 +380,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         case CHAT_MSG_RAID:
         case CHAT_MSG_RAID_LEADER:
         {
-            std::string msg="";
-            recvData >> msg;
-
-            if(msg.empty())
-                break;
-
-            if ((ChatHandler(this).ParseCommands(msg.c_str())) > 0)
-                break;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
             // if player is in battleground group, he cannot talk to battleground members by /raid, even if this is a raid group.
             // Players can be simultaneously in a battleground group and original groups. Prefer original if both exists.
             Group* targetGroup = nullptr;
@@ -499,22 +412,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             targetGroup->BroadcastPacket(&data, false);
+
+            logChannelId = targetGroup->GetLeaderGUID();
         } break;
         case CHAT_MSG_RAID_WARNING:
         {
-            std::string msg="";
-            recvData >> msg;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             Group *group = GetPlayer()->GetGroup();
             if(!group || !group->isRaidGroup() || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
                 return;
@@ -523,6 +425,8 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             // in battleground, raid warning is sent only to players in battleground - code is ok
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             group->BroadcastPacket(&data, false);
+
+            logChannelId = group->GetLeaderGUID();
         } break;
         
         case CHAT_MSG_BATTLEGROUND_LEADER:
@@ -531,22 +435,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Group* group = GetPlayer()->GetGroup();
             if (!group || !group->isBGGroup() || !group->IsLeader(GetPlayer()->GetGUID()))
                 return;
-        }
+        } //no break !
         case CHAT_MSG_BATTLEGROUND:
         {
-            std::string msg="";
-            recvData >> msg;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
             Group* _group = GetPlayer()->GetGroup();
             if(!_group || !_group->isBGGroup())
@@ -555,49 +446,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, ChatMsg(type), Language(lang), GetPlayer(), nullptr, msg);
             _group->BroadcastPacket(&data, false);
+
+            logChannelId = _group->GetLeaderGUID();
         } break;
 
         case CHAT_MSG_CHANNEL:
         {
-            std::string channel = "", msg = "";
-            recvData >> channel;
-
-            // recheck
-            CHECK_PACKET_SIZE(recvData,4+4+(channel.size()+1)+1);
-
-            recvData >> msg;
-
-            // strip invisible characters for non-addon messages
-            if (lang != LANG_ADDON && sWorld->getConfig(CONFIG_CHAT_FAKE_MESSAGE_PREVENTING))
-                stripLineInvisibleChars(msg);
-
-            if(msg.empty())
-                break;
-
-            if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-                break;
-                
-            if (strncmp(msg.c_str(), "|cff", 4) == 0) {
-                char* cEntry = ChatHandler(GetPlayer()).extractKeyFromLink(((char*)msg.c_str()), "Hitem");
-                if (cEntry) {
-                    if (uint32 entry = atoi(cEntry)) {
-                        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
-                        if (!proto)
-                            break;
-                    }
-                    else
-                        break;
-                }
-            }
-
-            if (sWorld->IsPhishing(msg)) {
-                sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
-                break;
-            }
-
             if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
             {
-                if(Channel *chn = cMgr->GetChannel(channel,_player))
+                if(Channel *chn = cMgr->GetChannel(to,_player))
                 {
                     #ifdef PLAYERBOT
                     // Playerbot mod: broadcast message to bot members
@@ -612,7 +469,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {
                         ChannelFaction faction = _player->GetTeam() == TEAM_ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
-                        sIRCMgr->onIngameChannelMessage(faction,channel.c_str(),_player->GetName(), msg.c_str());
+                        sIRCMgr->onIngameChannelMessage(faction,to.c_str(),_player->GetName(), msg.c_str());
                     }
                 }
             }
@@ -620,9 +477,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
         case CHAT_MSG_AFK:
         {
-            std::string msg;
-            recvData >> msg;
-
             if((msg.empty() || !_player->IsAFK()) && !_player->IsInCombat() )
             {
                 if(!_player->IsAFK())
@@ -639,9 +493,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
         case CHAT_MSG_DND:
         {
-            std::string msg;
-            recvData >> msg;
-
             if(msg.empty() || !_player->IsDND())
             {
                 if(!_player->IsDND())
@@ -657,9 +508,11 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         } break;
 
         default:
-            TC_LOG_ERROR("FIXME","CHAT: unknown message type %u, lang: %u", type, lang);
+            TC_LOG_ERROR("network.opcode","CHAT: unknown message type %u, lang: %u", type, lang);
             break;
     }
+
+    LogsDatabaseAccessor::CharacterChat(ChatMsg(type), _player, toPlayer, logChannelId, to, msg);
 }
 
 void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )

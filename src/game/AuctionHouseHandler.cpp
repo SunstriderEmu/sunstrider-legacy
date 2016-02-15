@@ -29,6 +29,7 @@
 #include "AuctionHouseMgr.h"
 #include "Util.h"
 #include "Chat.h"
+#include "LogsDatabaseAccessor.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -214,7 +215,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     //do not allow to sell already auctioned items
     if(sAuctionMgr->GetAItem(GUID_LOPART(itemGUID)))
     {
-        TC_LOG_ERROR("FIXME","AuctionError, player %s is sending item id: %u, but item is already in another auction", pl->GetName().c_str(), GUID_LOPART(itemGUID));
+        TC_LOG_ERROR("auctionHouse","AuctionError, player %s is sending item id: %u, but item is already in another auction", pl->GetName().c_str(), GUID_LOPART(itemGUID));
         SendAuctionCommandResult(0, AUCTION_SELL_ITEM, AUCTION_INTERNAL_ERROR);
         return;
     }
@@ -245,11 +246,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
         return;
     }
 
-    if( GetSecurity() > SEC_PLAYER && sWorld->getConfig(CONFIG_GM_LOG_TRADE) )
-    {
-        sLog->outCommand(GetAccountId(),"GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-            GetPlayerName().c_str(),GetAccountId(),it->GetTemplate()->Name1.c_str(),it->GetEntry(),it->GetCount());
-    }
+    LogsDatabaseAccessor::CreateAuction(GetPlayer(), it->GetGUIDLow(), it->GetEntry(), it->GetCount());
 
     pl->ModifyMoney( -int32(deposit) );
 
@@ -261,6 +258,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
         AH->auctioneer = 23442;
     else
         AH->auctioneer = GUID_LOPART(auctioneerGUID);
+
     AH->item_guidlow = GUID_LOPART(itemGUID);
     AH->item_template = it->GetEntry();
     AH->owner = pl->GetGUIDLow();
@@ -273,17 +271,16 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     AH->auctionHouseEntry = auctionHouseEntry;
     AH->deposit_time = time(NULL);
 
-    TC_LOG_DEBUG("FIXME","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", GUID_LOPART(itemGUID), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
+    TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", GUID_LOPART(itemGUID), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
 
     sAuctionMgr->AddAItem(it);
     pl->MoveItemFromInventory( it->GetBagSlot(), it->GetSlot(), true);
 
-    // TODO: SQL Transaction
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     it->DeleteFromInventoryDB(trans);
     it->SaveToDB(trans);                                         // recursive and not have transaction guard into self, not in inventiory and can be save standalone
-    AH->SaveToDB();
+    AH->SaveToDB(trans);
     pl->SaveInventoryAndGoldToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 
@@ -361,6 +358,8 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
         return;
     }
 
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
     if ((price < auction->buyout) || (auction->buyout == 0))
     {
         if (auction->bidder > 0)
@@ -384,7 +383,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
         auction->bid = price;
 
         // after this update we should save player's money ...
-        CharacterDatabase.PExecute("UPDATE auctionhouse SET buyguid = '%u',lastbid = '%u' WHERE id = '%u'", auction->bidder, auction->bid, auction->Id);
+        trans->PAppend("UPDATE auctionhouse SET buyguid = '%u',lastbid = '%u' WHERE id = '%u'", auction->bidder, auction->bid, auction->Id);
 
         SendAuctionCommandResult(auction->Id, AUCTION_PLACE_BID, AUCTION_OK, 0 );
     }
@@ -406,19 +405,19 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
         auction->bidder = pl->GetGUIDLow();
         auction->bid = auction->buyout;
 
-        sAuctionMgr->SendAuctionSalePendingMail( auction );
-        sAuctionMgr->SendAuctionSuccessfulMail( auction );
-        sAuctionMgr->SendAuctionWonMail( auction );
+        sAuctionMgr->SendAuctionSalePendingMail( trans, auction );
+        sAuctionMgr->SendAuctionSuccessfulMail( trans, auction );
+        sAuctionMgr->SendAuctionWonMail( trans, auction );
 
         SendAuctionCommandResult(auction->Id, AUCTION_PLACE_BID, AUCTION_OK);
 
         sAuctionMgr->RemoveAItem(auction->item_guidlow);
         auctionHouse->RemoveAuction(auction->Id);
-        auction->DeleteFromDB();
+        auction->DeleteFromDB(trans);
 
         delete auction;
     }
-    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
     pl->SaveInventoryAndGoldToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 }
@@ -434,7 +433,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
     uint32 auctionId;
     recvData >> auctioneerGUID;
     recvData >> auctionId;
-    //TC_LOG_DEBUG("FIXME", "Cancel AUCTION AuctionID: %u", auctionId);
+    //TC_LOG_DEBUG("auctionHouse", "Cancel AUCTION AuctionID: %u", auctionId);
 
     Creature *pCreature = GetPlayer()->GetNPCIfCanInteractWith(auctioneerGUID, UNIT_NPC_FLAG_AUCTIONEER);
     if (!pCreature)
@@ -486,17 +485,16 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
     else
     {
         SendAuctionCommandResult( 0, AUCTION_CANCEL, AUCTION_INTERNAL_ERROR );
-        //this code isn't possible ... maybe there should be assert
-        TC_LOG_ERROR("auction", "CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUIDLow(), auctionId );
+        //this code isn't possible... maybe there should be assert
+        TC_LOG_ERROR("auction", "POSSIBLE CHEATER : %u, he tried to cancel auction (id: %u) of another player, or auction is NULL", pl->GetGUIDLow(), auctionId );
         return;
     }
 
     //inform player, that auction is removed
     SendAuctionCommandResult( auction->Id, AUCTION_CANCEL, AUCTION_OK );
     // Now remove the auction
-    // TODO: SQL Transaction
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    auction->DeleteFromDB();
+    auction->DeleteFromDB(trans);
     pl->SaveInventoryAndGoldToDB(trans);
     CharacterDatabase.CommitTransaction(trans);
     sAuctionMgr->RemoveAItem( auction->item_guidlow );
@@ -633,7 +631,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
 
     AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap( pCreature->GetFaction() );
 
-    //TC_LOG_DEBUG("FIXME","Auctionhouse search guid: " UI64FMTD ", list from: %u, searchedname: %s, levelmin: %u, levelmax: %u, auctionSlotID: %u, auctionMainCategory: %u, auctionSubCategory: %u, quality: %u, usable: %u", guid, listfrom, searchedname.c_str(), levelmin, levelmax, auctionSlotID, auctionMainCategory, auctionSubCategory, quality, usable);
+    //TC_LOG_DEBUG("auctionHouse","Auctionhouse search guid: " UI64FMTD ", list from: %u, searchedname: %s, levelmin: %u, levelmax: %u, auctionSlotID: %u, auctionMainCategory: %u, auctionSubCategory: %u, quality: %u, usable: %u", guid, listfrom, searchedname.c_str(), levelmin, levelmax, auctionSlotID, auctionMainCategory, auctionSubCategory, quality, usable);
 
     WorldPacket data( SMSG_AUCTION_LIST_RESULT, (4+4+4) );
     uint32 count = 0;

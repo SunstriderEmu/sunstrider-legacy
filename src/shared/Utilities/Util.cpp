@@ -183,6 +183,7 @@ std::string secsToTimeString(uint32 timeInSecs, bool shortText, bool hoursOnly)
     uint32 hours   = timeInSecs % DAY  / HOUR;
     uint32 days    = timeInSecs / DAY;
 
+    //TODO translate
     std::ostringstream ss;
     if(days)
         ss << days << (shortText ? "d" : " Jour(s) ");
@@ -262,6 +263,7 @@ uint32 TimeStringToSecs(const std::string& timestring)
     return secs;
 }
 
+//human readable timestamp
 std::string TimeToTimestampStr(time_t t)
 {
     tm* aTm = localtime(&t);

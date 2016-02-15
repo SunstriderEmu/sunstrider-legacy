@@ -61,7 +61,7 @@ enum MailCheckMask
     MAIL_CHECK_MASK_RETURNED    = 16
 };
 
-enum MailMessageType
+enum MailMessageType : uint32
 {
     MAIL_NORMAL         = 0,
     MAIL_AUCTION        = 2,

@@ -31,6 +31,7 @@
 #include "World.h"
 #include "Util.h"
 #include "SpellMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 Battleground::Battleground()
 {
@@ -472,12 +473,11 @@ void Battleground::EndBattleground(uint32 winner)
     else if (finalScoreHorde >= 2000 && (GetMapId() == 529 || GetMapId() == 566))
         finalScoreHorde = 2000;
 
+    std::string winnerLog;
     if(winner == TEAM_ALLIANCE)
     {
-        if(isBattleground()) {
+        if(isBattleground())
             winmsg = GetTrinityString(LANG_BG_A_WINS);
-            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 0, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), finalScoreAlliance, finalScoreHorde);
-        }
         else
             winmsg = GetTrinityString(LANG_ARENA_GOLD_WINS);
 
@@ -487,10 +487,8 @@ void Battleground::EndBattleground(uint32 winner)
     }
     else if(winner == TEAM_HORDE)
     {
-        if(isBattleground()) {
+        if(isBattleground())
             winmsg = GetTrinityString(LANG_BG_H_WINS);
-            LogsDatabase.PExecute("INSERT INTO bg_stats (mapid, start_time, end_time, winner, score_alliance, score_horde) VALUES (%u, %u, %u, 1, %u, %u)", GetMapId(), GetStartTimestamp(), time(NULL), finalScoreAlliance, finalScoreHorde);
-        }
         else
             winmsg = GetTrinityString(LANG_ARENA_GREEN_WINS);
 
@@ -502,6 +500,9 @@ void Battleground::EndBattleground(uint32 winner)
     {
         SetWinner(3);
     }
+
+    if (isBattleground())
+        LogsDatabaseAccessor::BattlegroundStats(GetMapId(), GetStartTimestamp(), time(NULL), Team(winner), finalScoreAlliance, finalScoreHorde);
 
     SetStatus(STATUS_WAIT_LEAVE);
     m_RemovalTime = 0;
@@ -824,7 +825,6 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         // save new item before send
         markItem->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
-        CharacterDatabase.CommitTransaction(trans);
 
         // item
         MailItemsInfo mi;
@@ -841,7 +841,8 @@ void Battleground::SendRewardMarkByMail(Player *plr,uint32 mark, uint32 count)
         snprintf(textBuf,300,textFormat.c_str(),GetName().c_str(),GetName().c_str());
         uint32 itemTextId = sObjectMgr->CreateItemText( textBuf );
 
-        WorldSession::SendMailTo(plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUIDLow(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(trans, plr, MAIL_CREATURE, MAIL_STATIONERY_NORMAL, bmEntry, plr->GetGUIDLow(), subject, itemTextId , &mi, 0, 0, MAIL_CHECK_MASK_NONE);
+        CharacterDatabase.CommitTransaction(trans);
     }
 }
 

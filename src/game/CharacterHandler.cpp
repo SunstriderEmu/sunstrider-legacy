@@ -46,6 +46,7 @@
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "IRCMgr.h"
+#include "LogsDatabaseAccessor.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -699,7 +700,8 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     fname.append(fpath);
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
-    LogsDatabase.PExecute("INSERT INTO char_delete (account, guid, name, time, ip) VALUES (%u, %u, '%s', %u, '%s')", GetAccountId(), GUID_LOPART(guid), name.c_str(), time(NULL), IP_str.c_str());
+
+    LogsDatabaseAccessor::CharacterDelete(this, GUID_LOPART(guid), name, GetRemoteAddress());
 
     /*
     if(sLog->IsOutCharDump())                                // optimize GetPlayerDump call
@@ -1262,14 +1264,11 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
     trans->PAppend("DELETE FROM character_declinedname WHERE guid ='%u'", guidLow);
     CharacterDatabase.CommitTransaction(trans);
 
-//    sLog->outChar("Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s",session->GetAccountId(), session->GetRemoteAddress().c_str(), oldname.c_str(), guidLow, newname.c_str());
-
-    LogsDatabase.PExecute("INSERT INTO char_rename (account, guid, old_name, new_name, time, ip) VALUES (%u, %u, '%s', '%s', %u, '%s')",
-        GetAccountId(), guidLow, oldname.c_str(), renameInfo->Name.c_str(), time(NULL), GetRemoteAddress().c_str());
-
     SendCharRename(RESPONSE_SUCCESS, *renameInfo);
 
     sWorld->UpdateCharacterNameData(guidLow, renameInfo->Name);
+
+    LogsDatabaseAccessor::CharacterRename(this, guidLow, oldname, renameInfo->Name, GetRemoteAddress());
 }
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)

@@ -184,7 +184,7 @@ void Player::UpdateArmor()
         pet->UpdateArmor();
 }
 
-float Player::GetHealthBonusFromStamina()
+float Player::GetHealthBonusFromStamina() const
 {
     float stamina = GetStat(STAT_STAMINA);
 
@@ -194,7 +194,7 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + (moreStam*10.0f);
 }
 
-float Player::GetManaBonusFromIntellect()
+float Player::GetManaBonusFromIntellect() const
 {
     float intellect = GetStat(STAT_INTELLECT);
 

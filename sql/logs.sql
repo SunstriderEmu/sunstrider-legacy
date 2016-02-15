@@ -1,8 +1,3 @@
-/*
-SQLyog Community v12.09 (64 bit)
-MySQL - 5.5.41-MariaDB-1~wheezy-log : Database - logs
-*********************************************************************
-*/
 
 /*!40101 SET NAMES utf8 */;
 
@@ -12,8 +7,6 @@ MySQL - 5.5.41-MariaDB-1~wheezy-log : Database - logs
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-CREATE DATABASE /*!32312 IF NOT EXISTS*/`logs` /*!40100 DEFAULT CHARACTER SET latin1 */;
-
 /*Table structure for table `arena_match` */
 
 DROP TABLE IF EXISTS `arena_match`;
@@ -106,7 +99,7 @@ CREATE TABLE `arena_team_event` (
   `type` tinyint(3) unsigned NOT NULL,
   `player` int(10) unsigned NOT NULL,
   `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
-  `time` bigint(20) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
   KEY `idx_arena_team_event_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -117,9 +110,9 @@ DROP TABLE IF EXISTS `bg_stats`;
 CREATE TABLE `bg_stats` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `mapid` mediumint(8) unsigned NOT NULL,
-  `start_time` bigint(20) NOT NULL COMMENT 'Start timestamp',
-  `end_time` bigint(20) NOT NULL COMMENT 'End timestamp',
-  `winner` tinyint(4) NOT NULL COMMENT '0 = Alliance - 1 = Horde',
+  `start_time` int(11) unsigned NOT NULL COMMENT 'Start timestamp',
+  `end_time` int(11) unsigned NOT NULL COMMENT 'End timestamp',
+  `winner` enum('alliance','horde','none') NOT NULL,
   `score_alliance` mediumint(9) NOT NULL,
   `score_horde` mediumint(9) NOT NULL,
   PRIMARY KEY (`id`)
@@ -136,12 +129,66 @@ CREATE TABLE `boss_down` (
   `boss_name_fr` varchar(100) NOT NULL,
   `guild_id` mediumint(8) unsigned NOT NULL,
   `guild_name` varchar(100) NOT NULL,
-  `time` bigint(11) NOT NULL,
+  `time` int(11) unsigned NOT NULL,
   `guild_percentage` float NOT NULL,
   `leaderGuid` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_boss` (`boss_entry`)
-) ENGINE=Aria AUTO_INCREMENT=134695 DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1;
+) ENGINE=MyISAM AUTO_INCREMENT=134698 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_auction_create` */
+
+DROP TABLE IF EXISTS `char_auction_create`;
+
+CREATE TABLE `char_auction_create` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `seller_account` int(11) unsigned NOT NULL,
+  `seller_guid` int(11) unsigned NOT NULL,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_auction_won` */
+
+DROP TABLE IF EXISTS `char_auction_won`;
+
+CREATE TABLE `char_auction_won` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `bidder_account` int(11) NOT NULL,
+  `bidder_guid` int(11) unsigned NOT NULL,
+  `seller_account` int(11) unsigned NOT NULL,
+  `seller_guid` int(11) unsigned NOT NULL,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_chat` */
+
+DROP TABLE IF EXISTS `char_chat`;
+
+CREATE TABLE `char_chat` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `time` int(11) unsigned NOT NULL,
+  `type` tinyint(3) NOT NULL,
+  `account` int(11) unsigned NOT NULL,
+  `guid` int(11) unsigned NOT NULL,
+  `target_guid` int(11) unsigned NOT NULL DEFAULT '0',
+  `channelId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'for type Guild/Officer/Group/Raid/BG',
+  `channelName` varchar(30) NOT NULL COMMENT 'for type Channel',
+  `message` varchar(255) NOT NULL,
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `char_delete` */
 
@@ -151,10 +198,99 @@ CREATE TABLE `char_delete` (
   `account` int(10) unsigned NOT NULL DEFAULT '0',
   `guid` int(10) unsigned NOT NULL DEFAULT '0',
   `name` varchar(12) NOT NULL DEFAULT '',
-  `time` bigint(20) NOT NULL DEFAULT '0',
-  `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(16) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`guid`),
   KEY `idx_acct` (`account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_enchant` */
+
+DROP TABLE IF EXISTS `char_enchant`;
+
+CREATE TABLE `char_enchant` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `player_guid` int(11) unsigned NOT NULL,
+  `target_player_guid` int(11) unsigned NOT NULL,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `enchant_id` mediumint(8) unsigned NOT NULL,
+  `permanent` tinyint(1) NOT NULL,
+  `player_IP` varchar(15) NOT NULL,
+  `target_player_IP` varchar(15) NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_guild_money_deposit` */
+
+DROP TABLE IF EXISTS `char_guild_money_deposit`;
+
+CREATE TABLE `char_guild_money_deposit` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `account` int(11) unsigned NOT NULL,
+  `guid` int(11) unsigned NOT NULL COMMENT 'player guid',
+  `guildId` int(6) unsigned NOT NULL,
+  `amount` smallint(8) unsigned NOT NULL COMMENT 'negative is withdraw',
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_item_delete` */
+
+DROP TABLE IF EXISTS `char_item_delete`;
+
+CREATE TABLE `char_item_delete` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `account` int(11) unsigned NOT NULL,
+  `playerguid` int(11) unsigned NOT NULL COMMENT 'player guid',
+  `entry` mediumint(8) unsigned NOT NULL COMMENT 'item entry',
+  `count` smallint(5) unsigned NOT NULL COMMENT 'item count',
+  `time` int(11) unsigned NOT NULL COMMENT 'delete time',
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_item_guild_bank` */
+
+DROP TABLE IF EXISTS `char_item_guild_bank`;
+
+CREATE TABLE `char_item_guild_bank` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `account` int(11) unsigned NOT NULL,
+  `guid` int(11) unsigned NOT NULL,
+  `guildId` int(6) unsigned NOT NULL,
+  `direction` enum('chartoguild','guildtochar') NOT NULL,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_item_vendor` */
+
+DROP TABLE IF EXISTS `char_item_vendor`;
+
+CREATE TABLE `char_item_vendor` (
+  `id` bigint(20) unsigned NOT NULL,
+  `transaction_type` enum('buy','sell','buyback') NOT NULL,
+  `account` int(11) unsigned NOT NULL,
+  `guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL,
+  `vendor_entry` mediumint(8) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `char_rename` */
@@ -166,141 +302,140 @@ CREATE TABLE `char_rename` (
   `guid` int(10) unsigned NOT NULL,
   `old_name` varchar(12) NOT NULL,
   `new_name` varchar(12) NOT NULL,
-  `time` bigint(20) NOT NULL,
-  `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(16) NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
   KEY `idx_char_rename_guid` (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Table structure for table `characters_OLD` */
+/*Table structure for table `char_trade` */
 
-DROP TABLE IF EXISTS `characters_OLD`;
+DROP TABLE IF EXISTS `char_trade`;
 
-CREATE TABLE `characters_OLD` (
-  `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
-  `account` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
-  `data` longtext,
-  `name` varchar(12) NOT NULL DEFAULT '',
-  `race` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `class` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `gender` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `level` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `xp` int(10) unsigned NOT NULL DEFAULT '0',
-  `money` int(10) unsigned NOT NULL DEFAULT '0',
-  `playerBytes` int(10) unsigned NOT NULL DEFAULT '0',
-  `playerBytes2` int(10) unsigned NOT NULL DEFAULT '0',
-  `playerFlags` int(10) unsigned NOT NULL DEFAULT '0',
-  `position_x` float NOT NULL DEFAULT '0',
-  `position_y` float NOT NULL DEFAULT '0',
-  `position_z` float NOT NULL DEFAULT '0',
-  `map` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Map Identifier',
-  `instance_id` int(11) unsigned NOT NULL DEFAULT '0',
-  `dungeon_difficulty` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `orientation` float NOT NULL DEFAULT '0',
-  `taximask` longtext,
-  `online` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `cinematic` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `totaltime` int(11) unsigned NOT NULL DEFAULT '0',
-  `leveltime` int(11) unsigned NOT NULL DEFAULT '0',
-  `logout_time` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `is_logout_resting` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `rest_bonus` float NOT NULL DEFAULT '0',
-  `resettalents_cost` int(11) unsigned NOT NULL DEFAULT '0',
-  `resettalents_time` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `trans_x` float NOT NULL DEFAULT '0',
-  `trans_y` float NOT NULL DEFAULT '0',
-  `trans_z` float NOT NULL DEFAULT '0',
-  `trans_o` float NOT NULL DEFAULT '0',
-  `transguid` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `extra_flags` int(11) unsigned NOT NULL DEFAULT '0',
-  `stable_slots` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `at_login` int(11) unsigned NOT NULL DEFAULT '0',
-  `zone` int(11) unsigned NOT NULL DEFAULT '0',
-  `death_expire_time` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `taxi_path` text,
-  `arena_pending_points` int(10) unsigned NOT NULL DEFAULT '0',
-  `arenaPoints` int(10) unsigned NOT NULL DEFAULT '0',
-  `totalHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
-  `todayHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
-  `yesterdayHonorPoints` int(10) unsigned NOT NULL DEFAULT '0',
-  `totalKills` int(10) unsigned NOT NULL DEFAULT '0',
-  `todayKills` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `yesterdayKills` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `chosenTitle` int(10) unsigned NOT NULL DEFAULT '0',
-  `watchedFaction` int(10) NOT NULL DEFAULT '0',
-  `drunk` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `health` int(10) unsigned NOT NULL DEFAULT '0',
-  `power1` int(10) unsigned NOT NULL DEFAULT '0',
-  `power2` int(10) unsigned NOT NULL DEFAULT '0',
-  `power3` int(10) unsigned NOT NULL DEFAULT '0',
-  `power4` int(10) unsigned NOT NULL DEFAULT '0',
-  `power5` int(10) unsigned NOT NULL DEFAULT '0',
-  `latency` int(11) unsigned NOT NULL DEFAULT '0',
-  `exploredZones` longtext,
-  `equipmentCache` longtext,
-  `ammoId` int(10) unsigned NOT NULL DEFAULT '0',
-  `knownTitles` longtext,
-  `actionBars` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `xp_blocked` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `lastGenderChange` bigint(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`guid`),
-  KEY `idx_account` (`account`),
-  KEY `idx_online` (`online`),
-  KEY `idx_name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='Player System';
+CREATE TABLE `char_trade` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `player1_account` int(11) unsigned NOT NULL,
+  `player2_account` int(11) unsigned NOT NULL,
+  `player1_guid` int(11) unsigned NOT NULL,
+  `player2_guid` int(11) unsigned NOT NULL,
+  `money1` int(11) unsigned NOT NULL DEFAULT '0',
+  `money2` int(11) unsigned NOT NULL DEFAULT '0',
+  `player1_IP` varchar(15) NOT NULL,
+  `player2_IP` varchar(15) NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `char_trade_items` */
+
+DROP TABLE IF EXISTS `char_trade_items`;
+
+CREATE TABLE `char_trade_items` (
+  `trade_id` bigint(20) unsigned NOT NULL,
+  `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
+  `p1top2` tinyint(1) NOT NULL,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL,
+  PRIMARY KEY (`trade_id`,`id`),
+  KEY `id` (`id`),
+  CONSTRAINT `char_trade_items_ibfk_1` FOREIGN KEY (`trade_id`) REFERENCES `char_trade` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `gm_command` */
 
 DROP TABLE IF EXISTS `gm_command`;
 
 CREATE TABLE `gm_command` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account` int(11) NOT NULL DEFAULT '0',
-  `gmlevel` int(11) NOT NULL DEFAULT '0',
-  `time` int(11) NOT NULL DEFAULT '0',
-  `map` int(11) NOT NULL DEFAULT '0',
-  `selection` int(11) NOT NULL DEFAULT '0',
-  `command` text NOT NULL,
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `account` int(11) unsigned NOT NULL DEFAULT '0',
+  `guid` int(11) unsigned NOT NULL,
+  `gmlevel` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `time` int(11) unsigned NOT NULL,
+  `map` mediumint(8) unsigned NOT NULL,
+  `x` float NOT NULL,
+  `y` float NOT NULL,
+  `z` float NOT NULL,
+  `area_name` varchar(20) NOT NULL,
+  `zone_name` varchar(20) NOT NULL,
+  `selection_type` varchar(15) NOT NULL,
+  `selection_guid` int(11) NOT NULL DEFAULT '0',
+  `selection_name` varchar(25) NOT NULL,
+  `selection_map` mediumint(8) NOT NULL,
+  `selection_x` float NOT NULL,
+  `selection_y` float NOT NULL,
+  `selection_z` float NOT NULL,
+  `command` text NOT NULL COMMENT 'base command',
+  `IP` varchar(15) NOT NULL,
   PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8;
+
+/*Table structure for table `gm_sanction` */
+
+DROP TABLE IF EXISTS `gm_sanction`;
+
+CREATE TABLE `gm_sanction` (
+  `author_account` int(11) unsigned NOT NULL,
+  `author_guid` int(11) unsigned NOT NULL,
+  `target_account` int(11) unsigned NOT NULL,
+  `target_guid` int(11) unsigned NOT NULL,
+  `target_IP` varchar(15) NOT NULL COMMENT 'only for ban IP',
+  `type` tinyint(3) unsigned NOT NULL COMMENT 'see enum SanctionType',
+  `duration` mediumint(8) unsigned NOT NULL COMMENT 'in secs',
+  `time` int(11) NOT NULL COMMENT 'Current time',
+  `reason` varchar(255) NOT NULL,
+  `IP` varchar(15) NOT NULL COMMENT 'Author IP'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Table structure for table `item_delete` */
+/*Table structure for table `gm_sanction_remove` */
 
-DROP TABLE IF EXISTS `item_delete`;
+DROP TABLE IF EXISTS `gm_sanction_remove`;
 
-CREATE TABLE `item_delete` (
-  `playerguid` int(11) unsigned NOT NULL COMMENT 'player guid',
-  `entry` mediumint(8) unsigned NOT NULL COMMENT 'item entry',
-  `count` smallint(5) unsigned NOT NULL DEFAULT '1' COMMENT 'item count',
-  `time` bigint(20) unsigned NOT NULL COMMENT 'delete time',
-  PRIMARY KEY (`playerguid`,`entry`,`count`,`time`)
+CREATE TABLE `gm_sanction_remove` (
+  `author_account` int(11) unsigned NOT NULL,
+  `author_guid` int(11) unsigned NOT NULL,
+  `target_account` int(11) unsigned NOT NULL,
+  `target_guid` int(11) unsigned NOT NULL,
+  `target_IP` varchar(15) NOT NULL,
+  `type` tinyint(3) unsigned NOT NULL COMMENT 'see enum SanctionType',
+  `time` int(11) NOT NULL COMMENT 'Current time',
+  `IP` varchar(15) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Table structure for table `item_mail` */
+/*Table structure for table `mail` */
 
-DROP TABLE IF EXISTS `item_mail`;
+DROP TABLE IF EXISTS `mail`;
 
-CREATE TABLE `item_mail` (
-  `senderguid` int(11) unsigned DEFAULT NULL,
-  `receiverguid` int(11) unsigned NOT NULL,
-  `itemguid` int(11) unsigned NOT NULL,
-  `itementry` mediumint(8) unsigned NOT NULL,
-  `itemcount` smallint(5) unsigned NOT NULL,
-  `time` bigint(20) unsigned NOT NULL COMMENT 'send time'
+CREATE TABLE `mail` (
+  `id` int(11) unsigned NOT NULL,
+  `type` tinyint(3) unsigned NOT NULL,
+  `sender_account` int(11) unsigned NOT NULL,
+  `sender_guid_or_entry` int(11) unsigned NOT NULL,
+  `receiver_guid` int(11) unsigned NOT NULL,
+  `subject` longtext NOT NULL,
+  `message` longtext NOT NULL,
+  `money` int(11) NOT NULL DEFAULT '0' COMMENT 'can be negative',
+  `time` int(11) unsigned NOT NULL,
+  `IP` varchar(15) NOT NULL DEFAULT '0.0.0.0',
+  `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Table structure for table `mj_manager` */
+/*Table structure for table `mail_items` */
 
-DROP TABLE IF EXISTS `mj_manager`;
+DROP TABLE IF EXISTS `mail_items`;
 
-CREATE TABLE `mj_manager` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `account` varchar(32) NOT NULL,
-  `ip` varchar(16) NOT NULL,
-  `request` varchar(255) NOT NULL,
-  `query` text NOT NULL,
-  `logged_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE TABLE `mail_items` (
+  `mail_id` int(11) unsigned NOT NULL,
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `item_guid` int(11) unsigned NOT NULL,
+  `item_entry` mediumint(8) unsigned NOT NULL,
+  `item_count` smallint(5) unsigned NOT NULL DEFAULT '1',
+  PRIMARY KEY (`mail_id`,`id`),
+  KEY `id` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 /*Table structure for table `mon_classes` */
 
@@ -363,19 +498,6 @@ CREATE TABLE `phishing` (
   `data` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Table structure for table `sanctions` */
-
-DROP TABLE IF EXISTS `sanctions`;
-
-CREATE TABLE `sanctions` (
-  `acctid` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Account ID',
-  `author` bigint(11) NOT NULL DEFAULT '0',
-  `type` tinyint(3) NOT NULL DEFAULT '0' COMMENT '0 = mute, 1 = ingame ban, 2 = ip ban, 3 = forum ban',
-  `duration` mediumint(8) unsigned NOT NULL DEFAULT '0' COMMENT 'Mute duration',
-  `time` bigint(11) NOT NULL DEFAULT '0' COMMENT 'Current time',
-  `reason` varchar(255) NOT NULL DEFAULT 'Unspecified'
-) ENGINE=Aria DEFAULT CHARSET=utf8 PAGE_CHECKSUM=1;
 
 /*Table structure for table `warden_fails` */
 
