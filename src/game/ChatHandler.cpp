@@ -187,12 +187,15 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
    if (type != CHAT_MSG_AFK && type != CHAT_MSG_DND && msg.empty())
        return;
 
-   if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
-       return;
+   if(!msg.empty())
+   {
+       if (ChatHandler(this).ParseCommands(msg.c_str()) > 0)
+           return;
 
-   if (sWorld->IsPhishing(msg)) {
-       sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
-       return;
+       if (sWorld->IsPhishing(msg)) {
+           sWorld->LogPhishing(GetPlayer()->GetGUIDLow(), 0, msg);
+           return;
+        }
    }
 
     /* Is this to prevent linking fake items ?
