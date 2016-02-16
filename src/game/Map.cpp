@@ -244,6 +244,10 @@ void Map::AddToGrid(DynamicObject* obj, NGridType *grid, Cell const& cell)
 template<class T>
 void Map::RemoveFromGrid(T* obj, NGridType *grid, Cell const& cell)
 {
+#ifdef DO_DEBUG
+    if (dynamic_cast<Transport*>(obj))
+        ASSERT("Map::RemoveFromGrid called with a transport object " && false); //transports should never be removed from map
+#endif
     (*grid)(cell.CellX(), cell.CellY()).template RemoveGridObject<T>(obj);
 }
 
@@ -492,6 +496,10 @@ Map::Add(T *obj)
     CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
 
     assert(obj);
+#ifdef DO_DEBUG
+    if (dynamic_cast<Transport*>(obj))
+        ASSERT("Map::Add(T* obj) called with a transport object " && false);
+#endif
 
     if(p.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || p.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
     {

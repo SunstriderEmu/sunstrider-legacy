@@ -1552,7 +1552,7 @@ void Guild::LoadBankRightsFromDB(uint32 GuildId)
         Field *fields = result->Fetch();
         uint8 TabId = fields[0].GetUInt8();
         uint32 rankId = fields[1].GetUInt32();
-        uint16 right = fields[2].GetUInt32();
+        uint16 right = fields[2].GetUInt8();
         uint16 SlotPerDay = fields[3].GetUInt32();
 
         SetBankRightsAndSlots(rankId, TabId, right, SlotPerDay, false);

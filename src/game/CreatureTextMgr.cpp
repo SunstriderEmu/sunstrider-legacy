@@ -123,10 +123,19 @@ void CreatureTextMgr::LoadCreatureTexts()
             TC_LOG_ERROR("sql.sql","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` using Language %u but Language does not exist.", temp.entry, temp.group, uint32(temp.lang));
             temp.lang = LANG_UNIVERSAL;
         }
-        if (temp.type >= MAX_CHAT_MSG_TYPE)
+        switch (temp.type)
         {
-            TC_LOG_ERROR("sql.sql","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this Chat Type does not exist.", temp.entry, temp.group, uint32(temp.type));
-            temp.type = CHAT_MSG_SAY;
+        case CHAT_MSG_MONSTER_SAY:
+        case CHAT_MSG_MONSTER_PARTY:
+        case CHAT_MSG_MONSTER_YELL:
+        case CHAT_MSG_MONSTER_WHISPER:
+        case CHAT_MSG_MONSTER_EMOTE:
+        case CHAT_MSG_RAID_BOSS_WHISPER:
+        case CHAT_MSG_RAID_BOSS_EMOTE:
+            break;
+        default:
+            TC_LOG_ERROR("sql.sql", "CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this chat type is not a valid chat type for creatures. Defaulting to 12 (CHAT_MSG_MONSTER_SAY)", temp.entry, temp.group, uint32(temp.type));
+            temp.type = CHAT_MSG_MONSTER_SAY;
         }
         /*if (temp.emote)
         {
@@ -454,8 +463,6 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
 
 std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, uint8 textGroup, uint32 id, LocaleConstant locale) const
 {
-    return "";
-    /*
     CreatureTextMap::const_iterator mapitr = mTextMap.find(entry);
     if (mapitr == mTextMap.end())
         return "";
@@ -491,5 +498,4 @@ std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, 
     }
 
     return baseText;
-    */
 }
