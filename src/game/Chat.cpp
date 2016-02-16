@@ -1219,7 +1219,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
 {
     
 #ifndef LICH_KING
-    gmMessage = false;  // SMSG_GM_MESSAGECHAT is not working on BC, or may have a different structure
+    gmMessage = false;  // SMSG_GM_MESSAGECHAT seems to have a different structure on BC, disable it for now
 #endif
     size_t receiverGUIDPos = 0;
     data.Initialize(!gmMessage ? SMSG_MESSAGECHAT : SMSG_GM_MESSAGECHAT);

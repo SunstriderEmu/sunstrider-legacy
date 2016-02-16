@@ -696,6 +696,27 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     if(sWorld->getConfig(CONFIG_START_ALL_REP))
         SetAtLoginFlag(AT_LOGIN_ALL_REP);
         
+    // Default guild for GMs
+    if (GetSession()->GetSecurity() > SEC_PLAYER)
+    {
+        if (uint32 defaultGuildId = sWorld->getConfig(CONFIG_GM_DEFAULT_GUILD))
+        {
+            Guild* guild = sObjectMgr->GetGuildById(defaultGuildId);
+            if (guild)
+            {
+                SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                if (!guild->AddMember(this->GetGUID(), guild->GetLowestRank(), trans))
+                {
+                    TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, this->GetName().c_str(), this->GetGUIDLow());
+                }
+                CharacterDatabase.CommitTransaction(trans);
+            }
+            else {
+                TC_LOG_ERROR("entities.player", "Could not found default guild Id %u for GM player %s (%u)", defaultGuildId, this->GetName().c_str(), this->GetGUIDLow());
+            }
+        }
+    }
+
     // Played time
     m_Last_tick = time(NULL);
     m_Played_time[0] = 0;

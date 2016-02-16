@@ -857,6 +857,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GM_LEVEL_IN_GM_LIST]  = sConfigMgr->GetIntDefault("GM.InGMList.Level", SEC_GAMEMASTER3);
     m_configs[CONFIG_GM_LEVEL_IN_WHO_LIST] = sConfigMgr->GetIntDefault("GM.InWhoList.Level", SEC_GAMEMASTER3);
     m_configs[CONFIG_START_GM_LEVEL]       = sConfigMgr->GetIntDefault("GM.StartLevel", 1);
+    m_configs[CONFIG_GM_DEFAULT_GUILD]     = sConfigMgr->GetIntDefault("GM.DefaultGuild", 0);
+    m_configs[CONFIG_GM_FORCE_GUILD]       = sConfigMgr->GetIntDefault("GM.ForceGuild", 0);
     m_configs[CONFIG_ALLOW_GM_GROUP]       = sConfigMgr->GetBoolDefault("GM.AllowInvite", false);
     m_configs[CONFIG_ALLOW_GM_FRIEND]      = sConfigMgr->GetBoolDefault("GM.AllowFriend", false);
     if(m_configs[CONFIG_START_GM_LEVEL] < m_configs[CONFIG_START_PLAYER_LEVEL])
@@ -869,6 +871,11 @@ void World::LoadConfigSettings(bool reload)
     {
         TC_LOG_ERROR("server.loading","GM.StartLevel (%i) must be in range 1..%u. Set to %u.", m_configs[CONFIG_START_GM_LEVEL], MAX_LEVEL, MAX_LEVEL);
         m_configs[CONFIG_START_GM_LEVEL] = MAX_LEVEL;
+    }
+    if (m_configs[CONFIG_GM_DEFAULT_GUILD] && m_configs[CONFIG_GM_FORCE_GUILD] && (m_configs[CONFIG_GM_DEFAULT_GUILD] != m_configs[CONFIG_GM_FORCE_GUILD]))
+    {
+        TC_LOG_ERROR("server.loading", "GM.ForcedGuild conflicts with GM.DefaultGuild. Keeping only GM.ForcedGuild.");
+        m_configs[CONFIG_GM_DEFAULT_GUILD] = 0;
     }
 
     m_configs[CONFIG_GROUP_VISIBILITY] = sConfigMgr->GetIntDefault("Visibility.GroupMode",0);

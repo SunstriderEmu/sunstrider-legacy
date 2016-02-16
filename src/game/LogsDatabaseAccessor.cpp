@@ -140,7 +140,17 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
 
     Player* player = m_session ? m_session->GetPlayer() : nullptr;
 
-    uint64 targetGUID = target ? target->GetGUID() : 0;
+    uint64 targetGUID = 0;
+    if (target)
+    {
+        if (target->GetTypeId() == TYPEID_UNIT)
+            targetGUID = MAKE_PAIR64(target->ToCreature()->GetDBTableGUIDLow(), HIGHGUID_UNIT);
+        else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
+            targetGUID = MAKE_PAIR64(target->ToGameObject()->GetDBTableGUIDLow(), HIGHGUID_GAMEOBJECT);
+        else
+            targetGUID = target->GetGUID();
+    }
+
     uint32 areaId = player ? player->GetAreaId() : 0;
     std::string areaName = "Unknown";
     std::string zoneName = "Unknown";
@@ -186,6 +196,9 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
 
 void LogsDatabaseAccessor::CharacterChat(ChatMsg type, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg)
 {
+    if (type == CHAT_MSG_ADDON)
+        return;
+
     WorldSession const* session = player->GetSession();
     bool gmInvolved = (session->GetSecurity() > SEC_PLAYER) || (toPlayer && toPlayer->GetSession()->GetSecurity() > SEC_PLAYER);
 

@@ -927,10 +927,19 @@ Channel.SilentlyGMJoin = 0
 #        Are players allowed to add GMs to their friend list
 #        Default: 0 (false)
 #                 1 (true)
+#
+#	  GM.DefaultGuild
+#	   	Put new GM characters in this guild (guildId)
+#			Default: 0
+#
+#	  GM.ForceGuild
+#		 Force GM to be placed AND stay within this guild (guildId)
+#			Default: 0
+#
 ###################################################################################################################
 
-GM.LoginState       = 2
-GM.Visible          = 2
+GM.LoginState       = 1
+GM.Visible          = 1
 GM.Chat             = 2
 GM.WhisperingTo     = 2
 GM.InGMList.Level   = 3
@@ -938,6 +947,8 @@ GM.InWhoList.Level  = 3
 GM.StartLevel       = 70
 GM.AllowInvite      = 0
 GM.AllowFriend      = 0
+GM.DefaultGuild   = 0
+GM.ForceGuild    = 0
 
 ###################################################################################################################
 # VISIBILITY AND RADIUSES
