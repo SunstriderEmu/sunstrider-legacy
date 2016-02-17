@@ -505,7 +505,9 @@ class ObjectMgr
         CreatureTemplateContainer const* GetCreatureTemplates() const { return &_creatureTemplateStore; }
         CreatureTemplate const* GetCreatureTemplate( uint32 id );
         CreatureModelInfo const* GetCreatureModelInfo( uint32 modelid );
-        CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID);
+        //return a new displayId with same gender and race as baseModel, if possible. Else return model info for displayID. Race NYI
+        CreatureModelInfo const* GetCreatureModelSameGenderAndRaceAs(uint32& displayID, uint32 baseDisplayId);
+        CreatureModelInfo const* GetCreatureModelRandomGender(uint32& displayID);
         static uint32 ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data = NULL);
         EquipmentInfo const* GetEquipmentInfo( uint32 entry );
         CreatureAddon const *GetCreatureAddon( uint32 lowguid );

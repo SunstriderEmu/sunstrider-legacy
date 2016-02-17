@@ -115,7 +115,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, flo
     }
 
     uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, NULL);
-    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&displayId);
+    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(displayId);
     if (!minfo)
         return false;
 
