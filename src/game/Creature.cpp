@@ -322,7 +322,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     }
 
     uint32 display_id = sObjectMgr->ChooseDisplayId(GetCreatureTemplate(), data);
-    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(&display_id);
+    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(display_id);
     if (!minfo)
     {
         TC_LOG_ERROR("sql.sql","Creature (Entry: %u) has model %u not found in table `creature_model_info`, can't load. ", Entry, display_id);
@@ -1555,7 +1555,7 @@ void Creature::Respawn()
         SelectLevel();
 
         uint32 displayID = GetNativeDisplayId();
-        CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(&displayID);
+        CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(displayID);
         if (minfo)                                             // Cancel load if no model defined
         {
             SetDisplayId(displayID);

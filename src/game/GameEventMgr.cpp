@@ -1130,7 +1130,8 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
                 pCreature->LoadEquipment(itr.second.equipment_id, true);
                 if (itr.second.modelid >0 && itr.second.modelid_prev != itr.second.modelid)
                 {
-                    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelInfo(itr.second.modelid);
+                    uint32 newModelId = itr.second.modelid; //may be changed at next line
+                    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelSameGenderAndRaceAs(newModelId, itr.second.modelid_prev);
                     if (minfo)
                     {
                         pCreature->SetDisplayId(itr.second.modelid);
@@ -1163,7 +1164,7 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
             {
                 CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(data->id);
                 uint32 display_id = sObjectMgr->ChooseDisplayId(cinfo,data);
-                sObjectMgr->GetCreatureModelRandomGender(&display_id);
+                sObjectMgr->GetCreatureModelRandomGender(display_id);
                 if (data->equipmentId == 0)
                     itr.second.equipement_id_prev = cinfo->equipmentId;
                 else if (data->equipmentId != -1)

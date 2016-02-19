@@ -1023,9 +1023,9 @@ uint32 ObjectMgr::ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureD
     return display_id;
 }
 
-CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* displayID)
+CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32& displayID)
 {
-    CreatureModelInfo const* modelInfo = GetCreatureModelInfo(*displayID);
+    CreatureModelInfo const* modelInfo = GetCreatureModelInfo(displayID);
     if (!modelInfo)
         return NULL;
 
@@ -1034,15 +1034,47 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* display
     {
         CreatureModelInfo const* minfo_tmp = GetCreatureModelInfo(modelInfo->modelid_other_gender);
         if (!minfo_tmp)
-            TC_LOG_ERROR("sql.sql", "Model (Entry: %u) has modelid_other_gender %u not found in table `creature_model_info`. ", *displayID, modelInfo->modelid_other_gender);
+            TC_LOG_ERROR("sql.sql", "Model (Entry: %u) has modelid_other_gender %u not found in table `creature_model_info`. ", displayID, modelInfo->modelid_other_gender);
         else
         {
             // Model ID changed
-            *displayID = modelInfo->modelid_other_gender;
+            displayID = modelInfo->modelid_other_gender;
             return minfo_tmp;
         }
     }
 
+    return modelInfo;
+}
+
+CreatureModelInfo const* ObjectMgr::GetCreatureModelSameGenderAndRaceAs(uint32& displayID, uint32 baseDisplayId)
+{
+    CreatureModelInfo const* modelInfo = GetCreatureModelInfo(displayID);
+    if (!modelInfo)
+        return nullptr;
+
+    CreatureModelInfo const* baseModelInfo = GetCreatureModelInfo(baseDisplayId);
+    if (!modelInfo)
+        return modelInfo;
+
+    uint8 baseGender = modelInfo->gender;
+    //uint8 baseRace = modelInfo->race;
+
+    if (modelInfo->gender == baseGender)
+        return modelInfo;
+
+    if (modelInfo->modelid_other_gender)
+    {
+        CreatureModelInfo const* modelInfoOtherGender = GetCreatureModelInfo(modelInfo->modelid_other_gender);
+        if (modelInfoOtherGender)
+        {
+            if (modelInfoOtherGender->gender == baseGender)
+                return modelInfoOtherGender;
+        } else {
+            TC_LOG_ERROR("sql.sql", "Model (Entry: %u) has modelid_other_gender %u not found in table `creature_model_info`. ", displayID, modelInfo->modelid_other_gender);
+        }
+    }
+
+    //nothing found, return standard modelInfo
     return modelInfo;
 }
 
@@ -5155,7 +5187,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
     }
 
     // minfo is not actually used but the mount_id was updated
-    GetCreatureModelRandomGender(&mount_id);
+    GetCreatureModelRandomGender(mount_id);
 
     return mount_id;
 }
