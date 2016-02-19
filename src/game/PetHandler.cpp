@@ -219,7 +219,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
             int16 result = spell->PetCanCast(unit_target);
 
                                                             //auto turn to target unless possessed
-            if(result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
+            if(unit_target && result == SPELL_FAILED_UNIT_NOT_INFRONT && !pet->IsPossessed())
             {
                 pet->SetInFront(unit_target);
                 if( unit_target->GetTypeId() == TYPEID_PLAYER )

@@ -692,7 +692,6 @@ class ObjectMgr
         void LoadPageTextLocales();
         void LoadGossipMenuItemsLocales();
         void LoadInstanceTemplate();
-        void LoadInstanceTemplateAddon();
 
         void LoadGossipText();
 
@@ -903,9 +902,9 @@ class ObjectMgr
         void DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid);
 
         time_t GetCreatureRespawnTime(uint32 loguid, uint32 instance) { return mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)]; }
-        void SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t);
+        void SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
         time_t GetGORespawnTime(uint32 loguid, uint32 instance) { return mGORespawnTimes[MAKE_PAIR64(loguid,instance)]; }
-        void SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t);
+        void SaveGORespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
         void DeleteRespawnTimeForInstance(uint32 instance);
 
         // grid objects

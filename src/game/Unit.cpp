@@ -14585,7 +14585,6 @@ Position Unit::GetLeapPosition(float dist)
     destz = currentPos.m_positionZ;
     Position defaultTarget(destx, desty, destz); //position in front
     Position targetPos(currentPos);
-    bool foundValidDest = false;
 
     // Prevent invalid coordinates here, position is unchanged
     if (!Trinity::IsValidMapCoord(destx, desty))
@@ -14616,7 +14615,6 @@ Position Unit::GetLeapPosition(float dist)
                 {
                     TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                     //GetCollisionPosition already set targetPos to destx, desty, destz
-                    foundValidDest = true;
                     goto exitloopfounddest;
                 }
 
@@ -14641,7 +14639,6 @@ Position Unit::GetLeapPosition(float dist)
                             {
                                 targetPos.Relocate(destx, desty, mapHeight + 1.0f);
                                 TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
-                                foundValidDest = true;
                                 goto exitloopfounddest;
                             }
                         }
@@ -14657,22 +14654,19 @@ Position Unit::GetLeapPosition(float dist)
     }
 
     //No valid dest found
-    if (!foundValidDest)
-    {
         if (CanSwim() && GetMap()->IsUnderWater(POSITION_GET_X_Y_Z(&defaultTarget)))
-        {
-            targetPos = defaultTarget;
-        }
-        else if (this->IsFalling())
-        {
-            //try to find a ground not far
-            float mapHeight = GetMap()->GetHeight(PhaseMask(1), currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
-            if (mapHeight != INVALID_HEIGHT)
-                targetPos.m_positionZ = mapHeight + 1.0f;
-        }
-        targetPos = currentPos;
-        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, stay at current position %f %f %f", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+    {
+        targetPos = defaultTarget;
     }
+    else if (this->IsFalling())
+    {
+        //try to find a ground not far
+        float mapHeight = GetMap()->GetHeight(PhaseMask(1), currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
+        if (mapHeight != INVALID_HEIGHT)
+            targetPos.m_positionZ = mapHeight + 1.0f;
+    }
+    targetPos = currentPos;
+    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, stay at current position %f %f %f", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
 
 exitloopfounddest:
     Trinity::NormalizeMapCoord(targetPos.m_positionX);

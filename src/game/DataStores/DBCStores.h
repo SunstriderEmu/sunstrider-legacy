@@ -325,6 +325,10 @@ bool IsTotemCategoryCompatibleWith(uint32 itemTotemCategoryId, uint32 requiredTo
 void Zone2MapCoordinates(float& x,float& y,uint32 zone);
 void Map2ZoneCoordinates(float& x,float& y,uint32 zone);
 
+typedef std::map<uint32/*pair32(map, diff)*/, MapDifficulty> MapDifficultyMap;
+MapDifficulty const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty);
+MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &difficulty);
+
 uint32 GetTalentInspectBitPosInTab(uint32 talentId);
 uint32 GetTalentTabInspectBitSize(uint32 talentTabId);
 uint32 const* /*[3]*/ GetTalentTabPages(uint32 cls);
@@ -379,6 +383,8 @@ extern DBCStorage <LiquidTypeEntry>              sLiquidTypeStore;
 extern DBCStorage <LockEntry>                    sLockStore;
 extern DBCStorage <MailTemplateEntry>            sMailTemplateStore;
 extern DBCStorage <MapEntry>                     sMapStore;
+//extern DBCStorage <MapDifficultyEntry>           sMapDifficultyStore; -- use GetMapDifficultyData insteed
+extern MapDifficultyMap                          sMapDifficultyMap;
 extern DBCStorage <QuestSortEntry>               sQuestSortStore;
 extern DBCStorage <RandomPropertiesPointsEntry>  sRandomPropertiesPointsStore;
 extern DBCStorage <SkillLineEntry>               sSkillLineStore;

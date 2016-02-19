@@ -351,7 +351,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "creature_model_info",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureModelInfoCommand,       "" },
         { "creature_queststarter",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureQuestStartersCommand,   "" },
         { "creature_text",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureText,                   "" },
-      //{ "db_script_string",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadDbScriptStringCommand,          "" },
         { "disenchant_loot_template",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesDisenchantCommand, "" },
         { "event_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadEventScriptsCommand,            "" },
         { "fishing_loot_template",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesFishingCommand,    "" },
@@ -363,7 +362,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "gameobject_queststarter",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGameobjectQuestStartersCommand, "" },
         { "gameobject_scripts",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGameObjectScriptsCommand,       "" },
         { "gm_tickets",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleGMTicketReloadCommand,                "" },
-        { "instance_template_addon",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadInstanceTemplateAddonCommand,   "" },
         { "item_enchantment_template",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadItemEnchantementsCommand,       "" },
         { "item_extended_cost",          SEC_ADMINISTRATOR, true,  true,  &ChatHandler::HandleReloadItemExtendedCostCommand,        "" },
         { "item_loot_template",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesItemCommand,       "" },
@@ -867,7 +865,10 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 
 const char* ChatHandler::GetTrinityString(int32 entry) const
 {
-    return m_session->GetTrinityString(entry);
+    if (m_session)
+        return m_session->GetTrinityString(entry);
+    else
+        return sObjectMgr->GetTrinityString(entry, sWorld->GetDefaultDbcLocale());
 }
 
 std::string ChatHandler::GetTrinityStringVA(int32 entry, ...) const
@@ -1113,6 +1114,7 @@ int ChatHandler::ParseCommands(const char* text)
     {
         if(m_session && m_session->GetSecurity() == SEC_PLAYER)
             return 0;
+
         SendSysMessage(LANG_NO_CMD);
     }
     return 1;

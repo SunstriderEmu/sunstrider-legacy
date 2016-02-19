@@ -384,7 +384,6 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
 
 bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 {
-    int32 accountId;
     std::string plName;
     uint32 plLevel;
     uint32 plClass;
@@ -393,7 +392,6 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
     Player* pl = sObjectMgr->GetPlayer(guid);
     if(pl)
     {
-        accountId = pl->GetSession()->GetAccountId();
         plName  =   pl->GetName();
         plLevel =   pl->GetLevel();
         plClass =   pl->GetClass();

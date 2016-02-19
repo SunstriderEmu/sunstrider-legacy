@@ -193,7 +193,7 @@ Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
     return(i == m_InstancedMaps.end() ? NULL : i->second);
 }
 
-InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, uint8 difficulty)
+InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty)
 {
     // load/create a map
     std::lock_guard<std::mutex> lock(_mapLock);
@@ -213,8 +213,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     }
 
     // some instances only have one difficulty
-    if(!Map::SupportsHeroicMode(entry)) 
-        difficulty = DIFFICULTY_NORMAL;
+    GetDownscaledMapDifficultyData(GetId(), difficulty);
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 

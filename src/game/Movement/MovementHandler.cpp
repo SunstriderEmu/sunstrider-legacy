@@ -158,8 +158,12 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     {
         if(reset_notify)
         {
-            uint32 timeleft = sInstanceSaveMgr->GetResetTimeFor(GetPlayer()->GetMapId()) - time(NULL);
+#ifdef LICH_KING
+            FIXME; //LK has this message for dungeon as well
+#else
+            uint32 timeleft = sInstanceSaveMgr->GetResetTimeFor(GetPlayer()->GetMapId(), RAID_DIFFICULTY_NORMAL) - time(NULL);
             GetPlayer()->SendInstanceResetWarning(GetPlayer()->GetMapId(), timeleft); // greeting at the entrance of the resort raid instance
+#endif
         }
     }
 
@@ -342,12 +346,12 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                 //float delta_z = plrMover->GetPositionZ() - movementInfo.pos.GetPositionZ();
                 float delta = sqrt(delta_x * delta_x + delta_y * delta_y); // Len of movement-vector via Pythagoras (a^2+b^2=Len)
                 //float tg_z = 0.0f; //tangens
-                float delta_t = GetMSTimeDiff(GetPlayer()->m_anti_lastmovetime,CurTime);
+                //float delta_t = GetMSTimeDiff(GetPlayer()->m_anti_lastmovetime,CurTime); //value not used
                 plrMover->m_anti_lastmovetime = CurTime;
                 plrMover->m_anti_MovedLen += delta;
 
-                if (delta_t > 15000.0f)
-                    delta_t = 15000.0f;
+                /*if (delta_t > 15000.0f)
+                    delta_t = 15000.0f;*/
 
                 //antiOFF fall-damage, MOVEMENTFLAG_UNK4 seted by client if player try movement when falling and unset in this case the MOVEMENTFLAG_JUMPING_OR_FALLING flag.
                 if ((plrMover->m_anti_beginfalltime == 0) &&

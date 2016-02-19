@@ -2717,10 +2717,6 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
             return;
         }
 
-        uint32 team = 0;
-        if (m_target->GetTypeId()==TYPEID_PLAYER)
-            team = (m_target->ToPlayer())->GetTeam();
-
         uint32 display_id = sObjectMgr->ChooseDisplayId(ci);
         sObjectMgr->GetCreatureModelRandomGender(display_id);
 
@@ -3421,7 +3417,6 @@ void Aura::HandleModConfuse(bool apply, bool Real)
     if(!Real)
         return;
 
-    //m_target->SetConfused(apply, GetCasterGUID(), GetId());
     m_target->SetControlled(apply, UNIT_STATE_CONFUSED);
 }
 
@@ -3430,11 +3425,10 @@ void Aura::HandleModFear(bool apply, bool Real)
     if (!Real)
         return;
         
-    // Archimonde: if player has Air Burst, don't apply fear
-    if (apply && m_target && m_target->HasAuraEffect(32014))
+    // HACK / Archimonde: if player has Air Burst, don't apply fear
+    if (apply && m_target->HasAuraEffect(32014))
         return;
 
-    //m_target->SetFeared(apply, GetCasterGUID(), GetId());
     m_target->SetControlled(apply, UNIT_STATE_FLEEING);
 }
 

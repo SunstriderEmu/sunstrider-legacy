@@ -272,7 +272,6 @@ class ChatHandler
         bool HandleReloadGameTeleCommand(const char* args);
         bool HandleReloadGameobjectQuestStartersCommand(const char* args);
         bool HandleReloadGameobjectQuestEndersCommand(const char* args);
-        bool HandleReloadInstanceTemplateAddonCommand(const char* arg);
         bool HandleReloadCreatureModelInfoCommand(const char* args);
         bool HandleReloadLootTemplatesCreatureCommand(const char* args);
         bool HandleReloadLootTemplatesDisenchantCommand(const char* args);

@@ -2225,13 +2225,6 @@ enum NavTerrain
     // we only have 8 bits
 };
 
-enum DungeonDifficulties
-{
-    DIFFICULTY_NORMAL = 0,
-    DIFFICULTY_HEROIC = 1,
-    TOTAL_DIFFICULTIES
-};
-
 enum SummonType
 {
     SUMMON_TYPE_CRITTER     = 41,

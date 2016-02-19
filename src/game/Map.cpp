@@ -863,6 +863,8 @@ void Map::Update(const uint32 &t_diff)
 
 void Map::Remove(Player *player, bool remove)
 {
+    ASSERT(player);
+
     // this may be called during Map::Update
     // after decrement+unlink, ++m_mapRefIter will continue correctly
     // when the first element of the list is being removed
@@ -2141,20 +2143,6 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
     }
 }
 
-bool Map::SupportsHeroicMode(const MapEntry* mapEntry)
-{
-    if(!mapEntry)
-        return false;
-    if (mapEntry->resetTimeHeroic)
-        return true;
-
-    const InstanceTemplateAddon* instTempAddon = sObjectMgr->GetInstanceTemplateAddon(mapEntry->MapID);
-    if(instTempAddon && instTempAddon->forceHeroicEnabled)
-        return true;
-
-    return false;    
-}
-
 std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 {
     std::list<Creature*> creatureList;
@@ -2267,12 +2255,12 @@ bool InstanceMap::Add(Player *player)
         InstanceSave *mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
         if(!mapSave)
         {
-            TC_LOG_DEBUG("maps","InstanceMap::Add: creating instance save for map %d spawnmode %d with instance id %d", GetId(), GetSpawnMode(), GetInstanceId());
-            mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetSpawnMode(), 0, true);
+            TC_LOG_DEBUG("maps","InstanceMap::Add: creating instance save for map %d difficulty %d with instance id %d", GetId(), GetDifficulty(), GetInstanceId());
+            mapSave = sInstanceSaveMgr->AddInstanceSave(GetId(), GetInstanceId(), GetDifficulty(), 0, true);
         }
 
         // check for existing instance binds
-        InstancePlayerBind *playerBind = player->GetBoundInstance(GetId(), GetSpawnMode());
+        InstancePlayerBind *playerBind = player->GetBoundInstance(GetId(), GetDifficulty());
         if(playerBind && playerBind->perm)
         {
             // cannot enter other instances if bound permanently
@@ -2288,7 +2276,7 @@ bool InstanceMap::Add(Player *player)
             if(pGroup)
             {
                 // solo saves should be reset when entering a group
-                InstanceGroupBind *groupBind = pGroup->GetBoundInstance(GetId(), GetSpawnMode());
+                InstanceGroupBind *groupBind = pGroup->GetBoundInstance(GetDifficulty(), GetId());
                 if(playerBind)
                 {
                   //  TC_LOG_ERROR("maps","InstanceMap::Add: player %s(%d) is being put in instance %d,%d,%d,%d,%d,%d but he is in group %d and is bound to instance %d,%d,%d,%d,%d,%d!", player->GetName(), player->GetGUIDLow(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset(), GUID_LOPART(pGroup->GetLeaderGUID()), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset());
@@ -2501,12 +2489,6 @@ void InstanceMap::PermBindAllPlayers(Player *player)
     }
 }
 
-time_t InstanceMap::GetResetTime()
-{
-    InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
-    return save ? save->GetDifficulty() : DIFFICULTY_NORMAL;
-}
-
 void Map::RemoveAllPlayers()
 {
     if (HavePlayers())
@@ -2516,9 +2498,9 @@ void Map::RemoveAllPlayers()
             Player* player = itr->GetSource();
             if (!player->IsBeingTeleportedFar())
             {
-                // this is happening for bg
                 TC_LOG_ERROR("maps", "Map::UnloadAll: player %s is still in map %u during unload, this should not happen!", player->GetName().c_str(), GetId());
                 player->TeleportTo(player->m_homebindMapId, player->m_homebindX, player->m_homebindY, player->m_homebindZ, player->GetOrientation());
+               
             }
         }
     }
@@ -2558,14 +2540,20 @@ void InstanceMap::SetResetSchedule(bool on)
         InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
         if(!save) 
             TC_LOG_ERROR("maps", "InstanceMap::SetResetSchedule: cannot turn schedule %s, no save available for instance %u of %u", on ? "on" : "off", GetInstanceId(), GetId());
-        else sInstanceSaveMgr->ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetInstanceId()));
+        else 
+            sInstanceSaveMgr->ScheduleReset(on, save->GetResetTime(), InstanceSaveManager::InstResetEvent(0, GetId(), GetDifficulty(), GetInstanceId()));
     }
+}
+
+MapDifficulty const* Map::GetMapDifficulty() const
+{
+    return GetMapDifficultyData(GetId(), GetDifficulty());
 }
 
 /* ******* Battleground Instance Maps ******* */
 
 BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId)
-  : Map(id, expiry, InstanceId, DIFFICULTY_NORMAL)
+  : Map(id, expiry, InstanceId, REGULAR_DIFFICULTY)
 {
     //lets initialize visibility distance for BG/Arenas
     BattlegroundMap::InitVisibilityDistance();
@@ -2612,7 +2600,8 @@ bool BattlegroundMap::Add(Player * player)
 
 void BattlegroundMap::Remove(Player *player, bool remove)
 {
-    if (player && player->isSpectator() && !player->isSpectateCanceled())
+    ASSERT(player);
+    if (player->isSpectator() && !player->isSpectateCanceled())
     {
         if (GetBG())
             GetBG()->RemoveSpectator(player->GetGUID());

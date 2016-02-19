@@ -1515,7 +1515,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
 
     uint8 ComplaintType;                                        // 0 - mail, 1 - chat
     uint64 spammer_guid;
-    uint32 unk1, unk2, unk3, unk4 = 0;
+    uint32 unk1 = 0, unk2 = 0, unk3 = 0, unk4 = 0;
     std::string description = "";
     recvData >> ComplaintType;                                 // unk 0x01 const, may be spam type (mail/chat)
     recvData >> spammer_guid;                              // player guid
@@ -1645,10 +1645,10 @@ void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )
     if(pGroup)
     {
         if(pGroup->IsLeader(_player->GetGUID()))
-            pGroup->ResetInstances(INSTANCE_RESET_ALL, _player);
+            pGroup->ResetInstances(INSTANCE_RESET_ALL, false, _player);
     }
     else
-        _player->ResetInstances(INSTANCE_RESET_ALL);
+        _player->ResetInstances(INSTANCE_RESET_ALL, false);
 }
 
 void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
@@ -1663,7 +1663,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     if(mode == _player->GetDifficulty())
         return;
 
-    if(mode > DIFFICULTY_HEROIC)
+    if(mode >= MAX_DIFFICULTY)
     {
         TC_LOG_ERROR("network","WorldSession::HandleSetDungeonDifficultyOpcode: player %d sent an invalid instance mode %d!", _player->GetGUIDLow(), mode);
         return;
@@ -1679,21 +1679,36 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 
     if(_player->GetLevel() < LEVELREQUIREMENT_HEROIC)
         return;
-    Group *pGroup = _player->GetGroup();
-    if(pGroup)
+
+    Group *group = _player->GetGroup();
+    if(group)
     {
-        if(pGroup->IsLeader(_player->GetGUID()))
+        if(group->IsLeader(_player->GetGUID()))
         {
+            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            {
+                Player* groupGuy = itr->GetSource();
+                if (!groupGuy)
+                    continue;
+
+                if (!groupGuy->IsInMap(groupGuy))
+                {
+                    TC_LOG_DEBUG("network", "WorldSession::HandleSetDungeonDifficultyOpcode: player %d tried to reset the instance while group member (Name: %s, GUID: %u) is inside!",
+                        _player->GetGUIDLow(), groupGuy->GetName().c_str(), groupGuy->GetGUIDLow());
+                    return;
+                }
+            }
+
             // the difficulty is set even if the instances can't be reset
             //_player->SendDungeonDifficulty(true);
-            pGroup->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, _player);
-            pGroup->SetDifficulty(mode);
+            group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false, _player);
+            group->SetDifficulty(Difficulty(mode));
         }
     }
     else
     {
-        _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY);
-        _player->SetDifficulty(mode);
+        _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false);
+        _player->SetDifficulty(Difficulty(mode));
     }
 }
 

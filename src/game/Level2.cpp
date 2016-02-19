@@ -1030,8 +1030,6 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
 //delete object by selection or guid
 bool ChatHandler::HandleDelObjectCommand(const char* args)
 {
-    
-
     // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)
@@ -1065,7 +1063,8 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
             return false;
         }
 
-        owner->RemoveGameObject(obj,false);
+        if(owner)
+            owner->RemoveGameObject(obj,false);
     }
 
     obj->SetRespawnTime(0);                                 // not save respawn time
@@ -4124,7 +4123,7 @@ bool ChatHandler::HandleTempGameObjectCommand(const char* args)
     Player *chr = m_session->GetPlayer();
 
     char* spawntime = strtok(NULL, " ");
-    uint32 spawntm;
+    uint32 spawntm = 0;
 
     if( spawntime )
         spawntm = atoi((char*)spawntime);

@@ -1278,7 +1278,7 @@ void Creature::DeleteFromDB()
     if (!m_DBTableGuid)
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
+    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid, GetMapId(), GetInstanceId(),0);
     sObjectMgr->DeleteCreatureData(m_DBTableGuid);
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1535,7 +1535,7 @@ void Creature::Respawn()
     if(GetDeathState()==DEAD)
     {
         if (m_DBTableGuid)
-            sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),0);
+            sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
 
         TC_LOG_DEBUG("FIXME","Respawning...");
         m_respawnTime = 0;
@@ -1952,7 +1952,7 @@ void Creature::SaveRespawnTime()
     if(IsPet() || !m_DBTableGuid)
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetInstanceId(),m_respawnTime);
+    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),m_respawnTime);
 }
 
 bool Creature::IsOutOfThreatArea(Unit* pVictim) const

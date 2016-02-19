@@ -100,7 +100,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     }
 
     go->SetRespawnTime(0);
-    sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(),0,0);
+    sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(),0,0,0);
     pMap->Add(go);
 
     return true;
@@ -262,7 +262,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     else
     {
         go->SetRespawnTime(0);
-        sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(), 0, 0);
+        sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(), 0, 0, 0);
         pMap->Add(go);
     }
     // add creature...
@@ -316,7 +316,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
     if(Map * map = sMapMgr->FindBaseNonInstanceMap(cr->GetMapId()))
         map->Remove(cr,false);
     // delete respawn time for this creature
-    WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
+    CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
     cr->AddObjectToRemoveList();
     sObjectMgr->DeleteCreatureData(guid);
     m_CreatureTypes[m_Creatures[type]] = 0;
@@ -374,7 +374,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
             if(Map * map = sMapMgr->FindBaseNonInstanceMap(cr->GetMapId()))
                 map->Remove(cr,false);
             // delete respawn time for this creature
-            WorldDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
+            CharacterDatabase.PExecute("DELETE FROM creature_respawn WHERE guid = '%u'", guid);
             cr->AddObjectToRemoveList();
             sObjectMgr->DeleteCreatureData(guid);
         }

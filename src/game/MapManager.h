@@ -42,6 +42,13 @@ class MapManager
             return &instance;
         }
 
+
+        Map* CreateBaseMap(uint32 id);
+        Map* FindBaseMap(uint32 id) const
+        {
+            MapMapType::const_iterator iter = i_maps.find(id);
+            return (iter == i_maps.end() ? NULL : iter->second);
+        }
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 id, const WorldObject* obj);
         Map* FindMap(uint32 mapid, uint32 instanceId);
@@ -106,8 +113,6 @@ class MapManager
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
-        inline uint32 GenerateInstanceId() { return ++i_MaxInstanceId; }
-        void InitMaxInstanceId();
         void InitializeVisibilityDistanceInfo();
 
         /* statistics */
@@ -115,31 +120,37 @@ class MapManager
         uint32 GetNumPlayersInInstances();
         uint32 GetNumPlayersInMap(uint32 mapId);
 
+        // Instance ID management
+        void InitInstanceIds();
+        uint32 GenerateInstanceId();
+        void RegisterInstanceId(uint32 instanceId);
+        void FreeInstanceId(uint32 instanceId);
+
+        uint32 GetNextInstanceId() const { return _nextInstanceId; };
+        void SetNextInstanceId(uint32 nextInstanceId) { _nextInstanceId = nextInstanceId; };
+
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
     private:
         GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
         int i_GridStateErrorCount;
     private:
+        typedef std::vector<bool> InstanceIds;
+
         MapManager();
         ~MapManager();
 
         MapManager(const MapManager &);
         MapManager& operator=(const MapManager &);
         
-        Map* CreateBaseMap(uint32 id);
-        Map* FindBaseMap(uint32 id) const
-        {
-            MapMapType::const_iterator iter = i_maps.find(id);
-            return (iter == i_maps.end() ? NULL : iter->second);
-        }
 
         uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
-
         std::mutex _mapsLock;
-        uint32 i_MaxInstanceId;
+
+        InstanceIds _instanceIds;
+        uint32 _nextInstanceId;
         MapUpdater m_updater;
 };
 #define sMapMgr MapManager::instance()

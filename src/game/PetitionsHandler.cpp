@@ -310,7 +310,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
     uint64 ownerguid = 0;
     uint32 type;
     std::string name = "NO_NAME_FOR_GUID";
-    uint8 signs = 0;
+    //uint8 signs = 0; //not used
 
     QueryResult result = CharacterDatabase.PQuery(
         "SELECT ownerguid, name, "
@@ -323,7 +323,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
         Field* fields = result->Fetch();
         ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
         name      = fields[1].GetString();
-        signs     = fields[2].GetUInt8();
+        //signs     = fields[2].GetUInt8(); //not used
         type      = fields[3].GetUInt32();
     }
     else

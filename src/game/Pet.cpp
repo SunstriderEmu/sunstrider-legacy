@@ -438,10 +438,6 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
     if (mode >= PET_SAVE_AS_CURRENT) //every mode but PET_SAVE_AS_DELETED
     {
-        uint32 loyalty = 1;
-        if(getPetType() != HUNTER_PET)
-            loyalty = GetLoyaltyLevel();
-
         uint32 owner = GUID_LOPART(GetOwnerGUID());
         std::string name = m_name;
         CharacterDatabase.EscapeString(name);

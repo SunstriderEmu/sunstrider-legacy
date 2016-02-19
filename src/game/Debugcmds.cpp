@@ -928,6 +928,7 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
         }
     } else {
         SendSysMessage("No target selected.");
+        //TODO: try getting AI with args
     }
 
     return true;
