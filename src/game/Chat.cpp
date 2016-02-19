@@ -865,7 +865,10 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 
 const char* ChatHandler::GetTrinityString(int32 entry) const
 {
-    return m_session->GetTrinityString(entry);
+    if (m_session)
+        return m_session->GetTrinityString(entry);
+    else
+        return sObjectMgr->GetTrinityString(entry, sWorld->GetDefaultDbcLocale());
 }
 
 std::string ChatHandler::GetTrinityStringVA(int32 entry, ...) const
@@ -1111,6 +1114,7 @@ int ChatHandler::ParseCommands(const char* text)
     {
         if(m_session && m_session->GetSecurity() == SEC_PLAYER)
             return 0;
+
         SendSysMessage(LANG_NO_CMD);
     }
     return 1;

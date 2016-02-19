@@ -32,7 +32,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
     ChatChannelsEntry const* ch = GetChannelEntryFor(channel_id);
     if(ch)                                                  // it's built-in channel
     {
-        channel_id = ch->ChannelID;                         // built-in channel
+        m_channelId = ch->ChannelID;                         // built-in channel
         m_announce = false;                                 // no join/leave announces
 
         m_flags |= CHANNEL_FLAG_GENERAL;                    // for all built-in channels
@@ -394,7 +394,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 
         // allow make moderator from another team only if both is GMs
         // at this moment this only way to show channel post for GM from another team
-        if( (plr->GetSession()->GetSecurity() < SEC_GAMEMASTER2 || newp->GetSession()->GetSecurity() < SEC_GAMEMASTER2) &&
+        if( plr && (plr->GetSession()->GetSecurity() < SEC_GAMEMASTER2 || newp->GetSession()->GetSecurity() < SEC_GAMEMASTER2) &&
             plr->GetTeam() != newp->GetTeam() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL) )
         {
             WorldPacket data;
@@ -450,7 +450,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
         return;
     }
 
-    if(newp->GetTeam() != plr->GetTeam() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
+    if(plr && newp->GetTeam() != plr->GetTeam() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);

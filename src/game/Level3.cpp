@@ -2352,11 +2352,6 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         } while (result->NextRow());
 
         int64 res_count = result->GetRowCount();
-
-        if(count > res_count)
-            count-=res_count;
-        else if(count)
-            count = 0;
     }
 
     if(inv_count+mail_count+auc_count+guild_count == 0)
@@ -4015,7 +4010,7 @@ bool ChatHandler::HandleHoverCommand(const char* args)
 
 bool ChatHandler::HandleGodModeCheatCommand(const char *args)
 {
-    if (!m_session && !m_session->GetPlayer())
+    if (!m_session || !m_session->GetPlayer())
         return false;
 
     std::string argstr = (char*)args;
@@ -4041,7 +4036,7 @@ bool ChatHandler::HandleGodModeCheatCommand(const char *args)
 
 bool ChatHandler::HandleCasttimeCheatCommand(const char *args)
 {
-    if (!m_session && !m_session->GetPlayer())
+    if (!m_session || !m_session->GetPlayer())
         return false;
 
     std::string argstr = (char*)args;
@@ -4067,7 +4062,7 @@ bool ChatHandler::HandleCasttimeCheatCommand(const char *args)
 
 bool ChatHandler::HandleCoolDownCheatCommand(const char *args)
 {
-    if (!m_session && !m_session->GetPlayer())
+    if (!m_session || !m_session->GetPlayer())
         return false;
 
     std::string argstr = (char*)args;
@@ -4093,7 +4088,7 @@ bool ChatHandler::HandleCoolDownCheatCommand(const char *args)
 
 bool ChatHandler::HandlePowerCheatCommand(const char *args)
 {
-    if (!m_session && !m_session->GetPlayer())
+    if (!m_session || !m_session->GetPlayer())
         return false;
 
     std::string argstr = (char*)args;
@@ -5330,11 +5325,11 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
     if(!cId)
         return false;
 
-    bool forceComplete = false;
+   // bool forceComplete = false;
     uint32 entry = 0;
 
     //if gm wants to force quest completion
-    if( strcmp(cId, "force") == 0 )
+    /*if( strcmp(cId, "force") == 0 )
     {
         char* tail = strtok(NULL,"");
         if(!tail)
@@ -5350,7 +5345,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
             
         forceComplete = true;
     }
-    else
+    else */
         entry = atol(cId);
 
     Quest const* pQuest = sObjectMgr->GetQuestTemplate(entry);
@@ -5864,7 +5859,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         else
             authorname = "<Unknown>";
 
-        chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (at %s)%s.", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+        chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (account %u) at %s (%s).", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), authorAccount, TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
     } while (result2->NextRow());
 
     return true;

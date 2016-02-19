@@ -841,7 +841,8 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     Field *fields = query->Fetch();
     uint32 classe, faction, metier1, metier1_level, metier2, metier2_level, phase, recupID, stuff, metier3, metier3_level;
-    uint32 recupguid, stufflevel;
+    //uint32 recupguid;
+    uint32 stufflevel;
     std::string reputs;
 
     classe = fields[0].GetUInt32();
@@ -858,7 +859,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     stuff = fields[9].GetUInt32();
     metier3 = fields[10].GetUInt32();
     metier3_level = fields[11].GetUInt32();
-    recupguid = fields[12].GetUInt64();
+    //recupguid = fields[12].GetUInt64();
     stufflevel = fields[13].GetUInt32();
 
     /* additionnal checks */

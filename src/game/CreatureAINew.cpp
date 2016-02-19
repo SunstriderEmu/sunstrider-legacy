@@ -259,7 +259,6 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
 {
     uint8 exec = EVENT_MAX_ID;
     uint32 minTimer = 0xFFFFFFFF;
-    AIEvent* selected = NULL;
 
     for (EventMap::iterator itr = m_events.begin(); itr != m_events.end(); itr++) {
         AIEvent* evt = itr->second;
@@ -277,7 +276,6 @@ bool CreatureAINew::executeEvent(uint32 const diff, uint8& id)
             else {
                 exec = itr->first;
                 minTimer = evt->timer;
-                selected = evt;
             }
         }
     }

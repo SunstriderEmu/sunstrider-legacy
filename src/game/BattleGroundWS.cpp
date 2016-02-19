@@ -460,7 +460,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         return;
 
     const char *message;
-    ChatMsg type;
+    ChatMsg type = CHAT_MSG_SYSTEM; //defaut and invalid value
 
     //alliance flag picked up from base
     if(Source->GetTeam() == TEAM_HORDE && this->GetFlagState(TEAM_ALLIANCE) == BG_WS_FLAG_STATE_ON_BASE
@@ -566,7 +566,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         //target_obj->Delete();
     }
 
-    if (!type || !message)
+    if (type == CHAT_MSG_SYSTEM || !message)
         return;
 
     WorldPacket data;

@@ -4301,6 +4301,7 @@ void Spell::EffectSummonWild(uint32 i)
     uint32 level = m_caster->GetLevel();
 
     // level of creature summoned using engineering item based at engineering skill level
+    /* Check the correctness of this
     if(m_caster->GetTypeId()==TYPEID_PLAYER && m_CastItem)
     {
         ItemTemplate const *proto = m_CastItem->GetTemplate();
@@ -4313,6 +4314,7 @@ void Spell::EffectSummonWild(uint32 i)
             }
         }
     }
+    */
 
     // select center of summon position
     float center_x = m_targets.m_destX;
@@ -4350,7 +4352,7 @@ void Spell::EffectSummonWild(uint32 i)
 
         TempSummonType summonType = (duration == -1) ? TEMPSUMMON_CORPSE_TIMED_DESPAWN : TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN;
 
-        Creature* Charmed = (m_originalCaster ? m_originalCaster : m_caster)->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
+        Creature* Charmed = m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
         if (Charmed)
         {
             Charmed->SetSummoner(m_caster);
@@ -4475,8 +4477,8 @@ void Spell::EffectSummonGuardian(uint32 i)
             return;                                         // find old guardian, ignore summon
 
     // in another case summon new
+    /* Check correctness of this
     uint32 level = caster->GetLevel();
-
     // level of pet summoned using engineering item based at engineering skill level
     if(m_CastItem)
     {
@@ -4490,6 +4492,7 @@ void Spell::EffectSummonGuardian(uint32 i)
             }
         }
     }
+    */
 
     // select center of summon position
     float center_x = m_targets.m_destX;
@@ -7023,6 +7026,8 @@ void Spell::EffectCharge(uint32 i)
     // not all charge effects used in negative spells
     if ( !m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->Attack(target, true);
+
+    m_caster->CastSpell(target, triggeredSpellId, true);
 }
 
 void Spell::EffectSummonCritter(uint32 i)
@@ -7429,7 +7434,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
             // end time of range when possible catch fish (FISHING_BOBBER_READY_TIME..GetDuration(m_spellInfo))
             // start time == fish-FISHING_BOBBER_READY_TIME (0..GetDuration(m_spellInfo)-FISHING_BOBBER_READY_TIME)
-            int32 lastSec;
+            int32 lastSec = 0;
             switch(m_caster->GetMap()->urand(0, 3))
             {
                 case 0: lastSec =  3; break;

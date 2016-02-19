@@ -863,6 +863,8 @@ void Map::Update(const uint32 &t_diff)
 
 void Map::Remove(Player *player, bool remove)
 {
+    ASSERT(player);
+
     // this may be called during Map::Update
     // after decrement+unlink, ++m_mapRefIter will continue correctly
     // when the first element of the list is being removed
@@ -2598,7 +2600,8 @@ bool BattlegroundMap::Add(Player * player)
 
 void BattlegroundMap::Remove(Player *player, bool remove)
 {
-    if (player && player->isSpectator() && !player->isSpectateCanceled())
+    ASSERT(player);
+    if (player->isSpectator() && !player->isSpectateCanceled())
     {
         if (GetBG())
             GetBG()->RemoveSpectator(player->GetGUID());

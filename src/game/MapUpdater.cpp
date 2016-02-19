@@ -111,6 +111,8 @@ void MapUpdater::WorkerThread()
         if (_cancelationToken)
             return;
 
+        ASSERT(request);
+
         request->call();
 
         delete request;

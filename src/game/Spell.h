@@ -588,7 +588,8 @@ class Spell
         bool IsValidSingleTargetEffect(Unit const* target, Targets type) const;
         bool IsValidSingleTargetSpell(Unit const* target) const;
         void CalculateDamageDoneForAllTargets();
-        int32 CalculateDamageDone(Unit *unit, const uint32 effectMask, float *multiplier);
+        //Multiplier vector must be size MAX_SPELL_EFFECTS
+        int32 CalculateDamageDone(Unit *unit, const uint32 effectMask, std::vector<float> multiplier);
         void SpellDamageSchoolDmg(uint32 i);
         void SpellDamageWeaponDmg(uint32 i);
         void SpellDamageHeal(uint32 i);

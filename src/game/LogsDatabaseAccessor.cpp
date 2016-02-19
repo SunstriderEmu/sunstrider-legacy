@@ -493,7 +493,7 @@ void LogsDatabaseAccessor::CreateAuction(Player const* player, uint32 itemGUID, 
     WorldSession const* session = player->GetSession();
     uint32 accountId = session->GetAccountId();
     uint32 sellerSecurity = sAccountMgr->GetSecurity(accountId);
-    bool gmInvolved = accountId > SEC_PLAYER;
+    bool gmInvolved = sellerSecurity > SEC_PLAYER;
 
     if (!ShouldLog(CONFIG_LOG_CHAR_ITEM_AUCTION, CONFIG_GM_LOG_CHAR_ITEM_AUCTION, gmInvolved))
         return;

@@ -1434,14 +1434,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
-            bool foundTarget = false;
             float x,y,z;
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if(Unit* u = (*itr)->ToUnit())
                 {
-                    foundTarget = true;
                     u->GetPosition(x,y,z);
                     break;
                 }

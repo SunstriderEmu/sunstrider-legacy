@@ -5735,10 +5735,10 @@ bool Player::SetPosition(float x, float y, float z, float orientation, bool tele
         m->PlayerRelocation(this, x, y, z, orientation);
 
         // reread after Map::Relocation
-        m = GetMap();
+        //m = GetMap(); //not used
         x = GetPositionX();
         y = GetPositionY();
-        z = GetPositionZ();
+        //z = GetPositionZ(); //not used
 
         // group update
         if(GetGroup() && (old_x != x || old_y != y))
@@ -11441,7 +11441,6 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
 void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check, bool inBankAlso)
 {
     Item *pItem;
-    ItemTemplate const *pProto;
     uint32 remcount = 0;
 
     // in inventory
@@ -11461,7 +11460,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             }
             else
             {
-                pProto = pItem->GetTemplate();
+                //pProto = pItem->GetTemplate(); //not used
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
@@ -11487,7 +11486,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             }
             else
             {
-                pProto = pItem->GetTemplate();
+                //pProto = pItem->GetTemplate(); //not used
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
@@ -11519,7 +11518,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                     }
                     else
                     {
-                        pProto = pItem->GetTemplate();
+                        //pProto = pItem->GetTemplate(); //not used
                         ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                         pItem->SetCount( pItem->GetCount() - count + remcount );
                         if( IsInWorld() && update )
@@ -11551,7 +11550,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
             }
             else
             {
-                pProto = pItem->GetTemplate();
+                //pProto = pItem->GetTemplate(); //not used
                 ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                 pItem->SetCount( pItem->GetCount() - count + remcount );
                 if( IsInWorld() & update )
@@ -11580,7 +11579,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                 }
                 else
                 {
-                    pProto = pItem->GetTemplate();
+                    //pProto = pItem->GetTemplate(); //not used
                     ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                     pItem->SetCount( pItem->GetCount() - count + remcount );
                     if( IsInWorld() & update )
@@ -11610,7 +11609,7 @@ void Player::DestroyItemCount( uint32 item, uint32 count, bool update, bool uneq
                         }
                         else
                         {
-                            pProto = pItem->GetTemplate();
+                            //pProto = pItem->GetTemplate(); //not used
                             ItemRemovedQuestCheck( pItem->GetEntry(), count - remcount );
                             pItem->SetCount( pItem->GetCount() - count + remcount );
                             if( IsInWorld() && update )
@@ -12931,7 +12930,6 @@ Quest const * Player::GetNextQuest( uint64 guid, Quest const *pQuest )
 {
     Object *pObject;
     QuestRelations* pObjectQR;
-    QuestRelations* pObjectQIR;
 
     Creature *pCreature = ObjectAccessor::GetCreature(*this, guid);
     if( pCreature )

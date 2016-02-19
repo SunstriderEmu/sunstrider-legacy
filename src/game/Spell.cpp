@@ -2331,7 +2331,7 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
     // set timer base at cast time
     ReSetTimer();
 
-    if (GetCaster() && m_spellInfo)
+    if (GetCaster())
         if (Player *tmpPlayer = GetCaster()->ToPlayer())
             if (tmpPlayer->HaveSpectators())
             {
@@ -5972,8 +5972,8 @@ bool Spell::IsValidSingleTargetSpell(Unit const* target) const
 
 void Spell::CalculateDamageDoneForAllTargets()
 {
-    float multiplier[3];
-    for(int i = 0; i < 3; ++i)
+    std::vector<float> multiplier(MAX_SPELL_EFFECTS);
+    for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if ( m_applyMultiplierMask & (1 << i) )
         {
@@ -6014,11 +6014,12 @@ void Spell::CalculateDamageDoneForAllTargets()
     }
 }
 
-int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, float *multiplier)
+int32 Spell::CalculateDamageDone(Unit *unit, const uint32 effectMask, std::vector<float> multiplier)
 {
+    ASSERT(multiplier.size() == MAX_SPELL_EFFECTS);
     int32 damageDone = 0;
     unitTarget = unit;
-    for(uint32 i = 0; i < 3; ++i)
+    for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (effectMask & (1<<i))
         {

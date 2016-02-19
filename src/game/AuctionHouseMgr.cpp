@@ -84,7 +84,7 @@ uint32 AuctionHouseMgr::GetAuctionDeposit(AuctionHouseEntry const* entry, uint32
     }
     else
     {
-        faction_pct = 0.0f;
+        //faction_pct = 0.0f;
         deposit = 0.0f;
     }
 
@@ -111,14 +111,7 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
 
     // data for logging
     {
-        uint32 bidder_security = 0;
-        if (bidder)
-            bidder_security = bidder->GetSession()->GetSecurity();
-        else
-            bidder_security = sAccountMgr->GetSecurity(bidder_accId);
-
         uint32 owner_accid = sObjectMgr->GetPlayerAccountIdByGUID(auction->owner);
-        uint32 ownerSecurity = sAccountMgr->GetSecurity(owner_accid);
 
         LogsDatabaseAccessor::WonAuction(bidder_accId, auction->bidder, owner_accid, auction->owner, auction->item_guidlow, auction->item_template, pItem->GetCount());
     }
@@ -167,7 +160,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionE
     Player *owner = sObjectMgr->GetPlayer(auction->owner);
 
     // owner exist (online or offline)
-    if(owner || sObjectMgr->GetPlayerAccountIdByGUID(owner->GetGUID()))
+    if(owner || sObjectMgr->GetPlayerAccountIdByGUID(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER)))
     {
         std::ostringstream msgAuctionSalePendingSubject;
         msgAuctionSalePendingSubject << auction->item_template << ":0:" << AUCTION_SALE_PENDING;
@@ -196,7 +189,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEn
 
     uint32 owner_accId = 0;
     if(!owner)
-        owner_accId = sObjectMgr->GetPlayerAccountIdByGUID(owner->GetGUID());
+        owner_accId = sObjectMgr->GetPlayerAccountIdByGUID(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER));
 
     // owner exist
     if(owner || owner_accId)
@@ -242,7 +235,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry
 
     uint32 owner_accId = 0;
     if(!owner)
-        owner_accId = sObjectMgr->GetPlayerAccountIdByGUID(owner->GetGUID());
+        owner_accId = sObjectMgr->GetPlayerAccountIdByGUID(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER));
 
     // owner exist
     if(owner || owner_accId)

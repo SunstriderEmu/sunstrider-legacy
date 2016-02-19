@@ -384,7 +384,6 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     bool AllowTwoSideAccounts = !sWorld->IsPvPRealm() || sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_ACCOUNTS) || GetSecurity() > SEC_PLAYER;
     uint32 skipCinematics = sWorld->getConfig(CONFIG_SKIP_CINEMATICS);
 
-    bool have_same_race = false;
     if(!AllowTwoSideAccounts || skipCinematics == 1)
     {
         QueryResult result2 = CharacterDatabase.PQuery("SELECT DISTINCT race FROM characters WHERE account = '%u' %s", GetAccountId(),skipCinematics == 1 ? "" : "LIMIT 1");
@@ -418,7 +417,6 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
                     field = result2->Fetch();
                     race = field[0].GetUInt32();
                 }
-                have_same_race = createInfo.Race == race;
             }
         }
     }
