@@ -192,4 +192,4 @@ namespace Movement
         print_flags(raw(), g_SplineFlag_names, str);
         return str;
     }
-}
+} // namespace Movement

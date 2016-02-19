@@ -333,4 +333,4 @@ int32 MoveSpline::currentPathIdx() const
         point = point % (spline.last()-spline.first());
     return point;
 }
-}
+} // namespace Movement

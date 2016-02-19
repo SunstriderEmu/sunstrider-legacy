@@ -302,4 +302,4 @@ std::string SplineBase::ToString() const
     return str.str();
 }
 
-}
+} // namespace Movement

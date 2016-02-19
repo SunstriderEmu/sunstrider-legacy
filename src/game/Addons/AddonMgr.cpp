@@ -36,7 +36,7 @@ namespace
     SavedAddonsList m_knownAddons;
 
     BannedAddonList m_bannedAddons;
-}
+} // namespace
 
 void LoadFromDB()
 {
@@ -142,4 +142,4 @@ BannedAddonList const* GetBannedAddons()
     return &m_bannedAddons;
 }
 
-} // Namespace
+} // namespace AddonMgr

@@ -178,4 +178,4 @@ namespace Movement
             data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
         }
     }
-}
+} // namespace Movement

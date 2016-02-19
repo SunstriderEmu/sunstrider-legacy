@@ -71,7 +71,7 @@ namespace Trinity
 
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
     };
-}
+} // namespace Trinity
 
 ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() 

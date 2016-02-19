@@ -262,4 +262,4 @@ void RBACData::ClearData()
     _globalPerms.clear();
 }
 
-}
+} // namespace rbac
