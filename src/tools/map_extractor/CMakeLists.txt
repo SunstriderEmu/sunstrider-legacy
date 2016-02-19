@@ -14,6 +14,7 @@ file(GLOB_RECURSE sources *.cpp *.h)
 set(include_Dirs
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/dep/libmpq
+	${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_CURRENT_SOURCE_DIR}/loadlib
     ${CMAKE_SOURCE_DIR}/src/shared
 	${CMAKE_SOURCE_DIR}/src/shared/Utilities
@@ -37,6 +38,7 @@ add_executable(mapextractor
 target_link_libraries(mapextractor
   shared
   format
+  g3dlib
   mpq
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}

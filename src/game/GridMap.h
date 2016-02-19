@@ -32,6 +32,12 @@ struct map_areaHeader
     uint16 gridArea;
 };
 
+
+#define MAP_HEIGHT_NO_HEIGHT            0x0001
+#define MAP_HEIGHT_AS_INT16             0x0002
+#define MAP_HEIGHT_AS_INT8              0x0004
+#define MAP_HEIGHT_HAS_FLIGHT_BOUNDS    0x0008
+
 struct map_heightHeader
 {
     uint32 fourcc;
@@ -68,6 +74,9 @@ class GridMap
         uint16* m_uint16_V8;
         uint8* m_uint8_V8;
     };
+    float* _maxHeight;
+    float* _minHeight;
+
     // Height level data
     float _gridHeight;
     float _gridIntHeightMultiplier;
@@ -108,6 +117,7 @@ public:
 
     uint16 getArea(float x, float y) const;
     inline float getHeight(float x, float y, bool walkableOnly = false) const {return (this->*_gridGetHeight)(x, y, walkableOnly);}
+    float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
     uint8 getTerrainType(float x, float y) const;
     ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data = 0);

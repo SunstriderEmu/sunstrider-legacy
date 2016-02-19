@@ -180,6 +180,7 @@ class Map : public GridRefManager<NGridType>
         Returns INVALID_HEIGHT if no height found at position or if height is further than maxSearchDist
         */
         float GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
+        float GetMinHeight(float x, float y) const;
         /* Get map level (checking vmaps) or liquid level at given point */
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI

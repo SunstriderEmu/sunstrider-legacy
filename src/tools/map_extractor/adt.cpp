@@ -30,6 +30,7 @@ u_map_fcc MH2OMagic = { {'O','2','H','M'} };
 u_map_fcc MCNKMagic = { {'K','N','C','M'} };
 u_map_fcc MCVTMagic = { {'T','V','C','M'} };
 u_map_fcc MCLQMagic = { {'Q','L','C','M'} };
+u_map_fcc MFBOMagic = { {'O','B','F','M'} };
 
 bool isHole(int holes, int i, int j)
 {
@@ -90,6 +91,9 @@ bool adt_MHDR::prepareLoadedData()
 
     // Check and prepare MH2O
     if (offsMH2O && !getMH2O()->prepareLoadedData())
+        return false;
+
+    if (offsMFBO && flags & 1 && !getMFBO()->prepareLoadedData())
         return false;
 
     return true;
@@ -153,4 +157,9 @@ bool adt_MCLQ::prepareLoadedData()
         return false;
 
     return true;
+}
+
+bool adt_MFBO::prepareLoadedData()
+{
+    return fcc == MFBOMagic.fcc;
 }

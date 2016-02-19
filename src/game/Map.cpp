@@ -1568,6 +1568,14 @@ float Map::_GetHeight(float x, float y, float z, bool pUseVmaps, float maxSearch
     }
 }
 
+float Map::GetMinHeight(float x, float y) const
+{
+    if (GridMap const* grid = const_cast<Map*>(this)->GetGrid(x, y))
+        return grid->getMinHeight(x, y);
+    
+    return -500.0f;
+}
+
 inline bool IsOutdoorWMO(uint32 mogpFlags, int32 adtId, int32 rootId, int32 groupId, WMOAreaTableEntry const* wmoEntry, AreaTableEntry const* atEntry, uint32 mapId)
 {
     // If this flag is set we are outdoors and can mount up

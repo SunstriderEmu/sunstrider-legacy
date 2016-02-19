@@ -17,7 +17,7 @@
 #include "AsyncAcceptor.h"
 #include "ScriptMgr.h"
 #include "BattleGroundMgr.h"
-//#include "TCSoap.h"
+#include "TCSoap.h"
 #include "CliRunnable.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
@@ -202,16 +202,16 @@ extern int main(int argc, char **argv)
     if (sConfigMgr->GetBoolDefault("Ra.Enable", false))
         raAcceptor = StartRaSocketAcceptor(_ioService);
 
-    ///- Start up the IRC client
-    if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
-        sIRCMgr->startSessions();
-
     // Start soap serving thread if enabled
     std::thread* soapThread = nullptr;
     if (sConfigMgr->GetBoolDefault("SOAP.Enabled", false))
     {
-     //DISABLED FOR NOW   soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
+        soapThread = new std::thread(TCSoapThread, sConfigMgr->GetStringDefault("SOAP.IP", "127.0.0.1"), uint16(sConfigMgr->GetIntDefault("SOAP.Port", 7878)));
     }
+
+    ///- Start up the IRC client
+    if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
+        sIRCMgr->startSessions();
 
     // Launch the worldserver listener socket
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));

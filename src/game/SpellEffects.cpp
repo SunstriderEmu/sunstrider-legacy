@@ -6991,6 +6991,7 @@ void Spell::EffectCharge(uint32 i)
     if(!target)
         return;
         
+    //TODO: Why is this handled here?
     uint32 triggeredSpellId = 0;
     switch (i) {
     case 0:
