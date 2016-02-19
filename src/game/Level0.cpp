@@ -2064,11 +2064,11 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     plr->RemoveAllAuras();
 
     // Remove instance tag
-    for (uint8 i = 0; i < TOTAL_DIFFICULTIES; i++) {
-        Player::BoundInstancesMap &binds = plr->GetBoundInstances(i);
+    for (uint8 i = 0; i < MAX_DIFFICULTY; i++) {
+        Player::BoundInstancesMap &binds = plr->GetBoundInstances(Difficulty(i));
         for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ) {
             if (itr->first != plr->GetMapId())
-                plr->UnbindInstance(itr, i);
+                plr->UnbindInstance(itr, Difficulty(i));
             else
                 ++itr;
         }

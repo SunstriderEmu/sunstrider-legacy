@@ -529,6 +529,7 @@ struct MapEntry
 
     bool IsCommon() const { return map_type == MAP_COMMON; }
     bool IsDungeon() const { return map_type == MAP_INSTANCE || map_type == MAP_RAID; }
+    bool IsNonRaidDungeon() const { return map_type == MAP_INSTANCE; }
     bool Instanceable() const { return map_type == MAP_INSTANCE || map_type == MAP_RAID || map_type == MAP_BATTLEGROUND || map_type == MAP_ARENA; }
     bool IsRaid() const { return map_type == MAP_RAID; }
     bool IsBattleground() const { return map_type == MAP_BATTLEGROUND; }
@@ -998,6 +999,21 @@ struct WorldSafeLocsEntry
 };
 
 #pragma pack(pop)
+
+/*
+Structures not used for casting to loaded DBC data and not required then packing
+This is supposed to be LK only but we're going to use it for increased compat
+hasErrorMessage is not yet used
+*/
+struct MapDifficulty
+{
+    MapDifficulty() : resetTime(0), maxPlayers(0), hasErrorMessage(false) { }
+    MapDifficulty(uint32 _resetTime, uint32 _maxPlayers, bool _hasErrorMessage) : resetTime(_resetTime), maxPlayers(_maxPlayers), hasErrorMessage(_hasErrorMessage) { }
+
+    uint32 resetTime;
+    uint32 maxPlayers;
+    bool hasErrorMessage;
+};
 
 // Structures not used for casting to loaded DBC data and not required then packing
 struct TalentSpellPos

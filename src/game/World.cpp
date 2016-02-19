@@ -1381,11 +1381,11 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading InstanceTemplate" );
     sObjectMgr->LoadInstanceTemplate();
-    sObjectMgr->LoadInstanceTemplateAddon();
 
     ///- Clean up and pack instances
-    TC_LOG_INFO("server.loading", "Cleaning up instances..." );
-    sInstanceSaveMgr->CleanupInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
+    // Must be called before `creature_respawn`/`gameobject_respawn` tables
+    TC_LOG_INFO("server.loading", "Loading instances..." );
+    sInstanceSaveMgr->LoadInstances();                              // must be called before `creature_respawn`/`gameobject_respawn` tables
 
 //    TC_LOG_INFO("server.loading", "Packing instances..." );
 //    sInstanceSaveMgr->PackInstances();
@@ -2131,11 +2131,13 @@ void World::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source,
 
 void World::ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target)
 {
+    ASSERT(source);
+    ASSERT(target);
     // NOTE: script record _must_ exist until command executed
 
     // prepare static data
-    uint64 sourceGUID = source ? source->GetGUID() : (uint64)0;
-    uint64 targetGUID = target ? target->GetGUID() : (uint64)0;
+    uint64 sourceGUID = source->GetGUID();
+    uint64 targetGUID = target->GetGUID();
     uint64 ownerGUID  = (source->GetTypeId()==TYPEID_ITEM) ? ((Item*)source)->GetOwnerGUID() : (uint64)0;
 
     ScriptAction sa;
@@ -3134,7 +3136,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
     std::string safe_author=author;
     LoginDatabase.EscapeString(safe_author);
 
-    AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
+    //AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
 
     QueryResult resultAccounts = NULL;                     //used for kicking
     

@@ -77,6 +77,7 @@ struct InstanceTemplate
     float startLocZ;
     float startLocO;
     uint32 script_id;
+    bool heroicForced = false;
 };
 
 struct InstanceTemplateAddon
@@ -235,12 +236,22 @@ class Map : public GridRefManager<NGridType>
         virtual bool CanEnter(Player* /*player*/) { return true; }
         const char* GetMapName() const;
 
+        // have meaning only for instanced map (that have set real difficulty)
+        Difficulty GetDifficulty() const { return Difficulty(GetSpawnMode()); }
+        bool IsRegularDifficulty() const { return GetDifficulty() == REGULAR_DIFFICULTY; }
+        MapDifficulty const* GetMapDifficulty() const;
+
         bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
         // NOTE: this duplicate of Instanceable(), but Instanceable() can be changed when BG also will be instanceable
         bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
+        bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
         bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
         bool IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
-        bool IsHeroic() const { return i_spawnMode == DIFFICULTY_HEROIC; }
+#ifdef LICH_KING
+        bool IsHeroic() const { return IsRaid() ? i_spawnMode >= RAID_DIFFICULTY_10MAN_HEROIC : i_spawnMode >= DUNGEON_DIFFICULTY_HEROIC; }
+#else
+        bool IsHeroic() const { return i_spawnMode == DUNGEON_DIFFICULTY_HEROIC; }
+#endif
         bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
         bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
         bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
@@ -320,8 +331,6 @@ class Map : public GridRefManager<NGridType>
         void AddCreatureToPool(Creature*, uint32);
         void RemoveCreatureFromPool(Creature*, uint32);
         std::list<Creature*> GetAllCreaturesFromPool(uint32);
-
-        static bool SupportsHeroicMode(const MapEntry* mapEntry);
 
         // Objects that must update even in inactive grids without activating them
         typedef std::set<Transport*> TransportsContainer;
@@ -473,7 +482,6 @@ class InstanceMap : public Map
         uint32 GetScriptId() { return i_script_id; }
         InstanceScript* GetInstanceScript() { return i_data; }
         void PermBindAllPlayers(Player *player);
-        time_t GetResetTime();
         void UnloadAll();
         bool CanEnter(Player* player);
         void SendResetWarnings(uint32 timeLeft) const;

@@ -1000,6 +1000,14 @@ struct InstancePlayerBind
     /* permanent PlayerInstanceBinds are created in Raid/Heroic instances for players
        that aren't already permanently bound when they are inside when a boss is killed
        or when they enter an instance that the group leader is permanently bound to. */
+    
+    /*LK
+    // extend state listing:
+    //EXPIRED  - doesn't affect anything unless manually re-extended by player
+    //NORMAL   - standard state
+    //EXTENDED - won't be promoted to EXPIRED at next reset period, will instead be promoted to NORMAL
+    //BindExtensionState extendState;
+    */
     InstancePlayerBind() : save(NULL), perm(false) {}
 };
 
@@ -1808,8 +1816,9 @@ class Player : public Unit
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
 
-        void SetDifficulty(uint32 dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
-        uint8 GetDifficulty() const { return m_dungeonDifficulty; }
+        void SetDifficulty(Difficulty dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
+        //arg has no effect for now
+        Difficulty GetDifficulty(bool isRaid = false) const { return m_dungeonDifficulty; }
 
         bool UpdateSkill(uint32 skill_id, uint32 step);
         bool UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step);
@@ -1890,7 +1899,7 @@ class Player : public Unit
         void SendExplorationExperience(uint32 Area, uint32 Experience);
 
         void SendDungeonDifficulty(bool IsInGroup);
-        void ResetInstances(uint8 method);
+        void ResetInstances(uint8 method, bool isRaid = false);
         void SendResetInstanceSuccess(uint32 MapId);
         void SendResetInstanceFailed(uint32 reason, uint32 MapId);
         void SendResetFailedNotify(uint32 mapid);
@@ -2349,16 +2358,15 @@ class Player : public Unit
         uint32 m_HomebindTimer;
         bool m_InstanceValid;
         // permanent binds and solo binds by difficulty
-        BoundInstancesMap m_boundInstances[TOTAL_DIFFICULTIES];
-        InstancePlayerBind* GetBoundInstance(uint32 mapid, uint8 difficulty);
-        BoundInstancesMap& GetBoundInstances(uint8 difficulty) { return m_boundInstances[difficulty]; }
+        BoundInstancesMap m_boundInstances[MAX_DIFFICULTY];
+        InstancePlayerBind* GetBoundInstance(uint32 mapid, Difficulty difficulty);
+        BoundInstancesMap& GetBoundInstances(Difficulty difficulty) { return m_boundInstances[difficulty]; }
         InstanceSave * GetInstanceSave(uint32 mapid);
-        void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
-        void UnbindInstance(BoundInstancesMap::iterator &itr, uint8 difficulty, bool unload = false);
+        void UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload = false);
+        void UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload = false);
         InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
         void SendRaidInfo();
         void SendSavedInstances();
-        static void ConvertInstancesToGroup(Player *player, Group *group = NULL, uint64 player_guid = 0);
         bool Satisfy(AccessRequirement const*, uint32 target_map, bool report = false);
 
         /*********************************************************/
@@ -2560,7 +2568,7 @@ class Player : public Unit
         uint32 m_nextSave;
         time_t m_speakTime;
         uint32 m_speakCount;
-        uint32 m_dungeonDifficulty;
+        Difficulty m_dungeonDifficulty;
 
         uint32 m_atLoginFlags;
 

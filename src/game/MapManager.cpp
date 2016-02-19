@@ -39,7 +39,7 @@ extern GridState* si_GridStates[];                          // debugging code, s
 MapManager::MapManager() : 
     i_gridCleanUpDelay(sWorld->getConfig(CONFIG_INTERVAL_GRIDCLEAN)),
     i_GridStateErrorCount(0),
-    i_MaxInstanceId(0)
+    _nextInstanceId(0)
 {
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
@@ -64,8 +64,6 @@ void MapManager::Initialize()
     // Start mtmaps if needed.
     if (num_threads > 0)
         m_updater.activate(num_threads);
-
-    InitMaxInstanceId();
 }
 
 void MapManager::InitializeVisibilityDistanceInfo()
@@ -157,8 +155,11 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
             }
         }
 
-        //The player has a heroic mode and tries to enter into instance which has no a heroic mode
-        if (!Map::SupportsHeroicMode(entry) && player->GetDifficulty() == DIFFICULTY_HEROIC)
+        Difficulty targetDifficulty, requestedDifficulty;
+        targetDifficulty = requestedDifficulty = player->GetDifficulty(entry->IsRaid());
+        // Get the highest available difficulty if current setting is higher than the instance allows
+        MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(entry->MapID, targetDifficulty);
+        if (!mapDiff)
         {
             player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY2);      //Send aborted message
             return false;
@@ -278,17 +279,6 @@ void MapManager::UnloadAll()
     Map::DeleteStateMachine();
 }
 
-void MapManager::InitMaxInstanceId()
-{
-    i_MaxInstanceId = 0;
-
-    QueryResult result = CharacterDatabase.Query( "SELECT MAX(id) FROM instance" );
-    if( result )
-    {
-        i_MaxInstanceId = result->Fetch()[0].GetUInt32();
-    }
-}
-
 uint32 MapManager::GetNumInstances()
 {
     std::lock_guard<std::mutex> lock(_mapsLock);
@@ -348,4 +338,72 @@ uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
     }
 
     return ret;
+}
+
+
+void MapManager::InitInstanceIds()
+{
+    _nextInstanceId = 1;
+
+    QueryResult result = CharacterDatabase.Query("SELECT MAX(id) FROM instance");
+    if (result)
+    {
+        uint32 maxId = (*result)[0].GetUInt32();
+
+        // Resize to multiples of 32 (vector<bool> allocates memory the same way)
+        _instanceIds.resize((maxId / 32) * 32 + (maxId % 32 > 0 ? 32 : 0));
+    }
+}
+
+void MapManager::RegisterInstanceId(uint32 instanceId)
+{
+    // Allocation and sizing was done in InitInstanceIds()
+    _instanceIds[instanceId] = true;
+}
+
+uint32 MapManager::GenerateInstanceId()
+{
+    uint32 newInstanceId = _nextInstanceId;
+
+    // Find the lowest available id starting from the current NextInstanceId (which should be the lowest according to the logic in FreeInstanceId()
+    for (uint32 i = ++_nextInstanceId; i < 0xFFFFFFFF; ++i)
+    {
+        if ((i < _instanceIds.size() && !_instanceIds[i]) || i >= _instanceIds.size())
+        {
+            _nextInstanceId = i;
+            break;
+        }
+    }
+
+    if (newInstanceId == _nextInstanceId)
+    {
+        TC_LOG_ERROR("maps", "Instance ID overflow!! Can't continue, shutting down server. ");
+        World::StopNow(ERROR_EXIT_CODE);
+    }
+
+    // Allocate space if necessary
+    if (newInstanceId >= uint32(_instanceIds.size()))
+    {
+        // Due to the odd memory allocation behavior of vector<bool> we match size to capacity before triggering a new allocation
+        if (_instanceIds.size() < _instanceIds.capacity())
+        {
+            _instanceIds.resize(_instanceIds.capacity());
+        }
+        else
+            _instanceIds.resize((newInstanceId / 32) * 32 + (newInstanceId % 32 > 0 ? 32 : 0));
+    }
+
+    _instanceIds[newInstanceId] = true;
+
+    return newInstanceId;
+}
+
+void MapManager::FreeInstanceId(uint32 instanceId)
+{
+    // If freed instance id is lower than the next id available for new instances, use the freed one instead
+    if (instanceId < _nextInstanceId)
+        SetNextInstanceId(instanceId);
+
+    _instanceIds[instanceId] = false;
+ //LK   sAchievementMgr->OnInstanceDestroyed(instanceId);
 }

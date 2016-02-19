@@ -106,6 +106,12 @@ DBCStorage <LiquidTypeEntry> sLiquidTypeStore(LiquidTypefmt);
 DBCStorage <MailTemplateEntry> sMailTemplateStore(MailTemplateEntryfmt);
 DBCStorage <MapEntry> sMapStore(MapEntryfmt);
 
+// DBC used only for initialization sMapDifficultyMap at startup.
+#ifdef LICH_KING
+DBCStorage <MapDifficultyEntry> sMapDifficultyStore(MapDifficultyEntryfmt); // only for loading
+#endif
+MapDifficultyMap sMapDifficultyMap;
+
 DBCStorage <QuestSortEntry> sQuestSortStore(QuestSortEntryfmt);
 
 DBCStorage <RandomPropertiesPointsEntry> sRandomPropertiesPointsStore(RandomPropertiesPointsfmt);
@@ -305,6 +311,16 @@ void LoadDBCStores(const std::string& dataPath)
     LoadDBC(availableDbcLocales,bad_dbc_files,sLockStore,                dbcPath,"Lock.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sMailTemplateStore,        dbcPath,"MailTemplate.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sMapStore,                 dbcPath,"Map.dbc");
+#ifdef LICH_KING
+    LoadDBC(availableDbcLocales, bad_dbc_files, sMapDifficultyStore, dbcPath, "MapDifficulty.dbc");
+    // fill data
+    for (uint32 i = 1; i < sMapDifficultyStore.GetNumRows(); ++i)
+        if (MapDifficultyEntry const* entry = sMapDifficultyStore.LookupEntry(i))
+            sMapDifficultyMap[MAKE_PAIR32(entry->MapId, entry->Difficulty)] = MapDifficulty(entry->resetTime, entry->maxPlayers, entry->areaTriggerText[0] != '\0');
+    sMapDifficultyStore.Clear();
+#else
+    //fake MapDifficulty.dbc for BC is handled in ObjectMgr::LoadInstanceTemplate()
+#endif
     LoadDBC(availableDbcLocales,bad_dbc_files,sQuestSortStore,           dbcPath,"QuestSort.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sRandomPropertiesPointsStore, dbcPath,"RandPropPoints.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sSkillLineStore,           dbcPath,"SkillLine.dbc");
@@ -705,6 +721,38 @@ void Map2ZoneCoordinates(float& x,float& y,uint32 zone)
     x = (x-maEntry->x1)/((maEntry->x2-maEntry->x1)/100);
     y = (y-maEntry->y1)/((maEntry->y2-maEntry->y1)/100);    // client y coord from top to down
     std::swap(x,y);                                         // client have map coords swapped
+}
+
+MapDifficulty const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty)
+{
+    MapDifficultyMap::const_iterator itr = sMapDifficultyMap.find(MAKE_PAIR32(mapId, difficulty));
+    return itr != sMapDifficultyMap.end() ? &itr->second : NULL;
+}
+
+MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &difficulty)
+{
+    uint32 tmpDiff = difficulty;
+    MapDifficulty const* mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff));
+    if (!mapDiff)
+    {
+#ifdef LICH_KING
+        if (tmpDiff > RAID_DIFFICULTY_25MAN_NORMAL) // heroic, downscale to normal
+            tmpDiff -= 2;
+        else
+#endif
+            tmpDiff -= 1;   // any non-normal mode for raids like tbc (only one mode)
+
+                            // pull new data
+        mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff)); // we are 10 normal or 25 normal
+        if (!mapDiff)
+        {
+            tmpDiff -= 1;
+            mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff)); // 10 normal
+        }
+    }
+
+    difficulty = Difficulty(tmpDiff);
+    return mapDiff;
 }
 
 uint32 GetTalentInspectBitPosInTab(uint32 talentId)

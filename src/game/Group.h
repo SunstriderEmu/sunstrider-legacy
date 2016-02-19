@@ -158,7 +158,7 @@ class Group
         bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result = NULL, bool loadMembers = true);
         bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
-        void RemoveInvite(Player *player);
+        void   RemoveInvite(Player *player);
         void   RemoveAllInvites();
         bool   AddLeaderInvite(Player *player);
         bool   AddMember(const uint64 &guid, std::string name, SQLTransaction trans);
@@ -167,6 +167,7 @@ class Group
         void   ChangeLeader(const uint64 &guid);
         void   CheckLeader(const uint64 &guid, bool isLogout);
         bool   ChangeLeaderToFirstOnlineMember();
+        static void ConvertLeaderInstancesToGroup(Player *player, Group *group, bool switchLeader);
         void   SetLootMethod(LootMethod method) { m_lootMethod = method; }
         void   SetLooterGuid(const uint64 &guid) { m_looterGuid = guid; }
         void   UpdateLooterGuid( WorldObject* object, bool ifneed = false );
@@ -177,7 +178,11 @@ class Group
         bool IsFull() const { return (m_groupType==GROUPTYPE_NORMAL) ? (m_memberSlots.size()>=MAXGROUPSIZE) : (m_memberSlots.size()>=MAXRAIDSIZE); }
         bool isRaidGroup() const { return m_groupType==GROUPTYPE_RAID; }
         bool isBGGroup()   const { return m_bgGroup != NULL; }
+        //only for TC compat
+        bool isBFGroup()   const { return false; }
         bool IsCreated()   const { return GetMembersCount() > 0; }
+        //group currently use leader guid as identifier, this function is here for compat with trinity code
+        inline const uint32 GetLowGUID() const { return GetLeaderGUID();  }
         const uint64& GetLeaderGUID() const { return m_leaderGuid; }
         const char * GetLeaderName() const { return m_leaderName.c_str(); }
         LootMethod    GetLootMethod() const { return m_lootMethod; }
@@ -284,12 +289,12 @@ class Group
         }
 
         void SetTargetIcon(uint8 id, uint64 guid);
-        uint64 GetTargetIcon(uint8 id);
-        void SetDifficulty(uint8 difficulty);
-        uint8 GetDifficulty() { return m_difficulty; }
+        uint64 GetTargetIcon(uint8 id) const;
+        void SetDifficulty(Difficulty difficulty);
+        Difficulty GetDifficulty(bool isRaid = false) const;
         uint16 InInstance();
         bool InCombatToInstance(uint32 instanceId);
-        void ResetInstances(uint8 method, Player* SendMsgTo);
+        void ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo);
 
         // -no description-
         //void SendInit(WorldSession *session);
@@ -352,8 +357,11 @@ class Group
 
         InstanceGroupBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);
         void UnbindInstance(uint32 mapid, uint8 difficulty, bool unload = false);
-        InstanceGroupBind* GetBoundInstance(uint32 mapid, uint8 difficulty);
-        BoundInstancesMap& GetBoundInstances(uint8 difficulty) { return m_boundInstances[difficulty]; }
+        InstanceGroupBind* GetBoundInstance(Player* player);
+        InstanceGroupBind* GetBoundInstance(Map* aMap);
+        InstanceGroupBind* GetBoundInstance(MapEntry const* mapEntry);
+        InstanceGroupBind* GetBoundInstance(Difficulty difficulty, uint32 mapId);
+        BoundInstancesMap& GetBoundInstances(Difficulty difficulty);
 
         // FG: evil hacks
         void BroadcastGroupUpdate(void);
@@ -425,7 +433,8 @@ class Group
         uint64              m_mainTank;
         uint64              m_mainAssistant;
         GroupType           m_groupType;
-        uint8               m_difficulty;
+        Difficulty          m_dungeonDifficulty;
+        Difficulty          m_raidDifficulty; //LK compat, no effect yet
         Battleground*       m_bgGroup;
         uint64              m_targetIcons[TARGETICONCOUNT];
         LootMethod          m_lootMethod;
@@ -433,7 +442,7 @@ class Group
         uint64              m_looterGuid;
         uint64              m_masterLooterGuid; //TODO : save in db
         Rolls               RollId;
-        BoundInstancesMap   m_boundInstances[TOTAL_DIFFICULTIES];
+        BoundInstancesMap   m_boundInstances[MAX_DIFFICULTY];
         uint8*              m_subGroupsCounts;
         time_t              m_leaderLogoutTime;
 };

@@ -1455,7 +1455,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 {
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.Query("SELECT guid,respawntime,instance FROM creature_respawn");
+    QueryResult result = CharacterDatabase.Query("SELECT guid,respawntime,instanceId FROM creature_respawn");
 
     if(!result)
     {
@@ -1482,11 +1482,11 @@ void ObjectMgr::LoadCreatureRespawnTimes()
 void ObjectMgr::LoadGameobjectRespawnTimes()
 {
     // remove outdated data
-    WorldDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
+    CharacterDatabase.DirectExecute("DELETE FROM gameobject_respawn WHERE respawntime <= UNIX_TIMESTAMP(NOW())");
 
     uint32 count = 0;
 
-    QueryResult result = WorldDatabase.Query("SELECT guid,respawntime,instance FROM gameobject_respawn");
+    QueryResult result = CharacterDatabase.Query("SELECT guid,respawntime,instanceId FROM gameobject_respawn");
 
     if(!result)
     {
@@ -3334,7 +3334,7 @@ void ObjectMgr::LoadGroups()
                 }
             }
 
-            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt32(), fields[2].GetUInt32(), fields[4].GetUInt8(), (time_t)fields[5].GetUInt64(), (fields[6].GetUInt32() == 0), true);
+            InstanceSave *save = sInstanceSaveMgr->AddInstanceSave(fields[1].GetUInt32(), fields[2].GetUInt32(), Difficulty(fields[4].GetUInt8()), (time_t)fields[5].GetUInt64(), (fields[6].GetUInt32() == 0), true);
             group->BindToInstance(save, fields[3].GetBool(), true);
         }while( result->NextRow() );
     }
@@ -4582,8 +4582,8 @@ void ObjectMgr::LoadPageTextLocales()
 void ObjectMgr::LoadInstanceTemplate()
 {
     uint32 oldMSTime = GetMSTime();
-    //                                                0     1         2           4            5          6         7             8         9       10
-    QueryResult result = WorldDatabase.Query("SELECT map, parent, maxPlayers, reset_delay, access_id, startLocX, startLocY, startLocZ, startLocO, script FROM instance_template");
+    //                                                0     1         2           4            5          6         7             8         9       10          11
+    QueryResult result = WorldDatabase.Query("SELECT map, parent, maxPlayers, reset_delay, access_id, startLocX, startLocY, startLocZ, startLocO, script, forceHeroicEnabled FROM instance_template");
 
     if (!result)
     {
@@ -4615,6 +4615,7 @@ void ObjectMgr::LoadInstanceTemplate()
         instanceTemplate.startLocZ = fields[7].GetFloat();
         instanceTemplate.startLocO = fields[8].GetFloat();
         instanceTemplate.script_id = sObjectMgr->GetScriptId(fields[9].GetCString());
+        instanceTemplate.heroicForced = fields[10].GetBool();
 
         _instanceTemplateStore[mapID] = instanceTemplate;
 
@@ -4622,7 +4623,6 @@ void ObjectMgr::LoadInstanceTemplate()
     }
     while (result->NextRow());
 
-    //correctness check
     for(auto i : _instanceTemplateStore)
     {
         InstanceTemplate* temp = &(i.second);
@@ -4651,6 +4651,15 @@ void ObjectMgr::LoadInstanceTemplate()
 
         // the reset_delay must be at least one day
         temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld->GetRate(RATE_INSTANCE_RESET_TIME)));
+
+#ifndef LICH_KING
+        sMapDifficultyMap[MAKE_PAIR32(i.first, REGULAR_DIFFICULTY)] = MapDifficulty(temp->reset_delay, temp->maxPlayers, false);
+        if (MapEntry const* entry = sMapStore.LookupEntry(i.first))
+        {
+            if (entry->resetTimeHeroic || temp->heroicForced)
+                sMapDifficultyMap[MAKE_PAIR32(entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(entry->resetTimeHeroic,temp->maxPlayers, false);;
+        }
+#endif
     }
 
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Instance Template definitions in %u ms", _instanceTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
@@ -4663,69 +4672,6 @@ InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
         return &(itr->second);
 
     return NULL;
-}
-
-void ObjectMgr::LoadInstanceTemplateAddon()
-{
-    uint32 oldMSTime = GetMSTime();    
-    QueryResult result = WorldDatabase.Query("SELECT map, forceHeroicEnabled FROM instance_template_addon");
-
-    if (!result)
-    {
-        TC_LOG_INFO("server.loading", ">> Loaded 0 instance templates addon. DB table `instance_template_addon` is empty!");
-        return;
-    }
-
-    uint32 count = 0;
-    do
-    {
-        Field* fields = result->Fetch();
-
-        uint16 mapID = fields[0].GetUInt16();
-
-        if (!MapManager::IsValidMAP(mapID, false))
-        {
-            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadInstanceTemplateAddon: bad mapid %d for template!", mapID);
-            continue;
-        }
-
-        InstanceTemplate const* iTemp = GetInstanceTemplate(mapID);
-        if (!iTemp)
-        {
-            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadInstanceTemplateAddon: bad mapid %d for template!", mapID);
-            continue;
-        }
-
-        InstanceTemplateAddon instanceTemplateAddon;
-
-        instanceTemplateAddon.forceHeroicEnabled = fields[1].GetBool();
-
-        _instanceTemplateAddonStore[mapID] = instanceTemplateAddon;
-
-        ++count;
-    }
-    while (result->NextRow());
-
-    for(auto i : _instanceTemplateAddonStore)
-    {
-        const InstanceTemplateAddon* tempAddon = &(i.second);
-        if(!tempAddon) 
-            continue;
-        if(!tempAddon->forceHeroicEnabled) 
-            continue; //entry disabled
-
-        InstanceTemplate* temp = (InstanceTemplate*)GetInstanceTemplate(i.first);
-        if(!temp)
-        {
-            TC_LOG_ERROR("sql.sql","ObjectMgr::LoadInstanceTemplateAddon: bad mapid %d for template!", tempAddon->map);
-            continue;
-        }
-        
-        if(temp->reset_delay == 0) // instance has no reset delay, defaulting to 1 day
-            temp->reset_delay = 1;
-    }
-    TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " Instance Template Addons definitions in %u ms", _instanceTemplateAddonStore.size(), GetMSTimeDiffToNow(oldMSTime));
-    
 }
 
 InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
@@ -6305,7 +6251,7 @@ void ObjectMgr::LoadCorpses()
 {
     uint32 count = 0;
     //                                                     0           1           2           3            4    5     6     7            8         10
-    QueryResult result = CharacterDatabase.Query("SELECT position_x, position_y, position_z, orientation, map, data, time, corpse_type, instance, guid FROM corpse WHERE corpse_type <> 0");
+    QueryResult result = CharacterDatabase.Query("SELECT position_x, position_y, position_z, orientation, map, data, time, corpse_type, instanceId, guid FROM corpse WHERE corpse_type <> 0");
 
     if( !result )
     {
@@ -6504,17 +6450,17 @@ void ObjectMgr::LoadWeatherZoneChances()
     TC_LOG_INFO("server.loading",">> Loaded %u weather definitions", count);
 }
 
-void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 instance, time_t t)
+void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 instanceId, time_t t)
 {
     _creatureRespawnTimeLock.lock();
-    mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
+    mCreatureRespawnTimes[MAKE_PAIR64(loguid, instanceId)] = t;
     _creatureRespawnTimeLock.unlock();
 
-    SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM creature_respawn WHERE guid = '%u' AND instanceId = '%u'", loguid, instanceId);
     if (t)
-        trans->PAppend("INSERT INTO creature_respawn VALUES ( '%u', '" UI64FMTD "', '%u' )", loguid, uint64(t), instance);
-    WorldDatabase.CommitTransaction(trans);
+        trans->PAppend("INSERT INTO creature_respawn (guid, respawnTime, mapId, instanceId) VALUES ( '%u', '" UI64FMTD "', '%u', '%u' )", loguid, uint64(t), mapId, instanceId);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void ObjectMgr::DeleteCreatureData(uint32 guid)
@@ -6527,7 +6473,7 @@ void ObjectMgr::DeleteCreatureData(uint32 guid)
     mCreatureDataMap.erase(guid);
 }
 
-void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
+void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t)
 {
     if(!loguid) 
         return;
@@ -6536,11 +6482,11 @@ void ObjectMgr::SaveGORespawnTime(uint32 loguid, uint32 instance, time_t t)
     mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = t;
     _goRespawnTimeLock.unlock();
 
-    SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instance = '%u'", loguid, instance);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM gameobject_respawn WHERE guid = '%u' AND instanceId = '%u'", loguid, instance);
     if (t)
-        trans->PAppend("INSERT INTO gameobject_respawn VALUES ( '%u', '" UI64FMTD "', '%u' )", loguid, uint64(t), instance);
-    WorldDatabase.CommitTransaction(trans);
+        trans->PAppend("INSERT INTO gameobject_respawn (guid, respawnTime, mapId, instanceId) VALUES ( '%u', '" UI64FMTD "', '%u', '%u' )", loguid, uint64(t), mapId, instance);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
@@ -6569,10 +6515,10 @@ void ObjectMgr::DeleteRespawnTimeForInstance(uint32 instance)
     }
     _creatureRespawnTimeLock.unlock();
 
-    SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature_respawn WHERE instance = '%u'", instance);
-    trans->PAppend("DELETE FROM gameobject_respawn WHERE instance = '%u'", instance);
-    WorldDatabase.CommitTransaction(trans);
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+    trans->PAppend("DELETE FROM creature_respawn WHERE instanceId = '%u'", instance);
+    trans->PAppend("DELETE FROM gameobject_respawn WHERE instanceId = '%u'", instance);
+    CharacterDatabase.CommitTransaction(trans);
 }
 
 void ObjectMgr::DeleteGOData(uint32 guid)

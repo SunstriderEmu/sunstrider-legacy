@@ -596,14 +596,6 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
     return true;
 }
 
-bool ChatHandler::HandleReloadInstanceTemplateAddonCommand(const char* arg)
-{
-    TC_LOG_INFO("command", "Re-Loading Instance Templates Addon..." );
-    sObjectMgr->LoadInstanceTemplateAddon();
-    SendGlobalGMSysMessage("DB table `instance_template_addon` reloaded.");
-    return true;
-}
-
 bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 {
     if(sWorld->IsScriptScheduled())
@@ -6819,14 +6811,14 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
 {
     Player* player = GetSelectedPlayerOrSelf();
     uint32 counter = 0;
-    for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+    for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
     {
-        Player::BoundInstancesMap &binds = player->GetBoundInstances(i);
+        Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
         for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
         {
             InstanceSave *save = itr->second.save;
             std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
-            PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+            PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
             counter++;
         }
     }
@@ -6835,14 +6827,14 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
     Group *group = player->GetGroup();
     if(group)
     {
-        for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+        for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
         {
-            Group::BoundInstancesMap &binds = group->GetBoundInstances(i);
+            Group::BoundInstancesMap &binds = group->GetBoundInstances(Difficulty(i));
             for(Group::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
             {
                 InstanceSave *save = itr->second.save;
                 std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
-                PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
                 counter++;
             }
         }
@@ -6862,17 +6854,17 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
     {
         Player* player = GetSelectedPlayerOrSelf();
         uint32 counter = 0;
-        for(uint8 i = 0; i < TOTAL_DIFFICULTIES; i++)
+        for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
         {
-            Player::BoundInstancesMap &binds = player->GetBoundInstances(i);
+            Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
             for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end();)
             {
                 if(itr->first != player->GetMapId())
                 {
                     InstanceSave *save = itr->second.save;
                     std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
-                    PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == DIFFICULTY_NORMAL ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
-                    player->UnbindInstance(itr, i);
+                    PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                    player->UnbindInstance(itr, Difficulty(i));
                     counter++;
                 }
                 else

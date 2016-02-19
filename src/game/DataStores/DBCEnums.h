@@ -19,9 +19,26 @@
 #ifndef DBCENUMS_H
 #define DBCENUMS_H
 
-// client supported max level for player/pets/etc. Avoid overflow or client stability affected.
-// also see GT_MAX_LEVEL define
-#define MAX_LEVEL    100
+
+enum LevelLimit
+{
+    // Client expected level limitation, like as used in DBC item max levels for "until max player level"
+    // use as default max player level, must be fit max level for used client
+    // also see MAX_LEVEL and STRONG_MAX_LEVEL define
+#ifdef LICH_KING
+    DEFAULT_MAX_LEVEL = 80,
+#else
+    DEFAULT_MAX_LEVEL = 70,
+#endif
+
+    // client supported max level for player/pets/etc. Avoid overflow or client stability affected.
+    // also see GT_MAX_LEVEL define
+    MAX_LEVEL = 100,
+
+    // Server side limitation. Base at used code requirements.
+    // also see MAX_LEVEL and GT_MAX_LEVEL define
+    STRONG_MAX_LEVEL = 255,
+};
 
 // Server side limitation. Base at used code requirements.
 // also see MAX_LEVEL and GT_MAX_LEVEL define
@@ -66,14 +83,27 @@ enum Difficulty
 
     DUNGEON_DIFFICULTY_NORMAL = 0,
     DUNGEON_DIFFICULTY_HEROIC = 1,
-//LK
+#ifdef LICH_KING
     DUNGEON_DIFFICULTY_EPIC   = 2,
 
     RAID_DIFFICULTY_10MAN_NORMAL = 0,
     RAID_DIFFICULTY_25MAN_NORMAL = 1,
     RAID_DIFFICULTY_10MAN_HEROIC = 2,
     RAID_DIFFICULTY_25MAN_HEROIC = 3
+#else
+    RAID_DIFFICULTY_NORMAL     = 0,
+#endif
 };
+
+#ifdef LICH_KING
+#define MAX_DUNGEON_DIFFICULTY     3
+#define MAX_RAID_DIFFICULTY        4
+#define MAX_DIFFICULTY             4
+#else
+#define MAX_DUNGEON_DIFFICULTY     2
+#define MAX_RAID_DIFFICULTY        1
+#define MAX_DIFFICULTY             2
+#endif //LICH_KING
 
 enum SpawnMask
 {
@@ -83,6 +113,7 @@ enum SpawnMask
     SPAWNMASK_DUNGEON_HEROIC    = (1 << DUNGEON_DIFFICULTY_HEROIC),
     SPAWNMASK_DUNGEON_ALL       = (SPAWNMASK_DUNGEON_NORMAL | SPAWNMASK_DUNGEON_HEROIC),
 //LK
+#ifdef LICH_KING
     SPAWNMASK_RAID_10MAN_NORMAL = (1 << RAID_DIFFICULTY_10MAN_NORMAL),
     SPAWNMASK_RAID_25MAN_NORMAL = (1 << RAID_DIFFICULTY_25MAN_NORMAL),
     SPAWNMASK_RAID_NORMAL_ALL   = (SPAWNMASK_RAID_10MAN_NORMAL | SPAWNMASK_RAID_25MAN_NORMAL),
@@ -90,13 +121,18 @@ enum SpawnMask
     SPAWNMASK_RAID_10MAN_HEROIC = (1 << RAID_DIFFICULTY_10MAN_HEROIC),
     SPAWNMASK_RAID_25MAN_HEROIC = (1 << RAID_DIFFICULTY_25MAN_HEROIC),
     SPAWNMASK_RAID_HEROIC_ALL   = (SPAWNMASK_RAID_10MAN_HEROIC | SPAWNMASK_RAID_25MAN_HEROIC),
-
     SPAWNMASK_RAID_ALL          = (SPAWNMASK_RAID_NORMAL_ALL | SPAWNMASK_RAID_HEROIC_ALL)
+#else
+    SPAWNMASK_RAID_NORMAL_ALL   = RAID_DIFFICULTY_NORMAL,
+    SPAWNMASK_RAID_ALL          = RAID_DIFFICULTY_NORMAL,
+#endif
 };
 
 enum FactionTemplateFlags
 {
+    FACTION_TEMPLATE_FLAG_PVP = 0x00000800,   // flagged for PvP
     FACTION_TEMPLATE_FLAG_CONTESTED_GUARD   =   0x00001000, // faction will attack players that were involved in PvP combats
+    FACTION_TEMPLATE_FLAG_HOSTILE_BY_DEFAULT = 0x00002000,
 };
 
 enum FactionMasks

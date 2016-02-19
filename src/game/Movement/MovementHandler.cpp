@@ -158,8 +158,12 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     {
         if(reset_notify)
         {
-            uint32 timeleft = sInstanceSaveMgr->GetResetTimeFor(GetPlayer()->GetMapId()) - time(NULL);
+#ifdef LICH_KING
+            FIXME; //LK has this message for dungeon as well
+#else
+            uint32 timeleft = sInstanceSaveMgr->GetResetTimeFor(GetPlayer()->GetMapId(), RAID_DIFFICULTY_NORMAL) - time(NULL);
             GetPlayer()->SendInstanceResetWarning(GetPlayer()->GetMapId(), timeleft); // greeting at the entrance of the resort raid instance
+#endif
         }
     }
 
