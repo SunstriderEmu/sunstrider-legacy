@@ -112,6 +112,7 @@ collision
 format
 g3dlib
 game
+gsoap
 irc
 scripts
 shared
