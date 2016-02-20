@@ -416,8 +416,9 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_DEL_GROUP_INSTANCE_BY_GUID, "DELETE FROM group_instance WHERE leaderGuid = ? AND instance = ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_REP_GROUP_INSTANCE, "REPLACE INTO group_instance (leaderGuid, instance, permanent) VALUES (?, ?, ?)", CONNECTION_ASYNC);
     PrepareStatement(CHAR_INS_INSTANCE_RESET, "INSERT INTO instance_reset (mapid, difficulty, resettime) VALUES(?, ?, ?)", CONNECTION_ASYNC);
-    /*
     PrepareStatement(CHAR_UPD_INSTANCE_RESETTIME, "UPDATE instance SET resettime = ? WHERE id = ?", CONNECTION_ASYNC);
+    
+    /*
     PrepareStatement(CHAR_UPD_GLOBAL_INSTANCE_RESETTIME, "UPDATE instance_reset SET resettime = ? WHERE mapid = ? AND difficulty = ?", CONNECTION_ASYNC);
     /*
     PrepareStatement(CHAR_UPD_CHAR_ONLINE, "UPDATE characters SET online = 1 WHERE guid = ?", CONNECTION_ASYNC);

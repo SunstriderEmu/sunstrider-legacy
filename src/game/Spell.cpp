@@ -1862,7 +1862,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 SearchAreaTarget(unitList, range, PUSH_NONE, SPELL_TARGETS_ENEMY);
                 if(unitList.size())
                 {
-                    Trinity::RandomResizeList(unitList, 1);
+                    Trinity::Containers::RandomResizeList(unitList, 1);
                     m_targets.SetDestination(unitList.front());
                     break;
                 }
@@ -2201,7 +2201,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if(unitList.size() > 1)
                         unitList.remove(m_caster->GetVictim());
                 }
-                Trinity::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
+                Trinity::Containers::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
             }
             else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
                 unitList.remove(m_targets.GetUnitTarget());
