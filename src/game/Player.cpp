@@ -2317,6 +2317,20 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
     return creature;
 }
 
+GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid) const
+{
+    if (GameObject* go = GetMap()->GetGameObject(guid))
+    {
+        if (go->IsWithinDistInMap(this, go->GetInteractionDistance()))
+            return go;
+
+        TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal %f is allowed)", go->GetGOInfo()->name.c_str(),
+            go->GetGUIDLow(), GetName().c_str(), GetGUIDLow(), go->GetDistance(this), go->GetInteractionDistance());
+    }
+
+    return nullptr;
+}
+
 GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const
 {
     if (GameObject* go = GetMap()->GetGameObject(guid))
@@ -2326,8 +2340,8 @@ GameObject* Player::GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes 
             if (go->IsWithinDistInMap(this, go->GetInteractionDistance()))
                 return go;
 
-            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal 10 is allowed)", (go->GetGOInfo()->name.c_str()),
-                go->GetGUIDLow(), this->GetName().c_str(), GetGUIDLow(), go->GetDistance(this));
+            TC_LOG_DEBUG("maps", "GetGameObjectIfCanInteractWith: GameObject '%s' [GUID: %u] is too far away from player %s [GUID: %u] to be used by him (distance=%f, maximal %f is allowed)", (go->GetGOInfo()->name.c_str()),
+                go->GetGUIDLow(), this->GetName().c_str(), GetGUIDLow(), go->GetDistance(this), go->GetInteractionDistance());
         }
     }
 

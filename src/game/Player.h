@@ -1186,6 +1186,7 @@ class Player : public Unit
 
         bool CanInteractWithQuestGiver(Object* questGiver);
         Creature* GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask = UNIT_NPC_FLAG_NONE);
+        GameObject* GetGameObjectIfCanInteractWith(uint64 guid) const;
         GameObject* GetGameObjectIfCanInteractWith(uint64 guid, GameobjectTypes type) const;
 
         void ToggleAFK();

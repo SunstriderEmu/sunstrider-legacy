@@ -103,7 +103,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     GameObject* go = NULL;
     if (IS_CREATURE_OR_VEHICLE_GUID(guid))
     {
-        unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
+        unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_GOSSIP);
         if (!unit)
         {
             TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found or you can't interact with him.", guid);
@@ -112,7 +112,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     }
     else if (IS_GAMEOBJECT_GUID(guid))
     {
-        go = _player->GetMap()->GetGameObject(guid);
+        go = _player->GetGameObjectIfCanInteractWith(guid);
         if (!go)
         {
             TC_LOG_DEBUG("network", "WORLD: HandleGossipSelectOptionOpcode - " UI64FMTD " not found.", guid);

@@ -308,12 +308,9 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 
     recvData >> guid;
 
-    GameObject *obj = ObjectAccessor::GetGameObject(*_player, guid);
+    GameObject *obj = _player->GetGameObjectIfCanInteractWith(guid);
 
     if(!obj)
-        return;
-
-    if (!obj->IsWithinDistInMap(GetPlayer(), obj->GetInteractionDistance()))
         return;
 
     // ignore for remote control state
@@ -326,6 +323,8 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     obj->AI()->OnGossipHello(_player);
 
     obj->Use(_player);
+
+    //TC LK _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
 }
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
