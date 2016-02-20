@@ -343,7 +343,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
             continue;
 
         std::string aname;
-        if(AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(itr->second->GetZoneId()))
+        if(AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(itr->second->GetAreaId()))
             aname = areaEntry->area_name[GetSessionDbcLocale()];
 
         bool s_show = true;

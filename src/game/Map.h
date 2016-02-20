@@ -197,7 +197,7 @@ class Map : public GridRefManager<NGridType>
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData *data = 0) const;
 
-        uint16 GetAreaFlag(float x, float y, float z, bool *isOutdoors=0) const;
+        uint32 GetAreaId(float x, float y, float z, bool *isOutdoors) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
 
         bool IsOutdoors(float x, float y, float z) const;
@@ -207,18 +207,9 @@ class Map : public GridRefManager<NGridType>
         bool IsInWater(float x, float y, float z, LiquidData *data = 0) const;
         bool IsUnderWater(float x, float y, float z) const;
 
-        static uint32 GetAreaId(uint16 areaflag,uint32 map_id);
-        static uint32 GetZoneId(uint16 areaflag,uint32 map_id);
-
-        uint32 GetAreaId(float x, float y, float z) const
-        {
-            return GetAreaId(GetAreaFlag(x,y,z),i_id);
-        }
-
-        uint32 GetZoneId(float x, float y, float z) const
-        {
-            return GetZoneId(GetAreaFlag(x,y,z),i_id);
-        }
+        uint32 GetAreaId(float x, float y, float z) const;
+        uint32 GetZoneId(float x, float y, float z) const;
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const;
 
         virtual void MoveAllCreaturesInMoveList();
         virtual void MoveAllGameObjectsInMoveList();

@@ -62,10 +62,11 @@ class PlayerbotMgr;
 
 typedef std::deque<Mail*> PlayerMails;
 
-#define PLAYER_MAX_SKILLS       127
-#define PLAYER_MAX_DAILY_QUESTS 25
+#define PLAYER_MAX_SKILLS           127
+#define PLAYER_MAX_DAILY_QUESTS     25
+#define PLAYER_EXPLORED_ZONES_SIZE  128
 
-#define REPUTATION_CAP 42999
+#define REPUTATION_CAP    42999
 #define REPUTATION_BOTTOM -42999
 
 // Note: SPELLMOD_* values is aura types in fact

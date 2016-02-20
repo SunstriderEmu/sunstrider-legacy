@@ -49,9 +49,8 @@ struct WMOAreaTableTripple
 
 typedef std::map<WMOAreaTableTripple, WMOAreaTableEntry const *> WMOAreaInfoByTripple;
 
-DBCStorage <AreaTableEntry> sAreaStore(AreaTableEntryfmt);
-static AreaFlagByAreaID sAreaFlagByAreaID;
-static AreaFlagByMapID  sAreaFlagByMapID;                   // for instances without generated *.map files
+//zones are actually area so you can also search those with this
+DBCStorage <AreaTableEntry> sAreaTableStore(AreaTableEntryfmt);
 
 static WMOAreaInfoByTripple sWMOAreaInfoByTripple;
 
@@ -107,7 +106,7 @@ DBCStorage <MailTemplateEntry> sMailTemplateStore(MailTemplateEntryfmt);
 DBCStorage <MapEntry> sMapStore(MapEntryfmt);
 
 // DBC used only for initialization sMapDifficultyMap at startup.
-#ifdef LICH_KING
+#ifdef LICH_KING //this one does not exist on BC
 DBCStorage <MapDifficultyEntry> sMapDifficultyStore(MapDifficultyEntryfmt); // only for loading
 #endif
 MapDifficultyMap sMapDifficultyMap;
@@ -159,7 +158,7 @@ static DBCStorage <TaxiPathNodeEntry> sTaxiPathNodeStore(TaxiPathNodeEntryfmt);
 DBCStorage <TotemCategoryEntry> sTotemCategoryStore(TotemCategoryEntryfmt);
 DBCStorage <TransportAnimationEntry> sTransportAnimationStore(TransportAnimationfmt);
 DBCStorage <WMOAreaTableEntry> sWMOAreaTableStore(WMOAreaTableEntryfmt);
-DBCStorage <WorldMapAreaEntry>  sWorldMapAreaStore(WorldMapAreaEntryfmt);
+DBCStorage <WorldMapAreaEntry>  sWorldMapAreaStore(WorldMapAreaEntryfmt); //the index is set on area_id instead of the first column dbc id
 DBCStorage <WorldSafeLocsEntry> sWorldSafeLocsStore(WorldSafeLocsEntryfmt);
 
 typedef std::list<std::string> StoreProblemList;
@@ -229,22 +228,7 @@ void LoadDBCStores(const std::string& dataPath)
     StoreProblemList bad_dbc_files;
     uint32 availableDbcLocales = 0xFFFFFFFF;
 
-    LoadDBC(availableDbcLocales,bad_dbc_files,sAreaStore,                dbcPath,"AreaTable.dbc");
-
-    // must be after sAreaStore loading
-    for(uint32 i = 0; i < sAreaStore.GetNumRows(); ++i)           // areaflag numbered from 0
-    {
-        if(AreaTableEntry const* area = sAreaStore.LookupEntry(i))
-        {
-            // fill AreaId->DBC records
-            sAreaFlagByAreaID.insert(AreaFlagByAreaID::value_type(uint16(area->ID),area->areaBit));
-
-            // fill MapId->DBC records ( skip sub zones and continents )
-            if(area->parentArea==0 && area->mapid != 0 && area->mapid != 1 && area->mapid != 530 )
-                sAreaFlagByMapID.insert(AreaFlagByMapID::value_type(area->mapid,area->areaBit));
-        }
-    }
-
+    LoadDBC(availableDbcLocales,bad_dbc_files,sAreaTableStore,           dbcPath,"AreaTable.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sAreaTriggerStore,         dbcPath,"AreaTrigger.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sAuctionHouseStore,        dbcPath,"AuctionHouse.dbc");
     LoadDBC(availableDbcLocales,bad_dbc_files,sBankBagSlotPricesStore,   dbcPath,"BankBagSlotPrices.dbc");
@@ -540,7 +524,7 @@ void LoadDBCStores(const std::string& dataPath)
         !sMapStore.LookupEntry(598)                ||
         !sGemPropertiesStore.LookupEntry(1127)     ||
         !sCharTitlesStore.LookupEntry(71)          ||
-        !sAreaStore.LookupEntry(1768)              )
+        !sAreaTableStore.LookupEntry(1768)              )
     {
         TC_LOG_ERROR("server.loading","\nYou have _outdated_ DBC files. Please extract correct versions from current using client.");
         exit(1);
@@ -586,15 +570,6 @@ uint32 GetTalentSpellCost(uint32 spellId)
     return 0;
 }
 
-int32 GetAreaFlagByAreaID(uint32 area_id)
-{
-    AreaFlagByAreaID::iterator i = sAreaFlagByAreaID.find(area_id);
-    if(i == sAreaFlagByAreaID.end())
-        return -1;
-
-    return i->second;
-}
-
 WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid, int32 groupid)
 {
     WMOAreaInfoByTripple::iterator i = sWMOAreaInfoByTripple.find(WMOAreaTableTripple(rootid, adtid, groupid));
@@ -603,38 +578,9 @@ WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid
         return i->second;
 }
 
-AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id)
-{
-    int32 areaflag = GetAreaFlagByAreaID(area_id);
-    if(areaflag < 0)
-        return NULL;
-
-    return sAreaStore.LookupEntry(areaflag );
-}
-
-AreaTableEntry const* GetAreaEntryByAreaFlagAndMap(uint32 area_flag,uint32 map_id)
-{
-    if(area_flag)
-        return sAreaStore.LookupEntry(area_flag);
-
-    if(MapEntry const* mapEntry = sMapStore.LookupEntry(map_id))
-        return GetAreaEntryByAreaID(mapEntry->linked_zone);
-
-    return NULL;
-}
-
-uint32 GetAreaFlagByMapId(uint32 mapid)
-{
-    AreaFlagByMapID::iterator i = sAreaFlagByMapID.find(mapid);
-    if(i == sAreaFlagByMapID.end())
-        return 0;
-    else
-        return i->second;
-}
-
 uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId)
 {
-    if(mapid != 530)                                        // speed for most cases
+    if(mapid == 530 || mapid == 0 || mapid == 1)                                        // speed for most cases
         return mapid;
 
     if(WorldMapAreaEntry const* wma = sWorldMapAreaStore.LookupEntry(zoneId))
@@ -645,7 +591,7 @@ uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId)
 
 ContentLevels GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId)
 {
-    mapid = GetVirtualMapForMapAndZone(mapid,zoneId);
+    mapid = GetVirtualMapForMapAndZone(mapid, zoneId);
     if(mapid < 2)
         return CONTENT_1_60;
 
@@ -697,9 +643,10 @@ bool IsTotemCategoryCompatibleWith(uint32 itemTotemCategoryId, uint32 requiredTo
     return (itemEntry->categoryMask & reqEntry->categoryMask)==reqEntry->categoryMask;
 }
 
-void Zone2MapCoordinates(float& x,float& y,uint32 zone)
+void Zone2MapCoordinates(float& x,float& y,uint32 zoneId)
 {
-    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zone);
+    //sWorldMapAreaStore has index on zoneId instead of its original id
+    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zoneId);
 
     // if not listed then map coordinates (instance)
     if(!maEntry)
@@ -710,9 +657,10 @@ void Zone2MapCoordinates(float& x,float& y,uint32 zone)
     y = y*((maEntry->y2-maEntry->y1)/100)+maEntry->y1;      // client y coord from top to down
 }
 
-void Map2ZoneCoordinates(float& x,float& y,uint32 zone)
+void Map2ZoneCoordinates(float& x,float& y,uint32 zoneId)
 {
-    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zone);
+    //sWorldMapAreaStore has index on zoneId instead of its original id
+    WorldMapAreaEntry const* maEntry = sWorldMapAreaStore.LookupEntry(zoneId);
 
     // if not listed then map coordinates (instance)
     if(!maEntry)

@@ -77,16 +77,16 @@ class DBCStorage
     typedef std::list<char*> StringPoolList;
     public:
         explicit DBCStorage(char const* f)
-            : fmt(f), nCount(0), fieldCount(0), dataTable(NULL)
+            : fmt(f), nCount(0), fieldCount(0), dataTable(nullptr)
         {
-            indexTable.asT = NULL;
+            indexTable.asT = nullptr;
         }
 
         ~DBCStorage() { Clear(); }
 
         T const* LookupEntry(uint32 id) const
         {
-            return (id >= nCount) ? NULL : indexTable.asT[id];
+            return (id >= nCount) ? nullptr : indexTable.asT[id];
         }
 
         uint32  GetNumRows() const { return nCount; }
@@ -102,8 +102,8 @@ class DBCStorage
 
             uint32 sqlRecordCount = 0;
             uint32 sqlHighestIndex = 0;
-            Field* fields = NULL;
-            QueryResult result = QueryResult(NULL);
+            Field* fields = nullptr;
+            QueryResult result = QueryResult(nullptr);
             // Load data from sql
             if (sql)
             {
@@ -132,7 +132,7 @@ class DBCStorage
                 }
             }
 
-            char* sqlDataTable = NULL;
+            char* sqlDataTable = nullptr;
             fieldCount = dbc.GetCols();
 
             dataTable = reinterpret_cast<T*>(dbc.AutoProduceData(fmt, nCount, indexTable.asChar,
@@ -309,11 +309,6 @@ std::string GetPetName(uint32 petfamily, LocaleConstant dbclang);
 uint32 GetTalentSpellCost(uint32 spellId);
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId);
 
-int32 GetAreaFlagByAreaID(uint32 area_id);                  // -1 if not found
-AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id);
-AreaTableEntry const* GetAreaEntryByAreaFlagAndMap(uint32 area_flag,uint32 map_id);
-uint32 GetAreaFlagByMapId(uint32 mapid);
-
 WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid, int32 groupid);
 
 uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId);
@@ -341,7 +336,7 @@ enum ContentLevels
 };
 ContentLevels GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId);
 
-extern DBCStorage <AreaTableEntry>               sAreaStore;// recommend access using functions
+extern DBCStorage <AreaTableEntry>               sAreaTableStore;
 extern DBCStorage <AreaTriggerEntry>             sAreaTriggerStore;
 extern DBCStorage <AuctionHouseEntry>            sAuctionHouseStore;
 extern DBCStorage <BankBagSlotPricesEntry>       sBankBagSlotPricesStore;

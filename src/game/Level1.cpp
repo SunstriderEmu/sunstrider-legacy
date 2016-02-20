@@ -687,13 +687,13 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     uint32 area_id = obj->GetAreaId();
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(obj->GetMapId());
-    AreaTableEntry const* zoneEntry = GetAreaEntryByAreaID(zone_id);
-    AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(area_id);
+    AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(zone_id);
+    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(area_id);
 
     float zone_x = obj->GetPositionX();
     float zone_y = obj->GetPositionY();
 
-    Map2ZoneCoordinates(zone_x,zone_y,zone_id);
+    Map2ZoneCoordinates(zone_x, zone_y, zone_id);
 
     Map const *map = obj->GetMap();
     float ground_z = map->GetHeight(obj->GetPositionX(), obj->GetPositionY(), MAX_HEIGHT);
@@ -2117,11 +2117,11 @@ bool ChatHandler::HandleLookupAreaCommand(const char* args)
 
     // converting string that we try to find to lower case
     wstrToLower (wnamepart);
-
+    
     // Search in AreaTable.dbc
-    for (uint32 areaflag = 0; areaflag < sAreaStore.GetNumRows (); ++areaflag)
+    for (uint32 areaID = 0; areaID < sAreaTableStore.GetNumRows (); ++areaID)
     {
-        AreaTableEntry const *areaEntry = sAreaStore.LookupEntry (areaflag);
+        AreaTableEntry const *areaEntry = sAreaTableStore.LookupEntry (areaID);
         if (areaEntry)
         {
             int loc = GetSessionDbcLocale();
@@ -2763,9 +2763,9 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
 
     float x = (float)atof(px);
     float y = (float)atof(py);
-    uint32 areaid = cAreaId ? (uint32)atoi(cAreaId) : _player->GetZoneId();
+    uint32 areaid = cAreaId ? (uint32)atoi(cAreaId) : _player->GetAreaId();
 
-    AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(areaid);
+    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(areaid);
 
     if( x<0 || x>100 || y<0 || y>100 || !areaEntry )
     {
@@ -2775,9 +2775,9 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     }
 
     // update to parent zone if exist (client map show only zones without parents)
-    AreaTableEntry const* zoneEntry = areaEntry->parentArea ? GetAreaEntryByAreaID(areaEntry->parentArea) : areaEntry;
+    areaEntry = areaEntry->zone ? sAreaTableStore.LookupEntry(areaEntry->zone) : areaEntry;
 
-    Map const *map = sMapMgr->GetBaseMap(zoneEntry->mapid);
+    Map const *map = sMapMgr->GetBaseMap(areaEntry->mapid);
 
     if(map->Instanceable())
     {
@@ -2786,11 +2786,11 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
         return false;
     }
 
-    Zone2MapCoordinates(x,y,zoneEntry->ID);
+    Zone2MapCoordinates(x,y, areaEntry->zone);
 
-    if(!MapManager::IsValidMapCoord(zoneEntry->mapid,x,y))
+    if(!MapManager::IsValidMapCoord(areaEntry->mapid,x,y))
     {
-        PSendSysMessage(LANG_INVALID_TARGET_COORD,x,y,zoneEntry->mapid);
+        PSendSysMessage(LANG_INVALID_TARGET_COORD,x,y, areaEntry->mapid);
         SetSentErrorMessage(true);
         return false;
     }
@@ -2806,7 +2806,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
         _player->SaveRecallPosition();
 
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
-    _player->TeleportTo(zoneEntry->mapid, x, y, z, _player->GetOrientation());
+    _player->TeleportTo(areaEntry->mapid, x, y, z, _player->GetOrientation());
 
     return true;
 }

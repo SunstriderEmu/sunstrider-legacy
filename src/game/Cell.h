@@ -68,6 +68,16 @@ struct Cell
     Cell() { data.All = 0; }
     Cell(const Cell &cell) { data.All = cell.data.All; }
     explicit Cell(CellCoord const& p);
+    explicit Cell(float x, float y)
+    {
+        CellCoord p = Trinity::ComputeCellCoord(x, y);
+        data.Part.grid_x = p.x_coord / MAX_NUMBER_OF_CELLS;
+        data.Part.grid_y = p.y_coord / MAX_NUMBER_OF_CELLS;
+        data.Part.cell_x = p.x_coord % MAX_NUMBER_OF_CELLS;
+        data.Part.cell_y = p.y_coord % MAX_NUMBER_OF_CELLS;
+        data.Part.nocreate = 0;
+        data.Part.reserved = 0;
+    }
 
     void operator|=(Cell &cell)
     {

@@ -156,14 +156,15 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     std::string zoneName = "Unknown";
     if (player && m_session)
     {
-        if (AreaTableEntry const* area = GetAreaEntryByAreaID(areaId))
+        if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId))
         {
             int locale = m_session->GetSessionDbcLocale();
             areaName = area->area_name[locale];
-            if (area->parentArea)
+            
+            if (area->zone)
             {
-                if (AreaTableEntry const* zone = GetAreaEntryByAreaID(area->parentArea))
-                    zoneName = zone->area_name[locale];
+                if (area = sAreaTableStore.LookupEntry(area->zone))
+                    zoneName = area->area_name[locale];
             }
             else
                 zoneName = areaName; //no parent area = the area is the zone (can an area have parents on two levels ? If so this is incorrect)

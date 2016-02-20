@@ -27,7 +27,6 @@
 #include "Transport.h"
 #include "GridDefines.h"
 #include "MapInstanced.h"
-#include "DestinationHolderImp.h"
 #include "World.h"
 #include "CellImpl.h"
 #include "Corpse.h"
@@ -205,13 +204,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
     }
     else
         return true;
-}
-
-void MapManager::DeleteInstance(uint32 mapid, uint32 instanceId)
-{
-    Map *m = CreateBaseMap(mapid);
-    if (m && m->Instanceable())
-        ((MapInstanced*)m)->DestroyInstance(instanceId);
 }
 
 void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)

@@ -55,15 +55,22 @@ class MapManager
 
         // only const version for outer users
         Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->CreateBaseMap(id); }
-        void DeleteInstance(uint32 mapid, uint32 instanceId);
-
-        uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
+        
+        uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
         {
-            Map const* m = GetBaseMap(mapid);
-            return m->GetAreaFlag(x, y, z);
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            return m->GetAreaId(x, y, z);
         }
-        uint32 GetAreaId(uint32 mapid, float x, float y, float z) { return Map::GetAreaId(GetAreaFlag(mapid, x, y, z),mapid); }
-        uint32 GetZoneId(uint32 mapid, float x, float y, float z) { return Map::GetZoneId(GetAreaFlag(mapid, x, y, z),mapid); }
+        uint32 GetZoneId(uint32 mapid, float x, float y, float z) const
+        {
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            return m->GetZoneId(x, y, z);
+        }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
+        {
+            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            m->GetZoneAndAreaId(zoneid, areaid, x, y, z);
+        }
 
         void Initialize(void);
         void Update(time_t);

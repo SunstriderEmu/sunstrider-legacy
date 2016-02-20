@@ -5909,13 +5909,13 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                     case 75: unitTarget->CastSpell(unitTarget, 51621, true); break;;
                     case 150: unitTarget->CastSpell(unitTarget, 48024, true); break;
                     case 225: 
-                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) == 530)
+                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
                             unitTarget->CastSpell(unitTarget, 51617, true);
                         else
                             unitTarget->CastSpell(unitTarget, 48024, true);
                         break;
                     case 300: 
-                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetZoneId()) == 530)
+                        if (GetVirtualMapForMapAndZone(m_caster->GetMapId(),m_caster->GetAreaId()) == 530)
                             unitTarget->CastSpell(unitTarget, 48023, true);
                         else
                             unitTarget->CastSpell(unitTarget, 48024, true);
@@ -6306,14 +6306,14 @@ void Spell::EffectDuel(uint32 i)
         return;
     }
 
-    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetZoneId());
+    AreaTableEntry const* casterAreaEntry = sAreaTableStore.LookupEntry(caster->GetAreaId());
     if(casterAreaEntry && (casterAreaEntry->flags & AREA_FLAG_CAPITAL) )
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
         return;
     }
 
-    AreaTableEntry const* targetAreaEntry = GetAreaEntryByAreaID(target->GetZoneId());
+    AreaTableEntry const* targetAreaEntry = sAreaTableStore.LookupEntry(target->GetAreaId());
     if(targetAreaEntry && (targetAreaEntry->flags & AREA_FLAG_CAPITAL) )
     {
         SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here

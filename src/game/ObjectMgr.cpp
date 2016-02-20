@@ -1676,7 +1676,7 @@ void ObjectMgr::LoadItemTemplates()
     //                                             102
                                              "spellppmRate_5, spellcooldown_5, spellcategory_5, spellcategorycooldown_5, bonding, description, PageText, LanguageID, PageMaterial, "
     //                                            111
-                                             "startquest, lockid, Material, sheath, RandomProperty, RandomSuffix, block, itemset, MaxDurability, area, Map, BagFamily, "
+                                             "startquest, lockid, Material, sheath, RandomProperty, RandomSuffix, block, itemset, MaxDurability, zone, Map, BagFamily, "
     //                                            123                          125                             127                               129               130
                                              "TotemCategory, socketColor_1, socketContent_1, socketColor_2, socketContent_2, socketColor_3, socketContent_3, socketBonus, "
     //                                            131                   132                 133                134        135
@@ -2136,8 +2136,8 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.ItemSet = 0;
         }
 
-        if (itemTemplate.Area && !GetAreaEntryByAreaID(itemTemplate.Area))
-            TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has wrong Area (%u)", entry, itemTemplate.Area);
+        if (itemTemplate.Area && !sAreaTableStore.LookupEntry(itemTemplate.Area))
+            TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has wrong Zone (%u)", entry, itemTemplate.Area);
 
         if (itemTemplate.Map && !sMapStore.LookupEntry(itemTemplate.Map))
             TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has wrong Map (%u)", entry, itemTemplate.Map);
@@ -2240,303 +2240,7 @@ void ObjectMgr::LoadItemTemplates()
 
     TC_LOG_INFO("server.loading", ">> Loaded %u item templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
-/*
-void ObjectMgr::LoadItemTemplates()
-{
-    
 
-    // check data correctness
-    ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
-    {
-        ItemTemplate const* proto = itr->second;
-        ItemEntry const *dbcitem = sItemStore.LookupEntry(i);
-        if(!proto)
-        {
-            // to many errors, and possible not all items really used in game
-            //if (dbcitem)
-                //TC_LOG_ERROR("sql.sql","Item (Entry: %u) doesn't exists in DB, but must exist.",i);
-            //
-            continue;
-        }
-
-        if(dbcitem)
-        {
-            if(proto->InventoryType != dbcitem->InventoryType)
-            {
-                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u inventory type, must be %u (still using DB value).",i,proto->InventoryType,dbcitem->InventoryType);
-                // It safe let use InventoryType from DB
-            }
-
-            if(proto->DisplayInfoID != dbcitem->DisplayId)
-            {
-                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u display id, must be %u (using it).",i,proto->DisplayInfoID,dbcitem->DisplayId);
-                const_cast<ItemTemplate*>(proto)->DisplayInfoID = dbcitem->DisplayId;
-            }
-            if(proto->Sheath != dbcitem->Sheath)
-            {
-                TC_LOG_ERROR("sql.sql","Item (Entry: %u) not correct %u sheath, must be %u  (using it).",i,proto->Sheath,dbcitem->Sheath);
-                const_cast<ItemTemplate*>(proto)->Sheath = dbcitem->Sheath;
-            }
-        }
-
-        if(proto->Class >= MAX_ITEM_CLASS)
-        {
-            TC_LOG_ERROR("sql.sql","Item (Entry: %u) has wrong Class value (%u)",i,proto->Class);
-            const_cast<ItemTemplate*>(proto)->Class = ITEM_CLASS_MISC;
-        }
-
-        if(proto->SubClass >= MaxItemSubclassValues[proto->Class])
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Subclass value (%u) for class %u",i,proto->SubClass,proto->Class);
-            const_cast<ItemTemplate*>(proto)->SubClass = 0;// exist for all item classes
-        }
-
-        if(proto->Quality >= MAX_ITEM_QUALITY)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Quality value (%u)",i,proto->Quality);
-            const_cast<ItemTemplate*>(proto)->Quality = ITEM_QUALITY_NORMAL;
-        }
-
-        if(proto->BuyCount <= 0)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong BuyCount value (%u), set to default(1).",i,proto->BuyCount);
-            const_cast<ItemTemplate*>(proto)->BuyCount = 1;
-        }
-
-        if(proto->InventoryType >= MAX_INVTYPE)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong InventoryType value (%u)",i,proto->InventoryType);
-            const_cast<ItemTemplate*>(proto)->InventoryType = INVTYPE_NON_EQUIP;
-        }
-
-        if(proto->RequiredSkill >= MAX_SKILL_TYPE)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong RequiredSkill value (%u)",i,proto->RequiredSkill);
-            const_cast<ItemTemplate*>(proto)->RequiredSkill = 0;
-        }
-
-        if(!(proto->AllowableClass & CLASSMASK_ALL_PLAYABLE))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) not have in `AllowableClass` any playable classes (%u) and can't be equipped.",i,proto->AllowableClass);
-        }
-
-        if(!(proto->AllowableRace & RACEMASK_ALL_PLAYABLE))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) not have in `AllowableRace` any playable races (%u) and can't be equipped.",i,proto->AllowableRace);
-        }
-
-        if(proto->RequiredSpell && !sSpellMgr->GetSpellInfo(proto->RequiredSpell))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) have wrong (non-existed) spell in RequiredSpell (%u)",i,proto->RequiredSpell);
-            const_cast<ItemTemplate*>(proto)->RequiredSpell = 0;
-        }
-
-        if(proto->RequiredReputationRank >= MAX_REPUTATION_RANK)
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong reputation rank in RequiredReputationRank (%u), item can't be used.",i,proto->RequiredReputationRank);
-
-        if(proto->RequiredReputationFaction)
-        {
-            if(!sFactionStore.LookupEntry(proto->RequiredReputationFaction))
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong (not existing) faction in RequiredReputationFaction (%u)",i,proto->RequiredReputationFaction);
-                const_cast<ItemTemplate*>(proto)->RequiredReputationFaction = 0;
-            }
-
-            if(proto->RequiredReputationRank == MIN_REPUTATION_RANK)
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has min. reputation rank in RequiredReputationRank (0) but RequiredReputationFaction > 0, faction setting is useless.",i);
-        }
-        else if(proto->RequiredReputationRank > MIN_REPUTATION_RANK)
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has RequiredReputationFaction ==0 but RequiredReputationRank > 0, rank setting is useless.",i);
-
-        if(proto->Stackable==0)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong value in stackable (%u), replace by default 1.",i,proto->Stackable);
-            const_cast<ItemTemplate*>(proto)->Stackable = 1;
-        }
-        else if(proto->Stackable > 255)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has too large value in stackable (%u), replace by hardcoded upper limit (255).",i,proto->Stackable);
-            const_cast<ItemTemplate*>(proto)->Stackable = 255;
-        }
-
-        for (int j = 0; j < 10; j++)
-        {
-            // for ItemStatValue != 0
-            if(proto->ItemStat[j].ItemStatValue && proto->ItemStat[j].ItemStatType >= MAX_ITEM_MOD)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong stat_type%d (%u)",i,j+1,proto->ItemStat[j].ItemStatType);
-                const_cast<ItemTemplate*>(proto)->ItemStat[j].ItemStatType = 0;
-            }
-        }
-
-        for (int j = 0; j < 5; j++)
-        {
-            if(proto->Damage[j].DamageType >= MAX_SPELL_SCHOOL)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong dmg_type%d (%u)",i,j+1,proto->Damage[j].DamageType);
-                const_cast<ItemTemplate*>(proto)->Damage[j].DamageType = 0;
-            }
-        }
-
-        // special format
-        if(proto->Spells[0].SpellId == SPELL_ID_GENERIC_LEARN)
-        {
-            // spell_1
-            if(proto->Spells[0].SpellTrigger != ITEM_SPELLTRIGGER_ON_USE)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong item spell trigger value in spelltrigger_%d (%u) for special learning format",i,0+1,proto->Spells[0].SpellTrigger);
-                const_cast<ItemTemplate*>(proto)->Spells[0].SpellId = 0;
-                const_cast<ItemTemplate*>(proto)->Spells[0].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-                const_cast<ItemTemplate*>(proto)->Spells[1].SpellId = 0;
-                const_cast<ItemTemplate*>(proto)->Spells[1].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-            }
-
-            // spell_2 have learning spell
-            if(proto->Spells[1].SpellTrigger != ITEM_SPELLTRIGGER_LEARN_SPELL_ID)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong item spell trigger value in spelltrigger_%d (%u) for special learning format.",i,1+1,proto->Spells[1].SpellTrigger);
-                const_cast<ItemTemplate*>(proto)->Spells[0].SpellId = 0;
-                const_cast<ItemTemplate*>(proto)->Spells[1].SpellId = 0;
-                const_cast<ItemTemplate*>(proto)->Spells[1].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-            }
-            else if(!proto->Spells[1].SpellId)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) not has expected spell in spellid_%d in special learning format.",i,1+1);
-                const_cast<ItemTemplate*>(proto)->Spells[0].SpellId = 0;
-                const_cast<ItemTemplate*>(proto)->Spells[1].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-            }
-            else
-            {
-                SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[1].SpellId);
-                if(!spellInfo)
-                {
-                    TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,1+1,proto->Spells[1].SpellId);
-                    const_cast<ItemTemplate*>(proto)->Spells[0].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[1].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[1].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-                }
-                // allowed only in special format
-                else if(proto->Spells[1].SpellId==SPELL_ID_GENERIC_LEARN)
-                {
-                    TC_LOG_ERROR("FIXME","Item (Entry: %u) has broken spell in spellid_%d (%u)",i,1+1,proto->Spells[1].SpellId);
-                    const_cast<ItemTemplate*>(proto)->Spells[0].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[1].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[1].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-                }
-            }
-
-            // spell_3*,spell_4*,spell_5* is empty
-            for (int j = 2; j < 5; j++)
-            {
-                if(proto->Spells[j].SpellTrigger != ITEM_SPELLTRIGGER_ON_USE)
-                {
-                    TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong item spell trigger value in spelltrigger_%d (%u)",i,j+1,proto->Spells[j].SpellTrigger);
-                    const_cast<ItemTemplate*>(proto)->Spells[j].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[j].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-                }
-                else if(proto->Spells[j].SpellId != 0)
-                {
-                    TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong spell in spellid_%d (%u) for learning special format",i,j+1,proto->Spells[j].SpellId);
-                    const_cast<ItemTemplate*>(proto)->Spells[j].SpellId = 0;
-                }
-            }
-        }
-        // normal spell list
-        else
-        {
-            for (int j = 0; j < 5; j++)
-            {
-                if(proto->Spells[j].SpellTrigger >= MAX_ITEM_SPELLTRIGGER || proto->Spells[j].SpellTrigger == ITEM_SPELLTRIGGER_LEARN_SPELL_ID)
-                {
-                    TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong item spell trigger value in spelltrigger_%d (%u)",i,j+1,proto->Spells[j].SpellTrigger);
-                    const_cast<ItemTemplate*>(proto)->Spells[j].SpellId = 0;
-                    const_cast<ItemTemplate*>(proto)->Spells[j].SpellTrigger = ITEM_SPELLTRIGGER_ON_USE;
-                }
-
-                if(proto->Spells[j].SpellId)
-                {
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[j].SpellId);
-                    if(!spellInfo)
-                    {
-                        TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong (not existing) spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
-                        const_cast<ItemTemplate*>(proto)->Spells[j].SpellId = 0;
-                    }
-                    // allowed only in special format
-                    else if(proto->Spells[j].SpellId==SPELL_ID_GENERIC_LEARN)
-                    {
-                        TC_LOG_ERROR("FIXME","Item (Entry: %u) has broken spell in spellid_%d (%u)",i,j+1,proto->Spells[j].SpellId);
-                        const_cast<ItemTemplate*>(proto)->Spells[j].SpellId = 0;
-                    }
-                }
-            }
-        }
-
-        if(proto->Bonding >= MAX_BIND_TYPE)
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Bonding value (%u)",i,proto->Bonding);
-
-        if(proto->PageText && !sPageTextStore.LookupEntry<PageText>(proto->PageText))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has non existing first page (Id:%u)", i,proto->PageText);
-
-        if(proto->LockID && !sLockStore.LookupEntry(proto->LockID))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong LockID (%u)",i,proto->LockID);
-
-        if(proto->Sheath >= MAX_SHEATHETYPE)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Sheath (%u)",i,proto->Sheath);
-            const_cast<ItemTemplate*>(proto)->Sheath = SHEATHETYPE_NONE;
-        }
-
-        if(proto->RandomProperty && !sItemRandomPropertiesStore.LookupEntry(GetItemEnchantMod(proto->RandomProperty)))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has unknown (wrong or not listed in `item_enchantment_template`) RandomProperty (%u)",i,proto->RandomProperty);
-            const_cast<ItemTemplate*>(proto)->RandomProperty = 0;
-        }
-
-        if(proto->RandomSuffix && !sItemRandomSuffixStore.LookupEntry(GetItemEnchantMod(proto->RandomSuffix)))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong RandomSuffix (%u)",i,proto->RandomSuffix);
-            const_cast<ItemTemplate*>(proto)->RandomSuffix = 0;
-        }
-
-        if(proto->ItemSet && !sItemSetStore.LookupEntry(proto->ItemSet))
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) have wrong ItemSet (%u)",i,proto->ItemSet);
-            const_cast<ItemTemplate*>(proto)->ItemSet = 0;
-        }
-
-        if(proto->Area && !GetAreaEntryByAreaID(proto->Area))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Area (%u)",i,proto->Area);
-
-        if(proto->Map && !sMapStore.LookupEntry(proto->Map))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong Map (%u)",i,proto->Map);
-
-        if(proto->TotemCategory && !sTotemCategoryStore.LookupEntry(proto->TotemCategory))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong TotemCategory (%u)",i,proto->TotemCategory);
-
-        for (int j = 0; j < 3; j++)
-        {
-            if(proto->Socket[j].Color && (proto->Socket[j].Color & SOCKET_COLOR_ALL) != proto->Socket[j].Color)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong socketColor_%d (%u)",i,j+1,proto->Socket[j].Color);
-                const_cast<ItemTemplate*>(proto)->Socket[j].Color = 0;
-            }
-        }
-
-        if(proto->GemProperties && !sGemPropertiesStore.LookupEntry(proto->GemProperties))
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong GemProperties (%u)",i,proto->GemProperties);
-
-        if(proto->FoodType >= MAX_PET_DIET)
-        {
-            TC_LOG_ERROR("FIXME","Item (Entry: %u) has wrong FoodType value (%u)",i,proto->FoodType);
-            const_cast<ItemTemplate*>(proto)->FoodType = 0;
-        }
-    }
-
-    // this DBC used currently only for check item templates in DB.
-    sItemStore.Clear();
-}
-*/
 void ObjectMgr::LoadPetLevelInfo()
 {
     // Loading levels data
@@ -3447,7 +3151,7 @@ void ObjectMgr::LoadQuests()
         // client quest log visual (area case)
         if( qinfo->ZoneOrSort > 0 )
         {
-            if(!GetAreaEntryByAreaID(qinfo->ZoneOrSort))
+            if(!sAreaTableStore.LookupEntry(qinfo->ZoneOrSort))
             {
                 TC_LOG_ERROR("sql.sql","Quest %u has `ZoneOrSort` = %u (zone case) but zone with this id does not exist.",
                     qinfo->GetQuestId(),qinfo->ZoneOrSort);
@@ -4657,7 +4361,7 @@ void ObjectMgr::LoadInstanceTemplate()
         if (MapEntry const* entry = sMapStore.LookupEntry(i.first))
         {
             if (entry->resetTimeHeroic || temp->heroicForced)
-                sMapDifficultyMap[MAKE_PAIR32(entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(entry->resetTimeHeroic,temp->maxPlayers, false);;
+                sMapDifficultyMap[MAKE_PAIR32(entry->MapID, DUNGEON_DIFFICULTY_HEROIC)] = MapDifficulty(entry->resetTimeHeroic / DAY,temp->maxPlayers, false);;
         }
 #endif
     }
@@ -5170,16 +4874,16 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        AreaTableEntry const *areaEntry = GetAreaEntryByAreaID(zoneId);
+        AreaTableEntry const *areaEntry = sAreaTableStore.LookupEntry(zoneId);
         if(!areaEntry)
         {
             TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record for not existing zone id (%u), skipped.",zoneId);
             continue;
         }
 
-        if(areaEntry->parentArea != 0)
+        if(areaEntry->zone != 0)
         {
-            TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record subzone id (%u) instead of zone, skipped.",zoneId);
+            TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record subzone/area id (%u) instead of zone, skipped.",zoneId);
             continue;
         }
 
@@ -7038,7 +6742,7 @@ void ObjectMgr::LoadFishingBaseSkillLevel()
         uint32 entry  = fields[0].GetUInt32();
         int32 skill   = fields[1].GetInt16();
 
-        AreaTableEntry const* fArea = GetAreaEntryByAreaID(entry);
+        AreaTableEntry const* fArea = sAreaTableStore.LookupEntry(entry);
         if(!fArea)
         {
             TC_LOG_ERROR("sql.sql","AreaId %u defined in `skill_fishing_base_level` does not exist",entry);
@@ -7202,15 +6906,15 @@ bool PlayerCondition::IsValid(OldConditionType condition, uint32 value1, uint32 
         }
         case CONDITION_OLD_ZONEID:
         {
-            AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(value1);
+            AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(value1);
             if(!areaEntry)
             {
-                TC_LOG_ERROR("condition","Zone condition requires to be in non existing area (%u), skipped", value1);
+                TC_LOG_ERROR("condition","Zone condition requires to be in non existing zone (%u), skipped", value1);
                 return false;
             }
-            if(areaEntry->parentArea != 0)
+            if(areaEntry->zone != 0)
             {
-                TC_LOG_ERROR("condition","Zone condition requires to be in area (%u) which is a subzone but zone expected, skipped", value1);
+                TC_LOG_ERROR("condition","Zone condition requires to be in zone (%u) which is a subzone but zone expected, skipped", value1);
                 return false;
             }
             break;
@@ -8336,27 +8040,6 @@ SpellEntry const* ObjectMgr::GetSpellTemplate(uint32 id) const
         return itr->second;
         
     return NULL;
-}
-
-void ObjectMgr::LoadAreaFlagsOverridenData()
-{
-    AreaTableEntry* areaEntry;
-    uint32 count = 0;
-    for (uint32 areaflag = 0; areaflag < sAreaStore.GetNumRows(); ++areaflag) {
-        areaEntry = (AreaTableEntry*) sAreaStore.LookupEntry(areaflag);
-        if (!areaEntry)
-            continue;
-        
-        /*switch (areaEntry->ID) {
-        case 1637: // Orgrimmar
-            areaEntry->flags |= AREA_FLAG_OUTSIDE;
-            ++count;
-            break;
-        }*/
-    }
-    
-    TC_LOG_INFO("server.loading",">> Loaded %u overriden data.", count);
-    
 }
 
 void ObjectMgr::LoadFactionChangeItems()

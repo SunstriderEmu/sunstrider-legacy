@@ -793,20 +793,7 @@ bool ChatHandler::HandleDebugLoSCommand(const char* args)
 {
     if (Unit* unit = GetSelectedUnit())
         PSendSysMessage("Unit %s (GuidLow: %u) is %sin LoS", unit->GetName().c_str(), unit->GetGUIDLow(), m_session->GetPlayer()->IsWithinLOSInMap(unit) ? "" : "not ");
-    
-    /*AreaTableEntry const* area;
-    for (uint32 i = 0; i <= 4140; i++) {
-        area = GetAreaEntryByAreaID(i);
-        if (area) {
-            if (area->flags & AREA_FLAG_OUTSIDE)
-                TC_LOG_INFO("Area %u (%s) is outdoor", i, area->area_name[2]);
-            else if (area->flags & AREA_FLAG_INSIDE)
-                TC_LOG_INFO("Area %u (%s) is indoor", i, area->area_name[2]);
-            else
-                TC_LOG_INFO("Area %u (%s) is detected by wmo flags", i, area->area_name[2]);
-        }
-    }*/
-    
+        
     return true;
 }
 

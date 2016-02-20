@@ -32,12 +32,19 @@
 
 #pragma pack(push,1)
 
+/* My current understanding of zones and areas :
+Zone are as the usual the WoW map delimitations. General channels are per zone.
+Areas are what pops on screen when you move in specific parts of a zone. An area can have a parent, on maximum one level (no parent has a parent).
+A zone is actually a parent area, an area englobing all areas in a zone.
+
+Be aware that there seems to be some confusion between "zones" and "area" in code
+*/
 struct AreaTableEntry
 {
-    uint32    ID;                                           // 0
+    uint32    ID;                                           // 0 area ID
     uint32    mapid;                                        // 1
-    uint32    parentArea;                                   // 2 Recursive. If this is a sub-area, it will link to its parent area. //TC = zone
-    uint32    areaBit;                                      // 3, exploration related //TC = exploreFlag
+    uint32    zone;                                         // 2 Parent zone. 0 if this is the parent zone
+    uint32    exploreFlag;                                  // 3
     uint32    flags;                                        // 4, unknown value but 312 for all cities
                                                             // 5-9 unused
     int32     area_level;                                   // 10
@@ -978,7 +985,7 @@ struct WorldMapAreaEntry
 {
     //uint32    ID;                                         // 0
     uint32    map_id;                                       // 1
-    uint32    area_id;                                      // 2 index (continent 0 areas ignored)
+    uint32    zone_id;                                      // 2 index (continent 0 areas ignored)
     //char*   internal_name                                 // 3
     float     y1;                                           // 4
     float     y2;                                           // 5

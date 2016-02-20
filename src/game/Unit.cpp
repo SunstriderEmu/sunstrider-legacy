@@ -726,7 +726,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     //You still see it in the combat log though
     if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        const AreaTableEntry *area = sAreaTableStore.LookupEntry(pVictim->GetAreaId());
         if(area && (area->flags & AREA_FLAG_SANCTUARY || (World::IsZoneSanctuary(area->ID))))       //sanctuary
             return 0;
     }
@@ -1363,7 +1363,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     //You still see it in the combat log though
     if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        const AreaTableEntry *area = sAreaTableStore.LookupEntry(pVictim->GetAreaId());
         if(area && area->flags & AREA_FLAG_SANCTUARY)                     //sanctuary
             return;
     }
@@ -1610,7 +1610,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     //You still see it in the combat log though
     if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = GetAreaEntryByAreaID(pVictim->GetAreaId());
+        const AreaTableEntry *area = sAreaTableStore.LookupEntry(pVictim->GetAreaId());
         if(area && area->flags & 0x800)                     //sanctuary
             return;
     }

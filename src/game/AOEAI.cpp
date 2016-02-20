@@ -23,7 +23,6 @@
 #include "Creature.h"
 #include "Player.h"
 #include "ObjectAccessor.h"
-//#include "Management/VMapFactory.h"
 #include "World.h"
 
 #include <list>

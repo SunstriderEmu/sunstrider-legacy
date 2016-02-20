@@ -406,7 +406,7 @@ void InstanceSaveManager::LoadResetTimes()
         {
             // initialize the reset time
             t = today + period + diff;
-            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset VALUES ('%u', '%u', '%u')", mapid, difficulty, (uint32)t);
+            CharacterDatabase.DirectPExecute("INSERT INTO instance_reset (mapid, difficulty, resettime) VALUES ('%u', '%u', '%u')", mapid, difficulty, (uint32)t);
         }
 
         if (t < now)

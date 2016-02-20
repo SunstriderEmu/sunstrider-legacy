@@ -21,7 +21,7 @@
 #ifndef DBCFMT_H
 #define DBCFMT_H
  
-const char AreaTableEntryfmt[]="iiinixxxxxissssssssssssssssxiiiiifx";
+const char AreaTableEntryfmt[]="niiiixxxxxissssssssssssssssxiiiiifx";
 const char AuctionHouseEntryfmt[]="niiixxxxxxxxxxxxxxxxx";
 const char AreaTriggerEntryfmt[]="niffffffff";
 const char BankBagSlotPricesEntryfmt[]="ni";

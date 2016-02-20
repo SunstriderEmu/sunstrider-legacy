@@ -31,9 +31,6 @@ namespace FactorySelector
 {
     CreatureAI* selectAI(Creature *creature)
     {
-        //if(creature->IsPossessed())
-        //    creature->InitPossessedAI();
-
         // Allow scripting AI for normal creatures and not controlled pets (guardians and mini-pets)
         if((!creature->IsPet() || !((Pet*)creature)->isControlled()) && !creature->IsCharmed())
             if(CreatureAI* scriptedAI = sScriptMgr->GetAI(creature))

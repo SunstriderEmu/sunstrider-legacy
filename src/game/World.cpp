@@ -1485,9 +1485,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList();
     
-    TC_LOG_INFO("server.loading","Loading overriden area flags data...");
-    sObjectMgr->LoadAreaFlagsOverridenData();
-
     TC_LOG_INFO("server.loading", "Loading Quests..." );
     sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 

@@ -1734,16 +1734,16 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
         }
         case CONDITION_ZONEID:
         {
-            AreaTableEntry const* areaEntry = GetAreaEntryByAreaID(cond->ConditionValue1);
+            AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(cond->ConditionValue1);
             if (!areaEntry)
             {
-                TC_LOG_ERROR("sql.sql", "%s Area (%u) does not exist, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                TC_LOG_ERROR("sql.sql", "%s Zone (%u) does not exist, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;
             }
 
-            if (areaEntry->parentArea != 0)
+            if (areaEntry->zone != 0)
             {
-                TC_LOG_ERROR("sql.sql", "%s requires to be in area (%u) which is a subzone but zone expected, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                TC_LOG_ERROR("sql.sql", "%s requires to be in zone (%u) which is a subzone (= an area) but zone expected, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;
             }
             break;

@@ -1395,6 +1395,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
         }
         else
             ((MapInstanced*)(sMapMgr->GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
+
         GridMaps[gx][gy] = NULL;
     }
     TC_LOG_DEBUG("maps","Unloading grid[%u,%u] for map %u finished", x,y, i_id);
@@ -1603,13 +1604,12 @@ bool Map::IsOutdoors(float x, float y, float z) const
         return true;
 
     AreaTableEntry const* atEntry = 0;
-    WMOAreaTableEntry const* wmoEntry = 0;
-    /*WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
+    WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
     if(wmoEntry)
     {
         TC_LOG_DEBUG("maps","Got WMOAreaTableEntry! flag %u, areaid %u", wmoEntry->Flags, wmoEntry->areaId);
-        atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
-    }*/
+        atEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
+    }
     return IsOutdoorWMO(mogpFlags, adtId, rootId, groupId, wmoEntry, atEntry, i_mapEntry->MapID);
 }
 
@@ -1632,7 +1632,7 @@ bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, in
     return false;
 }
 
-uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
+uint32 Map::GetAreaId(float x, float y, float z, bool *isOutdoors) const
 {
     uint32 mogpFlags;
     int32 adtId, rootId, groupId;
@@ -1644,20 +1644,21 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
     {
         haveAreaInfo = true;
         if ((wmoEntry = GetWMOAreaTableEntryByTripple(rootId, adtId, groupId)))
-            atEntry = GetAreaEntryByAreaID(wmoEntry->areaId);
+            atEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
     }
 
-    uint16 areaflag;
+    uint16 areaId;
 
     if (atEntry)
-        areaflag = atEntry->areaBit;
+        areaId = atEntry->ID;
     else
     {
         if (GridMap *gmap = const_cast<Map*>(this)->GetGrid(x, y))
-            areaflag = gmap->getArea(x, y);
+            areaId = gmap->getArea(x, y);
         // this used while not all *.map files generated (instances)
-        else
-            areaflag = GetAreaFlagByMapId(i_mapEntry->MapID);
+
+        if (!areaId)
+            areaId = i_mapEntry->linked_zone;
     }
 
     if (isOutdoors) //pointer can be null
@@ -1667,7 +1668,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
         else
             *isOutdoors = true;
     }
-    return areaflag;
+    return areaId;
 }
 
 uint8 Map::GetTerrainType(float x, float y) const
@@ -1737,25 +1738,29 @@ float Map::GetWaterLevel(float x, float y) const
         return 0;
 }
 
-uint32 Map::GetAreaId(uint16 areaflag,uint32 map_id)
+uint32 Map::GetAreaId(float x, float y, float z) const
 {
-    AreaTableEntry const *entry = GetAreaEntryByAreaFlagAndMap(areaflag,map_id);
-
-    if (entry)
-        return entry->ID;
-    else
-        return 0;
+    return GetAreaId(x, y, z, nullptr);
 }
 
-uint32 Map::GetZoneId(uint16 areaflag,uint32 map_id)
+uint32 Map::GetZoneId(float x, float y, float z) const
 {
-    AreaTableEntry const *entry = GetAreaEntryByAreaFlagAndMap(areaflag,map_id);
+    uint32 areaId = GetAreaId(x, y, z);
+    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId))
+        if (area->zone)
+            return area->zone;
 
-    if( entry)
-        return ( entry->parentArea != 0) ? entry->parentArea : entry->ID;
-    else
-        return 0;
+    return areaId;
 }
+
+void Map::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const
+{
+    areaid = zoneid = GetAreaId(x, y, z);
+    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaid))
+        if (area->zone)
+            zoneid = area->zone;
+}
+
 
 bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask) const
 {

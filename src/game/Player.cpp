@@ -696,27 +696,6 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     if(sWorld->getConfig(CONFIG_START_ALL_REP))
         SetAtLoginFlag(AT_LOGIN_ALL_REP);
         
-    // Default guild for GMs
-    if (GetSession()->GetSecurity() > SEC_PLAYER)
-    {
-        if (uint32 defaultGuildId = sWorld->getConfig(CONFIG_GM_DEFAULT_GUILD))
-        {
-            Guild* guild = sObjectMgr->GetGuildById(defaultGuildId);
-            if (guild)
-            {
-                SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                if (!guild->AddMember(this->GetGUID(), guild->GetLowestRank(), trans))
-                {
-                    TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, this->GetName().c_str(), this->GetGUIDLow());
-                }
-                CharacterDatabase.CommitTransaction(trans);
-            }
-            else {
-                TC_LOG_ERROR("entities.player", "Could not found default guild Id %u for GM player %s (%u)", defaultGuildId, this->GetName().c_str(), this->GetGUIDLow());
-            }
-        }
-    }
-
     // Played time
     m_Last_tick = time(NULL);
     m_Played_time[0] = 0;
@@ -4563,7 +4542,7 @@ void Player::RepopAtGraveyard()
     // note: this can be called also when the player is alive
     // for example from WorldSession::HandleMovementOpcodes
 
-    AreaTableEntry const *zone = GetAreaEntryByAreaID(GetAreaId());
+    AreaTableEntry const *zone = sAreaTableStore.LookupEntry(GetAreaId());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
     if((!IsAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()) || (zone && zone->ID == 2257)) //HACK
@@ -4639,15 +4618,15 @@ void Player::UpdateLocalChannels(uint32 newZone )
     if(m_channels.empty())
         return;
 
-    AreaTableEntry const* current_zone = GetAreaEntryByAreaID(newZone);
-    if(!current_zone)
+    AreaTableEntry const* current_area = sAreaTableStore.LookupEntry(newZone);
+    if(!current_area)
         return;
 
     ChannelMgr* cMgr = channelMgr(GetTeam());
     if(!cMgr)
         return;
 
-    std::string current_zone_name = current_zone->area_name[GetSession()->GetSessionDbcLocale()];
+    std::string current_zone_name = current_area->area_name[GetSession()->GetSessionDbcLocale()];
 
     for(JoinedChannelsList::iterator i = m_channels.begin(), next; i != m_channels.end(); i = next)
     {
@@ -5796,7 +5775,8 @@ void Player::CheckAreaExploreAndOutdoor()
         return;
 
     bool isOutdoor;
-    uint16 areaFlag = GetBaseMap()->GetAreaFlag(GetPositionX(),GetPositionY(),GetPositionZ(), &isOutdoor);
+    uint32 areaId = GetBaseMap()->GetAreaId(GetPositionX(), GetPositionY(), GetPositionZ(), &isOutdoor);
+    AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(areaId);
 
     if (sWorld->getConfig(CONFIG_VMAP_INDOOR_CHECK) && !isOutdoor)
         RemoveAurasWithAttribute(SPELL_ATTR0_OUTDOORS_ONLY);
@@ -5811,42 +5791,37 @@ void Player::CheckAreaExploreAndOutdoor()
                 continue;
             
             if (GetErrorAtShapeshiftedCast(spellInfo, m_form) == SPELL_CAST_OK)
-                CastSpell(this, itr->first, true, NULL);
+                CastSpell(this, itr->first, true);
         }
     }
+    
+    uint32 offset = areaEntry->exploreFlag / 32;
 
-    if (areaFlag==0xffff)
-        return;
-    int offset = areaFlag / 32;
-
-    if(offset >= 128)
+    if (offset >= PLAYER_EXPLORED_ZONES_SIZE)
     {
-        TC_LOG_ERROR("entities.player","ERROR: Wrong area flag %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < 64 ).",areaFlag,GetPositionX(),GetPositionY(),offset,offset);
+        TC_LOG_ERROR("entities.player", "Player::CheckAreaExploreAndOutdoor: Wrong zone %u in map data for (X: %f Y: %f) point to field PLAYER_EXPLORED_ZONES_1 + %u ( %u must be < %u ).",
+            areaEntry->exploreFlag, GetPositionX(), GetPositionY(), offset, offset, PLAYER_EXPLORED_ZONES_SIZE);
         return;
     }
 
-    uint32 val = (uint32)(1 << (areaFlag % 32));
+    uint32 val = (uint32)(1 << (areaEntry->exploreFlag % 32));
     uint32 currFields = GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset);
 
     if( !(currFields & val) )
     {
         SetUInt32Value(PLAYER_EXPLORED_ZONES_1 + offset, (uint32)(currFields | val));
+        
+        //TC LK UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EXPLORE_AREA);
 
-        AreaTableEntry const *p = GetAreaEntryByAreaFlagAndMap(areaFlag,GetMapId());
-        if(!p)
+        if (areaEntry->area_level > 0)
         {
-            TC_LOG_ERROR("entities.player","Player: Player %u discovered unknown area (x: %f y: %f map: %u", GetGUIDLow(), GetPositionX(),GetPositionY(),GetMapId());
-        }
-        else if(p->area_level > 0)
-        {
-            uint32 area = p->ID;
             if (GetLevel() >= sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
             {
-                SendExplorationExperience(area,0);
+                SendExplorationExperience(areaId,0);
             }
             else
             {
-                int32 diff = int32(GetLevel()) - p->area_level;
+                int32 diff = int32(GetLevel()) - areaEntry->area_level;
                 uint32 XP = 0;
                 if (diff < -5)
                 {
@@ -5864,22 +5839,22 @@ void Player::CheckAreaExploreAndOutdoor()
                         exploration_percent = 0;
 
                     if (hasCustomXpRate())
-                        XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*exploration_percent/100*m_customXp);
+                        XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*exploration_percent/100*m_customXp);
                     else
-                        XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*exploration_percent/100*sWorld->GetRate(RATE_XP_EXPLORE));
+                        XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*exploration_percent/100*sWorld->GetRate(RATE_XP_EXPLORE));
                 }
                 else
                 {
                     if (hasCustomXpRate())
-                        XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*m_customXp);
+                        XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*m_customXp);
                     else
-                        XP = uint32(sObjectMgr->GetBaseXP(p->area_level)*sWorld->GetRate(RATE_XP_EXPLORE));
+                        XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*sWorld->GetRate(RATE_XP_EXPLORE));
                 }
 
                 GiveXP( XP, NULL );
-                SendExplorationExperience(area,XP);
+                SendExplorationExperience(areaId,XP);
             }
-            TC_LOG_DEBUG("entities.player","PLAYER: Player %u discovered a new area: %u", GetGUIDLow(), area);
+            TC_LOG_DEBUG("entities.player","PLAYER: Player %u discovered a new area: %u", GetGUIDLow(), areaId);
         }
     }
 }
@@ -6819,7 +6794,7 @@ void Player::UpdateArea(uint32 newArea)
     // so apply them accordingly
     m_areaUpdateId    = newArea;
 
-    AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
+    AreaTableEntry const* area = sAreaTableStore.LookupEntry(newArea);
 
     if(area && ((area->flags & AREA_FLAG_ARENA) || (World::IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
     {
@@ -6858,7 +6833,7 @@ void Player::UpdateZone(uint32 newZone)
     // zone changed, so area changed as well, update it
     UpdateArea(GetAreaId());
 
-    AreaTableEntry const* zone = GetAreaEntryByAreaID(newZone);
+    AreaTableEntry const* zone = sAreaTableStore.LookupEntry(newZone);
     if(!zone)
         return;
 
@@ -13523,17 +13498,17 @@ void Player::FailTimedQuest( uint32 quest_id )
 
 bool Player::SatisfyQuestSkillOrClass( Quest const* qInfo, bool msg )
 {
-    int32 zoneOrSort   = qInfo->GetZoneOrSort();
+    int32 ZoneOrSort   = qInfo->GetZoneOrSort();
     int32 skillOrClass = qInfo->GetSkillOrClass();
 
-    // skip zone zoneOrSort and 0 case skillOrClass
-    if( zoneOrSort >= 0 && skillOrClass == 0 )
+    // skip zone ZoneOrSort and 0 case skillOrClass
+    if( ZoneOrSort >= 0 && skillOrClass == 0 )
         return true;
 
-    int32 questSort = -zoneOrSort;
+    int32 questSort = -ZoneOrSort;
     uint8 reqSortClass = ClassByQuestSort(questSort);
 
-    // check class sort cases in zoneOrSort
+    // check class sort cases in ZoneOrSort
     if( reqSortClass != 0 && GetClass() != reqSortClass)
     {
         if( msg )
@@ -20881,7 +20856,7 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
 {
     // remove new continent flight forms
     if( !IsGameMaster() &&
-    GetVirtualMapForMapAndZone(GetMapId(),newZone) != 530)
+        GetVirtualMapForMapAndZone(GetMapId(),newZone) != 530)
     {
         RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
         RemoveAurasByType(SPELL_AURA_FLY);

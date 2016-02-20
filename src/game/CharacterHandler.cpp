@@ -576,7 +576,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                     //uint8 acc_class = field[2].GetUInt8();
                 }
             }
-            /*
+            /* TC LK
             if (checkHeroicReqs && !hasHeroicReqLevel)
             {
                 SendCharCreate(CHAR_CREATE_LEVEL_REQUIREMENT);
@@ -822,19 +822,57 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->SetRank(0);
     }
 
-    //force gm player in guild if needed
-    uint32 GMForcedGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
-    if (GetSecurity() > SEC_PLAYER && GMForcedGuildId && GMForcedGuildId != guildId)
+    // Default guild for GMs
+    if (GetSecurity() > SEC_PLAYER)
     {
-        //remove from current guild if any
-        if  (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
-            currentGuild->DelMember(pCurrChar->GetGUID());
-
-        if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
+        if (guildId == 0)
         {
-            gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank());
-            pCurrChar->SetInGuild(GMForcedGuildId);
-            pCurrChar->SetRank(gmGuild->GetLowestRank());
+            if (uint32 defaultGuildId = sWorld->getConfig(CONFIG_GM_DEFAULT_GUILD))
+            {
+                Guild* gmGuild = sObjectMgr->GetGuildById(defaultGuildId);
+                if (gmGuild)
+                {
+                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank(), trans))
+                    {
+                        guildId = defaultGuildId;
+                        pCurrChar->SetInGuild(defaultGuildId);
+                        pCurrChar->SetRank(gmGuild->GetLowestRank());
+                    }
+                    else
+                    {
+                        TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                    }
+                    CharacterDatabase.CommitTransaction(trans);
+                }
+                else {
+                    TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                }
+            }
+        }
+
+        //force gm player in guild if needed
+        
+        if (uint32 GMForcedGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD))
+        {
+            if (GMForcedGuildId != guildId)
+            {
+                //remove from current guild if any
+                if (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
+                    currentGuild->DelMember(pCurrChar->GetGUID());
+
+                if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
+                {
+                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank()))
+                    {
+                        pCurrChar->SetInGuild(GMForcedGuildId);
+                        pCurrChar->SetRank(gmGuild->GetLowestRank());
+                    }
+                    else {
+                        TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                    }
+                }
+            }
         }
     }
 

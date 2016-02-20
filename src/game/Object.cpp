@@ -887,12 +887,12 @@ void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid )
 
 uint32 WorldObject::GetZoneId() const
 {
-    return sMapMgr->GetBaseMap(m_mapId)->GetZoneId(m_positionX,m_positionY,m_positionZ);
+    return GetBaseMap()->GetZoneId(m_positionX,m_positionY,m_positionZ);
 }
 
 uint32 WorldObject::GetAreaId() const
 {
-    return sMapMgr->GetBaseMap(m_mapId)->GetAreaId(m_positionX,m_positionY,m_positionZ);
+    return GetBaseMap()->GetAreaId(m_positionX,m_positionY,m_positionZ);
 }
 
 InstanceScript* WorldObject::GetInstanceScript()
