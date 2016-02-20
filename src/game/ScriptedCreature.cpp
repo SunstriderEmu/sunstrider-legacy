@@ -13,6 +13,7 @@
 #include "Spell.h"
 #include "ObjectMgr.h"
 #include "ScriptMgr.h"
+#include "Containers.h"
 
 void SummonList::Despawn(Creature *summon)
 {

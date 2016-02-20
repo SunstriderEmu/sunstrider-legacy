@@ -23,6 +23,7 @@
 
 #include "Common.h"
 #include "Containers.h"
+#include "Random.h"
 
 #include <string>
 #include <vector>
@@ -45,36 +46,6 @@ inline uint32 secsToTimeBitFields(time_t secs)
 {
     tm* lt = localtime(&secs);
     return (lt->tm_year - 100) << 24 | lt->tm_mon  << 20 | (lt->tm_mday - 1) << 14 | lt->tm_wday << 11 | lt->tm_hour << 6 | lt->tm_min;
-}
-
-/* Return a random number in the range min..max. */
-int32 irand(int32 min, int32 max);
-
-/* Return a random number in the range min..max (inclusive). */
-uint32 urand(uint32 min, uint32 max);
-
-/* Return a random number in the range 0 .. UINT32_MAX. */
-uint32 rand32();
-
-/* Return a random number in the range min..max */
-float frand(float min, float max);
-
-/* Return a random double from 0.0 to 1.0 (exclusive). */
-double rand_norm();
-
-/* Return a random double from 0.0 to 100.0 (exclusive). */
-double rand_chance();
-
-/* Return true if a random roll fits in the specified chance (range 0-100). */
-inline bool roll_chance_f(float chance)
-{
-    return chance > rand_chance();
-}
-
-/* Return true if a random roll fits in the specified chance (range 0-100). */
-inline bool roll_chance_i(int chance)
-{
-    return chance > irand(0, 99);
 }
 
 inline void ApplyPercentModFloatVar(float& var, float val, bool apply)

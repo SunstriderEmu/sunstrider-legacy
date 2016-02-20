@@ -33,6 +33,7 @@
 #include "InstanceSaveMgr.h"
 #include "MapInstanced.h"
 #include "Util.h"
+#include "Containers.h"
 
 Group::Group() :
     m_masterLooterGuid(0),

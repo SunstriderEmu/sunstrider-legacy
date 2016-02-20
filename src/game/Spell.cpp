@@ -49,6 +49,8 @@
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "CreatureAINew.h"
+#include "Containers.h"
+
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
