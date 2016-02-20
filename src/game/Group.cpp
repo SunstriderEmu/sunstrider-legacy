@@ -301,8 +301,7 @@ bool Group::AddMember(const uint64 &guid, std::string name, SQLTransaction trans
 
             if(player->GetLevel() >= LEVELREQUIREMENT_HEROIC && player->GetDifficulty() != GetDifficulty() )
             {
-                player->SetDifficulty(m_dungeonDifficulty);
-                player->SendDungeonDifficulty(true);
+                player->SetDifficulty(m_dungeonDifficulty, true, true);
             }
         }
         player->SetGroupUpdateFlag(GROUP_UPDATE_FULL);
@@ -1703,8 +1702,7 @@ void Group::SetDifficulty(Difficulty difficulty)
         Player *player = itr->GetSource();
         if(!player->GetSession() || player->GetLevel() < LEVELREQUIREMENT_HEROIC)
             continue;
-        player->SetDifficulty(difficulty);
-        player->SendDungeonDifficulty(true);
+        player->SetDifficulty(difficulty, true, true);
     }
 }
 

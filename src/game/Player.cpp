@@ -16181,7 +16181,7 @@ void Player::_LoadGroup(QueryResult result)
             if(GetLevel() >= LEVELREQUIREMENT_HEROIC)
             {
                 // the group leader may change the instance difficulty while the player is offline
-                SetDifficulty(group->GetDifficulty());
+                SetDifficulty(group->GetDifficulty(), false);
             }
         }
     }
@@ -21970,6 +21970,13 @@ bool Player::IsInDuelArea() const
     return m_ExtraFlags & PLAYER_EXTRA_DUEL_AREA; 
 }
 
+void Player::SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer, bool asGroup)
+{
+    m_dungeonDifficulty = dungeon_difficulty;
+    if (sendToPlayer)
+        SendDungeonDifficulty(asGroup);
+}
+
 void Player::UpdateArenaTitleForRank(uint8 rank, bool add)
 {
     CharTitlesEntry const* titleForRank = sWorld->getArenaLeaderTitle(rank);
@@ -22312,7 +22319,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
 
     // if default menuId and no menu options exist for this, use options from default options
     if (menuItemBounds.first == menuItemBounds.second && menuId == GetDefaultGossipMenuForSource(source))
-        menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(0);
+        menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(ObjectMgr::GENERIC_OPTIONS_MENU);
 
     uint32 npcflags = 0;
 
@@ -22387,7 +22394,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 case GOSSIP_OPTION_TRAINER:
                     if (GetClass() != creature->GetCreatureTemplate()->trainer_class && creature->GetCreatureTemplate()->trainer_type == TRAINER_TYPE_CLASS)
                         TC_LOG_ERROR("sql.sql", "GOSSIP_OPTION_TRAINER:: Player %s (GUID: %u) request wrong gossip menu: %u with wrong class: %u at Creature: %s (Entry: %u, Trainer Class: %u)",
-                        GetName().c_str(), GetGUIDLow(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
+                            GetName().c_str(), GetGUIDLow(), menu->GetGossipMenu().GetMenuId(), GetClass(), creature->GetName().c_str(), creature->GetEntry(), creature->GetCreatureTemplate()->trainer_class);
                     // no break;
                 case GOSSIP_OPTION_GOSSIP:
                 case GOSSIP_OPTION_SPIRITGUIDE:
@@ -22445,14 +22452,14 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                 if (!optionBroadcastText)
                 {
                     /// Find localizations from database.
-                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, itr->second.OptionIndex))
                         ObjectMgr::GetLocaleString(gossipMenuLocale->OptionText, locale, strOptionText);
                 }
 
                 if (!boxBroadcastText)
                 {
                     /// Find localizations from database.
-                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(MAKE_PAIR32(menuId, menuId)))
+                    if (GossipMenuItemsLocale const* gossipMenuLocale = sObjectMgr->GetGossipMenuItemsLocale(menuId, itr->second.OptionIndex))
                         ObjectMgr::GetLocaleString(gossipMenuLocale->BoxText, locale, strBoxText);
                 }
             }

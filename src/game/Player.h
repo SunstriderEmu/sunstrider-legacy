@@ -1818,7 +1818,7 @@ class Player : public Unit
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
 
-        void SetDifficulty(Difficulty dungeon_difficulty) { m_dungeonDifficulty = dungeon_difficulty; }
+        void SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer = true, bool asGroup = false);
         //arg has no effect for now
         Difficulty GetDifficulty(bool isRaid = false) const { return m_dungeonDifficulty; }
 

@@ -724,6 +724,9 @@ class ObjectMgr
         void LoadGameTele();
 
         void LoadGossipMenu();
+        // Generic items are loaded in the same container as creature specific items, under menu id 0
+        static const int GENERIC_OPTIONS_MENU = 0;
+        //load both gossip_menu_option and gossip_menu_option_generic
         void LoadGossipMenuItems();
         void LoadCreatureGossip();
         void LoadVendors();
@@ -853,9 +856,9 @@ class ObjectMgr
             if(itr==mPageTextLocaleMap.end()) return NULL;
             return &itr->second;
         }
-        GossipMenuItemsLocale const* GetGossipMenuItemsLocale(uint32 entry) const
+        GossipMenuItemsLocale const* GetGossipMenuItemsLocale(uint16 menuId, uint16 optionIndex) const
         {
-            GossipMenuItemsLocaleContainer::const_iterator itr = _gossipMenuItemsLocaleStore.find(entry);
+            GossipMenuItemsLocaleContainer::const_iterator itr = _gossipMenuItemsLocaleStore.find(MAKE_PAIR32(menuId, optionIndex));
             if(itr==_gossipMenuItemsLocaleStore.end()) 
                 return nullptr;
 
@@ -1015,6 +1018,8 @@ class ObjectMgr
         void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
         bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = true); // for event
         bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0 ) const;
+        bool AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell);
+        bool RemoveTrainerSpell(uint32 creatureId, uint32 spellId);
 
         void LoadScriptNames();
         ScriptNameMap &GetScriptNames() { return m_scriptNames; }

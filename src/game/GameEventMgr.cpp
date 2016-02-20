@@ -172,6 +172,159 @@ void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
     }
 }
 
+void GameEventMgr::LoadVendors()
+{
+    mGameEventVendors.clear();
+    mGameEventVendors.resize(mGameEvent.size());
+
+    //                                   0      1      2     3         4         5
+    QueryResult result = WorldDatabase.Query("SELECT event, guid, item, maxcount, incrtime, ExtendedCost FROM game_event_npc_vendor");
+
+    uint32 count = 0;
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", " ");
+        TC_LOG_INFO("server.loading", ">> Loaded %u vendor additions in game events", count);
+    }
+    else
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            uint16 event_id = fields[0].GetUInt32();
+
+            if (event_id >= mGameEventVendors.size())
+            {
+                TC_LOG_ERROR("sql.sql", "`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`", event_id);
+                continue;
+            }
+
+            NPCVendorList& vendors = mGameEventVendors[event_id];
+            NPCVendorEntry newEntry;
+            uint32 guid = fields[1].GetUInt32();
+            uint32 itemId = fields[2].GetUInt32();
+            newEntry.proto = sObjectMgr->GetItemTemplate(itemId);
+            if (!newEntry.proto)
+            {
+                TC_LOG_ERROR("sql.sql", "`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)", event_id, itemId);
+                continue;
+            }
+            newEntry.maxcount = fields[3].GetUInt32();
+            newEntry.incrtime = fields[4].GetUInt32();
+            newEntry.ExtendedCost = fields[5].GetUInt32();
+            // get the event npc flag for checking if the npc will be vendor during the event or not
+            uint32 event_npc_flag = 0;
+            for (auto itr : mGameEventNPCFlags[event_id])
+            {
+                if (itr.first == guid)
+                {
+                    event_npc_flag = itr.second;
+                    break;
+                }
+            }
+            // get creature entry
+            newEntry.entry = 0;
+
+            if (CreatureData const* data = sObjectMgr->GetCreatureData(guid))
+                newEntry.entry = data->id;
+
+            // check validity with event's npcflag
+            if (!sObjectMgr->IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, NULL, NULL, event_npc_flag))
+                continue;
+            ++count;
+            vendors.push_back(newEntry);
+
+        } while (result->NextRow());
+        TC_LOG_INFO("server.loading", " ");
+        TC_LOG_INFO("server.loading", ">> Loaded %u vendor additions in game events", count);
+    }
+
+}
+
+void GameEventMgr::LoadTrainers()
+{
+    mGameEventTrainers.clear();
+    //                                     0             2                   4                       6
+    QueryResult result = WorldDatabase.Query("SELECT event, entry, spell, spellcost, reqskill, reqskillvalue, reqlevel FROM game_event_npc_trainer");
+    uint32 count = 0;
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded %u trainer spells in game events", count);
+    }
+    else
+    {
+        do
+        {
+            Field *fields = result->Fetch();
+
+            uint16 event_id = fields[0].GetUInt32();
+
+            if (event_id >= mGameEvent.size())
+            {
+                TC_LOG_ERROR("sql.sql", "`game_event_npc_trainer` game event id (%u) is out of range compared to max event id in `game_event`", event_id);
+                continue;
+            }
+
+            uint32 creatureId = fields[1].GetUInt32();
+            uint32 spellId = fields[2].GetUInt32();
+
+            CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(creatureId);
+            if (!cInfo)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `game_event_npc_trainer` have entry for not existed creature template (Entry: %u), ignore", creatureId);
+                continue;
+            }
+
+            if (!(cInfo->npcflag & UNIT_NPC_FLAG_TRAINER))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `game_event_npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", creatureId);
+                continue;
+            }
+
+            SpellInfo const *spellinfo = sSpellMgr->GetSpellInfo(spellId);
+            if (!spellinfo)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `npc_trainer` for Trainer (Entry: %u ) has non existing spell %u, ignore", creatureId, spellId);
+                continue;
+            }
+
+            if (!SpellMgr::IsSpellValid(spellinfo))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `npc_trainer` for Trainer (Entry: %u) has broken learning spell %u, ignore", creatureId, spellId);
+                continue;
+            }
+
+            TrainerSpell trainerSpell;
+            trainerSpell.spell = spellId;
+            trainerSpell.spellcost = fields[3].GetUInt32();
+            trainerSpell.reqskill = fields[4].GetUInt16();
+            trainerSpell.reqskillvalue = fields[5].GetUInt16();
+            trainerSpell.reqlevel = fields[6].GetUInt8();
+
+            if (!trainerSpell.reqlevel)
+                trainerSpell.reqlevel = spellinfo->SpellLevel;
+
+            auto itr = mGameEventTrainers.find(event_id);
+            if (itr == mGameEventTrainers.end())
+            {
+                std::multimap<uint32, TrainerSpell> map;
+                map.insert(std::make_pair(creatureId, trainerSpell));
+                mGameEventTrainers.insert(std::make_pair(event_id, std::move(map)));
+            }
+            else {
+                auto& map = itr->second;
+                map.insert(std::make_pair(creatureId, trainerSpell));
+            }
+
+            ++count;
+        } while (result->NextRow());
+        TC_LOG_INFO("server.loading", " ");
+        TC_LOG_INFO("server.loading", ">> Loaded %u trainer spells in game events", count);
+    }
+
+}
+
 void GameEventMgr::LoadFromDB()
 {
     //reload case
@@ -179,7 +332,6 @@ void GameEventMgr::LoadFromDB()
     mGameEvent.clear();
     mGameEventCreatureQuests.clear();
     mGameEventGameObjectQuests.clear();
-    mGameEventVendors.clear();
     mGameEventModelEquip.clear();
     mGameEventCreatureGuids.clear();
     mGameEventGameobjectGuids.clear();
@@ -685,69 +837,8 @@ void GameEventMgr::LoadFromDB()
         TC_LOG_INFO("server.loading", ">> Loaded %u npcflags in game events", count );
     }
 
-    mGameEventVendors.resize(mGameEvent.size());
-    //                                   0      1      2     3         4         5
-    result = WorldDatabase.Query("SELECT event, guid, item, maxcount, incrtime, ExtendedCost FROM game_event_npc_vendor");
-
-    count = 0;
-    if( !result )
-    {
-        TC_LOG_INFO("server.loading"," ");
-        TC_LOG_INFO("server.loading",">> Loaded %u vendor additions in game events", count );
-    }
-    else
-    {
-        do
-        {
-            Field *fields = result->Fetch();
-
-            uint16 event_id  = fields[0].GetUInt32();
-
-            if(event_id >= mGameEventVendors.size())
-            {
-                TC_LOG_ERROR("sql.sql","`game_event_npc_vendor` game event id (%u) is out of range compared to max event id in `game_event`",event_id);
-                continue;
-            }
-
-            NPCVendorList& vendors = mGameEventVendors[event_id];
-            NPCVendorEntry newEntry;
-            uint32 guid = fields[1].GetUInt32();
-            uint32 itemId = fields[2].GetUInt32();
-            newEntry.proto = sObjectMgr->GetItemTemplate(itemId);
-            if(!newEntry.proto)
-            {
-                TC_LOG_ERROR("sql.sql","`game_event_npc_vendor` game event id (%u) has an item with non existing template (%u)",event_id,itemId);
-                continue;
-            }
-            newEntry.maxcount = fields[3].GetUInt32();
-            newEntry.incrtime = fields[4].GetUInt32();
-            newEntry.ExtendedCost = fields[5].GetUInt32();
-            // get the event npc flag for checking if the npc will be vendor during the event or not
-            uint32 event_npc_flag = 0;
-            for(auto itr : mGameEventNPCFlags[event_id])
-            {
-                if(itr.first == guid)
-                {
-                    event_npc_flag = itr.second;
-                    break;
-                }
-            }
-            // get creature entry
-            newEntry.entry = 0;
-
-            if( CreatureData const* data = sObjectMgr->GetCreatureData(guid) )
-                newEntry.entry = data->id;
-
-            // check validity with event's npcflag
-            if(!sObjectMgr->IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, NULL, NULL, event_npc_flag))
-                continue;
-            ++count;
-            vendors.push_back(newEntry);
-
-        } while( result->NextRow() );
-        TC_LOG_INFO("server.loading", " ");
-        TC_LOG_INFO("server.loading",  ">> Loaded %u vendor additions in game events", count );
-    }
+    LoadVendors();
+    LoadTrainers();
 
     // set all flags to 0
     mGameEventBattlegroundHolidays.resize(mGameEvent.size(),0);
@@ -896,6 +987,8 @@ void GameEventMgr::UnApplyEvent(uint16 event_id)
     UpdateEventNPCFlags(event_id);
     // remove vendor items
     UpdateEventNPCVendor(event_id, false);
+    // remove trainer spells
+    UpdateEventNPCTrainer(event_id, false);
     // update bg holiday
     UpdateBattlegroundSettings();
 }
@@ -926,6 +1019,8 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
     UpdateEventNPCFlags(event_id);
     // add vendor items
     UpdateEventNPCVendor(event_id, true);
+    // add trainers spells
+    UpdateEventNPCTrainer(event_id, true);
     // update bg holiday
     UpdateBattlegroundSettings();
 }
@@ -959,6 +1054,26 @@ void GameEventMgr::UpdateBattlegroundSettings()
     for(auto itr : m_ActiveEvents)
         mask |= mGameEventBattlegroundHolidays[itr];
     sBattlegroundMgr->SetHolidayWeekends(mask);
+}
+
+void GameEventMgr::UpdateEventNPCTrainer(uint16 event_id, bool activate)
+{
+    auto itr_pair = mGameEventTrainers.equal_range(event_id);
+    auto itr_lower = itr_pair.first;
+    auto itr_upper = itr_pair.second;
+    for (auto itr = itr_lower; itr != itr_upper; itr++)
+    {
+        auto spellsByTrainerMap = itr->second;
+        for (auto itr2 : spellsByTrainerMap)
+        {
+            uint32 creatureId = itr2.first;
+            TrainerSpell spell = itr2.second;
+            if (activate)
+                sObjectMgr->AddTrainerSpell(creatureId, spell);
+            else
+                sObjectMgr->RemoveTrainerSpell(creatureId, spell.spell);
+        }
+    }
 }
 
 void GameEventMgr::UpdateEventNPCVendor(uint16 event_id, bool activate)

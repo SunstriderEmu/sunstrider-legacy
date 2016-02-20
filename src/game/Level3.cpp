@@ -436,6 +436,7 @@ bool ChatHandler::HandleReloadNpcTrainerCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading `npc_trainer` Table!" );
     sObjectMgr->LoadTrainerSpell();
+    sGameEventMgr->LoadTrainers();
     SendGlobalGMSysMessage("DB table `npc_trainer` reloaded.");
     return true;
 }
@@ -444,6 +445,7 @@ bool ChatHandler::HandleReloadNpcVendorCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading `npc_vendor` Table!" );
     sObjectMgr->LoadVendors();
+    sGameEventMgr->LoadVendors();
     SendGlobalGMSysMessage("DB table `npc_vendor` reloaded.");
     return true;
 }

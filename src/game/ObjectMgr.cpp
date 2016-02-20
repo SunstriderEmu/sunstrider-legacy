@@ -1111,7 +1111,10 @@ void ObjectMgr::LoadCreatureModelInfo()
         // Checks
 
         if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
+        {
             TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has model for not existed display id (%u).", modelId);
+            continue;
+        }
 
         if (modelInfo.gender > GENDER_NONE)
         {
@@ -7168,9 +7171,8 @@ void ObjectMgr::LoadTrainerSpell()
     // For reload case
     for (CacheTrainerSpellMap::iterator itr = m_mCacheTrainerSpellMap.begin(); itr != m_mCacheTrainerSpellMap.end(); ++itr)
         itr->second.Clear();
-    m_mCacheTrainerSpellMap.clear();
 
-    std::set<uint32> skip_trainers;
+    m_mCacheTrainerSpellMap.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT entry, spell,spellcost,reqskill,reqskillvalue,reqlevel FROM npc_trainer");
 
@@ -7190,7 +7192,6 @@ void ObjectMgr::LoadTrainerSpell()
         uint32 spell  = fields[1].GetUInt32();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(entry);
-
         if(!cInfo)
         {
             TC_LOG_ERROR("sql.sql","Table `npc_trainer` have entry for not existed creature template (Entry: %u), ignore", entry);
@@ -7199,11 +7200,7 @@ void ObjectMgr::LoadTrainerSpell()
 
         if(!(cInfo->npcflag & UNIT_NPC_FLAG_TRAINER))
         {
-            if(skip_trainers.count(entry) == 0)
-            {
-                TC_LOG_ERROR("sql.sql","Table `npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", entry);
-                skip_trainers.insert(entry);
-            }
+            TC_LOG_ERROR("sql.sql","Table `npc_trainer` have data for not creature template (Entry: %u) without trainer flag, ignore", entry);
             continue;
         }
 
@@ -7230,7 +7227,6 @@ void ObjectMgr::LoadTrainerSpell()
         if(!pTrainerSpell->reqlevel)
             pTrainerSpell->reqlevel = spellinfo->SpellLevel;
 
-
         TrainerSpellData& data = m_mCacheTrainerSpellMap[entry];
 
         if(SpellMgr::IsProfessionSpell(spell))
@@ -7250,6 +7246,7 @@ void ObjectMgr::LoadVendors()
     // For reload case
     for (CacheVendorItemMap::iterator itr = m_mCacheVendorItemMap.begin(); itr != m_mCacheVendorItemMap.end(); ++itr)
         itr->second.Clear();
+
     m_mCacheVendorItemMap.clear();
 
     std::set<uint32> skip_vendors;
@@ -7381,80 +7378,132 @@ void ObjectMgr::LoadGossipMenuItems()
 {
     uint32 oldMSTime = GetMSTime();
 
-    _gossipMenuItemsStore.clear();
-
     QueryResult result = WorldDatabase.Query(
         //      0        1   2            3            4                      5          6                   7               8              9          10         11        12
         "SELECT menu_id, id, option_icon, option_text, OptionBroadcastTextID, option_id, npc_option_npcflag, action_menu_id, action_poi_id, box_coded, box_money, box_text, BoxBroadcastTextID "
         "FROM gossip_menu_option ORDER BY menu_id, id");
 
-    if (!result)
+    if (result)
     {
+        uint32 count = 0;
+
+        do
+        {
+            Field* fields = result->Fetch();
+
+            GossipMenuItems gMenuItem;
+
+            gMenuItem.MenuId = fields[0].GetUInt16();
+            gMenuItem.OptionIndex = fields[1].GetUInt16();
+            gMenuItem.OptionIcon = fields[2].GetUInt32();
+            gMenuItem.OptionText = fields[3].GetString();
+            gMenuItem.OptionBroadcastTextId = fields[4].GetUInt32();
+            gMenuItem.OptionType = fields[5].GetUInt8();
+            gMenuItem.OptionNpcflag = fields[6].GetUInt32();
+            gMenuItem.ActionMenuId = fields[7].GetUInt16();
+            gMenuItem.ActionPoiId = fields[8].GetUInt32();
+            gMenuItem.BoxCoded = fields[9].GetBool();
+            gMenuItem.BoxMoney = fields[10].GetUInt32();
+            gMenuItem.BoxText = fields[11].GetString();
+            gMenuItem.BoxBroadcastTextId = fields[12].GetUInt32();
+
+            if (gMenuItem.MenuId == 0)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` has invalid menuId 0, skipping.");
+                continue;
+            }
+
+            if (gMenuItem.OptionIcon >= GOSSIP_ICON_MAX)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown icon id %u. Replacing with GOSSIP_ICON_CHAT", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionIcon);
+                gMenuItem.OptionIcon = GOSSIP_ICON_CHAT;
+            }
+
+            if (gMenuItem.OptionBroadcastTextId)
+            {
+                if (!GetBroadcastText(gMenuItem.OptionBroadcastTextId))
+                {
+                    TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible OptionBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionBroadcastTextId);
+                    gMenuItem.OptionBroadcastTextId = 0;
+                }
+            }
+
+            if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);
+                continue;
+            }
+
+            if (gMenuItem.ActionPoiId && !GetPointOfInterest(gMenuItem.ActionPoiId))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing action_poi_id %u, ignoring", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.ActionPoiId);
+                gMenuItem.ActionPoiId = 0;
+            }
+
+            if (gMenuItem.BoxBroadcastTextId)
+            {
+                if (!GetBroadcastText(gMenuItem.BoxBroadcastTextId))
+                {
+                    TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible BoxBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.BoxBroadcastTextId);
+                    gMenuItem.BoxBroadcastTextId = 0;
+                }
+            }
+
+            _gossipMenuItemsStore.insert(GossipMenuItemsContainer::value_type(gMenuItem.MenuId, gMenuItem));
+            ++count;
+        } while (result->NextRow());
+
+        TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    }
+    else {
         TC_LOG_ERROR("server.loading", ">> Loaded 0 gossip_menu_option entries. DB table `gossip_menu_option` is empty!");
-        return;
     }
 
-    uint32 count = 0;
+    oldMSTime = GetMSTime();
 
-    do
+    result = WorldDatabase.Query(
+        //      0                      2                          3
+        "SELECT id, option_icon, option_text, option_id, npc_option_npcflag "
+        "FROM gossip_menu_option_generic ORDER BY id");
+
+    if (result)
     {
-        Field* fields = result->Fetch();
+        uint32 count = 0;
 
-        GossipMenuItems gMenuItem;
-
-        gMenuItem.MenuId                = fields[0].GetUInt16();
-        gMenuItem.OptionIndex           = fields[1].GetUInt16();
-        gMenuItem.OptionIcon            = fields[2].GetUInt32();
-        gMenuItem.OptionText            = fields[3].GetString();
-        gMenuItem.OptionBroadcastTextId = fields[4].GetUInt32();
-        gMenuItem.OptionType            = fields[5].GetUInt8();
-        gMenuItem.OptionNpcflag         = fields[6].GetUInt32();
-        gMenuItem.ActionMenuId          = fields[7].GetUInt16();
-        gMenuItem.ActionPoiId           = fields[8].GetUInt32();
-        gMenuItem.BoxCoded              = fields[9].GetBool();
-        gMenuItem.BoxMoney              = fields[10].GetUInt32();
-        gMenuItem.BoxText               = fields[11].GetString();
-        gMenuItem.BoxBroadcastTextId    = fields[12].GetUInt32();
-
-        if (gMenuItem.OptionIcon >= GOSSIP_ICON_MAX)
+        do
         {
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown icon id %u. Replacing with GOSSIP_ICON_CHAT", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionIcon);
-            gMenuItem.OptionIcon = GOSSIP_ICON_CHAT;
-        }
+            Field* fields = result->Fetch();
 
-        if (gMenuItem.OptionBroadcastTextId)
-        {
-            if (!GetBroadcastText(gMenuItem.OptionBroadcastTextId))
+            GossipMenuItems gMenuItem;
+
+            gMenuItem.MenuId = GENERIC_OPTIONS_MENU;
+            gMenuItem.OptionIndex = fields[0].GetUInt16();
+            gMenuItem.OptionIcon = fields[1].GetUInt32();
+            gMenuItem.OptionText = fields[2].GetString();
+            gMenuItem.OptionType = fields[3].GetUInt8();
+            gMenuItem.OptionNpcflag = fields[4].GetUInt32();
+
+            if (gMenuItem.OptionIcon >= GOSSIP_ICON_MAX)
             {
-                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible OptionBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionBroadcastTextId);
-                gMenuItem.OptionBroadcastTextId = 0;
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option_generic` for menu %u, id %u has unknown icon id %u. Replacing with GOSSIP_ICON_CHAT", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionIcon);
+                gMenuItem.OptionIcon = GOSSIP_ICON_CHAT;
             }
-        }
 
-        if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);
-
-        if (gMenuItem.ActionPoiId && !GetPointOfInterest(gMenuItem.ActionPoiId))
-        {
-            TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u use non-existing action_poi_id %u, ignoring", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.ActionPoiId);
-            gMenuItem.ActionPoiId = 0;
-        }
-        
-        if (gMenuItem.BoxBroadcastTextId)
-        {
-            if (!GetBroadcastText(gMenuItem.BoxBroadcastTextId))
+            if (gMenuItem.OptionType >= GOSSIP_OPTION_MAX)
             {
-                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option` for menu %u, id %u has non-existing or incompatible BoxBroadcastTextId %u, ignoring.", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.BoxBroadcastTextId);
-                gMenuItem.BoxBroadcastTextId = 0;
+                TC_LOG_ERROR("sql.sql", "Table `gossip_menu_option_generic` for menu %u, id %u has unknown option id %u. Option will not be used", gMenuItem.MenuId, gMenuItem.OptionIndex, gMenuItem.OptionType);
+                continue;
             }
-        }
 
-        _gossipMenuItemsStore.insert(GossipMenuItemsContainer::value_type(gMenuItem.MenuId, gMenuItem));
-        ++count;
+            _gossipMenuItemsStore.insert(GossipMenuItemsContainer::value_type(GENERIC_OPTIONS_MENU, gMenuItem));
+            ++count;
+        } while (result->NextRow());
+
+        TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option_generic entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     }
-    while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    else {
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 gossip_menu_option_generic entries. DB table `gossip_menu_option` is empty!");
+    }
 }
 
 void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 extendedcost, bool savetodb)
@@ -7462,7 +7511,8 @@ void ObjectMgr::AddVendorItem( uint32 entry, ItemTemplate const *proto, uint32 m
     VendorItemData& vList = m_mCacheVendorItemMap[entry];
     vList.AddItem(proto,maxcount,incrtime,extendedcost);
 
-    if(savetodb) WorldDatabase.PExecute("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, proto->ItemId, maxcount,incrtime,extendedcost);
+    if(savetodb) 
+        WorldDatabase.PExecute("INSERT INTO npc_vendor (entry,item,maxcount,incrtime,extendedcost) VALUES('%u','%u','%u','%u','%u')",entry, proto->ItemId, maxcount,incrtime,extendedcost);
 }
 
 bool ObjectMgr::RemoveVendorItem( uint32 entry, ItemTemplate const *proto, bool savetodb)
@@ -7555,6 +7605,35 @@ bool ObjectMgr::IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *prot
     }
 
     return true;
+}
+
+bool ObjectMgr::AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell)
+{
+    TrainerSpellData& data = m_mCacheTrainerSpellMap[creatureId];
+
+    if (SpellMgr::IsProfessionSpell(spell.spell))
+        data.trainerType = 2;
+
+    TrainerSpell* new_spell = new TrainerSpell(spell);
+    data.spellList.push_back(new_spell);
+    return true;
+}
+
+bool ObjectMgr::RemoveTrainerSpell(uint32 creatureId, uint32 spellId)
+{
+    bool removed = false;
+    TrainerSpellData& data = m_mCacheTrainerSpellMap[creatureId];
+    for (std::vector<TrainerSpell*>::iterator itr = data.spellList.begin(); itr != data.spellList.end();)
+    {
+        if ((*itr)->spell == spellId)
+        {
+            itr = data.spellList.erase(itr);
+            removed = true;
+            continue;
+        }
+        itr++;
+    }
+    return removed;
 }
 
 void ObjectMgr::LoadScriptNames()

@@ -106,6 +106,8 @@ class GameEventMgr
         bool CheckOneGameEvent(uint16 entry) const;
         uint32 NextCheck(uint16 entry) const;
         void LoadFromDB();
+        void LoadVendors();
+        void LoadTrainers();
         uint32 Update();
         bool IsActiveEvent(uint16 event_id) { return ( m_ActiveEvents.find(event_id)!=m_ActiveEvents.end()); }
         uint32 Initialize();
@@ -156,6 +158,7 @@ class GameEventMgr
         void UpdateEventQuests(uint16 event_id, bool Activate);
         void UpdateEventNPCFlags(uint16 event_id);
         void UpdateEventNPCVendor(uint16 event_id, bool activate);
+        void UpdateEventNPCTrainer(uint16 event_id, bool activate);
         void UpdateBattlegroundSettings();
         bool CheckOneGameEventConditions(uint16 event_id);
         void SaveWorldEventStateToDB(uint16 event_id);
@@ -173,6 +176,8 @@ class GameEventMgr
         typedef std::vector<QuestRelList> GameEventQuestMap;
         typedef std::list<NPCVendorEntry> NPCVendorList;
         typedef std::vector<NPCVendorList> GameEventNPCVendorMap;
+        //arr this is complicated to use, consider changing the type
+        typedef std::multimap<uint16 /*event*/, std::multimap<uint32 /* trainer */, TrainerSpell /* spell */>> GameEventNPCTrainerSpellsMap;
         typedef std::map<uint32 /*quest id*/, GameEventQuestToEventConditionNum> QuestIdToEventConditionMap;
         typedef std::pair<uint32 /*guid*/, uint32 /*npcflag*/> GuidNPCFlagPair;
         typedef std::list<GuidNPCFlagPair> NPCFlagList;
@@ -184,6 +189,7 @@ class GameEventMgr
         GameEventQuestMap mGameEventGameObjectQuests;
         GameEventNPCVendorMap mGameEventVendors;
         GameEventModelEquipMap mGameEventModelEquip;
+        GameEventNPCTrainerSpellsMap mGameEventTrainers;
         GameEventGuidMap  mGameEventCreatureGuids;
         GameEventGuidMap  mGameEventGameobjectGuids;
         GameEventDataMap  mGameEvent;

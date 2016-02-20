@@ -1700,7 +1700,6 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
             }
 
             // the difficulty is set even if the instances can't be reset
-            //_player->SendDungeonDifficulty(true);
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false, _player);
             group->SetDifficulty(Difficulty(mode));
         }
@@ -1708,7 +1707,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     else
     {
         _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false);
-        _player->SetDifficulty(Difficulty(mode));
+        _player->SetDifficulty(Difficulty(mode), false, false); //client changes it without needing to be told
     }
 }
 

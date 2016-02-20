@@ -943,7 +943,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
                         _player->BindToInstance(save, !save->CanReset());
             }
 
-            _player->SetDifficulty(target->GetDifficulty());
+            _player->SetDifficulty(target->GetDifficulty(), true, false);
         }
 
         // stop flight if need
