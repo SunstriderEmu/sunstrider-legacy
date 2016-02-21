@@ -21972,6 +21972,7 @@ bool Player::IsInDuelArea() const
 
 void Player::SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer, bool asGroup)
 {
+    ASSERT(dungeon_difficulty < MAX_DIFFICULTY);
     m_dungeonDifficulty = dungeon_difficulty;
     if (sendToPlayer)
         SendDungeonDifficulty(asGroup);

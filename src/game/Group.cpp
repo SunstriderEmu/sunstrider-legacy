@@ -1693,6 +1693,7 @@ void Roll::targetObjectBuildLink()
 
 void Group::SetDifficulty(Difficulty difficulty)
 {
+    ASSERT(difficulty < MAX_DIFFICULTY);
     m_dungeonDifficulty = difficulty;
     if(!isBGGroup()) 
         CharacterDatabase.PExecute("UPDATE groups SET difficulty = %u WHERE leaderGuid ='%u'", m_dungeonDifficulty, GUID_LOPART(m_leaderGuid));
