@@ -1356,7 +1356,7 @@ void World::SetInitialWorldSettings()
     sSpellMgr->LoadSpellRequired();
 
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
-    sSpellMgr->LoadSpellInfoStore();
+    sSpellMgr->LoadSpellInfoStore(false);
     
     TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." ); //must be after SpellInfo
     sSpellMgr->LoadSpellElixirs();

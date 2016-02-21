@@ -3141,16 +3141,32 @@ SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
     return NULL;
 }
 
-void SpellMgr::LoadSpellInfoStore()
+void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
 {
     uint32 oldMSTime = GetMSTime();
 
-    UnloadSpellInfoStore();
-    auto lastSpell = sObjectMgr->GetSpellStore().rbegin();
-    mSpellInfoMap.resize(lastSpell->first+1, nullptr); //fill with null pointers by default
+    if (!reload)
+    {
+        UnloadSpellInfoStore();
 
-    for (auto i : sObjectMgr->GetSpellStore())
-        mSpellInfoMap[i.first] = new SpellInfo(i.second);
+        auto lastSpell = sObjectMgr->GetSpellStore().rbegin();
+        mSpellInfoMap.resize(lastSpell->first + 1, nullptr); //fill with null pointers by default
+
+        for (auto i : sObjectMgr->GetSpellStore())
+            mSpellInfoMap[i.first] = new SpellInfo(i.second);
+    }
+    else {
+        auto spellStore = sObjectMgr->GetSpellStore();
+        for (uint32 i = 0; i < mSpellInfoMap.size(); i++)
+        {
+            auto itr = spellStore.find(i);
+            if (itr == spellStore.end())
+                continue;
+
+            //replace old object by a new one, but keep it's adress
+            *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
+        }
+    }
 
     TC_LOG_INFO("server.loading", ">> Loaded SpellInfo store in %u ms", GetMSTimeDiffToNow(oldMSTime));
 }
