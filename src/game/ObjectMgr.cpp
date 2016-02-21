@@ -7929,6 +7929,7 @@ void ObjectMgr::LoadItemExtendedCost()
     TC_LOG_INFO("server.loading", ">> Loaded %u item extended cost", count );
 }
 
+//This does not erase existing spells and keep pointers valids
 void ObjectMgr::LoadSpellTemplates()
 {
     uint32 count = 0;
@@ -7949,7 +7950,7 @@ void ObjectMgr::LoadSpellTemplates()
         "effectPointsPerComboPoint3, spellVisual, spellIconID, activeIconID, spellName1, spellName2, spellName3, spellName4, spellName5, spellName6, spellName7, spellName8, "
         "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
         "rank11, rank12, rank13, rank14, rank15, rank16, ManaCostPercentage, startRecoveryCategory, startRecoveryTime, "
-        "maxTargetLevel, spellFamilyName, spellFamilyFlags1, spellFamilyFlags2, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
+        "maxTargetLevel, spellFamilyName, spellFamilyFlags, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
         "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY entry");
         
     if (!result) {
@@ -8057,18 +8058,16 @@ void ObjectMgr::LoadSpellTemplates()
         spell->StartRecoveryTime = fields[157].GetUInt32();
         spell->MaxTargetLevel = fields[158].GetUInt32();
         spell->SpellFamilyName = fields[159].GetUInt32();
-        uint32 col200 = fields[160].GetUInt32();
-        uint32 col201 = fields[161].GetUInt32();
-        spell->SpellFamilyFlags = ((uint64)col201 << 32) | (uint64)col200;
-        spell->MaxAffectedTargets = fields[162].GetUInt32();
-        spell->DmgClass = fields[163].GetUInt32();
-        spell->PreventionType = fields[164].GetUInt32();
+        spell->SpellFamilyFlags = fields[160].GetUInt64();
+        spell->MaxAffectedTargets = fields[161].GetUInt32();
+        spell->DmgClass = fields[162].GetUInt32();
+        spell->PreventionType = fields[163].GetUInt32();
         for (uint8 i = 0; i < 3; i++)
-            spell->EffectDamageMultiplier[i] = fields[i+165].GetFloat();
-        spell->TotemCategory[0] = fields[168].GetUInt32();
-        spell->TotemCategory[1] = fields[169].GetUInt32();
-        spell->AreaId = fields[170].GetUInt32();
-        spell->SchoolMask = fields[171].GetUInt32();
+            spell->EffectDamageMultiplier[i] = fields[i+164].GetFloat();
+        spell->TotemCategory[0] = fields[167].GetUInt32();
+        spell->TotemCategory[1] = fields[168].GetUInt32();
+        spell->AreaId = fields[169].GetUInt32();
+        spell->SchoolMask = fields[170].GetUInt32();
 
         spellTemplates[id] = spell;
         maxSpellId = id;
