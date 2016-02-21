@@ -1860,7 +1860,7 @@ uint32 ScriptMgr::GetDialogStatus( Player *player, Creature *_Creature )
 uint32 ScriptMgr::GetDialogStatus( Player *player, GameObject *_GO )
 {
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pGetDialogStatus) return 100;
+    if (!tmpscript || !tmpscript->pGOGetDialogStatus) return 100;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOGetDialogStatus(player,_GO);
@@ -1890,7 +1890,7 @@ bool ScriptMgr::ItemQuestAccept( Player *player, Item *_Item, Quest const *_Ques
 bool ScriptMgr::OnGossipHello( Player *player, GameObject *_GO )
 {
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pOnGossipHello) return false;
+    if (!tmpscript || !tmpscript->pGOOnGossipHello) return false;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOOnGossipHello(player,_GO);
@@ -1900,7 +1900,7 @@ bool ScriptMgr::OnGossipHello( Player *player, GameObject *_GO )
 bool ScriptMgr::OnQuestAccept( Player *player, GameObject *_GO, Quest const *_Quest )
 {
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pOnQuestAccept) return false;
+    if (!tmpscript || !tmpscript->pGOOnQuestAccept) return false;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOOnQuestAccept(player,_GO,_Quest);
@@ -1910,7 +1910,7 @@ bool ScriptMgr::OnQuestAccept( Player *player, GameObject *_GO, Quest const *_Qu
 bool ScriptMgr::OnQuestReward( Player *player, GameObject *_GO, Quest const *_Quest, uint32 opt )
 {
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if (!tmpscript || !tmpscript->pOnQuestReward) return false;
+    if (!tmpscript || !tmpscript->pGOOnQuestReward) return false;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOOnQuestReward(player,_GO,_Quest,opt);
