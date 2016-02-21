@@ -28,6 +28,7 @@
 #include "Player.h"
 #include "BattleGroundMgr.h"
 #include "GridNotifiers.h"
+#include "Map.h"
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
@@ -398,7 +399,6 @@ void GameEventMgr::LoadFromDB()
 
     } while( result->NextRow() );
 
-    TC_LOG_INFO("gameevent"," ");
     TC_LOG_INFO( "gameevent",">> Loaded %u game events", count );
 
     // load game event saves
@@ -408,7 +408,6 @@ void GameEventMgr::LoadFromDB()
     count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event saves in game events", count );
     }
     else
@@ -1355,13 +1354,47 @@ bool GameEventMgr::hasGameObjectActiveEventExcept(uint32 go_id, uint16 event_id)
     return false;
 }
 
+//move this to ObjectAccessor ? HACKY HACKY AND HEAVY
+void AddQuestFlagToCreatures(uint32 entry)
+{
+    //add gossip flag to existing creatures if needed
+ /* Disabled for now as this seems to freeze player session
+ boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+    auto creatures = ObjectAccessor::GetCreatures();
+    for (auto itr : creatures)
+    {
+        Creature* creature = itr.second;
+        if (creature->GetEntry() != entry)
+            continue;
+
+        creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER);
+
+        //update questgiver status (exclamation mark over creature heads) for every players having this creature at client
+        Map::PlayerList const& players = creature->GetMap()->GetPlayers();
+        for (auto itr2 : players)
+        {
+            Player* player = itr2.GetSource();
+            if (player->HaveAtClient(creature))
+            {
+                WorldPacket fakePacket(CMSG_QUESTGIVER_STATUS_QUERY);
+                fakePacket << itr.first;
+                player->GetSession()->HandleQuestgiverStatusQueryOpcode(fakePacket);
+            }
+        }
+    }
+    */
+}
+
 void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
 {
     for (auto itr : mGameEventCreatureQuests[event_id])
     {
         QuestRelations &CreatureQuestMap = sObjectMgr->mCreatureQuestRelations;
         if (Activate)                                       // Add the pair(id,quest) to the multimap
+        {
             CreatureQuestMap.insert(QuestRelations::value_type(itr.first, itr.second));
+            AddQuestFlagToCreatures(itr.first);
+        }
         else
         {
             if(!hasCreatureQuestActiveEventExcept(itr.second,event_id))

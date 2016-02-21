@@ -1,0 +1,50 @@
+#CREATURE TEXTS
+	#get translations from wrworld db_script_string
+	REPLACE INTO locales_creature_text (entry, groupid, text_loc2)
+		SELECT ct.entry, ct.groupid, dss.content_loc2
+		FROM creature_text ct
+			JOIN wrworld.db_script_string dss ON dss.content_default = ct.text;
+
+	#get translations from wrworld eventai_texts
+	REPLACE INTO locales_creature_text (entry, groupid, id, text_loc2)
+		SELECT ct.entry, ct.groupid, ct.id, et.content_loc2
+		FROM creature_text ct
+			JOIN wrworld.eventai_texts et ON et.content_default = ct.text;
+			
+	#get translation from wrworld creature_text
+	REPLACE INTO locales_creature_text (entry, groupid, id, text_loc2)
+		SELECT ct.entry, ct.groupid, ct.id, ct2.text_fr
+		FROM creature_text ct
+			JOIN wrworld.creature_text ct2 ON ct2.text_en = ct.text;
+			
+	#delete non translated entries
+	DELETE FROM locales_creature_text 
+	WHERE text_loc2 IN (SELECT `text` FROM creature_text);
+	
+	#List non translated locales 
+	SELECT ct.entry, ct.groupid, ct.id, ct.text, lct.text_loc2 FROM creature_text ct
+	LEFT JOIN locales_creature_text lct ON ct.entry = lct.entry AND ct.groupid = lct.groupid AND ct.id = lct.id
+	WHERE lct.entry IS NULL;
+
+	#Some search queries
+	SELECT * FROM wrworld.db_script_string WHERE content_default LIKE "%Brotherhood%"
+	SELECT * FROM wrworld.eventai_texts WHERE content_default LIKE "%Brotherhood%"
+	
+#GOSSIP MENUS
+
+	#List non translated options
+	SELECT gmo.menu_id, gmo.id, gmo.option_text, lgmo.option_text_loc2 FROM gossip_menu_option gmo
+	LEFT JOIN locales_gossip_menu_option lgmo ON gmo.menu_id = lgmo.menu_id AND gmo.id = lgmo.id
+	WHERE lgmo.menu_id IS NULL;
+	
+	#List non translated menus
+	SELECT gm.entry, gm.text_id, gt.text0_0, gt.text0_1,lgt.Text0_0_loc2
+	FROM gossip_menu gm
+	JOIN gossip_text gt ON gm.text_id = gt.ID
+	LEFT JOIN locales_gossip_text lgt ON gm.text_id = lgt.id
+	WHERE lgt.id IS NULL;
+
+	#delete non translated menus locales
+	DELETE FROM locales_gossip_text
+	WHERE Text0_0_loc2 IS NULL;
+	

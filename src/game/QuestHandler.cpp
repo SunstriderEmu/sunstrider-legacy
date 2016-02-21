@@ -53,7 +53,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 
     Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
     if (!questgiver) {
-        TC_LOG_ERROR("FIXME","Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(GUID_HIPART(guid)), GUID_LOPART(guid));
+        TC_LOG_ERROR("network.opcode","Error in CMSG_QUESTGIVER_STATUS_QUERY, called for not found questgiver (Typeid: %u GUID: %u)", GuidHigh2TypeId(GUID_HIPART(guid)), GUID_LOPART(guid));
         return;
     }
 
@@ -78,7 +78,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
         break;
     }
     default:
-        TC_LOG_ERROR("FIXME","QuestGiver called for unexpected type %u", questgiver->GetTypeId());
+        TC_LOG_ERROR("network.opcode","QuestGiver called for unexpected type %u", questgiver->GetTypeId());
         break;
     }
 
