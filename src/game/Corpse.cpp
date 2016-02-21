@@ -105,7 +105,7 @@ void Corpse::SaveToDB()
     DeleteFromDB(trans);
 
     std::ostringstream ss;
-    ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instance) VALUES ("
+    ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instanceId) VALUES ("
         << GetGUIDLow() << ", " << GUID_LOPART(GetOwnerGUID()) << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
         << GetOrientation() << ", "  << GetZoneId() << ", "  << GetMapId() << ", '";
     for(uint16 i = 0; i < m_valuesCount; i++ )
