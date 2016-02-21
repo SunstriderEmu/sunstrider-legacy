@@ -22319,7 +22319,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
 
     // if default menuId and no menu options exist for this, use options from default options
     if (menuItemBounds.first == menuItemBounds.second && menuId == GetDefaultGossipMenuForSource(source))
-        menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(ObjectMgr::GENERIC_OPTIONS_MENU);
+        menuItemBounds = sObjectMgr->GetGossipMenuItemsMapBounds(GENERIC_OPTIONS_MENU);
 
     uint32 npcflags = 0;
 
