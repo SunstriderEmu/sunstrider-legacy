@@ -295,6 +295,9 @@ struct PlayerCondition
     }
 };
 
+// Generic items are loaded in the same container as creature specific items, under menu id 0
+#define GENERIC_OPTIONS_MENU 0
+
 // NPC gossip text id
 typedef std::unordered_map<uint32, uint32> CacheNpcTextIdMap;
 typedef std::unordered_map<uint32, uint32> CacheGoTextIdMap;
@@ -724,8 +727,6 @@ class ObjectMgr
         void LoadGameTele();
 
         void LoadGossipMenu();
-        // Generic items are loaded in the same container as creature specific items, under menu id 0
-        static const int GENERIC_OPTIONS_MENU = 0;
         //load both gossip_menu_option and gossip_menu_option_generic
         void LoadGossipMenuItems();
         void LoadCreatureGossip();
