@@ -939,7 +939,9 @@ class ObjectMgr
         // guild bank tabs
         uint32 GetGuildBankTabPrice(uint8 Index) const { return Index < GUILD_BANK_MAX_TABS ? mGuildBankTabPrice[Index] : 0; }
 
+        //old condition system, to remove
         uint16 GetConditionId(OldConditionType condition, uint32 value1, uint32 value2);
+        //old condition system, to remove
         bool IsPlayerMeetToCondition(Player const* player, uint16 condition_id) const
         {
             if(condition_id >= mConditions.size())

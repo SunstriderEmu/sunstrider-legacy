@@ -245,7 +245,7 @@ void GameEventMgr::LoadVendors()
 void GameEventMgr::LoadTrainers()
 {
     mGameEventTrainers.clear();
-    //                                     0             2                   4                       6
+    //                                                 0             2                   4                       6
     QueryResult result = WorldDatabase.Query("SELECT event, entry, spell, spellcost, reqskill, reqskillvalue, reqlevel FROM game_event_npc_trainer");
     uint32 count = 0;
     if (!result)
