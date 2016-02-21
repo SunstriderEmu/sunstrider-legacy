@@ -14600,7 +14600,7 @@ Position Unit::GetLeapPosition(float dist)
     //replace this by dichotomic search ?
     for (uint8 i = 0; i < maxSteps; i++)
     {
-        float maxSearchDist = (dist - i * stepLength) / 2.0f + GetObjectSize()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
+        float maxSearchDist = (dist - i * stepLength) / 1.8f + GetObjectSize()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
         TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Searching for valid target, step %i. maxSearchDist = %f.", i, maxSearchDist);
 
         //start with higher check then lower
@@ -14621,7 +14621,7 @@ Position Unit::GetLeapPosition(float dist)
                 //if is accessible by path (allow just a bit longer than a straight line)
                 float distToTarget = GetExactDistance(destx, desty, mapHeight);
                 PathGenerator path(this);
-                path.SetPathLengthLimit(distToTarget - 4.0f); //this is a hack to help with the imprecision of this check into the path generator
+                path.SetPathLengthLimit(distToTarget - 6.0f); //this is a hack to help with the imprecision of this check into the path generator
                 if (path.CalculatePath(destx, desty, mapHeight, false, false)
                     && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) == 0)
                     )
