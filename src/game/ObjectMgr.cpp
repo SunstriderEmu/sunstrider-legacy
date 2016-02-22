@@ -4420,6 +4420,11 @@ GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
 
 void ObjectMgr::LoadGossipText()
 {
+    for (auto itr : mGossipText)
+        delete itr.second;
+
+    mGossipText.clear();
+
     GossipText *pGText;
     QueryResult result = WorldDatabase.Query("SELECT ID, "
         "text0_0, text0_1, BroadcastTextID0, lang0, prob0, em0_0, em0_1, em0_2, em0_3, em0_4, em0_5, "
@@ -4435,8 +4440,7 @@ void ObjectMgr::LoadGossipText()
     int count = 0;
     if( !result )
     {
-        TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );
-        
+        TC_LOG_INFO("server.loading", ">> Loaded %u npc texts", count );        
         return;
     }
 
