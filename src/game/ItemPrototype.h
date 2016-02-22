@@ -102,19 +102,19 @@ enum ItemBondingType
 // masks for ITEM_FIELD_FLAGS field
 enum ITEM_FLAGS
 {
-    ITEM_FLAGS_BINDED                         = 0x00000001,
-    ITEM_FLAGS_CONJURED                       = 0x00000002,
-    ITEM_FLAGS_OPENABLE                       = 0x00000004,
-    ITEM_FLAGS_WRAPPED                        = 0x00000008,
-    ITEM_FLAGS_WRAPPER                        = 0x00000200, // used or not used wrapper
-    ITEM_FLAGS_PARTY_LOOT                     = 0x00000800, // determines if item is party loot or not
-    ITEM_FLAGS_CHARTER                        = 0x00002000, // arena/guild charter
-    ITEM_FLAGS_UNIQUE_EQUIPPED                = 0x00080000,
-    ITEM_FLAGS_USEABLE_IN_ARENA               = 0x00200000,
-    ITEM_FLAGS_THROWABLE                      = 0x00400000, // not used in game for check trow possibility, only for item in game tooltip
-    ITEM_FLAGS_SPECIALUSE                     = 0x00800000, // last used flag in 2.3.0
-    ITEM_FLAGS_BOA                            = 0x08000000, // bind on account
-    ITEM_FLAGS_MILLABLE                       = 0x20000000
+    ITEM_FLAG_SOULBOUND                      = 0x00000001,
+    ITEM_FLAG_CONJURED                       = 0x00000002,
+    ITEM_FLAG_OPENABLE                       = 0x00000004,
+    ITEM_FLAG_WRAPPED                        = 0x00000008,
+    ITEM_FLAG_WRAPPER                        = 0x00000200, // used or not used wrapper
+    ITEM_FLAG_PARTY_LOOT                     = 0x00000800, // determines if item is party loot or not
+    ITEM_FLAG_CHARTER                        = 0x00002000, // arena/guild charter
+    ITEM_FLAG_UNIQUE_EQUIPPED                = 0x00080000,
+    ITEM_FLAG_USEABLE_IN_ARENA               = 0x00200000,
+    ITEM_FLAG_THROWABLE                      = 0x00400000, // not used in game for check trow possibility, only for item in game tooltip
+    ITEM_FLAG_SPECIALUSE                     = 0x00800000, // last used flag in 2.3.0
+    ITEM_FLAG_BOA                            = 0x08000000, // bind on account
+    ITEM_FLAG_MILLABLE                       = 0x20000000
 };
 
 enum BAG_FAMILY_MASK

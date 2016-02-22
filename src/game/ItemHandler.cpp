@@ -1081,7 +1081,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if(!gift->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPER))// cheating: non-wrapper wrapper
+    if(!gift->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPER))// cheating: non-wrapper wrapper
     {
         _player->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, gift, NULL );
         return;
@@ -1107,7 +1107,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    if(item->GetUInt64Value(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED);
+    if(item->GetUInt64Value(ITEM_FIELD_GIFTCREATOR))        // HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
     {
         _player->SendEquipError( EQUIP_ERR_WRAPPED_CANT_BE_WRAPPED, item, NULL );
         return;
@@ -1152,7 +1152,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         case 21830: item->SetEntry(21831); break;
     }
     item->SetUInt64Value(ITEM_FIELD_GIFTCREATOR, _player->GetGUID());
-    item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED);
+    item->SetUInt32Value(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED);
     item->SetState(ITEM_CHANGED, _player);
 
     if(item->GetState()==ITEM_NEW)                          // save new item, to have alway for `character_gifts` record in `item_instance`
@@ -1223,7 +1223,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     // check unique-equipped conditions
     for(int i = 0; i < 3; ++i)
     {
-        if (Gems[i] && (Gems[i]->GetTemplate()->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
+        if (Gems[i] && (Gems[i]->GetTemplate()->Flags & ITEM_FLAG_UNIQUE_EQUIPPED))
         {
             // for equipped item check all equipment for duplicate equipped gems
             if(itemTarget->IsEquipped())

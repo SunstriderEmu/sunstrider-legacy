@@ -318,7 +318,7 @@ LootItem::LootItem(LootStoreItem const& li)
     conditionId = li.conditionId;
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
-    freeforall  = proto && (proto->Flags & ITEM_FLAGS_PARTY_LOOT);
+    freeforall  = proto && (proto->Flags & ITEM_FLAG_PARTY_LOOT);
 
     needs_quest = li.needs_quest;
 
@@ -386,7 +386,7 @@ void Loot::AddItem(LootStoreItem const & item)
         if( !item.conditionId )
         {
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item.itemid);
-            if( !proto || (proto->Flags & ITEM_FLAGS_PARTY_LOOT)==0 )
+            if( !proto || (proto->Flags & ITEM_FLAG_PARTY_LOOT)==0 )
                 ++unlootedCount;
         }
     }

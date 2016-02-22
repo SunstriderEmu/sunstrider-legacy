@@ -190,13 +190,13 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
                 pl->SendMailResult(0, 0, MAIL_ERR_INTERNAL_ERROR);
                 return;
             }
-            if (mailItem.item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED) || mailItem.item->GetUInt32Value(ITEM_FIELD_DURATION))
+            if (mailItem.item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_CONJURED) || mailItem.item->GetUInt32Value(ITEM_FIELD_DURATION))
             {
                 pl->SendMailResult(0, 0, MAIL_ERR_INTERNAL_ERROR);
                 return;
             }
 
-            if(COD && mailItem.item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
+            if(COD && mailItem.item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
             {
                 pl->SendMailResult(0, 0, MAIL_ERR_CANT_SEND_WRAPPED_COD);
                 return;

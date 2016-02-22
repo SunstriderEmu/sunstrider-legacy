@@ -1881,23 +1881,23 @@ void ObjectMgr::LoadItemTemplates()
         }
 
 #ifdef LICH_KING
-        if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY)
+        if (itemTemplate.Flags2 & ITEM_FLAG_EXTRA_HORDE_ONLY)
         {
             if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_HORDE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
-                    TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAGS_EXTRA_HORDE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
-                        entry, itemTemplate.AllowableRace, ITEM_FLAGS_EXTRA_HORDE_ONLY);
+                    TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAG_EXTRA_HORDE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
+                        entry, itemTemplate.AllowableRace, ITEM_FLAG_EXTRA_HORDE_ONLY);
 
-            if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY)
-                TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `Flags2` flags (ITEM_FLAGS_EXTRA_ALLIANCE_ONLY) and ITEM_FLAGS_EXTRA_HORDE_ONLY (%u) in Flags field, this is a wrong combination.",
-                    entry, ITEM_FLAGS_EXTRA_ALLIANCE_ONLY, ITEM_FLAGS_EXTRA_HORDE_ONLY);
+            if (itemTemplate.Flags2 & ITEM_FLAG_EXTRA_ALLIANCE_ONLY)
+                TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `Flags2` flags (ITEM_FLAG_EXTRA_ALLIANCE_ONLY) and ITEM_FLAG_EXTRA_HORDE_ONLY (%u) in Flags field, this is a wrong combination.",
+                    entry, ITEM_FLAG_EXTRA_ALLIANCE_ONLY, ITEM_FLAG_EXTRA_HORDE_ONLY);
         }
-        else if (itemTemplate.Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY)
+        else if (itemTemplate.Flags2 & ITEM_FLAG_EXTRA_ALLIANCE_ONLY)
         {
             if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_ALLIANCE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
-                    TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAGS_EXTRA_ALLIANCE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
-                        entry, itemTemplate.AllowableRace, ITEM_FLAGS_EXTRA_ALLIANCE_ONLY);
+                    TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAG_EXTRA_ALLIANCE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
+                        entry, itemTemplate.AllowableRace, ITEM_FLAG_EXTRA_ALLIANCE_ONLY);
         }
 #endif
 
@@ -2208,10 +2208,10 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.HolidayId = 0;
         }
 
-        if (itemTemplate.FlagsCu & ITEM_FLAGS_CU_DURATION_REAL_TIME && !itemTemplate.Duration)
+        if (itemTemplate.FlagsCu & ITEM_FLAG_CU_DURATION_REAL_TIME && !itemTemplate.Duration)
         {
-            TC_LOG_ERROR("sql.sql", "Item (Entry %u) has flag ITEM_FLAGS_CU_DURATION_REAL_TIME but it does not have duration limit", entry);
-            itemTemplate.FlagsCu &= ~ITEM_FLAGS_CU_DURATION_REAL_TIME;
+            TC_LOG_ERROR("sql.sql", "Item (Entry %u) has flag ITEM_FLAG_CU_DURATION_REAL_TIME but it does not have duration limit", entry);
+            itemTemplate.FlagsCu &= ~ITEM_FLAG_CU_DURATION_REAL_TIME;
         }*/
 
         ++count;

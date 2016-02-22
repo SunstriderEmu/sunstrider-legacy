@@ -432,7 +432,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
             uint32 count = 5;
             player->DestroyItemCount(pItem, count, true);
         }
-        else if (pItem->GetTemplate()->Flags & ITEM_FLAGS_OPENABLE) {
+        else if (pItem->GetTemplate()->Flags & ITEM_FLAG_OPENABLE) {
             pItem->m_lootGenerated = false;
             pItem->loot.clear();
 

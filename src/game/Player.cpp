@@ -10418,7 +10418,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 return EQUIP_ERR_NO_EQUIPMENT_SLOT_AVAILABLE;
 
             // check unique-equipped on item
-            if (pProto->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED)
+            if (pProto->Flags & ITEM_FLAG_UNIQUE_EQUIPPED)
             {
                 // there is an equip limit on this item
                 Item* tItem = GetItemOrItemWithGemEquipped(pProto->ItemId);
@@ -10437,7 +10437,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                     continue;
 
                 ItemTemplate const* pGem = sObjectMgr->GetItemTemplate(enchantEntry->GemID);
-                if(pGem && (pGem->Flags & ITEM_FLAGS_UNIQUE_EQUIPPED))
+                if(pGem && (pGem->Flags & ITEM_FLAG_UNIQUE_EQUIPPED))
                 {
                     Item* tItem = GetItemOrItemWithGemEquipped(enchantEntry->GemID);
                     if(tItem && (!swap || tItem->GetSlot() != eslot ))
@@ -11378,7 +11378,7 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
         if (pItem->GetEntry() == 31088)      // Vashj Tainted Core
             SetMovement(MOVE_UNROOT);
 
-        if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
+        if(pItem->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
             CharacterDatabase.PExecute("DELETE FROM character_gifts WHERE item_guid = '%u'", pItem->GetGUIDLow());
 
         RemoveEnchantmentDurations(pItem);
@@ -11665,7 +11665,7 @@ void Player::DestroyConjuredItems( bool update )
         Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
         if( pItem && pItem->GetTemplate() &&
             (pItem->GetTemplate()->Class == ITEM_CLASS_CONSUMABLE) &&
-            (pItem->GetTemplate()->Flags & ITEM_FLAGS_CONJURED) )
+            (pItem->GetTemplate()->Flags & ITEM_FLAG_CONJURED) )
             DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
     }
 
@@ -11680,7 +11680,7 @@ void Player::DestroyConjuredItems( bool update )
                 Item* pItem = pBag->GetItemByPos(j);
                 if( pItem && pItem->GetTemplate() &&
                     (pItem->GetTemplate()->Class == ITEM_CLASS_CONSUMABLE) &&
-                    (pItem->GetTemplate()->Flags & ITEM_FLAGS_CONJURED) )
+                    (pItem->GetTemplate()->Flags & ITEM_FLAG_CONJURED) )
                     DestroyItem( i, j, update);
             }
         }
@@ -11692,7 +11692,7 @@ void Player::DestroyConjuredItems( bool update )
         Item* pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
         if( pItem && pItem->GetTemplate() &&
             (pItem->GetTemplate()->Class == ITEM_CLASS_CONSUMABLE) &&
-            (pItem->GetTemplate()->Flags & ITEM_FLAGS_CONJURED) )
+            (pItem->GetTemplate()->Flags & ITEM_FLAG_CONJURED) )
             DestroyItem( INVENTORY_SLOT_BAG_0, i, update);
     }
 }
