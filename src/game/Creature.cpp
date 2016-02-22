@@ -2555,7 +2555,9 @@ bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
     if (!movespline->Initialized())
         return true;
 
-    SetCanFly(enable);
+    //also mark creature as able to fly to avoid getting fly mode removed
+    if(enable)
+        SetCanFly(enable);
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
