@@ -327,7 +327,7 @@ void Item::SaveToDB(SQLTransaction trans)
             if (GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID) > 0 )
                 trans->PAppend("DELETE FROM item_text WHERE id = '%u'", GetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID));
             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", guid);
-            if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
+            if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
                 trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUIDLow());
             delete this;
             return;
@@ -387,7 +387,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
     // Remove bind flag for items vs NO_BIND set
     if (IsSoulBound() && proto->Bonding == NO_BIND)
     {
-        ApplyModFlag(ITEM_FIELD_FLAGS,ITEM_FLAGS_BINDED, false);
+        ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, false);
         need_save = true;
     }
 

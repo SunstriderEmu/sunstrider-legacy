@@ -15735,7 +15735,7 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
             }
 
             // "Conjured items disappear if you are logged out for more than 15 minutes"
-            if ((timediff > 15*60) && (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_CONJURED)))
+            if ((timediff > 15*60) && (item->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_CONJURED)))
             {
                 SQLTransaction trans = CharacterDatabase.BeginTransaction();
                 trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
