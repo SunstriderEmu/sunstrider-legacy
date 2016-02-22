@@ -208,12 +208,12 @@ void PlayerMenu::ClearMenus()
     _questMenu.ClearMenu();
 }
 
-void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 npcGUID)
+void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 senderGUID)
 {
-    _gossipMenu.SetSenderGUID(npcGUID);
+    _gossipMenu.SetSenderGUID(senderGUID);
 
     WorldPacket data(SMSG_GOSSIP_MESSAGE, 100);         // guess size
-    data << uint64(npcGUID);
+    data << uint64(senderGUID);
     data << uint32(_gossipMenu.GetMenuId());            // new 2.4.0
     data << uint32(titleTextId);
     data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x10
