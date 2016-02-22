@@ -1271,6 +1271,30 @@ void SpellInfo::LoadCustomAttributes()
     }
 }
 
+bool SpellInfo::IsSingleTarget() const
+{
+    // all other single target spells have if it has AttributesEx5
+    if (HasAttribute(SPELL_ATTR5_SINGLE_TARGET_SPELL))
+        return true;
+
+    // TODO - need find Judgements rule
+    switch (GetSpellSpecific())
+    {
+    case SPELL_JUDGEMENT:
+        return true;
+    default:
+        break;
+    }
+
+    // single target triggered spell.
+    // Not real client side single target spell, but it' not triggered until prev. aura expired.
+    // This is allow store it in single target spells list for caster for spell proc checking
+    if (Id == 38324)                                // Regeneration (triggered by 38299 (HoTs on Heals))
+        return true;
+
+    return false;
+}
+
 bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
 {
     // talents
@@ -1617,3 +1641,4 @@ void SpellInfo::_UnloadImplicitTargetConditionLists()
         delete cur;
     }
 }
+

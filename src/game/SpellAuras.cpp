@@ -351,7 +351,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
     m_isPassive = GetSpellInfo()->IsPassive();
     m_positive = GetSpellInfo()->IsPositiveEffect(m_effIndex, caster ? caster->IsHostileTo(target) : false);
 
-    m_isSingleTargetAura = IsSingleTargetSpell(m_spellProto);
+    m_isSingleTargetAura = m_spellProto->IsSingleTarget();
 
     if(!caster)
     {
@@ -5684,6 +5684,26 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
     }
     m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,SPELL_SCHOOL_MASK_NORMAL,apply);;
     m_target->CombatStop();
+}
+
+bool Aura::CanBeSaved() const
+{
+    if (IsPassive())
+        return false;
+
+    if (GetCasterGUID() != GetTarget()->GetGUID())
+        if(GetSpellInfo()->IsSingleTarget())
+            return false;
+
+    if (IsRemovedOnShapeLost())
+        return false;
+
+    if (   GetSpellInfo()->HasAuraEffect(SPELL_AURA_MOD_SHAPESHIFT)
+        || GetSpellInfo()->HasAuraEffect(SPELL_AURA_MOD_STEALTH)
+        )
+        return false;
+
+    return true;
 }
 
 void Aura::CleanupTriggeredSpells()

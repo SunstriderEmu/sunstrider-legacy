@@ -3997,7 +3997,7 @@ bool Unit::AddAura(Aura *Aur)
                 {
                     if ((*itr)->IsInUse())
                     {
-                        TC_LOG_ERROR("spell","Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for IsSingleTargetSpell", (*itr)->GetId(), (*itr)->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
+                        TC_LOG_ERROR("spell","Aura (Spell %u Effect %u) is in process but attempt removed at aura (Spell %u Effect %u) adding, need add stack rule for IsSingleTarget", (*itr)->GetId(), (*itr)->GetEffIndex(),Aur->GetId(), Aur->GetEffIndex());
                         continue;
                     }
                     (*itr)->GetTarget()->RemoveAura((*itr)->GetId(), (*itr)->GetEffIndex());
@@ -4525,7 +4525,7 @@ void Unit::RemoveNotOwnSingleTargetAuras()
     // single target auras from other casters
     for (AuraMap::iterator iter = m_Auras.begin(); iter != m_Auras.end(); )
     {
-        if (iter->second->GetCasterGUID()!=GetGUID() && IsSingleTargetSpell(iter->second->GetSpellInfo()))
+        if (iter->second->GetCasterGUID()!=GetGUID() && iter->second->GetSpellInfo()->IsSingleTarget())
             RemoveAura(iter);
         else
             ++iter;

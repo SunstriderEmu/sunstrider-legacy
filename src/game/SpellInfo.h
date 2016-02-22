@@ -474,6 +474,7 @@ public:
     //always use GetSpellModOwner() for caster
     float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;
 
+    bool IsSingleTarget() const;
 private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
     void LoadCustomAttributes();

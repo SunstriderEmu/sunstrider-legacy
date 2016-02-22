@@ -301,6 +301,8 @@ class Aura
         bool IsInUse() const { return m_in_use;}
         void CleanupTriggeredSpells();
 
+        bool CanBeSaved() const;
+
         virtual void Update(uint32 diff);
         void ApplyModifier(bool apply, bool Real = false);
 

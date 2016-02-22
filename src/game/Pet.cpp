@@ -1536,7 +1536,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 remaincharges = -1;
 
             /// do not load single target auras (unless they were cast by the player)
-            if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
+            if (caster_guid != GetGUID() && spellproto->IsSingleTarget())
                 continue;
                 
             bool abort = false;

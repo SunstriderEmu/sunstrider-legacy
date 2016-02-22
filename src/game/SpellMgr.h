@@ -319,7 +319,6 @@ bool IsSingleFromSpellSpecificPerCaster(uint32 spellSpec1, uint32 spellSpec2);
 bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1, uint32 spellSpec2);
 bool IsPassiveSpell(uint32 spellId);
 
-bool IsSingleTargetSpell(SpellInfo const *spellInfo);
 bool IsSingleTargetSpells(SpellInfo const *spellInfo1, SpellInfo const *spellInfo2);
 
 bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId);

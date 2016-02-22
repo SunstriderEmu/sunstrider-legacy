@@ -11045,7 +11045,7 @@ void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
 
     auto CheckSpell = [&] (SpellInfo const* spellInfo) 
     { 
-        if (   !IsPassiveSpell(spellInfo->Id) 
+        if (   !spellInfo->IsPassive()
             || proto->Class != spellInfo->EquippedItemClass //check only spells limited to this item class/subclass
             || !(spellInfo->EquippedItemSubClassMask & (1 << proto->SubClass))
             || !pItem->IsFitToSpellRequirements(spellInfo)
@@ -15625,7 +15625,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
                 remaincharges = -1;
 
             //do not load single target auras (unless they were cast by the player)
-            if (caster_guid != GetGUID() && IsSingleTargetSpell(spellproto))
+            if (caster_guid != GetGUID() && spellproto->IsSingleTarget())
                 continue;
             
             // Do not load SPELL_AURA_IGNORED auras
@@ -16590,7 +16590,7 @@ void Player::SaveToDB(bool create /*=false*/)
     pflags &= ~PLAYER_FLAGS_COMMENTATOR;
     pflags &= ~PLAYER_FLAGS_COMMENTATOR_UBER;
 
-    //TODO : only save needed information if !create
+    //TODO replace this with a Prepared Statement
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
         "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
@@ -16744,7 +16744,6 @@ void Player::SaveToDB(bool create /*=false*/)
         _SaveMail(trans);
     }
 
-    // TODO add Transaction
     _SaveBattlegroundCoord(trans);
     _SaveInventory(trans);
     _SaveQuestStatus(trans);
@@ -16838,39 +16837,23 @@ void Player::_SaveAuras(SQLTransaction trans)
             AuraMap::const_iterator itr2 = itr;
             // save previous spellEffectPair to db
             itr2--;
-            SpellInfo const *spellInfo = itr2->second->GetSpellInfo();
 
-            //skip all auras from spells that are passive or need a shapeshift
-            if (!(itr2->second->IsPassive() || itr2->second->IsRemovedOnShapeLost()))
+            if (itr2->second->CanBeSaved())
             {
-                //do not save single target auras (unless they were cast by the player)
-                if (!(itr2->second->GetCasterGUID() != GetGUID() && IsSingleTargetSpell(spellInfo)))
-                {
-                    uint8 i;
-                    // or apply at cast SPELL_AURA_MOD_SHAPESHIFT or SPELL_AURA_MOD_STEALTH auras
-                    for (i = 0; i < 3; i++)
-                        if (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT ||
-                        spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STEALTH)
-                            break;
-
-                    if (i == 3)
-                    {
-                        uint8 index = 0;
-                        stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA);
-                        stmt->setUInt32(index++, GetGUIDLow());
-                        stmt->setUInt64(index++, itr2->second->GetCasterGUID());
-                        stmt->setUInt32(index++, itr2->second->GetId());
-                        stmt->setUInt8(index++, itr2->second->GetEffIndex());
-                        stmt->setUInt8(index++, itr2->second->GetStackAmount());
-                        stmt->setInt32(index++, itr2->second->GetModifier()->m_amount);
-                        stmt->setInt32(index++, itr2->second->GetAuraMaxDuration());
-                        stmt->setInt32(index++, itr2->second->GetAuraDuration());
-                        stmt->setUInt8(index, itr2->second->m_procCharges);
-                        trans->Append(stmt);
-                    }
-                }
+                uint8 index = 0;
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA);
+                stmt->setUInt32(index++, GetGUIDLow());
+                stmt->setUInt64(index++, itr2->second->GetCasterGUID());
+                stmt->setUInt32(index++, itr2->second->GetId());
+                stmt->setUInt8(index++, itr2->second->GetEffIndex());
+                stmt->setUInt8(index++, itr2->second->GetStackAmount());
+                stmt->setInt32(index++, itr2->second->GetModifier()->m_amount);
+                stmt->setInt32(index++, itr2->second->GetAuraMaxDuration());
+                stmt->setInt32(index++, itr2->second->GetAuraDuration());
+                stmt->setUInt8(index, itr2->second->m_procCharges);
+                trans->Append(stmt);
             }
-
+               
             if(itr == auras.end())
                 break;
         }

@@ -1359,7 +1359,7 @@ void AddQuestFlagToCreatures(uint32 entry)
 {
     //add gossip flag to existing creatures if needed
  /* Disabled for now as this seems to freeze player session
- boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
     auto creatures = ObjectAccessor::GetCreatures();
     for (auto itr : creatures)
     {

@@ -322,30 +322,6 @@ bool IsSingleFromSpellSpecificPerTarget(uint32 spellSpec1,uint32 spellSpec2)
     }
 }
 
-bool IsSingleTargetSpell(SpellInfo const *spellInfo)
-{
-    // all other single target spells have if it has AttributesEx5
-    if ( spellInfo->HasAttribute(SPELL_ATTR5_SINGLE_TARGET_SPELL) )
-        return true;
-
-    // TODO - need found Judgements rule
-    switch(spellInfo->GetSpellSpecific())
-    {
-        case SPELL_JUDGEMENT:
-            return true;
-        default:
-            break;
-    }
-
-    // single target triggered spell.
-    // Not real client side single target spell, but it' not triggered until prev. aura expired.
-    // This is allow store it in single target spells list for caster for spell proc checking
-    if(spellInfo->Id==38324)                                // Regeneration (triggered by 38299 (HoTs on Heals))
-        return true;
-
-    return false;
-}
-
 bool IsSingleTargetSpells(SpellInfo const *spellInfo1, SpellInfo const *spellInfo2)
 {
     // TODO - need better check
