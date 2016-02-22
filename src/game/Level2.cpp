@@ -1246,13 +1246,11 @@ bool ChatHandler::HandleNpcFlyCommand(const char* args)
     if (argstr == "on")
     {
         pCreature->SetCanFly(true);
-        pCreature->UpdateMovementFlags();
         PSendSysMessage("Creature is now fly-capable");
         return true;
     } else if (argstr == "off")
     {
         pCreature->SetCanFly(false);
-        pCreature->UpdateMovementFlags();
         PSendSysMessage("Creature is now not fly-capable");
         return true;
     }

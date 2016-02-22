@@ -798,7 +798,7 @@ class Creature : public Unit
         // /!\ This is TC SetCanFly
         bool SetFlying(bool enable, bool packetOnly = false) override;
         // /!\ Not TC SetCanFly. This marks creature as able to fly, rather than making it fly. You can then call UpdateMovementFlags() if you want to update fly mode immediately.
-        void SetCanFly(bool enable) { m_canFly = enable; }
+        void SetCanFly(bool enable, bool updateMovementFlags = true);
         bool SetWaterWalking(bool enable, bool packetOnly = false) override;
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;

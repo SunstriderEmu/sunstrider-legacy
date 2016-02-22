@@ -690,8 +690,6 @@ void SmartAI::SetRun(bool run)
 void SmartAI::SetFly(bool fly)
 {
     me->SetCanFly(fly);
-    me->UpdateMovementFlags();
-    //TC me->SetDisableGravity(fly);
 }
 
 void SmartAI::SetSwim(bool swim)

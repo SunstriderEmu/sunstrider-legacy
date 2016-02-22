@@ -2557,12 +2557,19 @@ bool Creature::SetFlying(bool enable, bool packetOnly /* = false */)
 
     //also mark creature as able to fly to avoid getting fly mode removed
     if(enable)
-        SetCanFly(enable);
+        SetCanFly(enable, false);
 
     WorldPacket data(enable ? SMSG_SPLINE_MOVE_SET_FLYING : SMSG_SPLINE_MOVE_UNSET_FLYING, 9);
     data << GetPackGUID();
     SendMessageToSet(&data, false);
     return true;
+}
+
+void Creature::SetCanFly(bool enable, bool updateMovementFlags /* = true */) 
+{ 
+    m_canFly = enable; 
+    if (updateMovementFlags)
+        UpdateMovementFlags();
 }
 
 bool Creature::SetWaterWalking(bool enable, bool packetOnly /* = false */)
@@ -2640,7 +2647,10 @@ void Creature::UpdateMovementFlags()
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())
+        {
             SetFlying(true);
+            SetDisableGravity(true);
+        } 
         else
             SetDisableGravity(true);
     }
