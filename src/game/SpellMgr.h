@@ -45,7 +45,7 @@ enum SpellCastResult
     SPELL_FAILED_ALREADY_HAVE_CHARM             = 0x05,
     SPELL_FAILED_ALREADY_HAVE_SUMMON            = 0x06,
     SPELL_FAILED_ALREADY_OPEN                   = 0x07,
-    SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE     = 0x08,
+    SPELL_FAILED_MORE_POWERFUL_SPELL_ACTIVE     = 0x08, //NYI, check SunWell core IsAuraStronger & IsStrongerAuraActive
     SPELL_FAILED_AUTOTRACK_INTERRUPTED          = 0x09,
     SPELL_FAILED_BAD_IMPLICIT_TARGETS           = 0x0A,
     SPELL_FAILED_BAD_TARGETS                    = 0x0B,

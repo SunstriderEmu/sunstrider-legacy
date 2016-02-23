@@ -2008,8 +2008,8 @@ void Player::AddToWorld()
             m_items[i]->AddToWorld();
     }
     
+    //Fog of Corruption
     if (HasAuraEffect(45717))
-        CastSpell(this, 45917, true);
         
     if (m_session->IsMailChanged()) {
         m_session->SendNotification(LANG_WARNING_MAIL_CHANGED);
@@ -2017,6 +2017,7 @@ void Player::AddToWorld()
         ChatHandler(this).SendSysMessage(LANG_WARNING_MAIL_CHANGED);
         ChatHandler(this).SendSysMessage("**********************************************************************************");
     }
+        CastSpell(this, 45917, true); //Soul Sever - instakill
 }
 
 void Player::RemoveFromWorld()
@@ -5809,6 +5810,9 @@ void Player::CheckAreaExploreAndOutdoor()
         }
     }
     
+    if (!areaEntry)
+        return;
+
     uint32 offset = areaEntry->exploreFlag / 32;
 
     if (offset >= PLAYER_EXPLORED_ZONES_SIZE)

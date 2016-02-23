@@ -131,11 +131,15 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
         return true;
     }
 
-    if(owner->GetTypeId() == TYPEID_UNIT && i_path && i_path->GetPathType() & PATHFIND_INCOMPLETE)
+    if (owner->GetTypeId() == TYPEID_UNIT)
     {
-        owner->ToCreature()->IncreaseUnreachableTargetTime(time_diff);
-    } else {
-        owner->ToCreature()->ResetUnreachableTargetTime();
+        if (i_path && i_path->GetPathType() & PATHFIND_INCOMPLETE)
+        {
+            owner->ToCreature()->IncreaseUnreachableTargetTime(time_diff);
+        }
+        else {
+            owner->ToCreature()->ResetUnreachableTargetTime();
+        }
     }
 
     // prevent movement while casting spells with cast time or channel time
