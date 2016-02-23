@@ -1,31 +1,32 @@
 /*
- * Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2008  MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2005-2008  MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "NetworkThread.h"
 #include "ScriptMgr.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
+
 #include <boost/system/error_code.hpp>
 
-static void OnSocketAccept(tcp::socket&& sock)
+static void OnSocketAccept(tcp::socket&& sock, uint32 threadIndex)
 {
-    sWorldSocketMgr.OnSocketOpen(std::forward<tcp::socket>(sock));
+    sWorldSocketMgr.OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
 }
 
 class WorldSocketThread : public NetworkThread<WorldSocket>
@@ -50,7 +51,7 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
 {
     _tcpNoDelay = sConfigMgr->GetBoolDefault("Network.TcpNodelay", true);
 
-    int max_connections = boost::asio::socket_base::max_connections;
+    int const max_connections = boost::asio::socket_base::max_connections;
     TC_LOG_DEBUG("misc", "Max allowed socket connections %d", max_connections);
 
     // -1 means use default
@@ -66,7 +67,9 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
 
     BaseSocketMgr::StartNetwork(service, bindIp, port);
 
-    _acceptor->AsyncAcceptManaged(&OnSocketAccept);
+    _acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
+
+    _acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
 
     sScriptMgr->OnNetworkStart();
     return true;
@@ -79,7 +82,7 @@ void WorldSocketMgr::StopNetwork()
     sScriptMgr->OnNetworkStop();
 }
 
-void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock)
+void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
 {
     // set some options here
     if (_socketSendBufferSize >= 0)
@@ -107,7 +110,7 @@ void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock)
 
     //sock->m_OutBufferSize = static_cast<size_t> (m_SockOutUBuff);
 
-    BaseSocketMgr::OnSocketOpen(std::forward<tcp::socket>(sock));
+    BaseSocketMgr::OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
 }
 
 NetworkThread<WorldSocket>* WorldSocketMgr::CreateThreads() const

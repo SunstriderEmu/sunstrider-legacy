@@ -18,7 +18,7 @@
 #ifndef _PROCESSPRIO_H
 #define _PROCESSPRIO_H
 
-#include "Configuration/ConfigMgr.h"
+#include "Configuration/Config.h"
 
 #ifdef __linux__
 #include <sched.h>

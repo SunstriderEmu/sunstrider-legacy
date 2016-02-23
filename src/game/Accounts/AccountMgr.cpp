@@ -17,7 +17,7 @@
  */
 
 #include "AccountMgr.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "DatabaseEnv.h"
 #include "ObjectAccessor.h"
 #include "Player.h"

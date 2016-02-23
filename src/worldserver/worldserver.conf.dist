@@ -2109,3 +2109,13 @@ Debug.LogLastPackets = 0
 Debug.LogAllPackets = 0
 Debug.DisableMainHand = 0
 Debug.DisableArmor = 0
+
+#POLICY_LOG  = 0,
+#POLICY_KICK = 1,
+#POLICY_BAN  = 2,
+PacketSpoof.Policy = 1
+PacketSpoof.BanMode = 1
+
+Spam.Report.Threshold = 3
+Spam.Report.Period = 120
+Spam.Report.Cooldown = 120

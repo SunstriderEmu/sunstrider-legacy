@@ -42,7 +42,7 @@
 #include "Language.h"
 #include "Chat.h"
 #include "SystemConfig.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "IRCMgr.h"
@@ -775,6 +775,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     data << pCurrChar->GetOrientation();
     SendPacket(&data);
 
+#ifdef LICH_KING //need db support
+    LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACCOUNT_DATA), PER_CHARACTER_CACHE_MASK);
+#endif
     SendAccountDataTimes(GLOBAL_CACHE_MASK);
 
     data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);         // added in 2.2.0

@@ -25,7 +25,7 @@
 #include "Log.h"
 #include "DatabaseEnv.h"
 #include "World.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 
 using boost::asio::ip::tcp;
 

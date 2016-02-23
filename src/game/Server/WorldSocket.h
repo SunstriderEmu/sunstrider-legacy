@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2008-2016 TrinityCore <http://www.trinitycore.org/>
 * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -19,16 +19,6 @@
 #ifndef __WORLDSOCKET_H__
 #define __WORLDSOCKET_H__
 
-// Forward declare buffer function here - Socket.h must know about it
-struct WorldPacketBuffer;
-namespace boost
-{
-    namespace asio
-    {
-        WorldPacketBuffer const& buffer(WorldPacketBuffer const& buf);
-    }
-}
-
 #include "Common.h"
 #include "AuthCrypt.h"
 #include "ServerPktHeader.h"
@@ -36,12 +26,13 @@ namespace boost
 #include "Util.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
+#include "MPSCQueue.h"
 #include <chrono>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/buffer.hpp>
-#include "Opcodes.h"
 
 using boost::asio::ip::tcp;
+class EncryptablePacket;
 
 #pragma pack(push, 1)
 
@@ -56,8 +47,12 @@ struct ClientPktHeader
 
 #pragma pack(pop)
 
+struct AuthSession;
+
 class WorldSocket : public Socket<WorldSocket>
 {
+    typedef Socket<WorldSocket> BaseSocket;
+
 public:
     WorldSocket(tcp::socket&& socket);
 
@@ -65,28 +60,39 @@ public:
     WorldSocket& operator=(WorldSocket const& right) = delete;
 
     void Start() override;
+    bool Update() override;
 
     void SendPacket(WorldPacket const& packet);
 
     // see _lastPacketsSent
     std::list<WorldPacket> const& GetLastPacketsSent();
     void ClearLastPacketsSent();
-
 protected:
     void OnClose() override;
     void ReadHandler() override;
     bool ReadHeaderHandler();
-    bool ReadDataHandler();
+
+    enum class ReadDataHandlerResult
+    {
+        Ok = 0,
+        Error = 1,
+        WaitingForQuery = 2
+    };
+
+    ReadDataHandlerResult ReadDataHandler();
 
 private:
+    void CheckIpCallback(PreparedQueryResult result);
+
     /// writes network.opcode log
     /// accessing WorldSession is not threadsafe, only do it when holding _worldSessionLock
     void LogOpcodeText(uint16 opcode, std::unique_lock<std::mutex> const& guard) const;
     /// sends and logs network.opcode without accessing WorldSession
     void SendPacketAndLogOpcode(WorldPacket const& packet);
-
     void HandleSendAuthSession();
     void HandleAuthSession(WorldPacket& recvPacket);
+    void HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSession, PreparedQueryResult result);
+    void LoadSessionPermissionsCallback(PreparedQueryResult result);
     void SendAuthResponseError(uint8 code);
 
     bool HandlePing(WorldPacket& recvPacket);
@@ -103,9 +109,14 @@ private:
 
     MessageBuffer _headerBuffer;
     MessageBuffer _packetBuffer;
+    MPSCQueue<EncryptablePacket> _bufferQueue;
 
-    /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it 
-       after the last client response. CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled for this to be used.
+    PreparedQueryResultFuture _queryFuture;
+    std::function<void(PreparedQueryResult&&)> _queryCallback;
+    std::string _ipCountry;
+
+    /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it
+    after the last client response. CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled for this to be used.
     */
     std::list<WorldPacket> _lastPacketsSent;
 };

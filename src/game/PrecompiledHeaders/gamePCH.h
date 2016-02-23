@@ -9,3 +9,4 @@
 #include "SharedDefines.h"
 #include "ObjectMgr.h"
 #include "Timer.h"
+#include "Config.h"

@@ -221,7 +221,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange = false);
+        WorldSession(uint32 id, uint32 clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
         ~WorldSession();
 
         bool PlayerLoading() const { return m_playerLoading; }
@@ -231,7 +231,7 @@ class WorldSession
         
         uint32 GetClientBuild();
 
-        void ReadAddonsInfo(WorldPacket& data);
+        void ReadAddonsInfo(ByteBuffer &data);
         void SendAddonsInfo();
 
         inline bool Anti__CheatOccurred(uint32 CurTime,const char* Reason,float Speed,const char* Op=NULL,
@@ -253,10 +253,14 @@ class WorldSession
         void SendAuthResponse(uint8 code, bool shortForm, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);
 
-        //TODO
+        void InitializeSession();
+        void InitializeSessionCallback(SQLQueryHolder* realmHolder);
+
+        //RBAC system from TC, not yet implemented
 //        rbac::RBACData* GetRBACData();
         bool HasPermission(uint32 permissionId) { return true; }
         void LoadPermissions();
+        PreparedQueryResultFuture LoadPermissionsAsync();
         void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
 
         uint32 GetSecurity() const { return _security; }
@@ -347,7 +351,7 @@ class WorldSession
         void SendAccountDataTimes(uint32 mask = 0);
 
         //Tutorial
-        void LoadTutorialsData();
+        void LoadTutorialsData(PreparedQueryResult result);
         void SendTutorialsData();
         void SaveTutorialsData(SQLTransaction& trans);
         uint32 GetTutorialInt(uint8 index) const { return m_Tutorials[index]; }
@@ -416,8 +420,6 @@ class WorldSession
 
         void DoLootRelease( uint64 lguid );
         
-        bool IsMailChanged() { return m_mailChange; }
-
         // Account mute time
         time_t m_muteTime;
 
@@ -897,6 +899,7 @@ class WorldSession
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
 
+        QueryResultHolderFuture _realmAccountLoginCallback;
         PreparedQueryResultFuture _charEnumCallback;
         PreparedQueryResultFuture _addIgnoreCallback;
         PreparedQueryResultFuture _stablePetCallback;
@@ -964,6 +967,7 @@ class WorldSession
 
         uint32 _security;
         uint32 _accountId;
+        std::string _accountName;
         uint8 m_expansion;
         uint32 m_clientBuild;
 
@@ -980,7 +984,6 @@ class WorldSession
         bool m_playerLogout;                                // code processed in LogoutPlayer
         bool m_playerRecentlyLogout;
         bool m_playerSave;
-        bool m_mailChange;
         LocaleConstant m_sessionDbcLocale;
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;

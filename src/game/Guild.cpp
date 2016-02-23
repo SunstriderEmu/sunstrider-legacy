@@ -29,7 +29,7 @@
 #include "Chat.h"
 #include "SocialMgr.h"
 #include "Util.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "AccountMgr.h"
 
 Guild::Guild()

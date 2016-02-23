@@ -9,7 +9,7 @@
 
 #include "Common.h"
 #include "DatabaseEnv.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "Log.h"
 #include "BigNumber.h"
 #include "OpenSSLCrypto.h"
@@ -25,7 +25,7 @@
 #include "OutdoorPvPMgr.h"
 #include "RealmList.h"
 #include "World.h"
-#include "Configuration/ConfigMgr.h"
+#include "Configuration/Config.h"
 #include "ProcessPriority.h"
 #include "Timer.h"
 #include "MapManager.h"

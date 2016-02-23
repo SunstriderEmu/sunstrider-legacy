@@ -1970,8 +1970,6 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     std::string last_login = GetTrinityString(LANG_ERROR);
     std::string current_mail = GetTrinityString(LANG_ERROR);
     std::string reg_mail = GetTrinityString(LANG_ERROR);
-    std::string pending_mail = GetTrinityString(LANG_ERROR);
-    uint32 email_change_pending = 0;
 
     // Query the prepared statement for login data
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_PINFO);
@@ -1989,17 +1987,13 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
         {
             current_mail = fields[2].GetString();
             reg_mail = fields[3].GetString();
-            pending_mail = fields[4].GetString();
-            email_change_pending = fields[5].GetUInt32();
-            last_ip = fields[6].GetString();
-            last_login = fields[7].GetString();
+            last_ip = fields[4].GetString();
+            last_login = fields[5].GetString();
         }
         else
         {
             current_mail = "-";
             reg_mail = "-";
-            pending_mail = "-";
-            email_change_pending = 0;
             last_ip = "-";
             last_login = "-";
         }
@@ -2014,9 +2008,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
     PSendSysMessage(LANG_PINFO_LEVEL,  timeStr.c_str(), level, gold,silv,copp );
 
     PSendSysMessage("Current mail: %s",current_mail.c_str());
-    if (email_change_pending)
-        PSendSysMessage("Pending mail change from '%s'",pending_mail.c_str());
-
+    
     if ( py && strncmp(py, "rep", 3) == 0 )
     {
         if(!target)

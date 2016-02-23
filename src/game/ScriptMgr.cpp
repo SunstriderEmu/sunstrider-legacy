@@ -2,12 +2,12 @@
  * This program is free software licensed under GPL version 2
  * Please see the included DOCS/LICENSE.TXT for more information */
 
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "DatabaseEnv.h"
 #include "DBCStores.h"
 #include "ObjectMgr.h"
 #include "Spell.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "ScriptMgr.h"
 #include "GridNotifiers.h"
 #include "Player.h"

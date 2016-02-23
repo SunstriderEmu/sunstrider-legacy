@@ -24,7 +24,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "WorldSession.h"
-#include "Configuration/ConfigMgr.h"
+#include "Configuration/Config.h"
 
 #include "AccountMgr.h"
 #include "Chat.h"

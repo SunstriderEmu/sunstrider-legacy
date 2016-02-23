@@ -105,7 +105,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, uint32 clientBuild, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter, bool mailChange) :
+WorldSession::WorldSession(uint32 id, uint32 clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
 m_clientBuild(clientBuild),
 LookingForGroup_auto_join(false), 
 LookingForGroup_auto_add(false), 
@@ -115,6 +115,7 @@ _player(NULL),
 m_Socket(sock),
 _security(sec),
 _accountId(id), 
+_accountName(std::move(name)),
 m_expansion(expansion),
 m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)), 
 m_sessionDbLocaleIndex(locale),
@@ -127,7 +128,6 @@ m_playerSave(false),
 m_latency(0), 
 m_clientTimeDelay(0),
 m_TutorialsChanged(false),
-m_mailChange(mailChange),
 _Warden(NULL), 
 lastCheatWarn(time(NULL)),
 forceExit(false),
@@ -481,6 +481,9 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 void WorldSession::ProcessQueryCallbacks()
 {
     PreparedQueryResult result;
+
+    if (_realmAccountLoginCallback.valid() && _realmAccountLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        InitializeSessionCallback(_realmAccountLoginCallback.get());
 
     //! HandleCharEnumOpcode
     if (_charEnumCallback.valid() && _charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
@@ -888,6 +891,40 @@ void WorldSession::SendAuthWaitQue(uint32 position)
     }
 }
 
+void WorldSession::LoadAccountData(PreparedQueryResult result, uint32 mask)
+{
+#ifdef LICH_KING
+    for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
+        if (mask & (1 << i))
+            m_accountData[i] = AccountData();
+
+    if (!result)
+        return;
+
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 type = fields[0].GetUInt8();
+        if (type >= NUM_ACCOUNT_DATA_TYPES)
+        {
+            TC_LOG_ERROR("misc", "Table `%s` have invalid account data type (%u), ignore.",
+                mask == GLOBAL_CACHE_MASK ? "account_data" : "character_account_data", type);
+            continue;
+        }
+
+        if ((mask & (1 << type)) == 0)
+        {
+            TC_LOG_ERROR("misc", "Table `%s` have non appropriate for table  account data type (%u), ignore.",
+                mask == GLOBAL_CACHE_MASK ? "account_data" : "character_account_data", type);
+            continue;
+        }
+
+        m_accountData[type].Time = time_t(fields[1].GetUInt32());
+        m_accountData[type].Data = fields[2].GetString();
+    } while (result->NextRow());
+#endif
+}
+
 std::string WorldSession::GetLocalizedItemName(const ItemTemplate* proto)
 {
     std::string name = proto->Name1;
@@ -998,7 +1035,7 @@ void WorldSession::SendAddonsInfo()
     SendPacket(&data);
 }
 
-void WorldSession::ReadAddonsInfo(WorldPacket &data)
+void WorldSession::ReadAddonsInfo(ByteBuffer &data)
 {
     if (data.rpos() + 4 > data.size())
         return;
@@ -1124,13 +1161,11 @@ void WorldSession::ReadAddonsInfo(WorldPacket &data)
         TC_LOG_ERROR("misc", "Addon packet uncompress error!");
 }
 
-void WorldSession::LoadTutorialsData()
+void WorldSession::LoadTutorialsData(PreparedQueryResult result)
 {
     memset(m_Tutorials, 0, sizeof(uint32) * MAX_ACCOUNT_TUTORIAL_VALUES);
 
-    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
-    stmt->setUInt32(0, GetAccountId());
-    if (PreparedQueryResult result = CharacterDatabase.Query(stmt))
+    if (result)
         for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
             m_Tutorials[i] = (*result)[i].GetUInt32();
 
@@ -1162,6 +1197,106 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
     trans->Append(stmt);
 
     m_TutorialsChanged = false;
+}
+
+void WorldSession::LoadPermissions()
+{
+#ifdef LICH_KING
+    uint32 id = GetAccountId();
+    uint8 secLevel = GetSecurity();
+
+    _RBACData = new rbac::RBACData(id, _accountName, realmID, secLevel);
+    _RBACData->LoadFromDB();
+#endif
+}
+
+#ifdef LICH_KING
+PreparedQueryResultFuture WorldSession::LoadPermissionsAsync()
+{
+    uint32 id = GetAccountId();
+    uint8 secLevel = GetSecurity();
+
+    TC_LOG_DEBUG("rbac", "WorldSession::LoadPermissions [AccountId: %u, Name: %s, realmId: %d, secLevel: %u]",
+        id, _accountName.c_str(), realmID, secLevel);
+
+    _RBACData = new rbac::RBACData(id, _accountName, realmID, secLevel);
+    return _RBACData->LoadFromDBAsync();
+
+}
+#endif
+
+class AccountInfoQueryHolderPerRealm : public SQLQueryHolder
+{
+public:
+    enum
+    {
+#ifdef LICH_KING
+        GLOBAL_ACCOUNT_DATA = 0,
+#endif
+        TUTORIALS,
+
+        MAX_QUERIES
+    };
+
+    AccountInfoQueryHolderPerRealm() { SetSize(MAX_QUERIES); }
+
+    bool Initialize(uint32 accountId)
+    {
+        bool ok = true;
+
+        PreparedStatement* stmt;
+#ifdef LICH_KING
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ACCOUNT_DATA);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(GLOBAL_ACCOUNT_DATA, stmt) && ok;
+#endif
+
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_TUTORIALS);
+        stmt->setUInt32(0, accountId);
+        ok = SetPreparedQuery(TUTORIALS, stmt) && ok;
+
+        return ok;
+    }
+};
+
+void WorldSession::InitializeSession()
+{
+    AccountInfoQueryHolderPerRealm* realmHolder = new AccountInfoQueryHolderPerRealm();
+    if (!realmHolder->Initialize(GetAccountId()))
+    {
+        delete realmHolder;
+        SendAuthResponse(AUTH_SYSTEM_ERROR, false);
+        return;
+    }
+
+    _realmAccountLoginCallback = CharacterDatabase.DelayQueryHolder(realmHolder);
+}
+
+void WorldSession::InitializeSessionCallback(SQLQueryHolder* realmHolder)
+{
+#ifdef LICH_KING
+    if (GetClientBuild() == BUILD_335)
+        LoadAccountData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::GLOBAL_ACCOUNT_DATA), GLOBAL_CACHE_MASK);
+#endif
+
+    LoadTutorialsData(realmHolder->GetPreparedResult(AccountInfoQueryHolderPerRealm::TUTORIALS));
+
+    if (!m_inQueue)
+        SendAuthResponse(AUTH_OK, true);
+    else
+        SendAuthWaitQue(0);
+
+    SetInQueue(false);
+    ResetTimeOutTime();
+
+    SendAddonsInfo();
+    if (GetClientBuild() == BUILD_335)
+    {
+        SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
+        SendTutorialsData(); //ON 243 it seems to be sent after adding player to map
+    }
+
+    delete realmHolder;
 }
 
 bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) const

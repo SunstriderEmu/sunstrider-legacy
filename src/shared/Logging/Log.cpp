@@ -18,7 +18,7 @@
 
 #include "Log.h"
 #include "Common.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "Util.h"
 #include "AppenderConsole.h"
 #include "AppenderFile.h"

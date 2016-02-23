@@ -68,7 +68,7 @@
 #include "ArenaTeam.h"
 #include "Management/MMapFactory.h"
 #include "TransportMgr.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "ScriptMgr.h"
 #include "AddonMgr.h"
 #include "Management/VMapManager2.h"
@@ -285,13 +285,7 @@ World::AddSession_(WorldSession* s)
         return;
     }
     
-    s->SendAuthResponse(AUTH_OK, true);
-    s->SendAddonsInfo();
-    if(s->GetClientBuild() == BUILD_335)
-    {
-        s->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-        s->SendTutorialsData();
-    }
+    s->InitializeSession();
 
     UpdateMaxSessionCounters ();
 
@@ -342,16 +336,7 @@ void World::AddQueuedPlayer(WorldSession* sess)
     m_QueuedPlayer.push_back (sess);
 
     // The 1st SMSG_AUTH_RESPONSE needs to contain other info too.
-    WorldPacket packet (SMSG_AUTH_RESPONSE, 1 + 4 + 1 + 4 + 1);
-    packet << uint8 (AUTH_WAIT_QUEUE);
-    packet << uint32 (0); // unknown random value...
-    packet << uint8 (0);
-    packet << uint32 (0);
-    packet << uint8 (sess->Expansion () ? 1 : 0); // 0 - normal, 1 - TBC, must be set in database manually for each account
-    packet << uint32(GetQueuePos (sess));
-    sess->SendPacket (&packet);
-
-    //sess->SendAuthWaitQue (GetQueuePos (sess));
+    sess->SendAuthResponse(AUTH_WAIT_QUEUE, false, GetQueuePos(sess));
 }
 
 bool World::RemoveQueuedPlayer(WorldSession* sess)
@@ -388,18 +373,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     if ((!m_playerLimit || sessions < m_playerLimit) && !m_QueuedPlayer.empty())
     {
         WorldSession* pop_sess = m_QueuedPlayer.front();
-        pop_sess->SetInQueue(false);
-        pop_sess->ResetTimeOutTime();
-        pop_sess->SendAuthWaitQue(0);
-        pop_sess->SendAddonsInfo();
-
-        if(pop_sess->GetClientBuild() == BUILD_335)
-        {
-            pop_sess->SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
-            pop_sess->SendAccountDataTimes(GLOBAL_CACHE_MASK);
-            pop_sess->SendTutorialsData();
-        }
-
+        pop_sess->InitializeSession();
         m_QueuedPlayer.pop_front();
 
         // update iter to point first queued socket or end() if queue is empty now
@@ -3364,7 +3338,7 @@ void World::UpdateSessions(uint32 diff)
     ///- Add new sessions
     WorldSession* sess = NULL;
     while (addSessQueue.next(sess))
-        AddSession_ (sess);
+        AddSession_(sess);
 
     ///- Then send an update signal to remaining ones
     for (SessionMap::iterator itr = m_sessions.begin(), next; itr != m_sessions.end(); itr = next)

@@ -63,7 +63,7 @@
 #include "Spell.h"
 #include "SocialMgr.h"
 #include "GameEventMgr.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 #include "InstanceScript.h"
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
@@ -2010,13 +2010,6 @@ void Player::AddToWorld()
     
     //Fog of Corruption
     if (HasAuraEffect(45717))
-        
-    if (m_session->IsMailChanged()) {
-        m_session->SendNotification(LANG_WARNING_MAIL_CHANGED);
-        ChatHandler(this).SendSysMessage("**********************************************************************************");
-        ChatHandler(this).SendSysMessage(LANG_WARNING_MAIL_CHANGED);
-        ChatHandler(this).SendSysMessage("**********************************************************************************");
-    }
         CastSpell(this, 45917, true); //Soul Sever - instakill
 }
 
@@ -19710,9 +19703,8 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
 
-#ifndef LICH_KING //LK send those at session opening
-    GetSession()->SendTutorialsData();
-#endif
+    if(GetSession()->GetClientBuild() == BUILD_243)
+        GetSession()->SendTutorialsData(); //LK send those at session opening
 
     SendInitialSpells();
 

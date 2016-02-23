@@ -38,34 +38,41 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     Player* player = ObjectAccessor::FindPlayer(guid);
     CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
 
-#ifdef LICH_KING
-    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8+1+1+1+1+1+10));
-    data.appendPackGUID(guid);
-    if (!nameData)
-    {
-        data << uint8(1);                           // name unknown
-        SendPacket(&data);
-        return;
-    }
+    WorldPacket data(SMSG_NAME_QUERY_RESPONSE);
 
-    data << uint8(0);                               // name known
-    data << nameData->m_name;                       // played name
-    data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
-    data << uint8(nameData->m_race);
-    data << uint8(nameData->m_gender);
-    data << uint8(nameData->m_class);
-#else
-    if(!nameData)
-        return; //simply ignore request
-                                                            // guess size
-    WorldPacket data( SMSG_NAME_QUERY_RESPONSE, (8+1+4+4+4+10) );
-    data << guid;
-    data << nameData->m_name;
-    data << uint8(0);                                       // realm name for cross realm BG usage
-    data << uint32(nameData->m_race);
-    data << uint32(nameData->m_gender);
-    data << uint32(nameData->m_class);
-#endif
+    switch (GetClientBuild())
+    {
+    case BUILD_335:
+        data.resize(8 + 1 + 1 + 1 + 1 + 1 + 10);
+        data.appendPackGUID(guid);
+        if (!nameData)
+        {
+            data << uint8(1);                           // name unknown
+            SendPacket(&data);
+            return;
+        }
+
+        data << uint8(0);                               // name known
+        data << nameData->m_name;                       // played name
+        data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
+        data << uint8(nameData->m_race);
+        data << uint8(nameData->m_gender);
+        data << uint8(nameData->m_class);
+        break;
+    case BUILD_243:
+    default:
+        if (!nameData)
+            return; //simply ignore request
+                    // guess size
+        data.resize(8 + 1 + 4 + 4 + 4 + 10);
+        data << guid;
+        data << nameData->m_name;
+        data << uint8(0);                                       // realm name for cross realm BG usage
+        data << uint32(nameData->m_race);
+        data << uint32(nameData->m_gender);
+        data << uint32(nameData->m_class);
+        break;
+    }
 
     if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
     {
@@ -294,10 +301,18 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
         data << uint8(0);                                   // 2.0.3, probably string
         data.append(info->raw.data,24);
-        /* LICH_KING
-        for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
-            data << uint32(info->questItems[i]);              // itemId[6], quest drop
-        */
+
+        if (GetClientBuild() == BUILD_335)
+        {
+#ifdef LICH_KING
+            for (uint32 i = 0; i < MAX_GAMEOBJECT_QUEST_ITEMS; ++i)
+                data << uint32(info->questItems[i]);              // itemId[6], quest drop
+#else
+            for (uint32 i = 0; i < 6; ++i)
+                data << uint32(0);
+#endif
+        }
+
         SendPacket( &data );
     }
     else

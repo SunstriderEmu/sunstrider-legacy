@@ -41,7 +41,7 @@
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
-#include "ConfigMgr.h"
+#include "Config.h"
 
 #include <sstream>
 

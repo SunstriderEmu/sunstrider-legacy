@@ -46,7 +46,7 @@ OpcodeHandler opcodeTable[NUM_MSG_TYPES] =
 	#ifdef LICH_KING
     /*0x01E*/ { "SMSG_REFER_A_FRIEND_EXPIRED",                  STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
 	#else
-	/*0x01E*/ { "SMSG_DEBUGINFOSPELLMISS_OBSOLETE",                  STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
+	/*0x01E*/ { "SMSG_DEBUGINFOSPELLMISS_OBSOLETE",             STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_ServerSide               },
 	#endif
     /*0x01F*/ { "CMSG_WEATHER_SPEED_CHEAT",                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },
     /*0x020*/ { "CMSG_UNDRESSPLAYER",                           STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     },

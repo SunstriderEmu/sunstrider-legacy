@@ -1285,9 +1285,8 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
     PROFILE;
     
-#ifdef LICH_KING
-    return; //no support yet
-#endif
+    if (GetClientBuild() == BUILD_335)
+        return;  //no support yet
 
     CHECK_PACKET_SIZE(recvData, 8);
 
