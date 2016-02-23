@@ -56,11 +56,11 @@ class Bag : public Item
 
         // DB operations
         // overwrite virtual Item::SaveToDB
-        void SaveToDB(SQLTransaction trans);
+        void SaveToDB(SQLTransaction trans) override;
         // overwrite virtual Item::LoadFromDB
-        bool LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result);
+        bool LoadFromDB(uint32 guid, uint64 owner_guid) override;
         // overwrite virtual Item::DeleteFromDB
-        void DeleteFromDB();
+        void DeleteFromDB() override;
 
         void BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const override;
 

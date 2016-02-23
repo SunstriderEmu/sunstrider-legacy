@@ -294,33 +294,61 @@ void Item::SaveToDB(SQLTransaction trans)
     switch (uState)
     {
         case ITEM_NEW:
-        {
-            std::ostringstream ss;
-            ss << "REPLACE INTO item_instance (guid,owner_guid,data) VALUES (" << guid << "," << GUID_LOPART(GetOwnerGUID()) << ",'";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "' )";
-            trans->Append(ss.str().c_str());
-
-            ss.str("");
-            ss.clear();  
-        } break;
         case ITEM_CHANGED:
         {
-            std::ostringstream ss;
+#ifdef TRINITY_DEBUG
+            uint32 smallIntMax = 99999;
+            uint32 mediumIntMax = 99999999;
 
-            ss << "UPDATE item_instance SET data = '";
-            for(uint16 i = 0; i < m_valuesCount; i++ )
-                ss << GetUInt32Value(i) << " ";
-            ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
+            ASSERT(GetEntry() < mediumIntMax || std::cerr << GetEntry() && false);
+            ASSERT(GetCount() < smallIntMax || std::cerr << GetCount() && false);
+            for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+                ASSERT(GetUInt32Value(ITEM_FIELD_SPELL_CHARGES + i) < smallIntMax || std::cerr << GetUInt32Value(ITEM_FIELD_SPELL_CHARGES + i) && false);
+            ASSERT(GetUInt32Value(ITEM_FIELD_DURATION) < smallIntMax);
 
-            trans->Append( ss.str().c_str() );
+            for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; i++)
+            {
+                ASSERT(GetEnchantmentId(EnchantmentSlot(i)) < mediumIntMax || std::cerr << GetEnchantmentId(EnchantmentSlot(i)) && false);
+                ASSERT(GetEnchantmentDuration(EnchantmentSlot(i)) < mediumIntMax || std::cerr << GetEnchantmentDuration(EnchantmentSlot(i)) && false);
+                ASSERT(GetEnchantmentCharges(EnchantmentSlot(i)) < smallIntMax || std::cerr << GetEnchantmentCharges(EnchantmentSlot(i)) && false);
+            }
+            ASSERT(GetItemSuffixFactor() < smallIntMax || std::cerr << GetItemSuffixFactor() && false);
+            ASSERT(std::abs(GetItemRandomPropertyId()) < smallIntMax || std::cerr << GetItemRandomPropertyId() && false);
+            ASSERT(GetUInt32Value(ITEM_FIELD_DURABILITY) < smallIntMax || std::cerr << GetUInt32Value(ITEM_FIELD_DURABILITY) && false);
+#endif
+            uint8 index = 0; 
+            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(uState == ITEM_NEW ? CHAR_REP_ITEM_INSTANCE : CHAR_UPD_ITEM_INSTANCE);
+            stmt->setUInt32(index++, GetGUID());
+            stmt->setUInt32(index++, GUID_LOPART(GetOwnerGUID()));
+            stmt->setUInt32(index++, GetEntry());
+            stmt->setUInt64(index++, GetUInt64Value(ITEM_FIELD_CONTAINED));
+            stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_CREATOR));
+            stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_GIFTCREATOR));
+            stmt->setUInt16(index++, GetCount());
+            stmt->setUInt16(index++, GetUInt32Value(ITEM_FIELD_DURATION));
+            for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+                stmt->setUInt16(index++, GetUInt32Value(ITEM_FIELD_SPELL_CHARGES+i));
+            
+            stmt->setUInt32(index++, GetUInt32Value(ITEM_FIELD_FLAGS));
 
-            ss.str("");
-            ss.clear();
+            for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; i++)
+            {
+                stmt->setUInt32(index++, (GetEnchantmentId(EnchantmentSlot(i))));
+                stmt->setUInt32(index++, (GetEnchantmentDuration(EnchantmentSlot(i))));
+                stmt->setUInt16(index++, (GetEnchantmentCharges(EnchantmentSlot(i))));
+            }
 
-            if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAGS_WRAPPED))
-                trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'", GUID_LOPART(GetOwnerGUID()),GetGUIDLow());
+            stmt->setUInt16(index++, GetItemSuffixFactor());
+            stmt->setInt16(index++, GetItemRandomPropertyId());
+            stmt->setUInt16(index++, GetUInt32Value(ITEM_FIELD_DURABILITY));
+
+            if(uState == ITEM_CHANGED)
+                stmt->setUInt32(index++, guid);
+
+            trans->Append(stmt);
+
+             if ((uState == ITEM_CHANGED) && HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
+                trans->PAppend("UPDATE character_gifts SET guid = '%u' WHERE item_guid = '%u'", GUID_LOPART(GetOwnerGUID()), GetGUIDLow());
         } break;
         case ITEM_REMOVED:
         {
@@ -329,6 +357,7 @@ void Item::SaveToDB(SQLTransaction trans)
             trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", guid);
             if(HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_WRAPPED))
                 trans->PAppend("DELETE FROM character_gifts WHERE item_guid = '%u'", GetGUIDLow());
+
             delete this;
             return;
         }
@@ -338,28 +367,55 @@ void Item::SaveToDB(SQLTransaction trans)
     SetState(ITEM_UNCHANGED);
 }
 
-bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
+bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
     Object::_Create(guid, 0, HIGHGUID_ITEM);
 
-    if(!result)
-        result = CharacterDatabase.PQuery("SELECT data FROM item_instance WHERE guid = '%u'", guid);
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INSTANCE);
+    stmt->setUInt32(0, guid);
+    PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
     if (!result)
     {
-        TC_LOG_ERROR("FIXME","ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
+        TC_LOG_ERROR("sql.sql","ERROR: Item (GUID: %u owner: %u) not found in table `item_instance`, can't load. ",guid,GUID_LOPART(owner_guid));
         return false;
     }
 
-    Field *fields = result->Fetch();
+    Field* fields = result->Fetch();
 
-    if(!LoadValues(fields[0].GetCString()))
+    uint8 index = 0;
+    SetOwnerGUID(MAKE_PAIR64(fields[index++].GetUInt32(), HIGHGUID_PLAYER));
+    SetEntry(fields[index++].GetUInt32());
+    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(GetEntry());
+    if (!proto)
     {
-        TC_LOG_ERROR("FIXME","ERROR: Item #%d have broken data in `data` field. Can't be loaded.",guid);
+        TC_LOG_ERROR("sql.sql", "ERROR: Item (GUID: %u owner: %u) has an invalid entry %u `item_instance`, can't load. ", guid, GUID_LOPART(owner_guid), GetEntry());
         return false;
     }
+
+    SetUInt64Value(ITEM_FIELD_CONTAINED, fields[index++].GetUInt64());
+    SetUInt64Value(ITEM_FIELD_CREATOR, MAKE_PAIR64(fields[index++].GetUInt32(),HIGHGUID_PLAYER));
+    SetUInt64Value(ITEM_FIELD_GIFTCREATOR, MAKE_PAIR64(fields[index++].GetUInt32(), HIGHGUID_PLAYER));
+    SetUInt32Value(ITEM_FIELD_STACK_COUNT, fields[index++].GetUInt16());
+    SetUInt32Value(ITEM_FIELD_DURATION, fields[index++].GetUInt16());
+    for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+        SetUInt32Value(ITEM_FIELD_SPELL_CHARGES + i, fields[index++].GetUInt16());
+
+    SetUInt32Value(ITEM_FIELD_FLAGS, fields[index++].GetUInt32());
+    for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; i++)
+    {
+        SetUInt32Value(ITEM_FIELD_ENCHANTMENT + i * MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET, fields[index++].GetUInt32());
+        SetUInt32Value(ITEM_FIELD_ENCHANTMENT + i * MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET, fields[index++].GetUInt32());
+        SetUInt32Value(ITEM_FIELD_ENCHANTMENT + i * MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET, fields[index++].GetUInt16());
+    }
+
+    SetUInt32Value(ITEM_FIELD_PROPERTY_SEED, fields[index++].GetUInt16());
+    SetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[index++].GetInt16());
+    //SetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID, fields[index++].GetUInt32()); // not in request or db anymore since it seems this has no use
+    SetUInt32Value(ITEM_FIELD_DURABILITY, fields[index++].GetUInt16());
+    //   SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability); // already set in Item::Create 
 
     bool need_save = false;                                 // need explicit save data at load fixes
 
@@ -370,10 +426,6 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
         SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM));
         need_save = true;
     }
-
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(GetEntry());
-    if(!proto)
-        return false;
 
     m_itemProto = proto;
 
@@ -407,13 +459,14 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
 
     if(need_save)                                           // normal item changed state set not work at loading
     {
-        std::ostringstream ss;
-        ss << "UPDATE item_instance SET data = '";
-        for(uint16 i = 0; i < m_valuesCount; i++ )
-            ss << GetUInt32Value(i) << " ";
-        ss << "', owner_guid = '" << GUID_LOPART(GetOwnerGUID()) << "' WHERE guid = '" << guid << "'";
-
-        CharacterDatabase.Execute( ss.str().c_str() );
+        //"UPDATE item_instance SET guid = ?, owner_guid = ?, duration = ?, flags = ?, durability = ? WHERE guid = ?"
+        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_ITEM_INSTANCE_ON_LOAD);
+        stmt->setUInt32(0, guid);
+        stmt->setUInt32(1, owner_guid);
+        stmt->setUInt32(2, GetUInt32Value(ITEM_FIELD_DURATION));
+        stmt->setUInt32(3, GetUInt32Value(ITEM_FIELD_FLAGS));
+        stmt->setUInt32(4, GetUInt32Value(ITEM_FIELD_DURABILITY));
+        CharacterDatabase.Execute(stmt);
     }
 
     return true;

@@ -8032,7 +8032,7 @@ bool ChatHandler::HandleGMStats(const char* args)
     }
     
     Field* countFields = countResult->Fetch();
-    uint32 count = countFields[0].GetUInt32();
+    uint32 count = countFields[0].GetUInt64();
     
     //PSendSysMessage("Vous avez fermé %u tickets depuis le début de la semaine.", count);
     PSendSysMessage("You closed %u tickets since the beginning of the week.", count);

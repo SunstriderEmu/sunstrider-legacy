@@ -111,11 +111,12 @@ void Bag::SaveToDB(SQLTransaction trans)
     Item::SaveToDB(trans);
 }
 
-bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid, QueryResult result)
+bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid)
 {
-    if(!Item::LoadFromDB(guid, owner_guid, result))
+    if(!Item::LoadFromDB(guid, owner_guid))
         return false;
 
+    SetUInt32Value(CONTAINER_FIELD_NUM_SLOTS, GetTemplate()->ContainerSlots);
     // cleanup bag content related item value fields (its will be filled correctly from `character_inventory`)
     for (int i = 0; i < MAX_BAG_SIZE; ++i)
     {

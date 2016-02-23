@@ -266,7 +266,7 @@ void AuctionHouseMgr::SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry
 void AuctionHouseMgr::LoadAuctionItems()
 {
     // data needs to be at first place for Item::LoadFromDB
-    QueryResult result = CharacterDatabase.Query( "SELECT data, itemguid, item_template FROM auctionhouse JOIN item_instance ON itemguid = guid" );
+    QueryResult result = CharacterDatabase.Query( "SELECT itemguid, item_template FROM auctionhouse" );
 
     if( !result )
     {
@@ -280,21 +280,22 @@ void AuctionHouseMgr::LoadAuctionItems()
     do
     {
         fields = result->Fetch();
-        uint32 item_guid = fields[1].GetUInt32();
-        uint32 item_template = fields[2].GetUInt32();
+        uint32 item_guid = fields[0].GetUInt32();
+        uint32 item_template = fields[1].GetUInt32();
 
         ItemTemplate const *proto = sObjectMgr->GetItemTemplate(item_template);
 
         if(!proto)
         {
-            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
+            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item template (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
             continue;
         }
 
         Item *item = NewItemOrBag(proto);
 
-        if(!item->LoadFromDB(item_guid,0, result))
+        if(!item->LoadFromDB(item_guid,0))
         {
+            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u) in auction, skipped.", item_guid, item_template);
             delete item;
             continue;
         }

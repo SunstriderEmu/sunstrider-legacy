@@ -15677,7 +15677,7 @@ void Player::LoadCorpse()
 
 void Player::_LoadInventory(QueryResult result, uint32 timediff)
 {
-    //QueryResult result = CharacterDatabase.PQuery("SELECT data,bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GetGUIDLow());
+    //QueryResult result = CharacterDatabase.PQuery("SELECT bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", GetGUIDLow());
     std::map<uint64, Bag*> bagMap;                          // fast guid lookup for bags
     //NOTE: the "order by `bag`" is important because it makes sure
     //the bagMap is filled before items in the bags are loaded
@@ -15695,31 +15695,24 @@ void Player::_LoadInventory(QueryResult result, uint32 timediff)
         do
         {
             Field *fields = result->Fetch();
-            uint32 bag_guid  = fields[1].GetUInt32();
-            uint8  slot      = fields[2].GetUInt8();
-            uint32 item_guid = fields[3].GetUInt32();
-            uint32 item_id   = fields[4].GetUInt32();
+            uint32 bag_guid  = fields[0].GetUInt32();
+            uint8  slot      = fields[1].GetUInt8();
+            uint32 item_guid = fields[2].GetUInt32();
+            uint32 item_id   = fields[3].GetUInt32();
 
             ItemTemplate const * proto = sObjectMgr->GetItemTemplate(item_id);
 
             if(!proto)
             {
-                /*SQLTransaction trans = CharacterDatabase.BeginTransaction();
-                trans->PAppend("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                trans->PAppend("DELETE FROM item_instance WHERE guid = '%u'", item_guid);
-                CharacterDatabase.CommitTransaction(trans);*/
                 TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player %s has an unknown item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
                 continue;
             }
 
             Item *item = NewItemOrBag(proto);
 
-            if(!item->LoadFromDB(item_guid, GetGUID(), result))
+            if(!item->LoadFromDB(item_guid, GetGUID()))
             {
                 TC_LOG_ERROR("entities.player", "Player::_LoadInventory: Player %s has broken item (id: #%u) in inventory, not loaded.", GetName().c_str(),item_id );
-                //CharacterDatabase.PExecute("DELETE FROM character_inventory WHERE item = '%u'", item_guid);
-                //item->FSetState(ITEM_REMOVED);
-                //item->SaveToDB();                           // it also deletes item object !
                 continue;
             }
 
@@ -15920,7 +15913,7 @@ void Player::_LoadMail()
             m->deliver_time = (time_t)fields[8].GetUInt64();
             m->money = fields[9].GetUInt32();
             m->COD = fields[10].GetUInt32();
-            m->checked = fields[11].GetUInt32();
+            m->checked = fields[11].GetUInt8();
             m->stationery = fields[12].GetUInt8();
             m->mailTemplateId = fields[13].GetInt32();
 
@@ -16551,15 +16544,15 @@ void Player::SaveToDB(bool create /*=false*/)
     if (!create)
         sScriptMgr->OnPlayerSave(this);
 
+    /*
     uint32 mapid = IsBeingTeleported() ? GetTeleportDest().m_mapId : GetMapId();
     const MapEntry * me = sMapStore.LookupEntry(mapid);
     // players aren't saved on arena maps
     if(!me || me->IsBattleArena())
         return;
+    */
 
     int is_save_resting = HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) ? 1 : 0;
-                                                            //save, far from tavern/city
-                                                            //save, but in tavern/city
 
     // save state (after auras removing), if aura remove some flags then it must set it back by self)
     // also get change mask and restore it afterwards so that the server don't think the fields are changed
