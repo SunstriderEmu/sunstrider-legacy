@@ -155,7 +155,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
         if(result)
         {
             Field *fields = result->Fetch();
-            mails_count = fields[0].GetUInt32();
+            mails_count = fields[0].GetUInt64();
         }
     }
     //do not allow to have more than 100 mails in mailbox.. mails count is in opcode uint8!!! - so max can be 255..
@@ -658,6 +658,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
+    /* Is this supposed to be BC ?
     uint64 mailbox;
     uint32 mailId;
 
@@ -702,6 +703,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
         pl->SendMailResult(mailId, MAIL_MADE_PERMANENT, MAIL_ERR_BAG_FULL, msg);
         delete bodyItem;
     }
+    */
 }
 
 //TODO Fix me! ... this void has probably bad condition, but good data are sent
@@ -716,47 +718,44 @@ void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
 
     if( _player->unReadMails > 0 )
     {
-        data << (uint32) 0;                                 // float
+        data << float(0);                                   // float
         data << (uint32) 0;                                 // count
+
         uint32 count = 0;
+        time_t now = time(NULL);
+        std::set<uint32> sentSenders;
         for(PlayerMails::iterator itr = _player->GetmailBegin(); itr != _player->GetmailEnd(); ++itr)
         {
             Mail *m = (*itr);
-            // not checked yet, already must be delivered
-            if((m->checked & MAIL_CHECK_MASK_READ)==0 && (m->deliver_time <= time(NULL)))
-            {
-                ++count;
+            // must be not checked yet
+            if (m->checked & MAIL_CHECK_MASK_READ)
+                continue;
 
-                if(count > 2)
-                {
-                    count = 2;
-                    break;
-                }
+            // only send each mail sender once
+            if (sentSenders.count(m->sender))
+                continue;
 
-                data << (uint64) m->sender;                 // sender guid
+            // and already delivered
+            if (now < m->deliver_time)
+                continue;
 
-                switch(m->messageType)
-                {
-                    case MAIL_AUCTION:
-                        data << (uint32) 2;
-                        data << (uint32) 2;
-                        data << (uint32) m->stationery;
-                        break;
-                    default:
-                        data << (uint32) 0;
-                        data << (uint32) 0;
-                        data << (uint32) m->stationery;
-                        break;
-                }
-                data << (uint32) 0xC6000000;                // float unk, time or something
-            }
+            data << uint64(m->messageType == MAIL_NORMAL ? MAKE_PAIR64(m->sender, HIGHGUID_PLAYER) :0);  // player guid
+            data << uint32(m->messageType != MAIL_NORMAL ? m->sender : 0);  // non-player entries
+            data << uint32(m->messageType);
+            data << uint32(m->stationery);
+            data << float(m->deliver_time - now);
+
+            sentSenders.insert(m->sender);
+            ++count;
+            if (count == 2)
+                break; // do not display more than 2 mails
         }
         data.put<uint32>(4, count);
     }
     else
     {
-        data << (uint32) 0xC7A8C000;
-        data << (uint32) 0x00000000;
+        data << float(-DAY);
+        data << uint32(0);
     }
     SendPacket(&data);
 }
