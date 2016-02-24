@@ -108,7 +108,9 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
     ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
+#ifndef LICH_KING
     buf << (uint8) (hasTransport ? 1 : 0);
+#endif
 
     if(!m_outOfRangeGUIDs.empty())
     {

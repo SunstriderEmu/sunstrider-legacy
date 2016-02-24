@@ -1513,40 +1513,6 @@ AuctionHouseBot.DisableTGsBelowReqSkillRank = 0
 AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 
 ###################################################################################################################
-# CONSOLE AND REMOTE ACCESS
-#
-#    Console.Enable
-#        Enable console
-#        Default: 1 - on
-#                 0 - off
-#
-#    Ra.Enable
-#        Enable remote console
-#        Default: 0 - off
-#                 1 - on
-#
-#    Ra.IP
-#        Default remote console ip address, use 0.0.0.0 for every address
-#
-#    Ra.Port
-#        Default remote console port
-#
-#    Ra.MinLevel
-#        Minimum level that's required to login,3 by default
-#
-#    Ra.Secure
-#        Kick client on wrong pass
-#
-###################################################################################################################
-
-Console.Enable = 1
-Ra.Enable = 0
-Ra.IP = 0.0.0.0
-Ra.Port = 3443
-Ra.MinLevel = 3
-Ra.Secure = 1
-
-###################################################################################################################
 # CUSTOM SERVER OPTIONS
 #
 #    PlayerStart.AllReputation
@@ -2110,12 +2076,105 @@ Debug.LogAllPackets = 0
 Debug.DisableMainHand = 0
 Debug.DisableArmor = 0
 
-#POLICY_LOG  = 0,
-#POLICY_KICK = 1,
-#POLICY_BAN  = 2,
+###################################################################################################
+# PACKET SPOOF PROTECTION SETTINGS
+#
+# These settings determine which action to take when harmful packet spoofing is detected.
+#
+#    PacketSpoof.Policy
+#        Description: Determines the course of action when packet spoofing is detected.
+#        Default:     1 - (Log + kick)
+#                     0 - (Log only 'network')
+#                     2 - (Log + kick + ban)
+
 PacketSpoof.Policy = 1
-PacketSpoof.BanMode = 1
+
+#
+#    PacketSpoof.BanMode
+#        Description: If PacketSpoof.Policy equals 2, this will determine the ban mode.
+#        Note:        Banning by character not supported for logical reasons.
+#        Default:     0 - Ban Account
+#                     2 - Ban IP
+#
+
+PacketSpoof.BanMode = 0
+
+#
+#    PacketSpoof.BanDuration
+#        Description: Duration of the ban in seconds. Only valid if PacketSpoof.Policy is set to 2.
+#                     Set to 0 for permanent ban.
+#        Default:     86400 seconds (1 day)
+#
+
+PacketSpoof.BanDuration = 86400
+
+#
+###################################################################################################
 
 Spam.Report.Threshold = 3
 Spam.Report.Period = 120
 Spam.Report.Cooldown = 120
+
+###################################################################################################
+# CONSOLE AND REMOTE ACCESS
+#
+#    Console.Enable
+#        Description: Enable console.
+#        Default:     1 - (Enabled)
+#                     0 - (Disabled)
+
+Console.Enable = 1
+
+#
+#    Ra.Enable
+#        Description: Enable remote console (telnet).
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Ra.Enable = 0
+
+#
+#    Ra.IP
+#        Description: Bind remote access to IP/hostname.
+#        Default:     "0.0.0.0" - (Bind to all IPs on the system)
+
+Ra.IP = "0.0.0.0"
+
+#
+#    Ra.Port
+#        Description: TCP port to reach the remote console.
+#        Default:     3443
+
+Ra.Port = 3443
+
+#
+#    Ra.MinLevel
+#        Description: Required security level to use the remote console.
+#        Default:     3
+
+Ra.MinLevel = 3
+
+#
+#    SOAP.Enable
+#        Description: Enable soap service.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+SOAP.Enabled = 0
+
+#
+#    SOAP.IP
+#        Description: Bind SOAP service to IP/hostname.
+#        Default:     "127.0.0.1" - (Bind to localhost)
+
+SOAP.IP = "127.0.0.1"
+
+#
+#    SOAP.Port
+#        Description: TCP port to reach the SOAP service.
+#        Default:     7878
+
+SOAP.Port = 7878
+
+#
+###################################################################################################

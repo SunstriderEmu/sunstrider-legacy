@@ -358,7 +358,7 @@ void CreatureGroup::Update(uint32 diff)
         }
         justAlive = true;
 
-        //reset corpse despay time if loot linked
+        //reset corpse despawn time if loot linked
         for(auto itr : m_members)
         {
             if(itr.second->linkedLoot == true)

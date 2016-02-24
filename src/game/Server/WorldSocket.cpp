@@ -141,6 +141,7 @@ bool WorldSocket::Update()
 
 void WorldSocket::HandleSendAuthSession()
 {
+    //at this point, realm knows client build but we don't
 #ifdef LICH_KING
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
     packet << uint32(1);                                    // 1...31
