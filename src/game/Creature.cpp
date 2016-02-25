@@ -630,13 +630,14 @@ void Creature::Update(uint32 diff)
             if (m_formation)
                 GetFormation()->CheckLeaderDistance(this);
                 
-            if(m_regenTimer > 0)
-            {
-                if(diff >= m_regenTimer)
-                    m_regenTimer = 0;
-                else
-                    m_regenTimer -= diff;
-            }
+            if ((GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_HEALTH_RESET) == 0)
+                if(m_regenTimer > 0)
+                {
+                    if(diff >= m_regenTimer)
+                        m_regenTimer = 0;
+                    else
+                        m_regenTimer -= diff;
+                }
             
             if (m_regenTimer == 0)
             {

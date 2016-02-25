@@ -160,6 +160,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC       = 0x00100000,       // periodic on place relocation when ooc (use this for static mobs only)
     CREATURE_FLAG_EXTRA_DUAL_WIELD           = 0x00200000,       // can dual wield
     CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ = 0x00400000,       // creature does not need to take player damage for kill credit
+    CREATURE_FLAG_EXTRA_NO_HEALTH_RESET      = 0x00800000,       // creature does not refill its health at reset
 };
 
 enum WeaponSlot
