@@ -6787,16 +6787,13 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
     return zone;
 }
 
-uint32 Player::GetLevelFromDB(uint64 guid)
+uint32 Player::GetLevelFromStorage(uint64 guid)
 {
-    QueryResult result = CharacterDatabase.PQuery( "SELECT level FROM characters WHERE guid='%u'", GUID_LOPART(guid) );
-    if (!result)
-        return 0;
-        
-    Field* fields = result->Fetch();
-    uint32 level = fields[0].GetUInt32();
+    // xinef: Get data from global storage
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+        return playerData->level;
 
-    return level;
+    return 0;
 }
 
 void Player::UpdateArea(uint32 newArea)
@@ -21427,7 +21424,7 @@ void Player::AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, b
 
     if( !(spellInfo->Attributes & (SPELL_ATTR0_ABILITY|SPELL_ATTR0_TRADESPELL )) )
         cdTime *= GetFloatValue(UNIT_MOD_CAST_SPEED);
-    else if (spell->IsRangedSpell() && !spell->IsAutoRepeat())
+    else if (spellInfo->IsRangedWeaponSpell() && !spell->IsAutoRepeat())
         cdTime *= m_modAttackSpeedPct[RANGED_ATTACK];
 
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = (((cdTime<1000 || cdTime>2000) && !allowTinyCd) ? 1000 : cdTime);
@@ -22644,18 +22641,39 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
 {
     switch (source->GetTypeId())
     {
-        case TYPEID_UNIT:
-            // return menu for this particular guid if any
-            if(uint32 menuId = sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow()))
-                return menuId;
+    case TYPEID_UNIT:
+        // return menu for this particular guid if any
+        if (uint32 menuId = sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow()))
+            return menuId;
 
-            // else return menu from creature template
-            return source->ToCreature()->GetCreatureTemplate()->GossipMenuId;
-        case TYPEID_GAMEOBJECT:
-            return source->ToGameObject()->GetGOInfo()->GetGossipMenuId();
-        default:
-            break;
+        // else return menu from creature template
+        return source->ToCreature()->GetCreatureTemplate()->GossipMenuId;
+    case TYPEID_GAMEOBJECT:
+        return source->ToGameObject()->GetGOInfo()->GetGossipMenuId();
+    default:
+        break;
     }
 
+    return 0;
+}
+
+uint32 Player::GetGuildIdFromStorage(uint32 guid)
+{
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
+        return playerData->guildId;
+    return 0;
+}
+
+uint32 Player::GetGroupIdFromStorage(uint32 guid)
+{
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
+        return playerData->groupId;
+    return 0;
+}
+
+uint32 Player::GetArenaTeamIdFromStorage(uint32 guid, uint8 slot)
+{
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
+        return playerData->arenaTeamId[slot];
     return 0;
 }

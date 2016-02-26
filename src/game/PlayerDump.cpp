@@ -611,6 +611,9 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     CharacterDatabase.CommitTransaction(trans);
 
+    // in case of name conflict player has to rename at login anyway
+    //sWorld->AddGlobalPlayerData(guid, account, name, gender, race, playerClass, level, mails.size(), 0);
+
     sObjectMgr->m_hiItemGuid += items.size();
     sObjectMgr->m_mailid     += mails.size();
 

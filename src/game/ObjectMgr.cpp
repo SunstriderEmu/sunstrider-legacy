@@ -1533,87 +1533,47 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
 
 uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
 {
-    uint32 guid = 0;
-    
-    CharacterDatabase.EscapeString(name);
-    
-    QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
-    if (result) {
-        Field* fields = result->Fetch();
-        guid = fields[0].GetUInt32();
-    }
-    
-    return guid;
+    // Get data from global storage
+    if (uint32 guidLow = sWorld->GetGlobalPlayerGUID(name))
+        return MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+    return 0;
 }
 
 bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 {
-    // prevent DB access for online player
-    if(Player* player = GetPlayer(guid))
+    // Get data from global storage
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
     {
-        name = player->GetName();
+        name = playerData->name;
         return true;
     }
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
-
-    if(result)
-    {
-        name = (*result)[0].GetString();
-        return true;
-    }
-
-    return false;
-}
-
-bool ObjectMgr::GetPlayerNameByLowGUID(uint32 guid, std::string &name) const
-{
-    // TODO: Add support to get Player* by low guid
-    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM characters WHERE guid = '%u'", guid);
-    
-    if (result) {
-        Field* fields = result->Fetch();
-        name = fields[0].GetString();
-        
-        return true;        
-    }
-    
     return false;
 }
 
 uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT race FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
+    // xinef: Get data from global storage
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+        return Player::TeamForRace(playerData->race);
 
-    if(result)
-    {
-        uint8 race = (*result)[0].GetUInt8();
-        return Player::TeamForRace(race);
-    }
-
-    return 0;
+    // could not find team, default to alliance
+    return TEAM_ALLIANCE;
 }
 
 uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE guid = '%u'", GUID_LOPART(guid));
-    if(result)
-    {
-        uint32 acc = (*result)[0].GetUInt32();
-        return acc;
-    }
+    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+        return playerData->accountId;
 
     return 0;
 }
 
 uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
 {
-    QueryResult result = CharacterDatabase.PQuery("SELECT account FROM characters WHERE name = '%s'", name.c_str());
-    if(result)
-    {
-        uint32 acc = (*result)[0].GetUInt32();
-        return acc;
-    }
+    if (uint32 guidLow = sWorld->GetGlobalPlayerGUID(name))
+        if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guidLow))
+            return playerData->accountId;
 
     return 0;
 }

@@ -45,19 +45,21 @@ void PossessedAI::UpdateAI(const uint32 diff)
 
 void PossessedAI::JustDied(Unit *u)
 {
-    // We died while possessed, disable our loot
-    me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    // We died while possessed, disable our loot. Disabled because : WHY ?
+  //  me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
 }
 
 void PossessedAI::KilledUnit(Unit* victim)
 {
     // We killed a creature, disable victim's loot
+   /* Disabled because : WHY ?
     if (victim->GetTypeId() == TYPEID_UNIT)
-        victim->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+        victim->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE); */
 }
 
 void CritterAI::DamageTaken(Unit *done_by, uint32 &)
 {
+    //force fleeing on creature taking damage
     if(!me->HasUnitState(UNIT_STATE_FLEEING))
         me->SetControlled(true, UNIT_STATE_FLEEING);
 }

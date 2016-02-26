@@ -36,7 +36,7 @@
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
     Player* player = ObjectAccessor::FindPlayer(guid);
-    CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
+    GlobalPlayerData const* nameData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid));
 
 #ifdef LICH_KING
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 1 + 1 + 1 + 1 + 10));
@@ -60,11 +60,11 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
                 // guess size
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 10));
     data << guid;
-    data << nameData->m_name;
+    data << nameData->name;
     data << uint8(0);                                       // realm name for cross realm BG usage
-    data << uint32(nameData->m_race);
-    data << uint32(nameData->m_gender);
-    data << uint32(nameData->m_class);
+    data << uint32(nameData->race);
+    data << uint32(nameData->gender);
+    data << uint32(nameData->playerClass);
 #endif
 
     if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
@@ -77,81 +77,6 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
         data << uint8(0);                           // Name is not declined
 
     SendPacket(&data);
-}
-
-void WorldSession::SendNameQueryOpcodeFromDB(uint64 guid)
-{
-    Player* player = ObjectAccessor::FindPlayer(guid);
-    CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
-
-    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8+1+1+1+1+1+10));
-    data.appendPackGUID(guid);
-    if (!nameData)
-    {
-        data << uint8(1);                           // name unknown
-        SendPacket(&data);
-        return;
-    }
-
-    data << uint8(0);                               // name known
-    data << nameData->m_name;                       // played name
-    data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
-    data << uint8(nameData->m_race);
-    data << uint8(nameData->m_gender);
-    data << uint8(nameData->m_class);
-
-    if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
-    {
-        data << uint8(1);                           // Name is declined
-        for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            data << names->name[i];
-    }
-    else
-        data << uint8(0);                           // Name is not declined
-
-    SendPacket(&data);
-}
-
-void WorldSession::SendNameQueryOpcodeFromDBCallBack(QueryResult result, uint32 accountId)
-{
-    if(!result)
-        return;
-
-    WorldSession * session = sWorld->FindSession(accountId);
-    if(!session)
-    {
-        return;
-    }
-
-    Field *fields = result->Fetch();
-    uint32 guid      = fields[0].GetUInt32();
-    std::string name = fields[1].GetString();
-    uint32 field     = 0;
-    if(name == "")
-        name         = session->GetTrinityString(LANG_NON_EXIST_CHARACTER);
-    else
-        field        = fields[2].GetUInt32();
-
-                                                        // guess size
-    WorldPacket data( SMSG_NAME_QUERY_RESPONSE, (8+1+4+4+4+10) );
-    data << MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
-    data << name;
-    data << (uint8)0;
-    data << (uint32)(field & 0xFF);
-    data << (uint32)((field >> 16) & 0xFF);
-    data << (uint32)((field >> 8) & 0xFF);
-
-    // if the first declined name field (3) is empty, the rest must be too
-    if(sWorld->getConfig(CONFIG_DECLINED_NAMES_USED) && fields[3].GetString() != "")
-    {
-        data << (uint8)1;                                   // is declined
-        for(int i = 3; i < MAX_DECLINED_NAME_CASES+3; ++i)
-            data << fields[i].GetString();
-    }
-    else
-        data << (uint8)0;                                   // is declined
-
-    session->SendPacket( &data );
 }
 
 void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )

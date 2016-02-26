@@ -476,6 +476,8 @@ Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
         if (nameStr.compare(currentName) == 0)
             return iter->second;
     }
+
+    //TODO :use some kind of cache
     
     return nullptr;
 }

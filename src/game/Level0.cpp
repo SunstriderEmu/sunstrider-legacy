@@ -1496,8 +1496,9 @@ bool ChatHandler::HandleReskinCommand(const char* args)
             uint32 days = uint32(delta / 86400.0f);
             uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
             uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
-            //PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
-            PSendSysMessage("You can't change your character gender more than once every %u days. Last change was %u days %u hours %u minutes ago.",
+            //TODO translate
+            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
+            //PSendSysMessage("You can't change your character gender more than once every %u days. Last change was %u days %u hours %u minutes ago.",
                 sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
             return true;
         }
@@ -1521,6 +1522,8 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 //    m_session->KickPlayer();
     m_session->GetPlayer()->m_kickatnextupdate = true;
     
+    sWorld->UpdateGlobalPlayerData(m_session->GetPlayer()->GetGUID(), PLAYER_UPDATE_DATA_GENDER, "", 0, m_session->GetPlayer()->GetGender());
+
     return true;
 }
 
@@ -2085,6 +2088,8 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;
     
+    sWorld->UpdateGlobalPlayerData(plr->GetGUID(), PLAYER_UPDATE_DATA_RACE | PLAYER_UPDATE_DATA_GENDER, plr->GetName(), 0, plr->GetGender(), plr->GetRace());
+
     //***********************************************************************//
     //* BEYOND THIS LINE, ONLY STUFF THAT WILL NOT BE SAVED WITH SaveToDB() *//
     //***********************************************************************//

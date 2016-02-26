@@ -289,9 +289,9 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
     std::string gmname;
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    CharacterNameData const* data = sWorld->GetCharacterNameData(ticket->playerGuid);
+    GlobalPlayerData const* data = sWorld->GetGlobalPlayerData(ticket->playerGuid);
 
-    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, data ? data->m_name.c_str() : "<name not found>", data ? data->m_name.c_str() : "<name not found>");
+    ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, data ? data->name.c_str() : "<name not found>", data ? data->name.c_str() : "<name not found>");
     if (showAge)
     {
         ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
@@ -299,8 +299,8 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
     }
     if (showAssign)
     {
-        data = sWorld->GetCharacterNameData(ticket->assignedToGM);
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, data ? data->m_name.c_str() : "<name not found>");
+        data = sWorld->GetGlobalPlayerData(ticket->assignedToGM);
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, data ? data->name.c_str() : "<name not found>");
     }
     if (showMessage)
         ss << PGetParseString(LANG_COMMAND_TICKETLISTMESSAGE, ticket->message.c_str());

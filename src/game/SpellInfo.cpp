@@ -712,6 +712,34 @@ int32 SpellInfo::GetMaxDuration() const
     return (DurationEntry->Duration[2] == -1) ? -1 : abs(DurationEntry->Duration[2]);
 }
 
+
+uint32 SpellInfo::GetMaxTicks() const
+{
+    int32 DotDuration = GetDuration();
+    if (DotDuration == 0)
+        return 1;
+
+    // 200% limit
+    if (DotDuration > 30000)
+        DotDuration = 30000;
+
+    for (uint8 x = 0; x < MAX_SPELL_EFFECTS; x++)
+    {
+        if (Effects[x].Effect == SPELL_EFFECT_APPLY_AURA)
+            switch (Effects[x].ApplyAuraName)
+            {
+            case SPELL_AURA_PERIODIC_DAMAGE:
+            case SPELL_AURA_PERIODIC_HEAL:
+            case SPELL_AURA_PERIODIC_LEECH:
+                if (Effects[x].Amplitude != 0)
+                    return DotDuration / Effects[x].Amplitude;
+                break;
+            }
+    }
+
+    return 6;
+}
+
 uint32 SpellInfo::GetRecoveryTime() const
 {
     return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;
@@ -731,7 +759,7 @@ uint32 SpellInfo::CalcCastTime(Spell* spell) const
 
     if (spell)
         spell->GetCaster()->ModSpellCastTime(this, castTime, spell);
-
+    
     if (HasAttribute(SPELL_ATTR0_RANGED) && (!IsAutoRepeatRangedSpell()))
         castTime += 500;
 
@@ -742,6 +770,12 @@ uint32 SpellInfo::CalcCastTime(Spell* spell) const
 bool SpellInfo::HasInitialAggro() const
 {
     return !(HasAttribute(SPELL_ATTR1_NO_THREAT) || HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO));
+}
+
+bool SpellInfo::IsRangedWeaponSpell() const
+{
+    return ((EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED)
+        || (Attributes & SPELL_ATTR0_RANGED)); // Xinef: added
 }
 
 bool SpellInfo::IsAutoRepeatRangedSpell() const

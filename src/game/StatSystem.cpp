@@ -85,13 +85,13 @@ bool Player::UpdateStats(Stats stat)
 
 void Player::UpdateSpellDamageAndHealingBonus()
 {
-    // Magic damage modifiers implemented in Unit::SpellDamageBonus
+    // Magic damage modifiers implemented in Unit::SpellDamageBonusDone
     // This information for client side use only
     // Get healing bonus for all schools
-    SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, SpellBaseHealingBonus(SPELL_SCHOOL_MASK_ALL));
+    SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, SpellBaseHealingBonusDone(SPELL_SCHOOL_MASK_ALL));
     // Get damage bonus for all schools
     for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
-        SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonus(SpellSchoolMask(1 << i)));
+        SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)));
 }
 
 bool Player::UpdateAllStats()
@@ -1072,7 +1072,7 @@ void Pet::UpdateDamagePhysical(WeaponAttackType attType)
         {
             if(Unit *owner = GetOwner())
             {
-                int32 sDamage = int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW));
+                int32 sDamage = int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW));
                 if(sDamage > 0)
                     bonusDamage = sDamage * 0.0657f;
                 // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc
@@ -1155,7 +1155,7 @@ void Pet::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool 
         {
             if(Unit *owner = GetOwner())
             {
-                int32 sDamage = int32(owner->SpellBaseDamageBonus(SPELL_SCHOOL_MASK_SHADOW));
+                int32 sDamage = int32(owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW));
                 if(sDamage > 0)
                     bonusDamage = sDamage * 0.0657f;
                 // 2 parts T4 DPS Bonus: should be handled in future table spell_dbc

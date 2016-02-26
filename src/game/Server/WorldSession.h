@@ -309,8 +309,6 @@ class WorldSession
 
         //void SendTestCreatureQueryOpcode( uint32 entry, uint64 guid, uint32 testvalue );
         void SendNameQueryOpcode(uint64 guid);
-        void SendNameQueryOpcodeFromDB(uint64 guid);
-        static void SendNameQueryOpcodeFromDBCallBack(QueryResult result, uint32 accountId);
 
         void SendTrainerList( uint64 guid );
         void SendTrainerList( uint64 guid, const std::string& strTitle );

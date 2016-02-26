@@ -349,16 +349,16 @@ void ArenaTeam::Roster(WorldSession *session)
     
     for (auto itr : members)
     {
-        CharacterNameData const* pData = sWorld->GetCharacterNameData(itr.guid);
+        GlobalPlayerData const* pData = sWorld->GetGlobalPlayerData(itr.guid);
         
         pl = ObjectAccessor::FindConnectedPlayer(itr.guid);
 
         data << uint64(itr.guid);                      // guid
         data << uint8((pl ? 1 : 0));                    // online flag
-        data << (pData ? pData->m_name : "Unknown");       // member name
+        data << (pData ? pData->name : "Unknown");       // member name
         data << uint32((itr.guid == GetCaptain() ? 0 : 1));// captain flag 0 captain 1 member
-        data << uint8(pData ? pData->m_level : 0);        // unknown, level?
-        data << uint8(pData ? pData->m_class : 0);        // class
+        data << uint8(pData ? pData->level : 0);        // unknown, level?
+        data << uint8(pData ? pData->playerClass : 0);        // class
         data << uint32(itr.games_week);                // played this week
         data << uint32(itr.wins_week);                 // wins this week
         data << uint32(itr.games_season);              // played this season

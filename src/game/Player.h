@@ -1540,7 +1540,7 @@ class Player : public Unit
         static uint32 GetUInt32ValueFromDB(uint16 index, uint64 guid);
         static float  GetFloatValueFromDB(uint16 index, uint64 guid);
         static uint32 GetZoneIdFromDB(uint64 guid);
-        static uint32 GetLevelFromDB(uint64 guid);
+        static uint32 GetLevelFromStorage(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x,float& y,float& z,float& o, bool& in_flight, uint64 guid);
 
         static bool IsValidGender(uint8 Gender) { return Gender <= GENDER_FEMALE; }
@@ -1803,6 +1803,7 @@ class Player : public Unit
         static uint32 GetRankFromDB(uint64 guid);
         int GetGuildIdInvited() const { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
+        static uint32 GetGuildIdFromStorage(uint32 guid);
 
         // Arena Team
         void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
@@ -1817,6 +1818,7 @@ class Player : public Unit
         void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
+        static uint32 GetArenaTeamIdFromStorage(uint32 guid, uint8 slot);
 
         void SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer = true, bool asGroup = false);
         //arg has no effect for now
@@ -2391,6 +2393,7 @@ class Player : public Unit
         PartyResult CanUninviteFromGroup() const;
         // Teleporter NPC: Check level requirements (in Config)
         bool HasLevelInRangeForTeleport();
+        static uint32 GetGroupIdFromStorage(uint32 guid);
         
         // Battleground Group System
         void SetBattlegroundRaid(Group* group, int8 subgroup = -1);

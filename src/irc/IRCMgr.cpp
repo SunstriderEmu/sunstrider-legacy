@@ -12,9 +12,14 @@ void IRCSession::run()
     irc_run loop forever until irc_cmd_quit is called, so we need to start it in a separate thread
     */
     std::thread ircRun([&](){
-         if (irc_run(_server->session)) {
+        if (!_server->session)
+        {
+            TC_LOG_ERROR("IRCMgr", "IRCSession::run(): No session provided");
+        }
+        if (irc_run(_server->session)) 
+        {
             TC_LOG_ERROR("IRCMgr","Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
-                    _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
+                _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
             return;
         }
     });

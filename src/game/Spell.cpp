@@ -3185,7 +3185,11 @@ void Spell::SendSpellStart()
         return;
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_1;
-    if(IsRangedSpell())
+
+    if (((m_IsTriggeredSpell && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_spellInfo->IsChanneled())
+        castFlags |= CAST_FLAG_PENDING;
+
+    if (m_spellInfo->HasAttribute(SPELL_ATTR0_RANGED))
         castFlags |= CAST_FLAG_AMMO;
 
     WorldPacket data(SMSG_SPELL_START, (8+8+4+4+2));
@@ -3220,7 +3224,7 @@ void Spell::SendSpellGo()
     if( (m_IsTriggeredSpell && (m_spellInfo->HasAttribute(SPELL_ATTR4_AUTOSHOT)) == 0) || m_triggeredByAuraSpell)
         castFlags |= CAST_FLAG_PENDING; 
 
-    if(IsRangedSpell())
+    if(m_spellInfo->IsRangedWeaponSpell())
         castFlags |= CAST_FLAG_AMMO;                        // arrows/bullets visual
 
     WorldPacket data(SMSG_SPELL_GO, 50);                    // guess size

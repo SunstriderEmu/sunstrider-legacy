@@ -482,6 +482,14 @@ bool ChatHandler::HandleReloadSkillFishingBaseLevelCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleReloadSpellBonusesCommand(const char*)
+{
+    TC_LOG_INFO("command", "Re-Loading Spell Bonuses definitions...");
+    sSpellMgr->LoadSpellBonusess();
+    SendGlobalGMSysMessage("DB table `spell_bonus_data` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading SpellAffect definitions..." );
@@ -4208,7 +4216,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
 
     assert(chr || chr_guid);
 
-    int32 oldlevel = chr ? chr->GetLevel() : Player::GetLevelFromDB(chr_guid);
+    int32 oldlevel = chr ? chr->GetLevel() : Player::GetLevelFromStorage(chr_guid);
     int32 newlevel = oldlevel + addlevel;
     if(newlevel < 1)
         newlevel = 1;
@@ -4235,6 +4243,8 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         // update level and XP at level, all other will be updated at loading
         CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
     }
+
+    sWorld->UpdateGlobalPlayerData(GUID_LOPART(chr_guid), PLAYER_UPDATE_DATA_LEVEL, "", newlevel);
 
     if(m_session && m_session->GetPlayer() != chr)                       // including chr==NULL
         PSendSysMessage(LANG_YOU_CHANGE_LVL,name.c_str(),newlevel);
@@ -5539,11 +5549,10 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     {
         completedQuestsThisWeek = 0;
     }
-    
+
     std::string displayName;
-    if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(targetGUID))
-        displayName = nameData->m_name;
-    else
+    bool nameResult = sObjectMgr->GetPlayerNameByGUID(targetGUID, displayName);
+    if (!nameResult)
         displayName = "<Unknown>";
 
     PSendSysMessage(LANG_QCOMPLETE_THIS_WEEK, displayName.c_str(), completedQuestsThisWeek);
@@ -5856,9 +5865,9 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         std::string authorIP = fields[6].GetString();
         uint64 unbantimestamp = muteTime + (duration * MINUTE);
         std::string authorname;
-        if (CharacterNameData const* nameData = sWorld->GetCharacterNameData(authorGUID))
-            authorname = nameData->m_name;
-        else
+        std::string displayName;
+        bool nameResult = sObjectMgr->GetPlayerNameByGUID(authorGUID, displayName);
+        if (!nameResult)
             authorname = "<Unknown>";
 
         chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (account %u) at %s (%s).", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), authorAccount, TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");

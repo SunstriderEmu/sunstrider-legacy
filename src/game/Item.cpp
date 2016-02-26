@@ -297,8 +297,8 @@ void Item::SaveToDB(SQLTransaction trans)
         case ITEM_CHANGED:
         {
 #ifdef TRINITY_DEBUG
-            uint32 smallIntMax = 99999;
-            uint32 mediumIntMax = 99999999;
+            int32 smallIntMax = 99999;
+            int32 mediumIntMax = 99999999;
 
             ASSERT(GetEntry() < mediumIntMax || std::cerr << GetEntry() && false);
             ASSERT(GetCount() < smallIntMax || std::cerr << GetCount() && false);

@@ -195,8 +195,19 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
                 if (!(*result)[20].GetUInt32())
                     _legitCharacters.insert(guidlow);
 
-                if (!sWorld->HasCharacterNameData(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
-                    sWorld->AddCharacterNameData(guidlow, (*result)[1].GetString(), (*result)[4].GetUInt8(), (*result)[2].GetUInt8(), (*result)[3].GetUInt8(), (*result)[7].GetUInt8());
+                /*       0        1      2        3      4
+                SELECT c.guid, c.name, c.race, c.class, c.gender, c.playerBytes, c.playerBytes2, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, "
+                "gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid "
+                */
+                if (!sWorld->HasGlobalPlayerData(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
+                {
+                    std::string name = (*result)[1].GetString();
+                    uint8 gender = (*result)[4].GetUInt8();
+                    uint8 race = (*result)[2].GetUInt8();
+                    uint8 playerclass = (*result)[3].GetUInt8();
+                    uint8 level = (*result)[7].GetUInt8();
+                    sWorld->AddGlobalPlayerData(guidlow, GetAccountId(), name, gender, race, playerclass, level, 0, 0);
+                }
                 ++num;
             }
         }
@@ -358,7 +369,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     if ( resultacct )
     {
         Field *fields=resultacct->Fetch();
-        uint32 acctcharcount = fields[0].GetUInt32();
+        uint32 acctcharcount = fields[0].GetDouble();
 
         if (acctcharcount >= sWorld->getConfig(CONFIG_CHARACTERS_PER_ACCOUNT))
         {
@@ -372,7 +383,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
     if ( result )
     {
         Field *fields=result->Fetch();
-        charcount = fields[0].GetUInt8();
+        charcount = fields[0].GetUInt64();
 
         if (charcount >= sWorld->getConfig(CONFIG_CHARACTERS_PER_REALM))
         {
@@ -634,7 +645,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
             sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddCharacterNameData(newChar.GetGUIDLow(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel());
+            sWorld->AddGlobalPlayerData(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0, 0);
 
             newChar.CleanupsBeforeDelete();
             delete createInfo;
@@ -1323,7 +1334,8 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     SendCharRename(RESPONSE_SUCCESS, *renameInfo);
 
-    sWorld->UpdateCharacterNameData(guidLow, renameInfo->Name);
+    sWorld->UpdateGlobalNameData(guidLow, oldname, renameInfo->Name);
+    sWorld->UpdateGlobalPlayerData(guidLow, PLAYER_UPDATE_DATA_NAME, renameInfo->Name);
 
     LogsDatabaseAccessor::CharacterRename(this, guidLow, oldname, renameInfo->Name, GetRemoteAddress());
 }

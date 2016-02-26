@@ -452,7 +452,7 @@ enum SpellAttr5
     SPELL_ATTR5_HASTE_AFFECT_DURATION           = 0x00002000,           // 13 haste effects decrease duration of this
     SPELL_ATTR5_UNK14                           = 0x00004000,           // 14
     SPELL_ATTR5_UNK15                           = 0x00008000,           // 15
-    SPELL_ATTR5_UNK16                           = 0x00010000,           // 16 only "One-Handed Weapon Specialization" (20196 -> 20200)
+    SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK        = 0x00010000,           // 16 only "One-Handed Weapon Specialization" (20196 -> 20200). This allows spells with EquippedItemClass to affect spells from other items if the required item is equipped
     SPELL_ATTR5_USABLE_WHILE_FEARED             = 0x00020000,           // 17 usable while feared
     SPELL_ATTR5_USABLE_WHILE_CONFUSED           = 0x00040000,           // 18 usable while confused
     SPELL_ATTR5_DONT_TURN_DURING_CAST           = 0x00080000,           // 19 Blocks caster's turning when casting (client does not automatically turn caster's model to face UNIT_FIELD_TARGET)
@@ -755,8 +755,7 @@ enum AuraStateType
     AURA_STATE_JUDGEMENT                    = 5,            // C   |
     //AURA_STATE_UNKNOWN6                   = 6,            //     | not used
     AURA_STATE_HUNTER_PARRY                 = 7,            // C   |
-    AURA_STATE_ROGUE_ATTACK_FROM_STEALTH    = 7,            // C   | FIX ME: not implemented yet!
-    //AURA_STATE_UNKNOWN7c                  = 7,            //  c  | random/focused bursts spells (?)
+    //AURA_STATE_UNKNOWN7                   = 7,            //  c  | random/focused bursts spells (?)
     //AURA_STATE_UNKNOWN8                   = 8,            //     | not used
     //AURA_STATE_UNKNOWN9                   = 9,            //     | not used
     AURA_STATE_WARRIOR_VICTORY_RUSH         = 10,           // C   | warrior victory rush

@@ -547,7 +547,6 @@ class ObjectMgr
         uint64 GetPlayerGUIDByName(std::string name) const;
         uint32 GetPlayerLowGUIDByName(std::string name) const;
         bool GetPlayerNameByGUID(const uint64 &guid, std::string &name) const;
-        bool GetPlayerNameByLowGUID(uint32 guid, std::string &name) const;
         uint32 GetPlayerTeamByGUID(const uint64 &guid) const;
         uint32 GetPlayerAccountIdByGUID(const uint64 &guid) const;
         uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;

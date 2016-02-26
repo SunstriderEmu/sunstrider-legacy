@@ -115,7 +115,7 @@ enum SpellModOp
     SPELLMOD_CASTING_TIME_OLD       = 21,
     SPELLMOD_DOT                    = 22,
     SPELLMOD_EFFECT3                = 23,
-    SPELLMOD_SPELL_BONUS_DAMAGE     = 24,
+    SPELLMOD_BONUS_MULTIPLIER       = 24,
     // spellmod 25, 26 unused
     SPELLMOD_MULTIPLE_VALUE         = 27,
     SPELLMOD_RESIST_DISPEL_CHANCE   = 28
@@ -1671,17 +1671,36 @@ class Unit : public WorldObject
         /* Check if unit has at least one aura of given state; This just checks UNIT_FIELD_AURASTATE if no caster is given, or check in m_auraStateAuras if so (some state being caster dependant) */
         bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
-        int32 SpellBaseDamageBonus(SpellSchoolMask schoolMask, Unit* pVictim = NULL);
-        int32 SpellBaseHealingBonus(SpellSchoolMask schoolMask);
-        int32 SpellBaseDamageBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
-        int32 SpellBaseHealingBonusForVictim(SpellSchoolMask schoolMask, Unit *pVictim);
-        uint32 SpellDamageBonus(Unit *pVictim, SpellInfo const *spellProto, uint32 damage, DamageEffectType damagetype);
-        //only bonuses from caster if pVictim is NULL
-        uint32 SpellHealingBonus(SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, Unit *pVictim);
-        void ApplySpellHealingCasterModifiers(SpellInfo const *spellProto, DamageEffectType damagetype, int& healpower, float& healcoef, int32& flathealbonus);
-        void ApplySpellHealingTargetModifiers(SpellInfo const *spellProto, DamageEffectType damagetype, int& healpower, float& healcoef, int32& flathealbonus, Unit *pVictim);
-        //return real heal benefit for given spell and given healbonus
-        uint32 SpellHealBenefitForHealingPower(SpellInfo const *spellProto, int healpower, DamageEffectType damagetype);
+
+        uint32 GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectType damagetype, uint32 CastingTime) const;
+        float CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffectType damagetype) const;
+
+        int32 SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, Unit* pVictim = NULL);
+        int32 SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT = false);
+        float SpellPctDamageModsDone(Unit* victim, SpellInfo const *spellProto, DamageEffectType damagetype);
+
+        uint32 SpellDamageBonusDone(Unit *pVictim, SpellInfo const *spellProto, uint32 damage, DamageEffectType damagetype, float TotalMod = 0.0f, uint32 stack = 1);
+        uint32 SpellDamageBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 pdamage, DamageEffectType damagetype, uint32 stack = 1);
+        
+        // SPELL_AURA_MOD_HEALING_DONE + SPELL_AURA_MOD_SPELL_HEALING_OF_STAT_PERCENT + SPELL_AURA_MOD_SPELL_HEALING_OF_ATTACK_POWER + hacks
+        int32 SpellBaseHealingBonusDone(SpellSchoolMask schoolMask);
+        // SPELL_AURA_MOD_HEALING + hacks
+        int32 SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask);
+        //Includes SPELL_AURA_MOD_HEALING_DONE_PERCENT + lots of hacks
+        float SpellPctHealingModsDone(Unit* victim, SpellInfo const *spellProto, DamageEffectType damagetype);
+
+        /* Alter healamount with healing bonus taken
+        This includes : SPELL_AURA_MOD_HEALING_PCT, SPELL_AURA_MOD_HEALING_PCT, SpellBaseHealingBonusTaken SPELLMOD_BONUS_MULTIPLIER, and lots of hacks
+        */
+        uint32 SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack = 1);
+        /* Alter healamount with healing bonus done for victim
+        This includes : SpellBaseHealingBonusDone, SPELLMOD_BONUS_MULTIPLIER, ApplySpellMod, SpellPctHealingModsDone, and lots of hacks
+        */
+        uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, uint32 healamount, DamageEffectType damagetype, float TotalMod = 0.0f, uint32 stack = 1);
+
+        void MeleeDamageBonus(Unit *pVictim, uint32 *damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+//TODO        uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
+
         bool   IsSpellBlocked(Unit *pVictim, SpellInfo const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
         uint32 SpellCriticalBonus(SpellInfo const *spellProto, uint32 damage, Unit *pVictim);
@@ -1692,9 +1711,6 @@ class Unit : public WorldObject
         bool IsUnderLastManaUseEffect() const;
 
         void SetContestedPvP(Player *attackedPlayer = NULL);
-
-        void MeleeDamageBonus(Unit *pVictim, uint32 *damage, WeaponAttackType attType, SpellInfo const *spellProto = NULL);
-        uint32 GetCastingTimeForBonus( SpellInfo const *spellProto, DamageEffectType damagetype, uint32 CastingTime );
 
         void ApplySpellImmune(uint32 spellId, uint32 op, uint32 type, bool apply);
         void ApplySpellDispelImmunity(const SpellInfo * spellProto, DispelType type, bool apply);

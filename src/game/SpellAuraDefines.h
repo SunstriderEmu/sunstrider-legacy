@@ -295,12 +295,12 @@ enum AuraType
     SPELL_AURA_252 = 252,
     SPELL_AURA_253 = 253,
     SPELL_AURA_254 = 254,
-    SPELL_AURA_255 = 255,
+    SPELL_AURA_255 = 255, //no spell have this on BC. TC : SPELL_AURA_MOD_MECHANIC_DAMAGE_TAKEN_PERCENT
     SPELL_AURA_256 = 256,
     SPELL_AURA_257 = 257,
     SPELL_AURA_258 = 258,
-    SPELL_AURA_APPLY_IMMUNITY_ID = 259, //WM custom
-    SPELL_AURA_APPLY_EXTRA_FLAG = 260, //WM custom
+    SPELL_AURA_APPLY_IMMUNITY_ID = 259, //Sunstrider custom (replace this with dummy spells ?)
+    SPELL_AURA_APPLY_EXTRA_FLAG = 260, //Sunstrider custom (replace this with dummy spells ?)
     SPELL_AURA_261 = 261,
     TOTAL_AURAS=262
 };

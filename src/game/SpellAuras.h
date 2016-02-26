@@ -225,6 +225,7 @@ class Aura
         void SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue);
         AuraType GetAuraType() const { return m_modifier.m_auraname; }
         Modifier const* GetModifier() const { return &m_modifier;}
+        int32 GetAmount() const { return m_modifier.m_amount; }
         int32 GetModifierValuePerStack() const { return m_modifier.m_amount;}
         int32 GetModifierValue() const { return m_modifier.m_amount * m_stackAmount;}
 		int32 GetMiscValue() const;

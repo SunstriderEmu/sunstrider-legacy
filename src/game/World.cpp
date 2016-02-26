@@ -1344,7 +1344,10 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." );  //must be after SpellInfo
     sSpellMgr->LoadSpellLearnSpells();
     
-    TC_LOG_INFO("server.loading", "Loading Aggro Spells Definitions..."); //must be after SpellInfo
+    TC_LOG_INFO("server.loading", "Loading Spell Bonus Data...");
+    sSpellMgr->LoadSpellBonusess();
+
+    TC_LOG_INFO("server.loading", "Loading Threat Spells Definitions..."); //must be after SpellInfo
     sSpellMgr->LoadSpellThreats();
 
     TC_LOG_INFO("server.loading", "Loading Spell Proc Event conditions..." ); //must be after spellInfo
@@ -1711,8 +1714,6 @@ void World::SetInitialWorldSettings()
         sLogsDatabaseAccessor->CleanupOldMonitorLogs();
 
     sLogsDatabaseAccessor->CleanupOldLogs();
-
-    LoadCharacterNameData();
 
     #ifdef PLAYERBOT
     sPlayerbotAIConfig.Initialize();
@@ -3981,97 +3982,6 @@ void World::ProcessQueryCallbacks()
     }
 }
 
-
-/**
-* @brief Loads several pieces of information on server startup with the low GUID
-* There is no further database query necessary.
-* These are a number of methods that work into the calling function.
-*
-* @param guid Requires a lowGUID to call
-* @return Name, Gender, Race, Class and Level of player character
-* Example Usage:
-* @code
-*    CharacterNameData const* nameData = sWorld->GetCharacterNameData(lowGUID);
-*    if (!nameData)
-*        return;
-*
-* std::string playerName = nameData->m_name;
-* uint8 playerGender = nameData->m_gender;
-* uint8 playerRace = nameData->m_race;
-* uint8 playerClass = nameData->m_class;
-* uint8 playerLevel = nameData->m_level;
-* @endcode
-**/
-
-void World::LoadCharacterNameData()
-{
-    TC_LOG_INFO("server.loading", "Loading character name data");
-
-    QueryResult result = CharacterDatabase.Query("SELECT guid, name, race, gender, class, level FROM characters WHERE deleteDate IS NULL");
-    if (!result)
-    {
-        TC_LOG_INFO("server.loading", "No character name data loaded, empty query");
-        return;
-    }
-
-    uint32 count = 0;
-
-    do
-    {
-        Field* fields = result->Fetch();
-        AddCharacterNameData(fields[0].GetUInt32(), fields[1].GetString(),
-            fields[3].GetUInt8() /*gender*/, fields[2].GetUInt8() /*race*/, fields[4].GetUInt8() /*class*/, fields[5].GetUInt8() /*level*/);
-        ++count;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", "Loaded name data for %u characters", count);
-}
-
-void World::AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level)
-{
-    CharacterNameData& data = _characterNameDataMap[guid];
-    data.m_name = name;
-    data.m_race = race;
-    data.m_gender = gender;
-    data.m_class = playerClass;
-    data.m_level = level;
-}
-
-void World::UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender /*= GENDER_NONE*/, uint8 race /*= RACE_NONE*/)
-{
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
-    if (itr == _characterNameDataMap.end())
-        return;
-
-    itr->second.m_name = name;
-
-    if (gender != GENDER_NONE)
-        itr->second.m_gender = gender;
-
-    if (race != RACE_NONE)
-        itr->second.m_race = race;
-
-    InvalidatePlayerDataToAllClient(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
-}
-
-void World::UpdateCharacterNameDataLevel(uint32 guid, uint8 level)
-{
-    std::map<uint32, CharacterNameData>::iterator itr = _characterNameDataMap.find(guid);
-    if (itr == _characterNameDataMap.end())
-        return;
-
-    itr->second.m_level = level;
-}
-
-CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
-{
-    std::map<uint32, CharacterNameData>::const_iterator itr = _characterNameDataMap.find(guid);
-    if (itr != _characterNameDataMap.end())
-        return &itr->second;
-    else
-        return NULL;
-}
-
 void World::InvalidatePlayerDataToAllClient(uint64 guid)
 {
     WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
@@ -4084,4 +3994,186 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK,4);
     data << uint32(zoneId);
     SendGlobalMessage(&data,nullptr,team);
+}
+
+
+void World::LoadGlobalPlayerDataStore()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _globalPlayerDataStore.clear();
+    QueryResult result = CharacterDatabase.Query("SELECT guid, account, name, gender, race, class, level FROM characters WHERE deleteDate IS NULL");
+    if (!result)
+    {
+        TC_LOG_ERROR("server.loading",">>  Loaded 0 Players data!");
+        return;
+    }
+
+    uint32 count = 0;
+
+    // query to load number of mails by receiver
+    std::map<uint32, uint16> _mailCountMap;
+    QueryResult mailCountResult = CharacterDatabase.Query("SELECT receiver, COUNT(receiver) FROM mail GROUP BY receiver");
+    if (mailCountResult)
+    {
+        do
+        {
+            Field* fields = mailCountResult->Fetch();
+            _mailCountMap[fields[0].GetUInt32()] = uint16(fields[1].GetUInt64());
+        } while (mailCountResult->NextRow());
+    }
+
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 guidLow = fields[0].GetUInt32();
+
+        // count mails
+        uint16 mailCount = 0;
+        std::map<uint32, uint16>::const_iterator itr = _mailCountMap.find(guidLow);
+        if (itr != _mailCountMap.end())
+            mailCount = itr->second;
+
+        AddGlobalPlayerData(
+            guidLow,               /*guid*/
+            fields[1].GetUInt32(), /*accountId*/
+            fields[2].GetString(), /*name*/
+            fields[3].GetUInt8(),  /*gender*/
+            fields[4].GetUInt8(),  /*race*/
+            fields[5].GetUInt8(),  /*class*/
+            fields[6].GetUInt8(),  /*level*/
+            mailCount,             /*mail count*/
+            0                      /*guild id*/);
+
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %d Players data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void World::AddGlobalPlayerData(uint32 guid, uint32 accountId, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint16 mailCount, uint32 guildId)
+{
+    GlobalPlayerData data;
+
+    data.guidLow = guid;
+    data.accountId = accountId;
+    data.name = name;
+    data.level = level;
+    data.race = race;
+    data.playerClass = playerClass;
+    data.gender = gender;
+    data.mailCount = mailCount;
+    data.guildId = guildId;
+    data.groupId = 0;
+    data.arenaTeamId[0] = 0;
+    data.arenaTeamId[1] = 0;
+    data.arenaTeamId[2] = 0;
+
+    _globalPlayerDataStore[guid] = data;
+    _globalPlayerNameStore[name] = guid;
+}
+
+void World::UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& name, uint8 level, uint8 gender, uint8 race, uint8 playerClass)
+{
+    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr == _globalPlayerDataStore.end())
+        return;
+
+    if (mask & PLAYER_UPDATE_DATA_LEVEL)
+        itr->second.level = level;
+    if (mask & PLAYER_UPDATE_DATA_RACE)
+        itr->second.race = race;
+    if (mask & PLAYER_UPDATE_DATA_CLASS)
+        itr->second.playerClass = playerClass;
+    if (mask & PLAYER_UPDATE_DATA_GENDER)
+        itr->second.gender = gender;
+    if (mask & PLAYER_UPDATE_DATA_NAME)
+        itr->second.name = name;
+
+    WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
+    data << MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
+    SendGlobalMessage(&data);
+}
+
+void World::UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add)
+{
+    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr == _globalPlayerDataStore.end())
+        return;
+
+    if (!add)
+    {
+        itr->second.mailCount = count;
+        return;
+    }
+
+    int16 icount = (int16)itr->second.mailCount;
+    if (count < 0 && abs(count) > icount)
+        count = -icount;
+    itr->second.mailCount = uint16(icount + count); // addition or subtraction
+}
+
+void World::UpdateGlobalPlayerGuild(uint32 guid, uint32 guildId)
+{
+    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr == _globalPlayerDataStore.end())
+        return;
+
+    itr->second.guildId = guildId;
+}
+void World::UpdateGlobalPlayerGroup(uint32 guid, uint32 groupId)
+{
+    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr == _globalPlayerDataStore.end())
+        return;
+
+    itr->second.groupId = groupId;
+}
+
+void World::UpdateGlobalPlayerArenaTeam(uint32 guid, uint8 slot, uint32 arenaTeamId)
+{
+    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr == _globalPlayerDataStore.end())
+        return;
+
+    itr->second.arenaTeamId[slot] = arenaTeamId;
+}
+
+void World::UpdateGlobalNameData(uint32 guidLow, std::string const& oldName, std::string const& newName)
+{
+    _globalPlayerNameStore.erase(oldName);
+    _globalPlayerNameStore[newName] = guidLow;
+}
+
+void World::DeleteGlobalPlayerData(uint32 guid, std::string const& name)
+{
+    if (guid)
+        _globalPlayerDataStore.erase(guid);
+    if (!name.empty())
+        _globalPlayerNameStore.erase(name);
+}
+
+bool World::HasGlobalPlayerData(uint32 guid) const
+{
+    GlobalPlayerDataMap::const_iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr != _globalPlayerDataStore.end())
+        return true;
+    else
+        return false;
+}
+
+GlobalPlayerData const* World::GetGlobalPlayerData(uint32 guid) const
+{
+    GlobalPlayerDataMap::const_iterator itr = _globalPlayerDataStore.find(guid);
+    if (itr != _globalPlayerDataStore.end())
+        return &itr->second;
+    return NULL;
+}
+
+uint32 World::GetGlobalPlayerGUID(std::string const& name) const
+{
+    GlobalPlayerNameMap::const_iterator itr = _globalPlayerNameStore.find(name);
+    if (itr != _globalPlayerNameStore.end())
+        return itr->second;
+    return 0;
 }

@@ -51,14 +51,32 @@ struct CharTitlesEntry;
 
 typedef std::unordered_map<uint32, WorldSession*> SessionMap;
 
-struct CharacterNameData
+struct GlobalPlayerData
 {
-    std::string m_name;
-    uint8 m_class;
-    uint8 m_race;
-    uint8 m_gender;
-    uint8 m_level;
+    uint32 guidLow;
+    uint32 accountId;
+    std::string name;
+    uint8 race;
+    uint8 playerClass;
+    uint8 gender;
+    uint8 level;
+    uint16 mailCount;
+    uint32 guildId;
+    uint32 groupId;
+    uint32 arenaTeamId[3];
 };
+
+enum GlobalPlayerUpdateMask
+{
+    PLAYER_UPDATE_DATA_LEVEL = 0x01,
+    PLAYER_UPDATE_DATA_RACE = 0x02,
+    PLAYER_UPDATE_DATA_CLASS = 0x04,
+    PLAYER_UPDATE_DATA_GENDER = 0x08,
+    PLAYER_UPDATE_DATA_NAME = 0x10,
+};
+
+typedef std::unordered_map<uint32, GlobalPlayerData> GlobalPlayerDataMap;
+typedef std::map<std::string, uint32> GlobalPlayerNameMap;
 
 enum ShutdownMask
 {
@@ -705,6 +723,20 @@ class World
 
         inline std::string GetWardenBanTime()          {return m_wardenBanTime;}
 
+        // xinef: Global Player Data Storage system
+        void LoadGlobalPlayerDataStore();
+        uint32 GetGlobalPlayerGUID(std::string const& name) const;
+        GlobalPlayerData const* GetGlobalPlayerData(uint32 guid) const;
+        bool HasGlobalPlayerData(uint32 guidLow) const;
+        void AddGlobalPlayerData(uint32 guid, uint32 accountId, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint16 mailCount, uint32 guildId);
+        void UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& name, uint8 level = 0, uint8 gender = 0, uint8 race = 0, uint8 playerClass = 0);
+        void UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add = true);
+        void UpdateGlobalPlayerGuild(uint32 guid, uint32 guildId);
+        void UpdateGlobalPlayerGroup(uint32 guid, uint32 groupId);
+        void UpdateGlobalPlayerArenaTeam(uint32 guid, uint8 slot, uint32 arenaTeamId);
+        void UpdateGlobalNameData(uint32 guidLow, std::string const& oldName, std::string const& newName);
+        void DeleteGlobalPlayerData(uint32 guid, std::string const& name);
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -735,13 +767,6 @@ class World
         /** Print time diff since last ResetTimeDiffRecord() or since last RecordTimeDiff() (this function also does the reset) */
         void RecordTimeDiff(std::string const& text);
         
-        CharacterNameData const* GetCharacterNameData(uint32 guid) const;
-        void AddCharacterNameData(uint32 guid, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level);
-        void UpdateCharacterNameData(uint32 guid, std::string const& name, uint8 gender = GENDER_NONE, uint8 race = RACE_NONE);
-        void UpdateCharacterNameDataLevel(uint32 guid, uint8 level);
-        void DeleteCharacterNameData(uint32 guid) { _characterNameDataMap.erase(guid); }
-        bool HasCharacterNameData(uint32 guid) { return _characterNameDataMap.find(guid) != _characterNameDataMap.end(); }
-
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);
@@ -838,6 +863,10 @@ class World
        // CLI command holder to be thread safe
         LockedQueue<CliCommandHolder*> cliCmdQueue;
 
+        // our speed ups
+        GlobalPlayerDataMap _globalPlayerDataStore; // xinef
+        GlobalPlayerNameMap _globalPlayerNameStore; // xinef
+
         // next daily quests reset time
         time_t m_NextDailyQuestReset;
 
@@ -866,9 +895,6 @@ class World
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 
         std::vector<ArenaTeam*> firstArenaTeams;
-
-        std::map<uint32, CharacterNameData> _characterNameDataMap;
-        void LoadCharacterNameData();
 
         void ProcessQueryCallbacks();
         std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;

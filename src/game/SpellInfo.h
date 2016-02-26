@@ -440,6 +440,7 @@ public:
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
     bool IsPassive() const;
+
     /** Some spells, such as dispells, can be positive or negative depending on target */
     bool IsPositive(bool hostileTarget = false) const;
     /** Some effects, such as dispells, can be positive or negative depending on target */
@@ -456,6 +457,9 @@ public:
     int32 GetDuration() const;
     int32 GetMaxDuration() const;
 
+    uint32 GetMaxTicks() const;
+
+    bool IsRangedWeaponSpell() const;
     bool IsAutoRepeatRangedSpell() const;
     bool HasInitialAggro() const;
 

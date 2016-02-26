@@ -97,7 +97,6 @@ enum ArenaTeamTypes
 struct ArenaTeamMember
 {
     uint64 guid;
-    uint8 Class;
     uint32 games_week;
     uint32 wins_week;
     uint32 games_season;
@@ -187,11 +186,12 @@ class ArenaTeam
         {
             for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
             {
-                CharacterNameData const* data = sWorld->GetCharacterNameData(itr->guid);
-                if(!data) 
+                std::string fetchedName;
+                bool result = sObjectMgr->GetPlayerNameByGUID(itr->guid, fetchedName);
+                if(!result)
                     return nullptr;
 
-                if(data->m_name == name)
+                if(fetchedName == name)
                     return &(*itr);
             }
 

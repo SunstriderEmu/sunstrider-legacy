@@ -451,7 +451,7 @@ enum ProcFlags
    PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT      = 0x00020000,    // 17 Taken negative spell (by default only on damage)
 
    PROC_FLAG_ON_DO_PERIODIC                = 0x00040000,    // 18 Successful do periodic (damage / healing, determined from 14-17 flags)
-   PROC_FLAG_ON_TAKE_PERIODIC              = 0x00080000,    // 19 Taken spell periodic (damage / healing, determined from 14-17 flags)
+   PROC_FLAG_TAKEN_PERIODIC                = 0x00080000,    // 19 Taken spell periodic (damage / healing, determined from 14-17 flags)
 
    PROC_FLAG_TAKEN_ANY_DAMAGE              = 0x00100000,    // 20 Taken any damage
    PROC_FLAG_ON_TRAP_ACTIVATION            = 0x00200000,    // 21 On trap activation
@@ -519,6 +519,16 @@ struct SpellEnchantProcEntry
 };
 
 typedef std::unordered_map<uint32, SpellEnchantProcEntry> SpellEnchantProcEventMap;
+
+struct SpellBonusEntry
+{
+    float  direct_damage;
+    float  dot_damage;
+    float  ap_bonus;
+    float  ap_dot_bonus;
+};
+
+typedef std::unordered_map<uint32, SpellBonusEntry>     SpellBonusMap;
 
 #define ELIXIR_BATTLE_MASK    0x1
 #define ELIXIR_GUARDIAN_MASK  0x2
@@ -897,6 +907,9 @@ class SpellMgr
             return mSkillLineAbilityMap.upper_bound(spell_id);
         }
 
+        // Spell bonus data table
+        SpellBonusEntry const* GetSpellBonusData(uint32 spellId) const;
+
         // Spell threat table
         SpellThreatEntry const* GetSpellThreatEntry(uint32 spellID) const;
 
@@ -940,6 +953,7 @@ class SpellMgr
         void LoadSpellProcEvents();
         void LoadSpellTargetPositions();
         void LoadSpellThreats();
+        void LoadSpellBonusess();
         void LoadSkillLineAbilityMap();
         void LoadSpellPetAuras();
         /** Change SpellEntry entries with custom values. This MUST be done before loading spellInfo's, else it will have no effect. 
@@ -968,7 +982,8 @@ class SpellMgr
 
     private:
         SpellInfo* _GetSpellInfo(uint32 spellId) { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : NULL; }
-
+        
+        SpellBonusMap                mSpellBonusMap;
         SpellThreatMap               mSpellThreatMap;
         SpellScriptTarget            mSpellScriptTarget;
         SpellChainMap                mSpellChains;
