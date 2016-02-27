@@ -96,7 +96,7 @@ void LogsDatabaseAccessor::BossDown(Creature const* victim, std::string const& b
     LogsDatabase.Execute(stmt);
 }
 
-void LogsDatabaseAccessor::CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, std::string const& IP)
+void LogsDatabaseAccessor::CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, uint8 /* level */, std::string const& IP)
 {
     bool gmInvolved = session->GetSecurity() > SEC_PLAYER;
 

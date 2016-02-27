@@ -221,8 +221,6 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 
 void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
 {
-    
-
     PreparedStatement* stmt;
     // remove expired bans
 /*TODO no ban per character yet
@@ -240,38 +238,10 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
     stmt->setUInt32(1, GetAccountId());
 
     _charEnumCallback = CharacterDatabase.AsyncQuery(stmt);
-
-    /*
-    /// get all the data necessary for loading all characters (along with their pets) on the account
-    CharacterDatabase.AsyncPQuery(&chrHandler, &CharacterHandler::HandleCharEnumCallback, GetAccountId(),
-         !sWorld->getConfig(CONFIG_DECLINED_NAMES_USED) ?
-    //   ------- Query Without Declined Names --------
-    //          0                1                2                3                      4                      5               6                     7                     8
-        "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
-    //   9                    10                   11                     12                   13                    14               15                16                 17
-        "characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, guild_member.guildid, characters.race, characters.class, characters.gender, characters.playerBytes, "
-    //   18                       19                      20                21             22                23
-        "characters.playerBytes2, characters.playerFlags, characters.level, characters.xp, characters.money, characters.equipmentCache "
-        "FROM characters LEFT JOIN character_pet ON characters.guid=character_pet.owner AND character_pet.slot='0' "
-        "LEFT JOIN guild_member ON characters.guid = guild_member.guid "
-        "WHERE characters.account = '%u' ORDER BY characters.guid"
-        :
-    //   --------- Query With Declined Names ---------
-    //          0                1                2                3                      4                      5               6                     7                     8
-        "SELECT characters.guid, characters.data, characters.name, characters.position_x, characters.position_y, characters.position_z, characters.map, characters.totaltime, characters.leveltime, "
-    //   9                    10                   11                     12                   13                    14
-        "characters.at_login, character_pet.entry, character_pet.modelid, character_pet.level, guild_member.guildid, genitive "
-        "FROM characters LEFT JOIN character_pet ON characters.guid = character_pet.owner AND character_pet.slot='0' "
-        "LEFT JOIN character_declinedname ON characters.guid = character_declinedname.guid "
-        "LEFT JOIN guild_member ON characters.guid = guild_member.guid "
-        "WHERE characters.account = '%u' ORDER BY characters.guid",
-        GetAccountId());*/
 }
 
 void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,1+1+1+1+1+1+1+1+1+1);
 
     CharacterCreateInfo createInfo;
@@ -657,23 +627,28 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;
     recvData >> guid;
 
+    uint32 initAccountId = GetAccountId();
+
     // can't delete loaded character
-    if(sObjectMgr->GetPlayer(guid))
+    if (ObjectAccessor::FindPlayer(guid))
+    {
+        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         return;
+    }
 
     uint32 accountId = 0;
+    uint8 level = 0;
     std::string name;
 
     // is guild leader
     if(sObjectMgr->IsGuildLeader(guid))
     {
+        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_GUILD_LEADER);
         return;
     }
@@ -681,16 +656,18 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     // is arena team captain
     if(sObjectMgr->IsArenaTeamCaptain(guid))
     {
+        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_ARENA_CAPTAIN);
         return;
     }
 
-    QueryResult result = CharacterDatabase.PQuery("SELECT account,name FROM characters WHERE guid='%u'", GUID_LOPART(guid));
+    QueryResult result = CharacterDatabase.PQuery("SELECT account, name, level FROM characters WHERE guid='%u'", GUID_LOPART(guid));
     if(result)
     {
         Field *fields = result->Fetch();
         accountId = fields[0].GetUInt32();
         name = fields[1].GetString();
+        level = fields[2].GetUInt8();
     }
 
     // prevent deleting other players' characters using cheating tools
@@ -698,8 +675,9 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
         return;
 
     std::string IP_str = GetRemoteAddress();
-    TC_LOG_DEBUG("FIXME","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
-  //  sLog->outChar("FIXME","Account: %d (IP: %s) Delete Character:[%s] (guid: %u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
+    TC_LOG_DEBUG("entities.player","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
+
+    sScriptMgr->OnPlayerDelete(guid, initAccountId); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
 
     std::string fname = sConfigMgr->GetStringDefault("LogsDir", "");
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
@@ -710,15 +688,11 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     PlayerDumpWriter().WriteDump(fname, GUID_LOPART(guid));
 
 
-    LogsDatabaseAccessor::CharacterDelete(this, GUID_LOPART(guid), name, GetRemoteAddress());
+    LogsDatabaseAccessor::CharacterDelete(this, GUID_LOPART(guid), name, level, GetRemoteAddress());
 
-    /*
-    if(sLog->IsOutCharDump())                                // optimize GetPlayerDump call
-    {
-        std::string dump = PlayerDumpWriter().GetDump(GUID_LOPART(guid));
-        sLog->outCharDump(dump.c_str(),GetAccountId(),GUID_LOPART(guid),name.c_str());
-    }*/
-
+#ifdef LICH_LING
+    sCalendarMgr->RemoveAllPlayerEventsAndInvites(guid);
+#endif
     Player::DeleteFromDB(guid, GetAccountId());
 
     SendCharDelete(CHAR_DELETE_SUCCESS);

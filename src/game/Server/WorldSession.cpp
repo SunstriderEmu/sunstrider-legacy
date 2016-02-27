@@ -489,8 +489,15 @@ void WorldSession::ProcessQueryCallbacks()
     //! HandleCharEnumOpcode
     if (_charEnumCallback.valid() && _charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
     {
-        result = _charEnumCallback.get();
-        HandleCharEnum(result);
+        //Hacky hacky : if char create or char rename is pending, restart our enum request. A char delete may still pose problem.
+        if (_charCreateCallback.GetParam() || _charRenameCallback.GetParam())
+        {
+            WorldPacket dummy;
+            HandleCharEnumOpcode(dummy);
+        } else {
+            result = _charEnumCallback.get();
+            HandleCharEnum(result);
+        }
     }
 
     if (_charCreateCallback.IsReady())

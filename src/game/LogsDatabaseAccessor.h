@@ -32,7 +32,7 @@ public:
     static void Enchantment(Player const* caster, Player const* targetPlayer, uint32 itemGUIDLow, uint32 itemEntry, uint32 enchantID, bool permanent);
     static void BattlegroundStats(uint32 mapId, time_t start, time_t end, Team winner, uint32 scoreAlliance, uint32 scoreHorde);
     static void BossDown(Creature const* victim, std::string const& bossName, std::string const& bossNameFr, uint32 downByGuildId, std::string const& , uint32 guildPercentage, uint32 leaderGuid);
-    static void CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, std::string const& IP);
+    static void CharacterDelete(WorldSession const* session, uint32 playerGUID, std::string const& charName, uint8 level, std::string const& IP);
     static void CharacterRename(WorldSession const* m_session, uint32 playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP);
     static void GMCommand(WorldSession const* m_session, Unit const* target, std::string const& fullcmd);
     // 'to' can be a player name or a channel name
