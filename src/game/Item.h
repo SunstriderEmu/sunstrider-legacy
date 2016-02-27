@@ -21,7 +21,6 @@
 #ifndef TRINITYCORE_ITEM_H
 #define TRINITYCORE_ITEM_H
 
-#include "Common.h"
 #include "Object.h"
 #include "LootMgr.h"
 #include "ItemPrototype.h"
@@ -207,12 +206,12 @@ class Item : public Object
 
         ItemTemplate const* GetTemplate() const { return m_itemProto; }
 
-        uint64 GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
-        void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
-        Player* GetOwner()const;
+        uint64 GetOwnerGUID() const;
+        void SetOwnerGUID(uint64 guid);
+        Player* GetOwner() const;
 
-        void SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND,val); }
-        bool IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
+        void SetBinding(bool val);
+        bool IsSoulBound() const;
         bool IsBindedNotWith(uint64 guid) const { return IsSoulBound() && GetOwnerGUID()!= guid; }
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction trans);
@@ -220,8 +219,8 @@ class Item : public Object
         virtual void DeleteFromDB();
         void DeleteFromInventoryDB(SQLTransaction trans);
 
-        bool IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
-        bool IsBroken() const { return GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0 && GetUInt32Value(ITEM_FIELD_DURABILITY) == 0; }
+        bool IsBag() const;
+        bool IsBroken() const;
         bool CanBeTraded() const;
         void SetInTrade(bool b = true) { mb_in_trade = b; }
         bool IsInTrade() const { return mb_in_trade; }
@@ -230,8 +229,8 @@ class Item : public Object
         bool IsLimitedToAnotherMapOrZone( uint32 cur_mapId, uint32 cur_zoneId) const;
         bool GemsFitSockets() const;
 
-        uint32 GetCount() const { return GetUInt32Value (ITEM_FIELD_STACK_COUNT); }
-        void SetCount(uint32 value) { SetUInt32Value (ITEM_FIELD_STACK_COUNT, value); }
+        uint32 GetCount() const;
+        void SetCount(uint32 value);
         uint32 GetMaxStackCount() const { return GetTemplate()->Stackable; }
         uint8 GetGemCountWithID(uint32 GemID) const;
 
@@ -249,8 +248,8 @@ class Item : public Object
         uint32 GetSpell();
 
         // RandomPropertyId (signed but stored as unsigned)
-        int32 GetItemRandomPropertyId() const { return GetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID); }
-        uint32 GetItemSuffixFactor() const { return GetUInt32Value(ITEM_FIELD_PROPERTY_SEED); }
+        int32 GetItemRandomPropertyId() const;
+        uint32 GetItemSuffixFactor() const;
         void SetItemRandomProperties(int32 randomPropId);
         bool UpdateItemSuffixFactor();
         static int32 GenerateItemRandomPropertyId(uint32 item_id);
@@ -258,16 +257,16 @@ class Item : public Object
         void SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration);
         void SetEnchantmentCharges(EnchantmentSlot slot, uint32 charges);
         void ClearEnchantment(EnchantmentSlot slot);
-        uint32 GetEnchantmentId(EnchantmentSlot slot)       const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET);}
-        uint32 GetEnchantmentDuration(EnchantmentSlot slot) const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET);}
-        uint32 GetEnchantmentCharges(EnchantmentSlot slot)  const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET);}
+        uint32 GetEnchantmentId(EnchantmentSlot slot)       const;
+        uint32 GetEnchantmentDuration(EnchantmentSlot slot) const;
+        uint32 GetEnchantmentCharges(EnchantmentSlot slot)  const;
 
         void SendTimeUpdate(Player* owner);
         void UpdateDuration(Player* owner, uint32 diff);
 
         // spell charges (signed but stored as unsigned)
-        int32 GetSpellCharges(uint8 index/*0..5*/ = 0) const { return GetInt32Value(ITEM_FIELD_SPELL_CHARGES + index); }
-        void  SetSpellCharges(uint8 index/*0..5*/, int32 value) { SetInt32Value(ITEM_FIELD_SPELL_CHARGES + index,value); }
+        int32 GetSpellCharges(uint8 index/*0..5*/ = 0) const;
+        void  SetSpellCharges(uint8 index/*0..5*/, int32 value);
 
         Loot loot;
         bool m_lootGenerated;

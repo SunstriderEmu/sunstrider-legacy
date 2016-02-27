@@ -30,11 +30,11 @@
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "QueryResult.h"
-#include "Callback.h"
 
 #include <map>
 #include <set>
 #include <list>
+#include <future>
 
 class Object;
 class WorldPacket;
@@ -78,13 +78,13 @@ enum GlobalPlayerUpdateMask
 typedef std::unordered_map<uint32, GlobalPlayerData> GlobalPlayerDataMap;
 typedef std::map<std::string, uint32> GlobalPlayerNameMap;
 
-enum ShutdownMask
+enum ShutdownMask : int
 {
     SHUTDOWN_MASK_RESTART = 1,
     SHUTDOWN_MASK_IDLE    = 2,
 };
 
-enum ShutdownExitCode
+enum ShutdownExitCode : int
 {
     SHUTDOWN_EXIT_CODE = 0,
     ERROR_EXIT_CODE    = 1,

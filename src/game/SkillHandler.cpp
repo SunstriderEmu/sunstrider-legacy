@@ -32,7 +32,7 @@
 
 void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4);
 
@@ -159,7 +159,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -195,7 +195,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 

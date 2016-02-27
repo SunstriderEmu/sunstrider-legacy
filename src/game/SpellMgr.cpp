@@ -30,6 +30,28 @@
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 
+bool SpellMgr::IsPrimaryProfessionSkill(uint32 skill)
+{
+    SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
+    if (!pSkill)
+        return false;
+
+    if (pSkill->categoryId != SKILL_CATEGORY_PROFESSION)
+        return false;
+
+    return true;
+};
+
+bool SpellMgr::IsProfessionSkill(uint32 skill)
+{
+    return IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
+};
+
+bool SpellMgr::IsProfessionOrRidingSkill(uint32 skill)
+{
+    return IsProfessionSkill(skill) || skill == SKILL_RIDING;
+};
+
 SpellMgr::SpellMgr()
 {
     for(int i = 0; i < TOTAL_SPELL_EFFECTS; ++i)

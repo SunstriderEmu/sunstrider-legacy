@@ -221,7 +221,7 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
 
 void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
 
     PreparedStatement* stmt;
     // remove expired bans
@@ -270,7 +270,7 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1+1+1+1+1+1+1);
 
@@ -657,7 +657,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -726,7 +726,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -1124,7 +1124,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+1);
 
@@ -1150,7 +1150,7 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
 void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     //CHECK_PACKET_SIZE(recvData,4+4);
 
@@ -1179,7 +1179,7 @@ void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("FIXME", "WORLD: Received CMSG_MEETING_STONE_INFO" );
 
@@ -1206,7 +1206,7 @@ void WorldSession::HandleTutorialFlag(WorldPacket& recvData)
 
 void WorldSession::HandleTutorialClear(WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
 
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0xFFFFFFFF);
@@ -1214,7 +1214,7 @@ void WorldSession::HandleTutorialClear(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0x00000000);
@@ -1222,7 +1222,7 @@ void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -1234,7 +1234,7 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+1);
 
@@ -1252,7 +1252,7 @@ void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleShowingHelmOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_HELM for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
@@ -1260,7 +1260,7 @@ void WorldSession::HandleShowingHelmOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleShowingCloakOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_CLOAK for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
@@ -1268,7 +1268,7 @@ void WorldSession::HandleShowingCloakOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1);
 
@@ -1342,7 +1342,7 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     uint64 guid;
 

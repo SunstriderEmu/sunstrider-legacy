@@ -34,7 +34,7 @@
 
 void WorldSession::HandleSplitItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1+1);
 
@@ -70,7 +70,7 @@ void WorldSession::HandleSplitItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1);
 
@@ -111,7 +111,7 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+1);
     uint64 itemguid;
@@ -133,7 +133,7 @@ void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSwapItem( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1);
 
@@ -167,7 +167,7 @@ void WorldSession::HandleSwapItem( WorldPacket & recvData )
 
 void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1);
 
@@ -272,7 +272,7 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1+1+1);
 
@@ -316,7 +316,7 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
 // Only _static_ data send in this packet !!!
 void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -475,7 +475,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleReadItem( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1);
 
@@ -522,7 +522,7 @@ void WorldSession::HandlePageQuerySkippedOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+8+1);
 
@@ -638,7 +638,7 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -690,7 +690,7 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 
 void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+8+1+1);
 
@@ -705,7 +705,7 @@ void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+1+1);
 
@@ -720,7 +720,7 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -806,7 +806,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 
 void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1);
 
@@ -867,7 +867,7 @@ void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     uint32 slot = _player->GetByteValue(PLAYER_BYTES_2, 2);
 
@@ -903,7 +903,7 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
@@ -945,7 +945,7 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
@@ -997,7 +997,7 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -1040,7 +1040,7 @@ void WorldSession::SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,
 
 void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -1064,7 +1064,7 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1+1+1);
 
@@ -1169,7 +1169,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8*4);
 
@@ -1298,7 +1298,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleCancelTempEnchantmentOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 

@@ -3492,7 +3492,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
             {
                 // not reset skills for professions, class and racial abilities
                 if( (pSkill->categoryId==SKILL_CATEGORY_SECONDARY || pSkill->categoryId==SKILL_CATEGORY_PROFESSION) &&
-                    (IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask!=0) )
+                    (SpellMgr::IsProfessionSkill(pSkill->id) || _spell_idx->second->racemask!=0) )
                     continue;
                 
                 if (pSkill->categoryId == SKILL_CATEGORY_CLASS || pSkill->categoryId == SKILL_CATEGORY_WEAPON) // When do we need to reset this? I added this because it made faction-changed characters forget almost all their spells
@@ -3880,7 +3880,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     // secondary prof. or not prof. spell
     uint32 skill = spell->Effects[1].MiscValue;
 
-    if(spell->Effects[1].Effect != SPELL_EFFECT_SKILL || !IsPrimaryProfessionSkill(skill))
+    if(spell->Effects[1].Effect != SPELL_EFFECT_SKILL || !SpellMgr::IsPrimaryProfessionSkill(skill))
         return TRAINER_SPELL_GREEN;
 
     // check primary prof. limit
@@ -5389,7 +5389,7 @@ void Player::UpdateSkillsToMaxSkillsForLevel()
             continue;
 
         uint32 pskill = itr->first;
-        if (IsProfessionOrRidingSkill(pskill))
+        if (SpellMgr::IsProfessionOrRidingSkill(pskill))
             continue;
         uint32 valueIndex = PLAYER_SKILL_VALUE_INDEX(itr->second.pos);
         uint32 data = GetUInt32Value(valueIndex);
@@ -17585,6 +17585,10 @@ Pet* Player::GetMiniPet()
         return NULL;
     return ObjectAccessor::GetPet(*this,m_miniPet);
 }
+
+void Player::SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
+
+void Player::AddGuardian(Pet* pet) { m_guardianPets.insert(pet->GetGUID()); }
 
 void Player::RemoveGuardians()
 {

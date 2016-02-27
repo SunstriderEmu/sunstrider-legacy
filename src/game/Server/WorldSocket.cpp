@@ -24,10 +24,9 @@
 #include "PacketLog.h"
 #include "QueryHolder.h"
 #include "DatabaseEnv.h"
-#include "Player.h"
 #include "AccountMgr.h"
-#include <memory>
-
+#include "ServerPktHeader.h"
+#include <boost/asio/ip/tcp.hpp>
 
 class EncryptablePacket : public WorldPacket
 {

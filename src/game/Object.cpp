@@ -2313,3 +2313,14 @@ uint64 WorldObject::GetTransGUID() const
         return GetTransport()->GetGUID();
     return 0;
 }
+
+uint64 Object::GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }
+uint32 Object::GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
+uint32 Object::GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
+uint32 Object::GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
+PackedGuid const& Object::GetPackGUID() const { return m_PackGUID; }
+uint32 Object::GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
+void Object::SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
+
+float Object::GetObjectScale() const { return GetFloatValue(OBJECT_FIELD_SCALE_X); }
+void Object::SetObjectScale(float scale) { SetFloatValue(OBJECT_FIELD_SCALE_X, scale); }

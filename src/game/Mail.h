@@ -20,7 +20,6 @@
 #ifndef TRINITY_MAIL_H
 #define TRINITY_MAIL_H
 
-#include "Common.h"
 #include <map>
 
 class Item;

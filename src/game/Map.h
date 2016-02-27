@@ -22,12 +22,8 @@
 #define TRINITY_MAP_H
 
 #include "Define.h"
-#include "Policies/ThreadingModel.h"
-#include "DBCStructure.h"
 #include "GridDefines.h"
 #include "Cell.h"
-#include "Timer.h"
-#include "SharedDefines.h"
 #include "GameSystem/GridRefManager.h"
 #include "MapRefManager.h"
 #include "mersennetwister/MersenneTwister.h"
@@ -41,15 +37,15 @@
 class Unit;
 class WorldPacket;
 class InstanceScript;
-class Group;
-class InstanceSave;
 class WorldObject;
 class CreatureGroup;
 class Battleground;
 class GridMap;
 class Transport;
-struct Position;
 namespace Trinity { struct ObjectUpdater; }
+struct MapDifficulty;
+struct MapEntry;
+enum Difficulty : int;
 
 struct ObjectMover
 {
@@ -229,24 +225,21 @@ class Map : public GridRefManager<NGridType>
         const char* GetMapName() const;
 
         // have meaning only for instanced map (that have set real difficulty)
-        Difficulty GetDifficulty() const { return Difficulty(GetSpawnMode()); }
-        bool IsRegularDifficulty() const { return GetDifficulty() == REGULAR_DIFFICULTY; }
+        Difficulty GetDifficulty() const;
+        bool IsRegularDifficulty() const;
         MapDifficulty const* GetMapDifficulty() const;
 
-        bool Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
+        bool Instanceable() const;
         // NOTE: this duplicate of Instanceable(), but Instanceable() can be changed when BG also will be instanceable
-        bool IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
-        bool IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
-        bool IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
-        bool IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
-#ifdef LICH_KING
-        bool IsHeroic() const { return IsRaid() ? i_spawnMode >= RAID_DIFFICULTY_10MAN_HEROIC : i_spawnMode >= DUNGEON_DIFFICULTY_HEROIC; }
-#else
-        bool IsHeroic() const { return i_spawnMode == DUNGEON_DIFFICULTY_HEROIC; }
-#endif
-        bool IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
-        bool IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
-        bool IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }
+        bool IsDungeon() const;
+        bool IsNonRaidDungeon() const;
+        bool IsRaid() const;
+        bool IsCommon() const;
+        bool IsHeroic() const;
+
+        bool IsBattleground() const;
+        bool IsBattleArena() const;
+        bool IsBattlegroundOrArena() const;
    
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);

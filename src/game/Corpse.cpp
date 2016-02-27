@@ -129,6 +129,8 @@ void Corpse::DeleteBonesFromWorld()
     AddObjectToRemoveList();
 }
 
+uint64 Corpse::GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
+
 void Corpse::DeleteFromDB(SQLTransaction trans)
 {
     if(GetType() == CORPSE_BONES)

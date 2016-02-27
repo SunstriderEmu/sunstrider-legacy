@@ -47,7 +47,7 @@ void MailItem::deleteItem( bool inDB )
 
 void WorldSession::HandleSendMail(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+1+1+1+4+4+1+4+4+8+1);
 
@@ -261,7 +261,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 //called when mail is read
 void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -285,7 +285,7 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData )
 //called when client deletes mail
 void WorldSession::HandleMailDelete(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -303,7 +303,7 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData )
 
 void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -407,7 +407,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
 //called when player takes item attached in mail
 void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+4);
 
@@ -478,7 +478,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 
 void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -512,7 +512,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
 //called when player lists his received mails
 void WorldSession::HandleGetMailList(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -633,7 +633,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
 ///this function is called when client needs mail message body, or when player clicks on item which has ITEM_FIELD_ITEM_TEXT_ID > 0
 void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4+4);
 
@@ -654,7 +654,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 //used when player copies mail body to his inventory
 void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -709,7 +709,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 //TODO Fix me! ... this void has probably bad condition, but good data are sent
 void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     WorldPacket data(MSG_QUERY_NEXT_MAIL_TIME, 8);
 

@@ -22,7 +22,6 @@
 #define TRINITY_AOEAI_H
 
 #include "CreatureAI.h"
-#include "Timer.h"
 
 class Creature;
 

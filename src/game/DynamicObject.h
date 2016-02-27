@@ -24,7 +24,6 @@
 #include "Object.h"
 
 class Unit;
-class SpellInfo;
 
 class DynamicObject : public WorldObject
 {

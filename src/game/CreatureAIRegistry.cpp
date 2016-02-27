@@ -31,7 +31,6 @@
 #include "CreatureAIImpl.h"
 #include "MovementGeneratorImpl.h"
 #include "MapManager.h"
-#include "CreatureAIRegistry.h"
 #include "WaypointMovementGenerator.h"
 
 namespace AIRegistry

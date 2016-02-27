@@ -1,7 +1,7 @@
-
-
 #ifndef WR_CREATUREAI_H
 #define WR_CREATUREAI_H
+
+enum SelectAggroTarget : int;
 
 #define EVENT_MAX_ID    255
 

@@ -21,11 +21,10 @@
 #ifndef TRINITYCORE_PET_H
 #define TRINITYCORE_PET_H
 
-#include "ObjectDefines.h"
 #include "Creature.h"
 #include "Unit.h"
 
-enum PetType
+enum PetType : int
 {
     SUMMON_PET              = 0,
     HUNTER_PET              = 1,
@@ -44,7 +43,7 @@ enum PetType
 extern char const* petTypeSuffix[MAX_PET_TYPE];
 
 // stored in character_pet.slot
-enum PetSaveMode
+enum PetSaveMode : int
 {
     PET_SAVE_AS_DELETED        = -1,                        // not saved in fact
     PET_SAVE_AS_CURRENT        =  0,                        // in current slot (with player)
@@ -107,7 +106,7 @@ enum PetTalk
     PET_TALK_ATTACK         = 1
 };
 
-enum PetNameInvalidReason
+enum PetNameInvalidReason : int
 {
     // custom, not send
     PET_NAME_SUCCESS                                        = 0,

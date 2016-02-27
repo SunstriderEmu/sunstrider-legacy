@@ -20,13 +20,10 @@
 #define TRINITY_CONDITIONMGR_H
 
 #include "Define.h"
-#include "Errors.h"
 #include <list>
 #include <map>
 #include <string>
 
-class Player;
-class Unit;
 class WorldObject;
 class LootTemplate;
 struct Condition;

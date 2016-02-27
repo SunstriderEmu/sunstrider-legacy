@@ -128,7 +128,7 @@ Corpse* ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
 
 Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32 typemask)
 {
-    PROFILE;
+    
     
     Object *obj = NULL;
 
@@ -429,6 +429,20 @@ WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
         case HIGHGUID_CORPSE:        return GetObjectInWorld(guid, (Corpse*)NULL);
         default:                     return NULL;
     }
+}
+
+Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit* /*fake*/)
+{
+    if (!guid)
+        return NULL;
+
+    if (IS_PLAYER_GUID(guid))
+        return (Unit*)HashMapHolder<Player>::Find(guid);
+
+    if (Unit* u = (Unit*)HashMapHolder<Pet>::Find(guid))
+        return u;
+
+    return (Unit*)HashMapHolder<Creature>::Find(guid);
 }
 
 void ObjectAccessor::UnloadAll()

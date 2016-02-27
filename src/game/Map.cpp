@@ -47,6 +47,7 @@
 #include "DynamicTree.h"
 #include "BattleGround.h"
 #include "GridMap.h"
+#include "ObjectGridLoader.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -2563,6 +2564,28 @@ MapDifficulty const* Map::GetMapDifficulty() const
     return GetMapDifficultyData(GetId(), GetDifficulty());
 }
 
+Difficulty Map::GetDifficulty() const
+{ 
+    return Difficulty(GetSpawnMode()); 
+}
+
+bool Map::IsRegularDifficulty() const
+{ 
+    return GetDifficulty() == REGULAR_DIFFICULTY; 
+}
+
+#ifdef LICH_KING
+bool Map::IsHeroic() const 
+{ 
+    return IsRaid() ? i_spawnMode >= RAID_DIFFICULTY_10MAN_HEROIC : i_spawnMode >= DUNGEON_DIFFICULTY_HEROIC; 
+}
+#else
+bool Map::IsHeroic() const 
+{ 
+    return i_spawnMode == DUNGEON_DIFFICULTY_HEROIC; 
+}
+#endif
+
 /* ******* Battleground Instance Maps ******* */
 
 BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId)
@@ -2666,3 +2689,13 @@ bool Map::IsGridLoadedAt(float x, float y) const
 
     return loaded(gp);
 }
+
+bool Map::Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable(); }
+bool Map::IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
+bool Map::IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
+bool Map::IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
+bool Map::IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
+
+bool Map::IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
+bool Map::IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }
+bool Map::IsBattlegroundOrArena() const { return i_mapEntry && i_mapEntry->IsBattlegroundOrArena(); }

@@ -287,7 +287,6 @@ enum InventorySlot
 };
 
 struct FactionTemplateEntry;
-struct Modifier;
 class SpellInfo;
 struct SpellValue;
 
@@ -1371,7 +1370,7 @@ class Unit : public WorldObject
                 return guid;
             return GetGUID();
         }
-        bool isCharmedOwnedByPlayerOrPlayer() const { return IS_PLAYER_GUID(GetCharmerOrOwnerOrOwnGUID()); }
+        bool isCharmedOwnedByPlayerOrPlayer() const;
 
         Player* GetSpellModOwner() const;
 

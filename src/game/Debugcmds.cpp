@@ -813,20 +813,6 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleDebugDumpProfilingCommand(const char* args)
-{
-    PSendSysMessage("Dump done.");
-    TC_LOG_INFO("profiling", "%s", sProfilerMgr->dump().c_str());
-    return true;
-}
-
-bool ChatHandler::HandleDebugClearProfilingCommand(const char* args)
-{
-    PSendSysMessage("Profiling data cleared.");
-    sProfilerMgr->clear();
-    return true;
-}
-
 /** Syntax: .smartai errors [entryOrGuid] */
 bool ChatHandler::HandleSmartAIShowErrorsCommand(const char* args)
 {

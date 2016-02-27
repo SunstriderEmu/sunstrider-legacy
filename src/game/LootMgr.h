@@ -21,8 +21,6 @@
 #ifndef TRINITY_LOOTMGR_H
 #define TRINITY_LOOTMGR_H
 
-#include "ItemEnchantmentMgr.h"
-#include "ByteBuffer.h"
 #include "RefManager.h"
 #include "ConditionMgr.h"
 

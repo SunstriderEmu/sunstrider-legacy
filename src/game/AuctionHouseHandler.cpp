@@ -30,6 +30,7 @@
 #include "Util.h"
 #include "Chat.h"
 #include "LogsDatabaseAccessor.h"
+#include "Mail.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -37,8 +38,6 @@
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recvData )
 {
-    PROFILE;
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;                                            //NPC guid
@@ -161,7 +160,7 @@ void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 //this void creates new auction and adds auction to some auctionhouse
 void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+8+4+4+4);
 
@@ -290,7 +289,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 //this function is called when client bids or buys out auction
 void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+4);
 
@@ -425,7 +424,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 //this void is called when auction_owner cancels his auction
 void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -505,7 +504,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
 //called when player lists his bids
 void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+4);
 
@@ -563,7 +562,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
 //this void sends player info about his auctions
 void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -598,7 +597,7 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recvData )
 //this void is called when player clicks on search button
 void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+1+1+1+4+4+4+4+1);
 

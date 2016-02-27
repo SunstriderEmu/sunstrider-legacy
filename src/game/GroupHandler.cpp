@@ -56,7 +56,7 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
 
 void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     std::string membername;
     recvData >> membername;
@@ -177,7 +177,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Group *group = GetPlayer()->GetGroupInvite();
     if (!group) return;
@@ -223,7 +223,7 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Group  *group  = GetPlayer()->GetGroupInvite();
     if (!group) return;
@@ -255,7 +255,7 @@ void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -297,7 +297,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -354,7 +354,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -378,7 +378,7 @@ void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupDisbandOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     if(!GetPlayer()->GetGroup())
         return;
@@ -400,7 +400,7 @@ void WorldSession::HandleGroupDisbandOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+8+4);
 
@@ -427,7 +427,7 @@ void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootRoll( WorldPacket &recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+1);
 
@@ -453,7 +453,7 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4);
 
@@ -479,7 +479,7 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4);
 
@@ -510,7 +510,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -545,7 +545,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupRaidConvertOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -566,7 +566,7 @@ void WorldSession::HandleGroupRaidConvertOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1);
 
@@ -601,7 +601,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+1);
 
@@ -625,7 +625,7 @@ void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1+1+8);
 
@@ -656,7 +656,7 @@ void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleRaidReadyCheckOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -865,7 +865,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player *player, WorldPacke
 /*this procedure handles clients CMSG_REQUEST_PARTY_MEMBER_STATS request*/
 void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -988,7 +988,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 
 /*!*/void WorldSession::HandleRequestRaidInfoOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     // every time the player checks the character screen
     _player->SendRaidInfo();
@@ -1001,7 +1001,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 
 void WorldSession::HandleOptOutOfLootOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 

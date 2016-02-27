@@ -32,6 +32,7 @@
 #include "Util.h"
 #include "SpellMgr.h"
 #include "LogsDatabaseAccessor.h"
+#include "Mail.h"
 
 Battleground::Battleground()
 {

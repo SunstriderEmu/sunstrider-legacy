@@ -20,11 +20,6 @@
 #ifndef CREATUREAIIMPL_H
 #define CREATUREAIIMPL_H
 
-#include "Common.h"
-#include "Define.h"
-#include "TemporarySummon.h"
-#include "CreatureAI.h"
-
 #define HEROIC(n,h) (HeroicMode ? h : n)
 
 template<class T>

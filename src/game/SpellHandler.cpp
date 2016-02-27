@@ -39,7 +39,7 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     // TODO: add targets.read() check
     CHECK_PACKET_SIZE(recvPacket,1+1+1+1+8);
@@ -196,7 +196,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,1+1);
 
@@ -300,7 +300,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -329,7 +329,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,4+1+2);
 
@@ -398,7 +398,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,4);
 
@@ -411,7 +411,7 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,4);
 
@@ -447,7 +447,7 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket, 8+4);
 
@@ -519,7 +519,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket, 1);
 
@@ -545,7 +545,7 @@ void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 
 void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 {
-    PROFILE;
+    
     
 //    CHECK_PACKET_SIZE(recvData, 0);
 
@@ -561,7 +561,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 

@@ -50,7 +50,7 @@
 
 void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+8+4+1+5*8+2+1+4+4);
 
@@ -235,7 +235,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -286,7 +286,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionQueryOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+8);
 
@@ -367,7 +367,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
 
 void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1);
 
@@ -435,7 +435,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1);
 
@@ -559,7 +559,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -585,7 +585,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+8+8);
 
@@ -685,7 +685,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -855,7 +855,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 

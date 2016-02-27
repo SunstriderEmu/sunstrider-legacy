@@ -77,7 +77,7 @@ enum AreaFlags
     AREA_FLAG_OUTSIDE          = 0x04000000,
 };
 
-enum Difficulty
+enum Difficulty : int
 {
     REGULAR_DIFFICULTY = 0,
 

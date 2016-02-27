@@ -30,7 +30,6 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "Totem.h"
-#include "TransportBase.h"
 
 Transport::Transport() : GameObject(),
     _transportInfo(nullptr), _isMoving(true),

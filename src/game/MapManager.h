@@ -23,12 +23,11 @@
 
 #include "Define.h"
 #include "Policies/Singleton.h"
-#include "Common.h"
 #include "Map.h"
-#include "GridStates.h"
 #include "MapUpdater.h"
 
-class Transport;
+class WorldLocation;
+class GridState;
 
 class MapManager
 {
@@ -56,21 +55,9 @@ class MapManager
         // only const version for outer users
         Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->CreateBaseMap(id); }
         
-        uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
-        {
-            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetAreaId(x, y, z);
-        }
-        uint32 GetZoneId(uint32 mapid, float x, float y, float z) const
-        {
-            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            return m->GetZoneId(x, y, z);
-        }
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
-        {
-            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
-            m->GetZoneAndAreaId(zoneid, areaid, x, y, z);
-        }
+        uint32 GetAreaId(uint32 mapid, float x, float y, float z) const;
+        uint32 GetZoneId(uint32 mapid, float x, float y, float z) const;
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z);
 
         void Initialize(void);
         void Update(time_t);
@@ -113,10 +100,7 @@ class MapManager
             return IsValidMAP(mapid) && Trinity::IsValidMapCoord(x,y,z,o);
         }
 
-        static bool IsValidMapCoord(WorldLocation const& loc)
-        {
-            return IsValidMapCoord(loc.m_mapId,loc.m_positionX,loc.m_positionY,loc.m_positionZ,loc.m_orientation);
-        }
+        static bool IsValidMapCoord(WorldLocation const& loc);
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
         void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);

@@ -21,18 +21,13 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "Common.h"
 #include "ItemPrototype.h"
 #include "Unit.h"
 #include "Item.h"
 
-#include "Database/DatabaseEnv.h"
-#include "NPCHandler.h"
 #include "QuestDef.h"
 #include "Group.h"
-#include "Bag.h"
 #include "WorldSession.h"
-#include "Pet.h"
 #include "MapReference.h"
 #include "Util.h"                                           // for Tokens typedef
 #include "SpellMgr.h"
@@ -42,7 +37,6 @@
 
 struct Mail;
 class Channel;
-class DynamicObject;
 class Creature;
 class Pet;
 class PlayerMenu;
@@ -53,6 +47,9 @@ class OutdoorPvP;
 class SpectatorAddonMsg;
 class ArenaTeam;
 class Guild;
+enum PetType : int;
+enum PetSaveMode : int;
+struct TrainerSpell;
 
 #ifdef PLAYERBOT
 // Playerbot mod
@@ -1266,11 +1263,11 @@ class Player : public Unit
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
         void RemoveMiniPet();
         Pet* GetMiniPet();
-        void SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
+        void SetMiniPet(Pet* pet);
         void RemoveGuardians();
         void RemoveGuardiansWithEntry(uint32 entry);
         bool HasGuardianWithEntry(uint32 entry);
-        void AddGuardian(Pet* pet) { m_guardianPets.insert(pet->GetGUID()); }
+        void AddGuardian(Pet* pet);
         GuardianPetList const& GetGuardians() const { return m_guardianPets; }
         void Uncharm();
 

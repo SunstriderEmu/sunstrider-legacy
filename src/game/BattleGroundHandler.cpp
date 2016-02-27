@@ -39,7 +39,7 @@
 
 void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -180,7 +180,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
 
 void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+4+4+1);
 
@@ -212,7 +212,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Battleground *bg = _player->GetBattleground();
     if(!bg)                                                 // can't be received if player not in battleground
@@ -265,7 +265,7 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode( WorldPacket & /*recv
 
 void WorldSession::HandlePVPLogDataOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Battleground *bg = _player->GetBattleground();
     if(!bg || (bg->IsArena() && bg->GetStatus() != STATUS_WAIT_LEAVE))
@@ -278,7 +278,7 @@ void WorldSession::HandlePVPLogDataOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -303,7 +303,7 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 
 void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1+1+4+2+1);
 
@@ -507,7 +507,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
 void WorldSession::HandleBattlefieldLeaveOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
 
     if(Battleground *bg = _player->GetBattleground())
     {
@@ -538,7 +538,7 @@ void WorldSession::HandleBattlefieldLeaveOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     WorldPacket data;
 
@@ -620,7 +620,7 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -664,7 +664,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1+1+1);
 
@@ -909,7 +909,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 
 void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 

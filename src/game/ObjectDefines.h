@@ -22,7 +22,6 @@
 #define TRINITY_OBJECTDEFINES_H
 
 #include "Define.h"
-#include "ObjectGuid.h"
 
 #ifndef UINT64_C
 	#define UINT64_C(x)  (x ## ULL)

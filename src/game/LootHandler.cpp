@@ -34,7 +34,7 @@
 
 void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -176,7 +176,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     Player *player = GetPlayer();
     uint64 guid = player->GetLootGUID();
@@ -277,7 +277,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -289,7 +289,7 @@ void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -493,7 +493,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
 void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+1+8);
 

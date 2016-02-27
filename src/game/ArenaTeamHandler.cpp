@@ -31,8 +31,6 @@
 
 void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 {
-    PROFILE;
-    
     CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;
@@ -53,7 +51,7 @@ void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamQueryOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -70,7 +68,7 @@ void WorldSession::HandleArenaTeamQueryOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -86,7 +84,7 @@ void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+1);
 
@@ -162,7 +160,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     ArenaTeam *at = sObjectMgr->GetArenaTeamById(_player->GetArenaTeamIdInvited());
     if(!at)
@@ -196,14 +194,14 @@ void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleArenaTeamDeclineOpcode(WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     _player->SetArenaTeamIdInvited(0);                      // no more invited
 }
 
 void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -242,7 +240,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamDisbandOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -265,7 +263,7 @@ void WorldSession::HandleArenaTeamDisbandOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+1);
 
@@ -315,7 +313,7 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleArenaTeamLeaderOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+1);
 

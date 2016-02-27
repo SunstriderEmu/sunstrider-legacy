@@ -19,13 +19,12 @@
 #define _SPELLINFO_H
 
 #include "SharedDefines.h"
-#include "DBCStructure.h"
-#include "Util.h"
 
-enum AuraType;
+enum AuraType : int;
 class SpellInfo;
 class Spell;
 struct Condition;
+class Unit;
 
 enum SpellCustomAttributes
 {

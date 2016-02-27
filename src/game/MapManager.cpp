@@ -399,3 +399,24 @@ void MapManager::FreeInstanceId(uint32 instanceId)
     _instanceIds[instanceId] = false;
  //LK   sAchievementMgr->OnInstanceDestroyed(instanceId);
 }
+
+uint32 MapManager::GetAreaId(uint32 mapid, float x, float y, float z) const
+{
+    Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+    return m->GetAreaId(x, y, z);
+}
+uint32 MapManager::GetZoneId(uint32 mapid, float x, float y, float z) const
+{
+    Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+    return m->GetZoneId(x, y, z);
+}
+void MapManager::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, uint32 mapid, float x, float y, float z)
+{
+    Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+    m->GetZoneAndAreaId(zoneid, areaid, x, y, z);
+}
+
+bool MapManager::IsValidMapCoord(WorldLocation const& loc)
+{
+    return IsValidMapCoord(loc.m_mapId, loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
+}

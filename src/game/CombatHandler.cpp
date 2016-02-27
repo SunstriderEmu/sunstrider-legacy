@@ -29,7 +29,7 @@
 
 void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
 
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -60,14 +60,14 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAttackStopOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     GetPlayer()->AttackStop();
 }
 
 void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 

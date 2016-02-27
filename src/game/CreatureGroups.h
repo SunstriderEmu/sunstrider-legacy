@@ -21,8 +21,6 @@
 #ifndef _FORMATIONS_H
 #define _FORMATIONS_H
 
-#include "Common.h"
-
 class CreatureGroup;
 
 struct FormationInfo

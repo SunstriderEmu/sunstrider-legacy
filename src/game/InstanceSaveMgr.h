@@ -25,7 +25,6 @@
 #include <unordered_map>
 
 #include "Define.h"
-#include "DatabaseEnv.h"
 #include "DBCEnums.h"
 #include "ObjectDefines.h"
 

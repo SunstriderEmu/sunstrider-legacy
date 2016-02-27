@@ -234,7 +234,7 @@ void World::AddSession(WorldSession* s)
 void
 World::AddSession_(WorldSession* s)
 {
-    PROFILE;
+    
     
     ASSERT (s);
 

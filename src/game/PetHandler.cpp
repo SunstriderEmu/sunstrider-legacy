@@ -37,7 +37,7 @@
 
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+2+2+8);
 
@@ -325,7 +325,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
 }
 void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+8);
 
@@ -394,7 +394,7 @@ bool WorldSession::CheckStableMaster(uint64 guid)
 
 void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+4+2+2);
 
@@ -465,7 +465,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 
 void WorldSession::HandlePetRename( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1);
 
@@ -551,7 +551,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 
 void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -581,7 +581,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 
 void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8);
 
@@ -642,7 +642,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8+2+2+1);
 
@@ -700,7 +700,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
 void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
 

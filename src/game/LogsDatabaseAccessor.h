@@ -3,7 +3,6 @@
 
 #include "Define.h"
 #include "../game/SharedDefines.h"
-#include "DatabaseEnv.h"
 
 class Creature;
 class Player;

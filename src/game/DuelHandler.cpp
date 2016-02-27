@@ -30,7 +30,7 @@
 
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8);
 
@@ -70,7 +70,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8);
 

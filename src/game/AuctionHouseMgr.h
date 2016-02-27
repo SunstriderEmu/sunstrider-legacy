@@ -21,8 +21,6 @@
 #ifndef _AUCTION_HOUSE_MGR_H
 #define _AUCTION_HOUSE_MGR_H
 
-#include "SharedDefines.h"
-
 class Item;
 class Player;
 class WorldPacket;

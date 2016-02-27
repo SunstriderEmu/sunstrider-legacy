@@ -21,8 +21,6 @@
 #define TRINITYCORE_CHANNELMGR_H
 
 #include "Channel.h"
-#include "Policies/Singleton.h"
-#include "World.h"
 
 #include <map>
 #include <string>

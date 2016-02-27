@@ -231,7 +231,7 @@ void WorldSession::moveItems(std::vector<Item*> myItems, std::vector<Item*> hisI
 
 void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     std::vector<Item*> myItems(TRADE_SLOT_TRADED_COUNT, nullptr);
     std::vector<Item*> hisItems(TRADE_SLOT_TRADED_COUNT, nullptr);
@@ -395,7 +395,7 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleUnacceptTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     if ( !GetPlayer()->pTrader )
         return;
@@ -406,7 +406,7 @@ void WorldSession::HandleUnacceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleBeginTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     if(!_player->pTrader)
         return;
@@ -428,7 +428,7 @@ void WorldSession::SendCancelTrade()
 
 void WorldSession::HandleCancelTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     // sended also after LOGOUT COMPLETE
     if(_player)                                             // needed because STATUS_LOGGEDIN_OR_RECENTLY_LOGGOUT
@@ -437,7 +437,7 @@ void WorldSession::HandleCancelTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8);
 
@@ -540,7 +540,7 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,4);
 
@@ -559,7 +559,7 @@ void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,1+1+1);
 
@@ -610,7 +610,7 @@ void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleClearTradeItemOpcode(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,1);
 

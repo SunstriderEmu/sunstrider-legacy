@@ -22,10 +22,14 @@
 #include "MoveSplineFlag.h"
 
 class Unit;
+namespace G3D
+{
+    class Vector3;
+}
 
 namespace Movement
 {
-    typedef std::vector<Vector3> PointsArray;
+    typedef std::vector<G3D::Vector3> PointsArray;
 
     union FacingInfo
     {

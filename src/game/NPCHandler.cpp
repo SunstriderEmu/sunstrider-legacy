@@ -58,7 +58,7 @@ enum StableResultCode
 
 void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -88,7 +88,7 @@ void WorldSession::SendTabardVendorActivate( uint64 guid )
 
 void WorldSession::HandleBankerActivateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -118,7 +118,7 @@ void WorldSession::SendShowBank( uint64 guid )
 
 void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -214,7 +214,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -278,7 +278,7 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -330,7 +330,7 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -391,7 +391,7 @@ void WorldSession::SendSpiritResurrect()
 
 void WorldSession::HandleBinderActivateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -435,7 +435,7 @@ void WorldSession::SendBindPoint(Creature *npc)
 //Need fix
 void WorldSession::HandleListStabledPetsOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS");
     CHECK_PACKET_SIZE(recvData,8);
@@ -518,7 +518,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
 void WorldSession::HandleStablePet( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -598,7 +598,7 @@ void WorldSession::HandleStablePetCallback(PreparedQueryResult result)
 //receive pet number from client, do the first basic checks then start querying the database for the pet entry. HandleUnstablePetCallback is called uppon received response.
 void WorldSession::HandleUnstablePet( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+4);
 
@@ -688,7 +688,7 @@ void WorldSession::HandleUnstablePetCallback2(PreparedQueryResult result, uint32
 
 void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -823,7 +823,7 @@ void WorldSession::HandleStableSwapPetCallback(PreparedQueryResult result, uint3
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+8+1);
 

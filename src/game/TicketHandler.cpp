@@ -27,7 +27,7 @@
 
 void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4*4+1+2*4);
 
@@ -73,7 +73,7 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
     WorldPacket data(SMSG_GMTICKET_UPDATETEXT, 4);
@@ -102,7 +102,7 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
 
 void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     GM_Ticket* ticket = sObjectMgr->GetGMTicketByPlayer(GetPlayer()->GetGUID());
     if(ticket)
@@ -119,7 +119,7 @@ void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
 
 void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     WorldPacket data( SMSG_QUERY_TIME_RESPONSE, 4+4 );
     data << (uint32)time(NULL);
@@ -136,7 +136,7 @@ void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
 
 void WorldSession::HandleGMTicketSystemStatusOpcode( WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     WorldPacket data(SMSG_GMTICKET_SYSTEMSTATUS, 4);
     data << uint32(1);

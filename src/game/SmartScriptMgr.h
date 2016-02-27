@@ -3,13 +3,7 @@
 #ifndef TRINITY_SMARTSCRIPTMGR_H
 #define TRINITY_SMARTSCRIPTMGR_H
 
-#include "Common.h"
-#include "Creature.h"
-#include "CreatureAI.h"
-#include "Unit.h"
-#include "ConditionMgr.h"
-#include "CreatureTextMgr.h"
-#include "Spell.h"
+class Unit;
 
 #define SMARTAI_AI_NAME "SmartAI"
 
@@ -1647,56 +1641,15 @@ class SmartAIMgr
             return true;
         }
 
-        bool IsItemValid(SmartScriptHolder const& e, uint32 entry)
-        {
-            if (!sItemStore.LookupEntry(entry))
-            {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Item entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-                return false;
-            }
-            return true;
-        }
+        bool IsItemValid(SmartScriptHolder const& e, uint32 entry);
 
-        bool IsTextEmoteValid(SmartScriptHolder const& e, uint32 entry)
-        {
-            if (!sEmotesTextStore.LookupEntry(entry))
-            {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Text Emote entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-                return false;
-            }
-            return true;
-        }
+        bool IsTextEmoteValid(SmartScriptHolder const& e, uint32 entry);
 
-        bool IsEmoteValid(SmartScriptHolder const& e, uint32 entry)
-        {
-           /* if (!sEmotesStore.LookupEntry(entry))
-            {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Emote entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-                return false;
-            }
-         */
-            return true;
-        }
+        bool IsEmoteValid(SmartScriptHolder const& e, uint32 entry);
 
-        bool IsAreaTriggerValid(SmartScriptHolder const& e, uint32 entry)
-        {
-            if (!sAreaTriggerStore.LookupEntry(entry))
-            {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent AreaTrigger entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-                return false;
-            }
-            return true;
-        }
+        bool IsAreaTriggerValid(SmartScriptHolder const& e, uint32 entry);
 
-        bool IsSoundValid(SmartScriptHolder const& e, uint32 entry)
-        {
-            if (!sSoundEntriesStore.LookupEntry(entry))
-            {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Sound entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-                return false;
-            }
-            return true;
-        }
+        bool IsSoundValid(SmartScriptHolder const& e, uint32 entry);
 
         bool IsTextValid(SmartScriptHolder const& e, uint32 id);
 

@@ -42,7 +42,7 @@
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
 
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -88,7 +88,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -120,7 +120,7 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -249,7 +249,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -274,7 +274,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -290,7 +290,7 @@ void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4+4);
 
@@ -353,7 +353,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -377,14 +377,14 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverCancel(WorldPacket& /*recvData*/ )
 {
-    PROFILE;
+    
     
     _player->PlayerTalkClass->SendCloseGossip();
 }
 
 void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+1);
 
@@ -399,7 +399,7 @@ void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
 
 void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -423,7 +423,7 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
 void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
 {
     /*
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -477,7 +477,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
 
 void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+4);
 
@@ -521,7 +521,7 @@ void WorldSession::HandleQuestgiverQuestAutoLaunch(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,4);
 
@@ -597,7 +597,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 
 void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvPacket,8+1);
 
@@ -621,7 +621,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 
 uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
 {
-    PROFILE;
+    
     
     uint32 result = defstatus;
 
@@ -721,7 +721,7 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
 
 void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket*/)
 {
-    PROFILE;
+    
     
     uint32 count = 0;
 

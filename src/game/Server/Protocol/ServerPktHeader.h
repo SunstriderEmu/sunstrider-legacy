@@ -19,8 +19,6 @@
 #ifndef __SERVERPKTHDR_H__
 #define __SERVERPKTHDR_H__
 
-#include "Log.h"
-
 #pragma pack(push, 1)
 
 struct ServerPktHeader

@@ -24,12 +24,12 @@
 #define _WARDEN_MAC_H
 
 #include <map>
-#include "BigNumber.h"
-#include "ByteBuffer.h"
 #include "WardenBase.h"
 
+class ByteBuffer;
 class WorldSession;
 class WardenBase;
+class BigNumber;
 
 class WardenMac : WardenBase
 {

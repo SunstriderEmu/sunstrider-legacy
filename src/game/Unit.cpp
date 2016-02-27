@@ -1,7 +1,7 @@
 #include <omp.h>
-#include "Common.h"
+
 #include "Log.h"
-#include "Opcodes.h"
+
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "World.h"
@@ -20,7 +20,7 @@
 #include "CreatureAINew.h"
 #include "Formulas.h"
 #include "Pet.h"
-#include "Util.h"
+
 #include "Totem.h"
 #include "BattleGround.h"
 #include "OutdoorPvP.h"
@@ -34,7 +34,7 @@
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
-#include "InstanceScript.h"
+
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include "Transport.h"
@@ -7094,7 +7094,7 @@ FactionTemplateEntry const* Unit::GetFactionTemplateEntry() const
 
 bool Unit::IsHostileTo(Unit const* unit) const
 {
-    PROFILE;
+    
     
     // always non-hostile to self
     if (unit == this)
@@ -12126,6 +12126,8 @@ SpellSchoolMask Unit::GetMeleeDamageSchoolMask() const
 {
     return SPELL_SCHOOL_MASK_NORMAL;
 }
+
+bool Unit::isCharmedOwnedByPlayerOrPlayer() const { return IS_PLAYER_GUID(GetCharmerOrOwnerOrOwnGUID()); }
 
 Player* Unit::GetSpellModOwner() const
 {

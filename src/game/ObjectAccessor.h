@@ -111,19 +111,7 @@ class ObjectAccessor
 
         static WorldObject* GetObjectInWorld(uint64 guid, WorldObject* p);
 
-        static Unit* GetObjectInWorld(uint64 guid, Unit* /*fake*/)
-        {
-            if(!guid)
-                return NULL;
-
-            if (IS_PLAYER_GUID(guid))
-                return (Unit*)HashMapHolder<Player>::Find(guid);
-
-            if (Unit* u = (Unit*)HashMapHolder<Pet>::Find(guid))
-                return u;
-
-            return (Unit*)HashMapHolder<Creature>::Find(guid);
-        }
+        static Unit* GetObjectInWorld(uint64 guid, Unit* /*fake*/);
 
         // returns object if is in map
         template<class T> static T* GetObjectInMap(ObjectGuid guid, Map* map, T* /*typeSpecifier*/)

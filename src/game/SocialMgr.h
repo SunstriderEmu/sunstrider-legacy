@@ -21,10 +21,6 @@
 #ifndef __TRINITY_SOCIALMGR_H
 #define __TRINITY_SOCIALMGR_H
 
-#include "Policies/Singleton.h"
-#include "Database/DatabaseEnv.h"
-#include "Common.h"
-
 class SocialMgr;
 class PlayerSocial;
 class Player;

@@ -25,6 +25,9 @@
 #include "Database/DatabaseEnv.h"
 #include "ItemEnchantmentMgr.h"
 #include "World.h"
+#include "DBCStores.h"
+#include "SpellMgr.h"
+#include "Bag.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -976,3 +979,20 @@ void Item::BuildUpdate(UpdateDataMapType& data_map)
 
     ClearUpdateMask(false);
 }
+
+uint64 Item::GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
+void Item::SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
+void Item::SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); }
+bool Item::IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
+bool Item::IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
+bool Item::IsBroken() const { return GetUInt32Value(ITEM_FIELD_MAXDURABILITY) > 0 && GetUInt32Value(ITEM_FIELD_DURABILITY) == 0; }
+uint32 Item::GetCount() const { return GetUInt32Value(ITEM_FIELD_STACK_COUNT); }
+void Item::SetCount(uint32 value) { SetUInt32Value(ITEM_FIELD_STACK_COUNT, value); }
+
+int32 Item::GetItemRandomPropertyId() const { return GetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID); }
+uint32 Item::GetItemSuffixFactor() const { return GetUInt32Value(ITEM_FIELD_PROPERTY_SEED); }
+uint32 Item::GetEnchantmentId(EnchantmentSlot slot)       const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET); }
+uint32 Item::GetEnchantmentDuration(EnchantmentSlot slot) const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET); }
+uint32 Item::GetEnchantmentCharges(EnchantmentSlot slot)  const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET); }
+int32 Item::GetSpellCharges(uint8 index) const { return GetInt32Value(ITEM_FIELD_SPELL_CHARGES + index); }
+void  Item::SetSpellCharges(uint8 index, int32 value) { SetInt32Value(ITEM_FIELD_SPELL_CHARGES + index, value); }

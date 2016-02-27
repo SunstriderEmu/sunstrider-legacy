@@ -21,9 +21,6 @@
 #ifndef __BATTLEGROUND_H
 #define __BATTLEGROUND_H
 
-#include "Common.h"
-#include "WorldPacket.h"
-#include "WorldSession.h"
 #include "Opcodes.h"
 #include "ObjectMgr.h"
 #include "SharedDefines.h"

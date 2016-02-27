@@ -27,13 +27,10 @@
 
 #include "Common.h"
 #include "WorldPacket.h"
-#include "ProfilerMgr.h"
-#include "Profiler.h"
 #include "SharedDefines.h"
 #include "QueryHolder.h"
 #include "Callback.h"
 #include "World.h"
-#include "DatabaseEnv.h"
 
 class MailItemsInfo;
 struct ItemTemplate;
@@ -44,6 +41,8 @@ class WardenBase;
 class BigNumber;
 struct AddonInfo;
 enum MailMessageType : uint32;
+class Transaction;
+typedef std::shared_ptr<Transaction> SQLTransaction;
 
 class Creature;
 class Item;
@@ -58,7 +57,7 @@ class CharacterHandler;
 
 #define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return WorldSession::SizeError((P),(S));
 
-//LK ONLY
+#ifdef LICH_KING
 namespace lfg
 {
 struct LfgJoinResultData;
@@ -69,6 +68,7 @@ struct LfgPlayerRewardData;
 struct LfgRoleCheck;
 struct LfgUpdateData;
 }
+#endif
 
 enum AccountDataType
 {

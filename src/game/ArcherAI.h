@@ -2,7 +2,6 @@
 #define TRINITY_ARCHERAI_H
 
 #include "CreatureAI.h"
-#include "Timer.h"
 
 class Creature;
 

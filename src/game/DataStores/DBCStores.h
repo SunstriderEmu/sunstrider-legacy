@@ -20,13 +20,10 @@
 #define DBCSTORE_H
 
 #include "DBCFileLoader.h"
-#include "Logging/Log.h"
 #include "Field.h"
-#include "DatabaseWorkerPool.h"
-#include "Implementation/WorldDatabase.h"
-#include "DatabaseEnv.h"
 #include "DBCStructure.h"
 #include "Item.h"
+#include "Database/DatabaseEnv.h"
 
 struct SqlDbc
 {

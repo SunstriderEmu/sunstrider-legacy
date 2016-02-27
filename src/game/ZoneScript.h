@@ -21,10 +21,6 @@
 #ifndef TRINITY_INSTANCE_DATA_H
 #define TRINITY_INSTANCE_DATA_H
 
-#include "Common.h"
-#include "GameObject.h"
-#include "Map.h"
-
 class Map;
 class Unit;
 class Player;

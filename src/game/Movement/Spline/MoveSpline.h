@@ -21,7 +21,11 @@
 
 #include "Spline.h"
 #include "MoveSplineInitArgs.h"
-#include "G3D/Vector3.h"
+
+namespace G3D
+{
+    class Vector3;
+}
 
 namespace Movement
 {

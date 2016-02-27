@@ -18,20 +18,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#include "Common.h"
 #include "Language.h"
 #include "DatabaseEnv.h"
 #include "WorldPacket.h"
-#include "WorldSession.h"
 #include "Opcodes.h"
-#include "Log.h"
-#include "World.h"
-#include "ObjectMgr.h"
-#include "Player.h"
 #include "UpdateMask.h"
 #include "NPCHandler.h"
-#include "ObjectAccessor.h"
-#include "Pet.h"
 
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
@@ -81,7 +73,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
 
 void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -94,7 +86,7 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQueryTimeOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
 
     SendQueryTimeResponse();
 }
@@ -110,7 +102,7 @@ void WorldSession::SendQueryTimeResponse()
 /// Only _static_ data send in this packet !!!
 void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+8);
 
@@ -177,7 +169,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
 /// Only _static_ data send in this packet !!!
 void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+8);
 
@@ -250,7 +242,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 {
-    PROFILE;
+    
     
     Corpse *corpse = GetPlayer()->GetCorpse();
 
@@ -274,7 +266,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+8);
 
@@ -371,7 +363,7 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 

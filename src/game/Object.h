@@ -23,16 +23,10 @@
 
 #include "Common.h"
 #include "ByteBuffer.h"
-#include "UpdateFields.h"
 #include "UpdateData.h"
-#include "GameSystem/GridReference.h"
-#include "ObjectDefines.h"
-#include "GridDefines.h"
 #include "Map.h"
 #include "ObjectGuid.h"
 #include "UpdateMask.h"
-
-class CreatureAI;
 
 #include <set>
 #include <string>
@@ -68,13 +62,13 @@ enum TempSummonType
 
 class WorldPacket;
 class UpdateData;
-class WorldSession;
 class Creature;
 class Player;
 class InstanceScript;
 class GameObject;
 class Transport;
 class WorldObject;
+class CreatureAI;
 
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 
@@ -332,16 +326,16 @@ class Object
             ClearUpdateMask(true);
         }
 
-        uint64 GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }
-        uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-        uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-        uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(OBJECT_FIELD_GUID)); }
-        PackedGuid const& GetPackGUID() const { return m_PackGUID; }
-        uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
-        void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }
+        uint64 GetGUID() const;
+        uint32 GetGUIDLow() const;
+        uint32 GetGUIDMid() const;
+        uint32 GetGUIDHigh() const;
+        PackedGuid const& GetPackGUID() const;
+        uint32 GetEntry() const;
+        void SetEntry(uint32 entry);
 
-        float GetObjectScale() const { return GetFloatValue(OBJECT_FIELD_SCALE_X); }
-        virtual void SetObjectScale(float scale) { SetFloatValue(OBJECT_FIELD_SCALE_X, scale); }
+        float GetObjectScale() const;
+        virtual void SetObjectScale(float scale);
 
         uint8 GetTypeId() const { return m_objectTypeId; }
         bool isType(uint16 mask) const { return (mask & m_objectType); }

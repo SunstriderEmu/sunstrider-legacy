@@ -238,3 +238,405 @@ bool CannibalizeObjectCheck::operator()(Corpse* u)
     return false;
 }
 
+void RespawnDo::operator()(Creature* u) const { u->Respawn(); }
+void RespawnDo::operator()(GameObject* u) const { u->Respawn(); }
+
+void FactionDo::operator()(Creature* u) const 
+{
+    if (u->GetEntry() == i_entry)
+        u->SetFaction(i_faction);
+}
+
+bool CannibalizeObjectCheck::operator()(Player* u)
+{
+    if (i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight())
+        return false;
+
+    if (i_funit->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+bool CannibalizeObjectCheck::operator()(Creature* u)
+{
+    if (i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight() ||
+        (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) == 0)
+        return false;
+
+    if (i_funit->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+bool AnyUnfriendlyUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u))
+        return true;
+    else
+        return false;
+}
+
+bool AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (!u->IsAttackableByAOE())
+        return false;
+
+    // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
+    if (u->HasUnitState(UNIT_STATE_CHARGING))
+        return false;
+
+    if (!i_obj->IsWithinDistInMap(u, i_range))
+        return false;
+
+    if (i_funit->IsFriendlyTo(u))
+        return false;
+
+    return true;
+}
+
+bool AnyFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+        return true;
+    else
+        return false;
+}
+
+bool AnyFriendlyUnitInObjectRangeCheckWithRangeReturned::operator()(Unit* u, float& range)
+{
+    range = i_obj->GetDistance(u);
+    if (u->IsAlive() && i_range > range && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+        return true;
+    else
+        return false;
+}
+
+bool NearestFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && (!i_furthest || !i_obj->IsWithinDistInMap(u, i_minRange)) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
+    {
+        if (!i_furthest)
+            i_range = i_obj->GetDistance(u);
+        else
+            i_minRange = i_obj->GetDistance(u);
+        return true;
+    }
+
+    return false;
+}
+
+bool AnyUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+bool NearestAttackableUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    if (i_funit->CanAttack(u) == CAN_ATTACK_RESULT_OK && i_obj->IsWithinDistInMap(u, i_range) &&
+        !i_funit->IsFriendlyTo(u) && u->IsVisibleForOrDetect(i_funit, false))
+    {
+        i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
+        return true;
+    }
+
+    return false;
+}
+
+AnyAoETargetUnitInObjectRangeCheck::AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range)
+    : i_obj(obj), i_funit(funit), i_range(range)
+{
+    Unit const* check = i_funit;
+    Unit const* owner = i_funit->GetOwner();
+    if (owner)
+        check = owner;
+    i_targetForPlayer = (check->GetTypeId() == TYPEID_PLAYER);
+}
+
+bool AnyAoETargetUnitInObjectRangeCheck::operator()(Unit* u)
+{
+    // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
+    if (i_funit->CanAttack(u) != CAN_ATTACK_RESULT_OK)
+        return false;
+    if (u->GetTypeId() == TYPEID_UNIT && (u->ToCreature())->IsTotem())
+        return false;
+
+    if ((i_targetForPlayer ? !i_funit->IsFriendlyTo(u) : i_funit->IsHostileTo(u)) && i_obj->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+CallOfHelpCreatureInRangeDo::CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)
+    : i_funit(funit), i_enemy(enemy), i_range(range)
+{ }
+void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
+{
+    if (u == i_funit)
+        return;
+
+    if (!u->CanAssistTo(i_funit, i_enemy, false))
+        return;
+
+    // too far
+    if (!u->IsWithinDistInMap(i_funit, i_range))
+        return;
+
+    // only if see assisted creature's enemy
+    if (!u->IsWithinLOSInMap(i_enemy))
+        return;
+
+    if (u->AI())
+        u->AI()->AttackStart(i_enemy);
+}
+
+bool AnyDeadUnitCheck::operator()(Unit* u) { return !u->IsAlive(); }
+
+bool AnyStealthedCheck::operator()(Unit* u) { return u->GetVisibility() == VISIBILITY_GROUP_STEALTH; }
+
+bool NearestHostileUnitInAttackDistanceCheck::operator()(Unit* u)
+{
+    //is in range
+    if (!m_creature->IsWithinDistInMap(u, m_range))
+        return false;
+
+    //check for furthest if set
+    if (i_furthest)
+    {
+        if (m_creature->IsWithinDistInMap(u, m_minRange))
+            return false;
+        else
+            m_minRange = m_creature->GetDistance(u);
+    }
+    else { //else we want the nearest, then set new max range
+        m_range = m_creature->GetDistance(u);
+    }
+
+    if (m_force)
+    {
+        if (m_creature->CanAttack(u) != CAN_ATTACK_RESULT_OK)
+            return false;
+    }
+    else
+    {
+        if (!m_creature->CanAggro(u))
+            return false;
+    }
+
+    if (i_playerOnly && u->GetTypeId() != TYPEID_PLAYER)
+        return false;
+
+    return true;
+}
+
+bool AllWorldObjectsInRange::operator() (WorldObject* pGo)
+{
+    return m_pObject->IsWithinDistInMap(pGo, m_fRange, false);
+}
+
+bool MostHPMissingInRange::operator()(Unit* u)
+{
+    if (u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) && u->GetMaxHealth() - u->GetHealth() > i_hp)
+    {
+        i_hp = u->GetMaxHealth() - u->GetHealth();
+        return true;
+    }
+    return false;
+}
+
+bool FriendlyCCedInRange::operator()(Unit* u)
+{
+    if (u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+        (u->IsFeared() || u->IsCharmed() || u->IsFrozen() || u->HasUnitState(UNIT_STATE_STUNNED) || u->HasUnitState(UNIT_STATE_CONFUSED)))
+    {
+        return true;
+    }
+    return false;
+}
+
+bool FriendlyMissingBuffInRange::operator()(Unit* u)
+{
+    if (u->IsAlive() && u->IsInCombat() && /*!i_obj->IsHostileTo(u)*/ i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+        !(u->HasAuraEffect(i_spell, 0) || u->HasAuraEffect(i_spell, 1) || u->HasAuraEffect(i_spell, 2)))
+    {
+        return true;
+    }
+    return false;
+}
+
+bool FriendlyMissingBuffInRangeOutOfCombat::operator()(Unit* u)
+{
+    if (u->IsAlive() && !u->IsInCombat() && i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
+        !(u->HasAuraEffect(i_spell)) && i_obj != u)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool AllPlayersInRange::operator() (Player* u)
+{
+    if (i_object->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+bool AnyPlayerInObjectRangeCheck::operator()(Player* u)
+{
+    if (u->IsAlive() && !u->isSpectator() && i_obj->IsWithinDistInMap(u, i_range))
+        return true;
+
+    return false;
+}
+
+bool NearestPlayerInObjectRangeCheck::operator()(Player* u)
+{
+    if (u->IsAlive() == i_alive && !u->isSpectator() && i_obj.IsWithinDistInMap(u, i_range))
+    {
+        i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
+        return true;
+    }
+    return false;
+}
+
+bool AllFriendlyCreaturesInGrid::operator() (Creature* u)
+{
+    if (u->IsAlive() && u->GetVisibility() == VISIBILITY_ON && u->IsFriendlyTo(pUnit))
+        return true;
+
+    return false;
+}
+
+bool NearestCreatureEntryWithLiveStateInObjectRangeCheck::operator()(Creature* u)
+{
+    if (u->GetEntry() == i_entry && u->IsAlive() == i_alive && i_obj.IsWithinDistInMap(u, i_range))
+    {
+        i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
+        return true;
+    }
+    return false;
+}
+
+bool CreatureWithDbGUIDCheck::operator()(Creature* u)
+{
+    return u->GetDBTableGUIDLow() == i_lowguid;
+}
+
+bool AllCreaturesOfEntryInRange::operator() (Creature* u)
+{
+    if (u->GetEntry() == entry && pUnit->IsWithinDistInMap(u, range))
+        return true;
+
+    return false;
+}
+
+bool AllCreaturesInRange::operator() (Creature* u)
+{
+    if (pUnit->IsWithinDistInMap(u, range))
+        return true;
+
+    return false;
+}
+
+bool AllCreatures::operator() (Creature* u)
+{
+    return true;
+}
+
+bool AnyAssistCreatureInRangeCheck::operator()(Creature* u)
+{
+    if (u == i_funit)
+        return false;
+
+    if (!u->CanAssistTo(i_funit, i_enemy))
+        return false;
+
+    // too far
+    if (!i_funit->IsWithinDistInMap(u, i_range, true))
+        return false;
+
+    // only if see assisted creature
+    if (!i_funit->IsWithinLOSInMap(u))
+        return false;
+
+    return true;
+}
+
+bool NearestAssistCreatureInCreatureRangeCheck::operator()(Creature* u)
+{
+    if (u->GetFaction() == i_obj->GetFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
+    {
+        i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
+        return true;
+    }
+    return false;
+}
+
+bool NearestGeneralizedAssistCreatureInCreatureRangeCheck::operator()(Creature* u)
+{
+    if (u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
+    {
+        i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
+        return true;
+    }
+    return false;
+}
+
+bool GameObjectFocusCheck::operator()(GameObject* go) const
+{
+    if (go->GetGOInfo()->type != GAMEOBJECT_TYPE_SPELL_FOCUS)
+        return false;
+
+    if (go->GetGOInfo()->spellFocus.focusId != i_focusId)
+        return false;
+
+    float dist = (float)((go->GetGOInfo()->spellFocus.dist) / 2);
+
+    return go->IsWithinDistInMap(i_unit, dist);
+}
+
+bool NearestGameObjectFishingHole::operator()(GameObject* go)
+{
+    if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_FISHINGHOLE && go->isSpawned() && i_obj.IsWithinDistInMap(go, i_range) && i_obj.IsWithinDistInMap(go, go->GetGOInfo()->fishinghole.radius))
+    {
+        i_range = i_obj.GetDistance(go);
+        return true;
+    }
+    return false;
+}
+
+bool AllGameObjectsWithEntryInGrid::operator() (GameObject* g)
+{
+    if (g->GetEntry() == entry)
+        return true;
+
+    return false;
+}
+
+bool AllGameObjectsWithEntryInRange::operator() (GameObject* pGo)
+{
+    if (pGo->GetEntry() == m_uiEntry && m_pObject->IsWithinDistInMap(pGo, m_fRange, false))
+        return true;
+
+    return false;
+}
+
+bool NearestGameObjectEntryInObjectRangeCheck::operator()(GameObject* go)
+{
+    if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range))
+    {
+        i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
+        return true;
+    }
+    return false;
+}
+
+bool GameObjectWithDbGUIDCheck::operator()(GameObject const* go) const
+{
+    return go->GetDBTableGUIDLow() == i_db_guid;
+}

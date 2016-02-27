@@ -23,11 +23,8 @@
 
 #include "Common.h"
 #include "Unit.h"
-#include "UpdateMask.h"
 #include "ItemPrototype.h"
 #include "LootMgr.h"
-#include "Database/DatabaseEnv.h"
-#include "Cell.h"
 #include "CreatureGroups.h"
 
 #include <list>
@@ -42,6 +39,7 @@ class Player;
 class WorldSession;
 class CreatureGroup;
 class TemporarySummon;
+class Group;
 
 enum Gossip_Option
 {

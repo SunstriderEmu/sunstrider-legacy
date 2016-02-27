@@ -21,8 +21,6 @@
 #ifndef TRINITY_GRIDNOTIFIERS_H
 #define TRINITY_GRIDNOTIFIERS_H
 
-#include "ObjectGridLoader.h"
-#include "ByteBuffer.h"
 #include "UpdateData.h"
 #include <iostream>
 
@@ -33,7 +31,6 @@
 #include "Player.h"
 #include "Unit.h"
 
-class Player;
 //class Map;
 
 namespace Trinity
@@ -500,8 +497,8 @@ namespace Trinity
     {
         public:
             RespawnDo() {}
-            void operator()(Creature* u) const { u->Respawn(); }
-            void operator()(GameObject* u) const { u->Respawn(); }
+            void operator()(Creature* u) const;
+            void operator()(GameObject* u) const;
             void operator()(WorldObject*) const {}
             void operator()(Corpse*) const {}
     };
@@ -510,10 +507,7 @@ namespace Trinity
     {
         public:
             FactionDo(uint32 id, uint32 f) : i_entry(id), i_faction(f) {}
-            void operator()(Creature* u) const {
-                if (u->GetEntry() == i_entry)
-                    u->SetFaction(i_faction);
-            }
+            void operator()(Creature* u) const;
             void operator()(GameObject*) const {}
             void operator()(WorldObject*) const {}
             void operator()(Corpse*) const {}
@@ -529,28 +523,9 @@ namespace Trinity
     {
         public:
             CannibalizeObjectCheck(Unit* funit, float range) : i_funit(funit), i_range(range) {}
-            bool operator()(Player* u)
-            {
-                if( i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight() )
-                    return false;
-
-                if(i_funit->IsWithinDistInMap(u, i_range) )
-                    return true;
-
-                return false;
-            }
+            bool operator()(Player* u);
             bool operator()(Corpse* u);
-            bool operator()(Creature* u)
-            {
-                if( i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight() ||
-                    (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD)==0)
-                    return false;
-
-                if(i_funit->IsWithinDistInMap(u, i_range) )
-                    return true;
-
-                return false;
-            }
+            bool operator()(Creature* u);
             template<class NOT_INTERESTED> bool operator()(NOT_INTERESTED*) { return false; }
         private:
             Unit* const i_funit;
@@ -561,13 +536,7 @@ namespace Trinity
     {
         public:
             AnyUnfriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
-            bool operator()(Unit* u)
-            {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && !i_funit->IsFriendlyTo(u))
-                    return true;
-                else
-                    return false;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -578,23 +547,7 @@ namespace Trinity
     {
         public:
             AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
-            bool operator()(Unit* u)
-            {
-                if(!u->IsAttackableByAOE())
-                    return false;
-                    
-                // From 2.1.0 Feral Charge ignored traps, from 2.3.0 Intercept and Charge started to do so too
-                if(u->HasUnitState(UNIT_STATE_CHARGING))
-                    return false;
-
-                if(!i_obj->IsWithinDistInMap(u, i_range))
-                    return false;
-
-                if(i_funit->IsFriendlyTo(u))
-                    return false;
-
-                return true;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -606,13 +559,7 @@ namespace Trinity
     {
         public:
             AnyFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
-            bool operator()(Unit* u)
-            {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
-                    return true;
-                else
-                    return false;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -624,14 +571,7 @@ namespace Trinity
     {
         public:
             AnyFriendlyUnitInObjectRangeCheckWithRangeReturned(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
-            bool operator()(Unit* u, float& range)
-            {
-                range = i_obj->GetDistance(u);
-                if(u->IsAlive() && i_range > range && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
-                    return true;
-                else
-                    return false;
-            }
+            bool operator()(Unit* u, float& range);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -643,19 +583,7 @@ namespace Trinity
     {
         public:
             NearestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false, bool furthest = false) : i_obj(obj), i_funit(funit), i_range(range), i_minRange(0), i_playerOnly(playerOnly), i_furthest(furthest) {}
-            bool operator()(Unit* u)
-            {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && (!i_furthest || !i_obj->IsWithinDistInMap(u, i_minRange)) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
-                {
-                    if(!i_furthest)
-                        i_range = i_obj->GetDistance(u);
-                    else
-                        i_minRange = i_obj->GetDistance(u);
-                    return true;
-                }
-                
-                return false;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -667,13 +595,7 @@ namespace Trinity
     {
         public:
             AnyUnitInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
-            bool operator()(Unit* u)
-            {
-                if(u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range))
-                    return true;
-
-                return false;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             float i_range;
@@ -684,17 +606,7 @@ namespace Trinity
     {
         public:
             NearestAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
-            bool operator()(Unit* u)
-            {
-                if( i_funit->CanAttack(u) == CAN_ATTACK_RESULT_OK && i_obj->IsWithinDistInMap(u, i_range) &&
-                    !i_funit->IsFriendlyTo(u) && u->IsVisibleForOrDetect(i_funit,false)  )
-                {
-                    i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
-                    return true;
-                }
-
-                return false;
-            }
+            bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
@@ -707,28 +619,8 @@ namespace Trinity
     class AnyAoETargetUnitInObjectRangeCheck
     {
         public:
-            AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range)
-                : i_obj(obj), i_funit(funit), i_range(range)
-            {
-                Unit const* check = i_funit;
-                Unit const* owner = i_funit->GetOwner();
-                if(owner)
-                    check = owner;
-                i_targetForPlayer = ( check->GetTypeId()==TYPEID_PLAYER );
-            }
-            bool operator()(Unit* u)
-            {
-                // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
-                if (i_funit->CanAttack(u) != CAN_ATTACK_RESULT_OK)
-                    return false;
-                if(u->GetTypeId()==TYPEID_UNIT && (u->ToCreature())->IsTotem())
-                    return false;
-
-                if(( i_targetForPlayer ? !i_funit->IsFriendlyTo(u) : i_funit->IsHostileTo(u) )&& i_obj->IsWithinDistInMap(u, i_range))
-                    return true;
-
-                return false;
-            }
+            AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range);
+            bool operator()(Unit* u);
         private:
             bool i_targetForPlayer;
             WorldObject const* i_obj;
@@ -740,28 +632,8 @@ namespace Trinity
     class CallOfHelpCreatureInRangeDo
     {
     public:
-        CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)
-            : i_funit(funit), i_enemy(enemy), i_range(range)
-        { }
-        void operator()(Creature* u)
-        {
-            if (u == i_funit)
-                return;
-
-            if (!u->CanAssistTo(i_funit, i_enemy, false))
-                return;
-
-            // too far
-            if (!u->IsWithinDistInMap(i_funit, i_range))
-                return;
-
-            // only if see assisted creature's enemy
-            if (!u->IsWithinLOSInMap(i_enemy))
-                return;
-
-            if (u->AI())
-                u->AI()->AttackStart(i_enemy);
-        }
+        CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range);
+        void operator()(Creature* u);
     private:
         Unit* const i_funit;
         Unit* const i_enemy;
@@ -770,12 +642,12 @@ namespace Trinity
 
     struct AnyDeadUnitCheck
     {
-        bool operator()(Unit* u) { return !u->IsAlive(); }
+        bool operator()(Unit* u);
     };
 
     struct AnyStealthedCheck
     {
-        bool operator()(Unit* u) { return u->GetVisibility()==VISIBILITY_GROUP_STEALTH; }
+        bool operator()(Unit* u);
     };
 
     // Creature checks
@@ -788,39 +660,7 @@ namespace Trinity
                 m_range = (dist == 0 ? 9999 : dist);
                 m_force = (dist == 0 ? false : true);
             }
-            bool operator()(Unit* u)
-            {
-                //is in range
-                if(!m_creature->IsWithinDistInMap(u, m_range))
-                    return false;
-
-                //check for furthest if set
-                if(i_furthest)
-                {
-                    if (m_creature->IsWithinDistInMap(u, m_minRange))
-                        return false;
-                    else
-                        m_minRange = m_creature->GetDistance(u);
-                } else { //else we want the nearest, then set new max range
-                    m_range = m_creature->GetDistance(u);
-                }
-
-                if(m_force)
-                {
-                    if(m_creature->CanAttack(u) != CAN_ATTACK_RESULT_OK)
-                        return false;
-                }
-                else
-                {
-                    if(!m_creature->CanAggro(u))
-                        return false;
-                }
-
-                if (i_playerOnly && u->GetTypeId() != TYPEID_PLAYER)
-                    return false;
-
-                return true;
-            }
+            bool operator()(Unit* u);
             float GetLastRange() const { return m_range; }
         private:
             Creature const *m_creature;
@@ -835,10 +675,7 @@ namespace Trinity
     {
         public:
             AllWorldObjectsInRange(const WorldObject* pObject, float fMaxRange) : m_pObject(pObject), m_fRange(fMaxRange) {}
-            bool operator() (WorldObject* pGo)
-            {
-                return m_pObject->IsWithinDistInMap(pGo, m_fRange, false);
-            }
+            bool operator() (WorldObject* pGo);
         private:
             const WorldObject* m_pObject;
             float m_fRange;
@@ -848,15 +685,7 @@ namespace Trinity
     {
     public:
         MostHPMissingInRange(Unit const* obj, float range, uint32 hp) : i_obj(obj), i_range(range), i_hp(hp) {}
-        bool operator()(Unit* u)
-        {
-            if(u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) && u->GetMaxHealth() - u->GetHealth() > i_hp)
-            {
-                i_hp = u->GetMaxHealth() - u->GetHealth();
-                return true;
-            }
-            return false;
-        }
+        bool operator()(Unit* u);
     private:
         Unit const* i_obj;
         float i_range;
@@ -867,15 +696,7 @@ namespace Trinity
     {
     public:
         FriendlyCCedInRange(Unit const* obj, float range) : i_obj(obj), i_range(range) {}
-        bool operator()(Unit* u)
-        {
-            if(u->IsAlive() && u->IsInCombat() && !i_obj->IsHostileTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                (u->IsFeared() || u->IsCharmed() || u->IsFrozen() || u->HasUnitState(UNIT_STATE_STUNNED) || u->HasUnitState(UNIT_STATE_CONFUSED)))
-            {
-                return true;
-            }
-            return false;
-        }
+        bool operator()(Unit* u);
     private:
         Unit const* i_obj;
         float i_range;
@@ -885,15 +706,7 @@ namespace Trinity
     {
     public:
         FriendlyMissingBuffInRange(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
-        bool operator()(Unit* u)
-        {
-            if(u->IsAlive() && u->IsInCombat() && /*!i_obj->IsHostileTo(u)*/ i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                !(u->HasAuraEffect(i_spell, 0) || u->HasAuraEffect(i_spell, 1) || u->HasAuraEffect(i_spell, 2)))
-            {
-                return true;
-            }
-            return false;
-        }
+        bool operator()(Unit* u);
     private:
         Unit const* i_obj;
         float i_range;
@@ -904,15 +717,7 @@ namespace Trinity
     {
     public:
         FriendlyMissingBuffInRangeOutOfCombat(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
-        bool operator()(Unit* u)
-        {
-            if (u->IsAlive() && !u->IsInCombat() && i_obj->IsFriendlyTo(u) && i_obj->IsWithinDistInMap(u, i_range) &&
-                !(u->HasAuraEffect(i_spell)) && i_obj != u)
-            {
-                return true;
-            }
-            return false;
-        }
+        bool operator()(Unit* u);
     private:
         Unit const* i_obj;
         float i_range;
@@ -925,13 +730,7 @@ namespace Trinity
     {
     public:
         AllPlayersInRange(WorldObject const* obj, float range) : i_object(obj), i_range(range) {}
-        bool operator() (Player* u)
-        {
-            if (i_object->IsWithinDistInMap(u, i_range))
-                return true;
-                
-            return false;
-        }
+        bool operator() (Player* u);
     private:
         WorldObject const* i_object;
         float i_range;
@@ -941,13 +740,7 @@ namespace Trinity
     {
     public:
         AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
-        bool operator()(Player* u)
-        {
-            if(u->IsAlive() && !u->isSpectator() && i_obj->IsWithinDistInMap(u, i_range))
-                return true;
-
-            return false;
-        }
+        bool operator()(Player* u);
     private:
         WorldObject const* i_obj;
         float i_range;
@@ -960,15 +753,7 @@ namespace Trinity
             NearestPlayerInObjectRangeCheck(WorldObject const& obj, bool alive, float range)
                 : i_obj(obj), i_alive(alive), i_range(range) {}
 
-            bool operator()(Player* u)
-            {
-                if(u->IsAlive()==i_alive && !u->isSpectator() && i_obj.IsWithinDistInMap(u, i_range))
-                {
-                    i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(Player* u);
             float GetLastRange() const { return i_range; }
         private:
             WorldObject const& i_obj;
@@ -1026,13 +811,7 @@ namespace Trinity
     {
     public:
         AllFriendlyCreaturesInGrid(Unit const* obj) : pUnit(obj) {}
-        bool operator() (Creature* u)
-        {
-            if(u->IsAlive() && u->GetVisibility() == VISIBILITY_ON && u->IsFriendlyTo(pUnit))
-                return true;
-
-            return false;
-        }
+        bool operator() (Creature* u);
     private:
         Unit const* pUnit;
     };
@@ -1044,15 +823,7 @@ namespace Trinity
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range)
                 : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range) {}
 
-            bool operator()(Creature* u)
-            {
-                if(u->GetEntry() == i_entry && u->IsAlive()==i_alive && i_obj.IsWithinDistInMap(u, i_range))
-                {
-                    i_range = i_obj.GetDistance(u);         // use found unit range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(Creature* u);
             float GetLastRange() const { return i_range; }
         private:
             WorldObject const& i_obj;
@@ -1068,10 +839,7 @@ namespace Trinity
     {
         public:
             CreatureWithDbGUIDCheck(WorldObject const* obj, uint32 lowguid) : i_obj(obj), i_lowguid(lowguid) {}
-            bool operator()(Creature* u)
-            {
-                return u->GetDBTableGUIDLow() == i_lowguid;
-            }
+            bool operator()(Creature* u);
         private:
             WorldObject const* i_obj;
             uint32 i_lowguid;
@@ -1081,13 +849,7 @@ namespace Trinity
     {
     public:
         AllCreaturesOfEntryInRange(Unit const* obj, uint32 ent, float ran) : pUnit(obj), entry(ent), range(ran) {}
-        bool operator() (Creature* u)
-        {
-            if(u->GetEntry() == entry && pUnit->IsWithinDistInMap(u, range))
-                return true;
-
-            return false;
-        }
+        bool operator() (Creature* u);
     private:
         Unit const* pUnit;
         uint32 entry;
@@ -1098,13 +860,7 @@ namespace Trinity
     {
     public:
         AllCreaturesInRange(Unit const* obj, float ran) : pUnit(obj), range(ran) {}
-        bool operator() (Creature* u)
-        {
-            if(pUnit->IsWithinDistInMap(u, range))
-                return true;
-
-            return false;
-        }
+        bool operator() (Creature* u);
     private:
         Unit const* pUnit;
         float range;
@@ -1114,10 +870,7 @@ namespace Trinity
     {
     public:
         AllCreatures(Unit const* obj) : pUnit(obj) {}
-        bool operator() (Creature* u)
-        {
-            return true;
-        }
+        bool operator() (Creature* u);
     private:
         Unit const* pUnit;
     };
@@ -1129,24 +882,8 @@ namespace Trinity
                 : i_funit(funit), i_enemy(enemy), i_range(range)
             {
             }
-            bool operator()(Creature* u)
-            {
-                if(u == i_funit)
-                    return false;
 
-                if ( !u->CanAssistTo(i_funit, i_enemy) )
-                    return false;
-
-                // too far
-                if( !i_funit->IsWithinDistInMap(u, i_range, true) )
-                    return false;
-
-                // only if see assisted creature
-                if( !i_funit->IsWithinLOSInMap(u) )
-                    return false;
-
-                return true;
-            }
+            bool operator()(Creature* u);
         private:
             Unit* const i_funit;
             Unit* const i_enemy;
@@ -1160,15 +897,7 @@ namespace Trinity
             NearestAssistCreatureInCreatureRangeCheck(Creature* obj,Unit* enemy, float range)
                 : i_obj(obj), i_enemy(enemy), i_range(range) {}
 
-            bool operator()(Creature* u)
-            {
-                if(u->GetFaction() == i_obj->GetFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
-                {
-                    i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(Creature* u);
             float GetLastRange() const { return i_range; }
         private:
             Creature* const i_obj;
@@ -1185,15 +914,7 @@ namespace Trinity
             NearestGeneralizedAssistCreatureInCreatureRangeCheck(Creature* obj, uint32 entry, uint32 faction, float range)
                 : i_obj(obj), i_entry(entry), i_faction(faction), i_range(range) {}
 
-            bool operator()(Creature* u)
-            {
-                if ( u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive()&& i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u) )
-                {
-                    i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(Creature* u);
             float GetLastRange() const { return i_range; }
         private:
             Creature* const i_obj;
@@ -1213,18 +934,7 @@ namespace Trinity
     {
         public:
             GameObjectFocusCheck(Unit const* unit,uint32 focusId) : i_unit(unit), i_focusId(focusId) {}
-            bool operator()(GameObject* go) const
-            {
-                if(go->GetGOInfo()->type != GAMEOBJECT_TYPE_SPELL_FOCUS)
-                    return false;
-
-                if(go->GetGOInfo()->spellFocus.focusId != i_focusId)
-                    return false;
-
-                float dist = (float)((go->GetGOInfo()->spellFocus.dist)/2);
-
-                return go->IsWithinDistInMap(i_unit, dist);
-            }
+            bool operator()(GameObject* go) const;
         private:
             Unit const* i_unit;
             uint32 i_focusId;
@@ -1235,15 +945,7 @@ namespace Trinity
     {
         public:
             NearestGameObjectFishingHole(WorldObject const& obj, float range) : i_obj(obj), i_range(range) {}
-            bool operator()(GameObject* go)
-            {
-                if(go->GetGOInfo()->type == GAMEOBJECT_TYPE_FISHINGHOLE && go->isSpawned() && i_obj.IsWithinDistInMap(go, i_range) && i_obj.IsWithinDistInMap(go, go->GetGOInfo()->fishinghole.radius))
-                {
-                    i_range = i_obj.GetDistance(go);
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(GameObject* go);
             float GetLastRange() const { return i_range; }
         private:
             WorldObject const& i_obj;
@@ -1257,13 +959,7 @@ namespace Trinity
     {
     public:
         AllGameObjectsWithEntryInGrid(uint32 ent) : entry(ent) {}
-        bool operator() (GameObject* g)
-        {
-            if(g->GetEntry() == entry)
-                return true;
-
-            return false;
-        }
+        bool operator() (GameObject* g);
     private:
         uint32 entry;
     };
@@ -1272,13 +968,7 @@ namespace Trinity
     {
     public:
         AllGameObjectsWithEntryInRange(const WorldObject* pObject, uint32 uiEntry, float fMaxRange) : m_pObject(pObject), m_uiEntry(uiEntry), m_fRange(fMaxRange) {}
-        bool operator() (GameObject* pGo)
-        {
-            if (pGo->GetEntry() == m_uiEntry && m_pObject->IsWithinDistInMap(pGo,m_fRange,false))
-                return true;
-
-            return false;
-        }
+        bool operator() (GameObject* pGo);
     private:
         const WorldObject* m_pObject;
         uint32 m_uiEntry;
@@ -1290,15 +980,7 @@ namespace Trinity
     {
         public:
             NearestGameObjectEntryInObjectRangeCheck(WorldObject const& obj,uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
-            bool operator()(GameObject* go)
-            {
-                if(go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range))
-                {
-                    i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
-                    return true;
-                }
-                return false;
-            }
+            bool operator()(GameObject* go);
             float GetLastRange() const { return i_range; }
         private:
             WorldObject const& i_obj;
@@ -1313,10 +995,7 @@ namespace Trinity
     {
         public:
             GameObjectWithDbGUIDCheck(WorldObject const& obj,uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
-            bool operator()(GameObject const* go) const
-            {
-                return go->GetDBTableGUIDLow() == i_db_guid;
-            }
+            bool operator()(GameObject const* go) const;
         private:
             WorldObject const& i_obj;
             uint32 i_db_guid;

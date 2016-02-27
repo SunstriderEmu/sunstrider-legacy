@@ -407,7 +407,7 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
 
 void Group::ChangeLeader(const uint64 &guid)
 {
-    PROFILE;
+    
     
     member_citerator slot = _getMemberCSlot(guid);
 
@@ -462,7 +462,7 @@ void Group::CheckLeader(const uint64 &guid, bool isLogout)
 
 bool Group::ChangeLeaderToFirstOnlineMember()
 {
-    PROFILE;
+    
     
     for (GroupReference *itr = GetFirstMember(); itr != NULL; itr = itr->next()) {
         Player* player = itr->GetSource();
@@ -1142,7 +1142,7 @@ void Group::SendUpdate()
 // Automatic Update by World thread
 void Group::Update(time_t diff)
 {
-    PROFILE;
+    
 
     //change the leader if it has disconnect for a long time
     if (m_leaderLogoutTime) {
@@ -1330,7 +1330,7 @@ bool Group::_removeMember(const uint64 &guid)
 
 void Group::_setLeader(const uint64 &guid)
 {
-    PROFILE;
+    
     
     member_citerator slot = _getMemberCSlot(guid);
     if(slot==m_memberSlots.end())
@@ -1391,7 +1391,7 @@ void Group::_setLeader(const uint64 &guid)
 /// convert the player's binds to the group
 void Group::ConvertLeaderInstancesToGroup(Player *player, Group *group, bool switchLeader)
 {
-    PROFILE;
+    
 
     // copy all binds to the group, when changing leader it's assumed the character
     // will not have any solo binds

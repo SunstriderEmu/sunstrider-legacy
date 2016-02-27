@@ -3,13 +3,8 @@
 #ifndef TRINITY_SMARTAI_H
 #define TRINITY_SMARTAI_H
 
-#include "Common.h"
-#include "Creature.h"
 #include "CreatureAI.h"
 #include "Unit.h"
-#include "ConditionMgr.h"
-#include "CreatureTextMgr.h"
-#include "Spell.h"
 
 #include "SmartScript.h"
 #include "SmartScriptMgr.h"

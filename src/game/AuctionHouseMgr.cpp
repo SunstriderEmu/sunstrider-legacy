@@ -31,6 +31,8 @@
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "LogsDatabaseAccessor.h"
+#include "Mail.h"
+#include "Bag.h"
 
 AuctionHouseMgr::AuctionHouseMgr()
 {

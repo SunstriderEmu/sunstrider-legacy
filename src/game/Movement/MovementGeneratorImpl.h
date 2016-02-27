@@ -19,7 +19,7 @@
 #ifndef TRINITY_MOVEMENTGENERATOR_IMPL_H
 #define TRINITY_MOVEMENTGENERATOR_IMPL_H
 
-#include "MovementGenerator.h"
+class MovementGenerator;
 
 template<class MOVEMENT_GEN>
 inline MovementGenerator*

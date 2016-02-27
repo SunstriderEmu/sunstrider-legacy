@@ -8,11 +8,7 @@
 #ifndef SCRIPTMGR_H
 #define SCRIPTMGR_H
 
-#include "Common.h"
 #include "CreatureScript.h"
-#include "Platform/CompilerDefs.h"
-#include "DBCStructure.h"
-#include "World.h"
 
 class WorldSocket;
 class WorldSession;
@@ -39,6 +35,10 @@ class Guild;
 class Group;
 class SpellInfo;
 class Spell;
+struct AreaTriggerEntry;
+struct AreaTableEntry;
+enum ShutdownExitCode : int;
+enum ShutdownMask : int;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)

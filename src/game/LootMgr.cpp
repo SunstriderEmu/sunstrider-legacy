@@ -24,6 +24,7 @@
 #include "World.h"
 #include "Util.h"
 #include "SharedDefines.h"
+#include "ItemEnchantmentMgr.h"
 
 static Rates const qualityToRate[MAX_ITEM_QUALITY] = {
     RATE_DROP_ITEM_POOR,                                    // ITEM_QUALITY_POOR

@@ -21,23 +21,14 @@
 #ifndef _OBJECTMGR_H
 #define _OBJECTMGR_H
 
-#include "Log.h"
-#include "Object.h"
-#include "Bag.h"
 #include "Creature.h"
-#include "Player.h"
-#include "DynamicObject.h"
 #include "GameObject.h"
-#include "Corpse.h"
 #include "QuestDef.h"
 #include "ItemPrototype.h"
 #include "NPCHandler.h"
-#include "Database/DatabaseEnv.h"
-#include "Mail.h"
 #include "Map.h"
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
-#include "Policies/Singleton.h"
 #include "ConditionMgr.h"
 
 #include <string>
@@ -48,8 +39,9 @@
 class Group;
 class Guild;
 class ArenaTeam;
-class TransportPath;
 class Item;
+enum PetNameInvalidReason : int;
+class Player;
 
 struct PageText
 {

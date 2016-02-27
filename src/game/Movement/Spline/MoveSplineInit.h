@@ -24,6 +24,11 @@
 
 class Unit;
 
+namespace G3D
+{
+    class Vector3;
+}
+
 namespace Movement
 {
     enum AnimType
@@ -40,7 +45,7 @@ namespace Movement
     public:
         TransportPathTransform(Unit* owner, bool transformForTransport)
             : _owner(owner), _transformForTransport(transformForTransport) { }
-        Vector3 operator()(Vector3 input);
+        G3D::Vector3 operator()(G3D::Vector3 input);
 
     private:
         Unit* _owner;
@@ -79,7 +84,7 @@ namespace Movement
          * you can have only one final facing: previous will be overriden
          */
         void SetFacing(float angle);
-        void SetFacing(Vector3 const& point);
+        void SetFacing(G3D::Vector3 const& point);
         void SetFacing(const Unit* target);
 
         /* Initializes movement by path
@@ -90,7 +95,7 @@ namespace Movement
 
         /* Initializes simple A to B motion, A is current unit's position, B is destination
          */
-        void MoveTo(const Vector3& destination, bool generatePath = true, bool forceDestination = false);
+        void MoveTo(const G3D::Vector3& destination, bool generatePath = true, bool forceDestination = false);
         
         void MoveTo(float x, float y, float z, bool generatePath = true, bool forceDestination = false);
 
@@ -183,10 +188,10 @@ namespace Movement
         args.flags.EnableAnimation((uint8)anim);
     }*/
 
-    inline void MoveSplineInit::SetFacing(Vector3 const& spot)
+    inline void MoveSplineInit::SetFacing(G3D::Vector3 const& spot)
     {
         TransportPathTransform transform(unit, args.TransformForTransport);
-        Vector3 finalSpot = transform(spot);
+        G3D::Vector3 finalSpot = transform(spot);
         args.facing.f.x = finalSpot.x;
         args.facing.f.y = finalSpot.y;
         args.facing.f.z = finalSpot.z;

@@ -22,6 +22,7 @@
 #include "GridNotifiers.h"
 #include "GameSystem/Grid.h"
 #include "Log.h"
+#include "ObjectGridLoader.h"
 
 void
 InvalidState::Update(Map &, NGridType &, GridInfo &, const uint32 &/*x*/, const uint32 &/*y*/, const uint32 &) const

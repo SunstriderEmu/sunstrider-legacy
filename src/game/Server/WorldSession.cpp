@@ -52,6 +52,7 @@
 #include "AccountMgr.h"
 #include "PacketLog.h"
 #include "BattleGround.h"
+#include "WardenBase.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"

@@ -19,13 +19,9 @@
 #ifndef __WORLDSOCKET_H__
 #define __WORLDSOCKET_H__
 
-#include "Common.h"
 #include "AuthCrypt.h"
-#include "ServerPktHeader.h"
 #include "Socket.h"
-#include "Util.h"
 #include "WorldPacket.h"
-#include "WorldSession.h"
 #include "MPSCQueue.h"
 #include <chrono>
 #include <boost/asio/ip/tcp.hpp>
@@ -33,6 +29,8 @@
 
 using boost::asio::ip::tcp;
 class EncryptablePacket;
+
+class WorldSession;
 
 #pragma pack(push, 1)
 

@@ -21,17 +21,13 @@
 #ifndef TRINITY_CREATUREAI_H
 #define TRINITY_CREATUREAI_H
 
-#include "Common.h"
 #include "Define.h"
-#include "Policies/Singleton.h"
-#include "Dynamic/ObjectRegistry.h"
 #include "Dynamic/FactoryHolder.h"
 #include "UnitAI.h"
 
 class Unit;
 class Creature;
 class Player;
-class Quest;
 class GameObject;
 class GameObjectAI;
 class SpellInfo;
@@ -71,7 +67,7 @@ enum SCEquip
 };
 
 //Selection method used by SelectTarget
-enum SelectAggroTarget
+enum SelectAggroTarget : int
 {
     SELECT_TARGET_RANDOM = 0,                               //Just selects a random target
     SELECT_TARGET_TOPAGGRO,                                 //Selects targes from top aggro to bottom

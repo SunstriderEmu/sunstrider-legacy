@@ -26,7 +26,6 @@
 
 #include "SharedDefines.h"
 #include "DBCStructure.h"
-#include "DBCStores.h"
 #include "SpellInfo.h"
 
 #include <map>
@@ -34,7 +33,7 @@
 class Player;
 class Spell;
 
-enum SpellCastResult
+enum SpellCastResult : int
 {
     SPELL_CAST_OK                               = -1,
     SPELL_FAILED_AFFECTING_COMBAT               = 0x00,
@@ -658,28 +657,6 @@ typedef std::multimap<uint32, SpellLearnSpellNode> SpellLearnSpellMap;
 
 typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
 
-inline bool IsPrimaryProfessionSkill(uint32 skill)
-{
-    SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
-    if(!pSkill)
-        return false;
-
-    if(pSkill->categoryId != SKILL_CATEGORY_PROFESSION)
-        return false;
-
-    return true;
-}
-
-inline bool IsProfessionSkill(uint32 skill)
-{
-    return  IsPrimaryProfessionSkill(skill) || skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID;
-}
-
-inline bool IsProfessionOrRidingSkill(uint32 skill)
-{
-    return IsProfessionSkill(skill) || skill == SKILL_RIDING;
-}
-
 typedef std::vector<SpellInfo*> SpellInfoMap;
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
@@ -937,6 +914,11 @@ class SpellMgr
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
 
         bool IsBinaryMagicResistanceSpell(SpellInfo const* spell);
+
+
+        static bool IsPrimaryProfessionSkill(uint32 skill);
+        static bool IsProfessionSkill(uint32 skill);
+        static bool IsProfessionOrRidingSkill(uint32 skill);
 
         // Modifiers
     public:

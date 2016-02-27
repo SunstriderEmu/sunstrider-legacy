@@ -23,12 +23,8 @@
 
 #include "GridNotifiers.h"
 #include "WorldPacket.h"
-#include "Corpse.h"
 #include "Player.h"
-#include "UpdateData.h"
-#include "CreatureAI.h"
 #include "SpellAuras.h"
-#include "CreatureAINew.h"
 #include "SpellInfo.h"
 #include "ObjectAccessor.h"
 

@@ -18,7 +18,6 @@
 #ifndef TRINITY_PACKETLOG_H
 #define TRINITY_PACKETLOG_H
 
-#include "Common.h"
 #include "Appender.h"
 
 #include <boost/asio/ip/address.hpp>

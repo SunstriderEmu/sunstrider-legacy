@@ -365,8 +365,6 @@ class ChatHandler
         bool HandleDebugSendZoneUnderAttack(const char* args);
         bool HandleDebugLoSCommand(const char* args);
         bool HandleDebugPlayerFlags(const char* args);
-        bool HandleDebugDumpProfilingCommand(const char* args);
-        bool HandleDebugClearProfilingCommand(const char* args);
         bool HandleSmartAIDebugCommand(const char* args);
         bool HandleSmartAIShowErrorsCommand(const char* args);
         bool HandleDebugOpcodeTestCommand(const char* args);

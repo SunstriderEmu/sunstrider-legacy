@@ -149,7 +149,7 @@ static void AttemptAddMore(Player* _player)
 
 void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     LookingForGroup_auto_join = true;
 
@@ -161,14 +161,14 @@ void WorldSession::HandleLfgAutoJoinOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLfgCancelAutoJoinOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     LookingForGroup_auto_join = false;
 }
 
 void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     LookingForGroup_auto_add = true;
 
@@ -180,14 +180,14 @@ void WorldSession::HandleLfmAutoAddMembersOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLfmCancelAutoAddmembersOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     LookingForGroup_auto_add = false;
 }
 
 void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 {
-    PROFILE;
+    
     
     for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
         _player->m_lookingForGroup.slots[i].Clear();
@@ -198,14 +198,14 @@ void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 
 void WorldSession::HandleLfmSetNoneOpcode( WorldPacket & /*recvData */)
 {
-    PROFILE;
+    
     
     _player->m_lookingForGroup.more.Clear();
 }
 
 void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -225,7 +225,7 @@ void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -237,7 +237,7 @@ void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLookingForGroup(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4+4);
 
@@ -319,7 +319,7 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 
 void WorldSession::HandleSetLfgOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4);
 

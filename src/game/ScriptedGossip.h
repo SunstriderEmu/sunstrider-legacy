@@ -8,10 +8,6 @@
 #ifndef SC_PLAYER_H
 #define SC_PLAYER_H
 
-#include "Player.h"
-#include "GossipDef.h"
-#include "QuestDef.h"
-
 // Gossip Item Text
 /*
 #define GOSSIP_TEXT_BROWSE_GOODS        "J'aimerais voir ce que vous vendez."

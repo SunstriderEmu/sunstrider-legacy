@@ -22,6 +22,7 @@
 #define TRINITY_FORMULAS_H
 
 #include "World.h"
+#include "DBCStores.h"
 
 namespace Trinity
 {

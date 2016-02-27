@@ -51,7 +51,7 @@
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_REPOP_REQUEST Message");
 
@@ -173,7 +173,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_WHO Message");
 
@@ -388,7 +388,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_REQUEST Message, security - %u", GetSecurity());
 
@@ -445,7 +445,7 @@ void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_CANCEL Message");
 
@@ -479,7 +479,7 @@ void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleTogglePvP( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     // this opcode can be used in two ways: Either set explicit new status or toggle old status
     if(recvData.size() == 1)
@@ -516,7 +516,7 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
 
 void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -532,7 +532,7 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     // When this packet send?
     CHECK_PACKET_SIZE(recvData,8);
@@ -552,7 +552,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -582,7 +582,7 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     if(!_player->m_mover->IsAlive())
         return;
@@ -597,7 +597,7 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
     
@@ -609,7 +609,7 @@ void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1+1);
 
@@ -691,7 +691,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std
 
 void WorldSession::HandleDelFriendOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -705,7 +705,7 @@ void WorldSession::HandleDelFriendOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAddIgnoreOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -767,7 +767,7 @@ void WorldSession::HandleAddIgnoreOpcodeCallBack(PreparedQueryResult result)
 
 void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -784,7 +784,7 @@ void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetContactNotesOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+1);
     uint64 guid;
@@ -795,7 +795,7 @@ void WorldSession::HandleSetContactNotesOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBugOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4+1+4+1);
 
@@ -818,7 +818,7 @@ void WorldSession::HandleBugOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8);
 
@@ -861,7 +861,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
 
 void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,8+1);
 
@@ -890,7 +890,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4);
 
@@ -1110,7 +1110,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1+2+1+1);
 
@@ -1182,7 +1182,7 @@ void WorldSession::HandleFeatherFallAck(WorldPacket & recvData)
 
 void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     recvData.rfinish();                       // prevent warnings spam
 
@@ -1217,7 +1217,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 
 void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 {
-    PROFILE;
+    
 
     // no used
     recvData.rfinish();                       // prevent warnings spam
@@ -1251,7 +1251,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 
 void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,1);
 
@@ -1270,7 +1270,7 @@ void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
 
 void WorldSession::HandlePlayedTime(WorldPacket& /*recvData*/)
 {
-    PROFILE;
+    
     
     uint32 TotalTimePlayed = GetPlayer()->GetTotalPlayedTime();
     uint32 LevelPlayedTime = GetPlayer()->GetLevelPlayedTime();
@@ -1283,7 +1283,7 @@ void WorldSession::HandlePlayedTime(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     if (GetClientBuild() == BUILD_335)
         return;  //no support yet
@@ -1376,7 +1376,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8);
 
@@ -1403,7 +1403,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData,4+4+4+4+4+4);
 
@@ -1445,7 +1445,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1);
 
@@ -1506,7 +1506,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1+8);
 
@@ -1555,7 +1555,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -1578,7 +1578,7 @@ void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 1);
 
@@ -1604,7 +1604,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -1627,7 +1627,7 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4+4);
 
@@ -1652,7 +1652,7 @@ void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 4);
 
@@ -1712,7 +1712,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recvData*/ )
 {
-    PROFILE;
+    
     
     //If player is not mounted, so go out :)
     if (!_player->IsMounted())                              // not blizz like; no any messages on blizz
@@ -1733,7 +1733,7 @@ void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 {
-    PROFILE;
+    
     
     CHECK_PACKET_SIZE(recvData, 8+4+4);
 
