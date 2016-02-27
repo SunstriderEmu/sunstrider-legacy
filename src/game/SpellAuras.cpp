@@ -905,7 +905,7 @@ void Aura::_AddAura(bool sameSlot)  // This param is false ONLY in case of doubl
     bool secondaura = false;
     uint8 slot = NULL_AURA_SLOT;
 
-    for(uint8 i = 0; i < 3; i++)
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
@@ -1051,7 +1051,7 @@ void Aura::_RemoveAura()
     bool samespell = false;
 
     // find other aura in same slot (current already removed from list)
-    for(uint8 i = 0; i < 3; i++)
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         Unit::spellEffectPair spair = Unit::spellEffectPair(GetId(), i);
         for(Unit::AuraMap::const_iterator itr = m_target->GetAuras().lower_bound(spair); itr != m_target->GetAuras().upper_bound(spair); ++itr)
@@ -2715,7 +2715,7 @@ void Aura::HandleAuraMounted(bool apply, bool Real)
 
         //m_target->RemoveAurasByType(SPELL_AURA_MOUNTED);
         bool flying = false;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < MAX_SPELL_EFFECTS; i++) {
             if (m_spellProto->Effects[i].ApplyAuraName == SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED)
                 flying = true;
         }
@@ -7025,7 +7025,7 @@ void Aura::HandleAuraIgnored(bool apply, bool Real)
 
 bool Aura::IsRequiringSelectedTarget(SpellInfo const* info) const
 {
-    for (uint8 i = 0 ; i < 3; ++i)
+    for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (sSpellMgr->SpellTargetType[info->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET
             || sSpellMgr->SpellTargetType[info->Effects[i].TargetB.GetTarget()] == TARGET_TYPE_UNIT_TARGET

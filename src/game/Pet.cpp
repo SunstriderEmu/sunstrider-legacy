@@ -1540,7 +1540,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 continue;
                 
             bool abort = false;
-            for (uint8 i = 0; i < 3; i++) { // Don't load these, they make the core crash sometimes
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++) { // Don't load these, they make the core crash sometimes
                 if (spellproto->Effects[i].ApplyAuraName == SPELL_AURA_IGNORED)
                     abort = true;
             }
@@ -1589,7 +1589,7 @@ void Pet::_SaveAuras()
             continue;
 
         // skip all auras from spell that apply at cast SPELL_AURA_MOD_SHAPESHIFT or pet area auras.
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
         {
             if (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STEALTH ||
                 spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||

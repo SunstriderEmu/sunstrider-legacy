@@ -4197,7 +4197,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         {
             int32 delta = (int32(GetLevel()) - startLevel + 1)*MINUTE;
 
-            for(int i =0; i < 3; ++i)
+            for(int i =0; i < MAX_SPELL_EFFECTS; ++i)
             {
                 if(Aura* Aur = GetAura(SPELL_ID_PASSIVE_RESURRECTION_SICKNESS,i))
                 {
@@ -15624,7 +15624,7 @@ void Player::_LoadAuras(QueryResult result, uint32 timediff)
             
             // Do not load SPELL_AURA_IGNORED auras
         bool abort = false;
-            for (uint8 i = 0; i < 3; i++) {
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++) {
                 if (spellproto->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA && spellproto->Effects[i].ApplyAuraName == 221)
                     abort = true;
             }
@@ -19927,7 +19927,7 @@ void Player::learnQuestRewardedSpells(Quest const* quest)
 
     // check learned spells state
     bool found = false;
-    for(int i=0; i < 3; ++i)
+    for(int i=0; i < MAX_SPELL_EFFECTS; ++i)
     {
         //skip spells with effect SPELL_EFFECT_TRADE_SKILL, these are skill spec and shouldn't be learned again when unlearned
         uint32 triggerSpell = spellInfo->Effects[i].TriggerSpell;

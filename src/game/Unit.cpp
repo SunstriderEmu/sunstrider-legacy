@@ -1052,7 +1052,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
     SpellCastTargets targets;
     uint32 targetMask = spellInfo->Targets;
     //if(targetMask & (TARGET_FLAG_UNIT|TARGET_FLAG_UNIT_MINIPET))
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(sSpellMgr->SpellTargetType[spellInfo->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET)
         {
@@ -1119,7 +1119,7 @@ uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Uni
     uint32 targetMask = spellInfo->Targets;
 
     //check unit target
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(sSpellMgr->SpellTargetType[spellInfo->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET)
         {
@@ -4261,7 +4261,7 @@ void Unit::RemoveAurasByCasterSpell(uint32 spellId, uint64 casterGUID)
 
 void Unit::SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int32 duration)
 {
-    for(uint8 i = 0; i < 3; ++i)
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         spellEffectPair spair = spellEffectPair(spellId, i);
         for(AuraMap::const_iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr)
@@ -4278,7 +4278,7 @@ void Unit::SetAurasDurationByCasterSpell(uint32 spellId, uint64 casterGUID, int3
 Aura* Unit::GetAuraByCasterSpell(uint32 spellId, uint64 casterGUID)
 {
     // Returns first found aura from spell-use only in cases where effindex of spell doesn't matter!
-    for(uint8 i = 0; i < 3; ++i)
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         spellEffectPair spair = spellEffectPair(spellId, i);
         for(AuraMap::const_iterator itr = m_Auras.lower_bound(spair); itr != m_Auras.upper_bound(spair); ++itr)
@@ -4499,7 +4499,7 @@ void Unit::RemoveSingleAuraFromStack(uint32 spellId, uint32 effindex)
 
 void Unit::RemoveAurasDueToSpell(uint32 spellId, Aura* except)
 {
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         RemoveAura(spellId,i,except);
 }
 
@@ -4647,7 +4647,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
             // Unsummon summon as possessed creatures on spell cancel
             if(caster->GetTypeId() == TYPEID_PLAYER)
             {
-                for(int i = 0; i < 3; ++i)
+                for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
                     if(AurSpellInfo->Effects[i].Effect == SPELL_EFFECT_SUMMON &&
                         (AurSpellInfo->Effects[i].MiscValueB == SUMMON_TYPE_POSESSED ||
@@ -13896,7 +13896,7 @@ void Unit::AddAura(uint32 spellId, Unit* target)
     if (target->IsImmunedToSpell(spellInfo))
         return;
         
-    for(uint32 i = 0; i < 3; ++i)
+    for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
         {

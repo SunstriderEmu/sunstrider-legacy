@@ -374,7 +374,7 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
         if (spellproto->Effects[i].ApplyAuraName == auraType)
             return true;
     return false;
@@ -477,7 +477,7 @@ void SpellMgr::LoadSpellTargetPositions()
         }
 
         bool found = false;
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if( spellInfo->Effects[i].TargetA.GetTarget()==TARGET_DEST_DB || spellInfo->Effects[i].TargetB.GetTarget()==TARGET_DEST_DB )
             {
@@ -1016,7 +1016,7 @@ bool SpellMgr::canStackSpellRanks(SpellInfo const *spellInfo)
         return false;
 
     // All stance spells. if any better way, change it.
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         // Paladin aura Spell
         if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN
@@ -1096,7 +1096,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
         if (spellInfo_1->HasAttribute(SPELL_ATTR3_STACK_FOR_DIFF_CASTERS))
             return true;
             
-        for(uint32 i = 0; i < 3; ++i) {
+        for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i) {
             if (spellInfo_1->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA
                 || spellInfo_1->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA) {
                 // not area auras (shaman totem)
@@ -1146,7 +1146,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
     spellInfo_2=sSpellMgr->GetSpellInfo(GetLastSpellInChain(spellId_2));
 
     //if spells have exactly the same effect they cannot stack
-    for(uint32 i = 0; i < 3; ++i)
+    for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         if(spellInfo_1->Effects[i].Effect != spellInfo_2->Effects[i].Effect
             || spellInfo_1->Effects[i].ApplyAuraName != spellInfo_2->Effects[i].ApplyAuraName
             || spellInfo_1->Effects[i].MiscValue != spellInfo_2->Effects[i].MiscValue) // paladin resist aura
@@ -1527,7 +1527,7 @@ void SpellMgr::LoadSpellLearnSkills()
         if(!entry)
             continue;
 
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if(entry->Effects[i].Effect==SPELL_EFFECT_SKILL)
             {
@@ -1600,7 +1600,7 @@ void SpellMgr::LoadSpellLearnSpells()
         if(!spellInfo)
             continue;
 
-        for(int i = 0; i < 3; ++i)
+        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if(spellInfo->Effects[i].Effect ==SPELL_EFFECT_LEARN_SPELL)
             {
@@ -1797,7 +1797,7 @@ void SpellMgr::LoadSpellPetAuras()
                 continue;
             }
             int i = 0;
-            for(; i < 3; ++i)
+            for(; i < MAX_SPELL_EFFECTS; ++i)
                 if((spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
                     spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_DUMMY) ||
                     spellInfo->Effects[i].Effect == SPELL_EFFECT_DUMMY)
@@ -3132,7 +3132,7 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
         return false;
 
     bool doDamage = false;
-    for(uint8 i = 0; i < 3; i++)
+    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         if( spell->Effects[i].Effect == 0 )
             continue;

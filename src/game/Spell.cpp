@@ -996,7 +996,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     /*else //TODO: This is a hack. need fix
     {
         uint32 tempMask = 0;
-        for(uint32 i = 0; i < 3; ++i)
+        for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if(m_spellInfo->Effects[i].Effect == SPELL_EFFECT_DUMMY
                 || m_spellInfo->Effects[i].Effect == SPELL_EFFECT_TRIGGER_SPELL)
                 tempMask |= 1<<i;
@@ -1182,7 +1182,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
             if (unit->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             {
                 bool nearbyEntrySpell = false;
-                for(uint8 i = 0; i < 3; i++)
+                for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
                 {
                     if(sSpellMgr->IsNearbyEntryEffect(m_spellInfo,i))
                     {
@@ -4102,7 +4102,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     }
         
     // for effects of spells that have only one target
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         //Check pet presence
         if(m_spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_PET)
@@ -4608,7 +4608,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         switch(m_spellInfo->Effects[i].ApplyAuraName)
         {
@@ -4853,7 +4853,7 @@ SpellCastResult Spell::CheckCasterAuras() const
     //We use bitmasks so the loop is done only once and not on every aura check below.
     if ( m_spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY) )
     {
-        for(int i = 0;i < 3; i ++)
+        for(int i = 0;i < MAX_SPELL_EFFECTS; i ++)
         {
             if(m_spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_IMMUNITY)
                 school_immune |= uint32(m_spellInfo->Effects[i].MiscValue);
@@ -5167,7 +5167,7 @@ SpellCastResult Spell::CheckItems()
             {
                 // such items should only fail if there is no suitable effect at all - see Rejuvenation Potions for example
                 SpellCastResult failReason = SPELL_CAST_OK;
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
                 {
                     // skip check, pet not required like checks, and for TARGET_UNIT_PET m_targets.GetUnitTarget() is not the real target but the caster
                     if (m_spellInfo->Effects[i].TargetA.GetTarget()== TARGET_UNIT_PET)
@@ -5326,7 +5326,7 @@ SpellCastResult Spell::CheckItems()
     if(TotemCategory != 0)
         return SPELL_FAILED_TOTEM_CATEGORY;          //0x7B
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
     {
         switch (m_spellInfo->Effects[i].Effect)
         {
@@ -5965,7 +5965,7 @@ bool Spell::IsValidSingleTargetEffect(Unit const* target, Targets type) const
 
 bool Spell::IsValidSingleTargetSpell(Unit const* target) const
 {
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(!IsValidSingleTargetEffect(target, Targets(m_spellInfo->Effects[i].TargetA.GetTarget())))
             return false;

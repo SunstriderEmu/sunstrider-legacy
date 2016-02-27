@@ -415,7 +415,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             //food/drink
             if (AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
             {
-                for(int i = 0; i < 3; i++)
+                for(int i = 0; i < MAX_SPELL_EFFECTS; i++)
                     if( Effects[i].ApplyAuraName==SPELL_AURA_MOD_POWER_REGEN)
                         return SPELL_DRINK;
                     else if ( Effects[i].ApplyAuraName==SPELL_AURA_MOD_REGEN)
@@ -495,7 +495,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             if ((SpellFamilyFlags & 0x00000820180400LL) && (HasAttribute(SPELL_ATTR3_UNK9)))
                 return SPELL_JUDGEMENT;
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
             {
                 // only paladin auras have this
                 if (Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
@@ -543,7 +543,7 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
         return SPELL_ASPECT;
     }
 
-    for(int i = 0; i < 3; ++i)
+    for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if(Effects[i].Effect == SPELL_EFFECT_APPLY_AURA)
         {
@@ -1016,7 +1016,7 @@ AuraStateType SpellInfo::GetAuraState() const
 
     // Swiftmend state on Regrowth & Rejuvenation
     if (SpellFamilyName == SPELLFAMILY_DRUID
-        && (SpellFamilyFlags & (SPELLFAMILYFLAG_DRUIDE_REJUVENATION | SPELLFAMILYFLAG_DRUIDE_REGROWTH)))
+        && (SpellFamilyFlags & (SPELLFAMILYFLAG_DRUID_REJUVENATION | SPELLFAMILYFLAG_DRUID_REGROWTH)))
         return AURA_STATE_SWIFTMEND;
 
     // Deadly poison
@@ -1025,7 +1025,7 @@ AuraStateType SpellInfo::GetAuraState() const
 
     // Faerie Fire (druid versions)
     if ((SpellFamilyName == SPELLFAMILY_DRUID &&
-        SpellFamilyFlags & SPELLFAMILYFLAG_DRUIDE_FAERIEFIRE)
+        SpellFamilyFlags & SPELLFAMILYFLAG_DRUID_FAERIEFIRE)
         || Id == 35325) //glowing blood (why ?)
         return AURA_STATE_FAERIE_FIRE;
 
@@ -1479,7 +1479,7 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
                             if(spellTriggeredProto)
                             {
                                 // non-positive targets of main spell return early
-                                for(int i = 0; i < 3; ++i)
+                                for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
                                 {
                                     // if non-positive trigger cast targeted to positive target this main cast is non-positive
                                     // this will place this spell auras as debuffs

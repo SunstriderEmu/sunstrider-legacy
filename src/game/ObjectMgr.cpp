@@ -7986,7 +7986,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->EquippedItemClass = fields[60].GetInt32();
         spell->EquippedItemSubClassMask = fields[61].GetInt32();
         spell->EquippedItemInventoryTypeMask = fields[62].GetInt32();
-        for (uint8 i = 0; i < 3; i++) {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++) {
             spell->Effect[i] = fields[i+63].GetUInt32();
             spell->EffectDieSides[i] = fields[i+66].GetInt32();
             spell->EffectBaseDice[i] = fields[i+69].GetInt32();
@@ -8027,7 +8027,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->MaxAffectedTargets = fields[161].GetUInt32();
         spell->DmgClass = fields[162].GetUInt32();
         spell->PreventionType = fields[163].GetUInt32();
-        for (uint8 i = 0; i < 3; i++)
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
             spell->EffectDamageMultiplier[i] = fields[i+164].GetFloat();
         spell->TotemCategory[0] = fields[167].GetUInt32();
         spell->TotemCategory[1] = fields[168].GetUInt32();
