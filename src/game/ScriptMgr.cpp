@@ -1628,6 +1628,16 @@ void ScriptMgr::OnPlayerSave(Player* player)
    // FOREACH_SCRIPT(PlayerScript)->OnSave(player);
 }
 
+void ScriptMgr::OnPlayerDelete(uint64 guid, uint32 accountId)
+{
+    //FOREACH_SCRIPT(PlayerScript)->OnDelete(guid, accountId);
+}
+
+void ScriptMgr::OnPlayerFailedDelete(uint64 guid, uint32 accountId)
+{
+    //FOREACH_SCRIPT(PlayerScript)->OnFailedDelete(guid, accountId);
+}
+
 void ScriptMgr::OnPasswordChange(uint32 accountId)
 {
    // FOREACH_SCRIPT(AccountScript)->OnPasswordChange(accountId);
