@@ -23,13 +23,19 @@
 
 class CreatureGroup;
 
+enum GroupAI
+{
+    GROUP_AI_NONE           = 0, //no follow leader, no automatic mutual support
+    GROUP_AI_LEADER_SUPPORT = 1, //follow leader, leader start attacking if a member start attacking
+    GROUP_AI_FULL_SUPPORT   = 2, //follow leader, while group start attacking if any member start attacking
+};
+
 struct FormationInfo
 {
     uint32 leaderGUID;
-    float follow_dist_min;
-    float follow_dist_max;
+    float follow_dist;
     float follow_angle; 
-    uint8 groupAI; // 1 = leader support if a member start attack, 2 = whole group support
+    GroupAI groupAI;
     bool respawn;
     bool linkedLoot;
 };
@@ -98,9 +104,8 @@ class CreatureGroup
         void FormationReset(bool dismiss);
         void SetLootable(bool lootable);
 
-        void LeaderMoveTo(float x, float y, float z);
+        void LeaderMoveTo(float x, float y, float z, bool run);
         void MemberAttackStart(Creature* member, Unit *target);
-        void CheckLeaderDistance(Creature* member);
 
         void UpdateCombat();
         void Respawn();

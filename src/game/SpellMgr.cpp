@@ -3217,7 +3217,7 @@ void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
             if (itr == spellStore.end())
                 continue;
 
-            //replace old object by a new one, but keep it's adress
+            //replace old object by a new one, but keep it's adress, so that code having already pointers to some SpellInfos can continue.
             *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
         }
     }

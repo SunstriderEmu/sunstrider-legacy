@@ -23,8 +23,7 @@
 #include "ObjectMgr.h"
 #include "CreatureAI.h"
 #include "CreatureAINew.h"
-
-#define MAX_DESYNC 1.5f
+#include "MoveSplineInit.h"
 
 CreatureGroupManager::~CreatureGroupManager()
 {
@@ -94,7 +93,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     }
 
     //Get group data
-    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist_min`, `dist_max`, `angle`, `groupAI`,`respawn`,`linkedloot` FROM `creature_formations` ORDER BY `leaderGUID`");
+    result = WorldDatabase.PQuery("SELECT `leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`,`respawn`,`linkedloot` FROM `creature_formations` ORDER BY `leaderGUID`");
 
     if(!result)
     {
@@ -115,23 +114,23 @@ void CreatureGroupManager::LoadCreatureFormations()
         group_member                        = new FormationInfo;
         group_member->leaderGUID            = fields[0].GetUInt32();
         uint32 memberGUID = fields[1].GetUInt32();
-        group_member->groupAI                = fields[5].GetUInt32();
-        group_member->respawn                = fields[6].GetBool();
-        group_member->linkedLoot             = fields[7].GetBool();
         //If creature is group leader we may skip loading of dist/angle
         if(group_member->leaderGUID != memberGUID)
         {
-            group_member->follow_dist_min         = fields[2].GetFloat();
-            group_member->follow_dist_max         = fields[3].GetFloat();   //FIXME: Add a check to ensure that dist_min <= dist_max
-            group_member->follow_angle            = fields[4].GetFloat();
+            group_member->follow_dist             = fields[2].GetFloat();
+            group_member->follow_angle            = fields[3].GetFloat();
         }
+
+        group_member->groupAI = GroupAI(fields[4].GetUInt32());
+        group_member->respawn = fields[5].GetBool();
+        group_member->linkedLoot = fields[6].GetBool();
 
         // check data correctness
         const CreatureData* leader = sObjectMgr->GetCreatureData(group_member->leaderGUID);
         const CreatureData* member = sObjectMgr->GetCreatureData(memberGUID);
         if(!leader || !member || leader->mapid != member->mapid)
         {
-            TC_LOG_ERROR("FIXME","Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
+            TC_LOG_ERROR("sql.sql","Table `creature_formations` has an invalid record (leaderGUID: '%u', memberGUID: '%u')", group_member->leaderGUID, memberGUID);
             delete group_member;
             continue;
         }
@@ -140,9 +139,7 @@ void CreatureGroupManager::LoadCreatureFormations()
     }
     while(result->NextRow()) ;
 
-    TC_LOG_INFO("FIXME"," ");
-    TC_LOG_INFO("FIXME", ">> Loaded %u creatures in formations", total_records );
-    TC_LOG_INFO("FIXME"," ");
+    TC_LOG_INFO("sql.sql", ">> Loaded %u creatures in formations", total_records );
     //Free some heap
 }
 
@@ -172,14 +169,14 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
 
     CreatureGroupInfoType const& groupMap = sCreatureGroupMgr->GetGroupMap();
     CreatureGroupInfoType::const_iterator fInfo = groupMap.find(member->GetDBTableGUIDLow());
-    if(fInfo == groupMap.end() || !fInfo->second)
+    if (fInfo == groupMap.end() || !fInfo->second)
         return;
 
-    uint8 groupAI = fInfo->second->groupAI;
-    if(!groupAI)
+    GroupAI groupAI = fInfo->second->groupAI;
+    if (groupAI == GROUP_AI_NONE)
         return;
 
-    if(groupAI == 1 && member != m_leader)
+    if (groupAI == GROUP_AI_LEADER_SUPPORT && member != m_leader)
         return;
 
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
@@ -204,6 +201,9 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
 
 void CreatureGroup::FormationReset(bool dismiss)
 {
+    if (m_members.size() && m_members.begin()->second->groupAI == GROUP_AI_NONE)
+        return;
+
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
         if(itr->first != m_leader && itr->first->IsAlive())
@@ -217,14 +217,19 @@ void CreatureGroup::FormationReset(bool dismiss)
     m_Formed = !dismiss;
 }
 
-void CreatureGroup::LeaderMoveTo(float x, float y, float z)
+void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
 {
     //! To do: This should probably get its own movement generator or use WaypointMovementGenerator.
     //! If the leader's path is known, member's path can be plotted as well using formation offsets.
     if(!m_leader)
         return;
 
-    float pathangle = atan2(m_leader->GetPositionY() - y, m_leader->GetPositionX() - x);
+    uint8 groupAI = sCreatureGroupMgr->GetGroupMap().at(m_leader->GetDBTableGUIDLow())->groupAI;
+    if (groupAI == GROUP_AI_NONE)
+        return;
+
+    float pathDist = m_leader->GetExactDist(x, y, z);
+    float pathAngle = m_leader->GetAngle(x, y);
 
     for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
@@ -232,79 +237,48 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
         if(member == m_leader || !member->IsAlive() || member->GetVictim())
             continue;
 
-        //TODO: if at last of first waypoint, consider inverting follow angle
-        float angle = itr->second->follow_angle;
-        float dist_min = itr->second->follow_dist_min;
-        float dist_max = itr->second->follow_dist_max;
+        // Xinef: If member is stunned / rooted etc don't allow to move him
+        if (member->HasUnitState(UNIT_STATE_NOT_MOVE))
+            continue;
 
-        float dx = x + cos(angle + pathangle) * dist_min;
-        float dy = y + sin(angle + pathangle) * dist_min;
+        // Xinef: this should be automatized, if turn angle is greater than PI/2 (90°) we should swap formation angle
+        if (M_PI - fabs(fabs(m_leader->GetOrientation() - pathAngle) - M_PI) > M_PI*0.50f)
+        {
+            // pussywizard: in both cases should be 2*M_PI - follow_angle
+            // pussywizard: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
+            // pussywizard: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
+            // if (m_leader->GetCurrentWaypointID()+1 == itr->second->point_1 || m_leader->GetCurrentWaypointID()+1 == itr->second->point_2)
+            itr->second->follow_angle = Position::NormalizeOrientation(itr->second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
+        }
+
+
+        float followAngle = itr->second->follow_angle;
+        float followDist = itr->second->follow_dist;
+
+        float dx = x + cos(followAngle + pathAngle) * followDist;
+        float dy = y + sin(followAngle + pathAngle) * followDist;
         float dz = z;
 
         Trinity::NormalizeMapCoord(dx);
         Trinity::NormalizeMapCoord(dy);
 
-        //member->UpdateGroundPositionZ(dx, dy, dz);
+        member->UpdateGroundPositionZ(dx, dy, dz);
 
-        /*if (member->GetDistance(m_leader) > dist_min)
-            member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
-        else
-            member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);*/
-            
-        if (member->GetDistance(m_leader) < dist_min)               // Too close... Slow down buddy!
-            member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        else if (member->GetDistance(m_leader) > dist_max)          // HURRY UP, HE'S LEAVING WITHOUT YA!
+        member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
+        // pussywizard: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
+        if (run && member->IsWalking())
             member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        else                                                        // We're good, synchronize with leader
-            member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
+        else if (!run && !member->IsWalking())
+            member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
+            
+        // xinef: if we move members to position without taking care of sizes, we should compare distance without sizes
+        // xinef: change members speed basing on distance - if too far speed up, if too close slow down
+        UnitMoveType mtype = Movement::SelectSpeedType(member->GetUnitMovementFlags());
+        member->SetSpeedRate(mtype, m_leader->GetSpeedRate(mtype) * member->GetExactDist(dx, dy, dz) / pathDist);
 
         member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
-        member->SetHomePosition(dx, dy, dz, pathangle);
+        member->SetHomePosition(dx, dy, dz, pathAngle);
     }
-}
-
-void CreatureGroup::CheckLeaderDistance(Creature* member)
-{
-    if (!m_leader)
-        return;
-        
-    if (!m_leaderX || !m_leaderY || !m_leaderZ)
-        return;
-        
-    float angle = 0, dist_min = 0, dist_max = 0;
-        
-    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
-    {
-        Creature *memberItr = itr->first;
-        if(memberItr == m_leader || !member->IsAlive() || member->GetVictim())
-            continue;
-            
-        if (memberItr != member)
-            continue;
-            
-        angle = itr->second->follow_angle;
-        dist_min = itr->second->follow_dist_min;
-        dist_max = itr->second->follow_dist_max;
-        break;
-    }
-        
-        
-    if (member->GetDistance(m_leader) < dist_min) {
-        member->AddUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        return;
-        //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
-    }
-    else if (member->GetDistance(m_leader) > dist_max) {
-        member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
-        //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
-    }
-    else
-        member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
-        
-    member->GetMotionMaster()->MoveFollow(m_leader, dist_max, angle);
-
-    // Force move to GetNearPoint(dist, angle) here?
-    //member->GetMotionMaster()->MovePoint(0, m_leaderX, m_leaderY, m_leaderZ);
 }
 
 void CreatureGroup::UpdateCombat()

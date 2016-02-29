@@ -31,6 +31,8 @@ namespace G3D
 
 namespace Movement
 {
+    UnitMoveType SelectSpeedType(uint32 moveFlags);
+
     enum AnimType
     {
         ToGround    = 0, // 460 = ToGround, index of AnimationData.dbc

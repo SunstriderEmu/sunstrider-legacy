@@ -317,7 +317,7 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
     if (creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
     {
         creature->SetWalk(!currentNode->move_type);
-        creature->GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z);
+        creature->GetFormation()->LeaderMoveTo(formationDest.x, formationDest.y, formationDest.z, currentNode->move_type == WAYPOINT_MOVE_TYPE_RUN);
     }
 
     return true;

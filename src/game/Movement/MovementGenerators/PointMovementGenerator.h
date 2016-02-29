@@ -28,7 +28,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
     public:
         //_o = 0 means no orientation used. Use values like 0.00001 for orientation 0.
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _o, bool _generatePath, float _speed = 0.0f) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), i_o(_o), speed(_speed), m_generatePath(_generatePath), i_recalculateSpeed(false) { }
+            i_x(_x), i_y(_y), i_z(_z), i_o(_o), speed(_speed), _generatePath(_generatePath), i_recalculateSpeed(false) { }
 
         void DoInitialize(T*);
         void DoFinalize(T*);
@@ -46,8 +46,9 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
         uint32 id;
         float i_x, i_y, i_z, i_o;
         float speed;
-        bool m_generatePath;
         bool i_recalculateSpeed;
+
+        bool _generatePath;
 };
 
 class AssistanceMovementGenerator : public PointMovementGenerator<Creature>

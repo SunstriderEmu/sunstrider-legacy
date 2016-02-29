@@ -627,9 +627,6 @@ void Creature::Update(uint32 diff)
                 } else m_relocateTimer -= diff;
             }
             
-            if (m_formation)
-                GetFormation()->CheckLeaderDistance(this);
-                
             if ((GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_HEALTH_RESET) == 0)
                 if(m_regenTimer > 0)
                 {
@@ -1494,7 +1491,11 @@ void Creature::SetDeathState(DeathState s)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-        if ((CanFly() || IsFlying()))
+        //Dismiss group if is leader
+        if (m_formation && m_formation->getLeader() == this)
+            m_formation->FormationReset(true);
+
+        if ((CanFly() || IsFlying()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
             GetMotionMaster()->MoveFall();
 
         Unit::SetDeathState(CORPSE);

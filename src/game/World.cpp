@@ -1498,9 +1498,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Overriding SpellItemEnchantment...");
     sSpellMgr->OverrideSpellItemEnchantment();
 
-    TC_LOG_INFO("server.loading", "Loading linked spells..." ); //must be loaded after spell info
-    sSpellMgr->LoadSpellLinked();
-
     TC_LOG_INFO("server.loading", "Loading player Create Info & Level Stats..." );
     sObjectMgr->LoadPlayerInfo();
 

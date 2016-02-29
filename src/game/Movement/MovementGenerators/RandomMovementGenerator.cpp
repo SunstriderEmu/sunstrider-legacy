@@ -120,7 +120,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature* creature)
 
     //Call for creature group update
     if (creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
-        creature->GetFormation()->LeaderMoveTo(destX, destY, destZ);
+        creature->GetFormation()->LeaderMoveTo(destX, destY, destZ, false);
 }
 
 template<>
