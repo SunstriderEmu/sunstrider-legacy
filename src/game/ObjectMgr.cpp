@@ -7916,7 +7916,7 @@ void ObjectMgr::LoadSpellTemplates()
         "spellName9, spellName10, spellName11, spellName12, spellName13, spellName14, spellName15, spellName16, rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8, rank9, rank10, "
         "rank11, rank12, rank13, rank14, rank15, rank16, ManaCostPercentage, startRecoveryCategory, startRecoveryTime, "
         "maxTargetLevel, spellFamilyName, spellFamilyFlags, maxAffectedTargets, dmgClass, preventionType, dmgMultiplier1, dmgMultiplier2, dmgMultiplier3, "
-        "totemCategory1, totemCategory2, areaId, schoolMask FROM spell_template ORDER BY entry");
+        "totemCategory1, totemCategory2, areaId, schoolMask, customAttributesFlags FROM spell_template ORDER BY entry");
         
     if (!result) {
         TC_LOG_INFO("server.loading","Table spell_template is empty!");
@@ -8033,6 +8033,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->TotemCategory[1] = fields[168].GetUInt32();
         spell->AreaId = fields[169].GetUInt32();
         spell->SchoolMask = fields[170].GetUInt32();
+        spell->CustomAttributesFlags = fields[171].GetUInt32();
 
         spellTemplates[id] = spell;
         maxSpellId = id;
@@ -8070,10 +8071,12 @@ void ObjectMgr::LoadSpellTemplates()
                 sPetFamilySpellsStore[i].insert(spellInfo->Id);
             }
         }
+
     }
-    
+    //(re) apply custom attr
+    sSpellMgr->LoadSpellCustomAttr();
+
     TC_LOG_INFO("server.loading",">> Loaded %u spell templates.", count);
-    
 }
 
 SpellEntry const* ObjectMgr::GetSpellTemplate(uint32 id) const

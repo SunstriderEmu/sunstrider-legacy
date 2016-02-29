@@ -691,6 +691,9 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         Effects[i] = SpellEffectInfo(spellEntry, this, i);
 
+    //custom attributes from database. More custom attributes to be loaded 
+    AttributesCu = spellEntry->CustomAttributesFlags;
+
     /* TODO SPELLINFO
     ChainEntry = NULL;
     ExplicitTargetMask = 0; */

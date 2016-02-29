@@ -744,7 +744,8 @@ struct SpellEntry
     uint32    TotemCategory[2];                             // 212-213
     uint32    AreaId;                                       // 214
     uint32    SchoolMask;                                   // 215 school mask
-    
+    uint32    CustomAttributesFlags;                        // not in dbc, custom field for enum SpellCustomAttributes
+
     public:
         SpellEntry()
         {

@@ -726,6 +726,8 @@ class ObjectMgr
 
         void LoadGMTickets();
 
+        /* (Re)Load spell_template from database, and apply some hardcoded changes with LoadSpellCustomAttr(). You still need to reload SpellInfo's with LoadSpellInfoStore if you want this data to be used.
+        */
         void LoadSpellTemplates();
         SpellEntry const* GetSpellTemplate(uint32 id) const;
         SpellEntryStore& GetSpellStore() { return spellTemplates; }

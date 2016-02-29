@@ -325,7 +325,7 @@ public:
     uint32 AttributesEx4;
     uint32 AttributesEx5;
     uint32 AttributesEx6;
-    uint32 AttributesEx7; //LK
+    uint32 AttributesEx7; // LK field, not commented out so we can still use it if we want
     uint32 AttributesCu;
     uint32 Stances;
     uint32 StancesNot;

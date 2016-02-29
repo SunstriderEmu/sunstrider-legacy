@@ -1977,7 +1977,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 45026: // Heroic Strike
             spellInfo->EffectBasePoints[0] = 5200;
             break;
-        case 41357: // L1 Acane Charge
+        case 41357: // L1 Arcane Charge
             spellInfo->MaxAffectedTargets = 3;
             break;
         case 41376: // Spite
