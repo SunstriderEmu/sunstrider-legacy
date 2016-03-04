@@ -181,7 +181,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     }
 
     m_time             = time_t(fields[6].GetUInt64());
-    m_type             = CorpseType(fields[7].GetUInt32());
+    m_type             = CorpseType(fields[7].GetUInt8());
     if(m_type >= MAX_CORPSE_TYPE)
     {
         TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %d) have wrong corpse type, not load.",GetGUIDLow(),GUID_LOPART(GetOwnerGUID()));

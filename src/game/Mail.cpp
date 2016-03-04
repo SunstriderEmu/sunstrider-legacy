@@ -792,6 +792,9 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
         mailTemplateId = 0;
     }
 
+    //log it
+    LogsDatabaseAccessor::Mail(mailId, messageType, sender_guidlow_or_entry, receiver_guidlow, subject, itemTextId, mi, money > 0 ? money : -int32(COD));
+
     if(receiver)
     {
         receiver->AddNewMailDeliverTime(deliver_time);
@@ -847,9 +850,6 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
             trans->PAppend("INSERT INTO mail_items (mail_id,item_guid,item_template,receiver) VALUES ('%u', '%u', '%u','%u')", mailId, mailItem.item_guidlow, mailItem.item_template,receiver_guidlow);
         }
     }
-
-    //log it
-    LogsDatabaseAccessor::Mail(mailId, messageType, sender_guidlow_or_entry, receiver_guidlow, subject, itemTextId, mi, money > 0 ? money : -int32(COD));
 
     //receiver is not online, delete item from memory for now
     if(mi && !receiver)
