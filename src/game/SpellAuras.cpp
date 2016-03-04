@@ -2150,6 +2150,8 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     m_target->RemoveAurasDueToSpell(31970);
                 return;
             }
+            /*
+            Working with spell_target and SmartAI
             case 32146: //Liquid Fire
             {
                 if (!m_target && !caster->GetVictim())
@@ -2164,6 +2166,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                     
                 return;
             }
+            */
             case 37096:                                     // Blood Elf Disguise
                 if(caster)
                 {
