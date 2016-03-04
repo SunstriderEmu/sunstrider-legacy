@@ -141,7 +141,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
         AddUnitState(obj,cell);
         obj->AddToWorld();
         if(obj->isActiveObject())
-            map->AddToForceActive(obj);
+            map->AddToActive(obj);
 
         ++count;
 
@@ -169,7 +169,7 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapTyp
         AddUnitState(obj,cell);
         obj->AddToWorld();
         if(obj->isActiveObject())
-            map->AddToForceActive(obj);
+            map->AddToActive(obj);
 
         ++count;
     }
@@ -302,8 +302,6 @@ ObjectGridStoper::Visit(CreatureMapType &m)
             iter->GetSource()->CombatStop();
             iter->GetSource()->DeleteThreatList();
             iter->GetSource()->AI()->EnterEvadeMode();
-            if (iter->GetSource()->getAI())
-                iter->GetSource()->getAI()->evade();
         }
     }
 }

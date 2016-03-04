@@ -111,9 +111,7 @@ enum WorldTimers
 enum WorldConfigs
 {
     CONFIG_COMPRESSION = 0,
-    CONFIG_GRID_UNLOAD,
     CONFIG_INTERVAL_SAVE,
-    CONFIG_INTERVAL_GRIDCLEAN,
     CONFIG_INTERVAL_MAPUPDATE,
     CONFIG_INTERVAL_CHANGEWEATHER,
     CONFIG_INTERVAL_DISCONNECT_TOLERANCE,
@@ -503,7 +501,7 @@ enum ScriptCommands
     SCRIPT_COMMAND_PLAYSOUND =            16,              // datalong soundid, datalong2 play only self
 
     SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong
-    SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table
+   //not used anymore : SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table
     SCRIPT_COMMAND_KILL =                 22,              // datalong removecorpse
 };
 
@@ -680,6 +678,7 @@ class World
         //temp compatibility macros
 #define getIntConfig(a) getConfig(a)
 #define getBoolConfig(a) getConfig(a)
+#define getFloatConfig(a) getConfig(a)
 
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }

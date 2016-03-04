@@ -36,12 +36,15 @@ inline Cell::Cell(CellCoord const& p)
     data.Part.reserved = 0;
 }
 
-inline int CellHelper(const float radius)
+inline Cell::Cell(float x, float y)
 {
-    if (radius < 1.0f)
-        return 0;
-
-    return (int)ceilf(radius/SIZE_OF_GRID_CELL);
+    CellCoord p = Trinity::ComputeCellCoord(x, y);
+    data.Part.grid_x = p.x_coord / MAX_NUMBER_OF_CELLS;
+    data.Part.grid_y = p.y_coord / MAX_NUMBER_OF_CELLS;
+    data.Part.cell_x = p.x_coord % MAX_NUMBER_OF_CELLS;
+    data.Part.cell_y = p.y_coord % MAX_NUMBER_OF_CELLS;
+    data.Part.nocreate = 0;
+    data.Part.reserved = 0;
 }
 
 inline CellArea Cell::CalculateCellArea(const WorldObject &obj, float radius)
@@ -52,34 +55,22 @@ inline CellArea Cell::CalculateCellArea(const WorldObject &obj, float radius)
 inline CellArea Cell::CalculateCellArea(float x, float y, float radius)
 {
     if (radius <= 0.0f)
-        return CellArea();
+    {
+        CellCoord center = Trinity::ComputeCellCoord(x, y).normalize();
+        return CellArea(center, center);
+    }
 
-    //lets calculate object coord offsets from cell borders.
-    //TODO: add more correct/generic method for this task
-    const float x_offset = (x - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
-    const float y_offset = (y - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
+    CellCoord centerX = Trinity::ComputeCellCoord(x - radius, y - radius).normalize();
+    CellCoord centerY = Trinity::ComputeCellCoord(x + radius, y + radius).normalize();
 
-    const float x_val = floor(x_offset + CENTER_GRID_CELL_ID + 0.5f);
-    const float y_val = floor(y_offset + CENTER_GRID_CELL_ID + 0.5f);
-
-    const float x_off = (x_offset - x_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-    const float y_off = (y_offset - y_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-
-    const float tmp_diff = radius - CENTER_GRID_CELL_OFFSET;
-    //lets calculate upper/lower/right/left corners for cell search
-    int right = CellHelper(tmp_diff + x_off);
-    int left  = CellHelper(tmp_diff - x_off);
-    int upper = CellHelper(tmp_diff + y_off);
-    int lower = CellHelper(tmp_diff - y_off);
-
-    return CellArea(right, left, upper, lower);
+    return CellArea(centerX, centerY);
 }
 
 template<class T, class CONTAINER>
 inline void
 Cell::Visit(const CellCoord& standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float radius, float x_off, float y_off) const
 {
-    if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
+    if (!standing_cell.IsCoordValid())
         return;
 
     //no jokes here... Actually placing ASSERT() here was good idea, but
@@ -91,8 +82,8 @@ Cell::Visit(const CellCoord& standing_cell, TypeContainerVisitor<T, CONTAINER> &
         return;
     }
     //lets limit the upper value for search radius
-    if (radius > 333.0f)
-        radius = 333.0f;
+    if (radius > SIZE_OF_GRIDS)
+        radius = SIZE_OF_GRIDS;
 
     //lets calculate object coord offsets from cell borders.
     CellArea area = Cell::CalculateCellArea(x_off, y_off, radius);
@@ -140,11 +131,11 @@ Cell::Visit(const CellCoord& standing_cell, TypeContainerVisitor<T, CONTAINER> &
 
 template<class T, class CONTAINER>
 inline void
-Cell::Visit(const CellCoord& l, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject &obj, float radius) const
+Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, WorldObject const& obj, float radius) const
 {
     //we should increase search radius by object's radius, otherwise
     //we could have problems with huge creatures, which won't attack nearest players etc
-    Visit(l, visitor, m, radius + obj.GetObjectSize(), obj.GetPositionX(), obj.GetPositionY());
+    Visit(standing_cell, visitor, map, radius + obj.GetObjectSize(), obj.GetPositionX(), obj.GetPositionY());
 }
 
 template<class T, class CONTAINER>
@@ -196,99 +187,6 @@ Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const Cel
             Cell r_zone_right(cell_pair_right);
             r_zone_right.data.Part.nocreate = data.Part.nocreate;
             m.Visit(r_zone_right, visitor);
-        }
-    }
-}
-
-template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellCoord &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m) const
-{
-    if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-        return;
-
-    uint16 district = (District)this->data.Part.reserved;
-    if(district == CENTER_DISTRICT)
-    {
-        m.Visit(*this, visitor);
-        return;
-    }
-
-    // set up the cell range based on the district
-    // the overloaded operators handle range checking
-    CellCoord begin_cell = standing_cell;
-    CellCoord end_cell = standing_cell;
-
-    switch( district )
-    {
-        case ALL_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case UPPER_LEFT_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            break;
-        }
-        case UPPER_RIGHT_DISTRICT:
-        {
-            begin_cell -= 1;                                // up
-            end_cell >> 1;                                  // right
-            break;
-        }
-        case LOWER_LEFT_DISTRICT:
-        {
-            begin_cell << 1;                                // left
-            end_cell += 1;                                  // down
-            break;
-        }
-        case LOWER_RIGHT_DISTRICT:
-        {
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case LEFT_DISTRICT:
-        {
-            begin_cell -= 1;                                // up
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case RIGHT_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell += 1;                                  // down
-            break;
-        }
-        case UPPER_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell >> 1;                                  // right
-            break;
-        }
-        case LOWER_DISTRICT:
-        {
-            begin_cell << 1;                                // left
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        default:
-        {
-            assert( false );
-            break;
-        }
-    }
-
-    // loop the cell range
-    for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; x++)
-    {
-        for(uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; y++)
-        {
-            CellCoord cell_pair(x,y);
-            Cell r_zone(cell_pair);
-            r_zone.data.Part.nocreate = data.Part.nocreate;
-            m.Visit(r_zone, visitor);
         }
     }
 }

@@ -156,13 +156,13 @@ class ThreatContainer
 
         void setDirty(bool pDirty) { iDirty = pDirty; }
 
-        bool isDirty() { return iDirty; }
+        bool isDirty() const { return iDirty; }
 
-        bool empty() { return(iThreatList.empty()); }
+        bool empty() const { return(iThreatList.empty()); }
 
         HostileReference* getMostHated() { return iThreatList.empty() ? NULL : iThreatList.front(); }
 
-        HostileReference* getReferenceByTarget(Unit* pVictim);
+        HostileReference* getReferenceByTarget(Unit* pVictim) const;
 
         std::list<HostileReference*>& getThreatList() { return iThreatList; }
         std::list<HostileReference*> const& getThreatList() const { return iThreatList; }
@@ -194,13 +194,13 @@ class ThreatManager
         //modify threat for victim. Do not remove from threat list in any case
         void modifyThreatPercent(Unit *pVictim, int32 pPercent);
 
-        float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false);
+        float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false) const;
 
-        bool isThreatListEmpty() { return iThreatContainer.empty();}
+        bool isThreatListEmpty() const { return iThreatContainer.empty();}
 
         bool processThreatEvent(const UnitBaseEvent* pUnitBaseEvent);
 
-        HostileReference* getCurrentVictim() { return iCurrentVictim; }
+        HostileReference* getCurrentVictim() const { return iCurrentVictim; }
 
         Unit*  GetOwner() { return iOwner; }
 

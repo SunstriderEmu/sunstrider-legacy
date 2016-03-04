@@ -30,3 +30,5 @@
 #include "Bag.h"
 #include "Mail.h"
 #include "Corpse.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"

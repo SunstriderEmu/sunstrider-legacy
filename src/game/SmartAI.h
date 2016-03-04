@@ -240,7 +240,7 @@ class SmartGameObjectAI : public GameObjectAI
         bool OnGossipHello(Player* player) override;
         bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override;
         bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
-        bool QuestAccept(Player* player, Quest const* quest) override;
+        bool OnQuestAccept(Player* player, Quest const* quest) override;
         bool QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;
         void SetData(uint32 id, uint32 value) override;

@@ -124,8 +124,6 @@ void PetAI::UpdateAI(const uint32 diff)
             {
                 if(owner->IsInCombat() && !(i_pet.HasReactState(REACT_PASSIVE) || i_pet.GetCharmInfo()->HasCommandState(COMMAND_STAY))) {
                     AttackStart(owner->GetAttackerForHelper());
-                    if (me->getAI())
-                        me->getAI()->attackStart(owner->GetAttackerForHelper());
                 }
                 else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STATE_FOLLOW))
                     i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);

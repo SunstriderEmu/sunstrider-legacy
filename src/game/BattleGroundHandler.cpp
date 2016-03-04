@@ -303,8 +303,6 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 
 void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 1+1+4+2+1);
 
     uint8 type;                                             // arenatype if arena

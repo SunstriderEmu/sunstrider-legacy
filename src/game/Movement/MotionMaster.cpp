@@ -654,6 +654,15 @@ void MotionMaster::PropagateSpeedChange()
     }
 }
 
+void MotionMaster::ReinitializeMovement()
+{
+    for (int i = 0; i <= _top; ++i)
+    {
+        if (Impl[i])
+            Impl[i]->Reset(_owner);
+    }
+}
+
 MovementGeneratorType MotionMaster::GetCurrentMovementGeneratorType() const
 {
    if (empty())

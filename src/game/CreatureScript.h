@@ -10,10 +10,10 @@ class Creature;
 class CreatureAINew;
 class Player;
 
-class CreatureScript
+class CreatureScriptWR
 {
     public:
-        CreatureScript(std::string name) : m_name(name)//, pOnGossipHello(0), pGossipSelect(0), pOnGossipSelectCode(0)
+        CreatureScriptWR(std::string name) : m_name(name)//, OnGossipHello(0), OnGossipSelect(0)
         {}
         
         std::string getName() { return m_name; }
@@ -23,9 +23,8 @@ class CreatureScript
         virtual CreatureAINew* getAI(Creature* creature) { return NULL; }
     
         //Methods to be scripted
-        bool (*pOnGossipHello         )(Player*, Creature*);
-        bool (*pGossipSelect        )(Player*, Creature*, uint32 , uint32 );
-        bool (*pOnGossipSelectCode)(Player*, Creature*, uint32 , uint32 , const char* );
+        bool (*OnGossipHello         )(Player*, Creature*);
+        bool (*OnGossipSelect        )(Player*, Creature*, uint32 , uint32 );
     protected:
         std::string m_name;
 };

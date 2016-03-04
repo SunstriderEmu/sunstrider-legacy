@@ -170,7 +170,7 @@ m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), 
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
-m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), m_AI(NULL),
+m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0),
 m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false),
 m_stealthWarningCooldown(0)
 {
@@ -184,6 +184,7 @@ m_stealthWarningCooldown(0)
     m_GlobalCooldown = 0;
     DisableReputationGain = false;
     TriggerJustRespawned = false;
+    m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
 }
 
 Creature::~Creature()
@@ -471,8 +472,6 @@ void Creature::Update(uint32 diff)
     {
         TriggerJustRespawned = false;
         AI()->JustRespawned();
-        if (getAI())
-            getAI()->onRespawn();
             
         Map *map = FindMap();
         if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
@@ -595,15 +594,8 @@ void Creature::Update(uint32 diff)
                 if (!IsInEvadeMode())
                 {
                     i_AI->UpdateAI(diff);
-                    if (getAI())
-                        m_AI->update(diff);
 
                     CheckForUnreachableTarget();
-                }
-                else
-                {
-                    if (getAI())
-                        m_AI->updateEM(diff);
                 }
                 m_AI_locked = false;
             }
@@ -658,6 +650,9 @@ void Creature::Update(uint32 diff)
         default:
             break;
     }
+
+    if (IsInWorld())
+        sScriptMgr->OnCreatureUpdate(this, diff);
 }
 
 void Creature::RegenerateMana()
@@ -717,16 +712,6 @@ void Creature::RegenerateHealth()
     ModifyHealth(addvalue);
 }
 
-bool Creature::InitCustomScript(uint32 scriptId)
-{
-    CreatureAI* ai = sScriptMgr->GetAI(this, scriptId);
-    if (!ai)
-        return false;
-
-    AIM_Initialize(ai);
-    return true;
-}
-
 bool Creature::AIM_Initialize(CreatureAI* ai)
 {
     // make sure nothing can change the AI during AI update
@@ -744,14 +729,6 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     i_AI = ai ? ai : FactorySelector::selectAI(this);
     IsAIEnabled = true;     // Keep this when getting rid of old system
     i_AI->InitializeAI();
-    
-    // New system
-    if (m_AI)
-        delete m_AI;
-
-    m_AI = sScriptMgr->getAINew(this);
-    if (getAI())
-        m_AI->initialize();
     
 #ifdef LICH_KING
     // Initialize vehicle
@@ -1329,7 +1306,7 @@ bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
-    return IsWithinDistInMap(u, sWorld->getConfig(CONFIG_SIGHT_MONSTER));
+    return IsWithinDistInMap(u, m_SightDistance);
 }
 
 /**
@@ -1485,7 +1462,7 @@ void Creature::SetDeathState(DeathState s)
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
 
         //if(!IsPet())
-            SetKeepActive(false);
+            setActive(false);
 
         if(!IsPet() && GetCreatureTemplate()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
@@ -1798,15 +1775,9 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
     Creature* pCreature = NULL;
 
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
     Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,GetVictim(),radius);
     Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck>, GridTypeMapContainer > grid_creature_searcher(searcher);
-    cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+    VisitNearbyGridObject(radius, searcher);
 
     if(!pCreature)
         SetControlled(true, UNIT_STATE_FLEEING);
@@ -1816,22 +1787,44 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
 Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, bool furthest /* = false */) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
     Unit *target = NULL;
 
     {
-        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist,playerOnly,furthest);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(target, u_check);
+        if (dist == 0.0f)
+            dist = MAX_SEARCHER_DISTANCE;
+
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist, playerOnly, furthest);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
+        VisitNearbyObject(dist, searcher);
+    }
+
+    return target;
+}
+
+
+// select nearest hostile unit within the given attack distance (i.e. distance is ignored if > than ATTACK_DISTANCE), regardless of threat list.
+Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
+{
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    Unit* target = NULL;
+
+    if (dist < ATTACK_DISTANCE)
+        dist = ATTACK_DISTANCE;
+    if (dist > MAX_SEARCHER_DISTANCE)
+        dist = MAX_SEARCHER_DISTANCE;
+
+    {
+        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
 
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
         TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-        cell.Visit(p, world_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
-        cell.Visit(p, grid_unit_searcher, *GetMap(), *this, ATTACK_DISTANCE);
+        cell.Visit(p, world_unit_searcher, *GetMap(), *this, dist);
+        cell.Visit(p, grid_unit_searcher, *GetMap(), *this, dist);
     }
 
     return target;
@@ -1848,18 +1841,18 @@ void Creature::CallAssistance()
         {
             std::list<Creature*> assistList;
 
-            // Check near creatures for assistance
-            CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
-            Cell cell(p);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
+            {
+                CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+                Cell cell(p);
+                cell.SetNoCreate();
 
-            Trinity::AnyAssistCreatureInRangeCheck u_check(this, GetVictim(), radius);
-            Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(assistList, u_check);
+                Trinity::AnyAssistCreatureInRangeCheck u_check(this, GetVictim(), radius);
+                Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(this, assistList, u_check);
 
-            TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
+                TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck>, GridTypeMapContainer >  grid_creature_searcher(searcher);
 
-            cell.Visit(p, grid_creature_searcher, *GetMap());
+                cell.Visit(p, grid_creature_searcher, *GetMap(), *this, radius);
+            }
 
             // Add creatures from linking DB system
             if (m_creaturePoolId) {
@@ -2436,8 +2429,6 @@ bool AIMessageEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 { 
     if(owner.AI())
         owner.AI()->message(id,data);
-    if(owner.getAI())
-        owner.getAI()->message(id,data);
 
     return true; 
 }
@@ -2720,25 +2711,11 @@ void Creature::WarnDeathToFriendly()
 
     Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned u_check(this, this, CREATURE_MAX_DEATH_WARN_RANGE);
     Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned> searcher(warnList, u_check);
-
-    TypeContainerVisitor< Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned>, GridTypeMapContainer > grid_creature_searcher(searcher);
-
-    cell.Visit(p, grid_creature_searcher, *GetMap());
+    VisitNearbyGridObject(CREATURE_MAX_DEATH_WARN_RANGE, searcher);
 
     for(auto itr : warnList) 
         if(itr.first->IsAIEnabled)
             itr.first->AI()->FriendlyKilled(this, itr.second);    
-}
-
-Player* Creature::SelectNearestPlayer(float distance) const
-{
-    Player* target = NULL;
-
-    Trinity::NearestPlayerInObjectRangeCheck checker(*this, true, distance);
-    Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
-    VisitNearbyObject(distance, searcher);
-
-    return target;
 }
 
 void Creature::SetTextRepeatId(uint8 textGroup, uint8 id)

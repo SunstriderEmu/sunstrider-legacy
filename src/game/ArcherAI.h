@@ -17,7 +17,6 @@ struct ArcherAI : public CreatureAI
     private:
         float m_minRange;
         float m_CombatDistance;
-        float m_SightDistance;
 };
 
 #endif

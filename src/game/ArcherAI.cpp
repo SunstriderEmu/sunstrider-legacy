@@ -31,7 +31,7 @@ ArcherAI::ArcherAI(Creature *c) : CreatureAI(c)
     if (!m_minRange)
         m_minRange = MELEE_RANGE;
     m_CombatDistance = spell0->GetMaxRange(false, me->GetSpellModOwner());
-    m_SightDistance = m_CombatDistance;
+    me->m_SightDistance = m_CombatDistance;
 }
 
 void ArcherAI::AttackStart(Unit *who)

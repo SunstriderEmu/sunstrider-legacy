@@ -1150,6 +1150,7 @@ struct SmartTarget
             uint32 creature;
             uint32 minDist;
             uint32 maxDist;
+            uint32 livingState;
         } unitRange;
 
         struct
@@ -1162,6 +1163,7 @@ struct SmartTarget
         {
             uint32 creature;
             uint32 dist;
+            uint32 livingState;
         } unitDistance;
 
         struct
@@ -1549,7 +1551,7 @@ class SmartAIMgr
             else
             {
                 if (entry > 0)//first search is for guid (negative), do not drop error if not found
-                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
+                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load OLDScript for Entry %d ScriptType %u.", entry, uint32(type));
                 return temp;
             }
         }

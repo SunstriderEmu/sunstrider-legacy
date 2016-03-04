@@ -47,7 +47,7 @@ enum CorpseFlags
     CORPSE_FLAG_LOOTABLE    = 0x20
 };
 
-class Corpse : public WorldObject
+class Corpse : public WorldObject, public GridObject<Corpse>
 {
     public:
         explicit Corpse( CorpseType type = CORPSE_BONES );
@@ -72,22 +72,19 @@ class Corpse : public WorldObject
         void ResetGhostTime() { m_time = time(NULL); }
         CorpseType GetType() const { return m_type; }
 
-        GridPair const& GetGrid() const { return m_grid; }
-        void SetGrid(GridPair const& grid) { m_grid = grid; }
+        GridCoord const& GetGrid() const { return m_grid; }
+        void SetGrid(GridCoord const& grid) { m_grid = grid; }
 
         bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
 
         Loot loot;                                          // remove insignia ONLY at BG
         Player* lootRecipient;
         bool lootForBody;
-
-        GridReference<Corpse> &GetGridRef() { return m_gridRef; }
     private:
-        GridReference<Corpse> m_gridRef;
 
         CorpseType m_type;
         time_t m_time;
-        GridPair m_grid;                                    // gride for corpse position for fast search
+        GridCoord m_grid;                                    // gride for corpse position for fast search
 };
 #endif
 

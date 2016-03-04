@@ -83,20 +83,10 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
         i_totem.CanAttack(victim) != CAN_ATTACK_RESULT_OK || !i_totem.IsWithinDistInMap(victim, max_range) ||
         i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
     {
-        CellCoord p(Trinity::ComputeCellCoord(i_totem.GetPositionX(),i_totem.GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
-
         victim = NULL;
-
-        Trinity::NearestAttackableUnitInObjectRangeCheck u_check(&i_totem, &i_totem, max_range);
-        Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(victim, u_check);
-
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck>, GridTypeMapContainer > grid_object_checker(checker);
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck>, WorldTypeMapContainer > world_object_checker(checker);
-
-        cell.Visit(p, grid_object_checker,  *i_totem.GetMap());
-        cell.Visit(p, world_object_checker, *i_totem.GetMap());
+        Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
+        Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
+        me->VisitNearbyObject(max_range, checker);
     }
 
     // If have target

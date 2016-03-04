@@ -27,7 +27,7 @@
 #include "InstanceSaveMgr.h"
 #include "World.h"
 
-MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
+MapInstanced::MapInstanced(uint32 id) : Map(id, 0, DUNGEON_DIFFICULTY_NORMAL)
 {
     // fill with zero
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
@@ -217,7 +217,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 
-    InstanceMap *map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty);
+    InstanceMap *map = new InstanceMap(GetId(), InstanceId, difficulty);
     assert(map->IsDungeon());
 
     bool load_data = save != NULL;
@@ -234,7 +234,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
-    BattlegroundMap *map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId);
+    BattlegroundMap *map = new BattlegroundMap(GetId(), InstanceId);
     assert(map->IsBattlegroundOrArena());
     map->SetBG(bg);
 
@@ -262,15 +262,6 @@ bool MapInstanced::DestroyInstance(InstancedMaps::iterator &itr)
     }
 
     itr->second->UnloadAll();
-    // should only unload VMaps if this is the last instance and grid unloading is enabled
-    if(m_InstancedMaps.size() <= 1 && sWorld->getConfig(CONFIG_GRID_UNLOAD))
-    {
-        VMAP::VMapFactory::createOrGetVMapManager()->unloadMap(itr->second->GetId());
-        MMAP::MMapFactory::createOrGetMMapManager()->unloadMap(itr->second->GetId());
-        // in that case, unload grids of the base map, too
-        // so in the next map creation, (EnsureGridCreated actually) VMaps will be reloaded
-        Map::UnloadAll();
-    }
 
     // Free up the instance id and allow it to be reused for bgs and arenas (other instances are handled in the InstanceSaveMgr)
 /*TCMAP    if (itr->second->IsBattlegroundOrArena())

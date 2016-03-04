@@ -321,11 +321,7 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         _player->SendPreparedGossip(unit);
     }
     
-    /*
-    if(unit->getAI())
-        unit->getAI()->sOnGossipHello(_player);
-    else*/
-        unit->AI()->sOnGossipHello(_player);
+    unit->AI()->sOnGossipHello(_player);
 }
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )

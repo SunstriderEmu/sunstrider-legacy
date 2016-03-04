@@ -40,7 +40,6 @@ class Player;
 
 #define CENTER_GRID_OFFSET      (SIZE_OF_GRIDS/2)
 
-#define MIN_GRID_DELAY          (MINUTE*IN_MILLISECONDS)
 #define MIN_MAP_UPDATE_DELAY    50
 
 #define MAX_NUMBER_OF_CELLS     8
@@ -194,54 +193,89 @@ typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
 template<const unsigned int LIMIT>
 struct CoordPair
 {
-    CoordPair(uint32 x=0, uint32 y=0) : x_coord(x), y_coord(y) {}
-    CoordPair(const CoordPair<LIMIT> &obj) : x_coord(obj.x_coord), y_coord(obj.y_coord) {}
-    bool operator==(const CoordPair<LIMIT> &obj) const { return (obj.x_coord == x_coord && obj.y_coord == y_coord); }
-    bool operator!=(const CoordPair<LIMIT> &obj) const { return !operator==(obj); }
-    CoordPair<LIMIT>& operator=(const CoordPair<LIMIT> &obj)
+    CoordPair(uint32 x=0, uint32 y=0) : 
+        x_coord(x), 
+        y_coord(y) 
+    {}
+
+    CoordPair(const CoordPair<LIMIT> &obj) : 
+        x_coord(obj.x_coord), 
+        y_coord(obj.y_coord) 
+    {}
+
+    CoordPair<LIMIT> & operator=(const CoordPair<LIMIT> &obj)
     {
         x_coord = obj.x_coord;
         y_coord = obj.y_coord;
         return *this;
     }
 
-    void operator<<(const uint32 val)
+    void dec_x(uint32 val)
     {
-        if( x_coord > val )
+        if (x_coord > val)
             x_coord -= val;
         else
             x_coord = 0;
     }
 
-    void operator>>(const uint32 val)
+    void inc_x(uint32 val)
     {
-        if( x_coord+val < LIMIT )
+        if (x_coord + val < LIMIT)
             x_coord += val;
         else
             x_coord = LIMIT - 1;
     }
 
-    void operator-=(const uint32 val)
+    void dec_y(uint32 val)
     {
-        if( y_coord > val )
+        if (y_coord > val)
             y_coord -= val;
         else
             y_coord = 0;
     }
 
-    void operator+=(const uint32 val)
+    void inc_y(uint32 val)
     {
-        if( y_coord+val < LIMIT )
+        if (y_coord + val < LIMIT)
             y_coord += val;
         else
             y_coord = LIMIT - 1;
+    }
+
+    bool IsCoordValid() const
+    {
+        return x_coord < LIMIT && y_coord < LIMIT;
+    }
+
+    CoordPair& normalize()
+    {
+        x_coord = std::min(x_coord, LIMIT - 1);
+        y_coord = std::min(y_coord, LIMIT - 1);
+        return *this;
+    }
+
+    uint32 GetId() const
+    {
+        return y_coord * LIMIT + x_coord;
     }
 
     uint32 x_coord;
     uint32 y_coord;
 };
 
-typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridPair;
+template<uint32 LIMIT>
+bool operator==(const CoordPair<LIMIT> &p1, const CoordPair<LIMIT> &p2)
+{
+    return (p1.x_coord == p2.x_coord && p1.y_coord == p2.y_coord);
+}
+
+template<uint32 LIMIT>
+bool operator!=(const CoordPair<LIMIT> &p1, const CoordPair<LIMIT> &p2)
+{
+    return !(p1 == p2);
+}
+
+typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridCoord;
 typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellCoord;
 
 namespace Trinity
@@ -258,9 +292,9 @@ namespace Trinity
         return RET_TYPE(x_val, y_val);
     }
 
-    inline GridPair ComputeGridPair(float x, float y)
+    inline GridCoord ComputeGridPair(float x, float y)
     {
-        return Compute<GridPair, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
+        return Compute<GridCoord, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
     }
 
     inline CellCoord ComputeCellCoord(float x, float y)

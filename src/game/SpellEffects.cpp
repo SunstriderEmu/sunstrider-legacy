@@ -407,7 +407,7 @@ void Spell::SpellDamageSchoolDmg(uint32 effect_idx)
                             return;
                             
                         if (m_damage > unitTarget->GetHealth()) {
-                            if (Creature* archimonde = unitTarget->FindCreatureInGrid(17968, 100.0f, true))
+                            if (Creature* archimonde = unitTarget->FindNearestCreature(17968, 100.0f, true))
                                 archimonde->AI()->KilledUnit(unitTarget);
                         }
                         break;
@@ -850,7 +850,7 @@ void Spell::EffectDummy(uint32 i)
                 case 44935:
                 {
                     if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->GetEntry() == 24922) {
-                        if (GameObject* root = m_caster->FindGOInGrid(187073, 15.0f)) {
+                        if (GameObject* root = m_caster->FindNearestGameObject(187073, 15.0f)) {
                             if (!root->isSpawned())
                                 break;
                             m_caster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
@@ -1242,8 +1242,8 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->MonsterMoveWithSpeed(x, y, z, 0);
                     m_caster->CastSpell(unitTarget, 19712, false);
                     if (m_caster->ToCreature())
-                        if (m_caster->ToCreature()->getAI())
-                            m_caster->ToCreature()->getAI()->doResetThreat();
+                        if (m_caster->ToCreature()->AI())
+                            m_caster->ToCreature()->getThreatManager().clearReferences();
                     return;
                 }
                 case 23448:                                 // Ultrasafe Transporter: Gadgetzan - backfires
@@ -1404,8 +1404,6 @@ void Spell::EffectDummy(uint32 i)
                             cr = unitTarget->SummonCreature(20805, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
                             if (cr && cr->IsAIEnabled) {
                                 cr->AI()->AttackStart(m_caster);
-                                if (cr->getAI())
-                                    cr->getAI()->attackStart(m_caster);
                             }
                         }
                         m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
@@ -1420,8 +1418,6 @@ void Spell::EffectDummy(uint32 i)
                             cr = unitTarget->SummonCreature(20806, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
                             if (cr && cr->IsAIEnabled) {
                                 cr->AI()->AttackStart(m_caster);
-                                if (cr->getAI())
-                                    cr->getAI()->attackStart(m_caster);
                             }
                         }
                         m_caster->Kill(unitTarget, false); // Just for the "burst" animation on death....
@@ -1594,8 +1590,6 @@ void Spell::EffectDummy(uint32 i)
 
                     if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
-                        if (pCreature->getAI())
-                            pCreature->getAI()->attackStart(m_caster);
                     }
 
                     return;
@@ -1629,8 +1623,6 @@ void Spell::EffectDummy(uint32 i)
 
                     if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
-                        if (pCreature->getAI())
-                            pCreature->getAI()->attackStart(m_caster);
                     }
 
                     return;
@@ -1650,8 +1642,6 @@ void Spell::EffectDummy(uint32 i)
 
                     if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
-                        if (pCreature->getAI())
-                            pCreature->getAI()->attackStart(m_caster);
                     }
 
                     return;
@@ -1714,11 +1704,11 @@ void Spell::EffectDummy(uint32 i)
                 case 38920:
                 {
                     if (Player* player = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
-                        if (Creature* west = m_caster->FindCreatureInGrid(22348, 12.0f, true))
+                        if (Creature* west = m_caster->FindNearestCreature(22348, 12.0f, true))
                             player->KilledMonster(22348, 0);
-                        else if (Creature* center = m_caster->FindCreatureInGrid(22350, 12.0f, true))
+                        else if (Creature* center = m_caster->FindNearestCreature(22350, 12.0f, true))
                             player->KilledMonster(22350, 0);
-                        else if (Creature* east = m_caster->FindCreatureInGrid(22351, 12.0f, true))
+                        else if (Creature* east = m_caster->FindNearestCreature(22351, 12.0f, true))
                             player->KilledMonster(22351, 0);
                     }
                     
@@ -4271,8 +4261,6 @@ void Spell::EffectPickPocket(uint32 /*i*/)
             m_caster->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TALK);
             if ((unitTarget->ToCreature())->IsAIEnabled) {
                 (unitTarget->ToCreature())->AI()->AttackStart(m_caster);
-                if (unitTarget->ToCreature()->getAI())
-                    unitTarget->ToCreature()->getAI()->attackStart(m_caster);
             }
         }
     }
@@ -4298,7 +4286,7 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x80000002);
     m_caster->AddDynObject(dynObj);
 
-    dynObj->SetKeepActive(true);    //must before add to map to be put in world container
+    dynObj->setActive(true);    //must before add to map to be put in world container
     dynObj->GetMap()->Add(dynObj); //grid will also be loaded
 
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
@@ -4373,12 +4361,12 @@ void Spell::EffectSummonWild(uint32 i)
             {
                 case 45392:
                     Charmed->SetSummoner(m_originalCaster);
-                    if (Charmed->getAI())
-                        Charmed->getAI()->attackStart(m_caster);
+                    if (Charmed->AI())
+                        Charmed->AI()->AttackStart(m_caster);
                     break;
                 case 45891:
-                    if (Charmed->getAI())
-                        Charmed->getAI()->attackStart(m_caster);
+                    if (Charmed->AI())
+                        Charmed->AI()->AttackStart(m_caster);
                     break;
                 case 45410:
                     Charmed->SetSummoner(m_originalCaster);
@@ -4995,8 +4983,6 @@ void Spell::EffectTaunt(uint32 /*i*/)
 
     if((unitTarget->ToCreature())->IsAIEnabled) {
         (unitTarget->ToCreature())->AI()->AttackStart(m_caster);
-        if (unitTarget->ToCreature()->getAI())
-            unitTarget->ToCreature()->getAI()->attackStart(m_caster);
     }
 }
 
@@ -5448,9 +5434,9 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             {
                 if (m_caster->ToCreature())
                 {
-                    if (m_caster->ToCreature()->getAI())
+                    if (m_caster->ToCreature()->AI())
                     {
-                        if (Unit *unit = m_caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                        if (Unit *unit = m_caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                             target = unit;
                     }
                 }
@@ -6001,7 +5987,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         }
         case 32580:
         {
-            if (Creature* bunny = m_caster->FindCreatureInGrid(21352, 20.0f, true)) {
+            if (Creature* bunny = m_caster->FindNearestCreature(21352, 20.0f, true)) {
                 switch (m_caster->GetAreaId()) {
                 case 3776:
                 {
@@ -6248,9 +6234,9 @@ void Spell::EffectSanctuary(uint32 /*i*/)
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityDistance());
+    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-    unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityDistance(), searcher);
+    unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityRange(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
         if(!(*iter)->HasUnitState(UNIT_STATE_CASTING))
@@ -7568,8 +7554,6 @@ void Spell::EffectSummonDemon(uint32 i)
     else if (m_spellInfo->Effects[i].MiscValue == 23369) {
         if (m_caster->GetVictim()) {
             Charmed->AI()->AttackStart(m_caster->GetVictim());
-            if (Charmed->getAI())
-                Charmed->getAI()->attackStart(m_caster->GetVictim());
         }
     }
 }

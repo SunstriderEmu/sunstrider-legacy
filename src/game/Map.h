@@ -102,34 +102,36 @@ class Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        Map(uint32 id, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
-            if(!m_unloadTimer) return false;
-            if(m_unloadTimer <= diff) return true;
+            if(!m_unloadTimer) 
+                return false;
+            if(m_unloadTimer <= diff) 
+                return true;
             m_unloadTimer -= diff;
             return false;
         }
 
-        virtual bool Add(Player *);
-        virtual void Remove(Player *, bool);
-        virtual bool Add(Transport *);
-        virtual void Remove(Transport *, bool);
-        template<class T> void Add(T *);
-        template<class T> void Remove(T *, bool);
+        virtual bool AddPlayerToMap(Player*);
+        virtual void RemovePlayerFromMap(Player*, bool);
+        virtual void AfterPlayerUnlinkFromMap();
+        template<class T> bool AddToMap(T *, bool checkTransport = false);
+        template<class T> void RemoveFromMap(T *, bool);
 
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
-        virtual void Update(const uint32&);
+        virtual void Update(const uint32, const uint32, bool thread = true);
 
         void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
         void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
 
-        float GetVisibilityDistance() const { return m_VisibleDistance; }
+        float GetVisibilityRange() const { return m_VisibleDistance; }
+        void SetVisibilityRange(float range) { m_VisibleDistance = range; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
 
@@ -142,30 +144,25 @@ class Map : public GridRefManager<NGridType>
 
         bool IsRemovalGrid(float x, float y) const
         {
-            GridPair p = Trinity::ComputeGridPair(x, y);
-            return( !getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL );
+            GridCoord p = Trinity::ComputeGridPair(x, y);
+            return( !getNGrid(p.x_coord, p.y_coord) );
         }
 
-        bool GetUnloadLock(const GridPair &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
-        void SetUnloadLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
         void LoadGrid(float x, float y);
-        bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
+        bool UnloadGrid(NGridType& ngrid);
         virtual void UnloadAll();
 
         bool IsGridLoadedAt(float x, float y) const;
 
-        void ResetGridExpiry(NGridType &grid, float factor = 1) const
-        {
-            grid.ResetTimeTracker((time_t)((float)i_gridExpiry*factor));
-        }
-
-        time_t GetGridExpiry(void) const { return i_gridExpiry; }
         uint32 GetId(void) const { return i_id; }
 
         void LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x, int y);
 
-        static void InitStateMachine();
-        static void DeleteStateMachine();
+        // pussywizard:
+        std::unordered_set<Object*> i_objectsToUpdate;
+        void BuildAndSendUpdateForObjects(); // definition in ObjectAccessor.cpp, below ObjectAccessor::Update, because it does the same for a map
+        std::unordered_set<Unit*> i_objectsForDelayedVisibility;
+        void HandleDelayedVisibility();
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
@@ -207,17 +204,11 @@ class Map : public GridRefManager<NGridType>
         uint32 GetZoneId(float x, float y, float z) const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const;
 
-        virtual void MoveAllCreaturesInMoveList();
-        virtual void MoveAllGameObjectsInMoveList();
-        virtual void RemoveAllObjectsInRemoveList();
-        virtual void RemoveAllPlayers();
-
-        bool CreatureRespawnRelocation(Creature *c, bool diffGridOnly);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
-        bool GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly);
-
-        // assert print helper
-        bool CheckGridIntegrity(Creature* c, bool moved) const;
-        bool CheckGridIntegrity(GameObject* c, bool moved) const;
+        void MoveAllCreaturesInMoveList();
+        void MoveAllGameObjectsInMoveList();
+        void MoveAllDynamicObjectsInMoveList();
+        void RemoveAllObjectsInRemoveList();
+        void RemoveAllPlayers();
 
         uint32 GetInstanceId() const { return i_InstanceId; }
         uint8 GetSpawnMode() const { return (i_spawnMode); }
@@ -259,7 +250,6 @@ class Map : public GridRefManager<NGridType>
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
-        bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
 
         void AddUnitToNotify(Unit* unit);
         void RelocationNotify();
@@ -271,18 +261,19 @@ class Map : public GridRefManager<NGridType>
 
         // must called with AddToWorld
         template<class T>
-        void AddToForceActive(T* obj) { AddToForceActiveHelper(obj); }
+        void AddToActive(T* obj) { AddToActiveHelper(obj); }
 
-        void AddToForceActive(Creature* obj);
+        void AddToActive(Creature* obj);
 
         // must called with RemoveFromWorld
         template<class T>
-        void RemoveFromForceActive(T* obj) { RemoveFromForceActiveHelper(obj); }
+        void RemoveFromActive(T* obj) { RemoveFromActiveHelper(obj); }
 
-        void RemoveFromForceActive(Creature* obj);
+        void RemoveFromActive(Creature* obj);
 
         template<class T> void SwitchGridContainers(T* obj, bool active);
         template<class NOTIFIER> void VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier);
+        template<class NOTIFIER> void VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier);
         template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier);
         template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier);
         CreatureGroupHolderType CreatureGroupHolder;
@@ -329,9 +320,6 @@ class Map : public GridRefManager<NGridType>
 
         GridMap *GetGrid(float x, float y);
 
-        void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
-        //uint64 CalculateGridMask(const uint32 &y) const;
-
         void SendInitSelf( Player * player );
 
         void SendInitTransports( Player * player );
@@ -345,10 +333,10 @@ class Map : public GridRefManager<NGridType>
         CreatureMoveList i_creaturesToMove;
         GameObjectMoveList i_gameObjectsToMove;
 
-        bool loaded(const GridPair &) const;
-        void EnsureGridLoaded(const Cell&, Player* player = NULL);
-        void EnsureGridCreated(const GridPair &);
-        void EnsureGridCreated_i(const GridPair &);
+        bool IsGridLoaded(const GridCoord &) const;
+        bool EnsureGridLoaded(const Cell&, Player* player = NULL);
+        void EnsureGridCreated(const GridCoord &);
+        void EnsureGridCreated_i(const GridCoord &);
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
@@ -369,7 +357,7 @@ class Map : public GridRefManager<NGridType>
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
     protected:
-        void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
+        void SetUnloadReferenceLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
         std::mutex _mapLock;
         std::mutex _gridLock;
@@ -385,18 +373,16 @@ class Map : public GridRefManager<NGridType>
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
-        /** The objects in m_activeForcedNonPlayers are always kept active and makes everything around them also active, just like players
+        /** The objects in m_activeNonPlayers are always kept active and makes everything around them also active, just like players
         */
         typedef std::set<WorldObject*> ActiveForcedNonPlayers;
-        ActiveForcedNonPlayers m_activeForcedNonPlayers;
-        ActiveForcedNonPlayers::iterator m_activeForcedNonPlayersIter;
+        ActiveForcedNonPlayers m_activeNonPlayers;
+        ActiveForcedNonPlayers::iterator m_activeNonPlayersIter;
 
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
-
-        time_t i_gridExpiry;
 
         bool i_lock;
         std::vector<uint64> i_unitsToNotifyBacklog;
@@ -404,41 +390,38 @@ class Map : public GridRefManager<NGridType>
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
 
-        // Type specific code for add/remove to/from grid
+        /// Type specific code for add/remove to/from grid
         template<class T>
-            void AddToGrid(T*, NGridType *, Cell const&);
-
-        template<class T>
-            void AddNotifier(T*);
-
-        template<class T>
-            void RemoveFromGrid(T*, NGridType *, Cell const&);
+        void AddToGrid(T* object, Cell const& cell);
 
         template<class T>
             void DeleteFromWorld(T*);
 
         template<class T>
-        void AddToForceActiveHelper(T* obj)
+        void AddToActiveHelper(T* obj)
         {
-            m_activeForcedNonPlayers.insert(obj);
+            m_activeNonPlayers.insert(obj);
         }
 
         template<class T>
-        void RemoveFromForceActiveHelper(T* obj)
+        void RemoveFromActiveHelper(T* obj)
         {
             // Map::Update for active object in proccess
-            if(m_activeForcedNonPlayersIter != m_activeForcedNonPlayers.end())
+            if(m_activeNonPlayersIter != m_activeNonPlayers.end())
             {
-                ActiveForcedNonPlayers::iterator itr = m_activeForcedNonPlayers.find(obj);
-                if(itr == m_activeForcedNonPlayers.end())
+                ActiveForcedNonPlayers::iterator itr = m_activeNonPlayers.find(obj);
+                if(itr == m_activeNonPlayers.end())
                     return;
-                if(itr==m_activeForcedNonPlayersIter)
-                    ++m_activeForcedNonPlayersIter;
-                m_activeForcedNonPlayers.erase(itr);
+                if(itr==m_activeNonPlayersIter)
+                    ++m_activeNonPlayersIter;
+                m_activeNonPlayers.erase(itr);
             }
             else
-                m_activeForcedNonPlayers.erase(obj);
+                m_activeNonPlayers.erase(obj);
         }
+
+        UNORDERED_MAP<uint32 /*dbGUID*/, time_t> _creatureRespawnTimes;
+        UNORDERED_MAP<uint32 /*dbGUID*/, time_t> _goRespawnTimes;
 
         typedef std::map<uint32, std::set<uint64> > CreaturePoolMember;
         CreaturePoolMember m_cpmembers;
@@ -457,7 +440,7 @@ enum InstanceResetMethod
 class InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode);
         ~InstanceMap();
         bool Add(Player *);
         void Remove(Player *, bool);
@@ -483,7 +466,7 @@ class InstanceMap : public Map
 class BattlegroundMap : public Map
 {
     public:
-        BattlegroundMap(uint32 id, time_t, uint32 InstanceId);
+        BattlegroundMap(uint32 id, uint32 InstanceId);
         ~BattlegroundMap();
 
         bool Add(Player *) override;
@@ -500,16 +483,6 @@ class BattlegroundMap : public Map
         Battleground* m_bg;
 };
 
-/*inline
-uint64
-Map::CalculateGridMask(const uint32 &y) const
-{
-    uint64 mask = 1;
-    mask <<= y;
-    return mask;
-}
-*/
-
 template<class T, class CONTAINER>
 inline void
 Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
@@ -519,11 +492,10 @@ Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
     const uint32 cell_x = cell.CellX();
     const uint32 cell_y = cell.CellY();
 
-    if( !cell.NoCreate() || loaded(GridPair(x,y)) )
+    if( !cell.NoCreate() || IsGridLoaded(GridCoord(x,y)) )
     {
         EnsureGridLoaded(cell);
-        //LOCK_TYPE guard(i_info[x][y]->i_lock);
-        getNGrid(x, y)->Visit(cell_x, cell_y, visitor);
+        getNGrid(x, y)->VisitGrid(cell_x, cell_y, visitor);
     }
 }
 
@@ -533,7 +505,6 @@ Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
     CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
@@ -542,13 +513,30 @@ Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
     cell.Visit(p, grid_object_notifier, *this, radius, x, y);
 }
 
+// should be used with Searcher notifiers, tries to search world if nothing found in grid
+template<class NOTIFIER>
+inline void 
+Map::VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier)
+{
+    CellCoord p(Trinity::ComputeCellCoord(x, y));
+    Cell cell(p);
+    cell.SetNoCreate();
+
+    TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
+    cell.Visit(p, world_object_notifier, *this, radius, x, y);
+    if (!notifier.i_object)
+    {
+        TypeContainerVisitor<NOTIFIER, GridTypeMapContainer >  grid_object_notifier(notifier);
+        cell.Visit(p, grid_object_notifier, *this, radius, x, y);
+    }
+}
+
 template<class NOTIFIER>
 inline void
 Map::VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
     CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
@@ -561,7 +549,6 @@ Map::VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
     CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, GridTypeMapContainer >  grid_object_notifier(notifier);

@@ -533,8 +533,6 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 {
-    
-    
     if(!_player->m_mover->IsAlive())
         return;
 

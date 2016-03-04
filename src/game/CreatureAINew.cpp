@@ -1,3 +1,5 @@
+#ifdef LOLNOTDEF
+
 #include "Creature.h"
 #include "CreatureAINew.h"
 #include "World.h"
@@ -52,21 +54,6 @@ void CreatureAINew::attackStart(Unit* victim)
         }
         else
             me->GetMotionMaster()->MoveChase(victim);
-
-        if (!aiInCombat()) {
-            setAICombat(true);
-            onCombatStart(victim);
-        }
-    }
-}
-
-void Creature_NoMovementAINew::attackStart(Unit* victim)
-{
-    if (!victim)
-        return;
-
-    if (me->Attack(victim, false)) {
-        me->GetMotionMaster()->MoveIdle();
 
         if (!aiInCombat()) {
             setAICombat(true);
@@ -525,19 +512,6 @@ void CreatureAINew::selectUnitList(std::list<Unit*>& targetList, uint32 maxTarge
         targetList.resize(maxTargets);
 }
 
-void CreatureAINew::getAllPlayersInRange(std::list<Player*>& players, float range)
-{
-    CellCoord pair(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-    
-    Trinity::AllPlayersInRange check(me, range);
-    Trinity::PlayerListSearcher<Trinity::AllPlayersInRange> searcher(players, check);
-    TypeContainerVisitor<Trinity::PlayerListSearcher<Trinity::AllPlayersInRange>, GridTypeMapContainer> visitor(searcher);
-    cell.Visit(pair, visitor, *me->GetMap(), *me, range);
-}
-
 void CreatureAINew::setZoneInCombat(bool force)
 {
     Map* map = me->GetMap();
@@ -682,3 +656,4 @@ bool CreatureAINew::isInMeleeRange()
     return false;
 }
 
+#endif

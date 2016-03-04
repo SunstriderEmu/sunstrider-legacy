@@ -506,7 +506,7 @@ class GameObjectModel;
 //time before chest are automatically despawned after first loot
 #define CHEST_DESPAWN_TIME 300
 
-class GameObject : public WorldObject
+class GameObject : public WorldObject, public GridObject<GameObject>, public MovableMapObject
 {
     public:
         explicit GameObject();
@@ -677,8 +677,6 @@ class GameObject : public WorldObject
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         
-        Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
-        GameObject* FindGOInGrid(uint32 entry, float range);
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         
         GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
@@ -731,7 +729,6 @@ class GameObject : public WorldObject
 
     private:
         GameObjectAI* m_AI;
-        GridReference<GameObject> m_gridRef;
 };
 #endif
 

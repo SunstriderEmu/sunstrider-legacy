@@ -25,7 +25,7 @@
 
 class Unit;
 
-class DynamicObject : public WorldObject
+class DynamicObject : public WorldObject, public GridObject<DynamicObject>, public MovableMapObject
 {
     public:
         typedef std::set<Unit*> AffectedSet;
@@ -59,8 +59,6 @@ class DynamicObject : public WorldObject
         time_t m_nextThinkTime;
         float m_radius;
         AffectedSet m_affected;
-    private:
-        GridReference<DynamicObject> m_gridRef;
 };
 #endif
 

@@ -2613,7 +2613,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM creature WHERE id='%u'",cr_id);
     if(result)
     {
-        cr_count = (*result)[0].GetUInt32();
+        cr_count = (*result)[0].GetUInt64();
     }
 
     if(m_session)
@@ -6128,13 +6128,11 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
 
 bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 {
-    
-
-    Player* pl = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
 
     // accept only explicitly selected target (not implicitly self targeting case)
     Unit* target = GetSelectedUnit();
-    if(pl->GetTarget() && target)
+    if(player->GetTarget() && target)
     {
         if(target->GetTypeId()!=TYPEID_UNIT)
         {
@@ -6148,16 +6146,15 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         return true;
     }
 
-    CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY()));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     Trinity::RespawnDo u_do;
-    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(u_do);
+    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(player, u_do);
 
     TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *pl->GetMap());
+    cell.Visit(p, obj_worker, *player->GetMap(), *player, player->GetGridActivationRange());
 
     return true;
 }
@@ -7715,8 +7712,6 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
 
 bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 {
-    
-
     char *entryid = strtok((char *)args, " ");
     if (!entryid)
         return false;
@@ -7738,13 +7733,10 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 
     CellCoord p(Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY()));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
 
     Trinity::FactionDo u_do(entryId, factionId);
-    Trinity::WorldObjectWorker<Trinity::FactionDo> worker(u_do);
-
-    TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::FactionDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *player->GetMap());
+    Trinity::WorldObjectWorker<Trinity::FactionDo> worker(player, u_do);
+    player->VisitNearbyGridObject(MAX_SEARCHER_DISTANCE, worker);
 
     return true;
 }
@@ -8079,47 +8071,6 @@ bool ChatHandler::HandleMmap(const char* args)
 bool ChatHandler::HandleMmapTestArea(const char* args)
 {
     
-
-#ifdef OLDMOV
-    float radius = 40.0f;
-    //ExtractFloat(&args, radius);
-
-    CellCoord pair(Trinity::ComputeCellCoord( m_session->GetPlayer()->GetPositionX(), m_session->GetPlayer()->GetPositionY()) );
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    std::list<Creature*> creatureList;
-
-    Trinity::AnyUnitInObjectRangeCheck go_check(m_session->GetPlayer(), radius);
-    Trinity::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck> go_search(creatureList, go_check);
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer> go_visit(go_search);
-
-    // Get Creatures
-    cell.Visit(pair, go_visit, *(m_session->GetPlayer()->GetMap()), *(m_session->GetPlayer()), radius);
-
-    if (!creatureList.empty())
-    {
-        PSendSysMessage("Found %i Creatures.", creatureList.size());
-
-        uint32 paths = 0;
-        uint32 uStartTime = GetMSTime();
-
-        float gx,gy,gz;
-        m_session->GetPlayer()->GetPosition(gx,gy,gz);
-        for (std::list<Creature*>::iterator itr = creatureList.begin(); itr != creatureList.end(); ++itr)
-        {
-            PathInfo((*itr), gx, gy, gz);
-            ++paths;
-        }
-
-        uint32 uPathLoadTime = GetMSTimeDiff(uStartTime, GetMSTime());
-        PSendSysMessage("Generated %i paths in %i ms", paths, uPathLoadTime);
-    }
-    else
-    {
-        PSendSysMessage("No creatures in %f yard range.", radius);
-    }
-    #endif
     return true;
 }
 
@@ -8147,14 +8098,22 @@ bool ChatHandler::HandleReloadSmartAICommand(const char* args)
 
     if (reloadExistingCreatures)
     {
-        sSmartScriptMgr->ReloadCreaturesScripts();
-        SendGlobalGMSysMessage("Reloaded SmartAI scripts from existing creatures. /!\\ This is an experimental feature.");
+        if (Creature* target = GetSelectedCreature())
+        {
+            if (target->GetAIName() == SMARTAI_AI_NAME)
+                target->AIM_Initialize();
+            PSendSysMessage("Reloaded SmartAI scripts for targeted creature (%s)", target->GetName().c_str());
+        } else {
+            sSmartScriptMgr->ReloadCreaturesScripts();
+            SendGlobalGMSysMessage("Reloaded SmartAI scripts for all existing creatures.");
+        }
     }
     return true;
 }
 
 bool ChatHandler::HandleDebugUnloadGrid(const char* args)
 {
+    /*
     ARGS_CHECK
 
     char* mapidstr = strtok((char*)args, " ");
@@ -8192,6 +8151,7 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     ret = map->UnloadGrid(gx, gy, unloadall);
 
     PSendSysMessage("Unload grid returned %u", ret);
+    */
     return true;
 }
 
@@ -8258,75 +8218,6 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
     
     PSendSysMessage("Guilde renommée !");
     
-    return true;
-}
-
-bool ChatHandler::HandleEnableEventCommand(const char* args)
-{
-    
-    ARGS_CHECK
-
-    char* eventIdStr = strtok((char*)args, " ");
-    if (!eventIdStr)
-        return false;
-        
-    int eventId = atoi(eventIdStr);
-
-    Unit* pUnit = GetSelectedUnit();
-    if (!pUnit || pUnit == m_session->GetPlayer())
-        return false;
-
-    if (pUnit->ToCreature())
-        if (pUnit->ToCreature()->getAI())
-            pUnit->ToCreature()->getAI()->enableEvent(eventId);
-
-    return true;
-}
-
-bool ChatHandler::HandleDisableEventCommand(const char* args)
-{
-    
-    ARGS_CHECK
-
-    char* eventIdStr = strtok((char*)args, " ");
-    if (!eventIdStr)
-        return false;
-        
-    int eventId = atoi(eventIdStr);
-
-    Unit* pUnit = GetSelectedUnit();
-    if (!pUnit || pUnit == m_session->GetPlayer())
-        return false;
-
-    if (pUnit->ToCreature())
-        if (pUnit->ToCreature()->getAI())
-            pUnit->ToCreature()->getAI()->disableEvent(eventId);
-
-    return true;
-}
-
-bool ChatHandler::HandleScheduleEventCommand(const char* args)
-{
-    
-    ARGS_CHECK
-
-    char* eventIdStr = strtok((char*)args, " ");
-    char* timerStr = strtok(NULL, " ");
-
-    if (!eventIdStr || !timerStr)
-        return false;
-
-    int eventId = atoi(eventIdStr);
-    int timer = atoi(timerStr);
-
-    Unit* pUnit = GetSelectedUnit();
-    if (!pUnit || pUnit == m_session->GetPlayer())
-        return false;
-
-    if (pUnit->ToCreature())
-        if (pUnit->ToCreature()->getAI())
-            pUnit->ToCreature()->getAI()->scheduleEvent(eventId, timer);
-
     return true;
 }
 

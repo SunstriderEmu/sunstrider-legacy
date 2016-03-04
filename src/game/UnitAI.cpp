@@ -5,9 +5,6 @@ void UnitAI::AttackStart(Unit *victim)
     if(!victim)
         return;
         
-    if (me->ToCreature() && me->ToCreature()->getAI())
-        return;
-    
     bool melee = (m_combatDistance > ATTACK_DISTANCE) ? me->GetDistance(victim) <= ATTACK_DISTANCE : true; //visual part
     if(me->Attack(victim, melee))
     {
@@ -75,9 +72,10 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
 
 void UnitAI::SetCombatDistance(float dist)
 { 
+    bool changed = m_combatDistance != dist;
     m_combatDistance = dist;
      //create new targeted movement gen
-    if(me->GetVictim())
+    if(changed && me->GetVictim())
     {
         me->AttackStop();
         AttackStart(me->GetVictim()); 
@@ -86,9 +84,10 @@ void UnitAI::SetCombatDistance(float dist)
 
 void UnitAI::SetCombatMovementAllowed(bool allow)
 {
+    bool changed = m_allowCombatMovement != allow;
     m_allowCombatMovement = allow;
-    //create new targeted movement gen
-    if(me->GetVictim())
+    //re create new movement gen
+    if(changed && me->GetVictim())
     {
         me->AttackStop();
         AttackStart(me->GetVictim()); 
@@ -98,6 +97,7 @@ void UnitAI::SetCombatMovementAllowed(bool allow)
 void UnitAI::SetRestoreCombatMovementOnOOM(bool set)
 {
     m_restoreCombatMovementOnOOM = set;
+    //Movement will be restored at next oom cast
 }
 
 bool UnitAI::GetRestoreCombatMovementOnOOM()

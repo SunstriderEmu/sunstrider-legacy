@@ -478,14 +478,6 @@ bool FriendlyMissingBuffInRangeOutOfCombat::operator()(Unit* u)
     return false;
 }
 
-bool AllPlayersInRange::operator() (Player* u)
-{
-    if (i_object->IsWithinDistInMap(u, i_range))
-        return true;
-
-    return false;
-}
-
 bool AnyPlayerInObjectRangeCheck::operator()(Player* u)
 {
     if (u->IsAlive() && !u->isSpectator() && i_obj->IsWithinDistInMap(u, i_range))

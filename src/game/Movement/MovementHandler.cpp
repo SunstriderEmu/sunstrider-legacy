@@ -188,13 +188,13 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 {
     _player->SetSemaphoreTeleportNear(false);
     
-    TC_LOG_DEBUG("network", "MSG_MOVE_TELEPORT_ACK");
+    //TC_LOG_DEBUG("network", "MSG_MOVE_TELEPORT_ACK");
     uint64 guid;
     recvData >> guid;
     uint32 flags, time;
     recvData >> flags >> time;
-    TC_LOG_DEBUG("network", "Guid " UI64FMTD, guid);
-    TC_LOG_DEBUG("network", "Flags %u, time %u", flags, time/IN_MILLISECONDS);
+    //TC_LOG_DEBUG("network", "Guid " UI64FMTD, guid);
+    //TC_LOG_DEBUG("network", "Flags %u, time %u", flags, time/IN_MILLISECONDS);
 
     Player* plMover = _player->m_mover->ToPlayer();
     if (guid != plMover->GetGUID())
@@ -205,11 +205,31 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 
     plMover->SetSemaphoreTeleportNear(false);
 
+    uint32 old_zone = plMover->GetZoneId();
+
+    WorldLocation const& dest = plMover->GetTeleportDest();
+    Position oldPos(*plMover);
+
+    plMover->UpdatePosition(dest, true);
+
+    // xinef: teleport pets if they are not unsummoned
+    if (Pet* pet = plMover->GetPet())
+    {
+        if (!pet->IsWithinDist3d(plMover, plMover->GetMap()->GetVisibilityRange() - 5.0f))
+            pet->NearTeleportTo(plMover->GetPositionX(), plMover->GetPositionY(), plMover->GetPositionZ(), pet->GetOrientation());
+    }
+
     // resummon pet
     GetPlayer()->ResummonPetTemporaryUnSummonedIfAny();
 
     //lets process all delayed operations on successful teleport
     GetPlayer()->ProcessDelayedOperations();
+
+    plMover->GetMotionMaster()->ReinitializeMovement();
+
+    // pussywizard: client forgets about losing control, resend it
+    if (plMover->HasUnitState(UNIT_STATE_FLEEING | UNIT_STATE_CONFUSED) || plMover->IsCharmed()) // only in such cases SetClientControl(self, false) is sent
+        plMover->SetClientControl(plMover, false, true);
 }
 
 /*

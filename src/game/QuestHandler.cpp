@@ -206,7 +206,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    sScriptMgr->QuestAccept(_player, (pObject->ToCreature()), qInfo );
+                    sScriptMgr->OnQuestAccept(_player, (pObject->ToCreature()), qInfo );
                     (pObject->ToCreature())->AI()->sQuestAccept(_player, qInfo);
                     break;
                 case TYPEID_ITEM:
@@ -232,7 +232,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                 }
                 case TYPEID_GAMEOBJECT:
                     sScriptMgr->OnQuestAccept(_player, ((GameObject*)pObject), qInfo );
-                    (pObject->ToGameObject())->AI()->QuestAccept(_player, qInfo);
+                    (pObject->ToGameObject())->AI()->OnQuestAccept(_player, qInfo);
                     break;
             }
             _player->PlayerTalkClass->SendCloseGossip();
@@ -324,14 +324,14 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    if( !(sScriptMgr->ChooseReward( _player, (pObject->ToCreature()), pQuest, reward )) )
+                    if( !(sScriptMgr->OnQuestReward( _player, (pObject->ToCreature()), pQuest, reward )) )
                     {
                         // Send next quest
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
                             
                         (pObject->ToCreature())->AI()->sQuestReward(_player, pQuest, reward);
-                        sScriptMgr->QuestComplete(_player, pObject->ToCreature(), pQuest);
+                        sScriptMgr->OnQuestComplete(_player, pObject->ToCreature(), pQuest);
                     }
                     break;
                 case TYPEID_GAMEOBJECT:
@@ -341,7 +341,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
                         if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
                             _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
 
-                        (pObject->ToGameObject())->AI()->QuestAccept(_player, pQuest);
+                        (pObject->ToGameObject())->AI()->OnQuestAccept(_player, pQuest);
                     }
                     break;
             }

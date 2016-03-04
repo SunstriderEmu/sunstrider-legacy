@@ -131,8 +131,6 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     if(pet->GetTypeId() != TYPEID_PLAYER && (pet->ToCreature())->IsAIEnabled)
                     {
                         (pet->ToCreature())->AI()->AttackStart(TargetUnit);
-                        if (pet->ToCreature()->getAI())
-                            pet->ToCreature()->getAI()->attackStart(TargetUnit);
 
                         //10% chance to play special pet attack talk, else growl
                         if((pet->ToCreature())->IsPet() && ((Pet*)pet)->getPetType() == SUMMON_PET && pet != TargetUnit && urand(0, 100) < 10)
@@ -255,8 +253,6 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     pet->GetMotionMaster()->Clear();
                     if ((pet->ToCreature())->IsAIEnabled) {
                         (pet->ToCreature())->AI()->AttackStart(unit_target);
-                        if (pet->ToCreature()->getAI())
-                            pet->ToCreature()->getAI()->attackStart(unit_target);
                     }
                 }
 

@@ -9,6 +9,7 @@
 #define SCRIPTMGR_H
 
 #include "CreatureScript.h"
+#include "QuestDef.h"
 
 class WorldSocket;
 class WorldSession;
@@ -39,53 +40,201 @@ struct AreaTriggerEntry;
 struct AreaTableEntry;
 enum ShutdownExitCode : int;
 enum ShutdownMask : int;
+struct OLDScript;
+struct SpellSummary;
+class ScriptMgr;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
-#define DEFAULT_TEXT        "<Trinity Script Text Entry Missing!>"
+#define DEFAULT_TEXT        "<missing text>"
 
-struct Script
+class ScriptObject
 {
-    Script()
+    friend class ScriptMgr;
+
+public:
+
+    // Do not override this in scripts; it should be overridden by the various script type classes. It indicates
+    // whether or not this script type must be assigned in the database.
+    virtual bool IsDatabaseBound() const { return false; }
+
+    const std::string& GetName() const { return _name; }
+
+protected:
+
+    ScriptObject(const char* name)
+        : _name(std::string(name))
+    {
+    }
+
+    virtual ~ScriptObject()
+    {
+    }
+
+private:
+
+    const std::string _name;
+};
+
+template<class TObject> class UpdatableScript
+{
+protected:
+
+    UpdatableScript()
+    {
+    }
+
+public:
+
+    virtual void OnUpdate(TObject* /*obj*/, uint32 /*diff*/) { }
+};
+
+struct OLDScript
+{
+public:
+    std::string const& GetName() { return Name; }
+
+    OLDScript()
     {}
 
     std::string Name;
 
     //Methods to be scripted
-    void (*pOnLogin             )(Player*)                                                = nullptr;
-    void (*pOnLogout            )(Player*)                                                = nullptr;
-    void (*pOnPVPKill           )(Player*, Player*)                                       = nullptr;
-    bool (*pOnGossipHello       )(Player*, Creature*)                                     = nullptr;
-    bool (*pOnQuestAccept       )(Player*, Creature*, Quest const* )                      = nullptr;
-    bool (*pOnGossipSelect      )(Player*, Creature*, uint32 , uint32 )                   = nullptr;
-    bool (*pOnGossipSelectCode  )(Player*, Creature*, uint32 , uint32 , const char* )     = nullptr;
-    bool (*pGOOnGossipSelect    )(Player*, GameObject*, uint32 , uint32 )                 = nullptr;
-    bool (*pGOOnGossipSelectCode)(Player*, GameObject*, uint32 , uint32 , const char* )   = nullptr;
-    bool (*pQuestSelect         )(Player*, Creature*, Quest const* )                      = nullptr;
-    bool (*pQuestComplete       )(Player*, Creature*, Quest const* )                      = nullptr;
-    uint32 (*pGetDialogStatus   )(Player*, Creature* )                                    = nullptr;
-    uint32 (*pGOGetDialogStatus )(Player*, GameObject * _GO )                             = nullptr;
-    bool (*pOnQuestReward       )(Player*, Creature*, Quest const*, uint32 )              = nullptr;
-    bool (*pItemHello           )(Player*, Item*, Quest const* )                          = nullptr;
-    bool (*pGOOnGossipHello     )(Player*, GameObject* )                                  = nullptr;
-    bool (*pAreaTrigger         )(Player*, AreaTriggerEntry const* )                      = nullptr;
-    bool (*pItemQuestAccept     )(Player*, Item *, Quest const* )                         = nullptr;
-    bool (*pGoOnUse             )(Player*, GameObject*)                                   = nullptr;
-    bool (*pGOOnQuestAccept     )(Player*, GameObject*, Quest const* )                    = nullptr;
-    bool (*pGOOnQuestReward     )(Player*, GameObject*, Quest const*, uint32 )            = nullptr;
-    bool (*pReceiveEmote        )(Player*, Creature*, uint32 )                            = nullptr;
-    bool (*pItemUse             )(Player*, Item*, SpellCastTargets const& )               = nullptr;
-    bool (*pEffectDummyCreature )(Unit*, uint32, uint32, Creature*)                       = nullptr;
+    void(*pOnLogin)(Player*) = nullptr;
+    void(*pOnLogout)(Player*) = nullptr;
+    void(*pOnPVPKill)(Player*, Player*) = nullptr;
+    bool(*OnGossipHello)(Player*, Creature*) = nullptr;
+    bool(*OnQuestAccept)(Player*, Creature*, Quest const*) = nullptr;
+    bool(*OnGossipSelect)(Player*, Creature*, uint32, uint32) = nullptr;
+    bool(*OnGossipSelectCode)(Player*, Creature*, uint32, uint32, const char*) = nullptr;
+    bool(*pGOOnGossipSelect)(Player*, GameObject*, uint32, uint32) = nullptr;
+    bool(*pGOOnGossipSelectCode)(Player*, GameObject*, uint32, uint32, const char*) = nullptr;
+    bool(*OnQuestSelect)(Player*, Creature*, Quest const*) = nullptr;
+    bool(*OnQuestComplete)(Player*, Creature*, Quest const*) = nullptr;
+    uint32(*pGetDialogStatus)(Player*, Creature*) = nullptr;
+    uint32(*pGOGetDialogStatus)(Player*, GameObject * _GO) = nullptr;
+    bool(*OnQuestReward)(Player*, Creature*, Quest const*, uint32) = nullptr;
+    bool(*pItemHello)(Player*, Item*, Quest const*) = nullptr;
+    bool(*pGOOnGossipHello)(Player*, GameObject*) = nullptr;
+    bool(*pAreaTrigger)(Player*, AreaTriggerEntry const*) = nullptr;
+    bool(*pItemQuestAccept)(Player*, Item *, Quest const*) = nullptr;
+    bool(*pGoOnUse)(Player*, GameObject*) = nullptr;
+    bool(*pGOOnQuestAccept)(Player*, GameObject*, Quest const*) = nullptr;
+    bool(*pGOOnQuestReward)(Player*, GameObject*, Quest const*, uint32) = nullptr;
+    bool(*pItemUse)(Player*, Item*, SpellCastTargets const&) = nullptr;
+    bool(*OnReceiveEmote)(Player*, Creature*, uint32 emote) = nullptr;
+    bool(*OnEffectDummyCreature)(Unit*, uint32, uint32, Creature*) = nullptr;
 
-    CreatureAI* (*GetAI)(Creature*)                                                       = nullptr;
-    InstanceScript* (*GetInstanceData)(Map*)                                              = nullptr;
+    CreatureAI* (*GetAI)(Creature*) = nullptr;
+    InstanceScript* (*GetInstanceData)(Map*) = nullptr;
 };
 
-struct TSpellSummary {
-    uint8 Targets;                                          // set of enum SelectTarget
-    uint8 Effects;                                          // set of enum SelectEffect
+class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
+{
+    //make ScriptMgr friend so that we can create CreatureScript's from OLDScript from there (to be removed when OLDScript is discarded)
+    friend class ScriptMgr;
+
+protected:
+
+    CreatureScript(const char* name);
+    ~CreatureScript();
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Called when a player opens a gossip dialog with the creature.
+    virtual bool OnGossipHello(Player* player, Creature* creature) // { return false; }
+    {
+        if (baseScript && baseScript->OnGossipHello)
+            return baseScript->OnGossipHello(player, creature);
+        return false;
+    }
+
+    // Called when a player selects a gossip item in the creature's gossip menu.
+    virtual bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) // { return false; }
+    {
+        if (baseScript && baseScript->OnGossipSelect)
+            return baseScript->OnGossipSelect(player, creature, sender, action);
+        return false;
+    }
+
+    // Called when a player selects a gossip with a code in the creature's gossip menu.
+    virtual bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) // { return false; }
+    {
+        if (baseScript && baseScript->OnGossipSelectCode)
+            return baseScript->OnGossipSelectCode(player, creature, sender, action, code);
+        return false;
+    }
+
+    // Called when a player accepts a quest from the creature.
+    virtual bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) // { return false; }
+    {
+        if (baseScript && baseScript->OnQuestAccept)
+            return baseScript->OnQuestAccept(player, creature, quest);
+        return false;
+    }
+
+    // Called when a player selects a quest in the creature's quest menu.
+    virtual bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest) //{ return false; }
+    {
+        if (baseScript && baseScript->OnQuestSelect)
+            return baseScript->OnQuestSelect(player, creature, quest);
+        return false;
+    }
+
+    // Called when a player completes a quest with the creature.
+    virtual bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest) //{ return false; }
+    {
+        if (baseScript && baseScript->OnQuestComplete)
+            return baseScript->OnQuestComplete(player, creature, quest);
+        return false;
+    }
+
+    // Called when a player selects a quest reward.
+    virtual bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt) //{ return false; }
+    {
+        if (baseScript && baseScript->OnQuestReward)
+            return baseScript->OnQuestReward(player, creature, quest, opt);
+        return false;
+    }
+
+    //OLD! Only here for backward compat, if you're scripting a new creature override CreatureAI::ReceiveEmote instead
+    virtual bool OnReceiveEmote(Player* player, Creature* creature, uint32 emote) //{ return false; }
+    {
+        if (baseScript && baseScript->OnReceiveEmote)
+            return baseScript->OnReceiveEmote(player, creature, emote);
+        return false;
+    }
+
+    virtual bool OnEffectDummyCreature(Unit* caster, uint32 spellid, uint32 effIndex, Creature* targetCreature) // { return false; }
+    {
+        if (baseScript && baseScript->OnEffectDummyCreature)
+            return baseScript->OnEffectDummyCreature(caster, spellid, effIndex, targetCreature);
+        return false;
+    }
+
+    // Called when the dialog status between a player and the creature is requested.
+    virtual uint32 GetDialogStatus(Player* player, Creature* creature) //{ return DIALOG_STATUS_SCRIPTED_NO_STATUS; }
+    {
+        if (baseScript && baseScript->pGetDialogStatus)
+            return baseScript->pGetDialogStatus(player, creature);
+        return DIALOG_STATUS_SCRIPTED_NO_STATUS;
+    }
+
+    // Called when a CreatureAI object is needed for the creature.
+    virtual CreatureAI* GetAI(Creature* creature) const //{ return NULL; }
+    {
+        if (baseScript && baseScript->GetAI)
+            return baseScript->GetAI(creature);
+        return nullptr;
+    }
+
+    //Backward compat function, OLDScript used to create this script, this is stored here because we use it's member functions
+    OLDScript* baseScript;
 };
 
+// Manages registration, loading, and execution of scripts.
 class ScriptMgr
 {
     private:
@@ -107,10 +256,11 @@ class ScriptMgr
         /* Add given script to m_script list if the script is used in database. DO NOT use script afterwards as this function may delete it.
           Pointer script* will be freed upon ScriptMgr deletion, or immediately if registering failed
         **/
-        void RegisterScript(Script*& script);
+        void RegisterOLDScript(OLDScript*& script);
         void FillSpellSummary();
 
-        TSpellSummary* GetSpellSummary() { return spellSummary; }
+        void IncrementScriptCount() { ++_scriptCount; }
+        uint32 GetScriptCount() const { return _scriptCount; }
 
     public:
 
@@ -215,7 +365,24 @@ class ScriptMgr
         void OnStartup() {}
         void OnShutdown() {}
 
-    //event handlers
+    public: /* CreatureScript */
+
+        bool OnGossipHello(Player* player, Creature* creature);
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code);
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
+        uint32 GetDialogStatus(Player* player, Creature* creature);
+        CreatureAI* GetCreatureAI(Creature* creature);
+        void OnCreatureUpdate(Creature* creature, uint32 diff);
+        //!Only here for backward compat, if you're scripting a new creature override CreatureAI::ReceiveEmote instead
+        bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
+        bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
+
+    public: //old handlers not yet in categories
+
         bool OnSpellCast(Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellInfo const *spell);
         void OnServerStartup();
         void OnServerShutdown();
@@ -223,16 +390,8 @@ class ScriptMgr
         bool OnItemClick (Player *pPlayer, Item *pItem);
         bool OnItemOpen (Player *pPlayer, Item *pItem);
         bool OnGoClick (Player *pPlayer, GameObject *pGameObject);
-        bool OnGossipHello (Player * pPlayer, Creature* pCreature);
-        bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction);
-        bool OnGossipSelectCode(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction, const char* sCode);
         bool OnGossipSelect(Player* pPlayer, GameObject* pGO, uint32 uiSender, uint32 uiAction);
         bool OnGossipSelectCode(Player* pPlayer, GameObject* pGO, uint32 uiSender, uint32 uiAction, const char* sCode);
-        bool QuestAccept(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool QuestSelect(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool QuestComplete(Player* pPlayer, Creature* pCreature, Quest const* pQuest);
-        bool ChooseReward(Player* pPlayer, Creature* pCreature, Quest const* pQuest, uint32 opt);
-        uint32 GetDialogStatus(Player* pPlayer, Creature* pCreature);
         uint32 GetDialogStatus(Player* pPlayer, GameObject* pGO);
         bool ItemHello(Player* pPlayer, Item* pItem, Quest const* pQuest);
         bool ItemQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
@@ -241,44 +400,116 @@ class ScriptMgr
         bool OnQuestReward(Player* pPlayer, GameObject* pGO, Quest const* pQuest, uint32 opt);
         bool OnUse(Player* pPlayer, GameObject* pGO);
         bool AreaTrigger(Player* pPlayer,AreaTriggerEntry const* atEntry);
-        //use scriptId to override script, else this uses script in database
-        CreatureAI* GetAI(Creature* pCreature, uint32 scriptId = 0);
         bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
-        //bool ItemExpire(Player* pPlayer, ItemTemplate const * pItemProto);
-        //bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
-        //bool EffectDummyGameObj(Unit *caster, uint32 spellId, uint32 effIndex, GameObject *gameObjTarget);
-        //bool EffectDummyItem(Unit *caster, uint32 spellId, uint32 effIndex, Item *itemTarget);
         InstanceScript* CreateInstanceData(Map *map);
-        bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
-        bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
-        
-        
-        //script system by thumsoul
-        CreatureAINew* getAINew(Creature* creature);
-        //script system by thumsoul
-        void addScript(CreatureScript* cscript) { m_creatureScripts[cscript->getName()] = cscript; }
         
     private:
-        typedef std::map<std::string, CreatureScript*> CreatureScriptMap;
-        CreatureScriptMap m_creatureScripts;
 
-        int num_sc_scripts;
-        Script* m_scripts[MAX_SCRIPTS] = { nullptr };
+        uint32 _scriptCount;
 
-        //summary array
-        TSpellSummary* spellSummary;
+        OLDScript* m_scripts[MAX_SCRIPTS] = { nullptr };
 };
 
 //Generic scripting text function
 void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
 
-#if COMPILER == COMPILER_GNU
-#define FUNC_PTR(name,callconvention,returntype,parameters)    typedef returntype(*name)parameters __attribute__ ((callconvention));
-#else
-#define FUNC_PTR(name, callconvention, returntype, parameters)    typedef returntype(callconvention *name)parameters;
-#endif
-
-
 #define sScriptMgr ScriptMgr::instance()
+
+template<class TScript>
+class ScriptRegistry
+{
+public:
+
+    typedef std::map<uint32, TScript*> ScriptMap;
+    typedef typename ScriptMap::iterator ScriptMapIterator;
+
+    // The actual list of scripts. This will be accessed concurrently, so it must not be modified
+    // after server startup.
+    static ScriptMap ScriptPointerList;
+
+    static void AddScript(TScript* const script)
+    {
+        ASSERT(script);
+
+        // See if the script is using the same memory as another script. If this happens, it means that
+        // someone forgot to allocate new memory for a script.
+        for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
+        {
+            if (it->second == script)
+            {
+                TC_LOG_ERROR("scripts", "Script '%s' has same memory pointer as '%s'.",
+                    script->GetName().c_str(), it->second->GetName().c_str());
+
+                return;
+            }
+        }
+
+        if (script->IsDatabaseBound())
+        {
+            // Get an ID for the script. An ID only exists if it's a script that is assigned in the database
+            // through a script name (or similar).
+            uint32 id = sObjectMgr->GetScriptId(script->GetName().c_str());
+            if (id)
+            {
+                // Try to find an existing script.
+                bool existing = false;
+                for (ScriptMapIterator it = ScriptPointerList.begin(); it != ScriptPointerList.end(); ++it)
+                {
+                    // If the script names match...
+                    if (it->second->GetName() == script->GetName())
+                    {
+                        // ... It exists.
+                        existing = true;
+                        break;
+                    }
+                }
+
+                // If the script isn't assigned -> assign it!
+                if (!existing)
+                {
+                    ScriptPointerList[id] = script;
+                    sScriptMgr->IncrementScriptCount();
+                }
+                else
+                {
+                    // If the script is already assigned -> delete it!
+                    TC_LOG_ERROR("scripts", "Script '%s' already assigned with the same script name, so the script can't work.",
+                        script->GetName().c_str());
+
+                    ASSERT(false); // Error that should be fixed ASAP.
+                }
+            }
+            else
+            {
+                // The script uses a script name from database, but isn't assigned to anything.
+                if (script->GetName().find("Smart") == std::string::npos)
+                    TC_LOG_ERROR("sqL.sql", "Script named '%s' does not have a script name assigned in database.",
+                        script->GetName().c_str());
+            }
+        }
+        else
+        {
+            // We're dealing with a code-only script; just add it.
+            ScriptPointerList[_scriptIdCounter++] = script;
+            sScriptMgr->IncrementScriptCount();
+        }
+    }
+
+    // Gets a script by its ID (assigned by ObjectMgr).
+    static TScript* GetScriptById(uint32 id)
+    {
+        ScriptMapIterator it = ScriptPointerList.find(id);
+        if (it != ScriptPointerList.end())
+            return it->second;
+
+        return NULL;
+    }
+
+private:
+
+    // Counter used for code-only scripts.
+    static uint32 _scriptIdCounter;
+};
+
 #endif
 

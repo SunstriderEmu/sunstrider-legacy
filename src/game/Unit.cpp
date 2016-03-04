@@ -687,8 +687,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if(pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
     {
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
-        if ((pVictim->ToCreature())->getAI())
-            (pVictim->ToCreature())->getAI()->DamageTaken(this, damage);
     }
 
     if(this->GetTypeId()== TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
@@ -7494,9 +7492,6 @@ void Unit::CombatStop(bool cast)
     if( GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
     ClearInCombat();
-    
-    if (ToCreature() && ToCreature()->getAI())
-        ToCreature()->getAI()->setAICombat(false);
 }
 
 void Unit::CombatStopWithPets(bool cast)
@@ -7727,7 +7722,7 @@ void Unit::AddPlayerToVision(Player* plr)
     if(m_sharedVision.empty())
     {
         //set active so that creatures around in grid are active as well
-        SetKeepActive(true);
+        setActive(true);
         SetWorldObject(true);
     }
     m_sharedVision.push_back(plr->GetGUID());
@@ -7739,7 +7734,7 @@ void Unit::RemovePlayerFromVision(Player* plr)
     m_sharedVision.remove(plr->GetGUID());
     if(m_sharedVision.empty())
     {
-        SetKeepActive(false);
+        setActive(false);
         SetWorldObject(false);
     }
     plr->ClearFarsight();
@@ -9687,8 +9682,6 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
         && !(target->ToCreature())->HasReactState(REACT_PASSIVE) && (target->ToCreature())->IsAIEnabled)
     {
         (target->ToCreature())->AI()->AttackStart(this);
-        if (target->ToCreature()->getAI())
-            target->ToCreature()->getAI()->attackStart(this);
         
         if (InstanceScript* instance = ((InstanceScript*)target->GetInstanceScript()))
             instance->MonsterPulled(target->ToCreature(), this);
@@ -10119,9 +10112,9 @@ void Unit::DestroyForNearbyPlayers()
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    VisitNearbyWorldObject(GetMap()->GetVisibilityDistance(), searcher);
+    VisitNearbyWorldObject(GetMap()->GetVisibilityRange(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((*iter)->ToPlayer())->HaveAtClient(this))
@@ -10498,6 +10491,19 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
 }
 
+
+float Unit::GetThreat(Unit* pUnit) const
+{
+    if (!pUnit) 
+        return 0.0f;
+
+    if(CanHaveThreatList())
+        return m_ThreatManager.getThreat(pUnit);
+
+    return 0.0f;
+}
+
+
 //======================================================================
 
 void Unit::DeleteThreatList()
@@ -10527,8 +10533,6 @@ void Unit::TauntApply(Unit* taunter)
 
         if ((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->AttackStart(taunter);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->attackStart(taunter);
         }
     }
 
@@ -10555,8 +10559,6 @@ void Unit::TauntFadeOut(Unit *taunter)
     {
         if((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->EnterEvadeMode();
-            if (this->ToCreature()->getAI())
-                this->ToCreature()->getAI()->evade();
         }
         return;
     }
@@ -10569,8 +10571,6 @@ void Unit::TauntFadeOut(Unit *taunter)
         SetInFront(target);
         if ((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->AttackStart(target);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->attackStart(target);
         }
     }
 }
@@ -10700,8 +10700,6 @@ Unit* Creature::SelectVictim(bool evade)
             if((*itr)->IsPermanent() && evade)
             {
                 AI()->EnterEvadeMode();
-                if (getAI())
-                    getAI()->evade();
                 break;
             }
         return NULL;
@@ -10710,8 +10708,6 @@ Unit* Creature::SelectVictim(bool evade)
     // enter in evade mode in other case
     if (evade) {
         AI()->EnterEvadeMode();
-        if (getAI())
-            getAI()->evade();
     }
     //TC_LOG_INFO("%s: Returning null", GetName());
     return NULL;
@@ -11494,8 +11490,6 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
 {
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->OnRemove();
-        if ((this->ToCreature())->getAI())
-            (this->ToCreature())->getAI()->onRemove();
     }
     // This needs to be before RemoveFromWorld to make GetCaster() return a valid pointer on aura removal
     InterruptNonMeleeSpells(true);
@@ -12907,9 +12901,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
-            if (ToCreature()->getAI()) {
-                ToCreature()->getAI()->onKill(pVictim);
-            }
 
             auto attackers = pVictim->GetAttackers();
             for(auto attacker : attackers)
@@ -12966,8 +12957,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->onKill(pVictim);
         }
             
         if (GetTypeId() == TYPEID_PLAYER) {
@@ -12990,8 +12979,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call creature just died function
         if (cVictim->IsAIEnabled) {
             cVictim->AI()->JustDied(this);
-            if (cVictim->getAI())
-                cVictim->getAI()->onDeath(this);
         }
 
         cVictim->WarnDeathToFriendly();
@@ -13715,13 +13702,9 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             {
                 (this->ToCreature())->AddThreat(charmer, 10000.0f);
                 (this->ToCreature())->AI()->AttackStart(charmer);
-                if (ToCreature()->getAI())
-                    ToCreature()->getAI()->attackStart(charmer);
             }
             else {
                 (this->ToCreature())->AI()->EnterEvadeMode();
-                if (this->ToCreature()->getAI())
-                    this->ToCreature()->getAI()->evade();
             }
         }
     }
@@ -13929,44 +13912,6 @@ Unit* Unit::GetLastRedirectTarget()
 Unit* Unit::GetSummoner() const
 { 
     return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; 
-}
-
-Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
-{
-    Creature* pCreature = NULL;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*this, entry, isAlive, range);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher, *GetMap());
-    
-    return pCreature;
-}
-
-GameObject* Unit::FindGOInGrid(uint32 entry, float range)
-{
-    GameObject* pGo = NULL;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
-    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
-
-    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-    cell.Visit(pair, go_searcher, *GetMap());
-    
-    return pGo;
 }
 
 void Unit::SetFullTauntImmunity(bool apply)

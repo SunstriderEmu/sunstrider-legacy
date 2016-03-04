@@ -1203,7 +1203,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         case SMART_ACTION_SET_ACTIVE:
         {
             if (WorldObject* baseObj = GetBaseObject())
-                baseObj->SetKeepActive(e.action.active.state);
+                baseObj->setActive(e.action.active.state);
 
             break;
         }
@@ -2520,13 +2520,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
 void SmartScript::ProcessTimedAction(SmartScriptHolder& e, uint32 const& min, uint32 const& max, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellInfo* spell, GameObject* gob)
 {
-    //ConditionList const conds = sConditionMgr.GetConditionsForSmartEvent(e.entryOrGuid, e.event_id, e.source_type);
-    //ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
+    ConditionList const conds = sConditionMgr->GetConditionsForSmartEvent(e.entryOrGuid, e.event_id, e.source_type);
+    ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject(), me ? me->GetVictim() : NULL);
 
-   // if (sConditionMgr.IsObjectMeetToConditions(info, conds))
+    if (sConditionMgr->IsObjectMeetToConditions(info, conds))
+    {
         ProcessAction(e, unit, var0, var1, bvar, spell, gob);
-
-    RecalcTimer(e, min, max);
+        RecalcTimer(e, min, max);
+    }
+    else
+        RecalcTimer(e, 5000, 5000);
 }
 
 void SmartScript::InstallTemplate(SmartScriptHolder const& e)
@@ -2755,6 +2758,15 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 if (me && me == *itr)
                     continue;
 
+                // check alive state - 1 alive, 2 dead, 0 both
+                if (uint32 state = e.target.unitRange.livingState)
+                {
+                    if ((*itr)->ToCreature()->IsAlive() && state == 2)
+                        continue;
+                    if (!(*itr)->ToCreature()->IsAlive() && state == 1)
+                        continue;
+                }
+
                 if (e.target.unitRange.creature && (*itr)->ToCreature()->GetEntry() != e.target.unitRange.creature)
                     continue;
 
@@ -2769,29 +2781,30 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         }
         case SMART_TARGET_CREATURE_DISTANCE:
         {
-            std::list< Creature* > creatures;
-
-            CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
-            Cell cell(p);
-            cell.data.Part.reserved = ALL_DISTRICT;
-            cell.SetNoCreate();
-
-            Trinity::AllCreaturesInRange u_check(me, (float)e.target.unitDistance.dist);
-            Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange> searcher(creatures, u_check);
-            TypeContainerVisitor< Trinity::CreatureListSearcher<Trinity::AllCreaturesInRange>, GridTypeMapContainer > grid_creature_searcher(searcher);
-            cell.Visit(p, grid_creature_searcher, *(me->GetMap()));
-
-            for(auto itr : creatures) 
+            // will always return a valid pointer, even if empty list
+            ObjectList* units = GetWorldObjectsInDist((float)e.target.unitDistance.dist);
+            for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
             {
-                if (me && me == itr)
+                if (!IsCreature(*itr))
                     continue;
 
-                if ((e.target.unitDistance.creature && itr->GetEntry() != e.target.unitDistance.creature))
+                if (me && me->GetGUID() == (*itr)->GetGUID())
                     continue;
 
-                l->push_back(itr);
+                // check alive state - 1 alive, 2 dead, 0 both
+                if (uint32 state = e.target.unitDistance.livingState)
+                {
+                    if ((*itr)->ToCreature()->IsAlive() && state == 2)
+                        continue;
+                    if (!(*itr)->ToCreature()->IsAlive() && state == 1)
+                        continue;
+                }
+
+                if ((e.target.unitDistance.creature && (*itr)->ToCreature()->GetEntry() == e.target.unitDistance.creature) || !e.target.unitDistance.creature)
+                    l->push_back(*itr);
             }
-            
+
+            delete units;
             break;
         }
         case SMART_TARGET_GAMEOBJECT_DISTANCE:
@@ -2922,7 +2935,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         case SMART_TARGET_CLOSEST_PLAYER:
         {
             if (me)
-                if (Player* target = me->SelectNearestPlayer(float(e.target.playerDistance.dist)))
+                if (Player* target = me->FindNearestPlayer(float(e.target.playerDistance.dist)))
                     l->push_back(target);
             break;
         }
@@ -3927,7 +3940,7 @@ Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
     Unit* pUnit = NULL;
 
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
-    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(/*me, */pUnit, u_check);
+    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
 
     TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange>, GridTypeMapContainer > grid_unit_searcher(searcher);
 
@@ -3937,34 +3950,22 @@ Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 
 void SmartScript::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
 {
-    if (!me) return;
-    CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
-
+    if (!me) 
+        return;
+    
     Trinity::FriendlyCCedInRange u_check(me, range);
-    Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(/*me, */_list, u_check);
-
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange>, GridTypeMapContainer > grid_creature_searcher(searcher);
-
-    cell.Visit(p, grid_creature_searcher, *me->GetMap());
+    Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, _list, u_check);
+    me->VisitNearbyObject(range, searcher);
 }
 
-void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& _list, float range, uint32 spellid)
+void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& list, float range, uint32 spellid)
 {
-    if (!me) return;
-    CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
-    Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
-    cell.SetNoCreate();
+    if (!me)
+        return;
 
-    Trinity::FriendlyMissingBuffInRangeOutOfCombat u_check(me, range, spellid);
-    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRangeOutOfCombat> searcher(/*me, */_list, u_check);
-
-    TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRangeOutOfCombat>, GridTypeMapContainer > grid_creature_searcher(searcher);
-
-    cell.Visit(p, grid_creature_searcher, *me->GetMap());
+    Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
+    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, list, u_check);
+    me->VisitNearbyObject(range, searcher);
 }
 
 Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool playerOnly, bool nearest)
@@ -3974,7 +3975,7 @@ Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool play
 
     Unit *target = NULL;
     Trinity::NearestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly,nearest);
-    Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+    Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(me, target, u_check);
     me->VisitNearbyObject(range, searcher);
 
     return target;

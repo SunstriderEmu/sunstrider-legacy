@@ -251,7 +251,7 @@ class ObjectAccessor
         Don't delete the corpse pointer afterwards as is used in the object accessor. Corpse object will be deleted in ConvertCorpseForPlayer.
         */
         void AddCorpse(Corpse* corpse);
-        void AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map);
+        void AddCorpsesToGrid(GridCoord const& gridpair,GridType& grid,Map* map);
         Corpse* ConvertCorpseForPlayer(uint64 player_guid, bool insignia = false);
 
         static void UpdateObjectVisibility(WorldObject* obj);

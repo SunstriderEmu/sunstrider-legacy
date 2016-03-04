@@ -172,11 +172,7 @@ void TemporarySummon::UnSummon()
 
     Unit* sum = m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL;
     if (sum  && sum->GetTypeId() == TYPEID_UNIT && (sum->ToCreature())->IsAIEnabled)
-    {
         (sum->ToCreature())->AI()->SummonedCreatureDespawn(this);
-        if ((sum->ToCreature())->getAI())
-            (sum->ToCreature())->getAI()->onSummonDespawn(this);
-    }
 }
 
 bool TemporarySummon::DespawnOnDeath()

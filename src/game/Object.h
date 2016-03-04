@@ -34,7 +34,9 @@
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
 #define ATTACK_DISTANCE             5.0f
+#define MAX_SEARCHER_DISTANCE       150.0f // pussywizard: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpose
 #define MAX_VISIBILITY_DISTANCE     333.0f      // max distance for visible object show, limited in 333 yards
+#define VISIBILITY_INC_FOR_GOBJECTS 30.0f  // pussywizard
 #define DEFAULT_VISIBILITY_DISTANCE 90.0f       // default visible distance, 90 yards on continents
 #define DEFAULT_VISIBILITY_INSTANCE 120.0f      // default visible distance in instances, 120 yards
 #define DEFAULT_VISIBILITY_BGARENAS 180.0f      // default visible distance in BG/Arenas, 180 yards
@@ -296,6 +298,64 @@ class WorldLocation : public Position
         uint32 m_mapId;
 };
 
+template<class T>
+class GridObject
+{
+public:
+    bool IsInGrid() const { return _gridRef.isValid(); }
+    void AddToGrid(GridRefManager<T>& m) { ASSERT(!IsInGrid()); _gridRef.link(&m, (T*)this); }
+    void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef.unlink(); }
+private:
+    GridReference<T> _gridRef;
+};
+
+template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>
+class FlaggedValuesArray32
+{
+public:
+    FlaggedValuesArray32()
+    {
+        memset(&m_values, 0x00, sizeof(T_VALUES) * ARRAY_SIZE);
+        m_flags = 0;
+    }
+
+    T_FLAGS  GetFlags() const { return m_flags; }
+    bool     HasFlag(FLAG_TYPE flag) const { return m_flags & (1 << flag); }
+    void     AddFlag(FLAG_TYPE flag) { m_flags |= (1 << flag); }
+    void     DelFlag(FLAG_TYPE flag) { m_flags &= ~(1 << flag); }
+
+    T_VALUES GetValue(FLAG_TYPE flag) const { return m_values[flag]; }
+    void     SetValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] = value; }
+    void     AddValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] += value; }
+
+private:
+    T_VALUES m_values[ARRAY_SIZE];
+    T_FLAGS m_flags;
+};
+
+enum MapObjectCellMoveState
+{
+    MAP_OBJECT_CELL_MOVE_NONE, //not in move list
+    MAP_OBJECT_CELL_MOVE_ACTIVE, //in move list
+    MAP_OBJECT_CELL_MOVE_INACTIVE, //in move list but should not move
+};
+
+class MovableMapObject
+{
+    friend class Map; //map for moving creatures
+    friend class ObjectGridLoader; //grid loader for loading creatures
+    template<class T> friend class RandomMovementGenerator;
+
+protected:
+    MovableMapObject() : _moveState(MAP_OBJECT_CELL_MOVE_NONE) {}
+
+private:
+    Cell const& GetCurrentCell() const { return _currentCell; }
+    void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
+
+    Cell _currentCell;
+    MapObjectCellMoveState _moveState;
+};
 
 class Object
 {
@@ -447,10 +507,6 @@ class Object
 
         inline DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
         inline DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
-
-        //dont use, used by map only
-        Cell const& GetCurrentCell() const { return _currentCell; }
-        void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
     protected:
 
         Object();
@@ -504,6 +560,8 @@ class Object
 
 class WorldObject : public Object, public WorldLocation
 {
+    protected:
+        explicit WorldObject(bool isWorldObject); //note: here it means if it is in grid object list or world object list
     public:
         virtual ~WorldObject ( ) {}
 
@@ -625,11 +683,17 @@ class WorldObject : public Object, public WorldLocation
         // low level function for visibility change code, must be define in all main world object subclasses
         virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
 
+        float GetGridActivationRange() const;
+        float GetVisibilityRange() const;
+
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
         
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
+        GameObject* FindNearestGameObject(uint32 entry, float range) const;
+        Player* FindNearestPlayer(float range) const;
 
         //Get unit map. Will create map if it is not created yet.
         Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
@@ -640,15 +704,15 @@ class WorldObject : public Object, public WorldLocation
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const;
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
-        Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
-        GameObject* FindNearestGameObject(uint32 entry, float range) const;
-        Player* FindNearestPlayer(float range) const;
         bool isActiveObject() const { return m_isActive; }
-        /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
+        /** Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.
         */
-        void SetKeepActive(bool isActiveObject);
+        void setActive(bool isActiveObject);
         void SetWorldObject(bool apply);
+        bool IsWorldObject() const;
+        bool IsPermanentWorldObject() const { return m_isWorldObject; }
+
         template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier); }
         template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier); }
         template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier); }
@@ -679,9 +743,9 @@ class WorldObject : public Object, public WorldLocation
 
         void BuildUpdate(UpdateDataMapType&) override;
     protected:
-        explicit WorldObject();
         std::string m_name;
         bool m_isActive;
+        const bool m_isWorldObject;
 
         // transports
         Transport* m_transport;
