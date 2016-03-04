@@ -1472,7 +1472,7 @@ void ObjectMgr::LoadCreatureRespawnTimes()
         Field *fields = result->Fetch();
 
         uint32 loguid       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt64();
+        uint64 respawn_time = fields[1].GetUInt32();
         uint32 instance     = fields[2].GetUInt32();
 
         mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)] = time_t(respawn_time);
