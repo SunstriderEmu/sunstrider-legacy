@@ -1244,8 +1244,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     Unit* targetUnit = (*itr)->ToUnit();
                     if(Unit* victim = targetUnit->GetVictim())
                     {
-                        me->AI()->AttackStart(victim);
-                        break;
+                        if (me->CanAttack(victim))
+                        {
+                            me->AI()->AttackStart(victim);
+                            break; //found a valid target, no need to continue
+                        }
                     }
                 }
             }
@@ -2503,6 +2506,33 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
              delete targets;
             break;
         }
+        case SMART_ACTION_ADD_TO_FORMATION:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (auto itr : *targets)
+                if (Creature* target = itr->ToCreature())
+                    sCreatureGroupMgr->AddCreatureToGroup(me->GetGUIDLow(), target);
+
+            break;
+        }
+        case SMART_ACTION_REMOVE_FROM_FORMATION:
+        {
+            ObjectList* targets = GetTargets(e, unit);
+            if (!targets)
+                break;
+
+            for (auto itr : *targets)
+                if (Creature* target = itr->ToCreature())
+                    sCreatureGroupMgr->RemoveCreatureFromGroup(me->GetGUIDLow(), target);
+
+            break;
+        }
+        case SMART_ACTION_BREAK_FORMATION:
+            sCreatureGroupMgr->BreakFormation(me);
+            break;
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessAction: Entry %d SourceType %u, Event %u, Unhandled Action type %u", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
             break;

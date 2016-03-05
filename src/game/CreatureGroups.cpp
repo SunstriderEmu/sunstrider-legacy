@@ -64,6 +64,27 @@ void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member)
     }
 }
 
+void CreatureGroupManager::RemoveCreatureFromGroup(uint32 groupId, Creature *member)
+{
+    Map *map = member->FindMap();
+    if (!map)
+        return;
+
+    CreatureGroupHolderType::iterator itr = map->CreatureGroupHolder.find(groupId);
+    if (itr == map->CreatureGroupHolder.end())
+        return;
+
+    CreatureGroup *group = itr->second;
+
+    group->RemoveMember(member);
+
+    if (group->isEmpty())
+    {
+        map->CreatureGroupHolder.erase(group->GetId());
+        delete group;
+    }
+}
+
 void CreatureGroupManager::RemoveCreatureFromGroup(CreatureGroup *group, Creature *member)
 {
     group->RemoveMember(member);
@@ -79,6 +100,27 @@ void CreatureGroupManager::RemoveCreatureFromGroup(CreatureGroup *group, Creatur
     }
 }
 
+void CreatureGroup::EmptyFormation()
+{
+    for (auto itr : m_members)
+    {
+        Creature* member = itr.first;
+        member->SetFormation(NULL);
+        m_members.erase(member);
+    }
+}
+
+void CreatureGroupManager::BreakFormation(Creature* leader)
+{
+    CreatureGroup* group = leader->GetFormation();
+    if (!group)
+        return;
+
+    group->EmptyFormation();
+    leader->GetMap()->CreatureGroupHolder.erase(group->GetId());
+    delete group;
+}
+
 void CreatureGroupManager::LoadCreatureFormations()
 {
     Clear();
@@ -88,7 +130,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if(!result)
     {
-        TC_LOG_ERROR("FIXME"," ...an error occured while loading the table `creature_formations` ( maybe it doesn't exist ?)\n");
+        TC_LOG_ERROR("sql.sql"," ...an error occured while loading the table `creature_formations` ( maybe it doesn't exist ?)\n");
         return;
     }
 
@@ -97,7 +139,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 
     if(!result)
     {
-        TC_LOG_ERROR("FIXME","The table `creature_formations` is empty or corrupted");
+        TC_LOG_ERROR("sql.sql","The table `creature_formations` is empty or corrupted");
         return;
     }
 

@@ -53,8 +53,11 @@ class CreatureGroupManager
 
         ~CreatureGroupManager();
         
-        void AddCreatureToGroup(uint32 group_id, Creature *creature);
-        void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
+        void AddCreatureToGroup(uint32 group_id, Creature* member);
+        void RemoveCreatureFromGroup(uint32 group_id, Creature* member);
+        void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
+        //empty group then delete it
+        void BreakFormation(Creature* leader);
         void LoadCreatureFormations();
 
         void AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member);
@@ -82,14 +85,13 @@ class CreatureGroup
 
         uint32 m_groupID;
         bool m_Formed;
-        float m_leaderX, m_leaderY, m_leaderZ;
         bool inCombat;
         bool justAlive;
         uint32 respawnTimer;
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
         ~CreatureGroup() { }
         
         Creature* getLeader() const { return m_leader; }
@@ -110,6 +112,9 @@ class CreatureGroup
         void UpdateCombat();
         void Respawn();
         void Update(uint32 diff);
+        
+        //remove every members 
+        void EmptyFormation();
 };
 
 #define sCreatureGroupMgr CreatureGroupManager::instance()
