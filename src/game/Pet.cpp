@@ -1719,7 +1719,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     return true;
 }
 
-bool Pet::learnSpell(uint16 spell_id)
+bool Pet::LearnSpell(uint16 spell_id)
 {
     // prevent duplicated entires in spell book
     if (!addSpell(spell_id))
@@ -1789,7 +1789,7 @@ void Pet::InitPetCreateSpells()
                 {
                     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(petspellid);
                     if(spellInfo->IsPassive())          //learn passive skills when tamed, not sure if thats right
-                        (owner->ToPlayer())->learnSpell(learn_spellproto->Id);
+                        (owner->ToPlayer())->LearnSpell(learn_spellproto->Id);
                     else
                         AddTeachSpell(learn_spellproto->Effects[0].TriggerSpell, learn_spellproto->Id);
                 }
@@ -1837,7 +1837,7 @@ void Pet::CheckLearning(uint32 spellid)
 
     if(urand(0, 100) < 10)
     {
-        (owner->ToPlayer())->learnSpell(itr->second);
+        (owner->ToPlayer())->LearnSpell(itr->second);
         m_teachspells.erase(itr);
     }
 }

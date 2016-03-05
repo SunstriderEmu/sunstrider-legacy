@@ -3619,7 +3619,7 @@ bool ChatHandler::HandleLearnAllCraftsCommand(const char* /*args*/)
                 if(!spellInfo || !SpellMgr::IsSpellValid(spellInfo,m_session->GetPlayer(),false))
                     continue;
 
-                m_session->GetPlayer()->learnSpell(skillLine->spellId);
+                m_session->GetPlayer()->LearnSpell(skillLine->spellId);
             }
         }
     }
@@ -3689,7 +3689,7 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
                     continue;
 
                 if( !target->HasSpell(spellInfo->Id) )
-                    m_session->GetPlayer()->learnSpell(skillLine->spellId);
+                    m_session->GetPlayer()->LearnSpell(skillLine->spellId);
             }
 
             uint16 MaxLevel = target->GetPureMaxSkillValue(skillInfo->id);
@@ -3994,7 +3994,7 @@ bool ChatHandler::HandlePetLearnCommand(const char* args)
         return false;
     }
 
-    pet->learnSpell(spellId);
+    pet->LearnSpell(spellId);
 
     PSendSysMessage("Pet has learned spell %u.", spellId);
     return true;

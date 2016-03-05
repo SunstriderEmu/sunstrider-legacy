@@ -1656,7 +1656,7 @@ class Player : public Unit
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
         bool addSpell(uint32 spell_id, bool active, bool learning = true, bool loading = false, uint32 slot_id=SPELL_WITHOUT_SLOT_ID, bool disabled = false);
-        void learnSpell(uint32 spell_id);
+        void LearnSpell(uint32 spell_id);
         void removeSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
         void learnDefaultSpells(bool loading = false);
@@ -1963,8 +1963,8 @@ class Player : public Unit
         int16 GetSkillPermBonusValue(uint32 skill) const;
         int16 GetSkillTempBonusValue(uint32 skill) const;
         bool HasSkill(uint32 skill) const;
-        void learnSkillRewardedSpells( uint32 id );
-        void learnSkillRewardedSpells();
+        void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
+        void LearnSkillRewardedSpells();
 
         void SetDontMove(bool dontMove);
         bool GetDontMove() const { return m_dontMove; }

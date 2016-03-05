@@ -3139,7 +3139,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             if(loading)                                     // at spells loading, no output, but allow save
                 addSpell(prev_spell,active,true,loading,SPELL_WITHOUT_SLOT_ID,disabled);
             else                                            // at normal learning
-                learnSpell(prev_spell);
+                LearnSpell(prev_spell);
         }
 
         PlayerSpell *newspell = new PlayerSpell;
@@ -3301,10 +3301,10 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             if(HasSkill(pSkill->id))
                 continue;
 
-            if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
-                // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+            if(_spell_idx->second->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN ||
+                // poison special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
-                // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+                // lockpicking special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 switch(GetSkillRangeType(pSkill,_spell_idx->second->racemask!=0))
@@ -3336,7 +3336,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             if(loading)                                     // at spells loading, no output, but allow save
                 addSpell(itr->second.spell,true,true,loading);
             else                                            // at normal learning
-                learnSpell(itr->second.spell);
+                LearnSpell(itr->second.spell);
         }
     }
 
@@ -3344,7 +3344,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     return active && !disabled && !superceded_old;
 }
 
-void Player::learnSpell(uint32 spell_id)
+void Player::LearnSpell(uint32 spell_id)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
@@ -3359,7 +3359,7 @@ void Player::learnSpell(uint32 spell_id)
     {
         PlayerSpellMap::iterator iter = m_spells.find(node->next);
         if (disabled && iter != m_spells.end() && iter->second->disabled )
-            learnSpell(node->next);
+            LearnSpell(node->next);
     }
 
     // prevent duplicated entires in spell book
@@ -3488,10 +3488,10 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
             if(!pSkill)
                 continue;
 
-            if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
-                // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+            if(_spell_idx->second->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN ||
+                // poison special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
-                // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+                // lockpicking special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 // not reset skills for professions, class and racial abilities
@@ -5138,7 +5138,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             if(spellEntry && spellEntry->Mechanic==MECHANIC_DISCOVERY)
             {
                 if(uint32 discoveredSpell = GetSkillDiscoverySpell(_spell_idx->second->skillId, spellid, this))
-                    learnSpell(discoveredSpell);
+                    LearnSpell(discoveredSpell);
             }
 
             uint32 craft_skill_gain = sWorld->getConfig(CONFIG_SKILL_GAIN_CRAFTING);
@@ -5506,7 +5506,7 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
                         (*j)->ApplyModifier(true);
 
                 // Learn all spells for skill
-                learnSkillRewardedSpells(id);
+                LearnSkillRewardedSpells(id, currVal);
                 return;
             }
         }
@@ -15297,7 +15297,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // after spell load
     InitTalentForLevel();
-    learnSkillRewardedSpells();
+    LearnSkillRewardedSpells();
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
@@ -19930,7 +19930,7 @@ void Player::learnDefaultSpells(bool loading)
             if(loading || !spell_itr->second)               // not care about passive spells or loading case
                 addSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                learnSpell(tspell);
+                LearnSpell(tspell);
         }
     }
 }
@@ -20029,34 +20029,52 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
-void Player::learnSkillRewardedSpells(uint32 skill_id )
+void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
 {
     uint32 raceMask  = GetRaceMask();
     uint32 classMask = GetClassMask();
     for (uint32 j=0; j<sSkillLineAbilityStore.GetNumRows(); ++j)
     {
-        SkillLineAbilityEntry const *pAbility = sSkillLineAbilityStore.LookupEntry(j);
-        if (!pAbility || pAbility->skillId!=skill_id || pAbility->learnOnGetSkill != ABILITY_LEARNED_ON_GET_PROFESSION_SKILL)
+        SkillLineAbilityEntry const* ability = sSkillLineAbilityStore.LookupEntry(j);
+        if (!ability || ability->skillId != skillId)
             continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ability->spellId);
+        if (!spellInfo)
+            continue;
+
+        if (ability->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE && ability->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN)
+            continue;
+
         // Check race if set
-        if (pAbility->racemask && !(pAbility->racemask & raceMask))
+        if (ability->racemask && !(ability->racemask & raceMask))
             continue;
+
         // Check class if set
-        if (pAbility->classmask && !(pAbility->classmask & classMask))
+        if (ability->classmask && !(ability->classmask & classMask))
             continue;
 
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
-        {
-            if(spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
-                continue;
+        //still valid ?
+        if (spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
+            continue;
 
-            // Ok need learn spell
-            learnSpell(pAbility->spellId);
-        }
+        // need unlearn spell
+        /* TC
+        if (skillValue < ability->req_skill_value && ability->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
+            RemoveSpell(ability->spellId);
+        // need learn
+        else if (!IsInWorld())
+            AddSpell(ability->spellId, true, true, true, false, false, ability->skillId);
+        else
+            LearnSpell(ability->spellId, true, ability->skillId);
+        */
+
+        // Ok need learn spell
+        LearnSpell(ability->spellId);
     }
 }
 
-void Player::learnSkillRewardedSpells()
+void Player::LearnSkillRewardedSpells()
 {
     for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
     {
@@ -20065,7 +20083,7 @@ void Player::learnSkillRewardedSpells()
 
         uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
 
-        learnSkillRewardedSpells(pskill);
+        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(i));
     }
 }
 
@@ -20093,30 +20111,30 @@ void Player::LearnAllClassSpells()
         case CLASS_SHAMAN:
         {
             //those totems are learned from quests
-            learnSpell(8071); //stoneskin totem
-            learnSpell(3599); //incendiary totem
-            learnSpell(5394); //healing totem
+            LearnSpell(8071); //stoneskin totem
+            LearnSpell(3599); //incendiary totem
+            LearnSpell(5394); //healing totem
         }
         break;
         case CLASS_DRUID: //only 1 form seems to appear in the form bar until reconnexion
             if(GetLevel() >= 10)
             {
-                learnSpell(9634); //bear
-                learnSpell(6807); //maul rank 1
+                LearnSpell(9634); //bear
+                LearnSpell(6807); //maul rank 1
             }
             if(GetLevel() >= 20)
-                learnSpell(768); //cat
+                LearnSpell(768); //cat
             if(GetLevel() >= 26)
-                learnSpell(1066); //aqua
+                LearnSpell(1066); //aqua
             if(GetLevel() >= 30)
-                learnSpell(783); //travel
+                LearnSpell(783); //travel
             break;
         case CLASS_HUNTER:
         {
             CastSpell(this,5300,true); //learn some pet related spells
-            learnSpell(883); //call pet
-            learnSpell(2641);//dismiss pet
-            learnSpell(1515); //taming spell
+            LearnSpell(883); //call pet
+            LearnSpell(2641);//dismiss pet
+            LearnSpell(1515); //taming spell
             //pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (int i = 0; i < 119; i++)
@@ -20142,7 +20160,7 @@ void Player::LearnAllClassSpells()
             if(GetTrainerSpellState(itr) != TRAINER_SPELL_GREEN)
                 continue;
 
-            learnSpell(itr->spell);
+            LearnSpell(itr->spell);
         }
     }
 }
@@ -20154,7 +20172,7 @@ void Player::DoPack58(uint8 step)
         GiveLevel(58);
         InitTalentForLevel();
         SetUInt32Value(PLAYER_XP,0);
-        learnSpell(33388); //mount 75
+        LearnSpell(33388); //mount 75
         uint32 mountid = 0;
         switch(GetRace())
         {
@@ -20212,9 +20230,9 @@ void Player::DoPack58(uint8 step)
                     }
                 }
                 //those totems are learned from quests
-                learnSpell(8071); //stoneskin totem
-                learnSpell(3599); //incendiary totem
-                learnSpell(5394); //healing totem
+                LearnSpell(8071); //stoneskin totem
+                LearnSpell(3599); //incendiary totem
+                LearnSpell(5394); //healing totem
             }
             break;
         }
@@ -21539,7 +21557,7 @@ void Player::_LoadSkills(QueryResult result)
 
             mSkillStatus.insert(SkillStatusMap::value_type(skill, SkillStatusData(count, SKILL_UNCHANGED)));
 
-            learnSkillRewardedSpells(skill);
+            LearnSkillRewardedSpells(skill, value);
 
             ++count;
 

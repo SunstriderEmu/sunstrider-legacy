@@ -616,7 +616,7 @@ struct SkillLineAbilityEntry
     //uint32    classmaskNot;                               // 6 always 0 in 2.4.2
     uint32    req_skill_value;                              // 7 for trade skill.not for training.
     uint32    forward_spellid;                              // 8
-    uint32    learnOnGetSkill;                              // 9 can be 1 or 2 for spells learned on get skill
+    uint32    AutolearnType;                                // 9 can be 1 or 2 for spells learned on get skill
     uint32    max_value;                                    // 10
     uint32    min_value;                                    // 11
                                                             // 12-13, unknown, always 0 (may be NumSkillUps + UniqueBit)

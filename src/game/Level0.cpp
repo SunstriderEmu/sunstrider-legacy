@@ -440,7 +440,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
             fields = query->Fetch();
             spell_id = fields[0].GetUInt32();
 
-            player->learnSpell(spell_id);
+            player->LearnSpell(spell_id);
         } while (query->NextRow());
     }
 
@@ -523,7 +523,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
                         spell_id = fields[0].GetUInt32();
 
                         if (spell_id > 0)
-                            player->learnSpell(spell_id);
+                            player->LearnSpell(spell_id);
                     } while (query->NextRow());
                 }
             }
@@ -777,7 +777,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             }
 
             if (!player->HasSpell(spell))
-                player->learnSpell(spell);
+                player->LearnSpell(spell);
         } else if (v[0] == "money") {
             /* money, v[1] == money count, in pc */
             uint32 money = atoi(v[1].c_str());
@@ -1271,7 +1271,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             }
 
             if (!player->HasSpell(spell))
-                player->learnSpell(spell);
+                player->LearnSpell(spell);
         } else if (v[0] == "add") {
             if (v[1] == "level") {
                 int add_levels = atoi(v[2].c_str());
@@ -1792,7 +1792,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (!spell_itr->second)               // don't care about passive spells or loading case
                 plr->addSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                plr->learnSpell(tspell);
+                plr->LearnSpell(tspell);
         }
     }
     
@@ -1889,7 +1889,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 } else {
                     if (plr->HasSpell(spell_horde)) {
                         plr->removeSpell(spell_horde);
-                        plr->learnSpell(spell_alliance);
+                        plr->LearnSpell(spell_alliance);
                     }
                 }
             }
@@ -1900,7 +1900,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 } else {
                     if (plr->HasSpell(spell_alliance)) {
                         plr->removeSpell(spell_alliance);
-                        plr->learnSpell(spell_horde);
+                        plr->LearnSpell(spell_horde);
                     }
                 }
             }
@@ -1923,7 +1923,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     plr->removeSpell(from);
 
                 if (to != 0)
-                    plr->learnSpell(to);
+                    plr->LearnSpell(to);
 
             } while (result->NextRow());
         }

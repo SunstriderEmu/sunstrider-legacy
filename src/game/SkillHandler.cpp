@@ -132,17 +132,17 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
     // Hack for Divine Spirit - talent learns more than one spell
     if (spellid == 14752) {
         if (GetPlayer()->HasSpellButDisabled(27681))
-            GetPlayer()->learnSpell(27681);
+            GetPlayer()->LearnSpell(27681);
     }
     else if (spellid == 20217) {    // Benediction of Kings
         if (GetPlayer()->HasSpellButDisabled(25898))
-            GetPlayer()->learnSpell(25898);
+            GetPlayer()->LearnSpell(25898);
     }
     else if (spellid == 20911 || spellid == 20912 || spellid == 20913 || spellid == 20914 || spellid == 27168) {
         if (GetPlayer()->HasSpellButDisabled(27169))
-            GetPlayer()->learnSpell(27169);
+            GetPlayer()->LearnSpell(27169);
         else if (GetPlayer()->HasSpellButDisabled(25899))
-            GetPlayer()->learnSpell(25899);
+            GetPlayer()->LearnSpell(25899);
     } 
 
     // already known
@@ -150,7 +150,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
         return;
 
     // learn! (other talent ranks will unlearned at learning)
-    GetPlayer( )->learnSpell(spellid);
+    GetPlayer( )->LearnSpell(spellid);
     TC_LOG_DEBUG("network","TalentID: %u Rank: %u Spell: %u\n", talent_id, requested_rank, spellid);
 
     // update free talent points
