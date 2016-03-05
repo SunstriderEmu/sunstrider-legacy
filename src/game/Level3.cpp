@@ -2613,7 +2613,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM creature WHERE id='%u'",cr_id);
     if(result)
     {
-        cr_count = (*result)[0].GetUInt32();
+        cr_count = (*result)[0].GetUInt64();
     }
 
     if(m_session)

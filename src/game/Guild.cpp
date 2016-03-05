@@ -269,8 +269,6 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
         // check no members case (disbanded)
         if(members.empty())
             return false;
-
-        TC_LOG_INFO("FIXME","Pom5");
     }
 
     m_bankloaded = false;

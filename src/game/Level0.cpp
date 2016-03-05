@@ -554,7 +554,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     if (price != 0)
         LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Récupérations' WHERE id = %u", credits - price, time(NULL), account_id);
 
-    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
+  //  CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
 
     // On met à jour les champs de récupération
     CharacterDatabase.PExecute("UPDATE character_recovery SET done = %u WHERE id = %u", player_guid, recovery_id);
@@ -1411,7 +1411,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     if (can_take_credits == true) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(NULL), account_id);
-        CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
+     //   CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
         player->SaveToDB();
 
         return true;
@@ -1479,7 +1479,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     uint32 t_guid = fields[0].GetUInt32();
     uint32 t_account = fields[1].GetUInt32();
-    uint32 t_race = fields[2].GetUInt32();
+    uint32 t_race = fields[2].GetUInt8();
     uint8 t_gender = fields[3].GetUInt8();
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
@@ -1516,7 +1516,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     }
 
     LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
-    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
+   // CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
 
     m_session->GetPlayer()->SaveToDB();
 //    m_session->KickPlayer();
@@ -2080,7 +2080,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
-        trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
+      //  trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
     }
 
     CharacterDatabase.CommitTransaction(trans);
