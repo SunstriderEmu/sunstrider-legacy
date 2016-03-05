@@ -281,7 +281,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
-    m_preGeneratedPath(PathGenerator(m_caster))
+    m_preGeneratedPath(nullptr)
 {
     m_skipHitCheck = skipCheck;
     m_selfContainer = NULL;
@@ -393,6 +393,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
 Spell::~Spell()
 {
     delete m_spellValue;
+    delete m_preGeneratedPath;
 }
 
 void Spell::SelectSpellTargets()
@@ -4272,29 +4273,31 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_DONT_REPORT;
 
                 Position pos = target->GetFirstWalkableCollisionPosition(target->GetObjectSize(), target->GetRelativeAngle(m_caster));
-                m_preGeneratedPath.SetPathLengthLimit(m_spellInfo->GetMaxRange(false, m_caster) *1.4f);
-                bool result = m_preGeneratedPath.CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize(), false, false);
+                delete m_preGeneratedPath; //just in case, if logic changes elsewhere
+                m_preGeneratedPath = new PathGenerator(m_caster);
+                m_preGeneratedPath->SetPathLengthLimit(m_spellInfo->GetMaxRange(false, m_caster) *1.4f);
+                bool result = m_preGeneratedPath->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize(), false, false);
 
-                if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT) //path found is longer than limit
+                if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT) //path found is longer than limit
                     return SPELL_FAILED_OUT_OF_RANGE;
 
-                if(m_preGeneratedPath.GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE) )
+                if(m_preGeneratedPath->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE) )
                     return SPELL_FAILED_NOPATH;
 
                 //re adjust final position
-                if(m_preGeneratedPath.GetPath().size() > 2)
+                if(m_preGeneratedPath->GetPath().size() > 2)
                 {
-                    uint16 pathSize = m_preGeneratedPath.GetPath().size();
-                    G3D::Vector3 beforeLastPointV = m_preGeneratedPath.GetPath()[pathSize-2];
+                    uint16 pathSize = m_preGeneratedPath->GetPath().size();
+                    G3D::Vector3 beforeLastPointV = m_preGeneratedPath->GetPath()[pathSize-2];
                     const Position beforeLastPointP { beforeLastPointV.x, beforeLastPointV.y, beforeLastPointV.z, 0.0f };
                     const Position newLastPoint = target->GetFirstWalkableCollisionPosition(CONTACT_DISTANCE*3, target->GetRelativeAngle(&beforeLastPointP));
                     //Recreate a path to this point
-                    result = m_preGeneratedPath.CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetObjectSize(), false, false);
+                    result = m_preGeneratedPath->CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetObjectSize(), false, false);
                 }
 
-                if (m_preGeneratedPath.GetPathType() & PATHFIND_SHORT)
+                if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT)
                     return SPELL_FAILED_NOPATH; //seems to be always SPELL_FAILED_NOPATH on retail. SPELL_FAILED_OUT_OF_RANGE;
-                else if (!result || m_preGeneratedPath.GetPathType() & (PATHFIND_NOPATH|PATHFIND_INCOMPLETE) )
+                else if (!result || m_preGeneratedPath->GetPathType() & (PATHFIND_NOPATH|PATHFIND_INCOMPLETE) )
                     return SPELL_FAILED_NOPATH;
                 break;
             }
