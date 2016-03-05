@@ -784,7 +784,7 @@ class Creature : public Unit
         bool IsSummoned() const { return m_summoned; }
         TemporarySummon* ToTemporarySummon();
 
-        //Play message for current creature when given time is elapsed.
+        //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
         bool CanWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }

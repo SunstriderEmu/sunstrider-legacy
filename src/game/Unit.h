@@ -1520,7 +1520,7 @@ class Unit : public WorldObject
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
-        // Event handler
+        // Event handler. Processed only when creature is alive
         EventProcessor m_Events;
 
         // stat system

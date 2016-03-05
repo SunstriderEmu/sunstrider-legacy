@@ -460,13 +460,6 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
-    if(m_GlobalCooldown <= diff)
-        m_GlobalCooldown = 0;
-    else
-        m_GlobalCooldown -= diff;
-        
-    m_timeSinceSpawn += diff;
-        
     if (IsAIEnabled && TriggerJustRespawned)
     {
         TriggerJustRespawned = false;
@@ -478,13 +471,6 @@ void Creature::Update(uint32 diff)
         if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
             ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this, GetEntry());
     }
-
-    UpdateProhibitedSchools(diff);
-    DecreaseTimer(m_stealthWarningCooldown, diff);
-
-    UpdateMovementFlags();
-    
-    Unit::Update(diff); //this may change m_deathState, so keep it before the switch
 
     switch(m_deathState)
     {
@@ -556,6 +542,25 @@ void Creature::Update(uint32 diff)
         }
         case ALIVE:
         {
+            Unit::Update(diff);
+    
+            // creature can be dead after Unit::Update call
+            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
+            if (!IsAlive())
+                break;
+
+            if (m_GlobalCooldown <= diff)
+                m_GlobalCooldown = 0;
+            else
+                m_GlobalCooldown -= diff;
+
+            m_timeSinceSpawn += diff;
+
+            UpdateProhibitedSchools(diff);
+            DecreaseTimer(m_stealthWarningCooldown, diff);
+
+            UpdateMovementFlags();
+
             if (m_corpseRemoveTime <= time(NULL))
             {
                 RemoveCorpse(false);
