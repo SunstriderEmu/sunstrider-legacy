@@ -1166,7 +1166,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         WorldPacket data( SMSG_CLEAR_COOLDOWN, (4+8) );
         data << uint32(spell_id);
         data << uint64(target->GetGUID());
-        target->GetSession()->SendPacket(&data);
+        target->SendDirectMessage(&data);
         target->RemoveSpellCooldown(spell_id);
         PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName().c_str());
     }
@@ -7869,7 +7869,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
                 {
                     WorldPacket data;
                     ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr->second->GetSession()->GetPlayer(),itr->second->GetSession()->GetPlayer(), msg, 0, channel);
-                    itr->second->GetSession()->SendPacket(&data);
+                    itr->second->SendDirectMessage(&data);
                 }
             }
         }

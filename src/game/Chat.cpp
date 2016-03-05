@@ -855,7 +855,7 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
             {
                 if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
                 {
-                    itr->second->GetSession()->SendPacket(&data);
+                    itr->second->SendDirectMessage(&data);
                 }
             }
         }

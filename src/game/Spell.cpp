@@ -3169,14 +3169,14 @@ void Spell::SendCastResult(SpellCastResult result)
                 data << uint32(m_spellInfo->EquippedItemInventoryTypeMask);
                 break;
         }
-        (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+        (m_caster->ToPlayer())->SendDirectMessage(&data);
     }
     else
     {
         WorldPacket data(SMSG_CLEAR_EXTRA_AURA_INFO, (8+4));
         data << m_caster->GetPackGUID();
         data << uint32(m_spellInfo->Id);
-        (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+        (m_caster->ToPlayer())->SendDirectMessage(&data);
     }
 }
 
@@ -3532,7 +3532,7 @@ void Spell::SendResurrectRequest(Player* target)
     data << m_caster->GetGUID();
     data << uint32(1) << uint16(0) << uint32(0);
 
-    target->GetSession()->SendPacket(&data);
+    target->SendDirectMessage(&data);
 }
 
 void Spell::SendPlaySpellVisual(uint32 SpellID)
@@ -3543,7 +3543,7 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
     data << uint64(m_caster->GetGUID());
     data << uint32(SpellID);                                // spell visual id?
-    (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+    (m_caster->ToPlayer())->SendDirectMessage(&data);
 }
 
 bool IsFreeInDuelArea(uint32 item)

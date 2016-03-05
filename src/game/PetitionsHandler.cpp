@@ -533,7 +533,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
         // update for owner if online
         if(Player *owner = sObjectMgr->GetPlayer(ownerguid))
-            owner->GetSession()->SendPacket(&data);
+            owner->SendDirectMessage(&data);
         return;
     }
 
@@ -554,7 +554,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 
     // update for owner if online
     if(Player *owner = sObjectMgr->GetPlayer(ownerguid))
-        owner->GetSession()->SendPacket(&data);
+        owner->SendDirectMessage(&data);
 }
 
 void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
@@ -579,7 +579,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
         data << _player->GetGUID();
-        owner->GetSession()->SendPacket(&data);
+        owner->SendDirectMessage(&data);
     }
 }
 
@@ -680,7 +680,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
         result->NextRow();
     }
 
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 }
 
 void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
@@ -719,7 +719,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
         {
             data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
             data << (uint32)PETITION_TURN_ALREADY_IN_GUILD; // already in guild
-            _player->GetSession()->SendPacket(&data);
+            _player->SendDirectMessage(&data);
             return;
         }
     }
@@ -733,7 +733,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
         {
             //data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
             //data << (uint32)PETITION_TURN_ALREADY_IN_GUILD;                          // already in guild
-            //_player->GetSession()->SendPacket(&data);
+            //_player->SendDirectMessage(&data);
             SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ALREADY_IN_ARENA_TEAM);
             return;
         }

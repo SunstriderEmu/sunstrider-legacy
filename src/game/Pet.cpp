@@ -686,7 +686,7 @@ void Pet::ModifyLoyalty(int32 addvalue)
             if(owner && owner->GetTypeId() == TYPEID_PLAYER)
             {
                 WorldPacket data(SMSG_PET_BROKEN, 0);
-                (owner->ToPlayer())->GetSession()->SendPacket(&data);
+                (owner->ToPlayer())->SendDirectMessage(&data);
 
                 //run away
                 (owner->ToPlayer())->RemovePet(this,PET_SAVE_AS_DELETED);
@@ -1416,7 +1416,7 @@ void Pet::_LoadSpellCooldowns()
 
         if(!m_CreatureSpellCooldowns.empty() && GetOwner())
         {
-            (GetOwner()->ToPlayer())->GetSession()->SendPacket(&data);
+            (GetOwner()->ToPlayer())->SendDirectMessage(&data);
         }
     }
 }

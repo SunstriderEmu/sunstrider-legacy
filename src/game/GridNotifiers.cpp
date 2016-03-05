@@ -96,10 +96,10 @@ PlayerVisibilityNotifier::Notify()
         // send create/outofrange packet to player (except player create updates that already sent using SendUpdateToPlayer)
         WorldPacket packet;
         i_data.BuildPacket(&packet);
-        i_player.GetSession()->SendPacket(&packet);
+        i_player.SendDirectMessage(&packet);
         for (auto it : i_player.GetSharedVisionList())
             if(Player* p = ObjectAccessor::FindPlayer(it))
-                p->GetSession()->SendPacket(&packet);
+                p->SendDirectMessage(&packet);
 
         // send out of range to other players if need
         std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();

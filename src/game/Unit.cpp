@@ -12155,7 +12155,7 @@ void Unit::SendPetCastFail(uint32 spellid, uint8 msg)
     WorldPacket data(SMSG_PET_CAST_FAILED, (4+1));
     data << uint32(spellid);
     data << uint8(msg);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetActionFeedback (uint8 msg)
@@ -12166,7 +12166,7 @@ void Unit::SendPetActionFeedback (uint8 msg)
 
     WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 1);
     data << uint8(msg);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetTalk (uint32 pettalk)
@@ -12178,7 +12178,7 @@ void Unit::SendPetTalk (uint32 pettalk)
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8+4);
     data << uint64(GetGUID());
     data << uint32(pettalk);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
@@ -12193,7 +12193,7 @@ void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
     data << uint32(spellid);
     data << uint32(cooltime);
 
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetAIReaction()
@@ -12271,7 +12271,7 @@ void Unit::SetStandState(uint8 state)
     {
         WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
         data << (uint8)state;
-        (this->ToPlayer())->GetSession()->SendPacket(&data);
+        (this->ToPlayer())->SendDirectMessage(&data);
     }
 }
 
@@ -12902,7 +12902,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->DurabilityLossAll(0.10f,false);
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-            (pVictim->ToPlayer())->GetSession()->SendPacket(&data);
+            (pVictim->ToPlayer())->SendDirectMessage(&data);
         }
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
@@ -13770,7 +13770,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         // Remove pet spell action bar
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
-        (charmer->ToPlayer())->GetSession()->SendPacket(&data);
+        (charmer->ToPlayer())->SendDirectMessage(&data);
     }
 }
 
@@ -14432,7 +14432,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        player->GetSession()->SendPacket(&data);
+        player->SendDirectMessage(&data);
 
         if (player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || player->HasAuraType(SPELL_AURA_FLY))
             player->SetFlying(true, true);
@@ -14458,7 +14458,7 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        ToPlayer()->GetSession()->SendPacket(&data);
+        ToPlayer()->SendDirectMessage(&data);
     }
 }
 
@@ -14904,7 +14904,7 @@ void Unit::YellToMap(std::string const& text, Language language)
     if (!players.isEmpty()) {
         for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr) {
             if (Player* plr = itr->GetSource())
-                plr->GetSession()->SendPacket(&data);
+                plr->SendDirectMessage(&data);
         }
     }
 }

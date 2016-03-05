@@ -149,7 +149,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     WorldPacket data(SMSG_GUILD_INVITE, (8+10));            // guess size
     data << GetPlayer()->GetName();
     data << guild->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 
     //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_INVITE)");
 }

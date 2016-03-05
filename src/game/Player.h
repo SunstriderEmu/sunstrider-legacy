@@ -2008,8 +2008,8 @@ class Player : public Unit
         void RewardReputation(Unit *pVictim, float rate);
         void RewardReputation(Quest const *pQuest);
         void SetInitialFactions();
-        void UpdateReputation() const;
-        void SendFactionState(FactionState const* faction) const;
+        void UpdateReputation();
+        void SendFactionState(FactionState const* faction);
         void SendInitialReputations();
         FactionState const* GetFactionState( FactionEntry const* factionEntry) const;
         void SetFactionAtWar(FactionState* faction, bool atWar);

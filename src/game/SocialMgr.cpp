@@ -149,7 +149,7 @@ void PlayerSocial::SendSocialList()
         }
     }
 
-    plr->GetSession()->SendPacket(&data);
+    plr->SendDirectMessage(&data);
 }
 
 bool PlayerSocial::HasFriend(uint32 friend_guid)
@@ -262,7 +262,7 @@ void SocialMgr::SendFriendStatus(Player *player, FriendsResult result, uint32 fr
     if(broadcast)
         BroadcastToFriendListers(player, &data);
     else
-        player->GetSession()->SendPacket(&data);
+        player->SendDirectMessage(&data);
 }
 
 void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
@@ -290,7 +290,7 @@ void SocialMgr::BroadcastToFriendListers(Player *player, WorldPacket *packet)
                 (pFriend->GetTeam() == team || (allowTwoSideWhoList && security <= gmLevelInWhoList))) &&
                 player->IsVisibleGloballyFor(pFriend))
             {
-                pFriend->GetSession()->SendPacket(packet);
+                pFriend->SendDirectMessage(packet);
             }
         }
     }

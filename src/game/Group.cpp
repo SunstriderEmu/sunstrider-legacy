@@ -374,7 +374,7 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
             if(method == 1)
             {
                 data.Initialize( SMSG_GROUP_UNINVITE, 0 );
-                player->GetSession()->SendPacket( &data );
+                player->SendDirectMessage( &data );
             }
 
             // we already removed player from group and in player->GetGroup() is his original group!
@@ -383,7 +383,7 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
             else {
                 data.Initialize(SMSG_GROUP_LIST, 24);
                 data << uint64(0) << uint64(0) << uint64(0);
-                player->GetSession()->SendPacket(&data);
+                player->SendDirectMessage(&data);
             }
 
             _homebindIfInstance(player);
@@ -512,7 +512,7 @@ void Group::Disband(bool hideDestroy)
         if(!hideDestroy)
         {
             data.Initialize(SMSG_GROUP_DESTROYED, 0);
-            player->GetSession()->SendPacket(&data);
+            player->SendDirectMessage(&data);
         }
 
         // we already removed player from group and in player->GetGroup() is his original group, send update
@@ -523,12 +523,12 @@ void Group::Disband(bool hideDestroy)
 #ifndef LICH_KING
             data.Initialize(SMSG_GROUP_LIST, 24);
             data << uint64(0) << uint64(0) << uint64(0);
-            player->GetSession()->SendPacket(&data);
+            player->SendDirectMessage(&data);
 #else
             data.Initialize(SMSG_GROUP_LIST, 1 + 1 + 1 + 1 + 8 + 4 + 4 + 8);
             data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
             data << uint64(m_guid) << uint32(m_counter) << uint32(0) << uint64(0);
-            player->GetSession()->SendPacket(&data);
+            player->SendDirectMessage(&data);
 #endif
         }
 
@@ -577,7 +577,7 @@ void Group::SendLootStartRoll(uint32 CountDown, const Roll &r)
             continue;
 
         if(itr->second == NOT_EMITED_YET)
-            p->GetSession()->SendPacket( &data );
+            p->SendDirectMessage( &data );
     }
 }
 
@@ -601,7 +601,7 @@ void Group::SendLootRoll(const uint64& SourceGuid, const uint64& TargetGuid, uin
             continue;
 
         if(itr->second != NOT_VALID)
-            p->GetSession()->SendPacket( &data );
+            p->SendDirectMessage( &data );
     }
 }
 
@@ -624,7 +624,7 @@ void Group::SendLootRollWon(const uint64& SourceGuid, const uint64& TargetGuid, 
             continue;
 
         if(itr->second != NOT_VALID)
-            p->GetSession()->SendPacket( &data );
+            p->SendDirectMessage( &data );
     }
 }
 
@@ -666,7 +666,7 @@ void Group::SendLootAllPassed(uint32 NumberOfPlayers, const Roll &r)
             continue;
 
         if(itr->second != NOT_VALID)
-            p->GetSession()->SendPacket( &data );
+            p->SendDirectMessage( &data );
     }
 }
 
@@ -841,7 +841,7 @@ void Group::MasterLoot(const uint64& playerGUID, Loot* /*loot*/, WorldObject* ob
 
     data.put<uint8>(0,real_count);
 
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 }
 
 void Group::CountRollVote(const uint64& playerGUID, const uint64& Guid, uint32 NumberOfPlayers, uint8 Choise)
@@ -1135,7 +1135,7 @@ void Group::SendUpdate()
             data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
 
         }
-        player->GetSession()->SendPacket( &data );
+        player->SendDirectMessage( &data );
     }
 }
 
@@ -1168,7 +1168,7 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     {
         player = itr->GetSource();
         if (player && player != pPlayer && !pPlayer->isVisibleFor(player))
-            player->GetSession()->SendPacket(&data);
+            player->SendDirectMessage(&data);
     }
 }
 
@@ -1181,7 +1181,7 @@ void Group::BroadcastPacket(WorldPacket *packet, bool ignorePlayersInBGRaid, int
             continue;
 
         if (pl->GetSession() && (group==-1 || itr->getSubGroup()==group))
-            pl->GetSession()->SendPacket(packet);
+            pl->SendDirectMessage(packet);
     }
 }
 
@@ -1192,7 +1192,7 @@ void Group::BroadcastReadyCheck(WorldPacket *packet)
         Player *pl = itr->GetSource();
         if(pl && pl->GetSession())
             if(IsLeader(pl->GetGUID()) || IsAssistant(pl->GetGUID()))
-                pl->GetSession()->SendPacket(packet);
+                pl->SendDirectMessage(packet);
     }
 }
 

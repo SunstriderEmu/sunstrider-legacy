@@ -1175,7 +1175,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                         data << unitTarget->GetGUID();
-                        (m_originalCaster->ToPlayer())->GetSession()->SendPacket( &data );
+                        (m_originalCaster->ToPlayer())->SendDirectMessage( &data );
                     }
                     return;
                 }
@@ -2049,7 +2049,7 @@ void Spell::EffectDummy(uint32 i)
                     data << float(sinf(m_caster->GetOrientation()+M_PI));
                     data << float(15);
                     data << float(-7.0f);
-                    (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                    (m_caster->ToPlayer())->SendDirectMessage(&data);
                     return;
                 }
                 case 23989:                                 //Readiness talent
@@ -2168,7 +2168,7 @@ void Spell::EffectDummy(uint32 i)
                             WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
                             data << uint32(m_spellInfo->Id);
                             data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            (m_caster->ToPlayer())->SendDirectMessage(&data);
                         }
 
                         SendCastResult(SPELL_FAILED_BAD_TARGETS);
@@ -3134,7 +3134,7 @@ void Spell::EffectPowerBurn(uint32 i)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 
     //from TC2 :
     m_effectExecuteData[effIndex] = new ByteBuffer(0x20);
@@ -6370,8 +6370,8 @@ void Spell::EffectDuel(uint32 i)
     WorldPacket data(SMSG_DUEL_REQUESTED, 16);
     data << pGameObj->GetGUID();
     data << caster->GetGUID();
-    caster->GetSession()->SendPacket(&data);
-    target->GetSession()->SendPacket(&data);
+    caster->SendDirectMessage(&data);
+    target->SendDirectMessage(&data);
 
     // create duel-info
     DuelInfo *duel   = new DuelInfo;
@@ -6436,7 +6436,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 }
 
 static ScriptInfo generateActivateCommand()
@@ -7206,7 +7206,7 @@ void Spell::EffectPlayerPull(uint32 i)
     data << float(damage ? damage : unitTarget->GetDistance2d(m_caster));
     data << float(m_spellInfo->Effects[i].MiscValue)/-10;     // Z Movement speed
 
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)

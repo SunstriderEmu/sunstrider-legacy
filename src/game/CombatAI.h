@@ -30,7 +30,7 @@ class AggressorAI : public CreatureAI
     public:
         explicit AggressorAI(Creature* c) : CreatureAI(c) {}
 
-        void UpdateAI(uint32);
+        void UpdateAI(const uint32);
         static int Permissible(const Creature*);
 };
 
@@ -61,7 +61,7 @@ class CasterAI : public CombatAI
         explicit CasterAI(Creature* c) : CombatAI(c) { m_attackDist = MELEE_RANGE; }
         void InitializeAI();
         void AttackStart(Unit* victim) { AttackStartCaster(victim, m_attackDist); }
-        void UpdateAI(uint32 diff);
+        void UpdateAI(const uint32 diff);
         void EnterCombat(Unit* who);
     private:
         float m_attackDist;
@@ -72,7 +72,7 @@ struct ArcherAI : public CreatureAI
     public:
         explicit ArcherAI(Creature* c);
         void AttackStart(Unit* who);
-        void UpdateAI(uint32 diff);
+        void UpdateAI(const uint32 diff);
 
 
         static int Permissible(Creature const* creature) { return PERMIT_BASE_NO; }
@@ -87,7 +87,7 @@ struct TurretAI : public CreatureAI
         explicit TurretAI(Creature* c);
         bool CanAIAttack(const Unit* who) const;
         void AttackStart(Unit* who);
-        void UpdateAI(uint32 diff);
+        void UpdateAI(const uint32 diff);
 
         static int Permissible(Creature const* creature) { return PERMIT_BASE_NO; }
 
@@ -102,7 +102,7 @@ struct VehicleAI : public CreatureAI
     public:
         explicit VehicleAI(Creature* creature);
 
-        void UpdateAI(uint32 diff);
+        void UpdateAI(const uint32 diff);
         void MoveInLineOfSight(Unit*) {}
         void AttackStart(Unit*) {}
         void OnCharmed(bool apply);

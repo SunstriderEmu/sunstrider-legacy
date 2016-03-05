@@ -623,7 +623,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_IGNORED, LANG_UNIVERSAL, nullptr,  GetPlayer(), GetPlayer()->GetName().c_str());
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)

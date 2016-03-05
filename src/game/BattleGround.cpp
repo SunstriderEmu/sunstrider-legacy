@@ -168,7 +168,7 @@ void Battleground::Update(time_t diff)
                     if(plr)
                     {
                         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattlegroundQueueIndex(m_TypeID), STATUS_NONE, 0, 0);
-                        plr->GetSession()->SendPacket(&data);
+                        plr->SendDirectMessage(&data);
                     }
                     break;*/
                 case 1:                                     // currently in bg and was removed from bg
@@ -323,7 +323,7 @@ void Battleground::SendPacketToAll(WorldPacket *packet)
     {
         Player *plr = sObjectMgr->GetPlayer(itr->first);
         if(plr)
-            plr->GetSession()->SendPacket(packet);
+            plr->SendDirectMessage(packet);
     }
 }
 
@@ -343,7 +343,7 @@ void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
-            plr->GetSession()->SendPacket(packet);
+            plr->SendDirectMessage(packet);
     }
 }
 
@@ -371,7 +371,7 @@ void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
         if(team == TeamID)
         {
             sBattlegroundMgr->BuildPlaySoundPacket(&data, SoundID);
-            plr->GetSession()->SendPacket(&data);
+            plr->SendDirectMessage(&data);
         }
     }
 }
@@ -443,7 +443,7 @@ void Battleground::UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player 
 {
     WorldPacket data;
     sBattlegroundMgr->BuildUpdateWorldStatePacket(&data, Field, Value);
-    Source->GetSession()->SendPacket(&data);
+    Source->SendDirectMessage(&data);
 }
 
 void Battleground::EndBattleground(uint32 winner)
@@ -669,11 +669,11 @@ void Battleground::EndBattleground(uint32 winner)
         BlockMovement(plr);
 
         sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
-        plr->GetSession()->SendPacket(&data);
+        plr->SendDirectMessage(&data);
 
         uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
-        plr->GetSession()->SendPacket(&data);
+        plr->SendDirectMessage(&data);
     }
 
     for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
@@ -685,10 +685,10 @@ void Battleground::EndBattleground(uint32 winner)
         BlockMovement(plr);
 
         sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
-        plr->GetSession()->SendPacket(&data);
+        plr->SendDirectMessage(&data);
 
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetTeam(), 0, STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
-        plr->GetSession()->SendPacket(&data);
+        plr->SendDirectMessage(&data);
     }
     
     if(IsArena() && isRated() && winner_arena_team && loser_arena_team)
@@ -1010,7 +1010,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             if(SendPacket)
             {
                 sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, team, plr->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_NONE, 0, 0);
-                plr->GetSession()->SendPacket(&data);
+                plr->SendDirectMessage(&data);
             }
 
             // this call is important, because player, when joins to battleground, this method is not called, so it must be called when leaving bg
@@ -1702,10 +1702,10 @@ void Battleground::PlayerRelogin(uint64 guid)
     BlockMovement(plr);
 
     sBattlegroundMgr->BuildPvpLogDataPacket(&data, this);
-    plr->GetSession()->SendPacket(&data);
+    plr->SendDirectMessage(&data);
 
     sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, this, plr->GetTeam(), plr->GetBattlegroundQueueIndex(bgQueueTypeId), STATUS_IN_PROGRESS, TIME_TO_AUTOREMOVE, GetElapsedTime());
-    plr->GetSession()->SendPacket(&data);
+    plr->SendDirectMessage(&data);
 }
 
 uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const

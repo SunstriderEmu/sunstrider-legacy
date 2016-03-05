@@ -155,7 +155,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
     WorldPacket data(SMSG_ARENA_TEAM_INVITE, (8+10));
     data << GetPlayer()->GetName();
     data << arenateam->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 }
 
 void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)

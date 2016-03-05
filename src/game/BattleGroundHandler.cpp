@@ -105,7 +105,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
         {
             WorldPacket data(SMSG_GROUP_JOINED_BATTLEGROUND, 4);
             data << (uint32) 0xFFFFFFFE;
-            _player->GetSession()->SendPacket(&data);
+            _player->SendDirectMessage(&data);
             return;
         }
         // check if already in queue
@@ -151,9 +151,9 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
             WorldPacket data;
                                                             // send status packet (in queue)
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, member->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].GetAvgTime(), 0);
-            member->GetSession()->SendPacket(&data);
+            member->SendDirectMessage(&data);
             sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, bgTypeId);
-            member->GetSession()->SendPacket(&data);
+            member->SendDirectMessage(&data);
             sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(member, ginfo);
         }
 
@@ -460,7 +460,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 
                 queueSlot = _player->GetBattlegroundQueueIndex(bgQueueTypeId);
                 sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_IN_PROGRESS, 0, bg->GetElapsedTime());
-                _player->GetSession()->SendPacket(&data);
+                _player->SendDirectMessage(&data);
                 // remove battleground queue status from BGmgr
                 sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].RemovePlayer(_player->GetGUID(), false);
                 // this is still needed here if battleground "jumping" shouldn't add deserter debuff
@@ -882,9 +882,9 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             WorldPacket data;
             // send status packet (in queue)
             sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, member->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].GetAvgTime(), 0, arenatype, isRated);
-            member->GetSession()->SendPacket(&data);
+            member->SendDirectMessage(&data);
             sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, bgTypeId);
-            member->GetSession()->SendPacket(&data);
+            member->SendDirectMessage(&data);
             sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(member, ginfo);
         }
 
