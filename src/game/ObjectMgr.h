@@ -663,7 +663,7 @@ class ObjectMgr
         void LoadBroadcastTextLocales();
         void LoadCreatureLocales();
         void LoadCreatureClassLevelStats();
-        void LoadCreatureTemplates();
+        void LoadCreatureTemplates(bool reload = false);
         void LoadCreatureTemplate(Field* fields);
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void LoadCreatures();

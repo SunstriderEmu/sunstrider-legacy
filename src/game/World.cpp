@@ -1409,7 +1409,7 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadEquipmentTemplates();
 
     TC_LOG_INFO("server.loading", "Loading Creature templates..." );
-    sObjectMgr->LoadCreatureTemplates();
+    sObjectMgr->LoadCreatureTemplates(false);
 
     TC_LOG_INFO("server.loading", "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();

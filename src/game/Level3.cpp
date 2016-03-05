@@ -74,12 +74,20 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
     return false;
 }
 
-bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
+bool ChatHandler::HandleReloadCreatureTextCommand(const char* /*args*/)
 {
     TC_LOG_INFO("command","Re-Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
     sCreatureTextMgr->LoadCreatureTextLocales();
     SendGlobalGMSysMessage("Creature Texts reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadCreatureTemplateCommand(const char* /*args*/)
+{
+    TC_LOG_INFO("command", "Re-Loading Creature Templates...");
+    sObjectMgr->LoadCreatureTemplates(true);
+    SendGlobalGMSysMessage("Creature Templates reloaded.");
     return true;
 }
 

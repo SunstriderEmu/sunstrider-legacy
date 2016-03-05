@@ -458,7 +458,7 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
     TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option locale strings in %u ms", uint32(_gossipMenuItemsLocaleStore.size()), GetMSTimeDiffToNow(oldMSTime));
 }
 
-void ObjectMgr::LoadCreatureTemplates()
+void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
 {
     uint32 oldMSTime = GetMSTime();
 
@@ -486,7 +486,9 @@ void ObjectMgr::LoadCreatureTemplates()
         return;
     }
 
-    _creatureTemplateStore.rehash(result->GetRowCount());
+    if(!reload)
+        _creatureTemplateStore.rehash(result->GetRowCount());
+
     uint32 count = 0;
     do
     {
@@ -1504,7 +1506,7 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
         Field *fields = result->Fetch();
 
         uint32 loguid       = fields[0].GetUInt32();
-        uint64 respawn_time = fields[1].GetUInt64();
+        uint64 respawn_time = fields[1].GetUInt32();
         uint32 instance     = fields[2].GetUInt32();
 
         mGORespawnTimes[MAKE_PAIR64(loguid,instance)] = time_t(respawn_time);
