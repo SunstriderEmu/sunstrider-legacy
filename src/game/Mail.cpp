@@ -654,8 +654,6 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 //used when player copies mail body to his inventory
 void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8+4);
 
     /* Is this supposed to be BC ?
@@ -684,7 +682,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
     bodyItem->SetUInt32Value( ITEM_FIELD_ITEM_TEXT_ID , m->itemTextId );
     bodyItem->SetUInt32Value( ITEM_FIELD_CREATOR, m->sender);
 
-    TC_LOG_DEBUG("FIXME","HandleMailCreateTextItem mailid=%u",mailId);
+    TC_LOG_DEBUG("network.opcode","HandleMailCreateTextItem mailid=%u",mailId);
 
     ItemPosCountVec dest;
     uint8 msg = _player->CanStoreItem( NULL_BAG, NULL_SLOT, dest, bodyItem, false );

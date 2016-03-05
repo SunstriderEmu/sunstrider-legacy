@@ -1346,13 +1346,13 @@ void GameObject::Use(Unit* user)
 
                     //provide error, no fishable zone or area should be 0
                     if(!zone_skill)
-                        TC_LOG_ERROR("FIXME","Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
+                        TC_LOG_ERROR("entities.gameobject","Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
 
                     int32 skill = player->GetSkillValue(SKILL_FISHING);
                     int32 chance = skill - zone_skill + 5;
                     int32 roll = GetMap()->irand(1,100);
 
-                    TC_LOG_DEBUG("FIXME","Fishing check (skill: %i zone min skill: %i chance %i roll: %i",skill,zone_skill,chance,roll);
+                    TC_LOG_DEBUG("entities.gameobject","Fishing check (skill: %i zone min skill: %i chance %i roll: %i",skill,zone_skill,chance,roll);
 
                     if(skill >= zone_skill && chance >= roll)
                     {

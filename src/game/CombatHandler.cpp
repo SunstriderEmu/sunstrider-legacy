@@ -74,7 +74,7 @@ void WorldSession::HandleSetSheathedOpcode( WorldPacket & recvData )
     uint32 sheathed;
     recvData >> sheathed;
 
-    //TC_LOG_DEBUG("FIXME", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
+    //TC_LOG_DEBUG("network.opcode", "WORLD: Recvd CMSG_SETSHEATHED Message guidlow:%u value1:%u", GetPlayer()->GetGUIDLow(), sheathed );
 
     GetPlayer()->SetSheath(SheathState(sheathed));
 }

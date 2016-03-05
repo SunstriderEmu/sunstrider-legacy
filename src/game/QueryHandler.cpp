@@ -169,8 +169,6 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
 /// Only _static_ data send in this packet !!!
 void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+8);
 
     uint32 entryID;
@@ -200,7 +198,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
                     CastBarCaption = gl->CastBarCaption[loc_idx];
             }
         }
-        TC_LOG_DEBUG("FIXME","WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entryID);
+       // TC_LOG_DEBUG("network.opcode","WORLD: CMSG_GAMEOBJECT_QUERY '%s' - Entry: %u. ", info->name.c_str(), entryID);
         WorldPacket data ( SMSG_GAMEOBJECT_QUERY_RESPONSE, 150 );
         data << entryID;
         data << (uint32)info->type;

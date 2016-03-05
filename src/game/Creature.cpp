@@ -1544,7 +1544,7 @@ void Creature::Respawn()
         if (m_DBTableGuid)
             sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
 
-        TC_LOG_DEBUG("FIXME","Respawning...");
+        TC_LOG_DEBUG("entities.creature","Respawning...");
         m_respawnTime = 0;
         lootForPickPocketed = false;
         lootForBody         = false;

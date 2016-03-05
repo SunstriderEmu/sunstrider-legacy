@@ -3296,7 +3296,7 @@ void World::ShutdownMsg(bool show, Player* player, std::string reason)
         msgToSend = sst.str();
 
         SendServerMessage(msgid, msgToSend.c_str(), player);
-        TC_LOG_DEBUG("FIXME","Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shutting down"),str.c_str());
+        TC_LOG_DEBUG("misc","Server is %s in %s",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shutting down"),str.c_str());
     }
 }
 
@@ -3314,7 +3314,7 @@ void World::ShutdownCancel()
     m_ExitCode = SHUTDOWN_EXIT_CODE;                       // to default value
     SendServerMessage(msgid);
 
-    TC_LOG_DEBUG("FIXME","Server %s cancelled.",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shuttingdown"));
+    TC_LOG_DEBUG("misc","Server %s cancelled.",(m_ShutdownMask & SHUTDOWN_MASK_RESTART ? "restart" : "shuttingdown"));
 }
 
 /// Send a server message to the user(s)
@@ -3511,7 +3511,7 @@ void World::UpdateAllowedSecurity()
 
 void World::ResetDailyQuests()
 {
-    TC_LOG_DEBUG("FIXME","Daily quests reset for all characters.");
+    TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
     
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
     time_t curTime = time(NULL);
@@ -3538,10 +3538,10 @@ void World::ResetDailyQuests()
 
 void World::InitNewDataForQuestPools()
 {
-    TC_LOG_DEBUG("FIXME","Init new current quest in pools.");
+    TC_LOG_DEBUG("misc","Init new current quest in pools.");
     QueryResult result = WorldDatabase.PQuery("SELECT pool_id FROM quest_pool_current");
     if (!result) {
-        TC_LOG_ERROR("FIXME","World::InitNewDataForQuestPools: No quest_pool found!");
+        TC_LOG_ERROR("misc","World::InitNewDataForQuestPools: No quest_pool found!");
         return;
     }
     
@@ -3551,7 +3551,7 @@ void World::InitNewDataForQuestPools()
         
         QueryResult resquests = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool WHERE pool_id = %u", poolId);
         if (!resquests) {
-            TC_LOG_ERROR("FIXME","World::InitNewDataForQuestPools: No quest in pool (%u)!", poolId);
+            TC_LOG_ERROR("misc","World::InitNewDataForQuestPools: No quest in pool (%u)!", poolId);
             continue;
         }
         

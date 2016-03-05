@@ -70,11 +70,9 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket,8);
 
-    //TC_LOG_DEBUG("FIXME", "WORLD: received CMSG_DUEL_CANCELLED" );
+    //TC_LOG_DEBUG("network.opcode", "WORLD: received CMSG_DUEL_CANCELLED" );
 
     // no duel requested
     if(!GetPlayer()->duel)

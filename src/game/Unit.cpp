@@ -789,10 +789,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         return 0;
     }
 
-    TC_LOG_DEBUG("FIXME","DealDamageStart");
+    //TC_LOG_DEBUG("FIXME","DealDamageStart");
 
     uint32 health = pVictim->GetHealth();
-    TC_LOG_DEBUG("FIXME","deal dmg:%d to health:%d ",damage,health);
+    //TC_LOG_DEBUG("FIXME","deal dmg:%d to health:%d ",damage,health);
 
     // duel ends when player has 1 or less hp
     bool duel_hasEnded = false;
@@ -863,7 +863,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     
     if (health <= damage)
     {
-        TC_LOG_DEBUG("FIXME","DealDamage: victim just died");
+        //TC_LOG_DEBUG("FIXME","DealDamage: victim just died");
         Kill(pVictim, durabilityLoss);
         
         //Hook for OnPVPKill Event
@@ -876,7 +876,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
     else                                                    // if (health <= damage)
     {
-        TC_LOG_DEBUG("FIXME","DealDamageAlive");
+        //TC_LOG_DEBUG("FIXME","DealDamageAlive");
 
         pVictim->ModifyHealth(- (int32)damage);
 
@@ -1045,7 +1045,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
 {
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
+        TC_LOG_ERROR("spell","CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
 
@@ -1077,8 +1077,8 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
         targets.SetDestination(Victim);
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+    /*if (castItem)
+        TC_LOG_DEBUG("spell","WORLD: cast Item spellId - %i", spellInfo->Id);*/
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -1152,7 +1152,7 @@ uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Uni
 
     if(castItem)
     {
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+        //TC_LOG_DEBUG("spell","WORLD: cast Item spellId - %i", spellInfo->Id);
         spell->m_CastItem = castItem;
     }
 
@@ -1173,8 +1173,8 @@ uint32 Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered
         return SPELL_FAILED_UNKNOWN;
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+/*    if (castItem)
+        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -1207,8 +1207,8 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *cas
         return SPELL_FAILED_UNKNOWN;
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+  /*  if (castItem)
+        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -6597,10 +6597,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  case 31828: // Rank 1
                  case 31829: // Rank 2
                  case 31830: // Rank 3
-                    TC_LOG_DEBUG("FIXME","Blessed life trigger!");
+                    //TC_LOG_DEBUG("spell","Blessed life trigger!");
                  break;
                  default:
-                     TC_LOG_ERROR("spell","Unit::HandleProcTriggerSpell: Spell %u miss posibly Blessed Life", auraSpellInfo->Id);
+                     TC_LOG_ERROR("spell","Unit::HandleProcTriggerSpell: Spell %u miss possibly Blessed Life", auraSpellInfo->Id);
                  return false;
              }
          }

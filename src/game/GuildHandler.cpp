@@ -40,7 +40,7 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
     uint32 guildId;
     Guild *guild;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_QUERY");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_QUERY");
 
     recvPacket >> guildId;
 
@@ -64,7 +64,7 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 
     std::string gname;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_CREATE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_CREATE");
 
     recvPacket >> gname;
 
@@ -83,13 +83,11 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string Invitedname, plname;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_INVITE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INVITE");
 
     Player * player = NULL;
 
@@ -151,18 +149,16 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     data << guild->GetName();
     player->SendDirectMessage(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_INVITE)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_INVITE)");
 }
 
 void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_REMOVE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_REMOVE");
 
     recvPacket >> plName;
 
@@ -217,12 +213,10 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     Guild *guild;
     Player *player = GetPlayer();
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_ACCEPT");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_ACCEPT");
 
     guild = sObjectMgr->GetGuildById(player->GetGuildIdInvited());
     if(!guild || player->GetGuildId())
@@ -245,14 +239,12 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
     data << player->GetName();
     guild->BroadcastPacket(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_EVENT)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_EVENT)");
 }
 
 void WorldSession::HandleGuildDeclineOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_DECLINE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_DECLINE");
 
     GetPlayer()->SetGuildIdInvited(0);
     GetPlayer()->SetInGuild(0);
@@ -260,10 +252,8 @@ void WorldSession::HandleGuildDeclineOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     Guild *guild;
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_INFO");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INFO");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -285,9 +275,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_ROSTER");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_ROSTER");
 
     Guild* guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -298,13 +286,11 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_PROMOTE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_PROMOTE");
 
     recvPacket >> plName;
 
@@ -358,13 +344,11 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_DEMOTE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_DEMOTE");
 
     recvPacket >> plName;
 
@@ -418,12 +402,10 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     std::string plName;
     Guild *guild;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_LEAVE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_LEAVE");
 
     guild = sObjectMgr->GetGuildById(_player->GetGuildId());
     if(!guild)
@@ -455,19 +437,17 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
     data << plName;
     guild->BroadcastPacket(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_EVENT)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_EVENT)");
 
     SendGuildCommandResult(GUILD_QUIT_S, guild->GetName(), GUILD_PLAYER_NO_MORE_IN_GUILD);
 }
 
 void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     std::string name;
     Guild *guild;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_DISBAND");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_DISBAND");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -483,20 +463,18 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 
     guild->Disband();
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Guild Sucefully Disbanded");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Guild Sucefully Disbanded");
 }
 
 void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string name;
     Player *oldLeader = GetPlayer();
     Guild *guild;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_LEADER");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_LEADER");
 
     recvPacket >> name;
 
@@ -536,17 +514,15 @@ void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
     data << name.c_str();
     guild->BroadcastPacket(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_EVENT)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_EVENT)");
 }
 
 void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 {
-    
-    
     Guild *guild;
     std::string MOTD;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_MOTD");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_MOTD");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -573,18 +549,16 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
     data << MOTD;
     guild->BroadcastPacket(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_EVENT)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_EVENT)");
 }
 
 void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string name,PNOTE;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_SET_PUBLIC_NOTE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_SET_PUBLIC_NOTE");
 
     recvPacket >> name;
 
@@ -621,13 +595,11 @@ void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     std::string plName, OFFNOTE;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_SET_OFFICER_NOTE");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_SET_OFFICER_NOTE");
 
     recvPacket >> plName;
 
@@ -663,8 +635,6 @@ void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 4+4+1+4*13);
     //recvPacket.hexlike();
 
@@ -675,7 +645,7 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
     uint32 BankRights;
     uint32 BankSlotPerDay;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_RANK");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_RANK");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -716,14 +686,12 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
     Guild *guild;
     std::string rankname;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_ADD_RANK");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_ADD_RANK");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -753,12 +721,10 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDelRankOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     Guild *guild;
     std::string rankname;
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_DEL_RANK");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_DEL_RANK");
 
     guild = sObjectMgr->GetGuildById(GetPlayer()->GetGuildId());
     if(!guild)
@@ -787,16 +753,14 @@ void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str
     data << cmdresult;
     SendPacket(&data);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Sent (SMSG_GUILD_COMMAND_RESULT)");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Sent (SMSG_GUILD_COMMAND_RESULT)");
 }
 
 void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 1);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_GUILD_INFO_TEXT");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INFO_TEXT");
 
     std::string GINFO;
 
@@ -820,11 +784,9 @@ void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 8+4+4+4+4+4);
 
-    //TC_LOG_DEBUG("FIXME","WORLD: Received MSG_SAVE_GUILD_EMBLEM");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received MSG_SAVE_GUILD_EMBLEM");
 
     uint64 vendorGuid;
 

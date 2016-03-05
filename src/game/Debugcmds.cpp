@@ -258,7 +258,7 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
         }
     }
     ifs.close();
-    TC_LOG_DEBUG("FIXME","Sending opcode %u", data.GetOpcode());
+    TC_LOG_DEBUG("network.opcode","Sending opcode %u", data.GetOpcode());
     data.hexlike();
     (unit->ToPlayer())->SendDirectMessage(&data);
     PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName().c_str());

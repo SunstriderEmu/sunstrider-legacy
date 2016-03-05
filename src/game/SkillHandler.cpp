@@ -159,11 +159,9 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
-    TC_LOG_DEBUG("FIXME","MSG_TALENT_WIPE_CONFIRM");
+    TC_LOG_DEBUG("network.opcode","MSG_TALENT_WIPE_CONFIRM");
     uint64 guid;
     recvData >> guid;
 

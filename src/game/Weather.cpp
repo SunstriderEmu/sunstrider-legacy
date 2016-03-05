@@ -265,7 +265,7 @@ bool Weather::UpdateWeather()
             wthstr = "fine";
             break;
     }
-    TC_LOG_DEBUG("FIXME","Change the weather of zone %u to %s.", m_zone, wthstr);
+    //TC_LOG_DEBUG("misc","Changed the weather of zone %u to %s.", m_zone, wthstr);
 
     return true;
 }
