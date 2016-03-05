@@ -557,7 +557,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                     //uint8 acc_class = field[2].GetUInt8();
                 }
             }
-            /* TC LK
+#ifdef LICH_KING
             if (checkHeroicReqs && !hasHeroicReqLevel)
             {
                 SendCharCreate(CHAR_CREATE_LEVEL_REQUIREMENT);
@@ -565,7 +565,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 _charCreateCallback.Reset();
                 return;
             }
-            */
+#endif
             if (createInfo->Data.rpos() < createInfo->Data.wpos())
             {
                 uint8 unk;
@@ -993,6 +993,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     bool firstLogin = pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST);
     if (firstLogin)
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
+
 
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) {
         pCurrChar->CastSpell(pCurrChar, 26013, true);

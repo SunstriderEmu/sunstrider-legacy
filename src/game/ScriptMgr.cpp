@@ -1791,7 +1791,7 @@ bool ScriptMgr::OnGossipSelect( Player *player, GameObject *_GO, uint32 sender, 
     return false;
 
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if(!tmpscript || !tmpscript->pOnGossipSelect) return false;
+    if(!tmpscript || !tmpscript->pGOOnGossipSelect) return false;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOOnGossipSelect(player,_GO,sender,action);
@@ -1804,7 +1804,7 @@ bool ScriptMgr::OnGossipSelectCode( Player *player, GameObject *_GO, uint32 send
     return false;
 
     Script* tmpscript = m_scripts[_GO->GetGOInfo()->ScriptId];
-    if(!tmpscript || !tmpscript->pOnGossipSelectCode) return false;
+    if(!tmpscript || !tmpscript->pGOOnGossipSelectCode) return false;
 
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->pGOOnGossipSelectCode(player,_GO,sender,action,sCode);
