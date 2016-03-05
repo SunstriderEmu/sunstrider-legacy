@@ -187,11 +187,34 @@ void CreatureGroupManager::LoadCreatureFormations()
 
 void CreatureGroup::AddMember(Creature *member)
 {
+    if (member->GetFormation())
+    {
+        TC_LOG_ERROR("misc", "Tried to add a member already in a formation to formation %u", m_leader->GetGUIDLow());
+        return;
+    }
+
     //Check if it is a leader
     if(member->GetDBTableGUIDLow() == m_groupID)
         m_leader = member;
 
-    m_members[member] = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow())->second;
+    // Create formation info if needed
+    FormationInfo* fInfo = nullptr;
+    auto itr = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow());
+    if (itr == sCreatureGroupMgr->GetGroupMap().end())
+    {
+        fInfo = new FormationInfo;
+        fInfo->follow_angle = member->GetAngle(m_leader) - m_leader->GetOrientation();
+        fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+        fInfo->leaderGUID = m_leader->GetGUIDLow();
+        fInfo->groupAI = GROUP_AI_FULL_SUPPORT; // Assist other member of the group by default
+        sCreatureGroupMgr->AddGroupMember(member->GetDBTableGUIDLow(), fInfo);
+    }
+    else {
+        fInfo = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow())->second;
+    }
+
+
+    m_members[member] = fInfo;
     member->SetFormation(this);
 }
 

@@ -4072,7 +4072,7 @@ void Spell::EffectLearnSpell(uint32 i)
     Player *player = unitTarget->ToPlayer();
 
     uint32 spellToLearn = (m_spellInfo->Id==SPELL_ID_GENERIC_LEARN) ? damage : m_spellInfo->Effects[i].TriggerSpell;
-    player->learnSpell(spellToLearn);
+    player->LearnSpell(spellToLearn);
 }
 
 void Spell::EffectDispel(uint32 i)
@@ -4959,7 +4959,7 @@ void Spell::EffectLearnPetSpell(uint32 i)
         return;
 
     pet->SetTP(pet->m_TrainingPoints - pet->GetTPForSpell(learn_spellproto->Id));
-    pet->learnSpell(learn_spellproto->Id);
+    pet->LearnSpell(learn_spellproto->Id);
 
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     _player->PetSpellInitialize();
