@@ -19959,7 +19959,7 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
-void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 /* skillValue */)
+void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue )
 {
     uint32 raceMask  = GetRaceMask();
     uint32 classMask = GetClassMask();
