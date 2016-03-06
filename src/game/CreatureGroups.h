@@ -32,12 +32,12 @@ enum GroupAI
 
 struct FormationInfo
 {
-    uint32 leaderGUID;
-    float follow_dist;
-    float follow_angle; 
-    GroupAI groupAI;
-    bool respawn;
-    bool linkedLoot;
+    uint32 leaderGUID = 0;
+    float follow_dist = 0.0f;
+    float follow_angle = 0.0f;
+    GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
+    bool respawn = false;
+    bool linkedLoot = false;
 };
 
 typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;

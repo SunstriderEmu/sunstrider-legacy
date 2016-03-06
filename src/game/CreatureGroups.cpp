@@ -189,7 +189,7 @@ void CreatureGroup::AddMember(Creature *member)
 {
     if (member->GetFormation())
     {
-        TC_LOG_ERROR("misc", "Tried to add a member already in a formation to formation %u", m_leader->GetGUIDLow());
+        TC_LOG_ERROR("misc", "Tried to add a member (tableguid: %u, entry %u) already in a formation to formation", member->GetDBTableGUIDLow(), member->GetEntry());
         return;
     }
 
@@ -202,11 +202,20 @@ void CreatureGroup::AddMember(Creature *member)
     auto itr = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow());
     if (itr == sCreatureGroupMgr->GetGroupMap().end())
     {
+        //get leader to calc angle and distance from his current pos
+        if (!m_leader)
+            m_leader = member->GetMap()->GetCreature(MAKE_PAIR64(m_groupID, HIGHGUID_UNIT));
+       
+        if (!m_leader)
+            return;
+
         fInfo = new FormationInfo;
-        fInfo->follow_angle = member->GetAngle(m_leader) - m_leader->GetOrientation();
-        fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+        if (m_leader != member) //next infos not needed if we're leader
+        {
+            fInfo->follow_angle = member->GetAngle(m_leader) - m_leader->GetOrientation();
+            fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+        }
         fInfo->leaderGUID = m_leader->GetGUIDLow();
-        fInfo->groupAI = GROUP_AI_FULL_SUPPORT; // Assist other member of the group by default
         sCreatureGroupMgr->AddGroupMember(member->GetDBTableGUIDLow(), fInfo);
     }
     else {
