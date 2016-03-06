@@ -261,7 +261,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
                 //Offset surely incorrect, but works
                 WorldPacket data( SMSG_LOOT_MONEY_NOTIFY, 4 );
                 data << uint32(money_per_player);
-                (*i)->GetSession()->SendPacket( &data );
+                (*i)->SendDirectMessage( &data );
             }
         }
         else
@@ -289,17 +289,23 @@ void WorldSession::HandleLootOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootReleaseOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     // cheaters can modify lguid to prevent correct apply loot release code and re-loot
     // use internal stored guid
-    //uint64   lguid;
-    //recvData >> lguid;
+    uint64   guid;
+    recvData >> guid;
 
-    if(uint64 lguid = GetPlayer()->GetLootGUID())
-        DoLootRelease(lguid);
+    uint64 lguid = GetPlayer()->GetLootGUID();
+    if (lguid)
+    {
+        if (lguid == guid)
+        {
+            DoLootRelease(lguid);
+            return;
+        }
+    }
+    TC_LOG_DEBUG("network.opcode", "Player %u tried to release loot " UI64FMTD " but wasn't looting it (was looting " UI64FMTD ")", GetPlayer()->GetGUIDLow(), guid, lguid);
 }
 
 void WorldSession::DoLootRelease( uint64 lguid )
@@ -311,6 +317,9 @@ void WorldSession::DoLootRelease( uint64 lguid )
     player->SendLootRelease(lguid);
     
     player->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
+
+    if (!player->IsInWorld())
+        return;
 
     if (IS_GAMEOBJECT_GUID(lguid))
     {
@@ -410,7 +419,8 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
         loot = &corpse->loot;
 
-        if (loot->isLooted())
+        // Xinef: Buggs client? (Opening loot after closing)
+        //if (loot->isLooted())
         {
             loot->clear();
             corpse->RemoveFlag(CORPSE_FIELD_DYNAMIC_FLAGS, CORPSE_DYNFLAG_LOOTABLE);

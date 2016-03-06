@@ -3686,16 +3686,16 @@ void Spell::EffectOpenLock(uint32 /*i*/)
 {
     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
     {
-        TC_LOG_ERROR("FIXME", "WORLD: Open Lock - No Player Caster!");
+        TC_LOG_ERROR("network.opcode", "WORLD: Open Lock - No Player Caster!");
         return;
     }
 
     Player* player = m_caster->ToPlayer();
 
-    LootType loottype = LOOT_CORPSE;
     uint32 lockId = 0;
     uint64 guid = 0;
     
+    //Hand of Iruxos
     if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->KilledMonster(11937, 0);
 
@@ -3742,9 +3742,11 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
     else
     {
-        TC_LOG_ERROR("FIXME", "WORLD: Open Lock - No GameObject/Item Target!");
+        TC_LOG_ERROR("network.opcode", "WORLD: Open Lock - No GameObject/Item Target!");
         return;
     }
+
+    LootType loottype = LOOT_CORPSE;
 
     if(!lockId)                                             // possible case for GO and maybe for items.
     {
@@ -3764,7 +3766,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
 
     // check key
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < MAX_LOCK_CASE; ++i)
     {
         // type==1 This means lockInfo->key[i] is an item
         if(lockInfo->Type[i]==LOCK_KEY_ITEM && lockInfo->Index[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->Index[i])
@@ -3806,7 +3808,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         return;
     }
 
-    if ( SkillId )
+    if ( SkillId != SKILL_NONE )
     {
         loottype = LOOT_SKINNING;
         if ( player->GetSkillValue(SkillId) + spellSkillBonus < reqSkillValue )
@@ -3816,21 +3818,20 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
 
         // update skill if really known
-        uint32 SkillValue = player->GetPureSkillValue(SkillId);
-        if(SkillValue)                                      // non only item base skill
+        uint32 pureSkillValue = player->GetPureSkillValue(SkillId);
+        if(pureSkillValue)                                      // non only item base skill
         {
             if(gameObjTarget)
             {
                 // Allow one skill-up until respawned
                 if ( !gameObjTarget->IsInSkillupList( player->GetGUIDLow() ) &&
-                    player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue) )
+                    player->UpdateGatherSkill(SkillId, pureSkillValue, reqSkillValue) )
                     gameObjTarget->AddToSkillupList( player->GetGUIDLow() );
             }
             else if(itemTarget)
             {
                 // Do one skill-up
-                uint32 SkillValue = player->GetPureSkillValue(SkillId);
-                player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue);
+                player->UpdateGatherSkill(SkillId, pureSkillValue, reqSkillValue);
             }
         }
     }
