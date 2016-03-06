@@ -98,7 +98,8 @@ enum PlayerSpellState
     PLAYERSPELL_UNCHANGED = 0,
     PLAYERSPELL_CHANGED   = 1,
     PLAYERSPELL_NEW       = 2,
-    PLAYERSPELL_REMOVED   = 3
+    PLAYERSPELL_REMOVED   = 3,
+    PLAYERSPELL_TEMPORARY = 4
 };
 
 struct PlayerSpell
@@ -1655,9 +1656,9 @@ class Player : public Unit
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
-        bool addSpell(uint32 spell_id, bool active, bool learning = true, bool loading = false, uint32 slot_id=SPELL_WITHOUT_SLOT_ID, bool disabled = false);
+        bool AddSpell(uint32 spell_id, bool active, bool learning = true, bool dependent = false, bool disabled = false, bool loading = false, uint32 slot_id = SPELL_WITHOUT_SLOT_ID );
         void LearnSpell(uint32 spell_id);
-        void removeSpell(uint32 spell_id, bool disabled = false);
+        void RemoveSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
         void learnDefaultSpells(bool loading = false);
         void learnQuestRewardedSpells();

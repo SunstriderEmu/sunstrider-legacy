@@ -2979,7 +2979,7 @@ void Spell::EffectUnlearnSpecialization( uint32 i )
     Player *_player = unitTarget->ToPlayer();
     uint32 spellToUnlearn = m_spellInfo->Effects[i].TriggerSpell;
 
-    _player->removeSpell(spellToUnlearn);
+    _player->RemoveSpell(spellToUnlearn);
 }
 
 void Spell::EffectPowerDrain(uint32 i)

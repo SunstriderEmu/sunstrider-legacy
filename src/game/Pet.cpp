@@ -1452,7 +1452,7 @@ void Pet::_LoadSpells()
         {
             Field *fields = result->Fetch();
 
-            addSpell(fields[0].GetUInt16(), fields[2].GetUInt16(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
+            AddSpell(fields[0].GetUInt16(), fields[2].GetUInt16(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
         }
         while( result->NextRow() );
     }
@@ -1610,7 +1610,7 @@ void Pet::_SaveAuras()
     CharacterDatabase.CommitTransaction(trans);
 }
 
-bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 slot_id, PetSpellType type)
+bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 slot_id, PetSpellType type)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
@@ -1681,7 +1681,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
                 ToggleAutocast(itr->first, false);
 
             oldspell_id = itr->first;
-            removeSpell(itr->first);
+            RemoveSpell(itr->first);
         }
     }
 
@@ -1722,7 +1722,7 @@ bool Pet::addSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
 bool Pet::LearnSpell(uint16 spell_id)
 {
     // prevent duplicated entires in spell book
-    if (!addSpell(spell_id))
+    if (!AddSpell(spell_id))
         return false;
 
     Unit* owner = GetOwner();
@@ -1731,7 +1731,7 @@ bool Pet::LearnSpell(uint16 spell_id)
     return true;
 }
 
-void Pet::removeSpell(uint16 spell_id)
+void Pet::RemoveSpell(uint16 spell_id)
 {
     PetSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
@@ -1798,9 +1798,9 @@ void Pet::InitPetCreateSpells()
                 petspellid = learn_spellproto->Id;
 
             if (petspellid == SPELL_WATER_ELEMENTAL_WATERBOLT)
-                addSpell(petspellid,ACT_ENABLED);
+                AddSpell(petspellid,ACT_ENABLED);
             else
-                addSpell(petspellid);
+                AddSpell(petspellid);
 
             SkillLineAbilityMap::const_iterator lower = sSpellMgr->GetBeginSkillLineAbilityMap(learn_spellproto->Effects[0].TriggerSpell);
             SkillLineAbilityMap::const_iterator upper = sSpellMgr->GetEndSkillLineAbilityMap(learn_spellproto->Effects[0].TriggerSpell);
@@ -2081,7 +2081,7 @@ void Pet::LearnPetPassives()
         // Passive 01~10, Passive 00 (20782, not used), Ferocious Inspiration (34457)
         // Scale 01~03 (34902~34904, bonus from owner, not used)
         for(PetFamilySpellsSet::const_iterator petSet = petStore->second.begin(); petSet != petStore->second.end(); ++petSet)
-            addSpell(*petSet, ACT_DECIDE, PETSPELL_NEW, 0xffff, PETSPELL_FAMILY);
+            AddSpell(*petSet, ACT_DECIDE, PETSPELL_NEW, 0xffff, PETSPELL_FAMILY);
     }
 }
 

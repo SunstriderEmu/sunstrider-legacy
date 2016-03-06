@@ -4017,7 +4017,7 @@ bool ChatHandler::HandlePetUnlearnCommand(const char *args)
     uint32 spellId = extractSpellIdFromLink((char*)args);
 
     if(pet->HasSpell(spellId))
-        pet->removeSpell(spellId);
+        pet->RemoveSpell(spellId);
     else
         PSendSysMessage("Pet doesn't have that spell.");
 

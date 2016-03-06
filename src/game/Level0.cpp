@@ -1783,14 +1783,14 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell)
-            plr->removeSpell(tspell,false);
+            plr->RemoveSpell(tspell,false);
     }
     // Add new race starting spells
     for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell) {
             if (!spell_itr->second)               // don't care about passive spells or loading case
-                plr->addSpell(tspell,spell_itr->second);
+                plr->AddSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
                 plr->LearnSpell(tspell);
         }
@@ -1885,10 +1885,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (dest_team == BG_TEAM_ALLIANCE) {
                 if (spell_alliance == 0) {
                     if (plr->HasSpell(spell_horde))
-                        plr->removeSpell(spell_horde);
+                        plr->RemoveSpell(spell_horde);
                 } else {
                     if (plr->HasSpell(spell_horde)) {
-                        plr->removeSpell(spell_horde);
+                        plr->RemoveSpell(spell_horde);
                         plr->LearnSpell(spell_alliance);
                     }
                 }
@@ -1896,10 +1896,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             else {
                 if (spell_horde == 0) {
                     if (plr->HasSpell(spell_alliance))
-                        plr->removeSpell(spell_alliance);
+                        plr->RemoveSpell(spell_alliance);
                 } else {
                     if (plr->HasSpell(spell_alliance)) {
-                        plr->removeSpell(spell_alliance);
+                        plr->RemoveSpell(spell_alliance);
                         plr->LearnSpell(spell_horde);
                     }
                 }
@@ -1920,7 +1920,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 uint32 to = fields[1].GetUInt32();
 
                 if (plr->HasSpell(from))
-                    plr->removeSpell(from);
+                    plr->RemoveSpell(from);
 
                 if (to != 0)
                     plr->LearnSpell(to);

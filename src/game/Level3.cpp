@@ -1130,7 +1130,7 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
     for(uint32 spell=min_id;spell<max_id;spell++)
     {
         if (target->HasSpell(spell))
-            target->removeSpell(spell);
+            target->RemoveSpell(spell);
         else
             SendSysMessage(LANG_FORGET_SPELL);
     }

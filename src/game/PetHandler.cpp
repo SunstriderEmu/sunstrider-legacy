@@ -619,7 +619,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     {
         uint32 spell_id = itr->first;                       // Pet::removeSpell can invalidate iterator at erase NEW spell
         ++itr;
-        pet->removeSpell(spell_id);
+        pet->RemoveSpell(spell_id);
     }
 
     pet->SetTP(pet->GetLevel() * (pet->GetLoyaltyLevel() - 1));

@@ -836,7 +836,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         { // Pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (int i = 0; i < 119; i++)
-                addSpell(spellsId[i],true);
+                AddSpell(spellsId[i],true);
         }
 
         //class specific spells/skills from recuperation data
@@ -885,7 +885,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
                             }
 
                             if (!HasSpell(spell))
-                                addSpell(spell,true);
+                                AddSpell(spell,true);
                         } else if (v[0] == "setskill") {
                             /* skill, v[1] == skill ID */
                             int32 skill = atoi(v[1].c_str());
@@ -915,25 +915,25 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         }
 
         SetSkill(129,375,375); //first aid
-        addSpell(27028,true); //first aid spell
-        addSpell(27033,true); //bandage
-        addSpell(28029,true); //master ench
+        AddSpell(27028,true); //first aid spell
+        AddSpell(27033,true); //bandage
+        AddSpell(28029,true); //master ench
         SetSkill(333,375,375); //max it
-        addSpell(23803,true);//  [Ench. d'arme (Esprit renforc�) frFR] 
-        addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
-        addSpell(25080,true); // [Ench. de gants (Agilit� excellente) frFR]
-        addSpell(44383,true); // [Ench. de bouclier (R�silience) frFR]
-        addSpell(34091,true); //mount 280 
+        AddSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+        AddSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
+        AddSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
+        AddSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        AddSpell(34091,true); //mount 280 
     
         //Pala mounts
         if(class_ == CLASS_PALADIN)
         {
             if(GetTeam() == TEAM_ALLIANCE) {
-                addSpell(23214,true); //60
-                addSpell(13819,true); //40
+                AddSpell(23214,true); //60
+                AddSpell(13819,true); //40
             } else {
-                addSpell(34767,true); //60
-                addSpell(34769,true); //40
+                AddSpell(34767,true); //60
+                AddSpell(34769,true); //40
             }
         }
     }
@@ -2949,7 +2949,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
     }
 }
 
-bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint32 slot_id, bool disabled)
+bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependent, bool disabled, bool loading, uint32 slot_id)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
@@ -3041,76 +3041,6 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         }
     }
     
-    if (loading && !learning) {
-        bool sendPacket = false;
-        // TEMP HACK: Remove wrongly added racial spells after spell templates introduction
-        switch (spell_id) {
-        case 25046:
-            if (m_class != CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 28730:
-            if (m_class == CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20575:
-            if (m_class != CLASS_WARLOCK) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20576:
-            if (m_class != CLASS_HUNTER) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 21563:
-            if (m_class == CLASS_WARLOCK || m_class == CLASS_HUNTER) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 13819:
-            if (m_team == TEAM_HORDE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 33697:
-            if (m_class != CLASS_SHAMAN) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20572:
-            if (m_class != CLASS_WARRIOR && m_class != CLASS_HUNTER && m_class != CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 33702:
-            if (m_class != CLASS_MAGE && m_class != CLASS_WARLOCK) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        }
-        
-        if (sendPacket) {
-            if (!active) {
-                WorldPacket data(SMSG_REMOVED_SPELL, 4);
-                data << uint16(spell_id);
-                SendDirectMessage(&data);
-            }
-            return false; 
-        }
-    }
-
     if(!disabled_case) // skip new spell adding if spell already known (disabled spells case)
     {
         // talent: unlearn all other talent ranks (high and low)
@@ -3129,7 +3059,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                     if(!HasSpell(rankSpellId))
                         continue;
 
-                    removeSpell(rankSpellId);
+                    RemoveSpell(rankSpellId);
                 }
             }
         }
@@ -3137,7 +3067,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         else if(uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spell_id))
         {
             if(loading)                                     // at spells loading, no output, but allow save
-                addSpell(prev_spell,active,true,loading,SPELL_WITHOUT_SLOT_ID,disabled);
+                AddSpell(prev_spell,active,true,false,disabled,loading, SPELL_WITHOUT_SLOT_ID);
             else                                            // at normal learning
                 LearnSpell(prev_spell);
         }
@@ -3334,7 +3264,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         if(!itr->second.autoLearned)
         {
             if(loading)                                     // at spells loading, no output, but allow save
-                addSpell(itr->second.spell,true,true,loading);
+                AddSpell(itr->second.spell,true,true,false,false,loading);
             else                                            // at normal learning
                 LearnSpell(itr->second.spell);
         }
@@ -3351,7 +3281,7 @@ void Player::LearnSpell(uint32 spell_id)
     bool disabled = (itr != m_spells.end()) ? itr->second->disabled : false;
     bool active = disabled ? itr->second->active : true;
 
-    bool learning = addSpell(spell_id,active);
+    bool learning = AddSpell(spell_id,active);
 
     // learn all disabled higher ranks (recursive)
     SpellChainNode const* node = sSpellMgr->GetSpellChainNode(spell_id);
@@ -3371,7 +3301,7 @@ void Player::LearnSpell(uint32 spell_id)
     SendDirectMessage(&data);
 }
 
-void Player::removeSpell(uint32 spell_id, bool disabled)
+void Player::RemoveSpell(uint32 spell_id, bool disabled)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
@@ -3385,13 +3315,13 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     if (node)
     {
         if(HasSpell(node->next) && !GetTalentSpellPos(node->next))
-        removeSpell(node->next,disabled);
+        RemoveSpell(node->next,disabled);
     }
     //unlearn spells dependent from recently removed spells
     SpellsRequiringSpellMap const& reqMap = sSpellMgr->GetSpellsRequiringSpell();
     SpellsRequiringSpellMap::const_iterator itr2 = reqMap.find(spell_id);
     for (uint32 i=reqMap.count(spell_id);i>0;i--,itr2++)
-        removeSpell(itr2->second,disabled);
+        RemoveSpell(itr2->second,disabled);
 
     // removing
     WorldPacket data(SMSG_REMOVED_SPELL, 4);
@@ -3512,7 +3442,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     SpellLearnSpellMap::const_iterator spell_end   = sSpellMgr->GetEndSpellLearnSpell(spell_id);
 
     for(SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
-        removeSpell(itr2->second.spell, disabled);
+        RemoveSpell(itr2->second.spell, disabled);
 }
 
 void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */) 
@@ -3715,7 +3645,7 @@ bool Player::ResetTalents(bool no_cost)
                 // unlearn if first rank is talent or learned by talent
                 if (itrFirstId == talentInfo->RankID[j] || sSpellMgr->IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId))
                 {
-                    removeSpell(itr->first,!IsPassiveSpell(itr->first));
+                    RemoveSpell(itr->first,!IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
                 }
@@ -5455,7 +5385,7 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
                     if (_spell_idx->second->skillId == id)
                     {
                         // this may remove more than one spell (dependents)
-                        removeSpell(itr->first);
+                        RemoveSpell(itr->first);
                         next = m_spells.begin();
                         break;
                     }
@@ -16161,7 +16091,7 @@ void Player::_LoadSpells(QueryResult result)
         delete itr->second;
     m_spells.clear();
 
-    //QueryResult result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM character_spell WHERE guid = '%u'",GetGUIDLow());
+    //QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot, active, disabled FROM character_spell WHERE guid = '%u'",GetGUIDLow());
 
     if(result)
     {
@@ -16169,7 +16099,7 @@ void Player::_LoadSpells(QueryResult result)
         {
             Field *fields = result->Fetch();
 
-            addSpell(fields[0].GetUInt32(), fields[2].GetBool(), false, true, fields[1].GetUInt32(), fields[3].GetBool());
+            AddSpell(fields[0].GetUInt32(), fields[2].GetBool(), false, false, fields[3].GetBool(), true, fields[1].GetUInt32());
         }
         while( result->NextRow() );
     }
@@ -19911,7 +19841,7 @@ void Player::resetSpells()
     PlayerSpellMap smap = GetSpellMap();
 
     for(PlayerSpellMap::const_iterator iter = smap.begin();iter != smap.end(); ++iter)
-        removeSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
+        RemoveSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
 
     learnDefaultSpells();
     learnQuestRewardedSpells();
@@ -19928,7 +19858,7 @@ void Player::learnDefaultSpells(bool loading)
         if (tspell)
         {
             if(loading || !spell_itr->second)               // not care about passive spells or loading case
-                addSpell(tspell,spell_itr->second);
+                AddSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
                 LearnSpell(tspell);
         }
@@ -20029,7 +19959,7 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
-void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
+void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 /* skillValue */)
 {
     uint32 raceMask  = GetRaceMask();
     uint32 classMask = GetClassMask();
@@ -20054,23 +19984,19 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
         if (ability->classmask && !(ability->classmask & classMask))
             continue;
 
-        //still valid ?
+        // still necessary ?
         if (spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
             continue;
 
         // need unlearn spell
-        /* TC
         if (skillValue < ability->req_skill_value && ability->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
             RemoveSpell(ability->spellId);
-        // need learn
-        else if (!IsInWorld())
-            AddSpell(ability->spellId, true, true, true, false, false, ability->skillId);
-        else
-            LearnSpell(ability->spellId, true, ability->skillId);
-        */
 
-        // Ok need learn spell
-        LearnSpell(ability->spellId);
+        // need learn spell
+        if (!IsInWorld())
+            AddSpell(ability->spellId, true, true, true, false, false);
+        else
+            LearnSpell(ability->spellId);
     }
 }
 
@@ -20138,7 +20064,7 @@ void Player::LearnAllClassSpells()
             //pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (int i = 0; i < 119; i++)
-                addSpell(spellsId[i],true);
+                AddSpell(spellsId[i],true);
             break;
         }
         default:
@@ -20210,7 +20136,7 @@ void Player::DoPack58(uint8 step)
             if(!IsSpellFitByClassAndRace(spellsId[i]))
                 continue;
 
-            addSpell(spellsId[i],true);
+            AddSpell(spellsId[i],true);
         }
 
         //give totems to shamans
