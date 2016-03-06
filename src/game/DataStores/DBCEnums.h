@@ -153,10 +153,10 @@ enum MapTypes
     MAP_ARENA           = 4
 };
 
-enum AbilytyLearnType
+enum AbilityLearnType
 {
-    ABILITY_LEARNED_ON_GET_PROFESSION_SKILL     = 1,
-    ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL  = 2
+    SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE = 1, // Spell state will update depending on skill value
+    SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN = 2  // Spell will be learned/removed together with entire skill
 };
 
 enum ItemEnchantmentType

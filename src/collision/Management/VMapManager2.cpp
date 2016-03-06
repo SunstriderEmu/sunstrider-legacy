@@ -311,7 +311,7 @@ namespace VMAP
         if (IsVMAPDisabledForPtr(mapId, VMAP_DISABLE_LIQUIDSTATUS))
             return false;
 
-        InstanceTreeMap::const_iterator instanceTree = iInstanceMapTrees.find(mapId);
+        InstanceTreeMap::const_iterator instanceTree = GetMapTree(mapId);
         if (instanceTree != iInstanceMapTrees.end())
         {
             LocationInfo info;

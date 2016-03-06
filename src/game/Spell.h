@@ -611,7 +611,7 @@ class Spell
         // and in same time need aura data and after aura deleting.
         SpellInfo const* m_triggeredByAuraSpell;
 
-        PathGenerator m_preGeneratedPath;
+        PathGenerator* m_preGeneratedPath;
 };
 
 namespace Trinity

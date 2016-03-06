@@ -789,6 +789,10 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     for (PlayerCreateInfoItems::const_iterator item_id_itr = info->item.begin(); item_id_itr!=info->item.end(); ++item_id_itr++)
         StoreNewItemInBestSlots(item_id_itr->item_id, item_id_itr->item_amount);
 
+    //give bags to gms
+    if (GetSession()->GetSecurity() > SEC_PLAYER)
+        StoreNewItemInBestSlots(23162, 4); //36 slots bags "Foror's Crate of Endless Resist Gear Storage"
+
     // bags and main-hand weapon must equipped at this moment
     // now second pass for not equipped (offhand weapon/shield if it attempt equipped before main-hand weapon)
     // or ammo not equipped in special bag
@@ -832,7 +836,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         { // Pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (int i = 0; i < 119; i++)
-                addSpell(spellsId[i],true);
+                AddSpell(spellsId[i],true);
         }
 
         //class specific spells/skills from recuperation data
@@ -881,7 +885,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
                             }
 
                             if (!HasSpell(spell))
-                                addSpell(spell,true);
+                                AddSpell(spell,true);
                         } else if (v[0] == "setskill") {
                             /* skill, v[1] == skill ID */
                             int32 skill = atoi(v[1].c_str());
@@ -911,25 +915,25 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
         }
 
         SetSkill(129,375,375); //first aid
-        addSpell(27028,true); //first aid spell
-        addSpell(27033,true); //bandage
-        addSpell(28029,true); //master ench
+        AddSpell(27028,true); //first aid spell
+        AddSpell(27033,true); //bandage
+        AddSpell(28029,true); //master ench
         SetSkill(333,375,375); //max it
-        addSpell(23803,true);//  [Ench. d'arme (Esprit renforc�) frFR] 
-        addSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
-        addSpell(25080,true); // [Ench. de gants (Agilit� excellente) frFR]
-        addSpell(44383,true); // [Ench. de bouclier (R�silience) frFR]
-        addSpell(34091,true); //mount 280 
+        AddSpell(23803,true);//  [Ench. d'arme (Esprit renforcé) frFR] 
+        AddSpell(34002,true); // [Ench. de brassards (Assaut) frFR]
+        AddSpell(25080,true); // [Ench. de gants (Agilité excellente) frFR]
+        AddSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
+        AddSpell(34091,true); //mount 280 
     
         //Pala mounts
         if(class_ == CLASS_PALADIN)
         {
             if(GetTeam() == TEAM_ALLIANCE) {
-                addSpell(23214,true); //60
-                addSpell(13819,true); //40
+                AddSpell(23214,true); //60
+                AddSpell(13819,true); //40
             } else {
-                addSpell(34767,true); //60
-                addSpell(34769,true); //40
+                AddSpell(34767,true); //60
+                AddSpell(34769,true); //40
             }
         }
     }
@@ -1003,7 +1007,7 @@ void Player::SendMirrorTimer(MirrorTimerType Type, uint32 MaxValue, uint32 Curre
     data << Regen;
     data << (uint8)0;
     data << (uint32)0;                                      // spell id
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::StopMirrorTimer(MirrorTimerType Type)
@@ -1012,7 +1016,7 @@ void Player::StopMirrorTimer(MirrorTimerType Type)
 
     WorldPacket data(SMSG_STOP_MIRROR_TIMER, 4);
     data << (uint32)Type;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
@@ -1047,7 +1051,7 @@ void Player::EnvironmentalDamage(EnviromentalDamage type, uint32 damage)
         DurabilityLossAll(0.10f,false);
         // durability lost message
         WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -1960,7 +1964,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data << transport->GetEntry() << GetMapId();
                 //data << TransferSpellID //optional, not used but seemed to be existing, at least for 4.x client
 
-                GetSession()->SendPacket(&data);
+                SendDirectMessage(&data);
             }
 
             // remove from old map now
@@ -1981,7 +1985,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 else
                     data << m_teleport_dest.PositionXYZOStream();
 
-                GetSession()->SendPacket(&data);
+                SendDirectMessage(&data);
                 SendSavedInstances();
             }
 
@@ -2513,7 +2517,7 @@ void Player::SendLogXPGain(uint32 GivenXP, Unit* victim, uint32 RestXP)
         data << float(1);                                   // 1 - none 0 - 100% group bonus output
     }
     data << uint8(0);                                       // new 2.4.0
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::GiveXP(uint32 xp, Unit* victim)
@@ -2599,7 +2603,7 @@ void Player::GiveLevel(uint32 level)
     for(int i = STAT_STRENGTH; i < MAX_STATS; ++i)          // Stats loop (0-4)
         data << uint32(int32(info.stats[i]) - GetCreateStat(Stats(i)));
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::xp_to_level(level));
 
@@ -2870,7 +2874,7 @@ void Player::SendInitialSpells()
         }
     }
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     TC_LOG_DEBUG("entities.player", "CHARACTER: Sent Initial Spells" );
 }
@@ -2901,7 +2905,7 @@ void Player::SendMailResult(uint32 mailId, uint32 mailAction, uint32 mailError, 
         data << (uint32) item_guid;                         // item guid low?
         data << (uint32) item_count;                        // item count?
     }
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendNewMail()
@@ -2909,7 +2913,7 @@ void Player::SendNewMail()
     // deliver undelivered mail
     WorldPacket data(SMSG_RECEIVED_MAIL, 4);
     data << (uint32) 0;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::UpdateNextMailTimeAndUnreads()
@@ -2945,7 +2949,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
     }
 }
 
-bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading, uint32 slot_id, bool disabled)
+bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependent, bool disabled, bool loading, uint32 slot_id)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spell_id);
     if (!spellInfo)
@@ -2999,7 +3003,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             {
                 WorldPacket data(SMSG_REMOVED_SPELL, 4);
                 data << uint16(spell_id);
-                GetSession()->SendPacket(&data);
+                SendDirectMessage(&data);
             }
             return active;                                  // learn (show in spell book if active now)
         }
@@ -3037,76 +3041,6 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         }
     }
     
-    if (loading && !learning) {
-        bool sendPacket = false;
-        // TEMP HACK: Remove wrongly added racial spells after spell templates introduction
-        switch (spell_id) {
-        case 25046:
-            if (m_class != CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 28730:
-            if (m_class == CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20575:
-            if (m_class != CLASS_WARLOCK) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20576:
-            if (m_class != CLASS_HUNTER) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 21563:
-            if (m_class == CLASS_WARLOCK || m_class == CLASS_HUNTER) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 13819:
-            if (m_team == TEAM_HORDE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 33697:
-            if (m_class != CLASS_SHAMAN) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 20572:
-            if (m_class != CLASS_WARRIOR && m_class != CLASS_HUNTER && m_class != CLASS_ROGUE) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        case 33702:
-            if (m_class != CLASS_MAGE && m_class != CLASS_WARLOCK) {
-                disabled_case = true;
-                sendPacket = true;
-            }
-            break;
-        }
-        
-        if (sendPacket) {
-            if (!active) {
-                WorldPacket data(SMSG_REMOVED_SPELL, 4);
-                data << uint16(spell_id);
-                GetSession()->SendPacket(&data);
-            }
-            return false; 
-        }
-    }
-
     if(!disabled_case) // skip new spell adding if spell already known (disabled spells case)
     {
         // talent: unlearn all other talent ranks (high and low)
@@ -3125,7 +3059,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                     if(!HasSpell(rankSpellId))
                         continue;
 
-                    removeSpell(rankSpellId);
+                    RemoveSpell(rankSpellId);
                 }
             }
         }
@@ -3133,9 +3067,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         else if(uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spell_id))
         {
             if(loading)                                     // at spells loading, no output, but allow save
-                addSpell(prev_spell,active,true,loading,SPELL_WITHOUT_SLOT_ID,disabled);
+                AddSpell(prev_spell,active,true,false,disabled,loading, SPELL_WITHOUT_SLOT_ID);
             else                                            // at normal learning
-                learnSpell(prev_spell);
+                LearnSpell(prev_spell);
         }
 
         PlayerSpell *newspell = new PlayerSpell;
@@ -3163,7 +3097,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                                 WorldPacket data(SMSG_SUPERCEDED_SPELL, (4));
                                 data << uint16(itr->first);
                                 data << uint16(spell_id);
-                                GetSession()->SendPacket( &data );
+                                SendDirectMessage( &data );
                             }
 
                             // mark old spell as disable (SMSG_SUPERCEDED_SPELL replace it in client by new)
@@ -3178,7 +3112,7 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
                                 WorldPacket data(SMSG_SUPERCEDED_SPELL, (4));
                                 data << uint16(spell_id);
                                 data << uint16(itr->first);
-                                GetSession()->SendPacket( &data );
+                                SendDirectMessage( &data );
                             }
 
                             // mark new spell as disable (not learned yet for client and will not learned)
@@ -3297,10 +3231,10 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
             if(HasSkill(pSkill->id))
                 continue;
 
-            if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
-                // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+            if(_spell_idx->second->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN ||
+                // poison special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
-                // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+                // lockpicking special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 switch(GetSkillRangeType(pSkill,_spell_idx->second->racemask!=0))
@@ -3330,9 +3264,9 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
         if(!itr->second.autoLearned)
         {
             if(loading)                                     // at spells loading, no output, but allow save
-                addSpell(itr->second.spell,true,true,loading);
+                AddSpell(itr->second.spell,true,true,false,false,loading);
             else                                            // at normal learning
-                learnSpell(itr->second.spell);
+                LearnSpell(itr->second.spell);
         }
     }
 
@@ -3340,14 +3274,14 @@ bool Player::addSpell(uint32 spell_id, bool active, bool learning, bool loading,
     return active && !disabled && !superceded_old;
 }
 
-void Player::learnSpell(uint32 spell_id)
+void Player::LearnSpell(uint32 spell_id)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
 
     bool disabled = (itr != m_spells.end()) ? itr->second->disabled : false;
     bool active = disabled ? itr->second->active : true;
 
-    bool learning = addSpell(spell_id,active);
+    bool learning = AddSpell(spell_id,active);
 
     // learn all disabled higher ranks (recursive)
     SpellChainNode const* node = sSpellMgr->GetSpellChainNode(spell_id);
@@ -3355,7 +3289,7 @@ void Player::learnSpell(uint32 spell_id)
     {
         PlayerSpellMap::iterator iter = m_spells.find(node->next);
         if (disabled && iter != m_spells.end() && iter->second->disabled )
-            learnSpell(node->next);
+            LearnSpell(node->next);
     }
 
     // prevent duplicated entires in spell book
@@ -3364,10 +3298,10 @@ void Player::learnSpell(uint32 spell_id)
 
     WorldPacket data(SMSG_LEARNED_SPELL, 4);
     data << uint32(spell_id);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
-void Player::removeSpell(uint32 spell_id, bool disabled)
+void Player::RemoveSpell(uint32 spell_id, bool disabled)
 {
     PlayerSpellMap::iterator itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
@@ -3381,18 +3315,18 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     if (node)
     {
         if(HasSpell(node->next) && !GetTalentSpellPos(node->next))
-        removeSpell(node->next,disabled);
+        RemoveSpell(node->next,disabled);
     }
     //unlearn spells dependent from recently removed spells
     SpellsRequiringSpellMap const& reqMap = sSpellMgr->GetSpellsRequiringSpell();
     SpellsRequiringSpellMap::const_iterator itr2 = reqMap.find(spell_id);
     for (uint32 i=reqMap.count(spell_id);i>0;i--,itr2++)
-        removeSpell(itr2->second,disabled);
+        RemoveSpell(itr2->second,disabled);
 
     // removing
     WorldPacket data(SMSG_REMOVED_SPELL, 4);
     data << uint16(spell_id);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     if (disabled)
     {
@@ -3484,10 +3418,10 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
             if(!pSkill)
                 continue;
 
-            if(_spell_idx->second->learnOnGetSkill == ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL ||
-                // poison special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+            if(_spell_idx->second->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN ||
+                // poison special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_POISONS && _spell_idx->second->max_value==0) ||
-                // lockpicking special case, not have ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL
+                // lockpicking special case, not have SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN
                 (pSkill->id==SKILL_LOCKPICKING && _spell_idx->second->max_value==0) )
             {
                 // not reset skills for professions, class and racial abilities
@@ -3508,7 +3442,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
     SpellLearnSpellMap::const_iterator spell_end   = sSpellMgr->GetEndSpellLearnSpell(spell_id);
 
     for(SpellLearnSpellMap::const_iterator itr2 = spell_begin; itr2 != spell_end; ++itr2)
-        removeSpell(itr2->second.spell, disabled);
+        RemoveSpell(itr2->second.spell, disabled);
 }
 
 void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */) 
@@ -3711,7 +3645,7 @@ bool Player::ResetTalents(bool no_cost)
                 // unlearn if first rank is talent or learned by talent
                 if (itrFirstId == talentInfo->RankID[j] || sSpellMgr->IsSpellLearnToSpell(talentInfo->RankID[j],itrFirstId))
                 {
-                    removeSpell(itr->first,!IsPassiveSpell(itr->first));
+                    RemoveSpell(itr->first,!IsPassiveSpell(itr->first));
                     itr = GetSpellMap().begin();
                     continue;
                 }
@@ -4064,7 +3998,7 @@ void Player::SetMovement(PlayerMovementType pType)
     }
     data << GetPackGUID();
     data << uint32(0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 /* Preconditions:
@@ -4126,7 +4060,7 @@ void Player::SendDelayResponse(const uint32 ml_seconds)
     WorldPacket data( SMSG_QUERY_TIME_RESPONSE, 4+4 );
     data << (uint32)time(NULL);
     data << (uint32)0;
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::ResurrectPlayer(float restore_percent, bool applySickness)
@@ -4136,7 +4070,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     data << float(0);
     data << float(0);
     data << float(0);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // send spectate addon message
     if (HaveSpectators())
@@ -4587,7 +4521,7 @@ void Player::RepopAtGraveyard()
             data << ClosestGrave->x;
             data << ClosestGrave->y;
             data << ClosestGrave->z;
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
         }
     }
     else if (GetPositionZ() < GetMap()->GetMinHeight(GetPositionX(), GetPositionY()))
@@ -5134,7 +5068,7 @@ bool Player::UpdateCraftSkill(uint32 spellid)
             if(spellEntry && spellEntry->Mechanic==MECHANIC_DISCOVERY)
             {
                 if(uint32 discoveredSpell = GetSkillDiscoverySpell(_spell_idx->second->skillId, spellid, this))
-                    learnSpell(discoveredSpell);
+                    LearnSpell(discoveredSpell);
             }
 
             uint32 craft_skill_gain = sWorld->getConfig(CONFIG_SKILL_GAIN_CRAFTING);
@@ -5451,7 +5385,7 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
                     if (_spell_idx->second->skillId == id)
                     {
                         // this may remove more than one spell (dependents)
-                        removeSpell(itr->first);
+                        RemoveSpell(itr->first);
                         next = m_spells.begin();
                         break;
                     }
@@ -5502,7 +5436,7 @@ void Player::SetSkill(uint32 id, uint16 currVal, uint16 maxVal)
                         (*j)->ApplyModifier(true);
 
                 // Learn all spells for skill
-                learnSkillRewardedSpells(id);
+                LearnSkillRewardedSpells(id, currVal);
                 return;
             }
         }
@@ -5634,7 +5568,7 @@ void Player::SendInitialActionButtons()
         }
     }
 
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
     TC_LOG_DEBUG("entities.player", "Action Buttons for '%u' Initialized", GetGUIDLow() );
 }
 
@@ -5907,7 +5841,7 @@ void Player::SetFactionForRace(uint8 race)
     SetFaction( getFactionForRace(race) );
 }
 
-void Player::UpdateReputation() const
+void Player::UpdateReputation()
 {
     TC_LOG_TRACE("entities.player", "WORLD: Player::UpdateReputation" );
 
@@ -5917,7 +5851,7 @@ void Player::UpdateReputation() const
     }
 }
 
-void Player::SendFactionState(FactionState const* faction) const
+void Player::SendFactionState(FactionState const* faction)
 {
     if(faction->Flags & FACTION_FLAG_VISIBLE)               //If faction is visible then update it
     {
@@ -5928,7 +5862,7 @@ void Player::SendFactionState(FactionState const* faction) const
         data << (uint32) faction->ReputationListID;
         data << (uint32) faction->Standing;
         // end for
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -5962,7 +5896,7 @@ void Player::SendInitialReputations()
         data << uint32 (0x00000000);
     }
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 FactionState const* Player::GetFactionState( FactionEntry const* factionEntry) const
@@ -6054,7 +5988,7 @@ void Player::SetFactionVisible(FactionState* faction)
         // make faction visible in reputation list at client
         WorldPacket data(SMSG_SET_FACTION_VISIBLE, 4);
         data << faction->ReputationListID;
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -6630,7 +6564,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, float honor, bool pvpt
     data << (uint64) victim_guid;
     data << (uint32) victim_rank;
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // add honor points
     ModifyHonorPoints(int32(honor));
@@ -6967,7 +6901,7 @@ void Player::CheckDuelDistance(time_t currTime)
             duel->outOfBound = currTime;
 
             WorldPacket data(SMSG_DUEL_OUTOFBOUNDS, 0);
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
         }
     }
     else
@@ -6977,7 +6911,7 @@ void Player::CheckDuelDistance(time_t currTime)
             duel->outOfBound = 0;
 
             WorldPacket data(SMSG_DUEL_INBOUNDS, 0);
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
         }
         else if(currTime >= (duel->outOfBound+10))
         {
@@ -6999,8 +6933,8 @@ void Player::DuelComplete(DuelCompleteType type)
 
     WorldPacket data(SMSG_DUEL_COMPLETE, (1));
     data << (uint8)((type != DUEL_INTERUPTED) ? 1 : 0);
-    GetSession()->SendPacket(&data);
-    duel->opponent->GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
+    duel->opponent->SendDirectMessage(&data);
 
     if(type != DUEL_INTERUPTED)
     {
@@ -7019,13 +6953,13 @@ void Player::DuelComplete(DuelCompleteType type)
 
     data<<(uint32)7266;
     data<<uint32(0x0);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
     data.Initialize(SMSG_SPELL_COOLDOWN, 17);
     data<<duel->opponent->GetGUID();
     data<<uint8(0x0);
     data<<(uint32)7266;
     data<<uint32(0x0);
-    duel->opponent->GetSession()->SendPacket(&data);*/
+    duel->opponent->SendDirectMessage(&data);*/
 
     //Remove Duel Flag object
     GameObject* obj = ObjectAccessor::GetGameObject(*this, GetUInt64Value(PLAYER_DUEL_ARBITER));
@@ -8129,8 +8063,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         }
     }
 
-    SetLootGUID(guid);
-
     QuestItemList *q_list = 0;
     if (permission != NONE_PERMISSION)
     {
@@ -8171,35 +8103,55 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     if(loot_type == LOOT_FISHINGHOLE)
         loot_type = LOOT_FISHING;
 
-    WorldPacket data(SMSG_LOOT_RESPONSE, (9+50));           // we guess size
+    // LOOT_INSIGNIA and LOOT_FISHINGHOLE unsupported by client
+    switch (loot_type)
+    {
+#ifndef LICH_KING
+    case LOOT_PICKPOCKETING:
+    case LOOT_DISENCHANTING:
+    case LOOT_PROSPECTING:
+#endif
+    case LOOT_INSIGNIA:    loot_type = LOOT_SKINNING; break;
+    case LOOT_FISHINGHOLE: loot_type = LOOT_FISHING; break;
+#ifdef LICH_KING
+    case LOOT_FISHING_JUNK: loot_type = LOOT_FISHING; break;
+#endif
+    default: break;
+    }
 
-    data << uint64(guid);
-    data << uint8(loot_type);
-    data << LootView(*loot, q_list, ffa_list, conditional_list, this, permission);
-
-    SendDirectMessage(&data);
-
-    // add 'this' player as one of the players that are looting 'loot'
     if (permission != NONE_PERMISSION)
+    {
+        SetLootGUID(guid);
+
+        WorldPacket data(SMSG_LOOT_RESPONSE, (9 + 50));           // we guess size
+
+        data << uint64(guid);
+        data << uint8(loot_type);
+        data << LootView(*loot, q_list, ffa_list, conditional_list, this, permission);
+
+        SendDirectMessage(&data);
+
+        // add 'this' player as one of the players that are looting 'loot'
         loot->AddLooter(GetGUID());
+
+        if (loot_type == LOOT_CORPSE && !IS_ITEM_GUID(guid))
+            SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
+    }
     else
         SendLootError(GetLootGUID(), LOOT_ERROR_DIDNT_KILL);
-
-    if ( loot_type == LOOT_CORPSE && !IS_ITEM_GUID(guid) )
-        SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
 }
 
 void Player::SendNotifyLootMoneyRemoved()
 {
     WorldPacket data(SMSG_LOOT_CLEAR_MONEY, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage(&data);
 }
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
 {
     WorldPacket data(SMSG_LOOT_REMOVED, 1);
     data << uint8(lootSlot);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
@@ -8207,7 +8159,7 @@ void Player::SendUpdateWorldState(uint32 Field, uint32 Value)
     WorldPacket data(SMSG_UPDATE_WORLD_STATE, 8);
     data << Field;
     data << Value;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
@@ -8228,28 +8180,28 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
     switch(zoneid)
     {
         case 0:
-        case 1:
+        case 1: // Dun Morogh
         case 4:
         case 8:
         case 10:
-        case 11:
-        case 12:
+        case 11: // Wetlands
+        case 12: // Elwynn Forest
         case 36:
-        case 38:
-        case 40:
+        case 38: // Loch Modan
+        case 40: // Westfall
         case 41:
-        case 51:
+        case 51: // Searing Gorge
         case 267:
-        case 1519:
-        case 1537:
-        case 2257:
+        case 1519: // Stormwind City
+        case 1537: // Ironforge
+        case 2257: // Deeprun Tram
         case 2918:
             NumberOfFields = 6;
             break;
-        case 139:
+        case 139: // Eastern Plaguelands
             NumberOfFields = 39;
             break;
-        case 1377:
+        case 1377: // Silithus
             NumberOfFields = 13;
             break;
         case 2597:
@@ -8279,7 +8231,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
         case 3968:
             NumberOfFields = 9;
             break;
-        case 3703:
+        case 3703: // Shattrath City
             NumberOfFields = 9;
             break;
         default:
@@ -8317,7 +8269,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
         case 1537:
         case 2257:
             break;
-        case 139: // EPL
+        case 139: // Eastern Plaguelands
             {
                 if(pvp && pvp->GetTypeId() == OUTDOOR_PVP_EP)
                     pvp->FillInitialWorldStates(data);
@@ -8733,7 +8685,7 @@ void Player::SendInitWorldStates(bool forceZone, uint32 forceZoneId)
             data << uint32(0x915) << uint32(0x0);           // 10
             break;
     }
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 uint32 Player::GetXPRestBonus(uint32 xp)
@@ -8753,7 +8705,7 @@ void Player::SetBindPoint(uint64 guid)
 {
     WorldPacket data(SMSG_BINDER_CONFIRM, 8);
     data << uint64(guid);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendTalentWipeConfirm(uint64 guid)
@@ -8762,7 +8714,7 @@ void Player::SendTalentWipeConfirm(uint64 guid)
     data << uint64(guid);
     uint32 cost = sWorld->getConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : ResetTalentsCost();
     data << cost;
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendPetSkillWipeConfirm()
@@ -8773,7 +8725,7 @@ void Player::SendPetSkillWipeConfirm()
     WorldPacket data(SMSG_PET_UNLEARN_CONFIRM, (8+4));
     data << pet->GetGUID();
     data << uint32(pet->ResetTalentsCost());
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 /*********************************************************/
@@ -11120,7 +11072,7 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                         data << uint8(1);
                         data << uint32(cooldownSpell);
                         data << uint32(0);
-                        GetSession()->SendPacket(&data);
+                        SendDirectMessage(&data);
                     }
                 }
             }
@@ -12183,7 +12135,7 @@ void Player::SendEquipError( uint8 msg, Item* pItem, Item *pItem2 )
             data << uint32(level);                          // new 2.4.0
         }
     }
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendBuyError( uint8 msg, Creature* pCreature, uint32 item, uint32 param )
@@ -12194,7 +12146,7 @@ void Player::SendBuyError( uint8 msg, Creature* pCreature, uint32 item, uint32 p
     if( param > 0 )
         data << uint32(param);
     data << uint8(msg);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendSellError( uint8 msg, Creature* pCreature, uint64 guid, uint32 param )
@@ -12205,7 +12157,7 @@ void Player::SendSellError( uint8 msg, Creature* pCreature, uint64 guid, uint32 
     if( param > 0 )
         data << uint32(param);
     data << uint8(msg);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::ClearTrade()
@@ -12742,7 +12694,7 @@ void Player::SendNewItem(Item *item, uint32 count, bool received, bool created, 
     if (broadcast && GetGroup())
         GetGroup()->BroadcastPacket(&data, true);
     else
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
 }
 
 /*********************************************************/
@@ -13570,7 +13522,7 @@ bool Player::SatisfyQuestLog( bool msg )
     if( msg )
     {
         WorldPacket data( SMSG_QUESTLOG_FULL, 0 );
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     }
     return false;
 }
@@ -14536,7 +14488,7 @@ void Player::SendQuestComplete( uint32 quest_id )
     {
         WorldPacket data( SMSG_QUESTUPDATE_COMPLETE, 4 );
         data << uint32(quest_id);
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     }
 }
 
@@ -14568,7 +14520,7 @@ void Player::SendQuestReward( Quest const *pQuest, uint32 XP, Object * questGive
         else
             data << uint32(0) << uint32(0);
     }
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 
     if (pQuest->GetQuestCompleteScript() != 0)
         sWorld->ScriptsStart(sQuestEndScripts, pQuest->GetQuestCompleteScript(), questGiver, this);
@@ -14580,7 +14532,7 @@ void Player::SendQuestFailed( uint32 quest_id )
     {
         WorldPacket data( SMSG_QUESTGIVER_QUEST_FAILED, 4 );
         data << quest_id;
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     }
 }
 
@@ -14590,7 +14542,7 @@ void Player::SendQuestTimerFailed( uint32 quest_id )
     {
         WorldPacket data( SMSG_QUESTUPDATE_FAILEDTIMER, 4 );
         data << quest_id;
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     }
 }
 
@@ -14598,7 +14550,7 @@ void Player::SendCanTakeQuestResponse( uint32 msg )
 {
     WorldPacket data( SMSG_QUESTGIVER_QUEST_INVALID, 4 );
     data << uint32(msg);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
@@ -14619,7 +14571,7 @@ void Player::SendQuestConfirmAccept(const Quest* pQuest, Player* pReceiver)
         data << uint32(pQuest->GetQuestId());
         data << strTitle;
         data << uint64(GetGUID());
-        pReceiver->GetSession()->SendPacket(&data);
+        pReceiver->SendDirectMessage(&data);
     }
 }
 
@@ -14630,7 +14582,7 @@ void Player::SendPushToPartyResponse( Player *pPlayer, uint32 msg )
         WorldPacket data( MSG_QUEST_PUSH_RESULT, (8+1) );
         data << uint64(pPlayer->GetGUID());
         data << uint8(msg);                                 // valid values: 0-8
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     }
 }
 
@@ -14639,7 +14591,7 @@ void Player::SendQuestUpdateAddItem( Quest const* pQuest, uint32 item_idx, uint3
     WorldPacket data( SMSG_QUESTUPDATE_ADD_ITEM, (4+4) );
     data << pQuest->RequiredItemId[item_idx];
     data << count;
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, uint32 creatureOrGO_idx, uint32 old_count, uint32 add_count )
@@ -14657,7 +14609,7 @@ void Player::SendQuestUpdateAddCreatureOrGo( Quest const* pQuest, uint64 guid, u
     data << uint32(old_count + add_count);
     data << uint32(pQuest->RequiredNpcOrGoCount[ creatureOrGO_idx ]);
     data << uint64(guid);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     uint16 log_slot = FindQuestSlot( pQuest->GetQuestId() );
     if( log_slot < MAX_QUEST_LOG_SIZE)
@@ -15275,7 +15227,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     // after spell load
     InitTalentForLevel();
-    learnSkillRewardedSpells();
+    LearnSkillRewardedSpells();
 
     // after spell load, learn rewarded spell if need also
     _LoadQuestStatus(holder->GetResult(PLAYER_LOGIN_QUERY_LOADQUESTSTATUS));
@@ -16139,7 +16091,7 @@ void Player::_LoadSpells(QueryResult result)
         delete itr->second;
     m_spells.clear();
 
-    //QueryResult result = CharacterDatabase.PQuery("SELECT spell,slot,active FROM character_spell WHERE guid = '%u'",GetGUIDLow());
+    //QueryResult result = CharacterDatabase.PQuery("SELECT spell, slot, active, disabled FROM character_spell WHERE guid = '%u'",GetGUIDLow());
 
     if(result)
     {
@@ -16147,7 +16099,7 @@ void Player::_LoadSpells(QueryResult result)
         {
             Field *fields = result->Fetch();
 
-            addSpell(fields[0].GetUInt32(), fields[2].GetBool(), false, true, fields[1].GetUInt32(), fields[3].GetBool());
+            AddSpell(fields[0].GetUInt32(), fields[2].GetBool(), false, false, fields[3].GetBool(), true, fields[1].GetUInt32());
         }
         while( result->NextRow() );
     }
@@ -16188,10 +16140,10 @@ void Player::_LoadBoundInstances(QueryResult result)
         {
             Field *fields = result->Fetch();
             bool perm = fields[1].GetBool();
-            uint32 mapId = fields[2].GetUInt32();
+            uint32 mapId = fields[2].GetUInt16();
             uint32 instanceId = fields[0].GetUInt32();
             uint8 difficulty = fields[3].GetUInt8();
-            time_t resetTime = (time_t)fields[4].GetUInt64();
+            time_t resetTime = (time_t)fields[4].GetUInt32();
             // the resettime for normal instances is only saved when the InstanceSave is unloaded
             // so the value read from the DB may be wrong here but only if the InstanceSave is loaded
             // and in that case it is not used
@@ -16357,7 +16309,7 @@ void Player::SendRaidInfo()
             }
         }
     }
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 /*
@@ -16383,7 +16335,7 @@ void Player::SendSavedInstances()
     //Send opcode 811. true or false means, whether you have current raid/heroic instances
     data.Initialize(SMSG_UPDATE_INSTANCE_OWNERSHIP);
     data << uint32(hasBeenSaved);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     if(!hasBeenSaved)
         return;
@@ -16396,7 +16348,7 @@ void Player::SendSavedInstances()
             {
                 data.Initialize(SMSG_UPDATE_LAST_INSTANCE);
                 data << uint32(itr->second.save->GetMapId());
-                GetSession()->SendPacket(&data);
+                SendDirectMessage(&data);
             }
         }
     }
@@ -17175,7 +17127,7 @@ bool Player::CanSpeak() const
 void Player::SendAttackSwingNotInRange()
 {
     WorldPacket data(SMSG_ATTACKSWING_NOTINRANGE, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 // SQLTransaction here?
@@ -17257,31 +17209,31 @@ void Player::SetFloatValueInDB(uint16 index, float value, uint64 guid)
 void Player::SendAttackSwingNotStanding()
 {
     WorldPacket data(SMSG_ATTACKSWING_NOTSTANDING, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendAttackSwingDeadTarget()
 {
     WorldPacket data(SMSG_ATTACKSWING_DEADTARGET, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendAttackSwingCantAttack()
 {
     WorldPacket data(SMSG_ATTACKSWING_CANT_ATTACK, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendAttackSwingCancelAttack()
 {
     WorldPacket data(SMSG_CANCEL_COMBAT, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendAttackSwingBadFacingAttack()
 {
     WorldPacket data(SMSG_ATTACKSWING_BADFACING, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 void Player::SendAutoRepeatCancel()
@@ -17292,7 +17244,7 @@ void Player::SendAutoRepeatCancel()
     SendMessageToSet(&data, false);
 #else
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 0);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 #endif
 }
 
@@ -17301,7 +17253,7 @@ void Player::PlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf)
-        GetSession()->SendPacket( &data );
+        SendDirectMessage( &data );
     else
         SendMessageToSet( &data, true );
 }
@@ -17312,7 +17264,7 @@ void Player::SendExplorationExperience(uint32 Area, uint32 Experience)
     WorldPacket data( SMSG_EXPLORATION_EXPERIENCE, 8 );
     data << Area;
     data << Experience;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendDungeonDifficulty(bool IsInGroup)
@@ -17323,7 +17275,7 @@ void Player::SendDungeonDifficulty(bool IsInGroup)
     data << (uint32)GetDifficulty();
     data << uint32(val);
     data << uint32(IsInGroup);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 #ifdef LICH_KING
@@ -17334,7 +17286,7 @@ void Player::SendRaidDifficulty(bool IsInGroup, int32 forcedDifficulty)
     data << uint32(forcedDifficulty == -1 ? GetRaidDifficulty() : forcedDifficulty);
     data << uint32(val);
     data << uint32(IsInGroup);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 #endif
 
@@ -17343,7 +17295,7 @@ void Player::SendResetFailedNotify(uint32 mapid)
     //LK ok
     WorldPacket data(SMSG_RESET_FAILED_NOTIFY, 4);
     data << uint32(mapid);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 /// Reset all solo instances and optionally send a message on success for each
@@ -17410,7 +17362,7 @@ void Player::SendResetInstanceSuccess(uint32 MapId)
     //LK ok
     WorldPacket data(SMSG_INSTANCE_RESET, 4);
     data << MapId;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendResetInstanceFailed(uint32 reason, uint32 MapId)
@@ -17424,7 +17376,7 @@ void Player::SendResetInstanceFailed(uint32 reason, uint32 MapId)
     WorldPacket data(SMSG_INSTANCE_RESET_FAILED, 4);
     data << reason;
     data << MapId;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 /*********************************************************/
@@ -17563,7 +17515,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
         //LK ok
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
 
         if(GetGroup())
             SetGroupUpdateFlag(GROUP_UPDATE_PET);
@@ -17698,12 +17650,12 @@ void Player::Whisper(std::string const& text, Language language, Player* target,
     {
         WorldPacket data;
         ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, language, this, target, text);
-        target->GetSession()->SendPacket(&data);
+        target->SendDirectMessage(&data);
 
         // Also send message to sender. Do not send for addon messages
         if (language != LANG_ADDON) {
             ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER_INFORM, language, target, target, text);
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
         }
     }
     else
@@ -17786,7 +17738,7 @@ void Player::PetSpellInitialize()
         data << uint32(0x8e8c) << uint64(0);                // if count = 3
         data << uint32(0x8e8b) << uint64(0);                // if count = 3
 
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -17824,7 +17776,7 @@ void Player::PossessSpellInitialize()
     data << uint32(0x8e8c) << uint64(0);                    // if count = 3
     data << uint32(0x8e8b) << uint64(0);                    // if count = 3
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::CharmSpellInitialize()
@@ -17894,7 +17846,7 @@ void Player::CharmSpellInitialize()
     data << uint32(0x8e8c) << uint64(0);                    // if count = 3
     data << uint32(0x8e8b) << uint64(0);                    // if count = 3
 
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
@@ -18446,7 +18398,7 @@ void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
             AddSpellCooldown(unSpellId, 0, curTime + unTimeMs/1000);
         }
     }
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::InitDataForForm(bool reapplyMods)
@@ -18680,7 +18632,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << (uint32)(vendor_slot+1);                // numbered from 1 at client
             data << (uint32)(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
             data << (uint32)count;
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
 
@@ -18727,7 +18679,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
             data << (uint32)(vendor_slot+1);                // numbered from 1 at client
             data << (uint32)(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
             data << (uint32)count;
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
 
             SendNewItem(it, pProto->BuyCount*count, true, false, false);
 
@@ -18774,7 +18726,7 @@ void Player::UpdateHomebindTime(uint32 time)
             WorldPacket data(SMSG_RAID_GROUP_ONLY, 4+4);
             data << uint32(0);
             data << uint32(0);
-            GetSession()->SendPacket(&data);
+            SendDirectMessage(&data);
         }
         // instance is valid, reset homebind timer
         m_HomebindTimer = 0;
@@ -18797,7 +18749,7 @@ void Player::UpdateHomebindTime(uint32 time)
         WorldPacket data(SMSG_RAID_GROUP_ONLY, 4+4);
         data << m_HomebindTimer;
         data << uint32(1);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -19613,7 +19565,7 @@ void Player::SendComboPoints()
         data.Initialize(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size()+1);
         data << combotarget->GetPackGUID();
         data << uint8(m_comboPoints);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -19692,14 +19644,14 @@ void Player::SendInitialPacketsBeforeAddToMap()
 {
     WorldPacket data(SMSG_SET_REST_START, 4);
     data << uint32(0);                                      // unknown, may be rest state time or experience
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // Homebind
     data.Initialize(SMSG_BINDPOINTUPDATE, 5*4);
     data << m_homebindX << m_homebindY << m_homebindZ;
     data << (uint32) m_homebindMapId;
     data << (uint32) m_homebindAreaId;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // SMSG_SET_PROFICIENCY
     // SMSG_UPDATE_AURA_DURATION
@@ -19711,7 +19663,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);
     data << uint32(0);                                      // count, for(count) uint32;
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     SendInitialActionButtons();
     SendInitialReputations();
@@ -19723,12 +19675,12 @@ void Player::SendInitialPacketsBeforeAddToMap()
     data.Initialize(SMSG_LOGIN_SETTIMESPEED, 8);
     data << uint32(secsToTimeBitFields(sWorld->GetGameTime()));
     data << (float)0.01666667f;                             // game speed
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 
     data.Initialize(SMSG_UPDATE_WORLD_STATE, 4+4);
     data << uint32(3191);
     data << uint32(sWorld->getConfig(CONFIG_ARENA_SEASON));
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // set fly flag if in fly form or taxi flight to prevent visually drop at ground in showup moment
     if(HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || IsInFlight())
@@ -19830,7 +19782,7 @@ void Player::SendTransferAborted(uint32 mapid, uint16 reason)
     WorldPacket data(SMSG_TRANSFER_ABORTED, 4+2);
     data << uint32(mapid);
     data << uint16(reason);                                 // transfer abort reason
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
@@ -19849,7 +19801,7 @@ void Player::SendInstanceResetWarning(uint32 mapid, uint32 time)
     data << uint32(type);
     data << uint32(mapid);
     data << uint32(time);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 void Player::ApplyEquipCooldown( Item * pItem )
@@ -19871,7 +19823,7 @@ void Player::ApplyEquipCooldown( Item * pItem )
         WorldPacket data(SMSG_ITEM_COOLDOWN, 12);
         data << pItem->GetGUID();
         data << uint32(spellData.SpellId);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -19889,7 +19841,7 @@ void Player::resetSpells()
     PlayerSpellMap smap = GetSpellMap();
 
     for(PlayerSpellMap::const_iterator iter = smap.begin();iter != smap.end(); ++iter)
-        removeSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
+        RemoveSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
 
     learnDefaultSpells();
     learnQuestRewardedSpells();
@@ -19906,9 +19858,9 @@ void Player::learnDefaultSpells(bool loading)
         if (tspell)
         {
             if(loading || !spell_itr->second)               // not care about passive spells or loading case
-                addSpell(tspell,spell_itr->second);
+                AddSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                learnSpell(tspell);
+                LearnSpell(tspell);
         }
     }
 }
@@ -20007,34 +19959,48 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
-void Player::learnSkillRewardedSpells(uint32 skill_id )
+void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue )
 {
     uint32 raceMask  = GetRaceMask();
     uint32 classMask = GetClassMask();
     for (uint32 j=0; j<sSkillLineAbilityStore.GetNumRows(); ++j)
     {
-        SkillLineAbilityEntry const *pAbility = sSkillLineAbilityStore.LookupEntry(j);
-        if (!pAbility || pAbility->skillId!=skill_id || pAbility->learnOnGetSkill != ABILITY_LEARNED_ON_GET_PROFESSION_SKILL)
+        SkillLineAbilityEntry const* ability = sSkillLineAbilityStore.LookupEntry(j);
+        if (!ability || ability->skillId != skillId)
             continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(ability->spellId);
+        if (!spellInfo)
+            continue;
+
+        if (ability->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE && ability->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_LEARN)
+            continue;
+
         // Check race if set
-        if (pAbility->racemask && !(pAbility->racemask & raceMask))
+        if (ability->racemask && !(ability->racemask & raceMask))
             continue;
+
         // Check class if set
-        if (pAbility->classmask && !(pAbility->classmask & classMask))
+        if (ability->classmask && !(ability->classmask & classMask))
             continue;
 
-        if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(pAbility->spellId))
-        {
-            if(spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
-                continue;
+        // still necessary ?
+        if (spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON) // these values seems wrong in the dbc. See spells 19804, 13166, 13258, 4073, 12749
+            continue;
 
-            // Ok need learn spell
-            learnSpell(pAbility->spellId);
-        }
+        // need unlearn spell
+        if (skillValue < ability->req_skill_value && ability->AutolearnType == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
+            RemoveSpell(ability->spellId);
+
+        // need learn spell
+        if (!IsInWorld())
+            AddSpell(ability->spellId, true, true, true, false, false);
+        else
+            LearnSpell(ability->spellId);
     }
 }
 
-void Player::learnSkillRewardedSpells()
+void Player::LearnSkillRewardedSpells()
 {
     for (uint16 i=0; i < PLAYER_MAX_SKILLS; i++)
     {
@@ -20043,7 +20009,7 @@ void Player::learnSkillRewardedSpells()
 
         uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
 
-        learnSkillRewardedSpells(pskill);
+        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(i));
     }
 }
 
@@ -20071,34 +20037,34 @@ void Player::LearnAllClassSpells()
         case CLASS_SHAMAN:
         {
             //those totems are learned from quests
-            learnSpell(8071); //stoneskin totem
-            learnSpell(3599); //incendiary totem
-            learnSpell(5394); //healing totem
+            LearnSpell(8071); //stoneskin totem
+            LearnSpell(3599); //incendiary totem
+            LearnSpell(5394); //healing totem
         }
         break;
         case CLASS_DRUID: //only 1 form seems to appear in the form bar until reconnexion
             if(GetLevel() >= 10)
             {
-                learnSpell(9634); //bear
-                learnSpell(6807); //maul rank 1
+                LearnSpell(9634); //bear
+                LearnSpell(6807); //maul rank 1
             }
             if(GetLevel() >= 20)
-                learnSpell(768); //cat
+                LearnSpell(768); //cat
             if(GetLevel() >= 26)
-                learnSpell(1066); //aqua
+                LearnSpell(1066); //aqua
             if(GetLevel() >= 30)
-                learnSpell(783); //travel
+                LearnSpell(783); //travel
             break;
         case CLASS_HUNTER:
         {
             CastSpell(this,5300,true); //learn some pet related spells
-            learnSpell(883); //call pet
-            learnSpell(2641);//dismiss pet
-            learnSpell(1515); //taming spell
+            LearnSpell(883); //call pet
+            LearnSpell(2641);//dismiss pet
+            LearnSpell(1515); //taming spell
             //pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
             for (int i = 0; i < 119; i++)
-                addSpell(spellsId[i],true);
+                AddSpell(spellsId[i],true);
             break;
         }
         default:
@@ -20120,7 +20086,7 @@ void Player::LearnAllClassSpells()
             if(GetTrainerSpellState(itr) != TRAINER_SPELL_GREEN)
                 continue;
 
-            learnSpell(itr->spell);
+            LearnSpell(itr->spell);
         }
     }
 }
@@ -20132,7 +20098,7 @@ void Player::DoPack58(uint8 step)
         GiveLevel(58);
         InitTalentForLevel();
         SetUInt32Value(PLAYER_XP,0);
-        learnSpell(33388); //mount 75
+        LearnSpell(33388); //mount 75
         uint32 mountid = 0;
         switch(GetRace())
         {
@@ -20170,7 +20136,7 @@ void Player::DoPack58(uint8 step)
             if(!IsSpellFitByClassAndRace(spellsId[i]))
                 continue;
 
-            addSpell(spellsId[i],true);
+            AddSpell(spellsId[i],true);
         }
 
         //give totems to shamans
@@ -20190,9 +20156,9 @@ void Player::DoPack58(uint8 step)
                     }
                 }
                 //those totems are learned from quests
-                learnSpell(8071); //stoneskin totem
-                learnSpell(3599); //incendiary totem
-                learnSpell(5394); //healing totem
+                LearnSpell(8071); //stoneskin totem
+                LearnSpell(3599); //incendiary totem
+                LearnSpell(5394); //healing totem
             }
             break;
         }
@@ -20445,7 +20411,7 @@ void Player::UpdateForQuestsGO()
         }
     }
     udata.BuildPacket(&packet);
-    GetSession()->SendPacket(&packet);
+    SendDirectMessage(&packet);
 }
 
 void Player::SummonIfPossible(bool agree)
@@ -20833,7 +20799,7 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
     WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size()+1);
     data << target->GetPackGUID();
     data << uint8(allowMove);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     if (allowMove)
         SetMover(target);
@@ -20983,7 +20949,7 @@ void Player::SendCorpseReclaimDelay(bool load)
     //! corpse reclaim delay 30 * 1000ms or longer at often deaths
     WorldPacket data(SMSG_CORPSE_RECLAIM_DELAY, 4);
     data << uint32(delay*1000);
-    GetSession()->SendPacket( &data );
+    SendDirectMessage( &data );
 }
 
 Player* Player::GetNextRandomRaidMember(float radius)
@@ -21282,7 +21248,7 @@ void Player::ClearFarsight()
         SetUInt64Value(PLAYER_FARSIGHT, 0);
 
         WorldPacket data(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE, 0);
-        GetSession()->SendPacket(&data);
+        SendDirectMessage(&data);
     }
 }
 
@@ -21517,7 +21483,7 @@ void Player::_LoadSkills(QueryResult result)
 
             mSkillStatus.insert(SkillStatusMap::value_type(skill, SkillStatusData(count, SKILL_UNCHANGED)));
 
-            learnSkillRewardedSpells(skill);
+            LearnSkillRewardedSpells(skill, value);
 
             ++count;
 
@@ -22224,7 +22190,7 @@ void Player::SendTeleportAckPacket()
     data << GetPackGUID();
     data << uint32(0);                                     // this value increments every time
     BuildMovementPacket(&data);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 }
 
 bool Player::SetDisableGravity(bool disable, bool packetOnly /*= false*/)
@@ -22247,7 +22213,7 @@ void Player::SendTimeSync()
 {
     WorldPacket data(SMSG_TIME_SYNC_REQ, 4);
     data << uint32(m_timeSyncCounter++);
-    GetSession()->SendPacket(&data);
+    SendDirectMessage(&data);
 
     // Schedule next sync in 10 sec
     m_timeSyncTimer = 10000;

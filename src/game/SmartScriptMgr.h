@@ -128,7 +128,7 @@ enum SMART_EVENT
     SMART_EVENT_TIMED_EVENT_TRIGGERED    = 59,      // id
     SMART_EVENT_UPDATE                   = 60,      // InitialMin, InitialMax, RepeatMin, RepeatMax
     SMART_EVENT_LINK                     = 61,      // INTERNAL USAGE, no params, used to link together multiple events, does not use any extra resources to iterate event lists needlessly
-    SMART_EVENT_GOSSIP_SELECT            = 62,      // menuID, actionID
+    SMART_EVENT_GOSSIP_SELECT            = 62,      // menuID, actionID, any (0|1)
     SMART_EVENT_JUST_CREATED             = 63,      // none
     SMART_EVENT_GOSSIP_HELLO             = 64,      // none
     SMART_EVENT_FOLLOW_COMPLETED         = 65,      // none
@@ -548,6 +548,9 @@ enum SMART_ACTION
     SMART_ACTION_GAME_EVENT_START                   = 112,    // GameEventId
     SMART_ACTION_START_CLOSEST_WAYPOINT             = 113,    // wp1, wp2, wp3, wp4, wp5, wp6, wp7
     SMART_ACTION_RISE_UP                            = 114,    // distance
+    /*
+    range reserved for TC updates
+    */
     SMART_ACTION_SET_UNIT_FIELD_BYTES_2             = 150,    // bytes, target
     SMART_ACTION_REMOVE_UNIT_FIELD_BYTES_2          = 151,    // bytes, target
     SMART_ACTION_LOAD_PATH                          = 152,    // path
@@ -555,6 +558,12 @@ enum SMART_ACTION
     SMART_ACTION_SELF_TELEPORT_ON_TARGET            = 154,    // useVisual (0/1)
     SMART_ACTION_ASSIST                             = 155,    // none
     SMART_ACTION_PREVENT_MOVE_HOME                  = 156,    // prevent (0/1)
+    //affected creature add target(s) to own formation
+    SMART_ACTION_ADD_TO_FORMATION                   = 157,    // none
+    //affected creature add target(s) to own formation
+    SMART_ACTION_REMOVE_FROM_FORMATION              = 158,    // none
+    //break formation
+    SMART_ACTION_BREAK_FORMATION                    = 159,    // none
     SMART_ACTION_END                                     ,
 };
 

@@ -57,7 +57,6 @@ void GuardAI::EnterEvadeMode()
 {
     if( !i_creature.IsAlive() )
     {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because he's dead [guid=%u]", i_creature.GetGUIDLow());
         i_creature.GetMotionMaster()->MoveIdle();
 
         i_state = STATE_NORMAL;
@@ -69,27 +68,6 @@ void GuardAI::EnterEvadeMode()
     }
 
     Unit* victim = ObjectAccessor::GetUnit(i_creature, i_victimGuid );
-
-    if( !victim  )
-    {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is non exist [guid=%u]", i_creature.GetGUIDLow());
-    }
-    else if( !victim ->IsAlive() )
-    {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is dead [guid=%u]", i_creature.GetGUIDLow());
-    }
-    else if( victim ->HasStealthAura() )
-    {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is using stealth [guid=%u]", i_creature.GetGUIDLow());
-    }
-    else if( victim ->IsInFlight() )
-    {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim is flying away [guid=%u]", i_creature.GetGUIDLow());
-    }
-    else
-    {
-        TC_LOG_DEBUG("FIXME","Creature stopped attacking because victim outran him [guid=%u]", i_creature.GetGUIDLow());
-    }
 
     i_creature.RemoveAllAuras();
     i_creature.DeleteThreatList();

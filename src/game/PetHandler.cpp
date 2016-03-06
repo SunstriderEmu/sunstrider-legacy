@@ -362,7 +362,7 @@ void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
     else
         data << uint8(0);
 
-    _player->GetSession()->SendPacket(&data);
+    _player->SendDirectMessage(&data);
 }
 
 bool WorldSession::CheckStableMaster(uint64 guid)
@@ -619,7 +619,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     {
         uint32 spell_id = itr->first;                       // Pet::removeSpell can invalidate iterator at erase NEW spell
         ++itr;
-        pet->removeSpell(spell_id);
+        pet->RemoveSpell(spell_id);
     }
 
     pet->SetTP(pet->GetLevel() * (pet->GetLoyaltyLevel() - 1));

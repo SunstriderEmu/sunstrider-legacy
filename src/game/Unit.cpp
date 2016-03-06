@@ -789,10 +789,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         return 0;
     }
 
-    TC_LOG_DEBUG("FIXME","DealDamageStart");
+    //TC_LOG_DEBUG("FIXME","DealDamageStart");
 
     uint32 health = pVictim->GetHealth();
-    TC_LOG_DEBUG("FIXME","deal dmg:%d to health:%d ",damage,health);
+    //TC_LOG_DEBUG("FIXME","deal dmg:%d to health:%d ",damage,health);
 
     // duel ends when player has 1 or less hp
     bool duel_hasEnded = false;
@@ -863,7 +863,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     
     if (health <= damage)
     {
-        TC_LOG_DEBUG("FIXME","DealDamage: victim just died");
+        //TC_LOG_DEBUG("FIXME","DealDamage: victim just died");
         Kill(pVictim, durabilityLoss);
         
         //Hook for OnPVPKill Event
@@ -876,7 +876,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
     else                                                    // if (health <= damage)
     {
-        TC_LOG_DEBUG("FIXME","DealDamageAlive");
+        //TC_LOG_DEBUG("FIXME","DealDamageAlive");
 
         pVictim->ModifyHealth(- (int32)damage);
 
@@ -1045,7 +1045,7 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
 {
     if(!spellInfo)
     {
-        TC_LOG_ERROR("FIXME","CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
+        TC_LOG_ERROR("spell","CastSpell: unknown spell by caster: %s %u)", (GetTypeId()==TYPEID_PLAYER ? "player (GUID:" : "creature (Entry:"),(GetTypeId()==TYPEID_PLAYER ? GetGUIDLow() : GetEntry()));
         return SPELL_FAILED_UNKNOWN;
     }
 
@@ -1077,8 +1077,8 @@ uint32 Unit::CastSpell(Unit* Victim,SpellInfo const *spellInfo, bool triggered, 
         targets.SetDestination(Victim);
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+    /*if (castItem)
+        TC_LOG_DEBUG("spell","WORLD: cast Item spellId - %i", spellInfo->Id);*/
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -1152,7 +1152,7 @@ uint32 Unit::CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Uni
 
     if(castItem)
     {
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+        //TC_LOG_DEBUG("spell","WORLD: cast Item spellId - %i", spellInfo->Id);
         spell->m_CastItem = castItem;
     }
 
@@ -1173,8 +1173,8 @@ uint32 Unit::CastSpell(float x, float y, float z, uint32 spellId, bool triggered
         return SPELL_FAILED_UNKNOWN;
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+/*    if (castItem)
+        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -1207,8 +1207,8 @@ uint32 Unit::CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *cas
         return SPELL_FAILED_UNKNOWN;
     }
 
-    if (castItem)
-        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id);
+  /*  if (castItem)
+        TC_LOG_DEBUG("FIXME","WORLD: cast Item spellId - %i", spellInfo->Id); */
 
     if(!originalCaster && triggeredByAura)
         originalCaster = triggeredByAura->GetCasterGUID();
@@ -6597,10 +6597,10 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
                  case 31828: // Rank 1
                  case 31829: // Rank 2
                  case 31830: // Rank 3
-                    TC_LOG_DEBUG("FIXME","Blessed life trigger!");
+                    //TC_LOG_DEBUG("spell","Blessed life trigger!");
                  break;
                  default:
-                     TC_LOG_ERROR("spell","Unit::HandleProcTriggerSpell: Spell %u miss posibly Blessed Life", auraSpellInfo->Id);
+                     TC_LOG_ERROR("spell","Unit::HandleProcTriggerSpell: Spell %u miss possibly Blessed Life", auraSpellInfo->Id);
                  return false;
              }
          }
@@ -12155,7 +12155,7 @@ void Unit::SendPetCastFail(uint32 spellid, uint8 msg)
     WorldPacket data(SMSG_PET_CAST_FAILED, (4+1));
     data << uint32(spellid);
     data << uint8(msg);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetActionFeedback (uint8 msg)
@@ -12166,7 +12166,7 @@ void Unit::SendPetActionFeedback (uint8 msg)
 
     WorldPacket data(SMSG_PET_ACTION_FEEDBACK, 1);
     data << uint8(msg);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetTalk (uint32 pettalk)
@@ -12178,7 +12178,7 @@ void Unit::SendPetTalk (uint32 pettalk)
     WorldPacket data(SMSG_PET_ACTION_SOUND, 8+4);
     data << uint64(GetGUID());
     data << uint32(pettalk);
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
@@ -12193,7 +12193,7 @@ void Unit::SendPetSpellCooldown (uint32 spellid, time_t cooltime)
     data << uint32(spellid);
     data << uint32(cooltime);
 
-    (owner->ToPlayer())->GetSession()->SendPacket(&data);
+    (owner->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Unit::SendPetAIReaction()
@@ -12271,7 +12271,7 @@ void Unit::SetStandState(uint8 state)
     {
         WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
         data << (uint8)state;
-        (this->ToPlayer())->GetSession()->SendPacket(&data);
+        (this->ToPlayer())->SendDirectMessage(&data);
     }
 }
 
@@ -12902,7 +12902,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             (pVictim->ToPlayer())->DurabilityLossAll(0.10f,false);
             // durability lost message
             WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 0);
-            (pVictim->ToPlayer())->GetSession()->SendPacket(&data);
+            (pVictim->ToPlayer())->SendDirectMessage(&data);
         }
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
@@ -13770,7 +13770,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         // Remove pet spell action bar
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
-        (charmer->ToPlayer())->GetSession()->SendPacket(&data);
+        (charmer->ToPlayer())->SendDirectMessage(&data);
     }
 }
 
@@ -14432,7 +14432,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        player->GetSession()->SendPacket(&data);
+        player->SendDirectMessage(&data);
 
         if (player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) || player->HasAuraType(SPELL_AURA_FLY))
             player->SetFlying(true, true);
@@ -14458,7 +14458,7 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         data << float(speedXY);                                 // Horizontal speed
         data << float(-speedZ);                                 // Z Movement speed (vertical)
 
-        ToPlayer()->GetSession()->SendPacket(&data);
+        ToPlayer()->SendDirectMessage(&data);
     }
 }
 
@@ -14904,7 +14904,7 @@ void Unit::YellToMap(std::string const& text, Language language)
     if (!players.isEmpty()) {
         for(Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr) {
             if (Player* plr = itr->GetSource())
-                plr->GetSession()->SendPacket(&data);
+                plr->SendDirectMessage(&data);
         }
     }
 }

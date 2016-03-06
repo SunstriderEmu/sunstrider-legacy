@@ -557,7 +557,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                     //uint8 acc_class = field[2].GetUInt8();
                 }
             }
-            /* TC LK
+#ifdef LICH_KING
             if (checkHeroicReqs && !hasHeroicReqLevel)
             {
                 SendCharCreate(CHAR_CREATE_LEVEL_REQUIREMENT);
@@ -565,7 +565,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 _charCreateCallback.Reset();
                 return;
             }
-            */
+#endif
             if (createInfo->Data.rpos() < createInfo->Data.wpos())
             {
                 uint8 unk;
@@ -706,14 +706,14 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 
     if(PlayerLoading() || GetPlayer() != NULL)
     {
-        TC_LOG_ERROR("FIXME","Player tryes to login again, AccountId = %d",GetAccountId());
+        //TC_LOG_ERROR("network.opcode","Player tryes to login again, AccountId = %d",GetAccountId());
         return;
     }
 
     m_playerLoading = true;
     uint64 playerGuid = 0;
 
-    TC_LOG_DEBUG( "FIXME","WORLD: Recvd Player Logon Message" );
+   // TC_LOG_DEBUG( "network.opcode","WORLD: Recvd Player Logon Message" );
 
     recvData >> playerGuid;
 
@@ -777,7 +777,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         if(sWorld->getConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)
             chH.PSendSysMessage(_FULLVERSION);
 
-        TC_LOG_DEBUG( "network", "WORLD: Sent server info" );
+        //TC_LOG_DEBUG( "network", "WORLD: Sent server info" );
     }
 
     //warn player if no mail associated to account
@@ -994,6 +994,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if (firstLogin)
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_FIRST);
 
+
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_SET_DESERTER)) {
         pCurrChar->CastSpell(pCurrChar, 26013, true);
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_SET_DESERTER);
@@ -1098,11 +1099,9 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+1);
 
-    TC_LOG_DEBUG("FIXME", "WORLD: Received CMSG_SET_FACTION_ATWAR" );
+   // TC_LOG_DEBUG("network.opcode", "WORLD: Received CMSG_SET_FACTION_ATWAR" );
 
     uint32 repListID;
     uint8  flag;
@@ -1124,8 +1123,6 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
 void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 {
-    
-    
     //CHECK_PACKET_SIZE(recvData,4+4);
 
     //TC_LOG_DEBUG("FIXME","WORLD SESSION: HandleSetFactionCheat");
@@ -1153,9 +1150,7 @@ void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMeetingStoneInfo( WorldPacket & /*recvData*/ )
 {
-    
-    
-    TC_LOG_DEBUG("FIXME", "WORLD: Received CMSG_MEETING_STONE_INFO" );
+   // TC_LOG_DEBUG("network.opcode", "WORLD: Received CMSG_MEETING_STONE_INFO" );
 
     WorldPacket data(SMSG_MEETINGSTONE_SETQUEUE, 5);
     data << uint32(0) << uint8(6);
@@ -1180,27 +1175,21 @@ void WorldSession::HandleTutorialFlag(WorldPacket& recvData)
 
 void WorldSession::HandleTutorialClear(WorldPacket & /*recvData*/)
 {
-    
-
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0xFFFFFFFF);
 }
 
 void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 {
-    
-    
     for (uint8 i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
         SetTutorialInt(i, 0x00000000);
 }
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4);
 
-    TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_SET_WATCHED_FACTION");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_WATCHED_FACTION");
     uint32 fact;
     recvData >> fact;
     GetPlayer()->SetUInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fact);
@@ -1208,11 +1197,9 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+1);
 
-    TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_SET_FACTION_INACTIVE");
+   // TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_FACTION_INACTIVE");
     uint32 replistid;
     uint8 inactive;
     recvData >> replistid >> inactive;
@@ -1226,24 +1213,18 @@ void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleShowingHelmOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
-    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_HELM for %s", _player->GetName().c_str());
+    //TC_LOG_DEBUG("network.opcode","CMSG_TOGGLE_HELM for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_HELM);
 }
 
 void WorldSession::HandleShowingCloakOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
-    TC_LOG_DEBUG("FIXME","CMSG_TOGGLE_CLOAK for %s", _player->GetName().c_str());
+   // TC_LOG_DEBUG("network.opcode","CMSG_TOGGLE_CLOAK for %s", _player->GetName().c_str());
     _player->ToggleFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK);
 }
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 8+1);
 
     CharacterRenameInfo renameInfo;
@@ -1295,7 +1276,6 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
         return;
     }
 
-
     Field* fields = result->Fetch();
 
     uint32 guidLow      = fields[0].GetUInt32();
@@ -1316,8 +1296,6 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
 void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
-    
-    
     uint64 guid;
 
     CHECK_PACKET_SIZE(recvData, 8);

@@ -192,7 +192,7 @@ void Weather::SendWeatherUpdateToPlayer(Player *player)
     data << uint32(GetWeatherState());
     data << (float)m_grade;
     data << uint8(0); // 1 for instant change, 0 for smooth change
-    player->GetSession()->SendPacket( &data );
+    player->SendDirectMessage( &data );
 }
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
@@ -202,7 +202,7 @@ void Weather::SendFineWeatherUpdateToPlayer(Player *player)
     data << (uint32)WEATHER_STATE_FINE;
     data << (float)0.0f;
     data << uint8(0); // 1 for instant change, 0 for smooth change
-    player->GetSession()->SendPacket( &data );
+    player->SendDirectMessage( &data );
 }
 
 /// Send the new weather to all players in the zone
@@ -265,7 +265,7 @@ bool Weather::UpdateWeather()
             wthstr = "fine";
             break;
     }
-    TC_LOG_DEBUG("FIXME","Change the weather of zone %u to %s.", m_zone, wthstr);
+    //TC_LOG_DEBUG("misc","Changed the weather of zone %u to %s.", m_zone, wthstr);
 
     return true;
 }

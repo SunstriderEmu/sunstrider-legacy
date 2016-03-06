@@ -261,7 +261,8 @@ class ChatHandler
         bool HandleReloadAccessRequirementCommand(const char* args);
         bool HandleReloadEventScriptsCommand(const char* args);
         bool HandleReloadCommandCommand(const char* args);
-        bool HandleReloadCreatureText(const char* args);
+        bool HandleReloadCreatureTextCommand(const char* args);
+        bool HandleReloadCreatureTemplateCommand(const char* args);
         bool HandleReloadCreatureQuestStartersCommand(const char* args);
         bool HandleReloadCreatureQuestEndersCommand(const char* args);
         bool HandleReloadCreatureLinkedRespawnCommand(const char* args);

@@ -74,12 +74,20 @@ bool ChatHandler::HandleReloadCommand(const char* arg)
     return false;
 }
 
-bool ChatHandler::HandleReloadCreatureText(const char* /*args*/)
+bool ChatHandler::HandleReloadCreatureTextCommand(const char* /*args*/)
 {
     TC_LOG_INFO("command","Re-Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
     sCreatureTextMgr->LoadCreatureTextLocales();
     SendGlobalGMSysMessage("Creature Texts reloaded.");
+    return true;
+}
+
+bool ChatHandler::HandleReloadCreatureTemplateCommand(const char* /*args*/)
+{
+    TC_LOG_INFO("command", "Re-Loading Creature Templates...");
+    sObjectMgr->LoadCreatureTemplates(true);
+    SendGlobalGMSysMessage("Creature Templates reloaded.");
     return true;
 }
 
@@ -1122,7 +1130,7 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
     for(uint32 spell=min_id;spell<max_id;spell++)
     {
         if (target->HasSpell(spell))
-            target->removeSpell(spell);
+            target->RemoveSpell(spell);
         else
             SendSysMessage(LANG_FORGET_SPELL);
     }
@@ -1158,7 +1166,7 @@ bool ChatHandler::HandleCooldownCommand(const char* args)
         WorldPacket data( SMSG_CLEAR_COOLDOWN, (4+8) );
         data << uint32(spell_id);
         data << uint64(target->GetGUID());
-        target->GetSession()->SendPacket(&data);
+        target->SendDirectMessage(&data);
         target->RemoveSpellCooldown(spell_id);
         PSendSysMessage(LANG_REMOVE_COOLDOWN, spell_id, target==m_session->GetPlayer() ? GetTrinityString(LANG_YOU) : target->GetName().c_str());
     }
@@ -1788,7 +1796,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
             continue;
         }
 
-        m_session->GetPlayer()->learnSpell(spell);
+        m_session->GetPlayer()->LearnSpell(spell);
     }
 
     SendSysMessage(LANG_COMMAND_LEARN_MANY_SPELLS);
@@ -1830,7 +1838,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
             continue;
         }
 
-        m_session->GetPlayer()->learnSpell(spell);
+        m_session->GetPlayer()->LearnSpell(spell);
     }
 
     SendSysMessage(LANG_LEARNING_GM_SKILLS);
@@ -1857,7 +1865,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     do
     {
         node = sSpellMgr->GetSpellChainNode(spellid);
-        player->learnSpell(spellid);
+        player->LearnSpell(spellid);
         if (!node)
             break;
         spellid=node->next;
@@ -1905,7 +1913,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
             continue;
 
         // learn highest rank of talent
-        player->learnSpell(spellid);
+        player->LearnSpell(spellid);
 
         // and learn all non-talent spell ranks (recursive by tree)
         learnAllHighRanks(player,spellid);
@@ -1921,7 +1929,7 @@ bool ChatHandler::HandleLearnAllLangCommand(const char* /*args*/)
 
     // skipping UNIVERSAL language (0)
     for(int i = 1; i < LANGUAGES_COUNT; ++i)
-        m_session->GetPlayer()->learnSpell(lang_description[i].spell_id);
+        m_session->GetPlayer()->LearnSpell(lang_description[i].spell_id);
 
     SendSysMessage(LANG_COMMAND_LEARN_ALL_LANG);
     return true;
@@ -1994,7 +2002,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    targetPlayer->learnSpell(spell);
+    targetPlayer->LearnSpell(spell);
 
     return true;
 }
@@ -2613,7 +2621,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
     result=WorldDatabase.PQuery("SELECT COUNT(guid) FROM creature WHERE id='%u'",cr_id);
     if(result)
     {
-        cr_count = (*result)[0].GetUInt32();
+        cr_count = (*result)[0].GetUInt64();
     }
 
     if(m_session)
@@ -7861,7 +7869,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
                 {
                     WorldPacket data;
                     ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr->second->GetSession()->GetPlayer(),itr->second->GetSession()->GetPlayer(), msg, 0, channel);
-                    itr->second->GetSession()->SendPacket(&data);
+                    itr->second->SendDirectMessage(&data);
                 }
             }
         }
@@ -8227,6 +8235,8 @@ bool ChatHandler::HandleReloadSpellTemplates(const char* args)
     TC_LOG_INFO("command","Re-loading spell templates...");
     sObjectMgr->LoadSpellTemplates();
     sSpellMgr->LoadSpellInfoStore(true);
+    //also reload spell_linked as this can alter spell info too
+    sSpellMgr->LoadSpellLinked();
     SendGlobalGMSysMessage("DB table `spell_template` (spell definitions) reloaded.");
     return true;
 }

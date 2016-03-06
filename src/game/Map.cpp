@@ -1873,7 +1873,7 @@ void Map::SendInitSelf( Player * player)
 
     WorldPacket packet;
     data.BuildPacket(&packet, hasTransport);
-    player->GetSession()->SendPacket(&packet);
+    player->SendDirectMessage(&packet);
 }
 
 void Map::SendInitTransports( Player * player)
@@ -1890,7 +1890,7 @@ void Map::SendInitTransports( Player * player)
 
     WorldPacket packet;
     transData.BuildPacket(&packet,hasTransport);
-    player->GetSession()->SendPacket(&packet);
+    player->SendDirectMessage(&packet);
 }
 
 void Map::SendRemoveTransports(Player* player)
@@ -1903,7 +1903,7 @@ void Map::SendRemoveTransports(Player* player)
 
     WorldPacket packet;
     transData.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    player->SendDirectMessage(&packet);
 }
 
 
@@ -2012,7 +2012,7 @@ uint32 Map::GetPlayersCountExceptGMs() const
 void Map::SendToPlayers(WorldPacket* data) const
 {
     for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-        itr->GetSource()->GetSession()->SendPacket(data);
+        itr->GetSource()->SendDirectMessage(data);
 }
 
 bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
@@ -2325,7 +2325,7 @@ bool InstanceMap::Add(Player *player)
                     {
                         WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
                         data << uint32(0);
-                        player->GetSession()->SendPacket(&data);
+                        player->SendDirectMessage(&data);
                         player->BindToInstance(mapSave, true);
                     }
                 }
@@ -2494,7 +2494,7 @@ void InstanceMap::PermBindAllPlayers(Player *player)
             plr->BindToInstance(save, true);
             WorldPacket data(SMSG_INSTANCE_SAVE_CREATED, 4);
             data << uint32(0);
-            plr->GetSession()->SendPacket(&data);
+            plr->SendDirectMessage(&data);
         }
 
         // if the leader is not in the instance the group will not get a perm bind

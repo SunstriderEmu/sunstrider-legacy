@@ -440,7 +440,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
             fields = query->Fetch();
             spell_id = fields[0].GetUInt32();
 
-            player->learnSpell(spell_id);
+            player->LearnSpell(spell_id);
         } while (query->NextRow());
     }
 
@@ -523,7 +523,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
                         spell_id = fields[0].GetUInt32();
 
                         if (spell_id > 0)
-                            player->learnSpell(spell_id);
+                            player->LearnSpell(spell_id);
                     } while (query->NextRow());
                 }
             }
@@ -554,7 +554,7 @@ bool ChatHandler::HandleServerMotdCommand(const char* /*args*/)
     if (price != 0)
         LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Récupérations' WHERE id = %u", credits - price, time(NULL), account_id);
 
-    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
+  //  CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), "Récupération", time(NULL));
 
     // On met à jour les champs de récupération
     CharacterDatabase.PExecute("UPDATE character_recovery SET done = %u WHERE id = %u", player_guid, recovery_id);
@@ -777,7 +777,7 @@ bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, u
             }
 
             if (!player->HasSpell(spell))
-                player->learnSpell(spell);
+                player->LearnSpell(spell);
         } else if (v[0] == "money") {
             /* money, v[1] == money count, in pc */
             uint32 money = atoi(v[1].c_str());
@@ -1271,7 +1271,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             }
 
             if (!player->HasSpell(spell))
-                player->learnSpell(spell);
+                player->LearnSpell(spell);
         } else if (v[0] == "add") {
             if (v[1] == "level") {
                 int add_levels = atoi(v[2].c_str());
@@ -1411,7 +1411,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
 
     if (can_take_credits == true) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(NULL), account_id);
-        CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
+     //   CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
         player->SaveToDB();
 
         return true;
@@ -1479,7 +1479,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     uint32 t_guid = fields[0].GetUInt32();
     uint32 t_account = fields[1].GetUInt32();
-    uint32 t_race = fields[2].GetUInt32();
+    uint32 t_race = fields[2].GetUInt8();
     uint8 t_gender = fields[3].GetUInt8();
     uint32 t_playerBytes = fields[4].GetUInt32();
     uint32 t_playerBytes2 = fields[5].GetUInt32();
@@ -1516,7 +1516,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     }
 
     LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
-    CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
+   // CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
 
     m_session->GetPlayer()->SaveToDB();
 //    m_session->KickPlayer();
@@ -1783,16 +1783,16 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     for (spell_itr = myInfo->spell.begin(); spell_itr != myInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell)
-            plr->removeSpell(tspell,false);
+            plr->RemoveSpell(tspell,false);
     }
     // Add new race starting spells
     for (spell_itr = targetInfo->spell.begin(); spell_itr != targetInfo->spell.end(); ++spell_itr) {
         uint16 tspell = spell_itr->first;
         if (tspell) {
             if (!spell_itr->second)               // don't care about passive spells or loading case
-                plr->addSpell(tspell,spell_itr->second);
+                plr->AddSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                plr->learnSpell(tspell);
+                plr->LearnSpell(tspell);
         }
     }
     
@@ -1885,22 +1885,22 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (dest_team == BG_TEAM_ALLIANCE) {
                 if (spell_alliance == 0) {
                     if (plr->HasSpell(spell_horde))
-                        plr->removeSpell(spell_horde);
+                        plr->RemoveSpell(spell_horde);
                 } else {
                     if (plr->HasSpell(spell_horde)) {
-                        plr->removeSpell(spell_horde);
-                        plr->learnSpell(spell_alliance);
+                        plr->RemoveSpell(spell_horde);
+                        plr->LearnSpell(spell_alliance);
                     }
                 }
             }
             else {
                 if (spell_horde == 0) {
                     if (plr->HasSpell(spell_alliance))
-                        plr->removeSpell(spell_alliance);
+                        plr->RemoveSpell(spell_alliance);
                 } else {
                     if (plr->HasSpell(spell_alliance)) {
-                        plr->removeSpell(spell_alliance);
-                        plr->learnSpell(spell_horde);
+                        plr->RemoveSpell(spell_alliance);
+                        plr->LearnSpell(spell_horde);
                     }
                 }
             }
@@ -1920,10 +1920,10 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 uint32 to = fields[1].GetUInt32();
 
                 if (plr->HasSpell(from))
-                    plr->removeSpell(from);
+                    plr->RemoveSpell(from);
 
                 if (to != 0)
-                    plr->learnSpell(to);
+                    plr->LearnSpell(to);
 
             } while (result->NextRow());
         }
@@ -2080,7 +2080,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
         LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
-        trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
+      //  trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
     }
 
     CharacterDatabase.CommitTransaction(trans);

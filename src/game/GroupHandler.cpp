@@ -170,7 +170,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
     // ok, we do it
     WorldPacket data(SMSG_GROUP_INVITE, 10);                // guess size
     data << GetPlayer()->GetName();
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 
     SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_OK);
 }
@@ -250,7 +250,7 @@ void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
 
     WorldPacket data( SMSG_GROUP_DECLINE, 10 );             // guess size
     data << GetPlayer()->GetName();
-    leader->GetSession()->SendPacket( &data );
+    leader->SendDirectMessage( &data );
 }
 
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
@@ -441,7 +441,7 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
     recvData >> NumberOfPlayers;
     recvData >> Choise;                                    //0: pass, 1: need, 2: greed
 
-    //TC_LOG_DEBUG("FIXME","WORLD RECIEVE CMSG_LOOT_ROLL, From:%u, Numberofplayers:%u, Choise:%u", (uint32)Guid, NumberOfPlayers, Choise);
+    //TC_LOG_DEBUG("network.opcode","WORLD RECIEVE CMSG_LOOT_ROLL, From:%u, Numberofplayers:%u, Choise:%u", (uint32)Guid, NumberOfPlayers, Choise);
 
     Group* group = GetPlayer()->GetGroup();
     if(!group)
@@ -453,8 +453,6 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+4);
 
     if(!GetPlayer()->GetGroup())
@@ -464,7 +462,7 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
     recvData >> x;
     recvData >> y;
 
-    //TC_LOG_DEBUG("FIXME","Received opcode MSG_MINIMAP_PING X: %f, Y: %f", x, y);
+    //TC_LOG_DEBUG("network.opcode","Received opcode MSG_MINIMAP_PING X: %f, Y: %f", x, y);
 
     /** error handling **/
     /********************/
@@ -479,8 +477,6 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+4);
 
     uint32 minimum, maximum, roll;
@@ -495,7 +491,7 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
     // everything's fine, do it
     roll = urand(minimum, maximum);
 
-    //TC_LOG_DEBUG("FIXME","ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
+    //TC_LOG_DEBUG("network.opcode","ROLL: MIN: %u, MAX: %u, ROLL: %u", minimum, maximum, roll);
 
     WorldPacket data(MSG_RANDOM_ROLL, 4+4+4+8);
     data << minimum;
@@ -988,15 +984,13 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 
 /*!*/void WorldSession::HandleRequestRaidInfoOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     // every time the player checks the character screen
     _player->SendRaidInfo();
 }
 
 /*void WorldSession::HandleGroupCancelOpcode( WorldPacket & recvData )
 {
-    TC_LOG_DEBUG("FIXME", "WORLD: got CMSG_GROUP_CANCEL." );
+    TC_LOG_DEBUG("network.opcode", "WORLD: got CMSG_GROUP_CANCEL." );
 }*/
 
 void WorldSession::HandleOptOutOfLootOpcode( WorldPacket & recvData )

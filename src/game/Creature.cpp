@@ -460,13 +460,6 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
 
 void Creature::Update(uint32 diff)
 {
-    if(m_GlobalCooldown <= diff)
-        m_GlobalCooldown = 0;
-    else
-        m_GlobalCooldown -= diff;
-        
-    m_timeSinceSpawn += diff;
-        
     if (IsAIEnabled && TriggerJustRespawned)
     {
         TriggerJustRespawned = false;
@@ -478,13 +471,6 @@ void Creature::Update(uint32 diff)
         if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
             ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this, GetEntry());
     }
-
-    UpdateProhibitedSchools(diff);
-    DecreaseTimer(m_stealthWarningCooldown, diff);
-
-    UpdateMovementFlags();
-    
-    Unit::Update(diff); //this may change m_deathState, so keep it before the switch
 
     switch(m_deathState)
     {
@@ -556,6 +542,25 @@ void Creature::Update(uint32 diff)
         }
         case ALIVE:
         {
+            Unit::Update(diff);
+    
+            // creature can be dead after Unit::Update call
+            // CORPSE/DEAD state will processed at next tick (in other case death timer will be updated unexpectedly)
+            if (!IsAlive())
+                break;
+
+            if (m_GlobalCooldown <= diff)
+                m_GlobalCooldown = 0;
+            else
+                m_GlobalCooldown -= diff;
+
+            m_timeSinceSpawn += diff;
+
+            UpdateProhibitedSchools(diff);
+            DecreaseTimer(m_stealthWarningCooldown, diff);
+
+            UpdateMovementFlags();
+
             if (m_corpseRemoveTime <= time(NULL))
             {
                 RemoveCorpse(false);
@@ -627,9 +632,6 @@ void Creature::Update(uint32 diff)
                 } else m_relocateTimer -= diff;
             }
             
-            if (m_formation)
-                GetFormation()->CheckLeaderDistance(this);
-                
             if ((GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_HEALTH_RESET) == 0)
                 if(m_regenTimer > 0)
                 {
@@ -1494,7 +1496,11 @@ void Creature::SetDeathState(DeathState s)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
                 SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
 
-        if ((CanFly() || IsFlying()))
+        //Dismiss group if is leader
+        if (m_formation && m_formation->getLeader() == this)
+            m_formation->FormationReset(true);
+
+        if ((CanFly() || IsFlying()) && !HasUnitMovementFlag(MOVEMENTFLAG_SWIMMING))
             GetMotionMaster()->MoveFall();
 
         Unit::SetDeathState(CORPSE);
@@ -1538,7 +1544,7 @@ void Creature::Respawn()
         if (m_DBTableGuid)
             sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
 
-        TC_LOG_DEBUG("FIXME","Respawning...");
+        TC_LOG_DEBUG("entities.creature","Respawning...");
         m_respawnTime = 0;
         lootForPickPocketed = false;
         lootForBody         = false;
@@ -2645,6 +2651,7 @@ void Creature::UpdateMovementFlags()
 
     bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + 0.05f) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - 0.05f)); // Can be underground too, prevent the falling
 
+    bool canFly = CanFly();
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())
@@ -2661,7 +2668,7 @@ void Creature::UpdateMovementFlags()
         SetDisableGravity(false);
     }
 
-    if (!isInAir)
+    if (!isInAir || canFly)
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     SetSwim(CanSwim() && IsInWater());

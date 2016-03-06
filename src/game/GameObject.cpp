@@ -343,7 +343,7 @@ void GameObject::Update(uint32 diff)
                             WorldPacket packet;
                             BuildValuesUpdateBlockForPlayer(&udata,(caster->ToPlayer()));
                             udata.BuildPacket(&packet);
-                            (caster->ToPlayer())->GetSession()->SendPacket(&packet);
+                            (caster->ToPlayer())->SendDirectMessage(&packet);
 
                             SendCustomAnim(GetGoAnimProgress());
                         }
@@ -393,7 +393,7 @@ void GameObject::Update(uint32 diff)
                                 }
 
                                 WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
-                                (caster->ToPlayer())->GetSession()->SendPacket(&data);
+                                (caster->ToPlayer())->SendDirectMessage(&data);
                             }
                             // can be delete
                             m_lootState = GO_JUST_DEACTIVATED;
@@ -1273,7 +1273,7 @@ void GameObject::Use(Unit* user)
                 {
                     WorldPacket data(SMSG_GAMEOBJECT_PAGETEXT, 8);
                     data << GetGUID();
-                    player->GetSession()->SendPacket(&data);
+                    player->SendDirectMessage(&data);
                 } else if (info->goober.gossipID)
                 {
                     player->PrepareGossipMenu(this, info->goober.gossipID);
@@ -1312,7 +1312,7 @@ void GameObject::Use(Unit* user)
             {
                 WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
                 data << info->camera.cinematicId;
-                player->GetSession()->SendPacket(&data);
+                player->SendDirectMessage(&data);
             }
             return;
             
@@ -1346,13 +1346,13 @@ void GameObject::Use(Unit* user)
 
                     //provide error, no fishable zone or area should be 0
                     if(!zone_skill)
-                        TC_LOG_ERROR("FIXME","Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
+                        TC_LOG_ERROR("entities.gameobject","Fishable areaId %u are not properly defined in `skill_fishing_base_level`.",subzone);
 
                     int32 skill = player->GetSkillValue(SKILL_FISHING);
                     int32 chance = skill - zone_skill + 5;
                     int32 roll = GetMap()->irand(1,100);
 
-                    TC_LOG_DEBUG("FIXME","Fishing check (skill: %i zone min skill: %i chance %i roll: %i",skill,zone_skill,chance,roll);
+                    TC_LOG_DEBUG("entities.gameobject","Fishing check (skill: %i zone min skill: %i chance %i roll: %i",skill,zone_skill,chance,roll);
 
                     if(skill >= zone_skill && chance >= roll)
                     {
@@ -1378,7 +1378,7 @@ void GameObject::Use(Unit* user)
                         SetLootState(GO_JUST_DEACTIVATED);
 
                         WorldPacket data(SMSG_FISH_ESCAPED, 0);
-                        player->GetSession()->SendPacket(&data);
+                        player->SendDirectMessage(&data);
                     }
                     break;
                 }
@@ -1389,7 +1389,7 @@ void GameObject::Use(Unit* user)
                     SetLootState(GO_JUST_DEACTIVATED);
 
                     WorldPacket data(SMSG_FISH_NOT_HOOKED, 0);
-                    player->GetSession()->SendPacket(&data);
+                    player->SendDirectMessage(&data);
                     break;
                 }
             }
@@ -1581,7 +1581,7 @@ void GameObject::Use(Unit* user)
             break;
         }
         default:
-            TC_LOG_ERROR("FIXME","Unknown Object Type %u", GetGoType());
+            TC_LOG_ERROR("network.opcode","Unknown Object Type %u", GetGoType());
             break;
     }
 
@@ -1592,7 +1592,7 @@ void GameObject::Use(Unit* user)
     if(!spellInfo)
     {
         if(user->GetTypeId()!=TYPEID_PLAYER || !sOutdoorPvPMgr->HandleCustomSpell(user->ToPlayer(),spellId,this))
-            TC_LOG_ERROR("FIXME","WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u )", spellId,GetEntry(),GetGoType());
+            TC_LOG_ERROR("sql.sql","WORLD: unknown spell id %u at use action for gameobject (Entry: %u GoType: %u )", spellId,GetEntry(),GetGoType());
 
         return;
     }

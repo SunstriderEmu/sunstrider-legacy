@@ -197,7 +197,7 @@ bool SpectatorAddonMsg::SendPacket(SpectatorAddonMsg msg, uint64 receiver)
 
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_WHISPER, LANG_ADDON, nullptr, nullptr, addonData);
-    rPlayer->GetSession()->SendPacket(&data);
+    rPlayer->SendDirectMessage(&data);
 
     return true;
 }

@@ -613,7 +613,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
             WorldPacket data( MSG_QUEST_PUSH_RESULT, (8+1) );
             data << uint64(guid);
             data << uint8(msg);                             // valid values: 0-8
-            pPlayer->GetSession()->SendPacket(&data);
+            pPlayer->SendDirectMessage(&data);
             _player->SetDivider( 0 );
         }
     }

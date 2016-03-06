@@ -64,17 +64,15 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 
     WorldPacket data(SMSG_DUEL_COUNTDOWN, 4);
     data << (uint32)3000;                                   // 3 seconds
-    pl->GetSession()->SendPacket(&data);
-    plTarget->GetSession()->SendPacket(&data);
+    pl->SendDirectMessage(&data);
+    plTarget->SendDirectMessage(&data);
 }
 
 void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket,8);
 
-    //TC_LOG_DEBUG("FIXME", "WORLD: received CMSG_DUEL_CANCELLED" );
+    //TC_LOG_DEBUG("network.opcode", "WORLD: received CMSG_DUEL_CANCELLED" );
 
     // no duel requested
     if(!GetPlayer()->duel)

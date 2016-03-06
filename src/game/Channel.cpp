@@ -734,7 +734,7 @@ void Channel::SendToAll(WorldPacket *data, uint64 p)
         if(plr)
         {
             if(!p || !plr->GetSocial()->HasIgnore(GUID_LOPART(p)))
-                plr->GetSession()->SendPacket(data);
+                plr->SendDirectMessage(data);
         }
     }
 }
@@ -747,7 +747,7 @@ void Channel::SendToAllButOne(WorldPacket *data, uint64 who)
         {
             Player *plr = sObjectMgr->GetPlayer(i->first);
             if(plr)
-                plr->GetSession()->SendPacket(data);
+                plr->SendDirectMessage(data);
         }
     }
 }
@@ -756,7 +756,7 @@ void Channel::SendToOne(WorldPacket *data, uint64 who)
 {
     Player *plr = sObjectMgr->GetPlayer(who);
     if(plr)
-        plr->GetSession()->SendPacket(data);
+        plr->SendDirectMessage(data);
 }
 
 void Channel::Voice(uint64 guid1, uint64 guid2)

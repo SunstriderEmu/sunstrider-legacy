@@ -612,7 +612,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 
     uint64 iguid;
     uint8 reason;
-    //TC_LOG_DEBUG("FIXME","WORLD: Received CMSG_CHAT_IGNORED");
+    //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_CHAT_IGNORED");
 
     recvData >> iguid;
     recvData >> reason; //not 100% sure but this is from 4.0x
@@ -623,7 +623,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_IGNORED, LANG_UNIVERSAL, nullptr,  GetPlayer(), GetPlayer()->GetName().c_str());
-    player->GetSession()->SendPacket(&data);
+    player->SendDirectMessage(&data);
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)

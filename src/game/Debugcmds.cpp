@@ -258,9 +258,9 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
         }
     }
     ifs.close();
-    TC_LOG_DEBUG("FIXME","Sending opcode %u", data.GetOpcode());
+    TC_LOG_DEBUG("network.opcode","Sending opcode %u", data.GetOpcode());
     data.hexlike();
-    (unit->ToPlayer())->GetSession()->SendPacket(&data);
+    (unit->ToPlayer())->SendDirectMessage(&data);
     PSendSysMessage(LANG_COMMAND_OPCODESENT, data.GetOpcode(), unit->GetName().c_str());
     return true;
 }
@@ -651,7 +651,7 @@ bool ChatHandler::HandleDebugCinematic(const char* args)
 
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(atoi(args));
-    m_session->GetPlayer()->GetSession()->SendPacket(&data);
+    m_session->GetPlayer()->SendDirectMessage(&data);
     return true;
 }
 

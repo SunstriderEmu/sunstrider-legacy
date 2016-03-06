@@ -1352,9 +1352,10 @@ void SpellMgr::LoadSpellChains()
         SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(spell_id);
         if (!SpellInfo)
             continue;
+        /* Disable this as this will break spell ranks if rank locale is not properly loaded
         std::string sRank = SpellInfo->Rank[sWorld->GetDefaultDbcLocale()];
         if(sRank.empty())
-            continue;
+            continue;*/
         
         //exception to polymorph spells-make pig and turtle other chain than sheep
         if ((SpellInfo->SpellFamilyName==SPELLFAMILY_MAGE) && (SpellInfo->SpellFamilyFlags & 0x1000000) && (SpellInfo->SpellIconID!=82))
@@ -3217,7 +3218,7 @@ void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
             if (itr == spellStore.end())
                 continue;
 
-            //replace old object by a new one, but keep it's adress
+            //replace old object by a new one, but keep it's adress, so that code having already pointers to some SpellInfos can continue.
             *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
         }
     }

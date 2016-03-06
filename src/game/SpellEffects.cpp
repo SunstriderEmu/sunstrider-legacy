@@ -1175,7 +1175,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                         data << unitTarget->GetGUID();
-                        (m_originalCaster->ToPlayer())->GetSession()->SendPacket( &data );
+                        (m_originalCaster->ToPlayer())->SendDirectMessage( &data );
                     }
                     return;
                 }
@@ -2049,7 +2049,7 @@ void Spell::EffectDummy(uint32 i)
                     data << float(sinf(m_caster->GetOrientation()+M_PI));
                     data << float(15);
                     data << float(-7.0f);
-                    (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                    (m_caster->ToPlayer())->SendDirectMessage(&data);
                     return;
                 }
                 case 23989:                                 //Readiness talent
@@ -2168,7 +2168,7 @@ void Spell::EffectDummy(uint32 i)
                             WorldPacket data(SMSG_CLEAR_COOLDOWN, (4+8));
                             data << uint32(m_spellInfo->Id);
                             data << uint64(m_caster->GetGUID());
-                            (m_caster->ToPlayer())->GetSession()->SendPacket(&data);
+                            (m_caster->ToPlayer())->SendDirectMessage(&data);
                         }
 
                         SendCastResult(SPELL_FAILED_BAD_TARGETS);
@@ -2964,7 +2964,7 @@ void Spell::EffectUnlearnSpecialization( uint32 i )
     Player *_player = unitTarget->ToPlayer();
     uint32 spellToUnlearn = m_spellInfo->Effects[i].TriggerSpell;
 
-    _player->removeSpell(spellToUnlearn);
+    _player->RemoveSpell(spellToUnlearn);
 }
 
 void Spell::EffectPowerDrain(uint32 i)
@@ -3119,7 +3119,7 @@ void Spell::EffectPowerBurn(uint32 i)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 
     //from TC2 :
     m_effectExecuteData[effIndex] = new ByteBuffer(0x20);
@@ -3671,16 +3671,16 @@ void Spell::EffectOpenLock(uint32 /*i*/)
 {
     if(!m_caster || m_caster->GetTypeId() != TYPEID_PLAYER)
     {
-        TC_LOG_ERROR("FIXME", "WORLD: Open Lock - No Player Caster!");
+        TC_LOG_ERROR("network.opcode", "WORLD: Open Lock - No Player Caster!");
         return;
     }
 
     Player* player = m_caster->ToPlayer();
 
-    LootType loottype = LOOT_CORPSE;
     uint32 lockId = 0;
     uint64 guid = 0;
     
+    //Hand of Iruxos
     if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->KilledMonster(11937, 0);
 
@@ -3727,9 +3727,11 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
     else
     {
-        TC_LOG_ERROR("FIXME", "WORLD: Open Lock - No GameObject/Item Target!");
+        TC_LOG_ERROR("network.opcode", "WORLD: Open Lock - No GameObject/Item Target!");
         return;
     }
+
+    LootType loottype = LOOT_CORPSE;
 
     if(!lockId)                                             // possible case for GO and maybe for items.
     {
@@ -3749,7 +3751,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     }
 
     // check key
-    for(int i = 0; i < 5; ++i)
+    for(int i = 0; i < MAX_LOCK_CASE; ++i)
     {
         // type==1 This means lockInfo->key[i] is an item
         if(lockInfo->Type[i]==LOCK_KEY_ITEM && lockInfo->Index[i] && m_CastItem && m_CastItem->GetEntry()==lockInfo->Index[i])
@@ -3758,8 +3760,6 @@ void Spell::EffectOpenLock(uint32 /*i*/)
                 gameObjTarget->setManualUnlocked();
 
             SendLoot(guid, loottype);
-            if(gameObjTarget)
-                gameObjTarget->Use(player);
             return;
         }
     }
@@ -3793,7 +3793,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         return;
     }
 
-    if ( SkillId )
+    if ( SkillId != SKILL_NONE )
     {
         loottype = LOOT_SKINNING;
         if ( player->GetSkillValue(SkillId) + spellSkillBonus < reqSkillValue )
@@ -3803,28 +3803,25 @@ void Spell::EffectOpenLock(uint32 /*i*/)
         }
 
         // update skill if really known
-        uint32 SkillValue = player->GetPureSkillValue(SkillId);
-        if(SkillValue)                                      // non only item base skill
+        uint32 pureSkillValue = player->GetPureSkillValue(SkillId);
+        if(pureSkillValue)                                      // non only item base skill
         {
             if(gameObjTarget)
             {
                 // Allow one skill-up until respawned
                 if ( !gameObjTarget->IsInSkillupList( player->GetGUIDLow() ) &&
-                    player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue) )
+                    player->UpdateGatherSkill(SkillId, pureSkillValue, reqSkillValue) )
                     gameObjTarget->AddToSkillupList( player->GetGUIDLow() );
             }
             else if(itemTarget)
             {
                 // Do one skill-up
-                uint32 SkillValue = player->GetPureSkillValue(SkillId);
-                player->UpdateGatherSkill(SkillId, SkillValue, reqSkillValue);
+                player->UpdateGatherSkill(SkillId, pureSkillValue, reqSkillValue);
             }
         }
     }
 
     SendLoot(guid, loottype);    
-    if(gameObjTarget)
-        gameObjTarget->Use(player);
 }
 
 void Spell::EffectSummonChangeItem(uint32 i)
@@ -4061,7 +4058,7 @@ void Spell::EffectLearnSpell(uint32 i)
     Player *player = unitTarget->ToPlayer();
 
     uint32 spellToLearn = (m_spellInfo->Id==SPELL_ID_GENERIC_LEARN) ? damage : m_spellInfo->Effects[i].TriggerSpell;
-    player->learnSpell(spellToLearn);
+    player->LearnSpell(spellToLearn);
 }
 
 void Spell::EffectDispel(uint32 i)
@@ -4948,7 +4945,7 @@ void Spell::EffectLearnPetSpell(uint32 i)
         return;
 
     pet->SetTP(pet->m_TrainingPoints - pet->GetTPForSpell(learn_spellproto->Id));
-    pet->learnSpell(learn_spellproto->Id);
+    pet->LearnSpell(learn_spellproto->Id);
 
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
     _player->PetSpellInitialize();
@@ -6355,8 +6352,8 @@ void Spell::EffectDuel(uint32 i)
     WorldPacket data(SMSG_DUEL_REQUESTED, 16);
     data << pGameObj->GetGUID();
     data << caster->GetGUID();
-    caster->GetSession()->SendPacket(&data);
-    target->GetSession()->SendPacket(&data);
+    caster->SendDirectMessage(&data);
+    target->SendDirectMessage(&data);
 
     // create duel-info
     DuelInfo *duel   = new DuelInfo;
@@ -6421,7 +6418,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
     data << uint64(m_caster->GetGUID());                    // summoner guid
     data << uint32(m_caster->GetZoneId());                  // summoner zone
     data << uint32(MAX_PLAYER_SUMMON_DELAY*1000);           // auto decline after msecs
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 }
 
 static ScriptInfo generateActivateCommand()
@@ -7013,13 +7010,13 @@ void Spell::EffectCharge(uint32 i)
 
     float speed = G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) ? m_spellInfo->Speed : SPEED_CHARGE;
     // Spell is not using explicit target - no generated path
-    if (m_preGeneratedPath.GetPathType() == PATHFIND_BLANK)
+    if (m_preGeneratedPath->GetPathType() == PATHFIND_BLANK)
     {
         Position pos = unitTarget->GetFirstWalkableCollisionPosition(unitTarget->GetObjectSize(), unitTarget->GetRelativeAngle(m_caster));
         m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speed);
     }
     else
-        m_caster->GetMotionMaster()->MoveCharge(m_preGeneratedPath, speed);
+        m_caster->GetMotionMaster()->MoveCharge(*m_preGeneratedPath, speed);
 
     // not all charge effects used in negative spells
     if ( !m_spellInfo->IsPositive() && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7191,7 +7188,7 @@ void Spell::EffectPlayerPull(uint32 i)
     data << float(damage ? damage : unitTarget->GetDistance2d(m_caster));
     data << float(m_spellInfo->Effects[i].MiscValue)/-10;     // Z Movement speed
 
-    (unitTarget->ToPlayer())->GetSession()->SendPacket(&data);
+    (unitTarget->ToPlayer())->SendDirectMessage(&data);
 }
 
 void Spell::EffectDispelMechanic(uint32 i)

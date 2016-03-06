@@ -98,7 +98,8 @@ enum PlayerSpellState
     PLAYERSPELL_UNCHANGED = 0,
     PLAYERSPELL_CHANGED   = 1,
     PLAYERSPELL_NEW       = 2,
-    PLAYERSPELL_REMOVED   = 3
+    PLAYERSPELL_REMOVED   = 3,
+    PLAYERSPELL_TEMPORARY = 4
 };
 
 struct PlayerSpell
@@ -1655,9 +1656,9 @@ class Player : public Unit
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
-        bool addSpell(uint32 spell_id, bool active, bool learning = true, bool loading = false, uint32 slot_id=SPELL_WITHOUT_SLOT_ID, bool disabled = false);
-        void learnSpell(uint32 spell_id);
-        void removeSpell(uint32 spell_id, bool disabled = false);
+        bool AddSpell(uint32 spell_id, bool active, bool learning = true, bool dependent = false, bool disabled = false, bool loading = false, uint32 slot_id = SPELL_WITHOUT_SLOT_ID );
+        void LearnSpell(uint32 spell_id);
+        void RemoveSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
         void learnDefaultSpells(bool loading = false);
         void learnQuestRewardedSpells();
@@ -1963,8 +1964,8 @@ class Player : public Unit
         int16 GetSkillPermBonusValue(uint32 skill) const;
         int16 GetSkillTempBonusValue(uint32 skill) const;
         bool HasSkill(uint32 skill) const;
-        void learnSkillRewardedSpells( uint32 id );
-        void learnSkillRewardedSpells();
+        void LearnSkillRewardedSpells( uint32 skillId, uint32 skillValue);
+        void LearnSkillRewardedSpells();
 
         void SetDontMove(bool dontMove);
         bool GetDontMove() const { return m_dontMove; }
@@ -2008,8 +2009,8 @@ class Player : public Unit
         void RewardReputation(Unit *pVictim, float rate);
         void RewardReputation(Quest const *pQuest);
         void SetInitialFactions();
-        void UpdateReputation() const;
-        void SendFactionState(FactionState const* faction) const;
+        void UpdateReputation();
+        void SendFactionState(FactionState const* faction);
         void SendInitialReputations();
         FactionState const* GetFactionState( FactionEntry const* factionEntry) const;
         void SetFactionAtWar(FactionState* faction, bool atWar);

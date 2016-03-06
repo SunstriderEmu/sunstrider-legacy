@@ -23,15 +23,21 @@
 
 class CreatureGroup;
 
+enum GroupAI
+{
+    GROUP_AI_NONE           = 0, //no follow leader, no automatic mutual support
+    GROUP_AI_LEADER_SUPPORT = 1, //follow leader, leader start attacking if a member start attacking
+    GROUP_AI_FULL_SUPPORT   = 2, //follow leader, while group start attacking if any member start attacking
+};
+
 struct FormationInfo
 {
-    uint32 leaderGUID;
-    float follow_dist_min;
-    float follow_dist_max;
-    float follow_angle; 
-    uint8 groupAI; // 1 = leader support if a member start attack, 2 = whole group support
-    bool respawn;
-    bool linkedLoot;
+    uint32 leaderGUID = 0;
+    float follow_dist = 0.0f;
+    float follow_angle = 0.0f;
+    GroupAI groupAI = GROUP_AI_FULL_SUPPORT;
+    bool respawn = false;
+    bool linkedLoot = false;
 };
 
 typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
@@ -47,8 +53,11 @@ class CreatureGroupManager
 
         ~CreatureGroupManager();
         
-        void AddCreatureToGroup(uint32 group_id, Creature *creature);
-        void RemoveCreatureFromGroup(CreatureGroup *group, Creature *creature);
+        void AddCreatureToGroup(uint32 group_id, Creature* member);
+        void RemoveCreatureFromGroup(uint32 group_id, Creature* member);
+        void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
+        //empty group then delete it
+        void BreakFormation(Creature* leader);
         void LoadCreatureFormations();
 
         void AddGroupMember(uint32 creature_lowguid, FormationInfo* group_member);
@@ -76,14 +85,13 @@ class CreatureGroup
 
         uint32 m_groupID;
         bool m_Formed;
-        float m_leaderX, m_leaderY, m_leaderZ;
         bool inCombat;
         bool justAlive;
         uint32 respawnTimer;
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), m_leaderX(0), m_leaderY(0), m_leaderZ(0), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
         ~CreatureGroup() { }
         
         Creature* getLeader() const { return m_leader; }
@@ -98,13 +106,15 @@ class CreatureGroup
         void FormationReset(bool dismiss);
         void SetLootable(bool lootable);
 
-        void LeaderMoveTo(float x, float y, float z);
+        void LeaderMoveTo(float x, float y, float z, bool run);
         void MemberAttackStart(Creature* member, Unit *target);
-        void CheckLeaderDistance(Creature* member);
 
         void UpdateCombat();
         void Respawn();
         void Update(uint32 diff);
+        
+        //remove every members 
+        void EmptyFormation();
 };
 
 #define sCreatureGroupMgr CreatureGroupManager::instance()

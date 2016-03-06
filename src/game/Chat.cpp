@@ -347,8 +347,8 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "creature_linked_respawn",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureLinkedRespawnCommand,   "" },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "" },
         { "creature_model_info",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureModelInfoCommand,       "" },
-        { "creature_queststarter",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureQuestStartersCommand,   "" },
-        { "creature_text",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureText,                   "" },
+        { "creature_text",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureTextCommand,            "" },
+        { "creature_template",           SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureTemplateCommand,        "" },
         { "disenchant_loot_template",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesDisenchantCommand, "" },
         { "event_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadEventScriptsCommand,            "" },
         { "fishing_loot_template",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesFishingCommand,    "" },
@@ -855,7 +855,7 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
             {
                 if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
                 {
-                    itr->second->GetSession()->SendPacket(&data);
+                    itr->second->SendDirectMessage(&data);
                 }
             }
         }

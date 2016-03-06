@@ -106,7 +106,7 @@ void PetAI::UpdateAI(const uint32 diff)
     {
         if( _needToStop() )
         {
-            TC_LOG_DEBUG("FIXME","Pet AI stoped attacking [guid=%u]", i_pet.GetGUIDLow());
+            //TC_LOG_DEBUG("entities.pet","Pet AI stopped attacking [guid=%u]", i_pet.GetGUIDLow());
             _stopAttack();
             return;
         }

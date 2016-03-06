@@ -26,6 +26,7 @@
 #include "TotemAI.h"
 #include "SmartAI.h"
 #include "GameObjectAI.h"
+#include "CombatAI.h"
 #include "OutdoorPvPObjectiveAI.h"
 #include "RandomMovementGenerator.h"
 #include "CreatureAIImpl.h"
@@ -38,6 +39,7 @@ namespace AIRegistry
     void Initialize()
     {
         (new CreatureAIFactory<NullCreatureAI>("NullCreatureAI"))->RegisterSelf();
+        (new CreatureAIFactory<AggressorAI>("AggressorAI"))->RegisterSelf();
         (new CreatureAIFactory<PassiveAI>("PassiveAI"))->RegisterSelf();
         (new CreatureAIFactory<CritterAI>("CritterAI"))->RegisterSelf();
         (new CreatureAIFactory<GuardAI>("GuardAI"))->RegisterSelf();

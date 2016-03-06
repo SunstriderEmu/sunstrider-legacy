@@ -173,7 +173,7 @@ void Object::SendUpdateToPlayer(Player* player)
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
     upd.BuildPacket(&packet);
-    player->GetSession()->SendPacket(&packet);
+    player->SendDirectMessage(&packet);
 }
 
 void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) const
@@ -337,7 +337,7 @@ void Object::DestroyForPlayer(Player *target, bool onDeath /*= false*/) const
         //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
         data << uint8(onDeath ? 1 : 0);
         */
-    target->GetSession()->SendPacket( &data );
+    target->SendDirectMessage( &data );
 }
 
 int32 Object::GetInt32Value(uint16 index) const
@@ -1206,7 +1206,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER )
-        (this->ToPlayer())->GetSession()->SendPacket( &data );
+        (this->ToPlayer())->SendDirectMessage( &data );
     else
         SendMessageToSet( &data, true ); // ToSelf ignored in this case
 }

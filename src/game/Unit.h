@@ -1520,7 +1520,7 @@ class Unit : public WorldObject
         float m_threatModifier[MAX_SPELL_SCHOOL];
         float m_modAttackSpeedPct[3];
 
-        // Event handler
+        // Event handler. Processed only when creature is alive
         EventProcessor m_Events;
 
         // stat system
@@ -1726,6 +1726,7 @@ class Unit : public WorldObject
         float GetSpeed( UnitMoveType mtype ) const;
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false, bool withPet = true);
+        void SetSpeedRate(UnitMoveType mtype, float rate) { m_speed_rate[mtype] = rate; }
 
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
