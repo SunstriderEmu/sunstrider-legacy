@@ -2943,21 +2943,6 @@ void Spell::EffectApplyAura(uint32 i)
             unitTarget->AddAura(AdditionalAura);
         }
     }
-    
-    if (m_spellInfo->Id == 34219)                                 // Quest 10190
-    {
-        if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
-            return;
-            
-        Creature* cTarget = unitTarget->ToCreature();
-        
-        if (cTarget->GetHealth() <= cTarget->GetMaxHealth()/5)
-        {
-            (m_caster->ToPlayer())->KilledMonster(19595, 0);
-            cTarget->DealDamage(cTarget, cTarget->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
-            cTarget->RemoveCorpse();
-        }
-    }
 
     // Prayer of Mending (jump animation), we need formal caster instead original for correct animation
     if( m_spellInfo->SpellFamilyName == SPELLFAMILY_PRIEST && (m_spellInfo->SpellFamilyFlags & 0x00002000000000LL))
