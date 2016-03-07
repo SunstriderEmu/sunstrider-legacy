@@ -3,7 +3,7 @@
 
 ## Compiling The Server
 
-The only windows compiler supported for now is MSVC 12 (Visual Studio 2013). The server can be compiled
+The only windows compiler supported for now is MSVC 14 (Visual Studio Community 2015). The server can be compiled
 in x64 or x86, in Release or Debug mode.
 
 When downloading dependencies (such as OpenSSL, Boost or MariaDB) you must get the
@@ -42,8 +42,7 @@ the linking will fail.
    a new variable named `MYSQL_ADD_LIBRARIES_PATH`; and the location of the
    MySQL headers in a new variabled named `MYSQL_ADD_INCLUDE_PATH`.
 
-7. Click Generate, and select your compiler. We use Visual Studio 12 (2013). Be
-   sure not the select the 64 bit version!
+7. Click Generate, and select your compiler. 
 
 8. Open the `Sunstrider.sln` solution generated in the build directory.
 
@@ -56,7 +55,7 @@ http://www.cmake.org/cmake/resources/software.html
 http://slproweb.com/products/Win32OpenSSL.html
 
 [boost]:
-http://sourceforge.net/projects/boost/files/boost-binaries/1.58.0/
+http://sourceforge.net/projects/boost/files/boost-binaries/1.60.0/
 
 <!----------------------------------------------------------------------------->
 ## Setting Up The DB
@@ -182,9 +181,10 @@ You need to change the output directory of the executables so that they get put
 somewhere where the config files and DLLs are available (typically, the "install
 directory").
 
-You may also want to change the working directory to the same folder to be able
-to run the worldserver in the visual studio debugger. (If you do don't forget to
-also right click the worldserver and set as startup project.)
+You may also want to change the working directory of the worldserver project 
+to the same folder to be able to easily run the worldserver in the visual studio 
+debugger. (If you do don't forget to also right click the worldserver and set 
+as startup project.)
 
 To change the output directories, right click the `worldserver` project, then
 edit Properties > Configuration Properties > Output Directory. Same for the
