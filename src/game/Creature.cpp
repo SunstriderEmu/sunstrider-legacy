@@ -2186,23 +2186,6 @@ std::string Creature::GetScriptName()
     return sObjectMgr->GetScriptName(GetScriptId());
 }
 
-// CreatureAINew
-std::string Creature::getScriptName()
-{
-    std::string scriptName = "";
-    
-    if (CreatureData const* myData = sObjectMgr->GetCreatureData(m_DBTableGuid)) {
-        if (myData->scriptName != "")
-            scriptName = myData->scriptName;
-        else if (GetCreatureTemplate()->scriptName != "")
-            scriptName = std::string(GetCreatureTemplate()->scriptName);
-    }
-    else if (GetCreatureTemplate()->scriptName != "")
-            scriptName = std::string(GetCreatureTemplate()->scriptName);
-
-    return scriptName;
-}
-
 uint32 Creature::getInstanceEventId()
 {
     if (CreatureData const* myData = sObjectMgr->GetCreatureData(m_DBTableGuid))

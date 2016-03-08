@@ -3930,7 +3930,6 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage(LANG_NPCINFO_POSITION,float(target->GetPositionX()), float(target->GetPositionY()), float(target->GetPositionZ()), float(target->GetOrientation()));
     PSendSysMessage("AIName: %s", target->GetAIName().c_str());
     PSendSysMessage("ScriptName: %s", target->GetScriptName().c_str());
-    PSendSysMessage("ScriptName (new): %s", target->getScriptName().c_str());
     PSendSysMessage("Creature Pool ID: %u", target->GetCreaturePoolId());
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())

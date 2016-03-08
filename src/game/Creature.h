@@ -611,7 +611,6 @@ class Creature : public Unit
         std::string GetScriptName();
         uint32 GetScriptId();
         std::string GetAIName() const;
-        std::string getScriptName(); // New
         uint32 getInstanceEventId();
 
         void ResetCreatureEmote();
