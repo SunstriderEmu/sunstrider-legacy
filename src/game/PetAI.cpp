@@ -29,7 +29,6 @@
 #include "Creature.h"
 #include "World.h"
 #include "Util.h"
-#include "CreatureAINew.h"
 
 int PetAI::Permissible(const Creature *creature)
 {

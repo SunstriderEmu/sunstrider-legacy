@@ -24,7 +24,6 @@
 #include "World.h"
 #include "Pet.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "Item.h"
 #include "SpellMgr.h"
 #include "Bag.h"

@@ -48,7 +48,6 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#include "CreatureAINew.h"
 
 #define NULL_AURA_SLOT 0xFF
 

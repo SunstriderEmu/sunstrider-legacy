@@ -34,7 +34,6 @@
 #include "LootMgr.h"
 #include "MapManager.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "CreatureAISelector.h"
 #include "Formulas.h"
 #include "SpellAuras.h"

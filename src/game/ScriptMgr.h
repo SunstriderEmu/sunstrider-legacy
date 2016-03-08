@@ -8,7 +8,6 @@
 #ifndef SCRIPTMGR_H
 #define SCRIPTMGR_H
 
-#include "CreatureScript.h"
 #include "QuestDef.h"
 
 class WorldSocket;

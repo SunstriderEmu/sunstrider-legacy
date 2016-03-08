@@ -48,7 +48,6 @@
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
-#include "CreatureAINew.h"
 #include "Containers.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000

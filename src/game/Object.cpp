@@ -43,7 +43,6 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "CreatureAINew.h"
 #include "MovementPacketBuilder.h"
 #include "MapInstanced.h"
 #include "UpdateFieldFlags.h"

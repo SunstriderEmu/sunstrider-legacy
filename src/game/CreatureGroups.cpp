@@ -22,7 +22,6 @@
 #include "CreatureGroups.h"
 #include "ObjectMgr.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "MoveSplineInit.h"
 
 CreatureGroupManager::~CreatureGroupManager()

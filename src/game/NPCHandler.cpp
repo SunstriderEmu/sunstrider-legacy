@@ -42,7 +42,6 @@
 #include "Guild.h"
 #include "ScriptMgr.h"
 #include "CreatureAI.h"
-//#include "CreatureAINew.h"
 
 enum StableResultCode
 {

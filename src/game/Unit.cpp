@@ -17,7 +17,6 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "Formulas.h"
 #include "Pet.h"
 

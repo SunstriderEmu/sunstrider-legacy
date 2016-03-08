@@ -27,7 +27,6 @@
 #include "Corpse.h"
 #include "World.h"
 #include "CellImpl.h"
-#include "CreatureAINew.h"
 
 class ObjectGridRespawnMover
 {

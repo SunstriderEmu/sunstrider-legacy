@@ -24,7 +24,6 @@
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 
 TemporarySummon::TemporarySummon( uint64 summoner ) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)

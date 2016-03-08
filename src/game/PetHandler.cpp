@@ -33,12 +33,9 @@
 #include "Util.h"
 #include "Pet.h"
 #include "Language.h"
-#include "CreatureAINew.h"
 
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 8+2+2+8);
 
     uint64 guid1;

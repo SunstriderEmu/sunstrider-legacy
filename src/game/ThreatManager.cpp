@@ -22,7 +22,6 @@
 #include "Unit.h"
 #include "Creature.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "Player.h"
