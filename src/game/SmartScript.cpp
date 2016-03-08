@@ -3599,6 +3599,20 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
 
             ProcessTimedAction(e, e.event.victimNotInLoS.repeat, e.event.victimNotInLoS.repeat);
         }
+        case SMART_EVENT_AFFECTED_BY_MECHANIC:
+        {
+            auto auraList = me->GetAuras();
+            for (auto itr : auraList)
+            {
+                if (itr.second->GetSpellInfo()->GetAllEffectsMechanicMask() & e.event.affectedByMechanic.mechanicMask)
+                {
+                    ProcessTimedAction(e, e.event.affectedByMechanic.repeat, e.event.affectedByMechanic.repeat);
+                    break;
+                }
+            }
+            //nothing found
+            break;
+        }
         default:
             TC_LOG_ERROR("sql.sql","SmartScript::ProcessEvent: Unhandled Event type %u", e.GetEventType());
             break;
@@ -3625,6 +3639,13 @@ void SmartScript::InitTimer(SmartScriptHolder& e)
             break;
         case SMART_EVENT_VICTIM_NOT_IN_LOS:
             RecalcTimer(e, e.event.victimNotInLoS.repeat, e.event.victimNotInLoS.repeat);
+            break;
+        case SMART_EVENT_FRIENDLY_HEALTH_PCT:
+            RecalcTimer(e, e.event.friendlyHealthPct.repeatMin, e.event.friendlyHealthPct.repeatMax);
+            break;
+        case SMART_EVENT_AFFECTED_BY_MECHANIC:
+            RecalcTimer(e, e.event.affectedByMechanic.repeat, e.event.affectedByMechanic.repeat);
+            break;
         default:
             e.active = true;
             break;
@@ -3688,6 +3709,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
             case SMART_EVENT_DISTANCE_CREATURE:
             case SMART_EVENT_DISTANCE_GAMEOBJECT:
             case SMART_EVENT_VICTIM_NOT_IN_LOS:
+            case SMART_EVENT_AFFECTED_BY_MECHANIC:
             {
                 ProcessEvent(e);
                 if (e.GetScriptType() == SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)

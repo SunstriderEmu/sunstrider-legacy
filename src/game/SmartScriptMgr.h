@@ -151,6 +151,7 @@ enum SMART_EVENT
     SMART_EVENT_ATTACKED_UNIT_DIED       = 102,      // none
     SMART_EVENT_ENTER_PHASE              = 103,      // phase
     SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
+    SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanic
     
     
     SMART_EVENT_END                      ,
@@ -412,6 +413,12 @@ struct SmartEvent
             uint32 entry;
             uint32 guid;
         } friendlyDeath;
+
+        struct
+        {
+            uint32 repeat;
+            uint32 mechanicMask;
+        } affectedByMechanic;
 
         struct
         {
@@ -1374,6 +1381,7 @@ const std::unordered_map<uint32, uint32> SmartAIEventMask =
     { SMART_EVENT_ATTACKED_UNIT_DIED,        SMART_SCRIPT_TYPE_MASK_CREATURE },
     { SMART_EVENT_ENTER_PHASE,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     { SMART_EVENT_GO_LOOT_STATE_CHANGED,     SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_AFFECTED_BY_MECHANIC,      SMART_SCRIPT_TYPE_MASK_CREATURE }
 };
 
 enum SmartEventFlags
