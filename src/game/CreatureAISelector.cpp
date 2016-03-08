@@ -118,6 +118,9 @@ namespace FactorySelector
     {
         const GameObjectAICreator *ai_factory = NULL;
         
+        if (GameObjectAI* scriptedAI = sScriptMgr->GetGameObjectAI(go))
+            return scriptedAI;
+
         ai_factory = sGameObjectAIRegistry->GetRegistryItem(go->GetAIName());
 
         //future goAI types go here

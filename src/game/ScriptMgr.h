@@ -21,10 +21,11 @@ class WorldPacket;
 class Player;
 class Creature;
 class CreatureAI;
+class GameObject;
+class GameObjectAI;
 class InstanceScript;
 class Quest;
 class Item;
-class GameObject;
 class SpellCastTargets;
 class Map;
 class Unit;
@@ -105,20 +106,13 @@ public:
     bool(*OnQuestAccept)(Player*, Creature*, Quest const*) = nullptr;
     bool(*OnGossipSelect)(Player*, Creature*, uint32, uint32) = nullptr;
     bool(*OnGossipSelectCode)(Player*, Creature*, uint32, uint32, const char*) = nullptr;
-    bool(*pGOOnGossipSelect)(Player*, GameObject*, uint32, uint32) = nullptr;
-    bool(*pGOOnGossipSelectCode)(Player*, GameObject*, uint32, uint32, const char*) = nullptr;
     bool(*OnQuestSelect)(Player*, Creature*, Quest const*) = nullptr;
     bool(*OnQuestComplete)(Player*, Creature*, Quest const*) = nullptr;
     uint32(*pGetDialogStatus)(Player*, Creature*) = nullptr;
-    uint32(*pGOGetDialogStatus)(Player*, GameObject * _GO) = nullptr;
     bool(*OnQuestReward)(Player*, Creature*, Quest const*, uint32) = nullptr;
     bool(*pItemHello)(Player*, Item*, Quest const*) = nullptr;
-    bool(*pGOOnGossipHello)(Player*, GameObject*) = nullptr;
     bool(*pAreaTrigger)(Player*, AreaTriggerEntry const*) = nullptr;
     bool(*pItemQuestAccept)(Player*, Item *, Quest const*) = nullptr;
-    bool(*pGoOnUse)(Player*, GameObject*) = nullptr;
-    bool(*pGOOnQuestAccept)(Player*, GameObject*, Quest const*) = nullptr;
-    bool(*pGOOnQuestReward)(Player*, GameObject*, Quest const*, uint32) = nullptr;
     bool(*pItemUse)(Player*, Item*, SpellCastTargets const&) = nullptr;
     bool(*OnReceiveEmote)(Player*, Creature*, uint32 emote) = nullptr;
     bool(*OnEffectDummyCreature)(Unit*, uint32, uint32, Creature*) = nullptr;
@@ -230,6 +224,50 @@ public:
 
     //Backward compat function, OLDScript used to create this script, this is stored here because we use it's member functions
     OLDScript* baseScript;
+};
+
+class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
+{
+protected:
+
+    GameObjectScript(const char* name);
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Called when a player opens a gossip dialog with the gameobject.
+    virtual bool OnGossipHello(Player* /*player*/, GameObject* /*go*/) { return false; }
+
+    // Called when a player selects a gossip item in the gameobject's gossip menu.
+    virtual bool OnGossipSelect(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
+
+    // Called when a player selects a gossip with a code in the gameobject's gossip menu.
+    virtual bool OnGossipSelectCode(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
+
+    // Called when a player accepts a quest from the gameobject.
+    virtual bool OnQuestAccept(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/) { return false; }
+
+    // Called when a player selects a quest reward.
+    virtual bool OnQuestReward(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
+
+    // Called when the dialog status between a player and the gameobject is requested.
+    virtual uint32 GetDialogStatus(Player* /*player*/, GameObject* /*go*/) { return DIALOG_STATUS_SCRIPTED_NO_STATUS; }
+
+    // Called when the game object is destroyed (destructible buildings only).
+    virtual void OnDestroyed(GameObject* /*go*/, Player* /*player*/) { }
+
+    // Called when the game object is damaged (destructible buildings only).
+    virtual void OnDamaged(GameObject* /*go*/, Player* /*player*/) { }
+
+    // Called when the game object loot state is changed.
+    virtual void OnLootStateChanged(GameObject* /*go*/, uint32 /*state*/, Unit* /*unit*/) { }
+
+    // Called when the game object state is changed.
+    virtual void OnGameObjectStateChanged(GameObject* /*go*/, uint32 /*state*/) { }
+
+    // Called when a GameObjectAI object is needed for the gameobject.
+    virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return NULL; }
 };
 
 // Manages registration, loading, and execution of scripts.
@@ -379,6 +417,21 @@ class ScriptMgr
         bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
         bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
 
+    public: /* GameObjectScript */
+
+        bool OnGossipHello(Player* player, GameObject* go);
+        bool OnGossipSelect(Player* player, GameObject* go, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code);
+        bool OnQuestAccept(Player* player, GameObject* go, Quest const* quest);
+        bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt);
+        uint32 GetDialogStatus(Player* player, GameObject* go);
+        void OnGameObjectDestroyed(GameObject* go, Player* player);
+        void OnGameObjectDamaged(GameObject* go, Player* player);
+        void OnGameObjectLootStateChanged(GameObject* go, uint32 state, Unit* unit);
+        void OnGameObjectStateChanged(GameObject* go, uint32 state);
+        void OnGameObjectUpdate(GameObject* go, uint32 diff);
+        GameObjectAI* GetGameObjectAI(GameObject* go);
+
     public: //old handlers not yet in categories
 
         bool OnSpellCast(Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellInfo const *spell);
@@ -387,16 +440,8 @@ class ScriptMgr
         void OnAreaChange(Player *pPlayer, AreaTableEntry const *pArea);
         bool OnItemClick (Player *pPlayer, Item *pItem);
         bool OnItemOpen (Player *pPlayer, Item *pItem);
-        bool OnGoClick (Player *pPlayer, GameObject *pGameObject);
-        bool OnGossipSelect(Player* pPlayer, GameObject* pGO, uint32 uiSender, uint32 uiAction);
-        bool OnGossipSelectCode(Player* pPlayer, GameObject* pGO, uint32 uiSender, uint32 uiAction, const char* sCode);
-        uint32 GetDialogStatus(Player* pPlayer, GameObject* pGO);
         bool ItemHello(Player* pPlayer, Item* pItem, Quest const* pQuest);
         bool ItemQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
-        bool OnGossipHello(Player* pPlayer, GameObject* pGO);
-        bool OnQuestAccept(Player* pPlayer, GameObject* pGO, Quest const* pQuest);
-        bool OnQuestReward(Player* pPlayer, GameObject* pGO, Quest const* pQuest, uint32 opt);
-        bool OnUse(Player* pPlayer, GameObject* pGO);
         bool AreaTrigger(Player* pPlayer,AreaTriggerEntry const* atEntry);
         bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         InstanceScript* CreateInstanceData(Map *map);

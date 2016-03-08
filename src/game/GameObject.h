@@ -681,8 +681,6 @@ class GameObject : public WorldObject
         GameObject* FindGOInGrid(uint32 entry, float range);
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         
-        GameObjectAI* AI() const { return (GameObjectAI*)m_AI; }
-        
         GameObjectModel * m_model;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL) const;
         
@@ -692,6 +690,9 @@ class GameObject : public WorldObject
         Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return NULL; }
 
         void UpdateModelPosition();
+
+        virtual uint32 GetScriptId() const { return GetGOInfo()->ScriptId; }
+        GameObjectAI* AI() const { return m_AI; }
 
         std::string GetAIName() const;
         void SetDisplayId(uint32 displayid);
