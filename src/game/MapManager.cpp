@@ -33,7 +33,11 @@
 #include "ObjectMgr.h"
 #include "GridMap.h"
 
+extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
+
 MapManager::MapManager() : 
+    i_gridCleanUpDelay(sWorld->getConfig(CONFIG_INTERVAL_GRIDCLEAN)),
+    i_GridStateErrorCount(0),
     _nextInstanceId(0)
 {
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
@@ -44,6 +48,17 @@ MapManager::~MapManager()
 
 void MapManager::Initialize()
 {
+    Map::InitStateMachine();
+
+    // debugging code, should be deleted some day
+    {
+        for(int i=0;i<MAX_GRID_STATE; i++)
+        {
+            i_GridStates[i] = si_GridStates[i];
+        }
+        i_GridStateErrorCount = 0;
+    }
+
     int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
     if (num_threads > 0)
@@ -67,11 +82,11 @@ Map* MapManager::CreateBaseMap(uint32 id)
         const MapEntry* entry = sMapStore.LookupEntry(id);
         if (entry && entry->Instanceable())
         {
-            m = new MapInstanced(id);
+            m = new MapInstanced(id, i_gridCleanUpDelay);
         }
         else
         {
-            m = new Map(id, 0, REGULAR_DIFFICULTY);
+            m = new Map(id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
         }
         i_maps[id] = m;
     }
@@ -222,7 +237,7 @@ void MapManager::Update(time_t diff)
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 {
-    GridCoord p = Trinity::ComputeGridPair(x,y);
+    GridPair p = Trinity::ComputeGridPair(x,y);
 
     int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
     int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
@@ -252,6 +267,8 @@ void MapManager::UnloadAll()
 
     if (m_updater.activated())
         m_updater.deactivate();
+
+    Map::DeleteStateMachine();
 }
 
 uint32 MapManager::GetNumInstances()

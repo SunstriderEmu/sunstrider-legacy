@@ -3511,25 +3511,6 @@ void Player::removeSpell(uint32 spell_id, bool disabled)
         removeSpell(itr2->second.spell, disabled);
 }
 
-void Player::ResetMap()
-{
-    // this may be called during Map::Update
-    // after decrement+unlink, ++m_mapRefIter will continue correctly
-    // when the first element of the list is being removed
-    // nocheck_prev will return the padding element of the RefManager
-    // instead of NULL in the case of prev
-    GetMap()->UpdateIteratorBack(this);
-    Unit::ResetMap();
-    GetMapRef().unlink();
-}
-
-void Player::SetMap(Map* map)
-{
-    Unit::SetMap(map);
-    m_mapRef.link(map, this);
-}
-
-
 void Player::RemoveSpellCooldown(uint32 spell_id, bool update /* = false */) 
 { 
     m_spellCooldowns.erase(spell_id); 
@@ -20847,43 +20828,15 @@ void Player::RessurectUsingRequestData()
     SpawnCorpseBones();
 }
 
-void Player::SetClientControl(Unit* target, uint8 allowMove, bool packetOnly /*= false*/)
+void Player::SetClientControl(Unit* target, uint8 allowMove)
 {
     WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, target->GetPackGUID().size()+1);
     data << target->GetPackGUID();
     data << uint8(allowMove);
     GetSession()->SendPacket(&data);
 
-    // We want to set the packet only
-    if (packetOnly)
-        return;
-
     if (allowMove)
         SetMover(target);
-
-    // Xinef: disable moving if target has disable move flag
-    if (target->GetTypeId() != TYPEID_UNIT)
-        return;
-
-    if (allowMove && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
-    {
-        target->ClearUnitState(UNIT_STATE_ROOT);
-        target->SetControlled(true, UNIT_STATE_ROOT);
-    }
-    else if (!allowMove && target->HasUnitState(UNIT_STATE_ROOT) /* && !target->HasUnitTypeMask(UNIT_MASK_ACCESSORY) */)
-    {
-        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
-        {
-            // Xinef: restore original orientation, important for shooting vehicles!
-            //Position pos = target->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && target->GetTransGUID() && IS_MO_TRANSPORT_GUID(target->GetTransGUID()) ? target->ToCreature()->GetTransportHomePosition() : target->ToCreature()->GetHomePosition();
-            Position pos = target->ToCreature()->GetHomePosition();
-            target->SetOrientation(pos.GetOrientation());
-            target->SetFacingTo(pos.GetOrientation());
-            target->DisableSpline();
-        }
-        else
-            target->SetControlled(false, UNIT_STATE_ROOT);
-    }
 }
 
 void Player::UpdateZoneDependentAuras( uint32 newZone )

@@ -483,7 +483,7 @@ void GameObject::Update(uint32 diff)
                     // affect only players
                     Player* p_ok = NULL;
                     Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
-                    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(p_ok, p_check);
+                    Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
                     this->VisitNearbyWorldObject(radius, checker);
                     trapTarget = p_ok;
                 }

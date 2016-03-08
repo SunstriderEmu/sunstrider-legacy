@@ -174,7 +174,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, flo
     pCreature->SetHomePosition(x, y, z, o);
     
     if (setActive)
-        pCreature->setActive(true);
+        pCreature->SetKeepActive(true);
 
     return true;
 }

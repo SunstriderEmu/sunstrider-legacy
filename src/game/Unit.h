@@ -1605,7 +1605,7 @@ class Unit : public WorldObject
 
         // Threat related methods
         bool CanHaveThreatList() const;
-        float GetThreat(Unit *u) const;
+        float GetThreat(Unit* u) const;
         void AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
         void ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
         void DeleteThreatList();
@@ -1818,6 +1818,10 @@ class Unit : public WorldObject
 
         bool IsAIEnabled, NeedChangeAI;
              
+        //TODO: these should be removed in favor of WorldObject::FindNearestCreature and FindNearestGameObject
+        Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
+        GameObject* FindGOInGrid(uint32 entry, float range);
+        
         Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
         Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
         

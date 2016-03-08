@@ -6128,11 +6128,13 @@ bool ChatHandler::HandleBanListIPCommand(const char* args)
 
 bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 {
-    Player* player = m_session->GetPlayer();
+    
+
+    Player* pl = m_session->GetPlayer();
 
     // accept only explicitly selected target (not implicitly self targeting case)
     Unit* target = GetSelectedUnit();
-    if(player->GetTarget() && target)
+    if(pl->GetTarget() && target)
     {
         if(target->GetTypeId()!=TYPEID_UNIT)
         {
@@ -6146,15 +6148,16 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
         return true;
     }
 
-    CellCoord p(Trinity::ComputeCellCoord(player->GetPositionX(), player->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
     Cell cell(p);
+    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     Trinity::RespawnDo u_do;
-    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(player, u_do);
+    Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(pl, u_do);
 
     TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *player->GetMap(), *player, player->GetGridActivationRange());
+    cell.Visit(p, obj_worker, *pl->GetMap());
 
     return true;
 }

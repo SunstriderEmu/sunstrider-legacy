@@ -27,6 +27,7 @@
 #include "MapUpdater.h"
 
 class WorldLocation;
+class GridState;
 
 class MapManager
 {
@@ -60,7 +61,15 @@ class MapManager
 
         void Initialize(void);
         void Update(time_t);
-        
+
+        inline void SetGridCleanUpDelay(uint32 t)
+        {
+            if( t < MIN_GRID_DELAY )
+                i_gridCleanUpDelay = MIN_GRID_DELAY;
+            else
+                i_gridCleanUpDelay = t;
+        }
+
         inline void SetMapUpdateInterval(uint32 t)
         {
             if( t > MIN_MAP_UPDATE_DELAY )
@@ -114,6 +123,9 @@ class MapManager
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
     private:
+        GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
+        int i_GridStateErrorCount;
+    private:
         typedef std::vector<bool> InstanceIds;
 
         MapManager();
@@ -123,6 +135,7 @@ class MapManager
         MapManager& operator=(const MapManager &);
         
 
+        uint32 i_gridCleanUpDelay;
         MapMapType i_maps;
         IntervalTimer i_timer;
         std::mutex _mapsLock;

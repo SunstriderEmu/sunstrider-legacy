@@ -226,10 +226,6 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     GetPlayer()->ProcessDelayedOperations();
 
     plMover->GetMotionMaster()->ReinitializeMovement();
-
-    // pussywizard: client forgets about losing control, resend it
-    if (plMover->HasUnitState(UNIT_STATE_FLEEING | UNIT_STATE_CONFUSED) || plMover->IsCharmed()) // only in such cases SetClientControl(self, false) is sent
-        plMover->SetClientControl(plMover, false, true);
 }
 
 /*

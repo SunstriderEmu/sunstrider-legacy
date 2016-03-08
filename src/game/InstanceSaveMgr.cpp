@@ -20,6 +20,7 @@
 #include "Player.h"
 #include "GridNotifiers.h"
 #include "Log.h"
+#include "GridStates.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "MapInstanced.h"

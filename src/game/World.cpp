@@ -569,8 +569,18 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_COMPRESSION] = 1;
     }
     m_configs[CONFIG_ADDON_CHANNEL] = sConfigMgr->GetBoolDefault("AddonChannel", true);
+    m_configs[CONFIG_GRID_UNLOAD] = sConfigMgr->GetBoolDefault("GridUnload", true);
     m_configs[CONFIG_INTERVAL_SAVE] = sConfigMgr->GetIntDefault("PlayerSaveInterval", 60000);
     m_configs[CONFIG_INTERVAL_DISCONNECT_TOLERANCE] = sConfigMgr->GetIntDefault("DisconnectToleranceInterval", 0);
+
+    m_configs[CONFIG_INTERVAL_GRIDCLEAN] = sConfigMgr->GetIntDefault("GridCleanUpDelay", 300000);
+    if(m_configs[CONFIG_INTERVAL_GRIDCLEAN] < MIN_GRID_DELAY)
+    {
+        TC_LOG_ERROR("server.loading","GridCleanUpDelay (%i) must be greater %u. Use this minimal value.",m_configs[CONFIG_INTERVAL_GRIDCLEAN],MIN_GRID_DELAY);
+        m_configs[CONFIG_INTERVAL_GRIDCLEAN] = MIN_GRID_DELAY;
+    }
+    if(reload)
+        sMapMgr->SetGridCleanUpDelay(m_configs[CONFIG_INTERVAL_GRIDCLEAN]);
 
     m_configs[CONFIG_INTERVAL_MAPUPDATE] = sConfigMgr->GetIntDefault("MapUpdateInterval", 100);
     if(m_configs[CONFIG_INTERVAL_MAPUPDATE] < MIN_MAP_UPDATE_DELAY)
@@ -2431,7 +2441,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(go,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *summoner->GetMap(), *go, go->GetGridActivationRange());
+                cell.Visit(p, object_checker, *summoner->GetMap());
 
                 if ( !go )
                 {
@@ -2491,7 +2501,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap(), *door, door->GetGridActivationRange());
+                cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )
                 {
@@ -2546,7 +2556,7 @@ void World::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap(), *door, door->GetGridActivationRange());
+                cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )
                 {
@@ -2737,6 +2747,74 @@ void World::ScriptsProcess()
                 }
 
                 dynamic_cast<Unit*>(source)->GetMotionMaster()->MovePath(step.script->datalong);
+                break;
+            }
+
+            case SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT:
+            {
+                if(!step.script->datalong || !step.script->datalong2)
+                {
+                    TC_LOG_ERROR("sql.sql","SCRIPT_COMMAND_CALLSCRIPT calls invallid db_script_id or lowguid not present: skipping.");
+                    break;
+                }
+                //our target
+                Creature* target = NULL;
+
+                if(source) //using grid searcher
+                {
+                    CellCoord p(Trinity::ComputeCellCoord(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
+                    Cell cell(p);
+                    cell.data.Part.reserved = ALL_DISTRICT;
+
+                    //TC_LOG_DEBUG("FIXME","Attempting to find Creature: Db GUID: %i", step.script->datalong);
+                    Trinity::CreatureWithDbGUIDCheck target_check(((Unit*)source), step.script->datalong);
+                    Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(target,target_check);
+
+                    TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
+                    cell.Visit(p, unit_checker, *((Unit *)source)->GetMap());
+                }
+                else //check hashmap holders
+                {
+                    if(CreatureData const* data = sObjectMgr->GetCreatureData(step.script->datalong))
+                        target = ObjectAccessor::GetObjectInWorld<Creature>(data->mapid, data->posX, data->posY, MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), target);
+                }
+                //TC_LOG_DEBUG("scripts","attempting to pass target...");
+                if(!target)
+                    break;
+                //TC_LOG_DEBUG("scripts","target passed");
+                //Lets choose our ScriptMap map
+                ScriptMapMap *datamap = NULL;
+                switch(step.script->dataint)
+                {
+                    case 1://QUEST END SCRIPTMAP
+                        datamap = &sQuestEndScripts;
+                        break;
+                    case 2://QUEST START SCRIPTMAP
+                        datamap = &sQuestStartScripts;
+                        break;
+                    case 3://SPELLS SCRIPTMAP
+                        datamap = &sSpellScripts;
+                        break;
+                    case 4://GAMEOBJECTS SCRIPTMAP
+                        datamap = &sGameObjectScripts;
+                        break;
+                    case 5://EVENTS SCRIPTMAP
+                        datamap = &sEventScripts;
+                        break;
+                    case 6://WAYPOINTS SCRIPTMAP
+                        datamap = &sWaypointScripts;
+                        break;
+                    default:
+                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
+                        break;
+                }
+                //if no scriptmap present...
+                if(!datamap)
+                    break;
+
+                uint32 script_id = step.script->datalong2;
+                //insert script into schedule but do not start it
+                ScriptsStart(*datamap, script_id, target, NULL, false);
                 break;
             }
 

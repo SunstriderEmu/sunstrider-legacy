@@ -184,7 +184,6 @@ m_stealthWarningCooldown(0)
     m_GlobalCooldown = 0;
     DisableReputationGain = false;
     TriggerJustRespawned = false;
-    m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
 }
 
 Creature::~Creature()
@@ -1306,7 +1305,7 @@ bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
 
 bool Creature::IsWithinSightDist(Unit const* u) const
 {
-    return IsWithinDistInMap(u, m_SightDistance);
+    return IsWithinDistInMap(u, sWorld->getConfig(CONFIG_SIGHT_MONSTER));
 }
 
 /**
@@ -1462,7 +1461,7 @@ void Creature::SetDeathState(DeathState s)
         SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 0);       // if creature is mounted on a virtual mount, remove it at death
 
         //if(!IsPet())
-            setActive(false);
+            SetKeepActive(false);
 
         if(!IsPet() && GetCreatureTemplate()->SkinLootId)
             if ( LootTemplates_Skinning.HaveLootFor(GetCreatureTemplate()->SkinLootId) )
@@ -2710,7 +2709,7 @@ void Creature::WarnDeathToFriendly()
     cell.SetNoCreate();
 
     Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned u_check(this, this, CREATURE_MAX_DEATH_WARN_RANGE);
-    Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned> searcher(warnList, u_check);
+    Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned> searcher(this, warnList, u_check);
     VisitNearbyGridObject(CREATURE_MAX_DEATH_WARN_RANGE, searcher);
 
     for(auto itr : warnList) 

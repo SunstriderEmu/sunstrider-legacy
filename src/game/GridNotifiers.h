@@ -212,46 +212,35 @@ namespace Trinity
     template<class Do>
         struct WorldObjectWorker
     {
-        uint32 i_mapTypeMask;
         Do const& i_do;
 
-        explicit WorldObjectWorker(WorldObject const* /* searcher */, Do const& _do, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) : i_do(_do) {}
+        explicit WorldObjectWorker(WorldObject const* searcher, Do const& _do) : i_do(_do) {}
 
         void Visit(GameObjectMapType &m)
         {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
-                return;
             for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
 
         void Visit(PlayerMapType &m)
         {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
-                return;
             for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
         void Visit(CreatureMapType &m)
         {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
-                return;
             for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
 
         void Visit(CorpseMapType &m)
         {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
-                return;
             for(CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
 
         void Visit(DynamicObjectMapType &m)
         {
-            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
-                return;
             for(DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 i_do(itr->GetSource());
         }
@@ -354,7 +343,7 @@ namespace Trinity
         std::list<Player*> &i_objects;
         Check& i_check;
         
-        PlayerListSearcher(WorldObject const* /* searcher */, std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
+        PlayerListSearcher(WorldObject const* searcher, std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
         
         void Visit(PlayerMapType &m);
         
@@ -396,7 +385,7 @@ namespace Trinity
         std::list<Creature*> &i_objects;
         Check& i_check;
 
-        CreatureListSearcher(WorldObject const* searcher, std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        CreatureListSearcher(WorldObject const* /* searcher */, std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
 
         void Visit(CreatureMapType &m);
 
@@ -410,7 +399,7 @@ namespace Trinity
         std::list< std::pair<Creature*,float> > &i_objects;
         Check& i_check;
 
-        CreatureListSearcherWithRange(std::list< std::pair<Creature*,float> > &objects, Check & check) : i_objects(objects), i_check(check) {}
+        CreatureListSearcherWithRange(WorldObject const* /* searcher */, std::list< std::pair<Creature*,float> > &objects, Check & check) : i_objects(objects), i_check(check) {}
 
         void Visit(CreatureMapType &m);
 
@@ -425,7 +414,7 @@ namespace Trinity
         Player* &i_object;
         Check & i_check;
 
-        PlayerSearcher(Player* & result, Check & check) : i_object(result),i_check(check) {}
+        PlayerSearcher(WorldObject const* /* searcher */, Player* & result, Check & check) : i_object(result),i_check(check) {}
 
         void Visit(PlayerMapType &m);
 
@@ -737,6 +726,16 @@ namespace Trinity
 
     //PLAYERS SEARCHERS
     
+    class AllPlayersInRange
+    {
+    public:
+        AllPlayersInRange(WorldObject const* obj, float range) : i_object(obj), i_range(range) {}
+        bool operator() (Player* u);
+    private:
+        WorldObject const* i_object;
+        float i_range;
+    };
+
     class AnyPlayerInObjectRangeCheck
     {
     public:

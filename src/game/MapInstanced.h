@@ -30,7 +30,7 @@ class MapInstanced : public Map
     public:
         typedef std::unordered_map< uint32, Map* > InstancedMaps;
 
-        MapInstanced(uint32 id);
+        MapInstanced(uint32 id, time_t expiry);
         ~MapInstanced() {}
 
         // functions overwrite Map versions
@@ -47,17 +47,17 @@ class MapInstanced : public Map
         bool DestroyInstance(uint32 InstanceId);
         bool DestroyInstance(InstancedMaps::iterator &itr);
 
-        void AddGridMapReference(const GridCoord &p)
+        void AddGridMapReference(const GridPair &p)
         {
             ++GridMapReference[p.x_coord][p.y_coord];
-            SetUnloadReferenceLock(GridCoord(63-p.x_coord, 63-p.y_coord), true);
+            SetUnloadReferenceLock(GridPair(63-p.x_coord, 63-p.y_coord), true);
         }
 
-        void RemoveGridMapReference(const GridCoord &p)
+        void RemoveGridMapReference(const GridPair &p)
         {
             --GridMapReference[p.x_coord][p.y_coord];
             if (!GridMapReference[p.x_coord][p.y_coord])
-                SetUnloadReferenceLock(GridCoord(63-p.x_coord, 63-p.y_coord), false);
+                SetUnloadReferenceLock(GridPair(63-p.x_coord, 63-p.y_coord), false);
         }
 
         InstancedMaps &GetInstancedMaps() { return m_InstancedMaps; }

@@ -129,6 +129,11 @@ Locale = 0
 #        Maximum overspeed ping count before player kick (minimum is 2, 0 used for disable check)
 #        Default: 2
 #
+#    GridUnload
+#        Unload grids (if you have lot memory you can disable it to speed up player move to new grids second time)
+#        Default: 1 (unload grids)
+#                 0 (do not unload grids)
+#
 #    SocketTimeOutTime
 #        Description: Time (in milliseconds) after which a connection being idle on the character
 #                     selection screen is disconnected.
@@ -137,6 +142,10 @@ Locale = 0
 #    SocketSelectTime
 #        Socket select time (in milliseconds)
 #        Default: 10000
+#
+#    GridCleanUpDelay
+#        Grid clean up delay (in milliseconds)
+#        Default: 300000 (5 min)
 #
 #    MapUpdateInterval
 #        Map update interval (in milliseconds)
@@ -209,8 +218,10 @@ Compression = 1
 PlayerLimit = 0
 SaveRespawnTimeImmediately = 1
 MaxOverspeedPings = 2
+GridUnload = 1
 SocketTimeOutTime = 900000
 SocketSelectTime = 10000
+GridCleanUpDelay = 300000
 MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
 PlayerSaveInterval = 60000

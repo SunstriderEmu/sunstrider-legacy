@@ -1,5 +1,22 @@
 /*
  * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
+ *
+ * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 
 #ifndef TRINITY_TYPECONTAINER_H
 #define TRINITY_TYPECONTAINER_H
@@ -8,9 +25,6 @@
  * Here, you'll find a series of containers that allow you to hold multiple
  * types of object at the same time.
  */
-
-#ifndef TRINITY_TYPECONTAINER_H
-#define TRINITY_TYPECONTAINER_H
 
 #include <map>
 #include <vector>
@@ -37,42 +51,6 @@ template<class H, class T> struct ContainerMapList<TypeList<H, T> >
     ContainerMapList<T> _TailElements;
 };
 
-
-/*
-* @class ContaierArrayList is a multi-type container for
-* array of elements.
-*/
-template<class OBJECT> struct ContainerArrayList
-{
-    std::vector<OBJECT> _element;
-};
-
-// termination condition
-template<> struct ContainerArrayList<TypeNull> { };
-// recursion
-template<class H, class T> struct ContainerArrayList<TypeList<H, T> >
-{
-    ContainerArrayList<H> _elements;
-    ContainerArrayList<T> _TailElements;
-};
-
-/*
-* @class ContainerList is a simple list of different types of elements
-*
-*/
-template<class OBJECT> struct ContainerList
-{
-    OBJECT _element;
-};
-
-/* TypeNull is underfined */
-template<> struct ContainerList<TypeNull> { };
-template<class H, class T> struct ContainerList<TypeList<H, T> >
-{
-    ContainerList<H> _elements;
-    ContainerMapList<T> _TailElements;
-};
-
 #include "TypeContainerFunctions.h"
 
 /*
@@ -96,11 +74,11 @@ class TypeMapContainer
         }
 
         ///  Removes the object from the container, and returns the removed object
-        //template<class SPECIFIC_TYPE> bool remove(SPECIFIC_TYPE* obj)
-        //{
-        //    SPECIFIC_TYPE* t = Trinity::Remove(i_elements, obj);
-        //    return (t != NULL);
-        //}
+        template<class SPECIFIC_TYPE> bool remove(SPECIFIC_TYPE* obj)
+        {
+            SPECIFIC_TYPE* t = Trinity::Remove(i_elements, obj);
+            return (t != NULL);
+        }
 
         ContainerMapList<OBJECT_TYPES> & GetElements(void) { return i_elements; }
         const ContainerMapList<OBJECT_TYPES> & GetElements(void) const { return i_elements;}

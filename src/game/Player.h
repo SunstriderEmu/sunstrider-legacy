@@ -1120,7 +1120,7 @@ struct Gladiator {
 
 #define MAX_GLADIATORS_RANK 3
 
-class Player : public Unit, public GridObject<Player>
+class Player : public Unit
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);
@@ -2268,7 +2268,7 @@ class Player : public Unit, public GridObject<Player>
         bool ShouldGoToSecondaryArenaZone();
         void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
 
-        void SetClientControl(Unit* target, uint8 allowMove, bool packetOnly = false);
+        void SetClientControl(Unit* target, uint8 allowMove);
 
         void SetMover(Unit* target);
 
@@ -2403,11 +2403,8 @@ class Player : public Unit, public GridObject<Player>
         void SetPassOnGroupLoot(bool bPassOnGroupLoot) { m_bPassOnGroupLoot = bPassOnGroupLoot; }
         bool GetPassOnGroupLoot() const { return m_bPassOnGroupLoot; }
 
+        GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
-
-        // Set map to player and add reference
-        void SetMap(Map* map);
-        void ResetMap();
 
         bool IsAllowedToLoot(Creature const* creature);
 
@@ -2750,6 +2747,7 @@ class Player : public Unit, public GridObject<Player>
         uint8 m_MirrorTimerFlags;
         uint8 m_MirrorTimerFlagsLast;
 
+        GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
         void UpdateCharmedAI();

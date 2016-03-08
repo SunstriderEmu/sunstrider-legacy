@@ -229,7 +229,6 @@ struct CreatureTemplate
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
-    std::string scriptName; //CreatureAINew
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
@@ -340,7 +339,6 @@ struct CreatureData
     uint8 spawnMask;
     uint32 poolId;
     uint32 scriptId;
-    std::string scriptName;
     uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED
 };
 
@@ -483,7 +481,7 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
-class Creature : public Unit, public GridObject<Creature>, public MovableMapObject
+class Creature : public Unit
 {
     public:
 
@@ -558,10 +556,12 @@ class Creature : public Unit, public GridObject<Creature>, public MovableMapObje
         //@ai assign this AI
         bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
+        bool InitCustomScript(uint32 scriptId);
 
         void WarnDeathToFriendly();
 
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
+        CreatureAINew* getAI() { return m_AI; }
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
@@ -661,7 +661,10 @@ class Creature : public Unit, public GridObject<Creature>, public MovableMapObje
         void StartSuspiciousLook(Unit const* target);
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
+        //select nearest alive player
+        Player* SelectNearestPlayer(float distance = 0) const;
         Unit* SelectNearestTargetInAttackDistance(float dist) const;
+
 
         /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();
@@ -816,8 +819,6 @@ class Creature : public Unit, public GridObject<Creature>, public MovableMapObje
         //enter evade mode if target was unreachable for CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME
         void CheckForUnreachableTarget();
 
-        float m_SightDistance;
-
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
@@ -894,6 +895,7 @@ class Creature : public Unit, public GridObject<Creature>, public MovableMapObje
         CreatureGroup *m_formation;
         bool TriggerJustRespawned;
 
+        GridReference<Creature> m_gridRef;
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
         CreatureAddon const* m_creatureInfoAddon;
 

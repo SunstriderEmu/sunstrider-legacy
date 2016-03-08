@@ -803,9 +803,8 @@ bool Object::PrintIndexError(uint32 index, bool set) const
     return false;
 }
 
-WorldObject::WorldObject(bool isWorldObject) :
-    LastUsedScriptID(0),
-    m_isWorldObject(isWorldObject)
+WorldObject::WorldObject() :
+    LastUsedScriptID(0)
 {
     m_positionX         = 0.0f;
     m_positionY         = 0.0f;
@@ -837,18 +836,7 @@ void WorldObject::SetWorldObject(bool on)
     GetMap()->AddObjectToSwitchList(this, on); 
 }
 
-bool WorldObject::IsWorldObject() const
-{
-    if (m_isWorldObject)
-        return true;
-
-    if (ToCreature() && ToCreature()->m_isTempWorldObject)
-        return true;
-
-    return false;
-}
-
-void WorldObject::setActive( bool on )
+void WorldObject::SetKeepActive( bool on )
 {
     if(m_isActive == on)
         return;
@@ -868,18 +856,16 @@ void WorldObject::setActive( bool on )
     if(on)
     {
         if(GetTypeId() == TYPEID_UNIT)
-            map->AddToActive(this->ToCreature());
+            map->AddToForceActive(this->ToCreature());
         else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->AddToActive((DynamicObject*)this);
+            map->AddToForceActive((DynamicObject*)this);
     }
     else
     {
-        if (GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive(this->ToCreature());
-        else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
-            map->RemoveFromActive((DynamicObject*)this);
-        else if (GetTypeId() == TYPEID_GAMEOBJECT)
-            map->RemoveFromActive((GameObject*)this);
+        if(GetTypeId() == TYPEID_UNIT)
+            map->RemoveFromForceActive(this->ToCreature());
+        else if(GetTypeId() == TYPEID_DYNAMICOBJECT)
+            map->RemoveFromForceActive((DynamicObject*)this);
     }
 }
 
@@ -1215,28 +1201,6 @@ bool WorldObject::IsPositionValid() const
     return Trinity::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
 }
 
-float WorldObject::GetGridActivationRange() const
-{
-    if (ToPlayer())
-        return GetMap()->GetVisibilityRange();
-    else if (ToCreature())
-        return ToCreature()->m_SightDistance;
-    else if (GetTypeId() == TYPEID_GAMEOBJECT && ToGameObject()->IsTransport())
-        return GetMap()->GetVisibilityRange();
-    else
-        return 0.0f;
-}
-
-float WorldObject::GetVisibilityRange() const
-{
-    if (isActiveObject() && !ToPlayer())
-        return MAX_VISIBILITY_DISTANCE;
-    else if (GetTypeId() == TYPEID_GAMEOBJECT)
-        return GetMap()->GetVisibilityRange() + VISIBILITY_INC_FOR_GOBJECTS;
-    else
-        return GetMap()->GetVisibilityRange();
-}
-
 void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 4);
@@ -1358,9 +1322,13 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     
     if(pCreature->AI())
         pCreature->AI()->IsSummonedBy(((Unit*)this)->ToUnit());
+    if(pCreature->getAI())
+        pCreature->AI()->IsSummonedBy(((Unit*)this)->ToCreature());
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
+    {
         (((Unit*)this)->ToCreature())->AI()->JustSummoned(pCreature);
+    }
 
     if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
     {
@@ -1483,6 +1451,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     //scripts hooks
     if(pet->AI())
         pet->AI()->IsSummonedBy(this->ToUnit());
+    if(pet->getAI())
+        pet->AI()->IsSummonedBy(this->ToCreature());
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
     {
@@ -1625,7 +1595,7 @@ Player* WorldObject::FindNearestPlayer(float range) const
 {
        Player* pl = NULL;
        Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
-       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pl, checker);
+       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, pl, checker);
        VisitNearbyObject(range, searcher);
        return pl;
 }
@@ -2035,30 +2005,32 @@ float WorldObject::GetObjectSize() const
     return ( m_valuesCount > UNIT_FIELD_COMBATREACH ) ? m_floatValues[UNIT_FIELD_COMBATREACH] : DEFAULT_WORLD_OBJECT_SIZE;
 }
 
-void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float maxSearchRange) const
+void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const
 {
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::AllCreaturesOfEntryInRange check((Unit const*)this, uiEntry, maxSearchRange);
+    Trinity::AllCreaturesOfEntryInRange check((Unit const*)this, uiEntry, fMaxSearchRange);
     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, lList, check);
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, visitor, *(this->GetMap()));
 }
 
-void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float maxSearchRange) const
+void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const
 {
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
-    Trinity::AllGameObjectsWithEntryInRange check(this, uiEntry, maxSearchRange);
+    Trinity::AllGameObjectsWithEntryInRange check(this, uiEntry, fMaxSearchRange);
     Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(lList, check);
     TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
+    cell.Visit(pair, visitor, *(this->GetMap()));
 }
 
 //much much changes with LK here (not just the commented ones in here)

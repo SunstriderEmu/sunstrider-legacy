@@ -178,7 +178,7 @@ class SmartScript
             Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(pGameObject, goCheck);
             
             TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > objectChecker(checker);
-            cell.Visit(p, objectChecker, *searchObject->GetMap(), *searchObject, searchObject->GetGridActivationRange());
+            cell.Visit(p, objectChecker, *searchObject->GetMap());
 
             return pGameObject;
         }
@@ -193,7 +193,7 @@ class SmartScript
             Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(crea, target_check);
 
             TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-            cell.Visit(p, unit_checker, *pSearchObject->GetMap(), *pSearchObject, pSearchObject->GetGridActivationRange());
+            cell.Visit(p, unit_checker, *pSearchObject->GetMap());
 
             return crea;
         }

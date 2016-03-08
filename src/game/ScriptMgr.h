@@ -22,7 +22,6 @@ class WorldPacket;
 class Player;
 class Creature;
 class CreatureAI;
-class CreatureAINew;
 class InstanceScript;
 class Quest;
 class Item;

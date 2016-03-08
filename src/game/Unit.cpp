@@ -7722,7 +7722,7 @@ void Unit::AddPlayerToVision(Player* plr)
     if(m_sharedVision.empty())
     {
         //set active so that creatures around in grid are active as well
-        setActive(true);
+        SetKeepActive(true);
         SetWorldObject(true);
     }
     m_sharedVision.push_back(plr->GetGUID());
@@ -7734,7 +7734,7 @@ void Unit::RemovePlayerFromVision(Player* plr)
     m_sharedVision.remove(plr->GetGUID());
     if(m_sharedVision.empty())
     {
-        setActive(false);
+        SetKeepActive(false);
         SetWorldObject(false);
     }
     plr->ClearFarsight();
@@ -10471,6 +10471,17 @@ bool Unit::CanHaveThreatList() const
     return true;
 }
 
+float Unit::GetThreat(Unit* pUnit) const
+{
+    if (!pUnit)
+        return 0.0f;
+
+    if (CanHaveThreatList())
+        return m_ThreatManager.getThreat(pUnit);
+
+    return 0.0f;
+}
+
 //======================================================================
 
 void Unit::ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask)
@@ -10490,19 +10501,6 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
     if(CanHaveThreatList())
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
 }
-
-
-float Unit::GetThreat(Unit* pUnit) const
-{
-    if (!pUnit) 
-        return 0.0f;
-
-    if(CanHaveThreatList())
-        return m_ThreatManager.getThreat(pUnit);
-
-    return 0.0f;
-}
-
 
 //======================================================================
 
@@ -13912,6 +13910,44 @@ Unit* Unit::GetLastRedirectTarget()
 Unit* Unit::GetSummoner() const
 { 
     return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : NULL; 
+}
+
+Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
+{
+    Creature* pCreature = NULL;
+
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*this, entry, isAlive, range);
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
+
+    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
+
+    cell.Visit(pair, creature_searcher, *GetMap());
+    
+    return pCreature;
+}
+
+GameObject* Unit::FindGOInGrid(uint32 entry, float range)
+{
+    GameObject* pGo = NULL;
+
+    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+
+    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
+
+    cell.Visit(pair, go_searcher, *GetMap());
+    
+    return pGo;
 }
 
 void Unit::SetFullTauntImmunity(bool apply)
