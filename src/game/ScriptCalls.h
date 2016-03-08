@@ -23,6 +23,5 @@
 
 bool LoadScriptingModule();
 
-//extern ScriptsSet Script;
 #endif
 

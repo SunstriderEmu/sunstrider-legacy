@@ -31,22 +31,22 @@ namespace FactorySelector
 {
     CreatureAI* selectAI(Creature *creature)
     {
-        // Allow scripting AI for normal creatures and not controlled pets (guardians and mini-pets)
-        if((!creature->IsPet() || !((Pet*)creature)->isControlled()) && !creature->IsCharmed())
-            if(CreatureAI* scriptedAI = sScriptMgr->GetAI(creature))
+        const CreatureAICreator *ai_factory = NULL;
+
+        // Always PetAI for hunter pets
+        if (creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
+            ai_factory = sCreatureAIRegistry->GetRegistryItem("PetAI");
+
+        //scriptname in db
+        if ((!ai_factory || !((Pet*)creature)->isControlled()) && !creature->IsCharmed())
+            if (CreatureAI* scriptedAI = sScriptMgr->GetCreatureAI(creature))
                 return scriptedAI;
 
         assert( creature->GetCreatureTemplate() != NULL );
         CreatureTemplate const *cinfo=creature->GetCreatureTemplate();
 
-        const CreatureAICreator *ai_factory = NULL;
-
         std::string ainame=cinfo->AIName;
-
-        // Always PetAI for hunter pets
-        if(creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
-            ai_factory = sCreatureAIRegistry->GetRegistryItem("PetAI");
-        else if( !ainame.empty())  // select by script name
+        if( !ainame.empty())  // select by script name
             ai_factory = sCreatureAIRegistry->GetRegistryItem( ainame.c_str() );
         else if(!ai_factory) // else try to select AI by NPC flags
         {
@@ -54,6 +54,8 @@ namespace FactorySelector
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("GuardAI");
             else if(creature->IsTotem())
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("TotemAI");
+            else if (creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
+                ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
             else if(creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
             else if(creature->GetCreatureType() == CREATURE_TYPE_CRITTER)
@@ -79,9 +81,6 @@ namespace FactorySelector
                 }
             }
         }
-
-        // select NullCreatureAI if not another cases
-        ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
 
         return ( ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature) );
     }
@@ -119,6 +118,9 @@ namespace FactorySelector
     {
         const GameObjectAICreator *ai_factory = NULL;
         
+        if (GameObjectAI* scriptedAI = sScriptMgr->GetGameObjectAI(go))
+            return scriptedAI;
+
         ai_factory = sGameObjectAIRegistry->GetRegistryItem(go->GetAIName());
 
         //future goAI types go here

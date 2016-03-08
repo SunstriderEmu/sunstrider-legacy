@@ -680,6 +680,7 @@ class World
         //temp compatibility macros
 #define getIntConfig(a) getConfig(a)
 #define getBoolConfig(a) getConfig(a)
+#define getFloatConfig(a) getConfig(a)
 
         /// Are we on a "Player versus Player" server?
         bool IsPvPRealm() { return (getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_PVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_RPPVP || getConfig(CONFIG_GAME_TYPE) == REALM_TYPE_FFA_PVP); }

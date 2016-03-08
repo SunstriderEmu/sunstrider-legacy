@@ -33,12 +33,9 @@
 #include "Util.h"
 #include "Pet.h"
 #include "Language.h"
-#include "CreatureAINew.h"
 
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 8+2+2+8);
 
     uint64 guid1;
@@ -131,8 +128,6 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     if(pet->GetTypeId() != TYPEID_PLAYER && (pet->ToCreature())->IsAIEnabled)
                     {
                         (pet->ToCreature())->AI()->AttackStart(TargetUnit);
-                        if (pet->ToCreature()->getAI())
-                            pet->ToCreature()->getAI()->attackStart(TargetUnit);
 
                         //10% chance to play special pet attack talk, else growl
                         if((pet->ToCreature())->IsPet() && ((Pet*)pet)->getPetType() == SUMMON_PET && pet != TargetUnit && urand(0, 100) < 10)
@@ -255,8 +250,6 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                     pet->GetMotionMaster()->Clear();
                     if ((pet->ToCreature())->IsAIEnabled) {
                         (pet->ToCreature())->AI()->AttackStart(unit_target);
-                        if (pet->ToCreature()->getAI())
-                            pet->ToCreature()->getAI()->attackStart(unit_target);
                     }
                 }
 

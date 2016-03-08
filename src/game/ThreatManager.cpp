@@ -22,7 +22,6 @@
 #include "Unit.h"
 #include "Creature.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "Player.h"
@@ -255,11 +254,11 @@ void ThreatContainer::clearReferences()
 
 //============================================================
 // Return the HostileReference of NULL, if not found
-HostileReference* ThreatContainer::getReferenceByTarget(Unit* pVictim)
+HostileReference* ThreatContainer::getReferenceByTarget(Unit* pVictim) const
 {
     HostileReference* result = NULL;
     uint64 guid = pVictim->GetGUID();
-    for(std::list<HostileReference*>::iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
+    for(std::list<HostileReference*>::const_iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
     {
         if((*i)->getUnitGuid() == guid)
         {
@@ -446,13 +445,6 @@ void ThreatManager::doAddThreat(Unit* victim, float threat)
 
 void ThreatManager::_addThreat(Unit *pVictim, float threat)
 {
-    if (iOwner->ToCreature() && iOwner->ToCreature()->getAI()) {
-        if (threat >= 0)
-            iOwner->ToCreature()->getAI()->onThreatAdd(pVictim, threat);
-        else
-            iOwner->ToCreature()->getAI()->onThreatRemove(pVictim, threat);
-    }
-
     HostileReference* ref = iThreatContainer.addThreat(pVictim, threat);
     // Ref is not in the online refs, search the offline refs next
     if(!ref)
@@ -488,7 +480,7 @@ Unit* ThreatManager::getHostilTarget()
 
 //============================================================
 
-float ThreatManager::getThreat(Unit *pVictim, bool pAlsoSearchOfflineList)
+float ThreatManager::getThreat(Unit *pVictim, bool pAlsoSearchOfflineList) const
 {
     float threat = 0.0f;
     HostileReference* ref = iThreatContainer.getReferenceByTarget(pVictim);

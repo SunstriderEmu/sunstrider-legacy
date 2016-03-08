@@ -151,6 +151,7 @@ enum SMART_EVENT
     SMART_EVENT_ATTACKED_UNIT_DIED       = 102,      // none
     SMART_EVENT_ENTER_PHASE              = 103,      // phase
     SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
+    SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanic
     
     
     SMART_EVENT_END                      ,
@@ -412,6 +413,12 @@ struct SmartEvent
             uint32 entry;
             uint32 guid;
         } friendlyDeath;
+
+        struct
+        {
+            uint32 repeat;
+            uint32 mechanicMask;
+        } affectedByMechanic;
 
         struct
         {
@@ -1174,6 +1181,7 @@ struct SmartTarget
             uint32 creature;
             uint32 minDist;
             uint32 maxDist;
+            uint32 livingState;
         } unitRange;
 
         struct
@@ -1186,6 +1194,7 @@ struct SmartTarget
         {
             uint32 creature;
             uint32 dist;
+            uint32 livingState;
         } unitDistance;
 
         struct
@@ -1396,6 +1405,7 @@ const std::unordered_map<uint32, uint32> SmartAIEventMask =
     { SMART_EVENT_ATTACKED_UNIT_DIED,        SMART_SCRIPT_TYPE_MASK_CREATURE },
     { SMART_EVENT_ENTER_PHASE,               SMART_SCRIPT_TYPE_MASK_CREATURE + SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
     { SMART_EVENT_GO_LOOT_STATE_CHANGED,     SMART_SCRIPT_TYPE_MASK_GAMEOBJECT },
+    { SMART_EVENT_AFFECTED_BY_MECHANIC,      SMART_SCRIPT_TYPE_MASK_CREATURE }
 };
 
 enum SmartEventFlags
@@ -1573,7 +1583,7 @@ class SmartAIMgr
             else
             {
                 if (entry > 0)//first search is for guid (negative), do not drop error if not found
-                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
+                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load OLDScript for Entry %d ScriptType %u.", entry, uint32(type));
                 return temp;
             }
         }

@@ -43,7 +43,6 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
-#include "CreatureAINew.h"
 #include "MovementPacketBuilder.h"
 #include "MapInstanced.h"
 #include "UpdateFieldFlags.h"
@@ -1328,8 +1327,6 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
     {
         (((Unit*)this)->ToCreature())->AI()->JustSummoned(pCreature);
-        if ((((Unit*)this)->ToCreature())->getAI())
-            (((Unit*)this)->ToCreature())->getAI()->onSummon(pCreature);
     }
 
     if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
@@ -1459,8 +1456,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
     {
         (this->ToCreature())->AI()->JustSummoned(pet);
-        if ((this->ToCreature())->getAI())
-            (this->ToCreature())->getAI()->onSummon(pet);
     }
 
     return pet;
@@ -1599,7 +1594,7 @@ Player* WorldObject::FindNearestPlayer(float range) const
 {
        Player* pl = NULL;
        Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
-       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(pl, checker);
+       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, pl, checker);
        VisitNearbyObject(range, searcher);
        return pl;
 }
@@ -2017,7 +2012,7 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, ui
     cell.SetNoCreate();
 
     Trinity::AllCreaturesOfEntryInRange check((Unit const*)this, uiEntry, fMaxSearchRange);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(lList, check);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, lList, check);
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
     cell.Visit(pair, visitor, *(this->GetMap()));
@@ -2302,7 +2297,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     Map& map = *GetMap();
     //we must build packets for all visible players
-    cell.Visit(p, player_notifier, map, *this,  map.GetVisibilityDistance());
+    cell.Visit(p, player_notifier, map, *this,  map.GetVisibilityRange());
 
     ClearUpdateMask(false);
 }

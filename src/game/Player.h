@@ -2348,6 +2348,8 @@ class Player : public Unit
         bool IsXpBlocked() { return m_isXpBlocked; }
         void SetXpBlocked(bool blocked) { m_isXpBlocked = blocked; }
 
+        void SendCinematicStart(uint32 CinematicSequenceId);
+        void SendMovieStart(uint32 MovieId);
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/

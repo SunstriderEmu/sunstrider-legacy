@@ -214,7 +214,7 @@ namespace Trinity
     {
         Do const& i_do;
 
-        explicit WorldObjectWorker(Do const& _do) : i_do(_do) {}
+        explicit WorldObjectWorker(WorldObject const* searcher, Do const& _do) : i_do(_do) {}
 
         void Visit(GameObjectMapType &m)
         {
@@ -314,7 +314,7 @@ namespace Trinity
         Unit* &i_object;
         Check & i_check;
 
-        UnitLastSearcher(Unit* & result, Check & check) : i_object(result),i_check(check) {}
+        UnitLastSearcher(WorldObject const* searcher, Unit* & result, Check & check) : i_object(result),i_check(check) {}
 
         void Visit(CreatureMapType &m);
         void Visit(PlayerMapType &m);
@@ -343,7 +343,7 @@ namespace Trinity
         std::list<Player*> &i_objects;
         Check& i_check;
         
-        PlayerListSearcher(std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
+        PlayerListSearcher(WorldObject const* searcher, std::list<Player*> &objects, Check& check) : i_objects(objects), i_check(check) {}
         
         void Visit(PlayerMapType &m);
         
@@ -385,7 +385,7 @@ namespace Trinity
         std::list<Creature*> &i_objects;
         Check& i_check;
 
-        CreatureListSearcher(std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        CreatureListSearcher(WorldObject const* /* searcher */, std::list<Creature*> &objects, Check & check) : i_objects(objects),i_check(check) {}
 
         void Visit(CreatureMapType &m);
 
@@ -399,7 +399,7 @@ namespace Trinity
         std::list< std::pair<Creature*,float> > &i_objects;
         Check& i_check;
 
-        CreatureListSearcherWithRange(std::list< std::pair<Creature*,float> > &objects, Check & check) : i_objects(objects), i_check(check) {}
+        CreatureListSearcherWithRange(WorldObject const* /* searcher */, std::list< std::pair<Creature*,float> > &objects, Check & check) : i_objects(objects), i_check(check) {}
 
         void Visit(CreatureMapType &m);
 
@@ -414,7 +414,7 @@ namespace Trinity
         Player* &i_object;
         Check & i_check;
 
-        PlayerSearcher(Player* & result, Check & check) : i_object(result),i_check(check) {}
+        PlayerSearcher(WorldObject const* /* searcher */, Player* & result, Check & check) : i_object(result),i_check(check) {}
 
         void Visit(PlayerMapType &m);
 

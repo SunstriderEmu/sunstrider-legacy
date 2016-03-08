@@ -20,7 +20,7 @@ class UnitAI
         virtual ~UnitAI() { }
         
         virtual void AttackStart(Unit *);
-        virtual void UpdateAI(const uint32 diff) = 0;
+        virtual void UpdateAI(const uint32 diff) { }
 
         float GetCombatDistance() { return m_combatDistance; };
         void SetCombatDistance(float dist);
@@ -60,7 +60,7 @@ class UnitAI
         virtual void HealDone(Unit* /*done_to*/, uint32& /*addhealth*/) { }
 
         //Do melee swing of current victim if in rnage and ready and not casting
-        void DoMeleeAttackIfReady();
+        virtual void DoMeleeAttackIfReady();
         bool DoSpellAttackIfReady(uint32 spell);
         
         virtual void sOnGossipHello(Player* player) {}

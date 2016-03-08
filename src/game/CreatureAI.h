@@ -106,6 +106,9 @@ class CreatureAI : public UnitAI
 
         void AttackStartIfCan(Unit* victim);
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
+        //Places the entire map into combat with creature
+        void DoZoneInCombat(Unit* pUnit = NULL, bool force = false);
+        bool IsInMeleeRange() const;
 
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
         virtual bool AssistPlayerInCombat(Unit* who);
@@ -184,6 +187,14 @@ class CreatureAI : public UnitAI
 
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }
+
+        //Selects a unit from the creature's current aggro list
+        bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, bool noTank = false);
+        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
+        Unit* SelectUnit(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
+        void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

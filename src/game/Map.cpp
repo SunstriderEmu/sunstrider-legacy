@@ -548,7 +548,7 @@ void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool 
 
     Trinity::MessageDeliverer post_man(*player, msg, to_possessor, to_self);
     TypeContainerVisitor<Trinity::MessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *player, GetVisibilityDistance());
+    cell.Visit(p, message, *this, *player, GetVisibilityRange());
 }
 
 void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor)
@@ -570,7 +570,7 @@ void Map::MessageBroadcast(WorldObject *obj, WorldPacket *msg, bool to_possessor
 
     Trinity::ObjectMessageDeliverer post_man(*obj, msg, to_possessor);
     TypeContainerVisitor<Trinity::ObjectMessageDeliverer, WorldTypeMapContainer > message(post_man);
-    cell.Visit(p, message, *this, *obj, GetVisibilityDistance());
+    cell.Visit(p, message, *this, *obj, GetVisibilityRange());
 }
 
 void Map::MessageDistBroadcast(Player *player, WorldPacket *msg, float dist, bool to_self, bool to_possessor, bool own_team_only)
@@ -648,23 +648,23 @@ void Map::RelocationNotify()
         if(dist > 10.0f)
         {
             Trinity::VisibleChangesNotifier notifier(*unit);
-            VisitWorld(unit->oldX, unit->oldY, GetVisibilityDistance(), notifier);
+            VisitWorld(unit->oldX, unit->oldY, GetVisibilityRange(), notifier);
             dist = 0;
         }
         
         if(unit->GetTypeId() == TYPEID_PLAYER)
         {
             Trinity::PlayerRelocationNotifier notifier(*(unit->ToPlayer()));
-            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
+            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityRange() + dist, notifier);
             //also keep/update targets near our farsight target if we're updated
             if(WorldObject* farsightTarget = unit->ToPlayer()->GetFarsightTarget())
-                VisitAll(farsightTarget->GetPositionX(), farsightTarget->GetPositionY(), farsightTarget->GetMap()->GetVisibilityDistance() + dist, notifier);
+                VisitAll(farsightTarget->GetPositionX(), farsightTarget->GetPositionY(), farsightTarget->GetMap()->GetVisibilityRange() + dist, notifier);
             notifier.Notify();
         }
         else
         {
             Trinity::CreatureRelocationNotifier notifier(*(unit->ToCreature()));
-            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityDistance() + dist, notifier);
+            VisitAll(unit->GetPositionX(), unit->GetPositionY(), unit->GetMap()->GetVisibilityRange() + dist, notifier);
         }
 
     }
@@ -703,7 +703,7 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
     // the overloaded operators handle range checking
     // so ther's no need for range checking inside the loop
     CellCoord begin_cell(standing_cell), end_cell(standing_cell);
-    CellArea area = Cell::CalculateCellArea(*obj, GetVisibilityDistance());
+    CellArea area = Cell::CalculateCellArea(*obj, GetVisibilityRange());
     area.ResizeBorders(begin_cell, end_cell);
 
     for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
@@ -815,8 +815,8 @@ void Map::Update(const uint32 &t_diff)
                     if(caster->GetTypeId() == TYPEID_PLAYER && caster->GetUInt64Value(PLAYER_FARSIGHT) == obj->GetGUID())
                     {
                         Trinity::PlayerVisibilityNotifier notifier(*(caster->ToPlayer()));
-                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityDistance(), notifier);
-                        VisitAll(caster->GetPositionX(), caster->GetPositionY(), GetVisibilityDistance(), notifier);
+                        VisitAll(obj->GetPositionX(), obj->GetPositionY(), GetVisibilityRange(), notifier);
+                        VisitAll(caster->GetPositionX(), caster->GetPositionY(), GetVisibilityRange(), notifier);
                         notifier.Notify();
                     }
             }
@@ -1841,7 +1841,7 @@ void Map::UpdateObjectVisibility( WorldObject* obj, Cell cell, CellCoord cellpai
     cell.SetNoCreate();
     Trinity::VisibleChangesNotifier notifier(*obj);
     TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityDistance());
+    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityRange());
 }
 
 void Map::SendInitSelf( Player * player)
@@ -2024,7 +2024,7 @@ bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
     CellCoord cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
 
     //we must find visible range in cells so we unload only non-visible cells...
-    float viewDist = GetVisibilityDistance();
+    float viewDist = GetVisibilityRange();
     int cell_range = (int)ceilf(viewDist / SIZE_OF_GRID_CELL) + 1;
 
     cell_min << cell_range;

@@ -56,15 +56,16 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
 struct ScriptedAI : public CreatureAI
 {
-    ScriptedAI(Creature* creature) : CreatureAI(creature), m_creature(creature) {}
+    ScriptedAI(Creature* creature) : CreatureAI(creature) {}
     ~ScriptedAI() {}
 
     //*************
     //CreatureAI Functions
     //*************
 
-    //Called at each attack of m_creature by any victim
+    //Called at each attack of me by any victim
     void AttackStart(Unit *);
+    //Attack start with forcing melee / forcing staying on place
     void AttackStart(Unit *, bool melee);
     void AttackStartNoMove(Unit *pTarget);
 
@@ -108,14 +109,7 @@ struct ScriptedAI : public CreatureAI
     
     // Called when creature finishes a spell cast
     void OnSpellFinish(Unit *caster, uint32 spellId, Unit *target, bool ok) override {}
-
-    //*************
-    // Variables
-    //*************
-
-    //Pointer to creature we are manipulating
-    Creature* m_creature;
-
+    
     //*************
     //Pure virtual functions
     //*************
@@ -149,13 +143,9 @@ struct ScriptedAI : public CreatureAI
     //Plays a sound to all nearby players
     void DoPlaySoundToSet(Unit* unit, uint32 sound);
 
-    //Places the entire map into combat with creature
-    void DoZoneInCombat(Unit* pUnit = NULL, bool force = false);
-
     //Drops all threat to 0%. Does not remove players from the threat list
     void DoResetThreat();
 
-    float DoGetThreat(Unit *u);
     void DoModifyThreatPercent(Unit *pUnit, int32 pct);
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
@@ -178,14 +168,6 @@ struct ScriptedAI : public CreatureAI
     //Spawns a creature relative to m_creature
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
-    //Selects a unit from the creature's current aggro list
-    bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
-    Unit* SelectUnit(SelectAggroTarget target, uint32 position);
-    Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, bool noTank = false);
-    Unit* SelectUnit(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
-    Unit* SelectUnit(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
-    void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
-
     //Returns spells that meet the specified criteria from the creatures spell list
     SpellInfo const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
@@ -193,15 +175,6 @@ struct ScriptedAI : public CreatureAI
     bool CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered = false);
     
     void SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand = EQUIP_NO_CHANGE, int32 uiOffHand = EQUIP_NO_CHANGE, int32 uiRanged = EQUIP_NO_CHANGE);
-};
-
-/* Can now be replaced with a SetCombatMovementAllowed(false), you should avoid using this */
-struct Scripted_NoMovementAI : public ScriptedAI
-{
-    Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) { SetCombatMovementAllowed(false); }
-
-    //Called if IsVisible(Unit *who) is true at each *who move
-    //void MoveInLineOfSight(Unit *);
 };
 
 struct NullCreatureAI : public ScriptedAI

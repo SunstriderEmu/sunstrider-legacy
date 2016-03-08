@@ -679,6 +679,14 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                         return false;
                 }
             }
+            case SMART_EVENT_AFFECTED_BY_MECHANIC:
+            {
+                if (e.event.affectedByMechanic.mechanicMask >= (1 << MECHANIC_TOTAL))
+                {
+                    SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses invalid mechanic mask %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.event.affectedByMechanic.mechanicMask);
+                    return false;
+                }
+            }
         }
     }
 

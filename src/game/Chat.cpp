@@ -647,14 +647,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "morph",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleZoneMorphCommand,                "" },
     };
 
-    static std::vector<ChatCommand> npcEventCommandTable =
-    {
-        { "enable",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleEnableEventCommand,              "" },
-        { "disable",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDisableEventCommand,             "" },
-        { "schedule",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleScheduleEventCommand,            "" },
-    
-    };
-
     static std::vector<ChatCommand> spectateCommandTable =
     {
         { "version",       SEC_PLAYER,      false, false, &ChatHandler::HandleSpectateVersion,                 "" },
@@ -764,7 +756,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "neargrave",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleNearGraveCommand,           "" },
         { "notify",         SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleNotifyCommand,              "" },
         { "npc",            SEC_GAMEMASTER1,  false, false, NULL,                                           "", npcCommandTable },
-        { "npcevent",       SEC_GAMEMASTER2,  false, false, NULL,                                           "", npcEventCommandTable },
         { "password",       SEC_PLAYER,       false, false, &ChatHandler::HandlePasswordCommand,            "" },
         { "path",           SEC_GAMEMASTER2,  false, false, NULL,                                           "", wpCommandTable },
         { "pdump",          SEC_GAMEMASTER3,  true,  false, NULL,                                           "", pdumpCommandTable },

@@ -229,7 +229,6 @@ struct CreatureTemplate
     uint32  flags_extra;
     uint32  ScriptID;
     uint32  QuestPoolId;
-    std::string scriptName; //CreatureAINew
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
 
@@ -340,7 +339,6 @@ struct CreatureData
     uint8 spawnMask;
     uint32 poolId;
     uint32 scriptId;
-    std::string scriptName;
     uint32 instanceEventId; // If spawned in raid, don't respawn if corresponding instance event is != NOT_STARTED
 };
 
@@ -613,7 +611,6 @@ class Creature : public Unit
         std::string GetScriptName();
         uint32 GetScriptId();
         std::string GetAIName() const;
-        std::string getScriptName(); // New
         uint32 getInstanceEventId();
 
         void ResetCreatureEmote();
@@ -665,6 +662,8 @@ class Creature : public Unit
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         //select nearest alive player
         Player* SelectNearestPlayer(float distance = 0) const;
+        Unit* SelectNearestTargetInAttackDistance(float dist) const;
+
 
         /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();

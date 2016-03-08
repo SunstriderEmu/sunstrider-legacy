@@ -17,7 +17,6 @@
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "CreatureAI.h"
-#include "CreatureAINew.h"
 #include "Formulas.h"
 #include "Pet.h"
 
@@ -687,8 +686,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if(pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
     {
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
-        if ((pVictim->ToCreature())->getAI())
-            (pVictim->ToCreature())->getAI()->DamageTaken(this, damage);
     }
 
     if(this->GetTypeId()== TYPEID_UNIT && (this->ToCreature())->IsAIEnabled)
@@ -7494,9 +7491,6 @@ void Unit::CombatStop(bool cast)
     if( GetTypeId()==TYPEID_PLAYER )
         (this->ToPlayer())->SendAttackSwingCancelAttack();     // melee and ranged forced attack cancel
     ClearInCombat();
-    
-    if (ToCreature() && ToCreature()->getAI())
-        ToCreature()->getAI()->setAICombat(false);
 }
 
 void Unit::CombatStopWithPets(bool cast)
@@ -9687,8 +9681,6 @@ void Unit::CombatStart(Unit* target, bool updatePvP)
         && !(target->ToCreature())->HasReactState(REACT_PASSIVE) && (target->ToCreature())->IsAIEnabled)
     {
         (target->ToCreature())->AI()->AttackStart(this);
-        if (target->ToCreature()->getAI())
-            target->ToCreature()->getAI()->attackStart(this);
         
         if (InstanceScript* instance = ((InstanceScript*)target->GetInstanceScript()))
             instance->MonsterPulled(target->ToCreature(), this);
@@ -10119,9 +10111,9 @@ void Unit::DestroyForNearbyPlayers()
         return;
 
     std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityDistance());
+    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
-    VisitNearbyWorldObject(GetMap()->GetVisibilityDistance(), searcher);
+    VisitNearbyWorldObject(GetMap()->GetVisibilityRange(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((*iter)->ToPlayer())->HaveAtClient(this))
@@ -10478,6 +10470,17 @@ bool Unit::CanHaveThreatList() const
     return true;
 }
 
+float Unit::GetThreat(Unit* pUnit) const
+{
+    if (!pUnit)
+        return 0.0f;
+
+    if (CanHaveThreatList())
+        return m_ThreatManager.getThreat(pUnit);
+
+    return 0.0f;
+}
+
 //======================================================================
 
 void Unit::ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask)
@@ -10527,8 +10530,6 @@ void Unit::TauntApply(Unit* taunter)
 
         if ((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->AttackStart(taunter);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->attackStart(taunter);
         }
     }
 
@@ -10555,8 +10556,6 @@ void Unit::TauntFadeOut(Unit *taunter)
     {
         if((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->EnterEvadeMode();
-            if (this->ToCreature()->getAI())
-                this->ToCreature()->getAI()->evade();
         }
         return;
     }
@@ -10569,8 +10568,6 @@ void Unit::TauntFadeOut(Unit *taunter)
         SetInFront(target);
         if ((this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->AttackStart(target);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->attackStart(target);
         }
     }
 }
@@ -10700,8 +10697,6 @@ Unit* Creature::SelectVictim(bool evade)
             if((*itr)->IsPermanent() && evade)
             {
                 AI()->EnterEvadeMode();
-                if (getAI())
-                    getAI()->evade();
                 break;
             }
         return NULL;
@@ -10710,8 +10705,6 @@ Unit* Creature::SelectVictim(bool evade)
     // enter in evade mode in other case
     if (evade) {
         AI()->EnterEvadeMode();
-        if (getAI())
-            getAI()->evade();
     }
     //TC_LOG_INFO("%s: Returning null", GetName());
     return NULL;
@@ -11494,8 +11487,6 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
 {
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->OnRemove();
-        if ((this->ToCreature())->getAI())
-            (this->ToCreature())->getAI()->onRemove();
     }
     // This needs to be before RemoveFromWorld to make GetCaster() return a valid pointer on aura removal
     InterruptNonMeleeSpells(true);
@@ -12907,9 +12898,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call KilledUnit for creatures
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
-            if (ToCreature()->getAI()) {
-                ToCreature()->getAI()->onKill(pVictim);
-            }
 
             auto attackers = pVictim->GetAttackers();
             for(auto attacker : attackers)
@@ -12966,8 +12954,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call KilledUnit for creatures, this needs to be called after the lootable flag is set
         if (GetTypeId() == TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
             (this->ToCreature())->AI()->KilledUnit(pVictim);
-            if (ToCreature()->getAI())
-                ToCreature()->getAI()->onKill(pVictim);
         }
             
         if (GetTypeId() == TYPEID_PLAYER) {
@@ -12990,8 +12976,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         // Call creature just died function
         if (cVictim->IsAIEnabled) {
             cVictim->AI()->JustDied(this);
-            if (cVictim->getAI())
-                cVictim->getAI()->onDeath(this);
         }
 
         cVictim->WarnDeathToFriendly();
@@ -13715,13 +13699,9 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             {
                 (this->ToCreature())->AddThreat(charmer, 10000.0f);
                 (this->ToCreature())->AI()->AttackStart(charmer);
-                if (ToCreature()->getAI())
-                    ToCreature()->getAI()->attackStart(charmer);
             }
             else {
                 (this->ToCreature())->AI()->EnterEvadeMode();
-                if (this->ToCreature()->getAI())
-                    this->ToCreature()->getAI()->evade();
             }
         }
     }

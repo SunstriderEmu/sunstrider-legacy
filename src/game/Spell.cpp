@@ -48,7 +48,6 @@
 #include "Util.h"
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
-#include "CreatureAINew.h"
 #include "Containers.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
@@ -1283,8 +1282,6 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) 
     {
         (unit->ToCreature())->AI()->SpellHit(caster, m_spellInfo);
-        if ((unit->ToCreature())->getAI())
-            (unit->ToCreature())->getAI()->onHitBySpell(caster, m_spellInfo);
     }
 
     if(caster->GetTypeId() == TYPEID_UNIT && (caster->ToCreature())->IsAIEnabled)
@@ -1654,7 +1651,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
         {
             Unit *target = NULL;
             Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
-            Trinity::UnitLastSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+            Trinity::UnitLastSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_caster, target, u_check);
             m_caster->VisitNearbyObject(range, searcher);
             return target;
         }
@@ -1662,7 +1659,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargets TargetType)
         {
             Unit *target = NULL;
             Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, range);
-            Trinity::UnitLastSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(target, u_check);
+            Trinity::UnitLastSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, target, u_check);
             m_caster->VisitNearbyObject(range, searcher);
             return target;
         }
@@ -2343,15 +2340,6 @@ uint32 Spell::prepare(SpellCastTargets * targets, Aura* triggeredByAura)
                 msg.CastSpell(m_spellInfo->Id, m_casttime);
                 tmpPlayer->SendSpectatorAddonMsgToBG(msg);
             }
-
-    if (m_caster->ToCreature())
-    {
-        if (m_caster->ToCreature()->IsAIEnabled)
-        {
-            if ((m_caster->ToCreature())->getAI())
-                (m_caster->ToCreature())->getAI()->onSpellPrepare(m_spellInfo, m_targets.GetUnitTarget());
-        }
-    }
 
     if(m_IsTriggeredSpell)
         cast(true);
@@ -3057,9 +3045,6 @@ void Spell::finish(bool ok, bool cancelChannel)
     {
         if (m_caster->ToCreature())
         {
-            if (m_caster->ToCreature()->getAI())
-                m_caster->ToCreature()->getAI()->onSpellFinish(m_caster, m_spellInfo->Id, m_targets.GetUnitTarget(), ok);
-
             m_caster->ToCreature()->ReleaseFocus(this);
         }
     }
@@ -5254,7 +5239,7 @@ SpellCastResult Spell::CheckItems()
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck>, GridTypeMapContainer > object_checker(checker);
         Map& map = *m_caster->GetMap();
-        cell.Visit(p, object_checker, map, *m_caster, map.GetVisibilityDistance());
+        cell.Visit(p, object_checker, map, *m_caster, map.GetVisibilityRange());
 
         if(!ok)
             return SPELL_FAILED_REQUIRES_SPELL_FOCUS;

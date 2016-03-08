@@ -27,3 +27,8 @@ int GameObjectAI::Permissible(const GameObject* go)
 }
 
 NullGameObjectAI::NullGameObjectAI(GameObject *g) : GameObjectAI(g) {}
+
+uint32 GameObjectAI::GetDialogStatus(Player* /*player*/) 
+{ 
+    return DIALOG_STATUS_SCRIPTED_NO_STATUS; 
+}

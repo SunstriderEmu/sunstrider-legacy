@@ -48,7 +48,6 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
-#include "CreatureAINew.h"
 
 #define NULL_AURA_SLOT 0xFF
 
@@ -2053,8 +2052,8 @@ void Aura::TriggerSpell()
                 if(!caster)
                     return;
                 if (caster->ToCreature())
-                    if (caster->ToCreature()->getAI())
-                        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0))
+                    if (caster->ToCreature()->AI())
+                        if (Unit* victim = caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0))
                             m_target->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
                 return;
             case 45921:
@@ -2062,8 +2061,8 @@ void Aura::TriggerSpell()
                     return;
 
                 if (caster->ToCreature())
-                    if (caster->ToCreature()->getAI())
-                        if (Unit* victim = caster->ToCreature()->getAI()->selectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                    if (caster->ToCreature()->AI())
+                        if (Unit* victim = caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                             caster->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
         }
     }
@@ -2157,7 +2156,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 if (!m_target && !caster->GetVictim())
                     return;
 
-                Creature* cTarget = caster->FindCreatureInGrid(18240, 5, true);
+                Creature* cTarget = caster->FindNearestCreature(18240, 5, true);
                 if ((caster->ToPlayer())->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
                 {
                     (caster->ToPlayer())->KilledMonster(18240, 0);
@@ -2345,7 +2344,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
             case 39246: // quest 10930
             {
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER) {
-                    Creature* clefthoof = caster->FindCreatureInGrid(22105, 30.0f, false);
+                    Creature* clefthoof = caster->FindNearestCreature(22105, 30.0f, false);
                     if (!clefthoof)
                         return;
 
@@ -3449,9 +3448,9 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         bool mdtarget_attacked = false;
 
         std::list<Unit*> targets;
-        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityDistance());
+        Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityRange());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
-        m_target->VisitNearbyObject(m_target->GetMap()->GetVisibilityDistance(), searcher);
+        m_target->VisitNearbyObject(m_target->GetMap()->GetVisibilityRange(), searcher);
 
         /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)

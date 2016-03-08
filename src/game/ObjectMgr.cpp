@@ -477,8 +477,8 @@ void ObjectMgr::LoadCreatureTemplates(bool reload /* = false */)
                                              //           
                                              "InhabitType, HealthModifier, ManaModifier, ArmorModifier, DamageModifier, ExperienceModifier, RacialLeader, RegenHealth, equipment_id, "
                                              //   
-                                             "mechanic_immune_mask, flags_extra, creature_template.ScriptName, creature_scripts.scriptname "
-                                             "FROM creature_template LEFT JOIN creature_scripts ON entryorguid = entry;");
+                                             "mechanic_immune_mask, flags_extra, creature_template.ScriptName "
+                                             "FROM creature_template");
 
     if (!result)
     {
@@ -573,7 +573,6 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.MechanicImmuneMask = fields[f++].GetUInt32();
     creatureTemplate.flags_extra        = fields[f++].GetUInt32();
     creatureTemplate.ScriptID           = GetScriptId(fields[f++].GetCString());
-    creatureTemplate.scriptName         = fields[f++].GetString();
 }
 
 void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
@@ -1225,10 +1224,9 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13           14            15       16      17                18                         19                                                 
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, creature_scripts.scriptname, COALESCE(creature_encounter_respawn.eventid, -1) "
+    //   12         13           14            15       16      17                   18                                                
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1) "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
-        "LEFT OUTER JOIN creature_scripts ON creature.guid = -creature_scripts.entryorguid "
         "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
         );
 
@@ -1271,10 +1269,7 @@ void ObjectMgr::LoadCreatures()
         data.spawnMask      = fields[15].GetUInt8();
         int32 gameEvent     = fields[16].GetInt32();
         data.poolId         = fields[17].GetUInt32();
-
-        std::string scriptname = fields[18].GetString();
-        data.scriptName = scriptname;
-        data.instanceEventId = fields[19].GetDouble();
+        data.instanceEventId = fields[18].GetDouble();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)
@@ -7629,25 +7624,6 @@ void ObjectMgr::LoadScriptNames()
     }
 
     std::sort(m_scriptNames.begin(), m_scriptNames.end());
-    
-    // New system
-    QueryResult resultnew = WorldDatabase.Query("SELECT entryorguid, scriptname FROM creature_scripts");
-    Field* fields;
-    if (resultnew) {
-        do {
-            fields = resultnew->Fetch();
-            
-            int32 entryorguid = fields[0].GetInt32();
-            std::string scriptname = fields[1].GetString();
-            
-            if (entryorguid > 0)    // By entry
-                m_creatureScriptsByEntry[uint32(entryorguid)] = scriptname;
-            else                    // By GUID
-                m_creatureScriptsByGUID[uint32(-entryorguid)] = scriptname;
-        } while (resultnew->NextRow());
-    }
-    else
-        TC_LOG_DEBUG("server.loading","ObjectMgr::LoadScriptNames: Table `creature_scripts` is empty!");
 }
 
 uint32 ObjectMgr::GetScriptId(const char *name)
