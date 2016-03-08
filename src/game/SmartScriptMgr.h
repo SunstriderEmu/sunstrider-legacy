@@ -564,7 +564,10 @@ enum SMART_ACTION
     SMART_ACTION_REMOVE_FROM_FORMATION              = 158,    // none
     //break formation
     SMART_ACTION_BREAK_FORMATION                    = 159,    // none
-    SMART_ACTION_END                                     ,
+    SMART_ACTION_SET_MECHANIC_IMMUNITY              = 160,    // type, apply
+    SMART_ACTION_SET_SPELL_IMMUNITY                 = 161,    // id, apply
+
+    SMART_ACTION_END,
 };
 
 struct SmartAction
@@ -1064,6 +1067,18 @@ struct SmartAction
         {
             uint32 prevent; // 0/1
         } preventMoveHome;
+
+        struct
+        {
+            uint32 type;
+            uint32 apply;
+        } mechanicImmunity;
+
+        struct
+        {
+            uint32 id;
+            uint32 apply;
+        } spellImmunity;
 
         //! Note for any new future actions
         //! All parameters must have type uint32
