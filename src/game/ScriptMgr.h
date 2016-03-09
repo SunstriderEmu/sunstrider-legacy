@@ -111,7 +111,6 @@ public:
     uint32(*pGetDialogStatus)(Player*, Creature*) = nullptr;
     bool(*OnQuestReward)(Player*, Creature*, Quest const*, uint32) = nullptr;
     bool(*pItemHello)(Player*, Item*, Quest const*) = nullptr;
-    bool(*pAreaTrigger)(Player*, AreaTriggerEntry const*) = nullptr;
     bool(*pItemQuestAccept)(Player*, Item *, Quest const*) = nullptr;
     bool(*pItemUse)(Player*, Item*, SpellCastTargets const&) = nullptr;
     bool(*OnReceiveEmote)(Player*, Creature*, uint32 emote) = nullptr;
@@ -268,6 +267,20 @@ public:
 
     // Called when a GameObjectAI object is needed for the gameobject.
     virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return NULL; }
+};
+
+class AreaTriggerScript : public ScriptObject
+{
+protected:
+
+    AreaTriggerScript(const char* name);
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Called when the area trigger is activated by a player.
+    virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
 };
 
 // Manages registration, loading, and execution of scripts.
@@ -432,6 +445,10 @@ class ScriptMgr
         void OnGameObjectUpdate(GameObject* go, uint32 diff);
         GameObjectAI* GetGameObjectAI(GameObject* go);
 
+    public: /* AreaTriggerScript */
+
+        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
+
     public: //old handlers not yet in categories
 
         bool OnSpellCast(Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellInfo const *spell);
@@ -442,7 +459,6 @@ class ScriptMgr
         bool OnItemOpen (Player *pPlayer, Item *pItem);
         bool ItemHello(Player* pPlayer, Item* pItem, Quest const* pQuest);
         bool ItemQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
-        bool AreaTrigger(Player* pPlayer,AreaTriggerEntry const* atEntry);
         bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
         InstanceScript* CreateInstanceData(Map *map);
         
