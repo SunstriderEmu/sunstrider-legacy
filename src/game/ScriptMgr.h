@@ -9,6 +9,7 @@
 #define SCRIPTMGR_H
 
 #include "QuestDef.h"
+#include "ObjectMgr.h"
 
 class WorldSocket;
 class WorldSession;

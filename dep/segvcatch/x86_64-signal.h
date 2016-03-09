@@ -16,6 +16,7 @@ details.  */
 #define JAVA_SIGNAL_H 1
 
 #include <signal.h>
+ #include <unistd.h>
 #include <sys/syscall.h>
 
 #define HANDLE_SEGV 1

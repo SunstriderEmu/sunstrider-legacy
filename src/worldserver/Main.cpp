@@ -32,6 +32,8 @@
 #include "IRCMgr.h"
 
 #include <segvcatch.h>
+#include <fstream>
+#include <execinfo.h>
 
 using namespace boost::program_options;
 
@@ -91,15 +93,15 @@ void handle_segv()
 #if PLATFORM == PLATFORM_UNIX
     void* arr[20];
     size_t size = backtrace(arr, 20);
-    fprintf(stderr, "Error: signal %d:\n", sig);
+    fprintf(stderr, "SEGV or PFE occured :\n");
     //print to stderr
     backtrace_symbols_fd(arr, size, STDERR_FILENO);
 
     //get backtrace as string array
-    char* backtrace[] = backtrace_symbols(arr, size);
+    char** backtrace = backtrace_symbols(arr, size);
     //print to a dump file in exec folder as well
-    std::string outputFileName = "mapcrash_" + time(NULL);
-    ofstream dumpFile(outputFileName, ios::out);
+    std::string outputFileName = "mapcrash_" + std::to_string(time(NULL));
+    std::ofstream dumpFile(outputFileName, std::ios::out);
     if (dumpFile.is_open())
     {
         dumpFile << "Error: signal %d:" << std::endl;
@@ -109,7 +111,7 @@ void handle_segv()
         dumpFile.close();
     }
     //delete array allocated by backtrace_symbols
-    delete backtrace;
+    //delete backtrace;
 #endif
 
     throw std::runtime_error("Segmentation fault or FPE");
