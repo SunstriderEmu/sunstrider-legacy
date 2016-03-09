@@ -26,11 +26,10 @@
 #include "Cell.h"
 #include "CellImpl.h"
 #include "Unit.h"
-//#include "InstanceScript.h"
 #include "ScriptedCreature.h"
+#include "ScriptMgr.h"
 
 #include "SmartAI.h"
-//#include "ScriptPCH.h"
 
 SmartAI::SmartAI(Creature* c) : CreatureAI(c)
 {
@@ -923,7 +922,6 @@ void SmartGameObjectAI::EventInform(uint32 eventId)
     GetScript()->ProcessEventsFor(SMART_EVENT_GO_EVENT_INFORM, NULL, eventId);
 }
 
-/*
 class SmartTrigger : public AreaTriggerScript
 {
     public:
@@ -941,9 +939,9 @@ class SmartTrigger : public AreaTriggerScript
             script.ProcessEventsFor(SMART_EVENT_AREATRIGGER_ONTRIGGER, player, trigger->id);
             return true;
         }
-};*/
+};
 
-void AddSC_SmartSCripts()
+void AddSC_SmartScripts()
 {
-    //new SmartTrigger();
+    new SmartTrigger();
 }

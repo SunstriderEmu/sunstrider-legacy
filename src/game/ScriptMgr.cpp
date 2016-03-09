@@ -42,6 +42,7 @@ void LoadOverridenDBCData();
 
 // -- Areatrigger --
 extern void AddSC_areatrigger_scripts();
+extern void AddSC_SmartScripts();
 
 // -- Outdoors dragons --
 extern void AddSC_boss_dragonsofnightmare();
@@ -819,8 +820,8 @@ void ScriptMgr::ClearScripts()
     */
     SCR_CLEAR(CreatureScript);
     SCR_CLEAR(GameObjectScript);
-    /*
     SCR_CLEAR(AreaTriggerScript);
+    /*
     SCR_CLEAR(BattlegroundScript);
     SCR_CLEAR(OutdoorPvPScript);
     SCR_CLEAR(CommandScript);
@@ -870,6 +871,7 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
 
     // -- Areatrigger --
     AddSC_areatrigger_scripts();
+    AddSC_SmartScripts();
 
     // -- Outdoors Dragons --
     AddSC_boss_dragonsofnightmare();
@@ -2061,12 +2063,13 @@ GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* go)
     return tmpscript->GetAI(go);
 }
 
-bool ScriptMgr::AreaTrigger( Player *player, AreaTriggerEntry const* atEntry)
+bool ScriptMgr::OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger)
 {
-    OLDScript* tmpscript = m_scripts[GetAreaTriggerScriptId(atEntry->id)];
-    if (!tmpscript || !tmpscript->pAreaTrigger) return false;
+    ASSERT(player);
+    ASSERT(trigger);
 
-    return tmpscript->pAreaTrigger(player, atEntry);
+    GET_SCRIPT_RET(AreaTriggerScript, sObjectMgr->GetAreaTriggerScriptId(trigger->id), tmpscript, false);
+    return tmpscript->OnTrigger(player, trigger);
 }
 
 bool ScriptMgr::ItemUse( Player *player, Item* _Item, SpellCastTargets const& targets)
@@ -2120,6 +2123,12 @@ GameObjectScript::GameObjectScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<GameObjectScript>::AddScript(this);
+}
+
+AreaTriggerScript::AreaTriggerScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<AreaTriggerScript>::AddScript(this);
 }
 
 void ScriptMgr::FillSpellSummary()
@@ -2227,8 +2236,8 @@ template class ScriptRegistry<ItemScript>;
 */
 template class ScriptRegistry<CreatureScript>;
 template class ScriptRegistry<GameObjectScript>;
-/*
 template class ScriptRegistry<AreaTriggerScript>;
+/*
 template class ScriptRegistry<BattlegroundScript>;
 template class ScriptRegistry<OutdoorPvPScript>;
 template class ScriptRegistry<CommandScript>;
