@@ -32,9 +32,10 @@
 #include "IRCMgr.h"
 
 #include <segvcatch.h>
+#if PLATFORM == PLATFORM_UNIX
 #include <fstream>
 #include <execinfo.h>
-
+#endif
 using namespace boost::program_options;
 
 #define WORLD_SLEEP_CONST 50
