@@ -214,6 +214,11 @@ void Creature::AddToWorld()
             if (m_creaturePoolId)
                 FindMap()->AddCreatureToPool(this, m_creaturePoolId);
         }
+        AIM_Initialize();
+#ifdef LICH_KING
+        if (IsVehicle())
+            GetVehicleKit()->Install();
+#endif
     }
 }
 
@@ -1188,7 +1193,6 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
-    AIM_Initialize();
     return true;
 }
 
