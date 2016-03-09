@@ -258,7 +258,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     assert(map->IsDungeon());
 
     bool load_data = save != NULL;
-    map->CreateInstanceData(load_data);
+    map->CreateInstanceScript(load_data);
 
     m_InstancedMaps[InstanceId] = map;
     return map;

@@ -108,14 +108,98 @@ public:
     bool(*OnQuestComplete)(Player*, Creature*, Quest const*) = nullptr;
     uint32(*pGetDialogStatus)(Player*, Creature*) = nullptr;
     bool(*OnQuestReward)(Player*, Creature*, Quest const*, uint32) = nullptr;
-    bool(*pItemHello)(Player*, Item*, Quest const*) = nullptr;
-    bool(*pItemQuestAccept)(Player*, Item *, Quest const*) = nullptr;
-    bool(*pItemUse)(Player*, Item*, SpellCastTargets const&) = nullptr;
     bool(*OnReceiveEmote)(Player*, Creature*, uint32 emote) = nullptr;
     bool(*OnEffectDummyCreature)(Unit*, uint32, uint32, Creature*) = nullptr;
 
     CreatureAI* (*GetAI)(Creature*) = nullptr;
-    InstanceScript* (*GetInstanceData)(Map*) = nullptr;
+};
+
+template<class TMap> class MapScript : public UpdatableScript<TMap>
+{
+    MapEntry const* _mapEntry;
+
+protected:
+
+    MapScript(uint32 mapId)
+        : _mapEntry(sMapStore.LookupEntry(mapId))
+    {
+        if (!_mapEntry)
+            TC_LOG_ERROR("scripts","Invalid MapScript for %u; no such map ID.", mapId);
+    }
+
+public:
+
+    // Gets the MapEntry structure associated with this script. Can return NULL.
+    MapEntry const* GetEntry() { return _mapEntry; }
+
+    // Called when the map is created.
+    virtual void OnCreate(TMap* /*map*/) { }
+
+    // Called just before the map is destroyed.
+    virtual void OnDestroy(TMap* /*map*/) { }
+
+    // Called when a grid map is loaded.
+    virtual void OnLoadGridMap(TMap* /*map*/, GridMap* /*gmap*/, uint32 /*gx*/, uint32 /*gy*/) { }
+
+    // Called when a grid map is unloaded.
+    virtual void OnUnloadGridMap(TMap* /*map*/, GridMap* /*gmap*/, uint32 /*gx*/, uint32 /*gy*/) { }
+
+    // Called when a player enters the map.
+    virtual void OnPlayerEnter(TMap* /*map*/, Player* /*player*/) { }
+
+    // Called when a player leaves the map.
+    virtual void OnPlayerLeave(TMap* /*map*/, Player* /*player*/) { }
+
+    // Called on every map update tick.
+    virtual void OnUpdate(TMap* /*map*/, uint32 /*diff*/) { }
+};
+
+class WorldMapScript : public ScriptObject, public MapScript<Map>
+{
+protected:
+
+    WorldMapScript(const char* name, uint32 mapId);
+};
+
+class InstanceMapScript : public ScriptObject, public MapScript<InstanceMap>
+{
+protected:
+
+    InstanceMapScript(const char* name, uint32 mapId);
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Gets an InstanceScript object for this instance.
+    virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return NULL; }
+};
+
+class BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
+{
+protected:
+
+    BattlegroundMapScript(const char* name, uint32 mapId);
+};
+
+class ItemScript : public ScriptObject
+{
+protected:
+
+    ItemScript(const char* name);
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Called when a player accepts a quest from the item.
+    virtual bool OnQuestAccept(Player* /*player*/, Item* /*item*/, Quest const* /*quest*/) { return false; }
+
+    // Called when a player uses the item.
+    virtual bool OnUse(Player* /*player*/, Item* /*item*/, SpellCastTargets const& /*targets*/) { return false; }
+
+    // Called when the item expires (is destroyed).
+    virtual bool OnExpire(Player* /*player*/, ItemTemplate const* /*proto*/) { return false; }
 };
 
 class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
@@ -317,15 +401,18 @@ class ScriptMgr
 
     public: /* AccountScript */
 
+        /*
         void OnAccountLogin(uint32 accountId);
         void OnFailedAccountLogin(uint32 accountId);
         void OnEmailChange(uint32 accountId);
         void OnFailedEmailChange(uint32 accountId);
         void OnPasswordChange(uint32 accountId);
         void OnFailedPasswordChange(uint32 accountId);
-       
+       */
+
     public: /* GuildScript */
 
+        /*
         void OnGuildAddMember(Guild* guild, Player* player, uint8& plRank);
         void OnGuildRemoveMember(Guild* guild, Player* player, bool isDisbanding, bool isKicked);
         void OnGuildMOTDChanged(Guild* guild, const std::string& newMotd);
@@ -338,17 +425,30 @@ class ScriptMgr
             bool isDestBank, uint8 destContainer, uint8 destSlotId);
         void OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank);
         void OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId);
+        */
 
     public: /* GroupScript */
 
+        /*
         void OnGroupAddMember(Group* group, uint64 guid);
         void OnGroupInviteMember(Group* group, uint64 guid);
 //        void OnGroupRemoveMember(Group* group, uint64 guid, RemoveMethod method, uint64 kicker, const char* reason);
         void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
         void OnGroupDisband(Group* group);
+        */
 
     public: /* MapScript */
-         void OnMapUpdate(Map* map, uint32 diff);
+        void OnCreateMap(Map* map);
+        void OnDestroyMap(Map* map);
+        void OnLoadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy);
+        void OnUnloadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy);
+        void OnPlayerEnterMap(Map* map, Player* player);
+        void OnPlayerLeaveMap(Map* map, Player* player);
+        void OnMapUpdate(Map* map, uint32 diff);
+
+    public: /* InstanceMapScript */
+
+        InstanceScript* CreateInstanceScript(InstanceMap* map);
 
     public: /* TransportScript */
 
@@ -360,25 +460,25 @@ class ScriptMgr
 
     public: /* PlayerScript */
 
-        void OnPVPKill(Player* killer, Player* killed);
-        void OnCreatureKill(Player* killer, Creature* killed);
-        void OnPlayerKilledByCreature(Creature* killer, Player* killed);
-        void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
-        void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
-        void OnPlayerTalentsReset(Player* player, bool noCost);
-        void OnPlayerMoneyChanged(Player* player, int32& amount);
-        void OnPlayerMoneyLimit(Player* player, int32& amount);
-        void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
-        void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
-        void OnPlayerDuelRequest(Player* target, Player* challenger);
-        void OnPlayerDuelStart(Player* player1, Player* player2);
-        void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
+        //void OnPVPKill(Player* killer, Player* killed);
+        //void OnCreatureKill(Player* killer, Creature* killed);
+        //void OnPlayerKilledByCreature(Creature* killer, Player* killed);
+        //void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+        //void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
+        //void OnPlayerTalentsReset(Player* player, bool noCost);
+        //void OnPlayerMoneyChanged(Player* player, int32& amount);
+        //void OnPlayerMoneyLimit(Player* player, int32& amount);
+        //void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
+        //void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
+        //void OnPlayerDuelRequest(Player* target, Player* challenger);
+        //void OnPlayerDuelStart(Player* player1, Player* player2);
+        //void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
         /*void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
         void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);*/
-        void OnPlayerEmote(Player* player, uint32 emote);
+        /*void OnPlayerEmote(Player* player, uint32 emote);
         void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, uint64 guid);
         void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
         void OnPlayerLogin(Player* player, bool firstLogin);
@@ -390,9 +490,10 @@ class ScriptMgr
 //        void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
         void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
         bool OnPlayerChat(Player *pPlayer, const char *text); //old, to replace
-
+        */
     public: /* ServerScript */
 
+        /*
         void OnNetworkStart();
         void OnNetworkStop();
         void OnSocketOpen(std::shared_ptr<WorldSocket> socket);
@@ -400,9 +501,9 @@ class ScriptMgr
         void OnPacketReceive(WorldSession* session, WorldPacket const& packet);
         void OnPacketSend(WorldSession* session, WorldPacket const& packet);
         void OnUnknownPacketReceive(WorldSession* session, WorldPacket const& packet);
-
+        */
     public: /* WorldScript */
-
+        /*
         void OnOpenStateChange(bool open) {}
         void OnConfigLoad(bool reload) {}
         void OnMotdChange(std::string& newMotd) {}
@@ -411,6 +512,12 @@ class ScriptMgr
         void OnWorldUpdate(uint32 diff) {}
         void OnStartup() {}
         void OnShutdown() {}
+        */
+    public: /* ItemScript */
+
+        bool OnQuestAccept(Player* player, Item* item, Quest const* quest);
+        bool OnItemUse(Player* player, Item* item, SpellCastTargets const& targets);
+        bool OnItemExpire(Player* player, ItemTemplate const* proto);
 
     public: /* CreatureScript */
 
@@ -447,19 +554,6 @@ class ScriptMgr
 
         bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
 
-    public: //old handlers not yet in categories
-
-        bool OnSpellCast(Unit *pUnitTarget, Item *pItemTarget, GameObject *pGoTarget, uint32 i, SpellInfo const *spell);
-        void OnServerStartup();
-        void OnServerShutdown();
-        void OnAreaChange(Player *pPlayer, AreaTableEntry const *pArea);
-        bool OnItemClick (Player *pPlayer, Item *pItem);
-        bool OnItemOpen (Player *pPlayer, Item *pItem);
-        bool ItemHello(Player* pPlayer, Item* pItem, Quest const* pQuest);
-        bool ItemQuestAccept(Player* pPlayer, Item* pItem, Quest const* pQuest);
-        bool ItemUse(Player* pPlayer, Item* pItem, SpellCastTargets const& targets);
-        InstanceScript* CreateInstanceData(Map *map);
-        
     private:
 
         uint32 _scriptCount;

@@ -34,12 +34,12 @@ class WorldSocketThread : public NetworkThread<WorldSocket>
 public:
     void SocketAdded(std::shared_ptr<WorldSocket> sock) override
     {
-        sScriptMgr->OnSocketOpen(sock);
+        //sScriptMgr->OnSocketOpen(sock);
     }
 
     void SocketRemoved(std::shared_ptr<WorldSocket> sock) override
     {
-        sScriptMgr->OnSocketClose(sock);
+      //  sScriptMgr->OnSocketClose(sock);
     }
 };
 
@@ -71,7 +71,7 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
 
     _acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
 
-    sScriptMgr->OnNetworkStart();
+    //    sScriptMgr->OnNetworkStart();
     return true;
 }
 
@@ -79,7 +79,7 @@ void WorldSocketMgr::StopNetwork()
 {
     BaseSocketMgr::StopNetwork();
 
-    sScriptMgr->OnNetworkStop();
+    //    sScriptMgr->OnNetworkStop();
 }
 
 void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)

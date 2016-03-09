@@ -13193,14 +13193,14 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
     switch (questGiver->GetTypeId())
     {
         case TYPEID_UNIT:
-            //sScriptMgr->OnQuestAccept(this, (questGiver->ToCreature()), quest);
+            sScriptMgr->OnQuestAccept(this, (questGiver->ToCreature()), quest);
             questGiver->ToCreature()->AI()->sQuestAccept(this, quest);
             break;
         case TYPEID_ITEM:
         case TYPEID_CONTAINER:
         {
             Item* item = (Item*)questGiver;
-            //sScriptMgr->OnQuestAccept(this, item, quest);
+            sScriptMgr->OnQuestAccept(this, item, quest);
 
             // destroy not required for quest finish quest starting item
             bool destroyItem = true;
@@ -13219,7 +13219,7 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
             break;
         }
         case TYPEID_GAMEOBJECT:
-           // sScriptMgr->OnQuestAccept(this, questGiver->ToGameObject(), quest);
+            sScriptMgr->OnQuestAccept(this, questGiver->ToGameObject(), quest);
             questGiver->ToGameObject()->AI()->OnQuestAccept(this, quest);
             break;
         default:
@@ -16504,8 +16504,8 @@ void Player::SaveToDB(bool create /*=false*/)
     // first save/honor gain after midnight will also update the player's honor fields
     UpdateHonorFields();
 
-    if (!create)
-        sScriptMgr->OnPlayerSave(this);
+    /*if (!create)
+        sScriptMgr->OnPlayerSave(this); */
 
     /*
     uint32 mapid = IsBeingTeleported() ? GetTeleportDest().m_mapId : GetMapId();

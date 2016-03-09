@@ -28,6 +28,7 @@
 #include "DBCStores.h"
 #include "SpellMgr.h"
 #include "Bag.h"
+#include "ScriptMgr.h"
 
 void AddItemsSetItem(Player*player,Item *item)
 {
@@ -283,6 +284,7 @@ void Item::UpdateDuration(Player* owner, uint32 diff)
 
     if (GetUInt32Value(ITEM_FIELD_DURATION)<=diff)
     {
+        sScriptMgr->OnItemExpire(owner, GetTemplate());
         owner->DestroyItem(GetBagSlot(), GetSlot(), true);
         return;
     }

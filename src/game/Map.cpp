@@ -65,6 +65,8 @@ extern u_map_magic MapLiquidMagic;
 
 Map::~Map()
 {
+    sScriptMgr->OnDestroyMap(this);
+
     UnloadAll();
 
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), i_InstanceId);
@@ -114,6 +116,8 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
     //map already load, delete it before reloading (Is it necessary? Do we really need the ability the reload maps during runtime?)
     if(GridMaps[x][y])
     {
+        sScriptMgr->OnUnloadGridMap(this, GridMaps[x][y], x, y);
+
         TC_LOG_DEBUG("maps","Unloading already loaded map %u before reloading.",mapid);
         delete (GridMaps[x][y]);
         GridMaps[x][y]=NULL;
@@ -133,6 +137,8 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
         TC_LOG_ERROR("maps","ERROR loading map file: \n %s\n", tmp);
     }
     delete [] tmp;
+
+    sScriptMgr->OnLoadGridMap(this, GridMaps[x][y], x, y);
 }
 
 void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
@@ -179,6 +185,8 @@ Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
     }
 
     Map::InitVisibilityDistance();
+
+    sScriptMgr->OnCreateMap(this);
 }
 
 void Map::InitVisibilityDistance()
@@ -454,6 +462,8 @@ bool Map::Add(Player *player)
 
     player->m_clientGUIDs.clear();
     //AddNotifier(player);
+
+    sScriptMgr->OnPlayerEnterMap(this, player);
 
     return true;
 }
@@ -906,8 +916,11 @@ void Map::Remove(Player *player, bool remove)
     SendRemoveTransports(player);
     UpdateObjectVisibility(player,cell,p);
 
-    if( remove)
+    if (remove)
+    {
         DeleteFromWorld(player);
+        sScriptMgr->OnPlayerLeaveMap(this, player);
+    }
 }
 
 bool Map::RemoveBones(uint64 guid, float x, float y)
@@ -2402,7 +2415,7 @@ inline GridMap *Map::GetGrid(float x, float y)
     return GridMaps[gx][gy];
 }
 
-void InstanceMap::CreateInstanceData(bool load)
+void InstanceMap::CreateInstanceScript(bool load)
 {
     if(i_data != NULL)
         return;
@@ -2411,7 +2424,7 @@ void InstanceMap::CreateInstanceData(bool load)
     if (mInstance)
     {
         i_script_id = mInstance->script_id;
-        i_data = sScriptMgr->CreateInstanceData(this);
+        i_data = sScriptMgr->CreateInstanceScript(this);
     }
 
     if(!i_data)
@@ -2754,7 +2767,7 @@ bool Map::Instanceable() const { return i_mapEntry && i_mapEntry->Instanceable()
 bool Map::IsDungeon() const { return i_mapEntry && i_mapEntry->IsDungeon(); }
 bool Map::IsNonRaidDungeon() const { return i_mapEntry && i_mapEntry->IsNonRaidDungeon(); }
 bool Map::IsRaid() const { return i_mapEntry && i_mapEntry->IsRaid(); }
-bool Map::IsCommon() const { return i_mapEntry && i_mapEntry->IsCommon(); }
+bool Map::IsWorldMap() const { return i_mapEntry && i_mapEntry->IsWorldMap(); }
 
 bool Map::IsBattleground() const { return i_mapEntry && i_mapEntry->IsBattleground(); }
 bool Map::IsBattleArena() const { return i_mapEntry && i_mapEntry->IsBattleArena(); }

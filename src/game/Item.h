@@ -292,6 +292,7 @@ class Item : public Object
 
         void BuildUpdate(UpdateDataMapType&) override;
 
+        uint32 GetScriptId() const { return GetTemplate()->ScriptId; }
     protected:    
         ItemTemplate const* m_itemProto;
     private:

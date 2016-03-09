@@ -614,7 +614,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
-            sScriptMgr->OnPlayerCreate(&newChar);
+            //            sScriptMgr->OnPlayerCreate(&newChar);
             sWorld->AddGlobalPlayerData(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0, 0);
 
             newChar.CleanupsBeforeDelete();
@@ -637,7 +637,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     // can't delete loaded character
     if (ObjectAccessor::FindPlayer(guid))
     {
-        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
+        //        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         return;
     }
 
@@ -648,7 +648,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     // is guild leader
     if(sObjectMgr->IsGuildLeader(guid))
     {
-        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
+        //        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_GUILD_LEADER);
         return;
     }
@@ -656,7 +656,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     // is arena team captain
     if(sObjectMgr->IsArenaTeamCaptain(guid))
     {
-        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
+        //        sScriptMgr->OnPlayerFailedDelete(guid, initAccountId);
         SendCharDelete(CHAR_DELETE_FAILED_ARENA_CAPTAIN);
         return;
     }
@@ -677,7 +677,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     std::string IP_str = GetRemoteAddress();
     TC_LOG_DEBUG("entities.player","Account: %d (IP: %s) Delete Character:[%s] (guid:%u)",GetAccountId(),IP_str.c_str(),name.c_str(),GUID_LOPART(guid));
 
-    sScriptMgr->OnPlayerDelete(guid, initAccountId); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
+    //    sScriptMgr->OnPlayerDelete(guid, initAccountId); // To prevent race conditioning, but as it also makes sense, we hand the accountId over for successful delete.
 
     std::string fname = sConfigMgr->GetStringDefault("LogsDir", "");
     if (fname.length() > 0 && fname.at(fname.length()-1) != '/')
@@ -1086,7 +1086,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     #endif
 
     //Hook for OnLogin Event
-    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
+    //    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
 
     delete holder;
     

@@ -105,6 +105,8 @@ class Map : public GridRefManager<NGridType>
         Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
+        MapEntry const* GetEntry() const { return i_mapEntry; }
+
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
         {
@@ -234,7 +236,7 @@ class Map : public GridRefManager<NGridType>
         bool IsDungeon() const;
         bool IsNonRaidDungeon() const;
         bool IsRaid() const;
-        bool IsCommon() const;
+        bool IsWorldMap() const;
         bool IsHeroic() const;
 
         bool IsBattleground() const;
@@ -466,7 +468,7 @@ class InstanceMap : public Map
         bool Add(Player *) override;
         void Remove(Player *, bool) override;
         void Update(const uint32&) override;
-        void CreateInstanceData(bool load);
+        void CreateInstanceScript(bool load);
         bool Reset(uint8 method);
         uint32 GetScriptId() { return i_script_id; }
         InstanceScript* GetInstanceScript() { return i_data; }

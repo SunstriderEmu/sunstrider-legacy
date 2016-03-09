@@ -258,7 +258,7 @@ extern int main(int argc, char **argv)
 
     sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort);
 
-    sScriptMgr->OnNetworkStart();
+    //    sScriptMgr->OnNetworkStart();
 
     // Set server online (allow connecting now)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag & ~%u, population = 0 WHERE id = '%u'", REALM_FLAG_INVALID, realmID);
@@ -274,14 +274,14 @@ extern int main(int argc, char **argv)
 
     TC_LOG_INFO("server.worldserver", "%s (worldserver-daemon) ready...", _FULLVERSION);
 
-    sScriptMgr->OnStartup();
+  //  sScriptMgr->OnStartup();
 
     WorldUpdateLoop();
 
     // Shutdown starts here
     ShutdownThreadPool(threadPool);
 
-    sScriptMgr->OnShutdown();
+    //  sScriptMgr->OnShutdown();
 
     sWorld->KickAll();                                     // save and kick all players
     sWorld->UpdateSessions(1);                             // real players unload required UpdateSessions call
@@ -574,7 +574,7 @@ variables_map GetConsoleArguments(int argc, char** argv, std::string& configFile
 
 void ShutdownThreadPool(std::vector<std::thread>& threadPool)
 {
-    sScriptMgr->OnNetworkStop();
+    //    sScriptMgr->OnNetworkStop();
 
     _ioService.stop();
 

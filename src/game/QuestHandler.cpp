@@ -212,7 +212,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                 case TYPEID_ITEM:
                 case TYPEID_CONTAINER:
                 {
-                    sScriptMgr->ItemQuestAccept(_player, ((Item*)pObject), qInfo );
+                    sScriptMgr->OnQuestAccept(_player, ((Item*)pObject), qInfo );
 
                     // destroy not required for quest finish quest starting item
                     bool destroyItem = true;

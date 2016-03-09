@@ -241,7 +241,7 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     #endif                                                  // !TRINITY_DEBUG
 
-    sScriptMgr->OnPacketSend(this, *packet);
+    //    sScriptMgr->OnPacketSend(this, *packet);
 
     TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetPlayerInfo().c_str(), GetOpcodeNameForLogging(packet->GetOpcode()).c_str());
     m_Socket->SendPacket(*packet);
@@ -325,7 +325,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
             TC_LOG_ERROR( "network","SESSION: received non-existed opcode %s (0x%.4X)",
                 LookupOpcodeName(packet->GetOpcode()),
                 packet->GetOpcode());
-            sScriptMgr->OnUnknownPacketReceive(this, *packet);
+          //  sScriptMgr->OnUnknownPacketReceive(this, *packet);
         }
         else
         {
@@ -354,7 +354,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     }
                     else if(_player->IsInWorld() && AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        sScriptMgr->OnPacketReceive(this, *packet);
+                        //                        sScriptMgr->OnPacketReceive(this, *packet);
                         (this->*opHandle.handler)(*packet);
                         LogUnprocessedTail(packet);
 
@@ -372,7 +372,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         else if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                         {
                             // not expected _player or must checked in packet handler
-                            sScriptMgr->OnPacketReceive(this, *packet);
+                            //                            sScriptMgr->OnPacketReceive(this, *packet);
                             (this->*opHandle.handler)(*packet);
                             LogUnprocessedTail(packet);
                         }
@@ -384,7 +384,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player is still in world");
                     else if(AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        sScriptMgr->OnPacketReceive(this, *packet);
+                        //                        sScriptMgr->OnPacketReceive(this, *packet);
                         (this->*opHandle.handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
@@ -404,7 +404,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        sScriptMgr->OnPacketReceive(this, *packet);
+ //                        //                        sScriptMgr->OnPacketReceive(this, *packet);
                         (this->*opHandle.handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
@@ -777,7 +777,7 @@ void WorldSession::LogoutPlayer(bool Save)
     }
     
     //Hook for OnLogout Event
-    sScriptMgr->OnPlayerLogout(_player);
+    //    sScriptMgr->OnPlayerLogout(_player);
 
     m_playerLogout = false;
     m_playerSave = false;

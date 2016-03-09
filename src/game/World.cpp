@@ -196,7 +196,7 @@ void World::SetClosed(bool val)
     m_isClosed = val;
 
     // Invert the value, for simplicity for scripters.
-    sScriptMgr->OnOpenStateChange(!val);
+    //    sScriptMgr->OnOpenStateChange(!val);
 }
 
 /// Find a session by its id
@@ -1236,8 +1236,8 @@ void World::LoadConfigSettings(bool reload)
     }
 
     // call ScriptMgr if we're reloading the configuration
-    if (reload)
-        sScriptMgr->OnConfigLoad(reload);
+   /* if (reload)
+        sScriptMgr->OnConfigLoad(reload);*/
 }
 
 extern void LoadGameObjectModelList();
@@ -2053,7 +2053,7 @@ void World::Update(time_t diff)
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
 
-    sScriptMgr->OnWorldUpdate(diff);
+   // sScriptMgr->OnWorldUpdate(diff);
 }
 
 void World::ForceGameEventUpdate()

@@ -868,7 +868,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         {
             Player *killer = ToPlayer();
             Player *killed = pVictim->ToPlayer();
-            sScriptMgr->OnPVPKill(killer, killed);
+            //    sScriptMgr->OnPVPKill(killer, killed);
         }
     }
     else                                                    // if (health <= damage)
@@ -12987,7 +12987,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
         
         // Log down if worldboss
-        if (cVictim->IsWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsCommon())) 
+        if (cVictim->IsWorldBoss() && (cVictim->GetMap()->IsRaid() || cVictim->GetMap()->IsWorldMap()))
         {
             LogBossDown(cVictim);
         }
