@@ -99,9 +99,6 @@ public:
     std::string Name;
 
     //Methods to be scripted
-    void(*pOnLogin)(Player*) = nullptr;
-    void(*pOnLogout)(Player*) = nullptr;
-    void(*pOnPVPKill)(Player*, Player*) = nullptr;
     bool(*OnGossipHello)(Player*, Creature*) = nullptr;
     bool(*OnQuestAccept)(Player*, Creature*, Quest const*) = nullptr;
     bool(*OnGossipSelect)(Player*, Creature*, uint32, uint32) = nullptr;

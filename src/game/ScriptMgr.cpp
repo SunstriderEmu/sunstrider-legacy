@@ -56,7 +56,6 @@ extern void AddSC_training_dummy();
 extern void AddSC_zone_silence();
 extern void AddSC_custom_example();
 extern void AddSC_custom_gossip_codebox();
-extern void AddSC_onevents();
 extern void AddSC_npc_lottery();
 extern void AddSC_theinform();
 extern void AddSC_mylittlebombling();
@@ -885,7 +884,6 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     AddSC_zone_silence();
     AddSC_custom_example();
     AddSC_custom_gossip_codebox();
-    AddSC_onevents();
     AddSC_npc_lottery();
     AddSC_theinform();
     AddSC_mylittlebombling();
@@ -1697,11 +1695,7 @@ void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId
 
 void ScriptMgr::OnPlayerLogin(Player *pPlayer, bool /* firstLogin */)
 {
-    OLDScript *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
-    if (!tmpscript || !tmpscript->pOnLogin) 
-        return;
-
-    tmpscript->pOnLogin(pPlayer);
+   // FOREACH_SCRIPT(PlayerScript)->OnLogin(player);
 }
 
 void ScriptMgr::OnSocketOpen(std::shared_ptr<WorldSocket> socket)
@@ -1796,17 +1790,13 @@ void ScriptMgr::OnFailedAccountLogin(uint32 accountId)
 
 void ScriptMgr::OnPlayerLogout(Player *pPlayer)
 {
-    OLDScript *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
-    if (!tmpscript || !tmpscript->pOnLogout) return;
-    tmpscript->pOnLogout(pPlayer);
+   // FOREACH_SCRIPT(PlayerScript)->OnLogout(player);
 }
 
 
 void ScriptMgr::OnPVPKill(Player *killer, Player *killed)
 {
-    OLDScript *tmpscript = m_scripts[GetScriptId("scripted_on_events")];
-    if (!tmpscript || !tmpscript->pOnPVPKill) return;
-    tmpscript->pOnPVPKill(killer, killed);
+    //FOREACH_SCRIPT(PlayerScript)->OnPVPKill(killer, killed);
 }
 
 void ScriptMgr::OnUnknownPacketReceive(WorldSession* session, WorldPacket const& packet)
