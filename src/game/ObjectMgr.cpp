@@ -6629,12 +6629,11 @@ bool ObjectMgr::LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* tabl
 
 const char *ObjectMgr::GetTrinityString(int32 entry, LocaleConstant locale_idx) const
 {
-    // locale_idx==-1 -> default, locale_idx >= 0 in to idx+1
     // Content[0] always exist if exist TrinityStringLocale
     if(TrinityStringLocale const *msl = GetTrinityStringLocale(entry))
     {
-        if(msl->Content.size() > locale_idx+1 && !msl->Content[locale_idx+1].empty())
-            return msl->Content[locale_idx+1].c_str();
+        if(msl->Content.size() > locale_idx && !msl->Content[locale_idx].empty())
+            return msl->Content[locale_idx].c_str();
         else
             return msl->Content[0].c_str();
     }
