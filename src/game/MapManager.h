@@ -122,6 +122,7 @@ class MapManager
 
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
+        void MapCrashed(Map& map);
     private:
         GridState* i_GridStates[MAX_GRID_STATE];            // shadow entries to the global array in Map.cpp
         int i_GridStateErrorCount;

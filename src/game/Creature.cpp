@@ -2036,7 +2036,7 @@ bool Creature::InitCreatureAddon(bool reload)
         SpellInfo const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(id);
         if (!AdditionalSpellInfo)
         {
-            TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.",GetGUIDLow(),GetEntry(),id);
+            TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.", GetDBTableGUIDLow(),GetEntry(),id);
             continue;
         }
 
@@ -2044,13 +2044,13 @@ bool Creature::InitCreatureAddon(bool reload)
         if(HasAuraEffect(id))
         {
             if(!reload)
-                TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetGUIDLow(),GetEntry(),id);
+                TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetDBTableGUIDLow(),GetEntry(),id);
 
             continue;
         }
 
         AddAura(id,this);
-        TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetGUIDLow(), GetEntry());
+        TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetDBTableGUIDLow(), GetEntry());
     }
     return true;
 }

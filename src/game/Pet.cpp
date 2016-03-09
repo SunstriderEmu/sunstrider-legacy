@@ -1785,7 +1785,7 @@ void Pet::InitPetCreateSpells()
             {
                 petspellid = learn_spellproto->Effects[0].TriggerSpell;
                 Unit* owner = GetOwner();
-                if(owner->GetTypeId() == TYPEID_PLAYER && !(owner->ToPlayer())->HasSpell(learn_spellproto->Id))
+                if(owner && owner->GetTypeId() == TYPEID_PLAYER && !(owner->ToPlayer())->HasSpell(learn_spellproto->Id))
                 {
                     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(petspellid);
                     if(spellInfo->IsPassive())          //learn passive skills when tamed, not sure if thats right

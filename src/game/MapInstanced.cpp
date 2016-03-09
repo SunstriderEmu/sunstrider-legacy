@@ -67,11 +67,48 @@ void MapInstanced::Update(const uint32& t)
             if (sMapMgr->GetMapUpdater()->activated())
                 sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
             else
-                i->second->Update(t);
+            {
+                try
+                {
+                    i->second->Update(t);
+                }
+                catch (std::exception& /* e */)
+                {
+                    MapCrashed(i->second);
+                }
+            }
 
             ++i;
         }
     }
+
+    //crash recovery
+    for (auto crashedMap : crashedMaps)
+    {
+        crashedMap->HandleCrash();
+        //remove it from map list. Do not clear memory (map memory may be corrupted)
+        for (auto iter = m_InstancedMaps.begin(); iter != m_InstancedMaps.end(); iter++)
+        {
+            if (iter->second == crashedMap)
+            {
+                TC_LOG_FATAL("mapcrash", "Crashed map remove");
+                m_InstancedMaps.erase(iter);
+                break;
+            }
+        }
+    }
+    crashedMaps.clear();
+
+}
+
+void MapInstanced::MapCrashed(Map* map)
+{
+    TC_LOG_FATAL("mapcrash", "Prevented crash in map updater. Map: %u - InstanceId: %u", map->GetId(), map->GetInstanceId());
+    std::cerr << "Prevented crash in map updater. Map: " << map->GetId() << " - InstanceId: " << map->GetInstanceId() << std::endl;
+
+    //backtrace is generated in the signal handler in Main.cpp (unix only)
+
+    crashedMaps.push_back(map);
 }
 
 void MapInstanced::MoveAllCreaturesInMoveList()

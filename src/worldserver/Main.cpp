@@ -31,6 +31,8 @@
 #include "MapManager.h"
 #include "IRCMgr.h"
 
+#include <segvcatch.h>
+
 using namespace boost::program_options;
 
 #define WORLD_SLEEP_CONST 50
@@ -83,6 +85,37 @@ void ShutdownThreadPool(std::vector<std::thread>& threadPool);
 void ShutdownCLIThread(std::thread* cliThread);
 variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
 
+//segv handler, print stack to dump file
+void handle_segv()
+{
+#if PLATFORM == PLATFORM_UNIX
+    void* arr[20];
+    size_t size = backtrace(arr, 20);
+    fprintf(stderr, "Error: signal %d:\n", sig);
+    //print to stderr
+    backtrace_symbols_fd(arr, size, STDERR_FILENO);
+
+    //get backtrace as string array
+    char* backtrace[] = backtrace_symbols(arr, size);
+    //print to a dump file in exec folder as well
+    std::string outputFileName = "mapcrash_" + time(NULL);
+    ofstream dumpFile(outputFileName, ios::out);
+    if (dumpFile.is_open())
+    {
+        dumpFile << "Error: signal %d:" << std::endl;
+        for (int i = 0; i < size; i++)
+            dumpFile << backtrace[i] << std::endl;
+
+        dumpFile.close();
+    }
+    //delete array allocated by backtrace_symbols
+    delete backtrace;
+#endif
+
+    throw std::runtime_error("Segmentation fault or FPE");
+}
+
+
 /// Launch the Sunstrider server
 extern int main(int argc, char **argv)
 {
@@ -91,7 +124,10 @@ extern int main(int argc, char **argv)
        printf("Running with -fsanitize=address flag\n");
 #  endif
 #endif
-    
+    //prepare instance map crash recovery
+    segvcatch::init_segv(handle_segv);
+    segvcatch::init_fpe(handle_segv);
+
     ///- Command line parsing to get the configuration file name
     std::string configFile = _WORLD_SERVER_CONFIG;
     std::string configService;

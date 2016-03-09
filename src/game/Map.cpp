@@ -37,6 +37,8 @@
 #include "MapRefManager.h"
 #include "ScriptMgr.h"
 #include "Util.h"
+#include "Chat.h"
+#include "Language.h"
 
 #include "MapInstanced.h"
 #include "InstanceSaveMgr.h"
@@ -245,7 +247,7 @@ void Map::AddToGrid(DynamicObject* obj, NGridType *grid, Cell const& cell)
 template<class T>
 void Map::RemoveFromGrid(T* obj, NGridType *grid, Cell const& cell)
 {
-#ifdef DO_DEBUG
+#ifdef TRINITY_DEBUG
     if (dynamic_cast<Transport*>(obj))
         ASSERT("Map::RemoveFromGrid called with a transport object " && false); //transports should never be removed from map
 #endif
@@ -497,7 +499,7 @@ Map::Add(T *obj)
     CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
 
     assert(obj);
-#ifdef DO_DEBUG
+#ifdef TRINITY_DEBUG
     if (dynamic_cast<Transport*>(obj))
         ASSERT("Map::Add(T* obj) called with a transport object " && false);
 #endif
@@ -2525,10 +2527,18 @@ void InstanceMap::UnloadAll()
     if(HavePlayers())
     {
         TC_LOG_ERROR("maps","InstanceMap::UnloadAll: there are still players in the instance at unload, should not happen!");
-        for(MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        std::list<Player*> players;
+        //dont teleport players in this loop at this will invalidate our iterator
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            players.push_back(itr->GetSource());
+
+        for (auto plr : players)
         {
-            Player* plr = itr->GetSource();
-            plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
+            AreaTrigger const* at = sObjectMgr->GetGoBackTrigger(GetId());
+            if (at)
+                plr->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, plr->GetOrientation());
+            else
+                plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
         }
     }
 
@@ -2536,6 +2546,37 @@ void InstanceMap::UnloadAll()
         sObjectMgr->DeleteRespawnTimeForInstance(GetInstanceId());
 
     Map::UnloadAll();
+}
+
+void InstanceMap::HandleCrash()
+{
+    if (HavePlayers())
+    {
+        std::list<Player*> players;
+        //dont teleport players in this loop at this will invalidate our iterator
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            players.push_back(itr->GetSource());
+
+        for (auto plr : players)
+        {
+            bool tpResult = false;
+            AreaTrigger const* at = sObjectMgr->GetGoBackTrigger(GetId());
+            if (at)
+                tpResult = plr->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, plr->GetOrientation());
+
+            if(!tpResult)
+                tpResult = plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
+
+            if (!tpResult) //just to be extra sure
+                plr->m_kickatnextupdate = true;
+
+            ChatHandler(plr).SendSysMessage(LANG_INSTANCE_CRASHED);
+        }
+    }
+
+    if (m_resetAfterUnload == true)
+        sObjectMgr->DeleteRespawnTimeForInstance(GetInstanceId());
+
 }
 
 void InstanceMap::SendResetWarnings(uint32 timeLeft) const
@@ -2662,6 +2703,25 @@ void BattlegroundMap::RemoveAllPlayers()
             if (Player* player = itr->GetSource())
                 if (!player->IsBeingTeleportedFar())
                     player->TeleportTo(player->GetBattlegroundEntryPoint());
+}
+
+void BattlegroundMap::HandleCrash()
+{
+    if (HavePlayers())
+    {
+        std::list<Player*> players;
+        //dont teleport players in this loop at this will invalidate our iterator
+        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+            players.push_back(itr->GetSource());
+
+        for (auto plr : players)
+        {
+            bool tpResult = plr->TeleportTo(plr->GetBattlegroundEntryPoint());
+            ChatHandler(plr).SendSysMessage(LANG_INSTANCE_CRASHED);
+            if (!tpResult)
+                plr->m_kickatnextupdate = true;
+        }
+    }
 }
 
 Transport* Map::GetTransport(uint64 guid)

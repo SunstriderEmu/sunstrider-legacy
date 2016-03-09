@@ -544,6 +544,16 @@ struct MapEntry
     bool IsBattlegroundOrArena() const { return map_type == MAP_BATTLEGROUND || map_type == MAP_ARENA; }
     bool HasResetTime() const { return resetTimeHeroic || resetTimeRaid; }
 
+    bool GetEntrancePos(int32 &mapid, float &x, float &y) const
+    {
+        if (entrance_map < 0)
+            return false;
+        mapid = entrance_map;
+        x = entrance_x;
+        y = entrance_y;
+        return true;
+    }
+
     bool IsMountAllowed() const
     {
         return !IsDungeon() ||

@@ -22,7 +22,6 @@
 #include "MapUpdater.h"
 #include "Map.h"
 
-
 class MapUpdateRequest
 {
     private:
@@ -40,7 +39,14 @@ class MapUpdateRequest
 
         void call()
         {
-            m_map.Update (m_diff);
+            try
+            {
+                m_map.Update(m_diff);
+            }
+            catch (std::exception& /*e*/)
+            {
+                sMapMgr->MapCrashed(m_map);
+            }
             m_updater.update_finished();
         }
 };

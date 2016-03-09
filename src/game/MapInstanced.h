@@ -63,7 +63,11 @@ class MapInstanced : public Map
         InstancedMaps &GetInstancedMaps() { return m_InstancedMaps; }
         virtual void InitVisibilityDistance();
 
+        void MapCrashed(Map* map);
     private:
+       
+        std::list<Map*> crashedMaps; //those map have crashed, remove them as soon as possible. Contains either BattlegroundMap or InstanceMap
+
 
         InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty);
         BattlegroundMap* CreateBattleground(uint32 InstanceId, Battleground* bg);

@@ -322,6 +322,9 @@ class Map : public GridRefManager<NGridType>
         TransportsContainer _transports;
         TransportsContainer::iterator _transportsUpdateIter;
 
+        //this function is overrided by InstanceMap and BattlegroundMap to handle crash recovery
+        virtual void HandleCrash() { ASSERT(false); }
+
     private:
 
         void LoadVMap(int pX, int pY);
@@ -368,6 +371,7 @@ class Map : public GridRefManager<NGridType>
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
+
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
 
@@ -459,20 +463,21 @@ class InstanceMap : public Map
     public:
         InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
         ~InstanceMap();
-        bool Add(Player *);
-        void Remove(Player *, bool);
-        void Update(const uint32&);
+        bool Add(Player *) override;
+        void Remove(Player *, bool) override;
+        void Update(const uint32&) override;
         void CreateInstanceData(bool load);
         bool Reset(uint8 method);
         uint32 GetScriptId() { return i_script_id; }
         InstanceScript* GetInstanceScript() { return i_data; }
         void PermBindAllPlayers(Player *player);
-        void UnloadAll();
-        bool CanEnter(Player* player);
+        void UnloadAll() override;
+        void HandleCrash() override;
+        bool CanEnter(Player* player) override;
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
 
-        virtual void InitVisibilityDistance();
+        virtual void InitVisibilityDistance() override;
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -492,6 +497,8 @@ class BattlegroundMap : public Map
         void SetUnload();
         //void UnloadAll();
         void RemoveAllPlayers() override;
+
+        void HandleCrash() override;
 
         virtual void InitVisibilityDistance() override;
         Battleground* GetBG() { return m_bg; }

@@ -217,8 +217,7 @@ void MapManager::Update(time_t diff)
     if( !i_timer.Passed() )
         return;
 
-    MapMapType::iterator iter = i_maps.begin();
-    for (; iter != i_maps.end(); ++iter)
+    for (auto iter = i_maps.begin(); iter != i_maps.end(); ++iter)
     {
         if (m_updater.activated())
             m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
@@ -388,6 +387,41 @@ uint32 MapManager::GenerateInstanceId()
     _instanceIds[newInstanceId] = true;
 
     return newInstanceId;
+}
+
+void MapManager::MapCrashed(Map& map)
+{
+    if (!map.Instanceable())  //can't recover
+    {
+        std::cerr << "MapManager::MapCrashed not instanceable map given, cannot recover from crash" << std::endl;
+        ASSERT(false);
+    }
+
+    //find right MapInstanced to pass crashed map to it and let it handle it
+    for (auto iter : i_maps)
+    {
+        if (iter.first == map.GetId())
+        {
+            MapInstanced* mapInstanced = dynamic_cast<MapInstanced*>(iter.second);
+            if (!mapInstanced)
+            {
+                std::cerr << "MapManager::MapCrashed could not convert map iterator to MapInstanced" << std::endl;
+                break;
+            }
+            InstanceMap* instanceMap = dynamic_cast<InstanceMap*>(&map);
+            if (!instanceMap)
+            {
+                std::cerr << "MapManager::MapCrashed could not convert crashed map to InstanceMap" << std::endl;
+                break;
+            }
+            mapInstanced->MapCrashed(instanceMap);
+            return;
+        }
+    }
+
+    //shouldn't reach this point is all went well
+    std::cerr << "MapManager::MapCrashed recover failed" << std::endl;
+    ASSERT(false);
 }
 
 void MapManager::FreeInstanceId(uint32 instanceId)

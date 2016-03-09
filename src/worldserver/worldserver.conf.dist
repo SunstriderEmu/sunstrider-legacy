@@ -1901,6 +1901,7 @@ Appender.DBErrors=2,2,0,DBErrors.log
 Appender.Network=2,3,0,Network.log
 Appender.Warden=2,1,0,Warden.log
 Appender.Profiling=2,1,0,Profiling.log
+Appender.Mapcrash=2,1,0,Mapcrash.log
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -1958,6 +1959,7 @@ Logger.guild=3,Console Server
 Logger.loot=3,Console Server
 Logger.maps.script=3,Console Server
 Logger.maps=3,Console Server
+Logger.mapcrash=1,Console Server Mapcrash
 Logger.misc=3,Console Server
 Logger.network=3,Console Server
 #Logger.network.soap=3,Console Server
