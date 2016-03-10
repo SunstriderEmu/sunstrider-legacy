@@ -188,6 +188,7 @@ class SmartScript
             Creature *crea = nullptr;
             CellCoord p(Trinity::ComputeCellCoord(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
             Cell cell(p);
+            cell.data.Part.reserved = ALL_DISTRICT;
 
             Trinity::CreatureWithDbGUIDCheck target_check(pSearchObject, guid);
             Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(crea, target_check);
