@@ -193,7 +193,7 @@ void MotionMaster::MoveIdle()
     if(!empty())
         MovementExpired(false);
     //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
-    if (!isStatic(top()))
+    if (empty() || !isStatic(top()))
         Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
 }
 
