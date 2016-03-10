@@ -1157,7 +1157,7 @@ CacheSpellContainerBounds SmartAIMgr::GetKillCreditSpellContainerBounds(uint32 k
     return KillCreditSpellStore.equal_range(killCredit);
 }
 
-void SmartAIMgr::ReloadCreaturesScripts(bool forceAll)
+void SmartAIMgr::ReloadCreaturesScripts()
 {
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
     auto creatures = sObjectAccessor->GetCreatures();

@@ -1583,7 +1583,7 @@ class SmartAIMgr
             else
             {
                 if (entry > 0)//first search is for guid (negative), do not drop error if not found
-                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load OLDScript for Entry %d ScriptType %u.", entry, uint32(type));
+                    TC_LOG_ERROR("scripts.ai","SmartAIMgr::GetScript: Could not load Script for Entry %d ScriptType %u.", entry, uint32(type));
                 return temp;
             }
         }
@@ -1595,9 +1595,8 @@ class SmartAIMgr
         void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
 
         //DEV SERVER USE ONLY
-        //Reload every creature SmartAI scripts. This may cause a server freeze while executing. This will also probably cause memory leaks.
-        //NYI @forceAll Reload all smartAI scripts instead of the one that changed
-        void ReloadCreaturesScripts(bool forceAll = false);
+        //Reload every creature SmartAI scripts. This may be unstable.
+        void ReloadCreaturesScripts();
     private:
         //event stores
         SmartAIEventMap mEventMap[SMART_SCRIPT_TYPE_MAX];
