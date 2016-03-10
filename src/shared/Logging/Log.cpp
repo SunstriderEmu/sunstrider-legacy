@@ -269,7 +269,7 @@ void Log::write(std::unique_ptr<LogMessage>&& msg) const
 
     if (_ioService)
     {
-        auto logOperation = std::shared_ptr<LogOperation>(new LogOperation(logger, std::forward<std::unique_ptr<LogMessage>>(msg)));
+        auto logOperation = std::shared_ptr<LogOperation>(new LogOperation(logger, std::move(msg)));
 
         _ioService->post(_strand->wrap([logOperation](){ logOperation->call(); }));
     }
