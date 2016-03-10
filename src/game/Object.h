@@ -36,6 +36,12 @@
 #define ATTACK_DISTANCE             5.0f
 #define MAX_SEARCHER_DISTANCE       150.0f // pussywizard: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
 #define MAX_VISIBILITY_DISTANCE     250.0f      // max distance for visible object show, limited in 333 yards
+#define VISIBILITY_INC_FOR_GOBJECTS 30.0f // pussywizard
+#define VISIBILITY_COMPENSATION     15.0f // increase searchers
+#define SPELL_SEARCHER_COMPENSATION 30.0f // increase searchers size in case we have large npc near cell border
+#define VISIBILITY_DIST_WINTERGRASP 175.0f // LK
+#define SIGHT_RANGE_UNIT            50.0f
+
 #define DEFAULT_VISIBILITY_DISTANCE 90.0f       // default visible distance, 90 yards on continents
 #define DEFAULT_VISIBILITY_INSTANCE 120.0f      // default visible distance in instances, 120 yards
 #define DEFAULT_VISIBILITY_BGARENAS 180.0f      // default visible distance in BG/Arenas, 180 yards
@@ -619,6 +625,8 @@ class WorldObject : public Object, public WorldLocation
         virtual void SaveRespawnTime() {}
 
         void AddObjectToRemoveList();
+
+        float GetVisibilityRange() const;
 
         // main visibility check function in normal case (ignore grey zone distance check)
         bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }

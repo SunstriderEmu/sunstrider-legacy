@@ -237,6 +237,11 @@ struct CoordPair
             y_coord = LIMIT - 1;
     }
 
+    bool IsCoordValid() const
+    {
+        return x_coord < LIMIT && y_coord < LIMIT;
+    }
+
     uint32 x_coord;
     uint32 y_coord;
 };

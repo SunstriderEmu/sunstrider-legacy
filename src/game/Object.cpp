@@ -1294,6 +1294,22 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(this);
 }
 
+float WorldObject::GetVisibilityRange() const
+{
+    if (isActiveObject() && !ToPlayer())
+        return MAX_VISIBILITY_DISTANCE;
+    else if (GetTypeId() == TYPEID_GAMEOBJECT)
+#ifdef LICH_KING
+        return IsInWintergrasp() ? VISIBILITY_DIST_WINTERGRASP + VISIBILITY_INC_FOR_GOBJECTS : GetMap()->GetVisibilityRange() + VISIBILITY_INC_FOR_GOBJECTS;
+    else
+        return IsInWintergrasp() ? VISIBILITY_DIST_WINTERGRASP : GetMap()->GetVisibilityRange();
+#else
+        return GetMap()->GetVisibilityRange() + VISIBILITY_INC_FOR_GOBJECTS;
+    else
+        return GetMap()->GetVisibilityRange();
+#endif
+}
+
 Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime) const
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
@@ -2293,6 +2309,7 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
     CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
     cell.SetNoCreate();
+
     WorldObjectChangeAccumulator notifier(*this, data_map);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     Map& map = *GetMap();

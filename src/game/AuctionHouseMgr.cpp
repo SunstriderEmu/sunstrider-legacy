@@ -289,7 +289,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         if(!proto)
         {
-            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item template (GUID: %u id: #%u) in auction, skipped.", item_guid,item_template);
+            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item template (GUID: %u, id: #%u) in auction, skipped.", item_guid,item_template);
             continue;
         }
 
@@ -297,7 +297,7 @@ void AuctionHouseMgr::LoadAuctionItems()
 
         if(!item->LoadFromDB(item_guid,0))
         {
-            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u) in auction, skipped.", item_guid, item_template);
+            TC_LOG_ERROR("sql.sql", "ObjectMgr::LoadAuctionItems: Unknown item (GUID: %u, id: %u) in auction, skipped.", item_guid, item_template);
             delete item;
             continue;
         }

@@ -341,7 +341,7 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
     bool gmInvolved = false;
     std::string IP = NO_SESSION_STRING;
     Player const* sender = nullptr;
-    if ((type == MAIL_NORMAL))
+    if (type == MAIL_NORMAL)
     {
         if ((sender = sObjectAccessor->FindPlayer(sender_guidlow_or_entry)))
         {

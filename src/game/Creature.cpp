@@ -1815,6 +1815,7 @@ Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
+    cell.data.Part.reserved = ALL_DISTRICT;
 
     Unit* target = NULL;
 
@@ -1852,6 +1853,7 @@ void Creature::CallAssistance()
                 CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
                 Cell cell(p);
                 cell.SetNoCreate();
+                cell.data.Part.reserved = ALL_DISTRICT;
 
                 Trinity::AnyAssistCreatureInRangeCheck u_check(this, GetVictim(), radius);
                 Trinity::CreatureListSearcher<Trinity::AnyAssistCreatureInRangeCheck> searcher(this, assistList, u_check);
@@ -1907,6 +1909,7 @@ void Creature::CallForHelp(float radius)
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
+    cell.data.Part.reserved = ALL_DISTRICT;
 
     Trinity::CallOfHelpCreatureInRangeDo u_do(this, GetVictim(), radius);
     Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(u_do);

@@ -204,7 +204,7 @@ template<class T, class CONTAINER>
 inline void
 Cell::Visit(const CellCoord &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m) const
 {
-    if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
+    if (!standing_cell.IsCoordValid())
         return;
 
     uint16 district = (District)this->data.Part.reserved;
