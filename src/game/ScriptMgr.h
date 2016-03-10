@@ -10,6 +10,7 @@
 
 #include "QuestDef.h"
 #include "ObjectMgr.h"
+#include "DBCStores.h"
 
 class WorldSocket;
 class WorldSession;
