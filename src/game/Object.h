@@ -78,6 +78,7 @@ class WorldObject;
 class CreatureAI;
 
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
+typedef std::unordered_set<uint32> UpdatePlayerSet;
 
 #define POSITION_GET_X_Y_Z(a) (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ()
 
@@ -423,7 +424,7 @@ class Object
         /** 
             Visits cells around the object, fill players UpdateData with updates from this object if needed
         */
-        virtual void BuildUpdate(UpdateDataMapType&) { }
+        virtual void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) { }
         /**
            Adds the player and update data for him to the given updateData map. 
            Creates the update map for him if it doesn't exists, else exists the already existing one.
@@ -686,7 +687,7 @@ class WorldObject : public Object, public WorldLocation
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
 
-        void BuildUpdate(UpdateDataMapType&) override;
+        void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) override;
     protected:
         explicit WorldObject();
         std::string m_name;

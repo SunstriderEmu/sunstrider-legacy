@@ -2233,9 +2233,13 @@ Position::Position(const WorldObject* obj)
 struct WorldObjectChangeAccumulator
 {
     UpdateDataMapType& i_updateDatas;
+    UpdatePlayerSet& i_playerSet;
     WorldObject& i_object;
-    GuidSet plr_list;
-    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d) : i_updateDatas(d), i_object(obj) { }
+    WorldObjectChangeAccumulator(WorldObject &obj, UpdateDataMapType &d, UpdatePlayerSet &p) : i_updateDatas(d), i_object(obj), i_playerSet(p) 
+    { 
+        i_playerSet.clear();
+    }
+
     void Visit(PlayerMapType &m)
     {
         Player* source = NULL;
@@ -2294,27 +2298,27 @@ struct WorldObjectChangeAccumulator
     void BuildPacket(Player* player)
     {
         // Only send update once to a player
-        if (plr_list.find(player->GetGUID()) == plr_list.end() && player->HaveAtClient(&i_object))
+        if (i_playerSet.find(player->GetGUIDLow()) == i_playerSet.end() && player->HaveAtClient(&i_object))
         {
             i_object.BuildFieldsUpdate(player, i_updateDatas);
-            plr_list.insert(player->GetGUID());
+            i_playerSet.insert(player->GetGUIDLow());
         }
     }
 
     template<class SKIP> void Visit(GridRefManager<SKIP> &) { }
 };
 
-void WorldObject::BuildUpdate(UpdateDataMapType& data_map)
+void WorldObject::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet& player_set)
 {
     CellCoord p = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
     Cell cell(p);
     cell.SetNoCreate();
 
-    WorldObjectChangeAccumulator notifier(*this, data_map);
+    WorldObjectChangeAccumulator notifier(*this, data_map, player_set);
     TypeContainerVisitor<WorldObjectChangeAccumulator, WorldTypeMapContainer > player_notifier(notifier);
     Map& map = *GetMap();
     //we must build packets for all visible players
-    cell.Visit(p, player_notifier, map, *this,  map.GetVisibilityRange());
+    cell.Visit(p, player_notifier, map, *this, GetVisibilityRange() + VISIBILITY_COMPENSATION);
 
     ClearUpdateMask(false);
 }

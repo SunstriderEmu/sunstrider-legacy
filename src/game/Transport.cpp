@@ -618,7 +618,7 @@ void Transport::JustDocked()
     }
 }
 
-void Transport::BuildUpdate(UpdateDataMapType& data_map)
+void Transport::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
 {
     Map::PlayerList const& players = GetMap()->GetPlayers();
     if (players.isEmpty())

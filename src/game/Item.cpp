@@ -974,7 +974,7 @@ Item* Item::CloneItem( uint32 count, Player const* player ) const
     return newItem;
 }
 
-void Item::BuildUpdate(UpdateDataMapType& data_map)
+void Item::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
 {
     if (Player* owner = GetOwner())
         BuildFieldsUpdate(owner, data_map);

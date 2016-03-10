@@ -365,6 +365,8 @@ void ObjectAccessor::Update(uint32 diff)
 {
     //build updates for each objects
     UpdateDataMapType update_players; //one UpdateData object per player, containing updates for all objects
+    UpdatePlayerSet player_set;
+
     {
         std::lock_guard<std::mutex> lock(_objectLock);
         while (!i_objects.empty())
@@ -372,7 +374,7 @@ void ObjectAccessor::Update(uint32 diff)
             Object* obj = *i_objects.begin();
             ASSERT(obj && obj->IsInWorld());
             i_objects.erase(i_objects.begin());
-            obj->BuildUpdate(update_players);
+            obj->BuildUpdate(update_players, player_set);
         }
     }
 

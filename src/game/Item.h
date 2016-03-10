@@ -290,7 +290,7 @@ class Item : public Object
         }
         bool HasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
 
-        void BuildUpdate(UpdateDataMapType&) override;
+        void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet&) override;
 
         uint32 GetScriptId() const { return GetTemplate()->ScriptId; }
     protected:    
