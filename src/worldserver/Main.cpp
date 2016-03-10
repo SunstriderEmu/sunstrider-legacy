@@ -127,9 +127,6 @@ extern int main(int argc, char **argv)
        printf("Running with -fsanitize=address flag\n");
 #  endif
 #endif
-    //prepare instance map crash recovery
-    segvcatch::init_segv(handle_segv);
-    segvcatch::init_fpe(handle_segv);
 
     ///- Command line parsing to get the configuration file name
     std::string configFile = _WORLD_SERVER_CONFIG;
@@ -154,6 +151,12 @@ extern int main(int argc, char **argv)
     {
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
+    }
+
+    if (sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", true))
+    {
+        segvcatch::init_segv(handle_segv);
+        segvcatch::init_fpe(handle_segv);
     }
 
     if (sConfigMgr->GetBoolDefault("Log.Async.Enable", false))

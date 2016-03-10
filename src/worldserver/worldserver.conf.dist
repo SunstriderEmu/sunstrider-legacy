@@ -210,6 +210,10 @@ Locale = 0
 #          If using Unitguid.NewMethod, set the proportion (in %) of remaining free guid used for summoned units. May range from 50 to 95.
 #          Default: 90
 #
+#		InstanceCrashRecovery.Enable
+#			Enable crash recovery system. The server will try to shutdown instances and battlegrounds causing crashes instead of shutting down the whole server.
+#			Default: 1
+#
 ###################################################################################################################
 
 UseProcessors = 0
@@ -237,6 +241,7 @@ AddonChannel = 1
 MapUpdate.Threads = 4
 GuidDistribution.NewMethod = 1
 GuidDistribution.Proportion = 90
+InstanceCrashRecovery.Enable = 1
 
 ###################################################################################################################
 # MOVEMENT ANTICHEAT
