@@ -791,16 +791,6 @@ ScriptMgr::~ScriptMgr()
 
 void ScriptMgr::ClearScripts()
 {
-    //in reload case, delete all previous scripts
-    for (int i = 0; i < MAX_SCRIPTS; i++)
-    {
-        if (m_scripts[i])
-        {
-            delete m_scripts[i];
-            m_scripts[i] = nullptr;
-        }
-    }
-
 #define SCR_CLEAR(T) \
         for (SCR_REG_ITR(T) itr = SCR_REG_LST(T).begin(); itr != SCR_REG_LST(T).end(); ++itr) \
             delete itr->second; \
@@ -1591,42 +1581,11 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 //*********************************
 //*** Functions used internally ***
 
-//compat function, to remove when OLDScript is discarded
-bool IsCreatureScript(OLDScript*& script)
-{
-    return script->GetAI || script->OnGossipHello || script->OnQuestAccept || script->OnGossipSelect
-        || script->OnGossipSelectCode || script->OnQuestSelect
-        || script->OnQuestComplete || script->pGetDialogStatus
-        || script->OnQuestReward || script->OnEffectDummyCreature;
-}
-
 void ScriptMgr::RegisterOLDScript(OLDScript*& script)
 {
-    /*
-    Use new script system for creatures only, the rest is yet to be done
-    */
-    if (IsCreatureScript(script))
-    {
-        CreatureScript* cScript = new CreatureScript(script->Name.c_str());
-        cScript->baseScript = script;
-        /* old script will be removed on CreatureScript deletion
-        delete script;*/
-        script = nullptr;
-        return;
-    }
-
-    int id = GetScriptId(script->Name.c_str());
-    if (id)
-    {
-        m_scripts[id] = script;
-        IncrementScriptCount();
-        return;
-    }
-
-    TC_LOG_WARN("scripts", "TrinityScript: RegisterOLDScript, but script named %s does not have ScriptName assigned in database. Script has been removed from memory.", script->Name.c_str());
-
-    delete script;
-    script = nullptr;
+    CreatureScript* cScript = new CreatureScript(script->Name.c_str());
+    cScript->baseScript = script;
+    script = nullptr; //we now own the script pointer, remove it for caller
 }
 
 #define SCR_MAP_BGN(M, V, I, E, C, T) \

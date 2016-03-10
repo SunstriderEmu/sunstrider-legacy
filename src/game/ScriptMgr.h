@@ -305,7 +305,7 @@ public:
     }
 
     //Backward compat function, OLDScript used to create this script, this is stored here because we use it's member functions
-    OLDScript* baseScript;
+    OLDScript* baseScript = nullptr;
 };
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
@@ -558,8 +558,6 @@ class ScriptMgr
     private:
 
         uint32 _scriptCount;
-
-        OLDScript* m_scripts[MAX_SCRIPTS] = { nullptr };
 };
 
 //Generic scripting text function
