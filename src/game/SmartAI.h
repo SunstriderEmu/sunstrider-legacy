@@ -38,6 +38,7 @@ class SmartAI : public CreatureAI
         void EndPath(bool fail = false);
         void ResumePath();
         WayPoint* GetNextWayPoint();
+        void GenerateWayPointArray(Movement::PointsArray* points);
         bool HasEscortState(uint32 uiEscortState) const { return (mEscortState & uiEscortState) != 0; }
         void AddEscortState(uint32 uiEscortState) { mEscortState |= uiEscortState; }
         void RemoveEscortState(uint32 uiEscortState) { mEscortState &= ~uiEscortState; }
@@ -199,7 +200,8 @@ class SmartAI : public CreatureAI
         uint32 mEscortState;
         uint32 mCurrentWPID;
         uint32 mLastWPIDReached;
-        bool mWPReached;
+        bool mOOCReached; //just reached last SMART_ESCORT_LAST_OOC_POINT
+        bool mWPReached; //just reached any point
         uint32 mWPPauseTimer;
         WayPoint* mLastWP;
         Position mLastOOCPos;//set on enter combat

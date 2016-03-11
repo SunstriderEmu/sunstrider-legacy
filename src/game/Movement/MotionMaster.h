@@ -22,6 +22,7 @@
 #include <vector>
 #include "SharedDefines.h"
 #include "Object.h"
+#include "Spline/MoveSpline.h"
 
 class MovementGenerator;
 class Unit;
@@ -52,7 +53,8 @@ enum MovementGeneratorType
     ROTATE_MOTION_TYPE        = 15,
     EFFECT_MOTION_TYPE        = 16,
     STEALTH_WARN_MOTION_TYPE  = 17,                             // StealthWarnMovementGenerator.h TODO, précédence sur les autres générateurs ?
-    NULL_MOTION_TYPE          = 18
+    ESCORT_MOTION_TYPE        = 18,                             // xinef: EscortMovementGenerator.h
+    NULL_MOTION_TYPE          = 19
 };
 
 //this determines priority between movement generators
@@ -174,6 +176,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, generatePath); }
         //orientation = 0 will be ignored, use near 0 values if you want to do it
         void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
+        void MoveSplinePath(Movement::PointsArray* path);
 
         // These two movement types should only be used with creatures having landing/takeoff animations
         void MoveLand(uint32 id, Position const& pos);
@@ -199,6 +202,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;
+        uint32 GetCurrentSplineId() const; // Xinef: Escort system
 
         void PropagateSpeedChange();
         void ReinitializeMovement();

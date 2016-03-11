@@ -277,13 +277,13 @@ MoveSpline::UpdateResult MoveSpline::_updateState(int32& ms_time_diff)
             {
                 point_Idx = spline.first();
                 time_passed = time_passed % Duration();
-                result = Result_NextCycle;
+                result = Movement::MoveSpline::UpdateResult(Result_NextCycle | Result_JustArrived);
             }
             else
             {
                 _Finalize();
                 ms_time_diff = 0;
-                result = Result_Arrived;
+                result = Movement::MoveSpline::UpdateResult(Result_Arrived | Result_JustArrived);
             }
         }
     }

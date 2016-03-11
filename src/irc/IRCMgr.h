@@ -59,10 +59,10 @@ typedef struct {
     bool enabled;
 } IRCChan;
 
-typedef std::vector<IRCChan*> IRCChans;
+typedef std::vector<std::shared_ptr<IRCChan>> IRCChans;
 
-typedef std::multimap<uint32, IRCChan*> GuildToIRCMap;
-typedef std::multimap<std::string, IRCChan*> ChannelToIRCMap;
+typedef std::multimap<uint32, std::shared_ptr<IRCChan>> GuildToIRCMap;
+typedef std::multimap<std::string, std::shared_ptr<IRCChan>> ChannelToIRCMap;
 
 typedef struct {
     irc_session_t* session;

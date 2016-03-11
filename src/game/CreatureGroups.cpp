@@ -59,7 +59,7 @@ void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member)
     {
         CreatureGroup* group = new CreatureGroup(groupId);
         map->CreatureGroupHolder[groupId] = group;
-        group->AddMember(member);
+        group->AddMember(member); //this will add creature as leader
     }
 }
 
@@ -184,21 +184,35 @@ void CreatureGroupManager::LoadCreatureFormations()
     //Free some heap
 }
 
+uint32 CreatureGroupManager::GetCreatureGUIDForStore(Creature* member)
+{
+    //always use table guid except for summons
+    if (member->IsSummoned())
+        return member->GetGUIDLow();
+    else
+        return member->GetDBTableGUIDLow();
+}
+
 void CreatureGroup::AddMember(Creature *member)
 {
+    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
+
     if (member->GetFormation())
     {
-        TC_LOG_ERROR("misc", "Tried to add a member (tableguid: %u, entry %u) already in a formation to formation", member->GetDBTableGUIDLow(), member->GetEntry());
+        if(member->IsSummoned())
+            TC_LOG_ERROR("misc", "Tried to add a summoned member (guid: %u, entry %u) already in a formation to formation", member->GetGUIDLow(), member->GetEntry());
+        else
+            TC_LOG_ERROR("misc", "Tried to add a member (tableguid: %u, entry %u) already in a formation to formation", member->GetDBTableGUIDLow(), member->GetEntry());
         return;
     }
 
     //Check if it is a leader
-    if(member->GetDBTableGUIDLow() == m_groupID)
+    if(memberGUID == m_groupID)
         m_leader = member;
 
     // Create formation info if needed
     FormationInfo* fInfo = nullptr;
-    auto itr = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow());
+    auto itr = sCreatureGroupMgr->GetGroupMap().find(memberGUID);
     if (itr == sCreatureGroupMgr->GetGroupMap().end())
     {
         //get leader to calc angle and distance from his current pos
@@ -211,14 +225,14 @@ void CreatureGroup::AddMember(Creature *member)
         fInfo = new FormationInfo;
         if (m_leader != member) //next infos not needed if we're leader
         {
-            fInfo->follow_angle = member->GetAngle(m_leader) - m_leader->GetOrientation();
+            fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
             fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
         }
         fInfo->leaderGUID = m_leader->GetGUIDLow();
-        sCreatureGroupMgr->AddGroupMember(member->GetDBTableGUIDLow(), fInfo);
+        sCreatureGroupMgr->AddGroupMember(memberGUID, fInfo);
     }
     else {
-        fInfo = sCreatureGroupMgr->GetGroupMap().find(member->GetDBTableGUIDLow())->second;
+        fInfo = sCreatureGroupMgr->GetGroupMap().find(memberGUID)->second;
     }
 
 
@@ -240,8 +254,10 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
     if(!member || !target)
         return;
 
+    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
+
     CreatureGroupInfoType const& groupMap = sCreatureGroupMgr->GetGroupMap();
-    CreatureGroupInfoType::const_iterator fInfo = groupMap.find(member->GetDBTableGUIDLow());
+    CreatureGroupInfoType::const_iterator fInfo = groupMap.find(memberGUID);
     if (fInfo == groupMap.end() || !fInfo->second)
         return;
 
@@ -295,7 +311,9 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
     if(!m_leader)
         return;
 
-    uint8 groupAI = sCreatureGroupMgr->GetGroupMap().at(m_leader->GetDBTableGUIDLow())->groupAI;
+    uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(m_leader);
+
+    uint8 groupAI = sCreatureGroupMgr->GetGroupMap().at(memberGUID)->groupAI;
     if (groupAI == GROUP_AI_NONE)
         return;
 

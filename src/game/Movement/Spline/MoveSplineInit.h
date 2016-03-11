@@ -109,7 +109,7 @@ namespace Movement
         /* Enables CatmullRom spline interpolation mode(makes path smooth)
          * if not enabled linear spline mode will be choosen. Disabled by default
          */
-        void SetSmooth();
+        //Not BC ? void SetSmooth();
         /* Enables CatmullRom spline interpolation mode, enables flying animation. Disabled by default
          */
         void SetFly();
@@ -122,19 +122,20 @@ namespace Movement
         /* Enables falling mode. Disabled by default
          */
         void SetFall();
+#ifdef LICH_KING
         /* Enters transport. Disabled by default
          */
-        //void SetTransportEnter();
+        void SetTransportEnter();
         /* Exits transport. Disabled by default
          */
-        //void SetTransportExit();
+        void SetTransportExit();
         /* Inverses unit model orientation. Disabled by default
          */
-        //void SetOrientationInversed();
+        void SetOrientationInversed();
         /* Fixes unit's model rotation. Disabled by default
          */
-        //void SetOrientationFixed(bool enable);
-
+        void SetOrientationFixed(bool enable);
+#endif
         /* Sets the velocity (in case you want to have custom movement velocity)
          * if no set, speed will be selected based on unit's speeds and current movement mode
          * Has no effect if falling mode enabled

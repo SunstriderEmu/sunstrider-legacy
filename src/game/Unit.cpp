@@ -19,6 +19,7 @@
 #include "CreatureAI.h"
 #include "Formulas.h"
 #include "Pet.h"
+#include "EscortMovementGenerator.h"
 
 #include "Totem.h"
 #include "BattleGround.h"
@@ -9744,7 +9745,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
         // Set home position at place of engaging combat for escorted creatures
         if ((IsAIEnabled && creature->AI()->IsEscorted()) ||
             GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE ||
-            GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == ESCORT_MOTION_TYPE)
             creature->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
         if (enemy)
@@ -12223,6 +12224,21 @@ void Unit::StopMoving()
     init.Stop();
 }
 
+void Unit::StopMovingOnCurrentPos() // pussywizard
+{
+    ClearUnitState(UNIT_STATE_MOVING);
+
+    // not need send any packets if not in world
+    if (!IsInWorld())
+        return;
+
+    DisableSpline(); // pussywizard: required so Launch() won't recalculate position from previous spline
+    Movement::MoveSplineInit init(this);
+    init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ());
+    init.SetFacing(GetOrientation());
+    init.Launch();
+}
+
 void Unit::SendMovementFlagUpdate()
 {
     WorldPacket data;
@@ -14540,12 +14556,56 @@ void Unit::UpdateHeight(float newZ)
     Relocate(GetPositionX(), GetPositionY(), newZ);
 }
 
+class SplineHandler
+{
+public:
+    SplineHandler(Unit* unit) : _unit(unit) { }
+
+    bool operator()(Movement::MoveSpline::UpdateResult result)
+    {
+        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived)) &&
+            _unit->GetTypeId() == TYPEID_UNIT && _unit->GetMotionMaster()->GetCurrentMovementGeneratorType() == ESCORT_MOTION_TYPE &&
+            _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())
+        {
+            _unit->ToCreature()->AI()->MovementInform(ESCORT_MOTION_TYPE, _unit->movespline->currentPathIdx() - 1);
+
+            //warn formation of leader movement if needed
+            if (result & Movement::MoveSpline::Result_NextSegment)
+            {
+                Creature* creature = _unit->ToCreature();
+                if (creature && creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
+                {
+                    auto moveGenerator = static_cast<EscortMovementGenerator<Unit>*>(_unit->GetMotionMaster()->top());
+                    Position dest;
+                    if (moveGenerator->GetCurrentDesinationPoint(_unit, dest))
+                        creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
+                }
+            }
+        }
+
+        return true;
+    }
+
+private:
+    Unit* _unit;
+};
+
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
     if (movespline->Finalized())
         return;
 
-    movespline->updateState(t_diff);
+    // xinef: process movementinform
+    // this code cant be placed inside EscortMovementGenerator, because we cant delete active MoveGen while it is updated
+    SplineHandler handler(this);
+    movespline->updateState(t_diff, handler);
+    // Xinef: Spline was cleared by StopMoving, return
+    if (!movespline->Initialized())
+    {
+        DisableSpline();
+        return;
+    }
+
     bool arrived = movespline->Finalized();
 
     if (arrived)

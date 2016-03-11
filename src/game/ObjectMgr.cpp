@@ -1225,7 +1225,7 @@ void ObjectMgr::LoadCreatures()
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
     //   12         13           14            15       16      17                   18                                                
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1) "
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, FLOOR(-1)) " //floor to get a decimal instead of a double (why it this needed idk)
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
         );
@@ -1269,7 +1269,7 @@ void ObjectMgr::LoadCreatures()
         data.spawnMask      = fields[15].GetUInt8();
         int32 gameEvent     = fields[16].GetInt32();
         data.poolId         = fields[17].GetUInt32();
-        data.instanceEventId = fields[18].GetDouble();
+        data.instanceEventId = fields[18].GetUInt64();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
         if(!cInfo)

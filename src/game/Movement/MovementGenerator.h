@@ -40,6 +40,8 @@ class MovementGenerator
 
         virtual MovementGeneratorType GetMovementGeneratorType() = 0;
 
+        virtual uint32 GetSplineId() const { return 0; }  // Xinef: Escort system
+
         virtual void UnitSpeedChanged() { }
 
         // used by Evade code for select point to evade with expected restart default movement

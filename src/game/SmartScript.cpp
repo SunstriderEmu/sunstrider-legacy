@@ -2512,6 +2512,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
+            if(!me->GetFormation())
+                sCreatureGroupMgr->AddCreatureToGroup(me->GetGUIDLow(), me);
+
             for (auto itr : *targets)
                 if (Creature* target = itr->ToCreature())
                     sCreatureGroupMgr->AddCreatureToGroup(me->GetGUIDLow(), target);

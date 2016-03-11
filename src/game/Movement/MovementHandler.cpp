@@ -464,6 +464,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                     if (!plrMover->IsAlive())
                         plrMover->KillPlayer();
                 }
+                //plrMover->StopMovingOnCurrentPos(); // pussywizard: moving corpse can't release spirit // not needed, the correct fix for this is PLAYER_FLAGS_IS_OUT_OF_BOUNDS (probably, not tested)
             }
         }
     }

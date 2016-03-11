@@ -67,6 +67,8 @@ class CreatureGroupManager
             return CreatureGroupMap;
         };
 
+        //get guid for storing in group map
+        static uint32 GetCreatureGUIDForStore(Creature* member);
     private:
         CreatureGroupInfoType CreatureGroupMap;
 
@@ -115,6 +117,7 @@ class CreatureGroup
         
         //remove every members 
         void EmptyFormation();
+
 };
 
 #define sCreatureGroupMgr CreatureGroupManager::instance()

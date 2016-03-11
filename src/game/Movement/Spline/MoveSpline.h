@@ -51,7 +51,8 @@ namespace Movement
             Result_None         = 0x01,
             Result_Arrived      = 0x02,
             Result_NextCycle    = 0x04,
-            Result_NextSegment  = 0x08
+            Result_NextSegment  = 0x08,
+            Result_JustArrived  = 0x10,
         };
         friend class PacketBuilder;
 
@@ -91,6 +92,7 @@ namespace Movement
 
     public:
         int32 Duration() const { return spline.length(); }
+        bool Running() const { return !(splineflags & MoveSplineFlag::eFlags::Walkmode);  }
         MySpline const& _Spline() const { return spline; }
         int32 _currentSplineIdx() const { return point_Idx; }
         void _Finalize();

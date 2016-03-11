@@ -102,7 +102,7 @@ bool IRCMgr::configure()
         do {
             fields2 = res2->Fetch();
 
-            IRCChan* channel = new IRCChan;
+            auto channel = std::make_shared<IRCChan>();
             channel->name = fields2[0].GetString();
             channel->password = fields2[1].GetString();
             channel->joinmsg = fields2[4].GetString();
@@ -321,7 +321,7 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     msg += "] ";
     msg += params[1];
     for (uint32 i = 0; i < server->channels.size(); i++) {
-        IRCChan* chan = server->channels[i];
+        auto chan = server->channels[i];
         if (strcmp(chan->name.c_str(), params[0])) // Maybe we can achieve better perfs with a map instead of iterating on a vector
             continue;
         
@@ -410,7 +410,7 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
         if(!server) return;
         for (uint32 i = 0; i < server->channels.size(); i++) 
         {
-            IRCChan* chan = server->channels[i];
+            auto chan = server->channels[i];
             if(chan->name != _channel || !chan->enabled) continue;
             for (uint32 j = 0; j < chan->guilds.size(); j++) 
             {

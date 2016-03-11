@@ -21,6 +21,7 @@
 #include "Creature.h"
 
 #include "ConfusedMovementGenerator.h"
+#include "EscortMovementGenerator.h"
 #include "FleeingMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
@@ -313,6 +314,25 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool
         TC_LOG_DEBUG("misc", "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f O: %f)",
             _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z, o);
         Mutate(new PointMovementGenerator<Creature>(id, x, y, z, o, generatePath), MOTION_SLOT_ACTIVE);
+    }
+}
+
+void MotionMaster::MoveSplinePath(Movement::PointsArray* path)
+{
+    // Xinef: do not allow to move with UNIT_FLAG_DISABLE_MOVE
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+        return;
+
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+    {
+        ;//sLog->outStaticDebug("Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), id, x, y, z);
+        Mutate(new EscortMovementGenerator<Player>(path), MOTION_SLOT_ACTIVE);
+    }
+    else
+    {
+        ;//sLog->outStaticDebug("Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
+         //    _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
+        Mutate(new EscortMovementGenerator<Creature>(path), MOTION_SLOT_ACTIVE);
     }
 }
 
@@ -677,6 +697,15 @@ MovementGeneratorType MotionMaster::GetMotionSlotType(int slot) const
         return NULL_MOTION_TYPE;
     else
         return Impl[slot]->GetMovementGeneratorType();
+}
+
+// Xinef: Escort system
+uint32 MotionMaster::GetCurrentSplineId() const
+{
+    if (empty())
+        return 0;
+
+    return top()->GetSplineId();
 }
 
 void MotionMaster::InitTop()

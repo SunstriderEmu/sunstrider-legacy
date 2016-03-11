@@ -121,6 +121,9 @@ namespace Movement
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             data.append(unit->GetTransGUID()); //TODOMOV a valider
+#ifdef LICH_KING
+            data << int8(unit->GetTransSeat());
+#endif
         }
 
         PacketBuilder::WriteMonsterMove(move_spline, data);
@@ -166,7 +169,10 @@ namespace Movement
         if (transport)
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data.append(unit->GetTransGUID());
+            data.append(unit->GetTransGUID()); //Not tested on BC
+#ifdef LICH_KING
+            data << int8(unit->GetTransSeat());
+#endif
         }
 
         PacketBuilder::WriteStopMovement(loc, args.splineId, data);
