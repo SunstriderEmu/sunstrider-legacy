@@ -44,7 +44,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         TargetedMovementGeneratorMedium(Unit* target, float offset, float angle) :
             TargetedMovementGeneratorBase(target), i_path(nullptr),
             i_recheckDistance(0), i_offset(offset), i_angle(angle),
-            i_recalculateTravel(false), i_targetReached(false)
+            i_recalculateSpeed(false), i_targetReached(false)
         { }
         ~TargetedMovementGeneratorMedium()
         { 
@@ -55,7 +55,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         bool DoUpdate(T*, uint32);
         Unit* GetTarget() const { return i_target.getTarget(); }
 
-        void UnitSpeedChanged() { i_recalculateTravel = true; }
+        void UnitSpeedChanged() { i_recalculateSpeed = true; }
         bool IsReachable() const { return (i_path) ? (i_path->GetPathType() & PATHFIND_NORMAL) : true; }
         /** return true target position is within allowed distance of the owner */
         bool IsWithinAllowedDist(T* owner, float x, float y, float z);
@@ -70,7 +70,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         TimeTrackerSmall i_recheckDistance;
         float i_offset;
         float i_angle;
-        bool i_recalculateTravel : 1;
+        bool i_recalculateSpeed : 1;
         bool i_targetReached : 1;
 };
 

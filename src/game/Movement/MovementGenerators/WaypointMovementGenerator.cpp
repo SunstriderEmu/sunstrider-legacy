@@ -207,32 +207,31 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
 
     if (m_isArrivalDone)
     {
+        //set new home at current position
+        float x = i_path->at(i_currentNode)->x;
+        float y = i_path->at(i_currentNode)->y;
+        float z = i_path->at(i_currentNode)->z;
+        float o = creature->GetOrientation();
+
+        if (!transportPath)
+            creature->SetHomePosition(x, y, z, o);
+        else
+        {
+            if (Transport* trans = creature->GetTransport())
+            {
+                o -= trans->GetOrientation();
+                creature->SetTransportHomePosition(x, y, z, o);
+                trans->CalculatePassengerPosition(x, y, z, &o);
+                creature->SetHomePosition(x, y, z, o);
+            }
+            else
+                transportPath = false;
+        }
+
         if (IsLastNode(i_currentNode))
         {
             if (path_type == WP_PATH_TYPE_ONCE) 
-            { //end waypoint movement
-                
-                //set new home at current position
-                float x = i_path->at(i_currentNode)->x;
-                float y = i_path->at(i_currentNode)->y;
-                float z = i_path->at(i_currentNode)->z;
-                float o = creature->GetOrientation();
-
-                if (!transportPath)
-                    creature->SetHomePosition(x, y, z, o);
-                else
-                {
-                    if (Transport* trans = creature->GetTransport())
-                    {
-                        o -= trans->GetOrientation();
-                        creature->SetTransportHomePosition(x, y, z, o);
-                        trans->CalculatePassengerPosition(x, y, z, &o);
-                        creature->SetHomePosition(x, y, z, o);
-                    }
-                    else
-                        transportPath = false;
-                }
-
+            { 
                 creature->GetMotionMaster()->Initialize();
                 return false; //cause movement expire
             } else if (path_type == WP_PATH_TYPE_ROUND_TRIP) 
@@ -242,10 +241,13 @@ bool WaypointMovementGenerator<Creature>::StartMove(Creature* creature)
             }
         }
 
-        //else 
         SetNextNode();
     }
     
+    // xinef: do not initialize motion if we got stunned in movementinform
+    if (creature->HasUnitState(UNIT_STATE_NOT_MOVE))
+        return true;
+
     /*
     //we need next node to compute nice and smooth splines. Deactivated for now, see the other commented block below
     uint32 i_nextNode = (i_currentNode+1) % i_path->size();

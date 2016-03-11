@@ -78,13 +78,13 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     if (!result || (i_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
     {
         // Cant reach target, try again at next update
-        i_recalculateTravel = true;
+        i_recalculateSpeed = true;
         return;
     }
 
     D::_addUnitStateMove(owner);
     i_targetReached = false;
-    i_recalculateTravel = false;
+    i_recalculateSpeed = false;
     owner->AddUnitState(UNIT_STATE_CHASE);
 
     Movement::MoveSplineInit init(owner);
@@ -158,7 +158,7 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
     }
 
     i_recheckDistance.Update(time_diff);
-    if (!i_recalculateTravel && i_recheckDistance.Passed())
+    if (!i_recalculateSpeed && i_recheckDistance.Passed())
     {
         i_recheckDistance.Reset(100);
         G3D::Vector3 dest = owner->movespline->FinalDestination();
@@ -167,14 +167,14 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
             if (TransportBase* transport = owner->GetTransport())
                 transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
         
-        i_recalculateTravel = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
+        i_recalculateSpeed = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
-        if (!i_recalculateTravel)
-            i_recalculateTravel = !i_target->IsWithinLOSInMap(owner);
+        if (!i_recalculateSpeed)
+            i_recalculateSpeed = !i_target->IsWithinLOSInMap(owner);
     }
 
-    if (i_recalculateTravel)
-        _setTargetLocation(owner, i_recalculateTravel);
+    if (i_recalculateSpeed)
+        _setTargetLocation(owner, i_recalculateSpeed);
 
     if (owner->movespline->Finalized())
     {
