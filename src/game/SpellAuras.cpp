@@ -3172,21 +3172,6 @@ void Aura::HandleForceReaction(bool apply, bool Real)
         data << uint32(itr->second);                        // reputation rank
     }
     player->SendDirectMessage(&data);
-    
-    
-    //quests 10563 (Alliance) and 10596 (Horde)
-    if (apply && GetId() == 37097) {
-        Unit* caster = GetCaster();
-        if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-            return;
-        
-        if ((caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE && (caster->ToPlayer())->GetQuestStatus(10563) == QUEST_STATUS_INCOMPLETE)
-            (caster->ToPlayer())->KilledMonster(21502, 0);
-        else if ((caster->ToPlayer())->GetTeam() == TEAM_HORDE && (caster->ToPlayer())->GetQuestStatus(10596) == QUEST_STATUS_INCOMPLETE)
-            (caster->ToPlayer())->KilledMonster(21502, 0);
-        
-        caster->SummonCreature(21633, -3304.213135, 2929.657959, 170.916153, 5.700707, TEMPSUMMON_CORPSE_DESPAWN, 80000);
-    }
 }
 
 void Aura::HandleAuraModSkill(bool apply, bool Real)
