@@ -1159,12 +1159,17 @@ CacheSpellContainerBounds SmartAIMgr::GetKillCreditSpellContainerBounds(uint32 k
 
 void SmartAIMgr::ReloadCreaturesScripts()
 {
-    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
-    auto creatures = sObjectAccessor->GetCreatures();
-    for (auto pair : creatures)
+    //get creature list then release lock, as function inside AIM_Init may need this lock as well
+    std::list<Creature*> updateList;
     {
-        Creature* c = pair.second;
-        if(c->GetAIName() == SMARTAI_AI_NAME)
+        boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+        auto creatures = sObjectAccessor->GetCreatures();
+        for (auto pair : creatures)
+            updateList.push_back(pair.second);
+    }
+    for (auto c : updateList)
+    {
+        if (c->GetAIName() == SMARTAI_AI_NAME)
             c->AIM_Initialize();
     }
 }
