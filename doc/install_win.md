@@ -18,7 +18,7 @@ the linking will fail.
 3. Install [OpenSSL][openssl] note the directory to which you
    install it. Caution, do not use the 'Light' version.
 
-4. Install [Boost 1.58][boost] or newer to a directory of your choice. Set the
+4. Install [Boost 1.60][boost] or newer to a directory of your choice. Set the
    **environment** variable (not a CMake variable) `BOOST_ROOT` to wherever you
    installed Boost.
 
