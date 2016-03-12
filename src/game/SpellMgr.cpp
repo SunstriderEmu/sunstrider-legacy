@@ -1088,8 +1088,13 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
             return false;
     }
     
+    // Well Fed hack
     if (spellInfo_1->SpellIconID == 59 && spellInfo_2->SpellIconID == 59)
         return true;
+
+    //Channel Water Shield hack
+    if (spellInfo_1->SpellVisual == 8577 && spellInfo_2->SpellVisual == 8577 )
+        return false;
 
     if(!sameCaster)
     {
@@ -1154,6 +1159,7 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
 
     return true;
 }
+
 bool SpellMgr::IsProfessionSpell(uint32 spellId)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
