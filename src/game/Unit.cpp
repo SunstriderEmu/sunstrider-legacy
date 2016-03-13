@@ -10372,6 +10372,12 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
     }
 }
 
+void Unit::SetSpeedRate(UnitMoveType mtype, float rate) 
+{ 
+    m_speed_rate[mtype] = rate; 
+    PropagateSpeedChange();
+}
+
 void Unit::SetDeathState(DeathState s)
 {
     if (s != ALIVE && s!= JUST_RESPAWNED)

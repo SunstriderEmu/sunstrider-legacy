@@ -1727,7 +1727,7 @@ class Unit : public WorldObject
         float GetSpeed( UnitMoveType mtype ) const;
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
         void SetSpeed(UnitMoveType mtype, float rate, bool forced = false, bool withPet = true);
-        void SetSpeedRate(UnitMoveType mtype, float rate) { m_speed_rate[mtype] = rate; }
+        void SetSpeedRate(UnitMoveType mtype, float rate);
 
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();
@@ -1743,6 +1743,7 @@ class Unit : public WorldObject
         MotionMaster* GetMotionMaster() { return i_motionMaster; }
         const MotionMaster* GetMotionMaster() const { return i_motionMaster; }
 
+        //returns wheter unit his currently stopped (= has any move related UNIT_STATE)
         bool IsStopped() const { return !(HasUnitState(UNIT_STATE_MOVING)); }
         void StopMoving();
         void StopMovingOnCurrentPos();

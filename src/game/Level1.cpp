@@ -1470,30 +1470,42 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
         return false;
     }
 
-    Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    Unit* u = GetSelectedUnit();
+    if (u == NULL)
     {
-        SendSysMessage(LANG_NO_CHAR_SELECTED);
+        SendSysMessage(LANG_NO_SELECTION);
         SetSentErrorMessage(true);
         return false;
     }
 
-    if(chr->IsInFlight())
+    Player* chr = u->ToPlayer();
+    if(chr && chr->IsInFlight())
     {
         PSendSysMessage(LANG_CHAR_IN_FLIGHT,chr->GetName().c_str());
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage(LANG_YOU_CHANGE_ASPEED, ASpeed, chr->GetName().c_str());
-    if (needReportToTarget(chr))
+    PSendSysMessage(LANG_YOU_CHANGE_ASPEED, ASpeed, u->GetName().c_str());
+    if (chr && needReportToTarget(chr))
         ChatHandler(chr).PSendSysMessage(LANG_YOURS_ASPEED_CHANGED, GetName().c_str(), ASpeed);
 
-    chr->SetSpeed(MOVE_WALK,    ASpeed,true);
-    chr->SetSpeed(MOVE_RUN,     ASpeed,true);
-    chr->SetSpeed(MOVE_SWIM,    ASpeed,true);
-    //chr->SetSpeed(MOVE_TURN,    ASpeed,true);
-    chr->SetSpeed(MOVE_FLIGHT,     ASpeed,true);
+    if (chr)
+    {
+        chr->SetSpeed(MOVE_WALK, ASpeed, true);
+        chr->SetSpeed(MOVE_RUN, ASpeed, true);
+        chr->SetSpeed(MOVE_SWIM, ASpeed, true);
+        chr->SetSpeed(MOVE_FLIGHT, ASpeed, true);
+    }
+    else { //target is a creature
+        if (Creature* c = u->ToCreature())
+        {
+            c->SetSpeedRate(MOVE_WALK, ASpeed);
+            c->SetSpeedRate(MOVE_RUN, ASpeed);
+            c->SetSpeedRate(MOVE_SWIM, ASpeed);
+            c->SetSpeedRate(MOVE_FLIGHT, ASpeed);
+        }
+    }
     return true;
 }
 

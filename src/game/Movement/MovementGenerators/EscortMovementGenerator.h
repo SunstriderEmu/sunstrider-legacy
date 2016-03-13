@@ -22,7 +22,7 @@ class EscortMovementGenerator : public MovementGeneratorMedium< T, EscortMovemen
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
 
-        void unitSpeedChanged() { i_recalculateSpeed = true; }
+        void UnitSpeedChanged() override { i_recalculateSpeed = true; }
 
         MovementGeneratorType GetMovementGeneratorType() override { return ESCORT_MOTION_TYPE; }
 
