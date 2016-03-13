@@ -618,6 +618,14 @@ bool AllGameObjectsWithEntryInRange::operator() (GameObject* pGo)
     return false;
 }
 
+bool AllGameObjectsInRange::operator() (GameObject* pGo)
+{
+    if (pGo->IsWithinDist3d(m_X, m_Y, m_Z, m_fRange))
+        return true;
+
+    return false;
+}
+
 bool NearestGameObjectEntryInObjectRangeCheck::operator()(GameObject* go)
 {
     if (go->GetEntry() == i_entry && i_obj.IsWithinDistInMap(go, i_range))

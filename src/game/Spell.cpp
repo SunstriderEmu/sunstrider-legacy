@@ -1514,6 +1514,34 @@ void Spell::SearchChainTarget(std::list<Unit*> &TagUnitMap, float max_range, uin
     }
 }
 
+void Spell::SearchAreaGOTarget(std::list<GameObject*> &TagGoMap, float radius, const uint32 type, uint32 entry)
+{
+    float x, y, z;
+    switch (type)
+    {
+    case PUSH_DST_CENTER:
+        CheckDst();
+        x = m_targets.m_destX;
+        y = m_targets.m_destY;
+        z = m_targets.m_destZ;
+        break;
+    case PUSH_SRC_CENTER:
+        CheckSrc();
+        x = m_targets.m_srcX;
+        y = m_targets.m_srcY;
+        z = m_targets.m_srcZ;
+        break;
+    default:
+        x = m_caster->GetPositionX();
+        y = m_caster->GetPositionY();
+        z = m_caster->GetPositionZ();
+        break;
+    }
+
+    Trinity::AllGameObjectsInRange notifier(x, y, z, radius);
+    m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+}
+
 void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry)
 {
     float x, y, z;
@@ -2098,6 +2126,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
         float radius = m_spellInfo->Effects[i].CalcRadius(m_caster->GetSpellModOwner(), this) *m_spellValue->RadiusMod;
 
         std::list<Unit*> unitList;
+        std::list<GameObject*> goList;
 
         switch(cur)
         {
@@ -2116,8 +2145,9 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
             case TARGET_UNIT_DEST_AREA_PARTY:
                 m_caster->GetPartyMember(unitList, radius); //fix me
                 break;
-            case TARGET_GAMEOBJECT_SRC_AREA: // fix me
+            case TARGET_GAMEOBJECT_SRC_AREA:
             case TARGET_GAMEOBJECT_DEST_AREA:
+                SearchAreaGOTarget(goList, radius, pushType);
                 break;
             case TARGET_UNIT_SRC_AREA_ENTRY:
             case TARGET_UNIT_DEST_AREA_ENTRY:
@@ -2257,6 +2287,8 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
 
             for(std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 AddUnitTarget(*itr, i);
+            for (auto itr : goList)
+                AddGOTarget(itr, i);
         }
     } // Chain or Area
 }

@@ -975,6 +975,19 @@ namespace Trinity
         float m_fRange;
     };
 
+    //2D check
+    class AllGameObjectsInRange
+    {
+    public:
+        AllGameObjectsInRange(float x, float y, float z, float fMaxRange) : m_X(x), m_Y(y), m_Z(z), m_fRange(fMaxRange) {}
+        bool operator() (GameObject* pGo);
+    private:
+        float m_X;
+        float m_Y;
+        float m_Z;
+        float m_fRange;
+    };
+
     // Success at unit in range, range update for next check (this can be use with GameobjectLastSearcher to find nearest GO)
     class NearestGameObjectEntryInObjectRangeCheck
     {
