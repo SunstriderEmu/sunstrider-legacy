@@ -1538,8 +1538,16 @@ void Spell::SearchAreaGOTarget(std::list<GameObject*> &TagGoMap, float radius, c
         break;
     }
 
-    Trinity::AllGameObjectsInRange notifier(x, y, z, radius);
-    m_caster->GetMap()->VisitAll(x, y, radius, notifier);
+    CellCoord pair(Trinity::ComputeCellCoord(m_caster->GetPositionX(), m_caster->GetPositionY()));
+    Cell cell(pair);
+    cell.data.Part.reserved = ALL_DISTRICT;
+    cell.SetNoCreate();
+
+    Trinity::AllGameObjectsInRange check(x,y,z,radius);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(TagGoMap, check);
+    TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange>, GridTypeMapContainer> visitor(searcher);
+
+    cell.Visit(pair, visitor, *(m_caster->GetMap()));
 }
 
 void Spell::SearchAreaTarget(std::list<Unit*> &TagUnitMap, float radius, const uint32 type, SpellTargets TargetType, uint32 entry)
