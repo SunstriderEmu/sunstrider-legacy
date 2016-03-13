@@ -939,7 +939,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         data.orientation = chr->GetTransOffsetO();
         data.displayid = 0;
         data.equipmentId = 0;
-        data.spawntimesecs = 25;
+        data.spawntimesecs = 300;
         data.spawndist = 0;
         data.movementType = 1;
         data.spawnMask = 1;
