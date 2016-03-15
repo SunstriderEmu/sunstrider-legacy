@@ -40,6 +40,13 @@ Log::~Log()
     Close();
 }
 
+void Log::SetSynchronous()
+{
+    delete _strand;
+    _strand = nullptr;
+    _ioService = nullptr;
+}
+
 uint8 Log::NextAppenderId()
 {
     return AppenderId++;

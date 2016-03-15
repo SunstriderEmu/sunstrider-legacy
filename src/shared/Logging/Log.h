@@ -56,6 +56,7 @@ class Log
             return &instance;
         }
 
+        void SetSynchronous();  // Not threadsafe - should only be called from main() after all threads are joined
         void LoadFromConfig();
         void Close();
         bool ShouldLog(std::string const& type, LogLevel level) const;
