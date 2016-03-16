@@ -1714,7 +1714,6 @@ class Player : public Unit
 
         void _LoadSpellCooldowns(QueryResult result);
         void _SaveSpellCooldowns(SQLTransaction trans);
-        void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
         // global cooldown
         void AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd = false);

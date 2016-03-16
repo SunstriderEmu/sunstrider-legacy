@@ -10298,9 +10298,8 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced, bool withPet /*
                 TC_LOG_ERROR("entities.unit","Unit::SetSpeed: Unsupported move type (%d), data not sent to client.",mtype);
                 return;
         }
-#ifndef LICH_KING
-        data << GetPackGUID(); //BC, removed with LK
-#endif
+
+        data << GetPackGUID();
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
         SendMessageToSet(&data, true);

@@ -14885,8 +14885,8 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[LOAD_DATA_ACTIONBARS].GetUInt8());
-    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetCString(), PLAYER_EXPLORED_ZONES_1, 128);
-    _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetCString(), PLAYER_FIELD_KNOWN_TITLES, 2);
+    _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
+    _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER_FIELD_KNOWN_TITLES, 2);
     
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -15502,24 +15502,6 @@ void Player::_LoadActions(QueryResult result)
             m_actionButtons[button].uState = ACTIONBUTTON_UNCHANGED;
         }
         while( result->NextRow() );
-    }
-}
-
-void Player::_LoadIntoDataField(const char* data, uint32 startOffset, uint32 count)
-{
-    if (!data)
-        return;
-        
-    Tokens tokens = StrSplit(data, " ");
-    
-    if (tokens.size() != count)
-        return;
-        
-    Tokens::iterator iter;
-    uint32 index;
-    for (iter = tokens.begin(), index = 0; index < count; ++iter, ++index)
-    {
-        m_uint32Values[startOffset + index] = atol((*iter).c_str());
     }
 }
 
