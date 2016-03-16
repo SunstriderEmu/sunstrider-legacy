@@ -53,6 +53,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared/Networking
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
+  ${CMAKE_SOURCE_DIR}/src/shared/Realm
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
   ${CMAKE_CURRENT_SOURCE_DIR}/Realms
