@@ -30,6 +30,7 @@
 #include "Policies/Singleton.h"
 #include "SharedDefines.h"
 #include "QueryResult.h"
+#include "Realm/Realm.h"
 
 #include <map>
 #include <set>
@@ -407,18 +408,6 @@ enum Rates
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
     MAX_RATES
-};
-
-/// Type of server
-enum RealmType
-{
-    REALM_TYPE_NORMAL = 0,
-    REALM_TYPE_PVP = 1,
-    REALM_TYPE_NORMAL2 = 4,
-    REALM_TYPE_RP = 6,
-    REALM_TYPE_RPPVP = 8,
-    REALM_TYPE_FFA_PVP = 16                                 // custom, free for all pvp mode like arena PvP in all zones except rest activated places and sanctuaries
-                                                            // replaced by REALM_PVP in realm list
 };
 
 enum RealmZone
