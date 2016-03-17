@@ -40,6 +40,9 @@
 enum WaypointPathType
 {
     WP_PATH_TYPE_LOOP           = 0,
+    /* Note that for ONCE, the creature must have another movement generator if you don't want the waypoint generator to be started again. 
+    So you'll get no problem with creature where the path is loaded dynamically (as these creature at least the IDLE generator beneath), 
+    but when used from creature_addon the path will loop anyway */
     WP_PATH_TYPE_ONCE           = 1,
     WP_PATH_TYPE_ROUND_TRIP     = 2,
 
@@ -71,6 +74,7 @@ class PathMovementBase
 
     protected:
         P i_path;
+        //The node we're currently going to. Index for i_path. /!\ not always equal to path id in db (db path may not start at 0 or all points be contiguous)
         uint32 i_currentNode;
 };
 
@@ -78,27 +82,40 @@ template<class T>
 class WaypointMovementGenerator;
 
 /*
+*Completely rewritten by Kelno*
 You can set this path as repeatable or not with SetPathType.
 Default type is WP_PATH_TYPE_LOOP.
+Creature will have UNIT_STATE_ROAMING_MOVE and UNIT_STATE_ROAMING when currently moving.
+This generator does NOT used mmaps to create path between points
+
+TODO:
+- mmaps
+- cyclic choz (check if position equals then skip
 */
 template<>
 class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
+        WaypointMovementGenerator(Movement::PointsArray& points);
+        // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
         WaypointMovementGenerator(uint32 _path_id = 0);
-        ~WaypointMovementGenerator() { i_path = NULL; }
+        ~WaypointMovementGenerator();
         void DoInitialize(Creature*);
         void DoFinalize(Creature*);
         void DoReset(Creature*);
         bool DoUpdate(Creature*, uint32 diff);
 
-        void MovementInform(Creature*);
+        void UnitSpeedChanged() override { i_recalculatePath = true; }
+
+        void MovementInform(Creature*, uint32 DBNodeId);
 
         MovementGeneratorType GetMovementGeneratorType() { return WAYPOINT_MOTION_TYPE; }
 
-        // now path movement implmementation
-        void LoadPath(Creature*);
+        uint32 GetSplineId() const override { return _splineId; }
+
+        // Load path (from Creature::GetWaypointPathId) and start it
+        bool LoadPath(Creature*);
         
         WaypointPathType GetPathType() { return path_type; }
         //return true if argument is correct
@@ -108,39 +125,72 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         //return true if argument is correct
         bool SetDirection(WaypointPathDirection dir);
 
-        bool GetResetPos(Creature*, float& x, float& y, float& z);
+        bool GetResetPos(Creature*, float& x, float& y, float& z) const;
+
+        void SplineFinished(Creature* creature, uint32 splineId);
+
+        bool GetCurrentDestinationPoint(Creature* creature, Position& pos) const;
 
     private:
-        //return if last waypoint depending on current direction
-        bool IsLastNode(uint32 node);
-        //set next node as current depending on direction, return false if already at last node
-        bool SetNextNode();
+        // Return if node is last waypoint depending on current direction
+        bool IsLastMemoryNode(uint32 node);
+
+        // Get next node as current depending on direction, return false if already at last node
+        //Enable allowReverseDirection to allow generator direction to revert if type is WP_PATH_TYPE_ROUND_TRIP and we're at path end
+        bool GetNextMemoryNode(uint32 fromNode, uint32& nextNode, bool allowReverseDirection = true);
         
-        void Stop(int32 time) { i_nextMoveTime.Reset(time);}
+        // Get first node in path (depending on direction)
+        uint32 GetFirstMemoryNode();
 
-        bool Stopped() { return !i_nextMoveTime.Passed();}
+        // Pause path execution for given time. This does not stop current spline movement.
+        void Pause(int32 time);
 
-        bool CanMove(int32 diff)
-        {
-            i_nextMoveTime.Update(diff);
-            return i_nextMoveTime.Passed();
-        }
+        /* Handle point relative stuff (memory inform, script, delay)
+        arrivedNodeIndex = index in i_path
+        */
+        void OnArrived(Creature*, uint32 arrivedNodeIndex);
 
-        void OnArrived(Creature*);
-        //return false if path generator must expire
-        bool StartMove(Creature*);
+        /* Fill m_precomputedPath with data from i_path according to current node (that is, points until next stop), then start spline path
+        nextNode = skip current node
+        */
+        bool StartSplinePath(Creature* c, bool nextNode = false);
 
-        void StartMoveNow(Creature* creature)
+        bool IsPaused();
+
+        // Update pause timer if any and return wheter we can continue. Return false if not pausing at the moment.
+        bool UpdatePause(int32 diff);
+
+        // Remove pause if any and <insert StartSplinePath comment here>
+        bool StartMoveNow(Creature* creature, bool nextNode = false)
         {
             i_nextMoveTime.Reset(0);
-            StartMove(creature);
+            return StartSplinePath(creature, nextNode);
         }
+        
+        //create a new customPath object with given array
+        bool CreateCustomPath(Movement::PointsArray&);
 
-        TimeTrackerSmall i_nextMoveTime;
-        bool m_isArrivalDone;
+        TimeTrackerSmall i_nextMoveTime; //timer for pauses
         uint32 path_id;
+        //this movement generator can be constructed with either a path id or with given points, stored in customPath in this second case
+        WaypointPath* customPath;
         WaypointPathType path_type;
         WaypointPathDirection direction;
+
+        Movement::PointsArray m_precomputedPath;
+        bool i_recalculatePath;
+
+        uint32 _splineId;
+        //true when creature has reached the start node in path (it has to travel from its current position first)
+        uint32 reachedFirstNode;
+
+        typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> SplineToPathIdMapping;
+        //filled at spline path generation. Used to determine which node spline system reached. When spline id is finished, it means we've reached path id.
+        SplineToPathIdMapping splineToPathIds;
+
+        typedef std::unordered_map<uint32 /*splineId*/, uint32 /*pathNodeId*/> PathIdToPathIndexMapping;
+        //filled at initial path loading. Used to update i_currentNode when a new spline node is reached.
+        PathIdToPathIndexMapping pathIdsToPathIndexes;
 };
 
 /** FlightPathMovementGenerator generates movement of the player for the paths
@@ -172,7 +222,7 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
         void SkipCurrentNode() { ++i_currentNode; }
         void DoEventIfAny(Player* player, TaxiPathNodeEntry const* node, bool departure);
 
-        bool GetResetPos(Player*, float& x, float& y, float& z);
+        bool GetResetPos(Player*, float& x, float& y, float& z) const;
 
         void InitEndGridInfo();
         void PreloadEndGrid();

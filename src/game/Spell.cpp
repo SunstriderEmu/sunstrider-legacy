@@ -2155,6 +2155,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                 break;
             case TARGET_GAMEOBJECT_SRC_AREA:
             case TARGET_GAMEOBJECT_DEST_AREA:
+                //this is a quick and dirty impl, I'm not even sure what these targets are supposed to do. For now it will be target any gobject in range
                 SearchAreaGOTarget(goList, radius, pushType);
                 break;
             case TARGET_UNIT_SRC_AREA_ENTRY:

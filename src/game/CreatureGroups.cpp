@@ -351,7 +351,8 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         Trinity::NormalizeMapCoord(dx);
         Trinity::NormalizeMapCoord(dy);
 
-        member->UpdateGroundPositionZ(dx, dy, dz);
+        if(!member->CanFly() && !member->IsFlying())
+            member->UpdateGroundPositionZ(dx, dy, dz);
 
         member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         // pussywizard: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function

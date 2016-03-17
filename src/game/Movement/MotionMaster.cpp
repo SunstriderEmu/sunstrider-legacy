@@ -21,7 +21,6 @@
 #include "Creature.h"
 
 #include "ConfusedMovementGenerator.h"
-#include "EscortMovementGenerator.h"
 #include "FleeingMovementGenerator.h"
 #include "HomeMovementGenerator.h"
 #include "IdleMovementGenerator.h"
@@ -317,22 +316,72 @@ void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool
     }
 }
 
+/* Unused, from Sunwell core. Not sure what this actually does.
+void MotionMaster::GenerateWaypointArray(Unit* me, Movement::PointsArray& from, uint32 startingWaypointId, Movement::PointsArray& points)
+{
+    if (from.empty())
+        return;
+
+    // Flying unit, just fill array
+    if (me->m_movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY)))
+    {
+        // xinef: first point in vector is unit real position
+        points.clear();
+        points.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
+        for (uint32 i = startingWaypointId; i < from.size(); i++)
+            points.push_back(G3D::Vector3(from[i].x, from[i].y, from[i].z));
+    }
+    else
+    {
+        for (float size = 1.0f; size; size *= 0.5f)
+        {
+            std::vector<G3D::Vector3> pVector;
+            // xinef: first point in vector is unit real position
+            pVector.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
+            uint32 length = (from.size() - startingWaypointId)*size;
+
+            uint32 cnt = 0;
+            for (uint32 i = startingWaypointId; i < from.size() && cnt <= length; i++, ++cnt)
+                pVector.push_back(G3D::Vector3(from[i].x, from[i].y, from[i].z));
+
+            if (pVector.size() > 2) // more than source + dest
+            {
+                G3D::Vector3 middle = (pVector[0] + pVector[pVector.size() - 1]) / 2.f;
+                G3D::Vector3 offset;
+
+                bool continueLoop = false;
+                for (uint32 i = 1; i < pVector.size() - 1; ++i)
+                {
+                    offset = middle - pVector[i];
+                    if (fabs(offset.x) >= 0xFF || fabs(offset.y) >= 0xFF || fabs(offset.z) >= 0x7F)
+                    {
+                        // offset is too big, split points
+                        continueLoop = true;
+                        break;
+                    }
+                }
+                if (continueLoop)
+                    continue;
+            }
+            // everything ok
+            points = pVector;
+            break;
+        }
+    }
+}
+*/
+
 void MotionMaster::MoveSplinePath(Movement::PointsArray* path)
 {
     // Xinef: do not allow to move with UNIT_FLAG_DISABLE_MOVE
     if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
         return;
 
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-    {
-        ;//sLog->outStaticDebug("Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f)", _owner->GetGUIDLow(), id, x, y, z);
-        Mutate(new EscortMovementGenerator<Player>(path), MOTION_SLOT_ACTIVE);
-    }
-    else
+    if (_owner->GetTypeId() == TYPEID_UNIT)
     {
         ;//sLog->outStaticDebug("Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
          //    _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
-        Mutate(new EscortMovementGenerator<Creature>(path), MOTION_SLOT_ACTIVE);
+        Mutate(new WaypointMovementGenerator<Creature>(*path), MOTION_SLOT_ACTIVE);
     }
 }
 

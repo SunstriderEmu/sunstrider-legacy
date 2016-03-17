@@ -53,7 +53,6 @@ enum MovementGeneratorType
     ROTATE_MOTION_TYPE        = 15,
     EFFECT_MOTION_TYPE        = 16,
     STEALTH_WARN_MOTION_TYPE  = 17,                             // StealthWarnMovementGenerator.h TODO, précédence sur les autres générateurs ?
-    ESCORT_MOTION_TYPE        = 18,                             // xinef: EscortMovementGenerator.h
     NULL_MOTION_TYPE          = 19
 };
 
@@ -177,7 +176,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         //orientation = 0 will be ignored, use near 0 values if you want to do it
         void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
         void MoveSplinePath(Movement::PointsArray* path);
-
+      
         // These two movement types should only be used with creatures having landing/takeoff animations
         void MoveLand(uint32 id, Position const& pos);
         void MoveTakeoff(uint32 id, Position const& pos);

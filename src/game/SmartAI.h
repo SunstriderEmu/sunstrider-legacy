@@ -35,7 +35,7 @@ class SmartAI : public CreatureAI
         bool LoadPath(uint32 entry);
         void PausePath(uint32 delay, bool forced = false);
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
-        void EndPath(bool fail = false);
+        void EndPath(bool fail = false, bool died = false);
         void ResumePath();
         WayPoint* GetNextWayPoint();
         void GenerateWayPointArray(Movement::PointsArray* points);

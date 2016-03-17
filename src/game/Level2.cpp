@@ -4138,6 +4138,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     ARGS_CHECK
 
     uint32 leaderGUID = (uint32) atoi((char*)args);
+
     Creature *pCreature = GetSelectedCreature();
 
     if(!pCreature || !pCreature->GetDBTableGUIDLow())
@@ -4146,16 +4147,40 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
         SetSentErrorMessage(true);
         return true;
     }
-
-    uint32 lowguid = pCreature->GetDBTableGUIDLow();
+    
     if(pCreature->GetFormation())
     {
         PSendSysMessage("Selected creature is already member of group %u.", pCreature->GetFormation()->GetId());
         return true;
     }
 
+    uint32 lowguid = pCreature->GetDBTableGUIDLow();
     if (!lowguid)
-        return false;
+    {
+        PSendSysMessage("Creature may not be a summon", leaderGUID);
+        return true;
+    }
+
+    Creature* leader = pCreature->GetMap()->GetCreature(MAKE_PAIR64(leaderGUID, HIGHGUID_UNIT));
+    if (!leader)
+    {
+        PSendSysMessage("Leader with guid %u not found in map", leaderGUID);
+        return true;
+    }
+
+    if (!leader->GetFormation())
+    {
+        FormationInfo* group_member;
+        group_member = new FormationInfo;
+        group_member->leaderGUID = leaderGUID;
+        sCreatureGroupMgr->AddGroupMember(leaderGUID, group_member);
+        pCreature->SearchFormation();
+
+        WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u', 0, 0, '%u')",
+            leaderGUID, leaderGUID, uint32(group_member->groupAI));
+
+        PSendSysMessage("Created formation with leader %u", leaderGUID);
+    }
 
     Player *chr = m_session->GetPlayer();
     FormationInfo* group_member;
@@ -4168,7 +4193,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     sCreatureGroupMgr->AddGroupMember(lowguid, group_member);
     pCreature->SearchFormation();
 
-    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u','%u','%f', '%f', '%f', '%u')",
+    WorldDatabase.PExecute("REPLACE INTO `creature_formations` (`leaderGUID`, `memberGUID`, `dist`, `angle`, `groupAI`) VALUES ('%u', '%u','%f', '%f', '%u')",
         leaderGUID, lowguid, group_member->follow_dist, group_member->follow_angle, uint32(group_member->groupAI));
 
     PSendSysMessage("Creature %u added to formation with leader %u.", lowguid, leaderGUID);

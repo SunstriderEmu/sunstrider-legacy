@@ -19,7 +19,7 @@
 #include "CreatureAI.h"
 #include "Formulas.h"
 #include "Pet.h"
-#include "EscortMovementGenerator.h"
+#include "WaypointMovementGenerator.h"
 
 #include "Totem.h"
 #include "BattleGround.h"
@@ -9744,8 +9744,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     {
         // Set home position at place of engaging combat for escorted creatures
         if ((IsAIEnabled && creature->AI()->IsEscorted()) ||
-            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE ||
-            GetMotionMaster()->GetCurrentMovementGeneratorType() == ESCORT_MOTION_TYPE)
+            GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
             creature->SetHomePosition(GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
 
         if (enemy)
@@ -14568,22 +14567,27 @@ public:
 
     bool operator()(Movement::MoveSpline::UpdateResult result)
     {
-        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived)) &&
-            _unit->GetTypeId() == TYPEID_UNIT && _unit->GetMotionMaster()->GetCurrentMovementGeneratorType() == ESCORT_MOTION_TYPE &&
-            _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())
+        auto motionType = _unit->GetMotionMaster()->GetCurrentMovementGeneratorType();
+        if ((result & (Movement::MoveSpline::Result_NextSegment | Movement::MoveSpline::Result_JustArrived)) 
+            && _unit->GetTypeId() == TYPEID_UNIT 
+            && (motionType == WAYPOINT_MOTION_TYPE)
+            && _unit->movespline->GetId() == _unit->GetMotionMaster()->GetCurrentSplineId())
         {
-            _unit->ToCreature()->AI()->MovementInform(ESCORT_MOTION_TYPE, _unit->movespline->currentPathIdx() - 1);
-
-            //warn formation of leader movement if needed
-            if (result & Movement::MoveSpline::Result_NextSegment)
+            Creature* creature = _unit->ToCreature();
+            if (creature)
             {
-                Creature* creature = _unit->ToCreature();
-                if (creature && creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
+                auto moveGenerator = static_cast<WaypointMovementGenerator<Creature>*>(creature->GetMotionMaster()->top());
+                moveGenerator->SplineFinished(creature, creature->movespline->currentPathIdx());
+
+                //warn formation of leader movement if needed. atm members don't use spline movement and move point to point.
+                if (result & Movement::MoveSpline::Result_NextSegment)
                 {
-                    auto moveGenerator = static_cast<EscortMovementGenerator<Unit>*>(_unit->GetMotionMaster()->top());
-                    Position dest;
-                    if (moveGenerator->GetCurrentDesinationPoint(_unit, dest))
-                        creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
+                    if (creature && creature->GetFormation() && creature->GetFormation()->getLeader() == creature)
+                    {
+                        Position dest;
+                        if (moveGenerator->GetCurrentDestinationPoint(creature, dest))
+                            creature->GetFormation()->LeaderMoveTo(dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), !creature->IsWalking());
+                    }
                 }
             }
         }
@@ -14600,11 +14604,9 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
     if (movespline->Finalized())
         return;
 
-    // xinef: process movementinform
-    // this code cant be placed inside EscortMovementGenerator, because we cant delete active MoveGen while it is updated
+    // this code cant be placed inside WaypointMovementGenerator, because we cant delete active MoveGen while it is updated
     SplineHandler handler(this);
     movespline->updateState(t_diff, handler);
-    // Xinef: Spline was cleared by StopMoving, return
     if (!movespline->Initialized())
     {
         DisableSpline();

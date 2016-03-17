@@ -35,11 +35,14 @@ enum WaypointMoveType
 struct WaypointData
 {
     uint32 id;
-    float x, y, z, orientation;
-    uint32 delay;
-    uint32 event_id;
-    uint32 move_type;
-    uint8 event_chance;
+    float x;
+    float y;
+    float z;
+    float orientation = 0.0f;
+    uint32 delay = 0;
+    uint32 event_id = 0;
+    uint32 move_type = 0;
+    uint8 event_chance = 0;
 };
 
 typedef std::vector<WaypointData*> WaypointPathNodes;

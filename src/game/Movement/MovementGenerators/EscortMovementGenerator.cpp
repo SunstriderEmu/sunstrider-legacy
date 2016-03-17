@@ -14,6 +14,9 @@ Written by Xinef
 template<class T>
 void EscortMovementGenerator<T>::DoInitialize(T* unit)
 {
+    if (!unit->IsAlive())
+        return;
+
     if (!unit->IsStopped())
         unit->StopMoving();
 

@@ -24,18 +24,19 @@ class EscortMovementGenerator : public MovementGeneratorMedium< T, EscortMovemen
 
         void UnitSpeedChanged() override { i_recalculateSpeed = true; }
 
-        MovementGeneratorType GetMovementGeneratorType() override { return ESCORT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return /*ESCORT_MOTION_TYPE;*/ WAYPOINT_MOTION_TYPE; }
 
 		uint32 GetSplineId() const override { return _splineId; }
         //Update pos to position we're actually going to. Return false if we're not actually going somewhere
         bool GetCurrentDesinationPoint(T* unit, Position& pos)
         {
-            uint32 splineIdx = unit->movespline->_currentSplineIdx();
+           /* uint32 splineIdx = unit->movespline->_currentSplineIdx();
             if (m_precomputedPath.size() > splineIdx)
             {
                 pos.Relocate(m_precomputedPath[splineIdx].x, m_precomputedPath[splineIdx].y, m_precomputedPath[splineIdx].z);
                 return true;
             }
+            */
             return false;
         }
 
