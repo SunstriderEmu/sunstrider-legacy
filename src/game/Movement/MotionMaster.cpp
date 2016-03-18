@@ -370,21 +370,6 @@ void MotionMaster::GenerateWaypointArray(Unit* me, Movement::PointsArray& from, 
     }
 }
 */
-
-void MotionMaster::MoveSplinePath(Movement::PointsArray* path)
-{
-    // Xinef: do not allow to move with UNIT_FLAG_DISABLE_MOVE
-    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
-        return;
-
-    if (_owner->GetTypeId() == TYPEID_UNIT)
-    {
-        ;//sLog->outStaticDebug("Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f)",
-         //    _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z);
-        Mutate(new WaypointMovementGenerator<Creature>(*path), MOTION_SLOT_ACTIVE);
-    }
-}
-
 void MotionMaster::MoveLand(uint32 id, Position const& pos)
 {
     float x, y, z;

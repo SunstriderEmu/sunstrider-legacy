@@ -154,6 +154,8 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         nextNode = skip current node
         */
         bool StartSplinePath(Creature* c, bool nextNode = false);
+        //meant to be used by StartSplinePath only. Return false if should break in loop
+        bool GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointData* nextNode, uint32& splineId);
 
         bool IsPaused();
 

@@ -38,7 +38,6 @@ class SmartAI : public CreatureAI
         void EndPath(bool fail = false, bool died = false);
         void ResumePath();
         WayPoint* GetNextWayPoint();
-        void GenerateWayPointArray(Movement::PointsArray* points);
         bool HasEscortState(uint32 uiEscortState) const { return (mEscortState & uiEscortState) != 0; }
         void AddEscortState(uint32 uiEscortState) { mEscortState |= uiEscortState; }
         void RemoveEscortState(uint32 uiEscortState) { mEscortState &= ~uiEscortState; }

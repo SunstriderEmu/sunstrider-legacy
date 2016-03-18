@@ -114,70 +114,6 @@ WayPoint* SmartAI::GetNextWayPoint()
     return NULL;
 }
 
-void GenerateWaypointArray(Unit* me, Movement::PointsArray& from, uint32 startingWaypointId, Movement::PointsArray& points)
-{
-    if (from.empty())
-        return;
-
-    // Flying unit, just fill array
-    if (me->m_movementInfo.HasMovementFlag((MovementFlags)(MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_DISABLE_GRAVITY)))
-    {
-        // xinef: first point in vector is unit real position
-        points.clear();
-        points.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
-        for (uint32 i = startingWaypointId; i < from.size(); i++)
-            points.push_back(G3D::Vector3(from[i].x, from[i].y, from[i].z));
-    }
-    else
-    {
-        for (float size = 1.0f; size; size *= 0.5f)
-        {
-            std::vector<G3D::Vector3> pVector;
-            // xinef: first point in vector is unit real position
-            pVector.push_back(G3D::Vector3(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()));
-            uint32 length = (from.size() - startingWaypointId)*size;
-
-            uint32 cnt = 0;
-            for (uint32 i = startingWaypointId; i < from.size() && cnt <= length; i++, ++cnt)
-                pVector.push_back(G3D::Vector3(from[i].x, from[i].y, from[i].z));
-
-            if (pVector.size() > 2) // more than source + dest
-            {
-                G3D::Vector3 middle = (pVector[0] + pVector[pVector.size() - 1]) / 2.f;
-                G3D::Vector3 offset;
-
-                bool continueLoop = false;
-                for (uint32 i = 1; i < pVector.size() - 1; ++i)
-                {
-                    offset = middle - pVector[i];
-                    if (fabs(offset.x) >= 0xFF || fabs(offset.y) >= 0xFF || fabs(offset.z) >= 0x7F)
-                    {
-                        // offset is too big, split points
-                        continueLoop = true;
-                        break;
-                    }
-                }
-                if (continueLoop)
-                    continue;
-            }
-            // everything ok
-            points = pVector;
-            break;
-        }
-    }
-}
-
-void SmartAI::GenerateWayPointArray(Movement::PointsArray* points)
-{
-    if (!mWayPoints || mWayPoints->empty())
-        return;
-
-    points->clear();
-    points->reserve(mWayPoints->size());
-    for (auto itr : *mWayPoints)
-        points->emplace_back(itr.second->x, itr.second->y, itr.second->z);
-}
-
 void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* /*invoker*/)
 {
     if (me->IsInCombat())// no wp movement in combat
@@ -193,19 +129,15 @@ void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* /*invoker*/)
     if (!mWayPoints || mWayPoints->empty())
         return;
 
+    AddEscortState(SMART_ESCORT_ESCORTING);
+    mCanRepeatPath = repeat;
+
+    SetRun(run);
+
     if (WayPoint* wp = GetNextWayPoint())
     {
-        AddEscortState(SMART_ESCORT_ESCORTING);
-        mCanRepeatPath = repeat;
-
-        SetRun(run);
-
         mLastOOCPos = me->GetPosition();
-        
-        Movement::PointsArray pathPoints;
-        GenerateWayPointArray(&pathPoints);
-
-        me->GetMotionMaster()->MoveSplinePath(&pathPoints);
+        me->GetMotionMaster()->MovePoint(wp->id, wp->x, wp->y, wp->z);
         GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_START, NULL, wp->id, GetScript()->GetPathId());
     }
 }
@@ -230,18 +162,16 @@ void SmartAI::PausePath(uint32 delay, bool forced)
         return;
     if (HasEscortState(SMART_ESCORT_PAUSED))
     {
-        TC_LOG_ERROR("FIXME","SmartAI::StartPath: Creature entry %u wanted to pause waypoint movement while already paused, ignoring.", me->GetEntry());
+        TC_LOG_ERROR("FIXME", "SmartAI::StartPath: Creature entry %u wanted to pause waypoint movement while already paused, ignoring.", me->GetEntry());
         return;
     }
-    AddEscortState(SMART_ESCORT_PAUSED);
+    mForcedPaused = forced;
     mLastOOCPos = me->GetPosition();
+    AddEscortState(SMART_ESCORT_PAUSED);
     mWPPauseTimer = delay;
-    if (forced && !mWPReached)
+    if (forced)
     {
-        mForcedPaused = forced;
         SetRun(mRun);
-        if (me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_ACTIVE) == WAYPOINT_MOTION_TYPE)
-            me->GetMotionMaster()->MovementExpired();
         me->StopMoving();//force stop
         me->GetMotionMaster()->MoveIdle();//force stop
     }
@@ -255,11 +185,8 @@ void SmartAI::StopPath(uint32 DespawnTime, uint32 quest, bool fail)
 
     if (quest)
         mEscortQuestID = quest;
-
     SetDespawnTime(DespawnTime);
-
-    if (me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_ACTIVE) == WAYPOINT_MOTION_TYPE)
-        me->GetMotionMaster()->MovementExpired();
+    //mDespawnTime = DespawnTime;
 
     mLastOOCPos = me->GetPosition();
     me->StopMoving();//force stop
@@ -351,7 +278,8 @@ void SmartAI::UpdatePath(const uint32 diff)
             StopPath(mDespawnTime, mEscortQuestID, true);
         }
         mEscortInvokerCheckTimer = 1000;
-    } else mEscortInvokerCheckTimer -= diff;
+    }
+    else mEscortInvokerCheckTimer -= diff;
     // handle pause
     if (HasEscortState(SMART_ESCORT_PAUSED))
     {
@@ -371,23 +299,23 @@ void SmartAI::UpdatePath(const uint32 diff)
                     mWPReached = true;
             }
             mWPPauseTimer = 0;
-        } else {
+        }
+        else {
             mWPPauseTimer -= diff;
         }
     }
     if (HasEscortState(SMART_ESCORT_RETURNING))
     {
-        if (mOOCReached)//reached OOC WP
+        if (mWPReached)//reached OOC WP
         {
-            mOOCReached = false;
             RemoveEscortState(SMART_ESCORT_RETURNING);
             if (!HasEscortState(SMART_ESCORT_PAUSED))
                 ResumePath();
+            mWPReached = false;
         }
     }
     if ((!me->HasReactState(REACT_PASSIVE) && me->IsInCombat()) || HasEscortState(SMART_ESCORT_PAUSED | SMART_ESCORT_RETURNING))
         return;
-
     // handle next wp
     if (mWPReached)//reached WP
     {
@@ -472,50 +400,11 @@ bool SmartAI::IsEscortInvokerInRange()
 
 void SmartAI::MovepointReached(uint32 id)
 {
-    // override the id, path can be resumed any time and counter will reset
-    // mCurrentWPID holds proper id
-
-    // xinef: both point movement and escort generator can enter this function
-    if (id == SMART_ESCORT_LAST_OOC_POINT)
-    {
-        mOOCReached = true;
-        return;
-    }
-
-    mLastWPIDReached = id;
-    mWPReached = true;
-
     if (id != SMART_ESCORT_LAST_OOC_POINT && mLastWPIDReached != id)
         GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_REACHED, NULL, id);
 
-    if (mLastWP)
-    {
-        me->SetPosition(mLastWP->x, mLastWP->y, mLastWP->z, me->GetOrientation());
-        me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-    }
-
-    if (HasEscortState(SMART_ESCORT_PAUSED))
-    {
-        if (me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_ACTIVE) == WAYPOINT_MOTION_TYPE)
-            me->GetMotionMaster()->MovementExpired();
-
-        me->StopMovingOnCurrentPos();
-        me->GetMotionMaster()->MoveIdle();
-    }
-    // Xinef: Can be unset in ProcessEvents
-    else if (HasEscortState(SMART_ESCORT_ESCORTING) && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == WAYPOINT_MOTION_TYPE)
-    {
-        mWPReached = false;
-        if (mCurrentWPID == GetWPCount())
-            EndPath();
-        else if (GetNextWayPoint())
-        {
-            SetRun(mRun);
-            // xinef: if we have reached waypoint, and there is no working spline movement it means our splitted array has ended, make new one
-            if (me->movespline->Finalized())
-                ResumePath();
-        }
-    }
+    mLastWPIDReached = id;
+    mWPReached = true;
 }
 
 void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
@@ -527,8 +416,7 @@ void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
     if (MovementType != POINT_MOTION_TYPE || !HasEscortState(SMART_ESCORT_ESCORTING))
         return;
 
-    if (MovementType == WAYPOINT_MOTION_TYPE || (MovementType == POINT_MOTION_TYPE && Data == SMART_ESCORT_LAST_OOC_POINT))
-        MovepointReached(Data);
+    MovepointReached(Data);
 }
 
 void SmartAI::RemoveAuras()
@@ -701,12 +589,6 @@ void SmartAI::AttackStart(Unit* who)
         if (mCanCombatMove)
         {
             SetRun(mRun);
-            MovementGeneratorType type = me->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_ACTIVE);
-            if (type == WAYPOINT_MOTION_TYPE || type == POINT_MOTION_TYPE)
-            {
-                me->GetMotionMaster()->MovementExpired();
-                me->StopMoving();
-            }
             me->GetMotionMaster()->MoveChase(who);
         }
     }

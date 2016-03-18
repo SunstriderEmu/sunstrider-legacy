@@ -166,7 +166,7 @@ void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 //Must be called at each point reached. MovementInform is done in here.
 void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 arrivedNodeIndex)
 {
-    auto arrivedNode = (*i_path)[arrivedNodeIndex];
+    WaypointData* arrivedNode = (*i_path)[arrivedNodeIndex];
     if (!i_path || i_path->empty())
         return;
     
@@ -307,7 +307,7 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
         return;
     }
 
-    auto currentNode = (*i_path)[i_currentNode];
+    WaypointData* currentNode = (*i_path)[i_currentNode];
     uint32 pathNodeDBId = itr->second; //id of db node we just reached
 
     //warn we reached a new db node if needed
@@ -338,6 +338,31 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
     }
 }
 
+bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const& from, Creature* creature, WaypointData* nextNode, uint32& splineId)
+{
+    //generate mmaps path to next point
+    PathGenerator path(creature);
+    path.SetSourcePosition(from);
+    bool result = path.CalculatePath(nextNode->x, nextNode->y, nextNode->z, true);
+    if (!result || (path.GetPathType() & PATHFIND_NOPATH))
+        return false; //should never happen
+
+    auto points = path.GetPath();
+    ASSERT(!points.empty());
+    //Calculate path first point is current position, skip it
+    uint32 skip = 1;
+    for (uint32 i = 0 + skip; i < points.size(); i++)
+        m_precomputedPath.emplace_back(points[i].x, points[i].y, points[i].z);
+
+    //register id of the last point for movement inform
+    splineId += points.size() - skip;
+    splineToPathIds[splineId] = nextNode->id;
+
+    TC_LOG_TRACE("misc", "[path %u] Inserted node (db %u) at (%f,%f,%f) (splineId %u)", path_id, nextNode->id, nextNode->x, nextNode->y, nextNode->z, splineId);
+
+    return true;
+}
+
 bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bool nextNode /*= false*/)
 {
     if (!i_path || i_path->empty())
@@ -360,7 +385,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
         return false;
     }
 
-    auto currentNode = (*i_path)[i_currentNode];
+    WaypointData* currentNode = (*i_path)[i_currentNode];
     //final orientation for spline movement. 0.0f mean no final orientation.
     float finalOrientation = 0.0f;
     
@@ -371,7 +396,8 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
 
     TC_LOG_TRACE("misc", "Creating new spline path for path %u", path_id);
 
-    uint32 splinePathIndex = 1; //start with 1, this offset is needed because MoveSplineInit will insert a current position point before our path
+    //we keep track of the index of the spline we insert to match them to path id later
+    uint32 splineId = 1; // this offset of 1 is needed because MoveSplineInit will insert a current position point before our path
     //nextNodeId is an index of i_path
     uint32 nextMemoryNodeId = i_currentNode;
 
@@ -385,15 +411,17 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
             {
                 uint32 lastMemoryNodeId = nextMemoryNodeId;
                 //insert first node
-                auto nextNode = (*i_path)[nextMemoryNodeId];
-                splineToPathIds[splinePathIndex++] = nextNode->id;
-                m_precomputedPath.emplace_back(nextNode->x, nextNode->y, nextNode->z);
-                TC_LOG_TRACE("misc", "Inserted node 1 (db %u) at (%f,%f,%f)", nextNode->id, nextNode->x, nextNode->y, nextNode->z);
+                WaypointData* nextNode = (*i_path)[nextMemoryNodeId];
+
+                GeneratePathToNextPoint(creature, creature, nextNode, splineId);
+
                 //stop path if node has delay
                 if (nextNode->delay)
                     break;
                 //get move type of this first node
                 WaypointMoveType lastMoveType = WaypointMoveType(currentNode->move_type);
+
+                WaypointData* lastNode = nextNode;
 
                 //next nodes
                 while (GetNextMemoryNode(nextMemoryNodeId, nextMemoryNodeId, false))
@@ -404,9 +432,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                     if (nextNode->move_type != lastMoveType)
                         break;
 
-                    splineToPathIds[splinePathIndex++] = nextNode->id;
-                    m_precomputedPath.emplace_back(nextNode->x, nextNode->y, nextNode->z);
-                    TC_LOG_TRACE("misc", "Inserted next node %u (db %u) at (%f,%f,%f)", splinePathIndex-1, nextNode->id, nextNode->x, nextNode->y, nextNode->z);
+                    GeneratePathToNextPoint(Position(lastNode->x, lastNode->y, lastNode->z), creature, nextNode, splineId);
 
                     //stop if this is the last node in path
                     if (IsLastMemoryNode(nextMemoryNodeId))
@@ -418,11 +444,12 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                     //stop path if node has delay
                     if (nextNode->delay)
                         break;
+
+                    lastNode = nextNode;
                 }
 
                 //if last node has orientation, set it to spline
                 //! Accepts angles such as 0.00001 and -0.00001, 0 must be ignored, default value in waypoint table
-                auto lastNode = (*i_path)[lastMemoryNodeId];
                 if (lastNode->orientation)
                     finalOrientation = lastNode->orientation;
             }
@@ -430,12 +457,18 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
             { // WP_PATH_DIRECTION_RANDOM
                 //random paths have no end so lets set our spline path limit at 10 nodes
                 uint32 count = 0;
+                Position lastPosition = creature->GetPosition();
                 while (GetNextMemoryNode(nextMemoryNodeId, nextMemoryNodeId, true) && count < 10)
                 {
-                    auto nextNode = (*i_path)[nextMemoryNodeId];
-                    splineToPathIds[splinePathIndex++] = nextNode->id;
-                    m_precomputedPath.emplace_back(nextNode->x, nextNode->y, nextNode->z);
+                    WaypointData* nextNode = (*i_path)[nextMemoryNodeId];
+
+                    GeneratePathToNextPoint(lastPosition, creature, nextNode, splineId);
+                    lastPosition = Position(nextNode->x, nextNode->y, nextNode->z);
                     count++;
+
+                    //stop path if node has delay
+                    if (nextNode->delay)
+                        break;
                 }
             }
         } break;
@@ -468,10 +501,13 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
     case WAYPOINT_MOVE_TYPE_WALK:
         init.SetWalk(true);
         break;
+    case WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG:
+        init.SetWalk(creature->HasUnitMovementFlag(MOVEMENTFLAG_WALKING));
+        break;
     }
 
     /* Strange behavior with this, not sure how to use it.
-    From what I see, MoveSplineInit inserts a first point into the spline that fucks this up, this needs to be changed first (else the creature position at this time will be included in the loop)
+    Not much time right now but if you want to try if you want to enable it : From what I see, MoveSplineInit inserts a first point into the spline that fucks this up, this needs to be changed first (else the creature position at this time will be included in the loop)
     if (path_type == WP_PATH_TYPE_LOOP)
         init.SetCyclic();
     */
@@ -479,10 +515,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
     if(finalOrientation)
         init.SetFacing(finalOrientation);
 
-    if (m_precomputedPath.size() > 2)
-        init.MovebyPath(m_precomputedPath);
-    else if (m_precomputedPath.size() == 2)
-        init.MoveTo(m_precomputedPath[1].x, m_precomputedPath[1].y, m_precomputedPath[1].z, false); //disable mmaps to stay coherent with moveByPath which does not use it either
+    init.MovebyPath(m_precomputedPath);
 
     init.Launch();
     _splineId = creature->movespline->GetId(); //used by SplineHandler class to do movement inform's

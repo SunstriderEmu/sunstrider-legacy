@@ -91,6 +91,8 @@ class PathGenerator
         /** Update fly/walk/swim options from the generator owner */
         void UpdateOptions();
 
+        void SetSourcePosition(Position const& p) { _sourcePos = p; }
+
         bool SourceCanWalk()           { return _options & PATHFIND_OPTION_CANWALK;           }
         bool SourceCanFly()            { return _options & PATHFIND_OPTION_CANFLY;            }
         bool SourceCanSwim()           { return _options & PATHFIND_OPTION_CANSWIM;           }

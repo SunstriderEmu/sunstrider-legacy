@@ -15101,7 +15101,7 @@ Position Unit::GetLeapPosition(float dist)
     for (uint8 i = 0; i < maxSteps; i++)
     {
         float maxSearchDist = (dist - i * stepLength) / 1.8f + GetObjectSize()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
-        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Searching for valid target, step %i. maxSearchDist = %f.", i, maxSearchDist);
+        //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Searching for valid target, step %i. maxSearchDist = %f.", i, maxSearchDist);
 
         //start with higher check then lower
         for (int8 j = 1; j >= 0; j--)
@@ -15113,7 +15113,7 @@ Position Unit::GetLeapPosition(float dist)
                 //if no collision
                 if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetObjectSize()))
                 {
-                    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                    //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                     //GetCollisionPosition already set targetPos to destx, desty, destz
                     goto exitloopfounddest;
                 }
@@ -15138,7 +15138,7 @@ Position Unit::GetLeapPosition(float dist)
                             if (mapHeight != INVALID_HEIGHT)
                             {
                                 targetPos.Relocate(destx, desty, mapHeight + 1.0f);
-                                TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                                //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                                 goto exitloopfounddest;
                             }
                         }
@@ -15148,7 +15148,7 @@ Position Unit::GetLeapPosition(float dist)
         }
 
         //no valid dest found, try closer at next step
-        TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition No valid dest found at this iteration");
+        //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition No valid dest found at this iteration");
         destx -= stepLength * std::cos(angle);
         desty -= stepLength * std::sin(angle);
     }
@@ -15166,7 +15166,7 @@ Position Unit::GetLeapPosition(float dist)
             targetPos.m_positionZ = mapHeight + 1.0f;
     }
     targetPos = currentPos;
-    TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, stay at current position %f %f %f", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+    //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Could not get to target, stay at current position %f %f %f", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
 
 exitloopfounddest:
     Trinity::NormalizeMapCoord(targetPos.m_positionX);

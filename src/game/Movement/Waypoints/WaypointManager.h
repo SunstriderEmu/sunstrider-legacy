@@ -29,6 +29,9 @@ enum WaypointMoveType
     WAYPOINT_MOVE_TYPE_LAND     = 2,
     WAYPOINT_MOVE_TYPE_TAKEOFF  = 3,
 
+    //check for MOVEMENTFLAG_WALKING
+    WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG = 100,
+
     WAYPOINT_MOVE_TYPE_MAX
 };
 
@@ -41,7 +44,7 @@ struct WaypointData
     float orientation = 0.0f;
     uint32 delay = 0;
     uint32 event_id = 0;
-    uint32 move_type = 0;
+    uint32 move_type = WAYPOINT_MOVE_TYPE_USE_UNIT_MOVEMENT_FLAG;
     uint8 event_chance = 0;
 };
 
