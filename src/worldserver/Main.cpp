@@ -153,7 +153,7 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    if (sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", true))
+    if (sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false))
     {
         segvcatch::init_segv(handle_segv);
         segvcatch::init_fpe(handle_segv);

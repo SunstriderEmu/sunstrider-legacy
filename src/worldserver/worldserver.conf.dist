@@ -241,7 +241,7 @@ AddonChannel = 1
 MapUpdate.Threads = 4
 GuidDistribution.NewMethod = 1
 GuidDistribution.Proportion = 90
-InstanceCrashRecovery.Enable = 1
+InstanceCrashRecovery.Enable = 0
 
 ###################################################################################################################
 # MOVEMENT ANTICHEAT
