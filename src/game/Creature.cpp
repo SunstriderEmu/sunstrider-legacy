@@ -52,6 +52,7 @@
 #include "MoveSpline.h"
 #include "Spell.h"
 #include "InstanceScript.h"
+#include "Transport.h"
 
 void TrainerSpellData::Clear()
 {
@@ -165,7 +166,7 @@ Creature::Creature() :
 Unit(),
 lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0), m_lootRecipientGroup(0),
 m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE),
+m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE), m_transportCheckTimer(1000),
 m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0),m_relocateTimer(60000),
 m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false), 
 m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),m_creatureInfo(NULL), m_creatureInfoAddon(NULL),m_DBTableGuid(0), m_formation(NULL),
@@ -232,6 +233,8 @@ void Creature::RemoveFromWorld()
                 ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
         if(m_formation)
             sCreatureGroupMgr->RemoveCreatureFromGroup(m_formation, this);
+        if (Transport* transport = GetTransport())
+            transport->RemovePassenger(this, true);
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
         Unit::RemoveFromWorld();
@@ -660,7 +663,30 @@ void Creature::Update(uint32 diff)
     }
 
     if (IsInWorld())
+    {
+        // pussywizard:
+        if (IS_PLAYER_GUID(GetOwnerGUID()))
+        {
+            if (m_transportCheckTimer <= diff)
+            {
+                m_transportCheckTimer = 1000;
+                Transport* newTransport = GetMap()->GetTransportForPos(GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ(), this);
+                if (newTransport != GetTransport())
+                {
+                    if (GetTransport())
+                        GetTransport()->RemovePassenger(this, true);
+                    if (newTransport)
+                        newTransport->AddPassenger(this, true);
+                    this->StopMovingOnCurrentPos();
+                    //SendMovementFlagUpdate();
+                }
+            }
+            else
+                m_transportCheckTimer -= diff;
+        }
+
         sScriptMgr->OnCreatureUpdate(this, diff);
+    }
 }
 
 void Creature::RegenerateMana()
@@ -1555,6 +1581,14 @@ void Creature::Respawn()
         TriggerJustRespawned = true;//delay event to next tick so all creatures are created on the map before processing
 
     m_timeSinceSpawn = 0;
+}
+
+void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
+{
+    if (TemporarySummon* summon = this->ToTemporarySummon())
+        summon->UnSummon(/* msTimeToDespawn */); //todo : handle msTimeToDespawn for summons
+    else
+        ForcedDespawn(msTimeToDespawn);
 }
 
 void Creature::ForcedDespawn(uint32 timeMSToDespawn)
@@ -2656,18 +2690,6 @@ void Creature::UpdateMovementFlags()
 bool Creature::IsInEvadeMode() const 
 { 
     return HasUnitState(UNIT_STATE_EVADE); 
-}
-
-//Do not know if this works or not, moving creature to another map is very dangerous
-void Creature::FarTeleportTo(Map* map, float X, float Y, float Z, float O)
-{
-    //TODOMOV okay tout �a ?
-    CleanupsBeforeDelete(false);
-    GetMap()->Remove(this,false);
-    Relocate(X, Y, Z, O);
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
-    map->Add(this);
 }
 
 void Creature::CheckForUnreachableTarget()

@@ -73,7 +73,7 @@ class Creature;
 class Player;
 class InstanceScript;
 class GameObject;
-class Transport;
+class MotionTransport;
 class WorldObject;
 class CreatureAI;
 
@@ -652,6 +652,8 @@ class WorldObject : public Object, public WorldLocation
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
+        GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
+
         Player* FindNearestPlayer(float range) const;
         bool isActiveObject() const { return m_isActive; }
         /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).

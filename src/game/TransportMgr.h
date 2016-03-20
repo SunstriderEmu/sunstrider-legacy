@@ -26,14 +26,15 @@
 struct KeyFrame;
 struct GameObjectTemplate;
 struct TransportTemplate;
-class Transport;
+class MotionTransport;
 class Map;
 
 typedef Movement::Spline<double>                 TransportSpline;
 typedef std::vector<KeyFrame>                    KeyFrameVec;
 typedef std::unordered_map<uint32, TransportTemplate> TransportTemplates;
-typedef std::set<Transport*>                     TransportSet;
+typedef std::set<MotionTransport*>                     TransportSet;
 typedef std::unordered_map<uint32, TransportSet>      TransportMap;
+typedef std::unordered_map<uint32, std::set<uint32> > TransportInstanceMap;
 
 struct KeyFrame
 {
@@ -85,7 +86,10 @@ struct TransportAnimation
     TransportPathContainer Path;
     uint32 TotalTime;
 
-    TransportAnimationEntry const* GetAnimNode(uint32 time) const;
+    bool GetAnimNode(uint32 time, TransportAnimationEntry const* &curr, TransportAnimationEntry const* &next, float &percPos) const;
+#ifdef LICH_KING
+    void GetAnimRotation(uint32 time, G3D::Quat &curr, G3D::Quat &next, float &percRot) const;
+#endif
 };
 
 typedef std::map<uint32, TransportAnimation> TransportAnimationContainer;
@@ -106,13 +110,13 @@ class TransportMgr
         void LoadTransportTemplates();
 
         // Creates a transport using given GameObject template entry
-        Transport* CreateTransport(uint32 entry, uint32 guid = 0, Map* map = NULL);
+        MotionTransport* CreateTransport(uint32 entry, uint32 guid = 0, Map* map = NULL);
 
         // Spawns all continent transports, used at core startup
         void SpawnContinentTransports();
 
         // creates all transports for instance
-        //LK void CreateInstanceTransports(Map* map);
+        void CreateInstanceTransports(Map* map);
 
         TransportTemplate const* GetTransportTemplate(uint32 entry) const
         {
@@ -142,8 +146,17 @@ class TransportMgr
 
         void AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg, TransportAnimationEntry const* node);
 
+#ifdef LICH_KING
+        void AddPathRotationToTransport(uint32 transportEntry, uint32 timeSeg, TransportRotationEntry const* node)
+        {
+            _transportAnimations[transportEntry].Rotations[timeSeg] = node;
+        }
+#endif
         // Container storing transport templates
         TransportTemplates _transportTemplates;
+
+        // Container storing transport entries to create for instanced maps
+        TransportInstanceMap _instanceTransports;
 
         TransportAnimationContainer _transportAnimations;
 };

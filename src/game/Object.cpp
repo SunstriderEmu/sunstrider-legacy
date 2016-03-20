@@ -67,7 +67,8 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
     return 10;                                              // unknown
 }
 
-Object::Object() : m_PackGUID(sizeof(uint64)+1)
+Object::Object() : 
+    m_PackGUID(sizeof(uint64)+1)
 {
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
@@ -156,8 +157,11 @@ void Object::BuildMovementUpdateBlock(UpdateData* data, uint32 flags ) const
     ByteBuffer buf(500);
 
     buf << uint8( UPDATETYPE_MOVEMENT );
-    //LK buf << GetPackGUID();
+#ifdef LICH_KING
+    buf << GetPackGUID();
+#else
     buf << GetGUID();
+#endif
 
     BuildMovementUpdate(&buf, flags);
 
@@ -803,7 +807,8 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 }
 
 WorldObject::WorldObject() :
-    LastUsedScriptID(0)
+    LastUsedScriptID(0),
+    lootingGroupLeaderGUID(0)
 {
     m_positionX         = 0.0f;
     m_positionY         = 0.0f;
@@ -872,9 +877,6 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
 {
     if (IsInWorld())
         RemoveFromWorld();
-
-    if (Transport* transport = GetTransport())
-        transport->RemovePassenger(this);
 }
 
 void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid )
@@ -1553,7 +1555,8 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
         return NULL;
     }
     Map *map = GetMap();
-    GameObject *go = new GameObject();
+    GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
+
     if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,1))
     {
         delete go;
@@ -1599,11 +1602,20 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
 
 GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 {
-       GameObject *go = NULL;
-       Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
-       Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(go, checker);
-       VisitNearbyGridObject(range, searcher);
-       return go;
+    GameObject *go = NULL;
+    Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, go, checker);
+    VisitNearbyGridObject(range, searcher);
+    return go;
+}
+
+GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float range) const
+{
+    GameObject* go = NULL;
+    Trinity::NearestGameObjectTypeInObjectRangeCheck checker(*this, type, range);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(this, go, checker);
+    VisitNearbyGridObject(range, searcher);
+    return go;
 }
 
 Player* WorldObject::FindNearestPlayer(float range) const
@@ -2048,7 +2060,6 @@ void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList
     cell.Visit(pair, visitor, *(this->GetMap()));
 }
 
-//much much changes with LK here (not just the commented ones in here)
 void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
 {
     Unit const* unit = NULL;
@@ -2088,20 +2099,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         {
             ASSERT(object);
             // 0x02
-            if((flags & UPDATEFLAG_TRANSPORT) && ((GameObject*)this)->GetGoType() == GAMEOBJECT_TYPE_MO_TRANSPORT)
-            {
-                *data << (float)0;
-                *data << (float)0;
-                *data << (float)0;
-                *data << ((WorldObject *)this)->GetOrientation();
-            }
-            else
-            {
-                *data << object->GetStationaryX();
-                *data << object->GetStationaryY();
-                *data << object->GetStationaryZ();
-                *data << object->GetStationaryO();
-            }
+            //this is actually not used on bc for transports but whatever
+            *data << object->GetStationaryX();
+            *data << object->GetStationaryY();
+            *data << object->GetStationaryZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+            *data << object->GetStationaryO();
         }
     }
 
@@ -2167,14 +2169,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     // 0x2
     if (flags & UPDATEFLAG_TRANSPORT)
     {
-        /* LK :
-        Simply use MSTime for now. If you want to use GetTimer() see Transport::Update(uint32 diff) : uint32 timer = GetMSTime() % GetPeriod();
-       GameObject const* go = ToGameObject();
-        
+        GameObject const* go = ToGameObject();
         if (go && go->ToTransport())
-            *data << uint32((Transport*)go->GetTimer());
-        else */
-            *data << uint32(GetMSTime());
+            *data << uint32(go->ToTransport()->GetPathProgress());
+        else 
+            *data << uint32(0);
     }
 }
 

@@ -40,7 +40,7 @@ class Channel;
 class Creature;
 class Pet;
 class PlayerMenu;
-class Transport;
+class MotionTransport;
 class UpdateMask;
 class PlayerSocial;
 class OutdoorPvP;

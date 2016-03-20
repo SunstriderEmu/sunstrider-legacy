@@ -110,18 +110,6 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     SetFloatValue( DYNAMICOBJECT_POS_Z, z );
     SetUInt32Value( DYNAMICOBJECT_CASTTIME, GetMSTime() );  // new 2.4.0
 
-    if (Transport* transport = caster->GetTransport())
-    {
-        SetTransport(transport);
-        float _x, _y, _z, _o;
-        pos.GetPosition(_x, _y, _z, _o);
-        transport->CalculatePassengerOffset(_x, _y, _z, &_o);
-        m_movementInfo.transport.pos.Relocate(_x, _y, _z, _o);
-
-        // This object must be added to transport before adding to map for the client to properly display it
-        transport->AddPassenger(this);
-    }
-
     m_aliveDuration = duration;
     m_radius = radius;
     m_effIndex = effIndex;

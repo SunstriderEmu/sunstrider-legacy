@@ -461,6 +461,7 @@ class ObjectMgr
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
         GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
+        bool IsGameObjectStaticTransport(uint32 entry);
 
         void LoadGameObjectTemplate();
         void AddGameObjectTemplate(GameObjectTemplate *goinfo);
@@ -896,9 +897,9 @@ class ObjectMgr
         void AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance);
         void DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid);
 
-        time_t GetCreatureRespawnTime(uint32 loguid, uint32 instance) { return mCreatureRespawnTimes[MAKE_PAIR64(loguid,instance)]; }
+        time_t GetCreatureRespawnTime(uint32 loguid, uint32 instance);
         void SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
-        time_t GetGORespawnTime(uint32 loguid, uint32 instance) { return mGORespawnTimes[MAKE_PAIR64(loguid,instance)]; }
+        time_t GetGORespawnTime(uint32 loguid, uint32 instance);
         void SaveGORespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
         void DeleteRespawnTimeForInstance(uint32 instance);
 

@@ -72,6 +72,8 @@ GameObject::GameObject() : WorldObject(), m_AI(nullptr), m_model(nullptr), m_goV
     m_DBTableGuid = 0;
     
     manual_unlock = false;
+
+    m_stationaryPosition.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 GameObject::~GameObject()
@@ -147,9 +149,30 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
                         if (ActivateToQuest(target))
                             dynFlags |= GO_DYNFLAG_LO_SPARKLE;
                         break;
-                  /* LK case GAMEOBJECT_TYPE_MO_TRANSPORT:
-                        pathProgress = int16(float(m_goValue.Transport.PathProgress) / float(GetUInt32Value(GAMEOBJECT_LEVEL)) * 65535.0f);
-                        break; */
+
+#ifdef LICH_KING
+                    case GAMEOBJECT_TYPE_TRANSPORT:
+                        if (const StaticTransport* t = ToStaticTransport())
+                            if (t->GetPauseTime())
+                            {
+                                if (GetGoState() == GO_STATE_READY)
+                                {
+                                    if (t->GetPathProgress() >= t->GetPauseTime()) // if not, send 100% progress
+                                        pathProgress = int16(float(t->GetPathProgress() - t->GetPauseTime()) / float(t->GetPeriod() - t->GetPauseTime()) * 65535.0f);
+                                }
+                                else
+                                {
+                                    if (t->GetPathProgress() <= t->GetPauseTime()) // if not, send 100% progress
+                                        pathProgress = int16(float(t->GetPathProgress()) / float(t->GetPauseTime()) * 65535.0f);
+                                }
+                            }
+                        // else it's ignored
+                        break;
+                    case GAMEOBJECT_TYPE_MO_TRANSPORT:
+                        if (const MotionTransport* t = ToMotionTransport())
+                            pathProgress = int16(float(t->GetPathProgress()) / float(t->GetPeriod()) * 65535.0f);
+                        break;
+#endif
                     default:
                         break;
                 }
@@ -188,10 +211,8 @@ void GameObject::AddToWorld()
         bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
         if (m_model)
         {
-            if (Transport* trans = ToTransport())
-                trans->SetDelayedAddModelToMap();
-            else
-                GetMap()->InsertGameObjectModel(*m_model);
+            m_model->UpdatePosition();
+            GetMap()->InsertGameObjectModel(*m_model);
         }
 
         EnableCollision(toggledState);
@@ -210,6 +231,8 @@ void GameObject::RemoveFromWorld()
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
+        if (Transport* transport = GetTransport())
+            transport->RemovePassenger(this, true);
         sObjectAccessor->RemoveObject(this);
         WorldObject::RemoveFromWorld();
     }
@@ -217,7 +240,11 @@ void GameObject::RemoveFromWorld()
 
 bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, uint32 go_state, uint32 ArtKit)
 {
+    ASSERT(map);
+
     Relocate(x,y,z,ang);
+    m_stationaryPosition.Relocate(x, y, z, ang);
+
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
@@ -274,7 +301,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     switch (goinfo->type)
     {
         case GAMEOBJECT_TYPE_TRANSPORT:
-            SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pause);
+            SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pauseAtTime);
             SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
             SetGoAnimProgress(100);
             m_goValue.Transport.PathProgress = 0;
@@ -885,6 +912,16 @@ void GameObject::SetDisplayId(uint32 displayid)
     UpdateModel();
 }
 
+void GameObject::SetPhaseMask(uint32 newPhaseMask, bool update)
+{
+#ifdef LICH_KING
+    WorldObject::SetPhaseMask(newPhaseMask, update);
+
+    if (m_model && m_model->isEnabled())
+        EnableCollision(true);
+#endif
+}
+
 void GameObject::EnableCollision(bool enable)
 {
     if (!m_model)
@@ -1095,7 +1132,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     {
         // using original GO distance
         Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target,trapEntry,range);
-        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(trapGO,go_check);
+        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(target, trapGO,go_check);
         VisitNearbyGridObject(range, checker);
     }
 
@@ -1611,6 +1648,20 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
     }
 }
 
+void GameObject::EventInform(uint32 eventId)
+{
+    if (!eventId)
+        return;
+
+    if (AI())
+        AI()->EventInform(eventId);
+
+    /* TODO zonescript
+    if (m_zoneScript)
+        m_zoneScript->ProcessEvent(this, eventId);*
+        */
+}
+
 // overwrite WorldObject function for proper name localization
 std::string const& GameObject::GetNameForLocaleIdx(LocaleConstant loc_idx) const
 {
@@ -1755,6 +1806,14 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
 
     SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rotation2);
     SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rotation3);
+}
+
+void GameObject::SetTransportPathRotation(float qx, float qy, float qz, float qw)
+{
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 0, qx);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 1, qy);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, qz);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, qw);
 }
 
 bool GameObject::AIM_Initialize()

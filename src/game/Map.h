@@ -42,6 +42,7 @@ class CreatureGroup;
 class Battleground;
 class GridMap;
 class Transport;
+class MotionTransport;
 namespace Trinity { struct ObjectUpdater; }
 struct MapDifficulty;
 struct MapEntry;
@@ -118,9 +119,7 @@ class Map : public GridRefManager<NGridType>
 
         virtual bool Add(Player *);
         virtual void Remove(Player *, bool);
-        virtual bool Add(Transport *);
-        virtual void Remove(Transport *, bool);
-        template<class T> void Add(T *);
+        template<class T> bool Add(T *, bool checkTransport = false);
         template<class T> void Remove(T *, bool);
 
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
@@ -154,7 +153,7 @@ class Map : public GridRefManager<NGridType>
         bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
         virtual void UnloadAll();
 
-        bool IsGridLoadedAt(float x, float y) const;
+        bool IsGridLoaded(float x, float y) const;
 
         void ResetGridExpiry(NGridType &grid, float factor = 1) const
         {
@@ -187,6 +186,7 @@ class Map : public GridRefManager<NGridType>
         void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
         void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
+        Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = NULL);
 
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask = (PhaseMask)0) const;
         void Balance() { _dynamicTree.balance(); }
@@ -245,6 +245,7 @@ class Map : public GridRefManager<NGridType>
    
         void AddObjectToRemoveList(WorldObject *obj);
         void AddObjectToSwitchList(WorldObject *obj, bool on);
+        virtual void DelayedUpdate(const uint32 diff);
 
         virtual bool RemoveBones(uint64 guid, float x, float y);
 
@@ -320,7 +321,7 @@ class Map : public GridRefManager<NGridType>
         std::list<Creature*> GetAllCreaturesFromPool(uint32);
 
         // Objects that must update even in inactive grids without activating them
-        typedef std::set<Transport*> TransportsContainer;
+        typedef std::set<MotionTransport*> TransportsContainer;
         TransportsContainer _transports;
         TransportsContainer::iterator _transportsUpdateIter;
 
@@ -373,6 +374,10 @@ class Map : public GridRefManager<NGridType>
         void setNGrid(NGridType* grid, uint32 x, uint32 y);
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
+
+        bool AllTransportsEmpty() const; // pussywizard
+        void AllTransportsRemovePassengers(); // pussywizard
+        TransportsContainer const& GetAllTransports() const { return _transports; }
 
     protected:
         void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }

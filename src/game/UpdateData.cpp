@@ -109,7 +109,7 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
 #ifndef LICH_KING
-    buf << (uint8) (hasTransport ? 1 : 0);
+    buf << (uint8) (hasTransport ? true : false);
 #endif
 
     if(!m_outOfRangeGUIDs.empty())

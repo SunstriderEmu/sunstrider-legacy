@@ -59,7 +59,6 @@ namespace Movement
     {
         MoveSpline& move_spline = *unit->movespline;
 
-        // Elevators also use MOVEMENTFLAG_ONTRANSPORT but we do not keep track of their position changes (movementInfo.transport.guid is 0 in that case)
         bool transport = unit->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && unit->GetTransGUID();
         Location real_position;
         // there is a big chance that current position is unknown if current state is not finalized, need compute it
@@ -120,7 +119,7 @@ namespace Movement
         if (transport)
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data.append(unit->GetTransGUID()); //TODOMOV a valider
+            data.appendPackGUID(unit->GetTransGUID());
 #ifdef LICH_KING
             data << int8(unit->GetTransSeat());
 #endif
@@ -132,7 +131,6 @@ namespace Movement
         return move_spline.Duration();
     }
 
-    //TODOMOV a valider
     void MoveSplineInit::Stop()
     {
         MoveSpline& move_spline = *unit->movespline;
@@ -169,11 +167,14 @@ namespace Movement
         if (transport)
         {
             data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data.append(unit->GetTransGUID()); //Not tested on BC
+            data.appendPackGUID(unit->GetTransGUID());
 #ifdef LICH_KING
             data << int8(unit->GetTransSeat());
 #endif
         }
+
+        // Xinef: increase z position in packet
+        loc.z += unit->GetHoverHeight();
 
         PacketBuilder::WriteStopMovement(loc, args.splineId, data);
         unit->SendMessageToSet(&data, true);

@@ -28,6 +28,9 @@
 #include "Database/DatabaseEnv.h"
 #include "GameObjectAI.h"
 
+class StaticTransport;
+class MotionTransport;
+
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack(1)
@@ -186,7 +189,7 @@ struct GameObjectTemplate
         //11 GAMEOBJECT_TYPE_TRANSPORT
         struct
         {
-            uint32 pause;                                   //0
+            uint32 pauseAtTime;                             //0
             uint32 startOpen;                               //1
             uint32 autoCloseTime;                           //2 secs till autoclose = autoCloseTime / 0x10000
         } transport;
@@ -221,6 +224,7 @@ struct GameObjectTemplate
             uint32 transportPhysics;                        //5
             uint32 mapID;                                   //6
             uint32 worldState1;                             //7
+            uint32 canBeStopped;                            //8 used on LK only
         } moTransport;
         //17 GAMEOBJECT_TYPE_FISHINGNODE
         struct
@@ -536,6 +540,7 @@ class GameObject : public WorldObject
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
         void UpdateRotationFields(float rotation2 = 0.0f, float rotation3 = 0.0f);
+        void SetTransportPathRotation(float qx, float qy, float qz, float qw);
 
         // overwrite WorldObject function for proper name localization
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
@@ -605,6 +610,8 @@ class GameObject : public WorldObject
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
         
+        //not implemented yet
+        void SetPhaseMask(uint32 newPhaseMask, bool update);
         void EnableCollision(bool enable);
 
         void Use(Unit* user);
@@ -686,10 +693,21 @@ class GameObject : public WorldObject
         
         float GetInteractionDistance();
 
+        bool IsStaticTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT; }
+        bool IsMotionTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT; }
+
         Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<Transport*>(this); else return NULL; }
         Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return NULL; }
 
+        StaticTransport* ToStaticTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport*>(this); else return NULL; }
+        StaticTransport const* ToStaticTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport const*>(this); else return NULL; }
+
+        MotionTransport* ToMotionTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport*>(this); else return NULL; }
+        MotionTransport const* ToMotionTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport const*>(this); else return NULL; }
+
         void UpdateModelPosition();
+
+        void EventInform(uint32 eventId);
 
         virtual uint32 GetScriptId() const { return GetGOInfo()->ScriptId; }
         GameObjectAI* AI() const { return m_AI; }
@@ -704,6 +722,11 @@ class GameObject : public WorldObject
         void setManualUnlocked() { manual_unlock = true; RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED); }
         void SetInactive(bool inactive) { m_inactive = inactive; }
         bool IsInactive() { return m_inactive; }
+
+        float GetStationaryX() const { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetPositionX(); return GetPositionX(); }
+        float GetStationaryY() const { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetPositionY(); return GetPositionY(); }
+        float GetStationaryZ() const { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetPositionZ(); return GetPositionZ(); }
+        float GetStationaryO() const { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetOrientation(); return GetOrientation(); }
 
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
@@ -730,6 +753,7 @@ class GameObject : public WorldObject
         GameObjectModel* CreateModel();
         void UpdateModel();                                 // updates model in case displayId were changed
 
+        Position m_stationaryPosition;
     private:
         GameObjectAI* m_AI;
         GridReference<GameObject> m_gridRef;

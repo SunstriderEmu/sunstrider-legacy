@@ -303,7 +303,7 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
     auto itr = splineToPathIds.find(splineId);
     if (itr == splineToPathIds.end()) //spline not matched to any path id, nothing to do
     {
-        TC_LOG_TRACE("misc", "WaypointMovementGenerator: SplineFinished %u did not match any known path id, nothing to do", splineId);
+      //  TC_LOG_TRACE("misc", "WaypointMovementGenerator: SplineFinished %u did not match any known path id, nothing to do", splineId);
         return;
     }
 
@@ -313,11 +313,6 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
     //warn we reached a new db node if needed
     if (!reachedFirstNode || currentNode->id != pathNodeDBId)
     {
-        if (pathNodeDBId != currentNode->id)
-        {
-            std::string a = "BUG";
-        }
-
         reachedFirstNode = true;
 
         //update next node
@@ -331,7 +326,7 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
             i_currentNode = 0;
         }
 
-        TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", pathNodeDBId, path_id, splineId, i_currentNode);
+        //TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", pathNodeDBId, path_id, splineId, i_currentNode);
 
         //this may start a new path if we reached the end of it
         OnArrived(creature, i_currentNode);
@@ -358,7 +353,7 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
     splineId += points.size() - skip;
     splineToPathIds[splineId] = nextNode->id;
 
-    TC_LOG_TRACE("misc", "[path %u] Inserted node (db %u) at (%f,%f,%f) (splineId %u)", path_id, nextNode->id, nextNode->x, nextNode->y, nextNode->z, splineId);
+   // TC_LOG_TRACE("misc", "[path %u] Inserted node (db %u) at (%f,%f,%f) (splineId %u)", path_id, nextNode->id, nextNode->x, nextNode->y, nextNode->z, splineId);
 
     return true;
 }
@@ -394,7 +389,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
     //insert dummy first position as this will be replaced by MoveSplineInit
     m_precomputedPath.push_back(G3D::Vector3(0.0f, 0.0f, 0.0f));
 
-    TC_LOG_TRACE("misc", "Creating new spline path for path %u", path_id);
+    //TC_LOG_TRACE("misc", "Creating new spline path for path %u", path_id);
 
     //we keep track of the index of the spline we insert to match them to path id later
     uint32 splineId = 1; // this offset of 1 is needed because MoveSplineInit will insert a current position point before our path

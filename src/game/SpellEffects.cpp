@@ -964,7 +964,8 @@ void Spell::EffectDummy(uint32 i)
                     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel());
                     pGameObj->SetSpellId(m_spellInfo->Id);
 
-                    sMapMgr->CreateMap(creatureTarget->GetMapId(), pGameObj)->Add(pGameObj);
+                    Map* m = sMapMgr->CreateMap(creatureTarget->GetMapId(), pGameObj);
+                    m->Add(pGameObj);
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
@@ -3446,7 +3447,7 @@ void Spell::EffectPersistentAA(uint32 i)
     dynObj->SetUInt32Value(OBJECT_FIELD_TYPE, 65);
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x01eeeeee);
     caster->AddDynObject(dynObj);
-    dynObj->GetMap()->Add(dynObj);
+    dynObj->GetMap()->Add(dynObj, true);
 }
 
 void Spell::EffectEnergize(uint32 i)
@@ -4268,7 +4269,7 @@ void Spell::EffectAddFarsight(uint32 i)
     m_caster->AddDynObject(dynObj);
 
     dynObj->SetKeepActive(true);    //must before add to map to be put in world container
-    dynObj->GetMap()->Add(dynObj); //grid will also be loaded
+    dynObj->GetMap()->Add(dynObj, true); //grid will also be loaded
 
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
 }
@@ -4805,7 +4806,7 @@ void Spell::EffectTameCreature(uint32 /*i*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel()-1);
 
     // add to world
-    pet->GetMap()->Add(pet->ToCreature());
+    pet->GetMap()->Add(pet->ToCreature(), true);
 
     // visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());
@@ -4859,7 +4860,7 @@ void Spell::EffectSummonPet(uint32 i)
             owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
-            owner->GetMap()->Add(OldSummon->ToCreature());
+            owner->GetMap()->Add(OldSummon->ToCreature(), true);
             if(m_spellInfo->Id == 688 /*imp*/ || m_spellInfo->Id == 697 /*void walker*/ || m_spellInfo->Id == 691 /*felhunter*/ || m_spellInfo->Id == 712 /*succubus*/)
                 OldSummon->SetHealth(OldSummon->GetMaxHealth());
 
@@ -5337,7 +5338,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         else
             m_caster->AddGameObject(pGameObj);
     }
-    map->Add(pGameObj);
+    map->Add(pGameObj, true);
 
     if(pGameObj->GetMapId() == 489 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //WS
     {
@@ -5379,7 +5380,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
             linkedGO->SetSpellId(m_spellInfo->Id);
 
             m_caster->AddGameObject(linkedGO);
-            map->Add(linkedGO);
+            map->Add(linkedGO, true);
         }
         else
         {
@@ -6330,7 +6331,7 @@ void Spell::EffectDuel(uint32 i)
     pGameObj->SetSpellId(m_spellInfo->Id);
 
     m_caster->AddGameObject(pGameObj);
-    map->Add(pGameObj);
+    map->Add(pGameObj, true);
     //END
 
     // Send request
@@ -6755,7 +6756,7 @@ void Spell::EffectSummonObject(uint32 i)
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
 
-    map->Add(pGameObj);
+    map->Add(pGameObj, true);
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << pGameObj->GetGUID();
     m_caster->SendMessageToSet(&data,true);
@@ -7089,7 +7090,7 @@ void Spell::EffectSummonCritter(uint32 i)
     critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbcLocale()));
     player->SetMiniPet(critter);
 
-    map->Add(critter->ToCreature());
+    map->Add(critter->ToCreature(), true);
 }
 
 void Spell::EffectKnockBack(uint32 i)
@@ -7454,7 +7455,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //m_caster->AddGameObject(pGameObj);
     //m_ObjToDel.push_back(pGameObj);
 
-    cMap->Add(pGameObj);
+    cMap->Add(pGameObj, true);
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << uint64(pGameObj->GetGUID());
@@ -7471,7 +7472,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             linkedGO->SetSpellId(m_spellInfo->Id);
             linkedGO->SetOwnerGUID(m_caster->GetGUID() );
 
-            linkedGO->GetMap()->Add(linkedGO);
+            linkedGO->GetMap()->Add(linkedGO, true);
         }
         else
         {

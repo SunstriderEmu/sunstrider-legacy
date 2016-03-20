@@ -928,37 +928,37 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     float o = chr->GetOrientation();
     Map *map = chr->GetMap();
 
-    if (Transport* trans = chr->GetTransport())
-    {
-        uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
-        CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
-        data.id = id;
-        data.posX = chr->GetTransOffsetX();
-        data.posY = chr->GetTransOffsetY();
-        data.posZ = chr->GetTransOffsetZ();
-        data.orientation = chr->GetTransOffsetO();
-        data.displayid = 0;
-        data.equipmentId = 0;
-        data.spawntimesecs = 300;
-        data.spawndist = 0;
-        data.movementType = 1;
-        data.spawnMask = 1;
-
-        if(!trans->GetGOInfo())
+    if (Transport* tt = chr->GetTransport())
+        if (MotionTransport* trans = tt->ToMotionTransport())
         {
-            SendSysMessage("Error: cannot save creature on transport because trans->GetGOInfo() == NULL");
+            uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
+            CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
+            data.id = id;
+            data.posX = chr->GetTransOffsetX();
+            data.posY = chr->GetTransOffsetY();
+            data.posZ = chr->GetTransOffsetZ();
+            data.orientation = chr->GetTransOffsetO();
+            data.displayid = 0;
+            data.equipmentId = 0;
+            data.spawntimesecs = 300;
+            data.spawndist = 0;
+            data.movementType = 1;
+            data.spawnMask = 1;
+
+            if(!trans->GetGOInfo())
+            {
+                SendSysMessage("Error: cannot save creature on transport because trans->GetGOInfo() == NULL");
+                return true;
+            }
+            if(Creature* creature = trans->CreateNPCPassenger(guid, &data))
+            {
+                sObjectMgr->AddCreatureToGrid(guid, &data);
+                creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
+            } else {
+                SendSysMessage("Error: cannot create NPC Passenger.");
+            }
             return true;
         }
-        if(Creature* creature = trans->CreateNPCPassenger(guid, &data))
-        {
-            creature->SaveToDB(trans->GetGOInfo()->moTransport.mapID, 1 << map->GetSpawnMode());
-            map->Add(creature);
-            sObjectMgr->AddCreatureToGrid(guid, &data);
-        } else {
-            SendSysMessage("Error: cannot create NPC Passenger.");
-        }
-        return true;
-    }
 
     Creature* pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, id))
@@ -1079,8 +1079,6 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
 //turn selected object
 bool ChatHandler::HandleTurnObjectCommand(const char* args)
 {
-    
-
     // number or [name] Shift-click form |color|Hgameobject:go_id|h[name]|h|r
     char* cId = extractKeyFromLink((char*)args,"Hgameobject");
     if(!cId)
@@ -1313,7 +1311,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         obj->SetFloatValue(GAMEOBJECT_POS_Y, chr->GetPositionY());
         obj->SetFloatValue(GAMEOBJECT_POS_Z, chr->GetPositionZ());
 
-        map->Add(obj);
+        map->Add(obj, true);
     }
     else
     {
@@ -1339,7 +1337,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         obj->SetFloatValue(GAMEOBJECT_POS_Y, y);
         obj->SetFloatValue(GAMEOBJECT_POS_Z, z);
 
-        map->Add(obj);
+        map->Add(obj, true);
     }
 
     obj->SaveToDB();
@@ -3218,8 +3216,10 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     float rot2 = sin(o/2);
     float rot3 = cos(o/2);
     
+    /* Gobjects on transports have been added on LK (or did not found correct packet structure */
     if (Transport* trans = chr->GetTransport())
-    {/* Gobjects on transports have been added on LK (to confirm)
+    {
+#ifdef LICH_KING
         uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
         GameObjectData& data = sObjectMgr->NewGOData(guid);
         data.id = id;
@@ -3248,10 +3248,13 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
             map->Add(gob);
             sTransportMgr->CreatePassengerForTransportInDB(PASSENGER_GAMEOBJECT,guid,trans->GetEntry());
             sObjectMgr->AddGameobjectToGrid(guid, &data);
-        } else*/ {
+        } else {
             SendSysMessage("Error : Cannot create gameobject passenger.");
         }
         return true;
+#else
+        SendSysMessage("Error : Cannot create gameobject passenger.");
+#endif
     }
 
     GameObject* pGameObj = new GameObject;
@@ -3274,7 +3277,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     pGameObj->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
     delete pGameObj;
-    pGameObj = new GameObject();
+    pGameObj = sObjectMgr->IsGameObjectStaticTransport(goI->entry) ? new StaticTransport() : new GameObject();
 
     // this will generate a new guid if the object is in an instance
     if(!pGameObj->LoadFromDB(db_lowGUID, map))
@@ -3880,8 +3883,6 @@ bool ChatHandler::HandleNpcUnFollowCommand(const char* /*args*/)
 
 bool ChatHandler::HandleCreatePetCommand(const char* args)
 {
-    
-
     Player *player = m_session->GetPlayer();
     Creature *creatureTarget = GetSelectedCreature();
 
@@ -3946,7 +3947,8 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
      pet->InitPetCreateSpells();
      pet->SetHealth(pet->GetMaxHealth());
 
-     sMapMgr->CreateMap(pet->GetMapId(), pet)->Add(pet->ToCreature());
+     Map* m = sMapMgr->CreateMap(pet->GetMapId(), pet);
+     m->Add(pet->ToCreature());
 
      // visual effect for levelup
      pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());

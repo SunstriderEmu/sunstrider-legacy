@@ -20,6 +20,7 @@
 #include "MoveSpline.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
+#include "InstanceScript.h"
 
 TransportTemplate::~TransportTemplate()
 {
@@ -76,6 +77,10 @@ void TransportMgr::LoadTransportTemplates()
         TransportTemplate& transport = _transportTemplates[entry];
         transport.entry = entry;
         GeneratePath(goInfo, &transport);
+
+        // transports in instance are only on one map
+        if (transport.inInstance)
+            _instanceTransports[*transport.mapsUsed.begin()].insert(entry);
 
         ++count;
     } while (result->NextRow());
@@ -349,8 +354,20 @@ void TransportMgr::AddPathNodeToTransport(uint32 transportEntry, uint32 timeSeg,
     animNode.Path[timeSeg] = node;
 }
 
-Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map* map /*= NULL*/)
+MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map* map /*= NULL*/)
 {
+    // instance case, execute GetGameObjectEntry hook
+    if (map)
+    {
+        // SetZoneScript() is called after adding to map, so fetch the script using map
+        if (map->IsDungeon())
+            if (InstanceScript* instance = static_cast<InstanceMap*>(map)->GetInstanceScript())
+                entry = instance->GetGameObjectEntry(0, entry);
+
+        if (!entry)
+            return NULL;
+    }
+
     TransportTemplate const* tInfo = GetTransportTemplate(entry);
     if (!tInfo)
     {
@@ -359,7 +376,7 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
     }
 
     // create transport...
-    Transport* trans = new Transport();
+    MotionTransport* trans = new MotionTransport();
 
     // ...at first waypoint
     TaxiPathNodeEntry const* startNode = tInfo->keyFrames.begin()->Node;
@@ -371,7 +388,7 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
 
     // initialize the gameobject base
     uint32 guidLow = guid ? guid : sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT,false);
-    if (!trans->Create(guidLow, entry, mapId, x, y, z, o, 100))
+    if (!trans->CreateMoTrans(guidLow, entry, mapId, x, y, z, o, 100))
     {
         delete trans;
         return NULL;
@@ -409,6 +426,8 @@ Transport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/, Map*
     data.spawnMask = (1 << trans->GetMap()->GetSpawnMode());
     data.ArtKit = trans->GetUInt32Value(GAMEOBJECT_ARTKIT);
 
+    // xinef: transports are active so passengers can be relocated (grids must be loaded)
+    trans->SetKeepActive(true);
     trans->GetMap()->Add(trans);
     return trans;
 }
@@ -439,16 +458,99 @@ void TransportMgr::SpawnContinentTransports()
     }
 
     TC_LOG_INFO("server.loading", ">> Spawned %u continent transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+
+    // pussywizard: preload grids for continent static transports
+    oldMSTime = GetMSTime();
+    result = WorldDatabase.Query("SELECT map, position_x, position_y FROM gameobject g JOIN gameobject_template t ON g.id = t.entry WHERE t.type = 11");
+    count = 0;
+    if (result)
+    {
+        do
+        {
+            Field* fields = result->Fetch();
+            uint32 mapId = fields[0].GetUInt32();
+            float x = fields[1].GetFloat();
+            float y = fields[2].GetFloat();
+
+            MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+            if (mapEntry && !mapEntry->Instanceable())
+                if (Map* map = sMapMgr->CreateBaseMap(mapId))
+                {
+                    map->LoadGrid(x, y);
+                    ++count;
+                }
+
+        } while (result->NextRow());
+    }
+
+    TC_LOG_INFO("server.loading", ">> Preloaded grids for %u continent static transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-TransportAnimationEntry const* TransportAnimation::GetAnimNode(uint32 time) const
+void TransportMgr::CreateInstanceTransports(Map* map)
+{
+    TransportInstanceMap::const_iterator mapTransports = _instanceTransports.find(map->GetId());
+
+    // no transports here
+    if (mapTransports == _instanceTransports.end() || mapTransports->second.empty())
+        return;
+
+    // create transports
+    for (std::set<uint32>::const_iterator itr = mapTransports->second.begin(); itr != mapTransports->second.end(); ++itr)
+        CreateTransport(*itr, 0, map);
+}
+
+bool TransportAnimation::GetAnimNode(uint32 time, TransportAnimationEntry const* &curr, TransportAnimationEntry const* &next, float &percPos) const
 {
     if (Path.empty())
-        return NULL;
+        return false;
 
-    for (TransportPathContainer::const_reverse_iterator itr2 = Path.rbegin(); itr2 != Path.rend(); ++itr2)
-        if (time >= itr2->first)
-            return itr2->second;
+    for (TransportPathContainer::const_reverse_iterator itr = Path.rbegin(); itr != Path.rend(); ++itr)
+        if (time >= itr->first)
+        {
+            curr = itr->second;
+            ASSERT(itr != Path.rbegin());
+            --itr;
+            next = itr->second;
+            percPos = float(time - curr->TimeSeg) / float(next->TimeSeg - curr->TimeSeg);
+            return true;
+        }
 
-    return Path.begin()->second;
+    return false;
 }
+
+#ifdef LICH_KING
+void TransportAnimation::GetAnimRotation(uint32 time, G3D::Quat &curr, G3D::Quat &next, float &percRot) const
+{
+    if (Rotations.empty())
+    {
+        curr = G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f);
+        next = G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f);
+        percRot = 0.0f;
+        return;
+    }
+
+    for (TransportPathRotationContainer::const_reverse_iterator itr = Rotations.rbegin(); itr != Rotations.rend(); ++itr)
+        if (time >= itr->first)
+        {
+            uint32 currSeg = itr->second->TimeSeg, nextSeg;
+            curr = G3D::Quat(itr->second->X, itr->second->Y, itr->second->Z, itr->second->W);
+            if (itr != Rotations.rbegin())
+            {
+                --itr;
+                next = G3D::Quat(itr->second->X, itr->second->Y, itr->second->Z, itr->second->W);
+                nextSeg = itr->second->TimeSeg;
+            }
+            else
+            {
+                next = G3D::Quat(Rotations.begin()->second->X, Rotations.begin()->second->Y, Rotations.begin()->second->Z, Rotations.begin()->second->W);
+                nextSeg = this->TotalTime;
+            }
+            percRot = float(time - currSeg) / float(nextSeg - currSeg);
+            return;
+        }
+
+    curr = G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f);
+    next = G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f);
+    percRot = 0.0f;
+}
+#endif

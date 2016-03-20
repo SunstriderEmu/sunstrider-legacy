@@ -46,7 +46,9 @@ namespace Movement
     {
         MoveSplineFlag splineflags = move_spline.splineflags;
 
-        //data << uint8(0); added on LK
+#ifdef LICH_KING
+        data << uint8(0);
+#endif
         data << move_spline.spline.getPoint(move_spline.spline.first());
         data << move_spline.GetId();
 
@@ -79,7 +81,9 @@ namespace Movement
 
     void PacketBuilder::WriteStopMovement(Vector3 const& pos, uint32 splineId, ByteBuffer& data)
     {
-      //  data << uint8(0);  added on LK                               // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
+#ifdef LICH_KING
+        data << uint8(0);  // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
+#endif
         data << pos;
         data << splineId;
         data << uint8(MonsterMoveStop);

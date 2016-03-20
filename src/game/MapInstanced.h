@@ -35,6 +35,7 @@ class MapInstanced : public Map
 
         // functions overwrite Map versions
         void Update(const uint32&);
+        void DelayedUpdate(const uint32 diff);
         void MoveAllCreaturesInMoveList();
         void RemoveAllObjectsInRemoveList();
         bool RemoveBones(uint64 guid, float x, float y);

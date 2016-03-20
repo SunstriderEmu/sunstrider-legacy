@@ -3513,6 +3513,53 @@ Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
 
 bool Unit::isInAccessiblePlaceFor(Creature const* c) const
 {
+#ifdef LICH_KING
+    if (c->GetMapId() == 618) // Ring of Valor
+    {
+        // skip transport check, check for being below floor level
+        if (this->GetPositionZ() < 28.0f)
+            return false;
+        if (BattlegroundMap* bgMap = c->GetMap()->ToBattlegroundMap())
+            if (Battleground* bg = bgMap->GetBG())
+                if (bg->GetStartTime() < 80133) // 60000ms preparation time + 20133ms elevator rise time
+                    return false;
+    }
+    else if (c->GetMapId() == 631) // Icecrown Citadel
+    {
+        // if static transport doesn't match - return false
+        if (c->GetTransport() != this->GetTransport() && (c->GetTransport() && c->GetTransport()->IsStaticTransport() || this->GetTransport() && this->GetTransport()->IsStaticTransport()))
+            return false;
+
+        // special handling for ICC (map 631), for non-flying pets in Gunship Battle, for trash npcs this is done via CanAIAttack
+        if (IS_PLAYER_GUID(c->GetOwnerGUID()) && !c->CanFly())
+        {
+            if (c->GetTransport() && !this->GetTransport() || !c->GetTransport() && this->GetTransport())
+                return false;
+            if (this->GetTransport())
+            {
+                if (c->GetPositionY() < 2033.0f)
+                {
+                    if (this->GetPositionY() > 2033.0f)
+                        return false;
+                }
+                else if (c->GetPositionY() < 2438.0f)
+                {
+                    if (this->GetPositionY() < 2033.0f || this->GetPositionY() > 2438.0f)
+                        return false;
+                }
+                else if (this->GetPositionY() < 2438.0f)
+                    return false;
+            }
+        }
+    }
+    else
+#endif
+    {
+        // (sunwell) prevent any bugs by passengers exiting transports or normal creatures flying away
+        if (c->GetTransport() != this->GetTransport())
+            return false;
+    }
+
     if (IsInWater())
         return c->CanSwim();
     else
@@ -11490,6 +11537,14 @@ void Unit::RemoveFromWorld()
 
 void Unit::CleanupsBeforeDelete(bool finalCleanup)
 {
+    if (GetTransport())
+    {
+        GetTransport()->RemovePassenger(this);
+        SetTransport(NULL);
+        m_movementInfo.transport.Reset();
+        m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+    }
+
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) {
         (this->ToCreature())->AI()->OnRemove();
     }
@@ -13960,7 +14015,7 @@ GameObject* Unit::FindGOInGrid(uint32 entry, float range)
     cell.SetNoCreate();
 
     Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(pGo, go_check);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, pGo, go_check);
 
     TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
 

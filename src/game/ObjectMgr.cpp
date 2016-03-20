@@ -6137,6 +6137,24 @@ void ObjectMgr::SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 inst
     CharacterDatabase.CommitTransaction(trans);
 }
 
+time_t ObjectMgr::GetCreatureRespawnTime(uint32 loguid, uint32 instance) 
+{ 
+    auto itr = mCreatureRespawnTimes.find(MAKE_PAIR64(loguid, instance));
+    if (itr != mCreatureRespawnTimes.end())
+        return itr->second;
+
+    return time_t(0);
+}
+
+time_t ObjectMgr::GetGORespawnTime(uint32 loguid, uint32 instance) 
+{ 
+    auto itr = mGORespawnTimes.find(MAKE_PAIR64(loguid, instance));
+    if (itr != mGORespawnTimes.end())
+        return itr->second;
+
+    return time_t(0);
+}
+
 void ObjectMgr::DeleteCreatureData(uint32 guid)
 {
     // remove mapid*cellid -> guid_set map
@@ -8487,4 +8505,10 @@ void ObjectMgr::LoadBroadcastTextLocales()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u broadcast text locales in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+bool ObjectMgr::IsGameObjectStaticTransport(uint32 entry)
+{
+    GameObjectTemplate const* goinfo = GetGameObjectTemplate(entry);
+    return goinfo && goinfo->type == GAMEOBJECT_TYPE_TRANSPORT;
 }

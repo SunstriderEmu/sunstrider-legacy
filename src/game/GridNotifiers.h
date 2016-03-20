@@ -270,7 +270,7 @@ namespace Trinity
         GameObject* &i_object;
         Check& i_check;
 
-        GameObjectLastSearcher(GameObject* & result, Check& check) : i_object(result),i_check(check) {}
+        GameObjectLastSearcher(WorldObject const* /*searcher*/, GameObject* & result, Check& check) : i_object(result),i_check(check) {}
 
         void Visit(GameObjectMapType &m);
 
@@ -1002,6 +1002,29 @@ namespace Trinity
 
             // prevent clone this object
             NearestGameObjectEntryInObjectRangeCheck(NearestGameObjectEntryInObjectRangeCheck const&);
+    };
+
+    // Success at unit in range, range update for next check (this can be use with GameobjectLastSearcher to find nearest GO with a certain type)
+    class NearestGameObjectTypeInObjectRangeCheck
+    {
+    public:
+        NearestGameObjectTypeInObjectRangeCheck(WorldObject const& obj, GameobjectTypes type, float range) : i_obj(obj), i_type(type), i_range(range) {}
+        bool operator()(GameObject* go)
+        {
+            if (go->GetGoType() == i_type && i_obj.IsWithinDistInMap(go, i_range))
+            {
+                i_range = i_obj.GetDistance(go);        // use found GO range as new range limit for next check
+                return true;
+            }
+            return false;
+        }
+    private:
+        WorldObject const& i_obj;
+        GameobjectTypes i_type;
+        float  i_range;
+
+        // prevent clone this object
+        NearestGameObjectTypeInObjectRangeCheck(NearestGameObjectTypeInObjectRangeCheck const&);
     };
 
     class GameObjectWithDbGUIDCheck

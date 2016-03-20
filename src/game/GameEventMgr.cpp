@@ -29,6 +29,7 @@
 #include "BattleGroundMgr.h"
 #include "GridNotifiers.h"
 #include "Map.h"
+#include "Transport.h"
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
@@ -1126,7 +1127,7 @@ void GameEventMgr::SpawnGameObject(uint32 guid)
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
         if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
         {
-            GameObject* pGameobject = new GameObject;
+            GameObject* pGameobject = sObjectMgr->IsGameObjectStaticTransport(data->id) ? new StaticTransport() : new GameObject();
             //TC_LOG_DEBUG("gameevent","Spawning gameobject %u", *itr);
             if (!pGameobject->LoadFromDB(guid, map))
             {

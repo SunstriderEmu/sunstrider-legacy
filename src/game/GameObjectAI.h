@@ -54,6 +54,7 @@ class GameObjectAI
         virtual void Destroyed(Player* player, uint32 eventId) {}
         virtual void SetData(uint32 id, uint32 value) {}
         virtual void GetData(uint32 id) const {}
+        virtual void EventInform(uint32 /*eventId*/) {}
 
         virtual void OnStateChanged(GOState /*state*/, Unit* /*unit*/) { }
         virtual void OnLootStateChanged(LootState /*state*/, Unit* /*unit*/) { }

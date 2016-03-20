@@ -46,8 +46,9 @@ Group::Group() :
     m_groupType((GroupType)0),
     m_lootThreshold(ITEM_QUALITY_UNCOMMON),
     m_subGroupsCounts(nullptr),
-    m_leaderLogoutTime(0)
-
+    m_leaderLogoutTime(0),
+    m_raidDifficulty(RAID_DIFFICULTY_NORMAL),
+    m_dungeonDifficulty(DUNGEON_DIFFICULTY_NORMAL)
 {
     for(int i=0; i<TARGETICONCOUNT; i++)
         m_targetIcons[i] = 0;

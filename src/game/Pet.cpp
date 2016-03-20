@@ -228,7 +228,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if(cinfo->type == CREATURE_TYPE_CRITTER)
     {
         AIM_Initialize();
-        map->Add(this->ToCreature());
+        map->Add(this->ToCreature(), true);
         return true;
     }
     if(getPetType()==HUNTER_PET || (getPetType()==SUMMON_PET && cinfo->type == CREATURE_TYPE_DEMON && owner->GetClass() == CLASS_WARLOCK))
@@ -372,7 +372,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
     }
 
-    map->Add(this->ToCreature());
+    map->Add(this->ToCreature(), true);
 
     // Spells should be loaded after pet is added to map, because in CanCast is check on it
     _LoadSpells();

@@ -468,7 +468,8 @@ bool Map::Add(Player *player)
     return true;
 }
 
-bool Map::Add(Transport* obj)
+template<>
+bool Map::Add(MotionTransport* obj, bool /* checkTransport */)
 {
     assert(obj);
 
@@ -479,7 +480,15 @@ bool Map::Add(Transport* obj)
         return false;
     }
 
+    Cell cell(p);
+    if (obj->isActiveObject())
+        EnsureGridLoaded(cell);
+
     obj->AddToWorld();
+
+    if (obj->isActiveObject())
+        AddToForceActive(obj);
+
     //DO NOT ADD TO GRID. Else transport will be removed with grid unload. Transports are being kept updated even in unloaded grid.
     _transports.insert(obj);
 
@@ -503,21 +512,16 @@ bool Map::Add(Transport* obj)
 }
 
 template<class T>
-void
-Map::Add(T *obj)
+bool Map::Add(T *obj, bool checkTransport)
 {
     CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
 
     assert(obj);
-#ifdef TRINITY_DEBUG
-    if (dynamic_cast<Transport*>(obj))
-        ASSERT("Map::Add(T* obj) called with a transport object " && false);
-#endif
 
     if (!p.IsCoordValid())
     {
         TC_LOG_ERROR("maps","Map::Add: Object " UI64FMTD " have invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUID(), obj->GetPositionX(), obj->GetPositionY(), p.x_coord, p.y_coord);
-        return;
+        return false;
     }
 
     Cell cell(p);
@@ -532,6 +536,11 @@ Map::Add(T *obj)
     AddToGrid(obj,grid,cell);
     obj->AddToWorld();
     
+    if (checkTransport)
+        if (!(obj->GetTypeId() == TYPEID_GAMEOBJECT && obj->ToGameObject()->IsTransport())) // dont add transport to transport ;d
+            if (Transport* transport = GetTransportForPos(obj->GetPhaseMask(), obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), obj))
+                transport->AddPassenger(obj, true);
+
     if(obj->isActiveObject())
         AddToForceActive(obj);
 
@@ -540,6 +549,7 @@ Map::Add(T *obj)
     UpdateObjectVisibility(obj,cell,p);
 
     //AddNotifier(obj);
+    return true;
 }
 
 void Map::MessageBroadcast(Player *player, WorldPacket *msg, bool to_self, bool to_possessor)
@@ -970,9 +980,12 @@ Map::Remove(T *obj, bool remove)
     }
 }
 
-void Map::Remove(Transport *obj, bool remove)
+template<>
+void Map::Remove(MotionTransport *obj, bool remove)
 {
     obj->RemoveFromWorld();
+    if (obj->isActiveObject())
+        RemoveFromForceActive(obj);
 
     //remove for players in map
     Map::PlayerList const& players = GetPlayers();
@@ -1000,8 +1013,15 @@ void Map::Remove(Transport *obj, bool remove)
     else
         _transports.erase(obj);
 
+    obj->SetMapId(0);
+
     if (remove)
+    {
+        // if option set then object already saved at this moment
+        if (!sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
+            obj->SaveRespawnTime();
         DeleteFromWorld(obj);
+    }
 }
 
 void Map::PlayerRelocation(Player *player, float x, float y, float z, float orientation)
@@ -1429,13 +1449,19 @@ void Map::UnloadAll()
         UnloadGrid(grid.getX(), grid.getY(), true);       // deletes the grid and removes it from the GridRefManager
     }
 
+    // pussywizard: crashfix, some npc can be left on transport (not a default passenger)
+    if (!AllTransportsEmpty())
+        AllTransportsRemovePassengers();
+
     for (TransportsContainer::iterator itr = _transports.begin(); itr != _transports.end();)
     {
-        Transport* transport = *itr;
+        MotionTransport* transport = *itr;
         ++itr;
 
-        Remove(transport, true);
+        transport->RemoveFromWorld();
+        delete transport;
     }
+    _transports.clear();
 }
 
 
@@ -1479,6 +1505,33 @@ bool Map::GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, flo
 float Map::GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap/*=true*/, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /*= false*/) const
 {
     return std::max<float>(GetHeight(x, y, z, vmap, maxSearchDist, walkableOnly), _dynamicTree.getHeight(x, y, z, maxSearchDist, phasemask)); //walkableOnly not implemented in dynamicTree
+}
+
+Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject)
+{
+    G3D::Vector3 v(x, y, z + 2.0f);
+    G3D::Ray r(v, G3D::Vector3(0, 0, -1));
+    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
+        if ((*itr)->IsInWorld() && (*itr)->GetExactDistSq(x, y, z) < 75.0f*75.0f && (*itr)->m_model)
+        {
+            float dist = 30.0f;
+            bool hit = (*itr)->m_model->intersectRay(r, dist, false, phase);
+            if (hit)
+                return *itr;
+        }
+
+    if (worldobject)
+        if (GameObject* staticTrans = worldobject->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_TRANSPORT, 75.0f))
+            if (staticTrans->m_model)
+            {
+                float dist = 10.0f;
+                bool hit = staticTrans->m_model->intersectRay(r, dist, false, phase);
+                if (hit)
+                    if (GetHeight(phase, x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
+                        return staticTrans->ToTransport();
+            }
+
+    return NULL;
 }
 
 float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /* = false */) const
@@ -1915,6 +1968,18 @@ void Map::SendRemoveTransports(Player* player)
         if (*i != player->GetTransport())
             (*i)->BuildOutOfRangeUpdateBlock(&transData);
 
+    // pussywizard: remove static transports from client
+    for (Player::ClientGUIDs::const_iterator it = player->m_clientGUIDs.begin(); it != player->m_clientGUIDs.end(); )
+    {
+        if (IS_TRANSPORT(*it))
+        {
+            transData.AddOutOfRangeGUID(*it);
+            it = player->m_clientGUIDs.erase(it);
+        }
+        else
+            ++it;
+    }
+
     WorldPacket packet;
     transData.BuildPacket(&packet);
     player->SendDirectMessage(&packet);
@@ -1929,6 +1994,22 @@ inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
         ABORT();
     }
     i_grids[x][y] = grid;
+}
+
+void Map::DelayedUpdate(const uint32 t_diff)
+{
+    for (_transportsUpdateIter = _transports.begin(); _transportsUpdateIter != _transports.end();)
+    {
+        MotionTransport* transport = *_transportsUpdateIter;
+        ++_transportsUpdateIter;
+
+        if (!transport->IsInWorld())
+            continue;
+
+        transport->DelayedUpdate(t_diff);
+    }
+
+    RemoveAllObjectsInRemoveList();
 }
 
 void Map::AddObjectToRemoveList(WorldObject *obj)
@@ -1993,10 +2074,10 @@ void Map::RemoveAllObjectsInRemoveList()
             Remove((DynamicObject*)obj,true);
             break;
         case TYPEID_GAMEOBJECT:
-            if(((GameObject*)obj)->IsTransport())
-                Remove((Transport*)obj,true);
+            if (MotionTransport* transport = obj->ToGameObject()->ToMotionTransport())
+                Remove(transport, true);
             else
-                Remove((GameObject*)obj,true);
+                Remove(obj->ToGameObject(), true);
             break;
         case TYPEID_UNIT:
             // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
@@ -2191,10 +2272,26 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
     return creatureList;
 }
 
-template void Map::Add(Corpse *);
-template void Map::Add(Creature *);
-template void Map::Add(GameObject *);
-template void Map::Add(DynamicObject *);
+bool Map::AllTransportsEmpty() const
+{
+    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
+        if (!(*itr)->GetPassengers().empty())
+            return false;
+
+    return true;
+}
+
+void Map::AllTransportsRemovePassengers()
+{
+    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
+        while (!(*itr)->GetPassengers().empty())
+            (*itr)->RemovePassenger(*((*itr)->GetPassengers().begin()), true);
+}
+
+template bool Map::Add(Corpse *, bool);
+template bool Map::Add(Creature *, bool);
+template bool Map::Add(GameObject *, bool);
+template bool Map::Add(DynamicObject *, bool);
 
 template void Map::Remove(Corpse *,bool);
 template void Map::Remove(Creature *,bool);
@@ -2753,7 +2850,7 @@ DynamicObject* Map::GetDynamicObject(uint64 guid)
 }
 /*--------------------------TRINITY-------------------------*/
 
-bool Map::IsGridLoadedAt(float x, float y) const
+bool Map::IsGridLoaded(float x, float y) const
 {
     GridPair gp = Trinity::ComputeGridPair(x,y);
     if((gp.x_coord >= MAX_NUMBER_OF_GRIDS) || (gp.y_coord >= MAX_NUMBER_OF_GRIDS))

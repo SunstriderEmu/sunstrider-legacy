@@ -1823,12 +1823,17 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     SetUnitMovementFlags(GetUnitMovementFlags() & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE);
     DisableSpline();
 
-    if (Transport* transport = GetTransport())
+    if (m_transport)
     {
         if (options & TELE_TO_NOT_LEAVE_TRANSPORT)
             AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
         else
-            transport->RemovePassenger(this);
+        {
+            m_transport->RemovePassenger(this);
+            m_transport = NULL;
+            m_movementInfo.transport.Reset();
+            m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
+        }
     }
 
     // The player was ported to another map and loses the duel immediately.
@@ -14992,7 +14997,9 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 
     _LoadBoundInstances(holder->GetResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
 
-    if(!IsPositionValid())
+    MapEntry const* mapEntry = sMapStore.LookupEntry(GetMapId());
+
+    if(!mapEntry || !IsPositionValid())
     {
         TC_LOG_ERROR("entities.player","Player (guidlow %d) have invalid coordinates (X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.",guid,GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
         RelocateToHomebind();
@@ -15040,44 +15047,49 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if (transGUIDLow)
     {
         uint64 transGUID = MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_MO_TRANSPORT);
+        GameObject* transGO = HashMapHolder<GameObject>::Find(transGUID);
+        if (!transGO) // pussywizard: if not MotionTransport, look for StaticTransport
+        {
+            transGUID = MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_TRANSPORT);
+            transGO = HashMapHolder<GameObject>::Find(transGUID);
+        }
+        if (transGO)
+            if (transGO->IsInWorld() && transGO->FindMap()) // pussywizard: must be on map, for one world tick transport is not in map and has old GetMapId(), player would be added to old map and to the transport, multithreading crashfix
+                m_transport = transGO->ToTransport();
 
-        Transport* transport = NULL;
-        if (GameObject* go = HashMapHolder<GameObject>::Find(transGUID))
-            transport = go->ToTransport();
-
-        if (transport)
+        if (m_transport)
         {
             float x = fields[LOAD_DATA_TRANSX].GetFloat(), y = fields[LOAD_DATA_TRANSY].GetFloat(), z = fields[LOAD_DATA_TRANSZ].GetFloat(), o = fields[LOAD_DATA_TRANSO].GetFloat();
+            m_movementInfo.transport.guid = transGUID;
             m_movementInfo.transport.pos.Relocate(x, y, z, o);
-            transport->CalculatePassengerPosition(x, y, z, &o);
+            m_transport->CalculatePassengerPosition(x, y, z, &o);
 
-            if (!Trinity::IsValidMapCoord(x, y, z, o) ||
-                // transport size limited
-                std::fabs(m_movementInfo.transport.pos.GetPositionX()) > 50.0f ||
-                std::fabs(m_movementInfo.transport.pos.GetPositionY()) > 50.0f ||
-                std::fabs(m_movementInfo.transport.pos.GetPositionZ()) > 50.0f)
+            if (!Trinity::IsValidMapCoord(x, y, z, o) || std::fabs(m_movementInfo.transport.pos.GetPositionX()) > 75.0f || std::fabs(m_movementInfo.transport.pos.GetPositionY()) > 75.0f || std::fabs(m_movementInfo.transport.pos.GetPositionZ()) > 75.0f)
             {
-                TC_LOG_ERROR("entities.player", "Player (guidlow %d) have invalid transport coordinates (X: %f Y: %f Z: %f O: %f). Teleport to bind location.",
-                    guid, x, y, z, o);
-
+                m_transport = NULL;
                 m_movementInfo.transport.Reset();
-
+                m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
                 RelocateToHomebind();
             }
             else
             {
                 Relocate(x, y, z, o);
-                SetMapId(transport->GetMapId());
-
-                transport->AddPassenger(this);
+                SetMapId(m_transport->GetMapId());
+                m_transport->AddPassenger(this);
+                AddUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT);
             }
         }
         else
         {
-            TC_LOG_ERROR("entities.player", "Player (guidlow %u) have problems with transport guid (%u). Teleport to bind location.",
-                guid, transGUIDLow);
-
-            RelocateToHomebind();
+            bool fixed = false;
+            if (mapEntry->Instanceable())
+                if (AreaTrigger const* at = sObjectMgr->GetMapEntranceTrigger(GetMapId()))
+                {
+                    fixed = true;
+                    Relocate(at->target_X, at->target_Y, at->target_Z, at->target_Orientation);
+                }
+            if (!fixed)
+                RelocateToHomebind();
         }
     }
 

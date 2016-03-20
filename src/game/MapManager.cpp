@@ -228,6 +228,10 @@ void MapManager::Update(time_t diff)
     if (m_updater.activated())
         m_updater.wait();
 
+    //delayed map update (from sunwell core)
+    for (auto iter = i_maps.begin(); iter != i_maps.end(); ++iter)
+        iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));
+
     sObjectAccessor->Update(i_timer.GetCurrent());
     sWorld->RecordTimeDiff("UpdateObjectAccessor");
 

@@ -88,7 +88,7 @@ void Totem::Summon(Unit* owner)
 
     // Only add if a display exists.
     SetInstanceId(owner->GetInstanceId());
-    owner->GetMap()->Add(this->ToCreature());
+    owner->GetMap()->Add(this->ToCreature(), true);
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();

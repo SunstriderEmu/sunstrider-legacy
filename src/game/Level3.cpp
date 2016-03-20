@@ -4619,7 +4619,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     if(Map* map = sMapMgr->CreateMap(target->GetMapId(),target))
     {
         map->Remove(target,false);
-        map->Add(target);
+        map->Add(target, true);
     }
 
     return true;

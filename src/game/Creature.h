@@ -682,6 +682,7 @@ class Creature : public Unit
 
         void RemoveCorpse(bool setSpawnTime = true);
         
+        void DespawnOrUnsummon(uint32 msTimeToDespawn = 0);
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
@@ -801,8 +802,6 @@ class Creature : public Unit
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;
 
-        void FarTeleportTo(Map* map, float X, float Y, float Z, float O);
-
         // Handling caster facing during spellcast
         void SetTarget(uint64 guid);
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
@@ -839,6 +838,7 @@ class Creature : public Unit
         uint32 m_respawnDelay;                              // (secs) delay between corpse disappearance and respawning
         uint32 m_corpseDelay;                               // (secs) delay between death and corpse disappearance
         float m_respawnradius;
+        uint16 m_transportCheckTimer;
 
         bool m_IsPet;                                       // set only in Pet::Pet
         bool m_isTotem;                                     // set only in Totem::Totem

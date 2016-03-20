@@ -153,6 +153,8 @@ enum SpellFacingFlags
 
 #define MAX_AGGRO_RESET_TIME 10 // in seconds
 
+#define DEFAULT_HOVER_HEIGHT 1.0f
+
 // byte value (UNIT_FIELD_BYTES_1,0)
 enum UnitStandStateType
 {
@@ -1581,7 +1583,16 @@ class Unit : public WorldObject
         virtual bool CanWalk() const = 0;
         virtual bool CanSwim() const = 0;
         bool IsFlying() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_DISABLE_GRAVITY); }
+        bool IsHovering() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_HOVER); }
         bool IsFalling() const;
+        float GetHoverHeight() const { return IsHovering() ? 
+#ifdef LICH_KING
+            GetFloatValue(UNIT_FIELD_HOVERHEIGHT)
+#else
+            DEFAULT_HOVER_HEIGHT
+#endif
+            : 0.0f; 
+        }
 
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }

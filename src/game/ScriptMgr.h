@@ -32,7 +32,7 @@ class SpellCastTargets;
 class Map;
 class Unit;
 class WorldObject;
-class Transport;
+class MotionTransport;
 class Guild;
 class Group;
 class SpellInfo;
