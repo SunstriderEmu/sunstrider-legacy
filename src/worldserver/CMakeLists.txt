@@ -46,6 +46,9 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/dep/segvcatch
     ${CMAKE_SOURCE_DIR}/src/authserver/Realms
     ${CMAKE_SOURCE_DIR}/src/collision
+    ${CMAKE_SOURCE_DIR}/src/collision/Models
+    ${CMAKE_SOURCE_DIR}/src/collision/Management
+    ${CMAKE_SOURCE_DIR}/src/collision/Maps
     ${CMAKE_SOURCE_DIR}/src/framework
     ${CMAKE_SOURCE_DIR}/src/framework/Platform
     ${CMAKE_SOURCE_DIR}/src/game

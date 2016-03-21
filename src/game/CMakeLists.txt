@@ -57,5 +57,15 @@ add_library(game STATIC
 
 add_dependencies(game revision.h)
 
+target_link_libraries(
+game
+collision
+scripts
+Detour
+Recast
+segvcatch
+${MYSQL_LIBRARY}
+)
+
 # Generate precompiled header
 add_cxx_pch(game ${game_STAT_PCH_HDR} ${game_STAT_PCH_SRC})
