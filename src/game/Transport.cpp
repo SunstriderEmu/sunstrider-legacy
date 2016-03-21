@@ -336,6 +336,14 @@ Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* d
     creature->SetHomePosition(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
     creature->SetTransportHomePosition(creature->m_movementInfo.transport.pos);
 
+#ifndef LICH_KING
+    //keep these mobs as purely aesthetic for BC as the ship crews should not even be there on BC
+    creature->SetReactState(REACT_PASSIVE);
+    creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+    //also prevent using vendors
+    creature->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR | UNIT_NPC_FLAG_VENDOR_REAGENT | UNIT_NPC_FLAG_VENDOR_AMMO | UNIT_NPC_FLAG_VENDOR_FOOD | UNIT_NPC_FLAG_VENDOR_POISON | UNIT_NPC_FLAG_REPAIR);
+#endif
+
     /// @HACK - transport models are not added to map's dynamic LoS calculations
     ///         because the current GameObjectModel cannot be moved without recreating
     creature->AddUnitState(UNIT_STATE_IGNORE_PATHFINDING);
@@ -514,6 +522,8 @@ bool MotionTransport::TeleportTransport(uint32 newMapid, float x, float y, float
     }
     else
     {
+        /* Disabled, dunno why some transports have strange teleport frames (Grom'gol/Undercity)
+
         // Teleport players, they need to know it
         for (PassengerSet::iterator itr = _passengers.begin(); itr != _passengers.end(); ++itr)
         {
@@ -528,6 +538,7 @@ bool MotionTransport::TeleportTransport(uint32 newMapid, float x, float y, float
         }
 
         UpdatePosition(x, y, z, o);
+        */
         return false;
     }
 }

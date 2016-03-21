@@ -1515,7 +1515,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
         if ((*itr)->IsInWorld() && (*itr)->GetExactDistSq(x, y, z) < 75.0f*75.0f && (*itr)->m_model)
         {
             float dist = 30.0f;
-            bool hit = (*itr)->m_model->intersectRay(r, dist, false, phase);
+            bool hit = (*itr)->m_model->intersectRay(r, dist, true, phase);
             if (hit)
                 return *itr;
         }
@@ -1525,7 +1525,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
             if (staticTrans->m_model)
             {
                 float dist = 10.0f;
-                bool hit = staticTrans->m_model->intersectRay(r, dist, false, phase);
+                bool hit = staticTrans->m_model->intersectRay(r, dist, true, phase);
                 if (hit)
                     if (GetHeight(/*phase,*/ x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
                         return staticTrans->ToTransport();

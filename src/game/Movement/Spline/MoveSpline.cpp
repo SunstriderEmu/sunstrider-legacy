@@ -35,11 +35,14 @@ Location MoveSpline::ComputePosition() const
     c.orientation = initialOrientation;
     spline.evaluate_percent(point_Idx, u, c);
 
-    /*if (splineflags.animation)
+#ifdef LICH_KING
+    if (splineflags.animation)
         ;// MoveSplineFlag::Animation disables falling or parabolic movement
     else if (splineflags.parabolic)
         computeParabolicElevation(c.z);
-    else */ if (splineflags.falling)
+    else
+#endif
+    if (splineflags.falling)
         computeFallElevation(c.z);
 
     if (splineflags.done && splineflags.isFacing())
@@ -52,15 +55,20 @@ Location MoveSpline::ComputePosition() const
     }
     else
     {
-        if (!splineflags.hasFlag(/*MoveSplineFlag::OrientationFixed |*/ MoveSplineFlag::Falling))
+        if (!splineflags.hasFlag(
+#ifdef LICH_KING
+            MoveSplineFlag::OrientationFixed |
+#endif            
+            MoveSplineFlag::Falling))
         {
             Vector3 hermite;
             spline.evaluate_derivative(point_Idx, u, hermite);
             c.orientation = atan2(hermite.y, hermite.x);
         }
-
-        /*if (splineflags.orientationInversed)
-            c.orientation = -c.orientation; */
+#ifdef LICH_KING
+        if (splineflags.orientationInversed)
+            c.orientation = -c.orientation;
+#endif
     }
     return c;
 }
