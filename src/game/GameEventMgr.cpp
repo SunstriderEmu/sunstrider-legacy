@@ -1098,7 +1098,7 @@ void GameEventMgr::SpawnCreature(uint32 guid)
         // Spawn if necessary (loaded grids only)
         Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
         // We use spawn coords to spawn
-        if(!map->Instanceable() && !map->IsRemovalGrid(data->posX,data->posY))
+        if(!map->Instanceable())
         {
             Creature* pCreature = new Creature;
             //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
@@ -1125,7 +1125,7 @@ void GameEventMgr::SpawnGameObject(uint32 guid)
         // this base map checked as non-instanced and then only existed
         Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
-        if(!map->Instanceable() && !map->IsRemovalGrid(data->posX, data->posY))
+        if(!map->Instanceable())
         {
             GameObject* pGameobject = sObjectMgr->IsGameObjectStaticTransport(data->id) ? new StaticTransport() : new GameObject();
             //TC_LOG_DEBUG("gameevent","Spawning gameobject %u", *itr);

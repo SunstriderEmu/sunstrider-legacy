@@ -23,7 +23,6 @@
 #include "GridNotifiers.h"
 #include "WorldSession.h"
 #include "Log.h"
-#include "GridStates.h"
 #include "CellImpl.h"
 #include "InstanceScript.h"
 #include "Map.h"
@@ -54,8 +53,6 @@
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
 #define MAX_CREATURE_ATTACK_RADIUS  (45.0f * sWorld->GetRate(RATE_CREATURE_AGGRO))
-
-GridState* si_GridStates[MAX_GRID_STATE];
 
 extern u_map_magic MapMagic;
 extern u_map_magic MapVersionMagic;
@@ -151,25 +148,9 @@ void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
     }
 }
 
-void Map::InitStateMachine()
-{
-    si_GridStates[GRID_STATE_INVALID] = new InvalidState;
-    si_GridStates[GRID_STATE_ACTIVE] = new ActiveState;
-    si_GridStates[GRID_STATE_IDLE] = new IdleState;
-    si_GridStates[GRID_STATE_REMOVAL] = new RemovalState;
-}
-
-void Map::DeleteStateMachine()
-{
-    delete si_GridStates[GRID_STATE_INVALID];
-    delete si_GridStates[GRID_STATE_ACTIVE];
-    delete si_GridStates[GRID_STATE_IDLE];
-    delete si_GridStates[GRID_STATE_REMOVAL];
-}
-
-Map::Map(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
+Map::Map(uint32 id, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
-   i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), i_gridExpiry(expiry),
+   i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), 
    m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
    m_activeForcedNonPlayersIter(m_activeForcedNonPlayers.end()), _transportsUpdateIter(_transports.end())
    , i_lock(true)
@@ -385,13 +366,11 @@ void Map::EnsureGridCreated_i(const GridPair &p)
     {
         if (!getNGrid(p.x_coord, p.y_coord))
         {
-            setNGrid(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord, i_gridExpiry, sWorld->getConfig(CONFIG_GRID_UNLOAD)),
+            setNGrid(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord),
                 p.x_coord, p.y_coord);
 
             // build a linkage between this map and NGridType
             buildNGridLinkage(getNGrid(p.x_coord, p.y_coord));
-
-            getNGrid(p.x_coord, p.y_coord)->SetGridState(GRID_STATE_IDLE);
 
             //z coord
             int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
@@ -419,7 +398,7 @@ Map::EnsureGridLoaded(const Cell &cell, Player *player)
         }
         else
         {
-            TC_LOG_DEBUG("maps","Active object nearby triggers of loading grid [%u,%u] on map %u", cell.GridX(), cell.GridY(), i_id);
+            TC_LOG_DEBUG("maps", "Active object nearby triggers of loading grid [%u,%u] on map %u", cell.GridX(), cell.GridY(), i_id);
         }
 
         setGridObjectDataLoaded(true, cell.GridX(), cell.GridY());
@@ -427,13 +406,10 @@ Map::EnsureGridLoaded(const Cell &cell, Player *player)
         loader.LoadN();
 
         // Add resurrectable corpses to world object list in grid
-        sObjectAccessor->AddCorpsesToGrid(GridPair(cell.GridX(),cell.GridY()),(*grid)(cell.CellX(), cell.CellY()), this);
+        sObjectAccessor->AddCorpsesToGrid(GridPair(cell.GridX(), cell.GridY()), (*grid)(cell.CellX(), cell.CellY()), this);
         Balance();
-
-        ResetGridExpiry(*getNGrid(cell.GridX(), cell.GridY()), 0.1f);
-        grid->SetGridState(GRID_STATE_ACTIVE);
     }
-    
+
     if(player)
         AddToGrid(player,grid,cell);
 }
@@ -871,15 +847,6 @@ void Map::Update(const uint32 &t_diff)
     if (IsBattlegroundOrArena())
         return;
 
-    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end();)
-    {
-        NGridType *grid = i->GetSource();
-        GridInfo *info = i->GetSource()->getGridInfoRef();
-        ++i;                                                // The update might delete the map and we need the next map before the iterator gets invalid
-        assert(grid->GetGridState() >= 0 && grid->GetGridState() < MAX_GRID_STATE);
-        si_GridStates[grid->GetGridState()]->Update(*this, *grid, *info, grid->getX(), grid->getY(), t_diff);
-    }
-
     sScriptMgr->OnMapUpdate(this, t_diff);
 }
 
@@ -934,14 +901,14 @@ void Map::Remove(Player *player, bool remove)
 
 bool Map::RemoveBones(uint64 guid, float x, float y)
 {
-    if (IsRemovalGrid(x, y))
-    {
+   // if (IsRemovalGrid(x, y))
+    //{
         Corpse * corpse = sObjectAccessor->GetObjectInWorld(GetId(), x, y, guid, (Corpse*)NULL);
         if(corpse && corpse->GetTypeId() == TYPEID_CORPSE && corpse->GetType() == CORPSE_BONES)
             corpse->DeleteBonesFromWorld();
-        else
-            return false;
-    }
+     //   else
+       //     return false;
+    //}
     return true;
 }
 
@@ -1055,13 +1022,6 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
     }
 
     AddUnitToNotify(player);
-
-    NGridType* newGrid = getNGrid(new_cell.GridX(), new_cell.GridY());
-    if( !same_cell && newGrid->GetGridState()!= GRID_STATE_ACTIVE)
-    {
-        ResetGridExpiry(*newGrid, 0.1f);
-        newGrid->SetGridState(GRID_STATE_ACTIVE);
-    }
 }
 
 void Map::CreatureRelocation(Creature *creature, float x, float y, float z, float ang)
@@ -2160,9 +2120,7 @@ void Map::AddToForceActive( Creature* c)
         float x,y,z;
         c->GetRespawnPosition(x,y,z);
         GridPair p = Trinity::ComputeGridPair(x, y);
-        if(getNGrid(p.x_coord, p.y_coord))
-            getNGrid(p.x_coord, p.y_coord)->incUnloadActiveLock();
-        else
+        if(!getNGrid(p.x_coord, p.y_coord))
         {
             GridPair p2 = Trinity::ComputeGridPair(c->GetPositionX(), c->GetPositionY());
             TC_LOG_ERROR("maps","Active creature (GUID: %u Entry: %u) added to grid[%u,%u] but spawn grid[%u,%u] not loaded.",
@@ -2181,9 +2139,7 @@ void Map::RemoveFromForceActive( Creature* c)
         float x,y,z;
         c->GetRespawnPosition(x,y,z);
         GridPair p = Trinity::ComputeGridPair(x, y);
-        if(getNGrid(p.x_coord, p.y_coord))
-            getNGrid(p.x_coord, p.y_coord)->decUnloadActiveLock();
-        else
+        if(!getNGrid(p.x_coord, p.y_coord))
         {
             GridPair p2 = Trinity::ComputeGridPair(c->GetPositionX(), c->GetPositionY());
             TC_LOG_ERROR("maps","Active creature (GUID: %u Entry: %u) removed from grid[%u,%u] but spawn grid[%u,%u] not loaded.",
@@ -2300,8 +2256,8 @@ template void Map::Remove(DynamicObject *, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 
-InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode)
-  : Map(id, expiry, InstanceId, SpawnMode), i_data(NULL),
+InstanceMap::InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode)
+  : Map(id, InstanceId, SpawnMode), i_data(NULL),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false)
 {
     //lets initialize visibility distance for dungeons
@@ -2738,8 +2694,8 @@ bool Map::IsHeroic() const
 
 /* ******* Battleground Instance Maps ******* */
 
-BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId)
-  : Map(id, expiry, InstanceId, REGULAR_DIFFICULTY)
+BattlegroundMap::BattlegroundMap(uint32 id, uint32 InstanceId)
+  : Map(id, InstanceId, REGULAR_DIFFICULTY)
 {
     //lets initialize visibility distance for BG/Arenas
     BattlegroundMap::InitVisibilityDistance();

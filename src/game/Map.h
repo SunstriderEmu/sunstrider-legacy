@@ -103,7 +103,7 @@ class Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        Map(uint32 id, uint32 InstanceId, uint8 SpawnMode);
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
@@ -141,32 +141,15 @@ class Map : public GridRefManager<NGridType>
 
         template<class T, class CONTAINER> void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
 
-        bool IsRemovalGrid(float x, float y) const
-        {
-            GridPair p = Trinity::ComputeGridPair(x, y);
-            return( !getNGrid(p.x_coord, p.y_coord) || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL );
-        }
-
-        bool GetUnloadLock(const GridPair &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
-        void SetUnloadLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
         void LoadGrid(float x, float y);
         bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
         virtual void UnloadAll();
 
         bool IsGridLoaded(float x, float y) const;
 
-        void ResetGridExpiry(NGridType &grid, float factor = 1) const
-        {
-            grid.ResetTimeTracker((time_t)((float)i_gridExpiry*factor));
-        }
-
-        time_t GetGridExpiry(void) const { return i_gridExpiry; }
         uint32 GetId(void) const { return i_id; }
 
         void LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x, int y);
-
-        static void InitStateMachine();
-        static void DeleteStateMachine();
 
         // some calls like isInWater should not use vmaps due to processor power
         // can return INVALID_HEIGHT if under z+2 z coord not found height
@@ -335,7 +318,6 @@ class Map : public GridRefManager<NGridType>
 
         GridMap *GetGrid(float x, float y);
 
-        void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
         //uint64 CalculateGridMask(const uint32 &y) const;
 
         void SendInitSelf( Player * player );
@@ -380,8 +362,6 @@ class Map : public GridRefManager<NGridType>
         TransportsContainer const& GetAllTransports() const { return _transports; }
 
     protected:
-        void SetUnloadReferenceLock(const GridPair &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadReferenceLock(on); }
-
         std::mutex _mapLock;
         std::mutex _gridLock;
 
@@ -406,8 +386,6 @@ class Map : public GridRefManager<NGridType>
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
-
-        time_t i_gridExpiry;
 
         bool i_lock;
         std::vector<uint64> i_unitsToNotifyBacklog;
@@ -468,7 +446,7 @@ enum InstanceResetMethod
 class InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode);
+        InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode);
         ~InstanceMap();
         bool Add(Player *) override;
         void Remove(Player *, bool) override;
@@ -495,7 +473,7 @@ class InstanceMap : public Map
 class BattlegroundMap : public Map
 {
     public:
-        BattlegroundMap(uint32 id, time_t, uint32 InstanceId);
+        BattlegroundMap(uint32 id, uint32 InstanceId);
         ~BattlegroundMap();
 
         bool Add(Player *) override;

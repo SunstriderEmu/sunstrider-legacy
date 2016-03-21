@@ -143,10 +143,6 @@ Locale = 0
 #        Socket select time (in milliseconds)
 #        Default: 10000
 #
-#    GridCleanUpDelay
-#        Grid clean up delay (in milliseconds)
-#        Default: 300000 (5 min)
-#
 #    MapUpdateInterval
 #        Map update interval (in milliseconds)
 #        Default: 100
@@ -225,7 +221,6 @@ MaxOverspeedPings = 2
 GridUnload = 1
 SocketTimeOutTime = 900000
 SocketSelectTime = 10000
-GridCleanUpDelay = 300000
 MapUpdateInterval = 100
 ChangeWeatherInterval = 600000
 PlayerSaveInterval = 60000

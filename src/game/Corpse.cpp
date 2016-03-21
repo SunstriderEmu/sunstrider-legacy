@@ -122,7 +122,7 @@ void Corpse::DeleteBonesFromWorld()
 
     if (!corpse)
     {
-        TC_LOG_ERROR("FIXME","Bones %u not found in world.", GetGUIDLow());
+        TC_LOG_ERROR("misc","Bones %u not found in world.", GetGUIDLow());
         return;
     }
 
