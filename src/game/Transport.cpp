@@ -724,6 +724,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, 
 #ifdef LICH_KING
     Object::_Create(guidlow, 0, HIGHGUID_TRANSPORT);
 #else
+    //Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT); //entry doesn't seem necessary, but keeping this in comment in case this causes problem. If you change this, you'll also need to change it in layer::LoadFromDB (search for "MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_GAMEOBJECT)")
     Object::_Create(guidlow, 0, HIGHGUID_GAMEOBJECT);
 #endif
 

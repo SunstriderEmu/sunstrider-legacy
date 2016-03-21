@@ -163,7 +163,7 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
             
             if (area->zone)
             {
-                if (area = sAreaTableStore.LookupEntry(area->zone))
+                if ((area = sAreaTableStore.LookupEntry(area->zone)))
                     zoneName = area->area_name[locale];
             }
             else

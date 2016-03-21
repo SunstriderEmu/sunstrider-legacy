@@ -1527,7 +1527,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
                 float dist = 10.0f;
                 bool hit = staticTrans->m_model->intersectRay(r, dist, false, phase);
                 if (hit)
-                    if (GetHeight(phase, x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
+                    if (GetHeight(/*phase,*/ x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
                         return staticTrans->ToTransport();
             }
 
