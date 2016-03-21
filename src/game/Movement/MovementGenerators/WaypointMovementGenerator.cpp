@@ -176,6 +176,31 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
         sWorld->ScriptsStart(sWaypointScripts, arrivedNode->event_id, creature, NULL, false);
     }
 
+    float x = arrivedNode->x;
+    float y = arrivedNode->y;
+    float z = arrivedNode->z;
+    float o = creature->GetOrientation();
+
+    // Set home position
+    bool transportPath = creature->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) && creature->GetTransGUID();
+    if (!transportPath)
+        creature->SetHomePosition(x, y, z, o);
+    else
+    {
+        if (Transport* trans = (creature->GetTransport() ? creature->GetTransport()->ToMotionTransport() : NULL))
+        {
+            float x, y, z, o;
+            creature->GetPosition(x, y, z, o);
+            o -= trans->GetOrientation();
+            creature->SetTransportHomePosition(x, y, z, o);
+            trans->CalculatePassengerPosition(x, y, z, &o);
+            creature->SetHomePosition(x, y, z, o);
+        }
+        else
+            transportPath = false;
+        // else if (vehicle) - this should never happen, vehicle offsets are const
+    }
+
     // Inform script
     MovementInform(creature, arrivedNode->id);
     creature->UpdateWaypointID(arrivedNode->id);
@@ -599,11 +624,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
 
     if (i_recalculatePath)
         return StartSplinePath(creature);
-
-    // Set home position at place on waypoint movement.
-    if (!creature->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT) || !creature->GetTransGUID())
-        creature->SetHomePosition(creature->GetPosition());
-
+    
     if (arrived)
         bool result = StartSplinePath(creature, true);
 
