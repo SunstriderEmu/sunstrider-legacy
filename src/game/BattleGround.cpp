@@ -33,6 +33,7 @@
 #include "SpellMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "Mail.h"
+#include "Transport.h"
 
 Battleground::Battleground()
 {
@@ -1365,8 +1366,8 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     // must be created this way, adding to godatamap would add it to the base map of the instance
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // so we must create it specific for this instance
-    GameObject * go = new GameObject;
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry, map,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100,1))
+    GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry, map,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
     {
         TC_LOG_ERROR("battleground","Gameobject template %u not found in database! Battleground not created!", entry);
         TC_LOG_ERROR("battleground","Cannot create gameobject template %u! Battleground not created!", entry);

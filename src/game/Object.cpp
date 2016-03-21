@@ -63,6 +63,7 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
         case HIGHGUID_DYNAMICOBJECT:return TYPEID_DYNAMICOBJECT;
         case HIGHGUID_CORPSE:       return TYPEID_CORPSE;
         case HIGHGUID_MO_TRANSPORT: return TYPEID_GAMEOBJECT;
+        case HIGHGUID_TRANSPORT:    return TYPEID_GAMEOBJECT;
     }
     return 10;                                              // unknown
 }
@@ -231,10 +232,11 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
     ByteBuffer buf(500);
     buf << (uint8)updatetype;
-    if(target->GetSession()->GetClientBuild() == BUILD_335)
-        buf << GetPackGUID();
-    else
-        buf << (uint8)0xFF << GetGUID();
+#ifdef LICH_KING
+    buf << GetPackGUID();
+#else
+    buf << (uint8)0xFF << GetGUID();
+#endif
     buf << (uint8)m_objectTypeId;
 
     BuildMovementUpdate(&buf, flags);
@@ -1557,7 +1559,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
     Map *map = GetMap();
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
 
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100,1))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
     {
         delete go;
         return NULL;
@@ -2070,7 +2072,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     else
         object = ((WorldObject*)this);
 
-    *data << uint8(flags);                                  // update flags (uint16 on LK)
+#ifdef LICH_KING
+    *data << uint16(flags);                                  // update flags
+#else
+    *data << uint8(flags);                                  // update flags
+#endif
 
     // 0x20
     if (flags & UPDATEFLAG_LIVING)
@@ -2086,7 +2092,9 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
               << unit->GetSpeed(MOVE_FLIGHT)
               << unit->GetSpeed(MOVE_FLIGHT_BACK)
               << unit->GetSpeed(MOVE_TURN_RATE);
-            //LK  << unit->GetSpeed(MOVE_PITCH_RATE);
+#ifdef LICH_KING
+              << unit->GetSpeed(MOVE_PITCH_RATE);
+#endif
 
         // 0x08000000
         if (unit->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_SPLINE_ENABLED)
@@ -2094,6 +2102,42 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
     else
     {
+#ifdef LICH_KING
+        if (flags & UPDATEFLAG_POSITION)
+        {
+            Transport* transport = object->GetTransport();
+
+            if (transport)
+                data->append(transport->GetPackGUID());
+            else
+                *data << uint8(0);
+
+            *data << object->GetPositionX();
+            *data << object->GetPositionY();
+            *data << object->GetPositionZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+
+            if (transport)
+            {
+                *data << object->GetTransOffsetX();
+                *data << object->GetTransOffsetY();
+                *data << object->GetTransOffsetZ();
+            }
+            else
+            {
+                *data << object->GetPositionX();
+                *data << object->GetPositionY();
+                *data << object->GetPositionZ() + (unit ? unit->GetHoverHeight() : 0.0f);
+            }
+
+            *data << object->GetOrientation();
+
+            if (GetTypeId() == TYPEID_CORPSE)
+                *data << float(object->GetOrientation());
+            else
+                *data << float(0);
+        }
+        else
+#endif
         // 0x40
         if (flags & UPDATEFLAG_STATIONARY_POSITION)
         {
@@ -2106,6 +2150,15 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             *data << object->GetStationaryO();
         }
     }
+
+#ifdef LICH_KING
+    // 0x8
+    if (flags & UPDATEFLAG_UNKNOWN)
+    {
+        *data << uint32(0);
+    }
+#endif
+
 
     // 0x08
     if (flags & UPDATEFLAG_LOWGUID)
@@ -2127,7 +2180,11 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
                 break;
             case TYPEID_PLAYER:
                 if (flags & UPDATEFLAG_SELF)
+#ifdef LICH_KING //not sure this change is needed (since we dunno what it does)
+                    *data << uint32(0x0000002F);            // unk
+#else
                     *data << uint32(0x00000015);            // unk, can be 0x15 or 0x22
+#endif
                 else
                     *data << uint32(0x00000008);            // unk
                 break;
@@ -2137,6 +2194,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         }
     }
 
+#ifndef LICH_KING
     // 0x10
     if(flags & UPDATEFLAG_HIGHGUID)
     {
@@ -2148,6 +2206,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             case TYPEID_GAMEOBJECT:
             case TYPEID_DYNAMICOBJECT:
             case TYPEID_CORPSE:
+
                 *data << uint32(GetGUIDHigh());             // GetGUIDHigh()
                 break;
             default:
@@ -2155,6 +2214,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
                 break;
         }
     }
+#endif
 
     // 0x4
     if (flags & UPDATEFLAG_HAS_TARGET)
@@ -2175,6 +2235,23 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         else 
             *data << uint32(0);
     }
+
+#ifdef LICH_KING
+    // 0x80
+    if (flags & UPDATEFLAG_VEHICLE)
+    {
+        /// @todo Allow players to aquire this updateflag.
+        *data << uint32(unit->GetVehicleKit()->GetVehicleInfo()->m_ID);
+        if (unit->HasUnitMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
+            *data << float(unit->GetTransOffsetO());
+        else
+            *data << float(unit->GetOrientation());
+    }
+
+    // 0x200
+    if (flags & UPDATEFLAG_ROTATION)
+        *data << int64(ToGameObject()->GetPackedWorldRotation());
+#endif
 }
 
 void WorldObject::MovePosition(Position &pos, float dist, float angle)

@@ -38,11 +38,11 @@ uint32 Transport::GetPathProgress() const {
 
 MotionTransport::MotionTransport() : Transport(), _transportInfo(NULL), _isMoving(true), _pendingStop(false), _triggeredArrivalEvent(false), _triggeredDepartureEvent(false), _passengersLoaded(false), _delayedTeleport(false)
 {
-    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION 
 #ifdef LICH_KING
-        | UPDATEFLAG_ROTATION
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
+#else
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
 #endif
-        ;
 }
 
 MotionTransport::~MotionTransport()
@@ -671,11 +671,11 @@ void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
 
 StaticTransport::StaticTransport() : Transport(), _needDoInitialRelocation(false)
 {
-    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION 
 #ifdef LICH_KING
-        | UPDATEFLAG_ROTATION
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
+#else
+    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
 #endif
-        ;
 }
 
 StaticTransport::~StaticTransport()
@@ -683,22 +683,27 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 artKit)
 {
+   // return GameObject::Create(guidlow, name_id, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, artKit);
+
     ASSERT(map);
     //sunwell SetMap(map);
     SetMapId(map->GetId());
+    SetInstanceId(map->GetInstanceId());
 
     Relocate(x, y, z, ang);
     m_stationaryPosition.Relocate(x, y, z, ang);
+
     if (!IsPositionValid())
     {
         TC_LOG_ERROR("entities.gameobject", "Gameobject (GUID: %u Entry: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, x, y);
         return false;
     }
 
+#ifdef LICH_KING
     SetPhaseMask(phaseMask, false);
-
+#endif
     /* TODO zonescript
     SetZoneScript();
     if (m_zoneScript)
@@ -716,7 +721,11 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
         return false;
     }
 
+#ifdef LICH_KING
     Object::_Create(guidlow, 0, HIGHGUID_TRANSPORT);
+#else
+    Object::_Create(guidlow, 0, HIGHGUID_GAMEOBJECT);
+#endif
 
     m_goInfo = goinfo;
 
@@ -730,9 +739,14 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
     //SetWorldRotation( /*for StaticTransport we need 2 rotation Quats in db for World- and Path- Rotation*/ );
 #ifdef LICH_KING
     SetWorldRotationAngles(NormalizeOrientation(GetOrientation()), 0.0f, 0.0f);
+#else
+    SetFloatValue(GAMEOBJECT_POS_X, x);
+    SetFloatValue(GAMEOBJECT_POS_Y, y);
+    SetFloatValue(GAMEOBJECT_POS_Z, z);
+    SetFloatValue(GAMEOBJECT_FACING, ang);                  //this is not facing angle
 #endif
     // pussywizard: PathRotation for StaticTransport (only StaticTransports have PathRotation)
-    SetTransportPathRotation(rotation.x, rotation.y, rotation.z, rotation.w);
+    SetTransportPathRotation(rotation0, rotation1, rotation2, rotation3);
 
     SetObjectScale(goinfo->size);
 
@@ -748,11 +762,12 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
         m_model = CreateModel();
 
     SetGoType(GameobjectTypes(goinfo->type));
-    SetGoState(go_state);
-    SetGoArtKit(artKit);
-
-    SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
+    SetGoState(GOState(go_state));
+    //SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
     SetGoAnimProgress(animprogress);
+
+    SetGoArtKit(artKit);
+    
     m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->entry);
     //ASSERT(m_goValue.Transport.AnimationInfo);
     //ASSERT(m_goValue.Transport.AnimationInfo->TotalTime > 0);
@@ -777,7 +792,6 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 ph
     */
 
     LastUsedScriptID = GetGOInfo()->ScriptId;
-    AIM_Initialize();
 
     this->SetKeepActive(true);
     return true;

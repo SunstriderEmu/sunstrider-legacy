@@ -256,7 +256,7 @@ template<class T>
 void Map::RemoveFromGrid(T* obj, NGridType *grid, Cell const& cell)
 {
 #ifdef TRINITY_DEBUG
-    if (dynamic_cast<Transport*>(obj))
+    if (dynamic_cast<MotionTransport*>(obj))
         ASSERT("Map::RemoveFromGrid called with a transport object " && false); //transports should never be removed from map
 #endif
     (*grid)(cell.CellX(), cell.CellY()).template RemoveGridObject<T>(obj);
@@ -2835,8 +2835,11 @@ void BattlegroundMap::HandleCrash()
 
 Transport* Map::GetTransport(uint64 guid)
 {
-    if (GUID_HIPART(guid) != HIGHGUID_MO_TRANSPORT)
-        return NULL;
+#ifdef LICH_KING
+    //ON BC transports use Gameobject guids (not 100% sure but currently that's what we do)
+    if (GUID_HIPART(guid) != HIGHGUID_MO_TRANSPORT && GUID_HIPART(guid) != HIGHGUID_TRANSPORT)
+        return nullptr;
+#endif
 
     GameObject* go = GetGameObject(guid);
     return go ? go->ToTransport() : NULL;

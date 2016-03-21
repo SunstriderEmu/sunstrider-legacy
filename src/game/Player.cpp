@@ -15050,7 +15050,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         GameObject* transGO = HashMapHolder<GameObject>::Find(transGUID);
         if (!transGO) // pussywizard: if not MotionTransport, look for StaticTransport
         {
+#ifdef LICH_KING
             transGUID = MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_TRANSPORT);
+#else
+            transGUID = MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_GAMEOBJECT);
+#endif
             transGO = HashMapHolder<GameObject>::Find(transGUID);
         }
         if (transGO)

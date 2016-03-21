@@ -53,8 +53,12 @@ GameObject::GameObject() : WorldObject(), m_AI(nullptr), m_model(nullptr), m_goV
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
-                                                            // 2.3.2 - 0x58
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION);
+
+#ifdef LICH_KING
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_POSITION | UPDATEFLAG_ROTATION);
+#else
+    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION); // 2.3.2 - 0x58
+#endif
 
     m_valuesCount = GAMEOBJECT_END;
     m_respawnTime = 0;
@@ -238,7 +242,7 @@ void GameObject::RemoveFromWorld()
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, uint32 go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
 
@@ -250,14 +254,14 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("FIXME","ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)",guidlow,name_id,x,y);
+        TC_LOG_ERROR("entities.gameobject","ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, x, y);
         return false;
     }
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
     {
-        TC_LOG_ERROR("FIXME","Gameobject (GUID: %u Entry: %u) not created: it have not exist entry in `gameobject_template`. Map: %u  (X: %f Y: %f Z: %f) ang: %f rotation0: %f rotation1: %f rotation2: %f rotation3: %f",guidlow, name_id, map->GetId(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3);
+        TC_LOG_ERROR("sql.sql","Gameobject (GUID: %u Entry: %u) not created: it have not exist entry in `gameobject_template`. Map: %u  (X: %f Y: %f Z: %f) ang: %f rotation0: %f rotation1: %f rotation2: %f rotation3: %f",guidlow, name_id, map->GetId(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3);
         return false;
     }
 
@@ -270,7 +274,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
 
     if (goinfo->type >= MAX_GAMEOBJECT_TYPE)
     {
-        TC_LOG_ERROR("FIXME","Gameobject (GUID: %u Entry: %u) not created: it have not exist GO type '%u' in `gameobject_template`. It's will crash client if created.",guidlow,name_id,goinfo->type);
+        TC_LOG_ERROR("sql.sql","Gameobject (GUID: %u Entry: %u) not created: it have not exist GO type '%u' in `gameobject_template`. It's will crash client if created.",guidlow,name_id,goinfo->type);
         return false;
     }
 
@@ -284,12 +288,13 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     SetFloatValue (GAMEOBJECT_PARENTROTATION+2, rotation2);
     SetFloatValue (GAMEOBJECT_PARENTROTATION+3, rotation3);
 
-    SetFloatValue(OBJECT_FIELD_SCALE_X, goinfo->size);
+    SetObjectScale(goinfo->size);
 
     SetUInt32Value(GAMEOBJECT_FACTION, goinfo->faction);
     SetUInt32Value(GAMEOBJECT_FLAGS, goinfo->flags);
 
-    SetUInt32Value(OBJECT_FIELD_ENTRY, goinfo->entry);
+    SetEntry(goinfo->entry);
+    SetName(goinfo->name);
 
     SetDisplayId(goinfo->displayId);
 
@@ -297,22 +302,9 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     
     SetGoType(GameobjectTypes(goinfo->type));
     SetGoState(GOState(go_state));
+    SetGoAnimProgress(animprogress);
 
-    switch (goinfo->type)
-    {
-        case GAMEOBJECT_TYPE_TRANSPORT:
-            SetUInt32Value(GAMEOBJECT_LEVEL, goinfo->transport.pauseAtTime);
-            SetGoState(goinfo->transport.startOpen ? GO_STATE_ACTIVE : GO_STATE_READY);
-            SetGoAnimProgress(100);
-            m_goValue.Transport.PathProgress = 0;
-            m_goValue.Transport.AnimationInfo = sTransportMgr->GetTransportAnimInfo(goinfo->entry);
-            m_goValue.Transport.CurrentSeg = 0;
-            break;
-        default:
-            SetGoAnimProgress(animprogress);
-            break;
-    }
-    SetUInt32Value (GAMEOBJECT_ARTKIT, ArtKit);
+    SetGoArtKit(ArtKit);
 
     // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
@@ -378,17 +370,6 @@ void GameObject::Update(uint32 diff)
                         m_lootState = GO_READY;                 // can be successfully open with some chance
                     }
                     return;
-                }
-                case GAMEOBJECT_TYPE_TRANSPORT:
-                {
-                    if (!m_goValue.Transport.AnimationInfo)
-                        break;
-
-                    if (GetGoState() == GO_STATE_READY)
-                    {
-                        m_goValue.Transport.PathProgress += diff;
-                    }
-                    break;
                 }
                 default:
                     m_lootState = GO_READY;                         // for other GOis same switched without delay to GO_READY
@@ -643,7 +624,8 @@ void GameObject::Update(uint32 diff)
         }
     }
     
-    AI()->UpdateAI(diff);
+    if (AI())
+        AI()->UpdateAI(diff);
 
     sScriptMgr->OnGameObjectUpdate(this, diff);
 }
@@ -791,9 +773,10 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     uint32 ArtKit = data->ArtKit;
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
+    if (map->GetInstanceId() != 0) 
+        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
-    if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, ArtKit) )
+    if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, GOState(go_state), ArtKit) )
         return false;
 
     switch(GetGOInfo()->type)

@@ -27,6 +27,7 @@
 #include "Corpse.h"
 #include "World.h"
 #include "CellImpl.h"
+#include "Transport.h"
 
 class ObjectGridRespawnMover
 {
@@ -126,8 +127,21 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
 {
     for(CellGuidSet::const_iterator i_guid = guid_set.begin(); i_guid != guid_set.end(); ++i_guid)
     {
-        T* obj = new T;
         uint32 guid = *i_guid;
+
+        //ugly hackkk
+        T* obj = nullptr;
+        
+        if (std::is_same<T, GameObject>::value)
+        {
+            if (GameObjectData const *data = sObjectMgr->GetGOData(guid))
+                if (sObjectMgr->IsGameObjectStaticTransport(data->id))
+                    obj = (T*)(new StaticTransport());
+        }
+
+        if(!obj)
+            obj = new T;
+
         //TC_LOG_INFO("FIXME","DEBUG: LoadHelper from table: %s for (guid: %u) Loading",table,guid);
         if(!obj->LoadFromDB(guid, map))
         {
