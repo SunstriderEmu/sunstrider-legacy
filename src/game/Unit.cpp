@@ -14697,10 +14697,14 @@ void Unit::UpdateSplinePosition()
             transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, &loc.orientation);
     }
 
-    if (HasUnitState(UNIT_STATE_CANNOT_TURN))
-        loc.orientation = GetOrientation();
+    // Xinef: this is bullcrap, if we had spline running update orientation along with position
+    //if (HasUnitState(UNIT_STATE_CANNOT_TURN))
+    //    loc.orientation = GetOrientation();
 
-    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+    if (GetTypeId() == TYPEID_PLAYER)
+        UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
+    else
+        ToCreature()->SetPosition(loc.x, loc.y, loc.z, loc.orientation);
 }
 
 void Unit::DisableSpline()

@@ -71,7 +71,7 @@ void PathGenerator::UpdateOptions()
         options |= PATHFIND_OPTION_CANFLY;
     if(_sourceUnit->CanSwim())
         options |= PATHFIND_OPTION_CANSWIM;
-    if(_sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING))
+    if(_sourceUnit->HasUnitState(UNIT_STATE_IGNORE_PATHFINDING) || _sourceUnit->GetTransport())
         options |= PATHFIND_OPTION_IGNOREPATHFINDING;
     if(_sourceUnit->HasAuraType(SPELL_AURA_WATER_WALK))
         options |= (PATHFIND_OPTION_WATERWALK);

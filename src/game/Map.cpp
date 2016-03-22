@@ -1043,6 +1043,10 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
     else
     {
         creature->Relocate(x, y, z, ang);
+#ifdef LICH_KING
+        if (creature->IsVehicle())
+            creature->GetVehicleKit()->RelocatePassengers();
+#endif
         AddUnitToNotify(creature);
     }
     assert(CheckGridIntegrity(creature,true));
