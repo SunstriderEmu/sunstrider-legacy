@@ -351,7 +351,7 @@ void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uin
             i_currentNode = 0;
         }
 
-        //TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", pathNodeDBId, path_id, splineId, i_currentNode);
+        TC_LOG_TRACE("misc", "Reached node %u (path %u) (spline id %u) (path index : %u)", pathNodeDBId, path_id, splineId, i_currentNode);
 
         //this may start a new path if we reached the end of it
         OnArrived(creature, i_currentNode);
@@ -372,13 +372,15 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
     //Calculate path first point is current position, skip it
     uint32 skip = 1;
     for (uint32 i = 0 + skip; i < points.size(); i++)
+    {
         m_precomputedPath.emplace_back(points[i].x, points[i].y, points[i].z);
+        splineId++;
+    }
 
     //register id of the last point for movement inform
-    splineId += points.size() - skip;
     splineToPathIds[splineId] = nextNode->id;
 
-   // TC_LOG_TRACE("misc", "[path %u] Inserted node (db %u) at (%f,%f,%f) (splineId %u)", path_id, nextNode->id, nextNode->x, nextNode->y, nextNode->z, splineId);
+    TC_LOG_TRACE("misc", "[path %u] Inserted node (db %u) at (%f,%f,%f) (splineId %u)", path_id, nextNode->id, nextNode->x, nextNode->y, nextNode->z, splineId);
 
     return true;
 }
@@ -414,10 +416,10 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
     //insert dummy first position as this will be replaced by MoveSplineInit
     m_precomputedPath.push_back(G3D::Vector3(0.0f, 0.0f, 0.0f));
 
-    //TC_LOG_TRACE("misc", "Creating new spline path for path %u", path_id);
+    TC_LOG_TRACE("misc", "Creating new spline path for path %u", path_id);
 
     //we keep track of the index of the spline we insert to match them to path id later
-    uint32 splineId = 1; // this offset of 1 is needed because MoveSplineInit will insert a current position point before our path
+    uint32 splineId = 0;
     //nextNodeId is an index of i_path
     uint32 nextMemoryNodeId = i_currentNode;
 
@@ -619,14 +621,16 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
         else //pause not finisshed, nothing to do
             return true;
     }
+    else 
+    { //!IsPaused()
+        bool arrived = creature->movespline->Finalized();
 
-    bool arrived = creature->movespline->Finalized();
+        if (i_recalculatePath)
+            return StartSplinePath(creature);
 
-    if (i_recalculatePath)
-        return StartSplinePath(creature);
-    
-    if (arrived)
-        bool result = StartSplinePath(creature, true);
+        if (arrived)
+            bool result = StartSplinePath(creature, true);
+    }
 
      return true;
  }
