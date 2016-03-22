@@ -564,7 +564,7 @@ void Creature::Update(uint32 diff)
             UpdateProhibitedSchools(diff);
             DecreaseTimer(m_stealthWarningCooldown, diff);
 
-            UpdateMovementFlags();
+            //UpdateMovementFlags();
 
             if (m_corpseRemoveTime <= time(NULL))
             {
