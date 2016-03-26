@@ -45,16 +45,16 @@ namespace FactorySelector
         assert( creature->GetCreatureTemplate() != NULL );
         CreatureTemplate const *cinfo=creature->GetCreatureTemplate();
 
-        std::string ainame=cinfo->AIName;
-        if( !ainame.empty())  // select by script name
-            ai_factory = sCreatureAIRegistry->GetRegistryItem( ainame.c_str() );
-        else if(!ai_factory) // else try to select AI by NPC flags
+        if(!ai_factory) // else try to select AI by NPC flags
         {
+            std::string ainame = cinfo->AIName;
+            if (!ainame.empty())  // select by script name
+                ai_factory = sCreatureAIRegistry->GetRegistryItem(ainame.c_str());
 #ifdef LICH_KING
-            if (creature->IsVehicle())
+            else if (creature->IsVehicle())
                 ai_factory = ai_registry.GetRegistryItem("VehicleAI");
 #endif
-            if( creature->IsGuard() )
+            else if( creature->IsGuard() )
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("GuardAI");
             else if(creature->IsTotem())
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("TotemAI");
