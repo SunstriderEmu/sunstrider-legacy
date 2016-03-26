@@ -37,7 +37,6 @@ public:
     virtual void RemovePassenger(WorldObject* passenger, bool withAll = false) = 0;
     PassengerSet const& GetPassengers() const { return _passengers; }
 
-    //On BC path progress is synced using time
     uint32 GetPathProgress() const;
     void SetPathProgress(uint32 val) { m_goValue.Transport.PathProgress = val; }
 

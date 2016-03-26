@@ -32,7 +32,8 @@
 #include "Totem.h"
 #include "Spell.h"
 
-uint32 Transport::GetPathProgress() const {
+uint32 Transport::GetPathProgress() const 
+{
     return GetGOValue()->Transport.PathProgress;
 }
 
