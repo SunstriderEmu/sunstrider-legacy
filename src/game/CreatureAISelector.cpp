@@ -50,6 +50,10 @@ namespace FactorySelector
             ai_factory = sCreatureAIRegistry->GetRegistryItem( ainame.c_str() );
         else if(!ai_factory) // else try to select AI by NPC flags
         {
+#ifdef LICH_KING
+            if (creature->IsVehicle())
+                ai_factory = ai_registry.GetRegistryItem("VehicleAI");
+#endif
             if( creature->IsGuard() )
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("GuardAI");
             else if(creature->IsTotem())

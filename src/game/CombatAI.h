@@ -25,6 +25,7 @@
 
 class Creature;
 
+//Default AI for non civilian creatures
 class AggressorAI : public CreatureAI
 {
     public:

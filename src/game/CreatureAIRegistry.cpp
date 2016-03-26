@@ -27,6 +27,7 @@
 #include "SmartAI.h"
 #include "GameObjectAI.h"
 #include "CombatAI.h"
+#include "ReactorAI.h"
 #include "OutdoorPvPObjectiveAI.h"
 #include "RandomMovementGenerator.h"
 #include "CreatureAIImpl.h"
@@ -40,6 +41,7 @@ namespace AIRegistry
     {
         (new CreatureAIFactory<NullCreatureAI>("NullCreatureAI"))->RegisterSelf();
         (new CreatureAIFactory<AggressorAI>("AggressorAI"))->RegisterSelf();
+        (new CreatureAIFactory<ReactorAI>("ReactorAI"))->RegisterSelf();
         (new CreatureAIFactory<PassiveAI>("PassiveAI"))->RegisterSelf();
         (new CreatureAIFactory<CritterAI>("CritterAI"))->RegisterSelf();
         (new CreatureAIFactory<GuardAI>("GuardAI"))->RegisterSelf();
