@@ -130,6 +130,7 @@ void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* /*invoker*/)
         return;
 
     AddEscortState(SMART_ESCORT_ESCORTING);
+    me->SetEscorted(true);
     mCanRepeatPath = repeat;
 
     SetRun(run);
@@ -200,6 +201,7 @@ void SmartAI::EndPath(bool fail, bool died)
     GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_ENDED, NULL, mLastWP->id, GetScript()->GetPathId());
 
     RemoveEscortState(SMART_ESCORT_ESCORTING | SMART_ESCORT_PAUSED | SMART_ESCORT_RETURNING);
+    me->SetEscorted(false);
     mWayPoints = NULL;
     mCurrentWPID = 0;
     mWPPauseTimer = 0;

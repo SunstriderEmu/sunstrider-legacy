@@ -443,6 +443,7 @@ union GameObjectValue
     //11 GAMEOBJECT_TYPE_TRANSPORT
     struct
     {
+        //ever incrementing time
         uint32 PathProgress;
         TransportAnimation const* AnimationInfo;
         uint32 CurrentSeg;
