@@ -4163,7 +4163,15 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
         return true;
     }
 
-    Creature* leader = pCreature->GetMap()->GetCreature(MAKE_PAIR64(leaderGUID, HIGHGUID_UNIT));
+    CreatureData const* data = sObjectMgr->GetCreatureData(leaderGUID);
+    if (!data)
+    {
+        PSendSysMessage("Could not find creature data for guid %u", leaderGUID);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    Creature* leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HIGHGUID_UNIT));
     if (!leader)
     {
         PSendSysMessage("Leader with guid %u not found in map", leaderGUID);
