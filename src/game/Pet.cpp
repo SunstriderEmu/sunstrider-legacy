@@ -239,7 +239,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
     SetDisplayId(fields[3].GetUInt32());
     SetNativeDisplayId(fields[3].GetUInt32());
-    uint32 petlevel=fields[4].GetUInt32();
+    uint32 petlevel=fields[4].GetUInt8();
     SetUInt32Value(UNIT_NPC_FLAGS , 0);
     SetName(fields[11].GetString());
 
@@ -287,7 +287,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     uint32 savedmana = fields[14].GetUInt32();
 
     // set current pet as current
-    if(fields[10].GetUInt32() != 0)
+    if(fields[10].GetUInt8() != 0)
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
         trans->PAppend("UPDATE character_pet SET slot = '%u' WHERE owner = '%u' AND slot = '0' AND id <> '%u'", PET_SAVE_NOT_IN_SLOT, ownerid, m_charmInfo->GetPetNumber());
@@ -1452,7 +1452,7 @@ void Pet::_LoadSpells()
         {
             Field *fields = result->Fetch();
 
-            AddSpell(fields[0].GetUInt16(), fields[2].GetUInt16(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
+            AddSpell(fields[0].GetUInt16(), fields[2].GetUInt8(), PETSPELL_UNCHANGED, fields[1].GetUInt16());
         }
         while( result->NextRow() );
     }

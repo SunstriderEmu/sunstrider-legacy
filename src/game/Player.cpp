@@ -1695,7 +1695,7 @@ bool Player::BuildEnumData( PreparedQueryResult  result, WorldPacket * p_data )
             if(cInfo)
             {
                 petDisplayId = fields[17].GetUInt32();
-                petLevel     = fields[18].GetUInt32();
+                petLevel     = fields[18].GetUInt8();
                 petFamily    = cInfo->family;
             }
         }

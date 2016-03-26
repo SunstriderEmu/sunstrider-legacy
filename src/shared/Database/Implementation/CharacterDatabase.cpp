@@ -598,7 +598,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PrepareStatement(CHAR_SEL_PET_SLOTS_DETAIL, "SELECT owner, id, entry, level, name, loyalty, slot FROM character_pet WHERE owner = ? ORDER BY slot", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_PET_ENTRY, "SELECT entry FROM character_pet WHERE owner = ? AND id = ? AND slot >= ? AND slot <= ?", CONNECTION_ASYNC);
     PrepareStatement(CHAR_SEL_PET_SLOT_BY_ID, "SELECT slot, entry FROM character_pet WHERE owner = ? AND id = ?", CONNECTION_ASYNC);
-    PrepareStatement(CHAR_SEL_PET_CURRENT, "SELECT owner, id, entry, level, name, loyalty FROM character_pet WHERE owner = ? AND slot = 1", CONNECTION_ASYNC);
+    PrepareStatement(CHAR_SEL_PET_CURRENT, "SELECT owner, id, entry, level, name, loyalty FROM character_pet WHERE owner = ? AND slot = 0", CONNECTION_ASYNC); //slot 0 is PET_SAVE_AS_CURRENT
         /*
     PrepareStatement(CHAR_SEL_PET_SPELL_LIST, "SELECT DISTINCT pet_spell.spell FROM pet_spell, character_pet WHERE character_pet.owner = ? AND character_pet.id = pet_spell.guid AND character_pet.id <> ?", CONNECTION_SYNCH);
     PrepareStatement(CHAR_SEL_CHAR_PET, "SELECT id FROM character_pet WHERE owner = ? AND id <> ?", CONNECTION_SYNCH);
