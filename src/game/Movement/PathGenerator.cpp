@@ -45,7 +45,7 @@ PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 inst
     _polyLength(0), _type(PATHFIND_BLANK), _useStraightPath(false),
     _forceDestination(false), _pointPathLimit(MAX_POINT_PATH_LENGTH), _straightLine(false),
     _endPosition(G3D::Vector3::zero()), _sourceUnit(nullptr), _navMesh(NULL), _navMeshQuery(NULL),
-    _sourceMapId(mapId),_options((PathOptions)options)
+    _sourceMapId(mapId), _options((PathOptions)options), _forceSourcePos(false)
 {
     _sourcePos.Relocate(startPos);
     memset(_pathPolyRefs, 0, sizeof(_pathPolyRefs));
@@ -78,6 +78,12 @@ void PathGenerator::UpdateOptions()
     _options = (PathOptions)options;
 }
 
+void PathGenerator::SetSourcePosition(Position const& p) 
+{ 
+    _sourcePos = p; 
+    _forceSourcePos = true; 
+}
+
 PathGenerator::~PathGenerator()
 {
     if(_sourceUnit)
@@ -94,7 +100,7 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     G3D::Vector3 dest(destX, destY, destZ);
     SetEndPosition(dest);
 
-    if(_sourceUnit)
+    if(_sourceUnit && !_forceSourcePos)
         _sourcePos.Relocate(_sourceUnit->GetPosition());
 
     G3D::Vector3 start(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());

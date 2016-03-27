@@ -91,7 +91,7 @@ class PathGenerator
         /** Update fly/walk/swim options from the generator owner */
         void UpdateOptions();
 
-        void SetSourcePosition(Position const& p) { _sourcePos = p; }
+        void SetSourcePosition(Position const& p);
 
         bool SourceCanWalk()           { return _options & PATHFIND_OPTION_CANWALK;           }
         bool SourceCanFly()            { return _options & PATHFIND_OPTION_CANFLY;            }
@@ -120,6 +120,8 @@ class PathGenerator
         dtNavMeshQuery const* _navMeshQuery;    // the nav mesh query used to find the path
 
         Position _sourcePos;
+        //force using _forceSourcePos
+        bool _forceSourcePos;
         uint32 _sourceMapId;
         PathOptions _options;
 

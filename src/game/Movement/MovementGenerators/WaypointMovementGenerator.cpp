@@ -388,6 +388,9 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
 
 bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bool nextNode /*= false*/)
 {
+    //make sure we don't trigger OnArrived from last path at this point
+    _splineId = 0;
+
     if (!i_path || i_path->empty())
         return false;
 
