@@ -2902,11 +2902,6 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             map->Add(wpCreature);
             */
             chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
-            /*if(target)
-            {
-                wpCreature->SetDisplayId(target->GetDisplayId());
-                wpCreature->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.5);
-            }*/
         }
         while( result->NextRow() );
 
