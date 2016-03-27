@@ -166,9 +166,10 @@ void WaypointMovementGenerator<Creature>::DoReset(Creature* creature)
 //Must be called at each point reached. MovementInform is done in here.
 void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 arrivedNodeIndex)
 {
-    WaypointData* arrivedNode = (*i_path)[arrivedNodeIndex];
-    if (!i_path || i_path->empty())
+    if (!i_path || i_path->size() <= arrivedNodeIndex)
         return;
+
+    WaypointData* arrivedNode = (*i_path)[arrivedNodeIndex];
     
     if (arrivedNode->event_id && urand(0, 99) < arrivedNode->event_chance)
     {
@@ -322,7 +323,7 @@ There may be more splines than actual path nodes so we're doing some matching in
 */
 void WaypointMovementGenerator<Creature>::SplineFinished(Creature* creature, uint32 splineId)
 {
-    if (!i_path || i_path->empty())
+    if (!i_path || i_path->size() <= i_currentNode)
         return;
 
     auto itr = splineToPathIds.find(splineId);
@@ -542,6 +543,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
     init.Launch();
     _splineId = creature->movespline->GetId(); //used by SplineHandler class to do movement inform's
     reachedFirstNode = false;
+    i_recalculatePath = false;
     creature->AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
 
     //Call for creature group update
@@ -809,7 +811,7 @@ bool FlightPathMovementGenerator::DoUpdate(Player* player, uint32 /*diff*/)
 
 void FlightPathMovementGenerator::SetCurrentNodeAfterTeleport()
 {
-    if (i_path.empty() || i_currentNode >= i_path.size())
+    if (i_currentNode >= i_path.size())
         return;
 
     uint32 map0 = i_path[i_currentNode]->MapID;

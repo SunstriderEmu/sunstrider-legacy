@@ -532,6 +532,7 @@ class ChatHandler
         bool HandleWpShowCommand(const char* args);
         bool HandleWpChangePathDirectionCommand(const char* args);
         bool HandleWpChangePathTypeCommand(const char* args);
+        bool HandleWpTeleportToPathCommand(const char* args);
         bool HandleReloadAllPaths(const char *args);
 
         bool HandleFlyModeCommand(const char* args);

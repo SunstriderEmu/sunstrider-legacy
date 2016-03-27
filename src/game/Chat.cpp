@@ -216,6 +216,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "event",          SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpEventCommand,              "" },
         { "unload",         SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpUnLoadPathCommand,         "" },
         { "direction",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpChangePathDirectionCommand,"" },
+        { "teleport",       SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpTeleportToPathCommand,     "" },
         { "type"     ,      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleWpChangePathTypeCommand,     "" },
     };
 
