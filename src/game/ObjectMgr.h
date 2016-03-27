@@ -482,6 +482,7 @@ class ObjectMgr
 
         void AddGuild(Guild* guild);
         void RemoveGuild(uint32 Id);
+        bool RenameGuild(uint32 Id, std::string newName);
 
         ArenaTeam* _GetArenaTeamById(const uint32 arenateamid) const;
         ArenaTeam* _GetArenaTeamByName(const std::string& arenateamname) const;

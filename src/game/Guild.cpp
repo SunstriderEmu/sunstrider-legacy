@@ -2053,3 +2053,10 @@ bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const
     return false;
 }
 
+void Guild::SetName(std::string newName)
+{
+    if (newName.empty())
+        return;
+
+    name = newName;
+}

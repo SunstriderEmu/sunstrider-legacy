@@ -73,8 +73,6 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
 
 void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;
@@ -86,8 +84,6 @@ void WorldSession::HandleNameQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQueryTimeOpcode( WorldPacket & /*recvData*/ )
 {
-    
-
     SendQueryTimeResponse();
 }
 
@@ -102,8 +98,6 @@ void WorldSession::SendQueryTimeResponse()
 /// Only _static_ data send in this packet !!!
 void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+8);
 
     uint32 entry;
@@ -240,8 +234,6 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 {
-    
-    
     Corpse *corpse = GetPlayer()->GetCorpse();
 
     uint8 found = 1;
@@ -264,8 +256,6 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4+8);
 
     uint32 textID;
@@ -361,8 +351,6 @@ void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,4);
 
     uint32 pageID;

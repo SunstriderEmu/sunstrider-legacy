@@ -8224,10 +8224,27 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
         return false;
     
     uint32 guildId = atoi(guildIdStr);
-    CharacterDatabase.PExecute("UPDATE guild SET name = '%s' WHERE guildid = %u", newName, guildId);
-    
-    PSendSysMessage("Guilde renommée !");
-    
+    Guild* g = sObjectMgr->GetGuildById(guildId);
+    if (!g)
+    {
+        PSendSysMessage("Guild (id %u) not found", guildId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    std::string oldName = g->GetName();
+
+    if (sObjectMgr->RenameGuild(guildId, newName))
+    {
+        PSendSysMessage("Guild (id %u) renamed from %s to %s", guildId, oldName.c_str(), newName);
+        return true;
+    }
+    else {
+        PSendSysMessage("Error while renaming guild %i", guildId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
     return true;
 }
 
@@ -8361,7 +8378,8 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
         if(!creature)
         {
             SendSysMessage(LANG_SELECT_CREATURE);
-            return true;
+            SetSentErrorMessage(true);
+            return false;
         }           
         creatureGUID = creature->GetGUIDLow();
     }
@@ -8411,7 +8429,8 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
     {
         //PSendSysMessage("Valeurs incorrectes.");
         PSendSysMessage("Incorrect values.");
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
 
     data = sObjectMgr->GetGOData(gobGUID);
@@ -8419,7 +8438,8 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
     {
         //PSendSysMessage("Gobject (guid : %u) introuvable.",gobGUID);
         PSendSysMessage("Gobject (guid: %u) not found.",gobGUID);
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
 
     int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
@@ -8427,7 +8447,8 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
     {
         //PSendSysMessage("Le gobject est déjà lié à l'event %i.",currentEventId);
         PSendSysMessage("Gobject already linked to the event %i.",currentEventId);
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
 
     if(sGameEventMgr->AddGameObjectToEvent(gobGUID, event))
@@ -8457,7 +8478,8 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
     {
         //PSendSysMessage("Gobject avec le guid %u introuvable.",gobGUID);
         PSendSysMessage("Gobject with guid %u not found.",gobGUID);
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     } 
 
     int16 currentEventId = sGameEventMgr->GetGameObjectEvent(gobGUID);
@@ -8472,6 +8494,8 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
         else
             //PSendSysMessage("Erreur lors de la suppression du gobject (guid : %u) de l'event %i.",gobGUID,currentEventId);
             PSendSysMessage("Error on removing gobject (guid: %u) from the event %i.",gobGUID,currentEventId);
+            SetSentErrorMessage(true);
+            return false;
     }
 
     return true;
@@ -8480,6 +8504,7 @@ bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 /* event create #id $name */
 bool ChatHandler::HandleEventCreateCommand(const char* args)
 {
+    //cause crash, fix me
     /*
     ARGS_CHECK
 
@@ -8517,7 +8542,8 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
     if(!result)
     {
         PSendSysMessage("No path of given id (%u) found", pathId);
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
 
     char* dirStr = strtok(NULL, " ");
@@ -8527,7 +8553,8 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
         if(dir >= WP_PATH_DIRECTION_TOTAL)
         {
             PSendSysMessage("Wrong direction given : %u", dir);
-            return false;
+            SetSentErrorMessage(true);
+            return true;
         }
         
         //change in db
@@ -8556,6 +8583,8 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
             PSendSysMessage("DB : Path id %u has direction set to %s (%u)", pathId, pathDirStr.c_str(), dir);
         } else {
             PSendSysMessage("No db entry found for path id %u", pathId);
+            SetSentErrorMessage(true);
+            return false;
         }
         // check memory value
         WaypointPath const* path = sWaypointMgr->GetPath(pathId);
@@ -8595,6 +8624,49 @@ bool ChatHandler::HandleIRCQuitCommand(const char* /* args */)
     return true;
 }
 
+/** .path teleport #path_id [#point_id] **/
+bool ChatHandler::HandleWpTeleportToPathCommand(const char* args)
+{
+    ARGS_CHECK
+
+    Player* p = GetSession() ? GetSession()->GetPlayer() : nullptr;
+    if (!p)
+        return false;
+
+    char* pathIdStr = strtok((char*)args, " ");
+    if (!pathIdStr)
+        return false;
+
+    uint32 pathId = uint32(atoi(pathIdStr));
+    if (!pathId)
+        return false;
+
+    uint32 pointId = 0;
+    if (char* pointStr = strtok(NULL, " "))
+        pointId = atoi(pointStr);
+
+    WaypointPath* path = (WaypointPath*)sWaypointMgr->GetPath(pathId);
+    if (!path)
+    {
+        PSendSysMessage("Could not find path %u", pathId);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    for (auto itr : *path)
+    {
+        if (itr->id == pointId)
+        {
+            p->TeleportTo(p->GetMapId(), itr->x, itr->y, itr->z, itr->orientation ? itr->orientation : p->GetOrientation());
+            return true;
+        }
+    }
+
+    PSendSysMessage("Could not find point with id %u in path %u", pointId, pathId);
+    SetSentErrorMessage(true);
+    return false;
+}
+
 /* Syntax : .path type <pathid> [type] 
 Note that this doesn't update creatures already using this path.
 
@@ -8616,7 +8688,8 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
     if(!result)
     {
         PSendSysMessage("No path of given id (%u) found", pathId);
-        return true;
+        SetSentErrorMessage(true);
+        return false;
     }
 
     char* typeStr = strtok(NULL, " ");
@@ -8626,7 +8699,8 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
         if(type >= WP_PATH_TYPE_TOTAL)
         {
             PSendSysMessage("Wrong type given : %u", type);
-            return false;
+            SetSentErrorMessage(true);
+            return true;
         }
         
         //change in db
@@ -8655,6 +8729,8 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
             PSendSysMessage("DB : Path id %u has type set to %s (%u)", pathId, pathTypeStr.c_str(), type);
         } else {
             PSendSysMessage("No db entry found for path id %u", pathId);
+            SetSentErrorMessage(true);
+            return false;
         }
         // check memory value
         WaypointPath const* path = sWaypointMgr->GetPath(pathId);

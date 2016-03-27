@@ -289,6 +289,20 @@ void ObjectMgr::RemoveGuild(uint32 Id)
     mGuildMap.erase(Id);
 }
 
+bool ObjectMgr::RenameGuild(uint32 Id, std::string newName)
+{
+    if (newName.empty())
+        return false;
+
+    auto itr = mGuildMap.find(Id);
+    if (itr == mGuildMap.end())
+        return false;
+
+    itr->second->SetName(newName);
+    CharacterDatabase.PExecute("UPDATE guild SET name = '%s' WHERE guildid = %u", newName, Id);
+    return true;
+}
+
 ArenaTeam* ObjectMgr::_GetArenaTeamById(const uint32 arenateamid) const
 {
     ArenaTeamMap::const_iterator itr = mArenaTeamMap.find(arenateamid);
