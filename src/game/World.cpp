@@ -2840,7 +2840,7 @@ void World::ScriptsProcess()
                 if (step.script->datalong2)
                     source->ToPlayer()->CastedCreatureOrGO(step.script->datalong, 0, step.script->datalong2);
                 else
-                    source->ToPlayer()->KilledMonster(step.script->datalong, 0);
+                    source->ToPlayer()->KilledMonsterCredit(step.script->datalong, 0);
                 break;
             }
 

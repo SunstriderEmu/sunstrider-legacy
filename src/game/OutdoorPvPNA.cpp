@@ -32,7 +32,7 @@ OutdoorPvPNA::OutdoorPvPNA()
 void OutdoorPvPNA::HandleKillImpl(Player* plr, Unit* killed)
 {
     if (killed->GetTypeId() == TYPEID_PLAYER && plr->GetTeam() != (killed->ToPlayer())->GetTeam()) {
-        plr->KilledMonster(NA_CREDIT_MARKER, 0);
+        plr->KilledMonsterCredit(NA_CREDIT_MARKER, 0);
         if (plr->GetTeam() == TEAM_ALLIANCE)
             plr->CastSpell(plr, NA_KILL_TOKEN_ALLIANCE, true);
         else

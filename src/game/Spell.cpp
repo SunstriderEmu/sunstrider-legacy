@@ -504,7 +504,7 @@ void Spell::SelectSpellTargets()
 
                             if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 4.0f) {
                                 go->SetLootState(GO_JUST_DEACTIVATED);
-                                m_caster->ToPlayer()->KilledMonster(23118, go->GetGUID());
+                                m_caster->ToPlayer()->KilledMonsterCredit(23118, go->GetGUID());
                             }
                             
                             break;
@@ -527,7 +527,7 @@ void Spell::SelectSpellTargets()
 
                             if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 17.0f) {
                                 go->SetLootState(GO_JUST_DEACTIVATED);
-                                m_caster->ToPlayer()->KilledMonster(19291, go->GetGUID());
+                                m_caster->ToPlayer()->KilledMonsterCredit(19291, go->GetGUID());
                                 break;
                             }
 
@@ -547,7 +547,7 @@ void Spell::SelectSpellTargets()
                             
                             if (go && go->GetDistance2d(m_targets.m_destX, m_targets.m_destY) <= 17.0f) {
                                 go->SetLootState(GO_JUST_DEACTIVATED);
-                                m_caster->ToPlayer()->KilledMonster(19292, go->GetGUID());
+                                m_caster->ToPlayer()->KilledMonsterCredit(19292, go->GetGUID());
                                 break;
                             }
 

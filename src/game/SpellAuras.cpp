@@ -2159,7 +2159,7 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
                 Creature* cTarget = caster->FindNearestCreature(18240, 5, true);
                 if ((caster->ToPlayer())->GetQuestStatus(9874) == QUEST_STATUS_INCOMPLETE && cTarget)
                 {
-                    (caster->ToPlayer())->KilledMonster(18240, 0);
+                    (caster->ToPlayer())->KilledMonsterCredit(18240, 0);
                     cTarget->ForcedDespawn();
                 }
                     

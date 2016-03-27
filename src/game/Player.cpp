@@ -13999,7 +13999,7 @@ void Player::AutoCompleteQuest( Quest const* qInfo )
         else if(creatureOrGo > 0)
         {
             for(uint16 z = 0; z < creatureOrGocount; ++z)
-                KilledMonster(creatureOrGo,0);
+                KilledMonsterCredit(creatureOrGo,0);
         }
         else if(creatureOrGo < 0)
         {
@@ -14178,7 +14178,7 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
     UpdateForQuestsGO();
 }
 
-void Player::KilledMonster(uint32 entry, uint64 guid, uint32 questId)
+void Player::KilledMonsterCredit(uint32 entry, uint64 guid, uint32 questId)
 {
     uint32 addkillcount = 1;
     for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
@@ -20692,7 +20692,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                     {
                         // normal creature (not pet/etc) can be only in !PvP case
                         if(pVictim->GetTypeId()==TYPEID_UNIT)
-                            pGroupGuy->KilledMonster(pVictim->GetEntry(), pVictim->GetGUID());
+                            pGroupGuy->KilledMonsterCredit(pVictim->GetEntry(), pVictim->GetGUID());
                     }
                 }
             }
@@ -20717,7 +20717,7 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
 
             // normal creature (not pet/etc) can be only in !PvP case
             if(pVictim->GetTypeId()==TYPEID_UNIT)
-                KilledMonster(pVictim->GetEntry(),pVictim->GetGUID());
+                KilledMonsterCredit(pVictim->GetEntry(),pVictim->GetGUID());
         }
     }
 
@@ -20748,11 +20748,11 @@ void Player::RewardPlayerAndGroupAtEvent(uint32 creature_id, WorldObject* pRewar
 
             // quest objectives updated only for alive group member or dead but with not released body
             if (pGroupGuy->IsAlive()|| !pGroupGuy->GetCorpse())
-                pGroupGuy->KilledMonster(creature_id, creature_guid);
+                pGroupGuy->KilledMonsterCredit(creature_id, creature_guid);
         }
     }
     else                                                    // if (!pGroup)
-        KilledMonster(creature_id, creature_guid);
+        KilledMonsterCredit(creature_id, creature_guid);
 }
 
 bool Player::IsAtGroupRewardDistance(WorldObject const* pRewardSource) const

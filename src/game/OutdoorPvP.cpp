@@ -618,7 +618,7 @@ void OutdoorPvPObjective::SendObjectiveComplete(uint32 id,uint64 guid)
         Player * plr = sObjectMgr->GetPlayer(*itr);
         if(plr)
         {
-            plr->KilledMonster(id,guid);
+            plr->KilledMonsterCredit(id,guid);
         }
     }
 }

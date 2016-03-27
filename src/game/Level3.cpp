@@ -5430,7 +5430,7 @@ bool ChatHandler::HandleCompleteQuest(const char* args)
         else if(creatureOrGo > 0)
         {
             for(uint16 z = 0; z < creaturecount; ++z)
-                player->KilledMonster(creatureOrGo,0);
+                player->KilledMonsterCredit(creatureOrGo,0);
         }
         else if(creatureOrGo < 0)
         {

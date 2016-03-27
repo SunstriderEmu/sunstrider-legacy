@@ -797,7 +797,7 @@ void Spell::EffectDummy(uint32 i)
                             unitTarget->ToCreature()->UpdateEntry(13017);
                             unitTarget->SetFaction(m_caster->GetFaction());
                             unitTarget->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-                            m_caster->ToPlayer()->KilledMonster(13017, unitTarget->GetGUID());
+                            m_caster->ToPlayer()->KilledMonsterCredit(13017, unitTarget->GetGUID());
                         }
                     }
                     
@@ -808,7 +808,7 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (gameObjTarget && m_caster->ToPlayer()) {
                         if (i == 0)
-                            m_caster->ToPlayer()->KilledMonster(12247, 0);
+                            m_caster->ToPlayer()->KilledMonsterCredit(12247, 0);
                     }
                     
                     break;
@@ -1619,7 +1619,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     pCreature->SetHealth(health);
-                    (m_caster->ToPlayer())->KilledMonster(16992,pCreature->GetGUID());
+                    (m_caster->ToPlayer())->KilledMonsterCredit(16992,pCreature->GetGUID());
 
                     if(pCreature->IsAIEnabled) {
                         pCreature->AI()->AttackStart(m_caster);
@@ -1705,11 +1705,11 @@ void Spell::EffectDummy(uint32 i)
                 {
                     if (Player* player = m_caster->GetCharmerOrOwnerPlayerOrPlayerItself()) {
                         if (Creature* west = m_caster->FindNearestCreature(22348, 12.0f, true))
-                            player->KilledMonster(22348, 0);
+                            player->KilledMonsterCredit(22348, 0);
                         else if (Creature* center = m_caster->FindNearestCreature(22350, 12.0f, true))
-                            player->KilledMonster(22350, 0);
+                            player->KilledMonsterCredit(22350, 0);
                         else if (Creature* east = m_caster->FindNearestCreature(22351, 12.0f, true))
-                            player->KilledMonster(22351, 0);
+                            player->KilledMonsterCredit(22351, 0);
                     }
                     
                     return;
@@ -3020,7 +3020,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);
     else if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
-        (m_caster->ToPlayer())->KilledMonster(19547, 0);
+        (m_caster->ToPlayer())->KilledMonsterCredit(19547, 0);
     else if (m_spellInfo->Id == 30098 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(9444) == QUEST_STATUS_INCOMPLETE)
         (m_caster->ToPlayer())->CompleteQuest(9444);
     else if (m_spellInfo->Id == 24325) {
@@ -3029,7 +3029,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
             return;
     }
     else if (m_spellInfo->Id == 32408 && (m_caster->ToPlayer()))
-        (m_caster->ToPlayer())->KilledMonster(18395, 0);
+        (m_caster->ToPlayer())->KilledMonsterCredit(18395, 0);
     else if (m_spellInfo->Id == 40328) {
         Creature *soulgrinder = m_caster->FindNearestCreature(23019, 10.0f, true);
         if (soulgrinder) {      // Fear all ghosts
@@ -3055,7 +3055,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 34142 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->CompleteQuest(10306);
     else if (m_spellInfo->Id == 24706 && m_caster->ToPlayer())
-        m_caster->ToPlayer()->KilledMonster(15415, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(15415, 0);
     else if (m_spellInfo->Id == 39223 && m_caster->ToPlayer()) {
         if (Creature* rexxar = m_caster->SummonCreature(22448, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000)) {
             if (Creature* goc = m_caster->SummonCreature(20555, 3741.64, 5384.42, -4.98528, 1.89685, TEMPSUMMON_DEAD_DESPAWN, 60000))
@@ -3065,7 +3065,7 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 20737 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->SummonCreature(12918, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
     else if (m_spellInfo->Id == 42338 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->KilledMonster(23727, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(23727, 0);
     
     sWorld->ScriptsStart(sEventScripts, m_spellInfo->Effects[EffectIndex].MiscValue, m_caster, focusObject);
 }
@@ -3672,7 +3672,7 @@ void Spell::EffectOpenLock(uint32 /*i*/)
     
     //Hand of Iruxos
     if (m_spellInfo->Id == 18762 && m_caster->GetTypeId() == TYPEID_PLAYER)
-        m_caster->ToPlayer()->KilledMonster(11937, 0);
+        m_caster->ToPlayer()->KilledMonsterCredit(11937, 0);
 
     // Get lockId
     if(gameObjTarget)
@@ -4389,7 +4389,7 @@ void Spell::EffectSummonWild(uint32 i)
         case 26295:
         case 26293:
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->ToPlayer()->KilledMonster(15893, 0);
+                m_caster->ToPlayer()->KilledMonsterCredit(15893, 0);
             break;
         case 26333:
         case 26334:
@@ -4398,7 +4398,7 @@ void Spell::EffectSummonWild(uint32 i)
         case 26338:
         case 26335:
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->ToPlayer()->KilledMonster(15893, 0);
+                m_caster->ToPlayer()->KilledMonsterCredit(15893, 0);
             break;
         case 26516:
         case 26517:
@@ -4413,7 +4413,7 @@ void Spell::EffectSummonWild(uint32 i)
         case 26327:
         case 26326:
             if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                m_caster->ToPlayer()->KilledMonster(15894, 0);
+                m_caster->ToPlayer()->KilledMonsterCredit(15894, 0);
             break;
         default:
             break;
@@ -5467,7 +5467,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         // Plant Kil'sorrow Banner (quest 9931)
         case 32314:
             if (Player *plr = m_caster->ToPlayer())
-                plr->KilledMonster(18393, 0);
+                plr->KilledMonsterCredit(18393, 0);
             break;
         // Unban Azaloth (quest 10637 && 10688)
         case 37834:
@@ -5476,7 +5476,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 if ((m_caster->ToPlayer())->GetQuestStatus(10637) == QUEST_STATUS_INCOMPLETE)
                     (m_caster->ToPlayer())->CompleteQuest(10637);
                 else if ((m_caster->ToPlayer())->GetQuestStatus(10688) == QUEST_STATUS_INCOMPLETE)
-                    (m_caster->ToPlayer())->KilledMonster(21892, 0);
+                    (m_caster->ToPlayer())->KilledMonsterCredit(21892, 0);
             }
             break;
         // Grillok's Eye Quest Credit
@@ -5846,7 +5846,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             Creature *cTarget = dynamic_cast<Creature*>(unitTarget);
             if (!cTarget)
                 break;
-            p_caster->KilledMonster(18388, cTarget->GetGUID());
+            p_caster->KilledMonsterCredit(18388, cTarget->GetGUID());
             cTarget->SetDeathState(CORPSE);
             cTarget->RemoveCorpse();
             break;
@@ -5951,7 +5951,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
         {
             if (Unit *summoner = ((TemporarySummon*)m_caster)->GetSummoner()) {
                 if (summoner->ToPlayer())
-                    summoner->ToPlayer()->KilledMonster(23327, m_caster->GetGUID());
+                    summoner->ToPlayer()->KilledMonsterCredit(23327, m_caster->GetGUID());
             }
             return;
         }
@@ -7667,7 +7667,7 @@ void Spell::EffectKillCredit(uint32 i)
     if(!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    (unitTarget->ToPlayer())->KilledMonster(m_spellInfo->Effects[i].MiscValue, 0);
+    (unitTarget->ToPlayer())->KilledMonsterCredit(m_spellInfo->Effects[i].MiscValue, 0);
 }
 
 void Spell::EffectQuestFail(uint32 i)
