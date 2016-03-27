@@ -336,7 +336,7 @@ void InstanceSaveManager::LoadResetTimes()
 
         // update reset time for normal instances with the max creature respawn time + X hours
       //TC  if (PreparedQueryResult result2 = CharacterDatabase.Query(CharacterDatabase.GetPreparedStatement(CHAR_SEL_MAX_CREATURE_RESPAWNS)))
-        if(result = CharacterDatabase.Query("SELECT MAX(respawntime), instanceId FROM creature_respawn WHERE instanceId > 0 GROUP BY instanceId"))
+        if((result = CharacterDatabase.Query("SELECT MAX(respawntime), instanceId FROM creature_respawn WHERE instanceId > 0 GROUP BY instanceId")))
         {
             Field* fields = result->Fetch();
             uint32 instance = fields[1].GetUInt32();
