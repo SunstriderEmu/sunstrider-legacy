@@ -1083,10 +1083,10 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
 
     int32 max   = max_p ? atol (max_p) : target->GetPureMaxSkillValue(skill);
 
-    if( level <= 0 || level > max || max <= 0 )
+    if( level > max || max <= 0 )
         return false;
 
-    target->SetSkill(skill, level, max);
+    target->SetSkill(skill, level, max); //remove skill if level == 0
     PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], target->GetName().c_str(), level, max);
 
     return true;
