@@ -46,7 +46,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         return;
 
     float x, y, z;
-    bool sameTransport = owner->GetTransport() && owner->GetTransport() == i_target->GetTransport();
+    bool transportImplied = owner->GetTransport() || i_target->GetTransport();
 
     if (updateDestination || !i_path)
     {
@@ -79,7 +79,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     bool forceDest = 
            (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsPet() && owner->HasUnitState(UNIT_STATE_FOLLOW)) // allow pets to use shortcut if no path found when following their master
         || ((Creature*)owner)->IsWorldBoss() /*|| ((Creature*)owner)->IsDungeonBoss()*/ // force for all bosses, even not in instances
-        || sameTransport // nothing to comment, can't find path on transports so allow it
+        || transportImplied // transports at dock aren't handled by mmaps, this should help
         || (i_target->GetTypeId() == TYPEID_PLAYER && i_target->ToPlayer()->IsGameMaster()) // for .npc follow)
         || (owner->FindMap() && owner->FindMap()->IsDungeon() && !isPlayerPet) // force in instances to prevent exploiting
         ;

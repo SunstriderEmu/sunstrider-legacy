@@ -3555,8 +3555,8 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
     else
 #endif
     {
-        // (sunwell) prevent any bugs by passengers exiting transports or normal creatures flying away
-        if (c->GetTransport() != this->GetTransport())
+        // Prevent any bugs by passengers exiting transports or normal creatures flying away (but still allow pets to do it)
+        if (!c->GetOwnerGUID() && c->GetTransport() != this->GetTransport())
             return false;
     }
 

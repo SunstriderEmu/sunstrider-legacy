@@ -1419,7 +1419,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 
     pet->AIM_Initialize();
 
-    map->Add(pet->ToCreature());
+    map->Add(pet->ToCreature(), true);
 
     pet->SetPowerType(POWER_MANA);
     pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);
