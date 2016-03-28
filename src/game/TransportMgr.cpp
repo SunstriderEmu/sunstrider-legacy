@@ -428,7 +428,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
 
     // xinef: transports are active so passengers can be relocated (grids must be loaded)
     trans->SetKeepActive(true);
-    trans->GetMap()->Add(trans);
+    trans->GetMap()->Add<MotionTransport>(trans);
     return trans;
 }
 

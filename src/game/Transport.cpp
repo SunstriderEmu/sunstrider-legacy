@@ -1,19 +1,9 @@
 /*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
+Current bugs :
+- MotionTransports are at 0,0,0 on client until first teleport
+    to try : dumping all fields at first send then after first teleport, see what changed for client
+- MotionTransports have some strange behavior at client after a while ? (transport randomly stopping, broken player movement when aboard)
+- No MMaps handling on transports : Not so important, creatures force destination for now
  */
 
 #include "Common.h"
@@ -97,7 +87,12 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
     SetPeriod(tInfo->pathTime);
     SetEntry(goinfo->entry);
     SetDisplayId(goinfo->displayId);
+    //Ships on BC cannot be paused and are always GO_STATE_READY
+#ifdef LICH_KING
     SetGoState(!goinfo->moTransport.canBeStopped ? GO_STATE_READY : GO_STATE_ACTIVE);
+#else
+    SetGoState(GO_STATE_READY);
+#endif
     SetGoType(GAMEOBJECT_TYPE_MO_TRANSPORT);
     SetGoAnimProgress(animprogress);
     SetName(goinfo->name);
@@ -105,8 +100,8 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
     // pussywizard: no WorldRotation for MotionTransports
 #ifdef LICH_KING
     SetWorldRotation(G3D::Quat());
-    // pussywizard: no PathRotation for MotionTransports
 #endif
+    // pussywizard: no PathRotation for MotionTransports
     SetTransportPathRotation(0.0f, 0.0f, 0.0f, 1.0f);
 
     m_model = CreateModel();
@@ -174,6 +169,7 @@ void MotionTransport::Update(uint32 diff)
             if (timer < _currentFrame->DepartureTime)
             {
                 SetMoving(false);
+#ifdef LICH_KING
                 if (_pendingStop && GetGoState() != GO_STATE_READY)
                 {
                     SetGoState(GO_STATE_READY);
@@ -181,6 +177,7 @@ void MotionTransport::Update(uint32 diff)
                     SetPathProgress(GetPathProgress() * GetPeriod());
                     SetPathProgress(GetPathProgress() + _currentFrame->ArriveTime);
                 }
+#endif
                 break;  // its a stop frame and we are waiting
             }
         }
@@ -194,9 +191,11 @@ void MotionTransport::Update(uint32 diff)
         // not waiting anymore
         SetMoving(true);
 
-        // Enable movement
+        // Enable movement //No pause for ships on BC
+#ifdef LICH_KING
         if (GetGOInfo()->moTransport.canBeStopped)
             SetGoState(GO_STATE_ACTIVE);
+#endif
 
         if (timer >= _currentFrame->DepartureTime && timer < _currentFrame->NextArriveTime)
             break;  // found current waypoint
@@ -407,7 +406,7 @@ GameObject* MotionTransport::CreateGOPassenger(uint32 guid, GameObjectData const
     _staticPassengers.insert(go);
     return go;
 #else
-    //no gameobject on transports before LK
+    //no gameobject on transports before LK ?
     return nullptr;
 #endif
 }
@@ -462,10 +461,12 @@ void MotionTransport::UnloadNonStaticPassengers()
 
 void MotionTransport::EnableMovement(bool enabled)
 {
+#ifdef LICH_KING
     if (!GetGOInfo()->moTransport.canBeStopped)
         return;
 
     _pendingStop = !enabled;
+#endif
 }
 
 void MotionTransport::MoveToNextWaypoint()

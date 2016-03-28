@@ -213,9 +213,6 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                 case GAMEOBJECT_TYPE_FLAGDROP:
                     updatetype = UPDATETYPE_CREATE_OBJECT2;
                     break;
-                case GAMEOBJECT_TYPE_TRANSPORT:
-                    flags |= UPDATEFLAG_TRANSPORT;
-                    break;
                 default:
                     break;
             }
@@ -2143,7 +2140,7 @@ void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         {
             ASSERT(object);
             // 0x02
-            //this is actually not used on bc for transports but whatever
+            //X Y Z are at 0 for transports on bc for transports but whatever
             *data << object->GetStationaryX();
             *data << object->GetStationaryY();
             *data << object->GetStationaryZ() + (unit ? unit->GetHoverHeight() : 0.0f);
