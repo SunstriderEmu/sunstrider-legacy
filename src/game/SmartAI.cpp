@@ -138,7 +138,7 @@ void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* /*invoker*/)
     if (WayPoint* wp = GetNextWayPoint())
     {
         mLastOOCPos = me->GetPosition();
-        me->GetMotionMaster()->MovePoint(wp->id, wp->x, wp->y, wp->z);
+        MovePointInPath(run, wp->id, wp->x, wp->y, wp->z);
         GetScript()->ProcessEventsFor(SMART_EVENT_WAYPOINT_START, NULL, wp->id, GetScript()->GetPathId());
     }
 }
@@ -260,13 +260,21 @@ void SmartAI::ResumePath()
     //mWPReached = false;
     SetRun(mRun);
     if (mLastWP)
-        me->GetMotionMaster()->MovePoint(mLastWP->id, mLastWP->x, mLastWP->y, mLastWP->z);
+        MovePointInPath(mRun, mLastWP->id, mLastWP->x, mLastWP->y, mLastWP->z);
+}
+
+void SmartAI::MovePointInPath(bool run, uint32 id, float x, float y, float z, float o)
+{
+    me->GetMotionMaster()->MovePoint(id, x, y, z);
+
+    if (me->GetFormation() && me->GetFormation()->getLeader() == me)
+        me->GetFormation()->LeaderMoveTo(x, y, z, run);
 }
 
 void SmartAI::ReturnToLastOOCPos()
 {
     SetRun(mRun);
-    me->GetMotionMaster()->MovePoint(SMART_ESCORT_LAST_OOC_POINT, mLastOOCPos);
+    MovePointInPath(mRun, SMART_ESCORT_LAST_OOC_POINT, mLastOOCPos.GetPositionX(), mLastOOCPos.GetPositionY(), mLastOOCPos.GetPositionY(), mLastOOCPos.GetOrientation() );
 }
 
 void SmartAI::UpdatePath(const uint32 diff)
@@ -329,7 +337,7 @@ void SmartAI::UpdatePath(const uint32 diff)
         else if (WayPoint* wp = GetNextWayPoint())
         {
             SetRun(mRun);
-            me->GetMotionMaster()->MovePoint(wp->id, wp->x, wp->y, wp->z);
+            MovePointInPath(mRun, wp->id, wp->x, wp->y, wp->z);
         }
     }
 }

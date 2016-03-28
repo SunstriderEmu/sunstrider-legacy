@@ -372,6 +372,7 @@ bool WaypointMovementGenerator<Creature>::GeneratePathToNextPoint(Position const
     ASSERT(!points.empty());
     //Calculate path first point is current position, skip it
     uint32 skip = 1;
+    m_precomputedPath.reserve(m_precomputedPath.size() + points.size() - skip);
     for (uint32 i = 0 + skip; i < points.size(); i++)
     {
         m_precomputedPath.emplace_back(points[i].x, points[i].y, points[i].z);

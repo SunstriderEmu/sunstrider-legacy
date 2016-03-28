@@ -80,6 +80,7 @@ class CreatureGroupManager
 
 class CreatureGroup
 {
+    friend CreatureGroupManager;
     private:
         Creature* m_leader; //Important do not forget sometimes to work with pointers instead synonims :D:D
         typedef std::map<Creature*, FormationInfo*>  CreatureGroupMemberType;
@@ -94,7 +95,7 @@ class CreatureGroup
     public:
         //Group cannot be created empty
         explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
-        ~CreatureGroup() { }
+        ~CreatureGroup();
         
         Creature* getLeader() const { return m_leader; }
         uint32 GetId() const { return m_groupID; }
@@ -114,8 +115,9 @@ class CreatureGroup
         void UpdateCombat();
         void Respawn();
         void Update(uint32 diff);
-        
-        //remove every members 
+
+private:
+        //remove every members
         void EmptyFormation();
 
 };

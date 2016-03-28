@@ -99,16 +99,6 @@ void CreatureGroupManager::RemoveCreatureFromGroup(CreatureGroup *group, Creatur
     }
 }
 
-void CreatureGroup::EmptyFormation()
-{
-    for (auto itr : m_members)
-    {
-        Creature* member = itr.first;
-        member->SetFormation(NULL);
-        m_members.erase(member);
-    }
-}
-
 void CreatureGroupManager::BreakFormation(Creature* leader)
 {
     CreatureGroup* group = leader->GetFormation();
@@ -193,6 +183,24 @@ uint32 CreatureGroupManager::GetCreatureGUIDForStore(Creature* member)
         return member->GetDBTableGUIDLow();
 }
 
+CreatureGroup::~CreatureGroup()
+{
+    EmptyFormation();
+}
+
+void CreatureGroup::EmptyFormation()
+{
+    m_leader = nullptr;
+    for (auto itr : m_members)
+    {
+        Creature* member = itr.first;
+        member->SetFormation(NULL);
+        delete itr.second;
+    }
+
+    m_members.clear();
+}
+
 void CreatureGroup::AddMember(Creature *member)
 {
     uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
@@ -235,7 +243,6 @@ void CreatureGroup::AddMember(Creature *member)
         fInfo = sCreatureGroupMgr->GetGroupMap().find(memberGUID)->second;
     }
 
-
     m_members[member] = fInfo;
     member->SetFormation(this);
 }
@@ -245,7 +252,12 @@ void CreatureGroup::RemoveMember(Creature *member)
     if(m_leader == member)
         m_leader = NULL;
 
-    m_members.erase(member);
+    auto itr = m_members.find(member);
+    if (itr != m_members.end())
+    {
+        m_members.erase(member);
+        delete itr->second;
+    }
     member->SetFormation(NULL);
 }
 
