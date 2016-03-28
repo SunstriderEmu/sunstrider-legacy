@@ -2459,6 +2459,9 @@ class Player : public Unit
         uint32 GetGossipTextId(WorldObject* source);
         static uint32 GetDefaultGossipMenuForSource(WorldObject* source);
 
+        void SetHasMovedInUpdate(bool moved) { m_hasMovedInUpdate = moved; }
+        bool GetHasMovedInUpdate() { return m_hasMovedInUpdate; }
+
     protected:
 
         /*********************************************************/
@@ -2737,7 +2740,9 @@ class Player : public Unit
         bool spectatorFlag;
         bool spectateCanceled;
         Player *spectateFrom;
-
+       
+        // true if player has moved in this update. In the previous system, in a player moved and stopped in the same update you had no way to know it. (this is used to fix spell not always properly interrupted)
+        bool m_hasMovedInUpdate;
     private:
         // internal common parts for CanStore/StoreItem functions
         uint8 _CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec& dest, ItemTemplate const *pProto, uint32& count, bool swap, Item *pSrcItem ) const;
@@ -2764,6 +2769,7 @@ class Player : public Unit
         
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
+
     public:
         bool m_kickatnextupdate;
         uint32 m_swdBackfireDmg;

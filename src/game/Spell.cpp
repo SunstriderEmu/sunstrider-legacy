@@ -2960,12 +2960,12 @@ void Spell::update(uint32 difftime)
     
     // check if the player caster has moved before the spell finished
     if ((m_caster->GetTypeId() == TYPEID_PLAYER && m_timer != 0) &&
-        m_caster->isMoving() && 
-        (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) &&
+        m_caster->ToPlayer()->GetHasMovedInUpdate() &&
+        (m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_MOVEMENT) && m_spellState == SPELL_STATE_PREPARING &&
         (m_spellInfo->Effects[0].Effect != SPELL_EFFECT_STUCK || !m_caster->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR)))
     {
         // don't cancel for melee, autorepeat, triggered and instant spells
-        if(!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
+        if (!IsNextMeleeSwingSpell() && !IsAutoRepeat() && !m_IsTriggeredSpell)
             cancel();
     }
 
@@ -3145,6 +3145,12 @@ void Spell::SendCastResult(SpellCastResult result)
 
     if((m_caster->ToPlayer())->GetSession()->PlayerLoading())  // don't send cast results at loading time
         return;
+
+/* Sunwell
+    // Xinef: override every possible result, except for gm fail result... breaks many things and goes unnoticed because of this and makes me rage when i find this out
+    if ((_triggeredCastFlags & TRIGGERED_DONT_REPORT_CAST_ERROR) && result != SPELL_FAILED_BM_OR_INVISGOD)
+        result = SPELL_FAILED_DONT_REPORT;
+    */
 
     if(result != SPELL_CAST_OK)
     {

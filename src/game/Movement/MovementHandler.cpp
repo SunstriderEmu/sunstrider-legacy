@@ -512,13 +512,16 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     {
         plrMover->UpdateFallInformationIfNeed(movementInfo, opcode);
 
+        //used to handle spell interrupts on move (client does not always does it by itself)
+        if (plrMover->isMoving())
+            plrMover->SetHasMovedInUpdate(true);
+
         if (movementInfo.pos.GetPositionZ() < plrMover->GetMap()->GetMinHeight(movementInfo.pos.GetPositionX(), movementInfo.pos.GetPositionY()))
         {
             if (!(plrMover->GetBattleground() && plrMover->GetBattleground()->HandlePlayerUnderMap(_player)))
             {
                 // NOTE: this is actually called many times while falling
                 // even after the player has been teleported away
-                /// @todo discard movement packets after the player is rooted
                 if (plrMover->IsAlive())
                 {
                     plrMover->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_IS_OUT_OF_BOUNDS);
@@ -529,7 +532,6 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                     if (!plrMover->IsAlive())
                         plrMover->KillPlayer();
                 }
-                //sunwell: plrMover->StopMovingOnCurrentPos(); // pussywizard: moving corpse can't release spirit // not needed, the correct fix for this is PLAYER_FLAGS_IS_OUT_OF_BOUNDS (probably, not tested)
             }
         }
     }

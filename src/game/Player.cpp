@@ -282,7 +282,8 @@ Player::Player (WorldSession *session) :
     Unit(),
     m_bHasDelayedTeleport(false),
     m_bCanDelayTeleport(false),
-    m_DelayedOperations(0)
+    m_DelayedOperations(0),
+    m_hasMovedInUpdate(false)
 {
     m_speakTime = 0;
     m_speakCount = 0;

@@ -311,6 +311,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     uint32 processedPackets = 0;
     time_t currentTime = time(NULL);
 
+
+    //reset hasMoved info
+    if(_player)
+        _player->SetHasMovedInUpdate(false);
+    
     while (m_Socket && _recvQueue.next(packet, updater))
     {
         if(packet->GetOpcode() >= NUM_MSG_TYPES)
