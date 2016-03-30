@@ -664,6 +664,7 @@ AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
 {
     uint16 raPort = uint16(sConfigMgr->GetIntDefault("Ra.Port", 3443));
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
+    TC_LOG_INFO("server.worldserver", "Starting RA listener on address '%s' and port %u", raListener.c_str(), raPort);
 
     AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
     acceptor->AsyncAccept<RASession>();
