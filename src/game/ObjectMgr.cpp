@@ -7374,6 +7374,8 @@ void ObjectMgr::LoadGossipMenuItems()
 {
     uint32 oldMSTime = GetMSTime();
 
+    _gossipMenuItemsStore.clear(); //for reload case
+
     QueryResult result = WorldDatabase.Query(
         //      0        1   2            3            4                      5          6                   7               8              9          10         11        12
         "SELECT menu_id, id, option_icon, option_text, OptionBroadcastTextID, option_id, npc_option_npcflag, action_menu_id, action_poi_id, box_coded, box_money, box_text, BoxBroadcastTextID "
@@ -7498,7 +7500,7 @@ void ObjectMgr::LoadGossipMenuItems()
         TC_LOG_INFO("server.loading", ">> Loaded %u gossip_menu_option_generic entries in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
     }
     else {
-        TC_LOG_ERROR("server.loading", ">> Loaded 0 gossip_menu_option_generic entries. DB table `gossip_menu_option` is empty!");
+        TC_LOG_ERROR("server.loading", ">> Loaded 0 gossip_menu_option_generic entries. DB table `gossip_menu_option_generic` is empty!");
     }
 }
 
