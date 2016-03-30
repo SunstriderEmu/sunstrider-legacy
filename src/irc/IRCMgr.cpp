@@ -353,6 +353,8 @@ void IRCMgr::stopSessions()
 
 void IRCMgr::startSessions()
 {
+    TC_LOG_INFO("IRCMgr", "IRCMgr: Starting sessions...");
+
     stopSessions();
 
     // Start one thread per session

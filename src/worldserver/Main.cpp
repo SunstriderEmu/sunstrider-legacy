@@ -253,13 +253,17 @@ extern int main(int argc, char **argv)
 
     ///- Start up the IRC client
     if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
+    {
+        TC_LOG_INFO("server.worldserver", "IRC bridge is enabled.");
         sIRCMgr->startSessions();
+    }
 
     // Launch the worldserver listener socket
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
     std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
     sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort);
+    TC_LOG_INFO("server.worldserver", "Start listening on %s:%u", worldListener.c_str(), worldPort);
 
     //    sScriptMgr->OnNetworkStart();
 
