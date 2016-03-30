@@ -98,11 +98,11 @@ bool Guild::create(uint64 lGuid, std::string gname)
     switch (sWorld->GetDefaultDbcLocale())
     {
     case LOCALE_frFR:
-        leader = "Maître";
+        leader = "MaÃ®tre";
         officer = "Officier";
-        veteran = "Vétéran";
+        veteran = "VÃ©tÃ©ran";
         member = "Membre";
-        initiate = "Initié";
+        initiate = "InitiÃ©";
         break;
     default:
         leader = "Leader";
