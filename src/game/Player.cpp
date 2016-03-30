@@ -14348,58 +14348,7 @@ void Player::CastedCreatureOrGO( uint32 entry, uint64 guid, uint32 spell_id )
 
 void Player::TalkedToCreature( uint32 entry, uint64 guid )
 {
-    uint32 addTalkCount = 1;
-    for( int i = 0; i < MAX_QUEST_LOG_SIZE; i++ )
-    {
-        uint32 questid = GetQuestSlotQuestId(i);
-        if(!questid)
-            continue;
-
-        Quest const* qInfo = sObjectMgr->GetQuestTemplate(questid);
-        if ( !qInfo )
-            continue;
-
-        QuestStatusData& q_status = mQuestStatus[questid];
-
-        if ( q_status.m_status == QUEST_STATUS_INCOMPLETE )
-        {
-            if( qInfo->HasFlag( QUEST_TRINITY_FLAGS_KILL_OR_CAST | QUEST_TRINITY_FLAGS_SPEAKTO ) )
-            {
-                for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
-                {
-                                                            // skip spell casts and Gameobject objectives
-                    if(qInfo->ReqSpell[j] > 0 || qInfo->RequiredNpcOrGo[j] < 0)
-                        continue;
-
-                    uint32 reqTarget = 0;
-
-                    if(qInfo->RequiredNpcOrGo[j] > 0)     // creature activate objectives
-                                                            // checked at quest_template loading
-                        reqTarget = qInfo->RequiredNpcOrGo[j];
-                    else
-                        continue;
-
-                    if ( reqTarget == entry )
-                    {
-                        uint32 reqTalkCount = qInfo->RequiredNpcOrGoCount[j];
-                        uint32 curTalkCount = q_status.m_creatureOrGOcount[j];
-                        if ( curTalkCount < reqTalkCount )
-                        {
-                            q_status.m_creatureOrGOcount[j] = curTalkCount + addTalkCount;
-                            if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
-
-                            SendQuestUpdateAddCreatureOrGo( qInfo, guid, j, curTalkCount, addTalkCount);
-                        }
-                        if ( CanCompleteQuest( questid ) )
-                            CompleteQuest( questid );
-
-                        // same objective target can be in many active quests, but not in 2 objectives for single quest (code optimization).
-                        continue;
-                    }
-                }
-            }
-        }
-    }
+    //here was quest objectives "speak to validation", but was removed since it broke some quests and the few ones that were using this were fixed otherwise
 }
 
 void Player::MoneyChanged( uint32 count )

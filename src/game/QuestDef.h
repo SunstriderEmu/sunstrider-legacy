@@ -229,7 +229,7 @@ class Quest
         uint32 GetQuestStartScript() const { return QuestStartScript; }
         uint32 GetQuestCompleteScript() const { return QuestCompleteScript; }
         bool   IsRepeatable() const { return QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE; }
-        bool   IsAutoComplete() const { return QuestMethod ? false : true; }
+        bool   IsAutoComplete() const { return QuestMethod == 0; }
         uint32 GetFlags() const { return QuestFlags; }
         bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
         bool   IsMarkedAsBugged() const { return m_markedAsBugged; }

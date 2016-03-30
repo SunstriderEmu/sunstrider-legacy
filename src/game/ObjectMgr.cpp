@@ -3477,8 +3477,6 @@ void ObjectMgr::LoadQuests()
 
             if(id)
             {
-                // In fact SpeakTo and Kill are quite same: either you can speak to mob:SpeakTo or you can't:Kill/Cast
-
                 qinfo->SetFlag(QUEST_TRINITY_FLAGS_KILL_OR_CAST | QUEST_TRINITY_FLAGS_SPEAKTO);
 
                 if(!qinfo->RequiredNpcOrGoCount[j])
