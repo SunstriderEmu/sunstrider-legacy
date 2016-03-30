@@ -1353,6 +1353,9 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
         pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
     }
 
+    // allow summoned creatures to keep grids active for 2 minutes, so that we may use AI summoning creatures far away and coming to them
+    pCreature->SetKeepActiveTimer(2 * MINUTE * IN_MILLISECONDS);
+
     //return the creature therewith the summoner has access to it
     return pCreature;
 }

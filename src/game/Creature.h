@@ -817,6 +817,10 @@ class Creature : public Unit
         //enter evade mode if target was unreachable for CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME
         void CheckForUnreachableTarget();
 
+        /**
+        Same as SetKeepActive but with a timer, disable it after given time in MS
+        */
+        void SetKeepActiveTimer(uint32 timerMS);
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
@@ -884,6 +888,7 @@ class Creature : public Unit
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
         uint32 m_stealthWarningCooldown;
+        uint32 m_keepActiveTimer;
 
     private:
         //WaypointMovementGenerator vars

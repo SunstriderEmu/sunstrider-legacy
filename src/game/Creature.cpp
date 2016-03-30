@@ -172,7 +172,7 @@ Creature::Creature() :
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_creatureInfo(nullptr), m_creatureInfoAddon(nullptr), m_DBTableGuid(0), m_formation(nullptr),
     m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), _focusSpell(nullptr),
     m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false),
-    m_stealthWarningCooldown(0)
+    m_stealthWarningCooldown(0), m_keepActiveTimer(0)
 {
     m_valuesCount = UNIT_END;
 
@@ -564,6 +564,7 @@ void Creature::Update(uint32 diff)
             UpdateProhibitedSchools(diff);
             DecreaseTimer(m_stealthWarningCooldown, diff);
 
+            //From TC. Removed as this is VERY costly in cpu time for little to no gain
             //UpdateMovementFlags();
 
             if (m_corpseRemoveTime <= time(NULL))
@@ -654,6 +655,18 @@ void Creature::Update(uint32 diff)
                 RegenerateMana();
 
                 m_regenTimer = 2000;
+            }
+
+            //remove keep active if a timer was defined
+            if (m_keepActiveTimer != 0)
+            {
+                if (m_keepActiveTimer <= diff)
+                {
+                    SetKeepActive(false);
+                    m_keepActiveTimer = 0;
+                }
+                else
+                    m_keepActiveTimer -= diff;
             }
             
             break;
@@ -2759,4 +2772,19 @@ void Creature::ClearTextRepeatGroup(uint8 textGroup)
     CreatureTextRepeatGroup::iterator groupItr = m_textRepeat.find(textGroup);
     if (groupItr != m_textRepeat.end())
         groupItr->second.clear();
+}
+
+void Creature::SetKeepActiveTimer(uint32 timerMS)
+{
+    if (timerMS == 0)
+        return;
+
+    if (GetTypeId() == TYPEID_PLAYER)
+        return;
+
+    if (!IsInWorld())
+        return;
+
+    SetKeepActive(true);
+    m_keepActiveTimer = timerMS;
 }
