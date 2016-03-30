@@ -2170,6 +2170,29 @@ Creature* Map::GetCreature(uint64 guid)
     return ret;
 }
 
+Creature* Map::GetCreatureWithTableGUID(uint32 tableGUID) const
+{
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+    auto creatures = sObjectAccessor->GetCreatures();
+    for (auto pair : creatures)
+    {
+        auto c = pair.second;
+
+        if (c->GetMapId() != GetId())
+            continue;
+
+        if (c->GetInstanceId() != GetInstanceId())
+            continue;
+
+        if (c->GetDBTableGUIDLow() != tableGUID)
+            continue;
+
+        return c;
+    }
+
+    return nullptr;
+}
+
 GameObject* Map::GetGameObject(uint64 guid)
 {
     GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL);

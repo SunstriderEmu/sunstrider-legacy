@@ -241,7 +241,10 @@ class Map : public GridRefManager<NGridType>
         Creature* GetCreature(uint64 guid);
         GameObject* GetGameObject(uint64 guid);
         Transport* GetTransport(uint64 guid);
-        DynamicObject* GetDynamicObject(uint64 guid);   
+        DynamicObject* GetDynamicObject(uint64 guid);  
+
+        //avoid using as much as possible, this locks HashMapHolder
+        Creature* GetCreatureWithTableGUID(uint32 tableGUID) const;
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
