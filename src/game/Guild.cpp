@@ -90,16 +90,34 @@ bool Guild::create(uint64 lGuid, std::string gname)
         "VALUES('%u','%s','%u', '%s', '%s', NOW(),'%u','%u','%u','%u','%u','" UI64FMTD "')",
         Id, gname.c_str(), GUID_LOPART(leaderGuid), dbGINFO.c_str(), dbMOTD.c_str(), EmblemStyle, EmblemColor, BorderStyle, BorderColor, BackgroundColor, guildbank_money);
 
-    rname = "Leader";
-    CreateRank(rname,GR_RIGHT_ALL, trans);
-    rname = "Officer";
-    CreateRank(rname,GR_RIGHT_ALL, trans);
-    rname = "Veteran";
-    CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
-    rname = "Member";
-    CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
-    rname = "Initiate";
-    CreateRank(rname,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
+    std::string leader;
+    std::string officer;
+    std::string veteran;
+    std::string member;
+    std::string initiate;
+    switch (sWorld->GetDefaultDbcLocale())
+    {
+    case LOCALE_frFR:
+        leader = "Maître";
+        officer = "Officier";
+        veteran = "Vétéran";
+        member = "Membre";
+        initiate = "Initié";
+        break;
+    default:
+        leader = "Leader";
+        officer = "Officer";
+        veteran = "Veteran";
+        member = "Member";
+        initiate = "Initiate";
+        break;
+    }
+
+    CreateRank(leader,GR_RIGHT_ALL, trans);
+    CreateRank(officer,GR_RIGHT_ALL, trans);
+    CreateRank(veteran,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
+    CreateRank(member,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
+    CreateRank(initiate,GR_RIGHT_GCHATLISTEN | GR_RIGHT_GCHATSPEAK, trans);
 
     if (!AddMember(lGuid, (uint32)GR_GUILDMASTER, trans)) {
         TC_LOG_ERROR("guild", "Player " UI64FMTD " not added to guild %u!", lGuid, Id);
