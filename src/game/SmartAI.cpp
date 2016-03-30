@@ -274,7 +274,7 @@ void SmartAI::MovePointInPath(bool run, uint32 id, float x, float y, float z, fl
 void SmartAI::ReturnToLastOOCPos()
 {
     SetRun(mRun);
-    MovePointInPath(mRun, SMART_ESCORT_LAST_OOC_POINT, mLastOOCPos.GetPositionX(), mLastOOCPos.GetPositionY(), mLastOOCPos.GetPositionY(), mLastOOCPos.GetOrientation() );
+    MovePointInPath(mRun, SMART_ESCORT_LAST_OOC_POINT, mLastOOCPos.GetPositionX(), mLastOOCPos.GetPositionY(), mLastOOCPos.GetPositionZ(), mLastOOCPos.GetOrientation() );
 }
 
 void SmartAI::UpdatePath(const uint32 diff)
