@@ -1414,14 +1414,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
-            float x,y,z;
-            me->GetPosition(x,y,z);
+            float x,y,z,o;
+            me->GetPosition(x,y,z,o);
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if(Unit* u = (*itr)->ToUnit())
                 {
-                    u->NearTeleportTo(x, y, z, u->GetOrientation());
+                    u->NearTeleportTo(x, y, z, o);
                     if(e.action.teleportOnMe.useVisual)
                         me->CastSpell(u, 46614, true); //teleport visual
                 }
