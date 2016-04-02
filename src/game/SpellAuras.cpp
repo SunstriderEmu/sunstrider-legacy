@@ -1637,13 +1637,6 @@ void Aura::TriggerSpell()
 //                    case 36556: break;
 //                    // Cursed Scarab Despawn Periodic
 //                    case 36561: break;
-                      //Vision Guide
-                      case 36573: 
-                        if(!caster)
-                            return;
-                        if ((caster->ToPlayer())->GetQuestStatus(10525) == QUEST_STATUS_INCOMPLETE)
-                            (caster->ToPlayer())->CompleteQuest(10525);
-                        break;
 //                    // Cannon Charging (platform)
 //                    case 36785: break;
 //                    // Cannon Charging (self)
