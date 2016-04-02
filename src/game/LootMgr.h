@@ -225,6 +225,7 @@ struct Loot
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }
     QuestItemMap const& GetPlayerNonQuestNonFFAConditionalItems() const { return PlayerNonQuestNonFFAConditionalItems; }
 
+    void FillNotNormalLootFor(Player* player, bool presentAtLooting);
     QuestItemList* FillFFALoot(Player* player);
     QuestItemList* FillQuestLoot(Player* player);
     QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player);

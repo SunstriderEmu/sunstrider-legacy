@@ -455,6 +455,26 @@ bool Loot::hasOverThresholdItem() const
     return false;
 }
 
+void Loot::FillNotNormalLootFor(Player* player, bool presentAtLooting)
+{
+    uint32 plguid = player->GetGUIDLow();
+    QuestItemMap::iterator qmapitr = PlayerQuestItems.find(plguid);
+    if (qmapitr == PlayerQuestItems.end())
+    {
+        FillQuestLoot(player);
+    }
+    qmapitr = PlayerFFAItems.find(plguid);
+    if (qmapitr == PlayerFFAItems.end())
+    {
+        FillFFALoot(player);
+    }
+    qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
+    if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
+    {
+        FillNonQuestNonFFAConditionalLoot(player);
+    }
+}
+
 // Calls processor of corresponding LootTemplate (which handles everything including references)
 void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
 {
@@ -475,33 +495,22 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     if(!loot_owner)
         return;
     Group * pGroup=loot_owner->GetGroup();
-    if(!pGroup)
-        return;
-
-    roundRobinPlayer = loot_owner->GetGUID();
-
-    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+    if (pGroup)
     {
-        //fill the quest item map for every player in the recipient's group
-        Player* pl = itr->GetSource();
-        if(!pl)
-            continue;
-        uint32 plguid = pl->GetGUIDLow();
-        QuestItemMap::iterator qmapitr = PlayerQuestItems.find(plguid);
-        if (qmapitr == PlayerQuestItems.end())
+        roundRobinPlayer = loot_owner->GetGUID();
+
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            FillQuestLoot(pl);
+            //fill the quest item map for every player in the recipient's group
+            Player* pl = itr->GetSource();
+            if (!pl || !pl->IsInMap(loot_owner))
+                continue;
+
+            FillNotNormalLootFor(loot_owner, pl->IsAtGroupRewardDistance(loot_owner));
         }
-        qmapitr = PlayerFFAItems.find(plguid);
-        if (qmapitr == PlayerFFAItems.end())
-        {
-            FillFFALoot(pl);
-        }
-        qmapitr = PlayerNonQuestNonFFAConditionalItems.find(plguid);
-        if (qmapitr == PlayerNonQuestNonFFAConditionalItems.end())
-        {
-            FillNonQuestNonFFAConditionalLoot(pl);
-        }
+    }
+    else {
+        FillNotNormalLootFor(loot_owner, true);
     }
 }
 
