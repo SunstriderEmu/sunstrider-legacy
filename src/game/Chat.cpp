@@ -300,6 +300,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "" },
         { "playemote",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugPlayEmoteCommand,      "" },
         { "mapheight",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugMapHeight,             "" },
+        { "valuessnapshot", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugValuesSnapshot,        "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =

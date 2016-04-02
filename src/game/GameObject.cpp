@@ -135,7 +135,9 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
             if (index == GAMEOBJECT_DYN_FLAGS)
             {
                 uint16 dynFlags = 0;
+#ifdef LICH_KING
                //LK int16 pathProgress = -1;
+#endif
                 switch (GetGoType())
                 {
                     case GAMEOBJECT_TYPE_QUESTGIVER:
@@ -153,7 +155,6 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
                         if (ActivateToQuest(target))
                             dynFlags |= GO_DYNFLAG_LO_SPARKLE;
                         break;
-
 #ifdef LICH_KING
                     case GAMEOBJECT_TYPE_TRANSPORT:
                         if (const StaticTransport* t = ToStaticTransport())
@@ -181,9 +182,12 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
                         break;
                 }
 
+#ifdef LICH_KING
+                fieldBuffer << uint16(dynFlags);
+                fieldBuffer << int16(pathProgress);
+#else
                 fieldBuffer << uint32(dynFlags);
-               //LK fieldBuffer << uint16(dynFlags);
-              //LK  fieldBuffer << int16(pathProgress);
+#endif
             }
             else if (index == GAMEOBJECT_FLAGS)
             {

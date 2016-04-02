@@ -4490,65 +4490,6 @@ bool ChatHandler::HandleSetValueCommand(const char* args)
     return true;
 }
 
-/* Syntax : .debug getvalue #index [uint32/uint64/float]*/
-bool ChatHandler::HandleGetValueCommand(const char* args)
-{
-    ARGS_CHECK
-
-    char* cIndex = strtok((char*)args, " ");
-    char* cType = strtok(nullptr, " ");
-
-    if (!cIndex)
-        return false;
-
-    Unit* target = GetSelectedUnit();
-    if(!target)
-    {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint64 guid = target->GetGUID();
-
-    uint32 index = (uint32)atoi(cIndex);
-    if(index >= target->GetValuesCount())
-    {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
-        return false;
-    }
-    uint64 uValue;
-    float fValue;
-    uint8 type = 0;
-    if(cType)
-    {
-        if( strcmp(cType, "float") == 0 )
-            type = 2;
-        else if ( strcmp(cType, "uint64") == 0 )
-            type = 1;
-        else if ( strcmp(cType, "uint32") == 0 )
-            type = 0;
-    }
-
-    switch(type)
-    {
-    case 0: //uint32
-        uValue = target->GetUInt32Value(index);
-        PSendSysMessage(LANG_GET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
-        break;
-    case 1: //uint64
-        uValue = target->GetUInt64Value(index);
-        PSendSysMessage("The uint64 value of %u (lowguid) in field %u is " UI64FMTD, GUID_LOPART(guid), index, uValue);
-        break;
-    case 2: //float
-        fValue = target->GetFloatValue(index);
-        PSendSysMessage(LANG_GET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
-        break;
-    }
-
-    return true;
-}
-
 /* Syntax : .gobject setvalue #guid #index #value [uint32/uint64/float]*/
 bool ChatHandler::HandleGobSetValueCommand(const char* args)
 {

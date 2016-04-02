@@ -38,6 +38,7 @@
 #include "SpellMgr.h"
 #include "SmartScriptMgr.h"
 #include "SmartAI.h"
+#include "UpdateFieldsDebug.h"
 
 bool ChatHandler::HandleYoloCommand(const char* /* args */)
 {
@@ -1023,5 +1024,121 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
     GetSession()->SendPacket(&data);
     
     PSendSysMessage("Send opcode %u with size %u.", op, (uint32)data.size());
+    return true;
+}
+
+void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
+{
+    uint32 valuesCount = target->GetValuesCount();
+    values.clear();
+    values.resize(valuesCount);
+    for (uint32 i = 0; i < valuesCount; i++)
+        values[i] = target->GetUInt32Value(i);
+}
+
+/* Syntax: .debug valuessnapshots [start|stop] */
+bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
+{
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        return true;
+    }
+
+    char* cArg = strtok((char*)args, " ");
+    if (!cArg)
+        return false;
+
+    std::string arg(cArg);
+
+    auto& snapshot_values = GetSession()->snapshot_values;
+
+    if (arg == "start")
+    {
+        FillSnapshotValues(target, snapshot_values);
+        PSendSysMessage("Created snapshot for target %s (guid %u)", target->GetName(), target->GetGUIDLow());
+        return true;
+    }
+    else if (arg == "stop")
+    {
+        std::vector<uint32> newValues;
+        FillSnapshotValues(target, newValues);
+        if (newValues.size() != snapshot_values.size())
+        {
+            SendSysMessage("Error: Snapshots sizes do not match");
+            return true;
+        }
+        SendSysMessage("Differences since snapshot:");
+
+        uint32 diffCount = 0;
+        TypeID typeId = TypeID(target->GetTypeId());
+        for (uint32 i = 0; i < snapshot_values.size(); i++)
+        {
+            if (newValues[i] != snapshot_values[i])
+            {
+                std::stringstream stream;
+                std::string fieldName = "[UNKNOWN]";
+                GetFieldNameString(typeId, i, fieldName);
+                stream << "Index: " << i << " | " << fieldName << std::endl;
+                stream << "  New value:  ";
+                uint32 fieldSize = InsertFieldInStream(typeId, i, newValues, stream);
+                stream << std::endl;
+                stream << "  Old value:   ";
+                InsertFieldInStream(typeId, i, snapshot_values, stream);
+                stream << std::endl;
+                diffCount++;
+                if (fieldSize > 1)
+                    i += (fieldSize - 1); //this will skip next field for UPDATE_FIELD_TYPE_LONG
+
+                PSendSysMessage("%s", stream.str().c_str());
+            }
+        }
+        PSendSysMessage("Found %u differences", diffCount);
+    }
+    else {
+        return false;
+    }
+
+    return true;
+}
+
+/* Syntax : .debug getvalue #index */
+bool ChatHandler::HandleGetValueCommand(const char* args)
+{
+    ARGS_CHECK
+
+    char* cIndex = strtok((char*)args, " ");
+
+    if (!cIndex)
+        return false;
+
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 index = (uint32)atoi(cIndex);
+    if (index >= target->GetValuesCount())
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+
+    std::vector<uint32> values;
+    FillSnapshotValues(target, values);
+
+    TypeID type = TypeID(target->GetTypeId());
+    std::string fieldName = "[UNKNOWN]";
+    GetFieldNameString(type, index, fieldName);
+    std::stringstream ss;
+    InsertFieldInStream(type, index, values, ss);
+    PSendSysMessage("Field %s (%u): %s", fieldName.c_str(), index, ss.str().c_str());
+
     return true;
 }

@@ -160,6 +160,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         }
     }
 
+   //GM Silence
    if (GetPlayer()->HasAuraEffect(1852,0) && type != CHAT_MSG_WHISPER)
    {
         std::string msg="";

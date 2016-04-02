@@ -893,6 +893,11 @@ class WorldSession
         void HandleGuildBankSetTabText(WorldPacket& recvData);
 
         void HandleMirrorImageDataRequest(WorldPacket& recvData);
+
+#ifdef TRINITY_DEBUG
+        //for HandleDebugValuesSnapshot command
+        std::vector<uint32> snapshot_values;
+#endif
     private:
         void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
@@ -995,6 +1000,7 @@ class WorldSession
         bool forceExit;
 
         LockedQueue<WorldPacket*> _recvQueue;
+
 };
 #endif
 /// @}
