@@ -427,7 +427,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     data.ArtKit = trans->GetUInt32Value(GAMEOBJECT_ARTKIT);
 
     // xinef: transports are active so passengers can be relocated (grids must be loaded)
-    trans->SetKeepActive(true);
+    ///trans->SetKeepActive(true);
     trans->GetMap()->Add<MotionTransport>(trans);
     return trans;
 }
@@ -460,6 +460,7 @@ void TransportMgr::SpawnContinentTransports()
     TC_LOG_INFO("server.loading", ">> Spawned %u continent transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
     // pussywizard: preload grids for continent static transports
+  /*  
     oldMSTime = GetMSTime();
     result = WorldDatabase.Query("SELECT map, position_x, position_y FROM gameobject g JOIN gameobject_template t ON g.id = t.entry WHERE t.type = 11");
     count = 0;
@@ -482,8 +483,8 @@ void TransportMgr::SpawnContinentTransports()
 
         } while (result->NextRow());
     }
-
     TC_LOG_INFO("server.loading", ">> Preloaded grids for %u continent static transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+    */
 }
 
 void TransportMgr::CreateInstanceTransports(Map* map)

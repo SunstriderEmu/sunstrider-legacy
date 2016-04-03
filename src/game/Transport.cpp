@@ -234,8 +234,14 @@ void MotionTransport::Update(uint32 diff)
             3. transport moves from active to inactive grid
             4. the grid that transport is currently in unloads
             */
-            if (_staticPassengers.empty() && GetMap()->IsGridLoaded(GetPositionX(), GetPositionY())) // 2.
+            bool gridActive = GetMap()->IsGridLoaded(GetPositionX(), GetPositionY());
+
+            if (_staticPassengers.empty() && gridActive) // 2.
                 LoadStaticPassengers();
+            else if (!_staticPassengers.empty() && !gridActive)
+                // 4. - if transports stopped on grid edge, some passengers can remain in active grids
+                //      unload all static passengers otherwise passengers won't load correctly when the grid that transport is currently in becomes active
+                UnloadStaticPassengers();
         }
     }
 
@@ -252,18 +258,30 @@ void MotionTransport::DelayedUpdate(uint32 diff)
 
 void MotionTransport::UpdatePosition(float x, float y, float z, float o)
 {
+    bool newActive = GetMap()->IsGridLoaded(x, y);
+    Cell oldCell(GetPositionX(), GetPositionY());
+    /*
     if (!GetMap()->IsGridLoaded(x, y)) // pussywizard: should not happen, but just in case
         GetMap()->LoadGrid(x, y);
-
+        */
     Relocate(x, y, z, o);
     UpdateModelPosition();
 
     UpdatePassengerPositions(_passengers);
 
-    if (_staticPassengers.empty())
+    /* There are four possible scenarios that trigger loading/unloading passengers:
+    1. transport moves from inactive to active grid
+    2. the grid that transport is currently in becomes active
+    3. transport moves from active to inactive grid
+    4. the grid that transport is currently in unloads
+    */
+    if (_staticPassengers.empty()) // 1.
         LoadStaticPassengers();
+    else if (!_staticPassengers.empty() && !newActive && oldCell.DiffGrid(Cell(GetPositionX(), GetPositionY()))) // 3.
+        UnloadStaticPassengers();
     else
         UpdatePassengerPositions(_staticPassengers);
+    // 4. is handed by grid unload
 }
 
 void MotionTransport::AddPassenger(WorldObject* passenger, bool withAll)
@@ -809,7 +827,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, 
 
     LastUsedScriptID = GetGOInfo()->ScriptId;
 
-    this->SetKeepActive(true);
+    //this->SetKeepActive(true);
     return true;
 }
 

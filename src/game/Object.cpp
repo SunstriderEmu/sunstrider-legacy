@@ -213,6 +213,9 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
                 case GAMEOBJECT_TYPE_FLAGDROP:
                     updatetype = UPDATETYPE_CREATE_OBJECT2;
                     break;
+                case GAMEOBJECT_TYPE_TRANSPORT:
+                    updatetype |= UPDATEFLAG_TRANSPORT;
+                    break;
                 default:
                     break;
             }
