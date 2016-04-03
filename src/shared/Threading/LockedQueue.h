@@ -36,6 +36,11 @@ class LockedQueue
 
 public:
 
+
+#ifdef TRINITY_DEBUG
+    StorageType& GetQueue() { return _queue; }
+#endif
+
     //! Create a LockedQueue.
     LockedQueue()
         : _canceled(false)
