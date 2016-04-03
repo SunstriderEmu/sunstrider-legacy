@@ -83,7 +83,8 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
     SetObjectScale(goinfo->size);
     SetUInt32Value(GAMEOBJECT_FACTION, goinfo->faction);
     SetUInt32Value(GAMEOBJECT_FLAGS, goinfo->flags);
-    SetPathProgress(0);
+    //Do not start at 0, hackfix for ships appearing at wrong coordinates at server boot
+    SetPathProgress(120000);
     SetPeriod(tInfo->pathTime);
     SetEntry(goinfo->entry);
     SetDisplayId(goinfo->displayId);
