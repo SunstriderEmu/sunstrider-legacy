@@ -2700,7 +2700,7 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
     return script;
 }
 
-void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS /* type */, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
+void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type , SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
 {
     if (flags & TARGET_FLAG_UNIQUE_TARGET)
         if (!list.empty())
@@ -2721,7 +2721,9 @@ void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS /* type */, SMARTAI_TARGET
                ||  ( (flags & TARGET_FLAG_OUT_OF_COMBAT_ONLY)
                      && (c->IsInCombat()) )
                ||  ( (flags & TARGET_FLAG_CAN_TARGET_DEAD) == 0
-                     && (c->IsDead()) )
+                     && (c->IsDead()) 
+                     && type != SMART_TARGET_SELF //still allow self cast
+                   )
                //this next one should be moved outside of this if if/when WorldObject get a GetFaction function
                ||  ( (flags & TARGET_FLAG_SAME_FACTION)
                      && (c->GetFaction() != me->GetFaction()) )
