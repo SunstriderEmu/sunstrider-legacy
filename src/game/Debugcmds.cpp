@@ -1142,3 +1142,14 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
 
     return true;
 }
+
+/* Syntax: .debug crash $whatever */
+bool ChatHandler::HandleDebugCrashCommand(const char* args)
+{
+    char* cWhatever = strtok((char*)args, " ");
+    if (!cWhatever)
+        return false;
+
+    raise(SIGSEGV);
+    return true;
+}
