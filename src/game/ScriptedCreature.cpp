@@ -437,7 +437,7 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
                 i_pl->TeleportTo(me->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
 }
 
-Unit* FindCreature(uint32 entry, float range, Unit* Finder)
+Creature* FindCreature(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
         return NULL;

@@ -47,7 +47,7 @@ private:
 };
 
 //Get a single creature of given entry
-Unit* FindCreature(uint32 entry, float range, Unit* Finder);
+Creature* FindCreature(uint32 entry, float range, Unit* Finder);
 //Get every creatures of given entry within given range
 void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder);
 
