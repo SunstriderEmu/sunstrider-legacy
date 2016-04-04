@@ -493,6 +493,7 @@ enum ScriptCommands
     SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong
     SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table
     SCRIPT_COMMAND_KILL =                 22,              // datalong removecorpse
+    SCRIPT_COMMAND_SMART_SET_DATA =       23,              // source = unit, datalong=id, datalong2=value // triggers SMART_EVENT_DATA_SET for unit if using SmartAI
 };
 
 /// Storage class for commands issued for delayed execution

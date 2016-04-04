@@ -2844,6 +2844,22 @@ void World::ScriptsProcess()
                 break;
             }
 
+            case SCRIPT_COMMAND_SMART_SET_DATA:
+            {
+                if (!source || ((Unit*)source)->GetTypeId() != TYPEID_UNIT)
+                    break;
+
+                Creature* c = source->ToCreature();
+                if (!c->AI() || c->GetAIName() != SMARTAI_AI_NAME)
+                    break;
+
+                SmartAI* smartAI = dynamic_cast<SmartAI*>(c->AI()); //dynamic cast to be extra safe
+                if (!smartAI)
+                    break;
+
+                smartAI->SetData(step.script->datalong, step.script->datalong2);
+            }
+
             default:
                 TC_LOG_ERROR("scripts","Unknown script command %u called.",step.script->command);
                 break;
