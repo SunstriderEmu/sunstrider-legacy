@@ -8106,13 +8106,6 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             conditional_list = itr->second;
     }
 
-    // LOOT_PICKPOCKETING, LOOT_PROSPECTING, LOOT_DISENCHANTING and LOOT_INSIGNIA unsupported by client, sending LOOT_SKINNING instead
-    if(loot_type == LOOT_PICKPOCKETING || loot_type == LOOT_DISENCHANTING || loot_type == LOOT_PROSPECTING || loot_type == LOOT_INSIGNIA)
-        loot_type = LOOT_SKINNING;
-
-    if(loot_type == LOOT_FISHINGHOLE)
-        loot_type = LOOT_FISHING;
-
     // LOOT_INSIGNIA and LOOT_FISHINGHOLE unsupported by client
     switch (loot_type)
     {
