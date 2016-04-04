@@ -1096,7 +1096,7 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
 
                 addonInfo >> enabled >> crc >> unk1;
 
-                TC_LOG_DEBUG("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
+                TC_LOG_TRACE("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
 
                 AddonInfo addon(addonName, enabled, crc, 2, true);
 
@@ -1106,7 +1106,7 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
                     if (addon.CRC != savedAddon->CRC)
                         TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
                     else
-                        TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+                        TC_LOG_TRACE("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
                 }
                 else
                 {
