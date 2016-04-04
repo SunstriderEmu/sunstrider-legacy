@@ -7602,6 +7602,9 @@ void Unit::RemoveAllAttackers()
 
 void Unit::ModifyAuraState(AuraStateType flag, bool apply)
 {
+    if (!flag)
+        return;
+
     if (apply)
     {
         if (!HasFlag(UNIT_FIELD_AURASTATE, 1<<(flag-1)))
