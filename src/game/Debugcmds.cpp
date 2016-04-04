@@ -1036,7 +1036,7 @@ void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
         values[i] = target->GetUInt32Value(i);
 }
 
-/* Syntax: .debug valuessnapshots [start|stop] */
+/* Syntax: .debug valuessnapshots <start|stop> */
 bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
 {
     Unit* target = GetSelectedUnit();
@@ -1143,13 +1143,21 @@ bool ChatHandler::HandleGetValueCommand(const char* args)
     return true;
 }
 
-/* Syntax: .debug crash $whatever */
+/* Syntax: .debug crash <SIGSEGV|SEGABRT> */
 bool ChatHandler::HandleDebugCrashCommand(const char* args)
 {
-    char* cWhatever = strtok((char*)args, " ");
-    if (!cWhatever)
+    char* cSignal = strtok((char*)args, " ");
+    if (!cSignal)
         return false;
 
-    raise(SIGSEGV);
+    std::string signal(cSignal);
+
+    if (signal == "SIGSEGV")
+        raise(SIGSEGV);
+    else if (signal == "SIGABRT")
+        raise(SIGABRT);
+    else
+        return false;
+
     return true;
 }
