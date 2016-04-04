@@ -1126,12 +1126,12 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
 
     if(cinfo && getPetType() != HUNTER_PET)
     {
-        creatureResistance[SPELL_SCHOOL_HOLY]   = cinfo->resistance[0];
-        creatureResistance[SPELL_SCHOOL_FIRE]   = cinfo->resistance[1];
-        creatureResistance[SPELL_SCHOOL_NATURE] = cinfo->resistance[2];
-        creatureResistance[SPELL_SCHOOL_FROST]  = cinfo->resistance[3];
-        creatureResistance[SPELL_SCHOOL_SHADOW] = cinfo->resistance[4];
-        creatureResistance[SPELL_SCHOOL_ARCANE] = cinfo->resistance[5];
+        creatureResistance[SPELL_SCHOOL_HOLY]   = cinfo->resistance[SPELL_SCHOOL_HOLY - 1];
+        creatureResistance[SPELL_SCHOOL_FIRE]   = cinfo->resistance[SPELL_SCHOOL_FIRE - 1];
+        creatureResistance[SPELL_SCHOOL_NATURE] = cinfo->resistance[SPELL_SCHOOL_NATURE -1];
+        creatureResistance[SPELL_SCHOOL_FROST]  = cinfo->resistance[SPELL_SCHOOL_FROST -1];
+        creatureResistance[SPELL_SCHOOL_SHADOW] = cinfo->resistance[SPELL_SCHOOL_SHADOW -1];
+        creatureResistance[SPELL_SCHOOL_ARCANE] = cinfo->resistance[SPELL_SCHOOL_ARCANE -1];
     }
 
     switch(getPetType())

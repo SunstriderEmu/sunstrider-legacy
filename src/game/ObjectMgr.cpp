@@ -564,7 +564,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     creatureTemplate.pickpocketLootId = fields[f++].GetUInt32();
     creatureTemplate.SkinLootId       = fields[f++].GetUInt32();
 
-    for (uint8 i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
+    for (uint8 i = 0; i < MAX_SPELL_SCHOOL-1; ++i) //SPELL_SCHOOL_NORMAL is not handled here so, -1
         creatureTemplate.resistance[i] = fields[f++].GetInt16();
 
     for (uint8 i = 0; i < CREATURE_MAX_SPELLS; ++i)

@@ -209,7 +209,7 @@ struct CreatureTemplate
     uint32  lootid;
     uint32  pickpocketLootId;
     uint32  SkinLootId;
-    int32   resistance[MAX_SPELL_SCHOOL-1];
+    int32   resistance[MAX_SPELL_SCHOOL-1]; //-1 because no resistance to SPELL_SCHOOL_NORMAL
     uint32  spells[CREATURE_MAX_SPELLS];
     uint32  PetSpellDataId;
     uint32  mingold;
