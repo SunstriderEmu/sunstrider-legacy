@@ -1625,14 +1625,18 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
     if (!spellInfo)
         return false;
 
-    if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
-        return true;
+    if(spellInfo->Mechanic)
+        if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Mechanic - 1)))
+            return true;
 
     return Unit::IsImmunedToSpell(spellInfo, useCharges);
 }
 
 bool Creature::IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const
 {
+    if (!mechanic)
+        return false;
+
     if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (mechanic-1)))
         return true;
 
