@@ -259,7 +259,14 @@ class SmartScript
                 mEventPhase = 0;
         }
 
-        bool IsInPhase(PhaseMask phaseMask) const { return ((1 << (mEventPhase - 1)) & phaseMask) != 0; }
+        bool IsInPhase(PhaseMask phaseMask) const 
+        { 
+            if (mEventPhase == 0)
+                return false;
+
+            return ((1 << (mEventPhase - 1)) & phaseMask) != 0; 
+        }
+
         void SetPhase(uint32 p = 0) 
         { 
             uint32 previous = mEventPhase;
