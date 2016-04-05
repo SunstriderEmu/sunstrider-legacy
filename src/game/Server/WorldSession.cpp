@@ -349,7 +349,6 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                             requeuePackets.push_back(packet);
                             //! Because checking a bool is faster than reallocating memory
                             deletePacket = false;
-                            QueuePacket(packet);
                             //! Log
                             TC_LOG_DEBUG("network", "Re-enqueueing packet with opcode %s with with status STATUS_LOGGEDIN. "
                                 "Player is currently not in world yet.", GetOpcodeNameForLogging(packet->GetOpcode()).c_str());
