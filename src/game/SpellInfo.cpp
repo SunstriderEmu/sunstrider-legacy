@@ -20,6 +20,36 @@
 #include "SpellAuraDefines.h"
 #include "Spell.h"
 
+
+uint32 GetTargetFlagMask(SpellTargetObjectTypes objType)
+{
+    switch (objType)
+    {
+    case TARGET_OBJECT_TYPE_DEST:
+        return TARGET_FLAG_DEST_LOCATION;
+    case TARGET_OBJECT_TYPE_UNIT_AND_DEST:
+        return TARGET_FLAG_DEST_LOCATION | TARGET_FLAG_UNIT;
+    case TARGET_OBJECT_TYPE_CORPSE_ALLY:
+        return TARGET_FLAG_CORPSE_ALLY;
+    case TARGET_OBJECT_TYPE_CORPSE_ENEMY:
+        return TARGET_FLAG_CORPSE_ENEMY;
+    case TARGET_OBJECT_TYPE_CORPSE:
+        return TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY;
+    case TARGET_OBJECT_TYPE_UNIT:
+        return TARGET_FLAG_UNIT;
+    case TARGET_OBJECT_TYPE_GOBJ:
+        return TARGET_FLAG_GAMEOBJECT;
+    case TARGET_OBJECT_TYPE_GOBJ_ITEM:
+        return TARGET_FLAG_GAMEOBJECT_ITEM;
+    case TARGET_OBJECT_TYPE_ITEM:
+        return TARGET_FLAG_ITEM;
+    case TARGET_OBJECT_TYPE_SRC:
+        return TARGET_FLAG_SOURCE_LOCATION;
+    default:
+        return TARGET_FLAG_NONE;
+    }
+}
+
 SpellImplicitTargetInfo::SpellImplicitTargetInfo(uint32 target)
 {
     _target = Targets(target);
@@ -27,26 +57,6 @@ SpellImplicitTargetInfo::SpellImplicitTargetInfo(uint32 target)
 
 bool SpellImplicitTargetInfo::IsArea() const
 {
-   /* switch (_target)
-    {
-    case TARGET_UNIT_DEST_AREA_ENEMY:
-    case TARGET_UNIT_SRC_AREA_ENEMY:
-    case TARGET_UNIT_DEST_AREA_ALLY:
-    case TARGET_UNIT_SRC_AREA_ALLY:
-    case TARGET_UNIT_DEST_AREA_ENTRY:
-    case TARGET_UNIT_SRC_AREA_ENTRY:
-    case TARGET_UNIT_DEST_AREA_PARTY:
-    case TARGET_UNIT_SRC_AREA_PARTY:
-    case TARGET_UNIT_LASTTARGET_AREA_PARTY:
-    case TARGET_UNIT_CASTER_AREA_PARTY:
-    case TARGET_UNIT_CONE_ENEMY:
-    case TARGET_UNIT_CONE_ALLY:
-    case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
-    case TARGET_UNIT_CASTER_AREA_RAID:
-        return true;
-    default:
-        return false;
-    }*/
     return GetSelectionCategory() == TARGET_SELECT_CATEGORY_AREA || GetSelectionCategory() == TARGET_SELECT_CATEGORY_CONE;
 }
 
@@ -693,12 +703,115 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     //custom attributes from database. More custom attributes to be loaded 
     AttributesCu = spellEntry->CustomAttributesFlags;
-
-    /* TODO SPELLINFO
     ChainEntry = NULL;
-    ExplicitTargetMask = 0; */
+
+    ExplicitTargetMask = _GetExplicitTargetMask();
 
     LoadCustomAttributes();
+}
+
+
+bool SpellInfo::IsRanked() const
+{
+    return ChainEntry != NULL;
+}
+
+uint8 SpellInfo::GetRank() const
+{
+    if (!ChainEntry)
+        return 1;
+    return ChainEntry->rank;
+}
+
+SpellInfo const* SpellInfo::GetFirstRankSpell() const
+{
+    if (!ChainEntry)
+        return this;
+    return ChainEntry->first;
+}
+
+SpellInfo const* SpellInfo::GetLastRankSpell() const
+{
+    if (!ChainEntry)
+        return NULL;
+    return ChainEntry->last;
+}
+
+SpellInfo const* SpellInfo::GetNextRankSpell() const
+{
+    if (!ChainEntry)
+        return NULL;
+    return ChainEntry->next;
+}
+
+SpellInfo const* SpellInfo::GetPrevRankSpell() const
+{
+    if (!ChainEntry)
+        return NULL;
+    return ChainEntry->prev;
+}
+
+SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
+{
+    // ignore passive spells
+    if (IsPassive())
+        return this;
+
+    bool needRankSelection = false;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (IsPositiveEffect(i) &&
+            (   Effects[i].Effect == SPELL_EFFECT_APPLY_AURA
+             || Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY 
+#ifdef LICH_KING
+             || Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID))
+#endif
+            )
+           )
+        {
+            needRankSelection = true;
+            break;
+        }
+    }
+
+    // not required
+    if (!needRankSelection)
+        return this;
+
+    for (SpellInfo const* nextSpellInfo = this; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
+    {
+        // if found appropriate level
+        if (uint32(level + 10) >= nextSpellInfo->SpellLevel)
+            return nextSpellInfo;
+
+        // one rank less then
+    }
+
+    // not found
+    return NULL;
+}
+
+bool SpellInfo::IsRankOf(SpellInfo const* spellInfo) const
+{
+    return GetFirstRankSpell() == spellInfo->GetFirstRankSpell();
+}
+
+bool SpellInfo::IsDifferentRankOf(SpellInfo const* spellInfo) const
+{
+    if (Id == spellInfo->Id)
+        return false;
+    return IsRankOf(spellInfo);
+}
+
+bool SpellInfo::IsHighRankOf(SpellInfo const* spellInfo) const
+{
+    if (ChainEntry && spellInfo->ChainEntry)
+    {
+        if (ChainEntry->first == spellInfo->ChainEntry->first)
+            if (ChainEntry->rank > spellInfo->ChainEntry->rank)
+                return true;
+    }
+    return false;
 }
 
 int32 SpellInfo::GetDuration() const
@@ -808,6 +921,44 @@ bool SpellInfo::IsAffectingArea() const
     return false;
 }
 
+bool SpellInfo::NeedsExplicitUnitTarget() const
+{
+    return GetExplicitTargetMask() & TARGET_FLAG_UNIT_MASK;
+}
+
+bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint8 effIndex) const
+{
+    if (NeedsExplicitUnitTarget())
+        return true;
+
+    // pussywizard:
+    if (effIndex < MAX_SPELL_EFFECTS && (triggeringSpell->Effects[effIndex].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || triggeringSpell->Effects[effIndex].TargetB.GetCheckType() == TARGET_CHECK_ENTRY))
+    {
+#ifdef LICH_KING
+        if (Id == 60563)
+            return true;
+#endif
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (Effects[i].IsEffect() && (Effects[i].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || Effects[i].TargetB.GetCheckType() == TARGET_CHECK_ENTRY))
+                return true;
+    }
+
+    if (triggeringSpell->IsChanneled())
+    {
+        uint32 mask = 0;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (Effects[i].TargetA.GetTarget() != TARGET_UNIT_CASTER && Effects[i].TargetA.GetTarget() != TARGET_DEST_CASTER)
+                mask |= Effects[i].GetProvidedTargetMask();
+        }
+
+        if (mask & TARGET_FLAG_UNIT_MASK)
+            return true;
+    }
+
+    return false;
+}
+
 bool SpellInfo::CanBeUsedInCombat() const
 {
     return !HasAttribute(SPELL_ATTR0_CANT_USED_IN_COMBAT);
@@ -844,6 +995,14 @@ bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
     return HasEffectByEffectMask(effect, SPELL_EFFECT_MASK_ALL);
 }
 
+bool SpellInfo::HasAura(AuraType aura) const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].IsAura(aura))
+            return true;
+    return false;
+}
+
 bool SpellInfo::HasAuraEffect(AuraType aura) const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -855,6 +1014,24 @@ bool SpellInfo::HasAuraEffect(AuraType aura) const
 bool SpellInfo::IsBreakingStealth() const
 {
     return !(AttributesEx & SPELL_ATTR1_NOT_BREAK_STEALTH);
+}
+
+bool SpellInfo::IsValidDeadOrAliveTarget(Unit const* target) const
+{
+    if (target->IsAlive())
+        return !IsRequiringDeadTarget();
+
+    return IsAllowingDeadTarget();
+}
+
+bool SpellInfo::IsRequiringDeadTarget() const
+{
+    return AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_GHOSTS;
+}
+
+bool SpellInfo::IsAllowingDeadTarget() const
+{
+    return AttributesEx2 & (SPELL_ATTR2_CAN_TARGET_DEAD) || Attributes & (SPELL_ATTR0_CASTABLE_WHILE_DEAD) || Targets & (TARGET_FLAG_CORPSE_ALLY | TARGET_FLAG_CORPSE_ENEMY | TARGET_FLAG_UNIT_DEAD);
 }
 
 bool SpellInfo::IsChanneled() const
@@ -893,6 +1070,223 @@ bool SpellInfo::HasVisual(uint32 visual) const
 #else
     return SpellVisual == visual;
 #endif
+}
+
+SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* target, bool implicit) const
+{
+    if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
+        return SPELL_FAILED_BAD_TARGETS;
+
+    // check visibility - ignore stealth for implicit (area) targets
+#ifdef LICH_KING
+    if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
+        return SPELL_FAILED_BAD_TARGETS;
+#endif
+    Unit const* unitTarget = target->ToUnit();
+
+    // creature/player specific target checks
+    if (unitTarget)
+    {
+        // xinef: spells cannot be cast if player is in fake combat also
+        if (AttributesEx & SPELL_ATTR1_CANT_TARGET_IN_COMBAT && (unitTarget->IsInCombat() || unitTarget->IsPetInCombat()))
+            return SPELL_FAILED_TARGET_AFFECTING_COMBAT;
+
+        // only spells with SPELL_ATTR3_ONLY_TARGET_GHOSTS can target ghosts
+        if (((IsRequiringDeadTarget() != 0) != unitTarget->HasAuraType(SPELL_AURA_GHOST)) && !(IsDeathPersistent() && IsAllowingDeadTarget()))
+        {
+            if (AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_GHOSTS)
+                return SPELL_FAILED_TARGET_NOT_GHOST;
+            else
+                return SPELL_FAILED_BAD_TARGETS;
+        }
+
+        if (caster != unitTarget)
+        {
+            if (caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
+                if (AttributesEx2 & SPELL_ATTR2_CANT_TARGET_TAPPED)
+                    if (Creature const* targetCreature = unitTarget->ToCreature())
+                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(caster->ToPlayer()))
+                            return SPELL_FAILED_CANT_CAST_ON_TAPPED;
+
+                if (AttributesCu & SPELL_ATTR_CU_PICKPOCKET)
+                {
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_TARGETS;
+                    else if ((unitTarget->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) == 0)
+                        return SPELL_FAILED_TARGET_NO_POCKETS;
+                }
+
+                // Not allow disarm unarmed player
+                if (Mechanic == MECHANIC_DISARM)
+                {
+                    if (!unitTarget->HasMainWeapon())
+                        return SPELL_FAILED_TARGET_NO_WEAPONS;
+                }
+            }
+        }
+    }
+    // corpse specific target checks
+    else if (Corpse const* corpseTarget = target->ToCorpse())
+    {
+        // cannot target bare bones
+        if (corpseTarget->GetType() == CORPSE_BONES)
+            return SPELL_FAILED_BAD_TARGETS;
+        // we have to use owner for some checks (aura preventing resurrection for example)
+        if (Player* owner = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID()))
+            unitTarget = owner;
+        // we're not interested in corpses without owner
+        else
+            return SPELL_FAILED_BAD_TARGETS;
+    }
+    // other types of objects - always valid
+    else return SPELL_CAST_OK;
+
+    // corpseOwner and unit specific target checks
+    if (AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_PLAYERS && !unitTarget->ToPlayer())
+        return SPELL_FAILED_TARGET_NOT_PLAYER;
+
+    if (!IsAllowingDeadTarget() && !unitTarget->IsAlive())
+        return SPELL_FAILED_TARGETS_DEAD;
+
+    // check this flag only for implicit targets (chain and area), allow to explicitly target units for spells like Shield of Righteousness
+    if (implicit && AttributesEx6 & SPELL_ATTR6_CANT_TARGET_CROWD_CONTROLLED && !unitTarget->CanFreeMove())
+        return SPELL_FAILED_BAD_TARGETS;
+
+    // checked in Unit::IsValidAttack/AssistTarget, shouldn't be checked for ENTRY targets
+    //if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_UNTARGETABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+    //    return SPELL_FAILED_BAD_TARGETS;
+
+    //if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_POSSESSED_FRIENDS)
+
+    if (!CheckTargetCreatureType(unitTarget))
+    {
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            return SPELL_FAILED_TARGET_IS_PLAYER;
+        else
+            return SPELL_FAILED_BAD_TARGETS;
+    }
+
+    // check GM mode and GM invisibility - only for player casts (npc casts are controlled by AI) and negative spells
+    if (unitTarget != caster && (caster->IsControlledByPlayer() || !IsPositive()) && unitTarget->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (!unitTarget->ToPlayer()->IsVisible())
+            return SPELL_FAILED_BM_OR_INVISGOD;
+
+        if (unitTarget->ToPlayer()->IsGameMaster())
+            return SPELL_FAILED_BM_OR_INVISGOD;
+    }
+
+    // not allow casting on flying player
+    if (unitTarget->IsInFlight() /* sunwell && !HasAttribute(SPELL_ATTR0_CU_ALLOW_INFLIGHT_TARGET) */)
+        return SPELL_FAILED_BAD_TARGETS;
+
+    /* TARGET_UNIT_MASTER gets blocked here for passengers, because the whole idea of this check is to
+    not allow passengers to be implicitly hit by spells, however this target type should be an exception,
+    if this is left it kills spells that award kill credit from vehicle to master (few spells),
+    the use of these 2 covers passenger target check, logically, if vehicle cast this to master it should always hit
+    him, because it would be it's passenger, there's no such case where this gets to fail legitimacy, this problem
+    cannot be solved from within the check in other way since target type cannot be called for the spell currently
+    Spell examples: [ID - 52864 Devour Water, ID - 52862 Devour Wind, ID - 49370 Wyrmrest Defender: Destabilize Azure Dragonshrine Effect] */
+    if (
+#ifdef LICH_KING
+        !caster->IsVehicle() &&
+#endif
+        !(caster->GetCharmerOrOwner() == target))
+    {
+        if (TargetAuraState && !unitTarget->HasAuraState(AuraStateType(TargetAuraState), this, caster))
+            return SPELL_FAILED_TARGET_AURASTATE;
+
+        if (TargetAuraStateNot && unitTarget->HasAuraState(AuraStateType(TargetAuraStateNot), this, caster))
+            return SPELL_FAILED_TARGET_AURASTATE;
+    }
+
+#ifdef LICH_KING
+    if (TargetAuraSpell && !unitTarget->HasAura(sSpellMgr->GetSpellIdForDifficulty(TargetAuraSpell, caster)))
+        return SPELL_FAILED_TARGET_AURASTATE;
+
+    if (ExcludeTargetAuraSpell && unitTarget->HasAura(sSpellMgr->GetSpellIdForDifficulty(ExcludeTargetAuraSpell, caster)))
+        return SPELL_FAILED_TARGET_AURASTATE;
+
+    if (unitTarget->HasAuraType(SPELL_AURA_PREVENT_RESURRECTION))
+        if (HasEffect(SPELL_EFFECT_SELF_RESURRECT) || HasEffect(SPELL_EFFECT_RESURRECT) || HasEffect(SPELL_EFFECT_RESURRECT_NEW))
+            return SPELL_FAILED_TARGET_CANNOT_BE_RESURRECTED;
+#endif
+
+    // xinef: check if stronger aura is active
+    /* Todo spel strongerauras
+    if (IsStrongerAuraActive(caster, unitTarget))
+        return SPELL_FAILED_AURA_BOUNCED;
+        */
+
+    return SPELL_CAST_OK;
+}
+
+SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget) const
+{
+    uint32 neededTargets = GetExplicitTargetMask();
+    if (!target)
+    {
+        if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK))
+            if (!(neededTargets & TARGET_FLAG_GAMEOBJECT_ITEM) || !itemTarget)
+                return SPELL_FAILED_BAD_TARGETS;
+        return SPELL_CAST_OK;
+    }
+
+    if (Unit const* unitTarget = target->ToUnit())
+    {
+        if (neededTargets & (TARGET_FLAG_UNIT_ENEMY | TARGET_FLAG_UNIT_ALLY | TARGET_FLAG_UNIT_RAID | TARGET_FLAG_UNIT_PARTY | TARGET_FLAG_UNIT_MINIPET 
+#ifdef LICH_KING
+            | TARGET_FLAG_UNIT_PASSENGER
+#endif
+            ))
+        {
+            if (neededTargets & TARGET_FLAG_UNIT_ENEMY)
+                //sunwell/TC if (caster->_IsValidAttackTarget(unitTarget, this))
+                if (caster->CanAttack(unitTarget) == CAN_ATTACK_RESULT_OK)
+                    return SPELL_CAST_OK;
+            if (neededTargets & TARGET_FLAG_UNIT_ALLY
+                || (neededTargets & TARGET_FLAG_UNIT_PARTY && caster->IsInPartyWith(unitTarget))
+                || (neededTargets & TARGET_FLAG_UNIT_RAID && caster->IsInRaidWith(unitTarget)))
+                if (caster->_IsValidAssistTarget(unitTarget, this))
+                    return SPELL_CAST_OK;
+            if (neededTargets & TARGET_FLAG_UNIT_MINIPET)
+#ifdef LICH_KING
+                if (unitTarget->GetGUID() == caster->GetCritterGUID())
+                    return SPELL_CAST_OK;
+#else
+                if (Player const* p = caster->ToPlayer())
+                {
+                    Creature* miniPet = p->GetMiniPet();
+                    if (miniPet && unitTarget->GetGUID() == miniPet->GetGUID())
+                        return SPELL_CAST_OK;
+                }
+#endif
+#ifdef LICH_KING
+            if (neededTargets & TARGET_FLAG_UNIT_PASSENGER)
+                if (unitTarget->IsOnVehicle(caster))
+                    return SPELL_CAST_OK;
+#endif
+            return SPELL_FAILED_BAD_TARGETS;
+        }
+    }
+    return SPELL_CAST_OK;
+}
+
+bool SpellInfo::CheckTargetCreatureType(Unit const* target) const
+{
+    // Curse of Doom & Exorcism: not find another way to fix spell target check :/
+    if (SpellFamilyName == SPELLFAMILY_WARLOCK && GetCategory() == 1179)
+    {
+        // not allow cast at player
+        if (target->GetTypeId() == TYPEID_PLAYER)
+            return false;
+        else
+            return true;
+    }
+    uint32 creatureType = target->GetCreatureTypeMask();
+    return !TargetCreatureType || !creatureType || (creatureType & TargetCreatureType);
 }
 
 SpellSchoolMask SpellInfo::GetSchoolMask() const
@@ -978,6 +1372,14 @@ float SpellInfo::GetMaxRange(bool /* positive */, Unit* caster, Spell* spell) co
     return range;
 }
 
+bool SpellInfo::IsChannelCategorySpell() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (Effects[i].TargetA.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL || Effects[i].TargetB.GetSelectionCategory() == TARGET_SELECT_CATEGORY_CHANNEL)
+            return true;
+    return false;
+}
+
 bool SpellInfo::IsPassive() const
 {
     return HasAttribute(SPELL_ATTR0_PASSIVE);
@@ -1006,6 +1408,12 @@ bool SpellInfo::IsPositiveEffect(uint8 effIndex, bool hostileTarget /* = false *
         case 2:
             return !HasAttribute(SPELL_ATTR_CU_NEGATIVE_EFF2);
     }
+}
+
+
+uint32 SpellInfo::GetExplicitTargetMask() const
+{
+    return ExplicitTargetMask;
 }
 
 AuraStateType SpellInfo::GetAuraState() const
@@ -1063,6 +1471,22 @@ AuraStateType SpellInfo::GetAuraState() const
     return AURA_STATE_NONE;
 }
 
+float SpellEffectInfo::CalcValueMultiplier(Unit* caster, Spell* spell) const
+{
+    float multiplier = ValueMultiplier;
+    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+        modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_VALUE_MULTIPLIER, multiplier, spell);
+    return multiplier;
+}
+
+float SpellEffectInfo::CalcDamageMultiplier(Unit* caster, Spell* spell) const
+{
+    float multiplier = DamageMultiplier;
+    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+        modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_DAMAGE_MULTIPLIER, multiplier, spell);
+    return multiplier; 
+}
+
 bool SpellEffectInfo::HasRadius() const
 {
     return RadiusEntry != NULL;
@@ -1085,23 +1509,263 @@ float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
     return radius;
 }
 
+
+uint32 SpellEffectInfo::GetProvidedTargetMask() const
+{
+    return GetTargetFlagMask(TargetA.GetObjectType()) | GetTargetFlagMask(TargetB.GetObjectType());
+}
+
+uint32 SpellEffectInfo::GetMissingTargetMask(bool srcSet /*= false*/, bool dstSet /*= false*/, uint32 mask /*=0*/) const
+{
+    uint32 effImplicitTargetMask = GetTargetFlagMask(GetUsedTargetObjectType());
+    uint32 providedTargetMask = GetTargetFlagMask(TargetA.GetObjectType()) | GetTargetFlagMask(TargetB.GetObjectType()) | mask;
+
+    // remove all flags covered by effect target mask
+    if (providedTargetMask & TARGET_FLAG_UNIT_MASK)
+        effImplicitTargetMask &= ~(TARGET_FLAG_UNIT_MASK);
+    if (providedTargetMask & TARGET_FLAG_CORPSE_MASK)
+        effImplicitTargetMask &= ~(TARGET_FLAG_UNIT_MASK | TARGET_FLAG_CORPSE_MASK);
+    if (providedTargetMask & TARGET_FLAG_GAMEOBJECT_ITEM)
+        effImplicitTargetMask &= ~(TARGET_FLAG_GAMEOBJECT_ITEM | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_ITEM);
+    if (providedTargetMask & TARGET_FLAG_GAMEOBJECT)
+        effImplicitTargetMask &= ~(TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_GAMEOBJECT_ITEM);
+    if (providedTargetMask & TARGET_FLAG_ITEM)
+        effImplicitTargetMask &= ~(TARGET_FLAG_ITEM | TARGET_FLAG_GAMEOBJECT_ITEM);
+    if (dstSet || providedTargetMask & TARGET_FLAG_DEST_LOCATION)
+        effImplicitTargetMask &= ~(TARGET_FLAG_DEST_LOCATION);
+    if (srcSet || providedTargetMask & TARGET_FLAG_SOURCE_LOCATION)
+        effImplicitTargetMask &= ~(TARGET_FLAG_SOURCE_LOCATION);
+
+    return effImplicitTargetMask;
+}
+
+SpellEffectImplicitTargetTypes SpellEffectInfo::GetImplicitTargetType() const
+{
+    return _data[Effect].ImplicitTargetType;
+}
+
+SpellTargetObjectTypes SpellEffectInfo::GetUsedTargetObjectType() const
+{
+    return _data[Effect].UsedTargetObjectType;
+}
+
+SpellEffectInfo::StaticData  SpellEffectInfo::_data[TOTAL_SPELL_EFFECTS] =
+{
+    // implicit target type           used target object type
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 0
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 1 SPELL_EFFECT_INSTAKILL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 2 SPELL_EFFECT_SCHOOL_DAMAGE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 3 SPELL_EFFECT_DUMMY
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 4 SPELL_EFFECT_PORTAL_TELEPORT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 5 SPELL_EFFECT_TELEPORT_UNITS
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 6 SPELL_EFFECT_APPLY_AURA
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 7 SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 8 SPELL_EFFECT_POWER_DRAIN
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 9 SPELL_EFFECT_HEALTH_LEECH
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 10 SPELL_EFFECT_HEAL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 11 SPELL_EFFECT_BIND
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 12 SPELL_EFFECT_PORTAL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 13 SPELL_EFFECT_RITUAL_BASE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 14 SPELL_EFFECT_RITUAL_SPECIALIZE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 15 SPELL_EFFECT_RITUAL_ACTIVATE_PORTAL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 16 SPELL_EFFECT_QUEST_COMPLETE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 17 SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_CORPSE_ALLY }, // 18 SPELL_EFFECT_RESURRECT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 19 SPELL_EFFECT_ADD_EXTRA_ATTACKS
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 20 SPELL_EFFECT_DODGE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 21 SPELL_EFFECT_EVADE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 22 SPELL_EFFECT_PARRY
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 23 SPELL_EFFECT_BLOCK
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 24 SPELL_EFFECT_CREATE_ITEM
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 25 SPELL_EFFECT_WEAPON
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 26 SPELL_EFFECT_DEFENSE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 27 SPELL_EFFECT_PERSISTENT_AREA_AURA
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 28 SPELL_EFFECT_SUMMON
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 29 SPELL_EFFECT_LEAP
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 30 SPELL_EFFECT_ENERGIZE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 31 SPELL_EFFECT_WEAPON_PERCENT_DAMAGE
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 32 SPELL_EFFECT_TRIGGER_MISSILE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_GOBJ_ITEM }, // 33 SPELL_EFFECT_OPEN_LOCK
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 34 SPELL_EFFECT_SUMMON_CHANGE_ITEM
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 35 SPELL_EFFECT_APPLY_AREA_AURA_PARTY
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 36 SPELL_EFFECT_LEARN_SPELL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 37 SPELL_EFFECT_SPELL_DEFENSE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 38 SPELL_EFFECT_DISPEL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 39 SPELL_EFFECT_LANGUAGE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 40 SPELL_EFFECT_DUAL_WIELD
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 41 SPELL_EFFECT_JUMP
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_DEST }, // 42 SPELL_EFFECT_JUMP_DEST
+#else
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 41 SPELL_EFFECT_SUMMON_WILD
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 42 SPELL_EFFECT_SUMMON_GUARDIAN
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 43 SPELL_EFFECT_TELEPORT_UNITS_FACE_CASTER
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 44 SPELL_EFFECT_SKILL_STEP
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 45 SPELL_EFFECT_ADD_HONOR
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 46 SPELL_EFFECT_SPAWN
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 47 SPELL_EFFECT_TRADE_SKILL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 48 SPELL_EFFECT_STEALTH
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 49 SPELL_EFFECT_DETECT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 50 SPELL_EFFECT_TRANS_DOOR
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 51 SPELL_EFFECT_FORCE_CRITICAL_HIT
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 52 SPELL_EFFECT_GUARANTEE_HIT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 53 SPELL_EFFECT_ENCHANT_ITEM
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 54 SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 55 SPELL_EFFECT_TAMECREATURE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 56 SPELL_EFFECT_SUMMON_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 57 SPELL_EFFECT_LEARN_PET_SPELL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 58 SPELL_EFFECT_WEAPON_DAMAGE
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 59 SPELL_EFFECT_CREATE_RANDOM_ITEM
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 59 SPELL_EFFECT_OPEN_LOCK_ITEM
+#endif
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 60 SPELL_EFFECT_PROFICIENCY
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 61 SPELL_EFFECT_SEND_EVENT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 62 SPELL_EFFECT_POWER_BURN
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 63 SPELL_EFFECT_THREAT
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 64 SPELL_EFFECT_TRIGGER_SPELL
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 65 SPELL_EFFECT_APPLY_AREA_AURA_RAID
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 66 SPELL_EFFECT_CREATE_MANA_GEM
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 66 SPELL_EFFECT_HEALTH_FUNNEL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 66 SPELL_EFFECT_POWER_FUNNEL
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 67 SPELL_EFFECT_HEAL_MAX_HEALTH
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 68 SPELL_EFFECT_INTERRUPT_CAST
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 69 SPELL_EFFECT_DISTRACT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 70 SPELL_EFFECT_PULL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 71 SPELL_EFFECT_PICKPOCKET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 72 SPELL_EFFECT_ADD_FARSIGHT
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 73 SPELL_EFFECT_UNTRAIN_TALENTS
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 74 SPELL_EFFECT_APPLY_GLYPH
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT,     TARGET_OBJECT_TYPE_DEST }, // 73 SPELL_EFFECT_SUMMON_POSSESSED
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT,     TARGET_OBJECT_TYPE_DEST }, // 74 SPELL_EFFECT_SUMMON_TOTEM
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 75 SPELL_EFFECT_HEAL_MECHANICAL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 76 SPELL_EFFECT_SUMMON_OBJECT_WILD
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 77 SPELL_EFFECT_SCRIPT_EFFECT
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 78 SPELL_EFFECT_ATTACK
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 79 SPELL_EFFECT_SANCTUARY
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 80 SPELL_EFFECT_ADD_COMBO_POINTS
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 81 SPELL_EFFECT_CREATE_HOUSE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 82 SPELL_EFFECT_BIND_SIGHT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 83 SPELL_EFFECT_DUEL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 84 SPELL_EFFECT_STUCK
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 85 SPELL_EFFECT_SUMMON_PLAYER
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_GOBJ }, // 86 SPELL_EFFECT_ACTIVATE_OBJECT
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_GOBJ }, // 87 SPELL_EFFECT_GAMEOBJECT_DAMAGE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_GOBJ }, // 88 SPELL_EFFECT_GAMEOBJECT_REPAIR
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_GOBJ }, // 89 SPELL_EFFECT_GAMEOBJECT_SET_DESTRUCTION_STATE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 90 SPELL_EFFECT_KILL_CREDIT
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 87 SPELL_EFFECT_SUMMON_TOTEM_SLOT1
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 88 SPELL_EFFECT_SUMMON_TOTEM_SLOT2
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 89 SPELL_EFFECT_SUMMON_TOTEM_SLOT3
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 90 SPELL_EFFECT_SUMMON_TOTEM_SLOT4
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 91 SPELL_EFFECT_THREAT_ALL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 92 SPELL_EFFECT_ENCHANT_HELD_ITEM
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 93 SPELL_EFFECT_FORCE_DESELECT
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT,  TARGET_OBJECT_TYPE_DEST }, // 93 SPELL_EFFECT_SUMMON_PHANTASM
+#endif
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 94 SPELL_EFFECT_SELF_RESURRECT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 95 SPELL_EFFECT_SKINNING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 96 SPELL_EFFECT_CHARGE
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 97 SPELL_EFFECT_CAST_BUTTON
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 97 SPELL_EFFECT_SUMMON_CRITTER
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 98 SPELL_EFFECT_KNOCK_BACK
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 99 SPELL_EFFECT_DISENCHANT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 100 SPELL_EFFECT_INEBRIATE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 101 SPELL_EFFECT_FEED_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 102 SPELL_EFFECT_DISMISS_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 103 SPELL_EFFECT_REPUTATION
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 104 SPELL_EFFECT_SUMMON_OBJECT_SLOT1
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 105 SPELL_EFFECT_SUMMON_OBJECT_SLOT2
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 106 SPELL_EFFECT_SUMMON_OBJECT_SLOT3
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 107 SPELL_EFFECT_SUMMON_OBJECT_SLOT4
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 108 SPELL_EFFECT_DISPEL_MECHANIC
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 109 SPELL_EFFECT_RESURRECT_PET
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 109 SPELL_EFFECT_SUMMON_DEAD_PET
+#endif
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 110 SPELL_EFFECT_DESTROY_ALL_TOTEMS
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 111 SPELL_EFFECT_DURABILITY_DAMAGE
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 112 SPELL_EFFECT_112
+#else
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 112 SPELL_EFFECT_SUMMON_DEMON
+
+#endif
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_CORPSE_ALLY }, // 113 SPELL_EFFECT_RESURRECT_NEW
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 114 SPELL_EFFECT_ATTACK_ME
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 115 SPELL_EFFECT_DURABILITY_DAMAGE_PCT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_CORPSE_ENEMY }, // 116 SPELL_EFFECT_SKIN_PLAYER_CORPSE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 117 SPELL_EFFECT_SPIRIT_HEAL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 118 SPELL_EFFECT_SKILL
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 119 SPELL_EFFECT_APPLY_AREA_AURA_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 120 SPELL_EFFECT_TELEPORT_GRAVEYARD
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 121 SPELL_EFFECT_NORMALIZED_WEAPON_DMG
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 122 SPELL_EFFECT_122
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 123 SPELL_EFFECT_SEND_TAXI
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 124 SPELL_EFFECT_PULL_TOWARDS
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 125 SPELL_EFFECT_MODIFY_THREAT_PERCENT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 126 SPELL_EFFECT_STEAL_BENEFICIAL_BUFF
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 127 SPELL_EFFECT_PROSPECTING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 128 SPELL_EFFECT_APPLY_AREA_AURA_FRIEND
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 129 SPELL_EFFECT_APPLY_AREA_AURA_ENEMY
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 130 SPELL_EFFECT_REDIRECT_THREAT
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 131 SPELL_EFFECT_PLAY_SOUND // unused SPELL_EFFECT_131 on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 132 SPELL_EFFECT_PLAY_MUSIC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 133 SPELL_EFFECT_UNLEARN_SPECIALIZATION
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 134 SPELL_EFFECT_KILL_CREDIT2
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 135 SPELL_EFFECT_CALL_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 136 SPELL_EFFECT_HEAL_PCT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 137 SPELL_EFFECT_ENERGIZE_PCT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 138 SPELL_EFFECT_LEAP_BACK //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 139 SPELL_EFFECT_CLEAR_QUEST //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 140 SPELL_EFFECT_FORCE_CAST
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 141 SPELL_EFFECT_FORCE_CAST_WITH_VALUE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 142 SPELL_EFFECT_TRIGGER_SPELL_WITH_VALUE
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 143 SPELL_EFFECT_APPLY_AREA_AURA_OWNER
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 144 SPELL_EFFECT_KNOCK_BACK_DEST
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT_AND_DEST }, // 145 SPELL_EFFECT_PULL_TOWARDS_DEST //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 146 SPELL_EFFECT_ACTIVATE_RUNE //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 147 SPELL_EFFECT_QUEST_FAIL
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 148 SPELL_EFFECT_TRIGGER_MISSILE_SPELL_WITH_VALUE //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_DEST }, // 149 SPELL_EFFECT_CHARGE_DEST //unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 150 SPELL_EFFECT_QUEST_START // unused on BC
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 151 SPELL_EFFECT_TRIGGER_SPELL_2
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_NONE }, // 152 SPELL_EFFECT_SUMMON_RAF_FRIEND // unused on BC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 153 SPELL_EFFECT_CREATE_TAMED_PET
+#ifdef LICH_KING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 154 SPELL_EFFECT_DISCOVER_TAXI
+    { EFFECT_IMPLICIT_TARGET_NONE,     TARGET_OBJECT_TYPE_UNIT }, // 155 SPELL_EFFECT_TITAN_GRIP
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 156 SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 157 SPELL_EFFECT_CREATE_ITEM_2
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_ITEM }, // 158 SPELL_EFFECT_MILLING
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 159 SPELL_EFFECT_ALLOW_RENAME_PET
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 160 SPELL_EFFECT_160
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 161 SPELL_EFFECT_TALENT_SPEC_COUNT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 162 SPELL_EFFECT_TALENT_SPEC_SELECT
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 163 SPELL_EFFECT_163
+    { EFFECT_IMPLICIT_TARGET_EXPLICIT, TARGET_OBJECT_TYPE_UNIT }, // 164 SPELL_EFFECT_REMOVE_AURA
+#endif
+};
+
 void SpellInfo::LoadCustomAttributes()
 {
-    bool auraSpell = true;
-    for(uint32 j = 0; j < 3; ++j)
-    {
-        if(Effects[j].Effect)
-            if(Effects[j].Effect != SPELL_EFFECT_APPLY_AURA
-            || sSpellMgr->SpellTargetType[Effects[j].TargetA.GetTarget()] != TARGET_TYPE_UNIT_TARGET)
-            //ignore target party for now
-            {
-                auraSpell = false;
-                break;
-            }
-    }
-    if(auraSpell)
-        AttributesCu |= SPELL_ATTR_CU_AURA_SPELL;
-
     for(uint32 j = 0; j < 3; ++j)
     {
         switch(Effects[j].ApplyAuraName)
@@ -1129,6 +1793,9 @@ void SpellInfo::LoadCustomAttributes()
             case SPELL_AURA_MOD_STUN:
                 AttributesCu |= SPELL_ATTR_CU_AURA_CC;
                 AttributesCu &= ~SPELL_ATTR_CU_MOVEMENT_IMPAIR;
+                break;
+            case SPELL_EFFECT_PICKPOCKET:
+                AttributesCu |= SPELL_ATTR_CU_PICKPOCKET;
                 break;
             default:
                 break;
@@ -1201,9 +1868,6 @@ void SpellInfo::LoadCustomAttributes()
             break;
         case 40327: // Atrophy
             AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
-            break;
-        case 40902: //SPELL_AKAMA_SOUL_RETRIEVE
-            AttributesCu |= SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET;
             break;
         case 45236:
             AttributesCu |= SPELL_ATTR_CU_IGNORE_ARMOR;
@@ -1330,6 +1994,35 @@ bool SpellInfo::IsSingleTarget() const
         return true;
 
     return false;
+}
+
+
+uint32 SpellInfo::_GetExplicitTargetMask() const
+{
+    bool srcSet = false;
+    bool dstSet = false;
+    uint32 targetMask = Targets;
+    // prepare target mask using effect target entries
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (!Effects[i].IsEffect())
+            continue;
+        targetMask |= Effects[i].TargetA.GetExplicitTargetMask(srcSet, dstSet);
+        targetMask |= Effects[i].TargetB.GetExplicitTargetMask(srcSet, dstSet);
+
+        // add explicit target flags based on spell effects which have EFFECT_IMPLICIT_TARGET_EXPLICIT and no valid target provided
+        if (Effects[i].GetImplicitTargetType() != EFFECT_IMPLICIT_TARGET_EXPLICIT)
+            continue;
+
+        // extend explicit target mask only if valid targets for effect could not be provided by target types
+        uint32 effectTargetMask = Effects[i].GetMissingTargetMask(srcSet, dstSet, targetMask);
+
+        // don't add explicit object/dest flags when spell has no max range
+        if (GetMaxRange(true) == 0.0f && GetMaxRange(false) == 0.0f)
+            effectTargetMask &= ~(TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT | TARGET_FLAG_CORPSE_MASK | TARGET_FLAG_DEST_LOCATION);
+        targetMask |= effectTargetMask;
+    }
+    return targetMask;
 }
 
 bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
@@ -1678,4 +2371,5 @@ void SpellInfo::_UnloadImplicitTargetConditionLists()
         delete cur;
     }
 }
+
 

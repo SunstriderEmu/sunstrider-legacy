@@ -1866,9 +1866,9 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     {
         node = sSpellMgr->GetSpellChainNode(spellid);
         player->LearnSpell(spellid);
-        if (!node)
+        if (!node || !node->next)
             break;
-        spellid=node->next;
+        spellid=node->next->Id;
     }
     while (node->next);
 }
@@ -3701,7 +3701,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
             uint8 eff = spellInfo->Effects[i].Effect;
             if (eff>=TOTAL_SPELL_EFFECTS)
                 continue;
-            if( IsAreaAuraEffect(eff)           ||
+            if(spellInfo->Effects[eff].IsAreaAuraEffect()           ||
                 eff == SPELL_EFFECT_APPLY_AURA  ||
                 eff == SPELL_EFFECT_PERSISTENT_AREA_AURA )
             {

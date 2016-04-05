@@ -109,8 +109,9 @@ class ObjectAccessor
             return HashMapHolder<T>::Find(guid);
         }
 
+        // Player may be not in world while in ObjectAccessor
+        static Player* GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/);
         static WorldObject* GetObjectInWorld(uint64 guid, WorldObject* p);
-
         static Unit* GetObjectInWorld(uint64 guid, Unit* /*fake*/);
 
         // returns object if is in map

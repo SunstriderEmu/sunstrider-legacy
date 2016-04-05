@@ -21,21 +21,25 @@
 #include "SharedDefines.h"
 
 enum AuraType : int;
+enum SpellCastResult : int;
 class SpellInfo;
 class Spell;
 struct Condition;
 class Unit;
+class WorldObject;
+class Item;
+struct SpellChainNode;
 
 enum SpellCustomAttributes
 {
-    //SPELL_ATTR_CU_PLAYERS_ONLY      0x00000001,
+    SPELL_ATTR_CU_PICKPOCKET                    = 0x00000001,
     SPELL_ATTR_CU_CONE_BACK                     = 0x00000002,
     SPELL_ATTR_CU_CONE_LINE                     = 0x00000004,
     SPELL_ATTR_CU_SHARE_DAMAGE                  = 0x00000008,
     SPELL_ATTR_CU_AURA_HOT                      = 0x00000010,
     SPELL_ATTR_CU_AURA_DOT                      = 0x00000020,
     SPELL_ATTR_CU_AURA_CC                       = 0x00000040,
-    SPELL_ATTR_CU_AURA_SPELL                    = 0x00000080,
+    SPELL_ATTR_CU_UNUSED                        = 0x00000080, // UNUSED
     SPELL_ATTR_CU_DIRECT_DAMAGE                 = 0x00000100,
     SPELL_ATTR_CU_CHARGE                        = 0x00000200,
     SPELL_ATTR_CU_LINK_CAST                     = 0x00000400,
@@ -52,7 +56,7 @@ enum SpellCustomAttributes
     SPELL_ATTR_CU_REMOVE_ON_INSTANCE_ENTER      = 0x00200000,     // Auras removed when target enters an instance
     SPELL_ATTR_CU_AOE_CANT_TARGET_SELF          = 0x00400000,
     SPELL_ATTR_CU_CONE_180                      = 0x00800000,
-    SPELL_ATTR_CU_CAN_CHANNEL_DEAD_TARGET       = 0x01000000,
+    SPELL_ATTR_CU_NOT_USED                      = 0x01000000, // UNUSED
 
     SPELL_ATTR_CU_NEGATIVE_EFF0                 = 0x02000000,
     SPELL_ATTR_CU_NEGATIVE_EFF1                 = 0x04000000,
@@ -63,7 +67,8 @@ enum SpellCustomAttributes
 
 enum SpellCastTargetFlags
 {
-    TARGET_FLAG_SELF            = 0x00000000,
+    TARGET_FLAG_NONE            = 0x00000000,
+    TARGET_FLAG_UNUSED_1        = 0x00000001,               // not used
     TARGET_FLAG_UNIT            = 0x00000002,               // pguid
     TARGET_FLAG_UNIT_RAID       = 0x00000004,               // not sent, used to validate target (if raid member)
     TARGET_FLAG_UNIT_PARTY      = 0x00000008,               // not sent, used to validate target (if party member)
@@ -105,7 +110,8 @@ enum SpellTargetSelectionCategories
     TARGET_SELECT_CATEGORY_CHANNEL,
     TARGET_SELECT_CATEGORY_NEARBY,
     TARGET_SELECT_CATEGORY_CONE,
-    TARGET_SELECT_CATEGORY_AREA
+    TARGET_SELECT_CATEGORY_AREA,
+    TARGET_SELECT_CATEGORY_TRAJ,
 };
 
 enum SpellTargetReferenceTypes
@@ -115,7 +121,7 @@ enum SpellTargetReferenceTypes
     TARGET_REFERENCE_TYPE_TARGET,
     TARGET_REFERENCE_TYPE_LAST,
     TARGET_REFERENCE_TYPE_SRC,
-    TARGET_REFERENCE_TYPE_DEST
+    TARGET_REFERENCE_TYPE_DEST,
 };
 
 enum SpellTargetObjectTypes
@@ -131,7 +137,7 @@ enum SpellTargetObjectTypes
     TARGET_OBJECT_TYPE_CORPSE,
     // only for effect target type
     TARGET_OBJECT_TYPE_CORPSE_ENEMY,
-    TARGET_OBJECT_TYPE_CORPSE_ALLY
+    TARGET_OBJECT_TYPE_CORPSE_ALLY,
 };
 
 enum SpellTargetCheckTypes
@@ -142,8 +148,9 @@ enum SpellTargetCheckTypes
     TARGET_CHECK_ALLY,
     TARGET_CHECK_PARTY,
     TARGET_CHECK_RAID,
-    TARGET_CHECK_RAID_CLASS,
-    TARGET_CHECK_PASSENGER
+    TARGET_CHECK_RAID_CLASS, //LK
+    TARGET_CHECK_PASSENGER,  //LK
+    TARGET_CHECK_CORPSE,
 };
 
 enum SpellTargetDirectionTypes
@@ -158,14 +165,14 @@ enum SpellTargetDirectionTypes
     TARGET_DIR_BACK_LEFT,
     TARGET_DIR_FRONT_LEFT,
     TARGET_DIR_RANDOM,
-    TARGET_DIR_ENTRY
+    TARGET_DIR_ENTRY,
 };
 
 enum SpellEffectImplicitTargetTypes
 {
     EFFECT_IMPLICIT_TARGET_NONE = 0,
     EFFECT_IMPLICIT_TARGET_EXPLICIT,
-    EFFECT_IMPLICIT_TARGET_CASTER
+    EFFECT_IMPLICIT_TARGET_CASTER,
 };
 
 // Spell clasification
@@ -195,7 +202,7 @@ enum SpellSpecificType
     SPELL_CHARM             = 21,
     SPELL_WARRIOR_ENRAGE    = 22,
     SPELL_ARMOR_REDUCE      = 23,
-    SPELL_DRUID_MANGLE      = 24
+    SPELL_DRUID_MANGLE      = 24,
 };
 
 enum SpellEffectMask
@@ -208,6 +215,8 @@ enum SpellEffectMask
     SPELL_EFFECT_MASK_ALL  = SPELL_EFFECT_MASK_1 | SPELL_EFFECT_MASK_2 | SPELL_EFFECT_MASK_3,
 };
 
+uint32 GetTargetFlagMask(SpellTargetObjectTypes objType);
+
 class SpellImplicitTargetInfo
 {
 private:
@@ -219,7 +228,6 @@ public:
 
     bool IsArea() const;
     
-    //THOSE ARE NOT YET USED
     SpellTargetSelectionCategories GetSelectionCategory() const;
     SpellTargetReferenceTypes GetReferenceType() const;
     SpellTargetObjectTypes GetObjectType() const;
@@ -297,17 +305,26 @@ public:
     bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
+    float CalcValueMultiplier(Unit* caster, Spell* spell = NULL) const;
+    float CalcDamageMultiplier(Unit* caster, Spell* spell = NULL) const;
+
     bool HasRadius() const;
     //always use GetSpellModOwner() for caster
     float CalcRadius(Unit* caster = NULL, Spell* = NULL) const;
+
+    uint32 GetProvidedTargetMask() const;
+    uint32 GetMissingTargetMask(bool srcSet = false, bool destSet = false, uint32 mask = 0) const;
+
+    SpellEffectImplicitTargetTypes GetImplicitTargetType() const;
+    SpellTargetObjectTypes GetUsedTargetObjectType() const;
 private:
-    /*
+
     struct StaticData
     {
     SpellEffectImplicitTargetTypes ImplicitTargetType; // defines what target can be added to effect target list if there's no valid target type provided for effect
     SpellTargetObjectTypes UsedTargetObjectType; // defines valid target object type for spell effect
     };
-    static StaticData _data[TOTAL_SPELL_EFFECTS]; */
+    static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
 
 class SpellInfo
@@ -337,12 +354,12 @@ public:
     uint32 TargetAuraState;
     uint32 CasterAuraStateNot;
     uint32 TargetAuraStateNot;
-    /* LK
+#ifdef LICH_KING
     uint32 CasterAuraSpell;
     uint32 TargetAuraSpell;
     uint32 ExcludeCasterAuraSpell;
     uint32 ExcludeTargetAuraSpell;
-    */
+#endif
     //can be null
     SpellCastTimesEntry const* CastTimeEntry;
     uint32 RecoveryTime;
@@ -405,10 +422,8 @@ public:
 #endif
     uint32 SchoolMask;
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
-    /* TODO SPELLINFO
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
-    */
 
     SpellInfo(SpellEntry const* spellEntry);
     ~SpellInfo();
@@ -417,6 +432,7 @@ public:
     /** -1 for all indexes */
     bool HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effectMask = SPELL_EFFECT_MASK_ALL) const;
     bool HasEffect(SpellEffects effect, uint8 effectIndex = 0) const;
+    bool HasAura(AuraType aura) const;
     bool HasAuraEffect(AuraType aura) const;
     bool HasAreaAuraEffect() const;
 
@@ -431,27 +447,40 @@ public:
 
     bool IsAffectingArea() const;
     bool IsTargetingArea() const;
+    bool NeedsExplicitUnitTarget() const;
+    bool NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uint8 effIndex = MAX_SPELL_EFFECTS) const;
     bool IsAreaAuraEffect() const;
     bool IsChanneled() const;
     bool NeedsComboPoints() const;
     bool IsBreakingStealth() const;
     bool IsDeathPersistent() const;
+    bool IsRequiringDeadTarget() const;
+    bool IsAllowingDeadTarget() const;
+    bool IsValidDeadOrAliveTarget(Unit const* target) const;
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
     bool IsPassive() const;
+    bool IsChannelCategorySpell() const;
 
     /** Some spells, such as dispells, can be positive or negative depending on target */
     bool IsPositive(bool hostileTarget = false) const;
     /** Some effects, such as dispells, can be positive or negative depending on target */
     bool IsPositiveEffect(uint8 effIndex, bool hostileTarget = false) const;
-    /* Internal check, will try to deduce result from spell effects + lots of hardcoded id's
-    Use "deep" to enable recursive search in triggered spells
-    */
-    bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
-    bool _IsPositiveSpell() const;
 
     uint32 CalcCastTime(Spell* spell = nullptr) const;
     uint32 GetRecoveryTime() const;
+
+    bool IsRanked() const;
+    uint8 GetRank() const;
+    SpellInfo const* GetFirstRankSpell() const;
+    SpellInfo const* GetLastRankSpell() const;
+    SpellInfo const* GetNextRankSpell() const;
+    SpellInfo const* GetPrevRankSpell() const;
+    SpellInfo const* GetAuraRankForLevel(uint8 level) const;
+    bool IsRankOf(SpellInfo const* spellInfo) const;
+    bool IsDifferentRankOf(SpellInfo const* spellInfo) const;
+    bool IsHighRankOf(SpellInfo const* spellInfo) const;
+
 
     int32 GetDuration() const;
     int32 GetMaxDuration() const;
@@ -468,6 +497,11 @@ public:
     uint32 GetSpellMechanicMaskByEffectMask(SpellEffectMask effectMask) const;
     Mechanics GetEffectMechanic(uint8 effIndex) const;
     bool HasAnyEffectMechanic() const;
+    /*
+    uint32 GetDispelMask() const;
+    static uint32 GetDispelMask(DispelType type);
+    */
+    uint32 GetExplicitTargetMask() const;
 
     AuraStateType GetAuraState() const;
     SpellSpecificType GetSpellSpecific() const;
@@ -478,13 +512,24 @@ public:
     float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;
 
     bool IsSingleTarget() const;
+
+    SpellCastResult CheckTarget(Unit const* caster, WorldObject const* target, bool implicit = true) const;
+    SpellCastResult CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget = NULL) const;
+    bool CheckTargetCreatureType(Unit const* target) const;
 private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
     void LoadCustomAttributes();
     static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
+    uint32 _GetExplicitTargetMask() const;
+
+    /* Internal check, will try to deduce result from spell effects + lots of hardcoded id's
+    Use "deep" to enable recursive search in triggered spells
+    */
+    bool _IsPositiveEffect(uint32 effIndex, bool deep = true) const;
+    bool _IsPositiveSpell() const;
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
 };
 
-#endif // _SPELLINFO_H
+#endif // _SPELLINFO_

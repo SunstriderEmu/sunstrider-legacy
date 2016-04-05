@@ -63,5 +63,7 @@ class Totem : public Creature
         TotemType m_type;
         uint32 m_duration;
 };
+
+
 #endif
 

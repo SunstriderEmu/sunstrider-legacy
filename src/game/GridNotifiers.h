@@ -178,10 +178,13 @@ namespace Trinity
     template<class Check>
         struct WorldObjectSearcher
     {
+        uint32 i_mapTypeMask;
+        uint32 i_phaseMask; //Not yet used
         WorldObject* &i_object;
         Check &i_check;
 
-        WorldObjectSearcher(WorldObject* & result, Check& check) : i_object(result),i_check(check) {}
+        WorldObjectSearcher(WorldObject const* searcher, WorldObject* & result, Check& check, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) 
+            : i_mapTypeMask(mapTypeMask), i_phaseMask(searcher->GetPhaseMask()), i_object(result),i_check(check) {}
 
         void Visit(GameObjectMapType &m);
         void Visit(PlayerMapType &m);
@@ -193,12 +196,35 @@ namespace Trinity
     };
 
     template<class Check>
+    struct WorldObjectLastSearcher
+    {
+        uint32 i_mapTypeMask;
+        PhaseMask i_phaseMask;
+        WorldObject* &i_object;
+        Check &i_check;
+
+        WorldObjectLastSearcher(WorldObject const* searcher, WorldObject* & result, Check& check, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL)
+            : i_mapTypeMask(mapTypeMask), i_phaseMask(searcher->GetPhaseMask()), i_object(result), i_check(check) {}
+
+        void Visit(GameObjectMapType &m);
+        void Visit(PlayerMapType &m);
+        void Visit(CreatureMapType &m);
+        void Visit(CorpseMapType &m);
+        void Visit(DynamicObjectMapType &m);
+
+        template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
+    };
+
+template<class Check>
         struct WorldObjectListSearcher
     {
+        uint32 i_mapTypeMask;
+        PhaseMask i_phaseMask; //not used yet
         std::list<WorldObject*> &i_objects;
         Check& i_check;
 
-        WorldObjectListSearcher(std::list<WorldObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        WorldObjectListSearcher(WorldObject const* searcher, std::list<WorldObject*> &objects, Check & check, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) : 
+            i_objects(objects), i_phaseMask(searcher->GetPhaseMask()), i_check(check),i_mapTypeMask(mapTypeMask) {}
 
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);

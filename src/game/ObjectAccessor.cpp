@@ -432,6 +432,13 @@ WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
     }
 }
 
+
+Player* ObjectAccessor::GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/)
+{
+    Player* player = HashMapHolder<Player>::Find(guid);
+    return player && player->IsInWorld() ? player : NULL;
+}
+
 Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit* /*fake*/)
 {
     if (!guid)

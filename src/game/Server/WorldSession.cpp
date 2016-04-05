@@ -250,13 +250,6 @@ void WorldSession::SendPacket(WorldPacket* packet)
 /// Add an incoming packet to the queue
 void WorldSession::QueuePacket(WorldPacket* new_packet)
 {
-#ifdef TRINITY_DEBUG
-    for (auto p : _recvQueue.GetQueue())
-        if (p == new_packet)
-        {
-            ASSERT("WorldSession::QueuePacket re enqued an already queued packet" && false);
-        }
-#endif
     _recvQueue.add(new_packet);
 }
 

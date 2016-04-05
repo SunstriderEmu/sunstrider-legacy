@@ -50,6 +50,7 @@ class Guild;
 enum PetType : int;
 enum PetSaveMode : int;
 struct TrainerSpell;
+class SpellCastTargets;
 
 #ifdef PLAYERBOT
 // Playerbot mod
@@ -1263,7 +1264,7 @@ class Player : public Unit
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
         void RemoveMiniPet();
-        Pet* GetMiniPet();
+        Pet* GetMiniPet() const;
         void SetMiniPet(Pet* pet);
         void RemoveGuardians();
         void RemoveGuardiansWithEntry(uint32 entry);
@@ -1293,6 +1294,7 @@ class Player : public Unit
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
+        virtual bool HasMainWeapon() const override;
         Item* GetShield(bool useable = false) const;
         static uint32 GetAttackBySlot( uint8 slot );        // MAX_ATTACK if not weapon slot
         std::vector<Item *> &GetItemUpdateQueue() { return m_itemUpdateQueue; }
@@ -2061,6 +2063,7 @@ class Player : public Unit
         void _ApplyAllStatBonuses();
         void _RemoveAllStatBonuses();
 
+        void CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex = 0);
         void _ApplyItemMods(Item *item,uint8 slot,bool apply);
         void _RemoveAllItemMods();
         void _ApplyAllItemMods();

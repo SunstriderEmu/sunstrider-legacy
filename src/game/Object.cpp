@@ -1831,7 +1831,7 @@ bool Position::HasInArc(float arc, const Position *obj, float border) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
-bool Position::HasInLine(const Unit* const target, float width) const
+bool Position::HasInLine(const WorldObject* const target, float width) const
 {
     if (!HasInArc(float(M_PI), target))
         return false;

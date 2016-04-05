@@ -39,8 +39,6 @@
 
 void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
     // TODO: add targets.read() check
     CHECK_PACKET_SIZE(recvPacket,1+1+1+1+8);
 
@@ -127,64 +125,13 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket, pUser))
-        return;
+    targets.Read(recvPacket, pUser);
 
     //Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
     if(!sScriptMgr->OnItemUse(pUser,pItem,targets))
     {
         // no script or script not process request by self
-
-        // special learning case
-        if(pItem->GetTemplate()->Spells[0].SpellId==SPELL_ID_GENERIC_LEARN)
-        {
-            uint32 learning_spell_id = pItem->GetTemplate()->Spells[1].SpellId;
-
-            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
-            if(!spellInfo)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, SPELL_ID_GENERIC_LEARN);
-                pUser->SendEquipError(EQUIP_ERR_NONE,pItem,NULL);
-                return;
-            }
-
-            Spell *spell = new Spell(pUser, spellInfo, false);
-            spell->m_CastItem = pItem;
-            spell->m_cast_count = cast_count;               //set count of casts
-            spell->m_currentBasePoints[0] = learning_spell_id;
-            spell->prepare(&targets);
-            return;
-        }
-
-        // use triggered flag only for items with many spell casts and for not first cast
-        int count = 0;
-
-        for(int i = 0; i < 5; ++i)
-        {
-            _Spell const& spellData = pItem->GetTemplate()->Spells[i];
-
-            // no spell
-            if(!spellData.SpellId)
-                continue;
-
-            // wrong triggering type
-            if( spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
-                continue;
-
-            SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
-            if(!spellInfo)
-            {
-                TC_LOG_ERROR("FIXME","Item (Entry: %u) in have wrong spell id %u, ignoring ",proto->ItemId, spellData.SpellId);
-                continue;
-            }
-
-            Spell *spell = new Spell(pUser, spellInfo, (count > 0));
-            spell->m_CastItem = pItem;
-            spell->m_cast_count = cast_count;               //set count of casts
-            spell->prepare(&targets);
-
-            ++count;
-        }
+        pUser->CastItemUseSpell(pItem, targets, cast_count);
     }
 }
 
@@ -329,8 +276,6 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket,4+1+2);
 
     // ignore for remote control state (for player case)
@@ -345,6 +290,9 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     uint8  cast_count;
     recvPacket >> spellId;
     recvPacket >> cast_count;
+#ifdef LICH_KING
+    recvPacket >> castFlags;
+#endif
 
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId );
 
@@ -358,17 +306,20 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if ( !_player->HasSpell(spellId) || spellInfo->IsPassive() )
     {
         //cheater? kick? ban?
+        recvPacket.rfinish(); // prevent spam at ignore packet
         return;
     }
 
     // can't use our own spells when we're in possession of another unit,
-    if(_player->IsPossessing())
+    if (_player->IsPossessing())
+    {
+        recvPacket.rfinish(); // prevent spam at ignore packet
         return;
+    }
 
     // client provided targets
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket,_player))
-        return;
+    targets.Read(recvPacket, _player);
 
     // auto-selection buff level base at target level (in spellInfo)
     if(targets.GetUnitTarget())
@@ -385,8 +336,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
                 targets.SetUnitTarget(target);
     }
     
-    if (spellInfo->HasAttribute(SPELL_ATTR2_AUTOREPEAT_FLAG))
+    if (spellInfo->IsAutoRepeatRangedSpell())
     {
+        // Client is resending autoshot cast opcode when other spell is casted during shoot rotation
+        // Skip it to prevent "interrupt" message
         if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
             return;
     }

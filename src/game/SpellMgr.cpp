@@ -28,8 +28,6 @@
 #include "BattleGroundMgr.h"
 #include "SpellInfo.h"
 
-bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
-
 bool SpellMgr::IsPrimaryProfessionSkill(uint32 skill)
 {
     SkillLineEntry const *pSkill = sSkillLineStore.LookupEntry(skill);
@@ -54,201 +52,7 @@ bool SpellMgr::IsProfessionOrRidingSkill(uint32 skill)
 
 SpellMgr::SpellMgr()
 {
-    for(int i = 0; i < TOTAL_SPELL_EFFECTS; ++i)
-    {
-        switch(i)
-        {
-            case SPELL_EFFECT_PERSISTENT_AREA_AURA: //27
-            case SPELL_EFFECT_SUMMON:               //28
-            case SPELL_EFFECT_TRIGGER_MISSILE:      //32
-            case SPELL_EFFECT_SUMMON_WILD:          //41
-            case SPELL_EFFECT_SUMMON_GUARDIAN:      //42
-            case SPELL_EFFECT_TRANS_DOOR:           //50 summon object
-            case SPELL_EFFECT_SUMMON_PET:           //56
-            case SPELL_EFFECT_ADD_FARSIGHT:         //72
-            case SPELL_EFFECT_SUMMON_POSSESSED:     //73
-            case SPELL_EFFECT_SUMMON_TOTEM:         //74
-            case SPELL_EFFECT_SUMMON_OBJECT_WILD:   //76
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT1:   //87
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT2:   //88
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT3:   //89
-            case SPELL_EFFECT_SUMMON_TOTEM_SLOT4:   //90
-            case SPELL_EFFECT_SUMMON_CRITTER:       //97
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT1:  //104
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT2:  //105
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT3:  //106
-            case SPELL_EFFECT_SUMMON_OBJECT_SLOT4:  //107
-            case SPELL_EFFECT_SUMMON_DEAD_PET:      //109
-            case SPELL_EFFECT_SUMMON_DEMON:         //112
-            case SPELL_EFFECT_TRIGGER_SPELL_2:      //151 ritual of summon
-                EffectTargetType[i] = SPELL_REQUIRE_DEST;
-                break;
-            case SPELL_EFFECT_PARRY: // 0
-            case SPELL_EFFECT_BLOCK: // 0
-            case SPELL_EFFECT_SKILL: // always with dummy 3 as A
-            //case SPELL_EFFECT_LEARN_SPELL: // 0 may be 5 pet
-            case SPELL_EFFECT_TRADE_SKILL: // 0 or 1
-            case SPELL_EFFECT_PROFICIENCY: // 0
-                EffectTargetType[i] = SPELL_REQUIRE_NONE;
-                break;
-            case SPELL_EFFECT_ENCHANT_ITEM:
-            case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
-            case SPELL_EFFECT_DISENCHANT:
-            case SPELL_EFFECT_FEED_PET:
-            case SPELL_EFFECT_PROSPECTING:
-                EffectTargetType[i] = SPELL_REQUIRE_ITEM;
-                break;
-            //caster must be pushed otherwise no sound
-            case SPELL_EFFECT_APPLY_AREA_AURA_PARTY:
-            case SPELL_EFFECT_APPLY_AREA_AURA_FRIEND:
-            case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
-            case SPELL_EFFECT_APPLY_AREA_AURA_PET:
-            case SPELL_EFFECT_APPLY_AREA_AURA_OWNER:
-                EffectTargetType[i] = SPELL_REQUIRE_CASTER;
-                break;
-            default:
-                EffectTargetType[i] = SPELL_REQUIRE_UNIT;
-                break;
-        }
-    }
 
-    for(int i = 0; i < TOTAL_SPELL_TARGETS; ++i)
-    {
-        switch(i)
-        {
-            case TARGET_UNIT_CASTER:
-            case TARGET_UNIT_CASTER_FISHING:
-            case TARGET_UNIT_MASTER:
-            case TARGET_UNIT_PET:
-            case TARGET_UNIT_CASTER_AREA_PARTY:
-            case TARGET_UNIT_CASTER_AREA_RAID:
-                SpellTargetType[i] = TARGET_TYPE_UNIT_CASTER;
-                break;
-            case TARGET_UNIT_TARGET_MINIPET:
-            case TARGET_UNIT_TARGET_ALLY:
-            case TARGET_UNIT_TARGET_RAID:
-            case TARGET_UNIT_TARGET_ANY:
-            case TARGET_UNIT_TARGET_ENEMY:
-            case TARGET_UNIT_TARGET_PARTY:
-            case TARGET_UNIT_LASTTARGET_AREA_PARTY:
-            case TARGET_UNIT_TARGET_AREA_RAID_CLASS:
-            case TARGET_UNIT_TARGET_CHAINHEAL_ALLY:
-                SpellTargetType[i] = TARGET_TYPE_UNIT_TARGET;
-                break;
-            case TARGET_UNIT_NEARBY_ENEMY:
-            case TARGET_UNIT_NEARBY_ALLY:
-            case TARGET_UNIT_NEARBY_ALLY_UNK:
-            case TARGET_UNIT_NEARBY_ENTRY:
-            case TARGET_UNIT_NEARBY_RAID:
-                SpellTargetType[i] = TARGET_TYPE_UNIT_NEARBY;
-                break;
-            case TARGET_UNIT_SRC_AREA_ENEMY:
-            case TARGET_UNIT_SRC_AREA_ALLY:
-            case TARGET_UNIT_SRC_AREA_ENTRY:
-            case TARGET_UNIT_SRC_AREA_PARTY:
-            case TARGET_GAMEOBJECT_SRC_AREA:
-                SpellTargetType[i] = TARGET_TYPE_AREA_SRC;
-                break;
-            case TARGET_UNIT_DEST_AREA_ENEMY:
-            case TARGET_UNIT_DEST_AREA_ALLY:
-            case TARGET_UNIT_DEST_AREA_ENTRY:
-            case TARGET_UNIT_DEST_AREA_PARTY:
-            case TARGET_GAMEOBJECT_DEST_AREA:
-                SpellTargetType[i] = TARGET_TYPE_AREA_DST;
-                break;
-            case TARGET_UNIT_CONE_ENEMY:
-            case TARGET_UNIT_CONE_ALLY:
-            case TARGET_UNIT_CONE_ENTRY:
-            case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
-                SpellTargetType[i] = TARGET_TYPE_AREA_CONE;
-                break;
-            case TARGET_DEST_CASTER:
-            case TARGET_SRC_CASTER:
-            case TARGET_DEST_CASTER_SUMMON:
-            case TARGET_DEST_CASTER_FRONT_LEAP:
-            case TARGET_DEST_CASTER_FRONT:
-            case TARGET_DEST_CASTER_BACK:
-            case TARGET_DEST_CASTER_RIGHT:
-            case TARGET_DEST_CASTER_LEFT:
-            case TARGET_DEST_CASTER_FRONT_LEFT:
-            case TARGET_DEST_CASTER_BACK_LEFT:
-            case TARGET_DEST_CASTER_BACK_RIGHT:
-            case TARGET_DEST_CASTER_FRONT_RIGHT:
-            case TARGET_DEST_CASTER_RANDOM:
-            case TARGET_DEST_CASTER_RADIUS:
-                SpellTargetType[i] = TARGET_TYPE_DEST_CASTER;
-                break;
-            case TARGET_DEST_TARGET_ANY:
-            case TARGET_DEST_TARGET_FRONT:
-            case TARGET_DEST_TARGET_BACK:
-            case TARGET_DEST_TARGET_RIGHT:
-            case TARGET_DEST_TARGET_LEFT:
-            case TARGET_DEST_TARGET_FRONT_LEFT:
-            case TARGET_DEST_TARGET_BACK_LEFT:
-            case TARGET_DEST_TARGET_BACK_RIGHT:
-            case TARGET_DEST_TARGET_FRONT_RIGHT:
-            case TARGET_DEST_TARGET_RANDOM:
-            case TARGET_DEST_TARGET_RADIUS:
-                SpellTargetType[i] = TARGET_TYPE_DEST_TARGET;
-                break;
-            case TARGET_DEST_DYNOBJ_ENEMY:
-            case TARGET_DEST_DYNOBJ_ALLY:
-            case TARGET_DEST_DYNOBJ_NONE:
-            case TARGET_DEST_DEST:
-            case TARGET_DEST_TRAJ:
-            case TARGET_DEST_DEST_FRONT_LEFT:
-            case TARGET_DEST_DEST_BACK_LEFT:
-            case TARGET_DEST_DEST_BACK_RIGHT:
-            case TARGET_DEST_DEST_FRONT_RIGHT:
-            case TARGET_DEST_DEST_FRONT:
-            case TARGET_DEST_DEST_BACK:
-            case TARGET_DEST_DEST_RIGHT:
-            case TARGET_DEST_DEST_LEFT:
-            case TARGET_DEST_DEST_RANDOM:
-                SpellTargetType[i] = TARGET_TYPE_DEST_DEST;
-                break;
-            case TARGET_DEST_DB:
-            case TARGET_DEST_HOME:
-            case TARGET_DEST_NEARBY_ENTRY:
-                SpellTargetType[i] = TARGET_TYPE_DEST_SPECIAL;
-                break;
-            case TARGET_UNIT_CHANNEL:
-            case TARGET_DEST_CHANNEL:
-                SpellTargetType[i] = TARGET_TYPE_CHANNEL;
-                break;
-            case TARGET_DEST_TARGET_ENEMY:
-                SpellTargetType[i] = TARGET_TYPE_DEST_TARGET_ENEMY;
-                break;
-            default:
-                SpellTargetType[i] = TARGET_TYPE_DEFAULT;
-        }
-    }
-
-    for(int i = 0; i < TOTAL_SPELL_TARGETS; ++i)
-    {
-        switch(i)
-        {
-            case TARGET_UNIT_DEST_AREA_ENEMY:
-            case TARGET_UNIT_SRC_AREA_ENEMY:
-            case TARGET_UNIT_DEST_AREA_ALLY:
-            case TARGET_UNIT_SRC_AREA_ALLY:
-            case TARGET_UNIT_DEST_AREA_ENTRY:
-            case TARGET_UNIT_SRC_AREA_ENTRY:
-            case TARGET_UNIT_DEST_AREA_PARTY:
-            case TARGET_UNIT_SRC_AREA_PARTY:
-            case TARGET_UNIT_LASTTARGET_AREA_PARTY:
-            case TARGET_UNIT_CASTER_AREA_PARTY:
-            case TARGET_UNIT_CONE_ENEMY:
-            case TARGET_UNIT_CONE_ALLY:
-            case TARGET_UNIT_CONE_ENEMY_UNKNOWN:
-            case TARGET_UNIT_CASTER_AREA_RAID:
-                IsAreaEffectTarget[i] = true;
-                break;
-            default:
-                IsAreaEffectTarget[i] = false;
-                break;
-        }
-    }
 }
 
 SpellMgr::~SpellMgr()
@@ -1307,9 +1111,17 @@ struct SpellRankValue
     char const *Rank;
 };
 
+void SpellMgr::UnloadSpellInfoChains()
+{
+    for (SpellChainMap::iterator itr = mSpellChains.begin(); itr != mSpellChains.end(); ++itr)
+        mSpellInfoMap[itr->first]->ChainEntry = NULL;
+
+    mSpellChains.clear();
+}
+
 void SpellMgr::LoadSpellChains()
 {
-    mSpellChains.clear();                                   // need for reload case
+    UnloadSpellInfoChains();
 
     std::vector<uint32> ChainedSpells;
     for (uint32 ability_id=0;ability_id<sSkillLineAbilityStore.GetNumRows();ability_id++)
@@ -1483,32 +1295,58 @@ void SpellMgr::LoadSpellChains()
 
         count++;
 
+        SpellInfo const* prevSpell = nullptr;
         itr=RankMap.upper_bound(entry);
         uint32 spell_rank=1;
         for(std::list<uint32>::iterator itr2 = RankedSpells.begin();itr2!=RankedSpells.end();spell_rank++)
         {
             uint32 spell_id=*itr2;
-            mSpellChains[spell_id].rank=spell_rank;
-            mSpellChains[spell_id].first=RankedSpells.front();
-            mSpellChains[spell_id].last=RankedSpells.back();
 
+            SpellInfo const* currentSpell = GetSpellInfo(spell_id);
+            if (!currentSpell)
+            {
+                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: Spell %u (Rank: %u) does not exist.", spell_rank, spell_rank);
+                break;
+            }
+
+            SpellInfo const* firstSpell = GetSpellInfo(RankedSpells.front());
+            if (!firstSpell)
+            {
+                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: First Rank Spell %u for Spell %u does not exist.", RankedSpells.front(), spell_id);
+                continue;
+            }
+
+            SpellInfo const* lastSpell = GetSpellInfo(RankedSpells.back());
+            if (!lastSpell)
+            {
+                TC_LOG_ERROR("sql.sql", "SpellMgr::LoadSpellChains: Last Rank Spell %u for Spell %u does not exist.", RankedSpells.back(), spell_id);
+                continue;
+            }
+
+            mSpellChains[spell_id].rank = spell_rank;
+            mSpellChains[spell_id].first = firstSpell;
+            mSpellChains[spell_id].last = lastSpell;
+            mSpellChains[spell_id].prev = prevSpell;
             itr2++;
-            if (spell_rank<2)
-                mSpellChains[spell_id].prev=0;
 
             if (spell_id==RankedSpells.back())
                 mSpellChains[spell_id].next=0;
             else
             {
+                //Scare Beast rank 2 hack
                 if ((*itr2) == 14326) {
-                    mSpellChains[*itr2].prev = 1513;
-                    mSpellChains[1513].next=*itr2;
+                    mSpellChains[*itr2].prev = GetSpellInfo(1513); //rank 1
+                    mSpellChains[1513].next = GetSpellInfo(*itr2);
                 }
                 else {
-                    mSpellChains[*itr2].prev=spell_id;
-                    mSpellChains[spell_id].next=*itr2;
+                    mSpellChains[*itr2].prev = currentSpell;
+                    mSpellChains[spell_id].next = GetSpellInfo(*itr2);
                 }
             }
+
+            mSpellInfoMap[spell_id]->ChainEntry = &mSpellChains[spell_id];
+
+            prevSpell = currentSpell;
         }
     }
 
@@ -1876,11 +1714,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
                     break;
-                case SPELL_EFFECT_TRIGGER_SPELL:
-                    if (IsPositionTarget(spellInfo->EffectImplicitTargetA[j]) ||
-                        spellInfo->Targets & (TARGET_FLAG_SOURCE_LOCATION|TARGET_FLAG_DEST_LOCATION))
-                        spellInfo->Effect[j] = SPELL_EFFECT_TRIGGER_MISSILE;
-                    break;
             }
         }
 
@@ -1904,6 +1737,58 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+#ifdef LICH_KING
+        // Arcane Overload
+        case 56430:
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectTriggerSpell[0] = 56429;
+            // no break intended
+        case 56429:
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            spellInfo->EffectImplicitTargetB[0] = 0;
+            spellInfo->EffectImplicitTargetA[1] = 0;
+            spellInfo->EffectImplicitTargetB[1] = 0;
+            spellInfo->EffectImplicitTargetA[2] = 0;
+            spellInfo->EffectImplicitTargetB[2] = 0;
+            break;
+#endif
+        // Dragonmaw Race: All parts
+        case 40890: // Oldie's Rotten Pumpkin
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 40905;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
+        case 40909: // Trope's Slime Cannon
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 40905;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
+        case 40894: // Corlok's Skull Barrage
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 40900;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
+        case 40928: // Ichman's Blazing Fireball
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 40929;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
+        case 40930: // Mulverick's Great Balls of Lightning
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 40931;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
+        case 40945: // Sky Shatter
+            spellInfo->Targets |= TARGET_FLAG_DEST_LOCATION;
+            spellInfo->EffectTriggerSpell[0] = 41064;
+            spellInfo->Effect[0] = SPELL_EFFECT_TRIGGER_MISSILE;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_DEST_DEST;
+            break;
         case 41913: //Illidan SPELL_SHADOWFIEND_PASSIVE
             spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
             break;
@@ -1911,7 +1796,7 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Effect[0] = 2;
             break;
         case 31344:  //SPELL_HOWL_OF_AZGALOR
-            spellInfo->EffectRadiusIndex[0] = 12;//100yards instead of 50000?!
+            spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_100_YARDS;//100yards instead of 50000?!
             break;
         case 43734: //jan'alai SPELL_HATCH_EGG
             spellInfo->EffectImplicitTargetA[0] = 1;
@@ -1963,7 +1848,7 @@ void SpellMgr::LoadSpellCustomAttr()
         switch(i)
         {
         case 45150:                             // Meteor Slash
-            spellInfo->AttributesEx3 |= SPELL_ATTR3_PLAYERS_ONLY;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
             break;
         case 44978: case 45001: case 45002:     // Wild Magic
         case 45004: case 45006: case 45010:     // Wild Magic
@@ -2077,10 +1962,10 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->Dispel = 0;
             break;
         case 40611: // Blaze Effect
-            spellInfo->EffectRadiusIndex[0] = 7;
+            spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_2_YARDS;
             break;
         case 40030: // Demon Fire
-            spellInfo->EffectRadiusIndex[0] = 7;
+            spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_2_YARDS;
             break;
         case 40327: // Atrophy
             spellInfo->Attributes |= SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY;
@@ -2090,9 +1975,13 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 33666:     // Sonic Boom (Murmur)
         case 38795:
-            spellInfo->EffectRadiusIndex[0] = 13;
-            spellInfo->EffectRadiusIndex[1] = 13;
-            spellInfo->EffectRadiusIndex[2] = 13;
+            spellInfo->EffectRadiusIndex[0] = EFFECT_RADIUS_10_YARDS;
+            spellInfo->EffectRadiusIndex[1] = EFFECT_RADIUS_10_YARDS;
+            spellInfo->EffectRadiusIndex[2] = EFFECT_RADIUS_10_YARDS;
+            break;
+        case 29200:     // Purify Helboar Meat
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetB[0] = 0;
             break;
         case 603:       // Curse of Doom
         case 30910:
@@ -2178,7 +2067,7 @@ void SpellMgr::LoadSpellCustomAttr()
         case 46771: // SPELL_FLAME_SEAR
             spellInfo->MaxAffectedTargets = 5;
             spellInfo->AttributesEx4 |= SPELL_ATTR4_IGNORE_RESISTANCES;
-            spellInfo->AttributesEx3 |= SPELL_ATTR3_PLAYERS_ONLY;
+            spellInfo->AttributesEx3 |= SPELL_ATTR3_ONLY_TARGET_PLAYERS;
             break;
         case 45111:
             spellInfo->DurationIndex = 9;       // 30 sec
@@ -2374,9 +2263,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 6774: //Slice and Dice rank 2
             spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_INITIAL_AGGRO;
             //spellInfo->AttributesEx |= SPELL_ATTR1_NOT_BREAK_STEALTH; // Check if it wasn't changed later (in 3.x)
-            break;
-        case 29200: // Purification de la viande de sanglier infernal
-            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             break;
         case 35460: // Fureur des anciens crapuches
             spellInfo->EffectImplicitTargetA[1] = TARGET_TYPE_UNIT_TARGET;
@@ -3238,4 +3124,59 @@ void SpellMgr::UnloadSpellInfoStore()
         delete mSpellInfoMap[i];
 
     mSpellInfoMap.clear();
+}
+
+uint32 SpellMgr::GetFirstSpellInChain(uint32 spell_id) const
+{
+    if (SpellChainNode const* node = GetSpellChainNode(spell_id))
+        if(node->first)
+            return node->first->Id;
+
+    return spell_id;
+}
+
+uint32 SpellMgr::GetPrevSpellInChain(uint32 spell_id) const
+{
+    if (SpellChainNode const* node = GetSpellChainNode(spell_id))
+        if(node->prev)
+            return node->prev->Id;
+
+    return 0;
+}
+
+// Note: not use rank for compare to spell ranks: spell chains isn't linear order
+// Use IsHighRankOfSpell instead
+uint8 SpellMgr::GetSpellRank(uint32 spell_id) const
+{
+    if (SpellChainNode const* node = GetSpellChainNode(spell_id))
+        return node->rank;
+
+    return 0;
+}
+
+uint32 SpellMgr::GetLastSpellInChain(uint32 spell_id) const
+{
+    if (SpellChainNode const* node = GetSpellChainNode(spell_id))
+        if(node->last)
+            return node->last->Id;
+
+    return spell_id;
+}
+
+uint8 SpellMgr::IsHighRankOfSpell(uint32 spell1, uint32 spell2) const
+{
+    SpellChainMap::const_iterator itr = mSpellChains.find(spell1);
+
+    uint32 rank2 = GetSpellRank(spell2);
+
+    // not ordered correctly by rank value
+    if (itr == mSpellChains.end() || !rank2 || itr->second.rank <= rank2)
+        return false;
+
+    // check present in same rank chain
+    for (; itr != mSpellChains.end(); itr = mSpellChains.find(itr->second.prev->Id))
+        if (itr->second.prev && itr->second.prev->Id == spell2)
+            return true;
+
+    return false;
 }

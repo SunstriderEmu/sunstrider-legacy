@@ -139,6 +139,7 @@ class ThreatContainer
         friend class ThreatManager;
 
         void remove(HostileReference* pRef) { iThreatList.remove(pRef); }
+
         void addReference(HostileReference* pHostileReference) { iThreatList.push_back(pHostileReference); }
         void clearReferences();
         // Sort the list if necessary

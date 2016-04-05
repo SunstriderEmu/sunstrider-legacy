@@ -372,7 +372,7 @@ enum SpellAttr3
     SPELL_ATTR3_UNK5                       = 0x00000020,           // 5
     SPELL_ATTR3_UNK6                       = 0x00000040,           // 6
     SPELL_ATTR3_STACK_FOR_DIFF_CASTERS     = 0x00000080,           // 7 separate stack for every caster
-    SPELL_ATTR3_PLAYERS_ONLY               = 0x00000100,           // 8 Player only?
+    SPELL_ATTR3_ONLY_TARGET_PLAYERS        = 0x00000100,           // 8 can only target players
     SPELL_ATTR3_UNK9                       = 0x00000200,           // 9 //TC : SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2
     SPELL_ATTR3_MAIN_HAND                  = 0x00000400,           // 10 Main hand weapon required
     SPELL_ATTR3_BATTLEGROUND               = 0x00000800,           // 11 Can casted only on battleground
@@ -462,7 +462,7 @@ enum SpellAttr5
     SPELL_ATTR5_UNK23                           = 0x00800000,           // 23
     SPELL_ATTR5_UNK24                           = 0x01000000,           // 24
     SPELL_ATTR5_UNK25                           = 0x02000000,           // 25
-    SPELL_ATTR5_UNK26                           = 0x04000000,           // 26
+    SPELL_ATTR5_UNK26                           = 0x04000000,           // 26 //sunwell SPELL_ATTR5_SKIP_CHECKCAST_LOS_CHECK. Only two spells on BC have this : 13532 (Thunder Clap) && 27285 (Seed of Corruption)
     SPELL_ATTR5_DONT_SHOW_AURA_IF_SELF_CAST     = 0x08000000,           // 27 Auras with this attribute are not visible on units that are the caster
     SPELL_ATTR5_DONT_SHOW_AURA_IF_NOT_SELF_CAST = 0x10000000,           // 28 Auras with this attribute are not visible on units that are not the caster
     SPELL_ATTR5_UNK29                           = 0x20000000,           // 29
@@ -477,7 +477,7 @@ enum SpellAttr6
     SPELL_ATTR6_IGNORE_CASTER_AURAS             = 0x00000004,           // 2 From TC
     SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG       = 0x00000008,           // 3 skips checking UNIT_FLAG_IMMUNE_TO_PC and UNIT_FLAG_IMMUNE_TO_NPC flags on assist
     SPELL_ATTR6_UNK4                            = 0x00000010,           // 4 not set in 2.4.2
-    SPELL_ATTR6_UNK5                            = 0x00000020,           // 5
+    SPELL_ATTR6_UNK5                            = 0x00000020,           // 5 Only Ritual of Summoning on 2.4.3 (698) Sunwell SPELL_ATTR6_DONT_CONSUME_CHARGES 
     SPELL_ATTR6_USE_SPELL_CAST_EVENT            = 0x00000040,           // 6 Auras with this attribute trigger SPELL_CAST combat log event instead of SPELL_AURA_START (clientside attribute)
     SPELL_ATTR6_UNK7                            = 0x00000080,           // 7
     SPELL_ATTR6_CANT_TARGET_CROWD_CONTROLLED    = 0x00000100,           // 8
@@ -485,7 +485,7 @@ enum SpellAttr6
     SPELL_ATTR6_UNK10                           = 0x00000400,           // 10 only spells "Find Minerals" (2580, 8388) TC SPELL_ATTR6_CAN_TARGET_POSSESSED_FRIENDS
     SPELL_ATTR6_NOT_IN_RAID_INSTANCE            = 0x00000800,           // 11 not usable in raid instance
     SPELL_ATTR6_UNK12                           = 0x00001000,           // 12 not set in 2.4.2
-    SPELL_ATTR6_UNK13                           = 0x00002000,           // 13 not set in 2.4.2
+    SPELL_ATTR6_CAN_TARGET_INVISIBLE            = 0x00002000,           // 13 not set in 2.4.2 / ignore visibility requirement for spell target (phases, invisibility, etc.)
     SPELL_ATTR6_UNK14                           = 0x00004000,           // 14 not set in 2.4.2
     SPELL_ATTR6_UNK15                           = 0x00008000,           // 15 not set in 2.4.2
     SPELL_ATTR6_UNK16                           = 0x00010000,           // 16 not set in 2.4.2
@@ -734,7 +734,7 @@ enum SpellEffects
     SPELL_EFFECT_145                       = 145,
     SPELL_EFFECT_146                       = 146,
     SPELL_EFFECT_QUEST_FAIL                = 147,
-    SPELL_EFFECT_148                       = 148,
+    SPELL_EFFECT_148                       = 148, //unused on BC
     SPELL_EFFECT_149                       = 149,
     SPELL_EFFECT_150                       = 150,
     SPELL_EFFECT_TRIGGER_SPELL_2           = 151,
@@ -899,7 +899,7 @@ enum Targets
     TARGET_DEST_CASTER_UNK_36          = 36, //unknown
     TARGET_UNIT_LASTTARGET_AREA_PARTY  = 37,
     TARGET_UNIT_NEARBY_ENTRY           = 38,
-    TARGET_UNIT_CASTER_FISHING         = 39,
+    TARGET_DEST_CASTER_FISHING         = 39,
     TARGET_GAMEOBJECT_NEARBY_ENTRY     = 40,
     //the next four may not be in the right order, but do we care
     TARGET_DEST_CASTER_FRONT_LEFT      = 41, //earth totem
@@ -937,8 +937,8 @@ enum Targets
     TARGET_DEST_CASTER_RADIUS          = 73,
     TARGET_DEST_TARGET_RANDOM          = 74,
     TARGET_DEST_TARGET_RADIUS          = 75,
-    TARGET_DEST_CHANNEL                = 76,
-    TARGET_UNIT_CHANNEL                = 77,
+    TARGET_DEST_CHANNEL_TARGET         = 76,
+    TARGET_UNIT_CHANNEL_TARGET         = 77,
     TARGET_DEST_DEST_FRONT             = 78,
     TARGET_DEST_DEST_BACK              = 79,
     TARGET_DEST_DEST_RIGHT             = 80,
@@ -1716,6 +1716,27 @@ enum CreatureTypeFlags
     CREATURE_TYPEFLAGS_DONT_LOG_DEATH = 0x0400,       // Death event will not show up in combat log
     CREATURE_TYPEFLAGS_MOUNTED_COMBAT = 0x0800,       // Creature can remain mounted when entering combat
     CREATURE_TYPEFLAGS_AID_PLAYERS    = 0x01000       // Assist player in combat if in range
+#ifdef LICH_KING
+    CREATURE_TYPEFLAGS_UNK13            = 0x00002000,
+    CREATURE_TYPEFLAGS_UNK14            = 0x00004000,         // ? Possibly not in use
+    CREATURE_TYPEFLAGS_ENGINEERLOOT     = 0x00008000,         // Can be looted by engineer
+    CREATURE_TYPEFLAGS_EXOTIC           = 0x00010000,         // Can be tamed by hunter as exotic pet
+    CREATURE_TYPEFLAGS_UNK17            = 0x00020000,         // ? Related to vehicles/pvp?
+    CREATURE_TYPEFLAGS_UNK18            = 0x00040000,         // ? Related to vehicle/siege weapons?
+    CREATURE_TYPEFLAGS_PROJECTILE_COLLISION = 0x00080000,     // Projectiles can collide with this creature - interacts with TARGET_DEST_TRAJ
+    CREATURE_TYPEFLAGS_UNK20            = 0x00100000,
+    CREATURE_TYPEFLAGS_UNK21            = 0x00200000,
+    CREATURE_TYPEFLAGS_UNK22            = 0x00400000,
+    CREATURE_TYPEFLAGS_UNK23            = 0x00800000,         // ? First seen in 3.2.2. Related to banner/backpack of creature/companion?
+    CREATURE_TYPEFLAGS_UNK24            = 0x01000000,
+    CREATURE_TYPEFLAGS_UNK25            = 0x02000000,
+    CREATURE_TYPEFLAGS_PARTY_MEMBER     = 0x04000000,         //! Creature can be targeted by spells that require target to be in caster's party/raid
+    CREATURE_TYPEFLAGS_UNK27            = 0x08000000,
+    CREATURE_TYPEFLAGS_UNK28            = 0x10000000,
+    CREATURE_TYPEFLAGS_UNK29            = 0x20000000,
+    CREATURE_TYPEFLAGS_UNK30            = 0x40000000,
+    CREATURE_TYPEFLAGS_UNK31            = 0x80000000,
+#endif
 };
 
 enum CreatureEliteType

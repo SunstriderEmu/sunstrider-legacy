@@ -439,13 +439,13 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     }
 
     // HACK: trigger creature is always not selectable
-    if(isTrigger())
+    if(IsTrigger())
     {
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         SetDisableGravity(true);
     }
 
-    if(IsTotem() || isTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
+    if(IsTotem() || IsTrigger() || GetCreatureType() == CREATURE_TYPE_CRITTER)
         SetReactState(REACT_PASSIVE);
     /*else if(IsCivilian())
         SetReactState(REACT_DEFENSIVE);*/
@@ -1241,7 +1241,7 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
     {
         if (force)
         {
-            for (uint8 i = 0; i < 3; i++)
+            for (uint8 i = WEAPON_SLOT_MAINHAND; i <= WEAPON_SLOT_RANGED; i++)
             {
                 SetUInt32Value( UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + i, 0);
                 SetUInt32Value( UNIT_VIRTUAL_ITEM_INFO + (i * 2), 0);
@@ -1257,7 +1257,7 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
         return;
 
     m_equipmentId = equip_entry;
-    for (uint8 i = 0; i < 3; i++)
+    for (uint8 i = WEAPON_SLOT_MAINHAND; i <= WEAPON_SLOT_RANGED; i++)
     {
         SetUInt32Value( UNIT_VIRTUAL_ITEM_SLOT_DISPLAY + i, einfo->equipmodel[i]);
         SetUInt32Value( UNIT_VIRTUAL_ITEM_INFO + (i * 2), einfo->equipinfo[i]);
@@ -1268,8 +1268,27 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
 void Creature::SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType)
 {
     SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY+slot, displayid);
-    SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot*2, ITEM_CLASS_WEAPON + subclass * 256);
+    SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot*2, ITEM_CLASS_WEAPON + (subclass << 8));
     SetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + (slot*2)+1, inventoryType);
+}
+
+ItemSubclassWeapon Creature::GetWeaponSubclass(WeaponSlot slot)
+{
+    uint32 itemInfo = GetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot * 2);
+    ItemSubclassWeapon subclass = ItemSubclassWeapon((itemInfo & 0xFF00) >> 8);
+    if (subclass > ITEM_SUBCLASS_WEAPON_FISHING_POLE)
+        TC_LOG_ERROR("entities.creature", "Creature (table guid %u) appears to have broken weapon info for slot %u", GetDBTableGUIDLow(), uint32(slot));
+
+    return subclass;
+}
+
+bool Creature::HasMainWeapon() const
+{
+#ifdef LICH_KING
+    return GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID);
+#else
+    return GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_DISPLAY);
+#endif
 }
 
 bool Creature::HasQuest(uint32 quest_id) const
@@ -1335,10 +1354,6 @@ bool Creature::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bo
     if((m_invisibilityMask || u->m_invisibilityMask) && !CanDetectInvisibilityOf(u))
         return false;
 
-    // unit got in stealth in this moment and must ignore old detected state
-    //if (m_Visibility == VISIBILITY_GROUP_NO_DETECT)
-    //    return false;
-
     // GM invisibility checks early, invisibility if any detectable, so if not stealth then visible
     if(u->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
@@ -1380,13 +1395,15 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
 
     // If this unit isn't an NPC, is already distracted, is in combat, is confused, stunned or fleeing, do nothing
     if (HasUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_STUNNED | UNIT_STATE_FLEEING | UNIT_STATE_DISTRACTED)
-        || IsCivilian() || HasReactState(REACT_PASSIVE)
+        || IsCivilian() || HasReactState(REACT_PASSIVE) || !IsHostileTo(target)
        )
         return false;
 
+    //target is not a player
     if(target->GetTypeId() != TYPEID_PLAYER)
         return false;
 
+    //target not stealthed
     if(target->GetVisibility() != VISIBILITY_GROUP_STEALTH)
         return false;
 
@@ -1400,7 +1417,7 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
     return true;
 }
 
-//Trinity CanAttackStart
+//Trinity CanAttackStart // Sunwell CanCreatureAttack
 CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false */) const
 {
     if(IsInEvadeMode())
@@ -1632,15 +1649,15 @@ bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
     return Unit::IsImmunedToSpell(spellInfo, useCharges);
 }
 
-bool Creature::IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const
+bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const
 {
-    if (!mechanic)
-        return false;
-
-    if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (mechanic-1)))
+    if (GetCreatureTemplate()->MechanicImmuneMask & (1 << (spellInfo->Effects[index].Mechanic - 1)))
         return true;
 
-    return Unit::IsImmunedToSpellEffect(effect, mechanic);
+    if (GetCreatureTemplate()->type == CREATURE_TYPE_MECHANICAL && spellInfo->Effects[index].Effect == SPELL_EFFECT_HEAL)
+        return true;
+
+    return Unit::IsImmunedToSpellEffect(spellInfo, index);
 }
 
 void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs)

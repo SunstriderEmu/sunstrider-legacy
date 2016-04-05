@@ -1692,7 +1692,7 @@ bool GameEventMgr::CreateGameEvent(const char* name,int16& event_id)
 
     event_id = mGameEvent.size();
     /*
-    // crash crash crash
+    // crash crash crash. Remember events may not be continguous, probably the problem here
 
     // add to map
     mGameEvent.resize(mGameEvent.size() + 1);

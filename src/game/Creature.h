@@ -502,6 +502,9 @@ class Creature : public Unit
         void LoadEquipment(uint32 equip_entry, bool force=false);
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
         void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
+        //Get ItemSubclassWeapon based on UNIT_VIRTUAL_ITEM_INFO
+        ItemSubclassWeapon GetWeaponSubclass(WeaponSlot slot);
+        virtual bool HasMainWeapon() const override;
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
@@ -515,7 +518,7 @@ class Creature : public Unit
         bool IsTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
         bool IsCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
-        bool isTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
+        bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
         void SetReactState(ReactStates st) { m_reactState = st; }
         ReactStates GetReactState() { return m_reactState; }
         bool HasReactState(ReactStates state) const { return (m_reactState == state); }
@@ -525,7 +528,7 @@ class Creature : public Unit
         bool IsOutOfThreatArea(Unit* pVictim) const;
         bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false) override;
                                                             // redefine Unit::IsImmunedToSpell
-        bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const override;
+        bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const override;
                                                             // redefine Unit::IsImmunedToSpellEffect
         void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/);
         void UpdateProhibitedSchools(uint32 const diff);
