@@ -7,7 +7,7 @@ git:
 
 branch:
   only:
-    - sun
+    - master
   
 sudo: required
 
