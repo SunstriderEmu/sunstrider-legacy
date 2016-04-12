@@ -385,7 +385,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
         return false;
 
     CreatureTemplate const* cInfo = GetCreatureTemplate();
-    // m_regenHealth = GetCreatureTemplate()->RegenHealth; 
+    m_regenHealth = GetCreatureTemplate()->RegenHealth;
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN)
         SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_UNARMED );
