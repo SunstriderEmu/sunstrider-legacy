@@ -46,6 +46,7 @@ struct ProcTriggerSpell;
 
 // forward decl
 class Aura;
+struct ChannelTargetData;
 
 typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 // Real == true at aura add/remove
@@ -222,6 +223,9 @@ class Aura
 
         virtual ~Aura();
 
+        //Compat TC
+        inline Aura* GetBase() { return this; }
+
         void SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue);
         AuraType GetAuraType() const { return m_modifier.m_auraname; }
         Modifier const* GetModifier() const { return &m_modifier;}
@@ -234,10 +238,10 @@ class Aura
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
-        bool IsRequiringSelectedTarget(SpellInfo const* info) const;
 		uint32 GetId() const;
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
+        uint8 GetEffectMask() const { return 1 << m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
         void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
 
@@ -263,6 +267,11 @@ class Aura
 
         uint64 const& GetCasterGUID() const { return m_caster_guid; }
         Unit* GetCaster() const;
+        //compat TC
+        inline WorldObject* GetOwner() const { return GetCaster(); }
+        //compat TC
+        Unit* GetUnitOwner() const { return GetCaster(); }
+
         Unit* GetTarget() const { return m_target; }
         void SetTarget(Unit* target) { m_target = target; }
         void SetLoadedState(uint64 caster_guid,int32 damage,int32 maxduration,int32 duration,int32 charges)
@@ -293,7 +302,7 @@ class Aura
         bool IsPermanent() const { return m_permanent; }
         bool IsArea() const { return m_isAreaAura; }
         bool IsPeriodic() const { return m_isPeriodic; }
-        bool IsTrigger() const { return m_isTrigger; }
+        bool IsTrigger() const { return m_IsTrigger; }
         bool IsPassive() const { return m_isPassive; }
         bool IsPersistent() const { return m_isPersistent; }
         bool IsDeathPersistent() const { return m_isDeathPersist; }
@@ -317,8 +326,13 @@ class Aura
         void SetRemoveMode(AuraRemoveMode mode) { m_removeMode = mode; }
 
         int32 m_procCharges;
-        void SetAuraProcCharges(int32 charges) { m_procCharges = charges; }
-        int32 GetAuraProcCharges() { return m_procCharges; }
+        void SetCharges(int32 charges) { m_procCharges = charges; }
+        int32 GetCharges() { return m_procCharges; }
+        uint8 CalcMaxCharges(Unit* caster) const;
+        uint8 CalcMaxCharges() const { return CalcMaxCharges(GetCaster()); }
+        bool ModCharges(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
+        bool DropCharge(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT) { return ModCharges(-1, removeMode); }
+        bool IsUsingCharges() const { return m_procCharges > 0;  }
 
         Unit* GetTriggerTarget() const;
 
@@ -368,7 +382,7 @@ class Aura
         bool m_positive:1;
         bool m_permanent:1;
         bool m_isPeriodic:1;
-        bool m_isTrigger:1;
+        bool m_IsTrigger:1;
         bool m_isAreaAura:1;
         bool m_isPassive:1;
         bool m_isPersistent:1;
@@ -378,6 +392,9 @@ class Aura
         bool m_updated:1;
         bool m_in_use:1;                                    // true while in Aura::ApplyModifier call
         bool m_isSingleTargetAura:1;                        // true if it's a single target spell and registered at caster - can change at spell steal for example
+
+        //channel information for channel triggering
+        ChannelTargetData* m_channelData;
 
         int32 m_periodicTimer;
         int32 m_amplitude;

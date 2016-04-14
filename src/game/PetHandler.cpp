@@ -693,15 +693,17 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
 void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
-    
-    
     TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
 
     CHECK_PACKET_SIZE(recvPacket,8+4);
     uint64 guid;
     uint32 spellid;
 
+#ifdef LICH_KING
+    recvPacket >> guid >> castCount >> spellId >> castFlags;
+#else
     recvPacket >> guid >> spellid;
+#endif
 
     // This opcode is also sent from charmed and possessed units (players and creatures)
     if(!_player->GetPet() && !_player->GetCharm())
@@ -734,8 +736,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
         }
 
     SpellCastTargets targets;
-    if(!targets.read(&recvPacket,caster))
-        return;
+    targets.Read(recvPacket, caster);
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
@@ -743,7 +744,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     spell->m_targets = targets;
 
     SpellCastResult result = spell->PetCanCast(NULL);
-    if (spellid == 33395) { //Water elemental Freeze
+    if (spellid == 33395) { //Water elemental Freeze HACKZ
         result = spell->CheckRange(true);
     }
     

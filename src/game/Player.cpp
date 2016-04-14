@@ -339,6 +339,8 @@ Player::Player (WorldSession *session) :
 
     duel = NULL;
 
+    m_ControlledByPlayer = true;
+
     m_GuildIdInvited = 0;
     m_ArenaTeamIdInvited = 0;
 
@@ -3291,11 +3293,11 @@ void Player::LearnSpell(uint32 spell_id)
 
     // learn all disabled higher ranks (recursive)
     SpellChainNode const* node = sSpellMgr->GetSpellChainNode(spell_id);
-    if (node)
+    if (node && node->next)
     {
-        PlayerSpellMap::iterator iter = m_spells.find(node->next);
+        PlayerSpellMap::iterator iter = m_spells.find(node->next->Id);
         if (disabled && iter != m_spells.end() && iter->second->disabled )
-            LearnSpell(node->next);
+            LearnSpell(node->next->Id);
     }
 
     // prevent duplicated entires in spell book
@@ -3320,8 +3322,8 @@ void Player::RemoveSpell(uint32 spell_id, bool disabled)
     SpellChainNode const* node = sSpellMgr->GetSpellChainNode(spell_id);
     if (node)
     {
-        if(HasSpell(node->next) && !GetTalentSpellPos(node->next))
-        RemoveSpell(node->next,disabled);
+        if(node->next && HasSpell(node->next->Id) && !GetTalentSpellPos(node->next->Id))
+            RemoveSpell(node->next->Id,disabled);
     }
     //unlearn spells dependent from recently removed spells
     SpellsRequiringSpellMap const& reqMap = sSpellMgr->GetSpellsRequiringSpell();
@@ -3799,7 +3801,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     if(SpellChainNode const* spell_chain = sSpellMgr->GetSpellChainNode(trainer_spell->spell))
     {
         // check prev.rank requirement
-        if(spell_chain->prev && !HasSpell(spell_chain->prev))
+        if(spell_chain->prev && !HasSpell(spell_chain->prev->Id))
             return TRAINER_SPELL_RED;
     }
 
@@ -7599,6 +7601,85 @@ void Player::CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 
     }
 }
 
+void Player::CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex)
+{
+#ifdef LICH_KING
+    --"todo glyphIndex";
+#endif
+
+    ItemTemplate const* proto = item->GetTemplate();
+    // special learning case
+    if (proto->Spells[0].SpellId == SPELL_ID_GENERIC_LEARN)
+    {
+        uint32 learning_spell_id = item->GetTemplate()->Spells[1].SpellId;
+
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_ID_GENERIC_LEARN);
+        if (!spellInfo)
+        {
+            TC_LOG_ERROR("FIXME", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, SPELL_ID_GENERIC_LEARN);
+            SendEquipError(EQUIP_ERR_NONE, item, NULL);
+            return;
+        }
+
+        Spell *spell = new Spell(this, spellInfo, false);
+        spell->m_CastItem = item;
+        spell->m_cast_count = cast_count;               //set count of casts
+        spell->m_currentBasePoints[0] = learning_spell_id;
+        spell->prepare(&targets);
+        return;
+    }
+
+    // use triggered flag only for items with many spell casts and for not first cast
+    int count = 0;
+
+    std::list<Spell*> pushSpells;
+    for (int i = 0; i < 5; ++i)
+    {
+        _Spell const& spellData = item->GetTemplate()->Spells[i];
+
+        // no spell
+        if (!spellData.SpellId)
+            continue;
+
+        // wrong triggering type
+        if (spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_USE && spellData.SpellTrigger != ITEM_SPELLTRIGGER_ON_NO_DELAY_USE)
+            continue;
+
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellData.SpellId);
+        if (!spellInfo)
+        {
+            TC_LOG_ERROR("FIXME", "Item (Entry: %u) in have wrong spell id %u, ignoring ", proto->ItemId, spellData.SpellId);
+            continue;
+        }
+
+        Spell *spell = new Spell(this, spellInfo, (count > 0));
+        spell->m_CastItem = item;
+        spell->m_cast_count = cast_count;               //set count of casts
+		spell->InitExplicitTargets(targets);
+
+        // Xinef: dont allow to cast such spells, it may happen that spell possess 2 spells, one for players and one for items / gameobjects
+        // Xinef: if first one is cast on player, it may be deleted thus resulting in crash because second spell has saved pointer to the item
+        // Xinef: there is one problem with scripts which wont be loaded at the moment of call
+        SpellCastResult result = spell->CheckCast(true);
+        if (result != SPELL_CAST_OK)
+        {
+            spell->SendCastResult(result);
+            delete spell;
+            continue;
+        }
+
+        pushSpells.push_back(spell);
+        //spell->prepare(&targets);
+
+        ++count;
+    }
+
+
+    // send all spells in one go, prevents crash because container is not set
+    for (std::list<Spell*>::const_iterator itr = pushSpells.begin(); itr != pushSpells.end(); ++itr)
+        (*itr)->prepare(&targets);
+}
+
 void Player::_RemoveAllItemMods()
 {
     for (int i = 0; i < INVENTORY_SLOT_BAG_END; i++)
@@ -9165,6 +9246,11 @@ Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable) cons
         return NULL;
 
     return item;
+}
+
+bool Player::HasMainWeapon() const
+{
+    return bool(GetWeaponForAttack(BASE_ATTACK, true));
 }
 
 Item* Player::GetShield(bool useable) const
@@ -17476,7 +17562,7 @@ void Player::RemoveMiniPet()
     }
 }
 
-Pet* Player::GetMiniPet()
+Pet* Player::GetMiniPet() const
 {
     if(!m_miniPet)
         return NULL;
@@ -21982,6 +22068,9 @@ bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
 {
     if (!packetOnly && !Unit::SetFlying(apply))
         return false;
+
+    if (!apply)
+        SetFallInformation(0, GetPositionZ());
 
     WorldPacket data(apply ? SMSG_MOVE_SET_CAN_FLY : SMSG_MOVE_UNSET_CAN_FLY, 12);
     data << GetPackGUID();

@@ -438,6 +438,9 @@ void GameObject::Update(uint32 diff)
             GameObjectTemplate const* goInfo = GetGOInfo();
             if(goInfo->type == GAMEOBJECT_TYPE_TRAP)
             {
+                if (!this->IsInWorld())
+                    return;
+
                 // traps
                 Unit* owner = GetOwner();
                 Unit* trapTarget =  NULL;                            // pointer to appropriate target if found any

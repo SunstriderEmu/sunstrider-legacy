@@ -46,5 +46,20 @@ class TotemAI : public CreatureAI
         Totem &i_totem;
         uint64 i_victimGuid;
 };
+
+class KillMagnetEvent : public BasicEvent
+{
+public:
+    KillMagnetEvent(Unit& self) : _self(self) { }
+    bool Execute(uint64 e_time, uint32 p_time)
+    {
+        _self.SetDeathState(JUST_DIED);
+        return true;
+    }
+
+protected:
+    Unit& _self;
+};
+
 #endif
 

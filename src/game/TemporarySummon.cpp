@@ -163,6 +163,21 @@ void TemporarySummon::Summon(TempSummonType type, uint32 lifetime)
     sMapMgr->CreateMap(GetMapId(), this)->Add(this->ToCreature(), true);
 
     AIM_Initialize();
+
+    Unit* owner = GetSummoner();
+    if (owner)
+    {
+        if (IsTrigger() && m_spells[0])
+        {
+            SetFaction(owner->GetFaction());
+            SetLevel(owner->GetLevel());
+            if (owner->GetTypeId() == TYPEID_PLAYER)
+                m_ControlledByPlayer = true;
+        }
+
+        if (owner->GetTypeId() == TYPEID_PLAYER)
+            m_CreatedByPlayer = true;
+    }
 }
 
 void TemporarySummon::UnSummon()

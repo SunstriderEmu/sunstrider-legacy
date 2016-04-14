@@ -4315,13 +4315,10 @@ void ObjectMgr::LoadInstanceTemplate()
         if(!entry)
             continue;  //should never happen if sMapStore isn't altered elswhere
         
-        if(!entry->HasResetTime())
-            continue;
-
-        if(temp->reset_delay == 0)
+        if (temp->reset_delay == 0)
         {
             // use defaults from the DBC
-            if(entry->resetTimeHeroic)
+            if (entry->resetTimeHeroic)
             {
                 temp->reset_delay = entry->resetTimeHeroic / DAY;
             }
@@ -4329,10 +4326,16 @@ void ObjectMgr::LoadInstanceTemplate()
             {
                 temp->reset_delay = entry->resetTimeRaid / DAY;
             }
+            //defaults
+            else if (entry->IsRaid())
+            {
+                temp->reset_delay = 7;
+            }
+            else
+                temp->reset_delay = 1;
         }
 
-        // the reset_delay must be at least one day
-        temp->reset_delay = std::max((uint32)1, (uint32)(temp->reset_delay * sWorld->GetRate(RATE_INSTANCE_RESET_TIME)));
+        temp->reset_delay *= sWorld->GetRate(RATE_INSTANCE_RESET_TIME);
 
 #ifndef LICH_KING
         sMapDifficultyMap[MAKE_PAIR32(i.first, REGULAR_DIFFICULTY)] = MapDifficulty(temp->reset_delay, temp->maxPlayers, false);

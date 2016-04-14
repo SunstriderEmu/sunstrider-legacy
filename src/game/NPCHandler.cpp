@@ -200,7 +200,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
         data << uint8(tSpell->reqlevel);
         data << uint32(tSpell->reqskill);
         data << uint32(tSpell->reqskillvalue);
-        data << uint32(chain_node && chain_node->prev ? chain_node->prev : req_spell);
+        data << uint32(chain_node && chain_node->prev ? chain_node->prev->Id : req_spell);
         data << uint32(chain_node && chain_node->prev ? req_spell : 0);
         data << uint32(0);
     }

@@ -176,6 +176,12 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         //orientation = 0 will be ignored, use near 0 values if you want to do it
         void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
       
+        /*  Makes the unit move toward the target until it is at a certain distance from it. The unit then stops.
+                   Only works in 2D.
+                   This method doesn't account for any movement done by the target. in other words, it only works if the target is stationary.
+        */
+        void MoveCloserAndStop(uint32 id, Unit* target, float distance);
+
         // These two movement types should only be used with creatures having landing/takeoff animations
         void MoveLand(uint32 id, Position const& pos);
         void MoveTakeoff(uint32 id, Position const& pos);

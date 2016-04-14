@@ -320,10 +320,10 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
 Aura::Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(NULL), m_effIndex(eff), m_caster_guid(0), m_target(target),
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
-m_positive(false), m_permanent(false), m_isPeriodic(false), m_isTrigger(false), m_isAreaAura(false),
+m_positive(false), m_permanent(false), m_isPeriodic(false), m_IsTrigger(false), m_isAreaAura(false),
 m_isPersistent(false), m_removeMode(AURA_REMOVE_BY_DEFAULT), m_isRemovedOnShapeLost(true), m_in_use(false),
 m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISHING_NONE)
-,m_tickNumber(0), m_active(false), m_currentBasePoints(0)
+,m_tickNumber(0), m_active(false), m_currentBasePoints(0), m_channelData(nullptr)
 {
     assert(target);
 
@@ -388,6 +388,10 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
                 }
             }
         }
+
+        // channel data structure
+        if (Spell* spell = caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+            m_channelData = new ChannelTargetData(caster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT), spell->m_targets.HasDst() ? spell->m_targets.GetDst() : nullptr);
     }
 
     if(m_maxduration == -1 || (m_isPassive && m_spellProto->GetDuration() == 0))
@@ -457,6 +461,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
 
 Aura::~Aura()
 {
+    delete m_channelData;
 }
 
 AreaAura::AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target,
@@ -570,7 +575,7 @@ void PersistentAreaAura::Update(uint32 diff)
 
 Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem)
 {
-    if (IsAreaAuraEffect(spellproto->Effects[eff].Effect))
+    if(spellproto->Effects[eff].IsAreaAuraEffect())
         return new AreaAura(spellproto, eff, currentBasePoints, target, caster, castItem);
 
     return new Aura(spellproto, eff, currentBasePoints, target, caster, castItem);
@@ -624,10 +629,11 @@ void Aura::Update(uint32 diff)
         }
     }
 
+    auto triggerSpellInfo = sSpellMgr->GetSpellInfo(GetSpellInfo()->Effects[m_effIndex].TriggerSpell);
     // Channeled aura required check distance from caster except in possessed cases
     Unit *pRealTarget = (GetSpellInfo()->Effects[m_effIndex].ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-                         sSpellMgr->GetSpellInfo(GetSpellInfo()->Effects[m_effIndex].TriggerSpell) &&
-                         !IsAreaOfEffectSpell(sSpellMgr->GetSpellInfo(GetSpellInfo()->Effects[m_effIndex].TriggerSpell)) &&
+                         triggerSpellInfo &&
+                         !triggerSpellInfo->IsAffectingArea() &&
                          GetTriggerTarget()) ? GetTriggerTarget() : m_target;
 
 
@@ -664,7 +670,7 @@ void Aura::Update(uint32 diff)
 
             if(!m_target->HasUnitState(UNIT_STATE_ISOLATED))
             {
-                if(m_isTrigger)
+                if(m_IsTrigger)
                     TriggerSpell();
                 else
                     PeriodicTick();
@@ -2063,7 +2069,52 @@ void Aura::TriggerSpell()
     if (!triggeredSpellInfo->GetMaxRange(false, caster->GetSpellModOwner()))
         target = m_target;    //for druid dispel poison
 
-    m_target->CastSpell(target, triggeredSpellInfo, true, 0, this, originalCasterGUID);
+    SpellCastTargets targets;
+    targets.SetUnitTarget(target);
+    if (triggeredSpellInfo->IsChannelCategorySpell() && m_channelData)
+    {
+        targets.SetDstChannel(m_channelData->spellDst);
+        targets.SetObjectTargetChannel(m_channelData->channelGUID);
+    }
+
+    m_target->CastSpell(targets, triggeredSpellInfo, nullptr, true, nullptr, this, originalCasterGUID);
+}
+
+uint8 Aura::CalcMaxCharges(Unit* caster) const
+{
+    uint32 maxProcCharges = m_spellProto->ProcCharges;
+    /* sunwell
+    if (SpellProcEntry const* procEntry = sSpellMgr->GetSpellProcEntry(GetId()))
+        maxProcCharges = procEntry->charges;
+        */
+
+    if (caster)
+        if (Player* modOwner = caster->GetSpellModOwner())
+            modOwner->ApplySpellMod(GetId(), SPELLMOD_CHARGES, maxProcCharges);
+    return maxProcCharges;
+}
+
+bool Aura::ModCharges(int32 num, AuraRemoveMode removeMode)
+{
+    if (IsUsingCharges())
+    {
+        int32 charges = m_procCharges + num;
+        int32 maxCharges = CalcMaxCharges();
+
+        // limit charges (only on charges increase, charges may be changed manually)
+        if ((num > 0) && (charges > int32(maxCharges)))
+            charges = maxCharges;
+        // we're out of charges, remove
+        else if (charges <= 0)
+        {
+            GetUnitOwner()->RemoveAurasDueToSpell(GetId());
+            return true;
+        }
+
+        SetCharges(charges);
+        UpdateAuraCharges();
+    }
+    return false;
 }
 
 Unit* Aura::GetTriggerTarget() const
@@ -4248,7 +4299,7 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
         m_periodicTimer += m_amplitude;
 
     m_isPeriodic = apply;
-    m_isTrigger = apply;
+    m_IsTrigger = apply;
 
     // Curse of the Plaguebringer
     if (!apply && m_spellProto->Id == 29213 && m_removeMode!=AURA_REMOVE_BY_DISPEL)
@@ -6155,7 +6206,7 @@ void Aura::PeriodicTick()
 
             Unit* target = m_target;                        // aura can be deleted in DealDamage
             SpellInfo const* spellProto = GetSpellInfo();
-            float multiplier = spellProto->Effects[GetEffIndex()].ValueMultiplier > 0 ? spellProto->Effects[GetEffIndex()].ValueMultiplier : 1;
+            float  multiplier = spellProto->Effects[GetEffIndex()].CalcValueMultiplier(pCaster);
 
             // Set trigger flag
             uint32 procAttacker = PROC_FLAG_ON_DO_PERIODIC;
@@ -6177,8 +6228,6 @@ void Aura::PeriodicTick()
             }
 
 
-            if(Player *modOwner = pCaster->GetSpellModOwner())
-                modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_MULTIPLE_VALUE, multiplier);
 
             uint32 heal = pCaster->SpellHealingBonusDone(pCaster, spellProto, uint32(new_damage * multiplier), DOT);
             heal = pCaster->SpellHealingBonusTaken(pCaster, GetSpellInfo(), heal, DOT);
@@ -6342,10 +6391,7 @@ void Aura::PeriodicTick()
 
             if(pCaster->GetMaxPower(power) > 0)
             {
-                gain_multiplier = GetSpellInfo()->Effects[GetEffIndex()].ValueMultiplier;
-
-                if(Player *modOwner = pCaster->GetSpellModOwner())
-                    modOwner->ApplySpellMod(GetId(), SPELLMOD_MULTIPLE_VALUE, gain_multiplier);
+                gain_multiplier *= GetSpellInfo()->Effects[GetEffIndex()].CalcValueMultiplier(pCaster);
             }
 
             SpellPeriodicAuraLogInfo pInfo(this, drain_amount, 0, 0, gain_multiplier);
@@ -6510,7 +6556,7 @@ void Aura::PeriodicTick()
             uint32 triggerSpellId = GetSpellInfo()->Effects[m_effIndex].TriggerSpell;
             if (SpellInfo const* triggeredSpellInfo = GetSpellInfo())
             {
-                if (Unit* triggerCaster = IsRequiringSelectedTarget(triggeredSpellInfo) ? GetCaster() : m_target)
+                if (Unit* triggerCaster = triggeredSpellInfo->NeedsToBeTriggeredByCaster(GetSpellInfo(), GetEffIndex()) ? GetCaster() : m_target)
                 {
                     int32 basepoints0 = int32(GetModifier()->m_amount);
                     triggerCaster->CastCustomSpell(m_target, triggerSpellId, &basepoints0, &basepoints0, &basepoints0, true, 0, this);
@@ -7001,21 +7047,6 @@ void Aura::HandleAuraIgnored(bool apply, bool Real)
         caster->getThreatManager().detauntApply(m_target);
     else
         caster->getThreatManager().detauntFadeOut(m_target);
-}
-
-bool Aura::IsRequiringSelectedTarget(SpellInfo const* info) const
-{
-    for (uint8 i = 0 ; i < MAX_SPELL_EFFECTS; ++i)
-    {
-        if (sSpellMgr->SpellTargetType[info->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_UNIT_TARGET
-            || sSpellMgr->SpellTargetType[info->Effects[i].TargetB.GetTarget()] == TARGET_TYPE_UNIT_TARGET
-            || sSpellMgr->SpellTargetType[info->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_CHANNEL
-            || sSpellMgr->SpellTargetType[info->Effects[i].TargetB.GetTarget()] == TARGET_TYPE_CHANNEL
-            || sSpellMgr->SpellTargetType[info->Effects[i].TargetA.GetTarget()] == TARGET_TYPE_DEST_TARGET
-            || sSpellMgr->SpellTargetType[info->Effects[i].TargetB.GetTarget()] == TARGET_TYPE_DEST_TARGET)
-            return true;
-    }
-    return false;
 }
 
 void Aura::HandleModStateImmunityMask(bool apply, bool Real)

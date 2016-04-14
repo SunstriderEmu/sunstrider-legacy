@@ -198,10 +198,14 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     //Shadowfiend hack, try to spawn it close to target
     float px, py, pz;
-    if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) {
+    if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) 
+    {
         target = sObjectAccessor->GetObjectInWorld(owner->ToPlayer()->GetTarget(), (Unit*)NULL);
         if (target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
+        {
             target->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            UpdateAllowedPositionZ(px, py, pz); //prevent it spawning on flying targets
+        }
         else {
             //spawn at owner instead
             owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);

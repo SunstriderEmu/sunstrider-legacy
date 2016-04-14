@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #ifndef __UNIT_H
 #define __UNIT_H
 
@@ -39,6 +19,7 @@
 #include <list>
 #include "SpellInfo.h"
 class UnitAI;
+class SpellCastTargets;
 
 #define WORLD_TRIGGER   12999
 
@@ -111,13 +92,13 @@ enum SpellModOp
     SPELLMOD_JUMP_TARGETS           = 17,
     SPELLMOD_CHANCE_OF_SUCCESS      = 18,
     SPELLMOD_ACTIVATION_TIME        = 19,
-    SPELLMOD_EFFECT_PAST_FIRST      = 20,
+    SPELLMOD_DAMAGE_MULTIPLIER      = 20,
     SPELLMOD_CASTING_TIME_OLD       = 21,
     SPELLMOD_DOT                    = 22,
     SPELLMOD_EFFECT3                = 23,
     SPELLMOD_BONUS_MULTIPLIER       = 24,
     // spellmod 25, 26 unused
-    SPELLMOD_MULTIPLE_VALUE         = 27,
+    SPELLMOD_VALUE_MULTIPLIER       = 27,
     SPELLMOD_RESIST_DISPEL_CHANCE   = 28
 };
 
@@ -302,6 +283,9 @@ class Pet;
 class Totem;
 class PetAura;
 class BigNumber;
+
+//compat TC
+typedef Aura AuraEffect;
 
 struct SpellImmune
 {
@@ -994,6 +978,8 @@ class Unit : public WorldObject
         typedef std::pair<uint32, uint8> spellEffectPair;
         typedef std::multimap< spellEffectPair, Aura*> AuraMap;
         typedef std::list<Aura *> AuraList;
+        //compat TC
+        typedef AuraList AuraEffectList;
 
         typedef std::multimap<AuraStateType, Aura*> AuraStateAurasMap;
         typedef std::pair<AuraStateAurasMap::const_iterator, AuraStateAurasMap::const_iterator> AuraStateAurasMapBounds;
@@ -1160,6 +1146,7 @@ class Unit : public WorldObject
 
             return false;
         }
+        bool IsInSanctuary() const { return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY); }
         bool IsPvP() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
         bool IsFFAPvP() const;
         void SetPvP(bool state) { if(state) SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); else RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
@@ -1253,6 +1240,7 @@ class Unit : public WorldObject
         bool IsInFlight()  const { return HasUnitState(UNIT_STATE_IN_FLIGHT); }
 
         bool IsInCombat()  const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT); }
+        bool IsPetInCombat() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT); }
         void CombatStart(Unit* target, bool updatePvP = true);
         void SetInCombatState(bool PvP, Unit* enemy = nullptr);
         void SetInCombatWith(Unit* enemy);
@@ -1289,6 +1277,18 @@ class Unit : public WorldObject
         */
         bool IsAttackableByAOE() const;
         CanAttackResult CanAttack(Unit const* target, bool force = true) const;
+
+/* TC
+        bool isTargetableForAttack(bool checkFakeDeath = true, Unit const* byWho = NULL) const;
+
+        bool IsValidAttackTarget(Unit const* target) const;
+        bool _IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, WorldObject const* obj = NULL) const;
+
+        */
+        bool IsValidAssistTarget(Unit const* target) const;
+        bool _IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) const;
+
+
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
         virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
@@ -1298,13 +1298,14 @@ class Unit : public WorldObject
 
         void SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical = false);
         void SendEnergizeSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage,Powers powertype);
-        uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool isTriggeredSpell = false, bool useSpellDamage = true);
+        uint32 SpellNonMeleeDamageLog(Unit *pVictim, uint32 spellID, uint32 damage, bool IsTriggeredSpell = false, bool useSpellDamage = true);
         //returns SpellCastResult
         uint32 CastSpell(Unit* Victim, uint32 spellId, bool triggered = false, Item* castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0 );
         uint32 CastSpell(Unit* Victim,SpellInfo const* spellInfo, bool triggered, Item* castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0, bool skipHit = false);
         uint32 CastCustomSpell(Unit* Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, Item *castItem= NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, SpellValueMod mod, uint32 value, Unit* Victim = NULL, bool triggered = true, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         uint32 CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
+        uint32 CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, bool triggered = true, Item* castItem = nullptr, Aura* triggeredByAura = nullptr, uint64 originalCaster = 0);
         uint32 CastSpell(float x, float y, float z, uint32 spellId, bool triggered, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         uint32 CastSpell(GameObject *go, uint32 spellId, bool triggered, Item *castItem = NULL, Aura* triggeredByAura = NULL, uint64 originalCaster = 0);
         void AddAura(uint32 spellId, Unit *target);
@@ -1365,6 +1366,9 @@ class Unit : public WorldObject
         void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
         uint64 GetCharmGUID() const { return  GetUInt64Value(UNIT_FIELD_CHARM); }
 
+        bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
+        bool IsCreatedByPlayer() const { return m_CreatedByPlayer; }
+
         uint64 GetCharmerOrOwnerGUID() const { return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID(); }
         uint64 GetCharmerOrOwnerOrOwnGUID() const
         {
@@ -1389,6 +1393,7 @@ class Unit : public WorldObject
             return (Unit*)this;
         }
         Player* GetCharmerOrOwnerPlayerOrPlayerItself() const;
+        Player* GetAffectingPlayer() const;
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
@@ -1552,6 +1557,8 @@ class Unit : public WorldObject
         virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) = 0;
         float GetAPMultiplier(WeaponAttackType attType, bool normalized);
 
+        virtual bool HasMainWeapon() const { return true; }
+
         bool IsLevitating() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY); }
         bool IsWalking() const { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING); }
         virtual bool SetWalk(bool enable);
@@ -1573,7 +1580,20 @@ class Unit : public WorldObject
         // Movement info
         Movement::MoveSpline * movespline;
 
+        bool m_ControlledByPlayer;
+        bool m_CreatedByPlayer;
+
         bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
+#ifdef LICH_KING
+        void EnterVehicle(Unit* base, int8 seatId = -1);
+        void EnterVehicleUnattackable(Unit *base, int8 seatId = -1);
+        void ExitVehicle(Position const* exitPosition = NULL);
+        void ChangeSeat(int8 seatId, bool next = true);
+
+        // Should only be called by AuraEffect::HandleAuraControlVehicle(AuraApplication const* auraApp, uint8 mode, bool apply) const;
+        void _ExitVehicle(Position const* exitPosition = NULL);
+        void _EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* aurApp = NULL);
+#endif
 
         void BuildMovementPacket(ByteBuffer *data) const;
 
@@ -1594,6 +1614,8 @@ class Unit : public WorldObject
             : 0.0f; 
         }
 
+        // compat TC
+        bool IsVisible() const { return m_Visibility != VISIBILITY_OFF; }
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);
@@ -1628,10 +1650,15 @@ class Unit : public WorldObject
         HostileRefManager& GetHostileRefManager() { return m_HostileRefManager; }
         bool HasInThreatList(uint64 hostileGUID) const;
 
+        //TC compat
+        inline Aura* GetAuraApplication(uint32 spellId, uint64 casterGUID = 0) { return GetAuraWithCaster(spellId, casterGUID); }
         Aura* GetAura(uint32 spellId, uint32 effindex);
+        Aura* GetAuraWithCaster(uint32 spellId, uint64 casterGUID);
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
         AuraList const& GetAurasByType(AuraType type) const { return m_modAuras[type]; }
+        //compat TC
+        inline AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
         void ApplyAuraProcTriggerDamage(Aura* aura, bool apply);
 
         int32 GetTotalAuraModifier(AuraType auratype) const;
@@ -1682,6 +1709,8 @@ class Unit : public WorldObject
         /* Check if unit has at least one aura of given state; This just checks UNIT_FIELD_AURASTATE if no caster is given, or check in m_auraStateAuras if so (some state being caster dependant) */
         bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
+        Unit* GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo);
+        Unit* GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo = nullptr);
 
         uint32 GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectType damagetype, uint32 CastingTime) const;
         float CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffectType damagetype) const;
@@ -1728,7 +1757,7 @@ class Unit : public WorldObject
         virtual bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false);
                                                             // redefined in Creature
         bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask, bool useCharges = false);
-        virtual bool IsImmunedToSpellEffect(uint32 effect, uint32 mechanic) const;
+        virtual bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const;
                                                             // redefined in Creature
 
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
@@ -1747,6 +1776,7 @@ class Unit : public WorldObject
         int32 CalculateSpellDuration(SpellInfo const* spellProto, uint8 effect_index, Unit const* target);
         float CalculateLevelPenalty(SpellInfo const* spellProto) const;
         void ModSpellCastTime(SpellInfo const* spellProto, int32 & castTime, Spell * spell);
+        int32 CalculateAOEDamageReduction(int32 damage, uint32 schoolMask, Unit* caster) const;
 
         void AddFollower(FollowerReference* pRef) { m_FollowingRefManager.insertFirst(pRef); }
         void RemoveFollower(FollowerReference* /*pRef*/) { /* nothing to do yet */ }
@@ -1984,6 +2014,18 @@ class Unit : public WorldObject
         
         bool _targetLocked; // locks the target during spell cast for proper facing
         time_t _lastDamagedTime; // Part of Evade mechanic
+};
+
+class RedirectSpellEvent : public BasicEvent
+{
+public:
+    RedirectSpellEvent(Unit& self, uint64 auraOwnerGUID, AuraEffect* auraEffect) : _self(self), _auraOwnerGUID(auraOwnerGUID), _auraEffect(auraEffect) { }
+    bool Execute(uint64 e_time, uint32 p_time);
+
+protected:
+    Unit& _self;
+    uint64 _auraOwnerGUID;
+    AuraEffect* _auraEffect;
 };
 
 #endif

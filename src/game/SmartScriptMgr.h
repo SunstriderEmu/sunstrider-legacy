@@ -1149,17 +1149,17 @@ enum SMARTAI_TARGETS
 //custom sunstrider, column target_flags
 enum SMARTAI_TARGETS_FLAGS
 {
-    TARGET_FLAG_NONE                             = 0x0,
-    TARGET_FLAG_IN_COMBAT_ONLY                   = 0x1,   // can only target units in combat
-    TARGET_FLAG_OUT_OF_COMBAT_ONLY               = 0x2,   // can only target units out of combat
-    TARGET_FLAG_UNIQUE_TARGET                    = 0x4,   // can only target one unit (stop at the first found)
-    TARGET_FLAG_CAN_TARGET_DEAD                  = 0x8,   // can target a dead unit
-    TARGET_FLAG_SAME_FACTION                     = 0x10,  // can only target a unit of the same faction as the caster
+    SMART_TARGET_FLAG_NONE                             = 0x0,
+    SMART_TARGET_FLAG_IN_COMBAT_ONLY                   = 0x1,   // can only target units in combat
+    SMART_TARGET_FLAG_OUT_OF_COMBAT_ONLY               = 0x2,   // can only target units out of combat
+    SMART_TARGET_FLAG_UNIQUE_TARGET                    = 0x4,   // can only target one unit (stop at the first found)
+    SMART_TARGET_FLAG_CAN_TARGET_DEAD                  = 0x8,   // can target a dead unit
+    SMART_TARGET_FLAG_SAME_FACTION                     = 0x10,  // can only target a unit of the same faction as the caster
 };
 
 struct SmartTarget
 {
-    SmartTarget(SMARTAI_TARGETS t = SMART_TARGET_NONE, SMARTAI_TARGETS_FLAGS f = TARGET_FLAG_NONE, uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0)
+    SmartTarget(SMARTAI_TARGETS t = SMART_TARGET_NONE, SMARTAI_TARGETS_FLAGS f = SMART_TARGET_FLAG_NONE, uint32 p1 = 0, uint32 p2 = 0, uint32 p3 = 0)
     {
         type = t;
         flags = f;

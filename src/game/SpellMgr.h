@@ -232,15 +232,6 @@ enum SpellDisableTypes
     SPELL_DISABLE_PET      = 0x4
 };
 
-enum SpellEffectTargetTypes
-{
-    SPELL_REQUIRE_NONE,
-    SPELL_REQUIRE_UNIT,
-    SPELL_REQUIRE_DEST,
-    SPELL_REQUIRE_ITEM,
-    SPELL_REQUIRE_CASTER,
-};
-
 enum SpellSelectTargetTypes
 {
     TARGET_TYPE_DEFAULT,
@@ -325,28 +316,6 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId);
 
 bool IsSpellAllowedInLocation(SpellInfo const *spellInfo,uint32 map_id,uint32 zone_id,uint32 area_id);
 
-extern bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
-inline bool IsAreaOfEffectSpell(SpellInfo const *spellInfo)
-{
-    if(IsAreaEffectTarget[spellInfo->Effects[0].TargetA.GetTarget()] || IsAreaEffectTarget[spellInfo->Effects[0].TargetB.GetTarget()])
-        return true;
-    if(IsAreaEffectTarget[spellInfo->Effects[1].TargetA.GetTarget()] || IsAreaEffectTarget[spellInfo->Effects[1].TargetB.GetTarget()])
-        return true;
-    if(IsAreaEffectTarget[spellInfo->Effects[2].TargetA.GetTarget()] || IsAreaEffectTarget[spellInfo->Effects[2].TargetB.GetTarget()])
-        return true;
-    return false;
-}
-
-inline bool IsAreaAuraEffect(uint32 effect)
-{
-    if( effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY    ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND   ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY    ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_PET      ||
-        effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER)
-        return true;
-    return false;
-}
 inline bool IsDispel(SpellInfo const *spellInfo)
 {
     //spellsteal is also dispel
@@ -569,6 +538,68 @@ struct SpellTargetPosition
 
 typedef std::unordered_map<uint32, SpellTargetPosition> SpellTargetPositionMap;
 
+// Enum with EffectRadiusIndex and their actual radius
+enum EffectRadiusIndex
+{
+    EFFECT_RADIUS_2_YARDS = 7,
+    EFFECT_RADIUS_5_YARDS = 8,
+    EFFECT_RADIUS_20_YARDS = 9,
+    EFFECT_RADIUS_30_YARDS = 10,
+    EFFECT_RADIUS_45_YARDS = 11,
+    EFFECT_RADIUS_100_YARDS = 12,
+    EFFECT_RADIUS_10_YARDS = 13,
+    EFFECT_RADIUS_8_YARDS = 14,
+    EFFECT_RADIUS_3_YARDS = 15,
+    EFFECT_RADIUS_1_YARD = 16,
+    EFFECT_RADIUS_13_YARDS = 17,
+    EFFECT_RADIUS_15_YARDS = 18,
+    EFFECT_RADIUS_18_YARDS = 19,
+    EFFECT_RADIUS_25_YARDS = 20,
+    EFFECT_RADIUS_35_YARDS = 21,
+    EFFECT_RADIUS_200_YARDS = 22,
+    EFFECT_RADIUS_40_YARDS = 23,
+    EFFECT_RADIUS_65_YARDS = 24,
+    EFFECT_RADIUS_70_YARDS = 25,
+    EFFECT_RADIUS_4_YARDS = 26,
+    EFFECT_RADIUS_50_YARDS = 27,
+    EFFECT_RADIUS_50000_YARDS = 28,
+    EFFECT_RADIUS_6_YARDS = 29,
+    EFFECT_RADIUS_500_YARDS = 30,
+    EFFECT_RADIUS_80_YARDS = 31,
+    EFFECT_RADIUS_12_YARDS = 32,
+    EFFECT_RADIUS_99_YARDS = 33,
+    EFFECT_RADIUS_55_YARDS = 35,
+    EFFECT_RADIUS_0_YARDS = 36,
+    EFFECT_RADIUS_7_YARDS = 37,
+    EFFECT_RADIUS_21_YARDS = 38,
+    EFFECT_RADIUS_34_YARDS = 39,
+    EFFECT_RADIUS_9_YARDS = 40,
+    EFFECT_RADIUS_150_YARDS = 41,
+    EFFECT_RADIUS_11_YARDS = 42,
+    EFFECT_RADIUS_16_YARDS = 43,
+    EFFECT_RADIUS_0_5_YARDS = 44,   // 0.5 yards
+    EFFECT_RADIUS_10_YARDS_2 = 45,
+    EFFECT_RADIUS_5_YARDS_2 = 46,
+    EFFECT_RADIUS_15_YARDS_2 = 47,
+    EFFECT_RADIUS_60_YARDS = 48,
+    EFFECT_RADIUS_90_YARDS = 49,
+    EFFECT_RADIUS_15_YARDS_3 = 50,
+    EFFECT_RADIUS_60_YARDS_2 = 51,
+    EFFECT_RADIUS_5_YARDS_3 = 52,
+    EFFECT_RADIUS_60_YARDS_3 = 53,
+    EFFECT_RADIUS_50000_YARDS_2 = 54,
+    EFFECT_RADIUS_130_YARDS = 55,
+    EFFECT_RADIUS_38_YARDS = 56,
+    EFFECT_RADIUS_45_YARDS_2 = 57,
+    EFFECT_RADIUS_32_YARDS = 59,
+    EFFECT_RADIUS_44_YARDS = 60,
+    EFFECT_RADIUS_14_YARDS = 61,
+    EFFECT_RADIUS_47_YARDS = 62,
+    EFFECT_RADIUS_23_YARDS = 63,
+    EFFECT_RADIUS_3_5_YARDS = 64,   // 3.5 yards
+    EFFECT_RADIUS_80_YARDS_2 = 65
+};
+
 // Spell pet auras
 class PetAura
 {
@@ -624,10 +655,10 @@ typedef std::map<uint16, PetAura> SpellPetAuraMap;
 // Spell rank chain  (accessed using SpellMgr functions)
 struct SpellChainNode
 {
-    uint32 prev;
-    uint32 next;
-    uint32 first;
-    uint32 last;
+    SpellInfo const* prev;
+    SpellInfo const* next;
+    SpellInfo const* first;
+    SpellInfo const* last;
     uint8  rank;
 };
 
@@ -688,20 +719,6 @@ class SpellMgr
 
         bool IsAffectedBySpell(SpellInfo const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const;
 
-        inline bool IsPositionTarget(uint32 target)
-        {
-            switch (SpellTargetType[target])
-            {
-                case TARGET_TYPE_DEST_CASTER:
-                case TARGET_TYPE_DEST_TARGET:
-                case TARGET_TYPE_DEST_DEST:
-                    return true;
-                default:
-                    break;
-            }
-            return false;
-        }
-
         SpellElixirMap const& GetSpellElixirMap() const { return mSpellElixirs; }
 
         uint32 GetSpellElixirMask(uint32 spellid) const
@@ -732,8 +749,8 @@ class SpellMgr
             return NULL;
         }
 
-        // Spell target coordinates
-        SpellTargetPosition const* GetSpellTargetPosition(uint32 spell_id) const
+        // Spell target coordinates. effIndex NYI
+        SpellTargetPosition const* GetSpellTargetPosition(uint32 spell_id, SpellEffIndex /* effIndex */) const
         {
             SpellTargetPositionMap::const_iterator itr = mSpellTargetPositions.find( spell_id );
             if( itr != mSpellTargetPositions.end( ) )
@@ -760,59 +777,19 @@ class SpellMgr
             return itr->second;
         }
 
-        uint32 GetFirstSpellInChain(uint32 spell_id) const
-        {
-            if(SpellChainNode const* node = GetSpellChainNode(spell_id))
-                return node->first;
+        uint32 GetFirstSpellInChain(uint32 spell_id) const;
 
-            return spell_id;
-        }
-
-        uint32 GetPrevSpellInChain(uint32 spell_id) const
-        {
-            if(SpellChainNode const* node = GetSpellChainNode(spell_id))
-                return node->prev;
-
-            return 0;
-        }
+        uint32 GetPrevSpellInChain(uint32 spell_id) const;
 
         SpellsRequiringSpellMap const& GetSpellsRequiringSpell() const { return mSpellsReqSpell; }
 
         // Note: not use rank for compare to spell ranks: spell chains isn't linear order
         // Use IsHighRankOfSpell instead
-        uint8 GetSpellRank(uint32 spell_id) const
-        {
-            if(SpellChainNode const* node = GetSpellChainNode(spell_id))
-                return node->rank;
+        uint8 GetSpellRank(uint32 spell_id) const;
 
-            return 0;
-        }
+        uint32 GetLastSpellInChain(uint32 spell_id) const;
 
-        uint32 GetLastSpellInChain(uint32 spell_id) const
-        {
-            if(SpellChainNode const* node = GetSpellChainNode(spell_id))
-                return node->last;
-
-            return spell_id;
-        }
-
-        uint8 IsHighRankOfSpell(uint32 spell1,uint32 spell2) const
-        {
-            SpellChainMap::const_iterator itr = mSpellChains.find(spell1);
-
-            uint32 rank2 = GetSpellRank(spell2);
-
-            // not ordered correctly by rank value
-            if(itr == mSpellChains.end() || !rank2 || itr->second.rank <= rank2)
-                return false;
-
-            // check present in same rank chain
-            for(; itr != mSpellChains.end(); itr = mSpellChains.find(itr->second.prev))
-                if(itr->second.prev==spell2)
-                    return true;
-
-            return false;
-        }
+        uint8 IsHighRankOfSpell(uint32 spell1, uint32 spell2) const;
 
         bool IsRankSpellDueToSpell(SpellInfo const *spellInfo_1,uint32 spellId_2) const;
         static bool canStackSpellRanks(SpellInfo const *spellInfo);
@@ -908,9 +885,6 @@ class SpellMgr
             return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
         }
 
-        SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
-        SpellSelectTargetTypes SpellTargetType[TOTAL_SPELL_TARGETS];
-
         float GetSpellThreatModPercent(SpellInfo const* spellInfo) const;
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
 
@@ -927,6 +901,7 @@ class SpellMgr
 
         // Loading data at server startup
         void LoadSpellChains();
+        void UnloadSpellInfoChains();
         void LoadSpellRequired();
         void LoadSpellLearnSkills();
         void LoadSpellLearnSpells();

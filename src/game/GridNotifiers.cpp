@@ -418,7 +418,7 @@ bool NearestHostileUnitInAttackDistanceCheck::operator()(Unit* u)
 
     if (m_force)
     {
-        if (m_creature->CanAttack(u) != CAN_ATTACK_RESULT_OK)
+        if (m_creature->CanAttack(u, false) != CAN_ATTACK_RESULT_OK)
             return false;
     }
     else

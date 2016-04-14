@@ -187,7 +187,7 @@ struct Position
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
     bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
-    bool HasInLine(const Unit* target, float width) const;
+    bool HasInLine(const WorldObject* target, float width) const;
     std::string ToString() const;
 
     // modulos a radian orientation to the range of 0..2PI

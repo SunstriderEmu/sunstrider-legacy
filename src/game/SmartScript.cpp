@@ -2702,7 +2702,7 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
 
 void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type , SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
 {
-    if (flags & TARGET_FLAG_UNIQUE_TARGET)
+    if (flags & SMART_TARGET_FLAG_UNIQUE_TARGET)
         if (!list.empty())
         {
             list.resize(1);
@@ -2716,16 +2716,16 @@ void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type , SMARTAI_TARGETS_FLA
     {
         if (Creature const* c = (*itr)->ToCreature())
         {
-            if(    ( (flags & TARGET_FLAG_IN_COMBAT_ONLY)
+            if(    ( (flags & SMART_TARGET_FLAG_IN_COMBAT_ONLY)
                      && (!c->IsInCombat()) ) 
-               ||  ( (flags & TARGET_FLAG_OUT_OF_COMBAT_ONLY)
+               ||  ( (flags & SMART_TARGET_FLAG_OUT_OF_COMBAT_ONLY)
                      && (c->IsInCombat()) )
-               ||  ( (flags & TARGET_FLAG_CAN_TARGET_DEAD) == 0
+               ||  ( (flags & SMART_TARGET_FLAG_CAN_TARGET_DEAD) == 0
                      && (c->IsDead()) 
                      && type != SMART_TARGET_SELF //still allow self cast
                    )
                //this next one should be moved outside of this if if/when WorldObject get a GetFaction function
-               ||  ( (flags & TARGET_FLAG_SAME_FACTION)
+               ||  ( (flags & SMART_TARGET_FLAG_SAME_FACTION)
                      && (c->GetFaction() != me->GetFaction()) )
               )
             {
@@ -3065,7 +3065,7 @@ ObjectList* SmartScript::GetWorldObjectsInDist(float dist)
     if (obj)
     {
         Trinity::AllWorldObjectsInRange u_check(obj, dist);
-        Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(/*obj, */*targets, u_check);
+        Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(obj, *targets, u_check);
         obj->VisitNearbyObject(dist, searcher);
     }
     return targets;

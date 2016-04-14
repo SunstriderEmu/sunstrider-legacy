@@ -55,6 +55,23 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
         return;
     }
 
+#ifdef LICH_KING
+
+    //! Client explicitly checks the following before sending CMSG_ATTACKSWING packet,
+    //! so we'll place the same check here. Note that it might be possible to reuse this snippet
+    //! in other places as well.
+    if (Vehicle* vehicle = _player->GetVehicle())
+    {
+        VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(_player);
+        ASSERT(seat);
+        if (!(seat->m_flags & VEHICLE_SEAT_FLAG_CAN_ATTACK))
+        {
+            SendAttackStop(pEnemy);
+            return;
+        }
+    }
+#endif
+
     _player->Attack(enemy, true);
 }
 

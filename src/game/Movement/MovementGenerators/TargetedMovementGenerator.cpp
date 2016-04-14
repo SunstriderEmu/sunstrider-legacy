@@ -105,6 +105,12 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     if (i_angle == 0.f)
         init.SetFacing(i_target.getTarget());
 
+    // use player orientation if player pet
+    if (owner->HasUnitState(UNIT_STATE_FOLLOW) && isPlayerPet)
+        if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
+            init.SetFacing(p->GetOrientation());
+
+
     init.Launch();
 }
 

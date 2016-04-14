@@ -1039,6 +1039,7 @@ void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
 /* Syntax: .debug valuessnapshots <start|stop> */
 bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
 {
+#ifdef TRINITY_DEBUG
     Unit* target = GetSelectedUnit();
     if (!target)
     {
@@ -1099,7 +1100,9 @@ bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
     else {
         return false;
     }
-
+#else
+    PSendSysMessage("Command can only be used when compiled in debug mode");
+#endif
     return true;
 }
 
