@@ -3493,7 +3493,7 @@ void Spell::EffectPersistentAA(uint32 i)
     int32 duration = m_spellInfo->GetDuration();
     DynamicObject* dynObj = new DynamicObject;
 
-    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, POSITION_GET_X_Y_Z(&(destTarget->GetPosition())), duration, radius))
+    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, destTarget->GetPositionX(), destTarget->GetPositionY(), destTarget->GetPositionZ(), duration, radius))
     {
         delete dynObj;
         return;
