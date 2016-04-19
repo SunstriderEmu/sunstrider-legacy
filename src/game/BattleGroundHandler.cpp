@@ -20,8 +20,6 @@
 
 void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 8);
 
     uint64 guid;

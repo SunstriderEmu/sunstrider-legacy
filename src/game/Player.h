@@ -1060,12 +1060,7 @@ class PlayerTaxi
         void SaveTaxiMask(const char* data);
 
         uint32 GetTaximask( uint8 index ) const { return m_taximask[index]; }
-        bool IsTaximaskNodeKnown(uint32 nodeidx) const
-        {
-            uint8  field   = uint8((nodeidx - 1) / 32);
-            uint32 submask = 1<<((nodeidx-1)%32);
-            return (m_taximask[field] & submask) == submask;
-        }
+        bool IsTaximaskNodeKnown(uint32 nodeidx) const;
         void ResetTaximask() {
             for (uint8 i = 0; i < TaxiMaskSize; i++)
                 m_taximask[i] = 0;

@@ -205,6 +205,21 @@ void PlayerTaxi::AppendTaximaskTo( ByteBuffer& data, bool all )
     }
 }
 
+bool PlayerTaxi::IsTaximaskNodeKnown(uint32 nodeidx) const
+{
+    //hackz to disable Shattered Sun Staging Area until patch 2.4 is enabled
+    if (nodeidx == 213)
+    {
+        bool patch24active = sGameEventMgr->IsActiveEvent(67); //Patch 2.4
+        if (!patch24active)
+            return false;
+    }
+
+    uint8  field = uint8((nodeidx - 1) / 32);
+    uint32 submask = 1 << ((nodeidx - 1) % 32);
+    return (m_taximask[field] & submask) == submask;
+}
+
 bool PlayerTaxi::LoadTaxiDestinationsFromString( const std::string& values )
 {
     ClearTaxiDestinations();
