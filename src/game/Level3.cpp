@@ -179,7 +179,6 @@ bool ChatHandler::HandleReloadAllSpellCommand(const char*)
     HandleReloadSpellLearnSpellCommand("a");
     HandleReloadSpellLinkedSpellCommand("a");
     HandleReloadSpellProcEventCommand("a");
-    HandleReloadSpellScriptTargetCommand("a");
     HandleReloadSpellTargetPositionCommand("a");
     HandleReloadSpellThreatsCommand("a");
     HandleReloadSpellPetAurasCommand("a");
@@ -543,14 +542,6 @@ bool ChatHandler::HandleReloadSpellProcEventCommand(const char*)
     TC_LOG_INFO( "command", "Re-Loading Spell Proc Event conditions..." );
     sSpellMgr->LoadSpellProcEvents();
     SendGlobalGMSysMessage("DB table `spell_proc_event` (spell proc trigger requirements) reloaded.");
-    return true;
-}
-
-bool ChatHandler::HandleReloadSpellScriptTargetCommand(const char*)
-{
-    TC_LOG_INFO( "command", "Re-Loading SpellsScriptTarget..." );
-    sSpellMgr->LoadSpellScriptTarget();
-    SendGlobalGMSysMessage("DB table `spell_script_target` (spell targets selection in case specific creature/GO requirements) reloaded.");
     return true;
 }
 

@@ -1165,6 +1165,7 @@ class Player : public Unit
         void SummonIfPossible(bool agree);
         bool IsBeingInvitedForSummon() { return m_invite_summon; }
         void UpdateSummonExpireTime() { m_summon_expire = time(NULL) + MAX_PLAYER_SUMMON_DELAY; }
+        time_t GetSummonExpireTimer() const { return m_summon_expire; }
 
         bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
         bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId );

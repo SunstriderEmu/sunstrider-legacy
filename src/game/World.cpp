@@ -1405,9 +1405,6 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();
 
-    TC_LOG_INFO("server.loading", "Loading SpellsScriptTarget...");
-    sSpellMgr->LoadSpellScriptTarget();                       // must be after LoadCreatureTemplates and LoadGameObjectTemplate
-    
     TC_LOG_INFO("server.loading", "Loading Creature Reputation OnKill Data..." );
     sObjectMgr->LoadReputationOnKill();
 

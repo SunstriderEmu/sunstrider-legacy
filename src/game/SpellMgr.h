@@ -204,7 +204,30 @@ enum SpellCastResult : int
     SPELL_FAILED_NOT_IN_BATTLEGROUND            = 0xA5,
     SPELL_FAILED_ONLY_IN_ARENA                  = 0xA6,
     SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE = 0xA7,
+#ifdef LICH_KING
+        SPELL_FAILED_ONLY_IN_ARENA = 168,
+        SPELL_FAILED_TARGET_LOCKED_TO_RAID_INSTANCE = 169,
+        SPELL_FAILED_ON_USE_ENCHANT = 170,
+        SPELL_FAILED_NOT_ON_GROUND = 171,
+        SPELL_FAILED_CUSTOM_ERROR = 172,
+        SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW = 173,
+        SPELL_FAILED_TOO_MANY_SOCKETS = 174,
+        SPELL_FAILED_INVALID_GLYPH = 175,
+        SPELL_FAILED_UNIQUE_GLYPH = 176,
+        SPELL_FAILED_GLYPH_SOCKET_LOCKED = 177,
+        SPELL_FAILED_NO_VALID_TARGETS = 178,
+        SPELL_FAILED_ITEM_AT_MAX_CHARGES = 179,
+        SPELL_FAILED_NOT_IN_BARBERSHOP = 180,
+        SPELL_FAILED_FISHING_TOO_LOW = 181,
+        SPELL_FAILED_ITEM_ENCHANT_TRADE_WINDOW = 182,
+        SPELL_FAILED_SUMMON_PENDING = 183,
+        SPELL_FAILED_MAX_SOCKETS = 184,
+        SPELL_FAILED_PET_CAN_RENAME = 185,
+        SPELL_FAILED_TARGET_CANNOT_BE_RESURRECTED = 186,
+        SPELL_FAILED_UNKNOWN = 187, // actually doesn't exist in client
+#else
     SPELL_FAILED_UNKNOWN                        = 0xA8,
+#endif
 };
 
 enum SpellFamilyNames
@@ -905,7 +928,6 @@ class SpellMgr
         void LoadSpellRequired();
         void LoadSpellLearnSkills();
         void LoadSpellLearnSpells();
-        void LoadSpellScriptTarget();
         void LoadSpellAffects();
         void LoadSpellElixirs();
         void LoadSpellProcEvents();

@@ -294,6 +294,12 @@ struct FactionEntry
                                                             // 35 string flags, unused
     //char*     description[16];                            // 36-51 unused
                                                             // 52 string flags, unused
+
+                                                            // helpers
+    bool CanHaveReputation() const
+    {
+        return reputationListID >= 0;
+    }
 };
 
 struct FactionTemplateEntry

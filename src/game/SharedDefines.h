@@ -318,7 +318,7 @@ enum SpellAttr1
     SPELL_ATTR1_UNK23                       = 0x00800000,           // 23
     SPELL_ATTR1_IS_FISHING                  = 0x01000000,           // 24 only fishing spells
     SPELL_ATTR1_UNK25                       = 0x02000000,           // 25 not set in 2.4.2
-    SPELL_ATTR1_UNK26                       = 0x04000000,           // 26
+    SPELL_ATTR1_UNK26                       = 0x04000000,           // 26 //stop processing spell if any effect does not find it's target ?
     SPELL_ATTR1_UNK27                       = 0x08000000,           // 27
     SPELL_ATTR1_DONT_DISPLAY_IN_AURA_BAR    = 0x10000000,           // 28 client doesn't display these spells in aura bar
     SPELL_ATTR1_CHANNEL_DISPLAY_SPELL_NAME  = 0x20000000,           // 29 spell name is displayed in cast bar instead of 'channeling' text
@@ -482,28 +482,28 @@ enum SpellAttr6
     SPELL_ATTR6_UNK7                            = 0x00000080,           // 7
     SPELL_ATTR6_CANT_TARGET_CROWD_CONTROLLED    = 0x00000100,           // 8
     SPELL_ATTR6_UNK9                            = 0x00000200,           // 9 not set in 2.4.2
-    SPELL_ATTR6_UNK10                           = 0x00000400,           // 10 only spells "Find Minerals" (2580, 8388) TC SPELL_ATTR6_CAN_TARGET_POSSESSED_FRIENDS
+    SPELL_ATTR6_UNK10                           = 0x00000400,           // 10 only spells "Find Minerals" (2580, 8388) // TC SPELL_ATTR6_CAN_TARGET_POSSESSED_FRIENDS
     SPELL_ATTR6_NOT_IN_RAID_INSTANCE            = 0x00000800,           // 11 not usable in raid instance
-    SPELL_ATTR6_UNK12                           = 0x00001000,           // 12 not set in 2.4.2
-    SPELL_ATTR6_CAN_TARGET_INVISIBLE            = 0x00002000,           // 13 not set in 2.4.2 / ignore visibility requirement for spell target (phases, invisibility, etc.)
+    SPELL_ATTR6_CASTABLE_WHILE_ON_VEHICLE       = 0x00001000,           // 12 not set in 2.4.2 // castable while caster is on vehicle
+    SPELL_ATTR6_CAN_TARGET_INVISIBLE            = 0x00002000,           // 13 not set in 2.4.2 // ignore visibility requirement for spell target (phases, invisibility, etc.)
     SPELL_ATTR6_UNK14                           = 0x00004000,           // 14 not set in 2.4.2
-    SPELL_ATTR6_UNK15                           = 0x00008000,           // 15 not set in 2.4.2
+    SPELL_ATTR6_UNK15                           = 0x00008000,           // 15 not set in 2.4.2 // only 54368, 67892
     SPELL_ATTR6_UNK16                           = 0x00010000,           // 16 not set in 2.4.2
-    SPELL_ATTR6_UNK17                           = 0x00020000,           // 17 not set in 2.4.2
-    SPELL_ATTR6_UNK18                           = 0x00040000,           // 18 not set in 2.4.2
+    SPELL_ATTR6_UNK17                           = 0x00020000,           // 17 not set in 2.4.2 // Mount spell
+    SPELL_ATTR6_CAST_BY_CHARMER                 = 0x00040000,           // 18 not set in 2.4.2 // client won't allow to cast these spells when unit is not possessed && charmer of caster will be original caster
     SPELL_ATTR6_UNK19                           = 0x00080000,           // 19 not set in 2.4.2
-    SPELL_ATTR6_UNK20                           = 0x00100000,           // 20 not set in 2.4.2
-    SPELL_ATTR6_UNK21                           = 0x00200000,           // 21 not set in 2.4.2
+    SPELL_ATTR6_ONLY_VISIBLE_TO_CASTER          = 0x00100000,           // 20 not set in 2.4.2 // Auras with this attribute are only visible to their caster (or pet's owner)
+    SPELL_ATTR6_CLIENT_UI_TARGET_EFFECTS        = 0x00200000,           // 21 not set in 2.4.2 // it's only client-side attribute
     SPELL_ATTR6_UNK22                           = 0x00400000,           // 22 not set in 2.4.2
     SPELL_ATTR6_UNK23                           = 0x00800000,           // 23 not set in 2.4.2
-    SPELL_ATTR6_UNK24                           = 0x01000000,           // 24 not set in 2.4.2
+    SPELL_ATTR6_CAN_TARGET_UNTARGETABLE         = 0x01000000,           // 24 not set in 2.4.2
     SPELL_ATTR6_UNK25                           = 0x02000000,           // 25 not set in 2.4.2
     SPELL_ATTR6_UNK26                           = 0x04000000,           // 26 not set in 2.4.2
-    SPELL_ATTR6_UNK27                           = 0x08000000,           // 27 not set in 2.4.2
+    SPELL_ATTR6_LIMIT_PCT_HEALING_MODS          = 0x08000000,           // 27 not set in 2.4.2 // xinef: complicated and guessed
     SPELL_ATTR6_UNK28                           = 0x10000000,           // 28 not set in 2.4.2
-    SPELL_ATTR6_UNK29                           = 0x20000000,           // 29 not set in 2.4.2
+    SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS           = 0x20000000,           // 29 not set in 2.4.2 // xinef: complicated and guessed
     SPELL_ATTR6_UNK30                           = 0x40000000,           // 30 not set in 2.4.2
-    SPELL_ATTR6_UNK31                           = 0x80000000,           // 31 not set in 2.4.2
+    SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS   = 0x80000000,           // 31 not set in 2.4.2 // Spells with this attribute skip applying modifiers to category cooldowns
 };
 
 #define MIN_TALENT_SPECS        1

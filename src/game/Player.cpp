@@ -2282,8 +2282,8 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
     if (creature->GetCharmerGUID())
         return NULL;
 
-    // not enemy
-    if (creature->IsHostileTo(this))
+    // hostile or unfriendly
+    if (creature->GetReactionTo(this) <= REP_UNFRIENDLY)
         return NULL;
 
     /*

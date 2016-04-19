@@ -3364,7 +3364,10 @@ void Aura::HandleModPossess(bool apply, bool Real)
         if(m_target->GetLevel() > m_modifier.m_amount)
             return;
 
-        m_target->SetCharmedBy(caster, true);
+        if (m_target == caster)
+            TC_LOG_ERROR("FIXME", "HandleModPossess: unit " UI64FMTD " (typeId %u, entry %u) tried to charm itself", caster->GetGUID(), caster->GetTypeId(), caster->GetEntry());
+        else
+            m_target->SetCharmedBy(caster, true);
     }
     else
     {

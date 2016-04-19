@@ -7106,246 +7106,22 @@ FactionTemplateEntry const* Unit::GetFactionTemplateEntry() const
 
 bool Unit::IsHostileTo(Unit const* unit) const
 {
-    // always non-hostile to self
-    if (unit == this)
-        return false;
-
-    // always non-hostile to GM in GM mode
-    if (unit->GetTypeId() == TYPEID_PLAYER && (((Player const*) unit)->IsGameMaster() || ((Player const*) unit)->isSpectator()))
-        return false;
-
-    // always hostile to current victim
-    if (GetVictim() == unit || unit->GetVictim() == this)
-        return true;
-
-    // Karazhan chess exception
-    if (GetFaction() == 1689 && unit->GetFaction() == 1690)
-        return true;
-
-    if (GetFaction() == 1690 && unit->GetFaction() == 1689)
-        return true;
-
-    // test pet/charm masters instead pers/charmeds
-    Unit const* myOwner = GetCharmerOrOwner();
-    Unit const* targetOwner = unit->GetCharmerOrOwner();
-
-    // always hostile to owner's enemy
-    if (myOwner && (myOwner->GetVictim() == unit || unit->GetVictim() == myOwner))
-        return true;
-
-    // always hostile to enemy owner
-    if (targetOwner && (GetVictim() == targetOwner || targetOwner->GetVictim() == this))
-        return true;
-
-    // always hostile to owner of owner's enemy
-    if (myOwner && targetOwner && (myOwner->GetVictim() == targetOwner || targetOwner->GetVictim() == myOwner))
-        return true;
-
-    Unit const* meOrMyOwner = myOwner ? myOwner : this;
-    Unit const* target = targetOwner ? targetOwner : unit;
-
-    // always non-hostile to target with common owner, or to owner/pet
-    if (meOrMyOwner == target)
-        return false;    
-
-    // special cases (Duel, etc)
-    if (meOrMyOwner->GetTypeId() == TYPEID_PLAYER && target->GetTypeId() == TYPEID_PLAYER) {
-        Player const* pTester = (Player const*) meOrMyOwner;
-        Player const* pTarget = (Player const*) target;
-
-        // Duel
-        if (pTester->duel && pTester->duel->opponent == pTarget && pTester->duel->startTime != 0)
-            return true;
-
-        // Duel area case
-        if( (meOrMyOwner->ToPlayer() && meOrMyOwner->ToPlayer()->IsInDuelArea())
-            || (pTarget->ToPlayer() && pTarget->ToPlayer()->IsInDuelArea())
-          )
-            return false;
-
-        // Group
-        if (pTester->GetGroup() && pTester->GetGroup() == pTarget->GetGroup())
-            return false;
-
-        // Sanctuary
-        if (pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY) && pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
-            return false;
-
-        // PvP FFA state
-        if (pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
-            return true;
-
-        //= PvP states
-        // Green/Blue (can't attack)
-        if (pTester->GetTeam() == pTarget->GetTeam())
-            return false;
-
-        // Red (can attack) if true, Blue/Yellow (can't attack) in another case
-        return pTester->IsPvP() && pTarget->IsPvP();
-    }
-
-    // faction base cases
-    FactionTemplateEntry const* tester_faction = meOrMyOwner->GetFactionTemplateEntry();
-    FactionTemplateEntry const* target_faction = target->GetFactionTemplateEntry();
-    if (!tester_faction || !target_faction)
-        return false;
-
-    if (target->IsAttackingPlayer() && meOrMyOwner->IsContestedGuard())
-        return true;
-
-    // PvC forced reaction and reputation case
-    if (meOrMyOwner->GetTypeId() == TYPEID_PLAYER) {
-        // forced reaction
-        ForcedReactions::const_iterator forceItr = (meOrMyOwner->ToPlayer())->m_forcedReactions.find(target_faction->faction);
-        if (forceItr != (meOrMyOwner->ToPlayer())->m_forcedReactions.end())
-            return forceItr->second <= REP_HOSTILE;
-
-        // if faction have reputation then hostile state for tester at 100% dependent from at_war state
-        if (FactionEntry const* raw_target_faction = sFactionStore.LookupEntry(target_faction->faction))
-            if (raw_target_faction->reputationListID >= 0)
-                if (FactionState const* factionState = (meOrMyOwner->ToPlayer())->GetFactionState(raw_target_faction))
-                    return (factionState->Flags & FACTION_FLAG_AT_WAR);
-    }        // CvP forced reaction and reputation case
-    else if (target->GetTypeId() == TYPEID_PLAYER) {
-        // forced reaction
-        ForcedReactions::const_iterator forceItr = ((Player const*) target)->m_forcedReactions.find(tester_faction->faction);
-        if (forceItr != ((Player const*) target)->m_forcedReactions.end())
-            return forceItr->second <= REP_HOSTILE;
-
-        // apply reputation state
-        FactionEntry const* raw_tester_faction = sFactionStore.LookupEntry(tester_faction->faction);
-        if (raw_tester_faction && raw_tester_faction->reputationListID >= 0)
-            return ((Player const*) target)->GetReputationRank(raw_tester_faction) <= REP_HOSTILE;
-    }
-
-    // common faction based case (CvC,PvC,CvP)
-    return tester_faction->IsHostileTo(*target_faction);
+    return GetReactionTo(unit) <= REP_HOSTILE;
 }
 
 bool Unit::IsFriendlyTo(Unit const* unit) const
 {
-    // always friendly to self
-    if(unit==this)
-        return true;
-
-    // always friendly to GM in GM mode
-    if(unit->GetTypeId()==TYPEID_PLAYER && (((Player const*)unit)->IsGameMaster() || ((Player const*)unit)->isSpectator()))
-        return true;
-
-    // always non-friendly to enemy
-    if(unit->GetTypeId()==TYPEID_UNIT && (GetVictim()==unit || unit->GetVictim()==this))
-        return false;
-        
-    // Karazhan chess exception
-    if (GetFaction() == 1689 && unit->GetFaction() == 1690)
-        return false;
-    
-    if (GetFaction() == 1690 && unit->GetFaction() == 1689)
-        return false; 
-
-    // test pet/charm masters instead pers/charmeds
-    Unit const* testerOwner = GetCharmerOrOwner();
-    Unit const* targetOwner = unit->GetCharmerOrOwner();
-
-    // always non-friendly to owner's enemy
-    if(testerOwner && (testerOwner->GetVictim()==unit || unit->GetVictim()==testerOwner))
-        return false;
-
-    // always non-friendly to enemy owner
-    if(targetOwner && (GetVictim()==targetOwner || targetOwner->GetVictim()==this))
-        return false;
-
-    // always non-friendly to owner of owner's enemy
-    if(testerOwner && targetOwner && (testerOwner->GetVictim()==targetOwner || targetOwner->GetVictim()==testerOwner))
-        return false;
-
-    Unit const* tester = testerOwner ? testerOwner : this;
-    Unit const* target = targetOwner ? targetOwner : unit;
-
-    // always friendly to target with common owner, or to owner/pet
-    if(tester==target)
-        return true;
-
-    // special cases (Duel)
-    if(tester->GetTypeId()==TYPEID_PLAYER && target->GetTypeId()==TYPEID_PLAYER)
-    {
-        Player const* pTester = (Player const*)tester;
-        Player const* pTarget = (Player const*)target;
-
-        // Duel
-        if(pTester->duel && pTester->duel->opponent == target && pTester->duel->startTime != 0)
-            return false;
-
-        // Group
-        if(pTester->GetGroup() && pTester->GetGroup()==pTarget->GetGroup())
-            return true;
-
-        // Sanctuary
-        if(pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY) && pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY))
-            return true;
-
-        // PvP FFA state
-        if(pTester->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && pTarget->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP))
-            return false;
-
-        //= PvP states
-        // Green/Blue (non-attackable)
-        if(pTester->GetTeam()==pTarget->GetTeam())
-            return true;
-
-        // Blue (friendly/non-attackable) if not PVP, or Yellow/Red in another case (attackable)
-        return !pTarget->IsPvP();
-    }
-
-    // faction base cases
-    FactionTemplateEntry const*tester_faction = tester->GetFactionTemplateEntry();
-    FactionTemplateEntry const*target_faction = target->GetFactionTemplateEntry();
-    if(!tester_faction || !target_faction)
-        return false;
-
-    if(target->IsAttackingPlayer() && tester->IsContestedGuard())
-        return false;
-
-    // PvC forced reaction and reputation case
-    if(tester->GetTypeId()==TYPEID_PLAYER)
-    {
-        // forced reaction
-        ForcedReactions::const_iterator forceItr = ((Player const*)tester)->m_forcedReactions.find(target_faction->faction);
-        if(forceItr!=((Player const*)tester)->m_forcedReactions.end())
-            return forceItr->second >= REP_FRIENDLY;
-
-        // if faction have reputation then friendly state for tester at 100% dependent from at_war state
-        if(FactionEntry const* raw_target_faction = sFactionStore.LookupEntry(target_faction->faction))
-            if(raw_target_faction->reputationListID >=0)
-                if(FactionState const* FactionState = (tester->ToPlayer())->GetFactionState(raw_target_faction))
-                    return !(FactionState->Flags & FACTION_FLAG_AT_WAR);
-    }
-    // CvP forced reaction and reputation case
-    else if(target->GetTypeId()==TYPEID_PLAYER)
-    {
-        // forced reaction
-        ForcedReactions::const_iterator forceItr = ((Player const*)target)->m_forcedReactions.find(tester_faction->faction);
-        if(forceItr!=((Player const*)target)->m_forcedReactions.end())
-            return forceItr->second >= REP_FRIENDLY;
-
-        // apply reputation state
-        if(FactionEntry const* raw_tester_faction = sFactionStore.LookupEntry(tester_faction->faction))
-            if(raw_tester_faction->reputationListID >=0 )
-                return ((Player const*)target)->GetReputationRank(raw_tester_faction) >= REP_FRIENDLY;
-    }
-
-    // common faction based case (CvC,PvC,CvP)
-    return tester_faction->IsFriendlyTo(*target_faction);
+    return GetReactionTo(unit) >= REP_FRIENDLY;
 }
 
 bool Unit::IsHostileToPlayers() const
 {
     FactionTemplateEntry const* my_faction = GetFactionTemplateEntry();
-    if(!my_faction)
+    if (!my_faction || !my_faction->faction)
         return false;
 
     FactionEntry const* raw_faction = sFactionStore.LookupEntry(my_faction->faction);
-    if(raw_faction && raw_faction->reputationListID >=0 )
+    if (raw_faction && raw_faction->reputationListID >= 0)
         return false;
 
     return my_faction->IsHostileToPlayers();
@@ -7354,14 +7130,193 @@ bool Unit::IsHostileToPlayers() const
 bool Unit::IsNeutralToAll() const
 {
     FactionTemplateEntry const* my_faction = GetFactionTemplateEntry();
-    if(!my_faction)
+    if (!my_faction || !my_faction->faction)
         return true;
 
     FactionEntry const* raw_faction = sFactionStore.LookupEntry(my_faction->faction);
-    if(raw_faction && raw_faction->reputationListID >=0 )
+    if (raw_faction && raw_faction->reputationListID >= 0)
         return false;
 
     return my_faction->IsNeutralToAll();
+}
+
+ReputationRank Unit::GetReactionTo(Unit const* target) const
+{
+    // always friendly to self
+    if (this == target)
+        return REP_FRIENDLY;
+
+    // always friendly to charmer or owner
+    if (GetCharmerOrOwnerOrSelf() == target->GetCharmerOrOwnerOrSelf())
+        return REP_FRIENDLY;
+
+    { //HACK TIME
+        // Karazhan chess exception
+        if (GetFaction() == 1689 && target->GetFaction() == 1690)
+            return REP_HOSTILE;
+        if (GetFaction() == 1690 && target->GetFaction() == 1689)
+            return REP_HOSTILE;
+    }
+
+    Player const* selfPlayerOwner = GetAffectingPlayer();
+    Player const* targetPlayerOwner = target->GetAffectingPlayer();
+
+    // check forced reputation to support SPELL_AURA_FORCE_REACTION
+    if (selfPlayerOwner)
+    {
+        if (FactionTemplateEntry const* targetFactionTemplateEntry = target->GetFactionTemplateEntry())
+        {
+            //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
+            ForcedReactions::const_iterator forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
+            if (forceItr != selfPlayerOwner->m_forcedReactions.end())
+                return forceItr->second;
+        }
+    }
+    else if (targetPlayerOwner)
+    {
+        if (FactionTemplateEntry const* selfFactionTemplateEntry = GetFactionTemplateEntry())
+        {
+            //if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(selfFactionTemplateEntry))
+            ForcedReactions::const_iterator forceItr = targetPlayerOwner->m_forcedReactions.find(selfFactionTemplateEntry->faction);
+            if (forceItr != targetPlayerOwner->m_forcedReactions.end())
+                return forceItr->second;
+        }
+    }
+
+
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+    {
+        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+        {
+            if (selfPlayerOwner && targetPlayerOwner)
+            {
+                // always friendly to other unit controlled by player, or to the player himself
+                if (selfPlayerOwner == targetPlayerOwner)
+                    return REP_FRIENDLY;
+
+                // duel - always hostile to opponent
+                if (selfPlayerOwner->duel && selfPlayerOwner->duel->opponent == targetPlayerOwner && selfPlayerOwner->duel->startTime != 0)
+                    return REP_HOSTILE;
+
+                // Duel area case. check after duel
+                if ((selfPlayerOwner->IsInDuelArea())
+                    || (targetPlayerOwner->IsInDuelArea())
+                    )
+                    return REP_FRIENDLY;
+
+
+                // same group - checks dependant only on our faction - skip FFA_PVP for example
+                if (selfPlayerOwner->IsInRaidWith(targetPlayerOwner))
+                    return REP_FRIENDLY; // return true to allow config option AllowTwoSide.Interaction.Group to work
+                                         // however client seems to allow mixed group parties, because in 13850 client it works like:
+                                         // return GetFactionReactionTo(GetFactionTemplateEntry(), target);
+            }
+
+            // check FFA_PVP
+            if (IsFFAPvP() && target->IsFFAPvP())
+                return REP_HOSTILE;
+
+            if (selfPlayerOwner)
+            {
+                if (FactionTemplateEntry const* targetFactionTemplateEntry = target->GetFactionTemplateEntry())
+                {
+                    //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(targetFactionTemplateEntry))
+                    ForcedReactions::const_iterator forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
+                    if (forceItr != selfPlayerOwner->m_forcedReactions.end())
+                        return forceItr->second;
+
+                    if (!selfPlayerOwner->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
+                    {
+                        if (FactionEntry const* targetFactionEntry = sFactionStore.LookupEntry(targetFactionTemplateEntry->faction))
+                        {
+                            if (targetFactionEntry->CanHaveReputation())
+                            {
+                                // check contested flags
+                                if (targetFactionTemplateEntry->factionFlags & FACTION_TEMPLATE_FLAG_CONTESTED_GUARD
+                                    && selfPlayerOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
+                                    return REP_HOSTILE;
+
+                                // if faction has reputation, hostile state depends only from AtWar state
+                                //if (selfPlayerOwner->GetReputationMgr().IsAtWar(targetFactionEntry))
+                                if (FactionState const* factionState = (selfPlayerOwner->ToPlayer())->GetFactionState(targetFactionEntry))
+                                    if(factionState->Flags & FACTION_FLAG_AT_WAR)
+                                        return REP_HOSTILE;
+
+                                return REP_FRIENDLY;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // do checks dependant only on our faction
+    return GetFactionReactionTo(GetFactionTemplateEntry(), target);
+}
+
+ReputationRank Unit::GetFactionReactionTo(FactionTemplateEntry const* factionTemplateEntry, Unit const* target) const
+{
+    // always neutral when no template entry found
+    if (!factionTemplateEntry)
+        return REP_NEUTRAL;
+
+    FactionTemplateEntry const* targetFactionTemplateEntry = target->GetFactionTemplateEntry();
+    if (!targetFactionTemplateEntry)
+        return REP_NEUTRAL;
+
+    // xinef: check forced reputation for self also
+    if (Player const* selfPlayerOwner = GetAffectingPlayer())
+    {
+        //if (ReputationRank const* repRank = selfPlayerOwner->GetReputationMgr().GetForcedRankIfAny(target->GetFactionTemplateEntry()))
+        if (auto targetFactionTemplateEntry = target->GetFactionTemplateEntry())
+        {
+            ForcedReactions::const_iterator forceItr = selfPlayerOwner->m_forcedReactions.find(targetFactionTemplateEntry->faction);
+            if (forceItr != selfPlayerOwner->m_forcedReactions.end())
+                return forceItr->second;
+        }
+    }
+
+    if (Player const* targetPlayerOwner = target->GetAffectingPlayer())
+    {
+        // check contested flags
+        if (factionTemplateEntry->factionFlags & FACTION_TEMPLATE_FLAG_CONTESTED_GUARD
+            && targetPlayerOwner->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
+            return REP_HOSTILE;
+        //if (ReputationRank const* repRank = targetPlayerOwner->GetReputationMgr().GetForcedRankIfAny(factionTemplateEntry))
+         ForcedReactions::const_iterator forceItr = targetPlayerOwner->m_forcedReactions.find(factionTemplateEntry->faction);
+         if (forceItr != targetPlayerOwner->m_forcedReactions.end())
+             return forceItr->second;
+
+        if (!target->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_IGNORE_REPUTATION))
+        {
+            if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplateEntry->faction))
+            {
+                if (factionEntry->CanHaveReputation())
+                {
+                    // CvP case - check reputation, don't allow state higher than neutral when at war
+                    //ReputationRank repRank = targetPlayerOwner->GetReputationMgr().GetRank(factionEntry);
+                    ReputationRank repRank = targetPlayerOwner->GetReputationRank(factionEntry);
+                    //if (targetPlayerOwner->GetReputationMgr().IsAtWar(factionEntry))
+                    if (FactionState const* repState = targetPlayerOwner->GetFactionState(factionEntry))
+                        if (repState->Flags & FACTION_FLAG_AT_WAR)
+                            repRank = std::min(REP_NEUTRAL, repRank);
+                    return repRank;
+                }
+            }
+        }
+    }
+
+    // common faction based check
+    if (factionTemplateEntry->IsHostileTo(*targetFactionTemplateEntry))
+        return REP_HOSTILE;
+    if (factionTemplateEntry->IsFriendlyTo(*targetFactionTemplateEntry))
+        return REP_FRIENDLY;
+    if (targetFactionTemplateEntry->IsFriendlyTo(*factionTemplateEntry))
+        return REP_FRIENDLY;
+    if (factionTemplateEntry->factionFlags & FACTION_TEMPLATE_FLAG_HOSTILE_BY_DEFAULT)
+        return REP_HOSTILE;
+    // neutral by default
+    return REP_NEUTRAL;
 }
 
 /* return true if we started attacking a new target */
@@ -7823,8 +7778,7 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
         if (Unit* magnet = (*itr)->GetBase()->GetUnitOwner())
             if (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 //&& spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK
-                //&& _IsValidAttackTarget(magnet, spellInfo)
-                && CanAttack(victim) == CAN_ATTACK_RESULT_OK
+                && _IsValidAttackTarget(magnet, spellInfo)
                 /*&& IsWithinLOSInMap(magnet)*/)
             {
                 // Xinef: We should choose minimum between flight time and queue time as in reflect, however we dont know flight time at this point, use arbitrary small number
@@ -7856,7 +7810,7 @@ Unit* Unit::GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
     for (AuraEffectList::const_iterator i = hitTriggerAuras.begin(); i != hitTriggerAuras.end(); ++i)
     {
         if (Unit* magnet = (*i)->GetCaster())
-            if (/* sunwell _IsValidAttackTarget(magnet, spellInfo)*/ CanAttack(magnet) == CAN_ATTACK_RESULT_OK && magnet->IsWithinLOSInMap(this)
+            if (_IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this)
                 && (!spellInfo || (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                     && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK)))
                 if (roll_chance_i((*i)->GetAmount()))
@@ -10036,6 +9990,147 @@ bool Unit::IsAttackableByAOE() const
 }
 
 
+bool Unit::IsValidAttackTarget(Unit const* target) const
+{
+    return _IsValidAttackTarget(target, NULL);
+}
+
+// function based on function Unit::CanAttack from 13850 client
+bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, WorldObject const* obj) const
+{
+    ASSERT(target);
+
+    // can't attack self
+    if (this == target)
+        return false;
+
+    // can't attack unattackable units or GMs
+    if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
+        || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()))
+        return false;
+
+#ifdef LICH_KING
+    // can't attack own vehicle or passenger
+    if (m_vehicle)
+        if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
+            if (!IsHostileTo(target)) // pussywizard: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
+                return false;
+#endif
+
+    /* // can't attack invisible (ignore stealth for aoe spells) also if the area being looked at is from a spell use the dynamic object created instead of the casting unit.
+     TC if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) : !CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO))))
+        return false */
+
+    /* This replace the last TC block until Vision system has changed*/
+    if ((m_invisibilityMask || target->m_invisibilityMask) && !CanDetectInvisibilityOf(target))
+        return CAN_ATTACK_RESULT_CANNOT_DETECT_INVI;
+
+    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
+    {
+        StealthDetectedStatus stealthDetectStatus = CanDetectStealthOf(target, GetDistance(target));
+        if (stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
+        else if (stealthDetectStatus == DETECTED_STATUS_WARNING)
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+    }
+    /* ###### */
+
+    // can't attack dead
+    if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
+        return false;
+
+    // can't attack untargetable
+    if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
+        && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+        return false;
+
+    if (Player const* playerAttacker = ToPlayer())
+    {
+        if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR) /*|| playerAttacker->IsSpectator()*/)
+            return false;
+    }
+    // check flags
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16)
+        || (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+        || (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+        || (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+        // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
+        || (GetEntry() != WORLD_TRIGGER && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
+        return false;
+
+    // CvC case - can attack each other only when one of them is hostile
+    if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+        return GetReactionTo(target) <= REP_HOSTILE || target->GetReactionTo(this) <= REP_HOSTILE;
+
+    // PvP, PvC, CvP case
+    // can't attack friendly targets
+    ReputationRank repThisToTarget = GetReactionTo(target);
+    ReputationRank repTargetToThis;
+
+    if (repThisToTarget > REP_NEUTRAL
+        || (repTargetToThis = target->GetReactionTo(this)) > REP_NEUTRAL)
+        return false;
+
+    // Not all neutral creatures can be attacked (even some unfriendly faction does not react aggresive to you, like Sporaggar)
+    if (repThisToTarget == REP_NEUTRAL &&
+        repTargetToThis <= REP_NEUTRAL)
+    {
+        Player* owner = GetAffectingPlayer();
+        const Unit *const thisUnit = owner ? owner : this;
+        if (!(target->GetTypeId() == TYPEID_PLAYER && thisUnit->GetTypeId() == TYPEID_PLAYER) &&
+            !(target->GetTypeId() == TYPEID_UNIT && thisUnit->GetTypeId() == TYPEID_UNIT))
+        {
+            Player const* player = target->GetTypeId() == TYPEID_PLAYER ? target->ToPlayer() : thisUnit->ToPlayer();
+            Unit const* creature = target->GetTypeId() == TYPEID_UNIT ? target : thisUnit;
+
+            if (FactionTemplateEntry const* factionTemplate = creature->GetFactionTemplateEntry())
+            {
+                //if (!(player->GetReputationMgr().GetForcedRankIfAny(factionTemplate)))
+                ForcedReactions::const_iterator forceItr = player->m_forcedReactions.find(factionTemplate->faction);
+                if (forceItr == player->m_forcedReactions.end())
+                    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction))
+                        //if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
+                        if (FactionState const* repState = player->GetFactionState(factionEntry))
+                            if (!(repState->Flags & FACTION_FLAG_AT_WAR))
+                                return false;
+
+            }
+        }
+    }
+
+#ifdef LICH_KING
+    Creature const* creatureAttacker = ToCreature();
+    if (creatureAttacker && creatureAttacker->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER)
+        return false;
+#endif
+
+    Player const* playerAffectingAttacker = HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : NULL;
+    Player const* playerAffectingTarget = target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? target->GetAffectingPlayer() : NULL;
+
+    // check duel - before sanctuary checks
+    if (playerAffectingAttacker && playerAffectingTarget)
+        if (playerAffectingAttacker->duel && playerAffectingAttacker->duel->opponent == playerAffectingTarget && playerAffectingAttacker->duel->startTime != 0)
+            return true;
+
+    // PvP case - can't attack when attacker or target are in sanctuary
+    // however, 13850 client doesn't allow to attack when one of the unit's has sanctuary flag and is pvp
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && (target->IsInSanctuary() || IsInSanctuary()))
+        return false;
+
+    // additional checks - only PvP case
+    if (playerAffectingAttacker && playerAffectingTarget)
+    {
+        if (target->IsPvP())
+            return true;
+
+        if (IsFFAPvP() && target->IsFFAPvP())
+            return true;
+
+        return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1);
+    }
+    return true;
+}
+
 bool Unit::IsValidAssistTarget(Unit const* target) const
 {
     return _IsValidAssistTarget(target, NULL);
@@ -10094,8 +10189,8 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     }
 
     // can't assist non-friendly targets
-    if (!IsFriendlyTo(this)
-        && !target->IsFriendlyTo(this)
+    if (GetReactionTo(target) < REP_NEUTRAL
+        && target->GetReactionTo(this) < REP_NEUTRAL
 #ifdef LICH_KING
         && (!ToCreature() || !(ToCreature()->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_PARTY_MEMBER))
 #endif

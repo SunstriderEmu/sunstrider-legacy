@@ -381,7 +381,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "spell_pet_auras",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellPetAurasCommand,           "" },
         { "spell_proc_event",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellProcEventCommand,          "" },
         { "spell_required",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellRequiredCommand,           "" },
-        { "spell_script_target",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellScriptTargetCommand,       "" },
         { "spell_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellScriptsCommand,            "" },
         { "spell_target_position",       SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellTargetPositionCommand,     "" },
         { "spell_template",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellTemplates,                 "" },

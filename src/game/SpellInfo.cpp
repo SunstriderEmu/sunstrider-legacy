@@ -1243,8 +1243,7 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
             ))
         {
             if (neededTargets & TARGET_FLAG_UNIT_ENEMY)
-                //sunwell/TC if (caster->_IsValidAttackTarget(unitTarget, this))
-                if (caster->CanAttack(unitTarget) == CAN_ATTACK_RESULT_OK)
+                if (caster->_IsValidAttackTarget(unitTarget, this))
                     return SPELL_CAST_OK;
             if (neededTargets & TARGET_FLAG_UNIT_ALLY
                 || (neededTargets & TARGET_FLAG_UNIT_PARTY && caster->IsInPartyWith(unitTarget))

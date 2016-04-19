@@ -110,7 +110,7 @@ void SpellDestination::Relocate(Position const& pos)
         _position.GetPositionOffsetTo(pos, offset);
         _transportOffset.RelocateOffset(offset);
     }
-#endif LICH_KING
+#endif //LICH_KING
     _position.Relocate(pos);
 }
 
@@ -6036,6 +6036,24 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
+    // Don't check explicit target for passive spells (workaround) (check should be skipped only for learn case)
+    // those spells may have incorrect target entries or not filled at all (for example 15332)
+    // such spells when learned are not targeting anyone using targeting system, they should apply directly to caster instead
+    // also, such casts shouldn't be sent to client
+    // Xinef: do not check explicit casts for self cast of triggered spells (eg. reflect case)
+    if (!(m_spellInfo->HasAttribute(SPELL_ATTR0_PASSIVE) && (!m_targets.GetUnitTarget() || m_targets.GetUnitTarget() == m_caster)))
+    {
+        // Check explicit target for m_originalCaster - todo: get rid of such workarounds
+        // Xinef: do not check explicit target for triggered spell casted on self with targetflag enemy
+        if (!m_triggeredByAuraSpell || m_targets.GetUnitTarget() != m_caster || !(m_spellInfo->GetExplicitTargetMask() & TARGET_FLAG_UNIT_ENEMY))
+        {
+            Unit* caster = (m_originalCaster && m_caster->GetEntry() != WORLD_TRIGGER) ? m_originalCaster : m_caster;
+            SpellCastResult castResult = m_spellInfo->CheckExplicitTarget(caster, m_targets.GetObjectTarget(), m_targets.GetItemTarget());
+            if (castResult != SPELL_CAST_OK)
+                return castResult;
+        }
+    }
+
     // prevent casting at immune friendly target
     if(m_spellInfo->IsPositive(!m_caster->IsFriendlyTo(target)) && target->IsImmunedToSpell(m_spellInfo))
         return SPELL_FAILED_TARGET_AURASTATE;
@@ -6279,12 +6297,20 @@ SpellCastResult Spell::CheckCast(bool strict)
                 // Can be area effect, Check only for players and not check if target - caster (spell can have multiply drain/burn effects)
                 if(m_caster->GetTypeId() == TYPEID_PLAYER)
                     if(Unit* target = m_targets.GetUnitTarget())
-                        if(target!=m_caster && target->GetPowerType()!=m_spellInfo->Effects[i].MiscValue)
+                        if (target != m_caster && target->GetPowerType() != Powers(m_spellInfo->Effects[i].MiscValue))
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
             case SPELL_EFFECT_CHARGE:
             {
+#ifdef LICH_KING
+                if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
+                {
+                    // Warbringer - can't be handled in proc system - should be done before checkcast root check and charge effect process
+                    if (strict && m_caster->IsScriptOverriden(m_spellInfo, 6953))
+                        m_caster->RemoveMovementImpairingAuras(true);
+                }
+#endif
                 if (m_caster->HasUnitState(UNIT_STATE_ROOT))
                     return SPELL_FAILED_ROOTED;
 
@@ -6572,6 +6598,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 Player* target = sObjectMgr->GetPlayer((m_caster->ToPlayer())->GetTarget());
                 if( !target || (m_caster->ToPlayer())==target || !target->IsInSameRaidWith(m_caster->ToPlayer()) )
                     return SPELL_FAILED_BAD_TARGETS;
+
+#ifdef LICH_KING
+                // summon pending error
+                if (target->GetSummonExpireTimer() > time(NULL))
+                    return SPELL_FAILED_SUMMON_PENDING;
+#endif
 
                 // check if our map is dungeon
                 if( sMapStore.LookupEntry(m_caster->GetMapId())->IsDungeon() )
@@ -8484,8 +8516,7 @@ namespace Trinity
             case TARGET_CHECK_ENEMY:
                 if (targetIsTotem)
                     return false;
-                /* sunwell if (!_caster->_IsValidAttackTarget(unitTarget, _spellInfo)) */
-                if(_caster->CanAttack(unitTarget) != CAN_ATTACK_RESULT_OK)
+                if (!_caster->_IsValidAttackTarget(unitTarget, _spellInfo))
                     return false;
                 break;
             case TARGET_CHECK_ALLY:
