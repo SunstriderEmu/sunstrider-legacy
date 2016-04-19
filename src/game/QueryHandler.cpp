@@ -123,7 +123,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
                     SubName = cl->SubName[loc_idx];
             }
         }
-        TC_LOG_DEBUG("network","WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
+//        TC_LOG_DEBUG("network","WORLD: CMSG_CREATURE_QUERY '%s' - Entry: %u.", ci->Name.c_str(), entry);
         // guess size
         WorldPacket data( SMSG_CREATURE_QUERY_RESPONSE, 100 );
         data << (uint32)entry;                              // creature entry

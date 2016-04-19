@@ -506,7 +506,7 @@ SpellDestination const* SpellCastTargets::GetDstChannel() const
 
 void SpellCastTargets::Update(Unit* caster)
 {
-    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUID, caster)) : NULL;
+    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUID, (WorldObject*)caster)) : NULL;
 
     m_itemTarget = NULL;
     if (caster->GetTypeId() == TYPEID_PLAYER)
