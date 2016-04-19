@@ -6658,6 +6658,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }break;
             case SPELL_AURA_MOD_POSSESS:
             case SPELL_AURA_MOD_CHARM:
+            case SPELL_AURA_AOE_CHARM:
             {
                 if(m_caster->GetPetGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
@@ -6679,14 +6680,28 @@ SpellCastResult Spell::CheckCast(bool strict)
                         m_targets.SetUnitTarget(target);
                 }
 
-                if(!m_targets.GetUnitTarget())
-                    return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+                if (Unit* target = m_targets.GetUnitTarget())
+                {
+#ifdef LICH_KING
+                    if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->IsVehicle())
+                        return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
+#endif
+                    if (target->IsMounted())
+                        return SPELL_FAILED_CANT_BE_CHARMED;
 
-                if(m_targets.GetUnitTarget()->GetCharmerGUID())
-                    return SPELL_FAILED_CHARMED;
+                    if (target->GetCharmerGUID())
+                        return SPELL_FAILED_CHARMED;
 
-                if(int32(m_targets.GetUnitTarget()->GetLevel()) > CalculateDamage(i,m_targets.GetUnitTarget()))
-                    return SPELL_FAILED_HIGHLEVEL;
+                    if (target->GetOwnerGUID() && IS_PLAYER_GUID(target->GetOwnerGUID()))
+                        return SPELL_FAILED_TARGET_IS_PLAYER_CONTROLLED;
+
+                    if (target->IsPet() && (!target->GetOwner() || target->GetOwner()->ToPlayer()))
+                        return SPELL_FAILED_CANT_BE_CHARMED;
+
+                    int32 damage = CalculateDamage(i, target);
+                    if (damage && int32(target->GetLevel()) > damage)
+                        return SPELL_FAILED_HIGHLEVEL;
+                }
 
                 break;
             }
