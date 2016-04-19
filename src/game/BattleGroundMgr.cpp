@@ -371,6 +371,9 @@ bool BattlegroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayer
             RemoveGroup((*itr1));
         }
     }
+    if (MinPlayers == 0)
+        return true;
+
     // build didn't succeed
     return false;
 }
@@ -542,37 +545,30 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     if(bg_template->isBattleground())
     {
         if(sBattlegroundMgr->IsBattleGroundTesting())
-        {
-            MaxPlayersPerTeam = 1;
-            MinPlayersPerTeam = 1;
-        }
+            MinPlayersPerTeam = 0;
     }
     if(bg_template->IsArena())
     {
-        if(sBattlegroundMgr->IsArenaTesting())
+        
+        //is this really needed ?
+        switch(arenatype)
         {
-            MaxPlayersPerTeam = 1;
+        case ARENA_TYPE_2v2:
+            MaxPlayersPerTeam = 2;
+            MinPlayersPerTeam = 2;
+            break;
+        case ARENA_TYPE_3v3:
+            MaxPlayersPerTeam = 3;
+            MinPlayersPerTeam = 3;
+            break;
+        case ARENA_TYPE_5v5:
+            MaxPlayersPerTeam = 5;
+            MinPlayersPerTeam = 5;
+            break;
+        }
+
+        if (sBattlegroundMgr->IsArenaTesting())
             MinPlayersPerTeam = 1;
-        }
-        else
-        {
-            //is this really needed ?
-            switch(arenatype)
-            {
-            case ARENA_TYPE_2v2:
-                MaxPlayersPerTeam = 2;
-                MinPlayersPerTeam = 2;
-                break;
-            case ARENA_TYPE_3v3:
-                MaxPlayersPerTeam = 3;
-                MinPlayersPerTeam = 3;
-                break;
-            case ARENA_TYPE_5v5:
-                MaxPlayersPerTeam = 5;
-                MinPlayersPerTeam = 5;
-                break;
-            }
-        }
     }
 
     // found out the minimum and maximum ratings the newly added team should battle against

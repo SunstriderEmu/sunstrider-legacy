@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -70,8 +51,6 @@ bool ChatHandler::HandleCommandsCommand(const char* args)
 
 bool ChatHandler::HandleAccountCommand(const char* /*args*/)
 {
-    
-
     uint32 gmlevel = m_session->GetSecurity();
     PSendSysMessage(LANG_ACCOUNT_LEVEL, gmlevel);
     return true;
@@ -79,8 +58,6 @@ bool ChatHandler::HandleAccountCommand(const char* /*args*/)
 
 bool ChatHandler::HandleStartCommand(const char* /*args*/)
 {
-    
-
     Player *chr = m_session->GetPlayer();
 
     if(chr->IsInFlight())
@@ -149,8 +126,6 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 
 bool ChatHandler::HandleDismountCommand(const char* /*args*/)
 {
-    
-
     //If player is not mounted, so go out :)
     if (!m_session->GetPlayer( )->IsMounted())
     {
@@ -173,8 +148,6 @@ bool ChatHandler::HandleDismountCommand(const char* /*args*/)
 
 bool ChatHandler::HandleSaveCommand(const char* /*args*/)
 {
-    
-
     Player *player = m_session->GetPlayer();
 
     // save GM account without delay and output message (testing, etc)
@@ -1086,8 +1059,6 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
 bool ChatHandler::HandleViewCreditsCommand(const char *args)
 {
-    
-
     uint64 account_id = m_session->GetAccountId();
 
     QueryResult query = LoginDatabase.PQuery("SELECT amount FROM account_credits WHERE id = %u", account_id);
@@ -2163,8 +2134,6 @@ bool ChatHandler::HandleSpectateVersion(const char *args)
 
 bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 {
-    
-
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
         //PSendSysMessage("Arena spectator désactivé.");
@@ -2199,8 +2168,6 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
 bool ChatHandler::HandleSpectateFromCommand(const char *args)
 {
-    
-
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
     {
         //PSendSysMessage("Arena spectator désactivé.");
@@ -2278,8 +2245,6 @@ bool ChatHandler::HandleSpectateFromCommand(const char *args)
 
 bool ChatHandler::HandleSpectateInitCommand(const char *args)
 {
-    
-
     if(!sWorld->getConfig(CONFIG_ARENA_SPECTATOR_ENABLE))
         return true;
 
@@ -2291,8 +2256,6 @@ bool ChatHandler::HandleSpectateInitCommand(const char *args)
 
 bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 {
-    
-
     if (Player * player = GetSession()->GetPlayer()) {
         player->UpdateKnownPvPTitles();
         return true;
@@ -2302,8 +2265,6 @@ bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 
 bool ChatHandler::HandleReportLagCommand(const char* args)
 {
-    
-
     time_t now = time(NULL);
     Player* player = GetSession()->GetPlayer();
     if (now - player->lastLagReport > 10) { // Spam prevention
@@ -2317,8 +2278,6 @@ bool ChatHandler::HandleReportLagCommand(const char* args)
 
 bool ChatHandler::HandleBattlegroundCommand(const char* args)
 {
-    
-
     Player* p = m_session->GetPlayer();
     if(!p) return true;
 
@@ -2331,20 +2290,20 @@ bool ChatHandler::HandleBattlegroundCommand(const char* args)
     char* cAsGroup  = strtok (NULL, " ");
 
     uint32 bgTypeId = 0;
-    if(strcmp(cBGType,"goulet") == 0)
+    if(strcmp(cBGType,"warsong") == 0)
         bgTypeId = BATTLEGROUND_WS;
-    else if (strcmp(cBGType,"cyclone") == 0)
+    else if (strcmp(cBGType,"eye") == 0)
         bgTypeId = BATTLEGROUND_EY;
     else if (strcmp(cBGType,"arathi") == 0)
         bgTypeId = BATTLEGROUND_AB;
     else if (strcmp(cBGType,"alterac") == 0)
         bgTypeId = BATTLEGROUND_AV;
 
-    if(bgTypeId == 0) //no valid bg type provded
+    if(bgTypeId == 0) //no valid bg type provided
         return false;
 
     bool asGroup = false;
-    if(cAsGroup && strcmp(cAsGroup,"groupe") == 0)
+    if(cAsGroup && strcmp(cAsGroup,"group") == 0)
         asGroup = true;
 
     m_session->_HandleBattlegroundJoin(bgTypeId,0,asGroup);

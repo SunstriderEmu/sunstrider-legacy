@@ -1,6 +1,6 @@
 /* /!\ LK protocol added SMSG_VOICE_SESSION_ENABLE after the CMSG_VOICE_SESSION_ENABLE opcode, 
 the opcode index is different for the 2 extensions from there. The opcode index to the left are commun until the new (SMSG_VOICE_SESSION_ENABLE) opcode,
-then 1 must be substracted for the BC protocol (the values shown are the LK ones).
+then 1 must be substracted for the BC protocol (the values shown in comments at column start are the LK ones).
 */
 #include "Opcodes.h"
 #include "WorldSession.h"

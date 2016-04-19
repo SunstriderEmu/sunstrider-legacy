@@ -577,7 +577,7 @@ bool ChatHandler::HandleDebugArenaCommand(const char * /*args*/)
     bool enabled = sBattlegroundMgr->ToggleArenaTesting();
     
     if(enabled)
-        SendGlobalGMSysMessage("Arenas are set to 1v1 for debugging. So, don't join as group.");
+        SendGlobalGMSysMessage("Arenas are set to minimum 1 player per team for debugging.");
     else
         SendGlobalGMSysMessage("Arenas are set to normal playercount.");
 
@@ -589,7 +589,7 @@ bool ChatHandler::HandleDebugBattleGroundCommand(const char* )
     bool enabled = sBattlegroundMgr->ToggleBattleGroundTesting();
 
     if(enabled)
-        SendGlobalGMSysMessage("BattleGrounds are set to 1v1 for debugging. So, don't join as group.");
+        SendGlobalGMSysMessage("BattleGrounds will now open with first player joining.");
     else
         SendGlobalGMSysMessage("BattleGrounds are set to normal playercount.");
     
