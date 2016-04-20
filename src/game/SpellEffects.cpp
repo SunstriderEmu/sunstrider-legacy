@@ -6563,8 +6563,7 @@ void Spell::EffectActivateObject(uint32 effect_idx)
     if(!gameObjTarget)
         return;
 
-    Player* player = m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : m_caster->GetCharmerOrOwnerPlayerOrPlayerItself();
-    gameObjTarget->Use(player ? player : m_caster);
+    gameObjTarget->Use(m_caster);
 
     /* delay seems incorrect
     static ScriptInfo activateCommand = generateActivateCommand();
@@ -6735,11 +6734,23 @@ void Spell::EffectInebriate(uint32 /*i*/)
 
     Player *player = unitTarget->ToPlayer();
     uint16 currentDrunk = player->GetDrunkValue();
+#ifdef LICH_KING
+    uint8 drunkMod = damage;
+    if (currentDrunk + drunkMod > 100)
+    {
+        currentDrunk = 100;
+        if (rand_chance() < 25.0f)
+            player->CastSpell(player, 67468, false);    // Drunken Vomit
+    }
+    else
+        currentDrunk += drunkMod;
+#else
     uint16 drunkMod = damage * 256;
     if (currentDrunk + drunkMod > 0xFFFF)
         currentDrunk = 0xFFFF;
     else
         currentDrunk += drunkMod;
+#endif
     player->SetDrunkValue(currentDrunk, m_CastItem?m_CastItem->GetEntry():0);
 }
 
@@ -6895,8 +6906,8 @@ void Spell::EffectResurrect(uint32 /*effIndex*/)
     if(pTarget->isRessurectRequested())       // already have one active request
         return;
 
-    uint32 health = pTarget->GetMaxHealth() * damage / 100;
-    uint32 mana   = pTarget->GetMaxPower(POWER_MANA) * damage / 100;
+    uint32 health = pTarget->CountPctFromMaxHealth(damage);
+    uint32 mana   = CalculatePct(pTarget->GetMaxPower(POWER_MANA), damage);
 
     pTarget->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
     SendResurrectRequest(pTarget);
