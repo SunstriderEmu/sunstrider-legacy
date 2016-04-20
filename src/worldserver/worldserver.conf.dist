@@ -1238,6 +1238,12 @@ BattleGround.TimeLimit.Arena = 0
 #
 # NETWORK CONFIG
 #
+#    Network.Threads
+#        Description: Number of threads for network.
+#         Default:    1 - (Recommended 1 thread per 1000 connections)
+
+Network.Threads = 2
+
 #    Network.TcpNoDelay:
 #         TCP Nagle algorithm setting
 #         Default: 0 (enable Nagle algorithm, less traffic, more latency)
