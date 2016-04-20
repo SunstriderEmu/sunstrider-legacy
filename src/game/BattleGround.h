@@ -372,6 +372,10 @@ class Battleground
         void SendPacketToAll(WorldPacket *packet);
         void PlaySoundToTeam(uint32 SoundID, uint32 TeamID);
         void PlaySoundToAll(uint32 SoundID);
+
+        template<class Do>
+        void BroadcastWorker(Do& _do);
+
         void CastSpellOnTeam(uint32 SpellID, uint32 TeamID);
         void RewardHonorToTeam(uint32 Honor, uint32 TeamID);
         void RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID);
@@ -382,6 +386,13 @@ class Battleground
         void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player *Source);
         void EndBattleground(uint32 winner);
         void BlockMovement(Player *plr);
+
+        void SendWarningToAll(int32 entry, ...);
+        void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = NULL);
+        void PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...);
+
+        // specialized version with 2 string id args
+        void SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
 
         void SendMessageToAll(char const* text);
         void SendMessageToAll(int32 entry);

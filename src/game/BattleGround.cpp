@@ -35,6 +35,84 @@
 #include "Mail.h"
 #include "Transport.h"
 
+
+namespace Trinity
+{
+    class BattlegroundChatBuilder
+    {
+    public:
+        BattlegroundChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, va_list* args = NULL)
+            : _msgtype(msgtype), _textId(textId), _source(source), _args(args) { }
+
+        void operator()(WorldPacket& data, LocaleConstant loc_idx)
+        {
+            char const* text = sObjectMgr->GetTrinityString(_textId, loc_idx);
+            if (_args)
+            {
+                // we need copy va_list before use or original va_list will corrupted
+                va_list ap;
+                va_copy(ap, *_args);
+
+                char str[2048];
+                vsnprintf(str, 2048, text, ap);
+                va_end(ap);
+
+                do_helper(data, &str[0]);
+            }
+            else
+                do_helper(data, text);
+        }
+
+    private:
+        void do_helper(WorldPacket& data, char const* text)
+        {
+            ChatHandler::BuildChatPacket(data, _msgtype, LANG_UNIVERSAL, _source, _source, text);
+        }
+
+        ChatMsg _msgtype;
+        int32 _textId;
+        Player const* _source;
+        va_list* _args;
+    };
+
+    class Battleground2ChatBuilder
+    {
+    public:
+        Battleground2ChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, int32 arg1, int32 arg2)
+            : _msgtype(msgtype), _textId(textId), _source(source), _arg1(arg1), _arg2(arg2) {}
+
+        void operator()(WorldPacket& data, LocaleConstant loc_idx)
+        {
+            char const* text = sObjectMgr->GetTrinityString(_textId, loc_idx);
+            char const* arg1str = _arg1 ? sObjectMgr->GetTrinityString(_arg1, loc_idx) : "";
+            char const* arg2str = _arg2 ? sObjectMgr->GetTrinityString(_arg2, loc_idx) : "";
+
+            char str[2048];
+            snprintf(str, 2048, text, arg1str, arg2str);
+
+            ChatHandler::BuildChatPacket(data, _msgtype, LANG_UNIVERSAL, _source, _source, str);
+        }
+
+    private:
+        ChatMsg _msgtype;
+        int32 _textId;
+        Player const* _source;
+        int32 _arg1;
+        int32 _arg2;
+    };
+}                                                           // namespace Trinity
+
+template<class Do>
+void Battleground::BroadcastWorker(Do& _do)
+{
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player* p = sObjectAccessor->FindConnectedPlayer(itr->first);
+        if (p)
+            _do(p);
+    }
+}
+
 Battleground::Battleground()
 {
     m_TypeID            = 0;
@@ -714,6 +792,68 @@ void Battleground::EndBattleground(uint32 winner)
         ChatHandler::BuildChatPacket(data, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_UNIVERSAL, Source->GetGUID(), 0, winmsg, 0);
         SendPacketToAll(&data);
     }
+}
+
+
+void Battleground::SendMessageToAll(int32 entry, ChatMsg type, Player const* source)
+{
+    if (!entry)
+        return;
+
+    Trinity::BattlegroundChatBuilder bg_builder(type, entry, source);
+    Trinity::LocalizedPacketDo<Trinity::BattlegroundChatBuilder> bg_do(bg_builder);
+    BroadcastWorker(bg_do);
+}
+
+void Battleground::PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...)
+{
+    if (!entry)
+        return;
+
+    va_list ap;
+    va_start(ap, source);
+
+    Trinity::BattlegroundChatBuilder bg_builder(type, entry, source, &ap);
+    Trinity::LocalizedPacketDo<Trinity::BattlegroundChatBuilder> bg_do(bg_builder);
+    BroadcastWorker(bg_do);
+
+    va_end(ap);
+}
+
+void Battleground::SendWarningToAll(int32 entry, ...)
+{
+    if (!entry)
+        return;
+
+    std::map<uint32, WorldPacket> localizedPackets;
+    for (BattlegroundPlayerMap::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    {
+        Player* p = sObjectAccessor->FindConnectedPlayer(itr->first);
+        if (!p)
+            continue;
+
+        if (localizedPackets.find(p->GetSession()->GetSessionDbLocaleIndex()) == localizedPackets.end())
+        {
+            char const* format = sObjectMgr->GetTrinityString(entry, p->GetSession()->GetSessionDbLocaleIndex());
+
+            char str[1024];
+            va_list ap;
+            va_start(ap, entry);
+            vsnprintf(str, 1024, format, ap);
+            va_end(ap);
+
+            ChatHandler::BuildChatPacket(localizedPackets[p->GetSession()->GetSessionDbLocaleIndex()], CHAT_MSG_RAID_BOSS_EMOTE, LANG_UNIVERSAL, nullptr, nullptr, str);
+        }
+
+        p->SendDirectMessage(&localizedPackets[p->GetSession()->GetSessionDbLocaleIndex()]);
+    }
+}
+
+void Battleground::SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 arg1, int32 arg2)
+{
+    Trinity::Battleground2ChatBuilder bg_builder(type, entry, source, arg1, arg2);
+    Trinity::LocalizedPacketDo<Trinity::Battleground2ChatBuilder> bg_do(bg_builder);
+    BroadcastWorker(bg_do);
 }
 
 uint32 Battleground::GetBattlemasterEntry() const

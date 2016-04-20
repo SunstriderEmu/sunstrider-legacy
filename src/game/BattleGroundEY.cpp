@@ -610,9 +610,6 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     if(GetFlagPickerGUID() != Source->GetGUID())
         return;
 
-    const char *message = "";
-    ChatMsg type;
-
     SetFlagPicker(0);
     Source->RemoveAurasDueToSpell(BG_EY_NETHERSTORM_FLAG_SPELL);
     m_FlagState = BG_EY_FLAG_STATE_ON_GROUND;
@@ -620,22 +617,13 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player *Source)
     Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
     Source->CastSpell(Source, BG_EY_PLAYER_DROPPED_FLAG_SPELL, true);
     if(Source->GetTeam() == TEAM_ALLIANCE)
-    {
-        message = GetTrinityString(LANG_BG_EY_DROPPED_FLAG);
-        type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
-    }
+        SendMessageToAll(LANG_BG_EY_DROPPED_FLAG, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
     else
-    {
-        message = GetTrinityString(LANG_BG_EY_DROPPED_FLAG);
-        type = CHAT_MSG_BG_SYSTEM_HORDE;
-    }
+        SendMessageToAll(LANG_BG_EY_DROPPED_FLAG, CHAT_MSG_BG_SYSTEM_HORDE, Source);
+    
     //this does not work correctly :( (it should remove flag carrier name)
     UpdateWorldState(NETHERSTORM_FLAG_STATE_HORDE, BG_EY_FLAG_STATE_WAIT_RESPAWN);
     UpdateWorldState(NETHERSTORM_FLAG_STATE_ALLIANCE, BG_EY_FLAG_STATE_WAIT_RESPAWN);
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
 }
 
 void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj)
@@ -643,9 +631,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     if(GetStatus() != STATUS_IN_PROGRESS || this->IsFlagPickedup() || !Source->IsWithinDistInMap(target_obj, 10))
         return;
 
-    const char *message;
     ChatMsg type;
-    message = GetTrinityString(LANG_BG_EY_HAS_TAKEN_FLAG);
 
     if(Source->GetTeam() == TEAM_ALLIANCE)
     {
@@ -670,9 +656,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     Source->CastSpell(Source, BG_EY_NETHERSTORM_FLAG_SPELL, true);
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
+    SendMessageToAll(LANG_BG_EY_HAS_TAKEN_FLAG, type, Source);
 }
 
 void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
@@ -681,8 +665,6 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
         return;
 
     //Natural point
-    ChatMsg message_type;
-    const char *message = "";
     uint32 Team = m_PointOwnedByTeam[Point];
 
     if(!Team)
@@ -691,8 +673,8 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
     if (Team == TEAM_ALLIANCE)
     {
         m_TeamPointsCount[BG_TEAM_ALLIANCE]--;
-        message_type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
-        message = GetTrinityString(m_LoosingPointTypes[Point].MessageIdAlliance);
+        SendMessageToAll(m_LoosingPointTypes[Point].MessageIdAlliance, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
+
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeAlliance, RESPAWN_ONE_DAY);
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeAlliance + 1, RESPAWN_ONE_DAY);
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeAlliance + 2, RESPAWN_ONE_DAY);
@@ -700,8 +682,7 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
     else
     {
         m_TeamPointsCount[BG_TEAM_HORDE]--;
-        message_type = CHAT_MSG_BG_SYSTEM_HORDE;
-        message = GetTrinityString(m_LoosingPointTypes[Point].MessageIdHorde);
+        SendMessageToAll(m_LoosingPointTypes[Point].MessageIdHorde, CHAT_MSG_BG_SYSTEM_HORDE, Source);
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeHorde, RESPAWN_ONE_DAY);
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeHorde + 1, RESPAWN_ONE_DAY);
         SpawnBGObject(m_LoosingPointTypes[Point].DespawnObjectTypeHorde + 2, RESPAWN_ONE_DAY);
@@ -715,11 +696,7 @@ void BattlegroundEY::EventTeamLostPoint(Player *Source, uint32 Point)
 
     m_PointOwnedByTeam[Point] = EY_POINT_NO_OWNER;
     m_PointState[Point] = EY_POINT_NO_OWNER;
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, message_type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
-
+    
     UpdatePointsIcons(Team, Point);
     UpdatePointsCount(Team);
 }
@@ -729,8 +706,6 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    ChatMsg type;
-    const char *message = "";
     uint32 Team = Source->GetTeam();
 
     SpawnBGObject(m_CapturingPointTypes[Point].DespawnNeutralObjectType, RESPAWN_ONE_DAY);
@@ -740,8 +715,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     if (Team == TEAM_ALLIANCE)
     {
         m_TeamPointsCount[BG_TEAM_ALLIANCE]++;
-        type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
-        message = GetTrinityString(m_CapturingPointTypes[Point].MessageIdAlliance);
+        SendMessageToAll(m_CapturingPointTypes[Point].MessageIdAlliance, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeAlliance, RESPAWN_IMMEDIATELY);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeAlliance + 1, RESPAWN_IMMEDIATELY);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeAlliance + 2, RESPAWN_IMMEDIATELY);
@@ -749,8 +723,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     else
     {
         m_TeamPointsCount[BG_TEAM_HORDE]++;
-        type = CHAT_MSG_BG_SYSTEM_HORDE;
-        message = GetTrinityString(m_CapturingPointTypes[Point].MessageIdHorde);
+        SendMessageToAll(m_CapturingPointTypes[Point].MessageIdHorde, CHAT_MSG_BG_SYSTEM_HORDE, Source);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeHorde, RESPAWN_IMMEDIATELY);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeHorde + 1, RESPAWN_IMMEDIATELY);
         SpawnBGObject(m_CapturingPointTypes[Point].SpawnObjectTypeHorde + 2, RESPAWN_IMMEDIATELY);
@@ -760,10 +733,6 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
 
     m_PointOwnedByTeam[Point] = Team;
     m_PointState[Point] = EY_POINT_UNDER_CONTROL;
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
 
     if(m_BgCreatures[Point])
         DelCreature(Point);
@@ -785,9 +754,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     if(GetStatus() != STATUS_IN_PROGRESS || this->GetFlagPickerGUID() != Source->GetGUID())
         return;
 
-    ChatMsg type;
     uint8 team_id = 0;
-    const char *message = "";
 
     SetFlagPicker(0);
     m_FlagState = BG_EY_FLAG_STATE_WAIT_RESPAWN;
@@ -798,25 +765,19 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     {
         PlaySoundToAll(BG_EY_SOUND_FLAG_CAPTURED_ALLIANCE);
         team_id = BG_TEAM_ALLIANCE;
-        message = GetTrinityString(LANG_BG_EY_CAPTURED_FLAG_A);
-        type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+        SendMessageToAll(LANG_BG_EY_CAPTURED_FLAG_A, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
     }
     else
     {
         PlaySoundToAll(BG_EY_SOUND_FLAG_CAPTURED_HORDE);
         team_id = BG_TEAM_HORDE;
-        message = GetTrinityString(LANG_BG_EY_CAPTURED_FLAG_H);
-        type = CHAT_MSG_BG_SYSTEM_HORDE;
+        SendMessageToAll(LANG_BG_EY_CAPTURED_FLAG_H, CHAT_MSG_BG_SYSTEM_HORDE, Source);
     }
 
     SpawnBGObject(BgObjectType, RESPAWN_IMMEDIATELY);
 
     m_FlagsTimer = BG_EY_FLAG_RESPAWN_TIME;
     m_FlagCapturedBgObjectType = BgObjectType;
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
 
     if(m_TeamPointsCount[team_id] > 0)
         AddPoints(Source->GetTeam(), BG_EY_FlagPoints[m_TeamPointsCount[team_id] - 1]);

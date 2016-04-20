@@ -265,9 +265,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    ChatMsg type;
     uint32 winner = 0;
-    const char *message = "";
 
     //TODO FIX reputation and honor gains for low level players!
 
@@ -285,8 +283,8 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
           Source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
         if(m_FlagDebuffState == 2)
           Source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
-        message = GetTrinityString(LANG_BG_WS_CAPTURED_HF);
-        type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+        SendMessageToAll(LANG_BG_WS_CAPTURED_HF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
+
         if(GetTeamScore(TEAM_ALLIANCE) < BG_WS_MAX_TEAM_SCORE)
             AddPoint(TEAM_ALLIANCE, 1);
         PlaySoundToAll(BG_WS_SOUND_FLAG_CAPTURED_ALLIANCE);
@@ -306,8 +304,8 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
           Source->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
         if(m_FlagDebuffState == 2)
           Source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
-        message = GetTrinityString(LANG_BG_WS_CAPTURED_AF);
-        type = CHAT_MSG_BG_SYSTEM_HORDE;
+        SendMessageToAll(LANG_BG_WS_CAPTURED_AF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
+
         if(GetTeamScore(TEAM_HORDE) < BG_WS_MAX_TEAM_SCORE)
             AddPoint(TEAM_HORDE, 1);
         PlaySoundToAll(BG_WS_SOUND_FLAG_CAPTURED_HORDE);
@@ -328,10 +326,6 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
 
     SpawnBGObject(BG_WS_OBJECT_H_FLAG, BG_WS_FLAG_RESPAWN_TIME);
     SpawnBGObject(BG_WS_OBJECT_A_FLAG, BG_WS_FLAG_RESPAWN_TIME);
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
 
     UpdateFlagState(Source->GetTeam(), 1);                  // flag state none
     UpdateTeamScore(Source->GetTeam());
@@ -391,8 +385,6 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
         return;
     }
 
-    const char *message = "";
-    ChatMsg type;
     bool set = false;
 
     if(Source->GetTeam() == TEAM_ALLIANCE)
@@ -409,8 +401,8 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
             if(m_FlagDebuffState == 2)
               Source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
             m_FlagState[BG_TEAM_HORDE] = BG_WS_FLAG_STATE_ON_GROUND;
-            message = GetTrinityString(LANG_BG_WS_DROPPED_HF);
-            type = CHAT_MSG_BG_SYSTEM_HORDE;
+            SendMessageToAll(LANG_BG_WS_DROPPED_HF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
+
             Source->CastSpell(Source, BG_WS_SPELL_WARSONG_FLAG_DROPPED, true);
             set = true;
         }
@@ -429,8 +421,8 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
             if(m_FlagDebuffState == 2)
               Source->RemoveAurasDueToSpell(WS_SPELL_BRUTAL_ASSAULT);
             m_FlagState[BG_TEAM_ALLIANCE] = BG_WS_FLAG_STATE_ON_GROUND;
-            message = GetTrinityString(LANG_BG_WS_DROPPED_AF);
-            type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+            SendMessageToAll(LANG_BG_WS_DROPPED_AF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
+
             Source->CastSpell(Source, BG_WS_SPELL_SILVERWING_FLAG_DROPPED, true);
             set = true;
         }
@@ -440,10 +432,6 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player *Source)
     {
         Source->CastSpell(Source, SPELL_RECENTLY_DROPPED_FLAG, true);
         UpdateFlagState(Source->GetTeam(), 1);
-
-        WorldPacket data;
-        ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-        SendPacketToAll(&data);
 
         if(Source->GetTeam() == TEAM_ALLIANCE)
             UpdateWorldState(BG_WS_FLAG_UNK_HORDE, uint32(-1));
@@ -459,15 +447,11 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     if(GetStatus() != STATUS_IN_PROGRESS)
         return;
 
-    const char *message;
-    ChatMsg type = CHAT_MSG_SYSTEM; //defaut and invalid value
-
     //alliance flag picked up from base
     if(Source->GetTeam() == TEAM_HORDE && this->GetFlagState(TEAM_ALLIANCE) == BG_WS_FLAG_STATE_ON_BASE
         && this->m_BgObjects[BG_WS_OBJECT_A_FLAG] == target_obj->GetGUID())
     {
-        message = GetTrinityString(LANG_BG_WS_PICKEDUP_AF);
-        type = CHAT_MSG_BG_SYSTEM_HORDE;
+        SendMessageToAll(LANG_BG_WS_PICKEDUP_AF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
         PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
         SpawnBGObject(BG_WS_OBJECT_A_FLAG, RESPAWN_ONE_DAY);
         SetAllianceFlagPicker(Source->GetGUID());
@@ -484,8 +468,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     if (Source->GetTeam() == TEAM_ALLIANCE && this->GetFlagState(TEAM_HORDE) == BG_WS_FLAG_STATE_ON_BASE
         && this->m_BgObjects[BG_WS_OBJECT_H_FLAG] == target_obj->GetGUID())
     {
-        message = GetTrinityString(LANG_BG_WS_PICKEDUP_HF);
-        type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+        SendMessageToAll(LANG_BG_WS_PICKEDUP_HF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
         PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
         SpawnBGObject(BG_WS_OBJECT_H_FLAG, RESPAWN_ONE_DAY);
         SetHordeFlagPicker(Source->GetGUID());
@@ -503,8 +486,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     {
         if(Source->GetTeam() == TEAM_ALLIANCE)
         {
-            message = GetTrinityString(LANG_BG_WS_RETURNED_AF);
-            type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+            SendMessageToAll(LANG_BG_WS_RETURNED_AF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
             UpdateFlagState(TEAM_HORDE, BG_WS_FLAG_STATE_WAIT_RESPAWN);
             RespawnFlag(TEAM_ALLIANCE, false);
             SpawnBGObject(BG_WS_OBJECT_A_FLAG, RESPAWN_IMMEDIATELY);
@@ -514,8 +496,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         }
         else
         {
-            message = GetTrinityString(LANG_BG_WS_PICKEDUP_AF);
-            type = CHAT_MSG_BG_SYSTEM_HORDE;
+            SendMessageToAll(LANG_BG_WS_PICKEDUP_AF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
             PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
             SpawnBGObject(BG_WS_OBJECT_A_FLAG, RESPAWN_ONE_DAY);
             SetAllianceFlagPicker(Source->GetGUID());
@@ -537,8 +518,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
     {
         if(Source->GetTeam() == TEAM_HORDE)
         {
-            message = GetTrinityString(LANG_BG_WS_RETURNED_HF);
-            type = CHAT_MSG_BG_SYSTEM_HORDE;
+            SendMessageToAll(LANG_BG_WS_RETURNED_HF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
             UpdateFlagState(TEAM_ALLIANCE, BG_WS_FLAG_STATE_WAIT_RESPAWN);
             RespawnFlag(TEAM_HORDE, false);
             SpawnBGObject(BG_WS_OBJECT_H_FLAG, RESPAWN_IMMEDIATELY);
@@ -548,8 +528,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         }
         else
         {
-            message = GetTrinityString(LANG_BG_WS_PICKEDUP_HF);
-            type = CHAT_MSG_BG_SYSTEM_ALLIANCE;
+            SendMessageToAll(LANG_BG_WS_PICKEDUP_HF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
             PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
             SpawnBGObject(BG_WS_OBJECT_H_FLAG, RESPAWN_ONE_DAY);
             SetHordeFlagPicker(Source->GetGUID());
@@ -566,12 +545,6 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
         //target_obj->Delete();
     }
 
-    if (type == CHAT_MSG_SYSTEM || !message)
-        return;
-
-    WorldPacket data;
-    ChatHandler::BuildChatPacket(data, type, LANG_UNIVERSAL, Source, nullptr, message);
-    SendPacketToAll(&data);
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
