@@ -749,7 +749,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "possess",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePossessCommand,             "" },
         { "quest",          SEC_GAMEMASTER3,  false, false, NULL,                                           "", questCommandTable },
         { "recall",         SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleRecallCommand,              "" },
-        { "recup",          SEC_PLAYER,       false, false, &ChatHandler::HandleRecupCommand,               "" },
+        { "recup",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRecupCommand,               "" },
         { "reload",         SEC_ADMINISTRATOR,true,  false, NULL,                                           "", reloadCommandTable },
         { "removetitle"    ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveTitleCommand,         "" },
         { "rename",         SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleRenameCommand,              "" },

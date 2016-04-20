@@ -836,6 +836,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     m_lastGenderChange = 0;
 
+    //lot of free stuff
     if (sWorld->getConfig(CONFIG_ARENASERVER_ENABLED))
     {
         if(class_ == CLASS_HUNTER)

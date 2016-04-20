@@ -605,6 +605,7 @@ void Pet::Update(uint32 diff)
             else
                 m_regenTimer -= diff;
 
+            //don't loose happiness for arena server
             if(!sWorld->getConfig(CONFIG_ARENASERVER_ENABLED))
             {
                 if(m_happinessTimer <= diff)

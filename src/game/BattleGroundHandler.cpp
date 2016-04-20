@@ -640,9 +640,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 }
 
 void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
-{
-    
-    
+{     
     CHECK_PACKET_SIZE(recvData, 8+1+1+1);
 
     // ignore if we already in BG or BG queue
