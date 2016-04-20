@@ -19,6 +19,7 @@
 #include "ArenaTeam.h"
 #include "PlayerDump.h"
 #include "AuctionHouseMgr.h"
+#include "RecupMgr.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -616,189 +617,6 @@ bool ChatHandler::HandleRecupReputations(Player *player, std::string reputs)
     return true;
 }
 
-bool ChatHandler::HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip)
-{
-    std::string tempstr = command;
-    std::vector<std::string> v, vline;
-    std::vector<std::string>::iterator i;
-
-    int cutAt;
-    while ((cutAt = tempstr.find_first_of(";")) != tempstr.npos) {
-        if (cutAt > 0) {
-            vline.push_back(tempstr.substr(0, cutAt));
-        }
-        tempstr = tempstr.substr(cutAt + 1);
-    }
-
-    if (tempstr.length() > 0) {
-        vline.push_back(tempstr);
-    }
-
-    for (i = vline.begin(); i != vline.end(); i++) {
-        v.clear();
-        tempstr = *i;
-        while ((cutAt = tempstr.find_first_of(" ")) != tempstr.npos) {
-            if (cutAt > 0) {
-                v.push_back(tempstr.substr(0, cutAt));
-            }
-            tempstr = tempstr.substr(cutAt + 1);
-        }
-
-        if (tempstr.length() > 0) {
-            v.push_back(tempstr);
-        }
-
-        if (v[0] == "additemset") {
-            /* additemset, v[1] == set ID */
-            if(v.size() < 2) 
-            {
-                SendSysMessage("Erreur dans la commande db.");
-                continue;
-            }
-            uint32 itemsetId = atoi(v[1].c_str());
-            bool error = false;
-
-            if (itemsetId == 0) {
-                PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            QueryResult result = WorldDatabase.PQuery("SELECT entry FROM item_template WHERE itemset = %u", itemsetId);
-
-            if (!result) {
-                PSendSysMessage(LANG_NO_ITEMS_FROM_ITEMSET_FOUND, itemsetId);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            do {
-                Field *fields = result->Fetch();
-                uint32 itemId = fields[0].GetUInt32();
-
-                ItemPosCountVec dest;
-                uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, 1);
-                if (msg == EQUIP_ERR_OK) {
-                    Item *item = player->StoreNewItem(dest, itemId, true);
-                    player->SendNewItem(item, 1, true, true);
-                } else {
-                    player->SendEquipError(msg, NULL, NULL);
-                    PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, 1);
-                }
-            } while(result->NextRow() || error);
-
-        } else if (v[0] == "additem") {
-            /* additem, v[1] == item ID, v[2] == item count */
-            if(v.size() < 3) 
-            {
-                SendSysMessage("Command error.");
-                continue;
-            }
-
-            uint32 itemId = atol(v[1].c_str());
-            uint32 count = atoi(v[2].c_str());
-
-            ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(itemId);
-            if (!pProto) {
-                PSendSysMessage(LANG_COMMAND_ITEMIDINVALID, itemId);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            uint32 noSpaceForCount = 0;
-
-            ItemPosCountVec dest;
-            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
-            if (msg != EQUIP_ERR_OK)
-                count -= noSpaceForCount;
-
-            if (count == 0 || dest.empty()) {
-                PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (equip)
-            {
-                player->StoreNewItemInBestSlots(itemId, count);
-            }
-            else
-            {
-                Item *item = player->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
-
-                if (count > 0 && item)
-                    player->SendNewItem(item, count, true, true);
-            }
-
-            if (noSpaceForCount > 0) {
-                PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, noSpaceForCount);
-                return false;
-            }
-        } else if (v[0] == "learn") {
-            /* learn, v[1] == spell ID */
-            if(v.size() < 2) 
-            {
-                SendSysMessage("Command error.");
-                continue;
-            }
-            uint32 spell = atol(v[1].c_str());
-            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
-            if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
-                PSendSysMessage(LANG_COMMAND_SPELL_BROKEN, spell);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (!player->HasSpell(spell))
-                player->LearnSpell(spell);
-        } else if (v[0] == "money") {
-            /* money, v[1] == money count, in pc */
-            uint32 money = atoi(v[1].c_str());
-            uint32 current_money = player->GetMoney();
-
-            if (money > 0 && (current_money + money) < MAX_MONEY_AMOUNT) {
-                player->ModifyMoney(money);
-                PSendSysMessage(LANG_YOU_GET_MONEY);
-            }
-        } else if (v[0] == "setskill") {
-            /* skill, v[1] == skill ID */
-            if(v.size() < 2) 
-            {
-                SendSysMessage("Command error.");
-                continue;
-            }
-            int32 skill = atoi(v[1].c_str());
-            if (skill <= 0) {
-                PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            int32 maxskill = ((int)(metier_level/75)+1)*75;
-            if (maxskill > 375)
-                maxskill = 375;
-
-            SkillLineEntry const* sl = sSkillLineStore.LookupEntry(skill);
-            if (!sl) {
-                PSendSysMessage(LANG_INVALID_SKILL_ID, skill);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            if (!player->GetSkillValue(skill)) {
-                PSendSysMessage(LANG_SET_SKILL_ERROR, player->GetName().c_str(), skill, sl->name[0]);
-                SetSentErrorMessage(true);
-                return false;
-            }
-
-            player->SetSkill(skill, metier_level ? metier_level : 1, maxskill);
-            PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName().c_str(), metier_level, maxskill);
-        }
-    }
-
-    return true;
-}
-
 bool ChatHandler::HandleRecupCommand(const char* args)
 {
     Player *player = m_session->GetPlayer();
@@ -907,7 +725,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     player->SetUInt32Value(PLAYER_XP, 0);
     PSendSysMessage(LANG_YOU_CHANGE_LVL, player->GetName().c_str(), 70);
 
-    if (!ChatHandler::HandleRecupParseCommand(player, command, 0, true)) {
+    if (!RecupMgr::HandleRecupParseCommand(player, command, 0, true, this)) {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
         SetSentErrorMessage(true);
         return false;
@@ -923,7 +741,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         fields = query->Fetch();
         std::string command_p2 = fields[0].GetString();
 
-        if (!ChatHandler::HandleRecupParseCommand(player, command_p2, 0)) {
+        if (!RecupMgr::HandleRecupParseCommand(player, command_p2, 0, false, this)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
@@ -943,7 +761,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         fields = query->Fetch();
         command = fields[0].GetString();
 
-        if (!ChatHandler::HandleRecupParseCommand(player, command, metier1_level)) {
+        if (!RecupMgr::HandleRecupParseCommand(player, command, metier1_level, false, this)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
@@ -962,7 +780,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         fields = query->Fetch();
         command = fields[0].GetString();
 
-        if (!ChatHandler::HandleRecupParseCommand(player, command, metier2_level)) {
+        if (!RecupMgr::HandleRecupParseCommand(player, command, metier2_level, false, this)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
@@ -980,7 +798,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
         fields = query->Fetch();
         command = fields[0].GetString();
 
-        if (!ChatHandler::HandleRecupParseCommand(player, command, metier3_level)) {
+        if (!RecupMgr::HandleRecupParseCommand(player, command, metier3_level, false, this)) {
             PSendSysMessage(LANG_RECUP_CMD_FAILED);
             SetSentErrorMessage(true);
             return false;
@@ -998,7 +816,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     fields = query->Fetch();
     command = fields[0].GetString();
 
-    if (!ChatHandler::HandleRecupParseCommand(player, command, 0)) {
+    if (!RecupMgr::HandleRecupParseCommand(player, command, 0, false, this)) {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
         SetSentErrorMessage(true);
         return false;
@@ -1015,7 +833,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     fields = query->Fetch();
     command = fields[0].GetString();
 
-    if (!ChatHandler::HandleRecupParseCommand(player, command, 0))  {
+    if (!RecupMgr::HandleRecupParseCommand(player, command, 0, false, this)) {
         PSendSysMessage(LANG_RECUP_CMD_FAILED);
         SetSentErrorMessage(true);
         return false;

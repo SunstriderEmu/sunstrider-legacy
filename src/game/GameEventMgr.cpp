@@ -179,7 +179,7 @@ void GameEventMgr::LoadVendors()
     mGameEventVendors.clear();
     mGameEventVendors.resize(mGameEvent.size());
 
-    //                                   0      1      2     3         4         5
+    //                                                 0      1      2     3         4         5
     QueryResult result = WorldDatabase.Query("SELECT event, guid, item, maxcount, incrtime, ExtendedCost FROM game_event_npc_vendor");
 
     uint32 count = 0;

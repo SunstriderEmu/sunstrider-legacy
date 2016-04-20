@@ -573,7 +573,6 @@ class ChatHandler
         bool HandleBuyInShopCommand(const char* args); 
         bool HandleViewCreditsCommand(const char* args);
         bool HandleRecupCommand(const char* args);
-        bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip = false);
         bool HandleRecupReputations(Player *player, std::string reputs);
         bool HandleReskinCommand(const char* args);
         bool HandleRaceOrFactionChange(const char* args);
