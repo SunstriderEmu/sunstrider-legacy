@@ -675,6 +675,8 @@ void SmartAI::InitializeAI()
 
 void SmartAI::OnCharmed(Unit* charmer, bool apply)
 {
+    me->NeedChangeAI = true;
+
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, NULL, 0, 0, apply);
 
     if (!apply && !me->IsInEvadeMode() && me->GetUInt64Value(UNIT_FIELD_CHARMEDBY))
