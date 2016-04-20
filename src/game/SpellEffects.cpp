@@ -780,15 +780,11 @@ void Spell::EffectDummy(uint32 i)
                     if (!unitTarget)
                         break;
                    
-                    Unit* charmer = unitTarget->GetCharmer();
+                    Player* charmer = unitTarget->GetCharmerOrOwnerPlayerOrPlayerItself();
                     if (!charmer)
                         break;
 
-                    Player* pCharmer = charmer->ToPlayer();
-                    if (!pCharmer)
-                        break;
-
-                    pCharmer->KilledMonsterCredit(21959, 0, 10612);
+                    charmer->KilledMonsterCredit(21959, 0, 10612);
                     break;
                 }
                 // Blazerunner Dispel
@@ -6567,11 +6563,16 @@ void Spell::EffectActivateObject(uint32 effect_idx)
     if(!gameObjTarget)
         return;
 
+    Player* player = m_caster->GetTypeId() == TYPEID_PLAYER ? m_caster->ToPlayer() : m_caster->GetCharmerOrOwnerPlayerOrPlayerItself();
+    gameObjTarget->Use(player ? player : m_caster);
+
+    /* delay seems incorrect
     static ScriptInfo activateCommand = generateActivateCommand();
 
     int32 delay_secs = m_spellInfo->Effects[effect_idx].MiscValue;
 
     sWorld->ScriptCommandStart(activateCommand, delay_secs, m_caster, gameObjTarget);
+    */
 }
 
 void Spell::EffectSummonTotem(uint32 i)
