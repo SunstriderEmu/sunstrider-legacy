@@ -368,6 +368,22 @@ struct GameObjectTemplate
     };
 
     //helpers 
+    
+    uint32 GetAutoCloseTime() const
+    {
+        uint32 autoCloseTime = 0;
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_DOOR:          autoCloseTime = door.autoCloseTime; break;
+        case GAMEOBJECT_TYPE_BUTTON:        autoCloseTime = button.autoCloseTime; break;
+        case GAMEOBJECT_TYPE_TRAP:          autoCloseTime = trap.autoCloseTime; break;
+        case GAMEOBJECT_TYPE_GOOBER:        autoCloseTime = goober.autoCloseTime; break;
+        case GAMEOBJECT_TYPE_TRANSPORT:     autoCloseTime = transport.autoCloseTime; break;
+        case GAMEOBJECT_TYPE_AREADAMAGE:    autoCloseTime = areadamage.autoCloseTime; break;
+        default: break;
+        }
+        return autoCloseTime /* xinef: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
+    }
 
     uint32 GetLootId() const
     {

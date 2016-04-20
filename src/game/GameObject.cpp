@@ -1303,6 +1303,14 @@ void GameObject::Use(Unit* user)
                 player->CastedCreatureOrGO(info->entry, GetGUID(), 0);
             }
 
+            if (info->GetAutoCloseTime())
+            {
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+                SetLootState(GO_ACTIVATED, user);
+                if (!info->goober.customAnim)
+                    SetGoState(GO_STATE_ACTIVE);
+            }
+
             // cast this spell later if provided
             spellId = info->goober.spellId;
 

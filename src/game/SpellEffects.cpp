@@ -774,6 +774,23 @@ void Spell::EffectDummy(uint32 i)
         {
             switch(m_spellInfo->Id )
             {
+                // Fel Reaver Sentinel Tag // quest 10612
+                case 38020:
+                {
+                    if (!unitTarget)
+                        break;
+                   
+                    Unit* charmer = unitTarget->GetCharmer();
+                    if (!charmer)
+                        break;
+
+                    Player* pCharmer = charmer->ToPlayer();
+                    if (!pCharmer)
+                        break;
+
+                    pCharmer->KilledMonsterCredit(21959, 0, 10612);
+                    break;
+                }
                 // Blazerunner Dispel
                 case 14247:
                 {
