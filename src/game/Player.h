@@ -2186,14 +2186,7 @@ class Player : public Unit
         float GetBattlegroundEntryPointY() const { return m_bgEntryPointY; }
         float GetBattlegroundEntryPointZ() const { return m_bgEntryPointZ; }
         float GetBattlegroundEntryPointO() const { return m_bgEntryPointO; }
-        void SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO )
-        {
-            m_bgEntryPointMap = Map;
-            m_bgEntryPointX = PosX;
-            m_bgEntryPointY = PosY;
-            m_bgEntryPointZ = PosZ;
-            m_bgEntryPointO = PosO;
-        }
+        void SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO);
 
         void SetBGTeam(uint32 team) { m_bgTeam = team; }
         uint32 GetBGTeam() const { return m_bgTeam ? m_bgTeam : GetTeam(); }

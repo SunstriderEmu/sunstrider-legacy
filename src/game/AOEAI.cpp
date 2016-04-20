@@ -34,7 +34,7 @@ int AOEAI::Permissible(const Creature *creature)
 
 AOEAI::AOEAI(Creature *c) : CreatureAI(c)
 {
-    ASSERT(me->m_spells[0]);    
+    DEBUG_ASSERT(me->m_spells[0]);
     me->SetVisibility(VISIBILITY_ON);//visible to see all spell anims
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);//can't be targeted
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);//can't be damaged

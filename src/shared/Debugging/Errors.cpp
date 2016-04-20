@@ -24,12 +24,22 @@
 #include <cstdarg>
 
 namespace Trinity {
+    
 
 void Assert(char const* file, int line, char const* function, char const* message)
 {
     fprintf(stderr, "\n%s:%i in %s ASSERTION FAILED:\n  %s\n",
             file, line, function, message);
     abort();
+}
+
+void DebugAssert(char const* file, int line, char const* function, char const* message)
+{
+    fprintf(stderr, "\n%s:%i in %s ASSERTION FAILED:\n  %s\n",
+        file, line, function, message);
+#ifdef TRINITY_DEBUG
+    abort();
+#endif
 }
 
 void Assert(char const* file, int line, char const* function, char const* message, char const* format, ...)
@@ -44,6 +54,22 @@ void Assert(char const* file, int line, char const* function, char const* messag
 
     va_end(args);
     abort();
+}
+
+void DebugAssert(char const* file, int line, char const* function, char const* message, char const* format, ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    fprintf(stderr, "\n%s:%i in %s ASSERTION FAILED:\n  %s ", file, line, function, message);
+    vfprintf(stderr, format, args);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+
+    va_end(args);
+#ifdef TRINITY_DEBUG
+    abort();
+#endif
 }
 
 void Fatal(char const* file, int line, char const* function, char const* message)

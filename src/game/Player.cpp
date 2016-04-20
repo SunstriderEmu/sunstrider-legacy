@@ -19132,6 +19132,18 @@ void Player::LeaveBattleground(bool teleportToEntryPoint)
     }
 }
 
+void Player::SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO)
+{
+    MapEntry const* mEntry = sMapStore.LookupEntry(Map);
+    DEBUG_ASSERT(!mEntry->IsBattlegroundOrArena());
+
+    m_bgEntryPointMap = Map;
+    m_bgEntryPointX = PosX;
+    m_bgEntryPointY = PosY;
+    m_bgEntryPointZ = PosZ;
+    m_bgEntryPointO = PosO;
+}
+
 bool Player::CanJoinToBattleground() const
 {
     // check Deserter debuff

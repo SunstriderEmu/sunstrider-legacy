@@ -529,7 +529,7 @@ void LogsDatabaseAccessor::BuyOrSellItemToVendor(BuyTransactionType type, Player
     case TRANSACTION_BUYBACK:  transaction_type = "buyback"; break;
     default:
         //wrong type given, should never happen
-        ASSERT(false);
+        DEBUG_ASSERT(false);
         return;
     }
 
