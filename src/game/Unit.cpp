@@ -724,8 +724,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     //You still see it in the combat log though
     if(pVictim != this && GetTypeId() == TYPEID_PLAYER && pVictim->GetTypeId() == TYPEID_PLAYER)
     {
-        const AreaTableEntry *area = sAreaTableStore.LookupEntry(pVictim->GetAreaId());
-        if(area && (area->flags & AREA_FLAG_SANCTUARY || (World::IsZoneSanctuary(area->ID))))       //sanctuary
+        if(pVictim->IsInSanctuary())
             return 0;
     }
 
@@ -3181,7 +3180,7 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                     {
                         if (index == UNIT_FIELD_BYTES_2)
                             // Allow targetting opposite faction in party when enabled in config
-                            fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_SANCTUARY /*| UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5*/) << 8)); // this flag is at uint8 offset 1 !!
+                            fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_UNK3 /*| UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5*/) << 8)); // this flag is at uint8 offset 1 !!
                         else
                             // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
                             fieldBuffer << uint32(target->GetFaction());
@@ -11306,6 +11305,15 @@ uint32 Unit::GetCreatureType() const
     }
     else
         return (this->ToCreature())->GetCreatureTemplate()->type;
+}
+
+bool Unit::IsInSanctuary() const
+{
+    const AreaTableEntry *area = sAreaTableStore.LookupEntry(GetAreaId());
+    if (area && (area->flags & AREA_FLAG_SANCTUARY || (sWorld->IsZoneSanctuary(area->ID)))) 
+        return true;
+
+    return false;
 }
 
 bool Unit::IsFFAPvP() const 

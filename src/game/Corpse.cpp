@@ -54,14 +54,18 @@ Corpse::~Corpse()
 void Corpse::AddToWorld()
 {
     ///- Register the corpse for guid lookup
-    if(!IsInWorld()) sObjectAccessor->AddObject(this);
+    if(!IsInWorld()) 
+        sObjectAccessor->AddObject(this);
+
     Object::AddToWorld();
 }
 
 void Corpse::RemoveFromWorld()
 {
     ///- Remove the corpse from the accessor
-    if(IsInWorld()) sObjectAccessor->RemoveObject(this);
+    if(IsInWorld()) 
+        sObjectAccessor->RemoveObject(this);
+
     Object::RemoveFromWorld();
 }
 

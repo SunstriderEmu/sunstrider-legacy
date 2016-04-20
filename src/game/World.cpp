@@ -234,8 +234,6 @@ void World::AddSession(WorldSession* s)
 void
 World::AddSession_(WorldSession* s)
 {
-    
-    
     ASSERT (s);
 
     //NOTE - Still there is race condition in WorldSession* being used in the Sockets
@@ -295,7 +293,7 @@ World::AddSession_(WorldSession* s)
         float popu = GetActiveSessionCount (); //updated number of users on the server
         popu /= pLimit;
         popu *= 2;
-        LoginDatabase.PExecute ("UPDATE realmlist SET population = '%f' WHERE id = '%d'", popu, realmID);
+        LoginDatabase.AsyncPQuery("UPDATE realmlist SET population = '%f' WHERE id = '%d'", popu, realmID);
     }
 }
 
@@ -1225,6 +1223,9 @@ void World::LoadConfigSettings(bool reload)
         else
             TC_LOG_ERROR("server.loading", "ClientCacheVersion can't be negative %d, ignored.", clientCacheId);
     }
+
+    LoadSanctuaryAndFFAZones();
+    LoadFishingWords();
 
     // call ScriptMgr if we're reloading the configuration
    /* if (reload)
@@ -3121,7 +3122,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
         case SANCTION_BAN_IP:
             //No SQL injection as strings are escaped
             resultAccounts = LoginDatabase.PQuery("SELECT id FROM account WHERE last_ip = '%s'",nameOrIP.c_str());
-            LoginDatabase.PExecute("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
+            LoginDatabase.AsyncPQuery("INSERT INTO ip_banned VALUES ('%s',UNIX_TIMESTAMP(),UNIX_TIMESTAMP()+%u,'%s','%s')",nameOrIP.c_str(),duration_secs,safe_author.c_str(),reason.c_str());
             break;
         case SANCTION_BAN_ACCOUNT:
             //No SQL injection as string is escaped
@@ -3149,12 +3150,12 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
         Field* fieldsAccount = resultAccounts->Fetch();
         uint32 account = fieldsAccount->GetUInt32();
         //also reset mail change
-        LoginDatabase.PExecute("UPDATE account SET newMail = '', newMailTS = 0 WHERE id = %u",account);
+        LoginDatabase.AsyncPQuery("UPDATE account SET newMail = '', newMailTS = 0 WHERE id = %u",account);
 
         if(mode!= SANCTION_BAN_IP)
         {
             //No SQL injection as strings are escaped
-            LoginDatabase.PExecute("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
+            LoginDatabase.AsyncPQuery("INSERT INTO account_banned VALUES ('%u', UNIX_TIMESTAMP(), UNIX_TIMESTAMP()+%u, '%s', '%s', '1')",
                 account,duration_secs,safe_author.c_str(),reason.c_str());
             LogsDatabaseAccessor::Sanction(author_session, account, 0, SANCTION_BAN_ACCOUNT, duration_secs, reason);
         }
@@ -3186,7 +3187,7 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
     if (mode == SANCTION_BAN_IP)
     {
         LoginDatabase.EscapeString(nameOrIP);
-        LoginDatabase.PExecute("DELETE FROM ip_banned WHERE ip = '%s'",nameOrIP.c_str());
+        LoginDatabase.AsyncPQuery("DELETE FROM ip_banned WHERE ip = '%s'",nameOrIP.c_str());
 
         LogsDatabaseAccessor::RemoveSanction(unbanAuthor, 0, 0, nameOrIP, SANCTION_BAN_IP);
     }
@@ -3202,7 +3203,7 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
             return false;
 
         //NO SQL injection as account is uint32
-        LoginDatabase.PExecute("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
+        LoginDatabase.AsyncPQuery("UPDATE account_banned SET active = '0' WHERE id = '%u'",account);
         LogsDatabaseAccessor::RemoveSanction(unbanAuthor, account, 0, "", mode);
     }
     return true;
@@ -3523,10 +3524,10 @@ void World::ResetDailyQuests()
     bool reinitConsortium = false;
     if (localTm.tm_mday == 1) {
         reinitConsortium = true;
-        CharacterDatabase.Execute("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
+        CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
     }
     
-    CharacterDatabase.Execute("DELETE FROM character_queststatus_daily");
+    CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus_daily");
     for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
         if(itr->second->GetPlayer()) {
             itr->second->GetPlayer()->ResetDailyQuestStatus();
@@ -3601,85 +3602,104 @@ void World::LoadDBVersion()
         m_DBVersion = "unknown world database";
 }
 
-bool World::IsZoneSanctuary(uint32 zoneid)
+void World::LoadSanctuaryAndFFAZones()
 {
-    std::string zonestr = sConfigMgr->GetStringDefault("SanctuaryZone", "3703");
-    std::vector<std::string> v;
-    std::vector<std::string>::iterator it;
-    std::string tempstr;
+    {
+        configSanctuariesZones.clear();
 
-    int cutAt;
-    tempstr = zonestr;
-    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
-        if (cutAt > 0) {
-            v.push_back(tempstr.substr(0, cutAt));
+        std::string zonestr = sConfigMgr->GetStringDefault("SanctuaryZone", "3703");
+        std::vector<std::string> v;
+        std::vector<std::string>::iterator it;
+        std::string tempstr;
+
+        int cutAt;
+        tempstr = zonestr;
+        while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+            if (cutAt > 0) {
+                v.push_back(tempstr.substr(0, cutAt));
+            }
+            tempstr = tempstr.substr(cutAt + 1);
         }
-        tempstr = tempstr.substr(cutAt + 1);
+
+        if (tempstr.length() > 1) {
+            v.push_back(tempstr);
+        }
+
+        for (auto it : v) {
+            uint32 zoneId = atoi(it.c_str());
+            configSanctuariesZones.emplace(zoneId);
+        }
     }
 
-    if (tempstr.length() > 1) {
-        v.push_back(tempstr);
-    }
+    {
+        configFFAZones.clear();
 
-    for (it = v.begin(); it != v.end(); it++) {
-        if (atoi((*it).c_str()) == zoneid)
-            return true;
-    }
+        std::string zonestr = sConfigMgr->GetStringDefault("FFAZone", "");
+        std::vector<std::string> v;
+        std::vector<std::string>::iterator it;
+        std::string tempstr;
 
-    return false;
+        int cutAt;
+        tempstr = zonestr;
+        while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+            if (cutAt > 0) {
+                v.push_back(tempstr.substr(0, cutAt));
+            }
+            tempstr = tempstr.substr(cutAt + 1);
+        }
+
+        if (tempstr.length() > 1) {
+            v.push_back(tempstr);
+        }
+
+        for (auto it : v) {
+            uint32 zoneId = atoi(it.c_str());
+            configFFAZones.emplace(zoneId);
+        }
+    }
 }
 
-bool World::IsZoneFFA(uint32 zoneid)
+bool World::IsZoneSanctuary(uint32 zoneid) const
 {
-    std::string zonestr = sConfigMgr->GetStringDefault("FFAZone", "");
-    std::vector<std::string> v;
-    std::vector<std::string>::iterator it;
-    std::string tempstr;
-
-    int cutAt;
-    tempstr = zonestr;
-    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
-        if (cutAt > 0) {
-            v.push_back(tempstr.substr(0, cutAt));
-        }
-        tempstr = tempstr.substr(cutAt + 1);
-    }
-
-    if (tempstr.length() > 1) {
-        v.push_back(tempstr);
-    }
-
-    for (it = v.begin(); it != v.end(); it++) {
-        if (atoi((*it).c_str()) == zoneid)
-            return true;
-    }
-
-    return false;
+    auto itr = configSanctuariesZones.find(zoneid);
+    return itr != configSanctuariesZones.end();
 }
 
-bool World::IsPhishing(std::string msg)
+bool World::IsZoneFFA(uint32 zoneid) const
 {
+    auto itr = configFFAZones.find(zoneid);
+    return itr != configFFAZones.end();
+}
+
+void World::LoadFishingWords()
+{
+    fishingWords.clear();
+
     std::string badstr = sConfigMgr->GetStringDefault("PhishingWords", "");
-    std::vector<std::string> v;
     std::vector<std::string>::iterator itr;
     std::string tempstr;
     int cutAt;
 
     if (badstr.length() == 0)
-        return false;
+        return;
 
     tempstr = badstr;
-    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) {
+    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) 
+    {
         if (cutAt > 0)
-            v.push_back(tempstr.substr(0, cutAt));
+            fishingWords.push_back(tempstr.substr(0, cutAt));
+
         tempstr = tempstr.substr(cutAt + 1);
     }
 
     if (tempstr.length() > 1)
-        v.push_back(tempstr);
+        fishingWords.push_back(tempstr);
+}
 
-    for (itr = v.begin(); itr != v.end(); itr++) {
-        if (msg.find(*itr) != msg.npos)
+bool World::IsPhishing(std::string msg)
+{
+    for (auto itr : fishingWords) {
+        if (msg.find(itr) != msg.npos)
             return true;
     }
 
@@ -3690,7 +3710,7 @@ void World::LogPhishing(uint32 src, uint32 dst, std::string msg)
 {
     std::string msgsafe = msg;
     LogsDatabase.EscapeString(msgsafe);
-    LogsDatabase.PExecute("INSERT INTO phishing (srcguid, dstguid, time, data) VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%s')", src, dst, msgsafe.c_str());
+    LogsDatabase.AsyncPQuery("INSERT INTO phishing (srcguid, dstguid, time, data) VALUES ('%u', '%u', UNIX_TIMESTAMP(), '%s')", src, dst, msgsafe.c_str());
 }
 
 void World::LoadMotdAndTwitter()

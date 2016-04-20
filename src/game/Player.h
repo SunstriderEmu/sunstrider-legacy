@@ -1750,6 +1750,7 @@ class Player : public Unit
         void UpdatePvP(bool state, bool ovrride=false);
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
+        virtual bool IsInSanctuary() const override { return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY); }
 
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
@@ -2044,7 +2045,7 @@ class Player : public Unit
         void UpdateCorpseReclaimDelay();
         void SendCorpseReclaimDelay(bool load = false);
 
-        uint32 GetShieldBlockValue() const;                 // overwrite Unit version (virtual)
+        uint32 GetShieldBlockValue() const override;                 // overwrite Unit version (virtual)
         bool CanParry() const { return m_canParry; }
         void SetCanParry(bool value);
         bool CanBlock() const { return m_canBlock; }

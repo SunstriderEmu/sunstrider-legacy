@@ -552,8 +552,8 @@ class World
         Weather* AddWeather(uint32 zone_id);
         void RemoveWeather(uint32 zone_id);
 
-        static bool IsZoneSanctuary(uint32);
-        static bool IsZoneFFA(uint32);
+        bool IsZoneSanctuary(uint32) const;
+        bool IsZoneFFA(uint32) const;
 
         /// Get the active session server limit (or security level limitations)
         uint32 GetPlayerAmountLimit() const { return m_playerLimit >= 0 ? m_playerLimit : 0; }
@@ -827,6 +827,13 @@ class World
         std::string m_lastTwitter;
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
+
+        void LoadSanctuaryAndFFAZones();
+        std::set<uint32> configSanctuariesZones;
+        std::set<uint32> configFFAZones;
+
+        void LoadFishingWords();
+        std::list<std::string> fishingWords;
 
         // for max speed access
         static float m_MaxVisibleDistanceOnContinents;

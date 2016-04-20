@@ -659,7 +659,7 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
 
     SetUInt32Value(UNIT_FIELD_BYTES_0, ( RaceClassGender | ( powertype << 24 ) ) );
     SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
-    SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_UNK5 );
+    SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE );
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);               // fix cast time showed in spell tooltip on client
 
@@ -6753,7 +6753,7 @@ void Player::UpdateArea(uint32 newArea)
 
     AreaTableEntry const* area = sAreaTableStore.LookupEntry(newArea);
 
-    if(area && ((area->flags & AREA_FLAG_ARENA) || (World::IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
+    if(area && ((area->flags & AREA_FLAG_ARENA) || (sWorld->IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
     {
         if(!IsGameMaster())
             SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
@@ -6835,8 +6835,7 @@ void Player::UpdateZone(uint32 newZone)
             pvpInfo.endTimer = time(0);                     // start toggle-off
     }
 
-    if(zone->flags & AREA_FLAG_SANCTUARY || (World::IsZoneSanctuary(zone->ID)))
-        // in sanctuary
+    if(zone->flags & AREA_FLAG_SANCTUARY || (sWorld->IsZoneSanctuary(zone->ID)))
     {
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
         if(sWorld->IsFFAPvPRealm())
@@ -14900,7 +14899,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_XP, fields[LOAD_DATA_XP].GetUInt32());
     SetUInt32Value(PLAYER_FIELD_COINAGE, fields[LOAD_DATA_MONEY].GetUInt32());
     SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
-    SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY | UNIT_BYTE2_FLAG_UNK5 );
+    SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
     //SetByteValue(PLAYER_BYTES_3, 0, m_gender);
     SetUInt32Value(PLAYER_BYTES, fields[LOAD_DATA_PLAYERBYTES].GetUInt32());   // PlayerBytes
     SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2

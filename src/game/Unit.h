@@ -215,7 +215,11 @@ enum UnitBytes2_Flags
     UNIT_BYTE2_FLAG_UNK0  = 0x01,
     UNIT_BYTE2_FLAG_UNK1  = 0x02,
     UNIT_BYTE2_FLAG_UNK2  = 0x04,
-    UNIT_BYTE2_FLAG_SANCTUARY   = 0x08,
+#ifdef LICH_KING
+    UNIT_BYTE2_FLAG_SANCTUARY = 0x08,
+#else
+    UNIT_BYTE2_FLAG_UNK3  = 0x08, //old UNIT_BYTE2_FLAG_UNK3 but this does not seemed ok
+#endif
     UNIT_BYTE2_FLAG_AURAS = 0x10,                           // show possitive auras as positive, and allow its dispel
     UNIT_BYTE2_FLAG_UNK5  = 0x20,
     UNIT_BYTE2_FLAG_UNK6  = 0x40,
@@ -1167,7 +1171,11 @@ class Unit : public WorldObject
 
             return false;
         }
-        bool IsInSanctuary() const { return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY); }
+#ifdef LICH_KING
+        virtual bool IsInSanctuary() const { return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3); }
+#else
+        virtual bool IsInSanctuary() const;
+#endif
         bool IsPvP() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
         bool IsFFAPvP() const;
         void SetPvP(bool state) { if(state) SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); else RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP); }
