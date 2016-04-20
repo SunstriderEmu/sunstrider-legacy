@@ -841,12 +841,12 @@ void Spell::SelectSpellTargets()
                     {
                     case TYPEID_UNIT:
                     case TYPEID_PLAYER:
-                        AddUnitTarget((Unit*)result, i);
+                        AddUnitTarget((Unit*)result, 1 << i);
                         break;
                     case TYPEID_CORPSE:
                         /* todo spelltargets m_targets.SetCorpseTarget((Corpse*)result); */
                         if (Player* owner = ObjectAccessor::FindPlayer(((Corpse*)result)->GetOwnerGUID()))
-                            AddUnitTarget(owner, i);
+                            AddUnitTarget(owner, 1 << i);
                         break;
                     }
                 }
