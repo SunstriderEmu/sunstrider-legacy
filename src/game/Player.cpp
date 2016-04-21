@@ -846,88 +846,6 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     //lot of free stuff
     if (sWorld->getConfig(CONFIG_ARENASERVER_ENABLED))
     {
-        if(class_ == CLASS_HUNTER)
-        { // Pet spells
-            uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
-            for (int i = 0; i < 119; i++)
-                AddSpell(spellsId[i],true);
-        }
-
-        //class specific spells/skills from recuperation data
-        int faction = (GetTeam() == TEAM_ALLIANCE) ? 1 : 2;
-        QueryResult query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0)", class_, faction);
-        if (query) {
-            do {
-                Field* fields = query->Fetch();
-                std::string tempstr = fields[0].GetString();
-
-                {
-                    std::vector<std::string> v, vline;
-                    std::vector<std::string>::iterator i;
-
-                    int cutAt;
-                    while ((cutAt = tempstr.find_first_of(";")) != tempstr.npos) {
-                        if (cutAt > 0) {
-                            vline.push_back(tempstr.substr(0, cutAt));
-                        }
-                        tempstr = tempstr.substr(cutAt + 1);
-                    }
-
-                    if (tempstr.length() > 0) {
-                        vline.push_back(tempstr);
-                    }
-
-                    for (i = vline.begin(); i != vline.end(); i++) {
-                        v.clear();
-                        tempstr = *i;
-                        while ((cutAt = tempstr.find_first_of(" ")) != tempstr.npos) {
-                            if (cutAt > 0) {
-                                v.push_back(tempstr.substr(0, cutAt));
-                            }
-                            tempstr = tempstr.substr(cutAt + 1);
-                        }
-
-                        if (tempstr.length() > 0) {
-                            v.push_back(tempstr);
-                        }
-
-                        if (v[0] == "learn") {
-                            uint32 spell = atol(v[1].c_str());
-                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
-                            if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
-                                continue;
-                            }
-
-                            if (!HasSpell(spell))
-                                AddSpell(spell,true);
-                        } else if (v[0] == "setskill") {
-                            /* skill, v[1] == skill ID */
-                            int32 skill = atoi(v[1].c_str());
-                            if (skill <= 0) {
-                                continue;
-                            }
-
-                            int32 maxskill = 375;
-
-                            SkillLineEntry const* sl = sSkillLineStore.LookupEntry(skill);
-                            if (!sl) {
-                                continue;
-                            }
-
-                            if (!GetSkillValue(skill)) {
-                                continue;
-                            }
-
-                            SetSkill(skill, 375, maxskill);
-                        }
-                    }
-                }
-            } while (query->NextRow());
-
-        } else {
-            TC_LOG_ERROR("entities.player","Player creation : failed to get data from recups_data to add initial spells/skills");
-        }
-
         SetSkill(129,375,375); //first aid
         AddSpell(27028,true); //first aid spell
         AddSpell(27033,true); //bandage
@@ -939,17 +857,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
         AddSpell(44383,true); // [Ench. de bouclier (Résilience) frFR]
         AddSpell(34091,true); //mount 280 
     
-        //Pala mounts
-        if(class_ == CLASS_PALADIN)
-        {
-            if(GetTeam() == TEAM_ALLIANCE) {
-                AddSpell(23214,true); //60
-                AddSpell(13819,true); //40
-            } else {
-                AddSpell(34767,true); //60
-                AddSpell(34769,true); //40
-            }
-        }
+        LearnAllClassSpells();
     }
 
     return true;
@@ -14960,12 +14868,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     uint32 transGUIDLow = fields[LOAD_DATA_TRANSGUID].GetUInt64();
     if(sWorld->getConfig(CONFIG_ARENASERVER_ENABLED) && sWorld->getConfig(CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD))
     {
-        float x,y,z,o;
-        uint32 tMapId;
-        GetArenaZoneCoord(ShouldGoToSecondaryArenaZone(),tMapId,x,y,z,o);
-        Relocate(x,y,z,o);
-        SetFallInformation(0, z);
-        SetMapId(tMapId);
+        RelocateToArenaZone(ShouldGoToSecondaryArenaZone());
     } else {
         Relocate(fields[LOAD_DATA_POSX].GetFloat(),fields[LOAD_DATA_POSY].GetFloat(),fields[LOAD_DATA_POSZ].GetFloat(),fields[LOAD_DATA_ORIENTATION].GetFloat());
         SetFallInformation(0, fields[LOAD_DATA_POSZ].GetFloat());
@@ -20144,8 +20047,101 @@ void Player::LearnAllClassSpells()
                 AddSpell(spellsId[i],true);
             break;
         }
+        case CLASS_PALADIN:
+            //Pala mounts
+            if (GetTeam() == TEAM_ALLIANCE) {
+                AddSpell(23214, true); //60
+                AddSpell(13819, true); //40
+            } else {
+                AddSpell(34767, true); //60
+                AddSpell(34769, true); //40
+            }
+            break;
+        case CLASS_WARLOCK:
+            AddSpell(5784, true); //mount 40
+            AddSpell(23161, true); //mount 60
+            break;
         default:
             break;
+    }
+
+    {
+        //class specific spells/skills from recuperation data
+        int faction = (GetTeam() == TEAM_ALLIANCE) ? 1 : 2;
+        QueryResult query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0)", GetClass(), faction);
+        if (query) {
+            do {
+                Field* fields = query->Fetch();
+                std::string tempstr = fields[0].GetString();
+
+                {
+                    std::vector<std::string> v, vline;
+                    std::vector<std::string>::iterator i;
+
+                    int cutAt;
+                    while ((cutAt = tempstr.find_first_of(";")) != tempstr.npos) {
+                        if (cutAt > 0) {
+                            vline.push_back(tempstr.substr(0, cutAt));
+                        }
+                        tempstr = tempstr.substr(cutAt + 1);
+                    }
+
+                    if (tempstr.length() > 0) {
+                        vline.push_back(tempstr);
+                    }
+
+                    for (i = vline.begin(); i != vline.end(); i++) {
+                        v.clear();
+                        tempstr = *i;
+                        while ((cutAt = tempstr.find_first_of(" ")) != tempstr.npos) {
+                            if (cutAt > 0) {
+                                v.push_back(tempstr.substr(0, cutAt));
+                            }
+                            tempstr = tempstr.substr(cutAt + 1);
+                        }
+
+                        if (tempstr.length() > 0) {
+                            v.push_back(tempstr);
+                        }
+
+                        if (v[0] == "learn") {
+                            uint32 spell = atol(v[1].c_str());
+                            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spell);
+                            if (!spellInfo || !SpellMgr::IsSpellValid(spellInfo, m_session->GetPlayer())) {
+                                continue;
+                            }
+
+                            if (!HasSpell(spell))
+                                AddSpell(spell, true);
+                        }
+                        else if (v[0] == "setskill") {
+                            /* skill, v[1] == skill ID */
+                            int32 skill = atoi(v[1].c_str());
+                            if (skill <= 0) {
+                                continue;
+                            }
+
+                            int32 maxskill = 375;
+
+                            SkillLineEntry const* sl = sSkillLineStore.LookupEntry(skill);
+                            if (!sl) {
+                                continue;
+                            }
+
+                            if (!GetSkillValue(skill)) {
+                                continue;
+                            }
+
+                            SetSkill(skill, 375, maxskill);
+                        }
+                    }
+                }
+            } while (query->NextRow());
+
+        }
+        else {
+            TC_LOG_ERROR("entities.player", "Player creation : failed to get data from recups_data to add initial spells/skills");
+        }
     }
 
     TrainerSpellData const* trainer_spells = sObjectMgr->GetNpcTrainerSpells(classMaster);
