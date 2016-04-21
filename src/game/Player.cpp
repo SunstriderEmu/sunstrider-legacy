@@ -606,8 +606,15 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     m_class = class_;
     m_gender = gender;
 
-    SetMapId(info->mapId);
-    Relocate(info->positionX,info->positionY,info->positionZ);
+    if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
+    {
+        RelocateToArenaZone(false);
+    }
+    else
+    {
+        SetMapId(info->mapId);
+        Relocate(info->positionX, info->positionY, info->positionZ);
+    }
 
     ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(class_);
     if(!cEntry)
@@ -21943,6 +21950,16 @@ void Player::GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, 
            map = 0;x = -12248.573242;y = -1679.274902;z = 130.267273;o = 3.024384;
         }
     }
+}
+
+void Player::RelocateToArenaZone(bool secondary)
+{
+    float x, y, z, o;
+    uint32 map;
+    GetArenaZoneCoord(secondary, map, x, y, z, o);
+    SetFallInformation(0, z);
+    SetMapId(map);
+    Relocate(x, y, z, o);
 }
 
 void Player::TeleportToArenaZone(bool secondary)

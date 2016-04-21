@@ -1206,6 +1206,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfigMgr->GetBoolDefault("ArenaServer.UseCloseSchedule", false);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
 
+    m_configs[CONFIG_BETASERVER_ENABLED] = sConfigMgr->GetIntDefault("BetaServer.Enabled", false);
+
     m_configs[CONFIG_DEBUG_DISABLE_MAINHAND] = sConfigMgr->GetBoolDefault("Debug.DisableMainHand", 0);
     m_configs[CONFIG_DEBUG_DISABLE_ARMOR] = sConfigMgr->GetBoolDefault("Debug.DisableArmor", 0);
     m_configs[CONFIG_DEBUG_LOG_LAST_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogLastPackets", 0);

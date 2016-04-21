@@ -2258,6 +2258,8 @@ class Player : public Unit
         void HandleFallDamage(MovementInfo& movementInfo);
         void HandleFallUnderMap();
 
+        //relocate without teleporting
+        void RelocateToArenaZone(bool secondary = false);
         void TeleportToArenaZone(bool secondary = false);
         bool ShouldGoToSecondaryArenaZone();
         void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
