@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "GameEventMgr.h"
 #include "World.h"
@@ -102,7 +83,7 @@ uint32 GameEventMgr::NextCheck(uint16 entry) const
 bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
 {
     // Temp hack until game_event dependencies is implemented
-    if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(12))
+    if ((event_id >= 50 && event_id <= 56) && !IsActiveEvent(GAME_EVENT_HALLOWS_END))
         return false;
 
     if(mGameEvent[event_id].state == GAMEEVENT_NORMAL)

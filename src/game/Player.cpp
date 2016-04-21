@@ -194,7 +194,7 @@ void PlayerTaxi::AppendTaximaskTo( ByteBuffer& data, bool all )
     else
     {
         //hackz to disable Shattered Sun Staging Area until patch 2.4 is enabled
-        bool patch24active = sGameEventMgr->IsActiveEvent(67); //Patch 2.4
+        bool patch24active = sGameEventMgr->IsActiveEvent(GAME_EVENT_2_4);
         for (uint8 i = 0; i < TaxiMaskSize; i++)
         {
             if (!patch24active && i == 6)
@@ -210,7 +210,7 @@ bool PlayerTaxi::IsTaximaskNodeKnown(uint32 nodeidx) const
     //hackz to disable Shattered Sun Staging Area until patch 2.4 is enabled
     if (nodeidx == 213)
     {
-        bool patch24active = sGameEventMgr->IsActiveEvent(67); //Patch 2.4
+        bool patch24active = sGameEventMgr->IsActiveEvent(GAME_EVENT_2_4);
         if (!patch24active)
             return false;
     }
