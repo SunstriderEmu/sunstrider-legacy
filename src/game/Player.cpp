@@ -584,7 +584,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     return Create(guidlow,createInfo->Name,createInfo->Race,createInfo->Class,createInfo->Gender,createInfo->Skin,createInfo->Face,createInfo->HairStyle, createInfo->HairColor,createInfo->FacialHair,createInfo->OutfitId); 
 }
 
-bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId )
+bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId)
 {
     //FIXME: outfitId not used in player creating
 
@@ -593,9 +593,9 @@ bool Player::Create( uint32 guidlow, const std::string& name, uint8 race, uint8 
     m_name = name;
 
     PlayerInfo const* info = sObjectMgr->GetPlayerInfo(race, class_);
-    if(!info)
+    if (!info)
     {
-        TC_LOG_ERROR("entities.player","Player have incorrect race/class pair. Can't be loaded.");
+        TC_LOG_ERROR("entities.player", "Player have incorrect race/class pair. Can't be loaded.");
         return false;
     }
 
@@ -20057,6 +20057,30 @@ void Player::LearnSkillRewardedSpells()
 
         LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(i));
     }
+}
+
+void Player::LearnAllClassProficiencies()
+{
+    std::vector<uint32> weaponAndArmorSkillsList = { 196,197,198,199,200,201,202,227,264,266,1180,2567,5011,15590, //weapons
+                                                     8737, 750, 9116 }; //armors & shield
+
+    for (auto itr : weaponAndArmorSkillsList)
+    {
+        //a bit hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
+        TrainerSpell trainerSpell;
+        trainerSpell.reqlevel = 0;
+        trainerSpell.reqskill = 0;
+        trainerSpell.reqskillvalue = 0;
+        trainerSpell.spell = itr;
+        trainerSpell.spellcost = 0;
+
+        if (GetTrainerSpellState(&trainerSpell) != TRAINER_SPELL_GREEN)
+            continue;
+
+        LearnSpell(trainerSpell.spell);
+    }
+
+    UpdateSkillsToMaxSkillsForLevel();
 }
 
 //Hacky way, learn from a designated trainer for each class

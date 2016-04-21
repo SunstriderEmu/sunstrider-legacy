@@ -1662,6 +1662,7 @@ class Player : public Unit
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);
         void LearnAllClassSpells();
+        void LearnAllClassProficiencies();
 
         void DoPack58(uint8 step);
 

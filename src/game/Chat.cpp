@@ -301,6 +301,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "all_default",    SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleLearnAllDefaultCommand,     "" },
         { "all_lang",       SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleLearnAllLangCommand,        "" },
         { "all_myclass",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleLearnAllMyClassCommand,     "" },
+        { "all_myproficiencies",SEC_GAMEMASTER3,false,false,&ChatHandler::HandleLearnAllMyProeficienciesCommand,"" },
         { "all_myspells",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleLearnAllMySpellsCommand,    "" },
         { "all_mytalents",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleLearnAllMyTalentsCommand,   "" },
         { "all_recipes",    SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleLearnAllRecipesCommand,     "" },

@@ -1843,6 +1843,12 @@ bool ChatHandler::HandleLearnAllMyClassCommand(const char* /*args*/)
     return true;
 }
 
+bool ChatHandler::HandleLearnAllMyProeficienciesCommand(const char* /* args */)
+{
+    m_session->GetPlayer()->LearnAllClassProficiencies();
+    return true;
+}
+
 bool ChatHandler::HandleLearnAllMySpellsCommand(const char* /*args*/)
 {
     m_session->GetPlayer()->LearnAllClassSpells();
