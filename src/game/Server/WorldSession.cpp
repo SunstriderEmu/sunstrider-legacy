@@ -1708,8 +1708,11 @@ void WorldSession::SendMotd()
         ++linecount;
     }
         
-    data << str_twitter;
-    ++linecount;
+    if (!str_twitter.empty())
+    {
+        data << str_twitter;
+        ++linecount;
+    }
 
     data.put(0, linecount);
 

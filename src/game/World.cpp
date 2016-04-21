@@ -3715,17 +3715,8 @@ void World::LogPhishing(uint32 src, uint32 dst, std::string msg)
 
 void World::LoadMotdAndTwitter()
 {
-    /*
-    QueryResult motdRes = LoginDatabase.PQuery("SELECT motd, last_twitter FROM realmlist WHERE id = %u", realmID);
-    if (!motdRes) {
-        TC_LOG_ERROR("FIXME","Could not get motd from database for realm %u", realmID);       // I think that should never happen
-        return;
-    }
-    
-    Field *fields = motdRes->Fetch();
-    */
-    m_motd = "tofixmotd"; //fields[0].GetString();
-    m_lastTwitter = "tofixtwiter"; //fields[1].GetString();
+    SetMotd(sConfigMgr->GetStringDefault("Motd", "Welcome to Sunstrider!"));
+    m_lastTwitter = ""; //tofix
 }
 
 void World::UpdateMonitoring(uint32 diff)

@@ -690,6 +690,14 @@ FFAZone = ""
 SanctuaryZone = ""
 AutoAnnounce.Enable = 1
 
+#
+#    Motd
+#        Description: Message of the Day, displayed at login. Use '@' for a newline.
+#        Example:     "Welcome to John's Server!@This server is proud to be powered by Trinity Core."
+#        Default:     "Welcome to Sunstrider!"
+
+Motd = "Welcome to Sunstrider!"
+
 ###################################################################################################################
 # PLAYER INTERACTION
 #
@@ -1675,6 +1683,14 @@ Arena.Decay.ConsecutiveWeeks = 2
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
+
+###################################################################################################################
+# BETA SERVER 
+#
+#	BetaServer.Enabled
+#		Enable Beta server features
+
+BetaServer.Enabled = 0
 
 ###################################################################################################################
 # CUSTOM CONTENT
