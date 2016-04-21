@@ -1,7 +1,4 @@
-file(GLOB_RECURSE game_STAT_SRCS *.cpp *.h)
-
-set(game_STAT_PCH_HDR PrecompiledHeaders/gamePCH.h)
-set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
+file(GLOB_RECURSE testing_STAT_SRCS *.cpp *.h)
 
 include_directories(
   ${CMAKE_BINARY_DIR}
@@ -44,30 +41,23 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/shared/Packets
   ${CMAKE_SOURCE_DIR}/src/shared/Threading
   ${CMAKE_SOURCE_DIR}/src/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/src/testing
   ${CMAKE_SOURCE_DIR}/src/irc
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
 )
 
-add_library(game STATIC 
-  ${game_STAT_SRCS}
-  ${game_STAT_PCH_SRC}
+add_library(${TESTING_LIB} STATIC 
+  ${testing_STAT_SRCS}
 )
 
-add_dependencies(game revision.h)
-
 target_link_libraries(
+testing
 game
 collision
 scripts
 Detour
 Recast
 segvcatch
-${TESTING_LIB}
 ${MYSQL_LIBRARY}
 )
-
-# Generate precompiled header
-add_cxx_pch(game ${game_STAT_PCH_HDR} ${game_STAT_PCH_SRC})

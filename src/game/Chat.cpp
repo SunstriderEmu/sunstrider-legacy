@@ -776,6 +776,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "smartai",        SEC_GAMEMASTER3,  true,  true,  NULL,                                           "", smartAICommandTable },
         { "start",          SEC_PLAYER,       false, false, &ChatHandler::HandleStartCommand,               "" },
         { "tele",           SEC_GAMEMASTER1,  true,  false, NULL,                                           "", teleCommandTable },
+        { "tests",          SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleTestsCommand,               "" },
         { "ticket",         SEC_GAMEMASTER1,  false, false, NULL,                                           "", ticketCommandTable },
         { "unaura",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUnAuraCommand,              "" },
         { "unban",          SEC_GAMEMASTER3,  true,  false, NULL,                                           "", unbanCommandTable },

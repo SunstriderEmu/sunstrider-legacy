@@ -1,5 +1,6 @@
 #include "SuspiciousLookMovementGenerator.h"
 #include "Creature.h"
+#include "MotionMaster.h"
 
 SuspiciousLookMovementGenerator::SuspiciousLookMovementGenerator(Unit const* owner, Unit const* target, uint32 timer) : 
     m_timer(timer), 

@@ -20,6 +20,9 @@
 #include "PlayerDump.h"
 #include "AuctionHouseMgr.h"
 #include "RecupMgr.h"
+#ifdef TESTS
+#include "UnitaryTestMgr.h"
+#endif
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -103,6 +106,21 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
     if (chr->IsAlive())
         chr->Kill(chr);
     chr->RepopAtGraveyard();
+    return true;
+}
+
+bool ChatHandler::HandleTestsCommand(const char* args)
+{
+#ifdef TESTS
+    bool result = UnitaryTestMgr::RunAllTests();
+    if (result)
+        SendSysMessage("UnitaryTestMgr: All test succeeded");
+    else
+        SendSysMessage("/!\\ UnitaryTestMgr: Some test(s) failed. See test log file.");
+
+#else
+    SendSysMessage("Core has not been compiled with tests");
+#endif
     return true;
 }
 

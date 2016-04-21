@@ -1924,6 +1924,7 @@ Appender.Network=2,3,0,Network.log
 Appender.Warden=2,1,0,Warden.log
 Appender.Profiling=2,1,0,Profiling.log
 Appender.Mapcrash=2,1,0,Mapcrash.log
+Appender.Tests=2,1,0,Tests.log
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -1994,6 +1995,7 @@ Logger.server.authserver=3,Console Server
 Logger.spells=3,Console Server
 Logger.sql.dev=3,Console Server
 Logger.sql.driver=3,Console Server
+Logger.test.unit_test=1,Console Tests
 Logger.vmap=3,Console Server
 
 #
@@ -2202,3 +2204,4 @@ SOAP.Port = 7878
 
 #
 ###################################################################################################
+

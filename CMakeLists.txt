@@ -88,6 +88,12 @@ if(PLAYERBOT)
   add_definitions(-DPLAYERBOT)
 endif()
 
+if(TESTS)
+	#this variable so that library trying to link testing lib don't complain
+	set(TESTING_LIB testing)
+  add_definitions(-DTESTS)
+endif()
+
 # Find revision ID and hash of the sourcetree
 include(cmake/genrev.cmake)
 
