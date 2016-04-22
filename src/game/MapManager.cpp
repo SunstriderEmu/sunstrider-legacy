@@ -381,7 +381,7 @@ void MapManager::MapCrashed(Map& map)
     if (!map.Instanceable())  //can't recover
     {
         std::cerr << "MapManager::MapCrashed not instanceable map given, cannot recover from crash" << std::endl;
-        ASSERT(false);
+        return;
     }
 
     //find right MapInstanced to pass crashed map to it and let it handle it
@@ -408,7 +408,6 @@ void MapManager::MapCrashed(Map& map)
 
     //shouldn't reach this point is all went well
     std::cerr << "MapManager::MapCrashed recover failed" << std::endl;
-    ASSERT(false);
 }
 
 void MapManager::FreeInstanceId(uint32 instanceId)

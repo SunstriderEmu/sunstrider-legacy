@@ -88,6 +88,7 @@ void ShutdownThreadPool(std::vector<std::thread>& threadPool);
 void ShutdownCLIThread(std::thread* cliThread);
 variables_map GetConsoleArguments(int argc, char** argv, std::string& cfg_file, std::string& cfg_service);
 
+bool MAP_CRASH_RECOVERY_ENABLED = false;
 //segv handler, print stack to dump file
 void handle_segv()
 {
@@ -155,6 +156,7 @@ extern int main(int argc, char **argv)
 
     if (sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false))
     {
+        MAP_CRASH_RECOVERY_ENABLED = true;
         segvcatch::init_segv(handle_segv);
         segvcatch::init_fpe(handle_segv);
     }

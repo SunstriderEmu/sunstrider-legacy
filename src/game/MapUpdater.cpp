@@ -22,6 +22,8 @@
 #include "MapUpdater.h"
 #include "Map.h"
 
+extern bool MAP_CRASH_RECOVERY_ENABLED;
+
 class MapUpdateRequest
 {
     private:
@@ -39,13 +41,20 @@ class MapUpdateRequest
 
         void call()
         {
-            try
+            if (MAP_CRASH_RECOVERY_ENABLED)
+            {
+                try
+                {
+                    m_map.Update(m_diff);
+                }
+                catch (std::runtime_error& /*e*/)
+                {
+                    sMapMgr->MapCrashed(m_map);
+                }
+            }
+            else 
             {
                 m_map.Update(m_diff);
-            }
-            catch (std::exception& /*e*/)
-            {
-                sMapMgr->MapCrashed(m_map);
             }
             m_updater.update_finished();
         }
