@@ -136,7 +136,7 @@ bool RecupMgr::HandleRecupParseCommand(Player *player, std::string command, uint
             }
 
             if (!player->HasSpell(spell))
-                player->LearnSpell(spell);
+                player->LearnSpell(spell, false);
         } else if (v[0] == "money") {
             /* money, v[1] == money count, in pc */
             uint32 money = atoi(v[1].c_str());

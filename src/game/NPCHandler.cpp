@@ -213,15 +213,14 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8+4);
 
     uint64 guid;
     uint32 spellId = 0;
 
     recvData >> guid >> spellId;
-    
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_TRAINER_BUY_SPELL %s, learn spell id is: %u", guid.ToString().c_str(), spellId);
+
     Creature *unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_TRAINER);
     if (!unit)
     {
@@ -268,7 +267,7 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
     _player->ModifyMoney( -int32(nSpellCost) );
 
     // learn explicitly to prevent lost money at lags, learning spell will be only show spell animation
-    _player->LearnSpell(trainer_spell->spell);
+    _player->LearnSpell(trainer_spell->spell, false);
 
     data.Initialize(SMSG_TRAINER_BUY_SUCCEEDED, 12);
     data << uint64(guid) << uint32(spellId);
@@ -277,8 +276,7 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
-    
-    
+//    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GOSSIP_HELLO");
     CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;

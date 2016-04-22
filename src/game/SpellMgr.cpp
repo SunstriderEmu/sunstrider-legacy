@@ -1007,6 +1007,34 @@ bool SpellMgr::IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 eff) const
             || spellInfo->Effects[eff].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ENTRY;
 }
 
+SpellLearnSkillNode const* SpellMgr::GetSpellLearnSkill(uint32 spell_id) const
+{
+    SpellLearnSkillMap::const_iterator itr = mSpellLearnSkills.find(spell_id);
+    if (itr != mSpellLearnSkills.end())
+        return &itr->second;
+    else
+        return NULL;
+}
+
+SpellLearnSpellMapBounds SpellMgr::GetSpellLearnSpellMapBounds(uint32 spell_id) const
+{
+    return mSpellLearnSpells.equal_range(spell_id);
+}
+
+bool SpellMgr::IsSpellLearnSpell(uint32 spell_id) const
+{
+    return mSpellLearnSpells.find(spell_id) != mSpellLearnSpells.end();
+}
+
+bool SpellMgr::IsSpellLearnToSpell(uint32 spell_id1, uint32 spell_id2) const
+{
+    SpellLearnSpellMapBounds bounds = GetSpellLearnSpellMapBounds(spell_id1);
+    for (SpellLearnSpellMap::const_iterator i = bounds.first; i != bounds.second; ++i)
+        if (i->second.spell == spell_id2)
+            return true;
+    return false;
+}
+
 SpellInfo const* SpellMgr::SelectAuraRankForPlayerLevel(SpellInfo const* spellInfo, uint32 playerLevel, bool hostileTarget) const
 {
     // ignore passive spells
@@ -1453,11 +1481,10 @@ void SpellMgr::LoadSpellLearnSpells()
                 dbc_node.spell       = spellInfo->Effects[i].TriggerSpell;
                 dbc_node.autoLearned = true;
 
-                SpellLearnSpellMap::const_iterator db_node_begin = GetBeginSpellLearnSpell(spellId);
-                SpellLearnSpellMap::const_iterator db_node_end   = GetEndSpellLearnSpell(spellId);
+                SpellLearnSpellMapBounds spell_bounds = sSpellMgr->GetSpellLearnSpellMapBounds(spellId);
 
                 bool found = false;
-                for(SpellLearnSpellMap::const_iterator itr = db_node_begin; itr != db_node_end; ++itr)
+                for(SpellLearnSpellMap::const_iterator itr = spell_bounds.first; itr != spell_bounds.second; ++itr)
                 {
                     if(itr->second.spell == dbc_node.spell)
                     {
@@ -2358,6 +2385,11 @@ void SpellMgr::LoadSpellLinked()
     TC_LOG_INFO("server.loading", ">> Loaded %u linked spells", count );
 }
 
+SkillLineAbilityMapBounds SpellMgr::GetSkillLineAbilityMapBounds(uint32 spell_id) const
+{
+    return mSkillLineAbilityMap.equal_range(spell_id);
+}
+
 /// Some checks for spells, to prevent adding depricated/broken spells for trainers, spell book, etc
 bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
 {
@@ -3014,6 +3046,15 @@ uint32 SpellMgr::GetPrevSpellInChain(uint32 spell_id) const
     if (SpellChainNode const* node = GetSpellChainNode(spell_id))
         if(node->prev)
             return node->prev->Id;
+
+    return 0;
+}
+
+uint32 SpellMgr::GetNextSpellInChain(uint32 spell_id) const
+{
+    if (SpellChainNode const* node = GetSpellChainNode(spell_id))
+        if (node->next)
+            return node->next->Id;
 
     return 0;
 }

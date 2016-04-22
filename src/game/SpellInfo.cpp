@@ -1470,6 +1470,75 @@ AuraStateType SpellInfo::GetAuraState() const
     return AURA_STATE_NONE;
 }
 
+bool SpellInfo::IsStackableWithRanks() const
+{
+    if (IsPassive())
+        return false;
+    if (PowerType != POWER_MANA && PowerType != POWER_HEALTH)
+        return false;
+    if (IsProfessionOrRiding())
+        return false;
+
+    if (IsAbilityLearnedWithProfession())
+        return false;
+
+    // All stance spells. if any better way, change it.
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        switch (SpellFamilyName)
+        {
+        case SPELLFAMILY_PALADIN:
+            // Paladin aura Spell
+#ifdef LICH_KING
+            if (Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_RAID)
+#else
+            if (Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+#endif
+                return false;
+            break;
+        case SPELLFAMILY_DRUID:
+            // Druid form Spell
+            if (Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
+                Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+                return false;
+            break;
+        }
+    }
+    return true;
+}
+
+bool SpellInfo::IsProfessionOrRiding() const
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].Effect == SPELL_EFFECT_SKILL)
+        {
+            uint32 skill = Effects[i].MiscValue;
+
+            if (sSpellMgr->IsProfessionOrRidingSkill(skill))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool SpellInfo::IsAbilityLearnedWithProfession() const
+{
+    SkillLineAbilityMapBounds bounds = sSpellMgr->GetSkillLineAbilityMapBounds(Id);
+
+    for (SkillLineAbilityMap::const_iterator _spell_idx = bounds.first; _spell_idx != bounds.second; ++_spell_idx)
+    {
+        SkillLineAbilityEntry const* pAbility = _spell_idx->second;
+        if (!pAbility || pAbility->AutolearnType != SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
+            continue;
+
+        if (pAbility->req_skill_value > 0)
+            return true;
+    }
+
+    return false;
+}
+
 float SpellEffectInfo::CalcValueMultiplier(Unit* caster, Spell* spell) const
 {
     float multiplier = ValueMultiplier;

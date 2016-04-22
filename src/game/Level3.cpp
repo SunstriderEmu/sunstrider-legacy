@@ -1787,7 +1787,7 @@ bool ChatHandler::HandleLearnAllCommand(const char* /*args*/)
             continue;
         }
 
-        m_session->GetPlayer()->LearnSpell(spell);
+        m_session->GetPlayer()->LearnSpell(spell, false);
     }
 
     SendSysMessage(LANG_COMMAND_LEARN_MANY_SPELLS);
@@ -1829,7 +1829,7 @@ bool ChatHandler::HandleLearnAllGMCommand(const char* /*args*/)
             continue;
         }
 
-        m_session->GetPlayer()->LearnSpell(spell);
+        m_session->GetPlayer()->LearnSpell(spell, false);
     }
 
     SendSysMessage(LANG_LEARNING_GM_SKILLS);
@@ -1862,7 +1862,7 @@ static void learnAllHighRanks(Player* player, uint32 spellid)
     do
     {
         node = sSpellMgr->GetSpellChainNode(spellid);
-        player->LearnSpell(spellid);
+        player->LearnSpell(spellid, false);
         if (!node || !node->next)
             break;
         spellid=node->next->Id;
@@ -1910,7 +1910,7 @@ bool ChatHandler::HandleLearnAllMyTalentsCommand(const char* /*args*/)
             continue;
 
         // learn highest rank of talent
-        player->LearnSpell(spellid);
+        player->LearnSpell(spellid, false);
 
         // and learn all non-talent spell ranks (recursive by tree)
         learnAllHighRanks(player,spellid);
@@ -1926,7 +1926,7 @@ bool ChatHandler::HandleLearnAllLangCommand(const char* /*args*/)
 
     // skipping UNIVERSAL language (0)
     for(int i = 1; i < LANGUAGES_COUNT; ++i)
-        m_session->GetPlayer()->LearnSpell(lang_description[i].spell_id);
+        m_session->GetPlayer()->LearnSpell(lang_description[i].spell_id, false);
 
     SendSysMessage(LANG_COMMAND_LEARN_ALL_LANG);
     return true;
@@ -1999,7 +1999,7 @@ bool ChatHandler::HandleLearnCommand(const char* args)
         return false;
     }
 
-    targetPlayer->LearnSpell(spell);
+    targetPlayer->LearnSpell(spell, false);
 
     return true;
 }

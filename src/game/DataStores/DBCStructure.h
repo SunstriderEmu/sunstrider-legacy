@@ -899,6 +899,9 @@ struct StableSlotPricesEntry
     uint32 Price;
 };
 
+#define MAX_TALENT_RANK 5
+#define MAX_TALENT_TABS 3
+
 struct TalentEntry
 {
     uint32    TalentID;                                     // 0

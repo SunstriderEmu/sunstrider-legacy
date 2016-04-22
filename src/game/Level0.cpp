@@ -1078,7 +1078,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
             }
 
             if (!player->HasSpell(spell))
-                player->LearnSpell(spell);
+                player->LearnSpell(spell, false);
         } else if (v[0] == "add") {
             if (v[1] == "level") {
                 int add_levels = atoi(v[2].c_str());
@@ -1599,7 +1599,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (!spell_itr->second)               // don't care about passive spells or loading case
                 plr->AddSpell(tspell,spell_itr->second);
             else                                            // but send in normal spell in game learn case
-                plr->LearnSpell(tspell);
+                plr->LearnSpell(tspell, false);
         }
     }
     
@@ -1696,7 +1696,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 } else {
                     if (plr->HasSpell(spell_horde)) {
                         plr->RemoveSpell(spell_horde);
-                        plr->LearnSpell(spell_alliance);
+                        plr->LearnSpell(spell_alliance, false);
                     }
                 }
             }
@@ -1707,7 +1707,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 } else {
                     if (plr->HasSpell(spell_alliance)) {
                         plr->RemoveSpell(spell_alliance);
-                        plr->LearnSpell(spell_horde);
+                        plr->LearnSpell(spell_horde, false);
                     }
                 }
             }
@@ -1730,7 +1730,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                     plr->RemoveSpell(from);
 
                 if (to != 0)
-                    plr->LearnSpell(to);
+                    plr->LearnSpell(to, false);
 
             } while (result->NextRow());
         }

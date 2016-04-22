@@ -4140,7 +4140,9 @@ void Spell::EffectLearnSpell(uint32 i)
     Player *player = unitTarget->ToPlayer();
 
     uint32 spellToLearn = (m_spellInfo->Id==SPELL_ID_GENERIC_LEARN) ? damage : m_spellInfo->Effects[i].TriggerSpell;
-    player->LearnSpell(spellToLearn);
+    player->LearnSpell(spellToLearn, false);
+    
+ //   TC_LOG_DEBUG("spells", "Spell: Player %u has learned spell %u from NpcGUID: %u", player->GetGUID().GetCounter(), spellToLearn, m_caster->GetGUID().GetCounter());
 }
 
 void Spell::EffectDispel(uint32 i)

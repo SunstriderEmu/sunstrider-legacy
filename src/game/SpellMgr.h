@@ -709,8 +709,10 @@ struct SpellLearnSpellNode
 };
 
 typedef std::multimap<uint32, SpellLearnSpellNode> SpellLearnSpellMap;
+typedef std::pair<SpellLearnSpellMap::const_iterator, SpellLearnSpellMap::const_iterator> SpellLearnSpellMapBounds;
 
 typedef std::multimap<uint32, SkillLineAbilityEntry const*> SkillLineAbilityMap;
+typedef std::pair<SkillLineAbilityMap::const_iterator, SkillLineAbilityMap::const_iterator> SkillLineAbilityMapBounds;
 
 typedef std::vector<SpellInfo*> SpellInfoMap;
 
@@ -801,7 +803,8 @@ class SpellMgr
         }
 
         uint32 GetFirstSpellInChain(uint32 spell_id) const;
-
+        uint32 GetLastSpellInChain(uint32 spell_id) const;
+        uint32 GetNextSpellInChain(uint32 spell_id) const;
         uint32 GetPrevSpellInChain(uint32 spell_id) const;
 
         SpellsRequiringSpellMap const& GetSpellsRequiringSpell() const { return mSpellsReqSpell; }
@@ -809,8 +812,6 @@ class SpellMgr
         // Note: not use rank for compare to spell ranks: spell chains isn't linear order
         // Use IsHighRankOfSpell instead
         uint8 GetSpellRank(uint32 spell_id) const;
-
-        uint32 GetLastSpellInChain(uint32 spell_id) const;
 
         uint8 IsHighRankOfSpell(uint32 spell1, uint32 spell2) const;
 
@@ -823,39 +824,10 @@ class SpellMgr
         bool IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 effect) const;
 
         // Spell learning
-        SpellLearnSkillNode const* GetSpellLearnSkill(uint32 spell_id) const
-        {
-            SpellLearnSkillMap::const_iterator itr = mSpellLearnSkills.find(spell_id);
-            if(itr != mSpellLearnSkills.end())
-                return &itr->second;
-            else
-                return NULL;
-        }
-
-        bool IsSpellLearnSpell(uint32 spell_id) const
-        {
-            return mSpellLearnSpells.count(spell_id)!=0;
-        }
-
-        SpellLearnSpellMap::const_iterator GetBeginSpellLearnSpell(uint32 spell_id) const
-        {
-            return mSpellLearnSpells.lower_bound(spell_id);
-        }
-
-        SpellLearnSpellMap::const_iterator GetEndSpellLearnSpell(uint32 spell_id) const
-        {
-            return mSpellLearnSpells.upper_bound(spell_id);
-        }
-
-        bool IsSpellLearnToSpell(uint32 spell_id1,uint32 spell_id2) const
-        {
-            SpellLearnSpellMap::const_iterator b = GetBeginSpellLearnSpell(spell_id1);
-            SpellLearnSpellMap::const_iterator e = GetEndSpellLearnSpell(spell_id1);
-            for(SpellLearnSpellMap::const_iterator i = b; i != e; ++i)
-                if(i->second.spell==spell_id2)
-                    return true;
-            return false;
-        }
+        SpellLearnSkillNode const* GetSpellLearnSkill(uint32 spell_id) const;
+        SpellLearnSpellMapBounds GetSpellLearnSpellMapBounds(uint32 spell_id) const;
+        bool IsSpellLearnSpell(uint32 spell_id) const;
+        bool IsSpellLearnToSpell(uint32 spell_id1, uint32 spell_id2) const;
 
         static bool IsProfessionSpell(uint32 spellId);
         static bool IsPrimaryProfessionSpell(uint32 spellId);
@@ -875,15 +847,7 @@ class SpellMgr
         // Spell correctess for client using
         static bool IsSpellValid(SpellInfo const * spellInfo, Player* pl = NULL, bool msg = true);
 
-        SkillLineAbilityMap::const_iterator GetBeginSkillLineAbilityMap(uint32 spell_id) const
-        {
-            return mSkillLineAbilityMap.lower_bound(spell_id);
-        }
-
-        SkillLineAbilityMap::const_iterator GetEndSkillLineAbilityMap(uint32 spell_id) const
-        {
-            return mSkillLineAbilityMap.upper_bound(spell_id);
-        }
+        SkillLineAbilityMapBounds GetSkillLineAbilityMapBounds(uint32 spell_id) const;
 
         // Spell bonus data table
         SpellBonusEntry const* GetSpellBonusData(uint32 spellId) const;

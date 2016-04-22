@@ -460,7 +460,12 @@ public:
     bool HasVisual(uint32 visual) const;
     bool CanBeUsedInCombat() const;
     bool IsPassive() const;
+    bool IsStackableWithRanks() const;
+    bool IsPassiveStackableWithRanks() const;
     bool IsChannelCategorySpell() const;
+
+    bool IsProfessionOrRiding() const;
+    bool IsAbilityLearnedWithProfession() const;
 
     /** Some spells, such as dispells, can be positive or negative depending on target */
     bool IsPositive(bool hostileTarget = false) const;

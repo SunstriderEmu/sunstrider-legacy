@@ -100,15 +100,16 @@ enum PlayerSpellState
     PLAYERSPELL_CHANGED   = 1,
     PLAYERSPELL_NEW       = 2,
     PLAYERSPELL_REMOVED   = 3,
-    PLAYERSPELL_TEMPORARY = 4
+    //TC PLAYERSPELL_TEMPORARY = 4
 };
 
 struct PlayerSpell
 {
     uint16 slotId          : 16;
     PlayerSpellState state : 8;
-    bool active            : 1;
-    bool disabled          : 1;
+    bool active            : 1;   // show in spellbook
+    bool dependent         : 1;   // learned as result another spell learn, skill grow, quest reward, etc
+    bool disabled          : 1;   // first rank has been learned in result talent learn but currently talent unlearned, save max learned ranks
 };
 
 #define SPELL_WITHOUT_SLOT_ID uint16(-1)
@@ -1176,6 +1177,7 @@ class Player : public Unit
 
         void SendInitialPacketsBeforeAddToMap();
         void SendInitialPacketsAfterAddToMap();
+        void SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const;
         void SendTransferAborted(uint32 mapid, uint16 reason);
         void SendInstanceResetWarning(uint32 mapid, uint32 time);
 
@@ -1651,11 +1653,12 @@ class Player : public Unit
         bool HasSpellButDisabled(uint32 spell) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
+        bool IsNeedCastPassiveSpellAtLearn(SpellInfo const* spellInfo) const;
 
         void SendProficiency(uint8 pr1, uint32 pr2);
         void SendInitialSpells();
-        bool AddSpell(uint32 spell_id, bool active, bool learning = true, bool dependent = false, bool disabled = false, bool loading = false, uint32 slot_id = SPELL_WITHOUT_SLOT_ID );
-        void LearnSpell(uint32 spell_id);
+        bool AddSpell(uint32 spell_id, bool active, bool learning = true, bool dependent = false, bool disabled = false, bool loading = false, uint32 fromSkill = 0 );
+        void LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill = 0);
         void RemoveSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
         void learnDefaultSpells(bool loading = false);
