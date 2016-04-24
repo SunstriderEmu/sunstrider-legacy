@@ -3561,7 +3561,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if (!me)
                 return;
 
-            WorldObject* creature = NULL;
+            WorldObject* creature = nullptr;
 
             if (e.event.distance.guid != 0)
             {
@@ -3583,7 +3583,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             }
 
             if (creature)
-                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat);
+                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat, creature);
 
             break;
         }
@@ -3592,7 +3592,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if (!me)
                 return;
 
-            WorldObject* gameobject = NULL;
+            GameObject* gameobject = nullptr;
 
             if (e.event.distance.guid != 0)
             {
@@ -3614,7 +3614,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             }
 
             if (gameobject)
-                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat);
+                ProcessTimedAction(e, e.event.distance.repeat, e.event.distance.repeat, nullptr, 0, 0, false, nullptr, gameobject);
 
             break;
         }
