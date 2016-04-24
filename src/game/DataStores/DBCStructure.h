@@ -184,6 +184,25 @@ struct ChrRacesEntry
     uint32      addon;                                      // 68 (0 - original race, 1 - tbc addon, ...)
 };
 
+struct CinematicCameraEntry
+{
+    uint32      id;                                         // 0 index
+    char*       filename;                                   // 1
+    uint32      soundid;                                    // 2 in SoundEntries.dbc or 0
+    float       base_x;                                     // 3
+    float       base_y;                                     // 4
+    float       base_z;                                     // 5
+    float       base_o;                                     // 6
+};
+
+struct CinematicSequencesEntry
+{
+    uint32      Id;                                         // 0 index
+                                                            //uint32      unk1;                                     // 1 always 0
+    uint32      cinematicCamera;                            // 2 id in CinematicCamera.dbc
+                                                            // 3-9 always 0
+};
+
 struct CreatureDisplayInfoEntry
 {
     uint32      Displayid;                                  // 0        m_ID
@@ -194,7 +213,7 @@ struct CreatureDisplayInfoEntry
                                                             // 5-11,unused
 };
 
-//TODOMOV confirm bc format
+//from LK, not sure it's bc format too
 struct CreatureDisplayInfoExtraEntry
 {
     //uint32 Id;                                            // 0
