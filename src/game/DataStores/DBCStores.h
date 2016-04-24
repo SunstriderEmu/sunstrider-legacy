@@ -111,12 +111,28 @@ struct M2Array
     uint32_t number;
     uint32 offset_elements;
 };
+
+#ifndef LICH_KING
+struct InterpolationPair
+{
+    uint32 min;
+    uint32 max;
+};
+#endif
+
+//https://wowdev.wiki/M2#Standard_animation_block
 struct M2Track
 {
     uint16_t interpolation_type;
     uint16_t global_sequence;
-    M2Array timestamps;
-    M2Array values;
+#ifdef LICH_KING
+    M2Array timestampsLK; // M2Array<M2Array<uint32>
+    M2Array valuesLK; // M2Array<M2Array<T>>
+#else
+    M2Array interpolation_ranges; //M2Array<pair<uint32>> min & max of what ?
+    M2Array timestampsBC; // M2Array<uint32>
+    M2Array valuesBC; // M2Array<T>
+#endif
 };
 
 struct M2Camera

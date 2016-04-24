@@ -137,6 +137,7 @@ DBCStorage <TaxiPathEntry> sTaxiPathStore(TaxiPathEntryfmt);
 // DBC used only for initialization sTaxiPathSetBySource at startup.
 TaxiPathNodesByPath sTaxiPathNodesByPath;
 
+//NYI for BC, you'll have to fix readCamera first to use this (some hard work already done there)
 std::unordered_map<uint32, FlyByCameraCollection> sFlyByCameraStore;
 
 static DBCStorage <TaxiPathNodeEntry> sTaxiPathNodeStore(TaxiPathNodeEntryfmt);
@@ -557,17 +558,94 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     DBCData.z = dbcentry->base_z;
     DBCData.w = dbcentry->base_o;
 
+#ifndef LICH_KING
+    // kelno: This is not tested yet
+
+    /* Do I need this ?
+    uint32 interpolationMin = 0;
+    uint32 interpolationMax = 0;
+    
+    //can this have more than 1 entry ? if so, this code is invalid
+    for (uint32 k = 0; k < cam->target_positions.interpolation_ranges.number; ++k)
+    {
+        if (cam->target_positions.interpolation_ranges.offset_elements + (sizeof(InterpolationPair) * k) > buffSize)
+            return false;
+
+        InterpolationPair const* interpolationPair = reinterpret_cast<InterpolationPair const*>(buffer + (sizeof(InterpolationPair) * k) + cam->target_positions.interpolation_ranges.offset_elements);
+        interpolationMin = interpolationPair->min;
+        interpolationMax = interpolationPair->max;
+        break;
+    }
+
+    if (interpolationMax == 0)
+    {
+        TC_LOG_ERROR("server.loading", "readCamera: Invalid max interpolation value (0)");
+        return false;
+    }
+
     // Read target locations, only so that we can calculate orientation
-    for (uint32 k = 0; k < cam->target_positions.timestamps.number; ++k)
+    for (uint32 k = 0; k < cam->target_positions.timestampsBC.number; ++k)
     {
         // Extract Target positions
-        if (cam->target_positions.timestamps.offset_elements + sizeof(M2Array) > buffSize)
+        if (cam->target_positions.timestampsBC.offset_elements + (sizeof(uint32) * k) > buffSize)
             return false;
-        M2Array const* targTsArray = reinterpret_cast<M2Array const*>(buffer + cam->target_positions.timestamps.offset_elements);
-        if (targTsArray->offset_elements + sizeof(uint32) > buffSize || cam->target_positions.values.offset_elements + sizeof(M2Array) > buffSize)
+
+        uint32 const* timeStamp = reinterpret_cast<uint32 const*>(buffer + (sizeof(uint32) * k) + cam->target_positions.timestampsBC.offset_elements);
+
+        if (cam->target_positions.valuesBC.offset_elements + (sizeof(M2SplineKey<G3D::Vector3>) * k) > buffSize)
+            return false;
+
+        M2SplineKey<G3D::Vector3> const* targPositions = reinterpret_cast<M2SplineKey<G3D::Vector3> const*>(buffer + (sizeof(M2SplineKey<G3D::Vector3>) * k) + cam->target_positions.valuesBC.offset_elements);
+
+        G3D::Vector3 newPos = TranslateLocation(&DBCData, &cam->target_position_base, &targPositions->p0);
+
+        FlyByCamera thisCam;
+        thisCam.timeStamp = *timeStamp;
+        thisCam.locations.x = newPos.x;
+        thisCam.locations.y = newPos.y;
+        thisCam.locations.z = newPos.z;
+        thisCam.locations.w = 0.0f;
+        targetcam.push_back(thisCam);
+    }
+    */
+
+    // Read camera positions and timestamps (translating first position of 3 only, we don't need to translate the whole spline)
+    for (uint32 k = 0; k < cam->positions.timestampsBC.number; ++k)
+    {
+        // Extract Target positions
+        if (cam->positions.timestampsBC.offset_elements + (sizeof(uint32) * k) > buffSize)
+            return false;
+
+        uint32 const* timeStamp = reinterpret_cast<uint32 const*>(buffer + (sizeof(uint32) * k) + cam->positions.timestampsBC.offset_elements);
+
+        if (cam->positions.valuesBC.offset_elements + (sizeof(M2SplineKey<G3D::Vector3>) * k) > buffSize)
+            return false;
+
+        M2SplineKey<G3D::Vector3> const* positions = reinterpret_cast<M2SplineKey<G3D::Vector3> const*>(buffer + (sizeof(M2SplineKey<G3D::Vector3>) * k) + cam->positions.valuesBC.offset_elements);
+       
+        G3D::Vector3 newPos = TranslateLocation(&DBCData, &cam->position_base, &positions->p0);
+
+        FlyByCamera thisCam;
+        thisCam.timeStamp = *timeStamp;
+        thisCam.locations.x = newPos.x;
+        thisCam.locations.y = newPos.y;
+        thisCam.locations.z = newPos.z;
+        thisCam.locations.w = 0.0f;
+        cameras.push_back(thisCam);
+    }
+
+#else
+    // Read target locations, only so that we can calculate orientation
+    for (uint32 k = 0; k < cam->target_positions.timestampsLK.number; ++k)
+    {
+        // Extract Target positions
+        if (cam->target_positions.timestampsLK.offset_elements + sizeof(M2Array) > buffSize)
+            return false;
+        M2Array const* targTsArray = reinterpret_cast<M2Array const*>(buffer + cam->target_positions.timestampsLK.offset_elements);
+        if (targTsArray->offset_elements + sizeof(uint32) > buffSize || cam->target_positions.valuesLK.offset_elements + sizeof(M2Array) > buffSize)
             return false;
         uint32 const* targTimestamps = reinterpret_cast<uint32 const*>(buffer + targTsArray->offset_elements);
-        M2Array const* targArray = reinterpret_cast<M2Array const*>(buffer + cam->target_positions.values.offset_elements);
+        M2Array const* targArray = reinterpret_cast<M2Array const*>(buffer + cam->target_positions.valuesLK.offset_elements);
 
         if (targArray->offset_elements + sizeof(M2SplineKey<G3D::Vector3>) > buffSize)
             return false;
@@ -596,16 +674,16 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     }
 
     // Read camera positions and timestamps (translating first position of 3 only, we don't need to translate the whole spline)
-    for (uint32 k = 0; k < cam->positions.timestamps.number; ++k)
+    for (uint32 k = 0; k < cam->positions.timestampsLK.number; ++k)
     {
         // Extract Camera positions for this set
-        if (cam->positions.timestamps.offset_elements + sizeof(M2Array) > buffSize)
+        if (cam->positions.timestampsLK.offset_elements + sizeof(M2Array) > buffSize)
             return false;
-        M2Array const* posTsArray = reinterpret_cast<M2Array const*>(buffer + cam->positions.timestamps.offset_elements);
-        if (posTsArray->offset_elements + sizeof(uint32) > buffSize || cam->positions.values.offset_elements + sizeof(M2Array) > buffSize)
+        M2Array const* posTsArray = reinterpret_cast<M2Array const*>(buffer + cam->positions.timestampsLK.offset_elements);
+        if (posTsArray->offset_elements + sizeof(uint32) > buffSize || cam->positions.valuesLK.offset_elements + sizeof(M2Array) > buffSize)
             return false;
         uint32 const* posTimestamps = reinterpret_cast<uint32 const*>(buffer + posTsArray->offset_elements);
-        M2Array const* posArray = reinterpret_cast<M2Array const*>(buffer + cam->positions.values.offset_elements);
+        M2Array const* posArray = reinterpret_cast<M2Array const*>(buffer + cam->positions.valuesLK.offset_elements);
         if (posArray->offset_elements + sizeof(M2SplineKey<G3D::Vector3>) > buffSize)
             return false;
         M2SplineKey<G3D::Vector3> const* positions = reinterpret_cast<M2SplineKey<G3D::Vector3> const*>(buffer + posArray->offset_elements);
@@ -673,7 +751,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
             currPos += sizeof(M2SplineKey<G3D::Vector3>);
         }
     }
-
+#endif
     sFlyByCameraStore[dbcentry->id] = cameras;
     return true;
 }
