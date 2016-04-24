@@ -80,6 +80,8 @@ struct Realm
     uint8 Timezone;
     AccountTypes AllowedSecurityLevel;
     float PopulationLevel;
+
+    ip::tcp::endpoint GetAddressForClient(ip::address const& clientAddr) const;
 };
 
 #endif // Realm_h__
