@@ -21799,7 +21799,7 @@ void Player::SetSpectate(bool on)
 {
     if (on)
     {
-        SetSpeed(MOVE_RUN, 2.5);
+        SetSpeedRate(MOVE_RUN, 2.5);
         spectatorFlag = true;
 
         SetFaction(35);

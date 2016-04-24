@@ -1440,6 +1440,7 @@ class Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
+        //Renamed from TC: m_movedPlayer;
         Player* m_movedByPlayer;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
@@ -1792,11 +1793,10 @@ class Unit : public WorldObject
         uint32 CalcArmorReducedDamage(Unit* pVictim, const uint32 damage);
         void CalcAbsorbResist(Unit *pVictim, SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, uint32 spellId);
 
-        void  UpdateSpeed(UnitMoveType mtype, bool forced, bool withPet = true);
+        void  UpdateSpeed(UnitMoveType mtype);
         float GetSpeed( UnitMoveType mtype ) const;
         float GetSpeedRate( UnitMoveType mtype ) const { return m_speed_rate[mtype]; }
-        void SetSpeed(UnitMoveType mtype, float rate, bool forced = false, bool withPet = true);
-        void SetSpeedRate(UnitMoveType mtype, float rate);
+        void SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate = true);
 
         void _RemoveAllAuraMods();
         void _ApplyAllAuraMods();

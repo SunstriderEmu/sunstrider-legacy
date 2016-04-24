@@ -1492,18 +1492,18 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
 
     if (chr)
     {
-        chr->SetSpeed(MOVE_WALK, ASpeed, true);
-        chr->SetSpeed(MOVE_RUN, ASpeed, true);
-        chr->SetSpeed(MOVE_SWIM, ASpeed, true);
-        chr->SetSpeed(MOVE_FLIGHT, ASpeed, true);
+        chr->SetSpeedRate(MOVE_WALK, ASpeed);
+        chr->SetSpeedRate(MOVE_RUN, ASpeed);
+        chr->SetSpeedRate(MOVE_SWIM, ASpeed);
+        chr->SetSpeedRate(MOVE_FLIGHT, ASpeed);
     }
     else { //target is a creature
         if (Creature* c = u->ToCreature())
         {
-            c->SetSpeedRate(MOVE_WALK, ASpeed);
-            c->SetSpeedRate(MOVE_RUN, ASpeed);
-            c->SetSpeedRate(MOVE_SWIM, ASpeed);
-            c->SetSpeedRate(MOVE_FLIGHT, ASpeed);
+            c->SetSpeedRate(MOVE_WALK, ASpeed, false);
+            c->SetSpeedRate(MOVE_RUN, ASpeed, false);
+            c->SetSpeedRate(MOVE_SWIM, ASpeed, false);
+            c->SetSpeedRate(MOVE_FLIGHT, ASpeed, false);
         }
     }
     return true;
@@ -1542,7 +1542,7 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
     if (needReportToTarget(chr))
         ChatHandler(chr).PSendSysMessage(LANG_YOURS_SPEED_CHANGED, GetName().c_str(), Speed);
 
-    chr->SetSpeed(MOVE_RUN,Speed,true);
+    chr->SetSpeedRate(MOVE_RUN,Speed);
 
     return true;
 }
@@ -1580,7 +1580,7 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
     if (needReportToTarget(chr))
         ChatHandler(chr).PSendSysMessage(LANG_YOURS_SWIM_SPEED_CHANGED, GetName().c_str(), Swim);
 
-    chr->SetSpeed(MOVE_SWIM,Swim,true);
+    chr->SetSpeedRate(MOVE_SWIM,Swim);
 
     return true;
 }
@@ -1618,7 +1618,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
     if (needReportToTarget(chr))
         ChatHandler(chr).PSendSysMessage(LANG_YOURS_BACK_SPEED_CHANGED, GetName().c_str(), BSpeed);
 
-    chr->SetSpeed(MOVE_RUN_BACK,BSpeed,true);
+    chr->SetSpeedRate(MOVE_RUN_BACK,BSpeed);
 
     return true;
 }
@@ -1649,7 +1649,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
     if (needReportToTarget(chr))
         ChatHandler(chr).PSendSysMessage(LANG_YOURS_FLY_SPEED_CHANGED, GetName().c_str(), FSpeed);
 
-    chr->SetSpeed(MOVE_FLIGHT,FSpeed,true);
+    chr->SetSpeedRate(MOVE_FLIGHT,FSpeed);
 
     return true;
 }
