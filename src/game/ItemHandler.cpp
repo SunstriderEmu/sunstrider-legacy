@@ -740,25 +740,44 @@ void WorldSession::SendListInventory( uint64 vendorguid )
     VendorItemData const* vItems = pCreature->GetVendorItems();
     if(!vItems)
     {
-        _player->SendSellError( SELL_ERR_CANT_FIND_VENDOR, NULL, 0, 0);
+        WorldPacket data(SMSG_LIST_INVENTORY, 8 + 1 + 1);
+        data << uint64(vendorguid);
+        data << uint8(0);                                   // count == 0, next will be error code
+        data << uint8(0);                                   // "Vendor has no inventory"
+        SendPacket(&data);
         return;
     }
 
-    uint8 numitems = vItems->GetItemCount();
+    uint8 itemCount = vItems->GetItemCount();
     uint8 count = 0;
 
-    WorldPacket data( SMSG_LIST_INVENTORY, (8+1+numitems*8*4) );
+    WorldPacket data( SMSG_LIST_INVENTORY, (8+1+ itemCount *8*4) );
     data << uint64(vendorguid);
-    data << uint8(numitems);
+    size_t countPos = data.wpos();
+    data << uint8(count);
 
     float discountMod = _player->GetReputationPriceDiscount(pCreature);
 
-    for(int i = 0; i < numitems; i++ )
+    for(uint8 slot = 0; slot < itemCount; slot++ )
     {
         if(VendorItem const* crItem = vItems->GetItem(i))
         {
             if((crItem->proto->AllowableClass & _player->GetClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
                 continue;
+
+#ifdef LICH_KING
+            // Only display items in vendor lists for the team the
+            // player is on. If GM on, display all items.
+            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == TEAM_ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == TEAM_HORDE)))
+                continue;
+#endif
+
+            uint32 leftInStock = !crItem->maxcount ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem);
+            /* Why should this be ?
+            // Items sold out are not displayed in list
+            if (!_player->IsGameMaster() && !leftInStock)
+                continue;
+                */
 
             ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(pCreature->GetEntry(), crItem->proto->ItemId);
             if (!sConditionMgr->IsObjectMeetToConditions(_player, pCreature, conditions))
@@ -772,21 +791,29 @@ void WorldSession::SendListInventory( uint64 vendorguid )
             // reputation discount
             uint32 price = uint32(floor(crItem->proto->BuyPrice * discountMod));
 
-            data << uint32(count);
+            data << uint32(slot + 1);  // client expects counting to start at 1
             data << uint32(crItem->proto->ItemId);
             data << uint32(crItem->proto->DisplayInfoID);
-            data << uint32(crItem->maxcount <= 0 ? 0xFFFFFFFF : pCreature->GetVendorItemCurrentCount(crItem));
+            data << uint32(leftInStock);
             data << uint32(price);
             data << uint32(crItem->proto->MaxDurability);
             data << uint32(crItem->proto->BuyCount);
             data << uint32(crItem->ExtendedCost);
+
+            if (count >= MAX_VENDOR_ITEMS)
+                break;
         }
     }
 
-    if ( count == 0 || data.size() != 8 + 1 + size_t(count) * 8 * 4 )
+    if (count == 0)
+    {
+        // count == 0, next will be error code
+        data << uint8(0);// "Vendor has no inventory"
+        SendPacket(&data);
         return;
+    }
 
-    data.put<uint8>(8, count);
+    data.put<uint8>(countPos, count);
     SendPacket( &data );
 }
 
