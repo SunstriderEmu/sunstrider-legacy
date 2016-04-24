@@ -3976,30 +3976,6 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
         
-    switch (GetId())    // Correct wrong DBC Values : these spells do -100% speed instead of 50, 60, ... %
-    {
-        case 35965:
-            m_modifier.m_amount = -60;
-            break;
-        case 9672:
-        case 12548:
-        case 15043:
-        case 15497:
-        case 21401:
-        case 22582:
-        case 37865:
-        case 12675:
-        case 17165:
-        case 38243:
-        case 37930:
-        case 20822:
-        case 23115:
-            m_modifier.m_amount = -50;
-            break;
-        default:
-            break;
-    }
-
     m_target->UpdateSpeed(MOVE_RUN);
     m_target->UpdateSpeed(MOVE_SWIM);
     m_target->UpdateSpeed(MOVE_FLIGHT);
