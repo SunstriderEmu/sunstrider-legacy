@@ -559,12 +559,13 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     DBCData.w = dbcentry->base_o;
 
 #ifndef LICH_KING
-    // kelno: This is not tested yet
+    // kelno: This is not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
 
-    /* Do I need this ?
+    uint32 targetInterpolationMin = 0;
+    uint32 targetInterpolationMax = 0;
     uint32 interpolationMin = 0;
     uint32 interpolationMax = 0;
-    
+
     //can this have more than 1 entry ? if so, this code is invalid
     for (uint32 k = 0; k < cam->target_positions.interpolation_ranges.number; ++k)
     {
@@ -572,12 +573,25 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
             return false;
 
         InterpolationPair const* interpolationPair = reinterpret_cast<InterpolationPair const*>(buffer + (sizeof(InterpolationPair) * k) + cam->target_positions.interpolation_ranges.offset_elements);
+        targetInterpolationMin = interpolationPair->min;
+        targetInterpolationMax = interpolationPair->max;
+        break;
+    }
+
+    //can this have more than 1 entry ? if so, this code is invalid
+    for (uint32 k = 0; k < cam->positions.interpolation_ranges.number; ++k)
+    {
+        if (cam->positions.interpolation_ranges.offset_elements + (sizeof(InterpolationPair) * k) > buffSize)
+            return false;
+
+        InterpolationPair const* interpolationPair = reinterpret_cast<InterpolationPair const*>(buffer + (sizeof(InterpolationPair) * k) + cam->positions.interpolation_ranges.offset_elements);
         interpolationMin = interpolationPair->min;
         interpolationMax = interpolationPair->max;
         break;
     }
 
-    if (interpolationMax == 0)
+    //interpolationMax may be at 0 for some cases ?
+    if (/*interpolationMax == 0 || */targetInterpolationMax == 0)
     {
         TC_LOG_ERROR("server.loading", "readCamera: Invalid max interpolation value (0)");
         return false;
@@ -606,8 +620,10 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
         thisCam.locations.z = newPos.z;
         thisCam.locations.w = 0.0f;
         targetcam.push_back(thisCam);
+
+        if (k >= targetInterpolationMax)
+            break;
     }
-    */
 
     // Read camera positions and timestamps (translating first position of 3 only, we don't need to translate the whole spline)
     for (uint32 k = 0; k < cam->positions.timestampsBC.number; ++k)
@@ -631,7 +647,53 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
         thisCam.locations.y = newPos.y;
         thisCam.locations.z = newPos.z;
         thisCam.locations.w = 0.0f;
+
+        if (targetcam.size() > 0)
+        {
+            // Find the target camera before and after this camera
+            FlyByCamera lastTarget;
+            FlyByCamera nextTarget;
+
+            // Pre-load first item
+            lastTarget = targetcam[0];
+            nextTarget = targetcam[0];
+            for (uint32 j = 0; j < targetcam.size(); ++j)
+            {
+                nextTarget = targetcam[j];
+                if (targetcam[j].timeStamp > *timeStamp)
+                    break;
+
+                lastTarget = targetcam[j];
+            }
+
+            float x = lastTarget.locations.x;
+            float y = lastTarget.locations.y;
+            float z = lastTarget.locations.z;
+
+            // Now, the timestamps for target cam and position can be different. So, if they differ we interpolate
+            if (lastTarget.timeStamp != *timeStamp)
+            {
+                uint32 timeDiffTarget = nextTarget.timeStamp - lastTarget.timeStamp;
+                uint32 timeDiffThis = *timeStamp - lastTarget.timeStamp;
+                float xDiff = nextTarget.locations.x - lastTarget.locations.x;
+                float yDiff = nextTarget.locations.y - lastTarget.locations.y;
+                float zDiff = nextTarget.locations.z - lastTarget.locations.z;
+                x = lastTarget.locations.x + (xDiff * (float(timeDiffThis) / float(timeDiffTarget)));
+                y = lastTarget.locations.y + (yDiff * (float(timeDiffThis) / float(timeDiffTarget)));
+                z = lastTarget.locations.z + (zDiff * (float(timeDiffThis) / float(timeDiffTarget)));
+            }
+            float xDiff = x - thisCam.locations.x;
+            float yDiff = y - thisCam.locations.y;
+            thisCam.locations.w = std::atan2(yDiff, xDiff);
+
+            if (thisCam.locations.w < 0)
+                thisCam.locations.w += 2 * float(M_PI);
+        }
+
         cameras.push_back(thisCam);
+
+        if (k >= interpolationMax)
+            break;
     }
 
 #else

@@ -66,7 +66,7 @@ struct LootStoreItem
     int32   mincountOrRef;                                  // mincount for drop items (positive) or minus referenced TemplateleId (negative)
     uint8   group       :8;
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
-    uint16  conditionId :16;                                // additional loot condition Id
+    uint16  conditionId :16;                                // OLD CONDITION SYSTEM: additional loot condition Id
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
     ConditionList conditions;                               // additional loot condition
 

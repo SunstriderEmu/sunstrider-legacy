@@ -317,6 +317,7 @@ LootItem::LootItem(LootStoreItem const& li)
 {
     itemid      = li.itemid;
     conditionId = li.conditionId;
+    conditions = li.conditions;
 
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemid);
     freeforall  = proto && (proto->Flags & ITEM_FLAG_PARTY_LOOT);
