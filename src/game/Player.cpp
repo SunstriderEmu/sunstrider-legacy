@@ -21841,7 +21841,7 @@ void Player::SetSpectate(bool on)
         spectateCanceled = false;
         spectatorFlag = false;
         SetDisplayId(GetNativeDisplayId());
-        UpdateSpeed(MOVE_RUN, true);
+        UpdateSpeed(MOVE_RUN);
 
         if(!(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE)) //don't reset gm visibility
             SetVisibility(VISIBILITY_ON);

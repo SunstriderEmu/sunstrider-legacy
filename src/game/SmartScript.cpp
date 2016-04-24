@@ -3561,7 +3561,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             if (!me)
                 return;
 
-            WorldObject* creature = nullptr;
+            Creature* creature = nullptr;
 
             if (e.event.distance.guid != 0)
             {

@@ -3912,7 +3912,7 @@ void Aura::HandleAuraModIncreaseSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    m_target->UpdateSpeed(MOVE_RUN, true);
+    m_target->UpdateSpeed(MOVE_RUN);
 }
 
 void Aura::HandleAuraModIncreaseMountedSpeed(bool /*apply*/, bool Real)
@@ -3921,7 +3921,7 @@ void Aura::HandleAuraModIncreaseMountedSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    m_target->UpdateSpeed(MOVE_RUN, true);
+    m_target->UpdateSpeed(MOVE_RUN);
 }
 
 void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
@@ -3958,7 +3958,7 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
             m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,16314);
     }
 
-    m_target->UpdateSpeed(MOVE_FLIGHT, true);
+    m_target->UpdateSpeed(MOVE_FLIGHT);
 }
 
 void Aura::HandleAuraModIncreaseSwimSpeed(bool /*apply*/, bool Real)
@@ -3967,7 +3967,7 @@ void Aura::HandleAuraModIncreaseSwimSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    m_target->UpdateSpeed(MOVE_SWIM, true);
+    m_target->UpdateSpeed(MOVE_SWIM);
 }
 
 void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
@@ -4000,12 +4000,12 @@ void Aura::HandleAuraModDecreaseSpeed(bool /*apply*/, bool Real)
             break;
     }
 
-    m_target->UpdateSpeed(MOVE_RUN, true, false);
-    m_target->UpdateSpeed(MOVE_SWIM, true, false);
-    m_target->UpdateSpeed(MOVE_FLIGHT, true, false);
-    m_target->UpdateSpeed(MOVE_RUN_BACK, true);
-    m_target->UpdateSpeed(MOVE_SWIM_BACK, true);
-    m_target->UpdateSpeed(MOVE_FLIGHT_BACK, true);
+    m_target->UpdateSpeed(MOVE_RUN);
+    m_target->UpdateSpeed(MOVE_SWIM);
+    m_target->UpdateSpeed(MOVE_FLIGHT);
+    m_target->UpdateSpeed(MOVE_RUN_BACK);
+    m_target->UpdateSpeed(MOVE_SWIM_BACK);
+    m_target->UpdateSpeed(MOVE_FLIGHT_BACK);
 }
 
 void Aura::HandleAuraModUseNormalSpeed(bool /*apply*/, bool Real)
@@ -4014,9 +4014,9 @@ void Aura::HandleAuraModUseNormalSpeed(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    m_target->UpdateSpeed(MOVE_RUN,  true);
-    m_target->UpdateSpeed(MOVE_SWIM, true);
-    m_target->UpdateSpeed(MOVE_FLIGHT,  true);
+    m_target->UpdateSpeed(MOVE_RUN);
+    m_target->UpdateSpeed(MOVE_SWIM);
+    m_target->UpdateSpeed(MOVE_FLIGHT);
 }
 
 /*********************************************************/

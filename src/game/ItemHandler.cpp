@@ -760,7 +760,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 
     for(uint8 slot = 0; slot < itemCount; slot++ )
     {
-        if(VendorItem const* crItem = vItems->GetItem(i))
+        if(VendorItem const* crItem = vItems->GetItem(slot))
         {
             if((crItem->proto->AllowableClass & _player->GetClassMask()) == 0 && crItem->proto->Bonding == BIND_WHEN_PICKED_UP && !_player->IsGameMaster())
                 continue;
@@ -777,7 +777,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
             // Items sold out are not displayed in list
             if (!_player->IsGameMaster() && !leftInStock)
                 continue;
-                */
+            */
 
             ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(pCreature->GetEntry(), crItem->proto->ItemId);
             if (!sConditionMgr->IsObjectMeetToConditions(_player, pCreature, conditions))
@@ -785,8 +785,6 @@ void WorldSession::SendListInventory( uint64 vendorguid )
                 TC_LOG_DEBUG("condition", "SendListInventory: conditions not met for creature entry %u item %u", pCreature->GetEntry(), crItem->proto->ItemId);
                 continue;
             }
-
-            ++count;
 
             // reputation discount
             uint32 price = uint32(floor(crItem->proto->BuyPrice * discountMod));
@@ -800,6 +798,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
             data << uint32(crItem->proto->BuyCount);
             data << uint32(crItem->ExtendedCost);
 
+            ++count;
             if (count >= MAX_VENDOR_ITEMS)
                 break;
         }
