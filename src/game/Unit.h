@@ -1932,6 +1932,13 @@ class Unit : public WorldObject
         void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
         void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
 
+        // update m_last_isunderwater_status 
+        void UpdateEnvironmentIfNeeded(const uint8 option);
+
+        Position m_last_environment_position;
+        bool m_last_isinwater_status;
+        bool m_last_isunderwater_status;
+        bool m_is_updating_environment;
     protected:
         explicit Unit ();
 

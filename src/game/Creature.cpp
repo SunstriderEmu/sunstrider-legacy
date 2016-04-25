@@ -1442,9 +1442,6 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
             return CAN_ATTACK_RESULT_TARGET_EVADE;
     }
 
-    if(!who->isInAccessiblePlaceFor(this))
-        return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
-
     if(!CanFly() && GetDistanceZ(who) > CREATURE_Z_ATTACK_RANGE)
         return CAN_ATTACK_RESULT_TOO_FAR_Z;
 
@@ -1464,6 +1461,9 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
     //ignore LoS for assist
     if(!assistAggro && !IsWithinLOSInMap(who))
         return CAN_ATTACK_RESULT_NOT_IN_LOS;
+
+    if (!who->isInAccessiblePlaceFor(this))
+        return CAN_ATTACK_RESULT_NOT_ACCESSIBLE;
 
     return CAN_ATTACK_RESULT_OK;
 }

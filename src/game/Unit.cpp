@@ -3519,14 +3519,42 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
         return c->CanWalk() || c->CanFly();
 }
 
+//idea from sunwell core, extend from there if needed
+void Unit::UpdateEnvironmentIfNeeded(const uint8 /*option*/)
+{
+    if (m_is_updating_environment)
+        return;
+
+    if (GetTypeId() != TYPEID_UNIT || !IsAlive() || !IsInWorld() || !FindMap() /*|| IsDuringRemoveFromWorld()*/ || !IsPositionValid())
+        return;
+
+    //almost not moved
+    if (GetExactDistSq(&m_last_environment_position) < 2.5f*2.5f)
+        return;
+
+    m_is_updating_environment = true;
+
+    LiquidData liquid_status;
+    auto liquidStatus = GetBaseMap()->getLiquidStatus(GetPositionX(), GetPositionY(), GetPositionZ(), BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
+    bool enoughWater = (liquid_status.level > INVALID_HEIGHT && liquid_status.level > liquid_status.depth_level && liquid_status.level - liquid_status.depth_level >= 1.5f); // also check if theres enough water - at least 2yd
+    m_last_isinwater_status = liquidStatus >= LIQUID_MAP_IN_WATER && enoughWater;
+    m_last_isunderwater_status = liquidStatus == LIQUID_MAP_UNDER_WATER && enoughWater;
+
+    m_last_environment_position = GetPosition();
+
+    m_is_updating_environment = false;
+}
+
 bool Unit::IsInWater() const
 {
-    return GetBaseMap()->IsInWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    const_cast<Unit*>(this)->UpdateEnvironmentIfNeeded(1);
+    return m_last_isinwater_status;
 }
 
 bool Unit::IsUnderWater() const
 {
-    return GetBaseMap()->IsUnderWater(GetPositionX(), GetPositionY(), GetPositionZ());
+    const_cast<Unit*>(this)->UpdateEnvironmentIfNeeded(1);
+    return m_last_isunderwater_status;
 }
 
 void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
