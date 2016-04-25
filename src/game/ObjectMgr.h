@@ -78,6 +78,8 @@ struct ScriptInfo
 
 typedef std::multimap<uint32, ScriptInfo> ScriptMap;
 typedef std::map<uint32, ScriptMap > ScriptMapMap;
+typedef std::multimap<uint32, uint32> SpellScriptsContainer;
+typedef std::pair<SpellScriptsContainer::iterator, SpellScriptsContainer::iterator> SpellScriptsBounds;
 extern ScriptMapMap sQuestEndScripts;
 extern ScriptMapMap sQuestStartScripts;
 extern ScriptMapMap sSpellScripts;
@@ -604,6 +606,7 @@ class ObjectMgr
         AreaTrigger const* GetMapEntranceTrigger(uint32 Map) const;
 
         uint32 GetAreaTriggerScriptId(uint32 trigger_id);
+        SpellScriptsBounds GetSpellScriptsBounds(uint32 spell_id);
 
         ReputationOnKillEntry const* GetReputationOnKilEntry(uint32 id) const
         {
@@ -656,6 +659,9 @@ class ObjectMgr
         void LoadEventScripts();
         void LoadSpellScripts();
         void LoadWaypointScripts();
+
+        void LoadSpellScriptNames();
+        void ValidateSpellScripts();
 
         bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table, int32 min_value, int32 max_value);
         bool LoadTrinityStrings() { return LoadTrinityStrings(WorldDatabase,"trinity_string",MIN_TRINITY_STRING_ID,MAX_TRINITY_STRING_ID); }
@@ -1177,6 +1183,7 @@ class ObjectMgr
         CreatureTemplateContainer _creatureTemplateStore;
         ItemTemplateContainer _itemTemplateStore;
         BroadcastTextContainer _broadcastTextStore;
+        SpellScriptsContainer _spellScriptsStore;
 
     private:
         void LoadScripts(ScriptMapMap& scripts, char const* tablename);

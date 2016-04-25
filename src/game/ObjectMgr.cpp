@@ -43,6 +43,8 @@
 #include "WaypointManager.h"
 #include "InstanceScript.h" //for condition_instance_data
 #include "ItemEnchantmentMgr.h"
+#include "ScriptMgr.h"
+#include "SpellScript.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -4151,6 +4153,124 @@ void ObjectMgr::LoadWaypointScripts()
     }
 }
 
+
+void ObjectMgr::LoadSpellScriptNames()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    _spellScriptsStore.clear();                            // need for reload case
+
+    QueryResult result = WorldDatabase.Query("SELECT spell_id, ScriptName FROM spell_script_names");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 spell script names. DB table `spell_script_names` is empty!");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+
+        Field* fields = result->Fetch();
+
+        int32 spellId = fields[0].GetInt32();
+        const char *scriptName = fields[1].GetCString();
+
+        bool allRanks = false;
+        if (spellId <= 0)
+        {
+            allRanks = true;
+            spellId = -spellId;
+        }
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (!spellInfo)
+        {
+            TC_LOG_ERROR("sql.sql", "Scriptname:`%s` spell (spell_id:%d) does not exist in `Spell.dbc`.", scriptName, fields[0].GetInt32());
+            continue;
+        }
+
+        if (allRanks)
+        {
+            if (sSpellMgr->GetFirstSpellInChain(spellId) != uint32(spellId))
+            {
+                TC_LOG_ERROR("sql.sql", "Scriptname:`%s` spell (spell_id:%d) is not first rank of spell.", scriptName, fields[0].GetInt32());
+                continue;
+            }
+            while (spellInfo)
+            {
+                _spellScriptsStore.insert(SpellScriptsContainer::value_type(spellInfo->Id, GetScriptId(scriptName)));
+                spellInfo = spellInfo->GetNextRankSpell();
+            }
+        }
+        else
+            _spellScriptsStore.insert(SpellScriptsContainer::value_type(spellInfo->Id, GetScriptId(scriptName)));
+        ++count;
+    } while (result->NextRow());
+
+    TC_LOG_INFO("server.loading", ">> Loaded %u spell script names in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void ObjectMgr::ValidateSpellScripts()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    if (_spellScriptsStore.empty())
+    {
+        TC_LOG_INFO("server.loading", ">> Validated 0 scripts.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    for (SpellScriptsContainer::iterator itr = _spellScriptsStore.begin(); itr != _spellScriptsStore.end();)
+    {
+        SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(itr->first);
+        std::vector<std::pair<SpellScriptLoader *, SpellScriptsContainer::iterator> > SpellScriptLoaders;
+        sScriptMgr->CreateSpellScriptLoaders(itr->first, SpellScriptLoaders);
+        itr = _spellScriptsStore.upper_bound(itr->first);
+
+        for (std::vector<std::pair<SpellScriptLoader *, SpellScriptsContainer::iterator> >::iterator sitr = SpellScriptLoaders.begin(); sitr != SpellScriptLoaders.end(); ++sitr)
+        {
+            SpellScript* spellScript = sitr->first->GetSpellScript();
+            //NYI AuraScript* auraScript = sitr->first->GetAuraScript();
+            bool valid = true;
+            if (!spellScript/* && !auraScript */)
+            {
+                TC_LOG_ERROR("server.loading", "TSCR: Functions GetSpellScript() and GetAuraScript() of script `%s` do not return objects - script skipped", GetScriptName(sitr->second->second));
+                valid = false;
+            }
+            if (spellScript)
+            {
+                spellScript->_Init(&sitr->first->GetName(), spellEntry->Id);
+                spellScript->_Register();
+                if (!spellScript->_Validate(spellEntry))
+                    valid = false;
+                delete spellScript;
+            }
+            /* NYI
+            if (auraScript)
+            {
+                auraScript->_Init(&sitr->first->GetName(), spellEntry->Id);
+                auraScript->_Register();
+                if (!auraScript->_Validate(spellEntry))
+                    valid = false;
+                delete auraScript;
+            }
+            */
+            if (!valid)
+            {
+                _spellScriptsStore.erase(sitr->second);
+            }
+        }
+        ++count;
+    }
+
+    TC_LOG_INFO("server.loading", ">> Validated %u scripts in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
 void ObjectMgr::LoadItemTexts()
 {
     QueryResult result = CharacterDatabase.Query("SELECT id, text FROM item_text");
@@ -6804,6 +6924,11 @@ uint32 ObjectMgr::GetAreaTriggerScriptId(uint32 trigger_id)
     return 0;
 }
 
+SpellScriptsBounds ObjectMgr::GetSpellScriptsBounds(uint32 spell_id)
+{
+    return SpellScriptsBounds(_spellScriptsStore.lower_bound(spell_id), _spellScriptsStore.upper_bound(spell_id));
+}
+
 // Checks if player meets the condition
 bool PlayerCondition::Meets(Player const * player) const
 {
@@ -7648,6 +7773,10 @@ void ObjectMgr::LoadScriptNames()
       "SELECT DISTINCT(ScriptName) FROM item_template WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM areatrigger_scripts WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM spell_script_names WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM conditions WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(script) FROM instance_template WHERE script <> ''");
     

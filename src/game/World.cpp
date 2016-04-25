@@ -1452,7 +1452,7 @@ void World::SetInitialWorldSettings()
     
     TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList();
-    
+
     TC_LOG_INFO("server.loading", "Loading Quests..." );
     sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 
@@ -1596,7 +1596,10 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadFactionChangeQuests();
     TC_LOG_INFO("server.loading","Loading faction change reputations (generic)...");
     sObjectMgr->LoadFactionChangeReputGeneric();
-    
+
+    TC_LOG_INFO("server.loading", "Loading spell script names...");
+    sObjectMgr->LoadSpellScriptNames();
+
     TC_LOG_INFO("server.loading","Loading Creature Texts...");
     sCreatureTextMgr->LoadCreatureTexts();
 

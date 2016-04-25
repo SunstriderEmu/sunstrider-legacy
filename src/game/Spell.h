@@ -283,6 +283,7 @@ enum SpellTargets
 class Spell
 {
     friend struct Trinity::SpellNotifierCreatureAndPlayer;
+    friend class SpellScript;
     public:
 
         void EffectNULL(uint32 );
@@ -542,6 +543,8 @@ class Spell
 
         bool DoesApplyAuraName(uint32 name);
 
+        void LoadScripts();
+
     protected:
         bool HasGlobalCooldown();
         void TriggerGlobalCooldown();
@@ -668,8 +671,8 @@ class Spell
 
         void PrepareTargetProcessing();
         void FinishTargetProcessing();
-        
-        //tc spellscript. Not implemented
+
+        bool _scriptsLoaded;
         void CallScriptBeforeCastHandlers();
         void CallScriptOnCastHandlers();
         void CallScriptAfterCastHandlers();
@@ -682,7 +685,8 @@ class Spell
         void CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
         void CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType);
-
+        bool CheckScriptEffectImplicitTargets(uint32 effIndex, uint32 effIndexToCheck);
+        std::list<SpellScript*> m_loadedScripts;
         // -------------------------------------------
 
         //List For Triggered Spells

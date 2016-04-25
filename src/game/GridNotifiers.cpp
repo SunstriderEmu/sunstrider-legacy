@@ -249,7 +249,7 @@ void FactionDo::operator()(Creature* u) const
 
 bool CannibalizeObjectCheck::operator()(Player* u)
 {
-    if (i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight())
+    if (i_funit->IsFriendlyTo(u) || u->IsAlive() || u->IsInFlight() || u->HasAuraType(SPELL_AURA_GHOST))
         return false;
 
     if (i_funit->IsWithinDistInMap(u, i_range))

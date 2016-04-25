@@ -35,6 +35,12 @@ else()
     message("* Playerbot:              No ")
 endif()
 
+if(TESTS)
+    message("* Tests:                  Yes")
+else()
+    message("* Tests:                  No ")
+endif()
+
 if(DO_DEBUG)
 message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 endif(DO_DEBUG)

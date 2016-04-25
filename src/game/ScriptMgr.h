@@ -44,6 +44,7 @@ enum ShutdownMask : int;
 struct OLDScript;
 struct SpellSummary;
 class ScriptMgr;
+class SpellScript;
 
 #define MAX_SCRIPTS         5000                            //72 bytes each (approx 351kb)
 #define VISIBLE_RANGE       (166.0f)                        //MAX visible range (size of grid)
@@ -113,6 +114,23 @@ public:
     bool(*OnEffectDummyCreature)(Unit*, uint32, uint32, Creature*) = nullptr;
 
     CreatureAI* (*GetAI)(Creature*) = nullptr;
+};
+
+class SpellScriptLoader : public ScriptObject
+{
+protected:
+
+    SpellScriptLoader(const char* name);
+
+public:
+
+    bool IsDatabaseBound() const { return true; }
+
+    // Should return a fully valid SpellScript pointer.
+    virtual SpellScript* GetSpellScript() const { return NULL; }
+
+    // Should return a fully valid AuraScript pointer.
+  //NYI  virtual AuraScript* GetAuraScript() const { return NULL; }
 };
 
 template<class TMap> class MapScript : public UpdatableScript<TMap>
@@ -399,6 +417,13 @@ class ScriptMgr
         std::string GetConfigValueStr(char const* option);
         int32 GetConfigValueInt32(char const* option);
         float GetConfigValueFloat(char const* option);
+
+
+    public: /* SpellScriptLoader */
+
+        void CreateSpellScripts(uint32 spellId, std::list<SpellScript*>& scriptVector);
+        //NYIvoid CreateAuraScripts(uint32 spellId, std::list<AuraScript*>& scriptVector);
+        void CreateSpellScriptLoaders(uint32 spellId, std::vector<std::pair<SpellScriptLoader*, std::multimap<uint32, uint32>::iterator> >& scriptVector);
 
     public: /* AccountScript */
 

@@ -12,7 +12,7 @@
 #include "GridNotifiers.h"
 #include "Player.h"
 #include "GossipDef.h"
-
+#include "SpellScript.h"
 class CreatureScriptWR;
 
 #define _FULLVERSION "TrinityScript"
@@ -676,6 +676,9 @@ extern void AddSC_boss_zuljin();
 extern void AddSC_instance_zulaman();
 extern void AddSC_zulaman();
 
+//Spells
+extern void AddSC_generic_spell_scripts();
+
 // -------------------
 void ScriptMgr::LoadDatabase()
 {
@@ -798,8 +801,8 @@ void ScriptMgr::ClearScripts()
         SCR_REG_LST(T).clear();
 
     // Clear scripts for every script type.
-    /*
     SCR_CLEAR(SpellScriptLoader);
+    /*
     SCR_CLEAR(ServerScript);
     SCR_CLEAR(WorldScript);
     SCR_CLEAR(FormulaScript);
@@ -1495,6 +1498,9 @@ void ScriptMgr::ScriptsInit(char const* cfg_file)
     AddSC_instance_zulaman();
     AddSC_zulaman();
 
+    //Spells
+    AddSC_generic_spell_scripts();
+
     // -------------------
 
     TC_LOG_INFO("FIXME",">> Loaded %i C++ Scripts.", GetScriptCount());
@@ -1606,6 +1612,43 @@ void ScriptMgr::RegisterOLDScript(OLDScript*& script)
             } \
         } \
     }
+
+
+void ScriptMgr::CreateSpellScripts(uint32 spellId, std::list<SpellScript*>& scriptVector)
+{
+    SpellScriptsBounds bounds = sObjectMgr->GetSpellScriptsBounds(spellId);
+
+    for (SpellScriptsContainer::iterator itr = bounds.first; itr != bounds.second; ++itr)
+    {
+        SpellScriptLoader* tmpscript = ScriptRegistry<SpellScriptLoader>::GetScriptById(itr->second);
+        if (!tmpscript)
+            continue;
+
+        SpellScript* script = tmpscript->GetSpellScript();
+
+        if (!script)
+            continue;
+
+        script->_Init(&tmpscript->GetName(), spellId);
+
+        scriptVector.push_back(script);
+    }
+}
+
+void ScriptMgr::CreateSpellScriptLoaders(uint32 spellId, std::vector<std::pair<SpellScriptLoader*, SpellScriptsContainer::iterator> >& scriptVector)
+{
+    SpellScriptsBounds bounds = sObjectMgr->GetSpellScriptsBounds(spellId);
+    scriptVector.reserve(std::distance(bounds.first, bounds.second));
+
+    for (SpellScriptsContainer::iterator itr = bounds.first; itr != bounds.second; ++itr)
+    {
+        SpellScriptLoader* tmpscript = ScriptRegistry<SpellScriptLoader>::GetScriptById(itr->second);
+        if (!tmpscript)
+            continue;
+
+        scriptVector.push_back(std::make_pair(tmpscript, itr));
+    }
+}
 
 
 void ScriptMgr::OnCreateMap(Map* map)
@@ -2107,6 +2150,12 @@ AreaTriggerScript::AreaTriggerScript(const char* name)
     ScriptRegistry<AreaTriggerScript>::AddScript(this);
 }
 
+SpellScriptLoader::SpellScriptLoader(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<SpellScriptLoader>::AddScript(this);
+}
+
 void ScriptMgr::FillSpellSummary()
 {
     SpellSummary = new TSpellSummary[sObjectMgr->GetMaxSpellId() + 1];
@@ -2200,8 +2249,8 @@ template<class TScript> std::map<uint32, TScript*> ScriptRegistry<TScript>::Scri
 template<class TScript> uint32 ScriptRegistry<TScript>::_scriptIdCounter = 0;
 
 // Specialize for each script type class like so:
-/*
 template class ScriptRegistry<SpellScriptLoader>;
+/*
 template class ScriptRegistry<ServerScript>;
 template class ScriptRegistry<WorldScript>;
 template class ScriptRegistry<FormulaScript>;

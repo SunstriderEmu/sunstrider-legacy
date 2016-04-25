@@ -34,6 +34,10 @@ enum SpellEffIndex
     EFFECT_2 = 2
 };
 
+// used in script definitions
+#define EFFECT_FIRST_FOUND 254
+#define EFFECT_ALL 255
+
 enum Expansions
 {
     EXPANSION_CLASSIC                  = 0,

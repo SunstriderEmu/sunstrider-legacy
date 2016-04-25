@@ -1212,10 +1212,6 @@ void Spell::EffectDummy(uint32 i)
                     m_caster->CastSpell(m_caster,spell_id,true,NULL);
                     return;
                 }
-                case 20577:                                 // Cannibalize
-                    if (unitTarget)
-                        m_caster->CastSpell(m_caster,20578,false,NULL);
-                    return;
                 case 23019:                                 // Crystal Prison Dummy DND
                 {
                     if(!m_caster->ToCreature() || (m_caster->ToCreature() && m_caster->ToCreature()->GetEntry() != 12396))

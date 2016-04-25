@@ -291,6 +291,38 @@ template <class C> typename C::value_type const& SelectRandomContainerElement(C 
     return *it;
 }
 
+// simple class for not-modifyable list
+template <typename T>
+class HookList
+{
+    typedef typename std::list<T>::iterator ListIterator;
+private:
+    typename std::list<T> m_list;
+public:
+    HookList<T> & operator+=(T t)
+    {
+        m_list.push_back(t);
+        return *this;
+    }
+    HookList<T> & operator-=(T t)
+    {
+        m_list.remove(t);
+        return *this;
+    }
+    size_t size()
+    {
+        return m_list.size();
+    }
+    ListIterator begin()
+    {
+        return m_list.begin();
+    }
+    ListIterator end()
+    {
+        return m_list.end();
+    }
+};
+
 #if PLATFORM == PLATFORM_WINDOWS
 #define UTF8PRINTF(OUT,FRM,RESERR)                      \
 {                                                       \

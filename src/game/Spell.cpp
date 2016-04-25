@@ -49,6 +49,7 @@
 #include "TemporarySummon.h"
 #include "ScriptMgr.h"
 #include "Containers.h"
+#include "SpellScript.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -587,7 +588,8 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
-    m_preGeneratedPath(nullptr)
+    m_preGeneratedPath(nullptr),
+    _scriptsLoaded(false)
 {
     m_skipHitCheck = skipCheck;
     m_selfContainer = NULL;
@@ -707,6 +709,15 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
 
 Spell::~Spell()
 {
+    // unload scripts
+    while (!m_loadedScripts.empty())
+    {
+        std::list<SpellScript*>::iterator itr = m_loadedScripts.begin();
+        (*itr)->_Unload();
+        delete (*itr);
+        m_loadedScripts.erase(itr);
+    }
+
     delete m_spellValue;
     delete m_preGeneratedPath;
 }
@@ -1043,8 +1054,8 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
             if (effects[effIndex].TargetA.GetTarget() == effects[j].TargetA.GetTarget() &&
                 effects[effIndex].TargetB.GetTarget() == effects[j].TargetB.GetTarget() &&
                 effects[effIndex].ImplicitTargetConditions == effects[j].ImplicitTargetConditions &&
-                effects[effIndex].CalcRadius(m_caster) == effects[j].CalcRadius(m_caster)/* &&
- todo spellscript                CheckScriptEffectImplicitTargets(effIndex, j) */
+                effects[effIndex].CalcRadius(m_caster) == effects[j].CalcRadius(m_caster) &&
+                CheckScriptEffectImplicitTargets(effIndex, j) 
                 )
             {
                 effectMask |= 1 << j;
@@ -1924,7 +1935,7 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
         {
             WorldObject* target = ObjectAccessor::FindPlayer(m_caster->ToPlayer()->GetTarget());
 
-            //todo spellscript CallScriptObjectTargetSelectHandlers(target, SpellEffIndex(effIndex), SpellImplicitTargetInfo());
+            CallScriptObjectTargetSelectHandlers(target, SpellEffIndex(effIndex), SpellImplicitTargetInfo());
 
             if (target && target->ToPlayer())
                 AddUnitTarget(target->ToUnit(), 1 << effIndex, false);
@@ -1984,7 +1995,7 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
         break;
     }
 
-    //todo spellscript CallScriptObjectTargetSelectHandlers(target, SpellEffIndex(effIndex), SpellImplicitTargetInfo());
+    CallScriptObjectTargetSelectHandlers(target, SpellEffIndex(effIndex), SpellImplicitTargetInfo());
 
     if (target)
     {
@@ -2599,6 +2610,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             DoSpellHitOnUnit(unit, tempMask);
     }*/
 
+    CallScriptOnHitHandlers();
+
     // All calculated do it!
     // Do healing and triggers
     if (m_healing > 0)
@@ -2748,6 +2761,8 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
             (m_caster->ToPlayer())->UpdatePvP(true);
     }
+
+    CallScriptAfterHitHandlers();
 }
 
 bool Spell::UpdateChanneledTargetList()
@@ -2859,6 +2874,9 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         m_damage = 0;
         return;
     }
+
+    PrepareScriptHitHandlers();
+    CallScriptBeforeHitHandlers();
 
     if( caster != unit )
     {
@@ -3028,7 +3046,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     }
 }
 
-void Spell::DoAllEffectOnTarget(GOTargetInfo *target)
+void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
 {
     if (target->processed)                                  // Check target
         return;
@@ -4043,6 +4061,8 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
         finish(false,false);
         return SPELL_FAILED_SPELL_UNAVAILABLE;
     }
+
+    LoadScripts();
 
     // Fill cost data
     m_powerCost = CalculatePowerCost();
@@ -5803,7 +5823,7 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
     //we do not need DamageMultiplier here.
     damage = CalculateDamage(i, NULL);
 
-    bool preventDefault = false; // CallScriptEffectHandlers((SpellEffIndex)i, mode);
+    bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
 
     uint8 eff = m_spellInfo->Effects[i].Effect;
     if(!preventDefault && eff<TOTAL_SPELL_EFFECTS)
@@ -6113,9 +6133,11 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_DONT_REPORT;
     }
 
+    SpellCastResult castResult = SPELL_CAST_OK;
+
     if(!m_IsTriggeredSpell)
     {
-        SpellCastResult castResult = CheckRange(strict);
+        castResult = CheckRange(strict);
         if(castResult != SPELL_CAST_OK)
             return castResult;
 
@@ -6139,6 +6161,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if(bg->GetStatus() == STATUS_WAIT_LEAVE)
                     return SPELL_FAILED_DONT_REPORT;
     }
+
+    // script hook
+    castResult = CallScriptCheckCastHandlers();
+    if (castResult != SPELL_CAST_OK)
+        return castResult;
         
     // for effects of spells that have only one target
     for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
@@ -8643,9 +8670,29 @@ namespace Trinity
 
 } //namespace Trinity
 
+void Spell::LoadScripts()
+{
+    if (_scriptsLoaded)
+        return;
+    _scriptsLoaded = true;
+    sScriptMgr->CreateSpellScripts(m_spellInfo->Id, m_loadedScripts);
+    for (std::list<SpellScript*>::iterator itr = m_loadedScripts.begin(); itr != m_loadedScripts.end();)
+    {
+        if (!(*itr)->_Load(this))
+        {
+            std::list<SpellScript*>::iterator bitr = itr;
+            ++itr;
+            delete (*bitr);
+            m_loadedScripts.erase(bitr);
+            continue;
+        }
+        (*itr)->Register();
+        ++itr;
+    }
+}
+
 void Spell::CallScriptDestinationTargetSelectHandlers(SpellDestination& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
-    /* TC spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_DESTINATION_TARGET_SELECT);
@@ -8656,12 +8703,10 @@ void Spell::CallScriptDestinationTargetSelectHandlers(SpellDestination& target, 
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& targets, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
-  /* todo spellscript
   for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_OBJECT_AREA_TARGET_SELECT);
@@ -8672,12 +8717,10 @@ void Spell::CallScriptObjectAreaTargetSelectHandlers(std::list<WorldObject*>& ta
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
-    /* tc spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_OBJECT_TARGET_SELECT);
@@ -8688,15 +8731,12 @@ void Spell::CallScriptObjectTargetSelectHandlers(WorldObject*& target, SpellEffI
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::PrepareScriptHitHandlers()
 {
-    /* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
         (*scritr)->_InitHit();
-        */
 }
 
 
@@ -8704,7 +8744,7 @@ bool Spell::CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMo
 {
     // execute script effect handler hooks and check if effects was prevented
     bool preventDefault = false;
-    /* todo spellscript
+
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         std::list<SpellScript::EffectHandler>::iterator effItr, effEndItr;
@@ -8746,13 +8786,12 @@ bool Spell::CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMo
 
         (*scritr)->_FinishScriptCall();
     }
-    */
+
     return preventDefault;
 }
 
 void Spell::CallScriptAfterCastHandlers()
 {
-    /* tc spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_AFTER_CAST);
@@ -8762,13 +8801,29 @@ void Spell::CallScriptAfterCastHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
+SpellCastResult Spell::CallScriptCheckCastHandlers()
+{
+    SpellCastResult retVal = SPELL_CAST_OK;
+    for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
+    {
+        (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_CHECK_CAST);
+        std::list<SpellScript::CheckCastHandler>::iterator hookItrEnd = (*scritr)->OnCheckCast.end(), hookItr = (*scritr)->OnCheckCast.begin();
+        for (; hookItr != hookItrEnd; ++hookItr)
+        {
+            SpellCastResult tempResult = (*hookItr).Call(*scritr);
+            if (retVal == SPELL_CAST_OK)
+                retVal = tempResult;
+        }
+
+        (*scritr)->_FinishScriptCall();
+    }
+    return retVal;
+}
 
 void Spell::CallScriptAfterHitHandlers()
 {
-/* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_AFTER_HIT);
@@ -8778,12 +8833,10 @@ void Spell::CallScriptAfterHitHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptBeforeCastHandlers()
 {
-    /* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_BEFORE_CAST);
@@ -8793,12 +8846,10 @@ void Spell::CallScriptBeforeCastHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptBeforeHitHandlers()
 {
-    /* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_BEFORE_HIT);
@@ -8808,12 +8859,10 @@ void Spell::CallScriptBeforeHitHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptOnCastHandlers()
 {
-    /* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_ON_CAST);
@@ -8823,12 +8872,10 @@ void Spell::CallScriptOnCastHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
 }
 
 void Spell::CallScriptOnHitHandlers()
 {
-    /* todo spellscript
     for (std::list<SpellScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
         (*scritr)->_PrepareScriptCall(SPELL_SCRIPT_HOOK_HIT);
@@ -8838,5 +8885,27 @@ void Spell::CallScriptOnHitHandlers()
 
         (*scritr)->_FinishScriptCall();
     }
-    */
+}
+
+bool Spell::CheckScriptEffectImplicitTargets(uint32 effIndex, uint32 effIndexToCheck)
+{
+    // Skip if there are not any script
+    if (!m_loadedScripts.size())
+        return true;
+
+    for (std::list<SpellScript*>::iterator itr = m_loadedScripts.begin(); itr != m_loadedScripts.end(); ++itr)
+    {
+        std::list<SpellScript::ObjectTargetSelectHandler>::iterator targetSelectHookEnd = (*itr)->OnObjectTargetSelect.end(), targetSelectHookItr = (*itr)->OnObjectTargetSelect.begin();
+        for (; targetSelectHookItr != targetSelectHookEnd; ++targetSelectHookItr)
+            if (((*targetSelectHookItr).IsEffectAffected(m_spellInfo, effIndex) && !(*targetSelectHookItr).IsEffectAffected(m_spellInfo, effIndexToCheck)) ||
+                (!(*targetSelectHookItr).IsEffectAffected(m_spellInfo, effIndex) && (*targetSelectHookItr).IsEffectAffected(m_spellInfo, effIndexToCheck)))
+                return false;
+
+        std::list<SpellScript::ObjectAreaTargetSelectHandler>::iterator areaTargetSelectHookEnd = (*itr)->OnObjectAreaTargetSelect.end(), areaTargetSelectHookItr = (*itr)->OnObjectAreaTargetSelect.begin();
+        for (; areaTargetSelectHookItr != areaTargetSelectHookEnd; ++areaTargetSelectHookItr)
+            if (((*areaTargetSelectHookItr).IsEffectAffected(m_spellInfo, effIndex) && !(*areaTargetSelectHookItr).IsEffectAffected(m_spellInfo, effIndexToCheck)) ||
+                (!(*areaTargetSelectHookItr).IsEffectAffected(m_spellInfo, effIndex) && (*areaTargetSelectHookItr).IsEffectAffected(m_spellInfo, effIndexToCheck)))
+                return false;
+    }
+    return true;
 }
