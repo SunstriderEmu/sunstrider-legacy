@@ -16455,11 +16455,19 @@ bool Player::_LoadHomeBind(QueryResult result)
 
     if(!ok)
     {
-        m_homebindMapId = info->mapId;
-        m_homebindAreaId = info->areaId;
-        m_homebindX = info->positionX;
-        m_homebindY = info->positionY;
-        m_homebindZ = info->positionZ;
+        if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
+        {
+            float o;
+            GetArenaZoneCoord(false, m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, o);
+            m_homebindAreaId = sMapMgr->GetAreaId(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ);
+        }
+        else {
+            m_homebindMapId = info->mapId;
+            m_homebindAreaId = info->areaId;
+            m_homebindX = info->positionX;
+            m_homebindY = info->positionY;
+            m_homebindZ = info->positionZ;
+        }
 
         trans->PAppend("INSERT INTO character_homebind (guid,map,zone,position_x,position_y,position_z) VALUES ('%u', '%u', '%u', '%f', '%f', '%f')", GetGUIDLow(), m_homebindMapId, (uint32)m_homebindAreaId, m_homebindX, m_homebindY, m_homebindZ);
     }
@@ -20041,10 +20049,18 @@ void Player::LearnSkillRewardedSpells()
 void Player::LearnAllClassProficiencies()
 {
     std::vector<uint32> weaponAndArmorSkillsList = { 196,197,198,199,200,201,202,227,264,266,1180,2567,5011,15590, //weapons
-                                                     8737, 750, 9116 }; //armors & shield
+                                                     8737, 750, 8737, 9116, 674 }; //armors & shield & dual wield
 
     for (auto itr : weaponAndArmorSkillsList)
     {
+        // known spell
+        if (HasSpell(itr))
+            continue;
+
+        //exception : skip dual wield for shaman (this only comes with spec)
+        if (GetClass() == CLASS_SHAMAN && itr == 674)
+            continue;
+
         //a bit hacky: lets transform our spells into trainer spell to be able to use GetTrainerSpellState
         TrainerSpell trainerSpell;
         trainerSpell.reqlevel = 0;
@@ -20058,8 +20074,6 @@ void Player::LearnAllClassProficiencies()
 
         LearnSpell(trainerSpell.spell, false);
     }
-
-    UpdateSkillsToMaxSkillsForLevel();
 }
 
 //Hacky way, learn from a designated trainer for each class
@@ -20262,25 +20276,8 @@ void Player::DoPack58(uint8 step)
             Item * item = StoreNewItem(dest, mountid, true);
             SendNewItem(item, 1, true, false);
         }
-        //gun, plate, mace, mail, dual wield, polearm, 1H sword,2H sword, 2H mace, bow, dagger, staff, axe, 2M axe, pugi, crossbow, throwing
-        uint32 spellsId[17] = {266,750,198,8737,674,200,201,202,199,264,1180,227,196,197,473,5011,2567};
-        for (int i = 0; i < 17; i++)
-        {
-            // known spell
-            if(HasSpell(spellsId[i]))
-                continue;
-
-            //exception : skip dual wield for shaman (this only comes with spec)
-            if(GetClass() == CLASS_SHAMAN && spellsId[i] == 674)
-                continue;
-
-            // check race/class requirement
-            if(!IsSpellFitByClassAndRace(spellsId[i]))
-                continue;
-
-            AddSpell(spellsId[i],true);
-        }
-
+        LearnAllClassProficiencies();
+        
         //give totems to shamans
         switch(GetClass())
         {
@@ -20297,10 +20294,6 @@ void Player::DoPack58(uint8 step)
                         SendNewItem(item, 1, true, false);
                     }
                 }
-                //those totems are learned from quests
-                LearnSpell(8071, false); //stoneskin totem
-                LearnSpell(3599, false); //incendiary totem
-                LearnSpell(5394, false); //healing totem
             }
             break;
         }
@@ -20324,7 +20317,7 @@ void Player::DoPack58(uint8 step)
     } else {
         
         //also give some money 
-        ModifyMoney(100000); //10 gold
+        ModifyMoney(10 * GOLD); //10 gold
 
         for(int i = EQUIPMENT_SLOT_START; i < EQUIPMENT_SLOT_END; i++)
         {
@@ -20343,7 +20336,7 @@ void Player::DoPack58(uint8 step)
         case PACK58_MAGIC: packType = PACK58_TYPE_MAGIC; break;
         }
 
-        QueryResult result = WorldDatabase.PQuery("SELECT item, count FROM pack58 WHERE class = %u and type = %u",GetClass(),packType);
+        QueryResult result = WorldDatabase.PQuery("SELECT item, count FROM pack58 WHERE class = %u and type = %u", GetClass(), packType);
 
         uint32 count = 0;
         if(result)
@@ -20362,7 +20355,7 @@ void Player::DoPack58(uint8 step)
             while( result->NextRow() );
         }
         if(count == 0)
-            TC_LOG_ERROR("entities.player","DoPack58 : no item for given class (%u) & type (%u)",GetClass(),packType);
+            TC_LOG_ERROR("entities.player","DoPack58 : no item for given class (%u) & type (%u)", GetClass(), packType);
     }
     SaveToDB();
 }

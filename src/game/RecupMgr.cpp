@@ -188,6 +188,7 @@ bool RecupMgr::HandleRecupParseCommand(Player *player, std::string command, uint
 bool RecupMgr::Recup(Player* player, RecupEquipmentType type, RecupStuffLevel level)
 {
     player->LearnAllClassProficiencies();
+    player->UpdateSkillsToMaxSkillsForLevel();
 
     auto query = WorldDatabase.PQuery("SELECT command FROM recups_data WHERE classe = %u AND (faction = %u OR faction = 0) AND stufflevel = %u AND phase = 2 AND (stuff = %u OR stuff = -1)", player->GetClass(), 0, uint32(level), uint32(type));
     if (!query)
