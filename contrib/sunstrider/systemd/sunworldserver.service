@@ -2,11 +2,13 @@
 Description=Suntrider World Server
 
 Wants=network.target
-After=network.target
+RequiresMountFor=/
 
 [Service]
 User=suncore
 Group=suncore
+Environment="PATH=/usr/lib/llvm-3.5/bin/:/usr/local/bin:/usr/bin:/bin"
+Environment="CPUPROFILE=/tmp/prof.out"
 
 WorkingDirectory=/srv/suncore/dumps
 #remove core dumps and logs older than last 5 runs. 
@@ -19,8 +21,8 @@ RestartSec=3
 
 LimitCORE=infinity
 
-StandardOutput=null
-StandardError=null
+#StandardOutput=null
+#StandardError=null
 
 [Install]
 WantedBy=multi-user.target
