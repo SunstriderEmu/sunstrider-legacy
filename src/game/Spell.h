@@ -29,6 +29,7 @@ class Player;
 class GameObject;
 class Aura;
 enum SpellCastResult : int;
+class SpellScript;
 
 enum SpellCastFlags
 {
