@@ -16,7 +16,7 @@ if(DO_DEBUG)
   #http://clang.llvm.org/docs/AddressSanitizer.html
   option(CLANG_ADDRESS_SANITIZER "Enable Clang address sanitizer" 0)
   if(CLANG_ADDRESS_SANITIZER)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fno-sanitize-recover -fsanitize=return -fsanitize=bounds -fsanitize=shift -fsanitize=vptr")	
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address -fno-sanitize-recover -fsanitize=return -fsanitize=bounds -fsanitize=shift -fsanitize=bool -fsanitize=enum")	
 	
     message(STATUS "Clang: AddressSanitizer enabled")
   endif()
