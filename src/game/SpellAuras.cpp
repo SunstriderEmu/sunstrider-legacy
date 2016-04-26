@@ -2052,7 +2052,7 @@ void Aura::TriggerSpell()
                     return;
                 if (caster->ToCreature())
                     if (caster->ToCreature()->AI())
-                        if (Unit* victim = caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* victim = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0))
                             m_target->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
                 return;
             case 45921:
@@ -2061,7 +2061,7 @@ void Aura::TriggerSpell()
 
                 if (caster->ToCreature())
                     if (caster->ToCreature()->AI())
-                        if (Unit* victim = caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                        if (Unit* victim = caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                             caster->CastSpell(victim, triggeredSpellInfo, true, 0, this, originalCasterGUID);
         }
     }

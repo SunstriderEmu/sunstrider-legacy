@@ -301,18 +301,18 @@ void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlo
     }
 }
 
-void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool generatePath)
+void MotionMaster::MovePoint(uint32 id, float x, float y, float z, float o, bool generatePath, bool forceDestination)
 {
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
         //  TC_LOG_TRACE("misc", "Player (GUID: %u) targeted point (Id: %u X: %f Y: %f Z: %f O: %f)", _owner->GetGUIDLow(), id, x, y, z, o);
-        Mutate(new PointMovementGenerator<Player>(id, x, y, z, o, generatePath), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Player>(id, x, y, z, o, generatePath, 0.0f, forceDestination), MOTION_SLOT_ACTIVE);
     }
     else
     {
        /* TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: %u) targeted point (ID: %u X: %f Y: %f Z: %f O: %f)",
             _owner->GetEntry(), _owner->GetGUIDLow(), id, x, y, z, o); */
-        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, o, generatePath), MOTION_SLOT_ACTIVE);
+        Mutate(new PointMovementGenerator<Creature>(id, x, y, z, o, generatePath, 0.0f, forceDestination), MOTION_SLOT_ACTIVE);
     }
 }
 

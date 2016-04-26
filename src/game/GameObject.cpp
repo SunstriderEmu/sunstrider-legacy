@@ -235,7 +235,7 @@ void GameObject::RemoveFromWorld()
     {
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-                ((InstanceMap*)map)->GetInstanceScript()->OnObjectRemove(this);
+                ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectRemove(this);
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
@@ -319,7 +319,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
     //Normally non-players do not teleport to other maps.
     if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
     {
-        ((InstanceMap*)map)->GetInstanceScript()->OnObjectCreate(this);
+        ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectCreate(this);
     }
     
     LastUsedScriptID = GetGOInfo()->ScriptId;

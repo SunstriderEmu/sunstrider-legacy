@@ -5541,7 +5541,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
                 {
                     if (m_caster->ToCreature()->AI())
                     {
-                        if (Unit *unit = m_caster->ToCreature()->AI()->SelectUnit(SELECT_TARGET_RANDOM, 0, 100.0f, true))
+                        if (Unit *unit = m_caster->ToCreature()->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 100.0f, true))
                             target = unit;
                     }
                 }

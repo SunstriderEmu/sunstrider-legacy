@@ -13,7 +13,6 @@
 #include "Player.h"
 #include "GossipDef.h"
 #include "SpellScript.h"
-class CreatureScriptWR;
 
 #define _FULLVERSION "TrinityScript"
 
@@ -778,7 +777,7 @@ void ScriptMgr::LoadDatabase()
 
 struct TSpellSummary
 {
-    uint8 Targets;                                          // set of enum SelectTarget
+    uint8 Targets;                                          // set of enum SelectSpellTarget
     uint8 Effects;                                          // set of enum SelectEffect
 } *SpellSummary;
 
@@ -1593,7 +1592,7 @@ void ScriptMgr::RegisterOLDScript(OLDScript*& script)
 {
     CreatureScript* cScript = new CreatureScript(script->Name.c_str());
     cScript->baseScript = script;
-    script = nullptr; //we now own the script pointer, remove it for caller
+    script = nullptr; //CreatureScript object now own the script pointer, remove it for caller
 }
 
 #define SCR_MAP_BGN(M, V, I, E, C, T) \

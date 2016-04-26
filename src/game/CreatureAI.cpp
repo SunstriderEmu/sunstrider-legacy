@@ -258,7 +258,7 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
 }
 
 
-Unit* CreatureAI::SelectUnit(SelectAggroTarget target, uint32 position)
+Unit* CreatureAI::SelectTarget(SelectAggroTarget target, uint32 position)
 {
     std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
     std::list<HostileReference*>::iterator i = m_threatlist.begin();
@@ -322,7 +322,7 @@ struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit,
     }
 };
 
-Unit* CreatureAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
+Unit* CreatureAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
     std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())
@@ -368,7 +368,7 @@ Unit* CreatureAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
     return NULL;
 }
 
-Unit* CreatureAI::SelectUnit(SelectAggroTarget targetType, uint32 position, float distNear, float distFar, bool playerOnly)
+Unit* CreatureAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float distNear, float distFar, bool playerOnly)
 {
     if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
@@ -448,7 +448,7 @@ Unit* CreatureAI::SelectUnit(SelectAggroTarget targetType, uint32 position, floa
 }
 
 // selects random unit not having aura
-Unit* CreatureAI::SelectUnit(uint32 position, float distNear, float distFar, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex)
+Unit* CreatureAI::SelectTarget(uint32 position, float distNear, float distFar, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex)
 {
     std::list<HostileReference*> m_threatlist = me->getThreatManager().getThreatList();
     std::list<HostileReference*>::iterator i;

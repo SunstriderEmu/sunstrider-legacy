@@ -1559,8 +1559,16 @@ void Creature::SetDeathState(DeathState s)
     }
 }
 
-void Creature::Respawn()
+void Creature::Respawn(bool force /* = false */)
 {
+    if (force)
+    {
+        if (IsAlive())
+            SetDeathState(JUST_DIED);
+        else if (GetDeathState() != CORPSE)
+            SetDeathState(CORPSE);
+    }
+
     RemoveCorpse(false);
 
     if(!IsInWorld())

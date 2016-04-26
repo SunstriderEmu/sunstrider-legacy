@@ -1314,7 +1314,7 @@ float WorldObject::GetVisibilityRange() const
 #endif
 }
 
-Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang,TempSummonType spwtype,uint32 despwtime) const
+Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype,uint32 despwtime) const
 {
     TemporarySummon* pCreature = new TemporarySummon(GetGUID());
 

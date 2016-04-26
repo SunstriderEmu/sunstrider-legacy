@@ -47,6 +47,9 @@ namespace Trinity { struct ObjectUpdater; }
 struct MapDifficulty;
 struct MapEntry;
 enum Difficulty : int;
+class BattlegroundMap;
+class InstanceMap;
+class MapInstanced;
 
 struct ObjectMover
 {
@@ -245,6 +248,16 @@ class Map : public GridRefManager<NGridType>
 
         //avoid using as much as possible, this locks HashMapHolder
         Creature* GetCreatureWithTableGUID(uint32 tableGUID) const;
+
+        MapInstanced* ToMapInstanced() { if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return NULL; }
+        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return NULL; }
+
+        InstanceMap* ToInstanceMap() { if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return NULL; }
+        const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return NULL; }
+
+        BattlegroundMap* ToBattlegroundMap() { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap*>(this); else return NULL; }
+        const BattlegroundMap* ToBattlegroundMap() const { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap const*>(this); return NULL; }
+
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;

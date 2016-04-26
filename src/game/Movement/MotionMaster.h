@@ -171,10 +171,10 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
         void MoveFleeing(Unit* enemy, uint32 time = 0);
-        void MovePoint(uint32 id, Position const& pos, bool generatePath = true)
-            { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, generatePath); }
+        void MovePoint(uint32 id, Position const& pos, bool generatePath = true, bool forceDestination = true)
+            { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ, pos.m_orientation, generatePath, forceDestination); }
         //orientation = 0 will be ignored, use near 0 values if you want to do it
-        void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true);
+        void MovePoint(uint32 id, float x, float y, float z, float o = 0.0f, bool generatePath = true, bool forceDestination = true);
       
         /*  Makes the unit move toward the target until it is at a certain distance from it. The unit then stops.
                    Only works in 2D.

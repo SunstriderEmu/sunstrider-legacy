@@ -34,6 +34,7 @@
 #include "NullCreatureAI.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
+#include "TemporarySummon.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -146,7 +147,11 @@ Unit::Unit()
 : WorldObject(), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
 m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(NULL), i_disabledAI(NULL), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
-_lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_CreatedByPlayer(false)
+_lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_CreatedByPlayer(false),
+m_last_isinwater_status(false),
+m_last_isunderwater_status(false),
+m_is_updating_environment(false)
+
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -245,6 +250,7 @@ _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_Create
     _targetLocked = false;
 
     _lastLiquid = NULL;
+    m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
 }
 
 Unit::~Unit()
@@ -13365,6 +13371,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         if (cVictim->IsAIEnabled) {
             cVictim->AI()->JustDied(this);
         }
+
+        if (TemporarySummon* summon = creature->ToTemporarySummon())
+            if (Unit* summoner = summon->GetSummoner())
+                if (summoner->ToCreature() && summoner->IsAIEnabled)
+                    summoner->ToCreature()->AI()->SummonedCreatureDies(creature, this);
 
         cVictim->WarnDeathToFriendly();
         

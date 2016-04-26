@@ -707,6 +707,20 @@ template<class Check>
             float m_fRange;
     };
     
+    class ObjectGUIDCheck
+    {
+    public:
+        ObjectGUIDCheck(uint64 GUID, bool equals) : _GUID(GUID), _equals(equals) {}
+        bool operator()(WorldObject const* object)
+        {
+            return (object->GetGUID() == _GUID) == _equals;
+        }
+
+    private:
+        uint64 _GUID;
+        bool _equals;
+    };
+
     class MostHPMissingInRange
     {
     public:

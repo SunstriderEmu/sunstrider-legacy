@@ -11,6 +11,7 @@
 #include "CreatureAI.h"
 #include "Creature.h"
 #include "CreatureAIImpl.h"
+#include "InstanceScript.h"
 
 #define CAST_AI(a,b)    (dynamic_cast<a*>(b))
 #define ENSURE_AI(a,b)  (EnsureAI<a>(b))
@@ -26,14 +27,16 @@ T* EnsureAI(U* ai)
 class SummonList : public std::list<uint64>
 {
 public:
-    SummonList(Creature* creature) : m_creature(creature) {}
+    SummonList(Creature* creature) : me(creature) {}
     void Summon(Creature *summon) {push_back(summon->GetGUID());}
     void Despawn(Creature *summon);
     void DespawnEntry(uint32 entry);
     void DespawnAll(bool withoutWorldBoss = false);
     bool IsEmpty();
+
+    Creature* GetCreatureWithEntry(uint32 entry) const;
 private:
-    Creature *m_creature;
+    Creature* me;
 };
 
 class BumpHelper : std::map<uint64,uint32>
@@ -56,7 +59,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
 struct ScriptedAI : public CreatureAI
 {
-    ScriptedAI(Creature* creature) : CreatureAI(creature) {}
+    ScriptedAI(Creature* creature);
     ~ScriptedAI() {}
 
     //*************
@@ -64,27 +67,27 @@ struct ScriptedAI : public CreatureAI
     //*************
 
     //Called at each attack of me by any victim
-    void AttackStart(Unit *);
+    void AttackStart(Unit *) override;
     //Attack start with forcing melee / forcing staying on place
     void AttackStart(Unit *, bool melee);
     void AttackStartNoMove(Unit *pTarget);
 
     //Called at stoping attack by any attacker
-    void EnterEvadeMode();
+    void EnterEvadeMode() override;
 
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit *done_by, uint32 &damage) override {}
     
-    void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
+    void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) override {}
 
     //Called at World update tick
-    void UpdateAI(const uint32);
+    void UpdateAI(const uint32) override;
 
     //Called at creature death
     void JustDied(Unit*) override{}
 
     //Called at creature killing another unit
-    void KilledUnit(Unit*){}
+    void KilledUnit(Unit*) override{}
 
     // Called when the creature summon successfully other creature
     void JustSummoned(Creature*) override {}
@@ -99,7 +102,7 @@ struct ScriptedAI : public CreatureAI
     void SpellHitTarget(Unit* target, const SpellInfo*) override {}
 
     // Called when creature is spawned or respawned (for reseting variables)
-    void JustRespawned();
+    void JustRespawned() override;
 
     //Called at waypoint reached or PointMovement end
     void MovementInform(uint32, uint32) override {}
@@ -115,7 +118,7 @@ struct ScriptedAI : public CreatureAI
     //*************
 
     //Called at creature reset either by death or evade
-    void Reset() {}
+    void Reset() override {}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
     void EnterCombat(Unit*) override {}
@@ -169,12 +172,19 @@ struct ScriptedAI : public CreatureAI
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
     //Returns spells that meet the specified criteria from the creatures spell list
-    SpellInfo const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
+    SpellInfo const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
     //Checks if you can cast the specified spell
     bool CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered = false);
     
     void SetEquipmentSlots(bool bLoadDefault, int32 uiMainHand = EQUIP_NO_CHANGE, int32 uiOffHand = EQUIP_NO_CHANGE, int32 uiRanged = EQUIP_NO_CHANGE);
+
+    bool EnterEvadeIfOutOfCombatArea();
+    virtual bool CheckEvadeIfOutOfCombatArea() const { return false; }
+
+private:
+    uint32 _evadeCheckCooldown;
+
 };
 
 struct NullCreatureAI : public ScriptedAI
@@ -182,14 +192,66 @@ struct NullCreatureAI : public ScriptedAI
     NullCreatureAI(Creature* c) : ScriptedAI(c) {}
     ~NullCreatureAI() {}
 
-    void Reset() {}
-    void EnterCombat(Unit*) {}
-    void MoveInLineOfSight(Unit *) {}
-    void AttackStart(Unit *) {}
-    void EnterEvadeMode() {}
-    bool IsVisible(Unit *) const { return false; }
+    void Reset() override {}
+    void EnterCombat(Unit*) override {}
+    void MoveInLineOfSight(Unit *) override {}
+    void AttackStart(Unit *) override {}
+    void EnterEvadeMode() override {}
 
-    void UpdateAI(const uint32) {}
+    void UpdateAI(const uint32) override {}
+};
+
+
+class BossAI : public ScriptedAI
+{
+public:
+    BossAI(Creature* creature, uint32 bossId);
+    virtual ~BossAI() {}
+
+    InstanceScript* const instance;
+    BossBoundaryMap const* GetBoundary() const { return _boundary; }
+
+    void JustSummoned(Creature* summon);
+    void SummonedCreatureDespawn(Creature* summon);
+
+    virtual void UpdateAI(const uint32 diff) override;
+
+    // Hook used to execute events scheduled into EventMap without the need
+    // to override UpdateAI
+    // note: You must re-schedule the event within this method if the event
+    // is supposed to run more than once
+    virtual void ExecuteEvent(uint32 /*eventId*/) { }
+
+    void Reset() override { _Reset(); }
+    void EnterCombat(Unit* /*who*/) override { _EnterCombat(); }
+    void JustDied(Unit* /*killer*/) override { _JustDied(); }
+    void JustReachedHome() override { _JustReachedHome(); }
+
+protected:
+    void _Reset();
+    void _EnterCombat();
+    void _JustDied();
+    void _JustReachedHome() { me->SetKeepActive(false); }
+
+    bool CheckInRoom()
+    {
+        if (CheckBoundary(me))
+            return true;
+
+        EnterEvadeMode();
+        return false;
+    }
+
+    bool CheckBoundary(Unit* who);
+    //teleport players out of boundaries on boss
+    void TeleportCheaters();
+
+    EventMap events;
+    SummonList summons;
+
+private:
+    BossBoundaryMap const* const _boundary;
+    uint32 const _bossId;
 };
 
 // SD2 grid searchers.

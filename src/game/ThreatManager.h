@@ -132,8 +132,10 @@ class ThreatManager;
 
 class ThreatContainer
 {
+    public:
+        typedef std::list<HostileReference*> StorageType;
     private:
-        std::list<HostileReference*> iThreatList;
+        StorageType iThreatList;
         bool iDirty;
     protected:
         friend class ThreatManager;
@@ -145,6 +147,7 @@ class ThreatContainer
         // Sort the list if necessary
         void update();
     public:
+
         ThreatContainer() { iDirty = false; }
         ~ThreatContainer() { clearReferences(); }
 
@@ -165,8 +168,8 @@ class ThreatContainer
 
         HostileReference* getReferenceByTarget(Unit* pVictim) const;
 
-        std::list<HostileReference*>& getThreatList() { return iThreatList; }
-        std::list<HostileReference*> const& getThreatList() const { return iThreatList; }
+        StorageType& getThreatList() { return iThreatList; }
+        StorageType const& getThreatList() const { return iThreatList; }
 };
 
 //=================================================

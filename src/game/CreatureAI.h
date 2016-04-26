@@ -36,7 +36,7 @@ class SpellInfo;
 #define VISIBILITY_RANGE    10000
 
 //Spell targets used by SelectSpell
-enum SelectTarget
+enum SelectSpellTarget
 {
     SELECT_TARGET_DONTCARE = 0,                             //All target types allowed
 
@@ -66,7 +66,7 @@ enum SCEquip
     EQUIP_UNEQUIP   = 0
 };
 
-//Selection method used by SelectTarget
+//Selection method used by SelectSpellTarget
 enum SelectAggroTarget : int
 {
     SELECT_TARGET_RANDOM = 0,                               //Just selects a random target
@@ -133,6 +133,7 @@ class CreatureAI : public UnitAI
         virtual void IsSummonedBy(Unit* /*summoner*/) { }
 
         virtual void SummonedCreatureDespawn(Creature* /*unit*/) {}
+        virtual void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/) {}
 
         // Called when hit by a spell
         virtual void SpellHit(Unit*, const SpellInfo*) {}
@@ -190,10 +191,12 @@ class CreatureAI : public UnitAI
 
         //Selects a unit from the creature's current aggro list
         bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, bool noTank = false);
-        Unit* SelectUnit(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
-        Unit* SelectUnit(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
+
+        //SelectTargetFromPlayerList -> me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0.0f, 500.0f, true)
+        Unit* SelectTarget(SelectAggroTarget target, uint32 position);
+        Unit* SelectTarget(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, bool noTank = false);
+        Unit* SelectTarget(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
+        Unit* SelectTarget(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 };
 

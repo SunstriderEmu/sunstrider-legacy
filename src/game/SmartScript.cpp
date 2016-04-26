@@ -2761,22 +2761,22 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             break;
         case SMART_TARGET_HOSTILE_SECOND_AGGRO:
             if (me)
-                if (Unit* u = ((ScriptedAI*)me->AI())->SelectUnit(SELECT_TARGET_TOPAGGRO, 1))
+                if (Unit* u = ((ScriptedAI*)me->AI())->SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
                     l->push_back(u);
             break;
         case SMART_TARGET_HOSTILE_LAST_AGGRO:
             if (me)
-                if (Unit* u = ((ScriptedAI*)me->AI())->SelectUnit(SELECT_TARGET_BOTTOMAGGRO, 0))
+                if (Unit* u = ((ScriptedAI*)me->AI())->SelectTarget(SELECT_TARGET_BOTTOMAGGRO, 0))
                     l->push_back(u);
             break;
         case SMART_TARGET_HOSTILE_RANDOM:
             if (me)
-                if (Unit* u = ((ScriptedAI*)me->AI())->SelectUnit(SELECT_TARGET_RANDOM, 0))
+                if (Unit* u = ((ScriptedAI*)me->AI())->SelectTarget(SELECT_TARGET_RANDOM, 0))
                     l->push_back(u);
             break;
         case SMART_TARGET_HOSTILE_RANDOM_NOT_TOP:
             if (me)
-                if (Unit* u = ((ScriptedAI*)me->AI())->SelectUnit(SELECT_TARGET_RANDOM, 1))
+                if (Unit* u = ((ScriptedAI*)me->AI())->SelectTarget(SELECT_TARGET_RANDOM, 1))
                     l->push_back(u);
             break;
         case SMART_TARGET_ACTION_INVOKER:
@@ -3219,12 +3219,21 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
             ProcessTimedAction(e, e.event.aura.repeatMin, e.event.aura.repeatMax);
             break;
         }
+        case SMART_EVENT_CHARMED:
+            if ((e.GetActionType() == SMART_ACTION_KILL_UNIT && unit == me)
+                || e.GetActionType() == SMART_ACTION_DIE)
+            {
+                TC_LOG_ERROR("sql.sql", "SmartAI: Tried to kill self from event SMART_EVENT_CHARMED. This is not allowed as this would cause a crash");
+                break;
+            }
+
+            ProcessAction(e, unit, var0, var1, bvar, spell, gob);
+            break;
         //no params
         case SMART_EVENT_AGGRO:
         case SMART_EVENT_DEATH:
         case SMART_EVENT_EVADE:
         case SMART_EVENT_REACHED_HOME:
-        case SMART_EVENT_CHARMED:
         case SMART_EVENT_CHARMED_TARGET:
         case SMART_EVENT_CORPSE_REMOVED:
         case SMART_EVENT_AI_INIT:

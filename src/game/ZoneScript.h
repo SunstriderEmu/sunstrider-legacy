@@ -27,23 +27,6 @@ class Player;
 class GameObject;
 class Creature;
 
-enum EncounterState
-{
-    NOT_STARTED   = 0,
-    IN_PROGRESS   = 1,
-    FAIL          = 2,
-    DONE          = 3,
-    SPECIAL       = 4
-};
-
-typedef std::set<GameObject*> DoorSet;
-
-struct BossInfo
-{
-    BossInfo() : state(NOT_STARTED) {}
-    EncounterState state;
-    DoorSet roomDoor, passageDoor;
-};
 
 class ZoneScript
 {
@@ -72,15 +55,11 @@ class ZoneScript
         //Called every map update
         virtual void Update(uint32 /*diff*/) {}
 
-        //Used by the map's CanEnter function.
-        //This is to prevent players from entering during boss encounters.
-        virtual bool IsEncounterInProgress() const;
-
         //Called when a player successfully enters the instance.
         virtual void OnPlayerEnter(Player *) {}
 
         //Called when a gameobject is created
-        virtual void OnObjectCreate(GameObject *) {}
+        virtual void OnGameObjectCreate(GameObject *) {}
 
         //called on creature creation
         virtual void OnCreatureCreate(Creature * /*creature*/, uint32 /*creature_entry*/) {}
@@ -91,7 +70,7 @@ class ZoneScript
         virtual void OnCreatureDeath(Creature* /*creature*/) {}
 
         virtual void OnCreatureRemove(Creature*) {}
-        virtual void OnObjectRemove(GameObject*) {}
+        virtual void OnGameObjectRemove(GameObject*) {}
 
         // Called on player kill creature
         virtual void OnCreatureKill(Creature*) {}
@@ -101,7 +80,7 @@ class ZoneScript
         virtual void SetData(uint32, uint32 data) {}
 
         //Handle open / close objects
-        //use HandleGameObject(NULL,boolen,GO); in OnObjectCreate in instance scripts
+        //use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
         //use HandleGameObject(GUID,boolen,NULL); in any other script
         void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
         
@@ -110,26 +89,6 @@ class ZoneScript
         
         //change active state of doors or buttons
         void DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime = 0, bool bUseAlternativeState = false);
-
-    protected:
-        void AddBossRoomDoor(uint32 id, GameObject *door);
-        void AddBossPassageDoor(uint32 id, GameObject *door);
-        void RemoveBossRoomDoor(uint32 id, GameObject *door);
-        void RemoveBossPassageDoor(uint32 id, GameObject *door);
-
-        void SetBossState(uint32 id, EncounterState state);
-
-        std::string GetBossSave()
-        {
-            std::ostringstream saveStream;
-            for(std::vector<BossInfo>::iterator i = bosses.begin(); i != bosses.end(); ++i)
-                saveStream << (uint32)i->state << " ";
-            return saveStream.str();
-        }
-
-    private:
-        std::vector<BossInfo> bosses;
-
 };
 #endif
 
