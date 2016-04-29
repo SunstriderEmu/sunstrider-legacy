@@ -62,8 +62,13 @@ public:
 
     void SendPacket(WorldPacket const& packet);
 
-    // see _lastPacketsSent
+    // see _lastPacketsSent. Use _lastPacketsSent_mutex while using it
     std::list<WorldPacket> const& GetLastPacketsSent();
+    std::mutex& GetLastPacketsSentMutex()
+    {
+        return _lastPacketsSent_mutex;
+    }
+
     void ClearLastPacketsSent();
 protected:
     void OnClose() override;
@@ -117,6 +122,7 @@ private:
     after the last client response. CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled for this to be used.
     */
     std::list<WorldPacket> _lastPacketsSent;
+    std::mutex _lastPacketsSent_mutex;
 };
 
 #endif

@@ -332,7 +332,10 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
         sPacketLog->DumpPacket(LOG_LEVEL_TRACE, CLIENT_TO_SERVER, packet, _worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string());
 
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
+    {
+        std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
         _lastPacketsSent.clear();
+    }
 
     std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
 
@@ -410,8 +413,12 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_ALL_PACKETS))
         sPacketLog->DumpPacket(LOG_LEVEL_TRACE, SERVER_TO_CLIENT, packet, _worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string());
 
-    if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS) && _lastPacketsSent.size() < 10)
-        _lastPacketsSent.push_back(packet);
+    if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
+    {
+        std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
+        if (_lastPacketsSent.size() < 10)
+            _lastPacketsSent.push_back(packet);
+    }
 
     _bufferQueue.Enqueue(new EncryptablePacket(packet, _authCrypt.IsInitialized()));
 }
@@ -704,5 +711,6 @@ std::list<WorldPacket> const& WorldSocket::GetLastPacketsSent()
 
 void WorldSocket::ClearLastPacketsSent()
 {
+    std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
     _lastPacketsSent.clear();
 }

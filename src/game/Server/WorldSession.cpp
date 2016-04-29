@@ -287,6 +287,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
         {
+            std::lock_guard<std::mutex> lock(m_Socket->GetLastPacketsSentMutex());
             auto list = m_Socket->GetLastPacketsSent();
             if(!list.empty())
             {
