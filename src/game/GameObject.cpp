@@ -1688,7 +1688,7 @@ bool GameObject::IsInRange(float x, float y, float z, float radius) const
 {
     GameObjectDisplayInfoEntry const* info = sGameObjectDisplayInfoStore.LookupEntry(GetUInt32Value(GAMEOBJECT_DISPLAYID));
     if (!info)
-        return true/*IsWithinDist3d(x, y, z, radius)*/; // FIXME
+        return IsWithinDist3d(x, y, z, radius + 2.0f);
 
     float sinA = sin(GetOrientation());
     float cosA = cos(GetOrientation());
@@ -1696,13 +1696,19 @@ bool GameObject::IsInRange(float x, float y, float z, float radius) const
     float dy = y - GetPositionY();
     float dz = z - GetPositionZ();
     float dist = sqrt(dx*dx + dy*dy);
+    //! Check if the distance between the 2 objects is 0, can happen if both objects are on the same position.
+    //! The code below this check wont crash if dist is 0 because 0/0 in float operations is valid, and returns infinite
+    if (G3D::fuzzyEq(dist, 0.0f))
+        return true;
+
+    float scale = GetFloatValue(OBJECT_FIELD_SCALE_X);
     float sinB = dx / dist;
     float cosB = dy / dist;
     dx = dist * (cosA * cosB + sinA * sinB);
     dy = dist * (cosA * sinB - sinA * cosB);
-    return dx < info->maxX + radius && dx > info->minX - radius
-        && dy < info->maxY + radius && dy > info->minY - radius
-        && dz < info->maxZ + radius && dz > info->minZ - radius;
+    return dx < (info->maxX*scale) + radius && dx >(info->minX*scale) - radius
+        && dy < (info->maxY*scale) + radius && dy >(info->minY*scale) - radius
+        && dz < (info->maxZ*scale) + radius && dz >(info->minZ*scale) - radius;
 }
 
 void GameObject::AddUse()
