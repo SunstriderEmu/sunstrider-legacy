@@ -790,6 +790,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "whispers",       SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleWhispersCommand,            "" },
         { "yolo",           SEC_GAMEMASTER1,  true,  true,  &ChatHandler::HandleYoloCommand,                "" },
         { "zone",           SEC_GAMEMASTER3,  false, false, NULL,                                           "", zoneCommandTable },
+        //PLAYERBOT
+        { "rndbot",         SEC_SUPERADMIN,   true, true,   &ChatHandler::HandlePlayerbotConsoleCommand,    "" },
+        { "bot",            SEC_SUPERADMIN,   true, true,   &ChatHandler::HandlePlayerbotMgrCommand,        "" },
     };
 
     /**

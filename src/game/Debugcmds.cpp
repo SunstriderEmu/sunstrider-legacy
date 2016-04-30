@@ -40,6 +40,11 @@
 #include "SmartAI.h"
 #include "UpdateFieldsDebug.h"
 
+#ifdef PLAYERBOT
+#include "playerbot.h"
+#include "GuildTaskMgr.h"
+#endif
+
 bool ChatHandler::HandleYoloCommand(const char* /* args */)
 {
     SendSysMessage(LANG_SWAG);
@@ -1163,4 +1168,14 @@ bool ChatHandler::HandleDebugCrashCommand(const char* args)
         return false;
 
     return true;
+}
+
+bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
+{
+    return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(this, args);
+}
+
+bool ChatHandler::HandlePlayerbotMgrCommand(const char* args)
+{
+    return PlayerbotMgr::HandlePlayerbotMgrCommand(this, args);
 }

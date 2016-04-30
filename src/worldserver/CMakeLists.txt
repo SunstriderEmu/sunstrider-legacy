@@ -32,6 +32,10 @@ if( WIN32 )
     endif()
 endif()
 
+IF(PLAYERBOT)	
+	set(playerbot_SRC ${CMAKE_BINARY_DIR}/src/playerbot)
+	set(playerbot_lib playerbot)
+ENDIF()
 
 include_directories(  
     ${CMAKE_BINARY_DIR}
@@ -81,6 +85,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/TCSoap
     ${OPENSSL_INCLUDE_DIR}
     ${MYSQL_INCLUDE_DIR}
+	${playerbot_SRC}
 )
 
 add_executable(worldserver ${worldserver_SRCS})
@@ -128,6 +133,7 @@ ${OPENSSL_LIBRARIES}
 ${READLINE_LIBRARY}
 ${UNIX_LIBS}
 ${ZLIB_LIBRARIES}
+${playerbot_lib}
 )
 
 if( UNIX )

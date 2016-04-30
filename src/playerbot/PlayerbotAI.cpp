@@ -182,8 +182,12 @@ void PlayerbotAI::HandleTeleportAck()
 	if (bot->IsBeingTeleportedNear())
 	{
 		WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 8 + 4 + 4);
+#ifdef LICH_KING
 		p.appendPackGUID(bot->GetGUID());
-		p << (uint32) 0; // supposed to be flags? not used currently
+#else
+        p << uint64(bot->GetGUID());
+#endif
+		p << (uint32) 0; // flags, not used currently
 		p << (uint32) time(0); // time - not currently used
 		bot->GetSession()->HandleMoveTeleportAck(p);
 	}

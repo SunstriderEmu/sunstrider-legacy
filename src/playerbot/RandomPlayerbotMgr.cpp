@@ -258,24 +258,40 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, vector<WorldLocation> &locs
 void RandomPlayerbotMgr::RandomTeleportForLevel(Player* bot)
 {
     vector<WorldLocation> locs;
-    QueryResult results = WorldDatabase.PQuery("select map, position_x, position_y, position_z "
-        "from (select map, position_x, position_y, position_z, avg(t.maxlevel), avg(t.minlevel), "
-        "%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2 delta "
-        "from creature c inner join creature_template t on c.id = t.entry group by t.entry) q "
-        "where delta >= 0 and delta <= %u and map in (%s) and not exists ( "
-        "select map, position_x, position_y, position_z from "
+    // Select positions from creatures in bot level range AND in specified maps (sPlayerbotAIConfig.randomBotMapsAsString) AND 
+    QueryResult results = WorldDatabase.PQuery(
+        "SELECT map, position_x, position_y, position_z "
+        "FROM "
         "("
-        "select map, c.position_x, c.position_y, c.position_z, avg(t.maxlevel), avg(t.minlevel), "
-        "%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2 delta "
-        "from creature c "
-        "inner join creature_template t on c.id = t.entry group by t.entry "
-        ") q1 "
-        "where delta > %u and q1.map = q.map "
-        "and sqrt("
-        "(q1.position_x - q.position_x)*(q1.position_x - q.position_x) +"
-        "(q1.position_y - q.position_y)*(q1.position_y - q.position_y) +"
-        "(q1.position_z - q.position_z)*(q1.position_z - q.position_z)"
-        ") < %u)",
+            //                                                                                 bot->GetLevel()
+            "SELECT map, position_x, position_y, position_z, avg(t.maxlevel), avg(t.minlevel), (%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2) AS delta "
+            "FROM creature c "
+            "INNER JOIN creature_template t ON c.id = t.entry "
+            "GROUP BY t.entry "
+        ") q "
+        "WHERE delta >= 0 "
+        "AND delta <= %u " //randomBotTeleLevel
+        "AND map IN (%s) " //randomBotMapsAsString
+        "AND NOT EXISTS "
+        "( "
+            "SELECT map, position_x, position_y, position_z "
+            "FROM "
+            "("
+                //                                                                               bot->GetLevel()
+               "SELECT map, c.position_x, c.position_y, c.position_z, avg(t.maxlevel), avg(t.minlevel), (%u - (avg(t.maxlevel) + avg(t.minlevel)) / 2) AS delta "
+                "FROM creature c "
+                "INNER JOIN creature_template t on c.id = t.entry "
+                "GROUP BY t.entry "
+            ") q1 "
+            //     randomBotTeleLevel
+            "WHERE delta > %u and q1.map = q.map "
+            "AND sqrt("
+                "(q1.position_x - q.position_x)*(q1.position_x - q.position_x) +"
+                "(q1.position_y - q.position_y)*(q1.position_y - q.position_y) +"
+                "(q1.position_z - q.position_z)*(q1.position_z - q.position_z)"
+                // sightDistance
+                ") < %f"
+        ")",
         bot->GetLevel(),
         sPlayerbotAIConfig.randomBotTeleLevel,
         sPlayerbotAIConfig.randomBotMapsAsString.c_str(),
@@ -473,9 +489,30 @@ list<uint32> RandomPlayerbotMgr::GetBots()
         do
         {
             Field* fields = results->Fetch();
-            uint32 bot = fields[0].GetUInt32();
+            uint32 bot = uint32(fields[0].GetUInt64());
             bots.push_back(bot);
         } while (results->NextRow());
+    }
+
+    //add data to player global data if not existing yet
+    for (auto itr : bots)
+    {
+        auto data = sWorld->GetGlobalPlayerData(itr);
+        if (!data)
+        {
+            QueryResult results = CharacterDatabase.PQuery("select account, name, gender, race, class, level FROM characters where guid = %u", itr);
+            if (results)
+            {
+                Field* fields = results->Fetch();
+                uint32 account = fields[0].GetUInt32();
+                std::string name = fields[1].GetString();
+                uint8 gender = fields[2].GetUInt8();
+                uint8 race = fields[3].GetUInt8();
+                uint8 _class = fields[4].GetUInt8();
+                uint8 level = fields[5].GetUInt8();
+                sWorld->AddGlobalPlayerData(itr, account, name, gender, race, _class, level, 0, 0);
+            }
+        }
     }
 
     return bots;
@@ -527,7 +564,7 @@ vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
 
 uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string event)
 {
-    uint32 value = 0;
+    uint64 value = 0;
 
     QueryResult results = CharacterDatabase.PQuery(
             "select `value`, `time`, validIn from ai_playerbot_random_bots where owner = 0 and bot = '%u' and event = '%s'",
@@ -536,9 +573,9 @@ uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string event)
     if (results)
     {
         Field* fields = results->Fetch();
-        value = fields[0].GetUInt32();
-        uint32 lastChangeTime = fields[1].GetUInt32();
-        uint32 validIn = fields[2].GetUInt32();
+        value = fields[0].GetUInt64();
+        uint64 lastChangeTime = fields[1].GetUInt64();
+        uint64 validIn = fields[2].GetUInt64();
         if ((time(0) - lastChangeTime) >= validIn)
             value = 0;
     }

@@ -91,7 +91,7 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 	if (bot && bot->IsInWorld())
         return;
 
-    uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(ObjectGuid(playerGuid));
+    uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(playerGuid);
     if (accountId == 0)
         return;
 

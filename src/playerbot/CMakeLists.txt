@@ -49,7 +49,6 @@ include_directories(
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
 )
-
 add_library(playerbot STATIC
   ${sources_Playerbot}
   ${playerbot_STAT_PCH_SRC}

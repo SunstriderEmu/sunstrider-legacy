@@ -3,6 +3,10 @@ file(GLOB_RECURSE game_STAT_SRCS *.cpp *.h)
 set(game_STAT_PCH_HDR PrecompiledHeaders/gamePCH.h)
 set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
 
+IF(PLAYERBOT)	
+	set(playerbot_SRC ${CMAKE_BINARY_DIR}/src/playerbot)
+ENDIF()
+
 include_directories(
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/dep/cppformat
@@ -49,6 +53,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${MYSQL_INCLUDE_DIR}
   ${OPENSSL_INCLUDE_DIR}
+  ${playerbot_SRC}
 )
 
 add_library(game STATIC 

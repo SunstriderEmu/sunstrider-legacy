@@ -1925,6 +1925,7 @@ Appender.Warden=2,1,0,Warden.log
 Appender.Profiling=2,1,0,Profiling.log
 Appender.Mapcrash=2,1,0,Mapcrash.log
 Appender.Tests=2,1,0,Tests.log
+Appender.Playerbot=2,1,0,playerbot.log
 
 #  Logger config values: Given a logger "name"
 #    Logger.name
@@ -1997,6 +1998,7 @@ Logger.sql.dev=3,Console Server
 Logger.sql.driver=3,Console Server
 Logger.test.unit_test=1,Console Tests
 Logger.vmap=3,Console Server
+Logger.playerbot=3, Console Playerbot
 
 #
 #    Log.Async.Enable

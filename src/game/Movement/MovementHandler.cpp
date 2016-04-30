@@ -190,7 +190,11 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     
     //TC_LOG_DEBUG("network", "MSG_MOVE_TELEPORT_ACK");
     uint64 guid;
+#ifdef LICH_KING
+    recvData >> guid.ReadAsPacked();
+#else
     recvData >> guid;
+#endif
     uint32 flags, time;
     recvData >> flags >> time;
     //TC_LOG_DEBUG("network", "Guid " UI64FMTD, guid);

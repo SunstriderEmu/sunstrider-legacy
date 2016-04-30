@@ -375,6 +375,9 @@ class ChatHandler
         bool HandleDebugValuesSnapshot(const char* args);
         bool HandleDebugCrashCommand(const char* args);
 
+        bool HandlePlayerbotConsoleCommand(const char* args);
+        bool HandlePlayerbotMgrCommand(const char* args);
+
         bool HandleGUIDCommand(const char* args);
         bool HandleNameCommand(const char* args);
         bool HandleItemMoveCommand(const char* args);
