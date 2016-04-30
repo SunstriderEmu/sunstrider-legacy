@@ -28,7 +28,7 @@ class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMov
     public:
         explicit ConfusedMovementGenerator() : i_nextMoveTime(0), i_x(0), i_y(0), i_z(0) { }
 
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);

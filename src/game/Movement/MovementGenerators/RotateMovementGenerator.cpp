@@ -20,7 +20,7 @@
 #include "CreatureAI.h"
 #include "Creature.h"
 
-void RotateMovementGenerator::Initialize(Unit* owner)
+bool RotateMovementGenerator::Initialize(Unit* owner)
 {
     if (!owner->IsStopped())
         owner->StopMoving();
@@ -31,6 +31,7 @@ void RotateMovementGenerator::Initialize(Unit* owner)
     owner->AddUnitState(UNIT_STATE_ROTATING);
 
     owner->AttackStop();
+    return true;
 }
 
 bool RotateMovementGenerator::Update(Unit* owner, uint32 diff)

@@ -26,7 +26,7 @@ class RotateMovementGenerator : public MovementGenerator
     public:
         explicit RotateMovementGenerator(uint32 time, RotateDirection direction) : m_duration(time), m_maxDuration(time), m_direction(direction) { }
 
-        void Initialize(Unit*) override;
+        bool Initialize(Unit*) override;
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override { Initialize(owner); }
         bool Update(Unit*, uint32) override ;

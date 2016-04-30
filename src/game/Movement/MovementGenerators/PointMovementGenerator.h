@@ -30,7 +30,7 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _o, bool _generatePath, float _speed = 0.0f, bool forceDestination = false) : id(_id),
             i_x(_x), i_y(_y), i_z(_z), i_o(_o), speed(_speed), _generatePath(_generatePath), _forceDestination(forceDestination), i_recalculateSpeed(false) { }
 
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);
@@ -67,7 +67,7 @@ class EffectMovementGenerator : public MovementGenerator
 {
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) { }
-        void Initialize(Unit*) { }
+        bool Initialize(Unit*) { return true;  }
         void Finalize(Unit*, bool) override;
         void Reset(Unit*) { }
         bool Update(Unit*, uint32);

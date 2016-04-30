@@ -9,10 +9,11 @@ DistractMovementGenerator::DistractMovementGenerator(Unit const* owner, float ta
     targetOrientation(targetOrientation)
 { }
 
-void DistractMovementGenerator::Initialize(Unit* owner)
+bool DistractMovementGenerator::Initialize(Unit* owner)
 {
     owner->AddUnitState(UNIT_STATE_DISTRACTED);
     owner->SetFacingTo(targetOrientation);
+    return true;
 }
 
 void DistractMovementGenerator::Finalize(Unit* owner, bool premature)
@@ -41,9 +42,10 @@ AssistanceDistractMovementGenerator::AssistanceDistractMovementGenerator(uint32 
     m_timer(timer)
 { }
 
-void AssistanceDistractMovementGenerator::Initialize(Unit* owner)
+bool AssistanceDistractMovementGenerator::Initialize(Unit* owner)
 {
     owner->AddUnitState(UNIT_STATE_DISTRACTED);
+    return true;
 }
 
 bool AssistanceDistractMovementGenerator::Update(Unit* /*owner*/, uint32 time_diff)

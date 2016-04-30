@@ -8,7 +8,7 @@ class DistractMovementGenerator : public MovementGenerator
     public:
         explicit DistractMovementGenerator(Unit const* owner, float targetOrientation, uint32 timer);
 
-        void Initialize(Unit*) override;
+        bool Initialize(Unit*) override;
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override{ Initialize(owner); }
         bool Update(Unit*, uint32) override;
@@ -25,7 +25,7 @@ class AssistanceDistractMovementGenerator : public MovementGenerator
     public:
         AssistanceDistractMovementGenerator(uint32 timer);
         
-        void Initialize(Unit*) override;
+        bool Initialize(Unit*) override;
         void Finalize(Unit*, bool) override;
         void Reset(Unit* owner) override{ Initialize(owner); }
         bool Update(Unit*, uint32) override;

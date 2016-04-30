@@ -101,7 +101,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
         WaypointMovementGenerator(uint32 _path_id = 0);
         ~WaypointMovementGenerator();
-        void DoInitialize(Creature*);
+        bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
         void DoReset(Creature*);
         bool DoUpdate(Creature*, uint32 diff);
@@ -211,7 +211,7 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
             _preloadTargetNode = 0;
         }
         void LoadPath(Player* player);
-        void DoInitialize(Player*);
+        bool DoInitialize(Player*);
         void DoReset(Player*);
         void DoFinalize(Player*);
         bool DoUpdate(Player*, uint32);

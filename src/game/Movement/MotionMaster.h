@@ -213,7 +213,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         bool GetDestination(float &x, float &y, float &z);
     private:
-        void Mutate(MovementGenerator *m, MovementSlot slot);                  // use Move* functions instead
+        bool Mutate(MovementGenerator *m, MovementSlot slot);                  // use Move* functions instead
 
         void DirectClean(bool reset);
         void DelayedClean();

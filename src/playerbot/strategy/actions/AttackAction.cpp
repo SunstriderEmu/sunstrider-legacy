@@ -84,7 +84,7 @@ bool AttackAction::Attack(Unit* target)
     {
         pet->SetTarget(target->GetGUID());
         pet->AI()->EnterCombat(target);
-        /* TODO PLAYERBOT
+        /* TC
 		pet->GetCharmInfo()->SetIsCommandAttack(true);
         */
 		pet->AI()->AttackStart(target);

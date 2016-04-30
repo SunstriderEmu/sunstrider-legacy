@@ -115,14 +115,15 @@ void FleeingMovementGenerator<T>::_getPoint(T* owner, float &x, float &y, float 
 }
 
 template<class T>
-void FleeingMovementGenerator<T>::DoInitialize(T* owner)
+bool FleeingMovementGenerator<T>::DoInitialize(T* owner)
 {
     if (!owner)
-        return;
+        return false;
 
     owner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner->AddUnitState(UNIT_STATE_FLEEING | UNIT_STATE_FLEEING_MOVE);
     _setTargetLocation(owner);
+    return true;
 }
 
 template<>
@@ -167,8 +168,8 @@ bool FleeingMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     return true;
 }
 
-template void FleeingMovementGenerator<Player>::DoInitialize(Player*);
-template void FleeingMovementGenerator<Creature>::DoInitialize(Creature*);
+template bool FleeingMovementGenerator<Player>::DoInitialize(Player*);
+template bool FleeingMovementGenerator<Creature>::DoInitialize(Creature*);
 template void FleeingMovementGenerator<Player>::_getPoint(Player*, float&, float&, float&);
 template void FleeingMovementGenerator<Creature>::_getPoint(Creature*, float&, float&, float&);
 template void FleeingMovementGenerator<Player>::_setTargetLocation(Player*);

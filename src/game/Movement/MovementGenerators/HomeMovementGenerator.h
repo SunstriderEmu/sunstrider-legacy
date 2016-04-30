@@ -34,7 +34,7 @@ class HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature
         HomeMovementGenerator() : arrived(false) { }
         ~HomeMovementGenerator() { }
 
-        void DoInitialize(Creature*);
+        bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
         void DoReset(Creature*);
         bool DoUpdate(Creature*, const uint32);

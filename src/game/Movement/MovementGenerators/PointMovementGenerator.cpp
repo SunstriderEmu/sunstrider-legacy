@@ -28,7 +28,7 @@
 
 //----- Point Movement Generator
 template<class T>
-void PointMovementGenerator<T>::DoInitialize(T* unit)
+bool PointMovementGenerator<T>::DoInitialize(T* unit)
 {
     if (!unit->IsStopped())
         unit->StopMoving();
@@ -36,7 +36,7 @@ void PointMovementGenerator<T>::DoInitialize(T* unit)
     unit->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
 
     if (id == EVENT_CHARGE_PREPATH)
-        return;
+        return true;
 
     Movement::MoveSplineInit init(unit);
     init.MoveTo(i_x, i_y, i_z, _generatePath, _forceDestination);
@@ -47,6 +47,7 @@ void PointMovementGenerator<T>::DoInitialize(T* unit)
         init.SetFacing(i_o);
         
     init.Launch();
+    return true;
 }
 
 template<class T>
@@ -104,8 +105,8 @@ template <> void PointMovementGenerator<Creature>::MovementInform(Creature* unit
         unit->AI()->MovementInform(POINT_MOTION_TYPE, id);
 }
 
-template void PointMovementGenerator<Player>::DoInitialize(Player*);
-template void PointMovementGenerator<Creature>::DoInitialize(Creature*);
+template bool PointMovementGenerator<Player>::DoInitialize(Player*);
+template bool PointMovementGenerator<Creature>::DoInitialize(Creature*);
 template void PointMovementGenerator<Player>::DoFinalize(Player*);
 template void PointMovementGenerator<Creature>::DoFinalize(Creature*);
 template void PointMovementGenerator<Player>::DoReset(Player*);

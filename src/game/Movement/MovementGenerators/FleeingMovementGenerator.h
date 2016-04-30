@@ -27,7 +27,7 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
     public:
         FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) { }
 
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, uint32);

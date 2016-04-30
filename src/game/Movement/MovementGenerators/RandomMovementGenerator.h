@@ -28,7 +28,7 @@ class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovemen
         RandomMovementGenerator(float spawn_dist = 0.0f) : i_nextMoveTime(0), wander_distance(spawn_dist) { }
 
         void _setRandomLocation(T*);
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         bool DoUpdate(T*, const uint32);

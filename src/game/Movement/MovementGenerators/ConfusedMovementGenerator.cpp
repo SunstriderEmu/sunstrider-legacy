@@ -31,17 +31,18 @@
 #endif
 
 template<class T>
-void ConfusedMovementGenerator<T>::DoInitialize(T* unit)
+bool ConfusedMovementGenerator<T>::DoInitialize(T* unit)
 {
     unit->AddUnitState(UNIT_STATE_CONFUSED);
     unit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
     unit->GetPosition(i_x, i_y, i_z);
 
     if (!unit->IsAlive() || unit->IsStopped())
-        return;
+        return false;
 
     unit->StopMoving();
     unit->AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+    return true;
 }
 
 template<class T>
@@ -121,8 +122,8 @@ void ConfusedMovementGenerator<Creature>::DoFinalize(Creature* unit)
         unit->SetTarget(unit->EnsureVictim()->GetGUID());
 }
 
-template void ConfusedMovementGenerator<Player>::DoInitialize(Player*);
-template void ConfusedMovementGenerator<Creature>::DoInitialize(Creature*);
+template bool ConfusedMovementGenerator<Player>::DoInitialize(Player*);
+template bool ConfusedMovementGenerator<Creature>::DoInitialize(Creature*);
 template void ConfusedMovementGenerator<Player>::DoReset(Player*);
 template void ConfusedMovementGenerator<Creature>::DoReset(Creature*);
 template bool ConfusedMovementGenerator<Player>::DoUpdate(Player*, uint32 diff);

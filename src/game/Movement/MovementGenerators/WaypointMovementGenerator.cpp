@@ -137,17 +137,19 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
     return StartMoveNow(creature);
 }
 
-void WaypointMovementGenerator<Creature>::DoInitialize(Creature* creature)
+bool WaypointMovementGenerator<Creature>::DoInitialize(Creature* creature)
 {
     if (!creature->IsAlive())
-        return;
+        return false;
 
     bool result = LoadPath(creature);
     if (result == false)
     {
         TC_LOG_ERROR("misc","WaypointMovementGenerator failed to init for creature %u (entry %u)", creature->GetDBTableGUIDLow(), creature->GetEntry());
-        return;
+        return false;
     }
+
+    return true;
 }
 
 void WaypointMovementGenerator<Creature>::DoFinalize(Creature* creature)
@@ -731,10 +733,11 @@ void FlightPathMovementGenerator::LoadPath(Player* player)
     }
 }
 
-void FlightPathMovementGenerator::DoInitialize(Player* player)
+bool FlightPathMovementGenerator::DoInitialize(Player* player)
 {
     Reset(player);
     InitEndGridInfo();
+    return true;
 }
 
 void FlightPathMovementGenerator::DoFinalize(Player* player)

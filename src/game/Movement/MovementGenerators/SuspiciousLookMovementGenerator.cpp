@@ -8,9 +8,10 @@ SuspiciousLookMovementGenerator::SuspiciousLookMovementGenerator(Unit const* own
     targetOrientation(owner->GetAngle(target)) 
 { }
 
-void SuspiciousLookMovementGenerator::Initialize(Unit* owner)
+bool SuspiciousLookMovementGenerator::Initialize(Unit* owner)
 {
     owner->SetFacingTo(targetOrientation);
+    return true;
 }
 
 void SuspiciousLookMovementGenerator::Finalize(Unit* owner, bool premature) 

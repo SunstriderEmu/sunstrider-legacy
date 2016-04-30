@@ -594,7 +594,7 @@ void GuildTaskMgr::CheckItemTask(uint32 itemId, uint32 obtained, Player* ownerPl
             return;
 
         uint32 money = GetTaskValue(owner, guildId, "payment");
-        SetTaskValue(owner, guildId, "payment", money /* TODO PLAYERBOT + auctionbot.GetBuyPrice(proto) */ * obtained,
+        SetTaskValue(owner, guildId, "payment", money + proto->BuyPrice /* TODO PLAYERBOT auctionbot.GetBuyPrice(proto) */  * obtained,
                 sPlayerbotAIConfig.maxGuildTaskRewardTime);
     }
 

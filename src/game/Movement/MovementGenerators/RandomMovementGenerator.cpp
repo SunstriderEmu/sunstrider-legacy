@@ -124,16 +124,17 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature* creature)
 }
 
 template<>
-void RandomMovementGenerator<Creature>::DoInitialize(Creature* creature)
+bool RandomMovementGenerator<Creature>::DoInitialize(Creature* creature)
 {
     if (!creature->IsAlive())
-        return;
+        return false;
 
     if (!wander_distance)
         wander_distance = creature->GetRespawnRadius();
 
     creature->AddUnitState(UNIT_STATE_ROAMING | UNIT_STATE_ROAMING_MOVE);
     _setRandomLocation(creature);
+    return true;
 }
 
 template<>

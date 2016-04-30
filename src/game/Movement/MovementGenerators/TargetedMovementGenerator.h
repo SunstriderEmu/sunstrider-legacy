@@ -86,7 +86,7 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 
         MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
 
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         void MovementInform(T*);
@@ -110,7 +110,7 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
 
-        void DoInitialize(T*);
+        bool DoInitialize(T*);
         void DoFinalize(T*);
         void DoReset(T*);
         void MovementInform(T*);

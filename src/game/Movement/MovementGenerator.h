@@ -30,7 +30,7 @@ class MovementGenerator
     public:
         virtual ~MovementGenerator();
 
-        virtual void Initialize(Unit*) = 0;
+        virtual bool Initialize(Unit*) = 0;
         //@premature: generator was stopped before expiration
         virtual void Finalize(Unit*, bool premature) = 0;
 
@@ -52,10 +52,10 @@ template<class T, class D>
 class MovementGeneratorMedium : public MovementGenerator
 {
     public:
-        void Initialize(Unit* u) override
+        bool Initialize(Unit* u) override
         {
             //u->AssertIsType<T>();
-            (static_cast<D*>(this))->DoInitialize(static_cast<T*>(u));
+            return (static_cast<D*>(this))->DoInitialize(static_cast<T*>(u));
         }
 
         void Finalize(Unit* u, bool premature = false) override

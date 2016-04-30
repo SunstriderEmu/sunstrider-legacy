@@ -23,10 +23,11 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
-void HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
+bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->AddUnitState(UNIT_STATE_EVADE);
     _setTargetLocation(owner);
+    return true;
 }
 
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)

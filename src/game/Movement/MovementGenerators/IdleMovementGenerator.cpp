@@ -24,9 +24,10 @@ IdleMovementGenerator si_idleMovement;
 
 // StopMoving is needed to make unit stop if its last movement generator expires
 // But it should not be sent otherwise there are many redundent packets
-void IdleMovementGenerator::Initialize(Unit* owner)
+bool IdleMovementGenerator::Initialize(Unit* owner)
 {
     Reset(owner);
+    return true;
 }
 
 void IdleMovementGenerator::Reset(Unit* owner)

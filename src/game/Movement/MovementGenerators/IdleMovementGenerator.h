@@ -25,7 +25,7 @@ class IdleMovementGenerator : public MovementGenerator
 {
     public:
 
-        void Initialize(Unit*) override;
+        bool Initialize(Unit*) override;
         void Finalize(Unit*, bool) override {  }
         void Reset(Unit*) override;
         bool Update(Unit*, uint32) override { return true; }

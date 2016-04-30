@@ -60,12 +60,12 @@ void MotionMaster::InitDefault()
     if (_owner->GetTypeId() == TYPEID_UNIT && _owner->IsAlive())
     {
         MovementGenerator* movement = FactorySelector::selectMovementGenerator(_owner->ToCreature());
-        Mutate(movement == NULL ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
+        bool success = Mutate(movement == NULL ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
+        if (success)
+            return; //else default to idle below
     }
-    else
-    {
-        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
-    }
+
+    Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
 }
 
 MotionMaster::~MotionMaster()
@@ -660,7 +660,7 @@ void MotionMaster::MoveDistract(float x, float y, uint32 timer)
     Mutate(new DistractMovementGenerator(_owner, angle, timer), MOTION_SLOT_CONTROLLED);
 }
 
-void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
+bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
 {
     if (MovementGenerator *curr = Impl[slot])
     {
@@ -681,8 +681,9 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     else
     {
         _needInit[slot] = false;
-        m->Initialize(_owner);
+        return m->Initialize(_owner);
     }
+    return true;
 }
 
 void MotionMaster::MovePath(uint32 path_id)

@@ -217,18 +217,20 @@ void ChaseMovementGenerator<T>::_reachTarget(T* owner)
 }
 
 template<>
-void ChaseMovementGenerator<Player>::DoInitialize(Player* owner)
+bool ChaseMovementGenerator<Player>::DoInitialize(Player* owner)
 {
     owner->AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner, true);
+    return true;
 }
 
 template<>
-void ChaseMovementGenerator<Creature>::DoInitialize(Creature* owner)
+bool ChaseMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->SetWalk(false);
     owner->AddUnitState(UNIT_STATE_CHASE | UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner, true);
+    return true;
 }
 
 template<class T>
@@ -287,19 +289,21 @@ void FollowMovementGenerator<Creature>::_updateSpeed(Creature* owner)
 }
 
 template<>
-void FollowMovementGenerator<Player>::DoInitialize(Player* owner)
+bool FollowMovementGenerator<Player>::DoInitialize(Player* owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
     _setTargetLocation(owner, true);
+    return true;
 }
 
 template<>
-void FollowMovementGenerator<Creature>::DoInitialize(Creature* owner)
+bool FollowMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW | UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
     _setTargetLocation(owner, true);
+    return true;
 }
 
 template<class T>
