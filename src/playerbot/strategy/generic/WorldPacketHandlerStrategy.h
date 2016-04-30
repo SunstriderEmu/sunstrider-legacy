@@ -10,7 +10,7 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "default"; }
+        virtual std::string getName() { return "default"; }
     };
 
     class ReadyCheckStrategy : public PassTroughStrategy
@@ -20,6 +20,6 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "ready check"; }
+        virtual std::string getName() { return "ready check"; }
     };
 }

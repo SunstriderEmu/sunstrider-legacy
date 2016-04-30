@@ -24,7 +24,7 @@ namespace ai
         void relax();
         void achievement();
         void trade();
-        void spam(string msg);
+        void spam(std::string msg);
 
         vector<uint32> GetIncompletedQuests();
 

@@ -103,9 +103,12 @@ bool ItemUsageValue::IsItemUsefulForSkill(ItemTemplate const * proto)
         case ITEM_SUBCLASS_MEAT:
             return bot->HasSkill(SKILL_COOKING);
         case ITEM_SUBCLASS_HERB:
-            return (bot->HasSkill(SKILL_HERBALISM) ||
-                bot->HasSkill(SKILL_ALCHEMY) ||
-                bot->HasSkill(SKILL_INSCRIPTION));
+            return (bot->HasSkill(SKILL_HERBALISM)
+                || bot->HasSkill(SKILL_ALCHEMY)
+#ifdef LICH_KING
+                || bot->HasSkill(SKILL_INSCRIPTION)
+#endif
+                );
         case ITEM_SUBCLASS_ELEMENTAL:
             return true;
         case ITEM_SUBCLASS_ENCHANTING:

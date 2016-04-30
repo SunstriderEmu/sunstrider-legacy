@@ -6,7 +6,7 @@ namespace ai
     {
     public:
         RacialsStrategy(PlayerbotAI* ai);
-        virtual string getName() { return "racials"; }
+        virtual std::string getName() { return "racials"; }
     
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);

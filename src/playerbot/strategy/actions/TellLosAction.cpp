@@ -7,7 +7,7 @@ using namespace ai;
 
 bool TellLosAction::Execute(Event event)
 {
-    string param = event.getParam();
+    std::string param = event.getParam();
 
     if (param.empty() || param == "targets")
     {
@@ -36,7 +36,7 @@ bool TellLosAction::Execute(Event event)
     return true;
 }
 
-void TellLosAction::ListUnits(string title, list<ObjectGuid> units)
+void TellLosAction::ListUnits(std::string title, list<ObjectGuid> units)
 {
     ai->TellMaster(title);
 
@@ -48,7 +48,7 @@ void TellLosAction::ListUnits(string title, list<ObjectGuid> units)
     }
 
 }
-void TellLosAction::ListGameObjects(string title, list<ObjectGuid> gos)
+void TellLosAction::ListGameObjects(std::string title, list<ObjectGuid> gos)
 {
     ai->TellMaster(title);
 

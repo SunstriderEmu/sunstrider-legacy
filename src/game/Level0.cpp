@@ -1571,7 +1571,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     
     // Homebind
     if (factionChange)
-        plr->SetHomebindToLocation(loc, area_id);
+        plr->SetHomebind(loc, area_id);
     
     uint32 bankBags = plr->GetByteValue(PLAYER_BYTES_2, 2);
     plr->SetByteValue(UNIT_FIELD_BYTES_0, 0, t_race);

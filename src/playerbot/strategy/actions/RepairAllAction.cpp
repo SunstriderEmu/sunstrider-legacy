@@ -18,7 +18,7 @@ bool RepairAllAction::Execute(Event event)
         float discountMod = bot->GetReputationPriceDiscount(unit);
         uint32 totalCost = bot->DurabilityRepairAll(true, discountMod, false);
 
-        ostringstream out;
+        std::ostringstream out;
         out << "Repair: " << chat->formatMoney(totalCost) << " (" << unit->GetName() << ")";
         ai->TellMasterNoFacing(out.str());
 

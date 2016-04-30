@@ -3,6 +3,7 @@
 #include "ReviveFromCorpseAction.h"
 #include "../../PlayerbotFactory.h"
 #include "../../PlayerbotAIConfig.h"
+#include "Corpse.h"
 
 using namespace ai;
 

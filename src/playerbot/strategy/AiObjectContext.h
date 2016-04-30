@@ -15,47 +15,47 @@ namespace ai
         virtual ~AiObjectContext() {}
 
     public:
-        virtual Strategy* GetStrategy(string name) { return strategyContexts.GetObject(name, ai); }
-        virtual set<string> GetSiblingStrategy(string name) { return strategyContexts.GetSiblings(name); }
-        virtual Trigger* GetTrigger(string name) { return triggerContexts.GetObject(name, ai); }
-        virtual Action* GetAction(string name) { return actionContexts.GetObject(name, ai); }
-        virtual UntypedValue* GetUntypedValue(string name) { return valueContexts.GetObject(name, ai); }
+        virtual Strategy* GetStrategy(std::string name) { return strategyContexts.GetObject(name, ai); }
+        virtual set<std::string> GetSiblingStrategy(std::string name) { return strategyContexts.GetSiblings(name); }
+        virtual Trigger* GetTrigger(std::string name) { return triggerContexts.GetObject(name, ai); }
+        virtual Action* GetAction(std::string name) { return actionContexts.GetObject(name, ai); }
+        virtual UntypedValue* GetUntypedValue(std::string name) { return valueContexts.GetObject(name, ai); }
 
         template<class T>
-        Value<T>* GetValue(string name)
+        Value<T>* GetValue(std::string name)
         {
             return dynamic_cast<Value<T>*>(GetUntypedValue(name));
         }
 
         template<class T>
-        Value<T>* GetValue(string name, string param)
+        Value<T>* GetValue(std::string name, std::string param)
         {
             return GetValue<T>((string(name) + "::" + param));
         }
 
         template<class T>
-        Value<T>* GetValue(string name, uint32 param)
+        Value<T>* GetValue(std::string name, uint32 param)
         {
-        	ostringstream out; out << param;
+            std::ostringstream out; out << param;
             return GetValue<T>(name, out.str());
         }
 
-        set<string> GetSupportedStrategies()
+        set<std::string> GetSupportedStrategies()
         {
             return strategyContexts.supports();
         }
 
-        string FormatValues()
+        std::string FormatValues()
         {
-            ostringstream out;
-            set<string> names = valueContexts.GetCreated();
-            for (set<string>::iterator i = names.begin(); i != names.end(); ++i)
+            std::ostringstream out;
+            set<std::string> names = valueContexts.GetCreated();
+            for (set<std::string>::iterator i = names.begin(); i != names.end(); ++i)
             {
                 UntypedValue* value = GetUntypedValue(*i);
                 if (!value)
                     continue;
 
-                string text = value->Format();
+                std::string text = value->Format();
                 if (text == "?")
                     continue;
 

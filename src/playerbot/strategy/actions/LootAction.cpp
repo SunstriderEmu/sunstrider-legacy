@@ -4,7 +4,7 @@
 
 #include "../../LootObjectStack.h"
 #include "../../PlayerbotAIConfig.h"
-#include "../../../ahbot/AhBot.h"
+//#include "../../../ahbot/AhBot.h"
 #include "../../RandomPlayerbotMgr.h"
 #include "../values/ItemUsageValue.h"
 #include "../../GuildTaskMgr.h"
@@ -138,7 +138,7 @@ uint32 OpenLootAction::GetOpeningSpell(LootObject& lootObject, GameObject* go)
     auto spellStore = sObjectMgr->GetSpellStore();
     for (auto spellItr : spellStore)
     {
-        uint32 spellId = spellItr.First;
+        uint32 spellId = spellItr.first;
         if (spellId == MINING || spellId == HERB_GATHERING)
             continue;
 
@@ -187,7 +187,12 @@ bool OpenLootAction::CanOpenLock(LootObject& lootObject, const SpellInfo* pSpell
                     if (skillId == SKILL_NONE)
                         return true;
 
+#ifdef LICH_KING
                     if (CanOpenLock(skillId, lockInfo->Skill[j]))
+#else
+                    if (CanOpenLock(skillId, lockInfo->requiredlockskill))
+
+#endif
                         return true;
                 }
             }
@@ -243,8 +248,10 @@ bool StoreLootAction::Execute(Event event)
         p.read_skip<uint32>();  // randomPropertyId
         p >> lootslot_type;     // 0 = can get, 1 = look only, 2 = master get
 
+        /* TODO PLAYERBOT
         if (lootslot_type != LOOT_SLOT_TYPE_ALLOW_LOOT && lootslot_type != LOOT_SLOT_TYPE_OWNER)
             continue;
+            */
 
         if (loot_type != LOOT_SKINNING && !IsLootAllowed(itemid))
             continue;
@@ -254,7 +261,7 @@ bool StoreLootAction::Execute(Event event)
             ItemTemplate const *proto = sObjectMgr->GetItemTemplate(itemid);
             if (proto)
             {
-                uint32 price = itemcount * auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot) + gold;
+                uint32 price = itemcount * /* TODO PLAYERBOT auctionbot.GetSellPrice(proto)*/ proto->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot) + gold;
                 uint32 lootAmount = sRandomPlayerbotMgr.GetLootAmount(bot);
                 if (bot->GetGroup() && price)
                 {
@@ -319,7 +326,7 @@ bool StoreLootAction::IsLootAllowed(uint32 itemid)
     if (lootStrategy == LOOTSTRATEGY_QUEST)
         return false;
 
-    ostringstream out; out << itemid;
+    std::ostringstream out; out << itemid;
     ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
     if (usage == ITEM_USAGE_SKILL || usage == ITEM_USAGE_USE || usage == ITEM_USAGE_GUILD_TASK)
         return true;

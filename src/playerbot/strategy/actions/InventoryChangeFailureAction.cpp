@@ -1,11 +1,11 @@
 
 #include "../../playerbot.h"
-#include "InventoryResultAction.h"
+#include "InventoryChangeFailureAction.h"
 
 
 using namespace ai;
 
-bool InventoryResultAction::Execute(Event event)
+bool InventoryChangeFailureAction::Execute(Event event)
 {
     WorldPacket p(event.getPacket());
     p.rpos(0);

@@ -612,7 +612,7 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recvData )
     if(!unit)
         return;
 
-    if(!unit->isSpiritService())                            // it's not spirit service
+    if(!unit->IsSpiritService())                            // it's not spirit service
         return;
 
     sBattlegroundMgr->SendAreaSpiritHealerQueryOpcode(_player, bg, guid);
@@ -633,7 +633,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
     if(!unit)
         return;
 
-    if(!unit->isSpiritService())                            // it's not spirit service
+    if(!unit->IsSpiritService())                            // it's not spirit service
         return;
 
     bg->AddPlayerToResurrectQueue(guid, _player->GetGUID());

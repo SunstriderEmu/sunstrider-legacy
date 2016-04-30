@@ -2,7 +2,7 @@
 #include "../../playerbot.h"
 #include "PartyMemberToHeal.h"
 #include "../../PlayerbotAIConfig.h"
-#include "../../../Entities/Pet/Pet.h"
+#include "Pet.h"
 
 using namespace ai;
 

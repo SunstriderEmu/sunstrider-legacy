@@ -1,6 +1,7 @@
 
 #include "LootObjectStack.h"
 #include "playerbot.h"
+#include "DBCStores.h"
 
 using namespace ai;
 using namespace std;

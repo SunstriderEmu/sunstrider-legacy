@@ -5,7 +5,7 @@
 
 using namespace ai;
 
-void QueryQuestAction::TellObjective(string name, int available, int required)
+void QueryQuestAction::TellObjective(std::string name, int available, int required)
 {
     ai->TellMaster(chat->formatQuestObjective(name, available, required));
 }
@@ -15,7 +15,7 @@ bool QueryQuestAction::Execute(Event event)
 {
 
     Player *bot = ai->GetBot();
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     PlayerbotChatHandler ch(bot);
     uint32 questId = ch.extractQuestId(text);
@@ -27,7 +27,7 @@ bool QueryQuestAction::Execute(Event event)
         if(questId != bot->GetQuestSlotQuestId(slot))
             continue;
 
-        ostringstream out;
+        std::ostringstream out;
         out << "--- " << chat->formatQuest(sObjectMgr->GetQuestTemplate(questId)) << " ";
         if (bot->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
         {
@@ -61,7 +61,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         if (questTemplate->RequiredItemId[i])
         {
             int required = questTemplate->RequiredItemCount[i];
-            int available = questStatus.ItemCount[i];
+            int available = questStatus.m_itemcount[i];
             ItemTemplate const* proto = sObjectMgr->GetItemTemplate(questTemplate->RequiredItemId[i]);
             TellObjective(chat->formatItem(proto), available, required);
         }
@@ -69,7 +69,7 @@ void QueryQuestAction::TellObjectives(uint32 questId)
         if (questTemplate->RequiredNpcOrGo[i])
         {
             int required = questTemplate->RequiredNpcOrGoCount[i];
-            int available = questStatus.CreatureOrGOCount[i];
+            int available = questStatus.m_creatureOrGOcount[i];
 
             if (questTemplate->RequiredNpcOrGo[i] < 0)
             {

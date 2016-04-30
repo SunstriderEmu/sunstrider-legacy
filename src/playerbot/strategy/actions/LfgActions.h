@@ -8,7 +8,7 @@ namespace ai
     class LfgJoinAction : public InventoryAction
     {
     public:
-        LfgJoinAction(PlayerbotAI* ai, string name = "lfg join") : InventoryAction(ai, name) {}
+        LfgJoinAction(PlayerbotAI* ai, std::string name = "lfg join") : InventoryAction(ai, name) {}
         virtual bool Execute(Event event);
 
     protected:

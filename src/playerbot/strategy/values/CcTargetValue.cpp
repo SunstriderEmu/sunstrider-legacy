@@ -9,7 +9,7 @@ using namespace ai;
 class FindTargetForCcStrategy : public FindTargetStrategy
 {
 public:
-    FindTargetForCcStrategy(PlayerbotAI* ai, string spell) : FindTargetStrategy(ai)
+    FindTargetForCcStrategy(PlayerbotAI* ai, std::string spell) : FindTargetStrategy(ai)
     {
         this->spell = spell;
         maxDistance = 0;
@@ -77,7 +77,7 @@ public:
     }
 
 private:
-    string spell;
+    std::string spell;
     float maxDistance;
 };
 

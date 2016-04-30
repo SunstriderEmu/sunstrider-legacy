@@ -15,7 +15,7 @@ bool InvalidTargetValue::Calculate()
                 target->IsDead() ||
                 target->IsPolymorphed() ||
                 target->IsCharmed() ||
-                target->isFeared() ||
+                target->IsFeared() ||
                 target->HasUnitState(UNIT_STATE_ISOLATED) ||
                 target->IsFriendlyTo(bot) ||
                 !bot->IsWithinDistInMap(target, sPlayerbotAIConfig.sightDistance) ||

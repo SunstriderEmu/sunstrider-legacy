@@ -12,7 +12,7 @@ namespace ai
         virtual bool Execute(Event event) { return false; }
 
     protected:
-        list<Item*> Find(string qualifier);
+        list<Item*> Find(std::string qualifier);
     };
 
     class ItemCountValue : public Uint8CalculatedValue, public Qualified, InventoryItemValueBase

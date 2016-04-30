@@ -1959,7 +1959,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
         return false;
     }
 
-    player->learnDefaultSpells();
+    player->LearnDefaultSpells();
     player->learnQuestRewardedSpells();
 
     PSendSysMessage(LANG_COMMAND_LEARN_ALL_DEFAULT_AND_QUEST,player->GetName().c_str());

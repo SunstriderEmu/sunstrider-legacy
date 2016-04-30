@@ -68,14 +68,16 @@ void InventoryAction::IterateItems(IterateItemsVisitor* visitor, IterateItemsMas
 
 void InventoryAction::IterateItemsInBags(IterateItemsVisitor* visitor)
 {
-
-
     for(int i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; ++i)
         if (Item *pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             if (!visitor->Visit(pItem))
                 return;
 
-    for(int i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+#ifdef LICH_KING
+    for (int i = KEYRING_SLOT_START; i < CURRENCYTOKEN_SLOT_END; ++i)
+#else
+    for(int i = KEYRING_SLOT_START; i < KEYRING_SLOT_END; ++i)
+#endif
         if (Item *pItem = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
             if (!visitor->Visit(pItem))
                 return;
@@ -206,7 +208,7 @@ void InventoryAction::TellItem(ItemTemplate const * proto, int count)
     ai->TellMaster(chat->formatItem(proto, count));
 }
 
-list<Item*> InventoryAction::parseItems(string text)
+list<Item*> InventoryAction::parseItems(std::string text)
 {
     set<Item*> found;
     size_t pos = text.find(" ");

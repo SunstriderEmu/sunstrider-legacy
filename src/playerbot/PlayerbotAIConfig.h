@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ConfigMgr.h"
+#include "Config.h"
 
 class Player;
 class PlayerbotMgr;

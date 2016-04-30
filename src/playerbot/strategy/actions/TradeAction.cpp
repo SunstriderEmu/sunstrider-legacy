@@ -8,7 +8,7 @@ using namespace ai;
 
 bool TradeAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
     uint32 copper = chat->parseMoney(text);
     if (copper > 0)
     {
@@ -31,6 +31,7 @@ bool TradeAction::Execute(Event event)
 
 bool TradeAction::TradeItem(const Item& item, int8 slot)
 {
+    /* TODO PLAYERBOT
     if (!bot->GetTrader() || item.IsInTrade())
         return false;
 
@@ -78,6 +79,7 @@ bool TradeAction::TradeItem(const Item& item, int8 slot)
     *packet << (uint8) tradeSlot << (uint8) item.GetBagSlot()
         << (uint8) item.GetSlot();
     bot->GetSession()->QueuePacket(packet);
+    */
     return true;
 }
 

@@ -118,7 +118,7 @@ template<> void AddUnitState(Creature *obj, CellCoord const& cell_pair)
     Cell cell(cell_pair);
 
     obj->SetCurrentCell(cell);
-    if(obj->isSpiritService())
+    if(obj->IsSpiritService())
         obj->SetDeathState(DEAD);
 }
 

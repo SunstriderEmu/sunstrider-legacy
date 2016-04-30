@@ -27,6 +27,6 @@ namespace ai
 
     public:
         virtual void InitMultipliers(std::list<Multiplier*> &multipliers);
-        virtual string getName() { return "conserve mana"; }
+        virtual std::string getName() { return "conserve mana"; }
     };
 }

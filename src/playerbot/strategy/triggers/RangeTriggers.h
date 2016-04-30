@@ -26,7 +26,7 @@ namespace ai
 
     class OutOfRangeTrigger : public Trigger {
     public:
-        OutOfRangeTrigger(PlayerbotAI* ai, string name, float distance) : Trigger(ai, name)
+        OutOfRangeTrigger(PlayerbotAI* ai, std::string name, float distance) : Trigger(ai, name)
 		{
             this->distance = distance;
         }
@@ -35,7 +35,7 @@ namespace ai
 			Unit* target = AI_VALUE(Unit*, GetTargetName());
 			return target && AI_VALUE2(float, "distance", GetTargetName()) > distance;
         }
-        virtual string GetTargetName() { return "current target"; }
+        virtual std::string GetTargetName() { return "current target"; }
 
     protected:
         float distance;
@@ -57,12 +57,12 @@ namespace ai
 	{
     public:
         PartyMemberToHealOutOfSpellRangeTrigger(PlayerbotAI* ai) : OutOfRangeTrigger(ai, "party member to heal out of spell range", sPlayerbotAIConfig.spellDistance) {}
-        virtual string GetTargetName() { return "party member to heal"; }
+        virtual std::string GetTargetName() { return "party member to heal"; }
     };
 
     class FarFromMasterTrigger : public Trigger {
     public:
-        FarFromMasterTrigger(PlayerbotAI* ai, string name = "far from master", float distance = 12.0f, int checkInterval = 1) : Trigger(ai, name, checkInterval), distance(distance) {}
+        FarFromMasterTrigger(PlayerbotAI* ai, std::string name = "far from master", float distance = 12.0f, int checkInterval = 1) : Trigger(ai, name, checkInterval), distance(distance) {}
 
         virtual bool IsActive()
         {

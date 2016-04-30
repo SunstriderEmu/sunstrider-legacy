@@ -3,6 +3,7 @@
 #include "../Action.h"
 #include "InventoryAction.h"
 #include "QueryItemUsageAction.h"
+class TradeData;
 
 namespace ai
 {

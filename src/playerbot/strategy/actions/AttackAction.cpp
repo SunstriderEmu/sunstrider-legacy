@@ -49,7 +49,7 @@ bool AttackAction::Attack(Unit* target)
         return false;
     }
 
-    ostringstream msg;
+    std::ostringstream msg;
     msg << target->GetName();
     if (bot->IsFriendlyTo(target))
     {
@@ -70,7 +70,7 @@ bool AttackAction::Attack(Unit* target)
         bot->GetSession()->HandleCancelMountAuraOpcode(emptyPacket);
     }
 
-    ObjectGuid guid = target->GetGUID();
+    ObjectGuid guid = ObjectGuid(target->GetGUID());
     bot->SetSelection(target->GetGUID());
 
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
@@ -84,7 +84,9 @@ bool AttackAction::Attack(Unit* target)
     {
         pet->SetTarget(target->GetGUID());
         pet->AI()->EnterCombat(target);
+        /* TODO PLAYERBOT
 		pet->GetCharmInfo()->SetIsCommandAttack(true);
+        */
 		pet->AI()->AttackStart(target);
     }
 

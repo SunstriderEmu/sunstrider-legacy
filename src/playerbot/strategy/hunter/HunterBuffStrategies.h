@@ -9,7 +9,7 @@ namespace ai
     {
     public:
         HunterBuffSpeedStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-        virtual string getName() { return "bspeed"; }
+        virtual std::string getName() { return "bspeed"; }
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
@@ -19,7 +19,7 @@ namespace ai
     {
     public:
         HunterBuffManaStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-        virtual string getName() { return "bmana"; }
+        virtual std::string getName() { return "bmana"; }
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
@@ -29,7 +29,7 @@ namespace ai
 	{
 	public:
 		HunterBuffDpsStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-		virtual string getName() { return "bdps"; }
+		virtual std::string getName() { return "bdps"; }
 
 	public:
 		virtual void InitTriggers(std::list<TriggerNode*> &triggers);
@@ -39,7 +39,7 @@ namespace ai
 	{
 	public:
 		HunterNatureResistanceStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-		virtual string getName() { return "rnature"; }
+		virtual std::string getName() { return "rnature"; }
 
 	public:
 		virtual void InitTriggers(std::list<TriggerNode*> &triggers);

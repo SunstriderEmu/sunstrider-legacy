@@ -204,6 +204,13 @@ struct Position
         }
         return fmod(o, 2.0f * static_cast<float>(M_PI));
     }
+
+    bool operator==(Position const &a);
+
+    inline bool operator!=(Position const &a)
+    {
+        return !(operator==(a));
+    }
 };
 ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
 ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);

@@ -10,10 +10,10 @@ namespace ai
         Qualified() {};
 
     public:
-        void Qualify(string qualifier) { this->qualifier = qualifier; }
+        void Qualify(std::string qualifier) { this->qualifier = qualifier; }
 
     protected:
-        string qualifier;
+        std::string qualifier;
     };
 
     template <class T> class NamedObjectFactory
@@ -23,11 +23,11 @@ namespace ai
         map<string, ActionCreator> creators;
 
     public:
-        T* create(string name, PlayerbotAI* ai)
+        T* create(std::string name, PlayerbotAI* ai)
         {
             size_t found = name.find("::");
-            string qualifier;
-            if (found != string::npos)
+            std::string qualifier;
+            if (found != std::string::npos)
             {
                 qualifier = name.substr(found + 2);
                 name = name.substr(0, found);
@@ -48,9 +48,9 @@ namespace ai
             return object;
         }
 
-        set<string> supports()
+        set<std::string> supports()
         {
-            set<string> keys;
+            set<std::string> keys;
             for (typename map<string, ActionCreator>::iterator it = creators.begin(); it != creators.end(); it++)
                 keys.insert(it->first);
             return keys;
@@ -64,7 +64,7 @@ namespace ai
         NamedObjectContext(bool shared = false, bool supportsSiblings = false) :
             NamedObjectFactory<T>(), shared(shared), supportsSiblings(supportsSiblings) {}
 
-        T* create(string name, PlayerbotAI* ai)
+        T* create(std::string name, PlayerbotAI* ai)
         {
             if (created.find(name) == created.end())
                 return created[name] = NamedObjectFactory<T>::create(name, ai);
@@ -109,9 +109,9 @@ namespace ai
         bool IsShared() { return shared; }
         bool IsSupportsSiblings() { return supportsSiblings; }
 
-        set<string> GetCreated()
+        set<std::string> GetCreated()
         {
-            set<string> keys;
+            set<std::string> keys;
             for (typename map<string, T*>::iterator it = created.begin(); it != created.end(); it++)
                 keys.insert(it->first);
             return keys;
@@ -141,7 +141,7 @@ namespace ai
             contexts.push_back(context);
         }
 
-        T* GetObject(string name, PlayerbotAI* ai)
+        T* GetObject(std::string name, PlayerbotAI* ai)
         {
             for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
@@ -168,15 +168,15 @@ namespace ai
             }
         }
 
-        set<string> GetSiblings(string name)
+        set<std::string> GetSiblings(std::string name)
         {
             for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
                 if (!(*i)->IsSupportsSiblings())
                     continue;
 
-                set<string> supported = (*i)->supports();
-                set<string>::iterator found = supported.find(name);
+                set<std::string> supported = (*i)->supports();
+                set<std::string>::iterator found = supported.find(name);
                 if (found == supported.end())
                     continue;
 
@@ -184,32 +184,32 @@ namespace ai
                 return supported;
             }
 
-            return set<string>();
+            return set<std::string>();
         }
 
-        set<string> supports()
+        set<std::string> supports()
         {
-            set<string> result;
+            set<std::string> result;
 
             for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
-                set<string> supported = (*i)->supports();
+                set<std::string> supported = (*i)->supports();
 
-                for (set<string>::iterator j = supported.begin(); j != supported.end(); j++)
+                for (set<std::string>::iterator j = supported.begin(); j != supported.end(); j++)
                     result.insert(*j);
             }
             return result;
         }
 
-        set<string> GetCreated()
+        set<std::string> GetCreated()
         {
-            set<string> result;
+            set<std::string> result;
 
             for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
             {
-                set<string> createdKeys = (*i)->GetCreated();
+                set<std::string> createdKeys = (*i)->GetCreated();
 
-                for (set<string>::iterator j = createdKeys.begin(); j != createdKeys.end(); j++)
+                for (set<std::string>::iterator j = createdKeys.begin(); j != createdKeys.end(); j++)
                     result.insert(*j);
             }
             return result;
@@ -233,7 +233,7 @@ namespace ai
             factories.push_front(context);
         }
 
-        T* GetObject(string name, PlayerbotAI* ai)
+        T* GetObject(std::string name, PlayerbotAI* ai)
         {
             for (typename list<NamedObjectFactory<T>*>::iterator i = factories.begin(); i != factories.end(); i++)
             {

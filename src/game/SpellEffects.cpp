@@ -6343,7 +6343,7 @@ void Spell::EffectSanctuary(uint32 /*i*/)
 
     std::list<Unit*> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
+    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_caster, targets, u_check);
     unitTarget->VisitNearbyObject(m_caster->GetMap()->GetVisibilityRange(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
     {
@@ -7884,7 +7884,7 @@ void Spell::EffectBind(uint32 i)
 
     area_id = player->GetAreaId();
 
-    player->SetHomebindToLocation(loc, area_id);
+    player->SetHomebind(loc, area_id);
 
     // binding
     WorldPacket data(SMSG_BINDPOINTUPDATE, (4+4+4+4+4));

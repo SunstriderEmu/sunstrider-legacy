@@ -7,7 +7,7 @@ namespace ai
 {
     class QueryItemUsageAction : public InventoryAction {
     public:
-        QueryItemUsageAction(PlayerbotAI* ai, string name = "query item usage") : InventoryAction(ai, name) {}
+        QueryItemUsageAction(PlayerbotAI* ai, std::string name = "query item usage") : InventoryAction(ai, name) {}
         virtual bool Execute(Event event);
 
     protected:
@@ -18,7 +18,7 @@ namespace ai
         void QueryQuestItem(uint32 itemId);
 
     private:
-        ostringstream out;
+        std::ostringstream out;
 
     };
 }

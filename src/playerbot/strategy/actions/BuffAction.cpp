@@ -88,7 +88,7 @@ void BuffAction::TellHeader(uint32 subClass)
 
 bool BuffAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     FindBuffVisitor visitor(bot);
     IterateItems(&visitor);
@@ -108,7 +108,7 @@ bool BuffAction::Execute(Event event)
         for (list<Item*>::iterator j = items.begin(); j != items.end(); ++j)
         {
             Item* item = *j;
-            ostringstream out;
+            std::ostringstream out;
             out << chat->formatItem(item->GetTemplate(), item->GetCount());
             ai->TellMaster(out);
         }

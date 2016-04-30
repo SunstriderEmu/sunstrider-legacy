@@ -8,7 +8,7 @@ using namespace ai;
 
 bool EquipAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
     if (text == "?")
     {
         TellEquipmentSets();
@@ -39,12 +39,12 @@ bool EquipAction::UseEquipmentSet(string& name)
 
         UseEquipmentSet(i->second);
 
-        ostringstream out; out << name << " set equipped";
+        std::ostringstream out; out << name << " set equipped";
         ai->TellMaster(out);
         return true;
     }
     return false; */
-    ostringstream out; 
+    std::ostringstream out;
     out << "Not supported";
     ai->TellMaster(out);
     return true;
@@ -108,6 +108,6 @@ void EquipAction::EquipItem(Item& item)
         bot->GetSession()->QueuePacket(packet);
     }
 
-    ostringstream out; out << "equipping " << chat->formatItem(item.GetTemplate());
+    std::ostringstream out; out << "equipping " << chat->formatItem(item.GetTemplate());
     ai->TellMaster(out);
 }

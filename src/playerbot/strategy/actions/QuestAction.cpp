@@ -17,7 +17,7 @@ bool QuestAction::Execute(Event event)
     {
         Unit* target = master->GetSelectedUnit();
         if (target)
-            guid = target->GetGUID();
+            guid = ObjectGuid(target->GetGUID());
     }
 
     if (!guid)
@@ -41,7 +41,7 @@ bool QuestAction::ProcessQuests(ObjectGuid questGiver)
 
 bool QuestAction::ProcessQuests(WorldObject* questGiver)
 {
-    ObjectGuid guid = questGiver->GetGUID();
+    ObjectGuid guid = ObjectGuid(questGiver->GetGUID());
 
     if (bot->GetDistance(questGiver) > INTERACTION_DISTANCE)
     {

@@ -9,10 +9,13 @@
 //#include "../../../DungeonFinding/LFG.h"
 
 using namespace ai;
+#ifdef LICH_KING
 using namespace lfg;
+#endif
 
 bool LfgJoinAction::Execute(Event event)
 {
+#ifdef LICH_KING
     if (!sPlayerbotAIConfig.randomBotJoinLfg)
         return false;
 
@@ -33,10 +36,14 @@ bool LfgJoinAction::Execute(Event event)
         return false;
 
     return JoinProposal();
+#else
+    return false;
+#endif
 }
 
 uint8 LfgJoinAction::GetRoles()
 {
+#ifdef LICH_KING
     int spec = AiFactory::GetPlayerSpecTab(bot);
     switch (bot->GetClass())
     {
@@ -78,18 +85,22 @@ uint8 LfgJoinAction::GetRoles()
         return PLAYER_ROLE_DAMAGE;
         break;
     }
-
     return PLAYER_ROLE_DAMAGE;
+#endif
+    return 0;
 }
 
 bool LfgJoinAction::SetRoles()
 {
+#ifdef LICH_KING
     sLFGMgr->SetRoles(bot->GetGUID(), GetRoles());
+#endif
 	return true;
 }
 
 bool LfgJoinAction::JoinProposal()
 {
+#ifdef LICH_KING
     ItemCountByQuality visitor;
     IterateItems(&visitor, ITERATE_ITEMS_IN_EQUIP);
 	bool heroic = urand(0, 100) < 50 && (visitor.count[ITEM_QUALITY_EPIC] >= 3 || visitor.count[ITEM_QUALITY_RARE] >= 10) && bot->GetLevel() >= 70;
@@ -159,23 +170,27 @@ bool LfgJoinAction::JoinProposal()
 	}
 
     sLFGMgr->JoinLfg(bot, roles, list, "bot");
+#endif
     return true;
 }
 
 bool LfgRoleCheckAction::Execute(Event event)
 {
+#ifdef LICH_KING
     Group* group = bot->GetGroup();
     if (group)
     {
         sLFGMgr->UpdateRoleCheck(group->GetGUID(), bot->GetGUID(), GetRoles());
         return true;
     }
-
+#endif
     return false;
 }
 
 bool LfgAcceptAction::Execute(Event event)
 {
+#ifdef LICH_KING
+
     uint32 id = AI_VALUE(uint32, "lfg proposal");
     if (id)
     {
@@ -207,20 +222,26 @@ bool LfgAcceptAction::Execute(Event event)
     p >> dungeon >> state >> id;
 
     ai->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(id);
+#endif
     return true;
 }
 
 bool LfgLeaveAction::Execute(Event event)
 {
+#ifdef LICH_KING
+
     if (sLFGMgr->GetState(bot->GetGUID()) != LFG_STATE_QUEUED)
         return false;
 
     sLFGMgr->LeaveLfg(bot->GetGUID());
+#endif
 	return true;
 }
 
 bool LfgTeleportAction::Execute(Event event)
 {
+#ifdef LICH_KING
+
     bool out = false;
 
     WorldPacket p(event.getPacket());
@@ -232,5 +253,6 @@ bool LfgTeleportAction::Execute(Event event)
 
     bot->ClearUnitState(UNIT_STATE_ALL_STATE_SUPPORTED);
     sLFGMgr->TeleportPlayer(bot, out);
+#endif
 	return true;
 }

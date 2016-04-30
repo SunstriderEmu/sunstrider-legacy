@@ -31,7 +31,7 @@ bool TaxiAction::Execute(Event event)
 
         if (movement.taxiNodes.empty())
         {
-            ostringstream out;
+            std::ostringstream out;
             out << "I will order the taxi from " << npc->GetName() << ". Please start flying, then instruct me again";
             ai->TellMaster(out);
             return true;

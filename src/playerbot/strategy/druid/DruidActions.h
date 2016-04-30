@@ -194,7 +194,7 @@ namespace ai
     public:
         CastInnervateAction(PlayerbotAI* ai) : CastSpellAction(ai, "innervate") {}
 
-        virtual string GetTargetName() { return "self target"; }
+        virtual std::string GetTargetName() { return "self target"; }
     };
 
     class CastTranquilityAction : public CastAoeHealSpellAction

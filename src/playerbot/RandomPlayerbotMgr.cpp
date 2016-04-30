@@ -236,7 +236,7 @@ void RandomPlayerbotMgr::RandomTeleport(Player* bot, vector<WorldLocation> &locs
         if (!areaId)
             continue;
 
-        AreaTableEntry const* area = sAreaStore.LookupEntry(areaId);
+        AreaTableEntry const* area = sAreaTableStore.LookupEntry(areaId);
         if (!area)
             continue;
 
@@ -525,7 +525,7 @@ vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
     return guids;
 }
 
-uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, string event)
+uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, std::string event)
 {
     uint32 value = 0;
 
@@ -546,7 +546,7 @@ uint32 RandomPlayerbotMgr::GetEventValue(uint32 bot, string event)
     return value;
 }
 
-uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, string event, uint32 value, uint32 validIn)
+uint32 RandomPlayerbotMgr::SetEventValue(uint32 bot, std::string event, uint32 value, uint32 validIn)
 {
     CharacterDatabase.PExecute("delete from ai_playerbot_random_bots where owner = 0 and bot = '%u' and event = '%s'",
             bot, event.c_str());
@@ -574,7 +574,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
         return false;
     }
 
-    string cmd = args;
+    std::string cmd = args;
 
     if (cmd == "reset")
     {
@@ -636,8 +636,8 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
     }
     else
     {
-        list<string> messages = sRandomPlayerbotMgr.HandlePlayerbotCommand(args, NULL);
-        for (list<string>::iterator i = messages.begin(); i != messages.end(); ++i)
+        list<std::string> messages = sRandomPlayerbotMgr.HandlePlayerbotCommand(args, NULL);
+        for (list<std::string>::iterator i = messages.begin(); i != messages.end(); ++i)
         {
             sLog->outMessage("playerbot", LOG_LEVEL_INFO, i->c_str());
         }
@@ -647,7 +647,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
     return false;
 }
 
-void RandomPlayerbotMgr::HandleCommand(uint32 type, const string& text, Player& fromPlayer)
+void RandomPlayerbotMgr::HandleCommand(uint32 type, const std::string& text, Player& fromPlayer)
 {
     for (PlayerBotMap::const_iterator it = GetPlayerBotsBegin(); it != GetPlayerBotsEnd(); ++it)
     {
@@ -868,16 +868,16 @@ uint32 RandomPlayerbotMgr::GetTradeDiscount(Player* bot)
     return GetLootAmount(bot) / (group ? group->GetMembersCount() : 10);
 }
 
-string RandomPlayerbotMgr::HandleRemoteCommand(string request)
+string RandomPlayerbotMgr::HandleRemoteCommand(std::string request)
 {
-    string::iterator pos = find(request.begin(), request.end(), ',');
+    std::string::iterator pos = find(request.begin(), request.end(), ',');
     if (pos == request.end())
     {
-        ostringstream out; out << "invalid request: " << request;
+        std::ostringstream out; out << "invalid request: " << request;
         return out.str();
     }
 
-    string command = string(request.begin(), pos);
+    std::string command = std::string(request.begin(), pos);
     uint64 guid = atoi(string(pos + 1, request.end()).c_str());
     Player* bot = GetPlayerBot(guid);
     if (!bot)

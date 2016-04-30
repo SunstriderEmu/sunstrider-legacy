@@ -8,7 +8,7 @@ using namespace ai;
 
 bool UnequipAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     ItemIds ids = chat->parseItems(text);
     for (ItemIds::iterator i =ids.begin(); i != ids.end(); i++)
@@ -39,7 +39,7 @@ void UnequipAction::UnequipItem(Item& item)
     *packet << bagIndex << slot << dstBag;
     bot->GetSession()->QueuePacket(packet);
 
-    ostringstream out; out << chat->formatItem(item.GetTemplate()) << " unequipped";
+    std::ostringstream out; out << chat->formatItem(item.GetTemplate()) << " unequipped";
     ai->TellMaster(out);
 }
 

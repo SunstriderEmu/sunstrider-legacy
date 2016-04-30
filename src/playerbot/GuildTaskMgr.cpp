@@ -247,7 +247,7 @@ bool GuildTaskMgr::SendItemAdvertisement(uint32 itemId, uint32 owner, uint32 gui
         return false;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    ostringstream body;
+    std::ostringstream body;
     body << "Hello, " << player->GetName() << ",\n";
     body << "\n";
     body << "We are in a great need of " << proto->Name1 << ". If you could sell us ";
@@ -284,7 +284,7 @@ bool GuildTaskMgr::SendKillAdvertisement(uint32 creatureId, uint32 owner, uint32
         return false;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    ostringstream body;
+    std::ostringstream body;
     body << "Hello, " << player->GetName() << ",\n";
     body << "\n";
     body << "As you probably know " << proto->Name << " is wanted dead for the crimes it did against our guild. If you should kill it ";
@@ -326,7 +326,7 @@ bool GuildTaskMgr::SendThanks(uint32 owner, uint32 guildId)
             return false;
 
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
-        ostringstream body;
+        std::ostringstream body;
         body << "Hello, " << player->GetName() << ",\n";
         body << "\n";
         body << "One of our guild members wishes to thank you for the " << proto->Name1 << "! If we have another ";
@@ -386,7 +386,7 @@ bool GuildTaskMgr::IsGuildTaskItem(uint32 itemId, uint32 guildId)
     return value;
 }
 
-map<uint32,uint32> GuildTaskMgr::GetTaskValues(uint32 owner, string type, uint32 *validIn /* = NULL */)
+map<uint32,uint32> GuildTaskMgr::GetTaskValues(uint32 owner, std::string type, uint32 *validIn /* = NULL */)
 {
     map<uint32,uint32> result;
 
@@ -414,7 +414,7 @@ map<uint32,uint32> GuildTaskMgr::GetTaskValues(uint32 owner, string type, uint32
     return result;
 }
 
-uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, string type, uint32 *validIn /* = NULL */)
+uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, std::string type, uint32 *validIn /* = NULL */)
 {
     uint32 value = 0;
 
@@ -437,7 +437,7 @@ uint32 GuildTaskMgr::GetTaskValue(uint32 owner, uint32 guildId, string type, uin
     return value;
 }
 
-uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, string type, uint32 value, uint32 validIn)
+uint32 GuildTaskMgr::SetTaskValue(uint32 owner, uint32 guildId, std::string type, uint32 value, uint32 validIn)
 {
     CharacterDatabase.PExecute("delete from ai_playerbot_guild_tasks where owner = '%u' and guildid = '%u' and `type` = '%s'",
             owner, guildId, type.c_str());
@@ -465,7 +465,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return false;
     }
 
-    string cmd = args;
+    std::string cmd = args;
 
     if (cmd == "reset")
     {
@@ -480,9 +480,9 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return true;
     }
 
-    if (cmd.find("stats ") != string::npos)
+    if (cmd.find("stats ") != std::string::npos)
     {
-        string charName = cmd.substr(cmd.find("stats ") + 6);
+        std::string charName = cmd.substr(cmd.find("stats ") + 6);
         uint64 guid = sObjectMgr->GetPlayerGUIDByName(charName);
         if (!guid)
         {
@@ -507,7 +507,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
                 if ((time(0) - lastChangeTime) >= validIn)
                     value = 0;
                 uint32 guildId = fields[3].GetUInt32();
-                string type = fields[4].GetString();
+                std::string type = fields[4].GetString();
 
                 Guild *guild = sObjectMgr->GetGuildById(guildId);
                 if (!guild)
@@ -531,9 +531,9 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
         return true;
     }
 
-    if (cmd.find("reward ") != string::npos)
+    if (cmd.find("reward ") != std::string::npos)
     {
-        string charName = cmd.substr(cmd.find("reward ") + 7);
+        std::string charName = cmd.substr(cmd.find("reward ") + 7);
         uint64 guid = sObjectMgr->GetPlayerGUIDByName(charName);
         if (!guid)
         {
@@ -635,7 +635,7 @@ bool GuildTaskMgr::Reward(uint32 owner, uint32 guildId)
     if (!itemTask && !killTask)
         return false;
 
-    ostringstream body;
+    std::ostringstream body;
     body << "Hello, " << player->GetName() << ",\n";
     body << "\n";
 

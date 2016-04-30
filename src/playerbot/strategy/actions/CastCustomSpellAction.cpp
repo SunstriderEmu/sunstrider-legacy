@@ -15,11 +15,11 @@ bool CastCustomSpellAction::Execute(Event event)
     if (!target)
         target = bot;
 
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     uint32 spell = chat->parseSpell(text);
 
-    ostringstream msg;
+    std::ostringstream msg;
     if (!ai->CanCastSpell(spell, target))
     {
         msg << "Cannot cast " << text << " on " << target->GetName();

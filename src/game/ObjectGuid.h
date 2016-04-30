@@ -246,6 +246,9 @@ class ObjectGuidGenerator
         uint32 _nextGuid;
 };
 
+ByteBuffer& operator<<(ByteBuffer& buf, ObjectGuid const& guid);
+ByteBuffer& operator>>(ByteBuffer& buf, ObjectGuid&       guid);
+
 ByteBuffer& operator<<(ByteBuffer& buf, PackedGuid const& guid);
 ByteBuffer& operator>>(ByteBuffer& buf, PackedGuidReader const& guid);
 

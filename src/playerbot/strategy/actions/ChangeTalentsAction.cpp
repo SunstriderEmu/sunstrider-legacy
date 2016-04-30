@@ -6,9 +6,8 @@ using namespace ai;
 
 bool ChangeTalentsAction::Execute(Event event)
 {
-    
-
-    string text = event.getParam();
+#ifdef LICH_KING
+    std::string text = event.getParam();
     if (text == "1" || text == "primary")
     {
         bot->ActivateSpec(0);
@@ -21,7 +20,7 @@ bool ChangeTalentsAction::Execute(Event event)
     }
     else
     {
-        ostringstream out; 
+        std::ostringstream out;
         switch (bot->GetActiveSpec())
         {
         case 0: out << "Primary";
@@ -32,6 +31,6 @@ bool ChangeTalentsAction::Execute(Event event)
         out << " talents are active";
         ai->TellMaster(out);
     }
-
+#endif
     return true;
 }

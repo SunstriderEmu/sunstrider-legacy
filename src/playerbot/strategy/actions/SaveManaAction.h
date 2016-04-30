@@ -14,7 +14,7 @@ namespace ai
         virtual bool Execute(Event event);
 
     private:
-        string format(double value);
+        std::string format(double value);
     };
 
 }

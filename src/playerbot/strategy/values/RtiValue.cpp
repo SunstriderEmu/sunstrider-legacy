@@ -5,7 +5,7 @@
 using namespace ai;
 
 RtiValue::RtiValue(PlayerbotAI* ai)
-    : ManualSetValue<string>(ai, "none")
+    : ManualSetValue<std::string>(ai, "none")
 {
     switch (ai->GetBot()->GetClass())
     {

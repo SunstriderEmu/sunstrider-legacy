@@ -8,7 +8,7 @@ using namespace ai;
 
 bool DestroyItemAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
     ItemIds ids = chat->parseItems(text);
 
     for (ItemIds::iterator i =ids.begin(); i != ids.end(); i++)
@@ -28,7 +28,7 @@ void DestroyItemAction::DestroyItem(FindItemVisitor* visitor)
     {
 		Item* item = *i;
         bot->DestroyItem(item->GetBagSlot(),item->GetSlot(), true);
-        ostringstream out; out << chat->formatItem(item->GetTemplate()) << " destroyed";
+        std::ostringstream out; out << chat->formatItem(item->GetTemplate()) << " destroyed";
         ai->TellMaster(out);
     }
 }

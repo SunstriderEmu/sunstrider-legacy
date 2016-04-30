@@ -15,7 +15,7 @@ bool SpellCastUsefulValue::Calculate()
 	if (!spellInfo)
 		return true; // there can be known alternatives
 
-	if (spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING ||
+	if (spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING_1 ||
 		spellInfo->Attributes & SPELL_ATTR0_ON_NEXT_SWING_2)
 	{
 		Spell* spell = bot->GetCurrentSpell(CURRENT_MELEE_SPELL);

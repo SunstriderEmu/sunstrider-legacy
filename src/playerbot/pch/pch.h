@@ -8,3 +8,6 @@
 #include "Opcodes.h"
 #include "SharedDefines.h"
 #include "ObjectMgr.h"
+#include "DBCStores.h"
+#include "Bag.h"
+#include "ReputationMgr.h"

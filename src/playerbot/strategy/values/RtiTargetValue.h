@@ -11,7 +11,7 @@ namespace ai
         {}
 
     public:
-        static int GetRtiIndex(string rti)
+        static int GetRtiIndex(std::string rti)
         {
             int index = -1;
             if(rti == "star") index = 0;
@@ -31,7 +31,7 @@ namespace ai
             if(!group)
                 return NULL;
 
-            string rti = AI_VALUE(string, "rti");
+            std::string rti = AI_VALUE(string, "rti");
             int index = GetRtiIndex(rti);
 
             if (index == -1)

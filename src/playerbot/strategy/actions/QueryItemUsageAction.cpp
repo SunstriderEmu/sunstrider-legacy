@@ -41,7 +41,7 @@ bool QueryItemUsageAction::Execute(Event event)
         if (!item)
             return false;
 
-        ostringstream out; out << chat->formatItem(item, count);
+        std::ostringstream out; out << chat->formatItem(item, count);
         if (created)
             out << " created";
         else if (received)
@@ -53,7 +53,7 @@ bool QueryItemUsageAction::Execute(Event event)
         return true;
     }
 
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     ItemIds items = chat->parseItems(text);
     QueryItemsUsage(items);
@@ -62,7 +62,7 @@ bool QueryItemUsageAction::Execute(Event event)
 
 bool QueryItemUsageAction::QueryItemUsage(ItemTemplate const *item)
 {
-    ostringstream out; out << item->ItemId;
+    std::ostringstream out; out << item->ItemId;
     ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
     switch (usage)
     {
@@ -100,22 +100,24 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
         for (list<Item*>::iterator i = items.begin(); i != items.end(); ++i)
         {
             Item* sell = *i;
-            int32 sellPrice = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
-            ostringstream out;
+            //TODO PLAYERBOT int32 sellPrice = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
+            int32 sellPrice = 1;
+            std::ostringstream out;
             out << "Selling " << chat->formatItem(sell->GetTemplate(), sell->GetCount()) << " for " << chat->formatMoney(sellPrice);
             ai->TellMaster(out.str());
         }
     }
 
-    ostringstream out; out << item->ItemId;
+    std::ostringstream out; out << item->ItemId;
     ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
     if (usage == ITEM_USAGE_NONE)
         return;
 
-    int32 buyPrice = auctionbot.GetBuyPrice(item) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
+//TODO PLAYERBOT    int32 buyPrice = auctionbot.GetBuyPrice(item) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
+    int32 buyPrice = 1;
     if (buyPrice)
     {
-        ostringstream out;
+        std::ostringstream out;
         out << "Will buy for " << chat->formatMoney(buyPrice);
         ai->TellMaster(out.str());
     }
@@ -161,7 +163,7 @@ void QueryItemUsageAction::QueryQuestItem(uint32 itemId, const Quest *questTempl
             continue;
 
         int required = questTemplate->RequiredItemCount[i];
-        int available = questStatus->ItemCount[i];
+        int available = questStatus->m_itemcount[i];
 
         if (!required)
             continue;

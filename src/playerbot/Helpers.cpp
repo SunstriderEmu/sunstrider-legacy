@@ -5,10 +5,10 @@
 #include <cctype>
 #include <locale>
 
-vector<string>& split(const string &s, char delim, vector<string> &elems)
+vector<std::string>& split(const std::string &s, char delim, vector<std::string> &elems)
 {
-    stringstream ss(s);
-    string item;
+    std::stringstream ss(s);
+    std::string item;
     while(getline(ss, item, delim))
     {
         elems.push_back(item);
@@ -17,9 +17,9 @@ vector<string>& split(const string &s, char delim, vector<string> &elems)
 }
 
 
-vector<string> split(const string &s, char delim)
+vector<std::string> split(const std::string &s, char delim)
 {
-    vector<string> elems;
+    vector<std::string> elems;
     return split(s, delim, elems);
 }
 

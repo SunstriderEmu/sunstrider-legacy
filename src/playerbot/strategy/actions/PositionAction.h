@@ -18,13 +18,13 @@ namespace ai
     class MoveToPositionAction : public MovementAction
     {
     public:
-        MoveToPositionAction(PlayerbotAI* ai, string qualifier) : MovementAction(ai, "move to position"), qualifier(qualifier)
+        MoveToPositionAction(PlayerbotAI* ai, std::string qualifier) : MovementAction(ai, "move to position"), qualifier(qualifier)
         {}
 
         virtual bool Execute(Event event);
 
     protected:
-        string qualifier;
+        std::string qualifier;
     };
 
     class GuardAction : public MoveToPositionAction

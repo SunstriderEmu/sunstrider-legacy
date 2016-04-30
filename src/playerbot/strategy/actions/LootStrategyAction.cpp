@@ -8,7 +8,7 @@ using namespace ai;
 
 bool LootStrategyAction::Execute(Event event)
 {
-    string strategy = event.getParam();
+    std::string strategy = event.getParam();
 
     LootObjectStack* lootItems = AI_VALUE(LootObjectStack*, "available loot");
     set<uint32>& alwaysLootItems = AI_VALUE(set<uint32>&, "always loot list");
@@ -16,7 +16,7 @@ bool LootStrategyAction::Execute(Event event)
 
     if (strategy == "?")
     {
-        ostringstream out;
+        std::ostringstream out;
         out << "Loot strategy: ";
         out << LootStrategy2string(lootStrategy->Get());
         out << ", always loot items: ";
@@ -38,7 +38,7 @@ bool LootStrategyAction::Execute(Event event)
         if (items.size() == 0)
         {
             lootStrategy->Set(String2LootStrategy(strategy));
-            ostringstream out;
+            std::ostringstream out;
             out << "Loot strategy set to " << LootStrategy2string(lootStrategy->Get());
             ai->TellMaster(out);
             return true;
@@ -68,7 +68,7 @@ bool LootStrategyAction::Execute(Event event)
 }
 
 
-LootStrategy LootStrategyAction::String2LootStrategy(string strategy)
+LootStrategy LootStrategyAction::String2LootStrategy(std::string strategy)
 {
     if (strategy == "*" || strategy == "all")
         return LOOTSTRATEGY_ALL;

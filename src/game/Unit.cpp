@@ -2043,6 +2043,7 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
     if(attType == BASE_ATTACK && sWorld->getConfig(CONFIG_DEBUG_DISABLE_MAINHAND))
         return;
 
+    // disable this check for performance boost ?
     if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !IsWithinLOSInMap(pVictim))
         return;
         
@@ -10494,7 +10495,7 @@ void Unit::DestroyForNearbyPlayers()
 
     std::list<Unit*> targets;
     Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(targets, check);
+    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, targets, check);
     VisitNearbyWorldObject(GetMap()->GetVisibilityRange(), searcher);
     for(std::list<Unit*>::iterator iter = targets.begin(); iter != targets.end(); ++iter)
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
@@ -12771,7 +12772,7 @@ Unit* Unit::SelectNearbyTarget(float dist) const
 {
     std::list<Unit *> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(targets, u_check);
+    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
     VisitNearbyObject(dist, searcher);
 
     // remove current target

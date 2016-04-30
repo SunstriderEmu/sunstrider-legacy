@@ -2,9 +2,9 @@
 #include "../../playerbot.h"
 #include "NearestCorpsesValue.h"
 
-#include "../../../Grids/Notifiers/GridNotifiers.h"
-#include "../../../Grids/Notifiers/GridNotifiersImpl.h"
-#include "../../../Grids/Cells/CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 using namespace ai;
 using namespace Trinity;

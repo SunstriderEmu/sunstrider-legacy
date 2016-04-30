@@ -31,9 +31,9 @@ public:
     void LogoutAllBots();
     void OnBotLogin(Player * const bot);
 
-    list<string> HandlePlayerbotCommand(char const* args, Player* master = NULL);
-    string ProcessBotCommand(string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId);
-    uint32 GetAccountId(string name);
+    list<std::string> HandlePlayerbotCommand(char const* args, Player* master = NULL);
+    std::string ProcessBotCommand(std::string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId);
+    uint32 GetAccountId(std::string name);
 
 protected:
     virtual void OnBotLoginInternal(Player * const bot) = 0;
@@ -51,7 +51,7 @@ public:
     static bool HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args);
     void HandleMasterIncomingPacket(const WorldPacket& packet);
     void HandleMasterOutgoingPacket(const WorldPacket& packet);
-    void HandleCommand(uint32 type, const string& text);
+    void HandleCommand(uint32 type, const std::string& text);
 
     virtual void UpdateAIInternal(uint32 elapsed);
 

@@ -9,7 +9,7 @@ namespace ai
     class ReachTargetAction : public MovementAction
     {
     public:
-        ReachTargetAction(PlayerbotAI* ai, string name, float distance) : MovementAction(ai, name)
+        ReachTargetAction(PlayerbotAI* ai, std::string name, float distance) : MovementAction(ai, name)
 		{
             this->distance = distance;
         }
@@ -21,7 +21,7 @@ namespace ai
 		{
             return AI_VALUE2(float, "distance", "current target") > distance;
         }
-        virtual string GetTargetName() { return "current target"; }
+        virtual std::string GetTargetName() { return "current target"; }
 
     protected:
         float distance;
@@ -30,7 +30,7 @@ namespace ai
     class CastReachTargetSpellAction : public CastSpellAction
     {
     public:
-        CastReachTargetSpellAction(PlayerbotAI* ai, string spell, float distance) : CastSpellAction(ai, spell)
+        CastReachTargetSpellAction(PlayerbotAI* ai, std::string spell, float distance) : CastSpellAction(ai, spell)
 		{
             this->distance = distance;
         }

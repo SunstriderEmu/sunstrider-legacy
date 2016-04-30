@@ -8,7 +8,7 @@ namespace ai
     {
     public:
         ChatFilter(PlayerbotAI* ai) : PlayerbotAIAware(ai) {}
-        virtual string Filter(string message);
+        virtual std::string Filter(std::string message);
     };
 
     class CompositeChatFilter : public ChatFilter
@@ -16,7 +16,7 @@ namespace ai
     public:
         CompositeChatFilter(PlayerbotAI* ai);
         virtual ~CompositeChatFilter();
-        string Filter(string message);
+        std::string Filter(std::string message);
 
     private:
         list<ChatFilter*> filters;

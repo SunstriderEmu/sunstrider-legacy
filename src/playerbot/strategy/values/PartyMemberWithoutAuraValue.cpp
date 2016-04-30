@@ -1,14 +1,14 @@
 
 #include "../../playerbot.h"
 #include "PartyMemberWithoutAuraValue.h"
-#include "../../../Entities/Pet/Pet.h"
+#include "Pet.h"
 
 using namespace ai;
 
 class PlayerWithoutAuraPredicate : public FindPlayerPredicate, public PlayerbotAIAware
 {
 public:
-    PlayerWithoutAuraPredicate(PlayerbotAI* ai, string aura) :
+    PlayerWithoutAuraPredicate(PlayerbotAI* ai, std::string aura) :
         PlayerbotAIAware(ai), FindPlayerPredicate(), aura(aura) {}
 
 public:
@@ -25,7 +25,7 @@ public:
     }
 
 private:
-    string aura;
+    std::string aura;
 };
 
 Unit* PartyMemberWithoutAuraValue::Calculate()

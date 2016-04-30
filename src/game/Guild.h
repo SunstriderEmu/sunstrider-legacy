@@ -30,11 +30,14 @@ class Item;
 
 enum GuildDefaultRanks
 {
+    // These ranks can be modified, but they cannot be deleted
     GR_GUILDMASTER  = 0,
     GR_OFFICER      = 1,
-    //GR_VETERAN      = 2, -- not used anywhere and possible incorrect in modified rank list
-    //GR_MEMBER       = 3,
-    //GR_INITIATE     = 4, -- use Guild::GetLowestRank() instead for lowest rank
+    GR_VETERAN      = 2,
+    GR_MEMBER       = 3,
+    GR_INITIATE     = 4, //-- use Guild::GetLowestRank() instead for lowest rank
+   // When promoting member server does: rank--
+   // When demoting member server does: rank++
 };
 
 enum GuildRankRights
@@ -304,7 +307,7 @@ class Guild
         void SetOFFNOTE(uint64 guid,std::string offnote);
         void SetEmblem(uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle, uint32 borderColor, uint32 backgroundColor);
 
-        uint32 GetMemberSize() const { return members.size(); }
+        uint32 GetMemberCount() const { return members.size(); }
         uint32 GetAccountsNumber() const { return m_accountsNumber; }
 
         bool LoadGuildFromDB(const std::string guildname);

@@ -10,8 +10,8 @@ namespace ai
         virtual bool Execute(Event event);
 
     public:
-        static string logLevel2string(LogLevel level);
-        static LogLevel string2logLevel(string level);
+        static std::string logLevel2string(LogLevel level);
+        static LogLevel string2logLevel(std::string level);
     };
 
 }

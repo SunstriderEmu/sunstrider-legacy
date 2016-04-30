@@ -8,7 +8,7 @@ using namespace ai;
 
 bool BuyAction::Execute(Event event)
 {
-    string link = event.getParam();
+    std::string link = event.getParam();
 
     ItemIds itemIds = chat->parseItems(link);
     if (itemIds.empty())
@@ -37,6 +37,7 @@ bool BuyAction::Execute(Event event)
         return false;
     }
 
+    /* TODO PLAYERBOT
     for (ItemIds::iterator i = itemIds.begin(); i != itemIds.end(); i++)
     {
         for (uint32 slot = 0; slot < tItems->GetItemCount(); slot++)
@@ -48,6 +49,7 @@ bool BuyAction::Execute(Event event)
             }
         }
     }
+    */
 
     return true;
 }

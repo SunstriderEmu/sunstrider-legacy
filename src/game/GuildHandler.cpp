@@ -267,7 +267,7 @@ void WorldSession::HandleGuildInfoOpcode(WorldPacket& /*recvPacket*/)
     data << guild->GetCreatedDay();
     data << guild->GetCreatedMonth();
     data << guild->GetCreatedYear();
-    data << guild->GetMemberSize();
+    data << guild->GetMemberCount();
     data << guild->GetAccountsNumber();
 
     SendPacket(&data);
@@ -413,7 +413,7 @@ void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)
         SendGuildCommandResult(GUILD_CREATE_S, "", GUILD_PLAYER_NOT_IN_GUILD);
         return;
     }
-    if(_player->GetGUID() == guild->GetLeaderGUID() && guild->GetMemberSize() > 1)
+    if(_player->GetGUID() == guild->GetLeaderGUID() && guild->GetMemberCount() > 1)
     {
         SendGuildCommandResult(GUILD_QUIT_S, "", GUILD_LEADER_LEAVE);
         return;

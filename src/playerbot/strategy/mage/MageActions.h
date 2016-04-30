@@ -26,7 +26,7 @@ namespace ai
     {
     public:
         CastArcaneBlastAction(PlayerbotAI* ai) : CastBuffSpellAction(ai, "arcane blast") {}
-        virtual string GetTargetName() { return "current target"; }
+        virtual std::string GetTargetName() { return "current target"; }
     };
 
     class CastArcaneBarrageAction : public CastSpellAction
@@ -194,7 +194,7 @@ namespace ai
 	{
 	public:
 	    CastEvocationAction(PlayerbotAI* ai) : CastSpellAction(ai, "evocation") {}
-	    virtual string GetTargetName() { return "self target"; }
+	    virtual std::string GetTargetName() { return "self target"; }
 	};
 
     class CastCounterspellOnEnemyHealerAction : public CastSpellOnEnemyHealerAction

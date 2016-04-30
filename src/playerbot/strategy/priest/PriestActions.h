@@ -14,7 +14,7 @@ namespace ai
     public:
         CastGreaterHealOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "greater heal") {}
 
-        virtual string getName() { return "greater heal on party"; }
+        virtual std::string getName() { return "greater heal on party"; }
     };
 
     class CastLesserHealAction : public CastHealingSpellAction {
@@ -27,7 +27,7 @@ namespace ai
     public:
         CastLesserHealOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "lesser heal") {}
 
-        virtual string getName() { return "lesser heal on party"; }
+        virtual std::string getName() { return "lesser heal on party"; }
     };
 
     class CastFlashHealAction : public CastHealingSpellAction {
@@ -40,7 +40,7 @@ namespace ai
     public:
         CastFlashHealOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "flash heal") {}
 
-        virtual string getName() { return "flash heal on party"; }
+        virtual std::string getName() { return "flash heal on party"; }
     };
 
     class CastHealAction : public CastHealingSpellAction {
@@ -53,7 +53,7 @@ namespace ai
     public:
         CastHealOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "heal") {}
 
-        virtual string getName() { return "heal on party"; }
+        virtual std::string getName() { return "heal on party"; }
     };
 
     class CastRenewAction : public CastHealingSpellAction {
@@ -66,7 +66,7 @@ namespace ai
     public:
         CastRenewOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "renew") {}
 
-        virtual string getName() { return "renew on party"; }
+        virtual std::string getName() { return "renew on party"; }
     };
 
     class CastFadeAction : public CastBuffSpellAction {
@@ -105,7 +105,7 @@ namespace ai
     public:
         CastPowerWordShieldOnPartyAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "power word: shield") {}
 
-        virtual string getName() { return "power word: shield on party"; }
+        virtual std::string getName() { return "power word: shield on party"; }
     };
 
 	class CastPowerWordFortitudeAction : public CastBuffSpellAction {
@@ -184,7 +184,7 @@ namespace ai
     {
     public:
         CastCureDiseaseOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "cure disease", DISPEL_DISEASE) {}
-        virtual string getName() { return "cure disease on party"; }
+        virtual std::string getName() { return "cure disease on party"; }
     };
 
 	class CastAbolishDiseaseAction : public CastCureSpellAction {
@@ -197,7 +197,7 @@ namespace ai
     {
     public:
         CastAbolishDiseaseOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "abolish disease", DISPEL_DISEASE) {}
-        virtual string getName() { return "abolish disease on party"; }
+        virtual std::string getName() { return "abolish disease on party"; }
         virtual NextAction** getAlternatives();
     };
 
@@ -215,7 +215,7 @@ namespace ai
     {
     public:
         CastDispelMagicOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "dispel magic", DISPEL_MAGIC) {}
-        virtual string getName() { return "dispel magic on party"; }
+        virtual std::string getName() { return "dispel magic on party"; }
     };
 
 	class CastResurrectionAction : public ResurrectPartyMemberAction
@@ -240,7 +240,7 @@ namespace ai
 	{
 	public:
 	    CastDispersionAction(PlayerbotAI* ai) : CastSpellAction(ai, "dispersion") {}
-	    virtual string GetTargetName() { return "self target"; }
+	    virtual std::string GetTargetName() { return "self target"; }
 	};
 
 }

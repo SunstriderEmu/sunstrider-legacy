@@ -243,9 +243,22 @@ struct CreatureTemplate
             return SKILL_SKINNING;                          // normal case
     }
 
-    bool isTameable() const
+    bool IsExotic() const
     {
-        return type == CREATURE_TYPE_BEAST && family != 0 && (type_flags & CREATURE_TYPEFLAGS_TAMEABLE);
+#ifdef LICH_KING
+        return (type_flags & CREATURE_TYPEFLAGS_EXOTIC) != 0;
+#else
+        return false;
+#endif
+    }
+
+    bool IsTameable(bool canTameExotic = false) const
+    {
+        if (type != CREATURE_TYPE_BEAST || family == 0 || (type_flags & CREATURE_TYPEFLAGS_TAMEABLE) == 0)
+            return false;
+
+        // if can tame exotic then can tame any tameable
+        return canTameExotic || !IsExotic();
     }
 };
 

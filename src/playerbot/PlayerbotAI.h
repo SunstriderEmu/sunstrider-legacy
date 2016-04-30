@@ -8,6 +8,7 @@
 #include "strategy/ExternalEventHelper.h"
 #include "ChatFilter.h"
 #include "PlayerbotSecurity.h"
+#include "ChatHelper.h"
 #include <stack>
 
 class Player;
@@ -23,9 +24,9 @@ class PlayerbotChatHandler: protected ChatHandler
 {
 public:
     explicit PlayerbotChatHandler(Player* pMasterPlayer) : ChatHandler(pMasterPlayer->GetSession()) {}
-    void sysmessage(string str) { SendSysMessage(str.c_str()); }
-    uint32 extractQuestId(string str);
-    uint32 extractSpellId(string str)
+    void sysmessage(std::string str) { SendSysMessage(str.c_str()); }
+    uint32 extractQuestId(std::string str);
+    uint32 extractSpellId(std::string str)
     {
         char* source = (char*)str.c_str();
         return extractSpellIdFromLink(source);
@@ -67,19 +68,19 @@ enum BotState
 class PacketHandlingHelper
 {
 public:
-    void AddHandler(uint16 opcode, string handler);
+    void AddHandler(uint16 opcode, std::string handler);
     void Handle(ExternalEventHelper &helper);
     void AddPacket(const WorldPacket& packet);
 
 private:
-    map<uint16, string> handlers;
+    map<uint16, std::string> handlers;
     stack<WorldPacket> queue;
 };
 
 class ChatCommandHolder
 {
 public:
-    ChatCommandHolder(string command, Player* owner = NULL, uint32 type = CHAT_MSG_WHISPER) : command(command), owner(owner), type(type) {}
+    ChatCommandHolder(std::string command, Player* owner = NULL, uint32 type = CHAT_MSG_WHISPER) : command(command), owner(owner), type(type) {}
     ChatCommandHolder(ChatCommandHolder const& other)
     {
         this->command = other.command;
@@ -88,12 +89,12 @@ public:
     }
 
 public:
-    string GetCommand() { return command; }
+    std::string GetCommand() { return command; }
     Player* GetOwner() { return owner; }
     uint32 GetType() { return type; }
 
 private:
-    string command;
+    std::string command;
     Player* owner;
     uint32 type;
 };
@@ -108,18 +109,18 @@ public:
 public:
 	virtual void UpdateAI(uint32 elapsed);
 	virtual void UpdateAIInternal(uint32 elapsed);
-	string HandleRemoteCommand(string command);
-    void HandleCommand(uint32 type, const string& text, Player& fromPlayer);
+	string HandleRemoteCommand(std::string command);
+    void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer);
 	void HandleBotOutgoingPacket(const WorldPacket& packet);
     void HandleMasterIncomingPacket(const WorldPacket& packet);
     void HandleMasterOutgoingPacket(const WorldPacket& packet);
 	void HandleTeleportAck();
     void ChangeEngine(BotState type);
     void DoNextAction();
-    void DoSpecificAction(string name);
-    void ChangeStrategy(string name, BotState type);
+    void DoSpecificAction(std::string name);
+    void ChangeStrategy(std::string name, BotState type);
     bool ContainsStrategy(StrategyType type);
-    bool HasStrategy(string name, BotState type);
+    bool HasStrategy(std::string name, BotState type);
     void ResetStrategies();
     void ReInitCurrentEngine();
     void Reset();
@@ -129,22 +130,22 @@ public:
     Creature* GetCreature(ObjectGuid guid);
     Unit* GetUnit(ObjectGuid guid);
     GameObject* GetGameObject(ObjectGuid guid);
-    bool TellMaster(ostringstream &stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) { return TellMaster(stream.str(), securityLevel); }
-    bool TellMaster(string text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
-    bool TellMasterNoFacing(string text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
+    bool TellMaster(std::ostringstream &stream, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL) { return TellMaster(stream.str(), securityLevel); }
+    bool TellMaster(std::string text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
+    bool TellMasterNoFacing(std::string text, PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
     void InterruptSpell();
-    void RemoveAura(string name);
+    void RemoveAura(std::string name);
     void RemoveShapeshift();
     void WaitForSpellCast(Spell *spell);
 
-    virtual bool CanCastSpell(string name, Unit* target);
-    virtual bool CastSpell(string name, Unit* target);
-    virtual bool HasAura(string spellName, Unit* player);
+    virtual bool CanCastSpell(std::string name, Unit* target);
+    virtual bool CastSpell(std::string name, Unit* target);
+    virtual bool HasAura(std::string spellName, Unit* player);
     virtual bool HasAnyAuraOf(Unit* player, ...);
 
-    virtual bool IsInterruptableSpellCasting(Unit* player, string spell);
+    virtual bool IsInterruptableSpellCasting(Unit* player, std::string spell);
     virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
     bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true);
 

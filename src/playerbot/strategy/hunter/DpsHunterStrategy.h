@@ -12,7 +12,7 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "dps"; }
+        virtual std::string getName() { return "dps"; }
         virtual NextAction** getDefaultActions();
 
     };
@@ -24,7 +24,7 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "aoe"; }
+        virtual std::string getName() { return "aoe"; }
     };
 
     class DpsHunterDebuffStrategy : public CombatStrategy
@@ -34,6 +34,6 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "dps debuff"; }
+        virtual std::string getName() { return "dps debuff"; }
     };
 }

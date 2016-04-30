@@ -11,8 +11,6 @@
 
 using namespace ai;
 
-
-
 bool TradeStatusAction::Execute(Event event)
 {
     Player* trader = bot->GetTrader();
@@ -39,6 +37,7 @@ bool TradeStatusAction::Execute(Event event)
     uint32 status;
     p >> status;
 
+    /* TODO PLAYERBOT
     if (status == TRADE_STATUS_TRADE_ACCEPT)
     {
         WorldPacket p;
@@ -79,7 +78,7 @@ bool TradeStatusAction::Execute(Event event)
         BeginTrade();
         return true;
     }
-
+    */
     return false;
 }
 
@@ -100,7 +99,7 @@ void TradeStatusAction::BeginTrade()
         uint32 discount = sRandomPlayerbotMgr.GetTradeDiscount(bot);
         if (discount)
         {
-            ostringstream out; out << "Discount up to: " << chat->formatMoney(discount);
+            std::ostringstream out; out << "Discount up to: " << chat->formatMoney(discount);
             ai->TellMaster(out);
         }
     }
@@ -111,6 +110,8 @@ bool TradeStatusAction::CheckTrade()
     if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return true;
 
+    /* TODO PLAYERBOT
+
     Player* master = GetMaster();
     if (!bot->GetTradeData() || !master->GetTradeData())
         return false;
@@ -120,7 +121,7 @@ bool TradeStatusAction::CheckTrade()
         Item* item = bot->GetTradeData()->GetItem((TradeSlots)slot);
         if (item && !auctionbot.GetSellPrice(item->GetTemplate()))
         {
-            ostringstream out;
+            std::ostringstream out;
             out << chat->formatItem(item->GetTemplate()) << " - This is not for sale";
             ai->TellMaster(out);
             return false;
@@ -129,11 +130,11 @@ bool TradeStatusAction::CheckTrade()
         item = master->GetTradeData()->GetItem((TradeSlots)slot);
         if (item)
         {
-            ostringstream out; out << item->GetTemplate()->ItemId;
+            std::ostringstream out; out << item->GetTemplate()->ItemId;
             ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
             if (!auctionbot.GetBuyPrice(item->GetTemplate()) || usage == ITEM_USAGE_NONE)
             {
-                ostringstream out;
+                std::ostringstream out;
                 out << chat->formatItem(item->GetTemplate()) << " - I don't need this";
                 ai->TellMaster(out);
                 return false;
@@ -177,9 +178,10 @@ bool TradeStatusAction::CheckTrade()
         return true;
     }
 
-    ostringstream out;
+    std::ostringstream out;
     out << "I want " << chat->formatMoney(botMoney - playerMoney) << " for this";
     ai->TellMaster(out);
+    */
     return false;
 }
 
@@ -189,6 +191,7 @@ int32 TradeStatusAction::CalculateCost(TradeData* data, bool sell)
         return 0;
 
     uint32 sum = 0;
+    /* TODO PLAYERBOT
     for (uint32 slot = 0; slot < TRADE_SLOT_TRADED_COUNT; ++slot)
     {
         Item* item = data->GetItem((TradeSlots)slot);
@@ -211,6 +214,6 @@ int32 TradeStatusAction::CalculateCost(TradeData* data, bool sell)
             sum += item->GetCount() * auctionbot.GetBuyPrice(proto) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
         }
     }
-
+    */
     return sum;
 }

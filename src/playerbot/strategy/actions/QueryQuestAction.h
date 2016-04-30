@@ -11,6 +11,6 @@ namespace ai
 
     private:
         void TellObjectives(uint32 questId);
-        void TellObjective(string name, int available, int required);
+        void TellObjective(std::string name, int available, int required);
     };
 }

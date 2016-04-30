@@ -11,13 +11,13 @@ namespace ai
 
     public:
         virtual bool Execute(Event event);
-        static map<uint32, string> skills;
+        static map<uint32, std::string> skills;
 
     private:
         void InitSkills();
-        string QueryTrade(string text);
-        string QuerySkill(string text);
-        string QuerySpec(string text);
+        std::string QueryTrade(std::string text);
+        std::string QuerySkill(std::string text);
+        std::string QuerySpec(std::string text);
     };
 
 }

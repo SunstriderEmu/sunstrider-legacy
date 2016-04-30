@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         StayStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-        virtual string getName() { return "stay"; }
+        virtual std::string getName() { return "stay"; }
         virtual NextAction** getDefaultActions();
     };
 

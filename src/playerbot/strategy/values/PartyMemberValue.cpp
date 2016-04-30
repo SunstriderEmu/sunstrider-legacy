@@ -2,6 +2,7 @@
 #include "../../playerbot.h"
 #include "PartyMemberValue.h"
 #include "../../PlayerbotAIConfig.h"
+#include "Corpse.h"
 
 using namespace ai;
 using namespace std;
@@ -81,8 +82,8 @@ bool PartyMemberValue::IsTargetOfSpellCast(Player* target, SpellEntryPredicate &
 {
 
     Group* group = bot->GetGroup();
-    ObjectGuid targetGuid = target ? target->GetGUID() : bot->GetGUID();
-    ObjectGuid corpseGuid = target && target->GetCorpse() ? target->GetCorpse()->GetGUID() : ObjectGuid();
+    ObjectGuid targetGuid = ObjectGuid(target ? target->GetGUID() : bot->GetGUID());
+    ObjectGuid corpseGuid = target && target->GetCorpse() ? ObjectGuid(target->GetCorpse()->GetGUID()) : ObjectGuid();
 
     for (GroupReference *gref = group->GetFirstMember(); gref; gref = gref->next())
     {
@@ -95,11 +96,11 @@ bool PartyMemberValue::IsTargetOfSpellCast(Player* target, SpellEntryPredicate &
             for (int type = CURRENT_GENERIC_SPELL; type < CURRENT_MAX_SPELL; type++) {
                 Spell* spell = player->GetCurrentSpell((CurrentSpellTypes)type);
                 if (spell && predicate.Check(spell->m_spellInfo)) {
-                    ObjectGuid unitTarget = spell->m_targets.GetUnitTargetGUID();
+                    ObjectGuid unitTarget = ObjectGuid(spell->m_targets.GetUnitTargetGUID());
                     if (unitTarget == targetGuid)
                         return true;
 
-                    ObjectGuid corpseTarget = spell->m_targets.GetCorpseTargetGUID();
+                    ObjectGuid corpseTarget = ObjectGuid(spell->m_targets.GetCorpseTargetGUID());
                     if (corpseTarget == corpseGuid)
                         return true;
                 }

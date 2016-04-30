@@ -730,7 +730,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     }
 
     // original spells
-    learnDefaultSpells(true);
+    LearnDefaultSpells(true);
 
     // original action bar
     std::list<uint16>::const_iterator action_itr[4];
@@ -1448,7 +1448,8 @@ void Player::Update( uint32 p_time )
     
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
-    if (IsHasDelayedTeleport() && IsAlive())
+    // xinef: so we store it to the end of the world and teleport out of the ass after resurrection?
+    if (IsHasDelayedTeleport() /* && IsAlive()*/)
         TeleportTo(m_teleport_dest, m_teleport_options);
 
     #ifdef PLAYERBOT
@@ -2198,11 +2199,11 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
         return NULL;
 
     // Deathstate checks
-    if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_GHOST || creature->isSpiritService()))
+    if (!IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_GHOST || creature->IsSpiritService()))
         return NULL;
 
     // alive or spirit healer
-    if (!creature->IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT || creature->isSpiritService()))
+    if (!creature->IsAlive() && !(creature->GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_DEAD_INTERACT || creature->IsSpiritService()))
         return NULL;
 
     // appropriate npc type
@@ -8906,7 +8907,8 @@ uint8 Player::FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap )
             // (this will be replace mainhand weapon at auto equip instead unwonted "you don't known dual wielding" ...
             if(CanDualWield())
                 slots[1] = EQUIPMENT_SLOT_OFFHAND;
-        };break;
+        }
+        break;
         case INVTYPE_SHIELD:
             slots[0] = EQUIPMENT_SLOT_OFFHAND;
             break;
@@ -9009,19 +9011,19 @@ uint8 Player::FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap )
     return NULL_SLOT;
 }
 
-uint8 Player::CanUnequipItems( uint32 item, uint32 count ) const
+InventoryResult Player::CanUnequipItems( uint32 item, uint32 count ) const
 {
     Item *pItem;
     uint32 tempcount = 0;
 
-    uint8 res = EQUIP_ERR_OK;
+    InventoryResult res = EQUIP_ERR_OK;
 
     for(int i = EQUIPMENT_SLOT_START; i < INVENTORY_SLOT_BAG_END; i++)
     {
         pItem = GetItemByPos( INVENTORY_SLOT_BAG_0, i );
         if( pItem && pItem->GetEntry() == item )
         {
-            uint8 ires = CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i, false);
+            InventoryResult ires = CanUnequipItem(INVENTORY_SLOT_BAG_0 << 8 | i, false);
             if(ires==EQUIP_ERR_OK)
             {
                 tempcount += pItem->GetCount();
@@ -9504,7 +9506,7 @@ Item* Player::GetItemOrItemWithGemEquipped( uint32 item ) const
     return nullptr;
 }
 
-uint8 Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
+InventoryResult Player::_CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count ) const
 {
     ItemTemplate const *pProto = sObjectMgr->GetItemTemplate(entry);
     if( !pProto )
@@ -9560,7 +9562,7 @@ bool Player::HasItemTotemCategory( uint32 TotemCategory ) const
     return false;
 }
 
-uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool swap, Item* pSrcItem ) const
+InventoryResult Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool swap, Item* pSrcItem ) const
 {
     Item* pItem2 = GetItemByPos( bag, slot );
 
@@ -9626,7 +9628,7 @@ uint8 Player::_CanStoreItem_InSpecificSlot( uint8 bag, uint8 slot, ItemPosCountV
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
+InventoryResult Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, bool non_specialized, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
 {
     // skip specific bag already processed in first called _CanStoreItem_InBag
     if(bag==skip_bag)
@@ -9702,7 +9704,7 @@ uint8 Player::_CanStoreItem_InBag( uint8 bag, ItemPosCountVec &dest, ItemTemplat
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
+InventoryResult Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, ItemPosCountVec &dest, ItemTemplate const *pProto, uint32& count, bool merge, Item* pSrcItem, uint8 skip_bag, uint8 skip_slot ) const
 {
     for(uint32 j = slot_begin; j < slot_end; j++)
     {
@@ -9758,7 +9760,7 @@ uint8 Player::_CanStoreItem_InInventorySlots( uint8 slot_begin, uint8 slot_end, 
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count, ItemTemplate const* pProto) const
+InventoryResult Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint32 entry, uint32 count, Item *pItem, bool swap, uint32* no_space_count, ItemTemplate const* pProto) const
 {
     if (pItem && !pProto)
         pProto = pItem->GetTemplate();
@@ -9805,7 +9807,7 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
 
     // check count of items (skip for auto move for same player from bank)
     uint32 no_similar_count = 0;                            // can't store this amount similar items
-    uint8 res = _CanTakeMoreSimilarItems(entry,count,pItem,&no_similar_count);
+    InventoryResult res = _CanTakeMoreSimilarItems(entry,count,pItem,&no_similar_count);
     if(res!=EQUIP_ERR_OK)
     {
         if(count==no_similar_count)
@@ -10147,7 +10149,7 @@ uint8 Player::_CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, uint3
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint8 Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
+InventoryResult Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
 {
     Item    *pItem2;
 
@@ -10217,7 +10219,7 @@ uint8 Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
         ItemTemplate const *pBagProto;
 
         // item is 'one item only'
-        uint8 res = CanTakeMoreSimilarItems(pItem);
+        InventoryResult res = CanTakeMoreSimilarItems(pItem);
         if(res != EQUIP_ERR_OK)
             return res;
 
@@ -10362,13 +10364,13 @@ uint8 Player::CanStoreItems(std::vector<Item*> const& items, uint32 count) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const* proto) const
+InventoryResult Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap, ItemTemplate const* proto) const
 {
     dest = 0;
     Item *pItem = Item::CreateItem( item, 1, this, proto );
     if( pItem )
     {
-        uint8 result = CanEquipItem(slot, dest, pItem, swap );
+        InventoryResult result = CanEquipItem(slot, dest, pItem, swap );
         delete pItem;
         return result;
     }
@@ -10376,7 +10378,7 @@ uint8 Player::CanEquipNewItem( uint8 slot, uint16 &dest, uint32 item, bool swap,
     return EQUIP_ERR_ITEM_NOT_FOUND;
 }
 
-uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading ) const
+InventoryResult Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bool not_loading ) const
 {
     dest = 0;
     if( pItem )
@@ -10388,7 +10390,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
                 return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
             // check count of items (skip for auto move for same player from bank)
-            uint8 res = CanTakeMoreSimilarItems(pItem);
+            InventoryResult res = CanTakeMoreSimilarItems(pItem);
             if(res != EQUIP_ERR_OK)
                 return res;
 
@@ -10424,7 +10426,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
             if( eslot == NULL_SLOT )
                 return EQUIP_ERR_ITEM_CANT_BE_EQUIPPED;
 
-            uint8 msg = CanUseItem( pItem , not_loading );
+            InventoryResult msg = CanUseItem( pItem , not_loading );
             if( msg != EQUIP_ERR_OK )
                 return msg;
             if( !swap && GetItemByPos( INVENTORY_SLOT_BAG_0, eslot ) )
@@ -10521,7 +10523,7 @@ uint8 Player::CanEquipItem( uint8 slot, uint16 &dest, Item *pItem, bool swap, bo
         return EQUIP_ERR_ITEMS_CANT_BE_SWAPPED;
 }
 
-uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
+InventoryResult Player::CanUnequipItem( uint16 pos, bool swap ) const
 {
     // Applied only to equipped items and bank bags
     if(!IsEquipmentPos(pos) && !IsBagPos(pos))
@@ -10556,7 +10558,7 @@ uint8 Player::CanUnequipItem( uint16 pos, bool swap ) const
     return EQUIP_ERR_OK;
 }
 
-uint8 Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *pItem, bool swap, bool not_loading ) const
+InventoryResult Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *pItem, bool swap, bool not_loading ) const
 {
     if( !pItem )
         return swap ? EQUIP_ERR_ITEMS_CANT_BE_SWAPPED : EQUIP_ERR_ITEM_NOT_FOUND;
@@ -10571,7 +10573,7 @@ uint8 Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *p
         return EQUIP_ERR_DONT_OWN_THAT_ITEM;
 
     // check count of items (skip for auto move for same player from bank)
-    uint8 res = CanTakeMoreSimilarItems(pItem);
+    InventoryResult res = CanTakeMoreSimilarItems(pItem);
     if(res != EQUIP_ERR_OK)
         return res;
 
@@ -10587,8 +10589,9 @@ uint8 Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *p
                 {
                     if( !HasBankBagSlot( slot ) )
                         return EQUIP_ERR_MUST_PURCHASE_THAT_BAG_SLOT;
-                    if( uint8 cantuse = CanUseItem( pItem, not_loading ) != EQUIP_ERR_OK )
-                        return cantuse;
+                    InventoryResult canUse = CanUseItem(pItem, not_loading);
+                    if(canUse != EQUIP_ERR_OK)
+                        return canUse;
                 }
                 else
                 {
@@ -10745,7 +10748,7 @@ uint8 Player::CanBankItem( uint8 bag, uint8 slot, ItemPosCountVec &dest, Item *p
     return EQUIP_ERR_BANK_FULL;
 }
 
-uint8 Player::CanUseItem( Item *pItem, bool not_loading ) const
+InventoryResult Player::CanUseItem( Item *pItem, bool not_loading ) const
 {
     if( pItem )
     {
@@ -10808,7 +10811,7 @@ bool Player::CanUseItem( ItemTemplate const *pProto )
     return false;
 }
 
-uint8 Player::CanUseAmmo( uint32 item ) const
+InventoryResult Player::CanUseAmmo( uint32 item ) const
 {
     if( !IsAlive() )
         return EQUIP_ERR_YOU_ARE_DEAD;
@@ -19877,11 +19880,11 @@ void Player::resetSpells()
     for(PlayerSpellMap::const_iterator iter = smap.begin();iter != smap.end(); ++iter)
         RemoveSpell(iter->first);                           // only iter->first can be accessed, object by iter->second can be deleted already
 
-    learnDefaultSpells();
+    LearnDefaultSpells();
     learnQuestRewardedSpells();
 }
 
-void Player::learnDefaultSpells(bool loading)
+void Player::LearnDefaultSpells(bool loading)
 {
     // learn default race/class spells
     PlayerInfo const *info = sObjectMgr->GetPlayerInfo(GetRace(),GetClass());
@@ -20312,7 +20315,7 @@ void Player::DoPack58(uint8 step)
             loc = WorldLocation(1, 1632.54, -4440.77, 15.4584, 1.0637);
             area_id = 1637; // Orgrimmar
         }
-        SetHomebindToLocation(loc, area_id);
+        SetHomebind(loc, area_id);
 
     } else {
         
@@ -21563,7 +21566,7 @@ void Player::RemoveGlobalCooldown(SpellInfo const *spellInfo)
     m_globalCooldowns[spellInfo->StartRecoveryCategory] = 0;
 }
 
-void Player::SetHomebindToLocation(WorldLocation const& loc, uint32 area_id)
+void Player::SetHomebind(WorldLocation const& loc, uint32 area_id)
 {
     m_homebindMapId = loc.m_mapId;
     m_homebindAreaId = area_id;

@@ -16,6 +16,6 @@ namespace ai
         LfgStrategy(PlayerbotAI* ai) : Strategy(ai) {}
 		virtual int GetType() { return STRATEGY_TYPE_NONCOMBAT; }
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "lfg"; }
+        virtual std::string getName() { return "lfg"; }
     };
 }

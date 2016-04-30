@@ -2,9 +2,9 @@
 #include "../../playerbot.h"
 #include "NearestGameObjects.h"
 
-#include "../../../Grids/Notifiers/GridNotifiers.h"
-#include "../../../Grids/Notifiers/GridNotifiersImpl.h"
-#include "../../../Grids/Cells/CellImpl.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 using namespace ai;
 using namespace Trinity;
@@ -40,7 +40,7 @@ list<ObjectGuid> NearestGameObjects::Calculate()
     {
 		GameObject* go = *tIter;
         if(bot->IsWithinLOSInMap(go))
-			result.push_back(go->GetGUID());
+			result.push_back(ObjectGuid(go->GetGUID()));
     }
 
     return result;

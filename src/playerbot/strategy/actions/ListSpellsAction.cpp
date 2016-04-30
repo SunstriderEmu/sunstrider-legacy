@@ -16,7 +16,7 @@ bool ListSpellsAction::Execute(Event event)
     std::ostringstream posOut;
     std::ostringstream negOut;
 
-    string filter = event.getParam();
+    std::string filter = event.getParam();
 
     const std::string ignoreList = ",Opening,Closing,Stuck,Remove Insignia,Opening - No Text,Grovel,Duel,Honorless Target,";
     std::string alreadySeenList = ",";

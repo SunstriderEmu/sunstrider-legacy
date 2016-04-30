@@ -8,7 +8,7 @@ using namespace ai;
 class MagePullMultiplier : public PassiveMultiplier
 {
 public:
-    MagePullMultiplier(PlayerbotAI* ai, string action) : PassiveMultiplier(ai)
+    MagePullMultiplier(PlayerbotAI* ai, std::string action) : PassiveMultiplier(ai)
     {
         this->action = action;
     }
@@ -17,7 +17,7 @@ public:
     virtual float GetValue(Action* action);
 
 private:
-    string action;
+    std::string action;
 };
 
 float MagePullMultiplier::GetValue(Action* action) 
@@ -25,7 +25,7 @@ float MagePullMultiplier::GetValue(Action* action)
     if (!action) 
         return 1.0f;
 
-    string name = action->getName();
+    std::string name = action->getName();
     if (this->action == name ||
         name == "reach spell" ||
         name == "change strategy")

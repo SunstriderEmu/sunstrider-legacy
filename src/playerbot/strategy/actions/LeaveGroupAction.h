@@ -7,7 +7,7 @@ namespace ai
 {
     class LeaveGroupAction : public Action {
     public:
-        LeaveGroupAction(PlayerbotAI* ai, string name = "leave") : Action(ai, name) {}
+        LeaveGroupAction(PlayerbotAI* ai, std::string name = "leave") : Action(ai, name) {}
 
         virtual bool Execute(Event event)
         {
@@ -17,7 +17,7 @@ namespace ai
             ai->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
 
             WorldPacket p;
-            string member = bot->GetName();
+            std::string member = bot->GetName();
             p << uint32(PARTY_OP_LEAVE) << member << uint32(0);
             bot->GetSession()->HandleGroupDisbandOpcode(p);
 
@@ -42,7 +42,7 @@ namespace ai
             WorldPacket& p = event.getPacket();
             p.rpos(0);
             uint32 operation;
-            string member;
+            std::string member;
 
             p >> operation >> member;
 

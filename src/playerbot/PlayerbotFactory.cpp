@@ -126,6 +126,8 @@ void PlayerbotFactory::Randomize(bool incremental)
 void PlayerbotFactory::InitPet()
 {
     Pet* pet = bot->GetPet();
+    /* TODO PLAYERBOT
+
     if (!pet)
     {
         if (bot->GetClass() != CLASS_HUNTER)
@@ -140,7 +142,7 @@ void PlayerbotFactory::InitPet()
 	    for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
 	    {
 	        CreatureTemplate const& co = i->second;
-            if (!co.IsTameable(false))
+            if (!co.isTameable(false))
                 continue;
 
             if (co.minlevel > bot->GetLevel())
@@ -178,7 +180,7 @@ void PlayerbotFactory::InitPet()
             }
 
             pet->SetPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
-            pet->setFaction(bot->getFaction());
+            pet->SetFaction(bot->GetFaction());
             pet->SetLevel(bot->GetLevel());
             bot->SetPetGUID(pet->GetGUID());
             bot->GetMap()->AddToMap(pet->ToCreature());
@@ -192,12 +194,14 @@ void PlayerbotFactory::InitPet()
             break;
         }
     }
-
+    */
     if (!pet)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Cannot create pet for bot %s", bot->GetName().c_str());
         return;
     }
+
+    /* TODO PLAYERBOT
 
     for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
     {
@@ -211,6 +215,7 @@ void PlayerbotFactory::InitPet()
 
         pet->ToggleAutocast(spellInfo, true);
     }
+    */
 }
 
 void PlayerbotFactory::ClearSpells()
@@ -228,7 +233,7 @@ void PlayerbotFactory::ClearSpells()
 
     for (list<uint32>::iterator i = spells.begin(); i != spells.end(); ++i)
     {
-        bot->RemoveSpell(*i, false, false);
+        bot->RemoveSpell(*i, false/*TC , false*/);
     }
 }
 
@@ -851,9 +856,10 @@ void PlayerbotFactory::EnchantItem(Item* item)
             SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchant_id);
             if (!enchant || enchant->slot != PERM_ENCHANTMENT_SLOT)
                 continue;
-
+#ifdef LICH_KING
             if (enchant->requiredLevel && enchant->requiredLevel > level)
                 continue;
+#endif
 
             uint8 sp = 0, ap = 0, tank = 0;
             for (int i = 0; i < 3; ++i)
@@ -912,6 +918,7 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16 &dest, uint32 item)
 
 void PlayerbotFactory::InitTradeSkills()
 {
+    /* TODO PLAYERBOT
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
         bot->SetSkill(tradeSkills[i], 0, 0, 0);
@@ -962,15 +969,18 @@ void PlayerbotFactory::InitTradeSkills()
         SetRandomSkill(secondSkills[urand(0, secondSkills.size() - 1)]);
         break;
     }
+    */
 }
 
 void PlayerbotFactory::UpdateTradeSkills()
 {
+    /* TODO PLAYERBOT
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
         if (bot->GetSkillValue(tradeSkills[i]) == 1)
             bot->SetSkill(tradeSkills[i], 0, 0, 0);
     }
+    ¨*/
 }
 
 void PlayerbotFactory::InitSkills()
@@ -994,15 +1004,15 @@ void PlayerbotFactory::InitSkills()
     SetRandomSkill(SKILL_FIST_WEAPONS);
 
     if (bot->GetLevel() >= 70)
-        bot->SetSkill(SKILL_RIDING, 0, 300, 300);
+        bot->SetSkill(SKILL_RIDING, /*0,*/ 300, 300);
     else if (bot->GetLevel() >= 60)
-        bot->SetSkill(SKILL_RIDING, 0, 225, 225);
+        bot->SetSkill(SKILL_RIDING, /*0,*/ 225, 225);
     else if (bot->GetLevel() >= 40)
-        bot->SetSkill(SKILL_RIDING, 0, 150, 150);
+        bot->SetSkill(SKILL_RIDING, /*0,*/ 150, 150);
     else if (bot->GetLevel() >= 20)
-        bot->SetSkill(SKILL_RIDING, 0, 75, 75);
+        bot->SetSkill(SKILL_RIDING, /*0,*/ 75, 75);
     else
-        bot->SetSkill(SKILL_RIDING, 0, 0, 0);
+        bot->SetSkill(SKILL_RIDING, /*0,*/ 0, 0);
 
     uint32 skillLevel = bot->GetLevel() < 40 ? 0 : 1;
     switch (bot->GetClass())
@@ -1010,11 +1020,11 @@ void PlayerbotFactory::InitSkills()
     case CLASS_DEATH_KNIGHT:
     case CLASS_WARRIOR:
     case CLASS_PALADIN:
-        bot->SetSkill(SKILL_PLATE_MAIL, 0, skillLevel, skillLevel);
+        bot->SetSkill(SKILL_PLATE_MAIL, /*0,*/ skillLevel, skillLevel);
         break;
     case CLASS_SHAMAN:
     case CLASS_HUNTER:
-        bot->SetSkill(SKILL_MAIL, 0, skillLevel, skillLevel);
+        bot->SetSkill(SKILL_MAIL, /*0,*/ skillLevel, skillLevel);
     }
 }
 
@@ -1022,12 +1032,13 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 {
     uint32 maxValue = level * 5;
     uint32 curValue = urand(maxValue - level, maxValue);
-    bot->SetSkill(id, 0, curValue, maxValue);
+    bot->SetSkill(id, /*0,*/ curValue, maxValue);
 
 }
 
 void PlayerbotFactory::InitAvailableSpells()
 {
+    /* TODO PLAYERBOT
     bot->LearnDefaultSkills();
 
     CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
@@ -1049,7 +1060,7 @@ void PlayerbotFactory::InitAvailableSpells()
         if (!trainer_spells)
             continue;
 
-        for (TrainerSpellMap::const_iterator itr =  trainer_spells->spellList.begin(); itr !=  trainer_spells->spellList.end(); ++itr)
+        for (auto itr =  trainer_spells->spellList.begin(); itr !=  trainer_spells->spellList.end(); ++itr)
         {
             TrainerSpell const* tSpell = &itr->second;
 
@@ -1069,6 +1080,10 @@ void PlayerbotFactory::InitAvailableSpells()
                 ai->CastSpell(tSpell->spell, bot);
         }
     }
+    */
+    bot->LearnDefaultSpells();
+    bot->LearnAllClassProficiencies();
+    bot->LearnAllClassSpells();
 }
 
 void PlayerbotFactory::InitSpecialSpells()
@@ -1082,8 +1097,8 @@ void PlayerbotFactory::InitSpecialSpells()
 
 void PlayerbotFactory::InitTalents(uint32 specNo)
 {
-    uint32 classMask = bot->getClassMask();
-
+    uint32 classMask = bot->GetClassMask();
+    /* TODO PLAYERBOT
     map<uint32, vector<TalentEntry const*> > spells;
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
     {
@@ -1141,6 +1156,7 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
                 itr->second->state = PLAYERSPELL_CHANGED;
         }
     }
+    */
 }
 
 ObjectGuid PlayerbotFactory::GetRandomBot()
@@ -1184,7 +1200,7 @@ void PlayerbotFactory::InitQuests()
         uint32 questId = fields[0].GetUInt32();
         uint16 requiredClasses = fields[1].GetUInt16();
         uint16 requiredRaces = fields[2].GetUInt16();
-        if ((requiredClasses & bot->getClassMask()) && (requiredRaces & bot->getRaceMask()))
+        if ((requiredClasses & bot->GetClassMask()) && (requiredRaces & bot->GetRaceMask()))
             ids.push_back(questId);
     } while (results->NextRow());
 
@@ -1197,12 +1213,13 @@ void PlayerbotFactory::InitQuests()
 
             bot->SetQuestStatus(questId, QUEST_STATUS_NONE);
 
-            if (!bot->SatisfyQuestClass(quest, false) ||
+            //if (!bot->SatisfyQuestClass(quest, false) ||
+            if(!bot->SatisfyQuestSkillOrClass(quest, false) ||
                     !bot->SatisfyQuestRace(quest, false) ||
                     !bot->SatisfyQuestStatus(quest, false))
                 continue;
 
-            if (quest->IsDailyOrWeekly() || quest->IsRepeatable() || quest->IsMonthly())
+            if (quest->IsDaily() || quest->IsWeekly() || quest->IsRepeatable() || quest->IsMonthly())
                 continue;
 
             bot->SetQuestStatus(questId, QUEST_STATUS_COMPLETE);
@@ -1432,9 +1449,11 @@ void PlayerbotFactory::InitInventorySkill()
     if (bot->HasSkill(SKILL_ENCHANTING)) {
         StoreItem(44452, 1); // Runed Titanium Rod
     }
+#ifdef LICH_KING
     if (bot->HasSkill(SKILL_INSCRIPTION)) {
         StoreItem(39505, 1); // Virtuoso Inking Set
     }
+#endif
     if (bot->HasSkill(SKILL_SKINNING)) {
         StoreItem(7005, 1); // Skinning Knife
     }
@@ -1498,7 +1517,7 @@ void PlayerbotFactory::InitInventoryTrade()
     {
     case ITEM_QUALITY_NORMAL:
         count = proto->GetMaxStackSize();
-        stacks = urand(1, 7) / auctionbot.GetRarityPriceMultiplier(proto);
+        stacks = urand(1, 7) /* TODO PLAYERBOT / auctionbot.GetRarityPriceMultiplier(proto)*/;
         break;
     case ITEM_QUALITY_UNCOMMON:
         stacks = 1;
@@ -1564,6 +1583,7 @@ void PlayerbotFactory::InitInventoryEquip()
 
 void PlayerbotFactory::InitGlyphs()
 {
+#ifdef LICH_KING
     bot->InitGlyphsForLevel();
 
     for (uint32 slotIndex = 0; slotIndex < MAX_GLYPH_SLOT_INDEX; ++slotIndex)
@@ -1667,6 +1687,7 @@ void PlayerbotFactory::InitGlyphs()
         if (!found)
             sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "No glyphs found for bot %s index %d slot %d", bot->GetName().c_str(), slotIndex, slot);
     }
+#endif
 }
 
 void PlayerbotFactory::InitGuild()

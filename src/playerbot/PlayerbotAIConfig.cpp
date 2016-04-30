@@ -12,10 +12,10 @@ PlayerbotAIConfig::PlayerbotAIConfig()
 }
 
 template <class T>
-void LoadList(string value, T &list)
+void LoadList(std::string value, T &list)
 {
-    vector<string> ids = split(value, ',');
-    for (vector<string>::iterator i = ids.begin(); i != ids.end(); i++)
+    vector<std::string> ids = split(value, ',');
+    for (vector<std::string>::iterator i = ids.begin(); i != ids.end(); i++)
     {
         uint32 id = atoi((*i).c_str());
         if (!id)
@@ -29,7 +29,7 @@ bool PlayerbotAIConfig::Initialize()
 {
     sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Initializing AI Playerbot by ike3, based on the original Playerbot by blueboy");
 
-    string error;
+    std::string error;
     if (!config.LoadInitial("aiplayerbot.conf", error))
     {
         sLog->outMessage("playerbot", LOG_LEVEL_INFO, "AI Playerbot is Disabled. Unable to open configuration file aiplayerbot.conf");
@@ -117,7 +117,7 @@ bool PlayerbotAIConfig::Initialize()
     {
         for (uint32 spec = 0; spec < 3; ++spec)
         {
-            ostringstream os; os << "AiPlayerbot.RandomClassSpecProbability." << cls << "." << spec;
+            std::ostringstream os; os << "AiPlayerbot.RandomClassSpecProbability." << cls << "." << spec;
             specProbability[cls][spec] = config.GetIntDefault(os.str().c_str(), 33);
         }
     }
@@ -153,9 +153,9 @@ bool PlayerbotAIConfig::IsInRandomQuestItemList(uint32 id)
     return find(randomBotQuestItems.begin(), randomBotQuestItems.end(), id) != randomBotQuestItems.end();
 }
 
-string PlayerbotAIConfig::GetValue(string name)
+string PlayerbotAIConfig::GetValue(std::string name)
 {
-    ostringstream out;
+    std::ostringstream out;
 
     if (name == "GlobalCooldown")
         out << globalCoolDown;
@@ -192,7 +192,7 @@ string PlayerbotAIConfig::GetValue(string name)
     return out.str();
 }
 
-void PlayerbotAIConfig::SetValue(string name, string value)
+void PlayerbotAIConfig::SetValue(std::string name, std::string value)
 {
     istringstream out(value, istringstream::in);
 

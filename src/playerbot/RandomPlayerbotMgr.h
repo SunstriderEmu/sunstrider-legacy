@@ -34,8 +34,8 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         void RandomizeFirst(Player* bot);
         void IncreaseLevel(Player* bot);
         void ScheduleTeleport(uint32 bot);
-        void HandleCommand(uint32 type, const string& text, Player& fromPlayer);
-        string HandleRemoteCommand(string request);
+        void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer);
+        std::string HandleRemoteCommand(std::string request);
         void OnPlayerLogout(Player* player);
         void OnPlayerLogin(Player* player);
         Player* GetRandomPlayer();
@@ -52,8 +52,8 @@ class RandomPlayerbotMgr : public PlayerbotHolder
 	    virtual void OnBotLoginInternal(Player * const bot) {}
 
     private:
-        uint32 GetEventValue(uint32 bot, string event);
-        uint32 SetEventValue(uint32 bot, string event, uint32 value, uint32 validIn);
+        uint32 GetEventValue(uint32 bot, std::string event);
+        uint32 SetEventValue(uint32 bot, std::string event, uint32 value, uint32 validIn);
         list<uint32> GetBots();
         vector<uint32> GetFreeBots(bool alliance);
         uint32 AddRandomBot(bool alliance);

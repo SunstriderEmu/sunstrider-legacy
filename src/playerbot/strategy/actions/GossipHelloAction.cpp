@@ -14,7 +14,7 @@ bool GossipHelloAction::Execute(Event event)
     {
         Player* master = GetMaster();
         if (master && master->GetSelectedUnit())
-            guid = master->GetSelectedUnit()->GetGUID();
+            guid = ObjectGuid(master->GetSelectedUnit()->GetGUID());
     }
     else
     {
@@ -43,7 +43,7 @@ bool GossipHelloAction::Execute(Event event)
     bot->GetSession()->HandleGossipHelloOpcode(p1);
     bot->SetFacingToObject(pCreature);
 
-    ostringstream out; out << "--- " << pCreature->GetName() << " ---";
+    std::ostringstream out; out << "--- " << pCreature->GetName() << " ---";
     ai->TellMasterNoFacing(out.str());
 
     GossipMenu& menu = bot->PlayerTalkClass->GetGossipMenu();

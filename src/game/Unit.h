@@ -252,25 +252,51 @@ enum HitInfo
 {
     HITINFO_NORMALSWING         = 0x00000000,
     HITINFO_UNK1                = 0x00000001,               // req correct packet structure
+#ifdef LICH_KING
+    HITINFO_AFFECTS_VICTIM      = 0x00000002,
+    HITINFO_OFFHAND             = 0x00000004,
+    HITINFO_UNK2                = 0x00000008,
+    HITINFO_MISS                = 0x00000010,
+    HITINFO_FULL_ABSORB         = 0x00000020,
+    HITINFO_PARTIAL_ABSORB      = 0x00000040,
+    HITINFO_FULL_RESIST         = 0x00000080,
+    HITINFO_PARTIAL_RESIST      = 0x00000100,
+    HITINFO_CRITICALHIT         = 0x00000200,               // critical hit
+    // 0x00000400
+    // 0x00000800
+    // 0x00001000
+    HITINFO_BLOCK               = 0x00002000,               // blocked damage
+    // 0x00004000                                           // Hides worldtext for 0 damage
+    // 0x00008000                                           // Related to blood visual
+    HITINFO_GLANCING            = 0x00010000,
+    HITINFO_CRUSHING            = 0x00020000,
+    HITINFO_NO_ANIMATION        = 0x00040000,
+    // 0x00080000
+    // 0x00100000
+    HITINFO_SWINGNOHITSOUND     = 0x00200000,               // unused?
+    // 0x00400000
+    HITINFO_RAGE_GAIN           = 0x00800000,
+#else
     HITINFO_NORMALSWING2        = 0x00000002,
     HITINFO_LEFTSWING           = 0x00000004,
     HITINFO_MISS                = 0x00000010,
     HITINFO_ABSORB              = 0x00000020,               // plays absorb sound
     HITINFO_RESIST              = 0x00000040,               // resisted at least some damage
     HITINFO_CRITICALHIT         = 0x00000080,
-    HITINFO_UNK2                = 0x00000100,               // wotlk?
-    HITINFO_UNK3                = 0x00002000,               // wotlk?
+    HITINFO_UNK2                = 0x00000100,               // 
+    HITINFO_UNK3                = 0x00002000,               // 
     HITINFO_GLANCING            = 0x00004000,
     HITINFO_CRUSHING            = 0x00008000,
     HITINFO_NOACTION            = 0x00010000,
-    HITINFO_SWINGNOHITSOUND     = 0x00080000
+    HITINFO_SWINGNOHITSOUND     = 0x00080000,
+#endif
 };
 
 //i would like to remove this: (it is defined in item.h
 enum InventorySlot
 {
-    NULL_BAG                   = 0,
-    NULL_SLOT                  = 255
+    NULL_BAG = 0,
+    NULL_SLOT = 255
 };
 
 struct FactionTemplateEntry;
@@ -1240,21 +1266,21 @@ class Unit : public WorldObject
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, SpellSchoolMask schoolMask) const;
         MeleeHitOutcome RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const;
 
-        bool isVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
-        bool isTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }
-        bool isQuestGiver()   const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER ); }
-        bool isGossip()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP ); }
-        bool isTaxi()         const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_FLIGHTMASTER ); }
-        bool isGuildMaster()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PETITIONER ); }
+        bool IsVendor()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_VENDOR ); }
+        bool IsTrainer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TRAINER ); }
+        bool IsQuestGiver()   const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER ); }
+        bool IsGossip()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP ); }
+        bool IsTaxi()         const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_FLIGHTMASTER ); }
+        bool IsGuildMaster()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PETITIONER ); }
         bool IsBattleMaster() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BATTLEMASTER ); }
-        bool isBanker()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER ); }
-        bool isInnkeeper()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER ); }
-        bool isSpiritHealer() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER ); }
-        bool isSpiritGuide()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITGUIDE ); }
-        bool isTabardDesigner()const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER ); }
-        bool isAuctioner()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER ); }
-        bool isArmorer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR ); }
-        bool isServiceProvider() const
+        bool IsBanker()       const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_BANKER ); }
+        bool IsInnkeeper()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_INNKEEPER ); }
+        bool IsSpiritHealer() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER ); }
+        bool IsSpiritGuide()  const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITGUIDE ); }
+        bool IsTabardDesigner()const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_TABARDDESIGNER ); }
+        bool IsAuctioner()    const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_AUCTIONEER ); }
+        bool IsArmorer()      const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_REPAIR ); }
+        bool IsServiceProvider() const
         {
             return HasFlag( UNIT_NPC_FLAGS,
                 UNIT_NPC_FLAG_VENDOR | UNIT_NPC_FLAG_TRAINER | UNIT_NPC_FLAG_FLIGHTMASTER |
@@ -1262,7 +1288,7 @@ class Unit : public WorldObject
                 UNIT_NPC_FLAG_INNKEEPER | UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_SPIRITHEALER |
                 UNIT_NPC_FLAG_SPIRITGUIDE | UNIT_NPC_FLAG_TABARDDESIGNER | UNIT_NPC_FLAG_AUCTIONEER );
         }
-        bool isSpiritService() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE ); }
+        bool IsSpiritService() const { return HasFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPIRITHEALER | UNIT_NPC_FLAG_SPIRITGUIDE ); }
         bool IsCritter() const { return GetCreatureType() == CREATURE_TYPE_CRITTER; }
 
         //Need fix or use this
@@ -1279,6 +1305,10 @@ class Unit : public WorldObject
         void ClearInCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
+        //TC compat
+        bool HasAura(uint32 spellId) const {
+            return GetAuraCount(spellId) > 0;
+        }
         uint32 GetAuraCount(uint32 spellId) const;
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;

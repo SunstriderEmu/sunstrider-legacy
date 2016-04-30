@@ -309,7 +309,7 @@ template<class Check>
         std::list<GameObject*> &i_objects;
         Check& i_check;
 
-        GameObjectListSearcher(std::list<GameObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        GameObjectListSearcher(WorldObject const* /*searcher*/, std::list<GameObject*> &objects, Check & check) : i_objects(objects),i_check(check) {}
 
         void Visit(GameObjectMapType &m);
 
@@ -340,7 +340,7 @@ template<class Check>
         Unit* &i_object;
         Check & i_check;
 
-        UnitLastSearcher(WorldObject const* searcher, Unit* & result, Check & check) : i_object(result),i_check(check) {}
+        UnitLastSearcher(WorldObject const* /*searcher*/, Unit* & result, Check & check) : i_object(result),i_check(check) {}
 
         void Visit(CreatureMapType &m);
         void Visit(PlayerMapType &m);
@@ -355,7 +355,7 @@ template<class Check>
         std::list<Unit*> &i_objects;
         Check& i_check;
 
-        UnitListSearcher(std::list<Unit*> &objects, Check & check) : i_objects(objects),i_check(check) {}
+        UnitListSearcher(WorldObject const* /*searcher*/, std::list<Unit*> &objects, Check & check) : i_objects(objects),i_check(check) {}
 
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);

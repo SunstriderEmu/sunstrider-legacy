@@ -24,8 +24,8 @@ class RandomPlayerbotFactory
         static void CreateRandomGuilds();
 
 	private:
-        string CreateRandomBotName();
-        static string CreateRandomGuildName();
+        std::string CreateRandomBotName();
+        static std::string CreateRandomGuildName();
 
     private:
         uint32 accountId;

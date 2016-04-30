@@ -8,12 +8,12 @@ using namespace ai;
 
 bool SaveManaAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
     double value = AI_VALUE(double, "mana save level");
 
     if (text == "?")
     {
-        ostringstream out; out << "Mana save level: " << format(value);
+        std::ostringstream out; out << "Mana save level: " << format(value);
         ai->TellMaster(out);
         return true;
     }
@@ -51,7 +51,7 @@ bool SaveManaAction::Execute(Event event)
 
     ai->GetAiObjectContext()->GetValue<double>("mana save level")->Set(value);
 
-    ostringstream out; out << "Mana save level set: " << format(value);
+    std::ostringstream out; out << "Mana save level set: " << format(value);
     ai->TellMaster(out);
 
     return true;
@@ -59,7 +59,7 @@ bool SaveManaAction::Execute(Event event)
 
 string SaveManaAction::format(double value)
 {
-    ostringstream out;
+    std::ostringstream out;
     if (value <= 1.0)
         out << "|cFF808080";
     else if (value <= 5.0)

@@ -23,7 +23,7 @@ bool TeleportAction::Execute(Event event)
         if (pSpellInfo->Effects[0].Effect != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effects[1].Effect != SPELL_EFFECT_TELEPORT_UNITS && pSpellInfo->Effects[2].Effect != SPELL_EFFECT_TELEPORT_UNITS)
             continue;
 
-        ostringstream out; out << "Teleporting using " << goInfo->name;
+        std::ostringstream out; out << "Teleporting using " << goInfo->name;
         ai->TellMasterNoFacing(out.str());
 
         ai->ChangeStrategy("-follow,+stay", BOT_STATE_NON_COMBAT);

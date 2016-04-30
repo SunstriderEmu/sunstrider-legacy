@@ -6,7 +6,7 @@ using namespace ai;
 
 bool UseItemAction::Execute(Event event)
 {
-    string name = event.getParam();
+    std::string name = event.getParam();
     if (name.empty())
         name = getName();
 
@@ -44,7 +44,7 @@ bool UseItemAction::UseGameObject(ObjectGuid guid)
         return false;
 
     go->Use(bot);
-    ostringstream out; out << "Using " << chat->formatGameobject(go);
+    std::ostringstream out; out << "Using " << chat->formatGameobject(go);
     ai->TellMasterNoFacing(out.str());
     return true;
 }
@@ -72,8 +72,10 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
     if (bot->IsNonMeleeSpellCast(true))
         return false;
 
+    /* TODO PLAYERBOT
     if (bot->IsInCombat() && item->IsPotion() && bot->GetLastPotionId())
         return false;
+        */
 
     uint8 bagIndex = item->GetBagSlot();
     uint8 slot = item->GetSlot();
@@ -87,7 +89,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
         << glyphIndex << unk_flags;
 
     bool targetSelected = false;
-    ostringstream out; out << "Using " << chat->formatItem(item->GetTemplate());
+    std::ostringstream out; out << "Using " << chat->formatItem(item->GetTemplate());
     if (item->GetTemplate()->Stackable)
     {
         uint32 count = item->GetCount();
@@ -153,7 +155,7 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
             *packet << questid;
             *packet << uint32(0);
             bot->GetSession()->QueuePacket(packet); // queue the packet to get around race condition
-            ostringstream out; out << "Got quest " << chat->formatQuest(qInfo);
+            std::ostringstream out; out << "Got quest " << chat->formatQuest(qInfo);
             ai->TellMasterNoFacing(out.str());
             return true;
         }
@@ -203,7 +205,8 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget)
                 out << " on "<< chat->formatItem(itemForSpell->GetTemplate());
             }
 
-            Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, ObjectGuid::Empty, true);
+            //Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE, ObjectGuid::Empty, true);
+            Spell *spell = new Spell(bot, pSpellInfo, false, 0, nullptr, true);
             ai->WaitForSpellCast(spell);
             delete spell;
         }
@@ -281,7 +284,7 @@ bool UseItemAction::SocketItem(Item* item, Item* gem, bool replace)
 
     if (fits)
     {
-        ostringstream out; out << "Socketing " << chat->formatItem(item->GetTemplate());
+        std::ostringstream out; out << "Socketing " << chat->formatItem(item->GetTemplate());
         out << " with "<< chat->formatItem(gem->GetTemplate());
         ai->TellMasterNoFacing(out.str());
 

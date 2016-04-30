@@ -12,7 +12,7 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "caster"; }
+        virtual std::string getName() { return "caster"; }
         virtual NextAction** getDefaultActions();
         virtual int GetType() { return STRATEGY_TYPE_COMBAT | STRATEGY_TYPE_DPS | STRATEGY_TYPE_RANGED; }
     };
@@ -24,7 +24,7 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "caster aoe"; }
+        virtual std::string getName() { return "caster aoe"; }
     };
 
     class CasterDruidDebuffStrategy : public CombatStrategy
@@ -34,6 +34,6 @@ namespace ai
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);
-        virtual string getName() { return "caster debuff"; }
+        virtual std::string getName() { return "caster debuff"; }
     };
 }

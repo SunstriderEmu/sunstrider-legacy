@@ -1,6 +1,7 @@
 ////
 #include "../../playerbot.h"
 #include "BankAction.h"
+#include "Bag.h"
 
 #include "../values/ItemCountValue.h"
 
@@ -9,7 +10,7 @@ using namespace ai;
 
 bool BankAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     list<ObjectGuid> npcs = AI_VALUE(list<ObjectGuid>, "nearest npcs");
     for (list<ObjectGuid>::iterator i = npcs.begin(); i != npcs.end(); i++)
@@ -25,7 +26,7 @@ bool BankAction::Execute(Event event)
     return false;
 }
 
-bool BankAction::Execute(string text, Unit* bank)
+bool BankAction::Execute(std::string text, Unit* bank)
 {
     if (text.empty() || text == "?")
     {
@@ -69,7 +70,7 @@ bool BankAction::Withdraw(const uint32 itemid)
         return false;
 
     ItemPosCountVec dest;
-    InventoryResult msg = bot->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false);
+    InventoryResult msg = InventoryResult(bot->CanStoreItem(NULL_BAG, NULL_SLOT, dest, pItem, false));
     if (msg != EQUIP_ERR_OK)
     {
         bot->SendEquipError(msg, pItem, NULL);
@@ -110,9 +111,10 @@ void BankAction::ListItems()
     ai->TellMaster("=== Bank ===");
 
     map<uint32, int> items;
+    /* TODO PLAYERBOT
     for (uint8 bag = BANK_SLOT_BAG_START; bag < BANK_SLOT_BAG_END; ++bag)
     {
-        const Bag* const pBag = static_cast<Bag *>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag));
+        const Bag* const pBag = static_cast<const Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag));
         if (pBag)
         {
             const ItemTemplate* const pBagProto = pBag->GetTemplate();
@@ -126,7 +128,7 @@ void BankAction::ListItems()
             }
         }
     }
-
+    */
     TellItems(items);
 }
 

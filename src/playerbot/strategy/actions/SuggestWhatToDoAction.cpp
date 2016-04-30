@@ -94,7 +94,7 @@ void SuggestWhatToDoAction::specificQuest()
     int index = rand() % quests.size();
 
     Quest const* quest = sObjectMgr->GetQuestTemplate(quests[index]);
-    ostringstream out; out << "We could do some quest, for instance " << chat->formatQuest(quest);
+    std::ostringstream out; out << "We could do some quest, for instance " << chat->formatQuest(quest);
     spam(out.str());
 }
 
@@ -229,15 +229,15 @@ void SuggestWhatToDoAction::trade()
     if (!proto)
         return;
 
-    uint32 price = auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
+    uint32 price = 1;//TODO PLAYERBOT auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
     if (!price)
         return;
 
-    ostringstream out; out << "Selling " << chat->formatItem(proto, count) << " for " << chat->formatMoney(price);
+    std::ostringstream out; out << "Selling " << chat->formatItem(proto, count) << " for " << chat->formatMoney(price);
     spam(out.str());
 }
 
-void SuggestWhatToDoAction::spam(string msg)
+void SuggestWhatToDoAction::spam(std::string msg)
 {
     Player* player = sRandomPlayerbotMgr.GetRandomPlayer();
     if (!player || !player->IsInWorld())

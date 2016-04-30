@@ -28,7 +28,7 @@ namespace ai
 	class StatAvailable : public Trigger
 	{
 	public:
-		StatAvailable(PlayerbotAI* ai, int amount, string name = "stat available") : Trigger(ai, name)
+		StatAvailable(PlayerbotAI* ai, int amount, std::string name = "stat available") : Trigger(ai, name)
 		{
 			this->amount = amount;
 		}
@@ -109,13 +109,13 @@ namespace ai
 	class SpellTrigger : public Trigger
 	{
 	public:
-		SpellTrigger(PlayerbotAI* ai, string spell, int checkInterval = 1) : Trigger(ai, spell, checkInterval)
+		SpellTrigger(PlayerbotAI* ai, std::string spell, int checkInterval = 1) : Trigger(ai, spell, checkInterval)
 		{
 			this->spell = spell;
 		}
 
-		virtual string GetTargetName() { return "current target"; }
-		virtual string getName() { return spell; }
+		virtual std::string GetTargetName() { return "current target"; }
+		virtual std::string getName() { return spell; }
 		virtual bool IsActive();
 
 	protected:
@@ -125,7 +125,7 @@ namespace ai
 	class SpellCanBeCastTrigger : public SpellTrigger
 	{
 	public:
-		SpellCanBeCastTrigger(PlayerbotAI* ai, string spell) : SpellTrigger(ai, spell) {}
+		SpellCanBeCastTrigger(PlayerbotAI* ai, std::string spell) : SpellTrigger(ai, spell) {}
 		virtual bool IsActive();
 	};
 
@@ -133,7 +133,7 @@ namespace ai
     class InterruptSpellTrigger : public SpellTrigger
 	{
     public:
-        InterruptSpellTrigger(PlayerbotAI* ai, string spell) : SpellTrigger(ai, spell) {}
+        InterruptSpellTrigger(PlayerbotAI* ai, std::string spell) : SpellTrigger(ai, spell) {}
         virtual bool IsActive();
     };
 
@@ -151,7 +151,7 @@ namespace ai
 		{
             return AI_VALUE(uint8, "attacker count") >= amount;
         }
-        virtual string getName() { return "attacker count"; }
+        virtual std::string getName() { return "attacker count"; }
 
     protected:
         int amount;
@@ -170,7 +170,7 @@ namespace ai
         MyAttackerCountTrigger(PlayerbotAI* ai, int amount) : AttackerCountTrigger(ai, amount) {}
     public:
         virtual bool IsActive();
-        virtual string getName() { return "my attacker count"; }
+        virtual std::string getName() { return "my attacker count"; }
     };
 
     class MediumThreatTrigger : public MyAttackerCountTrigger
@@ -188,7 +188,7 @@ namespace ai
         }
     public:
         virtual bool IsActive();
-        virtual string getName() { return "aoe"; }
+        virtual std::string getName() { return "aoe"; }
 
     private:
         float range;
@@ -227,16 +227,16 @@ namespace ai
     class BuffTrigger : public SpellTrigger
     {
     public:
-        BuffTrigger(PlayerbotAI* ai, string spell) : SpellTrigger(ai, spell, 5) {}
+        BuffTrigger(PlayerbotAI* ai, std::string spell) : SpellTrigger(ai, spell, 5) {}
     public:
-		virtual string GetTargetName() { return "self target"; }
+		virtual std::string GetTargetName() { return "self target"; }
         virtual bool IsActive();
     };
 
     class BuffOnPartyTrigger : public BuffTrigger
     {
     public:
-        BuffOnPartyTrigger(PlayerbotAI* ai, string spell) : BuffTrigger(ai, spell) {}
+        BuffOnPartyTrigger(PlayerbotAI* ai, std::string spell) : BuffTrigger(ai, spell) {}
     public:
 		virtual Value<Unit*>* GetTargetValue();
     };
@@ -259,27 +259,27 @@ namespace ai
     class DebuffTrigger : public BuffTrigger
     {
     public:
-        DebuffTrigger(PlayerbotAI* ai, string spell) : BuffTrigger(ai, spell) {
+        DebuffTrigger(PlayerbotAI* ai, std::string spell) : BuffTrigger(ai, spell) {
 			checkInterval = 1;
 		}
     public:
-		virtual string GetTargetName() { return "current target"; }
+		virtual std::string GetTargetName() { return "current target"; }
         virtual bool IsActive();
     };
 
     class DebuffOnAttackerTrigger : public DebuffTrigger
     {
     public:
-        DebuffOnAttackerTrigger(PlayerbotAI* ai, string spell) : DebuffTrigger(ai, spell) {}
+        DebuffOnAttackerTrigger(PlayerbotAI* ai, std::string spell) : DebuffTrigger(ai, spell) {}
     public:
         virtual Value<Unit*>* GetTargetValue();
-        virtual string getName() { return spell + " on attacker"; }
+        virtual std::string getName() { return spell + " on attacker"; }
     };
 
 	class BoostTrigger : public BuffTrigger
 	{
 	public:
-		BoostTrigger(PlayerbotAI* ai, string spell, float balance = 50) : BuffTrigger(ai, spell)
+		BoostTrigger(PlayerbotAI* ai, std::string spell, float balance = 50) : BuffTrigger(ai, spell)
 		{
 			this->balance = balance;
 		}
@@ -299,7 +299,7 @@ namespace ai
         }
     public:
         virtual bool IsActive();
-        virtual string getName() { return "random"; }
+        virtual std::string getName() { return "random"; }
 
     protected:
         int probability;
@@ -309,14 +309,14 @@ namespace ai
     {
     public:
         SeldomTrigger(PlayerbotAI* ai) : RandomTrigger(ai, 9000) {}
-        virtual string getName() { return "seldom"; }
+        virtual std::string getName() { return "seldom"; }
     };
 
     class OftenTrigger : public RandomTrigger
     {
     public:
         OftenTrigger(PlayerbotAI* ai) : RandomTrigger(ai, 50) {}
-        virtual string getName() { return "often"; }
+        virtual std::string getName() { return "often"; }
     };
 
     class AndTrigger : public Trigger
@@ -334,7 +334,7 @@ namespace ai
         }
     public:
         virtual bool IsActive();
-        virtual string getName();
+        virtual std::string getName();
 
     protected:
         Trigger* ls;
@@ -344,10 +344,10 @@ namespace ai
     class SnareTargetTrigger : public DebuffTrigger
     {
     public:
-        SnareTargetTrigger(PlayerbotAI* ai, string aura) : DebuffTrigger(ai, aura) {}
+        SnareTargetTrigger(PlayerbotAI* ai, std::string aura) : DebuffTrigger(ai, aura) {}
     public:
         virtual bool IsActive();
-        virtual string getName() { return "target is moving"; }
+        virtual std::string getName() { return "target is moving"; }
     };
 
 	class LowManaTrigger : public Trigger
@@ -367,7 +367,7 @@ namespace ai
 	};
 
     BEGIN_TRIGGER(PanicTrigger, Trigger)
-        virtual string getName() { return "panic"; }
+        virtual std::string getName() { return "panic"; }
     END_TRIGGER()
 
 
@@ -383,13 +383,13 @@ namespace ai
 
 	class ItemCountTrigger : public Trigger {
 	public:
-		ItemCountTrigger(PlayerbotAI* ai, string item, int count) : Trigger(ai, item, 5) {
+		ItemCountTrigger(PlayerbotAI* ai, std::string item, int count) : Trigger(ai, item, 5) {
 			this->item = item;
 			this->count = count;
 		}
 	public:
 		virtual bool IsActive();
-		virtual string getName() { return "item count"; }
+		virtual std::string getName() { return "item count"; }
 
 	protected:
 		string item;
@@ -398,9 +398,9 @@ namespace ai
 
 	class HasAuraTrigger : public Trigger {
 	public:
-		HasAuraTrigger(PlayerbotAI* ai, string spell) : Trigger(ai, spell, 5) {}
+		HasAuraTrigger(PlayerbotAI* ai, std::string spell) : Trigger(ai, spell, 5) {}
 
-		virtual string GetTargetName() { return "self target"; }
+		virtual std::string GetTargetName() { return "self target"; }
 		virtual bool IsActive();
 
 	};
@@ -445,7 +445,7 @@ namespace ai
     class HasCcTargetTrigger : public Trigger
     {
     public:
-        HasCcTargetTrigger(PlayerbotAI* ai, string name) : Trigger(ai, name) {}
+        HasCcTargetTrigger(PlayerbotAI* ai, std::string name) : Trigger(ai, name) {}
 
     public:
         virtual bool IsActive();
@@ -454,7 +454,7 @@ namespace ai
 	class NoMovementTrigger : public Trigger
 	{
 	public:
-		NoMovementTrigger(PlayerbotAI* ai, string name) : Trigger(ai, name) {}
+		NoMovementTrigger(PlayerbotAI* ai, std::string name) : Trigger(ai, name) {}
 
 	public:
 		virtual bool IsActive();
@@ -509,7 +509,7 @@ namespace ai
     class HasItemForSpellTrigger : public Trigger
     {
     public:
-        HasItemForSpellTrigger(PlayerbotAI* ai, string spell) : Trigger(ai, spell) {}
+        HasItemForSpellTrigger(PlayerbotAI* ai, std::string spell) : Trigger(ai, spell) {}
 
     public:
         virtual bool IsActive();
@@ -527,10 +527,10 @@ namespace ai
     class InterruptEnemyHealerTrigger : public SpellTrigger
     {
     public:
-        InterruptEnemyHealerTrigger(PlayerbotAI* ai, string spell) : SpellTrigger(ai, spell) {}
+        InterruptEnemyHealerTrigger(PlayerbotAI* ai, std::string spell) : SpellTrigger(ai, spell) {}
     public:
         virtual Value<Unit*>* GetTargetValue();
-        virtual string getName() { return spell + " on enemy healer"; }
+        virtual std::string getName() { return spell + " on enemy healer"; }
     };
 
 }

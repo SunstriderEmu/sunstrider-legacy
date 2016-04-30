@@ -4,7 +4,7 @@
 
 using namespace ai;
 
-list<Item*> InventoryItemValueBase::Find(string qualifier)
+list<Item*> InventoryItemValueBase::Find(std::string qualifier)
 {
     list<Item*> result;
 

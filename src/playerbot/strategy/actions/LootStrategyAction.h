@@ -11,8 +11,8 @@ namespace ai
         virtual bool Execute(Event event);
 
     private:
-        static LootStrategy String2LootStrategy(string strategy);
-        static string LootStrategy2string(LootStrategy lootStrategy);
+        static LootStrategy String2LootStrategy(std::string strategy);
+        static std::string LootStrategy2string(LootStrategy lootStrategy);
    
     };
 

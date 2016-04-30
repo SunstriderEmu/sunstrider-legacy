@@ -4,9 +4,9 @@
 
 namespace ai
 {
-    class InventoryResultAction : public Action {
+    class InventoryChangeFailureAction : public Action {
     public:
-        InventoryResultAction(PlayerbotAI* ai) : Action(ai, "inventory change failure") {}
+        InventoryChangeFailureAction(PlayerbotAI* ai) : Action(ai, "inventory change failure") {}
         virtual bool Execute(Event event);
     };
 }

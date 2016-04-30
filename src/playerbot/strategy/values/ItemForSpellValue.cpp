@@ -26,7 +26,7 @@ Item* ItemForSpellValue::Calculate()
     Player* trader = bot->GetTrader();
     if (trader)
     {
-        itemForSpell = trader->GetTradeData()->GetItem(TRADE_SLOT_NONTRADED);
+     //TODO PLAYERBOT   itemForSpell = trader->GetTradeData()->GetItem(TRADE_SLOT_NONTRADED);
         if (itemForSpell && itemForSpell->IsFitToSpellRequirements(spellInfo))
             return itemForSpell;
     }

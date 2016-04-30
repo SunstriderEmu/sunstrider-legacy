@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         GuardStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-        virtual string getName() { return "guard"; }
+        virtual std::string getName() { return "guard"; }
         NextAction** getDefaultActions();
 
     public:

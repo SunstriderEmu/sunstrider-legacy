@@ -7,7 +7,7 @@ using namespace ai;
 
 bool DropQuestAction::Execute(Event event)
 {
-    string link = event.getParam();
+    std::string link = event.getParam();
     if (!GetMaster())
         return false;
 
@@ -31,18 +31,21 @@ bool DropQuestAction::Execute(Event event)
             // we ignore unequippable quest items in this case, its' still be equipped
             bot->TakeQuestSourceItem(logQuest, false);
 
-            /* LK 
+#ifdef LICH_KING
             if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
             {
                 bot->pvpInfo.IsHostile = bot->pvpInfo.IsInHostileArea || bot->HasPvPForcingQuest();
                 bot->UpdatePvPState();
             }
-            */
+#endif
         }
     }
 
+    /* TC
     bot->RemoveActiveQuest(entry, false);
     bot->RemoveRewardedQuest(entry);
+    */
+    bot->SetQuestStatus(entry, QUEST_STATUS_NONE);
 
     ai->TellMaster("Quest removed");
     return true;

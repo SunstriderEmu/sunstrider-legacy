@@ -2,7 +2,7 @@
 #include "../../playerbot.h"
 #include "SpellIdValue.h"
 #include "../../PlayerbotAIConfig.h"
-#include "../../../Entities/Pet/Pet.h"
+#include "Pet.h"
 
 using namespace ai;
 
@@ -13,7 +13,7 @@ SpellIdValue::SpellIdValue(PlayerbotAI* ai) :
 
 uint32 SpellIdValue::Calculate()
 {
-    string namepart = qualifier;
+    std::string namepart = qualifier;
     wstring wnamepart;
 
     if (!Utf8toWStr(namepart, wnamepart))
@@ -67,7 +67,7 @@ uint32 SpellIdValue::Calculate()
     {
         for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
         {
-            if(itr->second.state == PETSPELL_REMOVED)
+            if(itr->second->state == PETSPELL_REMOVED)
                 continue;
 
             uint32 spellId = itr->first;

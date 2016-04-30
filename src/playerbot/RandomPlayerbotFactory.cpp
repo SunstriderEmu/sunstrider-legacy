@@ -82,7 +82,7 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
     uint8 gender = rand() % 2 ? GENDER_MALE : GENDER_FEMALE;
 
     uint8 race = availableRaces[cls][urand(0, availableRaces[cls].size() - 1)];
-    string name = CreateRandomBotName();
+    std::string name = CreateRandomBotName();
     if (name.empty())
         return false;
 
@@ -93,7 +93,7 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
     uint8 facialHair = urand(0, 7);
     uint8 outfitId = 0;
 
-    WorldSession* session = new WorldSession(accountId, BUILD_243, NULL, SEC_PLAYER, 1, 0, LOCALE_enUS, 0, false);
+    WorldSession* session = new WorldSession(accountId, BUILD_243, "rndbot", NULL, SEC_PLAYER, 1, 0, LOCALE_enUS, 0, false);
     if (!session)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Couldn't create session for random bot account %d", accountId);
@@ -182,15 +182,15 @@ void RandomPlayerbotFactory::CreateRandomBots()
 
     for (int accountNumber = 0; accountNumber < sPlayerbotAIConfig.randomBotAccountCount; ++accountNumber)
     {
-        ostringstream out; out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
-        string accountName = out.str();
+        std::ostringstream out; out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
+        std::string accountName = out.str();
         QueryResult results = LoginDatabase.PQuery("SELECT id FROM account where username = '%s'", accountName.c_str());
         if (results)
         {
             continue;
         }
 
-        string password = "";
+        std::string password = "";
         for (int i = 0; i < 10; i++)
         {
             password += (char)urand('!', 'z');
@@ -205,8 +205,8 @@ void RandomPlayerbotFactory::CreateRandomBots()
     int totalRandomBotChars = 0;
     for (int accountNumber = 0; accountNumber < sPlayerbotAIConfig.randomBotAccountCount; ++accountNumber)
     {
-        ostringstream out; out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
-        string accountName = out.str();
+        std::ostringstream out; out << sPlayerbotAIConfig.randomBotAccountPrefix << accountNumber;
+        std::string accountName = out.str();
 
         QueryResult results = LoginDatabase.PQuery("SELECT id FROM account where username = '%s'", accountName.c_str());
         if (!results)
@@ -297,7 +297,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
 
     for (; guildNumber < sPlayerbotAIConfig.randomBotGuildCount; ++guildNumber)
     {
-        string guildName = CreateRandomGuildName();
+        std::string guildName = CreateRandomGuildName();
         if (guildName.empty())
             break;
 

@@ -13,14 +13,14 @@ namespace ai
     {
     public:
         MeleeFormation(PlayerbotAI* ai) : FollowFormation(ai, "melee") {}
-        virtual string GetTargetName() { return "master target"; }
+        virtual std::string GetTargetName() { return "master target"; }
     };
 
     class QueueFormation : public FollowFormation
     {
     public:
         QueueFormation(PlayerbotAI* ai) : FollowFormation(ai, "queue") {}
-        virtual string GetTargetName() { return "line target"; }
+        virtual std::string GetTargetName() { return "line target"; }
     };
 
     class ChaosFormation : public MoveFormation
@@ -225,12 +225,12 @@ FormationValue::FormationValue(PlayerbotAI* ai) : ManualSetValue<Formation*>(ai,
 
 bool SetFormationAction::Execute(Event event)
 {
-    string formation = event.getParam();
+    std::string formation = event.getParam();
 
 	Value<Formation*>* value = context->GetValue<Formation*>("formation");
     if (formation == "?" || formation.empty())
     {
-        ostringstream str; str << "Formation: |cff00ff00" << value->Get()->getName();
+        std::ostringstream str; str << "Formation: |cff00ff00" << value->Get()->getName();
         ai->TellMaster(str);
         return true;
     }
@@ -272,13 +272,13 @@ bool SetFormationAction::Execute(Event event)
     }
     else
     {
-        ostringstream str; str << "Invalid formation: |cffff0000" << formation;
+        std::ostringstream str; str << "Invalid formation: |cffff0000" << formation;
         ai->TellMaster(str);
         ai->TellMaster("Please set to any of:|cffffffff melee (default), queue, chaos, circle, line, shield, arrow");
         return false;
     }
 
-    ostringstream str; str << "Formation set to: " << formation;
+    std::ostringstream str; str << "Formation set to: " << formation;
     ai->TellMaster(str);
     return true;
 }

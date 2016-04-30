@@ -218,7 +218,7 @@ bool Engine::DoNextAction(Unit* unit, int depth)
     return actionExecuted;
 }
 
-ActionNode* Engine::CreateActionNode(string name)
+ActionNode* Engine::CreateActionNode(std::string name)
 {
     for (map<string, Strategy*>::iterator i = strategies.begin(); i != strategies.end(); i++)
     {
@@ -269,7 +269,7 @@ bool Engine::MultiplyAndPush(NextAction** actions, float forceRelevance, bool sk
     return pushed;
 }
 
-ActionResult Engine::ExecuteAction(string name)
+ActionResult Engine::ExecuteAction(std::string name)
 {
 	bool result = false;
 
@@ -301,15 +301,15 @@ ActionResult Engine::ExecuteAction(string name)
 	return result ? ACTION_RESULT_OK : ACTION_RESULT_FAILED;
 }
 
-void Engine::addStrategy(string name)
+void Engine::addStrategy(std::string name)
 {
     removeStrategy(name);
 
     Strategy* strategy = aiObjectContext->GetStrategy(name);
     if (strategy)
     {
-        set<string> siblings = aiObjectContext->GetSiblingStrategy(name);
-        for (set<string>::iterator i = siblings.begin(); i != siblings.end(); i++)
+        set<std::string> siblings = aiObjectContext->GetSiblingStrategy(name);
+        for (set<std::string>::iterator i = siblings.begin(); i != siblings.end(); i++)
             removeStrategy(*i);
 
         LogAction("S:+%s", strategy->getName().c_str());
@@ -318,7 +318,7 @@ void Engine::addStrategy(string name)
     Init();
 }
 
-void Engine::addStrategies(string first, ...)
+void Engine::addStrategies(std::string first, ...)
 {
 	addStrategy(first);
 
@@ -337,7 +337,7 @@ void Engine::addStrategies(string first, ...)
 	va_end(vl);
 }
 
-bool Engine::removeStrategy(string name)
+bool Engine::removeStrategy(std::string name)
 {
     map<string, Strategy*>::iterator i = strategies.find(name);
     if (i == strategies.end())
@@ -355,13 +355,13 @@ void Engine::removeAllStrategies()
     Init();
 }
 
-void Engine::toggleStrategy(string name)
+void Engine::toggleStrategy(std::string name)
 {
     if (!removeStrategy(name))
         addStrategy(name);
 }
 
-bool Engine::HasStrategy(string name)
+bool Engine::HasStrategy(std::string name)
 {
     return strategies.find(name) != strategies.end();
 }
@@ -413,7 +413,7 @@ void Engine::PushDefaultActions()
 
 string Engine::ListStrategies()
 {
-    string s = "Strategies: ";
+    std::string s = "Strategies: ";
 
     if (strategies.empty())
         return s;
@@ -498,10 +498,10 @@ void Engine::LogAction(const char* format, ...)
     }
 }
 
-void Engine::ChangeStrategy(string names)
+void Engine::ChangeStrategy(std::string names)
 {
-    vector<string> splitted = split(names, ',');
-    for (vector<string>::iterator i = splitted.begin(); i != splitted.end(); i++)
+    vector<std::string> splitted = split(names, ',');
+    for (vector<std::string>::iterator i = splitted.begin(); i != splitted.end(); i++)
     {
         const char* name = i->c_str();
         switch (name[0])
@@ -531,6 +531,6 @@ void Engine::LogValues()
     if (sPlayerbotAIConfig.logInGroupOnly && !bot->GetGroup())
         return;
 
-    string text = ai->GetAiObjectContext()->FormatValues();
+    std::string text = ai->GetAiObjectContext()->FormatValues();
     sLog->outMessage("playerbot", LOG_LEVEL_DEBUG, "Values for %s: %s", bot->GetName().c_str(), text.c_str());
 }

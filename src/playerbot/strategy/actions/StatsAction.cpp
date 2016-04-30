@@ -7,7 +7,7 @@ using namespace ai;
 
 bool StatsAction::Execute(Event event)
 {
-    ostringstream out;
+    std::ostringstream out;
 
     ListGold(out);
 
@@ -27,12 +27,12 @@ bool StatsAction::Execute(Event event)
     return true;
 }
 
-void StatsAction::ListGold(ostringstream &out)
+void StatsAction::ListGold(std::ostringstream &out)
 {
     out << chat->formatMoney(bot->GetMoney());
 }
 
-void StatsAction::ListBagSlots(ostringstream &out)
+void StatsAction::ListBagSlots(std::ostringstream &out)
 {
     uint32 totalused = 0, total = 16;
     // list out items in main backpack
@@ -67,7 +67,7 @@ void StatsAction::ListBagSlots(ostringstream &out)
     out << "|h|c" << color << (total - totalfree) << "/" << total << "|h|cffffffff Bag";
 }
 
-void StatsAction::ListXP( ostringstream &out )
+void StatsAction::ListXP(std::ostringstream &out )
 {
     uint32 curXP = bot->GetUInt32Value(PLAYER_XP);
     uint32 nextLevelXP = bot->GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
@@ -78,7 +78,7 @@ void StatsAction::ListXP( ostringstream &out )
     out << "|r|cff00ff00" << xpPercent << "|r|cffffd333%" << "|h|cffffffff XP";
 }
 
-void StatsAction::ListRepairCost(ostringstream &out)
+void StatsAction::ListRepairCost(std::ostringstream &out)
 {
     out << chat->formatMoney(EstRepairAll()) << " Repair";
 }

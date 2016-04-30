@@ -11,7 +11,7 @@ namespace ai
         virtual bool Execute(Event event);
 
     private:
-        bool Execute(string text, Unit* bank);
+        bool Execute(std::string text, Unit* bank);
         void ListItems();
         bool Withdraw(const uint32 itemid);
         bool Deposit(Item* pItem);

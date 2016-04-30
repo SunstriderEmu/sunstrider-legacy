@@ -3244,7 +3244,7 @@ void Spell::SearchAreaGOTarget(std::list<GameObject*> &TagGoMap, float radius, c
     cell.SetNoCreate();
 
     Trinity::AllGameObjectsInRange check(x,y,z,radius);
-    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(TagGoMap, check);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange> searcher(m_caster, TagGoMap, check);
     TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsInRange>, GridTypeMapContainer> visitor(searcher);
 
     cell.Visit(pair, visitor, *(m_caster->GetMap()));
@@ -6705,7 +6705,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         return SPELL_FAILED_HIGHLEVEL;
 
                     // use SMSG_PET_TAME_FAILURE?
-                    if (!(m_targets.GetUnitTarget()->ToCreature())->GetCreatureTemplate()->isTameable ())
+                    if (!(m_targets.GetUnitTarget()->ToCreature())->GetCreatureTemplate()->IsTameable ())
                         return SPELL_FAILED_BAD_TARGETS;
 
                     if(m_caster->GetPetGUID())

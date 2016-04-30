@@ -168,7 +168,7 @@ namespace ai
     class QueryNamedItemCountVisitor : public QueryItemCountVisitor
     {
     public:
-        QueryNamedItemCountVisitor(string name) : QueryItemCountVisitor(0)
+        QueryNamedItemCountVisitor(std::string name) : QueryItemCountVisitor(0)
         {
             this->name = name;
         }
@@ -183,12 +183,12 @@ namespace ai
         }
 
     private:
-        string name;
+        std::string name;
     };
 
     class FindUsableNamedItemVisitor : public FindUsableItemVisitor {
     public:
-        FindUsableNamedItemVisitor(Player* bot, string name) : FindUsableItemVisitor(bot)
+        FindUsableNamedItemVisitor(Player* bot, std::string name) : FindUsableItemVisitor(bot)
         {
             this->name = name;
         }
@@ -199,7 +199,7 @@ namespace ai
         }
 
     private:
-        string name;
+        std::string name;
     };
 
     class FindItemByIdVisitor : public FindItemVisitor {

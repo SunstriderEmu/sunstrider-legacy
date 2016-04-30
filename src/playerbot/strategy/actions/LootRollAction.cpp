@@ -8,6 +8,7 @@ using namespace ai;
 
 bool LootRollAction::Execute(Event event)
 {
+    /* TODO PLAYERBOT
     Player *bot = QueryItemUsageAction::ai->GetBot();
 
     WorldPacket p(event.getPacket()); //WorldPacket packet for CMSG_LOOT_ROLL, (8+4+1)
@@ -39,8 +40,10 @@ bool LootRollAction::Execute(Event event)
             case ITEM_CLASS_ARMOR:
                 if (QueryItemUsage(proto))
                     vote = NEED;
+#ifdef LICH_KING
                 else if (bot->HasSkill(SKILL_ENCHANTING))
                     vote = DISENCHANT;
+#endif
                 break;
             default:
                 if (IsLootAllowed(itemId))
@@ -61,6 +64,6 @@ bool LootRollAction::Execute(Event event)
         group->CountRollVote(bot->GetGUID(), guid, vote);
         break;
     }
-
+    */
     return true;
 }

@@ -1451,7 +1451,7 @@ bool ChatHandler::HandleDelVendorItemCommand(const char* args)
     ARGS_CHECK
 
     Creature* vendor = GetSelectedCreature();
-    if (!vendor || !vendor->isVendor())
+    if (!vendor || !vendor->IsVendor())
     {
         SendSysMessage(LANG_COMMAND_VENDORSELECTION);
         SetSentErrorMessage(true);

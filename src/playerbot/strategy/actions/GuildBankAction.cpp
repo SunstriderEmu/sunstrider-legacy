@@ -10,7 +10,7 @@ using namespace ai;
 
 bool GuildBankAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
     if (text.empty())
         return false;
 
@@ -28,7 +28,7 @@ bool GuildBankAction::Execute(Event event)
     return false;
 }
 
-bool GuildBankAction::Execute(string text, GameObject* bank)
+bool GuildBankAction::Execute(std::string text, GameObject* bank)
 {
     bool result = true;
 
@@ -52,9 +52,11 @@ bool GuildBankAction::MoveFromCharToBank(Item* item, GameObject* bank)
     uint32 playerBag = item->GetBagSlot();
 
     Guild* guild = sObjectMgr->GetGuildById(bot->GetGuildId());
-    guild->SwapItems(bot, 0, playerSlot, 0, INVENTORY_SLOT_BAG_0, 0);
+   /* TODO PLAYERBOT guild->SwapItems(bot, 0, playerSlot, 0, INVENTORY_SLOT_BAG_0, 0);
 
-    ostringstream out; out << chat->formatItem(item->GetTemplate()) << " put to guild bank";
-    ai->TellMaster(out);
+    std::ostringstream out; out << chat->formatItem(item->GetTemplate()) << " put to guild bank";
+    */
+    ai->TellMaster("TODO PLAYERBOT");
+
     return true;
 }

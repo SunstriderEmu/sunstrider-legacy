@@ -13,10 +13,10 @@ namespace ai
         virtual void ProcessQuest(Quest const* quest, WorldObject* questGiver);
 
     private:
-        void TurnInQuest(Quest const* quest, WorldObject* questGiver, ostringstream& out);
-        void RewardNoItem(Quest const* quest, WorldObject* questGiver, ostringstream& out);
-        void RewardSingleItem(Quest const* quest, WorldObject* questGiver, ostringstream& out);
-        void AskToSelectReward(Quest const* quest, ostringstream& out);
+        void TurnInQuest(Quest const* quest, WorldObject* questGiver, std::ostringstream& out);
+        void RewardNoItem(Quest const* quest, WorldObject* questGiver, std::ostringstream& out);
+        void RewardSingleItem(Quest const* quest, WorldObject* questGiver, std::ostringstream& out);
+        void AskToSelectReward(Quest const* quest, std::ostringstream& out);
     };
 
 }

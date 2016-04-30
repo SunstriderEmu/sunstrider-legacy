@@ -13,7 +13,7 @@ bool EmoteAction::Execute(Event event)
 
     uint32 emote = 0;
 
-    string param = event.getParam();
+    std::string param = event.getParam();
 	if (param.empty() || emotes.find(param) == emotes.end())
     {
         int index = rand() % emotes.size();

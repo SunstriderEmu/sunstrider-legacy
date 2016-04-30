@@ -61,23 +61,23 @@ if( WIN32 )
   if ( MSVC )
 	add_custom_command(TARGET playerbot
       POST_BUILD
- 	  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/
+ 	  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/
     ) 
   elseif ( MINGW )
     
 	 add_custom_command(TARGET playerbot
       POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/
     )
   endif()
 endif()
 
 if( UNIX )
   install(TARGETS playerbot DESTINATION bin)
-  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
+  install(FILES aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
 elseif( WIN32 )
   install(TARGETS playerbot DESTINATION "${CMAKE_INSTALL_PREFIX}")
-  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
+  install(FILES aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # Generate precompiled header

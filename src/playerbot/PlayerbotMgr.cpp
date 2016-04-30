@@ -108,7 +108,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
         if (!groupValid)
         {
             WorldPacket p;
-            string member = bot->GetName();
+            std::string member = bot->GetName();
             p << uint32(PARTY_OP_LEAVE) << member << uint32(0);
             bot->GetSession()->HandleGroupDisbandOpcode(p);
         }
@@ -118,7 +118,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
     ai->TellMaster("Hello!");
 }
 
-string PlayerbotHolder::ProcessBotCommand(string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId)
+string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId)
 {
     if (!sPlayerbotAIConfig.enabled || guid.IsEmpty())
         return "bot system is disabled";
@@ -236,11 +236,11 @@ bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* a
         return false;
     }
 
-    list<string> messages = mgr->HandlePlayerbotCommand(args, player);
+    list<std::string> messages = mgr->HandlePlayerbotCommand(args, player);
     if (messages.empty())
         return true;
 
-    for (list<string>::iterator i = messages.begin(); i != messages.end(); ++i)
+    for (list<std::string>::iterator i = messages.begin(); i != messages.end(); ++i)
     {
         handler->PSendSysMessage(i->c_str());
     }
@@ -249,9 +249,9 @@ bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* a
     return false;
 }
 
-list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* master)
+list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* master)
 {
-    list<string> messages;
+    list<std::string> messages;
 
     if (!*args)
     {
@@ -270,7 +270,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
     std::string cmdStr = cmd;
     std::string charnameStr = charname;
 
-    set<string> bots;
+    set<std::string> bots;
     if (charnameStr == "*" && master)
     {
         Group* group = master->GetGroup();
@@ -285,10 +285,10 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
         {
 			ObjectGuid member = ObjectGuid(i->guid);
 
-			if (member == master->GetGUID())
+			if (member == ObjectGuid(master->GetGUID()))
 				continue;
 
-			string bot;
+			std::string bot;
 			if (sObjectMgr->GetPlayerNameByGUID(member, bot))
 			    bots.insert(bot);
         }
@@ -304,10 +304,10 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
         }
     }
 
-    vector<string> chars = split(charnameStr, ',');
-    for (vector<string>::iterator i = chars.begin(); i != chars.end(); i++)
+    vector<std::string> chars = split(charnameStr, ',');
+    for (vector<std::string>::iterator i = chars.begin(); i != chars.end(); i++)
     {
-        string s = *i;
+        std::string s = *i;
 
         uint32 accountId = GetAccountId(s);
         if (!accountId)
@@ -324,16 +324,16 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
             do
             {
                 Field* fields = results->Fetch();
-                string charName = fields[0].GetString();
+                std::string charName = fields[0].GetString();
                 bots.insert(charName);
             } while (results->NextRow());
         }
 	}
 
-    for (set<string>::iterator i = bots.begin(); i != bots.end(); ++i)
+    for (set<std::string>::iterator i = bots.begin(); i != bots.end(); ++i)
     {
-        string bot = *i;
-        ostringstream out;
+        std::string bot = *i;
+        std::ostringstream out;
         out << cmdStr << ": " << bot << " - ";
 
         ObjectGuid member = ObjectGuid(sObjectMgr->GetPlayerGUIDByName(bot));
@@ -341,7 +341,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
         {
             out << "character not found";
         }
-        else if (master && member != master->GetGUID())
+        else if (master && member != ObjectGuid(master->GetGUID()))
         {
             out << ProcessBotCommand(cmdStr, member,
                     master->GetSession()->GetSecurity() >= SEC_GAMEMASTER1,
@@ -359,7 +359,7 @@ list<string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Player* m
     return messages;
 }
 
-uint32 PlayerbotHolder::GetAccountId(string name)
+uint32 PlayerbotHolder::GetAccountId(std::string name)
 {
     uint32 accountId = 0;
 
@@ -388,7 +388,7 @@ void PlayerbotMgr::UpdateAIInternal(uint32 elapsed)
     SetNextCheckDelay(sPlayerbotAIConfig.reactDelay);
 }
 
-void PlayerbotMgr::HandleCommand(uint32 type, const string& text)
+void PlayerbotMgr::HandleCommand(uint32 type, const std::string& text)
 {
     Player *master = GetMaster();
     if (!master)

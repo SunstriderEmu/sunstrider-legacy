@@ -24,7 +24,7 @@ bool HelpAction::Execute(Event event)
 
 void HelpAction::TellChatCommands()
 {
-    ostringstream out;
+    std::ostringstream out;
     out << "Whisper any of: ";
     out << CombineSupported(chatContext->supports());
     out << ", [item], [quest] or [object] link";
@@ -33,17 +33,17 @@ void HelpAction::TellChatCommands()
 
 void HelpAction::TellStrategies()
 {
-    ostringstream out;
+    std::ostringstream out;
     out << "Possible strategies (co/nc/dead commands): ";
     out << CombineSupported(ai->GetAiObjectContext()->GetSupportedStrategies());
     ai->TellMaster(out);
 }
 
-string HelpAction::CombineSupported(set<string> commands)
+string HelpAction::CombineSupported(set<std::string> commands)
 {
-    ostringstream out;
+    std::ostringstream out;
 
-    for (set<string>::iterator i = commands.begin(); i != commands.end(); )
+    for (set<std::string>::iterator i = commands.begin(); i != commands.end(); )
 	{
         out << *i;
 		if (++i != commands.end())

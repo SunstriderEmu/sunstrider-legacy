@@ -8,7 +8,7 @@ namespace ai
     {
     public:
         GenericHunterNonCombatStrategy(PlayerbotAI* ai);
-        virtual string getName() { return "nc"; }
+        virtual std::string getName() { return "nc"; }
 
     public:
         virtual void InitTriggers(std::list<TriggerNode*> &triggers);

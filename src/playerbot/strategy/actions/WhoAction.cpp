@@ -8,7 +8,7 @@
 
 using namespace ai;
 
-map<uint32, string> WhoAction::skills;
+map<uint32, std::string> WhoAction::skills;
 
 #ifndef WIN32
 inline int strcmpi(const char* s1, const char* s2)
@@ -24,8 +24,8 @@ bool WhoAction::Execute(Event event)
     if (!owner)
         return false;
 
-    string tell = "";
-    string text = event.getParam();
+    std::string tell = "";
+    std::string text = event.getParam();
     if (!text.empty())
     {
         if (!sRandomPlayerbotMgr.IsRandomBot(bot))
@@ -51,15 +51,15 @@ bool WhoAction::Execute(Event event)
 }
 
 
-string WhoAction::QueryTrade(string text)
+string WhoAction::QueryTrade(std::string text)
 {
-    ostringstream out;
+    std::ostringstream out;
 
     list<Item*> items = InventoryAction::parseItems(text);
     for (list<Item*>::iterator i = items.begin(); i != items.end(); ++i)
     {
         Item* sell = *i;
-        int32 sellPrice = auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * sell->GetCount();
+        int32 sellPrice = 1; //TODO PLAYERBOT auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * sell->GetCount();
         if (!sellPrice)
             continue;
 
@@ -70,23 +70,23 @@ string WhoAction::QueryTrade(string text)
     return "";
 }
 
-string WhoAction::QuerySkill(string text)
+string WhoAction::QuerySkill(std::string text)
 {
-    ostringstream out;
+    std::ostringstream out;
     InitSkills();
 
-    for (map<uint32, string>::iterator i = skills.begin(); i != skills.end(); ++i)
+    for (map<uint32, std::string>::iterator i = skills.begin(); i != skills.end(); ++i)
     {
-        string name = i->second;
+        std::string name = i->second;
         uint16 skill = i->first;
         if (!strcmpi(text.c_str(), name.c_str()) && bot->HasSkill(skill))
         {
-            string skillName = i->second;
+            std::string skillName = i->second;
             uint32 spellId = AI_VALUE2(uint32, "spell id", skillName);
             uint16 value = bot->GetSkillValue(skill);
             uint16 maxSkill = bot->GetMaxSkillValue(skill);
-            ObjectGuid guid = bot->GetGUID();
-            string data = "0";
+            ObjectGuid guid = ObjectGuid(bot->GetGUID());
+            std::string data = "0";
             out << "|cFFFFFF00|Htrade:" << spellId << ":" << value << ":" << maxSkill << ":"
                     << std::hex << std::uppercase << guid.GetRawValue()
                     << std::nouppercase << std::dec << ":" << data
@@ -99,9 +99,9 @@ string WhoAction::QuerySkill(string text)
     return out.str();
 }
 
-string WhoAction::QuerySpec(string text)
+string WhoAction::QuerySpec(std::string text)
 {
-    ostringstream out;
+    std::ostringstream out;
 
     int spec = AiFactory::GetPlayerSpecTab(bot);
     out << "|h|cffffffff" << chat->formatClass(bot, spec);
@@ -147,7 +147,9 @@ void WhoAction::InitSkills()
     skills[SKILL_ENCHANTING] = "Enchanting";
     skills[SKILL_SKINNING] = "Skinning";
     skills[SKILL_JEWELCRAFTING] = "Jewelcrafting";
+#ifdef LICH_KING
     skills[SKILL_INSCRIPTION] = "Inscription";
+#endif
     skills[SKILL_TAILORING] = "Tailoring";
     skills[SKILL_LEATHERWORKING] = "Leatherworking";
     skills[SKILL_ENGINEERING] = "Engineering";

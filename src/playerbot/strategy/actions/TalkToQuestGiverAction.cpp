@@ -30,23 +30,23 @@ void TalkToQuestGiverAction::ProcessQuest(Quest const* quest, WorldObject* quest
     ai->TellMaster(out);
 }
 
-void TalkToQuestGiverAction::TurnInQuest(Quest const* quest, WorldObject* questGiver, ostringstream& out)
+void TalkToQuestGiverAction::TurnInQuest(Quest const* quest, WorldObject* questGiver, std::ostringstream& out)
 {
     uint32 questID = quest->GetQuestId();
 
     if (bot->GetQuestRewardStatus(questID))
         return;
 
-    if (quest->GetRewChoiceItemsCount() == 0)
+    if (quest->GetRewardChoiceItemsCount() == 0)
         RewardNoItem(quest, questGiver, out);
-    else if (quest->GetRewChoiceItemsCount() == 1)
+    else if (quest->GetRewardChoiceItemsCount() == 1)
         RewardSingleItem(quest, questGiver, out);
     else {
         AskToSelectReward(quest, out);
     }
 }
 
-void TalkToQuestGiverAction::RewardNoItem(Quest const* quest, WorldObject* questGiver, ostringstream& out)
+void TalkToQuestGiverAction::RewardNoItem(Quest const* quest, WorldObject* questGiver, std::ostringstream& out)
 {
     if (bot->CanRewardQuest(quest, false))
     {
@@ -59,7 +59,7 @@ void TalkToQuestGiverAction::RewardNoItem(Quest const* quest, WorldObject* quest
     }
 }
 
-void TalkToQuestGiverAction::RewardSingleItem(Quest const* quest, WorldObject* questGiver, ostringstream& out)
+void TalkToQuestGiverAction::RewardSingleItem(Quest const* quest, WorldObject* questGiver, std::ostringstream& out)
 {
     int index = 0;
     ItemTemplate const *item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[index]);
@@ -75,11 +75,11 @@ void TalkToQuestGiverAction::RewardSingleItem(Quest const* quest, WorldObject* q
     }
 }
 
-void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, ostringstream& out)
+void TalkToQuestGiverAction::AskToSelectReward(Quest const* quest, std::ostringstream& out)
 {
-    ostringstream msg;
+    std::ostringstream msg;
     msg << "Choose reward: ";
-    for (uint8 i=0; i < quest->GetRewChoiceItemsCount(); ++i)
+    for (uint8 i=0; i < quest->GetRewardChoiceItemsCount(); ++i)
     {
         ItemTemplate const* item = sObjectMgr->GetItemTemplate(quest->RewardChoiceItemId[i]);
         msg << chat->formatItem(item);

@@ -11,7 +11,7 @@ namespace ai
         virtual bool Execute(Event event);
 
     private:
-        bool Execute(string text, GameObject* bank);
+        bool Execute(std::string text, GameObject* bank);
         bool MoveFromCharToBank(Item* item, GameObject* bank);
     };
 

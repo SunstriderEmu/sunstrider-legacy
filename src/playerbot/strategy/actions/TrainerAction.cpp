@@ -4,22 +4,23 @@
 
 using namespace ai;
 
-void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, ostringstream& msg)
+void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostringstream& msg)
 {
     if (bot->GetMoney() < cost)
         return;
 
     bot->ModifyMoney(-int32(cost));
-    if (tSpell->IsCastable())
+    /* TODO PLAYERBOT if (tSpell->IsCastable())
         bot->CastSpell(bot, tSpell->spell, true);
-    else
-        bot->LearnSpell(tSpell->learnedSpell[0], false, false);
+    else */
+        bot->LearnSpell(tSpell->spell, false, false);
 
     msg << " - learned";
 }
 
 void TrainerAction::List(Creature* creature, TrainerSpellAction action, SpellIds& spells)
 {
+    /* TODO PLAYERBOT
     TellHeader(creature);
 
     TrainerSpellData const* trainer_spells = creature->GetTrainerSpells();
@@ -48,7 +49,7 @@ void TrainerAction::List(Creature* creature, TrainerSpellAction action, SpellIds
         uint32 cost = uint32(floor(tSpell->spellCost *  fDiscountMod));
         totalCost += cost;
 
-        ostringstream out;
+        std::ostringstream out;
         out << chat->formatSpell(pSpellInfo) << chat->formatMoney(cost);
 
         if (action && (spells.empty() || spells.find(tSpell->spell) != spells.end() || spells.find(tSpell->learnedSpell[0]) != spells.end()))
@@ -58,12 +59,13 @@ void TrainerAction::List(Creature* creature, TrainerSpellAction action, SpellIds
     }
 
     TellFooter(totalCost);
+    */
 }
 
 
 bool TrainerAction::Execute(Event event)
 {
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     Player* master = GetMaster();
     if (!master)
@@ -73,7 +75,7 @@ bool TrainerAction::Execute(Event event)
     if (!target)
         return false;
 
-    Creature *creature = ai->GetCreature(target->GetGUID());
+    Creature *creature = ai->GetCreature(ObjectGuid(target->GetGUID()));
     if (!creature)
         return false;
 
@@ -100,7 +102,7 @@ bool TrainerAction::Execute(Event event)
 
 void TrainerAction::TellHeader(Creature* creature)
 {
-    ostringstream out; out << "--- can learn from " << creature->GetName() << " ---";
+    std::ostringstream out; out << "--- can learn from " << creature->GetName() << " ---";
     ai->TellMaster(out);
 }
 
@@ -108,7 +110,7 @@ void TrainerAction::TellFooter(uint32 totalCost)
 {
     if (totalCost)
     {
-        ostringstream out; out << "Total cost: " << chat->formatMoney(totalCost);
+        std::ostringstream out; out << "Total cost: " << chat->formatMoney(totalCost);
         ai->TellMaster(out);
     }
 }

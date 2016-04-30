@@ -8,11 +8,11 @@ namespace ai
     public:
         ExternalEventHelper(AiObjectContext* aiObjectContext) : aiObjectContext(aiObjectContext) {}
 
-        bool ParseChatCommand(string command, Player* owner = nullptr);
+        bool ParseChatCommand(std::string command, Player* owner = nullptr);
 
-        void HandlePacket(map<uint16, string> &handlers, const WorldPacket &packet, Player* owner = nullptr);
+        void HandlePacket(std::map<uint16, std::string> &handlers, const WorldPacket &packet, Player* owner = nullptr);
 
-        bool HandleCommand(string name, string param, Player* owner = nullptr);
+        bool HandleCommand(std::string name, std::string param, Player* owner = nullptr);
 
     private:
         AiObjectContext* aiObjectContext;

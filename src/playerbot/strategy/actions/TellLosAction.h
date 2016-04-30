@@ -10,8 +10,8 @@ namespace ai
         virtual bool Execute(Event event);
 
     private:
-        void ListUnits(string title, list<ObjectGuid> units);
-        void ListGameObjects(string title, list<ObjectGuid> gos);
+        void ListUnits(std::string title, list<ObjectGuid> units);
+        void ListGameObjects(std::string title, list<ObjectGuid> gos);
     };
 
 }

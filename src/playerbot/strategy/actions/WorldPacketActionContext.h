@@ -13,7 +13,7 @@
 #include "CheckMountStateAction.h"
 #include "RememberTaxiAction.h"
 #include "TradeStatusAction.h"
-#include "InventoryResultAction.h"
+#include "InventoryChangeFailureAction.h"
 #include "LootAction.h"
 #include "QuestAction.h"
 #include "LeaveGroupAction.h"
@@ -96,7 +96,7 @@ namespace ai
         static Action* pass_leadership_to_master(PlayerbotAI* ai) { return new PassLeadershipToMasterAction(ai); }
         static Action* tell_not_enough_money(PlayerbotAI* ai) { return new TellMasterAction(ai, "Not enough money"); }
         static Action* tell_not_enough_reputation(PlayerbotAI* ai) { return new TellMasterAction(ai, "Not enough reputation"); }
-        static Action* tell_cannot_equip(PlayerbotAI* ai) { return new InventoryResultAction(ai); }
+        static Action* tell_cannot_equip(PlayerbotAI* ai) { return new InventoryChangeFailureAction(ai); }
         static Action* turn_in_quest(PlayerbotAI* ai) { return new TalkToQuestGiverAction(ai); }
         static Action* accept_quest(PlayerbotAI* ai) { return new AcceptQuestAction(ai); }
         static Action* accept_all_quests(PlayerbotAI* ai) { return new AcceptAllQuestsAction(ai); }

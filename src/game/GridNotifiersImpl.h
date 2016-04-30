@@ -32,7 +32,7 @@ inline void
 Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 {
     for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        if(iter->GetSource()->IsInWorld() && !iter->GetSource()->isSpiritService())
+        if(iter->GetSource()->IsInWorld() && !iter->GetSource()->IsSpiritService())
             iter->GetSource()->Update(i_timeDiff);
 }
 

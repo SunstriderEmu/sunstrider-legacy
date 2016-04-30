@@ -1,7 +1,7 @@
 
 #include "../../playerbot.h"
 #include "PartyMemberToDispel.h"
-#include "../../../Entities/Pet/Pet.h"
+#include "Pet.h"
 
 using namespace ai;
 

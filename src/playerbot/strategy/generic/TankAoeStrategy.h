@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         TankAoeStrategy(PlayerbotAI* ai) : NonCombatStrategy(ai) {}
-        virtual string getName() { return "tank aoe"; }
+        virtual std::string getName() { return "tank aoe"; }
         virtual int GetType() { return STRATEGY_TYPE_TANK; }
 
     public:

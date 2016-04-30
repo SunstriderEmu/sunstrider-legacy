@@ -18,7 +18,7 @@ bool TellCastFailedAction::Execute(Event event)
         return false;
 
     const SpellInfo *const pSpellInfo =  sSpellMgr->GetSpellInfo(spellId);
-    ostringstream out; out << chat->formatSpell(pSpellInfo) << ": ";
+    std::ostringstream out; out << chat->formatSpell(pSpellInfo) << ": ";
     switch (result)
     {
     case SPELL_FAILED_NOT_READY:
@@ -47,7 +47,7 @@ bool TellCastFailedAction::Execute(Event event)
     default:
         out << "cannot cast";
     }
-    Spell *spell = new Spell(bot, pSpellInfo, TRIGGERED_NONE);
+    Spell *spell = new Spell(bot, pSpellInfo, /*TRIGGERED_NONE*/ false);
     int32 castTime = spell->GetCastTime();
     delete spell;
 
@@ -60,7 +60,7 @@ bool TellCastFailedAction::Execute(Event event)
 
 bool TellSpellAction::Execute(Event event)
 {
-    string spell = event.getParam();
+    std::string spell = event.getParam();
     uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
     if (!spellId)
         return false;
@@ -69,7 +69,7 @@ bool TellSpellAction::Execute(Event event)
     if (!spellInfo)
         return false;
 
-    ostringstream out; out << chat->formatSpell(spellInfo);
+    std::ostringstream out; out << chat->formatSpell(spellInfo);
     ai->TellMaster(out);
     return true;
 }

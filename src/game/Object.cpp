@@ -1831,6 +1831,14 @@ bool Position::HasInArc(float arc, const Position *obj, float border) const
     return ((angle >= lborder) && (angle <= rborder));
 }
 
+bool Position::operator==(Position const &a)
+{
+    return (G3D::fuzzyEq(a.m_positionX, m_positionX) &&
+        G3D::fuzzyEq(a.m_positionY, m_positionY) &&
+        G3D::fuzzyEq(a.m_positionZ, m_positionZ) &&
+        G3D::fuzzyEq(a.m_orientation, m_orientation));
+}
+
 bool Position::HasInLine(const WorldObject* const target, float width) const
 {
     if (!HasInArc(float(M_PI), target))
@@ -2059,7 +2067,7 @@ void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList
     cell.SetNoCreate();
 
     Trinity::AllGameObjectsWithEntryInRange check(this, uiEntry, fMaxSearchRange);
-    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(lList, check);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(this, lList, check);
     TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
     cell.Visit(pair, visitor, *(this->GetMap()));

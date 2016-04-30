@@ -176,8 +176,6 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     Player *player = GetPlayer();
     uint64 guid = player->GetLootGUID();
     if(!guid)

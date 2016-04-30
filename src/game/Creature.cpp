@@ -823,7 +823,7 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData
 
 bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
 {
-    if(!isTrainer())
+    if(!IsTrainer())
         return false;
 
     TrainerSpellData const* trainer_spells = GetTrainerSpells();
@@ -1832,7 +1832,7 @@ bool Creature::IsVisibleInGridForPlayer(Player const* pl) const
     }
 
     // Dead player see Spirit Healer or Spirit Guide
-    if(isSpiritService())
+    if(IsSpiritService())
         return true;
 
     // and not see any other

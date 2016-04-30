@@ -44,7 +44,7 @@ bool SellAction::Execute(Event event)
     if (!master)
         return false;
 
-    string text = event.getParam();
+    std::string text = event.getParam();
 
     if (text == "gray" || text == "*")
     {
@@ -83,13 +83,13 @@ void SellAction::Sell(Item* item)
         return;
     }
 
-    ObjectGuid itemguid = item->GetGUID();
+    ObjectGuid itemguid = ObjectGuid(item->GetGUID());
     uint32 count = item->GetCount();
 
     WorldPacket p;
     p << vendor->GetGUID() << itemguid << count;
     bot->GetSession()->HandleSellItemOpcode(p);
 
-    ostringstream out; out << chat->formatItem(item->GetTemplate()) << " sold";
+    std::ostringstream out; out << chat->formatItem(item->GetTemplate()) << " sold";
     ai->TellMaster(out);
 }

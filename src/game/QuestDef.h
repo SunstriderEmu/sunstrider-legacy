@@ -99,6 +99,7 @@ enum QuestStatus
     QUEST_STATUS_UNAVAILABLE    = 2,
     QUEST_STATUS_INCOMPLETE     = 3,
     QUEST_STATUS_AVAILABLE      = 4,
+    QUEST_STATUS_FAILED         = 5, //NYI
     MAX_QUEST_STATUS
 };
 
@@ -232,6 +233,13 @@ class Quest
         bool   IsAutoComplete() const { return QuestMethod == 0; }
         uint32 GetFlags() const { return QuestFlags; }
         bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
+#ifdef LICH_KING
+        bool   IsWeekly() const { return (QuestFlags & QUEST_FLAGS_WEEKLY) != 0; }
+        bool   IsMonthly() const { return (SpecialFlags & QUEST_SPECIAL_FLAGS_MONTHLY) != 0; }
+#else
+        bool   IsWeekly() const { return false; }
+        bool   IsMonthly() const { return false; }
+#endif
         bool   IsMarkedAsBugged() const { return m_markedAsBugged; }
 
         // multiple values

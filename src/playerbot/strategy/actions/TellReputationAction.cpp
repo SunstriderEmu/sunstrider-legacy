@@ -19,12 +19,12 @@ bool TellReputationAction::Execute(Event event)
     const FactionTemplateEntry *factionTemplate = unit->GetFactionTemplateEntry();
     uint32 faction = factionTemplate->faction;
     const FactionEntry* entry = sFactionStore.LookupEntry(faction);
-    int32 reputation = bot->GetReputationMgr().GetReputation(faction);
+    int32 reputation = bot->GetReputation(entry); //bot->GetReputationMgr().GetReputation(faction);
 
-    ostringstream out;
+    std::ostringstream out;
     out << entry->name[0] << ": ";
     out << "|cff";
-    ReputationRank rank = bot->GetReputationMgr().GetRank(entry);
+    ReputationRank rank = bot->GetReputationRank(faction);// bot->GetReputationMgr().GetRank(entry);
     switch (rank) {
         case REP_HATED:
             out << "cc2222hated";

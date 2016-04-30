@@ -401,7 +401,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             #ifdef PLAYERBOT
             // Playerbot mod: broadcast message to bot members
-            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
+            for(GroupReference* itr = targetGroup->GetFirstMember(); itr != NULL; itr=itr->next())
             {
                 Player* player = itr->GetSource();
                 if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)

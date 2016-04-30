@@ -12,24 +12,24 @@ namespace ai
 
         virtual bool Execute(Event event)
         {
-            string text = event.getParam();
+            std::string text = event.getParam();
             if (text.empty() || text == "?")
             {
-                ostringstream out; out << "RTI: ";
+                std::ostringstream out; out << "RTI: ";
                 AppendRti(out);
                 ai->TellMaster(out);
                 return true;
             }
 
-            context->GetValue<string>("rti")->Set(text);
-            ostringstream out; out << "RTI set to: ";
+            context->GetValue<std::string>("rti")->Set(text);
+            std::ostringstream out; out << "RTI set to: ";
             AppendRti(out);
             ai->TellMaster(out);
             return true;
         }
 
     private:
-        void AppendRti(ostringstream & out)
+        void AppendRti(std::ostringstream & out)
         {
             out << AI_VALUE(string, "rti");
 
