@@ -1,7 +1,7 @@
 
 #include "../../playerbot.h"
 #include "TellReputationAction.h"
-//#include "../../../Reputation/ReputationMgr.h"
+#include "ReputationMgr.h"
 
 
 using namespace ai;
