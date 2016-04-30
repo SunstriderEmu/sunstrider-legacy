@@ -1600,7 +1600,7 @@ void GameObject::Use(Unit* user)
             break;
         }
         default:
-            TC_LOG_ERROR("network.opcode","Unknown Object Type %u", GetGoType());
+            TC_LOG_ERROR("network.opcode","GameObject::Use - Unknown Object Type %u", GetGoType());
             break;
     }
 

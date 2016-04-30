@@ -339,7 +339,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     // since last save (in seconds)
-    uint32 timediff = (time(NULL) - fields[18].GetUInt32());
+    uint32 timediff = (time(NULL) - fields[18].GetUInt64());
 
     //load spells/cooldowns/auras
     SetCanModifyStats(true);

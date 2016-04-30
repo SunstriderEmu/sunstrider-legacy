@@ -1718,7 +1718,7 @@ void WorldSession::SendMotd()
     data.put(0, linecount);
 
     SendPacket( &data );
-    TC_LOG_DEBUG( "network", "WORLD: Sent motd (SMSG_MOTD)" );
+    //TC_LOG_DEBUG( "network", "WORLD: Sent motd (SMSG_MOTD)" );
 }
 
 void WorldSession::SendTitleEarned(uint32 titleIndex, bool earned)
