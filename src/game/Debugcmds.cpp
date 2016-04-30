@@ -1172,10 +1172,18 @@ bool ChatHandler::HandleDebugCrashCommand(const char* args)
 
 bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
 {
+#ifdef PLAYERBOT
     return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(this, args);
+#else
+    SendSysMessage("Core not build with playerbot");
+#endif
 }
 
 bool ChatHandler::HandlePlayerbotMgrCommand(const char* args)
 {
+#ifdef PLAYERBOT
     return PlayerbotMgr::HandlePlayerbotMgrCommand(this, args);
+#else
+    SendSysMessage("Core not build with playerbot");
+#endif
 }
