@@ -100,8 +100,8 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
         for (list<Item*>::iterator i = items.begin(); i != items.end(); ++i)
         {
             Item* sell = *i;
-            //TODO PLAYERBOT int32 sellPrice = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
-            int32 sellPrice = 1;
+            //TC int32 sellPrice = sell->GetCount() * auctionbot.GetSellPrice(sell->GetTemplate()) * sRandomPlayerbotMgr.GetSellMultiplier(bot);
+            int32 sellPrice = sell->GetCount() * sell->GetTemplate()->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot);
             std::ostringstream out;
             out << "Selling " << chat->formatItem(sell->GetTemplate(), sell->GetCount()) << " for " << chat->formatMoney(sellPrice);
             ai->TellMaster(out.str());
@@ -113,8 +113,8 @@ void QueryItemUsageAction::QueryItemPrice(ItemTemplate const *item)
     if (usage == ITEM_USAGE_NONE)
         return;
 
-//TODO PLAYERBOT    int32 buyPrice = auctionbot.GetBuyPrice(item) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
-    int32 buyPrice = 1;
+    //TC   int32 buyPrice = auctionbot.GetBuyPrice(item) * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
+    int32 buyPrice = item->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
     if (buyPrice)
     {
         std::ostringstream out;

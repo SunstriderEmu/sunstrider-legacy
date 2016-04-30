@@ -10,7 +10,7 @@ void TrainerAction::Learn(uint32 cost, TrainerSpell const* tSpell, std::ostrings
         return;
 
     bot->ModifyMoney(-int32(cost));
-    /* TODO PLAYERBOT if (tSpell->IsCastable())
+    /* TC if (tSpell->IsCastable())
         bot->CastSpell(bot, tSpell->spell, true);
     else */
         bot->LearnSpell(tSpell->spell, false, false);

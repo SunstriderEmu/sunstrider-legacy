@@ -126,7 +126,6 @@ void PlayerbotFactory::Randomize(bool incremental)
 void PlayerbotFactory::InitPet()
 {
     Pet* pet = bot->GetPet();
-    /* TODO PLAYERBOT
 
     if (!pet)
     {
@@ -142,7 +141,7 @@ void PlayerbotFactory::InitPet()
 	    for (CreatureTemplateContainer::const_iterator i = creatureTemplateContainer->begin(); i != creatureTemplateContainer->end(); ++i)
 	    {
 	        CreatureTemplate const& co = i->second;
-            if (!co.isTameable(false))
+            if (!co.IsTameable(false))
                 continue;
 
             if (co.minlevel > bot->GetLevel())
@@ -161,6 +160,7 @@ void PlayerbotFactory::InitPet()
             return;
         }
 
+        /* TODO PLAYERBOT
 		for (int i = 0; i < 100; i++)
 		{
 			int index = urand(0, ids.size() - 1);
@@ -193,8 +193,8 @@ void PlayerbotFactory::InitPet()
             pet->SavePetToDB(PET_SAVE_AS_CURRENT);
             break;
         }
-    }
     */
+    }
     if (!pet)
     {
         sLog->outMessage("playerbot", LOG_LEVEL_ERROR, "Cannot create pet for bot %s", bot->GetName().c_str());
@@ -918,10 +918,9 @@ bool PlayerbotFactory::CanEquipUnseenItem(uint8 slot, uint16 &dest, uint32 item)
 
 void PlayerbotFactory::InitTradeSkills()
 {
-    /* TODO PLAYERBOT
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
-        bot->SetSkill(tradeSkills[i], 0, 0, 0);
+        bot->SetSkill(tradeSkills[i], 0, 0/*, 0*/);
     }
 
     vector<uint32> firstSkills;
@@ -958,7 +957,9 @@ void PlayerbotFactory::InitTradeSkills()
         break;
     case 1:
         SetRandomSkill(SKILL_HERBALISM);
+#ifdef LICH_KING
         SetRandomSkill(SKILL_INSCRIPTION);
+#endif
         break;
     case 2:
         SetRandomSkill(SKILL_MINING);
@@ -969,18 +970,15 @@ void PlayerbotFactory::InitTradeSkills()
         SetRandomSkill(secondSkills[urand(0, secondSkills.size() - 1)]);
         break;
     }
-    */
 }
 
 void PlayerbotFactory::UpdateTradeSkills()
 {
-    /* TODO PLAYERBOT
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
         if (bot->GetSkillValue(tradeSkills[i]) == 1)
-            bot->SetSkill(tradeSkills[i], 0, 0, 0);
+            bot->SetSkill(tradeSkills[i], 0, 0/*TC , 0*/);
     }
-    ¨*/
 }
 
 void PlayerbotFactory::InitSkills()
@@ -1038,7 +1036,7 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 
 void PlayerbotFactory::InitAvailableSpells()
 {
-    /* TODO PLAYERBOT
+    /* old code
     bot->LearnDefaultSkills();
 
     CreatureTemplateContainer const* creatureTemplateContainer = sObjectMgr->GetCreatureTemplates();
@@ -1081,6 +1079,7 @@ void PlayerbotFactory::InitAvailableSpells()
         }
     }
     */
+    //my code instead
     bot->LearnDefaultSpells();
     bot->LearnAllClassProficiencies();
     bot->LearnAllClassSpells();

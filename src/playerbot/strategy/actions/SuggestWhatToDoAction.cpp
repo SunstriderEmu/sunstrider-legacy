@@ -229,7 +229,8 @@ void SuggestWhatToDoAction::trade()
     if (!proto)
         return;
 
-    uint32 price = 1;//TODO PLAYERBOT auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
+    //TC uint32 price = auctionbot.GetSellPrice(proto) * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
+    uint32 price = proto->SellPrice * sRandomPlayerbotMgr.GetSellMultiplier(bot) * count;
     if (!price)
         return;
 

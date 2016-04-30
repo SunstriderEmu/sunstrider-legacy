@@ -285,7 +285,7 @@ bool StoreLootAction::Execute(Event event)
         }
 
         WorldPacket* const packet = new WorldPacket(CMSG_AUTOSTORE_LOOT_ITEM, 1);
-        *packet << itemindex;
+        *packet << itemindex; //bc+lk okay
         bot->GetSession()->QueuePacket(packet);
     }
 
@@ -293,7 +293,7 @@ bool StoreLootAction::Execute(Event event)
 
     // release loot
     WorldPacket* const packet = new WorldPacket(CMSG_LOOT_RELEASE, 8);
-    *packet << guid;
+    *packet << guid; //bc+lk okay
     bot->GetSession()->QueuePacket(packet);
     return true;
 }

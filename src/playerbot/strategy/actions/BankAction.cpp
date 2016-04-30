@@ -111,7 +111,6 @@ void BankAction::ListItems()
     ai->TellMaster("=== Bank ===");
 
     map<uint32, int> items;
-    /* TODO PLAYERBOT
     for (uint8 bag = BANK_SLOT_BAG_START; bag < BANK_SLOT_BAG_END; ++bag)
     {
         const Bag* const pBag = static_cast<const Bag*>(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag));
@@ -128,7 +127,6 @@ void BankAction::ListItems()
             }
         }
     }
-    */
     TellItems(items);
 }
 

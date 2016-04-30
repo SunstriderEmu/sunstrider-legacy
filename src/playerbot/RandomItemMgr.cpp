@@ -117,22 +117,25 @@ RandomItemList RandomItemMgr::Query(RandomItemType type)
         if (proto->Duration & 0x80000000)
             continue;
 
-        /* TODO PLAYERBOT if (sAhBotConfig.ignoreItemIds.find(proto->ItemId) != sAhBotConfig.ignoreItemIds.end())
+        /* TC if (sAhBotConfig.ignoreItemIds.find(proto->ItemId) != sAhBotConfig.ignoreItemIds.end())
             continue; */
 
         if (strstri(proto->Name1.c_str(), "qa") || strstri(proto->Name1.c_str(), "test") || strstri(proto->Name1.c_str(), "deprecated"))
             continue;
 
-/* TODO PLAYERBOT        if ((proto->RequiredLevel && proto->RequiredLevel > sAhBotConfig.maxRequiredLevel) || proto->ItemLevel > sAhBotConfig.maxItemLevel)
+/*TC        if ((proto->RequiredLevel && proto->RequiredLevel > sAhBotConfig.maxRequiredLevel) || proto->ItemLevel > sAhBotConfig.maxItemLevel)
             continue; */
 
         if (predicates[type] && !predicates[type]->Apply(proto))
             continue;
 
-        /* TODO PLAYERBOT  
+        /* TC
         if (!auctionbot.GetSellPrice(proto))
             continue;
             */
+        //insteand:
+        if (!proto->SellPrice)
+            continue;
 
         items.push_back(itemId);
     }
