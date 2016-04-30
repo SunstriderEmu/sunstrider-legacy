@@ -358,7 +358,9 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
     if (!ShouldLog(CONFIG_LOG_CHAR_MAIL, CONFIG_GM_LOG_CHAR_MAIL, gmInvolved))
         return;
 
-    std::string body = sObjectMgr->GetItemText(itemTextId);
+    std::string body;
+    if(itemTextId)
+        body = sObjectMgr->GetItemText(itemTextId);
 
     //## Insert into database
 
@@ -380,14 +382,16 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
 
     if (mi)
     {
+        uint32 id = 0;
         for (auto itr : *mi)
         {
-            //PrepareStatement(LOGS_INS_CHAR_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, item_guid, item_entry, item_count) VALUES (?,?,?,?)", CONNECTION_ASYNC);
+            //PrepareStatement(LOGS_INS_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, id, item_guid, item_entry, item_count) VALUES (?,?,?,?,?)", CONNECTION_ASYNC);
             stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_MAIL_ITEMS);
             stmt->setUInt32(0, mailId);
-            stmt->setUInt32(1, itr.second.item_guidlow);
-            stmt->setUInt32(2, itr.second.item_template);
-            stmt->setUInt16(3, itr.second.item->GetCount());
+            stmt->setUInt8(1, id++);
+            stmt->setUInt32(2, itr.second.item_guidlow);
+            stmt->setUInt32(3, itr.second.item_template);
+            stmt->setUInt16(4, itr.second.item->GetCount());
             trans->Append(stmt);
         }
     }

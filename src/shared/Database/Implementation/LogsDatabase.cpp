@@ -14,7 +14,7 @@ void LogsDatabaseConnection::DoPrepareStatements()
     PrepareStatement(LOGS_INS_CHAR_ITEM_DELETE, "INSERT INTO char_item_delete (account, playerguid, entry, count, time, IP,gm_involved) VALUES (?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_INS_CHAR_ITEM_GUILD_BANK, "INSERT INTO char_item_guild_bank (account, guid, guildId, direction, item_guid, item_entry, item_count, time, IP, gm_involved) VALUES (?,?,?,?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_INS_MAIL, "INSERT INTO mail (id, type, sender_account, sender_guid_or_entry, receiver_guid, subject, message, money, time, IP, gm_involved) VALUES (?,?,?,?,?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
-    PrepareStatement(LOGS_INS_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, item_guid, item_entry, item_count) VALUES (?,?,?,?)", CONNECTION_ASYNC);
+    PrepareStatement(LOGS_INS_MAIL_ITEMS, "INSERT INTO mail_items (mail_id, id, item_guid, item_entry, item_count) VALUES (?,?,?,?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_INS_CHAR_RENAME, "INSERT INTO char_rename (account, guid, old_name, new_name, time, IP, gm_involved) VALUES (?,?,?,?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
     PrepareStatement(LOGS_SEL_CHAR_TRADE_MAX_ID, "SELECT MAX(id) FROM char_trade", CONNECTION_SYNCH);
     PrepareStatement(LOGS_INS_CHAR_TRADE, "INSERT INTO char_trade (id, player1_account, player2_account, player1_guid, player2_guid, money1, money2, player1_IP, player2_IP, time, gm_involved) VALUES (?,?,?,?,?,?,?,?,?,UNIX_TIMESTAMP(),?)", CONNECTION_ASYNC);
