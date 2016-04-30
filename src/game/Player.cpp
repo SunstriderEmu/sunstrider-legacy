@@ -22008,7 +22008,7 @@ void Player::GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, 
             y = fields[1].GetFloat();
             z = fields[2].GetFloat();
             o = fields[3].GetFloat();
-            map = fields[4].GetUInt32();
+            map = fields[4].GetUInt16();
             set = true;
         }
     }

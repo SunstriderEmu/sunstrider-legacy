@@ -309,7 +309,6 @@ void Item::SaveToDB(SQLTransaction trans)
             ASSERT(GetCount() < smallIntMax || std::cerr << GetCount() && false);
             for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
                 ASSERT(GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i) < smallIntMax/2 || std::cerr << GetInt32Value(ITEM_FIELD_SPELL_CHARGES + i) && false);
-            ASSERT(GetUInt32Value(ITEM_FIELD_DURATION) < smallIntMax);
 
             for (uint8 i = 0; i < MAX_ENCHANTMENT_SLOT; i++)
             {
@@ -404,7 +403,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     SetUInt64Value(ITEM_FIELD_CREATOR, MAKE_PAIR64(fields[index++].GetUInt32(),HIGHGUID_PLAYER));
     SetUInt64Value(ITEM_FIELD_GIFTCREATOR, MAKE_PAIR64(fields[index++].GetUInt32(), HIGHGUID_PLAYER));
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, fields[index++].GetUInt16());
-    SetUInt32Value(ITEM_FIELD_DURATION, fields[index++].GetUInt16());
+    SetUInt32Value(ITEM_FIELD_DURATION, fields[index++].GetUInt32());
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
         SetInt32Value(ITEM_FIELD_SPELL_CHARGES + i, fields[index++].GetInt16());
 
