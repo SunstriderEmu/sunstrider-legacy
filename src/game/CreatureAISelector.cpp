@@ -93,6 +93,10 @@ namespace FactorySelector
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRegistry::instance());
         assert( creature->GetCreatureTemplate() != NULL );
+        MovementGeneratorType defaultMovementType = creature->GetDefaultMovementType();
+        //override default WAYPOINT_MOTION_TYPE type if no waypoint path id found for creature (or WAYPOINT_MOTION_TYPE will fail anyway)
+        if (defaultMovementType == WAYPOINT_MOTION_TYPE && creature->GetWaypointPathId() == 0)
+            defaultMovementType = IDLE_MOTION_TYPE;
         const MovementGeneratorCreator *mv_factory = mv_registry.GetRegistryItem( creature->GetDefaultMovementType());
 
         /* if( mv_factory == NULL  )
