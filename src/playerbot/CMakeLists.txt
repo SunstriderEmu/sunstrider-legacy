@@ -2,7 +2,13 @@ file(GLOB_RECURSE sources_Playerbot *.cpp *.h)
 
 set(playerbot_STAT_PCH_HDR pch/pch.h)
 set(playerbot_STAT_PCH_SRC pch/pch.cpp)
-  
+
+if ( UNIX )
+    add_definitions(
+        -D_PLAYERBOT_CONFIG='"${CONF_DIR}/aiplayerbot.conf"'
+            )
+ endif()
+
 include_directories(
   ${CMAKE_BINARY_DIR}
   ${CMAKE_SOURCE_DIR}/dep/cppformat
