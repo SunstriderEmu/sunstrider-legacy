@@ -46,7 +46,7 @@ void LootTargetList::shrink(time_t fromTime)
 }
 
 LootObject::LootObject(Player* bot, ObjectGuid guid)
-	: guid(), skillId(SKILL_NONE), reqSkillValue(0), reqItem(NULL)
+	: guid(), skillId(SKILL_NONE), reqSkillValue(0), reqItem(0)
 {
     Refresh(bot, guid);
 }
@@ -55,7 +55,7 @@ void LootObject::Refresh(Player* bot, ObjectGuid guid)
 {
     skillId = SKILL_NONE;
     reqSkillValue = 0;
-    reqItem = NULL;
+    reqItem = 0;
     this->guid = ObjectGuid();
 
     PlayerbotAI* ai = bot->GetPlayerbotAI();
