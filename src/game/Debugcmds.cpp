@@ -960,7 +960,7 @@ bool ChatHandler::HandleDebugPlayEmoteCommand(const char* args)
 }
 
 //this is meant to be use with the debugger to compose an arbitrary packet on the fly
-bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
+bool ChatHandler::HandleDebugOpcodeTestCommand(const char* /* args */)
 {
     Opcodes op = MSG_NULL_ACTION;
     bool boo = false;
@@ -1025,6 +1025,12 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* args)
         data << tGuidLow;
     if (false)
         data << tPackGuid;
+
+    if (op == MSG_NULL_ACTION)
+    {
+        PSendSysMessage("Nothing to send");
+        return true;
+    }
 
     GetSession()->SendPacket(&data);
     

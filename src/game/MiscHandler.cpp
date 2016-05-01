@@ -1113,25 +1113,33 @@ void WorldSession::HandleNextCinematicCamera( WorldPacket & /*recvData*/ )
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_NEXT_CINEMATIC_CAMERA");
 }
 
-void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & /*recvData*/ )
+void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
-    // TODO
 
-    /*
-        CHECK_PACKET_SIZE(recvData,8+4);
-        uint64 guid;
-        uint32 time_skipped;
-        recvData >> guid;
-        recvData >> time_skipped;
-        TC_LOG_DEBUG("network", "WORLD: CMSG_MOVE_TIME_SKIPPED" );
+    uint64 guid;
+    uint32 time_skipped;
+#ifdef LICH_KING
+    recvData.readPackGUID(guid);
+#else
+    recvData.readPackGUID(guid);
+    recvData >> guid;
+#endif
+    recvData >> time_skipped;
 
-        /// TODO
-        must be need use in Trinity
-        We substract server Lags to move time ( AntiLags )
-        for exmaple
-        GetPlayer()->ModifyLastMoveTime( -int32(time_skipped) );
-    */
+    // ignore updates for not us
+    if (_player == NULL || guid != _player->GetGUID())
+        return;
+
+    WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
+#ifdef LICH_KING
+    data << _player->GetPackGUID();
+#else
+    data << guid;
+#endif
+    data << time_skipped;
+
+    _player->SendMessageToSet(&data, false);
 }
 
 void WorldSession::HandleFeatherFallAck(WorldPacket & recvData)

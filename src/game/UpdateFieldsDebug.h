@@ -20,7 +20,7 @@ int32 GetBaseIndex(TypeID type, uint32 index)
         return -1;
     }
 
-    if (TYPEID_UNIT && index >= UNIT_END)
+    if (type == TYPEID_UNIT && index >= UNIT_END)
         return -1;
 
     switch (index)
@@ -839,14 +839,14 @@ UpdateFieldType GetUpdateFieldType(TypeID type, uint32 index)
         return UPDATE_FIELD_TYPE_UNKNOWN;
     }
 
-    if (TYPEID_UNIT && index >= UNIT_END)
+    if (type == TYPEID_UNIT && index >= UNIT_END)
         return UPDATE_FIELD_TYPE_UNKNOWN;
 
-    index = GetBaseIndex(type, index);
-    if (index == -1)
+    uint32 baseIndex = GetBaseIndex(type, index);
+    if (baseIndex == -1)
         return UPDATE_FIELD_TYPE_UNKNOWN;
 
-    switch (index)
+    switch (baseIndex)
     {
         case OBJECT_FIELD_GUID: return UPDATE_FIELD_TYPE_LONG;
         case OBJECT_FIELD_TYPE: return UPDATE_FIELD_TYPE_INT;
