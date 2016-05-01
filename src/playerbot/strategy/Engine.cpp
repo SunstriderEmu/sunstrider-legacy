@@ -479,7 +479,14 @@ void Engine::LogAction(const char* format, ...)
     va_start(ap, format);
     vsprintf(buf, format, ap);
     va_end(ap);
-    lastAction = buf;
+    lastAction += "|";
+    lastAction += buf;
+    if (lastAction.size() > 512)
+    {
+        lastAction = lastAction.substr(512);
+        size_t pos = lastAction.find("|");
+        lastAction = (pos == string::npos ? "" : lastAction.substr(pos));
+    }
 
     if (testMode)
     {

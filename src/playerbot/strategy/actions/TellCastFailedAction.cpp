@@ -11,12 +11,13 @@ bool TellCastFailedAction::Execute(Event event)
     p.rpos(0);
     uint8 castCount, result;
     uint32 spellId;
+#ifdef LICH_KING
     p >> castCount >> spellId >> result;
+#else
+    p >> spellId >> result >> castCount;
+#endif
     ai->SpellInterrupted(spellId);
-
-    if (result == SPELL_CAST_OK)
-        return false;
-
+    
     const SpellInfo *const pSpellInfo =  sSpellMgr->GetSpellInfo(spellId);
     std::ostringstream out; out << chat->formatSpell(pSpellInfo) << ": ";
     switch (result)

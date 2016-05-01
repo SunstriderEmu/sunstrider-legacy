@@ -5459,14 +5459,24 @@ void Spell::SendLogExecute()
 
 void Spell::SendInterrupted(uint8 result)
 {
-    WorldPacket data(SMSG_SPELL_FAILURE, (8+4+1));
+#ifdef LICH_KING
+    WorldPacket data(SMSG_SPELL_FAILURE, (8+1+4+1));
+#else
+    WorldPacket data(SMSG_SPELL_FAILURE, (8 + 4 + 1));
+#endif
     data << m_caster->GetPackGUID();
+#ifdef LICH_KING
+    data << uint8(m_cast_count);
+#endif
     data << m_spellInfo->Id;
     data << result;
     m_caster->SendMessageToSet(&data, true);
 
     data.Initialize(SMSG_SPELL_FAILED_OTHER, (8+4));
     data << m_caster->GetPackGUID();
+#ifdef LICH_KING
+    data << uint8(m_cast_count);
+#endif
     data << m_spellInfo->Id;
     m_caster->SendMessageToSet(&data, true);
 }

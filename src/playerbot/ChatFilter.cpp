@@ -167,7 +167,7 @@ public:
             if (target->GetGUID() != rtiTarget)
                 return "";
 
-            if (found |= isRti)
+            if ((found |= isRti))
                 break;
         }
 
@@ -209,7 +209,7 @@ public:
             if (isClass && bot->GetClass() != i->second)
                 return "";
 
-            if (found |= isClass)
+            if ((found |= isClass))
                 break;
         }
 

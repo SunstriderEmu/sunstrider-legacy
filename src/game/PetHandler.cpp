@@ -260,6 +260,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                 if(pet->IsPossessed())
                 {
                     WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
+                    //structure seems wrong here
                     data << uint32(spellid) << uint8(2) << uint8(result);
                     switch (result)
                     {

@@ -77,7 +77,9 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
     currentEngine = engines[BOT_STATE_NON_COMBAT];
     currentState = BOT_STATE_NON_COMBAT;
 
-    //TODO PLAYERBOT masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_REPORT_USE, "use game object");
+#ifdef LICH_KING
+    masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_REPORT_USE, "use game object");
+#endif
     masterIncomingPacketHandlers.AddHandler(CMSG_AREATRIGGER, "area trigger");
     masterIncomingPacketHandlers.AddHandler(CMSG_GAMEOBJ_USE, "use game object");
     masterIncomingPacketHandlers.AddHandler(CMSG_LOOT_ROLL, "loot roll");
@@ -91,7 +93,9 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
     masterIncomingPacketHandlers.AddHandler(CMSG_GROUP_UNINVITE_GUID, "uninvite");
     masterIncomingPacketHandlers.AddHandler(CMSG_PUSHQUESTTOPARTY, "quest share");
     masterIncomingPacketHandlers.AddHandler(CMSG_GUILD_INVITE, "guild invite");
-//    masterIncomingPacketHandlers.AddHandler(CMSG_LFG_TELEPORT, "lfg teleport");
+#ifdef LICH_KING
+    masterIncomingPacketHandlers.AddHandler(CMSG_LFG_TELEPORT, "lfg teleport");
+#endif
 
     botOutgoingPacketHandlers.AddHandler(SMSG_GROUP_INVITE, "group invite");
     botOutgoingPacketHandlers.AddHandler(BUY_ERR_NOT_ENOUGHT_MONEY, "not enough money");
@@ -107,8 +111,10 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
     botOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
     botOutgoingPacketHandlers.AddHandler(SMSG_CAST_FAILED, "cast failed");
     botOutgoingPacketHandlers.AddHandler(SMSG_DUEL_REQUESTED, "duel requested");
-    //botOutgoingPacketHandlers.AddHandler(SMSG_LFG_ROLE_CHECK_UPDATE, "lfg role check");
-    //botOutgoingPacketHandlers.AddHandler(SMSG_LFG_PROPOSAL_UPDATE, "lfg proposal");
+#ifdef LICH_KING
+    botOutgoingPacketHandlers.AddHandler(SMSG_LFG_ROLE_CHECK_UPDATE, "lfg role check");
+    botOutgoingPacketHandlers.AddHandler(SMSG_LFG_PROPOSAL_UPDATE, "lfg proposal");
+#endif
 
     masterOutgoingPacketHandlers.AddHandler(SMSG_PARTY_COMMAND_RESULT, "party command");
     masterOutgoingPacketHandlers.AddHandler(MSG_RAID_READY_CHECK, "ready check");
@@ -258,7 +264,7 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         return;
     }
 
-    if (filtered.size() > 2 && filtered.substr(0, 2) == "d " || filtered.size() > 3 && filtered.substr(0, 3) == "do ")
+    if ((filtered.size() > 2 && filtered.substr(0, 2) == "d ") || (filtered.size() > 3 && filtered.substr(0, 3) == "do "))
     {
         std::string action = filtered.substr(filtered.find(" ") + 1);
         DoSpecificAction(action);
@@ -279,7 +285,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
     switch (packet.GetOpcode())
     {
     case SMSG_MOVE_SET_CAN_FLY:
-        {
+        { //BC + LK okay
             WorldPacket p(packet);
             uint64 guid;
             p.readPackGUID(guid);
@@ -290,7 +296,7 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             return;
         }
     case SMSG_MOVE_UNSET_CAN_FLY:
-        {
+        { //BC + LK okay
             WorldPacket p(packet);
             uint64 guid;
             p.readPackGUID(guid);
@@ -300,21 +306,22 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             return;
         }
     case SMSG_CAST_FAILED:
-        {
+        { //BC + LK okay
             WorldPacket p(packet);
             p.rpos(0);
             uint8 castCount, result;
             uint32 spellId;
+#ifdef LICH_KING
             p >> castCount >> spellId >> result;
-            if (result != SPELL_CAST_OK)
-            {
-                SpellInterrupted(spellId);
-                botOutgoingPacketHandlers.AddPacket(packet);
-            }
+#else
+            p >> spellId >> result >> castCount;
+#endif
+            SpellInterrupted(spellId);
+            botOutgoingPacketHandlers.AddPacket(packet);
             return;
         }
     case SMSG_SPELL_FAILURE:
-        {
+        { //BC + LK okay
             WorldPacket p(packet);
             p.rpos(0);
             uint64 casterGuid;
@@ -324,13 +331,15 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
 
             uint8 castCount;
             uint32 spellId;
+#ifdef LICH_KING
             p >> castCount;
+#endif
             p >> spellId;
             SpellInterrupted(spellId);
             return;
         }
     case SMSG_SPELL_DELAYED:
-        {
+        { //BC + LK okay
             WorldPacket p(packet);
             p.rpos(0);
             uint64 casterGuid;
@@ -1035,19 +1044,7 @@ void PlayerbotAI::InterruptSpell()
 
         bot->InterruptSpell((CurrentSpellTypes)type);
 
-        WorldPacket data(SMSG_SPELL_FAILURE, 8 + 1 + 4 + 1);
-        data.appendPackGUID(bot->GetGUID());
-        data << uint8(1);
-        data << uint32(spell->m_spellInfo->Id);
-        data << uint8(0);
-        bot->SendMessageToSet(&data, true);
-
-        data.Initialize(SMSG_SPELL_FAILED_OTHER, 8 + 1 + 4 + 1);
-        data.appendPackGUID(bot->GetGUID());
-        data << uint8(1);
-        data << uint32(spell->m_spellInfo->Id);
-        data << uint8(0);
-        bot->SendMessageToSet(&data, true);
+        spell->SendInterrupted(0);
 
         SpellInterrupted(spell->m_spellInfo->Id);
     }

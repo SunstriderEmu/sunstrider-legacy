@@ -22,7 +22,7 @@ public:
         GetPlayerCount(creature, &tankCount, &dpsCount);
 
         if (!result ||
-            minThreat >= threat && (maxTankCount <= tankCount || minDpsCount >= dpsCount))
+            (minThreat >= threat && (maxTankCount <= tankCount || minDpsCount >= dpsCount)))
         {
             minThreat = threat;
             maxTankCount = tankCount;
