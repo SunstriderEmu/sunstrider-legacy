@@ -193,12 +193,13 @@ void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recvData)
 {
-    
-    
-    CHECK_PACKET_SIZE(recvData,4);
+    uint32 skillId;
+    recvData >> skillId;
 
-    uint32 skill_id;
-    recvData >> skill_id;
-    GetPlayer()->SetSkill(skill_id, 0, 0);
+    SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(skillId, GetPlayer()->GetRace(), GetPlayer()->GetClass());
+    if (!rcEntry || !(rcEntry->Flags & SKILL_FLAG_UNLEARNABLE))
+        return;
+
+    GetPlayer()->SetSkill(skillId, 0, 0, 0);
 }
 

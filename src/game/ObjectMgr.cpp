@@ -7135,36 +7135,29 @@ bool PlayerCondition::IsValid(OldConditionType condition, uint32 value1, uint32 
     return true;
 }
 
-SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial)
+SkillRangeType GetSkillRangeType(SkillRaceClassInfoEntry const* rcEntry)
 {
-    switch(pSkill->categoryId)
+    SkillLineEntry const* skill = sSkillLineStore.LookupEntry(rcEntry->SkillId);
+    if (!skill)
+        return SKILL_RANGE_NONE;
+
+    if (sSkillTiersStore.LookupEntry(rcEntry->SkillTier))
+        return SKILL_RANGE_RANK;
+
+#ifdef LICH_KING
+    if (rcEntry->SkillId == SKILL_RUNEFORGING)
+        return SKILL_RANGE_MONO;
+#endif
+
+    switch (skill->categoryId)
     {
-        case SKILL_CATEGORY_LANGUAGES: return SKILL_RANGE_LANGUAGE;
-        case SKILL_CATEGORY_WEAPON:
-            if(pSkill->id!=SKILL_FIST_WEAPONS)
-                return SKILL_RANGE_LEVEL;
-            else
-                return SKILL_RANGE_MONO;
-        case SKILL_CATEGORY_ARMOR:
-        case SKILL_CATEGORY_CLASS:
-            if(pSkill->id != SKILL_POISONS && pSkill->id != SKILL_LOCKPICKING)
-                return SKILL_RANGE_MONO;
-            else
-                return SKILL_RANGE_LEVEL;
-        case SKILL_CATEGORY_SECONDARY:
-        case SKILL_CATEGORY_PROFESSION:
-            // not set skills for professions and racial abilities
-            if(SpellMgr::IsProfessionSkill(pSkill->id))
-                return SKILL_RANGE_RANK;
-            else if(racial)
-                return SKILL_RANGE_NONE;
-            else
-                return SKILL_RANGE_MONO;
-        default:
-        case SKILL_CATEGORY_ATTRIBUTES:                     //not found in dbc
-        case SKILL_CATEGORY_NOT_DISPLAYED:                  //only GENEREC(DND)
-            return SKILL_RANGE_NONE;
+    case SKILL_CATEGORY_ARMOR:
+        return SKILL_RANGE_MONO;
+    case SKILL_CATEGORY_LANGUAGES:
+        return SKILL_RANGE_LANGUAGE;
     }
+
+    return SKILL_RANGE_LEVEL;
 }
 
 void ObjectMgr::LoadGameTele()

@@ -177,7 +177,9 @@ bool RecupMgr::HandleRecupParseCommand(Player *player, std::string command, uint
                 return false;
             }
 
-            player->SetSkill(skill, metier_level ? metier_level : 1, maxskill);
+            //from 0 to 4
+            uint16 step = metier_level ? ((metier_level - 1) / 75) : 1;
+            player->SetSkill(skill, step, metier_level ? metier_level : 1, maxskill);
             if (chatHandler) chatHandler->PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], player->GetName().c_str(), metier_level, maxskill);
         }
     }
@@ -213,60 +215,60 @@ bool RecupMgr::RecupProfession(Player* player, RecupProfessionType profession)
     switch (profession)
     {
     case RECUP_PROFESSION_FIRST_AID:
-        player->SetSkill(129, 375, 375); //first aid
+        player->SetSkill(129, 4, 375, 375); //first aid
         player->AddSpell(27028, true); //first aid spell
         player->AddSpell(27033, true); //bandage
         break;
     case RECUP_PROFESSION_COOKING:
-        player->SetSkill(185, 375, 375);
+        player->SetSkill(185, 4, 375, 375);
         player->AddSpell(33359, true);
         break;
     case RECUP_PROFESSION_FISHING:
-        player->SetSkill(356, 375, 375);
+        player->SetSkill(356, 4, 375, 375);
         player->AddSpell(33095, true);
         break;
     case RECUP_PROFESSION_ENCHANTMENT:
-        player->SetSkill(333, 375, 375);
+        player->SetSkill(333, 4, 375, 375);
         player->AddSpell(28029, true);
         break;
     case RECUP_PROFESSION_MINING:
-        player->SetSkill(182, 375, 375);
+        player->SetSkill(182, 4, 375, 375);
         player->AddSpell(29354, true);
         break;
     case RECUP_PROFESSION_FORGE:
-        player->SetSkill(164, 375, 375);
+        player->SetSkill(164, 4, 375, 375);
         player->AddSpell(29844, true);
         break;
     case RECUP_PROFESSION_ENGINEERING:
-        player->SetSkill(202, 375, 375);
+        player->SetSkill(202, 4, 375, 375);
         player->AddSpell(30350, true);
         break;
     case RECUP_PROFESSION_LEATHERWORKING:
-        player->SetSkill(165, 375, 375);
+        player->SetSkill(165, 4, 375, 375);
         player->AddSpell(32549, true);
         break;
     case RECUP_PROFESSION_SKINNING:
-        player->SetSkill(393, 375, 375);
+        player->SetSkill(393, 4, 375, 375);
         player->AddSpell(32678, true);
         break;
     case RECUP_PROFESSION_ALCHEMY:
-        player->SetSkill(171, 375, 375);
+        player->SetSkill(171, 4, 375, 375);
         player->AddSpell(28596, true);
         break;
     case RECUP_PROFESSION_TAILORING:
-        player->SetSkill(197, 375, 375);
+        player->SetSkill(197, 4, 375, 375);
         player->AddSpell(26790, true);
         break;
     case RECUP_PROFESSION_JEWELCRAFTING:
-        player->SetSkill(755, 375, 375);
+        player->SetSkill(755, 4, 375, 375);
         player->AddSpell(28897, true);
         break;
     case RECUP_PROFESSION_HERBALISM:
-        player->SetSkill(182, 375, 375);
+        player->SetSkill(182, 4, 375, 375);
         player->AddSpell(28695, true);
         break;
     case RECUP_PROFESSION_LOCKPICKING:
-        player->SetSkill(633, 225, 225);
+        player->SetSkill(633, 2, 225, 225);
         player->AddSpell(6463, true);
         break;
     default:

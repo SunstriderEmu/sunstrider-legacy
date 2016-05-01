@@ -310,6 +310,8 @@ enum SkillRangeType
     SKILL_RANGE_NONE,                                       // 0..0 always
 };
 
+SkillRangeType GetSkillRangeType(SkillRaceClassInfoEntry const* rcEntry);
+
 struct GM_Ticket
 {
   uint64 guid;
@@ -326,8 +328,6 @@ struct GM_Ticket
   std::string comment;
 };
 typedef std::list<GM_Ticket*> GmTicketList;
-
-SkillRangeType GetSkillRangeType(SkillLineEntry const *pSkill, bool racial);
 
 struct PointOfInterest
 {

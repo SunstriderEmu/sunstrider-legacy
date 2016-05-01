@@ -1406,6 +1406,7 @@ void SpellMgr::LoadSpellLearnSkills()
             {
                 SpellLearnSkillNode dbc_node;
                 dbc_node.skill    = entry->Effects[i].MiscValue;
+                dbc_node.step     = entry->Effects[i].BasePoints;
                 if ( dbc_node.skill != SKILL_RIDING )
                     dbc_node.value    = 1;
                 else

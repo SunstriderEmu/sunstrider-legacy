@@ -658,6 +658,28 @@ struct SkillLineAbilityEntry
     uint32    reqtrainpoints;                               // 14
 };
 
+#define MAX_SKILL_STEP 16
+
+struct SkillTiersEntry
+{
+    uint32 Id;                                              // 0
+                                                            //uint32 StepCost[MAX_SKILL_STEP];                      // 1-16
+    uint32 MaxSkill[MAX_SKILL_STEP];                        // 17-32
+};
+
+//OK BC & LK
+struct SkillRaceClassInfoEntry
+{
+    //uint32 Id;                                            // 0
+    uint32 SkillId;                                         // 1
+    uint32 RaceMask;                                        // 2
+    uint32 ClassMask;                                       // 3
+    uint32 Flags;                                           // 4
+                                                            //uint32 MinLevel;                                      // 5
+    uint32 SkillTier;                                       // 6
+                                                            //uint32 SkillCostType;                                 // 7
+};
+
 struct SoundEntriesEntry
 {
     uint32    Id;                                           // 0        m_ID

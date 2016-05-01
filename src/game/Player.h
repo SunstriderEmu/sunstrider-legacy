@@ -1661,6 +1661,7 @@ class Player : public Unit
         void LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill = 0);
         void RemoveSpell(uint32 spell_id, bool disabled = false);
         void resetSpells();
+        void LearnDefaultSkill(uint32 skillId, uint16 rank);
         void LearnDefaultSpells(bool loading = false);
         void learnQuestRewardedSpells();
         void learnQuestRewardedSpells(Quest const* quest);
@@ -1957,7 +1958,8 @@ class Player : public Unit
         void UpdateWeaponSkill (WeaponAttackType attType);
         void UpdateCombatSkills(Unit *pVictim, WeaponAttackType attType, MeleeHitOutcome outcome, bool defence);
 
-        void SetSkill(uint32 id, uint16 currVal, uint16 maxVal);
+        //step = skill tier (I guess)
+        void SetSkill(uint32 id, uint16 step, uint16 currVal, uint16 maxVal);
         uint16 GetMaxSkillValue(uint32 skill) const;        // max + perm. bonus
         uint16 GetPureMaxSkillValue(uint32 skill) const;    // max
         uint16 GetSkillValue(uint32 skill) const;           // skill value + perm. bonus + temp bonus

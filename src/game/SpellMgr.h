@@ -696,6 +696,7 @@ typedef std::multimap<uint32, uint32> SpellsRequiringSpellMap;
 struct SpellLearnSkillNode
 {
     uint32 skill;
+    uint16 step;                                            // 0 - 4
     uint32 value;                                           // 0  - max skill value for player level
     uint32 maxvalue;                                        // 0  - max skill value for player level
 };

@@ -4675,7 +4675,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
         unitTarget->GetMap()->CreatureRelocation(unitTarget->ToCreature(), fx, fy, fz, -m_caster->GetOrientation());
 }
 
-void Spell::EffectLearnSkill(uint32 i)
+void Spell::EffectLearnSkill(uint32 effIndex)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -4686,9 +4686,19 @@ void Spell::EffectLearnSkill(uint32 i)
     if(damage < 0)
         return;
 
-    uint32 skillid =  m_spellInfo->Effects[i].MiscValue;
-    uint16 skillval = (unitTarget->ToPlayer())->GetPureSkillValue(skillid);
-    (unitTarget->ToPlayer())->SetSkill(skillid, skillval?skillval:1, damage*75);
+    uint32 skillid = m_spellInfo->Effects[effIndex].MiscValue;
+    SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(skillid, unitTarget->GetRace(), unitTarget->GetClass());
+    if (!rcEntry)
+        return;
+
+    SkillTiersEntry const* tier = sSkillTiersStore.LookupEntry(rcEntry->SkillTier);
+    if (!tier)
+        return;
+
+    uint16 skillval = unitTarget->ToPlayer()->GetPureSkillValue(skillid);
+    //TC unitTarget->ToPlayer()->SetSkill(skillid, m_spellInfo->Effects[effIndex].CalcValue(), std::max<uint16>(skillval, 1), tier->MaxSkill[damage - 1]);
+    uint16 step = damage - 1;
+    unitTarget->ToPlayer()->SetSkill(skillid, step, std::max<uint16>(skillval, 1), tier->MaxSkill[step]);
 }
 
 void Spell::EffectAddHonor(uint32 /*i*/)

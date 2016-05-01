@@ -920,7 +920,7 @@ void PlayerbotFactory::InitTradeSkills()
 {
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
-        bot->SetSkill(tradeSkills[i], 0, 0/*, 0*/);
+        bot->SetSkill(tradeSkills[i], 0, 0, 0);
     }
 
     vector<uint32> firstSkills;
@@ -977,7 +977,7 @@ void PlayerbotFactory::UpdateTradeSkills()
     for (int i = 0; i < sizeof(tradeSkills) / sizeof(uint32); ++i)
     {
         if (bot->GetSkillValue(tradeSkills[i]) == 1)
-            bot->SetSkill(tradeSkills[i], 0, 0/*TC , 0*/);
+            bot->SetSkill(tradeSkills[i], 0, 0, 0);
     }
 }
 
@@ -1002,15 +1002,15 @@ void PlayerbotFactory::InitSkills()
     SetRandomSkill(SKILL_FIST_WEAPONS);
 
     if (bot->GetLevel() >= 70)
-        bot->SetSkill(SKILL_RIDING, /*0,*/ 300, 300);
+        bot->SetSkill(SKILL_RIDING, 0, 300, 300);
     else if (bot->GetLevel() >= 60)
-        bot->SetSkill(SKILL_RIDING, /*0,*/ 225, 225);
+        bot->SetSkill(SKILL_RIDING, 0, 225, 225);
     else if (bot->GetLevel() >= 40)
-        bot->SetSkill(SKILL_RIDING, /*0,*/ 150, 150);
+        bot->SetSkill(SKILL_RIDING, 0, 150, 150);
     else if (bot->GetLevel() >= 20)
-        bot->SetSkill(SKILL_RIDING, /*0,*/ 75, 75);
+        bot->SetSkill(SKILL_RIDING, 0, 75, 75);
     else
-        bot->SetSkill(SKILL_RIDING, /*0,*/ 0, 0);
+        bot->SetSkill(SKILL_RIDING, 0, 0, 0);
 
     uint32 skillLevel = bot->GetLevel() < 40 ? 0 : 1;
     switch (bot->GetClass())
@@ -1018,11 +1018,11 @@ void PlayerbotFactory::InitSkills()
     case CLASS_DEATH_KNIGHT:
     case CLASS_WARRIOR:
     case CLASS_PALADIN:
-        bot->SetSkill(SKILL_PLATE_MAIL, /*0,*/ skillLevel, skillLevel);
+        bot->SetSkill(SKILL_PLATE_MAIL, 0, skillLevel, skillLevel);
         break;
     case CLASS_SHAMAN:
     case CLASS_HUNTER:
-        bot->SetSkill(SKILL_MAIL, /*0,*/ skillLevel, skillLevel);
+        bot->SetSkill(SKILL_MAIL, 0, skillLevel, skillLevel);
     }
 }
 
@@ -1030,7 +1030,7 @@ void PlayerbotFactory::SetRandomSkill(uint16 id)
 {
     uint32 maxValue = level * 5;
     uint32 curValue = urand(maxValue - level, maxValue);
-    bot->SetSkill(id, /*0,*/ curValue, maxValue);
+    bot->SetSkill(id, 0, curValue, maxValue);
 
 }
 

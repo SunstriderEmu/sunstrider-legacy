@@ -3691,7 +3691,9 @@ bool ChatHandler::HandleLearnAllRecipesCommand(const char* args)
             }
 
             uint16 MaxLevel = target->GetPureMaxSkillValue(skillInfo->id);
-            target->SetSkill(skillInfo->id, MaxLevel, MaxLevel);
+
+            uint16 step = (MaxLevel-1) / 75;
+            target->SetSkill(skillInfo->id, step, MaxLevel, MaxLevel);
             PSendSysMessage(LANG_COMMAND_LEARN_ALL_RECIPES, name.c_str());
             return true;
         }

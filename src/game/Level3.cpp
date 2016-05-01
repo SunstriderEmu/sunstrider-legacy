@@ -1047,7 +1047,9 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
         return false;
     }
 
-    int32 level = atol (level_p);
+    int32 level = atol(level_p);
+    if (level == 0)
+        level = 1;
 
     Player * target = GetSelectedPlayerOrSelf();
     if(!target)
@@ -1077,7 +1079,8 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
     if( level > max || max <= 0 )
         return false;
 
-    target->SetSkill(skill, level, max); //remove skill if level == 0
+    uint16 step = (level - 1) / 75;
+    target->SetSkill(skill, step, level, max); //remove skill if level == 0
     PSendSysMessage(LANG_SET_SKILL, skill, sl->name[0], target->GetName().c_str(), level, max);
 
     return true;
