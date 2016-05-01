@@ -13,6 +13,7 @@ namespace ai
             if (bot->IsAlive())
                 return false;
 
+            //BC + LK ok
             WorldPacket p(event.getPacket());
             p.rpos(0);
             ObjectGuid guid;

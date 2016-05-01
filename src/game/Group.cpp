@@ -408,8 +408,6 @@ uint32 Group::RemoveMember(const uint64 &guid, const uint8 &method)
 
 void Group::ChangeLeader(const uint64 &guid)
 {
-    
-    
     member_citerator slot = _getMemberCSlot(guid);
 
     if(slot==m_memberSlots.end())

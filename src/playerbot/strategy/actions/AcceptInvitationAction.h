@@ -23,6 +23,7 @@ namespace ai
 
 			if (!ai->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, inviter))
             {
+                //BC + LK OK
                 WorldPacket data(SMSG_GROUP_DECLINE, 10);
                 data << bot->GetName();
                 inviter->GetSession()->SendPacket(&data);

@@ -21644,6 +21644,7 @@ void Player::_LoadSkills(QueryResult result)
         } while (result->NextRow());
     }
 
+    //fill the rest with 0's
     for (; count < PLAYER_MAX_SKILLS; ++count)
     {
         SetUInt32Value(PLAYER_SKILL_INDEX(count), 0);

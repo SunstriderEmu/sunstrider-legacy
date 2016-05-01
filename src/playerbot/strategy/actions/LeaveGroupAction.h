@@ -16,9 +16,10 @@ namespace ai
 
             ai->TellMaster("Goodbye!", PLAYERBOT_SECURITY_TALK);
 
+            //SMSG_PARTY_COMMAND_RESULT
             WorldPacket p;
             std::string member = bot->GetName();
-            p << uint32(PARTY_OP_LEAVE) << member << uint32(0);
+            p << uint32(PARTY_OP_LEAVE) << member << uint32(PARTY_RESULT_OK);
             bot->GetSession()->HandleGroupDisbandOpcode(p);
 
             if (sRandomPlayerbotMgr.IsRandomBot(bot))

@@ -7,6 +7,7 @@ using namespace ai;
 
 bool TellCastFailedAction::Execute(Event event)
 {
+    //BC + LK OK
     WorldPacket p(event.getPacket());
     p.rpos(0);
     uint8 castCount, result;

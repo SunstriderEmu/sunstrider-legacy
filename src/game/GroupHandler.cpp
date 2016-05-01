@@ -354,8 +354,6 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     Group *group = GetPlayer()->GetGroup();
