@@ -186,8 +186,6 @@ void WorldSession::HandleMoveWorldportAckOpcode()
 
 void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 {
-    _player->SetSemaphoreTeleportNear(false);
-    
     //TC_LOG_DEBUG("network", "MSG_MOVE_TELEPORT_ACK");
     uint64 guid;
 #ifdef LICH_KING
