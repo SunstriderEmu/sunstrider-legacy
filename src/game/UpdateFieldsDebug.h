@@ -381,7 +381,7 @@ bool GetFieldNameString(TypeID type, uint32 index, std::string& str)
         return false;
     }
 
-    if (TYPEID_UNIT && index >= UNIT_END)
+    if (type == TYPEID_UNIT && index >= UNIT_END)
         return false;
 
     index = GetBaseIndex(type, index);
