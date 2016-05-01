@@ -34,7 +34,7 @@ install:
   - cd ..
   - mkdir bin
   - cd bin
-  - cmake ../sunstrider
+  - cmake -DPLAYERBOT=1 -DTOOLS=1 ../sunstrider 
   - cd ../sunstrider
 
 script:
