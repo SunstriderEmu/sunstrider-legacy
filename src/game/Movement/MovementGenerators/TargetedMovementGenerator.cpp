@@ -129,7 +129,7 @@ template<class T, typename D>
 float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
 {
     //More distance let have better performance, less distance let have more sensitive reaction at target move.
-    return owner->GetCombatReach() + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
+    return owner->GetCombatReach() + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset + 0.2f; //little offset to avoid having creature just at the max rang and looping on place movement
 }
 
 template<class T, typename D>
