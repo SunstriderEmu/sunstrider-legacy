@@ -16,7 +16,9 @@ SuggestWhatToDoAction::SuggestWhatToDoAction(PlayerbotAI* ai) : InventoryAction(
     suggestions.push_back(&SuggestWhatToDoAction::grindReputation);
     suggestions.push_back(&SuggestWhatToDoAction::nothing);
     suggestions.push_back(&SuggestWhatToDoAction::relax);
+#ifdef LICH_KING
     suggestions.push_back(&SuggestWhatToDoAction::achievement);
+#endif
 }
 
 bool SuggestWhatToDoAction::Execute(Event event)
