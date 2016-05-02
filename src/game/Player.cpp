@@ -21669,7 +21669,7 @@ void Player::_LoadSkills(QueryResult result)
             SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(skill, GetRace(), GetClass());
             if(!rcEntry)
             {
-                TC_LOG_ERROR("entities.player","Character %u has skill %u that does not exist.", GetGUIDLow(), skill);
+                TC_LOG_ERROR("entities.player","Character %u has skill %u that does not exist, or is not compatible with it's race/class.", GetGUIDLow(), skill);
                 continue;
             }
 

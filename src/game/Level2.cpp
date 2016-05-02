@@ -4096,7 +4096,7 @@ bool ChatHandler::HandleTempAddSpwCommand(const char* args)
 
     uint32 id = atoi(charID);
 
-    chr->SummonCreature(id,x,y,z,ang,TEMPSUMMON_CORPSE_DESPAWN,120);
+    chr->SummonCreature(id,x,y,z,ang, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 1 * MINUTE * IN_MILLISECONDS);
 
     return true;
 }
