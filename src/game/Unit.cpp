@@ -9956,8 +9956,13 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         return CAN_ATTACK_RESULT_FRIENDLY;
 
     if(target->HasFlag(UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC))
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC))
         return CAN_ATTACK_RESULT_TARGET_FLAGS;
+
+    //do not let players attack not selectable units
+    if(this->GetTypeId() == TYPEID_PLAYER)
+        if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+            return CAN_ATTACK_RESULT_TARGET_FLAGS;
 
     if(   (target->GetTypeId() == TYPEID_PLAYER && ((target->ToPlayer())->IsGameMaster() || (target->ToPlayer())->isSpectator()))
        || (target->GetTypeId() == TYPEID_UNIT && target->GetEntry() == 10 && GetTypeId() != TYPEID_PLAYER && !IsPet()) //training dummies
