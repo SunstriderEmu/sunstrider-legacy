@@ -1544,14 +1544,14 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
 
         if (!totemCollision)
         {
-            if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_LEAP 
-                || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_TELEPORT_UNITS 
+            if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_LEAP
+                || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_TELEPORT_UNITS
 #ifdef LICH_KING
-                || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_JUMP_DEST 
+                || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_JUMP_DEST
 #endif
                 || (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON))
-               /*sunwell m_caster->GetFirstCollisionPosition(pos, dist, angle); */
-                pos = m_caster->GetFirstWalkableCollisionPosition(dist, angle, false);
+                /*sunwell m_caster->GetFirstCollisionPosition(pos, dist, angle); */
+                pos = m_caster->GetLeapPosition(dist);
             else
                 /*sunwell m_caster->GetNearPosition(pos, dist, angle); */
                 pos = m_caster->GetNearPosition(dist, angle);
