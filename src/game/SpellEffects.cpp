@@ -7151,31 +7151,33 @@ void Spell::EffectCharge(uint32 i)
     }
 }
 
+//if caster is a creature, this handles like a normal summon (instead of 'toggling' minipet like for players)
 void Spell::EffectSummonCritter(uint32 i)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    if(m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
+    //may be nullptr
     Player* player = m_caster->ToPlayer();
 
     uint32 pet_entry = m_spellInfo->Effects[i].MiscValue;
     if(!pet_entry)
         return;
 
-    Pet* old_critter = player->GetMiniPet();
-
-    // for same pet just despawn
-    if(old_critter && old_critter->GetEntry() == pet_entry)
+    if (player)
     {
-        player->RemoveMiniPet();
-        return;
-    }
+        Pet* old_critter = player->GetMiniPet();
+        // for same pet just despawn
+        if (old_critter && old_critter->GetEntry() == pet_entry)
+        {
+            player->RemoveMiniPet();
+            return;
+        }
 
-    // despawn old pet before summon new
-    if(old_critter)
-        player->RemoveMiniPet();
+        // despawn old pet before summon new
+        if (old_critter)
+            player->RemoveMiniPet();
+    }
 
     // summon new pet
     Pet* critter = new Pet(MINI_PET);
@@ -7226,10 +7228,19 @@ void Spell::EffectSummonCritter(uint32 i)
     if(duration > 0)
         critter->SetDuration(duration);
 
-    /*std::string name = player->GetName();
-    name.append(petTypeSuffix[critter->getPetType()]);*/
-    critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbcLocale()));
-    player->SetMiniPet(critter);
+    if (player)
+    {
+        critter->SetName(critter->GetNameForLocaleIdx(player->GetSession()->GetSessionDbcLocale()));
+        player->SetMiniPet(critter);
+    }
+    //else keep default name
+    
+    //scripts hooks
+    if (critter->AI())
+        critter->AI()->IsSummonedBy(m_caster);
+
+    if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsAIEnabled)
+        m_caster->ToCreature()->AI()->JustSummoned(critter);
 
     map->Add(critter->ToCreature(), true);
 }

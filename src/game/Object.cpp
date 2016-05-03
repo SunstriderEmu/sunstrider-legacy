@@ -1339,15 +1339,13 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     pCreature->SetHomePosition(x, y, z, ang);
     pCreature->Summon(spwtype, despwtime);
     
+    //script hooks
     if(pCreature->AI())
         pCreature->AI()->IsSummonedBy(((Unit*)this)->ToUnit());
-    if(pCreature->getAI())
-        pCreature->AI()->IsSummonedBy(((Unit*)this)->ToCreature());
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
-    {
         (((Unit*)this)->ToCreature())->AI()->JustSummoned(pCreature);
-    }
+    // --
 
     if((pCreature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER) && pCreature->m_spells[0])
     {
@@ -1473,13 +1471,9 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     //scripts hooks
     if(pet->AI())
         pet->AI()->IsSummonedBy(this->ToUnit());
-    if(pet->getAI())
-        pet->AI()->IsSummonedBy(this->ToCreature());
 
     if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
-    {
         (this->ToCreature())->AI()->JustSummoned(pet);
-    }
 
     return pet;
 }
