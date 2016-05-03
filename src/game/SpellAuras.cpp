@@ -4296,19 +4296,6 @@ void Aura::HandlePeriodicTriggerSpell(bool apply, bool Real)
     // Start periodic on next tick or at aura apply. Example: Windfury && Tremor && Earthbind totems
     else if (GetSpellInfo()->HasAttribute(SPELL_ATTR5_START_PERIODIC_AT_APPLY) && apply && Real) 
         m_periodicTimer = 0;
-
-    else if((   m_spellProto->Id == 8145 //"Tremor Totem Passive"
-                || m_spellProto->Id == 8515  //"Windfury Totem Passive"
-                || m_spellProto->Id == 10609 //"Windfury Totem Passive"
-                || m_spellProto->Id == 10612 //"Windfury Totem Passive"
-                || m_spellProto->Id == 25581 //"Windfury Totem Passive"
-                || m_spellProto->Id == 25582 //"Windfury Totem Passive"
-                || m_spellProto->SpellIconID == 1676  // "earthbind Totem"
-                || m_spellProto->Id == 6474  //"Earthbind Totem Passive"
-                || m_spellProto->Id == 8172 // Disease Cleansing Totem Passive
-                || m_spellProto->Id == 8167) //Poison Cleansing Totem Passive 
-            && apply && Real) 
-        m_periodicTimer = 1000;
 }
 
 void Aura::HandlePeriodicEnergize(bool apply, bool Real)

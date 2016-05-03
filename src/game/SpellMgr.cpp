@@ -1831,10 +1831,6 @@ void SpellMgr::LoadSpellCustomAttr()
         case 12723: // Sweeping Strikes proc
             spellInfo->Attributes |= SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK;
             break;
-        // cleansing totem pulse when it is spawned
-        case 8172:
-            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
-            break;
         case 30421:     // Nether Portal - Perseverence
             spellInfo->EffectBasePoints[2] += 30000;
             break;
@@ -2313,6 +2309,23 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         case 37027:
             spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+            break;
+        //Totems should pulse at spawn
+        case 8145: //"Tremor Totem Passive"
+        case 8515:  //"Windfury Totem Passive"
+        case 10609: //"Windfury Totem Passive"
+        case 10612: //"Windfury Totem Passive"
+        case 25581: //"Windfury Totem Passive"
+        case 25582: //"Windfury Totem Passive"
+        case 6474: //"Earthbind Totem Passive"
+        case 8172: // Disease Cleansing Totem Passive
+        case 8167: //Poison Cleansing Totem Passive 
+        case 8229: //Flametongue totem Passive
+        case 8251: //Flametongue totem Passive
+        case 10524: //Flametongue totem Passive
+        case 16388: //Flametongue totem Passive
+        case 25556: //Flametongue totem Passive
+            spellInfo->AttributesEx5 |= SPELL_ATTR5_START_PERIODIC_AT_APPLY;
             break;
         default:
             break;
