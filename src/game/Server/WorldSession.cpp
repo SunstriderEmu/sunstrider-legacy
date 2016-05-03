@@ -53,8 +53,6 @@
 #include "PacketLog.h"
 #include "BattleGround.h"
 #include "WardenBase.h"
-#include <shared_lock>
-#include <shared_mutex>
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -289,7 +287,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
         {
-            auto lock = m_Socket->GetLastPacketsSentMutex();
+            boost::shared_mutex& lock = m_Socket->GetLastPacketsSentMutex();
             lock.lock_shared();
             auto list = m_Socket->GetLastPacketsSent();
             if(!list.empty())

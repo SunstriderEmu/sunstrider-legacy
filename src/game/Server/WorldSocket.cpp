@@ -28,7 +28,6 @@
 #include "ServerPktHeader.h"
 #include <boost/asio/ip/tcp.hpp>
 #include <shared_mutex>
-#include <shared_lock>
 
 class EncryptablePacket : public WorldPacket
 {
@@ -414,7 +413,7 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
 
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
     {
-        std::unique_lock<std::shared_mutex> lock(_lastPacketsSent_mutex);
+        boost::unique_lock<boost::shared_mutex> lock(_lastPacketsSent_mutex);
         if (_lastPacketsSent.size() < 10)
             _lastPacketsSent.push_back(packet);
     }
@@ -711,6 +710,6 @@ std::list<WorldPacket> const& WorldSocket::GetLastPacketsSent()
 void WorldSocket::ClearLastPacketsSent()
 {
     //exclusive lock
-    std::unique_lock<std::shared_mutex> lock(_lastPacketsSent_mutex);
+    boost::unique_lock<boost::shared_mutex> lock(_lastPacketsSent_mutex);
     _lastPacketsSent.clear();
 }
