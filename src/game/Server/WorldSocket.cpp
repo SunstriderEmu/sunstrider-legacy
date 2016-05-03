@@ -27,7 +27,6 @@
 #include "AccountMgr.h"
 #include "ServerPktHeader.h"
 #include <boost/asio/ip/tcp.hpp>
-#include <shared_mutex>
 
 class EncryptablePacket : public WorldPacket
 {
