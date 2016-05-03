@@ -53,6 +53,8 @@
 #include "PacketLog.h"
 #include "BattleGround.h"
 #include "WardenBase.h"
+#include <shared_lock>
+#include <shared_mutex>
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -287,7 +289,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         if(sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
         {
-            std::lock_guard<std::mutex> lock(m_Socket->GetLastPacketsSentMutex());
+            auto lock = m_Socket->GetLastPacketsSentMutex();
+            lock.lock_shared();
             auto list = m_Socket->GetLastPacketsSent();
             if(!list.empty())
             {
@@ -295,9 +298,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                 for(auto itr : list)
                     sPacketLog->DumpPacket(LOG_LEVEL_ERROR,SERVER_TO_CLIENT,itr,GetPlayerInfo());
 
+                lock.unlock(); //unlock before calling ClearLastPacketsSent
                 TC_LOG_ERROR("network.opcode","==================================================================");
                 m_Socket->ClearLastPacketsSent();
-            }
+            } else 
+                lock.unlock();
         }
         m_Socket->CloseSocket();
     }

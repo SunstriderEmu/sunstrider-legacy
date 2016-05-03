@@ -31,6 +31,10 @@ using boost::asio::ip::tcp;
 class EncryptablePacket;
 
 class WorldSession;
+namespace std
+{
+    class shared_mutex;
+};
 
 #pragma pack(push, 1)
 
@@ -64,7 +68,7 @@ public:
 
     // see _lastPacketsSent. Use _lastPacketsSent_mutex while using it
     std::list<WorldPacket> const& GetLastPacketsSent();
-    std::mutex& GetLastPacketsSentMutex()
+    std::shared_mutex& GetLastPacketsSentMutex()
     {
         return _lastPacketsSent_mutex;
     }
@@ -122,7 +126,7 @@ private:
     after the last client response. CONFIG_DEBUG_LOG_LAST_PACKETS must be enabled for this to be used.
     */
     std::list<WorldPacket> _lastPacketsSent;
-    std::mutex _lastPacketsSent_mutex;
+    std::shared_mutex _lastPacketsSent_mutex;
 };
 
 #endif

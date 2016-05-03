@@ -33,7 +33,6 @@
 class SpellInfo;
 
 class CreatureAI;
-class CreatureAINew;
 class Quest;
 class Player;
 class WorldSession;
@@ -577,7 +576,6 @@ class Creature : public Unit
         void WarnDeathToFriendly();
 
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
-        CreatureAINew* getAI() { return m_AI; }
 
         uint32 GetShieldBlockValue() const                  //dunno mob block value
         {
@@ -893,8 +891,6 @@ class Creature : public Unit
         
         uint64 m_timeSinceSpawn;                            // (msecs) elapsed time since (re)spawn
         
-        CreatureAINew* m_AI;
-
         uint32 m_prohibitedSchools[7];
         
         bool m_isBeingEscorted;

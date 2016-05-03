@@ -27,6 +27,8 @@
 #include "AccountMgr.h"
 #include "ServerPktHeader.h"
 #include <boost/asio/ip/tcp.hpp>
+#include <shared_mutex>
+#include <shared_lock>
 
 class EncryptablePacket : public WorldPacket
 {
@@ -332,10 +334,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
         sPacketLog->DumpPacket(LOG_LEVEL_TRACE, CLIENT_TO_SERVER, packet, _worldSession ? _worldSession->GetPlayerInfo() : GetRemoteIpAddress().to_string());
 
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
-    {
-        std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
-        _lastPacketsSent.clear();
-    }
+        ClearLastPacketsSent();
 
     std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
 
@@ -415,7 +414,7 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
 
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
     {
-        std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
+        std::unique_lock<std::shared_mutex> lock(_lastPacketsSent_mutex);
         if (_lastPacketsSent.size() < 10)
             _lastPacketsSent.push_back(packet);
     }
@@ -711,6 +710,7 @@ std::list<WorldPacket> const& WorldSocket::GetLastPacketsSent()
 
 void WorldSocket::ClearLastPacketsSent()
 {
-    std::lock_guard<std::mutex> lock(_lastPacketsSent_mutex);
+    //exclusive lock
+    std::unique_lock<std::shared_mutex> lock(_lastPacketsSent_mutex);
     _lastPacketsSent.clear();
 }
