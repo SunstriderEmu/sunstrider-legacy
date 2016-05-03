@@ -21,6 +21,7 @@
 
 #include "MapUpdater.h"
 #include "Map.h"
+#include "LagWatcher.h"
 
 extern bool MAP_CRASH_RECOVERY_ENABLED;
 
@@ -41,6 +42,7 @@ class MapUpdateRequest
 
         void call()
         {
+            sLagWatcher->MapUpdateStart(m_map);
             if (MAP_CRASH_RECOVERY_ENABLED)
             {
                 try
@@ -56,6 +58,7 @@ class MapUpdateRequest
             {
                 m_map.Update(m_diff);
             }
+            sLagWatcher->MapUpdateEnd(m_map);
             m_updater.update_finished();
         }
 };

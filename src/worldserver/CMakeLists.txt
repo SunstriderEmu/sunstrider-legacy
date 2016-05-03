@@ -37,6 +37,13 @@ IF(PLAYERBOT)
 	set(playerbot_lib playerbot)
 ENDIF()
 
+IF(USE_GPERFTOOLS)
+	set(gperftools_libs
+		profiler
+		tcmalloc
+	)
+ENDIF()
+
 include_directories(  
     ${CMAKE_BINARY_DIR}
     ${CMAKE_SOURCE_DIR}/dep/cppformat
@@ -86,6 +93,7 @@ include_directories(
     ${OPENSSL_INCLUDE_DIR}
     ${MYSQL_INCLUDE_DIR}
 	${playerbot_SRC}
+	${gperftools_libs}
 )
 
 add_executable(worldserver ${worldserver_SRCS})

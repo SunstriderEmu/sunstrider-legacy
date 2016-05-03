@@ -41,6 +41,12 @@ else()
     message("* Tests:                  No ")
 endif()
 
+if(USE_GPERFTOOLS)
+    message("* Use gperftools:         Yes")
+else()
+    message("* Use gperftools:         No ")
+endif()
+
 if(DO_DEBUG)
-message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+	message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 endif(DO_DEBUG)
