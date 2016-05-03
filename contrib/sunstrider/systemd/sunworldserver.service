@@ -2,7 +2,6 @@
 Description=Suntrider World Server
 
 Wants=network.target
-RequiresMountFor=/
 
 [Service]
 User=suncore
