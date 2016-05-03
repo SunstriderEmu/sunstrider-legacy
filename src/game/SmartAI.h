@@ -134,7 +134,7 @@ class SmartAI : public CreatureAI
         uint32 GetData(uint32 id = 0) const override;
 
         // Used in scripts to share variables
-        void SetData(uint32 id, uint32 value) override;
+        void SetData(uint32 id, uint32 value, Unit* setter = nullptr) override;
 
         // Used in scripts to share variables
         void SetGUID(uint64 guid, int32 id = 0) override;
@@ -245,7 +245,7 @@ class SmartGameObjectAI : public GameObjectAI
         bool OnQuestAccept(Player* player, Quest const* quest) override;
         bool QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;
-        void SetData(uint32 id, uint32 value) override;
+        void SetData(uint32 id, uint32 value, Unit* setter = nullptr) override;
         void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker); //FIXME
         void OnGameEvent(bool start, uint16 eventId); //FIXME
         void OnStateChanged(GOState state, Unit* unit) override;

@@ -52,7 +52,7 @@ class GameObjectAI
         virtual bool QuestReward(Player* player, Quest const* quest, uint32 opt) {return false;}
         uint32 GetDialogStatus(Player* /*player*/);
         virtual void Destroyed(Player* player, uint32 eventId) {}
-        virtual void SetData(uint32 id, uint32 value) {}
+        virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) {}
         virtual void GetData(uint32 id) const {}
         virtual void EventInform(uint32 /*eventId*/) {}
 

@@ -1168,9 +1168,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (IsCreature(*itr))
-                    (*itr)->ToCreature()->AI()->SetData(e.action.setData.field, e.action.setData.data);
+                    (*itr)->ToCreature()->AI()->SetData(e.action.setData.field, e.action.setData.data, me);
                 else if (IsGameObject(*itr))
-                    (*itr)->ToGameObject()->AI()->SetData(e.action.setData.field, e.action.setData.data);
+                    (*itr)->ToGameObject()->AI()->SetData(e.action.setData.field, e.action.setData.data, me);
             }
 
             delete targets;
@@ -2783,11 +2783,12 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             if (scriptTrigger)
                 l->push_back(scriptTrigger);
             break;
-            /*
+#ifdef LICH_KING
         case SMART_TARGET_ACTION_INVOKER_VEHICLE:
             if (scriptTrigger && scriptTrigger->GetVehicle() && scriptTrigger->GetVehicle()->GetBase())
                 l->push_back(scriptTrigger->GetVehicle()->GetBase());
-            break;*/
+            break;
+#endif
         case SMART_TARGET_INVOKER_PARTY:
             if (scriptTrigger)
             {
@@ -3989,37 +3990,6 @@ void SmartScript::OnMoveInLineOfSight(Unit* who)
     ProcessEventsFor(SMART_EVENT_IC_LOS, who);
 
 }
-
-/*
-void SmartScript::UpdateAIWhileCharmed(const uint32 diff) { }
-
-void SmartScript::DoAction(const int32 param) { }
-
-uint32 SmartScript::GetData(uint32 id)
-{
-    return 0;
-}
-
-void SmartScript::SetData(uint32 id, uint32 value) { }
-
-void SmartScript::SetGUID(uint64 guid, int32 id) { }
-
-uint64 SmartScript::GetGUID(int32 id)
-{
-    return 0;
-}
-
-void SmartScript::MovepointStart(uint32 id) { }
-
-void SmartScript::SetRun(bool run) { }
-
-void SmartScript::SetMovePathEndAction(SMART_ACTION action) { }
-
-uint32 SmartScript::DoChat(int8 id, uint64 whisperGuid)
-{
-    return 0;
-}*/
-// SmartScript end
 
 Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {

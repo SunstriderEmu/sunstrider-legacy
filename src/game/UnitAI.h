@@ -41,7 +41,7 @@ class UnitAI
         // Pass parameters between AI
         virtual void DoAction(const int32 param) {}
         virtual uint32 GetData(uint32 /*id = 0*/) const { return 0; }
-        virtual void SetData(uint32 /*id*/, uint32 /*value*/) {}
+        virtual void SetData(uint32 /*id*/, uint32 /*value*/, Unit* setter = nullptr) {}
         virtual void SetGUID(uint64 /*guid*/, int32 /*id*/ = 0) { }
         virtual uint64 GetGUID(int32 /*id*/ = 0) const { return 0; }
 
