@@ -8756,10 +8756,15 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
             return false;
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
+            /* After research, disabled this check. Potions, health stones and thunderclap should crit.
+            Implied spells:
+            SELECT * FROM spell_template WHERE dmgClass = 1 AND schoolMask = 1 AND (effect1 IN (2,10) OR effect2 IN (2,10) OR effect3 IN (2,10))
+
             if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
                 crit_chance = 0.0f;
+            */
             // For other schools
-            else if (GetTypeId() == TYPEID_PLAYER)
+            /*else*/ if (GetTypeId() == TYPEID_PLAYER)
                 crit_chance = GetFloatValue( PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
             else
             {
