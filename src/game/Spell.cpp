@@ -2616,7 +2616,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     // Do healing and triggers
     if (m_healing > 0)
     {
-        bool crit = caster->IsSpellCrit(NULL, m_spellInfo, m_spellSchoolMask);
+        bool crit = target->crit;
         uint32 addhealth = m_healing;
         if (crit)
         {

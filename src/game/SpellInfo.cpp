@@ -992,7 +992,7 @@ bool SpellInfo::HasEffectByEffectMask(SpellEffects effect, SpellEffectMask effec
 
 bool SpellInfo::HasEffect(SpellEffects effect, uint8 effectIndex) const
 {
-    return HasEffectByEffectMask(effect, SPELL_EFFECT_MASK_ALL);
+    return HasEffectByEffectMask(effect, SpellEffectMask(1 << effectIndex));
 }
 
 bool SpellInfo::HasAura(AuraType aura) const

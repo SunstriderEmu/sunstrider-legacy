@@ -8722,49 +8722,35 @@ bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMa
     // Mobs can't crit except for player controlled pets/guardians/totems (confirmed for those three)
     if (IS_CREATURE_GUID(GetGUID()))
     {
-            if(Unit* owner = GetOwner())
-                return owner->IsSpellCrit(pVictim,spellProto,schoolMask,attackType);
+        if(Unit* owner = GetOwner())
+            return owner->IsSpellCrit(pVictim,spellProto,schoolMask,attackType);
 
         return false;
     }
 
-    // not critting spell
     if((spellProto->HasAttribute(SPELL_ATTR2_CANT_CRIT)))
         return false;
     
-    for(int i=0;i<3;++i)
-    {
-        switch (spellProto->Effects[i].Effect)
-        {
-            // NPCs cannot crit with school damage spells
-            case SPELL_EFFECT_SCHOOL_DAMAGE:
-            {
-                if (!GetCharmerOrOwnerPlayerOrPlayerItself())
-                    return false;
-                break;
-            }
-            // Leech spells are not considered as direct spell damage ( they cannot crit )
-            case SPELL_EFFECT_HEALTH_LEECH:
-                return false;
-        }
-    }
+    if (spellProto->HasEffectByEffectMask(SPELL_EFFECT_HEALTH_LEECH))
+        return false;
 
     float crit_chance = 0.0f;
     switch(spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
-            return false;
+            // mana potions, Demonic Rune, Alchemist's Stone, ...
+            crit_chance = m_baseSpellCritChance;
+            break;
         case SPELL_DAMAGE_CLASS_MAGIC:
         {
-            /* After research, disabled this check. Potions, health stones and thunderclap should crit.
-            Implied spells:
+            /*  
+            Implied spells: Potions, health stones, thunderclap, ... should crit
             SELECT * FROM spell_template WHERE dmgClass = 1 AND schoolMask = 1 AND (effect1 IN (2,10) OR effect2 IN (2,10) OR effect3 IN (2,10))
-
-            if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
-                crit_chance = 0.0f;
             */
+            if (schoolMask & SPELL_SCHOOL_MASK_NORMAL)
+                crit_chance = m_baseSpellCritChance;
             // For other schools
-            /*else*/ if (GetTypeId() == TYPEID_PLAYER)
+            else if (GetTypeId() == TYPEID_PLAYER)
                 crit_chance = GetFloatValue( PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
             else
             {
