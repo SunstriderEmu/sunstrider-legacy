@@ -8719,17 +8719,12 @@ int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT)
 
 bool Unit::IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType)
 {        
-    // Mobs can't crit except for totems
+    // Mobs can't crit except for player controlled pets/guardians/totems (confirmed for those three)
     if (IS_CREATURE_GUID(GetGUID()))
     {
-        uint32 owner_guid = GetOwnerGUID();
-        if(IS_PLAYER_GUID(owner_guid))
-        {
-            Player* owner = ObjectAccessor::GetPlayer(*this, owner_guid);
-            Creature* c = ToCreature();
-            if(owner && c && c->IsTotem())
+            if(Unit* owner = GetOwner())
                 return owner->IsSpellCrit(pVictim,spellProto,schoolMask,attackType);
-        }
+
         return false;
     }
 
