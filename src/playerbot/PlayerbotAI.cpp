@@ -329,9 +329,9 @@ void PlayerbotAI::HandleBotOutgoingPacket(const WorldPacket& packet)
             if (casterGuid != bot->GetGUID())
                 return;
 
-            uint8 castCount;
             uint32 spellId;
 #ifdef LICH_KING
+            uint8 castCount;
             p >> castCount;
 #endif
             p >> spellId;

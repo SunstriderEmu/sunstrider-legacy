@@ -296,11 +296,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                 for(auto itr : list)
                     sPacketLog->DumpPacket(LOG_LEVEL_ERROR,SERVER_TO_CLIENT,itr,GetPlayerInfo());
 
-                lock.unlock(); //unlock before calling ClearLastPacketsSent
+                lock.unlock_shared(); //unlock before calling ClearLastPacketsSent
                 TC_LOG_ERROR("network.opcode","==================================================================");
                 m_Socket->ClearLastPacketsSent();
             } else 
-                lock.unlock();
+                lock.unlock_shared();
         }
         m_Socket->CloseSocket();
     }
