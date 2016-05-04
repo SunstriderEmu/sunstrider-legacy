@@ -419,7 +419,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     SetUInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[index++].GetInt16());
     //SetUInt32Value(ITEM_FIELD_ITEM_TEXT_ID, fields[index++].GetUInt32()); // not in request or db anymore since it seems this has no use
     SetUInt32Value(ITEM_FIELD_DURABILITY, fields[index++].GetUInt16());
-    //   SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability); // already set in Item::Create 
+    SetUInt32Value(ITEM_FIELD_MAXDURABILITY, proto->MaxDurability);
 
     bool need_save = false;                                 // need explicit save data at load fixes
 
