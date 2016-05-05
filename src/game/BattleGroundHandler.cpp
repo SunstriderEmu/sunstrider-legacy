@@ -938,4 +938,3 @@ void WorldSession::SendBattlegroundOrArenaJoinError(uint8 err)
     SendPacket(&data);
     return;
 }
-

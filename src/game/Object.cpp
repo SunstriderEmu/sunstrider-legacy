@@ -898,6 +898,11 @@ uint32 WorldObject::GetAreaId() const
     return GetBaseMap()->GetAreaId(m_positionX,m_positionY,m_positionZ);
 }
 
+void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
+{
+    GetBaseMap()->GetZoneAndAreaId(zoneid, areaid, m_positionX, m_positionY, m_positionZ);
+}
+
 InstanceScript* WorldObject::GetInstanceScript()
 {
     Map *map = GetMap();

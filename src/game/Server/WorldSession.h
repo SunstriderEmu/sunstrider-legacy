@@ -43,6 +43,7 @@ struct AddonInfo;
 enum MailMessageType : uint32;
 class Transaction;
 typedef std::shared_ptr<Transaction> SQLTransaction;
+enum WeatherState : int;
 
 class Creature;
 class Item;
@@ -408,6 +409,12 @@ class WorldSession
         void SendPetitionShowList( uint64 guid );
         void SendSaveGuildEmblem( uint32 msg );
         void SendBattlegroundOrArenaJoinError(uint8 err);
+
+        // Dynamic map data
+        void SendPlayMusic(uint32 musicId);
+        void SendWeather(WeatherState weatherId, float weatherGrade, uint8 unk = 0);
+        //defaultLightId for current zone ?
+        void SendOverrideLight(uint32 defaultLightId, uint32 overrideLightId, uint32 fadeTime);
 
         // Looking For Group
         // TRUE values set by client sending CMSG_LFG_SET_AUTOJOIN and CMSG_LFM_CLEAR_AUTOFILL before player login

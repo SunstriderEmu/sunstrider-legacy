@@ -913,7 +913,7 @@ bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
     return true;
 }
 
-/* Syntax: .debug mapheight [walkableOnly] [teleport] */
+/* Syntax: .debug #mapheight [walkableOnly] [teleport] */
 bool ChatHandler::HandleDebugMapHeight(const char* args)
 {
     bool walkableOnly = false;
@@ -941,7 +941,7 @@ bool ChatHandler::HandleDebugMapHeight(const char* args)
     return true;
 }
 
-/* Syntax: .debug playemote <emoteId> */
+/* Syntax: .debug playemote #emoteId */
 bool ChatHandler::HandleDebugPlayEmoteCommand(const char* args)
 {
     uint32 emote = atoi(args);
@@ -1174,6 +1174,82 @@ bool ChatHandler::HandleDebugCrashCommand(const char* args)
         return false;
 
     return true;
+}
+
+/* Syntax: .debug zonemusic #musicId */
+bool ChatHandler::HandleDebugZoneMusicCommand(const char* args)
+{
+    char* cMusicId = strtok((char*)args, " ");
+
+    if (!cMusicId)
+        return false;
+
+    uint32 musicId = (uint32)atoi(cMusicId);
+    if (musicId == 0)
+        return false;
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneMusic(p->GetZoneId(), musicId);
+}
+
+/* Syntax: .debug zonelight #newLightId */
+bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
+{
+    char* cLightId = strtok((char*)args, " ");
+
+    if (!cLightId)
+        return false;
+
+    uint32 lightId = (uint32)atoi(cLightId);
+    if (lightId == 0)
+        return false;
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS);
+}
+
+/* Syntax: .debug zoneweather #weatherId [#intensity] */
+bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
+{
+    char* sWeatherId = strtok((char*)args, " ");
+    char* sIntensity = strtok(NULL, " ");
+
+    uint32 weatherId = 0;
+    float intensity = 0.999f;
+
+    if (!sWeatherId)
+        return false;
+
+    weatherId = atoi(sWeatherId);
+    if (weatherId == 0)
+        return false;
+
+    if (sIntensity)
+        intensity = atof(sIntensity);
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneWeather(p->GetZoneId(), WeatherState(weatherId), intensity);
 }
 
 bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)

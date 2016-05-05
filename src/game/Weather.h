@@ -30,7 +30,7 @@
 
 class Player;
 
-enum WeatherState
+enum WeatherState : int
 {
     WEATHER_STATE_FINE              = 0,
     WEATHER_STATE_LIGHT_RAIN        = 3,

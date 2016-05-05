@@ -34,8 +34,8 @@ const char ChatChannelsEntryfmt[]="iixssssssssssssssssxxxxxxxxxxxxxxxxxx";
                                                             // ChatChannelsEntryfmt, index not used (more compact store)
 const char ChrClassesEntryfmt[]="nxixssssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxix";
 const char ChrRacesEntryfmt[]="niixiixxixxxxissssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
-char const CinematicCameraEntryfmt[] = "nsiffff";
-char const CinematicSequencesEntryfmt[] = "nxixxxxxxx";
+const char CinematicCameraEntryfmt[] = "nsiffff";
+const char CinematicSequencesEntryfmt[] = "nxixxxxxxx";
 const char CreatureDisplayInfofmt[]="nixifxxxxxxxxx";
 const char CreatureDisplayInfoExtrafmt[]="diixxxxxxxxxxxxxxxxxx";
 const char CreatureFamilyfmt[]="nfifiiiissssssssssssssssxx";
@@ -63,6 +63,11 @@ const char ItemExtendedCostEntryfmt[]="niiiiiiiiiiiii";
 const char ItemRandomPropertiesfmt[]="nxiiixxxxxxxxxxxxxxxxxxx";
 const char ItemRandomSuffixfmt[]="nxxxxxxxxxxxxxxxxxxiiiiii";
 const char ItemSetEntryfmt[]="dssssssssssssssssxxxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiiiii";
+#ifdef LICH_KING
+const char LightEntryfmt[] = "nifffxxxxxxxxxx";
+#else
+const char LightEntryfmt[] = "nifffxxxxxxx";
+#endif
 const char LiquidTypefmt[] = "nxxi";
 const char LockEntryfmt[]="niiiiiiiiiiiiiiiiiixxxxxxxxxxxxxx";
 const char MailTemplateEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
@@ -71,11 +76,11 @@ const char QuestSortEntryfmt[]="nxxxxxxxxxxxxxxxxx";
 const char RandomPropertiesPointsfmt[]="niiiiiiiiiiiiiii";
 const char SkillLinefmt[]="nixssssssssssssssssxxxxxxxxxxxxxxxxxxi";
 const char SkillLineAbilityfmt[]="niiiixxiiiiixxi";
-char const SkillRaceClassInfofmt[] = "diiiixix";
-char const SkillTiersfmt[] = "nxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiii";
+const char SkillRaceClassInfofmt[] = "diiiixix";
+const char SkillTiersfmt[] = "nxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiii";
 const char SoundEntriesfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char SpellCastTimefmt[]="nixx";
-char const SpellCategoryfmt[] = "ni";
+const char SpellCategoryfmt[] = "ni";
 const char SpellDurationfmt[]="niii";
 const char SpellEntryfmt[]="nixiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiifxiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiffffffiiiiiiiiiiiiiiiiiiiiifffiiiiiiiiiiiiiiifffixiixssssssssssssssssxssssssssssssssssxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxiiiiiiiiiixfffxxxiiii";
 const char SpellFocusObjectfmt[]="nxxxxxxxxxxxxxxxxx";

@@ -1122,7 +1122,6 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
 #ifdef LICH_KING
     recvData.readPackGUID(guid);
 #else
-    recvData.readPackGUID(guid);
     recvData >> guid;
 #endif
     recvData >> time_skipped;
