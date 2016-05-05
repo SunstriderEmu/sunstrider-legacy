@@ -1540,7 +1540,7 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
     {
         if( GetSoundEntriesStore()->LookupEntry((*i).second.SoundId) )
         {
-            pSource->SendPlaySound((*i).second.SoundId, false);
+            pSource->PlayDirectSound((*i).second.SoundId);
         }
         else
             error_log("TSCR: DoScriptText entry %i tried to process invalid sound id %u.",textEntry,(*i).second.SoundId);

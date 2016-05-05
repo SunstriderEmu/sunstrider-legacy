@@ -352,6 +352,7 @@ DumpReturn PlayerDumpWriter::WriteDump(const std::string& file, uint32 guid)
 // Reading - High-level functions
 #define ROLLBACK(DR) {fclose(fin); return (DR);}
 
+//item loading is broken for now
 DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, std::string name, uint32 guid)
 {
     // check character count

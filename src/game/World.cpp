@@ -2820,7 +2820,8 @@ void World::ScriptsProcess()
                 if(!source)
                     break;
                 //datalong sound_id, datalong2 onlyself
-                ((WorldObject*)source)->SendPlaySound(step.script->datalong, step.script->datalong2);
+                Player* target = step.script->datalong2 ? source->ToPlayer() : nullptr;
+                ((WorldObject*)source)->PlayDirectSound(step.script->datalong, target);
                 break;
             }
 

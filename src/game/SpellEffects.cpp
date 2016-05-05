@@ -199,8 +199,8 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectApplyAreaAura,                            //128 SPELL_EFFECT_APPLY_AREA_AURA_FRIEND
     &Spell::EffectApplyAreaAura,                            //129 SPELL_EFFECT_APPLY_AREA_AURA_ENEMY
     &Spell::EffectRedirectThreat,                           //130 SPELL_EFFECT_REDIRECT_THREAT
-    &Spell::EffectUnused,                                   //131 SPELL_EFFECT_131                      used in some test spells
-    &Spell::EffectNULL,                                     //132 SPELL_EFFECT_PLAY_MUSIC               sound id in misc value
+    &Spell::EffectPlaySound,                                //131 SPELL_EFFECT_PLAY_SOUND               used in some test spells
+    &Spell::EffectPlayMusic,                                //132 SPELL_EFFECT_PLAY_MUSIC               sound id in misc value
     &Spell::EffectUnlearnSpecialization,                    //133 SPELL_EFFECT_UNLEARN_SPECIALIZATION   unlearn profession specialization
     &Spell::EffectKillCredit,                               //134 SPELL_EFFECT_KILL_CREDIT              misc value is creature entry
     &Spell::EffectNULL,                                     //135 SPELL_EFFECT_CALL_PET
@@ -7935,6 +7935,60 @@ void Spell::EffectRedirectThreat(uint32 /*i*/)
         m_caster->SetReducedThreatPercent(100, unitTarget->GetGUID());
         m_caster->SetLastMisdirectionTargetGUID(unitTarget->GetGUID());
     }
+}
+
+void Spell::EffectPlaySound(uint32 effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget)
+        return;
+
+    Player* player = unitTarget->ToPlayer();
+    if (!player)
+        return;
+
+#ifdef LICH_KING
+    switch (m_spellInfo->Id)
+    {
+    case 58730: // Restricted Flight Area
+    case 58600: // Restricted Flight Area
+        player->GetSession()->SendNotification(LANG_ZONE_NOFLYZONE);
+        break;
+    default:
+        break;
+    }
+#endif
+
+    uint32 soundId = m_spellInfo->Effects[effIndex].MiscValue;
+
+    if (!sSoundEntriesStore.LookupEntry(soundId))
+    {
+        TC_LOG_ERROR("spells", "EffectPlaySound: Sound (Id: %u) does not exist in spell %u.", soundId, m_spellInfo->Id);
+        return;
+    }
+
+    player->PlayDirectSound(soundId, player);
+}
+
+void Spell::EffectPlayMusic(uint32 effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    uint32 soundid = m_spellInfo->Effects[effIndex].MiscValue;
+
+    if (!sSoundEntriesStore.LookupEntry(soundid))
+    {
+        TC_LOG_ERROR("spells", "EffectPlayMusic: Sound (Id: %u) does not exist in spell %u.", soundid, m_spellInfo->Id);
+        return;
+    }
+
+    unitTarget->ToPlayer()->GetSession()->SendPlayMusic(soundid);
 }
 
 void Spell::EffectForceCastWithValue(uint32 i)

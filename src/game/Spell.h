@@ -390,6 +390,8 @@ class Spell
         void EffectKillCredit(uint32 i);
         void EffectQuestFail(uint32 i);
         void EffectRedirectThreat(uint32 i);
+        void EffectPlaySound(uint32 i);
+        void EffectPlayMusic(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
         Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false);

@@ -1197,6 +1197,8 @@ bool ChatHandler::HandleDebugZoneMusicCommand(const char* args)
         return false;
 
     map->SetZoneMusic(p->GetZoneId(), musicId);
+    PSendSysMessage("Changed zone music to %u", musicId);
+    return true;
 }
 
 /* Syntax: .debug zonelight #newLightId */
@@ -1220,6 +1222,8 @@ bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
         return false;
 
     map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS);
+    PSendSysMessage("Changed zone light to %u", lightId);
+    return true;
 }
 
 /* Syntax: .debug zoneweather #weatherId [#intensity] */
@@ -1250,6 +1254,8 @@ bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
         return false;
 
     map->SetZoneWeather(p->GetZoneId(), WeatherState(weatherId), intensity);
+    PSendSysMessage("Changed zone weather to %u", weatherId);
+    return true;
 }
 
 bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)

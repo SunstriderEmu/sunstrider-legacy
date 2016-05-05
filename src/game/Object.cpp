@@ -1207,14 +1207,14 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
 bool WorldObject::IsPositionValid() const
 {
     return Trinity::IsValidMapCoord(m_positionX,m_positionY,m_positionZ,m_orientation);
-}
+}   
 
-void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
+void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 4);
-    data << Sound;
-    if (OnlySelf && GetTypeId() == TYPEID_PLAYER )
-        (this->ToPlayer())->SendDirectMessage( &data );
+    data << sound_id;
+    if (target)
+        target->SendDirectMessage(&data);
     else
         SendMessageToSet( &data, true ); // ToSelf ignored in this case
 }

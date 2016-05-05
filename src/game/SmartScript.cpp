@@ -247,7 +247,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsUnit(*itr))
                     {
-                        (*itr)->SendPlaySound(e.action.sound.sound, e.action.sound.onlySelf > 0);
+                        Player* target = e.action.sound.onlySelf ? (*itr)->ToPlayer() : nullptr;
+                        (*itr)->PlayDirectSound(e.action.sound.sound, target);
                         TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
                             (*itr)->GetName().c_str(), (*itr)->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
                     }
