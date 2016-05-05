@@ -13245,7 +13245,7 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
     if(questGiver && pQuest->GetQuestStartScript()!=0)
         sWorld->ScriptsStart(sQuestStartScripts, pQuest->GetQuestStartScript(), questGiver, this);
 
-    UpdateForQuestsGO();
+    UpdateForQuestWorldObjects();
 }
 
 void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
@@ -14001,9 +14001,11 @@ bool Player::CanShareQuest(uint32 quest_id) const
     return false;
 }
 
-void Player::SetQuestStatus( uint32 quest_id, QuestStatus status )
+void Player::SetQuestStatus( uint32 questId, QuestStatus status )
 {
-    Quest const* qInfo = sObjectMgr->GetQuestTemplate(quest_id);
+    uint32 zone = 0, area = 0;
+
+    Quest const* qInfo = sObjectMgr->GetQuestTemplate(questId);
     if( qInfo )
     {
         if( status == QUEST_STATUS_NONE || status == QUEST_STATUS_INCOMPLETE || status == QUEST_STATUS_COMPLETE )
@@ -14012,13 +14014,36 @@ void Player::SetQuestStatus( uint32 quest_id, QuestStatus status )
                 m_timedquests.erase(qInfo->GetQuestId());
         }
 
-        QuestStatusData& q_status = mQuestStatus[quest_id];
+        QuestStatusData& q_status = mQuestStatus[questId];
 
         q_status.m_status = status;
-        if (q_status.uState != QUEST_NEW) q_status.uState = QUEST_CHANGED;
+        if (q_status.uState != QUEST_NEW) 
+            q_status.uState = QUEST_CHANGED;
     }
 
-    UpdateForQuestsGO();
+    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(questId);
+    if (saBounds.first != saBounds.second)
+    {
+        GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+            if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
+                if (!HasAura(itr->second->spellId))
+                    CastSpell(this, itr->second->spellId, true);
+    }
+
+    saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(questId);
+    if (saBounds.first != saBounds.second)
+    {
+        if (!zone || !area)
+            GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+            if (!itr->second->IsFitToRequirements(this, zone, area))
+                RemoveAurasDueToSpell(itr->second->spellId);
+    }
+
+    UpdateForQuestWorldObjects();
 }
 
 void Player::AutoCompleteQuest( Quest const* qInfo )
@@ -14197,7 +14222,7 @@ void Player::ItemAddedQuestCheck( uint32 entry, uint32 count )
             }
         }
     }
-    UpdateForQuestsGO();
+    UpdateForQuestWorldObjects();
 }
 
 void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
@@ -14238,7 +14263,7 @@ void Player::ItemRemovedQuestCheck( uint32 entry, uint32 count )
             }
         }
     }
-    UpdateForQuestsGO();
+    UpdateForQuestWorldObjects();
 }
 
 void Player::KilledMonsterCredit(uint32 entry, uint64 guid, uint32 questId)
@@ -15449,7 +15474,7 @@ bool Player::ModifyMoney(int32 amount, bool sendError /*= true*/)
     return true;
 }
 
-bool Player::IsAllowedToLoot(Creature const* creature)
+bool Player::IsAllowedToLoot(Creature const* creature) const
 {
     if(creature->IsDead() && !creature->IsDamageEnoughForLootingAndReward())
         return false;
@@ -15461,7 +15486,7 @@ bool Player::IsAllowedToLoot(Creature const* creature)
     /*if (loot->loot_type == LOOT_SKINNING)
         return creature->GetSkinner() == GetGUID(); */
 
-    Group* thisGroup = GetGroup();
+    Group const* thisGroup = GetGroup();
     if (!thisGroup)
         return this == creature->GetLootRecipient();
     else if (thisGroup != creature->GetLootRecipientGroup())
@@ -16224,7 +16249,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, Difficulty difficulty
     if (!mapDiff)
         return NULL;
 
-    BoundInstancesMap::iterator itr = m_boundInstances[difficulty].find(mapid);
+    auto itr = m_boundInstances[difficulty].find(mapid);
     if(itr != m_boundInstances[difficulty].end())
         return &itr->second;
    
@@ -20609,7 +20634,7 @@ bool Player::HasQuestForGO(int32 GOId)
     return false;
 }
 
-void Player::UpdateForQuestsGO()
+void Player::UpdateForQuestWorldObjects()
 {
     if(m_clientGUIDs.empty())
         return;
@@ -20623,12 +20648,41 @@ void Player::UpdateForQuestsGO()
     {
         if(IS_GAMEOBJECT_GUID(*itr))
         {
-            GameObject *obj = HashMapHolder<GameObject>::Find(*itr);
-            if(!obj)
+            if (GameObject* obj = ObjectAccessor::GetGameObject(*this, *itr))
+                obj->BuildValuesUpdateBlockForPlayer(&udata, this);
+        }
+#ifdef LICH_KING
+        else if (IS_CREATURE_OR_VEHICLE_GUID(*itr))
+        {
+            Creature* obj = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, *itr);
+            if (!obj)
                 continue;
 
-            obj->BuildValuesUpdateBlockForPlayer(&udata,this);
+            // check if this unit requires quest specific flags
+            if (!obj->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
+                continue;
+
+            SpellClickInfoMapBounds clickPair = sObjectMgr->GetSpellClickInfoMapBounds(obj->GetEntry());
+            for (SpellClickInfoContainer::const_iterator _itr = clickPair.first; _itr != clickPair.second; ++_itr)
+            {
+                //! This code doesn't look right, but it was logically converted to condition system to do the exact
+                //! same thing it did before. It definitely needs to be overlooked for intended functionality.
+                if (ConditionContainer const* conds = sConditionMgr->GetConditionsForSpellClickEvent(obj->GetEntry(), _itr->second.spellId))
+                {
+                    bool buildUpdateBlock = false;
+                    for (ConditionContainer::const_iterator jtr = conds->begin(); jtr != conds->end() && !buildUpdateBlock; ++jtr)
+                        if ((*jtr)->ConditionType == CONDITION_QUESTREWARDED || (*jtr)->ConditionType == CONDITION_QUESTTAKEN)
+                            buildUpdateBlock = true;
+
+                    if (buildUpdateBlock)
+                    {
+                        obj->BuildValuesUpdateBlockForPlayer(&udata, this);
+                        break;
+                    }
+                }
+            }
         }
+#endif
     }
     udata.BuildPacket(&packet);
     SendDirectMessage(&packet);
@@ -21051,6 +21105,13 @@ void Player::UpdateZoneDependentAuras( uint32 newZone )
         if(spellid && !HasAuraEffect(spellid,0) )
             CastSpell(this,spellid,true);
     }
+
+    // Some spells applied at enter into zone (with subzones), aura removed in UpdateAreaDependentAuras that called always at zone->area update
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr->GetSpellAreaForAreaMapBounds(newZone);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        if (itr->second->autocast && itr->second->IsFitToRequirements(this, newZone, 0))
+            if (!HasAura(itr->second->spellId))
+                CastSpell(this, itr->second->spellId, true);
 }
 
 void Player::UpdateAreaDependentAuras( uint32 newArea )
@@ -21082,6 +21143,13 @@ void Player::UpdateAreaDependentAuras( uint32 newArea )
             }
         }
     }
+
+    // some auras applied at subzone enter
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr->GetSpellAreaForAreaMapBounds(newArea);
+    for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        if (itr->second->autocast && itr->second->IsFitToRequirements(this, m_zoneUpdateId, newArea))
+            if (!HasAura(itr->second->spellId))
+                CastSpell(this, itr->second->spellId, true);
 }
 
 uint32 Player::GetCorpseReclaimDelay(bool pvp) const
@@ -21172,16 +21240,16 @@ void Player::SendCorpseReclaimDelay(bool load)
     SendDirectMessage( &data );
 }
 
-Player* Player::GetNextRandomRaidMember(float radius)
+Player* Player::GetNextRandomRaidMember(float radius) const
 {
-    Group *pGroup = GetGroup();
+    Group const* pGroup = GetGroup();
     if(!pGroup)
         return NULL;
 
     std::vector<Player*> nearMembers;
     nearMembers.reserve(pGroup->GetMembersCount());
 
-    for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+    for(GroupReference const* itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
     {
         Player* Target = itr->GetSource();
 
@@ -21514,7 +21582,7 @@ bool Player::isAllowedToTakeBattlegroundBase()
            );
 }
 
-bool Player::HasTitle(uint32 bitIndex)
+bool Player::HasTitle(uint32 bitIndex) const
 {
     if (bitIndex > 128)
         return false;
@@ -21551,7 +21619,7 @@ void Player::RemoveTitle(CharTitlesEntry const* title, bool notify)
         SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 }
 
-bool Player::HasLevelInRangeForTeleport()
+bool Player::HasLevelInRangeForTeleport() const
 {
     uint8 minLevel = sConfigMgr->GetIntDefault("Teleporter.MinLevel", 1);
     uint8 MaxLevel = sConfigMgr->GetIntDefault("Teleporter.MaxLevel", 255);
@@ -21932,7 +22000,7 @@ void Player::SetSpectate(bool on)
     SetToNotify();
 }
 
-bool Player::HaveSpectators()
+bool Player::HaveSpectators() const
 {
     if (Battleground *bg = GetBattleground())
     {
@@ -22828,7 +22896,7 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
     ModifyMoney(-cost);
 }
 
-uint32 Player::GetGossipTextId(WorldObject* source)
+uint32 Player::GetGossipTextId(WorldObject* source) const
 {
     if (!source)
         return DEFAULT_GOSSIP_MESSAGE;
@@ -22836,7 +22904,7 @@ uint32 Player::GetGossipTextId(WorldObject* source)
     return GetGossipTextId(GetDefaultGossipMenuForSource(source), source);
 }
 
-uint32 Player::GetGossipTextId(uint32 menuId, WorldObject* source)
+uint32 Player::GetGossipTextId(uint32 menuId, WorldObject* source) const
 {
     uint32 textId = DEFAULT_GOSSIP_MESSAGE;
 

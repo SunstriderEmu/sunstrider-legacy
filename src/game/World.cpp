@@ -1468,6 +1468,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Quest Area Triggers..." );
     sObjectMgr->LoadQuestAreaTriggers();                         // must be after LoadQuests
 
+    TC_LOG_INFO("server.loading", "Loading SpellArea Data...");  // must be after quest load
+    sSpellMgr->LoadSpellAreas();
+
     TC_LOG_INFO("server.loading", "Loading Tavern Area Triggers..." );
     sObjectMgr->LoadTavernAreaTriggers();
 

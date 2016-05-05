@@ -4077,6 +4077,28 @@ bool Unit::AddAura(Aura *Aur)
     Aur->ApplyModifier(true,true);
 
     uint32 id = Aur->GetId();
+    Unit* target = Aur->GetTarget();
+    // handle spell_area table
+    SpellAreaForAreaMapBounds saBounds = sSpellMgr->GetSpellAreaForAuraMapBounds(id);
+    if (target && saBounds.first != saBounds.second)
+    {
+        uint32 zone, area;
+        target->GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        {
+            // some auras remove at aura remove
+            if (!itr->second->IsFitToRequirements(target->ToPlayer(), zone, area))
+                target->RemoveAurasDueToSpell(itr->second->spellId);
+            // some auras applied at aura apply
+            else if (itr->second->autocast)
+            {
+                if (!target->HasAura(itr->second->spellId))
+                    target->CastSpell(target, itr->second->spellId, true);
+            }
+        }
+    }
+
     if(Aur->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_LINK_AURA))
     {
         if(const std::vector<int32> *spell_triggered = sSpellMgr->GetSpellLinked(id + SPELL_LINK_AURA))

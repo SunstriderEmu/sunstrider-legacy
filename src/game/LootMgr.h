@@ -287,7 +287,7 @@ struct Loot
     void ClearRemovedItemsList() { removed_items.clear(); }
 
     LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
-    bool hasItemFor(Player* player) const;
+    bool hasItemFor(Player const* player) const;
     bool hasOverThresholdItem() const;
 
     private:
