@@ -151,7 +151,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
             TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: invalid source_type (%u), skipped loading.", uint32(source_type));
             continue;
         }
-        if (temp.entryOrGuid >= 0)
+        if (temp.entryOrGuid > 0)
         {
             switch (source_type)
             {
