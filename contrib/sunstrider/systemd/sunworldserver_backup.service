@@ -1,0 +1,11 @@
+[Unit]
+Description=Create a backup of Sunstrider world database, and delete old backups
+
+[Service]
+User=suncore
+Group=suncore
+Type=simple
+ExecStart=/srv/suncore/sources/contrib/sunstrider/systemd/backup_world.sh sun_world /home/suncore/backups sun_world_backup
+
+[Install]
+WantedBy=multi-user.target
