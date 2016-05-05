@@ -7339,7 +7339,7 @@ bool ChatHandler::HandlePlayAllCommand(const char* args)
         return false;
     }
 
-    WorldPacket data(SMSG_PLAY_SOUND, 4);
+    WorldPacket data(SMSG_PLAY_SOUND, 12);
     data << uint32(soundId) << m_session->GetPlayer()->GetGUID();
     sWorld->SendGlobalMessage(&data);
 

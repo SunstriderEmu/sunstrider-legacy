@@ -187,22 +187,12 @@ bool Weather::ReGenerate()
 
 void Weather::SendWeatherUpdateToPlayer(Player *player)
 {
-    WorldPacket data( SMSG_WEATHER, (4+4+1) );
-
-    data << uint32(GetWeatherState());
-    data << (float)m_grade;
-    data << uint8(0); // 1 for instant change, 0 for smooth change
-    player->SendDirectMessage( &data );
+    player->GetSession()->SendWeather(GetWeatherState(), m_grade, 0);
 }
 
 void Weather::SendFineWeatherUpdateToPlayer(Player *player)
 {
-    WorldPacket data( SMSG_WEATHER, (4+4+1) );
-
-    data << (uint32)WEATHER_STATE_FINE;
-    data << (float)0.0f;
-    data << uint8(0); // 1 for instant change, 0 for smooth change
-    player->SendDirectMessage( &data );
+    player->GetSession()->SendWeather(WEATHER_STATE_FINE, 0.0f, 0);
 }
 
 /// Send the new weather to all players in the zone
@@ -219,7 +209,7 @@ bool Weather::UpdateWeather()
     WorldPacket data( SMSG_WEATHER, (4+4+1) );
     data << uint32(state);
     data << (float)m_grade;
-    data << uint8(0); // 1 for instant change, 0 for smooth change
+    data << uint8(0);
 
     sWorld->SendZoneMessage(m_zone, &data);
 

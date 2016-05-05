@@ -580,6 +580,7 @@ class WorldObject : public Object, public WorldLocation
 
         uint32 GetZoneId() const;
         uint32 GetAreaId() const;
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
 
         //for trinitycore compatibility
         PhaseMask GetPhaseMask() const { return PhaseMask(1); }
@@ -643,7 +644,7 @@ class WorldObject : public Object, public WorldLocation
         virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
 
         // Low Level Packets
-        void SendPlaySound(uint32 Sound, bool OnlySelf);
+        void PlayDirectSound(uint32 Sound, Player* target = nullptr);
         
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;

@@ -283,6 +283,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "mapheight",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugMapHeight,             "" },
         { "valuessnapshot", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugValuesSnapshot,        "" },
         { "crash",          SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugCrashCommand,          "" },
+        { "setzonemusic",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneMusicCommand,      "" },
+        { "setzonelight",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneLightCommand,      "" },
+        { "setzoneweather", SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneWeatherCommand,    "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =

@@ -1468,6 +1468,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Quest Area Triggers..." );
     sObjectMgr->LoadQuestAreaTriggers();                         // must be after LoadQuests
 
+    TC_LOG_INFO("server.loading", "Loading SpellArea Data...");  // must be after quest load
+    sSpellMgr->LoadSpellAreas();
+
     TC_LOG_INFO("server.loading", "Loading Tavern Area Triggers..." );
     sObjectMgr->LoadTavernAreaTriggers();
 
@@ -2817,7 +2820,8 @@ void World::ScriptsProcess()
                 if(!source)
                     break;
                 //datalong sound_id, datalong2 onlyself
-                ((WorldObject*)source)->SendPlaySound(step.script->datalong, step.script->datalong2);
+                Player* target = step.script->datalong2 ? source->ToPlayer() : nullptr;
+                ((WorldObject*)source)->PlayDirectSound(step.script->datalong, target);
                 break;
             }
 

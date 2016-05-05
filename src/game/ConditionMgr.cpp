@@ -108,7 +108,7 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
 bool Condition::Meets(ConditionSourceInfo& sourceInfo)
 {
     ASSERT(ConditionTarget < MAX_CONDITION_TARGETS);
-    WorldObject* object = sourceInfo.mConditionTargets[ConditionTarget];
+    WorldObject const* object = sourceInfo.mConditionTargets[ConditionTarget];
     // object not present, return false
     if (!object)
     {
@@ -123,13 +123,13 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             break;
         case CONDITION_AURA:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = unit->HasAuraEffect(ConditionValue1, ConditionValue2);
             break;
         }
         case CONDITION_ITEM:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
             {
                 // don't allow 0 items (it's checked during table load)
                 ASSERT(ConditionValue2);
@@ -140,7 +140,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_ITEM_EQUIPPED:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 //condMeets = player->HasItemOrGemWithIdEquipped(ConditionValue1, 1);
                 condMeets = player->GetItemOrItemWithGemEquipped(ConditionValue1) != nullptr;
             break;
@@ -150,7 +150,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             break;
         case CONDITION_REPUTATION_RANK:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
             {
                 if (FactionEntry const* faction = sFactionStore.LookupEntry(ConditionValue1))
                     condMeets = (ConditionValue2 & (1 << player->GetReputationRank(faction))) != 0;
@@ -159,50 +159,53 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_ACHIEVEMENT:
         {
-           /* if (Player* player = object->ToPlayer())
-                condMeets = player->HasAchieved(ConditionValue1); */
+#ifdef LICH_KING
+            if (Player const* player = object->ToPlayer())
+                condMeets = player->HasAchieved(ConditionValue1);
+#else
             condMeets = true;
+#endif
             break;
         }
         case CONDITION_TEAM:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->GetTeam() == ConditionValue1;
             break;
         }
         case CONDITION_CLASS:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = (unit->GetClassMask() & ConditionValue1) != 0;
             break;
         }
         case CONDITION_RACE:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = (unit->GetRaceMask() & ConditionValue1) != 0;
             break;
         }
         case CONDITION_GENDER:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->GetGender() == ConditionValue1;
             break;
         }
         case CONDITION_SKILL:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->HasSkill(ConditionValue1) && player->GetBaseSkillValue(ConditionValue1) >= ConditionValue2;
             break;
         }
         case CONDITION_QUESTREWARDED:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->GetQuestRewardStatus(ConditionValue1);
             break;
         }
         case CONDITION_QUESTTAKEN:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
             {
                 QuestStatus status = player->GetQuestStatus(ConditionValue1);
                 condMeets = (status == QUEST_STATUS_INCOMPLETE);
@@ -211,7 +214,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_QUEST_COMPLETE:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
             {
                 QuestStatus status = player->GetQuestStatus(ConditionValue1);
                 condMeets = (status == QUEST_STATUS_COMPLETE && !player->GetQuestRewardStatus(ConditionValue1));
@@ -220,7 +223,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_QUEST_NONE:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
             {
                 QuestStatus status = player->GetQuestStatus(ConditionValue1);
                 condMeets = (status == QUEST_STATUS_NONE);
@@ -266,19 +269,19 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
             break;
         case CONDITION_SPELL:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->HasSpell(ConditionValue1);
             break;
         }
         case CONDITION_LEVEL:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue2), static_cast<uint32>(unit->GetLevel()), ConditionValue1);
             break;
         }
         case CONDITION_DRUNKENSTATE:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = (uint32)Player::GetDrunkenstateByValue(player->GetDrunkValue()) >= ConditionValue1;
             break;
         }
@@ -322,10 +325,10 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_RELATION_TO:
         {
-            if (WorldObject* toObject = sourceInfo.mConditionTargets[ConditionValue1])
+            if (WorldObject const* toObject = sourceInfo.mConditionTargets[ConditionValue1])
             {
-                Unit* toUnit = toObject->ToUnit();
-                Unit* unit = object->ToUnit();
+                Unit const* toUnit = toObject->ToUnit();
+                Unit const* unit = object->ToUnit();
                 if (toUnit && unit)
                 {
                     switch (static_cast<RelationType>(ConditionValue2))
@@ -359,10 +362,10 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_REACTION_TO:
         {
-            if (WorldObject* toObject = sourceInfo.mConditionTargets[ConditionValue1])
+            if (WorldObject const* toObject = sourceInfo.mConditionTargets[ConditionValue1])
             {
-                Unit* toUnit = toObject->ToUnit();
-                Unit* unit = object->ToUnit();
+                Unit const* toUnit = toObject->ToUnit();
+                Unit const* unit = object->ToUnit();
                 if (toUnit && unit)
                     condMeets = ((1 << unit->GetReactionTo(toUnit)) & ConditionValue2) != 0;
             }
@@ -371,25 +374,25 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_DISTANCE_TO:
         {
-            if (WorldObject* toObject = sourceInfo.mConditionTargets[ConditionValue1])
+            if (WorldObject const* toObject = sourceInfo.mConditionTargets[ConditionValue1])
                 condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue3), object->GetDistance(toObject), static_cast<float>(ConditionValue2));
             break;
         }
         case CONDITION_ALIVE:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = unit->IsAlive();
             break;
         }
         case CONDITION_HP_VAL:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue2), unit->GetHealth(), static_cast<uint32>(ConditionValue1));
             break;
         }
         case CONDITION_HP_PCT:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue2), unit->GetHealthPct(), static_cast<float>(ConditionValue1));
             break;
         }
@@ -406,7 +409,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_TITLE:
         {
-            if (Player* player = object->ToPlayer())
+            if (Player const* player = object->ToPlayer())
                 condMeets = player->HasTitle(ConditionValue1);
             break;
         }
@@ -417,13 +420,13 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_UNIT_STATE:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = unit->HasUnitState(ConditionValue1);
             break;
         }
         case CONDITION_CREATURE_TYPE:
         {
-            if (Creature* creature = object->ToCreature())
+            if (Creature const* creature = object->ToCreature())
                 condMeets = creature->GetCreatureTemplate()->type == ConditionValue1;
             break;
         }
@@ -437,7 +440,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
         case CONDITION_IN_WATER:
         {
-            if (Unit* unit = object->ToUnit())
+            if (Unit const* unit = object->ToUnit())
                 condMeets = unit->IsInWater();
             break;
         }
@@ -770,13 +773,13 @@ bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, 
     return false;
 }
 
-bool ConditionMgr::IsObjectMeetToConditions(WorldObject* object, ConditionList const& conditions)
+bool ConditionMgr::IsObjectMeetToConditions(WorldObject const* object, ConditionList const& conditions)
 {
     ConditionSourceInfo srcInfo = ConditionSourceInfo(object);
     return IsObjectMeetToConditions(srcInfo, conditions);
 }
 
-bool ConditionMgr::IsObjectMeetToConditions(WorldObject* object1, WorldObject* object2, ConditionList const& conditions)
+bool ConditionMgr::IsObjectMeetToConditions(WorldObject const* object1, WorldObject const* object2, ConditionList const& conditions)
 {
     ConditionSourceInfo srcInfo = ConditionSourceInfo(object1, object2);
     return IsObjectMeetToConditions(srcInfo, conditions);

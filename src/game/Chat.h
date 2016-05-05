@@ -374,6 +374,9 @@ class ChatHandler
         bool HandleDebugMapHeight(const char* args);
         bool HandleDebugValuesSnapshot(const char* args);
         bool HandleDebugCrashCommand(const char* args);
+        bool HandleDebugZoneMusicCommand(const char* args);
+        bool HandleDebugZoneLightCommand(const char* args);
+        bool HandleDebugZoneWeatherCommand(const char* args);
 
         bool HandlePlayerbotConsoleCommand(const char* args);
         bool HandlePlayerbotMgrCommand(const char* args);

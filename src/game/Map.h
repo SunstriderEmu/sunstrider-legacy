@@ -50,6 +50,7 @@ enum Difficulty : int;
 class BattlegroundMap;
 class InstanceMap;
 class MapInstanced;
+enum WeatherState : int;
 
 struct ObjectMover
 {
@@ -91,6 +92,17 @@ enum LevelRequirementVsMode
     LEVELREQUIREMENT_HEROIC = 70
 };
 
+struct ZoneDynamicInfo
+{
+    ZoneDynamicInfo();
+
+    uint32 MusicId;
+    WeatherState WeatherId;
+    float WeatherGrade;
+    uint32 OverrideLightId;
+    uint32 LightFadeInTime;
+};
+
 #if defined( __GNUC__ )
 #pragma pack()
 #else
@@ -101,6 +113,7 @@ typedef std::unordered_map<Creature*, ObjectMover> CreatureMoveList;
 typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
+typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
 
 class Map : public GridRefManager<NGridType>
 {
@@ -327,6 +340,9 @@ class Map : public GridRefManager<NGridType>
         //this function is overrided by InstanceMap and BattlegroundMap to handle crash recovery
         virtual void HandleCrash() { ASSERT(false); }
 
+        void SetZoneMusic(uint32 zoneId, uint32 musicId);
+        void SetZoneWeather(uint32 zoneId, WeatherState weatherId, float weatherGrade);
+        void SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime);
     private:
 
         void LoadVMap(int pX, int pY);
@@ -340,6 +356,8 @@ class Map : public GridRefManager<NGridType>
 
         void SendInitTransports( Player * player );
         void SendRemoveTransports( Player * player );
+
+        void SendZoneDynamicInfo(Player* player);
 
         bool CreatureCellRelocation(Creature* creature, Cell new_cell);
         bool GameObjectCellRelocation(GameObject* gob, Cell new_cell);
@@ -447,6 +465,9 @@ class Map : public GridRefManager<NGridType>
 
         typedef std::map<uint32, std::set<uint64> > CreaturePoolMember;
         CreaturePoolMember m_cpmembers;
+
+        ZoneDynamicInfoMap _zoneDynamicInfo;
+        uint32 _defaultLight;
 };
 
 enum InstanceResetMethod

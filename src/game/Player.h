@@ -1504,7 +1504,7 @@ class Player : public Unit
         void MoneyChanged( uint32 value );
         bool HasQuestForItem( uint32 itemid ) const;
         bool HasQuestForGO(int32 GOId);
-        void UpdateForQuestsGO();
+        void UpdateForQuestWorldObjects();
         bool CanShareQuest(uint32 quest_id) const;
 
         void SendQuestComplete( uint32 quest_id );
@@ -2345,7 +2345,7 @@ class Player : public Unit
         void SetOldPetSpell(uint32 petspell) { m_oldpetspell = petspell; }
         
         // Experience Blocking
-        bool IsXpBlocked() { return m_isXpBlocked; }
+        bool IsXpBlocked() const { return m_isXpBlocked; }
         void SetXpBlocked(bool blocked) { m_isXpBlocked = blocked; }
 
         void SendCinematicStart(uint32 CinematicSequenceId);
@@ -2379,20 +2379,20 @@ class Player : public Unit
 
         Group * GetGroupInvite() { return m_groupInvite; }
         void SetGroupInvite(Group *group) { m_groupInvite = group; }
-        Group * GetGroup() { return m_group.getTarget(); }
-        const Group * GetGroup() const { return (const Group*)m_group.getTarget(); }
+        Group* GetGroup() { return m_group.getTarget(); }
+        const Group* GetGroup() const { return (const Group*)m_group.getTarget(); }
         GroupReference& GetGroupRef() { return m_group; }
         void SetGroup(Group *group, int8 subgroup = -1);
         uint8 GetSubGroup() const { return m_group.getSubGroup(); }
-        uint32 GetGroupUpdateFlag() { return m_groupUpdateMask; }
+        uint32 GetGroupUpdateFlag() const { return m_groupUpdateMask; }
         void SetGroupUpdateFlag(uint32 flag) { m_groupUpdateMask |= flag; }
-        uint64 GetAuraUpdateMask() { return m_auraUpdateMask; }
+        uint64 GetAuraUpdateMask() const { return m_auraUpdateMask; }
         void SetAuraUpdateMask(uint8 slot) { m_auraUpdateMask |= (uint64(1) << slot); }
         void UnsetAuraUpdateMask(uint8 slot) { m_auraUpdateMask &= ~(uint64(1) << slot); }
-        Player* GetNextRandomRaidMember(float radius);
+        Player* GetNextRandomRaidMember(float radius) const;
         PartyResult CanUninviteFromGroup() const;
         // Teleporter NPC: Check level requirements (in Config)
-        bool HasLevelInRangeForTeleport();
+        bool HasLevelInRangeForTeleport() const;
         static uint32 GetGroupIdFromStorage(uint32 guid);
         
         // Battleground Group System
@@ -2409,16 +2409,16 @@ class Player : public Unit
         GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
 
-        bool IsAllowedToLoot(Creature const* creature);
+        bool IsAllowedToLoot(Creature const* creature) const;
 
         DeclinedName const* GetDeclinedNames() const { return m_declinedname; }
-        bool HasTitle(uint32 bitIndex);
-        bool HasTitle(CharTitlesEntry const* title) { return HasTitle(title->bit_index); }
+        bool HasTitle(uint32 bitIndex) const;
+        bool HasTitle(CharTitlesEntry const* title) const { return HasTitle(title->bit_index); }
         void SetTitle(CharTitlesEntry const* title, bool notify = false, bool setCurrentTitle = false);
         void RemoveTitle(CharTitlesEntry const* title, bool notify = true);
         
-        uint8 GetRace() { return m_race; }
-        uint8 GetGender() { return m_gender; }
+        uint8 GetRace() const { return m_race; }
+        uint8 GetGender() const { return m_gender; }
         void SetGender(uint8 gender) { m_gender = gender; }
         void SetRace(uint8 newrace) { m_race = newrace; } // Race/Faction change
         
@@ -2428,10 +2428,10 @@ class Player : public Unit
         uint64 GetLastGenderChange() { return m_lastGenderChange; }
         void SetLastGenderChange(uint64 timestamp) { m_lastGenderChange = timestamp; }
         
-        bool hasCustomXpRate() { return m_customXp != 0.0f; }
-        float getCustomXpRate() { return m_customXp; }
+        bool hasCustomXpRate() const { return m_customXp != 0.0f; }
+        float getCustomXpRate() const { return m_customXp; }
 
-        bool HaveSpectators();
+        bool HaveSpectators() const;
         void SendSpectatorAddonMsgToBG(SpectatorAddonMsg msg);
         bool isSpectateCanceled() { return spectateCanceled; }
         void CancelSpectate()     { spectateCanceled = true; }
@@ -2456,12 +2456,12 @@ class Player : public Unit
         void SendPreparedGossip(WorldObject* source);
         void OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 menuId);
 
-        uint32 GetGossipTextId(uint32 menuId, WorldObject* source);
-        uint32 GetGossipTextId(WorldObject* source);
+        uint32 GetGossipTextId(uint32 menuId, WorldObject* source) const;
+        uint32 GetGossipTextId(WorldObject* source) const;
         static uint32 GetDefaultGossipMenuForSource(WorldObject* source);
 
         void SetHasMovedInUpdate(bool moved) { m_hasMovedInUpdate = moved; }
-        bool GetHasMovedInUpdate() { return m_hasMovedInUpdate; }
+        bool GetHasMovedInUpdate() const { return m_hasMovedInUpdate; }
 
     protected:
 

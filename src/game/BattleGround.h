@@ -489,6 +489,8 @@ class Battleground
         bool isSpectator(uint64 guid);
         bool canEnterSpectator(Player *spectator);
 
+        virtual bool IsSpellAllowed(uint32 /*spellId*/, Player const* /*player*/) const { return true; }
+
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
