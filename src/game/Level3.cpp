@@ -505,6 +505,14 @@ bool ChatHandler::HandleReloadSpellAffectCommand(const char*)
     return true;
 }
 
+bool ChatHandler::HandleReloadSpellAreaCommand(const char*)
+{
+    TC_LOG_INFO("command", "Re-Loading spell_area...");
+    sSpellMgr->LoadSpellAreas();
+    SendGlobalGMSysMessage("DB table `spell_area` reloaded.");
+    return true;
+}
+
 bool ChatHandler::HandleReloadSpellRequiredCommand(const char*)
 {
     TC_LOG_INFO( "command", "Re-Loading Spell Required Data... " );

@@ -377,6 +377,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "skinning_loot_template",      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesSkinningCommand,   "" },
         { "smart_scripts",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSmartAICommand,                 "" },
         { "spell_affect",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellAffectCommand,             "" },
+        { "spell_area",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellAreaCommand,               "" },
         { "spell_bonus_data",            SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellBonusesCommand,             "" },
         { "spell_disabled",              SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellDisabledCommand,           "" },
         { "spell_elixir",                SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadSpellElixirCommand,             "" },
