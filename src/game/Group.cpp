@@ -152,6 +152,12 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
         _initRaidSubGroupsCounter();
 
     m_dungeonDifficulty = Difficulty((*result)[14].GetUInt8());
+    if (m_dungeonDifficulty >= MAX_DIFFICULTY)
+    {
+        TC_LOG_ERROR("misc", "Group " UI64FMTD " has invalid dungeon difficulty %u, resetting to default value instead.", leaderGuid, m_dungeonDifficulty);
+        m_dungeonDifficulty = REGULAR_DIFFICULTY;
+    }
+
     m_mainTank = (*result)[0].GetUInt32();
     m_mainAssistant = (*result)[1].GetUInt64();
     m_lootMethod = (LootMethod)(*result)[2].GetUInt8();
@@ -1834,6 +1840,12 @@ Difficulty Group::GetDifficulty(bool isRaid) const
 
 InstanceGroupBind* Group::GetBoundInstance(Difficulty difficulty, uint32 mapId)
 {
+    if (difficulty >= MAX_DUNGEON_DIFFICULTY)
+    {
+        TC_LOG_ERROR("misc", "Group::GetBoundInstance called with invalid difficulty %u", uint32(difficulty));
+        return nullptr;
+    }
+
     // some instances only have one difficulty
     GetDownscaledMapDifficultyData(mapId, difficulty);
 
@@ -1841,7 +1853,7 @@ InstanceGroupBind* Group::GetBoundInstance(Difficulty difficulty, uint32 mapId)
     if (itr != m_boundInstances[difficulty].end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 Group::BoundInstancesMap& Group::GetBoundInstances(Difficulty difficulty)
