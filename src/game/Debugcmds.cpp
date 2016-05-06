@@ -1258,6 +1258,30 @@ bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
     return true;
 }
 
+/* Syntax: .debug setarmor #armorValue */
+bool ChatHandler::HandleDebugSetArmorCommand(const char* args)
+{
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        return true;
+    }
+
+    uint32 armor = atoi(args);
+    target->SetUInt32Value(UNIT_FIELD_RESISTANCES, armor);
+
+    PSendSysMessage("Set target armor to %u", armor);
+
+    return true;
+}
+
+/* Syntax: .debug getarmor */
+bool ChatHandler::HandleDebugGetArmorCommand(const char* args)
+{
+    return HandleGetValueCommand("186"); //186 == UNIT_FIELD_RESISTANCES
+}
+
 bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
 {
 #ifdef PLAYERBOT
