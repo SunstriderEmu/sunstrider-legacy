@@ -596,6 +596,9 @@ void Creature::Update(uint32 diff)
                 UpdateCharmAI();
                 NeedChangeAI = false;
                 IsAIEnabled = true;
+
+                // sunwell: update combat state, if npc is not in combat - return to spawn correctly by calling EnterEvadeMode
+                SelectVictim();
             }
 
             if(IsAIEnabled)
@@ -676,7 +679,7 @@ void Creature::Update(uint32 diff)
 
     if (IsInWorld())
     {
-        // pussywizard:
+        // sunwell:
         if (IS_PLAYER_GUID(GetOwnerGUID()))
         {
             if (m_transportCheckTimer <= diff)
