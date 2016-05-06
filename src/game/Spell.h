@@ -920,6 +920,7 @@ namespace Trinity
 
 typedef void(Spell::*pEffect)(uint32 i);
 
+//update spell. Reschedule itself if necessary
 class SpellEvent : public BasicEvent
 {
     public:
@@ -933,7 +934,7 @@ class SpellEvent : public BasicEvent
         Spell* m_Spell;
 };
 
-
+//procs for reflects + remove reflect
 class ReflectEvent : public BasicEvent
 {
 public:

@@ -2084,6 +2084,7 @@ class Unit : public WorldObject
         time_t _lastDamagedTime; // Part of Evade mechanic
 };
 
+// drop a charge for the first aura found of type SPELL_AURA_SPELL_MAGNET
 class RedirectSpellEvent : public BasicEvent
 {
 public:

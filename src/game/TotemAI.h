@@ -47,6 +47,7 @@ class TotemAI : public CreatureAI
         uint64 i_victimGuid;
 };
 
+//simply kill self
 class KillMagnetEvent : public BasicEvent
 {
 public:

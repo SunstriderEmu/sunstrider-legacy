@@ -128,9 +128,6 @@ CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unit
 
 bool AssistDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 {
-    if(!m_owner.IsAlive()) //event can be executed after creature death
-        return true;
-
     Unit* victim = ObjectAccessor::GetUnit(m_owner, m_victim);
     if (victim)
     {
@@ -519,6 +516,8 @@ void Creature::Update(uint32 diff)
         }
         case CORPSE:
         {
+            Unit::Update(diff);
+
             if (m_corpseRemoveTime <= time(NULL))
             {
                 RemoveCorpse(false);
