@@ -96,10 +96,11 @@ enum QuestStatus
 {
     QUEST_STATUS_NONE           = 0,
     QUEST_STATUS_COMPLETE       = 1,
-    QUEST_STATUS_UNAVAILABLE    = 2,
+   // QUEST_STATUS_UNAVAILABLE    = 2,
     QUEST_STATUS_INCOMPLETE     = 3,
-    QUEST_STATUS_AVAILABLE      = 4,
-    QUEST_STATUS_FAILED         = 5, //NYI
+   // QUEST_STATUS_AVAILABLE      = 4,
+    QUEST_STATUS_FAILED         = 5,
+    QUEST_STATUS_REWARDED       = 6, // Not used in DB
     MAX_QUEST_STATUS
 };
 
@@ -107,6 +108,17 @@ enum __QuestGiverStatus
 {
     DIALOG_STATUS_NONE                     = 0,
     DIALOG_STATUS_UNAVAILABLE              = 1,
+#ifdef LICH_KING
+    DIALOG_STATUS_LOW_LEVEL_AVAILABLE      = 2,
+    DIALOG_STATUS_LOW_LEVEL_REWARD_REP     = 3,
+    DIALOG_STATUS_LOW_LEVEL_AVAILABLE_REP  = 4,
+    DIALOG_STATUS_INCOMPLETE               = 5,
+    DIALOG_STATUS_REWARD_REP               = 6,
+    DIALOG_STATUS_AVAILABLE_REP            = 7,
+    DIALOG_STATUS_AVAILABLE                = 8,
+    DIALOG_STATUS_REWARD2                  = 9,             // no yellow dot on minimap
+    DIALOG_STATUS_REWARD                   = 10,            // yellow dot on minimap
+#else
     DIALOG_STATUS_CHAT                     = 2,
     DIALOG_STATUS_INCOMPLETE               = 3,
     DIALOG_STATUS_REWARD_REP               = 4,
@@ -114,7 +126,7 @@ enum __QuestGiverStatus
     DIALOG_STATUS_AVAILABLE                = 6,
     DIALOG_STATUS_REWARD2                  = 7,             // not yellow dot on minimap
     DIALOG_STATUS_REWARD                   = 8,              // yellow dot on minimap
-
+#endif
                                                             // Custom value meaning that script call did not return any valid quest status
     DIALOG_STATUS_SCRIPTED_NO_STATUS     = 100,
 };
@@ -240,6 +252,15 @@ class Quest
         bool   IsWeekly() const { return false; }
         bool   IsMonthly() const { return false; }
 #endif
+        bool   IsSeasonal() const 
+        { 
+            return (ZoneOrSort == -QUEST_SORT_SEASONAL || ZoneOrSort == -QUEST_SORT_SPECIAL || ZoneOrSort == -QUEST_SORT_LUNAR_FESTIVAL || ZoneOrSort == -QUEST_SORT_MIDSUMMER || ZoneOrSort == -QUEST_SORT_BREWFEST 
+#ifdef LICH_KING
+            || ZoneOrSort == -QUEST_SORT_LOVE_IS_IN_THE_AIR || ZoneOrSort == -QUEST_SORT_NOBLEGARDEN
+#endif
+                   ) && !IsRepeatable(); 
+        }
+
         bool   IsMarkedAsBugged() const { return m_markedAsBugged; }
 
         // multiple values

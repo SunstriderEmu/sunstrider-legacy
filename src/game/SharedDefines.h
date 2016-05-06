@@ -1804,7 +1804,15 @@ enum QuestSort
     QUEST_SORT_REPUTATION          = 367,
     QUEST_SORT_INVASION            = 368,
     QUEST_SORT_MIDSUMMER           = 369,
-    QUEST_SORT_BREWFEST            = 370
+    QUEST_SORT_BREWFEST            = 370,
+#ifdef LICH_KING
+    QUEST_SORT_INSCRIPTION         = 371,
+    QUEST_SORT_DEATH_KNIGHT        = 372,
+    QUEST_SORT_JEWELCRAFTING       = 373,
+    QUEST_SORT_NOBLEGARDEN         = 374,
+    QUEST_SORT_PILGRIMS_BOUNTY     = 375,
+    QUEST_SORT_LOVE_IS_IN_THE_AIR  = 376,
+#endif
 };
 
 inline uint8 ClassByQuestSort(int32 QuestSort)

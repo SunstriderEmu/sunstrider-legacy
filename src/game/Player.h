@@ -1577,8 +1577,10 @@ class Player : public Unit
         bool ModifyMoney(int32 amount, bool sendError = true);
         void SetMoney( uint32 value );
         bool HasEnoughMoney(int32 amount) const;
+        
+        QuestStatusMap& getQuestStatusMap() { return m_QuestStatus; }
 
-        QuestStatusMap& getQuestStatusMap() { return mQuestStatus; };
+        bool IsQuestRewarded(uint32 quest_id) const;
 
         Unit* GetSelectedUnit() const;
         Player* GetSelectedPlayer() const;
@@ -2588,7 +2590,7 @@ class Player : public Unit
         uint64 m_comboTarget;
         int8 m_comboPoints;
 
-        QuestStatusMap mQuestStatus;
+        QuestStatusMap m_QuestStatus;
         
         SkillStatusMap mSkillStatus;
 
