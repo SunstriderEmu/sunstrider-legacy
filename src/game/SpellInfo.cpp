@@ -2184,6 +2184,8 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
         case SPELL_EFFECT_SKILL_STEP:
         case SPELL_EFFECT_HEAL_PCT:
         case SPELL_EFFECT_ENERGIZE_PCT:
+        case SPELL_EFFECT_PLAY_SOUND:
+        case SPELL_EFFECT_PLAY_MUSIC:
             return true;
 
         case SPELL_EFFECT_APPLY_AREA_AURA_ENEMY:
