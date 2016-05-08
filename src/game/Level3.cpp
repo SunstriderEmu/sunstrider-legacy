@@ -4103,6 +4103,7 @@ bool ChatHandler::HandleCoolDownCheatCommand(const char *args)
     }
     else if (argstr == "on")
     {
+        m_session->GetPlayer()->RemoveAllSpellCooldown();
         m_session->GetPlayer()->SetCommandStatusOn(CHEAT_COOLDOWN);
         SendSysMessage("Cooldown Cheat is ON. You are not on the global cooldown.");
         return true;
