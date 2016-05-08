@@ -109,10 +109,10 @@ bool PathGenerator::CalculatePath(float destX, float destY, float destZ, bool fo
     _forceDestination = forceDest;
     _straightLine = straightLine;
 
-    if(_sourceUnit)
+    /* if(_sourceUnit)
         TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath() for %u \n", _sourceUnit->GetGUIDLow());
     else
-        TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath()");
+        TC_LOG_DEBUG("maps", "++ PathGenerator::CalculatePath()");  */
 
     // make sure navMesh works - we can run on map w/o mmap
     // check if the start and end point have a .mmtile loaded (can we pass via not loaded tile on the way?)
@@ -659,9 +659,19 @@ void PathGenerator::UpdateFilter()
 {
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
-    Map const* baseMap = (MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId);
-    if(baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ())
-       || baseMap->IsUnderWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ()))
+    bool sourceInWater = false;
+    //here I assume if there is a _sourceUnit, _sourcePos is always on it. This is currently true but may change at some point...
+    //but this function is used a lot and _sourceUnit->IsInWater should be often more performant
+    if (_sourceUnit)
+    {
+        sourceInWater = _sourceUnit->IsInWater() || _sourceUnit->IsUnderWater();
+    }
+    else {
+        Map const* baseMap = (MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId);
+        sourceInWater = baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
+    }
+
+    if(sourceInWater)
     {
         uint16 includedFlags = _filter.getIncludeFlags();
         includedFlags |= GetNavTerrain(_sourcePos.GetPositionX(),
