@@ -44,7 +44,7 @@ PetAI::PetAI(Creature *c) : CreatureAI(c), i_pet(*c), i_tracker(TIME_INTERVAL_LO
     UpdateAllies();
 }
 
-void PetAI::EnterEvadeMode()
+void PetAI::EnterEvadeMode(EvadeReason why)
 {
 }
 

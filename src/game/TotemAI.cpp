@@ -53,7 +53,7 @@ TotemAI::MoveInLineOfSight(Unit *)
 {
 }
 
-void TotemAI::EnterEvadeMode()
+void TotemAI::EnterEvadeMode(EvadeReason why)
 {
     i_totem.CombatStop();
 }

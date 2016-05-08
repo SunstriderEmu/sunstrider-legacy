@@ -125,7 +125,7 @@ bool CreatureAI::UpdateVictim(bool evade)
     return me->GetVictim();
 }
 
-void CreatureAI::EnterEvadeMode()
+void CreatureAI::EnterEvadeMode(EvadeReason why)
 {
     me->RemoveAllAuras();
     me->DeleteThreatList();

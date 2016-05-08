@@ -73,7 +73,7 @@ struct ScriptedAI : public CreatureAI
     void AttackStartNoMove(Unit *pTarget);
 
     //Called at stoping attack by any attacker
-    void EnterEvadeMode() override;
+    void EnterEvadeMode(EvadeReason /* why */) override;
 
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit *done_by, uint32 &damage) override {}
@@ -196,7 +196,7 @@ struct NullCreatureAI : public ScriptedAI
     void EnterCombat(Unit*) override {}
     void MoveInLineOfSight(Unit *) override {}
     void AttackStart(Unit *) override {}
-    void EnterEvadeMode() override {}
+    void EnterEvadeMode(EvadeReason /* why */) override {}
 
     void UpdateAI(const uint32) override {}
 };

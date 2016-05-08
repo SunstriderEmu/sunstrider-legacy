@@ -41,12 +41,12 @@ class PossessedAI : public PassiveAI
     public:
         PossessedAI(Creature *c) : PassiveAI(c) {}
 
-        void AttackStart(Unit *target);
-        void UpdateAI(const uint32);
-        void EnterEvadeMode() {}
+        void AttackStart(Unit *target) override;
+        void UpdateAI(const uint32) override;
+        void EnterEvadeMode(EvadeReason /* why */) override {}
 
-        void JustDied(Unit*);
-        void KilledUnit(Unit* victim);
+        void JustDied(Unit*) override;
+        void KilledUnit(Unit* victim) override;
 };
 
 class NullCreatureAI : public PassiveAI
@@ -54,8 +54,8 @@ class NullCreatureAI : public PassiveAI
     public:
         NullCreatureAI(Creature *c) : PassiveAI(c) {}
 
-        void UpdateAI(const uint32) {}
-        void EnterEvadeMode() {}
+        void UpdateAI(const uint32) override {}
+        void EnterEvadeMode(EvadeReason /* why */) override {}
 };
 
 class CritterAI : public PassiveAI
@@ -63,8 +63,8 @@ class CritterAI : public PassiveAI
     public:
         CritterAI(Creature *c) : PassiveAI(c) {}
 
-        void DamageTaken(Unit *done_by, uint32 & /*damage*/);
-        void EnterEvadeMode();
+        void DamageTaken(Unit *done_by, uint32 & /*damage*/) override;
+        void EnterEvadeMode(EvadeReason /* why */) override;
 };
 
 #endif

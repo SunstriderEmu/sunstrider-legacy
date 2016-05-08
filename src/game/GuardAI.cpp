@@ -53,7 +53,7 @@ void GuardAI::MoveInLineOfSight(Unit *u)
     }
 }
 
-void GuardAI::EnterEvadeMode()
+void GuardAI::EnterEvadeMode(EvadeReason why)
 {
     if( !i_creature.IsAlive() )
     {

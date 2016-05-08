@@ -168,7 +168,7 @@ void ScriptedAI::UpdateAI(const uint32 diff)
     }
 }
 
-void ScriptedAI::EnterEvadeMode()
+void ScriptedAI::EnterEvadeMode(EvadeReason why)
 {
     //me->InterruptNonMeleeSpells(true);
     me->RemoveAllAuras();

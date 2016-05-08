@@ -100,6 +100,15 @@ class CreatureAI : public UnitAI
 
         bool UpdateVictim(bool evade = true);
     public:
+        enum EvadeReason
+        {
+            EVADE_REASON_NO_HOSTILES,       // the creature's threat list is empty
+            EVADE_REASON_BOUNDARY,          // the creature has moved outside its evade boundary
+            EVADE_REASON_NO_PATH,           // the creature was unable to reach its target for over 5 seconds
+            EVADE_REASON_SEQUENCE_BREAK,    // this is a boss and the pre-requisite encounters for engaging it are not defeated yet
+            EVADE_REASON_OTHER,
+        };
+
         CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
 
         virtual ~CreatureAI() {}
@@ -119,8 +128,8 @@ class CreatureAI : public UnitAI
         //Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
         virtual void MoveInLineOfSight2(Unit *) {}
 
-        // Called at stopping attack by any attacker
-        virtual void EnterEvadeMode();
+        // Called for reaction at stopping attack at no attackers or targets
+        virtual void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);
 
         // Called when the creature is killed
         virtual void JustDied(Unit *) {}

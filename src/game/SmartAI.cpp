@@ -453,7 +453,7 @@ void SmartAI::RemoveAuras()
     */
 }
 
-void SmartAI::EnterEvadeMode()
+void SmartAI::EnterEvadeMode(EvadeReason why)
 {
     if (!me->IsAlive() || me->IsInEvadeMode())
         return;

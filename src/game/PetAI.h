@@ -33,10 +33,10 @@ class PetAI : public CreatureAI
 
         PetAI(Creature *c);
 
-        void EnterEvadeMode();
-        void JustDied(Unit* who) { _stopAttack(); }
+        void EnterEvadeMode(EvadeReason /* why */) override;
+        void JustDied(Unit* who) override { _stopAttack(); }
 
-        void UpdateAI(const uint32);
+        void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
         void ResetMovement();
     protected:

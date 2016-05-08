@@ -38,12 +38,12 @@ class GuardAI : public CreatureAI
 
         GuardAI(Creature *c);
 
-        void MoveInLineOfSight(Unit *);
-        void EnterEvadeMode();
-        void JustDied(Unit *);
+        void MoveInLineOfSight(Unit *) override;
+        void EnterEvadeMode(EvadeReason /* why */) override;
+        void JustDied(Unit *) override;
         bool IsVisible(Unit *) const;
 
-        void UpdateAI(const uint32);
+        void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
 
     private:
