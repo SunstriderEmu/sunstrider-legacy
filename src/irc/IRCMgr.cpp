@@ -5,29 +5,48 @@
 #include "World.h"
 #include "Runnable.h"
 #include <boost/regex.hpp>
+#include <segvcatch.h>
+
+void handle_segv_irc()
+{
+    throw std::runtime_error("Segmentation fault or FPE");
+}
 
 void IRCSession::run()
 {
     /*
     irc_run loop forever until irc_cmd_quit is called, so we need to start it in a separate thread
     */
-    std::thread ircRun([&](){
+    std::thread ircRun([&]()
+    {
+        //libirc seems to crash at times... not much I can do about it, I'll just catch it to avoid crashing the whole server.
+        segvcatch::init_segv(handle_segv_irc);
+        segvcatch::init_fpe(handle_segv_irc);
+
         if (!_server->session)
         {
             TC_LOG_ERROR("IRCMgr", "IRCSession::run(): No session provided");
         }
-        if (irc_run(_server->session)) 
+
+        try
         {
-            TC_LOG_ERROR("IRCMgr","Could not connect or I/O error with a server (%s:%u, %susing SSL): %s", 
-                _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
-            return;
+            if (irc_run(_server->session))
+            {
+                TC_LOG_ERROR("IRCMgr", "Could not connect or I/O error with a server (%s:%u, %susing SSL): %s",
+                    _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
+                return;
+            }
+        }
+        catch (std::runtime_error& /*e*/) 
+        {
+            TC_LOG_ERROR("IRCMgr", "IRCMgr crashed in irc_run.");
+            m_stop = true;
         }
     });
 
     while(!m_stop)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
-    //BUT THEN
     irc_cmd_quit(_server->session, "Quit");
         
     ircRun.join();
