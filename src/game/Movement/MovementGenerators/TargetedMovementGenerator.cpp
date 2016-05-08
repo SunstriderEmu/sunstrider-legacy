@@ -149,12 +149,12 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
 
     if (owner->GetTypeId() == TYPEID_UNIT)
     {
-        if (i_path && i_path->GetPathType() & PATHFIND_INCOMPLETE)
+        if (i_path && i_path->GetPathType() & (PATHFIND_INCOMPLETE | PATHFIND_NOPATH))
         {
-            owner->ToCreature()->IncreaseUnreachableTargetTime(time_diff);
+            owner->ToCreature()->SetCannotReachTarget(true);
         }
         else {
-            owner->ToCreature()->ResetUnreachableTargetTime();
+            owner->ToCreature()->SetCannotReachTarget(false);
         }
     }
 
@@ -214,6 +214,8 @@ void ChaseMovementGenerator<T>::_reachTarget(T* owner)
 {
     if (owner->IsWithinMeleeRange(this->i_target.getTarget()))
         owner->Attack(this->i_target.getTarget(), true);
+    if (owner->GetTypeId() == TYPEID_UNIT)
+        owner->ToCreature()->SetCannotReachTarget(false);
 }
 
 template<>

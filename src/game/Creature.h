@@ -160,6 +160,8 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_HEALTH_RESET      = 0x00800000,       // creature does not refill its health at reset
 };
 
+static const uint32 CREATURE_REGEN_INTERVAL = 2 * SECOND * IN_MILLISECONDS;
+
 enum WeaponSlot
 {
     WEAPON_SLOT_MAINHAND = 0,
@@ -825,11 +827,11 @@ class Creature : public Unit
         void SetTextRepeatId(uint8 textGroup, uint8 id);
         void ClearTextRepeatGroup(uint8 textGroup);
 
-        void IncreaseUnreachableTargetTime(uint32 timediff) { m_unreachableTargetTime += timediff; }
-        void ResetUnreachableTargetTime() { m_unreachableTargetTime = 0; }
-        uint32 GetUnreachableTargetTime() { return m_unreachableTargetTime; }
-        //enter evade mode if target was unreachable for CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME
-        void CheckForUnreachableTarget();
+        void SetCannotReachTarget(bool cannotReach);
+        bool CannotReachTarget() const;
+        bool IsEvadingAttacks() const { return m_evadingAttacks || IsInEvadeMode(); }
+        //
+        void HandleUnreachableTarget(uint32 diff);
 
         /**
         Same as SetKeepActive but with a timer, disable it after given time in MS
@@ -896,7 +898,11 @@ class Creature : public Unit
         bool m_isBeingEscorted;
         bool m_summoned;
 
+        // Time since target is unreachable
         uint32 m_unreachableTargetTime;
+        // Creature evade all attacks. This is different from evade mode, when target is unreachable creature will stay some tile on place before evading.
+        bool m_evadingAttacks;
+
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
         uint32 m_stealthWarningCooldown;

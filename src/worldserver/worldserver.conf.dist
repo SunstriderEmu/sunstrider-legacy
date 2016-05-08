@@ -791,9 +791,13 @@ Whisper.MinLevel = 1
 #                     found.
 #        Default:     7000 (7 Seconds)
 #
-#    CreatureMaxUnreachableTargetTime
-#        Description: Maximum time in ms the target can stay unreachable before entering evade mode. 0 to disable.
+#    CreatureUnreachableTarget.EvadeHomeTimer
+#        Description: Maximum time in ms the target can stay unreachable before entering evade mode and returning to home. 0 to disable.
 #        Default : 10000
+#
+#    CreatureUnreachableTarget.EvadeAttacksTimer
+#        Description: Maximum time in ms the target can stay unreachable before evading all attacks. 0 to disable.
+#        Default : 5000
 #
 #    Corpse.Decay.NORMAL
 #    Corpse.Decay.RARE
@@ -828,7 +832,9 @@ Rate.Creature.Aggro = 1
 CreatureFamilyAssistanceRadius = 10
 CreatureFamilyAssistanceDelay = 1500
 CreatureFamilyFleeDelay = 7000
-CreatureMaxUnreachableTargetTime = 10000
+CreatureUnreachableTarget.EvadeHomeTimer = 10000
+CreatureUnreachableTarget.EvadeAttacksTimer = 3000
+
 Corpse.Decay.NORMAL = 60
 Corpse.Decay.RARE = 300
 Corpse.Decay.ELITE = 300

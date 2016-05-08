@@ -1307,7 +1307,7 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage *damageInfo, bool durabilityLoss)
     if(!pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks()))
         return;
 
     SpellInfo const *spellProto = sSpellMgr->GetSpellInfo(damageInfo->SpellID);
@@ -1561,7 +1561,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
     if(!pVictim)
         return;
 
-    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
+    if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks()))
         return;
 
     //You don't lose health from damage taken from another player while in a sanctuary
@@ -2123,6 +2123,9 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
 
 MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttackType attType, int32 crit_chance, int32 miss_chance, int32 dodge_chance, int32 parry_chance, int32 block_chance, bool SpellCasted ) const
 {
+    if (pVictim->GetTypeId() == TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
+        return MELEE_HIT_EVADE;
+
     if (pVictim->GetTypeId() == TYPEID_UNIT)
     {
         Creature const* c = pVictim->ToCreature();
@@ -2767,7 +2770,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
             return owner->SpellHitResult(pVictim, spell, CanReflect, castItem);
 
     // Return evade for units in evade mode
-    if (pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode())
+    if (pVictim->GetTypeId()==TYPEID_UNIT && pVictim->ToCreature()->IsEvadingAttacks())
         return SPELL_MISS_EVADE;
 
     // Check for immune (use charges)
@@ -7391,7 +7394,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
             return false;
     } else {
         Creature* c = victim->ToCreature();
-        if (c && c->IsInEvadeMode())
+        if (c && c->IsEvadingAttacks())
             return false;
     }
 
@@ -7400,7 +7403,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         if ((victim->ToPlayer())->IsGameMaster() || (victim->ToPlayer())->isSpectator())
             return false;
     } else {
-        if ((victim->ToCreature())->IsInEvadeMode())
+        if (victim->ToCreature()->IsEvadingAttacks())
             return false;
     }
 
@@ -10906,27 +10909,27 @@ void Unit::TauntFadeOut(Unit *taunter)
     if(!CanHaveThreatList())
         return;
 
+    Creature* creature = ToCreature();
+
     Unit *target = GetVictim();
     if(!target || target != taunter)
         return;
 
     if(m_ThreatManager.isThreatListEmpty())
     {
-        if((this->ToCreature())->IsAIEnabled) {
-            (this->ToCreature())->AI()->EnterEvadeMode();
-        }
+        if(creature->IsAIEnabled)
+            creature->AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_HOSTILES);
+
         return;
     }
 
-    //m_ThreatManager.tauntFadeOut(taunter);
-    target = m_ThreatManager.getHostilTarget();
+    target = creature->SelectVictim();  // might have more taunt auras remaining
 
     if (target && target != taunter)
     {
         SetInFront(target);
-        if ((this->ToCreature())->IsAIEnabled) {
-            (this->ToCreature())->AI()->AttackStart(target);
-        }
+        if (creature->IsAIEnabled)
+            creature->AI()->AttackStart(target);
     }
 }
 
@@ -11062,7 +11065,7 @@ Unit* Creature::SelectVictim(bool evade)
 
     // enter in evade mode in other case
     if (evade) {
-        AI()->EnterEvadeMode();
+        AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_HOSTILES);
     }
     //TC_LOG_INFO("%s: Returning null", GetName());
     return NULL;

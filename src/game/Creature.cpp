@@ -168,7 +168,7 @@ Creature::Creature() :
     m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_creatureInfo(nullptr), m_creatureInfoAddon(nullptr), m_DBTableGuid(0), m_formation(nullptr),
     m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), _focusSpell(nullptr),
-    m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_canFly(false),
+    m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_evadingAttacks(false), m_canFly(false),
     m_stealthWarningCooldown(0), m_keepActiveTimer(0)
 {
     m_valuesCount = UNIT_END;
@@ -609,7 +609,7 @@ void Creature::Update(uint32 diff)
                 {
                     i_AI->UpdateAI(diff);
 
-                    CheckForUnreachableTarget();
+                    HandleUnreachableTarget(diff);
                 }
                 m_AI_locked = false;
             }
@@ -651,12 +651,12 @@ void Creature::Update(uint32 diff)
                         
                     RegenerateHealth();
                 }
-                else if(IsPolymorphed())
+                else if(IsPolymorphed() || IsEvadingAttacks())
                     RegenerateHealth();
 
                 RegenerateMana();
 
-                m_regenTimer = 2000;
+                m_regenTimer = CREATURE_REGEN_INTERVAL;
             }
 
             //remove keep active if a timer was defined
@@ -2736,17 +2736,44 @@ bool Creature::IsInEvadeMode() const
     return HasUnitState(UNIT_STATE_EVADE); 
 }
 
-void Creature::CheckForUnreachableTarget()
+void Creature::SetCannotReachTarget(bool cannotReach)
 {
-    if(!AI() || !IsInCombat() || GetMap()->IsDungeon())
+    if (cannotReach)
+    {
+        //this mark creature as unreachable + start counting
+        if (!m_unreachableTargetTime)
+            m_unreachableTargetTime = 1;
+    }
+    else {
+        m_unreachableTargetTime = 0;
+        m_evadingAttacks = false;
+    }
+}
+
+bool Creature::CannotReachTarget() const
+{
+    return m_unreachableTargetTime > 0;
+}
+
+void Creature::HandleUnreachableTarget(uint32 diff)
+{
+    if(!AI() || !IsInCombat() || m_unreachableTargetTime == 0 || IsInEvadeMode())
         return;
 
-    uint32 maxTime = sWorld->getConfig(CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME);
-    if(!maxTime)
-        return;
+    m_unreachableTargetTime += diff;
 
-    if(GetUnreachableTargetTime() > maxTime)
-        AI()->EnterEvadeMode();
+    if (!m_evadingAttacks)
+    {
+        uint32 maxTimeBeforeEvadingAttacks = sWorld->getConfig(CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_ATTACKS_TIME);
+        if (maxTimeBeforeEvadingAttacks)
+            if (m_unreachableTargetTime > maxTimeBeforeEvadingAttacks)
+                m_evadingAttacks = true;
+    }
+
+    uint32 maxTimeBeforeEvadingHome = sWorld->getConfig(CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_TIME);
+    if (maxTimeBeforeEvadingHome)
+        if (m_unreachableTargetTime > maxTimeBeforeEvadingHome)
+            AI()->EnterEvadeMode(CreatureAI::EVADE_REASON_NO_PATH);
 }
 
 void Creature::ResetCreatureEmote()

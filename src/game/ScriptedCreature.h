@@ -73,7 +73,7 @@ struct ScriptedAI : public CreatureAI
     void AttackStartNoMove(Unit *pTarget);
 
     //Called at stoping attack by any attacker
-    void EnterEvadeMode(EvadeReason /* why */) override;
+    void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER) override;
 
     // Called at any Damage from any attacker (before damage apply)
     void DamageTaken(Unit *done_by, uint32 &damage) override {}
@@ -238,7 +238,7 @@ protected:
         if (CheckBoundary(me))
             return true;
 
-        EnterEvadeMode();
+        EnterEvadeMode(EVADE_REASON_BOUNDARY);
         return false;
     }
 

@@ -952,8 +952,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_RADIUS] = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceRadius",10);
     m_configs[CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY]  = sConfigMgr->GetIntDefault("CreatureFamilyAssistanceDelay",1500);
     m_configs[CONFIG_CREATURE_FAMILY_FLEE_DELAY] = sConfigMgr->GetIntDefault("CreatureFamilyFleeDelay",7000);
-    m_configs[CONFIG_CREATURE_MAX_UNREACHABLE_TARGET_TIME] = sConfigMgr->GetIntDefault("CreatureMaxUnreachableTargetTime",15000);
-
+    m_configs[CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_TIME] = sConfigMgr->GetIntDefault("CreatureUnreachableTarget.EvadeHomeTimer", 10000);
+    m_configs[CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_ATTACKS_TIME] = sConfigMgr->GetIntDefault("CreatureUnreachableTarget.EvadeAttacksTimer", 3000);
     // note: disable value (-1) will assigned as 0xFFFFFFF, to prevent overflow at calculations limit it to max possible player level MAX_LEVEL(100)
     m_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] = sConfigMgr->GetIntDefault("Quests.LowLevelHideDiff", 4);
     if(m_configs[CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF] > MAX_LEVEL)

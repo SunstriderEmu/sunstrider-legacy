@@ -407,7 +407,7 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
     if (!CheckEvadeIfOutOfCombatArea())
         return false;
 
-    EnterEvadeMode();
+    EnterEvadeMode(EVADE_REASON_BOUNDARY);
     return true;
 }
 
