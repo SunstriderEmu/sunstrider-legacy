@@ -2760,7 +2760,8 @@ void Creature::HandleUnreachableTarget(uint32 diff)
     if(!AI() || !IsInCombat() || m_unreachableTargetTime == 0 || IsInEvadeMode())
         return;
 
-    m_unreachableTargetTime += diff;
+    if(GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
+        m_unreachableTargetTime += diff;
 
     if (!m_evadingAttacks)
     {
@@ -2769,6 +2770,10 @@ void Creature::HandleUnreachableTarget(uint32 diff)
             if (m_unreachableTargetTime > maxTimeBeforeEvadingAttacks)
                 m_evadingAttacks = true;
     }
+
+    //evading to home shouldn't happen in instance (not 100% sure in which case this is true on retail but this seems like a good behavior for now)
+    if (GetMap()->IsDungeon())
+        return;
 
     uint32 maxTimeBeforeEvadingHome = sWorld->getConfig(CONFIG_CREATURE_UNREACHABLE_TARGET_EVADE_TIME);
     if (maxTimeBeforeEvadingHome)
