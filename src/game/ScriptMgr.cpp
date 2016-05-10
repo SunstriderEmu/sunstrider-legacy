@@ -1834,17 +1834,18 @@ bool ScriptMgr::OnGossipHello( Player * player, Creature *creature)
     return tmpscript->OnGossipHello(player, creature);
 }
 
-
+//Difference from TC: This clears menu before calling script OnGossipSelect
 bool ScriptMgr::OnGossipSelect( Player* player, Creature* creature, uint32 sender, uint32 action )
 {
     ASSERT(player);
     ASSERT(creature);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelect(player, creature, sender, action);
 }
 
-
+//Difference from TC: This clears menu before calling script OnGossipSelectCode
 bool ScriptMgr::OnGossipSelectCode( Player *player, Creature *creature, uint32 sender, uint32 action, const char* code )
 {
     ASSERT(player);
@@ -1852,6 +1853,7 @@ bool ScriptMgr::OnGossipSelectCode( Player *player, Creature *creature, uint32 s
     ASSERT(code);
 
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, creature, sender, action, code);
 }
 
@@ -1863,6 +1865,7 @@ bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender
     ASSERT(code);
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
