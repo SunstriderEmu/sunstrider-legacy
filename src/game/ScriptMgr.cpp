@@ -1865,6 +1865,7 @@ bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender
     ASSERT(code);
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
