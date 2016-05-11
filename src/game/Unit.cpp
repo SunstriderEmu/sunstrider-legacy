@@ -3075,48 +3075,82 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
         {
             updateMask.SetBit(index);
 
-            if (index == UNIT_NPC_FLAGS)
+            switch (index)
+            {
+            case UNIT_FIELD_HEALTH:
+            {
+                if (m_uint32Values[UNIT_DYNAMIC_FLAGS] & UNIT_DYNFLAG_DEAD)
+                    fieldBuffer << uint32(0);
+                else
+                    fieldBuffer << m_uint32Values[index];
+
+            } break;
+            case UNIT_NPC_FLAGS:
             {
                 uint32 appendValue = m_uint32Values[UNIT_NPC_FLAGS];
 
                 //remove server custom flags 
                 appendValue &= ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP);
-             /* LK?  if (creature)
+#ifdef LICH_KING
+                if (creature)
                     if (!target->CanSeeSpellClickOn(creature))
-                        appendValue &= ~UNIT_NPC_FLAG_SPELLCLICK; */
+                        appendValue &= ~UNIT_NPC_FLAG_SPELLCLICK;
+#endif
 
                 fieldBuffer << uint32(appendValue);
-            }
-            else if (index == UNIT_FIELD_AURASTATE)
+            } break;
+            case UNIT_FIELD_AURASTATE:
             {
                 // Check per caster aura states to not enable using a spell in client if specified aura is not by target
                 fieldBuffer << BuildAuraStateUpdateForTarget(target);
-            }
+            } break;
             // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
-            else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
+            case UNIT_FIELD_BASEATTACKTIME:
+            case UNIT_FIELD_BASEATTACKTIME+1:
+            case UNIT_FIELD_RANGEDATTACKTIME:
             {
                 // convert from float to uint32 and send
                 fieldBuffer << uint32(m_floatValues[index] < 0 ? 0 : m_floatValues[index]);
-            }
+            } break;
             // there are some float values which may be negative or can't get negative due to other checks
-            else if ((index >= UNIT_FIELD_NEGSTAT0   && index <= UNIT_FIELD_NEGSTAT4) ||
-                (index >= UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6)) ||
-                (index >= UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE  && index <= (UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6)) ||
-                (index >= UNIT_FIELD_POSSTAT0   && index <= UNIT_FIELD_POSSTAT4))
+            case UNIT_FIELD_NEGSTAT0:
+            case UNIT_FIELD_NEGSTAT1:
+            case UNIT_FIELD_NEGSTAT2:
+            case UNIT_FIELD_NEGSTAT3:
+            case UNIT_FIELD_NEGSTAT4:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 1:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 2:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 3:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 4:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 5:
+            case UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE + 6:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 1:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 2:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 3:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 4:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 5:
+            case UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE + 6:
+            case UNIT_FIELD_POSSTAT0:
+            case UNIT_FIELD_POSSTAT1:
+            case UNIT_FIELD_POSSTAT2:
+            case UNIT_FIELD_POSSTAT3:
+            case UNIT_FIELD_POSSTAT4:
             {
                 fieldBuffer << uint32(m_floatValues[index]);
-            }
+            } break;
             // Gamemasters should be always able to select units - remove not selectable flag
-            else if (index == UNIT_FIELD_FLAGS)
+            case UNIT_FIELD_FLAGS:;
             {
                 uint32 appendValue = m_uint32Values[UNIT_FIELD_FLAGS];
                 if (target->IsGameMaster())
                     appendValue &= ~UNIT_FLAG_NOT_SELECTABLE;
 
                 fieldBuffer << uint32(appendValue);
-            }
+            } break;
             // use modelid_a if not gm, _h if gm for CREATURE_FLAG_EXTRA_TRIGGER creatures
-            else if (index == UNIT_FIELD_DISPLAYID)
+            case UNIT_FIELD_DISPLAYID:
             {
                 uint32 displayId = m_uint32Values[UNIT_FIELD_DISPLAYID];
                 if (creature)
@@ -3153,9 +3187,9 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                 }
 
                 fieldBuffer << uint32(displayId);
-            }
+            } break;
             // hide lootable animation for unallowed players
-            else if (index == UNIT_DYNAMIC_FLAGS)
+            case UNIT_DYNAMIC_FLAGS:
             {
                 uint32 dynamicFlags = m_uint32Values[UNIT_DYNAMIC_FLAGS] & ~(UNIT_DYNFLAG_TAPPED | UNIT_DYNFLAG_TAPPED_BY_PLAYER);
 
@@ -3178,9 +3212,10 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                         dynamicFlags &= ~UNIT_DYNFLAG_TRACK_UNIT;
 
                 fieldBuffer << dynamicFlags;
-            }
+            } break;
             // FG: pretend that OTHER players in own group are friendly ("blue")
-            else if (index == UNIT_FIELD_BYTES_2 || index == UNIT_FIELD_FACTIONTEMPLATE)
+            case UNIT_FIELD_BYTES_2:
+            case UNIT_FIELD_FACTIONTEMPLATE:
             {
                 if (/* IsControlledByPlayer() && */ target != this && IS_PLAYER_GUID(target->GetCharmerOrOwnerGUID()) && sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && IsInRaidWith(target))
                 {
@@ -3200,12 +3235,14 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                 }
                 else
                     fieldBuffer << m_uint32Values[index];
-            }
-            else
+            } break;
+            default:
             {
                 // send in current format (float as float, uint32 as uint32)
                 fieldBuffer << m_uint32Values[index];
+            } break;
             }
+            
         }
     }
 
@@ -15048,7 +15085,7 @@ void Unit::UpdateSplinePosition()
             transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, &loc.orientation);
     }
 
-    // Xinef: this is bullcrap, if we had spline running update orientation along with position
+    // sunwell: this is bullcrap, if we had spline running update orientation along with position
     //if (HasUnitState(UNIT_STATE_CANNOT_TURN))
     //    loc.orientation = GetOrientation();
 
