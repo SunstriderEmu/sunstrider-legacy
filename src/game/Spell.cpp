@@ -4470,12 +4470,14 @@ void Spell::cast(bool skipCheck)
     }
 
     // sunwell: start combat at cast for delayed spells, only for explicit target
+    /* Commented: Is this really a valid rule?
     if (Unit* target = m_targets.GetUnitTarget())
         if (m_caster->GetTypeId() == TYPEID_PLAYER || (m_caster->IsPet() && m_caster->IsControlledByPlayer()))
             if (GetDelayMoment() > 0 && !m_caster->IsFriendlyTo(target) && !m_spellInfo->HasAura(SPELL_AURA_BIND_SIGHT) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
                 if (!m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO))
                     m_caster->CombatStart(target);
                  //m_caster->CombatStartOnCast(target, !m_spellInfo->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO), GetDelayMoment() + 500); // xinef: increase this time so we dont leave and enter combat in a moment
+                 */
 
     SetExecutedCurrently(false);
 }
