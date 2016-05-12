@@ -516,7 +516,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             break;
     }
 
-    LogsDatabaseAccessor::CharacterChat(ChatMsg(type), _player, toPlayer, logChannelId, to, msg);
+    LogsDatabaseAccessor::CharacterChat(ChatMsg(type), lang, _player, toPlayer, logChannelId, to, msg);
 }
 
 void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )

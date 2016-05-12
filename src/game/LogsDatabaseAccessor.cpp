@@ -196,25 +196,13 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     LogsDatabase.Execute(stmt);
 }
 
-bool IsAddonMessageWeDontCareAbout(std::string const& msg)
+void LogsDatabaseAccessor::CharacterChat(ChatMsg type, Language lang, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg)
 {
-    static const std::string prefixes[] = { "RECOUNT", "LGP\tP", "X-Perl" };
-
-    for(auto prefix : prefixes)
-        if (!msg.compare(0, prefix.size(), prefix))
-            return true;
-
-    return false;
-}
-
-void LogsDatabaseAccessor::CharacterChat(ChatMsg type, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg)
-{
-    if (type == CHAT_MSG_ADDON)
+    if (type == CHAT_MSG_ADDON || lang == LANG_ADDON)
         return;
 
     if (msg == "")
         return;
-
 
     WorldSession const* session = player->GetSession();
     bool gmInvolved = (session->GetSecurity() > SEC_PLAYER) || (toPlayer && toPlayer->GetSession()->GetSecurity() > SEC_PLAYER);

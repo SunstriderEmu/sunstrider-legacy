@@ -36,7 +36,7 @@ public:
     static void CharacterRename(WorldSession const* m_session, uint32 playerGUID, std::string const& oldName, std::string const& newName, std::string const& IP);
     static void GMCommand(WorldSession const* m_session, Unit const* target, std::string const& fullcmd);
     // 'to' can be a player name or a channel name
-    static void CharacterChat(ChatMsg type, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg);
+    static void CharacterChat(ChatMsg type, Language lang, Player const* player, Player const* toPlayer, uint32 logChannelId, std::string const& to, std::string const& msg);
     static void GuildMoneyTransfer(Player const* player, uint32 guildId, int32 money);
     static void GuildBankItemTransfer(Player const* player, bool deposit, uint32 itemGuid, uint32 itemEntry, uint8 itemCount);
     static void CharacterItemDelete(Player const* player, Item const* item);
