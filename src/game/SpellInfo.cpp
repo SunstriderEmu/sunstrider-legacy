@@ -1507,6 +1507,12 @@ bool SpellInfo::IsStackableWithRanks() const
     return true;
 }
 
+
+bool SpellInfo::IsBinarySpell() const
+{
+    return AttributesCu & SPELL_ATTR_CU_BINARY;
+}
+
 bool SpellInfo::IsProfessionOrRiding() const
 {
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -2038,6 +2044,9 @@ void SpellInfo::LoadCustomAttributes()
             AttributesCu |= SPELL_ATTR_CU_SAME_STACK_DIFF_CASTERS;
             break;
     }
+
+    if (SpellMgr::IsBinaryMagicResistanceSpell(this))
+        AttributesCu |= SPELL_ATTR_CU_BINARY;
 }
 
 bool SpellInfo::IsSingleTarget() const

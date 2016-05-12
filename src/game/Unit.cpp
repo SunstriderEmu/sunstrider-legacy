@@ -1715,7 +1715,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
     // Magic damage, check for resists
     if(  (schoolMask & SPELL_SCHOOL_MASK_SPELL)                                          // Is magic and not holy
          && (  !spellProto 
-               || !sSpellMgr->IsBinaryMagicResistanceSpell(spellProto) 
+               || !spellProto->IsBinarySpell()
                || !(spellProto->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
                || !(spellProto->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT)) ) // Non binary spell (this was already handled in DoSpellHitOnUnit) (see Spell::IsBinaryMagicResistanceSpell for more)
       )              
@@ -2814,7 +2814,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
     }
 
     //Check magic resistance for binaries spells (see IsBinaryMagicResistanceSpell(...) for more details). This check is not rolled inside attack table.
-    if(    sSpellMgr->IsBinaryMagicResistanceSpell(spell)
+    if(    spell->IsBinarySpell()
         && !(spell->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) 
         && !(spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))  )
     {

@@ -910,7 +910,7 @@ class SpellMgr
         float GetSpellThreatModPercent(SpellInfo const* spellInfo) const;
         int GetSpellThreatModFlat(SpellInfo const* spellInfo) const;
 
-        bool IsBinaryMagicResistanceSpell(SpellInfo const* spell);
+        static bool IsBinaryMagicResistanceSpell(SpellInfo const* spell);
 
 
         static bool IsPrimaryProfessionSkill(uint32 skill);

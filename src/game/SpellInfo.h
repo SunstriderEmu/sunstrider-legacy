@@ -39,7 +39,7 @@ enum SpellCustomAttributes
     SPELL_ATTR_CU_AURA_HOT                      = 0x00000010,
     SPELL_ATTR_CU_AURA_DOT                      = 0x00000020,
     SPELL_ATTR_CU_AURA_CC                       = 0x00000040,
-    SPELL_ATTR_CU_UNUSED                        = 0x00000080, // UNUSED
+    SPELL_ATTR_CU_BINARY                        = 0x00000080,
     SPELL_ATTR_CU_DIRECT_DAMAGE                 = 0x00000100,
     SPELL_ATTR_CU_CHARGE                        = 0x00000200,
     SPELL_ATTR_CU_LINK_CAST                     = 0x00000400,
@@ -462,6 +462,7 @@ public:
     bool IsStackableWithRanks() const;
     bool IsPassiveStackableWithRanks() const;
     bool IsChannelCategorySpell() const;
+    bool IsBinarySpell() const;
 
     bool IsProfessionOrRiding() const;
     bool IsAbilityLearnedWithProfession() const;
