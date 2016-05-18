@@ -1705,7 +1705,8 @@ class Unit : public WorldObject
         // Threat related methods
         bool CanHaveThreatList() const;
         float GetThreat(Unit* u) const;
-        void AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
+        void AddThreat(Unit* victim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = nullptr);
+        void ModifyThreatPct(Unit* victim, int32 percent);
         void ApplyTotalThreatModifier(float& threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL);
         void DeleteThreatList();
         void TauntApply(Unit* pVictim);
@@ -1894,6 +1895,7 @@ class Unit : public WorldObject
         void ClearAllReactives();
         void StartReactiveTimer( ReactiveType reactive ) { m_reactiveTimer[reactive] = REACTIVE_TIMER_START;}
         void UpdateReactives(uint32 p_time);
+        bool HasReactiveTimerActive(ReactiveType reactive) const;
 
         // group updates
         void UpdateAuraForGroup(uint8 slot);

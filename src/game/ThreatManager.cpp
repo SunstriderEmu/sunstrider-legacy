@@ -287,7 +287,7 @@ void ThreatContainer::modifyThreatPercent(Unit *pVictim, int32 pPercent)
 {
     if(HostileReference* ref = getReferenceByTarget(pVictim))
     {
-        if(pPercent < -100.0f)
+        if(pPercent < -100)
         {
             ref->setThreat(0.0f);
         }

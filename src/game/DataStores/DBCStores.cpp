@@ -803,7 +803,7 @@ void LoadM2Cameras(const std::string& dataPath)
     {
         if (CinematicCameraEntry const* dbcentry = sCinematicCameraStore.LookupEntry(i))
         {
-            std::string filename = dataPath.c_str();
+            std::string filename = dataPath;
             filename.append(dbcentry->filename);
 
             // Replace slashes

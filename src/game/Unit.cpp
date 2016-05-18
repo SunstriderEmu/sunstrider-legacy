@@ -10899,6 +10899,12 @@ void Unit::AddThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask, Sp
         m_ThreatManager.addThreat(pVictim, threat, schoolMask, threatSpell);
 }
 
+void Unit::ModifyThreatPct(Unit* victim, int32 percent)
+{
+    if (CanHaveThreatList())
+        m_ThreatManager.modifyThreatPercent(victim, percent);
+}
+
 //======================================================================
 
 void Unit::DeleteThreatList()
@@ -12345,9 +12351,12 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
             else //For attacker
             {
                 // Overpower on victim dodge
-                if (procExtra&PROC_EX_DODGE && GetTypeId() == TYPEID_PLAYER && GetClass() == CLASS_WARRIOR)
+                if (procExtra&PROC_EX_DODGE)
                 {
-                    (this->ToPlayer())->AddComboPoints(pTarget, 1);
+                    if(GetTypeId() == TYPEID_PLAYER && GetClass() == CLASS_WARRIOR)
+                        (this->ToPlayer())->AddComboPoints(pTarget, 1);
+
+                    //still have this to be able to check it for creatures
                     StartReactiveTimer( REACTIVE_OVERPOWER );
                 }
                 // Enable AURA_STATE_CRIT on crit
@@ -12819,6 +12828,11 @@ void Unit::UpdateReactives( uint32 p_time )
             m_reactiveTimer[reactive] -= p_time;
         }
     }
+}
+
+bool Unit::HasReactiveTimerActive(ReactiveType reactive) const
+{
+    return m_reactiveTimer[reactive] != 0;
 }
 
 Unit* Unit::SelectNearbyTarget(float dist) const
