@@ -5883,9 +5883,11 @@ SpellCastResult Spell::CheckCast(bool strict)
     if(!target)
         target = m_caster;
     
+    /* Disabled, this is wrong. For example with spell 39298, spell should be able to be casted at self, but self should not be an affected target. (So I guess this attributes only has sense with aoe spells)
     if(m_caster == target)
         if (m_spellInfo->HasAttribute(SPELL_ATTR1_CANT_TARGET_SELF))
             return SPELL_FAILED_BAD_TARGETS;
+            */
 
     if(target != m_caster)
     {
