@@ -1690,7 +1690,7 @@ class Player : public Unit
         int32 GetTotalFlatMods(uint32 spellId, SpellModOp op);
         int32 GetTotalPctMods(uint32 spellId, SpellModOp op);
         bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = NULL);
-        template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = NULL);
+        template <class T> void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = NULL);
         void RemoveSpellMods(Spell const* spell);
         void RestoreSpellMods(Spell const* spell);
 
