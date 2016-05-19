@@ -2781,45 +2781,50 @@ class Player : public Unit
 void AddItemsSetItem(Player*player,Item *item);
 void RemoveItemsSetItem(Player*player,ItemTemplate const *proto);
 
-// "the bodies of template functions must be made available in a header file"
-template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
+template <class T>
+void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell)
 {
-    //TC_LOG_INFO("Player::ApplySpellMod: spellId %u op %u basevalue %d", spellId, op, basevalue);
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo) 
-        return 0;
-    //TC_LOG_INFO("FIXME","Player::ApplySpellMod1");
-    int32 totalpct = 0;
+    if (!spellInfo)
+        return;
+
+    float totalmul = 1.0f;
     int32 totalflat = 0;
-    T calcvalue = basevalue;
+
     for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
     {
-        //TC_LOG_INFO("FIXME","Player::ApplySpellMod (begin for)");
         SpellModifier *mod = *itr;
-        //TC_LOG_INFO("Player::ApplySpellMod mod %u (1)", mod->spellId);
+
+        // Charges can be set only for mods with auras
+        /* TC
+        if (!mod->ownerAura)
+        ASSERT(mod->charges == 0);
+        */
+
         if(!IsAffectedBySpellmod(spellInfo,mod,spell))
             continue;
-        //TC_LOG_INFO("Player::ApplySpellMod mod %u (2)", mod->spellId);
+
         if (mod->type == SPELLMOD_FLAT)
             totalflat += mod->value;
         else if (mod->type == SPELLMOD_PCT)
         {
-            //TC_LOG_INFO("Player::ApplySpellMod mod %u (3a)", mod->spellId);
             // skip percent mods for null basevalue (most important for spell mods with charges )
-            if(basevalue == T(0)) {
+            if(basevalue == T(0)) 
+            {
+                //HACKZ //Frost Warding + Molten Shields
                 if (mod->spellId == 11189 || mod->spellId == 28332 || mod->spellId == 11094 || mod->spellId == 13043)
-                    calcvalue = 100;
+                    basevalue = 100;
                 else
                     continue;
             }
-            //TC_LOG_INFO("Player::ApplySpellMod mod %u (3b)", mod->spellId);
             // special case (skip >10sec spell casts for instant cast setting)
             if( mod->op==SPELLMOD_CASTING_TIME  && basevalue >= T(10000) && mod->value <= -100)
                 continue;
-            //TC_LOG_INFO("FIXME","Player::ApplySpellMod mod %u (3c)", mod->spellId);
-            totalpct += mod->value;
+
+            totalmul += CalculatePct(1.0f, mod->value);
         }
 
+        //TC DropModCharge(mod, spell);
         if (mod->charges > 0 )
         {
           if( !(spellInfo->SpellFamilyName == 8 && (spellInfo->SpellFamilyFlags & 0x200000000LL)))
@@ -2835,10 +2840,6 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
         }
     }
 
-    float diff = (float)calcvalue*(float)totalpct/100.0f + (float)totalflat;
-    basevalue = T((float)basevalue + diff);
-    //TC_LOG_INFO("FIXME","Player::ApplySpellMod diff %.2f basevalue %d", diff, basevalue);
-
-    return T(diff);
+    basevalue = T(float(basevalue + totalflat) * totalmul);
 }
 #endif
