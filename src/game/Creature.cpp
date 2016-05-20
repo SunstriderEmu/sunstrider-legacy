@@ -2708,7 +2708,6 @@ void Creature::UpdateMovementFlags()
 
     bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + 0.05f) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - 0.05f)); // Can be underground too, prevent the falling
 
-    bool canFly = CanFly();
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())

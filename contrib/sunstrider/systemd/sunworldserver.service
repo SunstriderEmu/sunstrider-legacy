@@ -10,8 +10,8 @@ Environment="PATH=/usr/lib/llvm-3.5/bin/:/usr/local/bin:/usr/bin:/bin"
 Environment="CPUPROFILE=/tmp/prof.out"
 
 WorkingDirectory=/srv/suncore/dumps
-#remove core dumps and logs older than last 5 runs. 
 ExecStartPre=-/srv/suncore/sources/contrib/sunstrider/systemd/logrotate.sh /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf
+#remove core dumps older than last 5 runs. 
 ExecStartPre=-/bin/bash -c "ls -1tr | head -n -5 | xargs -d '\n' rm -f"
 ExecStartPre=-/bin/bash -c 'mv /tmp/prof.out /tmp/prof.$(date +"%Y%m%d%H%M").out'
 ExecStart=/srv/suncore/bin/worldserver
@@ -20,9 +20,6 @@ Restart=always
 RestartSec=3
 
 LimitCORE=infinity
-
-#StandardOutput=null
-#StandardError=null
 
 [Install]
 WantedBy=multi-user.target
