@@ -119,7 +119,8 @@ class CreatureGroup
 private:
         //remove every members
         void EmptyFormation();
-
+        //depth is there to avoid infinite recursive calls, let it at 0 by default
+        Position CalculateMemberDestination(Creature* member, Position const& leaderPos, float followAngle, float followDist, float pathAngle, uint8 depth = 0) const;
 };
 
 #define sCreatureGroupMgr CreatureGroupManager::instance()

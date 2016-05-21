@@ -2707,7 +2707,7 @@ void Creature::UpdateMovementFlags()
     float ground = GetMap()->GetHeight(GetPositionX(), GetPositionY(), GetPositionZMinusOffset());
 
     bool isInAir = (G3D::fuzzyGt(GetPositionZMinusOffset(), ground + 0.05f) || G3D::fuzzyLt(GetPositionZMinusOffset(), ground - 0.05f)); // Can be underground too, prevent the falling
-
+    
     if (CanFly() && isInAir && !IsFalling())
     {
         if (CanWalk())
@@ -2724,7 +2724,7 @@ void Creature::UpdateMovementFlags()
         SetDisableGravity(false);
     }
 
-    if (!isInAir || canFly)
+    if (!isInAir || CanFly())
         RemoveUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
 
     SetSwim(CanSwim() && IsInWater());

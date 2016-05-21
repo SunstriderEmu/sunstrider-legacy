@@ -309,6 +309,37 @@ void CreatureGroup::FormationReset(bool dismiss)
     m_Formed = !dismiss;
 }
 
+Position CreatureGroup::CalculateMemberDestination(Creature* member, Position const& leaderPos, float followAngle, float followDist, float pathAngle, uint8 depth) const
+{
+    //no valid position found after 3 iterations, return leader position instead
+    if (depth > 3)
+        return leaderPos;
+
+    depth++;
+
+    Position dest;
+
+    dest.m_positionX = leaderPos.GetPositionX() + cos(followAngle + pathAngle) * followDist;
+    dest.m_positionY = leaderPos.GetPositionY() + sin(followAngle + pathAngle) * followDist;
+    float height = member->GetMap()->GetHeight(dest.m_positionX, dest.m_positionY, leaderPos.GetPositionZ() + 5.0f, true, 10.0f, true);;
+    if (height != INVALID_HEIGHT)
+        dest.m_positionZ = height;
+    else //no valid height found, try closer
+        return CalculateMemberDestination(member, leaderPos, followAngle, followDist / 2.0f, pathAngle, depth);
+
+    Trinity::NormalizeMapCoord(dest.m_positionX);
+    Trinity::NormalizeMapCoord(dest.m_positionY);
+
+    if (!member->CanFly() && !member->IsFlying())
+        member->UpdateGroundPositionZ(dest.m_positionX, dest.m_positionY, dest.m_positionZ);
+
+    //If member Z position is too far from leader, we may have a problem (example, the leader is not far from a ledge, member should not go all the way down)
+    if (std::fabs(dest.m_positionZ - leaderPos.GetPositionZ()) > 8.0f)
+        return CalculateMemberDestination(member, leaderPos, followAngle, followDist / 2.0f, pathAngle, depth);
+
+    return dest;
+}
+
 void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
 {
     //! To do: This should probably get its own movement generator or use WaypointMovementGenerator.
@@ -345,19 +376,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
             itr->second->follow_angle = Position::NormalizeOrientation(itr->second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
         }
 
-
-        float followAngle = itr->second->follow_angle;
-        float followDist = itr->second->follow_dist;
-
-        float dx = x + cos(followAngle + pathAngle) * followDist;
-        float dy = y + sin(followAngle + pathAngle) * followDist;
-        float dz = z;
-
-        Trinity::NormalizeMapCoord(dx);
-        Trinity::NormalizeMapCoord(dy);
-
-        if(!member->CanFly() && !member->IsFlying())
-            member->UpdateGroundPositionZ(dx, dy, dz);
+        Position memberDest = CalculateMemberDestination(member, Position(x, y, z), itr->second->follow_angle, itr->second->follow_dist, pathAngle);
 
         member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         // pussywizard: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
@@ -369,10 +388,10 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         // xinef: if we move members to position without taking care of sizes, we should compare distance without sizes
         // xinef: change members speed basing on distance - if too far speed up, if too close slow down
         UnitMoveType mtype = Movement::SelectSpeedType(member->GetUnitMovementFlags());
-        member->SetSpeedRate(mtype, m_leader->GetSpeedRate(mtype) * member->GetExactDist(dx, dy, dz) / pathDist);
+        member->SetSpeedRate(mtype, m_leader->GetSpeedRate(mtype) * member->GetExactDist(POSITION_GET_X_Y_Z(&memberDest)) / pathDist);
 
-        member->GetMotionMaster()->MovePoint(0, dx, dy, dz);
-        member->SetHomePosition(dx, dy, dz, pathAngle);
+        member->GetMotionMaster()->MovePoint(0, POSITION_GET_X_Y_Z(&memberDest));
+        member->SetHomePosition(POSITION_GET_X_Y_Z(&memberDest), pathAngle);
     }
 }
 
