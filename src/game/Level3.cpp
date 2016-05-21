@@ -3923,7 +3923,6 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     uint32 nativeid = target->GetNativeDisplayId();
     uint32 Entry = target->GetEntry();
     CreatureTemplate const* cInfo = target->GetCreatureTemplate();
-    //CreatureData const* cData = sObjectMgr->GetCreatureData(target->GetDBTableGUIDLow());
 
     int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
     if(curRespawnDelay < 0)

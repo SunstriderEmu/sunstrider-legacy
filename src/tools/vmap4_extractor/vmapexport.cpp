@@ -157,7 +157,7 @@ bool ExtractSingleWmo(std::string& fname)
     WMORoot froot(fname);
     if(!froot.open())
     {
-        printf("Couldn't open RootWmo!!!\n");
+        printf("Couldn't open RootWmo! (%s) \n", fname.c_str());
         return true;
     }
     FILE *output = fopen(szLocalFile,"wb");

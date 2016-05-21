@@ -503,16 +503,17 @@ namespace VMAP
         FILE* rf = fopen(path, "rb");
         if (!rf)
         {
-            int len = strlen(path); // mdx not found, try with m2 extension
-            char* tempname = new char(len);
-            strcpy(tempname, path);
-            tempname[len-1] = '\0';
-            tempname[len-2] = '2';
-            rf = fopen(tempname, "r+b");
-            delete tempname;
+            // kelno: mdx not found, try with m2 extension
+            std::string m2path(path);
+            //remove 'mdx'
+            m2path = m2path.substr(0, m2path.size() - 3);
+            m2path = m2path + "m2";
+
+            rf = fopen(m2path.c_str(), "rb");
+            //if still not found:
             if(!rf)
             {
-                printf("ERROR: Can't open raw model file: %s\n", tempname);
+                printf("ERROR: Can't open raw model file: %s\n", path);
                 return false;
             }
         }
