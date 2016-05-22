@@ -109,7 +109,10 @@ namespace Movement
         }
 
         if (!args.Validate(unit))
+        {
+            unit->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_SPLINE_ENABLED);
             return 0;
+        }
 
         unit->m_movementInfo.SetMovementFlags(moveFlags);
         move_spline.Initialize(args);
