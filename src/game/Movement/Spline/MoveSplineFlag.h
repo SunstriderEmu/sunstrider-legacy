@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #ifndef TRINITYSERVER_MOVESPLINEFLAG_H
 #define TRINITYSERVER_MOVESPLINEFLAG_H
 
@@ -143,17 +125,49 @@ namespace Movement
         void operator &= (uint32 f) { raw() &= f; }
         void operator |= (uint32 f) { raw() |= f; }
 
-       /* void EnableAnimation(uint8 anim) { raw() = (raw() & ~(Mask_Animations | Falling | Parabolic)) | Animation | anim; }
-        void EnableParabolic() { raw() = (raw() & ~(Mask_Animations | Falling | Animation)) | Parabolic; }*/
+#ifdef LICH_KING
+        void EnableAnimation(uint8 anim) { raw() = (raw() & ~(Mask_Animations | Falling | Parabolic)) | Animation | anim; }
+        void EnableParabolic() { raw() = (raw() & ~(Mask_Animations | Falling | Animation)) | Parabolic; }
+        void EnableFalling() { raw() = (raw() & ~(Mask_Animations | Parabolic | Flying | Animation)) | Falling; }
+        void EnableFlying() { raw() = (raw() & ~(Falling | Catmullrom)) | Flying; }
+        void EnableCatmullRom() { raw() = (raw() & ~Flying) | Catmullrom; }
+        void EnableTransportEnter() { raw() = (raw() & ~TransportExit) | TransportEnter; }
+        void EnableTransportExit() { raw() = (raw() & ~TransportEnter) | TransportExit; }
+#else
         void EnableFalling() { raw() = (raw() & ~(Flying)) | Falling; }
         void EnableFlying() { raw() = (raw() & ~(Falling)) | Flying; }
-        //void EnableCatmullRom() { raw() = (raw() & ~Flying) | Catmullrom; }
+#endif
         void EnableFacingPoint() { raw() = (raw() & ~Mask_Final_Facing) | Final_Point; }
         void EnableFacingAngle() { raw() = (raw() & ~Mask_Final_Facing) | Final_Angle; }
         void EnableFacingTarget() { raw() = (raw() & ~Mask_Final_Facing) | Final_Target; }
-        //void EnableTransportEnter() { raw() = (raw() & ~TransportExit) | TransportEnter; }
-        //void EnableTransportExit() { raw() = (raw() & ~TransportEnter) | TransportExit; }
 
+#ifdef LICH_KING
+        uint8 animId : 8;
+        bool done : 1;
+        bool falling : 1;
+        bool no_spline : 1;
+        bool parabolic : 1;
+        bool walkmode : 1;
+        bool flying : 1;
+        bool orientationFixed : 1;
+        bool final_point : 1;
+        bool final_target : 1;
+        bool final_angle : 1;
+        bool catmullrom : 1;
+        bool cyclic : 1;
+        bool enter_cycle : 1;
+        bool animation : 1;
+        bool frozen : 1;
+        bool transportEnter : 1;
+        bool transportExit : 1;
+        bool unknown7 : 1;
+        bool unknown8 : 1;
+        bool orientationInversed : 1;
+        bool unknown10 : 1;
+        bool unknown11 : 1;
+        bool unknown12 : 1;
+        bool unknown13 : 1;
+#else
         bool done          : 1;
         bool falling       : 1;
         bool unknown3      : 1;
@@ -186,6 +200,7 @@ namespace Movement
         bool unknown29     : 1;
         bool unknown30     : 1;
         bool unknown31     : 1;
+#endif
     };
 #if defined( __GNUC__ )
 #pragma pack()

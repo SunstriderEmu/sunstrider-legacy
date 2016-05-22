@@ -51,8 +51,14 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
     if (updateDestination || !i_path)
     {
         if (!i_offset)
+        {
             // to nearest contact position
-            i_target->GetContactPoint(owner, x, y, z); 
+            i_target->GetContactPoint(owner, x, y, z);
+
+            //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
+            if (GetMovementGeneratorType() == CHASE_MOTION_TYPE && !i_target->IsWithinLOS(x, y, z))
+                i_target->GetPosition(x, y, z);
+        }
         else
             // to at i_offset distance from target and i_angle from target facing
             i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
