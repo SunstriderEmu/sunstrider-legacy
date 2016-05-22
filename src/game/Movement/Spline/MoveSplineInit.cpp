@@ -97,12 +97,15 @@ namespace Movement
 
         if (!args.HasVelocity)
         {
+            // If spline is initialized with SetWalk method it only means we need to select
+            // walk move speed for it but not add walk flag to unit
+            uint32 moveFlagsForSpeed = moveFlags;
             if (args.flags.walkmode)
-                moveFlags |= MOVEMENTFLAG_WALKING;
+                moveFlagsForSpeed |= MOVEMENTFLAG_WALKING;
             else
-                moveFlags &= ~MOVEMENTFLAG_WALKING;
+                moveFlagsForSpeed &= ~MOVEMENTFLAG_WALKING;
 
-            args.velocity = unit->GetSpeed(SelectSpeedType(moveFlags));
+            args.velocity = unit->GetSpeed(SelectSpeedType(moveFlagsForSpeed));
         }
 
         if (!args.Validate(unit))
