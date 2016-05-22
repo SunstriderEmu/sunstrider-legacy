@@ -46,7 +46,7 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mCanRepeatPath = false;
 
     // spawn in run mode
-    me->SetWalk(false);
+    // me->SetWalk(false); //disabled this, movement generator may have altered this already
     mRun = false;
 
     mLastOOCPos = me->GetPosition();
