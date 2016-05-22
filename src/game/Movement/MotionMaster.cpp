@@ -218,7 +218,7 @@ void MotionMaster::MoveTargetedHome()
         // TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: %u) targeted home", _owner->GetEntry(), _owner->GetGUIDLow());
         Mutate(new HomeMovementGenerator<Creature>(), MOTION_SLOT_ACTIVE);
     }
-    else if (_owner->GetTypeId() == TYPEID_UNIT && _owner->ToCreature()->GetCharmerOrOwnerGUID())
+    else if (_owner->GetTypeId() == TYPEID_UNIT && _owner->ToCreature()->GetCharmerOrOwnerGUID() && !_owner->ToCreature()->IsTotem())
     {
         //  TC_LOG_TRACE("misc", "Pet or controlled creature (Entry: %u GUID: %u) targeting home", _owner->GetEntry(), _owner->GetGUIDLow());
         Unit* target = _owner->ToCreature()->GetCharmerOrOwner();
