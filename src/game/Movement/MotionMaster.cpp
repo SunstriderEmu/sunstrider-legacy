@@ -159,6 +159,7 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
     if (size() > 1)
     {
         MovementGenerator *curr = top();
+        ASSERT(curr != nullptr);
         pop();
         DirectDelete(curr, premature);
     }
@@ -180,6 +181,7 @@ void MotionMaster::DelayedExpire(bool premature)
     if (size() > 1)
     {
         MovementGenerator *curr = top();
+        ASSERT(curr != nullptr);
         pop();
         DelayedDelete(curr, premature);
     }
@@ -662,20 +664,30 @@ void MotionMaster::MoveDistract(float x, float y, uint32 timer)
 
 bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
 {
+    //remove last generator in this slot if any
     if (MovementGenerator *curr = Impl[slot])
     {
+        bool delayed = (_top == slot && (_cleanFlag & MMCF_UPDATE));
+
         Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
-        if (_top == slot && (_cleanFlag & MMCF_UPDATE))
+        //kelno: crashfix from sunwell: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
+        while (!empty() && !top())
+            --_top;
+
+        if (delayed)
             DelayedDelete(curr, true);
         else
             DirectDelete(curr, true);
     }
+    //set top to new top if needed
     else if (_top < slot)
     {
         _top = slot;
     }
 
     Impl[slot] = m;
+    ASSERT(Impl[slot] != nullptr);
+    //if generator is new top, init it immediately, else mark as need init
     if (_top > slot)
         _needInit[slot] = true;
     else

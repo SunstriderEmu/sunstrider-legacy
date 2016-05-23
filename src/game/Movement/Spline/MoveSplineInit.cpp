@@ -106,10 +106,12 @@ namespace Movement
                 moveFlagsForSpeed &= ~MOVEMENTFLAG_WALKING;
 
             args.velocity = unit->GetSpeed(SelectSpeedType(moveFlagsForSpeed));
+            DEBUG_ASSERT(args.velocity);
         }
 
         if (!args.Validate(unit))
         {
+            //kelno: make sure this flag is correctly removed if it's already there when entering this function.
             unit->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_SPLINE_ENABLED);
             return 0;
         }
