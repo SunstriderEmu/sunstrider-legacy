@@ -56,7 +56,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
             i_target->GetContactPoint(owner, x, y, z);
 
             //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
-            if (GetMovementGeneratorType() == CHASE_MOTION_TYPE && !i_target->IsWithinLOS(x, y, z))
+            if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE && !i_target->IsWithinLOS(x, y, z))
                 i_target->GetPosition(x, y, z);
         }
         else
@@ -86,8 +86,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
            (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsPet() && owner->HasUnitState(UNIT_STATE_FOLLOW)) // allow pets to use shortcut if no path found when following their master
         || (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature()->IsWorldBoss()) /*|| ((Creature*)owner)->IsDungeonBoss()*/ // force for all bosses, even not in instances
         || transportImplied // transports at dock aren't handled by mmaps, this should help
-        || (i_target->GetTypeId() == TYPEID_PLAYER && i_target->ToPlayer()->IsGameMaster()) // for .npc follow)
-        || (owner->FindMap() && owner->FindMap()->IsDungeon() && !isPlayerPet) // force in instances to prevent exploiting
+        ///|| (owner->FindMap() && owner->FindMap()->IsDungeon() && !isPlayerPet) // force in instances to prevent exploiting //disabled, evade mode when target is not accessible should help with this in a better way. Maybe disable for bosses too ?
         ;
 
     bool result = i_path->CalculatePath(x, y, z, forceDest);
