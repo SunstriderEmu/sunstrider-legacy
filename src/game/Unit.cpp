@@ -15075,8 +15075,9 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
     if (arrived)
         DisableSpline();
 
-    m_movesplineTimer.Update(t_diff);
-    if (m_movesplineTimer.Passed() || arrived)
+    // sunwell: update always! not every 400ms, because movement generators need the actual position
+    /*m_movesplineTimer.Update(t_diff);
+    if (m_movesplineTimer.Passed() || arrived) */
         UpdateSplinePosition();
 }
 

@@ -255,8 +255,17 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         return;
     } 
 
+#ifdef LICH_KING
+    uint64 guid;
+
+    recvData.readPackGUID(guid);
+#endif
+
     MovementInfo movementInfo;
-    recvData >> movementInfo;
+#ifdef LICH_KING
+    movementInfo.guid = guid;
+#endif
+    ReadMovementInfo(recvData, &movementInfo);
 
     recvData.rfinish();                         // prevent warnings spam
 
@@ -472,7 +481,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     movementInfo.time = movementInfo.time + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY;
 
     data.appendPackGUID(mover->GetGUID());
-    data << movementInfo;
+    WriteMovementInfo(&data, &movementInfo);
     mover->SendMessageToSet(&data, _player);
     mover->m_movementInfo = movementInfo;
     
@@ -573,7 +582,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
     recvData >> unk1;                                      // counter or moveEvent
 
     MovementInfo movementInfo;
-    recvData >> movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
 
     recvData >> newspeed;
     /*----------------*/
@@ -631,6 +640,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
 
+    //LK OK
     uint64 guid;
     recvData >> guid; //Client started controlling this unit
 
@@ -648,14 +658,25 @@ void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
 
     uint64 old_mover_guid;
+#ifdef LICH_KING
+    recvData.readPackGUID(old_mover_guid);
+#else
     recvData >> old_mover_guid;
+#endif
 
-    MovementInfo mi;
-    recvData >> mi;
+    if (!_player->m_mover || !_player->m_mover->IsInWorld() || old_mover_guid != _player->m_mover->GetGUID())
+    {
+        recvData.rfinish(); // prevent warnings spam
+        return;
+    }
 
-    //mi.guid = old_mover_guid;
+    MovementInfo movementInfo;
+#ifdef LICH_KING
+    mi.guid = old_mover_guid;
+#endif
+    ReadMovementInfo(recvData, &movementInfo);
 
-    _player->m_movementInfo = mi;
+    _player->m_movementInfo = movementInfo;
 }
 
 void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
@@ -672,15 +693,25 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");
 
     uint64 guid;
+#ifdef LICH_KING
+    recvData.readPackGUID(guid);
+#else
     recvData >> guid;
+#endif
 
-    if (_player->m_mover->GetGUID() != guid)
+    if (!_player->m_mover || !_player->m_mover->IsInWorld() || guid != _player->m_mover->GetGUID())
+    {
+        recvData.rfinish(); // prevent warnings spam
         return;
+    }
 
     recvData.read_skip<uint32>();                          // Always set to 0
 
     MovementInfo movementInfo;
-    recvData >> movementInfo;
+#ifdef LICH_KING
+    movementInfo.guid = guid;
+#endif
+    ReadMovementInfo(recvData, &movementInfo);
 
     _player->m_movementInfo = movementInfo;
 
@@ -697,7 +728,6 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 
     // Send packet
     WorldPacket data(MSG_MOVE_KNOCK_BACK, uint16(recvData.size() + 4));
-    //recvData << guid;
     data.appendPackGUID(guid);
     _player->BuildMovementPacket(&data);
 
@@ -718,12 +748,16 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
     TC_LOG_DEBUG("network", "CMSG_MOVE_HOVER_ACK");
 
     uint64 guid;                                            // guid - unused
+#ifdef LICH_KING
+    recvData.readPackGUID(guid);
+#else
     recvData >> guid;
+#endif
 
     recvData.read_skip<uint32>();                          // unk
 
     MovementInfo movementInfo;
-    recvData >> movementInfo;
+    WriteMovementInfo(&recvData, &movementInfo);
 
     recvData.read_skip<uint32>();                          // unk2
 }
@@ -740,7 +774,7 @@ void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recvData)
     recvData.read_skip<uint32>();                          // unk
 
     MovementInfo movementInfo;
-    recvData >> movementInfo;
+    ReadMovementInfo(recvData, &movementInfo);
 
     recvData.read_skip<uint32>();                          // unk2
 }

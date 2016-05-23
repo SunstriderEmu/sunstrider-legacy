@@ -221,8 +221,15 @@ ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const & 
 struct MovementInfo
 {
     // common
+#ifdef LICH_KING
+    uint64 guid;
+#endif
     uint32 flags;
-    uint8 flags2; //not used on BC
+#ifdef LICH_KING
+    uint16 flags2;
+#else
+    uint8 flags2; //not used on BC (but still in packet)
+#endif
     Position pos;
     uint32 time;
 
@@ -263,6 +270,9 @@ struct MovementInfo
     float splineElevation;
 
     MovementInfo() :
+#ifdef LICH_KING
+        guid(0), 
+#endif
         flags(0), flags2(0), time(0), pitch(0.0f), fallTime(0), splineElevation(0.0f)
     {
         pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
@@ -270,30 +280,20 @@ struct MovementInfo
         jump.Reset();
     }
 
-    // Read/Write methods
-    void Read(ByteBuffer& data);
-    void Write(ByteBuffer& data) const;
-
     uint32 GetMovementFlags() const { return flags; }
     void SetMovementFlags(uint32 flag) { flags = flag; }
     void AddMovementFlag(uint32 flag) { flags |= flag; }
     void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
     bool HasMovementFlag(uint32 flag) const { return flags & flag; }
 
+    uint16 GetExtraMovementFlags() const { return flags2; }
+    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
+#ifdef LICH_KING
+    void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
+#endif
+
     void SetFallTime(uint32 _time) { fallTime = _time; }
 };
-
-inline ByteBuffer& operator<< (ByteBuffer& buf, MovementInfo const& mi)
-{
-    mi.Write(buf);
-    return buf;
-}
-
-inline ByteBuffer& operator>> (ByteBuffer& buf, MovementInfo& mi)
-{
-    mi.Read(buf);
-    return buf;
-}
 
 #define MAPID_INVALID 0xFFFFFFFF
 

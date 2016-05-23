@@ -190,11 +190,14 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
 {
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_SPLINE_DONE");
 
-    /* LK uint64 guid; // used only for proper packet read
-    recvData.readPackGUID(guid); */
+#ifdef LICH_KING
+    uint64 guid; // used only for proper packet read
+    recvData.readPackGUID(guid);
+#endif
 
     MovementInfo movementInfo;                              // used only for proper packet read
-    recvData >> movementInfo;
+    WriteMovementInfo(&recvData, &movementInfo);
+
     GetPlayer()->m_anti_lastmovetime = movementInfo.time;
 
    //LK? recvData.read_skip<uint32>();                          // spline id
