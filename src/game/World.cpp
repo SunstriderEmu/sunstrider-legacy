@@ -801,6 +801,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_ARENA_ALTERNATE_RATING]     = sConfigMgr->GetBoolDefault("Battleground.Arena.Alternate.Rating", false);
     m_configs[CONFIG_BATTLEGROUND_ARENA_ANNOUNCE]             = sConfigMgr->GetBoolDefault("Battleground.Arena.Announce", true);
 
+    m_configs[CONFIG_CHARDELETE_KEEP_DAYS] = sConfigMgr->GetIntDefault("CharDelete.KeepDays", 30);
+
     m_configs[CONFIG_CAST_UNSTUCK] = sConfigMgr->GetBoolDefault("CastUnstuck", true);
     m_configs[CONFIG_INSTANCE_RESET_TIME_HOUR]  = sConfigMgr->GetIntDefault("Instance.ResetTimeHour", 4);
     m_configs[CONFIG_INSTANCE_UNLOAD_DELAY] = sConfigMgr->GetIntDefault("Instance.UnloadDelay", 1800000);
@@ -1695,6 +1697,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Starting Game Event system..." );
     uint32 nextGameEvent = sGameEventMgr->Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
+
+    // Delete all characters which have been deleted X days before
+    Player::DeleteOldCharacters();
 
     //TC_LOG_INFO("server.loading","Initialize AuctionHouseBot...");
     //auctionbot.Initialize();

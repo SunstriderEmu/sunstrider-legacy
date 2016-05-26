@@ -1026,19 +1026,12 @@ struct AccessRequirement
     uint32 heroicQuestFailedText; //entry in trinity_string
 };
 
-struct WowarmoryFeedEntry 
+enum CharDeleteMethod
 {
-    uint32 guid;         // Player GUID
-    time_t date;         // Log date
-    uint32 type;         // TYPE_ACHIEVEMENT_FEED, TYPE_ITEM_FEED, TYPE_BOSS_FEED
-    uint32 data;         // TYPE_ITEM_FEED: item_entry, TYPE_BOSS_FEED: creature_entry
-    uint32 item_guid;    // Can be 0
-    uint32 item_quality; // Can be 0
-    uint8  difficulty;   // Can be 0
-    int    counter;      // Can be 0
+    CHAR_DELETE_REMOVE = 0,                      // Completely remove from the database
+    CHAR_DELETE_UNLINK = 1                       // The character gets unlinked from the account,
+                                                 // the name gets freed up and appears as deleted ingame
 };
-
-typedef std::vector<WowarmoryFeedEntry> WowarmoryFeeds;
 
 enum PlayerCommandStates
 {
@@ -1921,7 +1914,21 @@ class Player : public Unit
 
         void SendTeleportAckPacket();
 
-        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true);
+        /**
+        * Deletes a character from the database
+        *
+        * By default character in just unlinked and not really deleted.
+        *
+        * @see Player::DeleteOldCharacters
+        *
+        * @param playerguid       the low-GUID from the player which should be deleted
+        * @param accountId        the account id from the player
+        * @param updateRealmChars when this flag is set, the amount of characters on that realm will be updated in the realmlist
+        * @param deleteFinally    if this flag is set, the character will be permanently removed from the database
+        */
+        static void DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmChars = true, bool deleteFinally = false);
+        static void LeaveAllArenaTeams(uint64 guid);
+        static void DeleteOldCharacters();
 
         Corpse *GetCorpse() const;
         void SpawnCorpseBones();
@@ -2607,8 +2614,6 @@ class Player : public Unit
         uint32 m_timeSyncTimer;
         uint32 m_timeSyncClient;
         uint32 m_timeSyncServer;
-
-        WowarmoryFeeds m_wowarmory_feeds;
 
         ActionButtonList m_actionButtons;
 

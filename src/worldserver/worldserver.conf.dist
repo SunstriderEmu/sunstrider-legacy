@@ -1532,6 +1532,14 @@ AuctionHouseBot.DisableItemsAboveReqSkillRank = 0
 AuctionHouseBot.DisableTGsBelowReqSkillRank = 0
 AuctionHouseBot.DisableTGsAboveReqSkillRank = 0
 
+#
+#    CharDelete.KeepDays
+#        Description: Time (in days) before unlinked characters will be removed from the database.
+#        Default:     30 - (Enabled)
+#                     0  - (Disabled, Don't delete any characters)
+
+CharDelete.KeepDays = 30
+
 ###################################################################################################################
 # CUSTOM SERVER OPTIONS
 #
