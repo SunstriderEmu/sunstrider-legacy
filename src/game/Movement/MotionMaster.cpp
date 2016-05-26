@@ -679,11 +679,10 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
         else
             DirectDelete(curr, true);
     }
+
     //set top to new top if needed
-    else if (_top < slot)
-    {
+    if (_top < slot)
         _top = slot;
-    }
 
     Impl[slot] = m;
     ASSERT(Impl[slot] != nullptr);
