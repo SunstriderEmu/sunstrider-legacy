@@ -47,7 +47,7 @@ bool CreatureAI::AssistPlayerInCombat(Unit* who)
     for(auto itr : who->GetAttackers())
     {
         //experimental (unknown) flag not present
-      /*  if (!(me->GetCreatureTemplate()->type_flags & 0x001000)) // CREATURE_TYPEFLAGS_AID_PLAYERS
+      /*  if (!(me->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_CAN_ASSIST))
             return false; */
 
         //contested guards don't assists if victim is not in combat (hacky)

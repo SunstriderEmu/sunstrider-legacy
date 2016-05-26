@@ -236,9 +236,9 @@ struct CreatureTemplate
     // helpers
     SkillType GetRequiredLootSkill() const
     {
-        if(type_flags & CREATURE_TYPEFLAGS_HERBLOOT)
+        if(type_flags & CREATURE_TYPE_FLAG_HERB_SKINNING_SKILL)
             return SKILL_HERBALISM;
-        else if(type_flags & CREATURE_TYPEFLAGS_MININGLOOT)
+        else if(type_flags & CREATURE_TYPE_FLAG_MINING_SKINNING_SKILL)
             return SKILL_MINING;
         else
             return SKILL_SKINNING;                          // normal case
@@ -255,7 +255,7 @@ struct CreatureTemplate
 
     bool IsTameable(bool canTameExotic = false) const
     {
-        if (type != CREATURE_TYPE_BEAST || family == 0 || (type_flags & CREATURE_TYPEFLAGS_TAMEABLE) == 0)
+        if (type != CREATURE_TYPE_BEAST || family == 0 || (type_flags & CREATURE_TYPE_FLAG_TAMEABLE_PET) == 0)
             return false;
 
         // if can tame exotic then can tame any tameable
@@ -561,7 +561,7 @@ class Creature : public Unit
             if(IsPet())
                 return false;
 
-            return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPEFLAGS_BOSS);
+            return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB);
         }
 
         uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
