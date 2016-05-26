@@ -1019,7 +1019,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         }
     }
 
-    TC_LOG_DEBUG("FIXME","DealDamageEnd returned %d damage", damage);
+    //TC_LOG_DEBUG("FIXME","DealDamageEnd returned %d damage", damage);
 
     return damage;
 }

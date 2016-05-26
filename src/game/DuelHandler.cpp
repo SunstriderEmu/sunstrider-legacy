@@ -30,8 +30,6 @@
 
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket,8);
 
     uint64 guid;

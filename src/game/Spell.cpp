@@ -4349,6 +4349,10 @@ void Spell::cast(bool skipCheck)
         return;
     }
 
+    if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
+        if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, m_caster->GetPetGUID()))
+            pet->DespawnOrUnsummon();
+
     CallScriptOnCastHandlers();
 
     // traded items have trade slot instead of guid in m_itemTargetGUID
@@ -6580,7 +6584,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     case SUMMON_TYPE_DEMON:
                     case SUMMON_TYPE_SUMMON:
                     {
-                        if(m_caster->GetPetGUID())
+                        if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                         if(m_caster->GetCharmGUID())
@@ -6600,7 +6604,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_SUMMON_PHANTASM:
             case SPELL_EFFECT_SUMMON_DEMON:
             {
-                if(m_caster->GetPetGUID())
+                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 if(m_caster->GetCharmGUID())
@@ -6620,7 +6624,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
                             pet->CastSpell(pet, 32752, true, NULL, NULL, pet->GetGUID());
                     }
-                    else
+                    else if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
                 }
 
@@ -6733,7 +6737,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_AURA_MOD_CHARM:
             case SPELL_AURA_AOE_CHARM:
             {
-                if(m_caster->GetPetGUID())
+                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 if(m_caster->GetCharmGUID())
