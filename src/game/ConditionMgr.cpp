@@ -741,7 +741,7 @@ bool ConditionMgr::IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, 
             //! If not found, add an entry in the store and set to true (placeholder)
             if (itr == ElseGroupStore.end())
                 ElseGroupStore[(*i)->ElseGroup] = true;
-            else if (!(*itr).second)
+            else if (!(*itr).second) //! If another condition in this group was unmatched before this, don't bother checking (the group is false anyway)
                 continue;
 
             if ((*i)->ReferenceId)//handle reference

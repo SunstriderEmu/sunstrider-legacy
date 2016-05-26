@@ -15528,6 +15528,39 @@ void Unit::old_Whisper(int32 textId, uint64 receiverGUID, bool IsBossWhisper)
     target->SendDirectMessage(&data);
 }
 
+bool _IsLeapAccessibleByPath(Unit* unit, Position& targetPos)
+{
+    float distToTarget = unit->GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+
+    PathGenerator path(unit);
+    //here we'd want to allow just a bit longer than a straight line
+    path.SetPathLengthLimit(std::min(distToTarget - 6.0f, distToTarget)); //this is a hack to help with the imprecision of this check into the path generator
+    if (path.CalculatePath(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ(), false, false)
+        && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) == 0)
+        )
+    {
+        //additional internal validity hack to compensate for mmap imprecision. Check if path last two points and two first points are in Los
+        Movement::PointsArray points = path.GetPath();
+        if (points.size() >= 2) //if shorter than that the LoS check from before should be valid anyway, noneed for else
+        {
+            G3D::Vector3 firstPoint = points[0];
+            Position firstPointPos(firstPoint.x, firstPoint.y, firstPoint.z + 1.5f);
+
+            G3D::Vector3 lastPoint = points[points.size() - 1];
+            G3D::Vector3 beforeLastPoint = points[points.size() - 2];
+            Position beforeLastPointPos(beforeLastPoint.x, beforeLastPoint.y, beforeLastPoint.z + 1.5f);
+            if (!unit->GetCollisionPosition(beforeLastPointPos, lastPoint.x, lastPoint.y, lastPoint.z + 1.5f, targetPos)
+                && !unit->GetCollisionPosition(unit->GetPosition(), firstPoint.x, firstPoint.y, firstPoint.z + 1.5f, targetPos)
+                )
+            {
+                //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 /*
 Logic:
 Search a ground under default target, then a bit higher.
@@ -15580,32 +15613,16 @@ Position Unit::GetLeapPosition(float dist)
                     goto exitloopfounddest;
                 }
 
-                //if is accessible by path (allow just a bit longer than a straight line)
-                float distToTarget = GetExactDistance(destx, desty, mapHeight);
-                PathGenerator path(this);
-                path.SetPathLengthLimit(distToTarget - 6.0f); //this is a hack to help with the imprecision of this check into the path generator
-                if (path.CalculatePath(destx, desty, mapHeight, false, false)
-                    && ((path.GetPathType() & (PATHFIND_SHORT | PATHFIND_NOPATH | PATHFIND_INCOMPLETE)) == 0)
-                    )
+                //if is accessible by path (don't check for shorter distance)
+                targetPos.Relocate(destx, desty, mapHeight);
+                float distToTarget = GetExactDistance(targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                if (distToTarget > 8.0f && _IsLeapAccessibleByPath(this, targetPos))
                 {
-                    //additional internal validity hack to compensate for mmap imprecision. Check if path last two points are in Los
-                    Movement::PointsArray points = path.GetPath();
-                    if (points.size() >= 2) //if shorter than that the LoS check from before should be valid anyway, noneed for else
-                    {
-                        G3D::Vector3 lastPoint = points[points.size()-1];
-                        G3D::Vector3 beforeLastPoint = points[points.size()-2];
-                        Position tempposition(beforeLastPoint.x, beforeLastPoint.y, beforeLastPoint.z + 1.5f);
-                        if (!GetCollisionPosition(tempposition, lastPoint.x, lastPoint.y, lastPoint.z + 1.5f, targetPos))
-                        {
-                            if (mapHeight != INVALID_HEIGHT)
-                            {
-                                targetPos.Relocate(destx, desty, mapHeight + 1.0f);
-                                //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
-                                goto exitloopfounddest;
-                            }
-                        }
-                    }
+                    targetPos.Relocate(destx, desty, mapHeight + 1.0f);
+                    //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Found valid target point, %f %f %f was accessible by path.", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
+                    goto exitloopfounddest;
                 }
+
             }
         }
 
@@ -15616,7 +15633,7 @@ Position Unit::GetLeapPosition(float dist)
     }
 
     //No valid dest found
-        if (CanSwim() && GetMap()->IsUnderWater(POSITION_GET_X_Y_Z(&defaultTarget)))
+    if (CanSwim() && GetMap()->IsUnderWater(POSITION_GET_X_Y_Z(&defaultTarget)))
     {
         targetPos = defaultTarget;
     }
