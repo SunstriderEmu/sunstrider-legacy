@@ -175,7 +175,7 @@ class CreatureAI : public UnitAI
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
         
-        virtual void DespawnDueToGameEventEnd(uint32 /*eventId*/) {}
+        virtual void DespawnDueToGameEventEnd(int32 /*eventId*/) {}
 
         // called when the corpse of this creature gets removed
         virtual void CorpseRemoved(uint32& respawnDelay) {}
