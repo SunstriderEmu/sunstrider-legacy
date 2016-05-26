@@ -5,12 +5,6 @@
 #include "World.h"
 #include "Runnable.h"
 #include <boost/regex.hpp>
-#include <segvcatch.h>
-
-void handle_segv_irc()
-{
-    throw std::runtime_error("Segmentation fault or FPE");
-}
 
 void IRCSession::run()
 {
@@ -19,28 +13,16 @@ void IRCSession::run()
     */
     std::thread ircRun([&]()
     {
-        //libirc seems to crash at times... not much I can do about it, I'll just catch it to avoid crashing the whole server.
-        segvcatch::init_segv(handle_segv_irc);
-        segvcatch::init_fpe(handle_segv_irc);
-
         if (!_server->session)
         {
             TC_LOG_ERROR("IRCMgr", "IRCSession::run(): No session provided");
         }
 
-        try
+        if (irc_run(_server->session))
         {
-            if (irc_run(_server->session))
-            {
-                TC_LOG_ERROR("IRCMgr", "Could not connect or I/O error with a server (%s:%u, %susing SSL): %s",
-                    _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
-                return;
-            }
-        }
-        catch (std::runtime_error& /*e*/) 
-        {
-            TC_LOG_ERROR("IRCMgr", "IRCMgr crashed in irc_run.");
-            m_stop = true;
+            TC_LOG_ERROR("IRCMgr", "Could not connect or I/O error with a server (%s:%u, %susing SSL): %s",
+                _server->host.c_str(), _server->port, (_server->ssl ? "" : "not "), irc_strerror(irc_errno(_server->session)));
+            return;
         }
     });
 

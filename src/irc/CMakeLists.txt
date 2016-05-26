@@ -25,7 +25,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include
-  ${CMAKE_SOURCE_DIR}/dep/segvcatch
   ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
   ${MYSQL_INCLUDE_DIR}
 )
@@ -70,5 +69,4 @@ target_link_libraries(
     #the next one contains nothing on linux
     ${LIBIRCCLIENT_LIB_WIN}
     ${Boost_LIBRARIES}
-	segvcatch
 )
