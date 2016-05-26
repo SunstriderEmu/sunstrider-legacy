@@ -48,6 +48,8 @@ public:
     static void WonAuction(uint32 bidderAccount, uint32 bidderGUID, uint32 sellerAccount, uint32 sellerGUID, uint32 itemGUID, uint32 itemEntry, uint32 itemCount);
     static void CreateAuction(Player const* player, uint32 itemGUID, uint32 itemEntry, uint32 itemCount);
 
+    static void LogConnectionIP(WorldSession const* session);
+
     enum BuyTransactionType
     {
         TRANSACTION_BUY,

@@ -869,6 +869,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GM_LOG_CHAR_RENAME] = sConfigMgr->GetIntDefault("DBLog.gm.char.rename", -1);
     m_configs[CONFIG_LOG_GM_COMMANDS] = sConfigMgr->GetIntDefault("DBLog.GMCommands", -1);
     m_configs[CONFIG_LOG_SANCTIONS] = sConfigMgr->GetIntDefault("DBLog.sanctions", -1);
+    m_configs[CONFIG_LOG_CONNECTION_IP] = sConfigMgr->GetIntDefault("DBLog.connectionip",-1);
+    m_configs[CONFIG_GM_LOG_CONNECTION_IP] = sConfigMgr->GetIntDefault("DBLog.gm.connectionip", -1);
 
     m_configs[CONFIG_MAIL_DELIVERY_DELAY] = sConfigMgr->GetIntDefault("MailDeliveryDelay",HOUR);
 

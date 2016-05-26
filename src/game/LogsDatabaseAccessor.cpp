@@ -606,9 +606,26 @@ void LogsDatabaseAccessor::CleanupOldLogs()
     deleteOldLogs("char_item_delete", CONFIG_LOG_CHAR_ITEM_DELETE, CONFIG_GM_LOG_CHAR_ITEM_DELETE);
     deleteOldLogs("char_item_guild_bank", CONFIG_LOG_CHAR_ITEM_GUILD_BANK, CONFIG_GM_LOG_CHAR_ITEM_GUILD_BANK);
     deleteOldLogs("char_rename", CONFIG_LOG_CHAR_RENAME, CONFIG_GM_LOG_CHAR_RENAME);
+    deleteOldLogs("account_ip", CONFIG_LOG_CONNECTION_IP, CONFIG_GM_LOG_CONNECTION_IP);
 
     deleteOldLogsCombined("char_trade", "char_trade_items", "id", "trade_id", CONFIG_LOG_CHAR_ITEM_TRADE, CONFIG_GM_LOG_CHAR_ITEM_TRADE);
     deleteOldLogsCombined("mail", "mail_items", "id", "mail_id", CONFIG_LOG_CHAR_MAIL, CONFIG_GM_LOG_CHAR_MAIL);
 
     LogsDatabase.CommitTransaction(trans);
+}
+
+void LogsDatabaseAccessor::LogConnectionIP(WorldSession const* session)
+{
+    bool gmInvolved = session->GetSecurity() > SEC_PLAYER;
+    if (!ShouldLog(CONFIG_LOG_CONNECTION_IP, CONFIG_GM_LOG_CONNECTION_IP, gmInvolved))
+        return;
+
+    //PrepareStatement(LOGS_INS_ACCOUNT_IP, "INSERT INTO account_ip (id, time, ip, gm_involved) VALUES (?,UNIX_TIMESTAMP(),?,?)", CONNECTION_ASYNC);
+    PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_ACCOUNT_IP);
+
+    stmt->setUInt32(0, session->GetAccountId());
+    stmt->setString(1, session->GetRemoteAddress());
+    stmt->setBool(2, gmInvolved);
+
+    LogsDatabase.Execute(stmt);
 }

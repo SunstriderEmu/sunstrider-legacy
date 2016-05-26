@@ -27,6 +27,7 @@
 #include "AccountMgr.h"
 #include "ServerPktHeader.h"
 #include <boost/asio/ip/tcp.hpp>
+#include "LogsDatabaseAccessor.h"
 
 class EncryptablePacket : public WorldPacket
 {
@@ -605,6 +606,8 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     _worldSession = new WorldSession(account.Id, authSession->Build, std::move(authSession->Account), shared_from_this(), account.Security,
         account.Expansion, mutetime, account.Locale, account.Recruiter, account.IsRectuiter);
     _worldSession->ReadAddonsInfo(authSession->AddonInfo);
+
+    sLogsDatabaseAccessor->LogConnectionIP(_worldSession);
 
     // Initialize Warden system only if it is enabled by config
     if (wardenActive)
