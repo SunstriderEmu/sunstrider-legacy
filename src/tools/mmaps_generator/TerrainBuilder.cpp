@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2011 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "TerrainBuilder.h"
 
@@ -24,7 +7,6 @@
 #include "VMapManager2.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
-#include <vector>
 
 // ******************************************
 // Map file format defines
@@ -82,7 +64,7 @@ struct map_liquidHeader
 namespace MMAP
 {
 
-    char const* MAP_VERSION_MAGIC = "v1.3";
+    char const* MAP_VERSION_MAGIC = "v1.8";
 
     TerrainBuilder::TerrainBuilder(bool skipLiquid) : m_skipLiquid (skipLiquid){ }
     TerrainBuilder::~TerrainBuilder() { }
@@ -709,7 +691,7 @@ namespace MMAP
                         vertsY = tilesY + 1;
                         uint8* flags = liquid->GetFlagsStorage();
                         float* data = liquid->GetHeightStorage();
-                        uint8 type;
+                        uint8 type = NAV_EMPTY;
 
                         // convert liquid type to NavTerrain
                         switch (liquid->GetType())
@@ -723,9 +705,6 @@ namespace MMAP
                             break;
                         case 3:
                             type = NAV_SLIME;
-                            break;
-                        default:
-                            type = NAV_EMPTY;
                             break;
                         }
 
