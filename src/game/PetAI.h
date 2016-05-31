@@ -42,7 +42,6 @@ class PetAI : public CreatureAI
     protected:
         void Minipet_DistanceCheck(uint32 diff);
     private:
-        bool _isVisible(Unit *) const;
         bool _needToStop(void) const;
         void _stopAttack(void);
 

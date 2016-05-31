@@ -122,7 +122,7 @@ class CreatureAI : public UnitAI
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
         virtual bool AssistPlayerInCombat(Unit* who);
 
-        // Called if IsVisible(Unit *who) is true at each *who move, AND if creature is aggressive
+        // Called at each *who move, AND if creature is aggressive
         virtual void MoveInLineOfSight(Unit *);
         
         //Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)

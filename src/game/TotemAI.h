@@ -37,7 +37,6 @@ class TotemAI : public CreatureAI
         void MoveInLineOfSight(Unit *) override;
         void AttackStart(Unit *) override;
         void EnterEvadeMode(EvadeReason /* why */) override;
-        bool IsVisible(Unit *) const;
 
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);

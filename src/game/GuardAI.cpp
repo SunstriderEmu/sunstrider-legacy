@@ -101,12 +101,6 @@ void GuardAI::UpdateAI(const uint32 /*diff*/)
     }
 }
 
-bool GuardAI::IsVisible(Unit *pl) const
-{
-    return i_creature.GetDistance(pl) < sWorld->getConfig(CONFIG_SIGHT_GUARDER)
-        && pl->IsVisibleForOrDetect(&i_creature,true);
-}
-
 void GuardAI::JustDied(Unit *killer)
 {
     if(Player* pkiller = killer->GetCharmerOrOwnerPlayerOrPlayerItself())

@@ -605,7 +605,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_GROUP_XP_DISTANCE] = sConfigMgr->GetIntDefault("MaxGroupXPDistance", 74);
     /// \todo Add MonsterSight and GuarderSight (with meaning) in worldserver.conf or put them as define
     m_configs[CONFIG_SIGHT_MONSTER] = sConfigMgr->GetIntDefault("MonsterSight", 50);
-    m_configs[CONFIG_SIGHT_GUARDER] = sConfigMgr->GetIntDefault("GuarderSight", 50);
 
     if(reload)
     {
