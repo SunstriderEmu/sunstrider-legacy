@@ -16570,7 +16570,7 @@ bool Player::_LoadHomeBind(QueryResult result)
         if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
         {
             float o;
-            GetBetaZoneCoord(false, m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, o);
+            GetBetaZoneCoord(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, o);
             m_homebindAreaId = sMapMgr->GetAreaId(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ);
         }
         else {
@@ -22298,7 +22298,7 @@ void Player::RelocateToBetaZone()
 {
     float x, y, z, o;
     uint32 map;
-    GetBetaZoneCoord(secondary, map, x, y, z, o);
+    GetBetaZoneCoord(map, x, y, z, o);
     SetFallInformation(0, z);
     SetMapId(map);
     Relocate(x, y, z, o);
@@ -22312,11 +22312,11 @@ void Player::TeleportToArenaZone(bool secondary)
     TeleportTo(map, x, y, z, o, TELE_TO_GM_MODE); 
 }
 
-void Player::TeleportToBetaZone(bool secondary)
+void Player::TeleportToBetaZone()
 {
     float x, y, z, o;
     uint32 map;
-    GetBetaZoneCoord(secondary, map, x, y, z, o);
+    GetBetaZoneCoord(map, x, y, z, o);
     TeleportTo(map, x, y, z, o, TELE_TO_GM_MODE);
 }
 
