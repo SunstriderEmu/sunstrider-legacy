@@ -2275,9 +2275,12 @@ class Player : public Unit
         //relocate without teleporting
         void RelocateToArenaZone(bool secondary = false);
         void TeleportToArenaZone(bool secondary = false);
+        void RelocateToBetaZone();
+        void TeleportToBetaZone();
         bool ShouldGoToSecondaryArenaZone();
         void GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o);
-
+        void GetBetaZoneCoord(uint32& map, float& x, float& y, float& z, float& o);
+        
         void SetClientControl(Unit* target, uint8 allowMove);
 
         void SetMover(Unit* target);

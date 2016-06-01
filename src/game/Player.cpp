@@ -616,7 +616,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
     if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
     {
-        RelocateToArenaZone(false);
+        RelocateToBetaZone();
     }
     else
     {
@@ -16570,7 +16570,7 @@ bool Player::_LoadHomeBind(QueryResult result)
         if (sWorld->getConfig(CONFIG_BETASERVER_ENABLED))
         {
             float o;
-            GetArenaZoneCoord(false, m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, o);
+            GetBetaZoneCoord(false, m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, o);
             m_homebindAreaId = sMapMgr->GetAreaId(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ);
         }
         else {
@@ -22232,6 +22232,30 @@ void Player::RemoveAllCurrentPetAuras()
         CharacterDatabase.PQuery("DELETE FROM pet_aura WHERE guid IN ( SELECT id FROM character_pet WHERE owner = %u AND slot = %u )", GetGUIDLow(), PET_SAVE_NOT_IN_SLOT);
 }
 
+void Player::GetBetaZoneCoord(uint32& map, float& x, float& y, float& z, float& o)
+{
+    bool set = false;
+    QueryResult query = WorldDatabase.PQuery("SELECT position_x, position_y, position_z, orientation, map FROM game_tele WHERE name = 'BETA Landing Zone'");
+    if (query) {
+        Field* fields = query->Fetch();
+        if (fields)
+        {
+            x = fields[0].GetFloat();
+            y = fields[1].GetFloat();
+            z = fields[2].GetFloat();
+            o = fields[3].GetFloat();
+            map = fields[4].GetUInt16();
+            set = true;
+        }
+    }
+
+    if (!set) //default values
+    {
+        TC_LOG_ERROR("entities.player", "GetBetaZoneCoord(...) : DB values not found, using default values");
+        map = 0; x = -11785; y = -3171; z = -29; o = 3.7;
+    }
+}
+
 void Player::GetArenaZoneCoord(bool secondary, uint32& map, float& x, float& y, float& z, float& o)
 {
     bool set = false;
@@ -22270,12 +22294,30 @@ void Player::RelocateToArenaZone(bool secondary)
     Relocate(x, y, z, o);
 }
 
+void Player::RelocateToBetaZone()
+{
+    float x, y, z, o;
+    uint32 map;
+    GetBetaZoneCoord(secondary, map, x, y, z, o);
+    SetFallInformation(0, z);
+    SetMapId(map);
+    Relocate(x, y, z, o);
+}
+
 void Player::TeleportToArenaZone(bool secondary)
 {    
     float x, y, z, o;
     uint32 map;
     GetArenaZoneCoord(secondary, map, x, y, z, o);
     TeleportTo(map, x, y, z, o, TELE_TO_GM_MODE); 
+}
+
+void Player::TeleportToBetaZone(bool secondary)
+{
+    float x, y, z, o;
+    uint32 map;
+    GetBetaZoneCoord(secondary, map, x, y, z, o);
+    TeleportTo(map, x, y, z, o, TELE_TO_GM_MODE);
 }
 
 /* true if the player threshold is reached and there is more player in the main zone than the secondary */

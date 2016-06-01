@@ -39,7 +39,7 @@ void LagWatcher::MapUpdateStart(Map const& map)
     //CONFIG_LAGWATCHER_PROFILING_THRESHOLD_DIFF
 #ifdef USE_GPERFTOOLS
     //ProfilerStart("filename");
-#endif USE_GPERFTOOLS
+#endif //USE_GPERFTOOLS
 }
 
 void LagWatcher::MapUpdateEnd(Map const& map)
@@ -56,5 +56,5 @@ void LagWatcher::MapUpdateEnd(Map const& map)
 
 #ifdef USE_GPERFTOOLS
     //ProfilerStop();
-#endif USE_GPERFTOOLS
+#endif //USE_GPERFTOOLS
 }
