@@ -163,12 +163,12 @@ Creature::Creature() :
     Unit(),
     lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0), m_lootRecipientGroup(0),
     m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-    m_IsPet(false), m_isTotem(false), m_reactState(REACT_AGGRESSIVE), m_transportCheckTimer(1000),
+    m_reactState(REACT_AGGRESSIVE), m_transportCheckTimer(1000),
     m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0), m_relocateTimer(60000),
     m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_creatureInfo(nullptr), m_creatureInfoAddon(nullptr), m_DBTableGuid(0), m_formation(nullptr),
     m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), _focusSpell(nullptr),
-    m_isBeingEscorted(false), m_summoned(false), m_path_id(0), m_unreachableTargetTime(0), m_evadingAttacks(false), m_canFly(false),
+    m_isBeingEscorted(false), m_path_id(0), m_unreachableTargetTime(0), m_evadingAttacks(false), m_canFly(false),
     m_stealthWarningCooldown(0), m_keepActiveTimer(0)
 {
     m_valuesCount = UNIT_END;
@@ -318,6 +318,12 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     SetEntry(Entry);                                        // normal entry always
     m_creatureInfo = cinfo;                                 // map mode related always
 
+    // equal to player Race field, but creature does not have race
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, 0);
+
+    // known valid are: CLASS_WARRIOR, CLASS_PALADIN, CLASS_ROGUE, CLASS_MAGE
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, uint8(cinfo->unit_class));
+
     // Cancel load if no model defined
     if (!(cinfo->GetFirstValidModelId()))
     {
@@ -335,7 +341,9 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
 
     SetDisplayId(display_id);
     SetNativeDisplayId(display_id);
-    SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+
+    // equal to player Race field, but creature does not have race
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
 
     LastUsedScriptID = GetCreatureTemplate()->ScriptID;
 
@@ -2489,11 +2497,6 @@ bool Creature::isMoving()
 {
     float x, y ,z;
     return GetMotionMaster()->GetDestination(x,y,z);
-}
-
-TemporarySummon* Creature::ToTemporarySummon()  
-{ 
-    return m_summoned ? dynamic_cast<TemporarySummon*>(this) : nullptr; 
 }
 
 bool AIMessageEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/) 

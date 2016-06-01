@@ -4091,7 +4091,7 @@ void Spell::EffectSummon(uint32 i)
 
     Player *owner = m_originalCaster->ToPlayer();
 
-    if(owner->GetPetGUID())
+    if(owner->GetMinionGUID())
         return;
 
     // Summon in dest location
@@ -4442,6 +4442,9 @@ void Spell::EffectSummonWild(uint32 i)
         Creature* Charmed = m_originalCaster->SummonCreature(creature_entry,px,py,pz,m_caster->GetOrientation(),summonType,duration);
         if (Charmed)
         {
+            if(m_spellInfo->Effects[i].MiscValueB == SUMMON_TYPE_GUARDIAN)
+                Charmed->AddUnitTypeMask(UNIT_MASK_GUARDIAN);
+
             Charmed->SetSummoner(m_caster);
             //lolhack section
             switch (m_spellInfo->Id)
@@ -4613,10 +4616,11 @@ void Spell::EffectSummonGuardian(uint32 i)
         else
             m_caster->GetClosePoint(px,py,pz,m_caster->GetObjectSize());
 
-        Pet *spawnCreature = caster->SummonPet(m_spellInfo->Effects[i].MiscValue, px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration);
+        Pet* spawnCreature = caster->SummonPet(m_spellInfo->Effects[i].MiscValue, px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration);
         if(!spawnCreature)
             return;
 
+        spawnCreature->AddUnitTypeMask(UNIT_MASK_GUARDIAN);
         spawnCreature->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP,0);
         spawnCreature->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
         spawnCreature->SetFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_PVP_ATTACKABLE);
@@ -4913,7 +4917,7 @@ void Spell::EffectTameCreature(uint32 /*i*/)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
 
-    if(m_caster->GetPetGUID())
+    if(m_caster->GetMinionGUID())
         return;
 
     if(!unitTarget)

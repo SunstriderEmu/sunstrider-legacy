@@ -20,8 +20,13 @@
 #include "SpellInfo.h"
 class UnitAI;
 class SpellCastTargets;
+class Aura;
+class TemporarySummon;
 
 #define WORLD_TRIGGER   12999
+
+//TC compat
+typedef Aura AuraApplication;
 
 enum SpellInterruptFlags
 {
@@ -44,7 +49,7 @@ enum SpellChannelInterruptFlags
 enum SpellAuraInterruptFlags
 {
     AURA_INTERRUPT_FLAG_HITBYSPELL          = 0x00000001,   // 0    removed when getting hit by a negative spell?
-    AURA_INTERRUPT_FLAG_DAMAGE              = 0x00000002,   // 1    removed by any damage
+    AURA_INTERRUPT_FLAG_TAKE_DAMAGE              = 0x00000002,   // 1    removed by any damage
     AURA_INTERRUPT_FLAG_CAST                = 0x00000004,   // 2    cast any spells
     AURA_INTERRUPT_FLAG_MOVE                = 0x00000008,   // 3    removed by any movement
     AURA_INTERRUPT_FLAG_TURNING             = 0x00000010,   // 4    removed by any turning
@@ -164,6 +169,14 @@ enum UnitStandFlags
     UNIT_STAND_FLAGS_UNK4         = 0x08,
     UNIT_STAND_FLAGS_UNK5         = 0x10,
     UNIT_STAND_FLAGS_ALL          = 0xFF
+};
+
+enum UnitBytes0Offsets
+{
+    UNIT_BYTES_0_OFFSET_RACE        = 0,
+    UNIT_BYTES_0_OFFSET_CLASS       = 1,
+    UNIT_BYTES_0_OFFSET_GENDER      = 2,
+    UNIT_BYTES_0_OFFSET_POWER_TYPE  = 3,
 };
 
 // byte flags value (UNIT_FIELD_BYTES_1, 3)
@@ -540,7 +553,7 @@ enum UnitFlags
 {
     UNIT_FLAG_SERVER_CONTROLLED     = 0x00000001,                // set only when unit movement is controlled by server - by SPLINE/MONSTER_MOVE packets, together with UNIT_FLAG_STUNNED; only set to units controlled by client; client function CGUnit_C::IsClientControlled returns false when set for owner        
     UNIT_FLAG_NON_ATTACKABLE        = 0x00000002,                // not attackable
-    UNIT_FLAG_DISABLE_MOVE          = 0x00000004,
+    UNIT_FLAG_REMOVE_CLIENT_CONTROL = 0x00000004,
     UNIT_FLAG_PVP_ATTACKABLE        = 0x00000008,                // allow apply pvp rules to attackable state in addition to faction dependent state
     UNIT_FLAG_RENAME                = 0x00000010,
     UNIT_FLAG_PREPARATION           = 0x00000020,                // don't take reagents for spells with SPELL_ATTR5_NO_REAGENT_WHILE_PREP
@@ -713,6 +726,7 @@ enum UnitTypeMask
     UNIT_MASK_TOTEM                 = 0x00000008,
     UNIT_MASK_PET                   = 0x00000010,
     UNIT_MASK_VEHICLE               = 0x00000020,
+    //NYI
     UNIT_MASK_PUPPET                = 0x00000040,
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
@@ -917,6 +931,14 @@ enum SplineType
 
 typedef std::list<uint64> SharedVisionList;
 
+enum CharmType
+{
+    CHARM_TYPE_CHARM,
+    CHARM_TYPE_POSSESS,
+    CHARM_TYPE_VEHICLE,
+    CHARM_TYPE_CONVERT
+};
+
 struct CharmInfo
 {
     public:
@@ -1118,18 +1140,25 @@ class Unit : public WorldObject
         void ClearUnitState(uint32 f) { m_state &= ~f; }
         bool CanFreeMove() const;
 
-        bool IsPet() const      { return m_unitTypeMask & UNIT_MASK_PET; }
-        bool isTotem() const    { return m_unitTypeMask & UNIT_MASK_TOTEM; }
+        uint32 HasUnitTypeMask(uint32 mask) const { return mask & m_unitTypeMask; }
+        void AddUnitTypeMask(uint32 mask) { m_unitTypeMask |= mask; }
+        bool IsSummon() const { return (m_unitTypeMask & UNIT_MASK_SUMMON) != 0; }
+        bool IsGuardian() const { return (m_unitTypeMask & UNIT_MASK_GUARDIAN) != 0; }
+        bool IsPet() const { return (m_unitTypeMask & UNIT_MASK_PET) != 0; }
+        bool IsHunterPet() const { return (m_unitTypeMask & UNIT_MASK_HUNTER_PET) != 0; }
+        bool IsTotem() const { return (m_unitTypeMask & UNIT_MASK_TOTEM) != 0; }
+        bool IsVehicle() const { return (m_unitTypeMask & UNIT_MASK_VEHICLE) != 0; }
+
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
         uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
         virtual uint32 GetLevelForTarget(Unit const* /*target*/) const { return GetLevel(); }
         void SetLevel(uint32 lvl);
-        uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, 0); }
+        uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
         uint32 GetRaceMask() const { return 1 << (GetRace()-1); }
-        uint8 GetClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
+        uint8 GetClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS); }
         uint32 GetClassMask() const { return 1 << (GetClass()-1); }
-        uint8 GetGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
+        uint8 GetGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER); }
 
         float GetStat(Stats stat) const { return float(GetUInt32Value(UNIT_FIELD_STAT0+stat)); }
         void SetStat(Stats stat, int32 val) { SetStatInt32Value(UNIT_FIELD_STAT0+stat, val); }
@@ -1232,6 +1261,7 @@ class Unit : public WorldObject
         void RemoveSpellbyDamageTaken(uint32 damage, uint32 spell);
         uint32 DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *spellProto = NULL, bool durabilityLoss = true);
         void Kill(Unit *pVictim, bool durabilityLoss = true);
+        void KillSelf(bool durabilityLoss = true) { Kill(this, durabilityLoss); }
 
         void ProcDamageAndSpell(Unit *pVictim, uint32 procAttacker, uint32 procVictim, uint32 procEx, uint32 amount, WeaponAttackType attType = BASE_ATTACK, SpellInfo const *procSpell = NULL, bool canTrigger = true);
         void ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, SpellInfo const * procSpell, uint32 damage );
@@ -1324,6 +1354,8 @@ class Unit : public WorldObject
         bool HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 owner) const;
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
+        bool HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura = 0) const;
+        bool HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel = NULL) const;
 
         bool HasStealthAura()      const { return HasAuraType(SPELL_AURA_MOD_STEALTH); }
         bool HasInvisibilityAura() const { return HasAuraType(SPELL_AURA_MOD_INVISIBILITY); }
@@ -1426,10 +1458,14 @@ class Unit : public WorldObject
         uint64 GetCreatorGUID() const { return GetUInt64Value(UNIT_FIELD_CREATEDBY); }
         /** Set a "X's minion" text on the creature */
         void SetCreatorGUID(uint64 creator) { SetUInt64Value(UNIT_FIELD_CREATEDBY, creator); }
-        uint64 GetPetGUID() const { return  GetUInt64Value(UNIT_FIELD_SUMMON); }
+        uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
         uint64 GetCharmerGUID() const { return GetUInt64Value(UNIT_FIELD_CHARMEDBY); }
         void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
         uint64 GetCharmGUID() const { return  GetUInt64Value(UNIT_FIELD_CHARM); }
+        //not tc like yet
+        void SetPetGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_SUMMON, guid); }
+        //not tc like yet
+        uint64 GetPetGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
 
         bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
         bool IsCreatedByPlayer() const { return m_CreatedByPlayer; }
@@ -1447,6 +1483,7 @@ class Unit : public WorldObject
 
         Unit* GetOwner() const;
         Pet* GetPet() const;
+        Unit* GetGuardianPet() const;
         Unit* GetCharmer() const;
         Unit* GetCharm() const;
         Unit* GetCharmerOrOwner() const { return GetCharmerGUID() ? GetCharmer() : GetOwner(); }
@@ -1465,6 +1502,8 @@ class Unit : public WorldObject
         void SetCharmedBy(Unit* charmer, bool possess);
         void RemoveCharmedBy(Unit* charmer);
         void RestoreFaction();
+
+        Unit* GetFirstControlled() const;
 
         bool IsCharmed() const { return GetCharmerGUID() != 0; }
         bool IsPossessed() const { return HasUnitState(UNIT_STATE_POSSESSED); }
@@ -1718,9 +1757,13 @@ class Unit : public WorldObject
         bool HasInThreatList(uint64 hostileGUID) const;
 
         //TC compat
-        inline Aura* GetAuraApplication(uint32 spellId, uint64 casterGUID = 0) { return GetAuraWithCaster(spellId, casterGUID); }
+        Aura* GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = nullptr) const;
         Aura* GetAura(uint32 spellId, uint32 effindex);
         Aura* GetAuraWithCaster(uint32 spellId, uint64 casterGUID);
+
+        AuraApplication* GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint8 reqEffMask = 0, AuraApplication * except = NULL) const;
+        Aura* GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = ObjectGuid::Empty, uint8 reqEffMask = 0) const;
+
         AuraMap      & GetAuras()       { return m_Auras; }
         AuraMap const& GetAuras() const { return m_Auras; }
         AuraList const& GetAurasByType(AuraType type) const { return m_modAuras[type]; }
@@ -1933,8 +1976,14 @@ class Unit : public WorldObject
         GameObject* FindGOInGrid(uint32 entry, float range);
         
         Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return NULL; } 
-        Totem* ToTotem(){ if(isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
-        
+        Pet const* ToPet() const { if (IsPet()) return reinterpret_cast<Pet const*>(this); else return NULL; }
+
+        Totem* ToTotem(){ if(IsTotem()) return reinterpret_cast<Totem*>(this); else return NULL; } 
+        Totem const* ToTotem() const { if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return NULL; }
+
+        TemporarySummon* ToTemporarySummon() { if (IsSummon()) return reinterpret_cast<TemporarySummon*>(this); else return NULL; }
+        TemporarySummon const* ToTemporarySummon() const { if (IsSummon()) return reinterpret_cast<TemporarySummon const*>(this); else return NULL; }
+
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() const;
         uint64 GetSummonerGUID() { return m_summoner; }

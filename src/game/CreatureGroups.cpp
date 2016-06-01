@@ -177,7 +177,7 @@ void CreatureGroupManager::LoadCreatureFormations()
 uint32 CreatureGroupManager::GetCreatureGUIDForStore(Creature* member)
 {
     //always use table guid except for summons
-    if (member->IsSummoned())
+    if (member->IsSummon())
         return member->GetGUIDLow();
     else
         return member->GetDBTableGUIDLow();
@@ -202,7 +202,7 @@ void CreatureGroup::AddMember(Creature *member)
 
     if (member->GetFormation())
     {
-        if(member->IsSummoned())
+        if(member->IsSummon())
             TC_LOG_ERROR("misc", "Tried to add a summoned member (guid: %u, entry %u) already in a formation to formation", member->GetGUIDLow(), member->GetEntry());
         else
             TC_LOG_ERROR("misc", "Tried to add a member (tableguid: %u, entry %u) already in a formation to formation", member->GetDBTableGUIDLow(), member->GetEntry());

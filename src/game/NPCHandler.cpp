@@ -318,13 +318,11 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         _player->SendPreparedGossip(unit);
     }
     
-    unit->AI()->sOnGossipHello(_player);
+    unit->AI()->sGossipHello(_player);
 }
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData,8);
 
     uint64 guid;

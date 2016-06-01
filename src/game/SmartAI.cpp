@@ -725,7 +725,7 @@ void SmartAI::SetSwim(bool swim)
         me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
 }
 
-void SmartAI::sOnGossipHello(Player* player)
+void SmartAI::sGossipHello(Player* player)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player);
 }
@@ -735,7 +735,7 @@ void SmartAI::sGossipSelect(Player* player, uint32 sender, uint32 action)
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_SELECT, player, sender, action);
 }
 
-void SmartAI::sOnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
+void SmartAI::sGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
 
 void SmartAI::sQuestAccept(Player* player, Quest const* quest)
 {

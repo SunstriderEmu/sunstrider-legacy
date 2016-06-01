@@ -527,9 +527,7 @@ class Creature : public Unit
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
-        bool IsPet() const { return m_IsPet; }
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
-        bool IsTotem() const { return m_isTotem; }
         bool isRacialLeader() const { return GetCreatureTemplate()->RacialLeader; }
         bool IsCivilian() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN; }
         bool IsTrigger() const { return GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER; }
@@ -797,9 +795,6 @@ class Creature : public Unit
         bool IsBeingEscorted() const { return m_isBeingEscorted; }
         void SetEscorted(bool status) { m_isBeingEscorted = status; }
 
-        bool IsSummoned() const { return m_summoned; }
-        TemporarySummon* ToTemporarySummon();
-
         //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
@@ -860,8 +855,6 @@ class Creature : public Unit
         float m_respawnradius;
         uint16 m_transportCheckTimer;
 
-        bool m_IsPet;                                       // set only in Pet::Pet
-        bool m_isTotem;                                     // set only in Totem::Totem
         ReactStates m_reactState;                           // for AI, not charmInfo
         void RegenerateMana();
         void RegenerateHealth();
@@ -896,7 +889,6 @@ class Creature : public Unit
         uint32 m_prohibitedSchools[7];
         
         bool m_isBeingEscorted;
-        bool m_summoned;
 
         // Time since target is unreachable
         uint32 m_unreachableTargetTime;

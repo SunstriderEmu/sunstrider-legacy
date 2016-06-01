@@ -1660,18 +1660,13 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         target = m_caster->GetCharmerOrOwner();
         break;
     case TARGET_UNIT_PET:
-        /* TC
-        target = m_caster->GetGuardianPet(); */
-        target = m_caster->GetPet();
+        target = m_caster->GetGuardianPet();
         if (!target)
             target = m_caster->GetCharm();
         break;
     case TARGET_UNIT_SUMMONER:
-        /* TC 
         if (m_caster->IsSummon())
-            target = m_caster->ToTempSummon()->GetSummoner(); */
-        if (Unit* summoner = m_caster->GetSummoner())
-            target = summoner;
+            target = m_caster->ToTemporarySummon()->GetSummoner(); 
         break;
 #ifdef LICH_KING
     case TARGET_UNIT_VEHICLE:
@@ -4350,7 +4345,7 @@ void Spell::cast(bool skipCheck)
     }
 
     if (m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
-        if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, m_caster->GetPetGUID()))
+        if (Creature* pet = ObjectAccessor::GetCreature(*m_caster, m_caster->GetMinionGUID()))
             pet->DespawnOrUnsummon();
 
     CallScriptOnCastHandlers();
@@ -6573,7 +6568,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             // This is generic summon effect now and don't make this check for summon types similar
             // SPELL_EFFECT_SUMMON_CRITTER, SPELL_EFFECT_SUMMON_WILD or SPELL_EFFECT_SUMMON_GUARDIAN.
-            // These won't show up in m_caster->GetPetGUID()
+            // These won't show up in m_caster->GetMinionGUID()
             case SPELL_EFFECT_SUMMON:
             {
                 switch(m_spellInfo->Effects[i].MiscValueB)
@@ -6584,7 +6579,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     case SUMMON_TYPE_DEMON:
                     case SUMMON_TYPE_SUMMON:
                     {
-                        if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
+                        if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                         if(m_caster->GetCharmGUID())
@@ -6599,12 +6594,12 @@ SpellCastResult Spell::CheckCast(bool strict)
                 break;
             }
             // Don't make this check for SPELL_EFFECT_SUMMON_CRITTER, SPELL_EFFECT_SUMMON_WILD or SPELL_EFFECT_SUMMON_GUARDIAN.
-            // These won't show up in m_caster->GetPetGUID()
+            // These won't show up in m_caster->GetMinionGUID()
             case SPELL_EFFECT_SUMMON_POSSESSED:
             case SPELL_EFFECT_SUMMON_PHANTASM:
             case SPELL_EFFECT_SUMMON_DEMON:
             {
-                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
+                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 if(m_caster->GetCharmGUID())
@@ -6614,7 +6609,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_SUMMON_PET:
             {
-                if(m_caster->GetPetGUID())                  //let warlock do a replacement summon
+                if(m_caster->GetMinionGUID())                  //let warlock do a replacement summon
                 {
 
                     Pet* pet = m_caster->GetPet();
@@ -6726,7 +6721,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (!(m_targets.GetUnitTarget()->ToCreature())->GetCreatureTemplate()->IsTameable ())
                         return SPELL_FAILED_BAD_TARGETS;
 
-                    if(m_caster->GetPetGUID())
+                    if(m_caster->GetMinionGUID())
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                     if(m_caster->GetCharmGUID())
@@ -6737,7 +6732,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_AURA_MOD_CHARM:
             case SPELL_AURA_AOE_CHARM:
             {
-                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
+                if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
                     return SPELL_FAILED_ALREADY_HAVE_SUMMON;
 
                 if(m_caster->GetCharmGUID())
@@ -6907,8 +6902,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            // TC if (!m_caster->GetGuardianPet() && !m_caster->GetCharm())
-            if(!m_caster->GetPet())
+            if (!m_caster->GetGuardianPet() && !m_caster->GetCharm())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;

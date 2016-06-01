@@ -670,9 +670,10 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
     SetFactionForRace(m_race);
 
-    uint32 RaceClassGender = ( race ) | ( class_ << 8 ) | ( gender << 16 );
-
-    SetUInt32Value(UNIT_FIELD_BYTES_0, ( RaceClassGender | ( powertype << 24 ) ) );
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, race);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, class_);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_POWER_TYPE, powertype);
     SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
     SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE );
@@ -763,7 +764,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     {
         if(CharStartOutfitEntry const* entry = sCharStartOutfitStore.LookupEntry(i))
         {
-            if(entry->RaceClassGender == RaceClassGender)
+            if(entry->RaceClassGender == ( race | (class_ << 8) | (gender << 16) ))
             {
                 oEntry = entry;
                 break;
@@ -2730,7 +2731,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // cleanup unit flags (will be re-applied if need at aura load).
     RemoveFlag( UNIT_FIELD_FLAGS,
-        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_NOT_ATTACKABLE_1 |
+        UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_NOT_ATTACKABLE_1 |
         UNIT_FLAG_PET_IN_COMBAT  | UNIT_FLAG_SILENCED     | UNIT_FLAG_PACIFIED         |
         UNIT_FLAG_STUNNED | UNIT_FLAG_IN_COMBAT    | UNIT_FLAG_DISARMED         |
         UNIT_FLAG_CONFUSED       | UNIT_FLAG_FLEEING      | UNIT_FLAG_NOT_SELECTABLE   |
@@ -7049,12 +7050,12 @@ void Player::DuelComplete(DuelCompleteType type)
     // cleanup combo points
     if(GetComboTarget()==duel->opponent->GetGUID())
         ClearComboPoints();
-    else if(GetComboTarget()==duel->opponent->GetPetGUID())
+    else if(GetComboTarget()==duel->opponent->GetMinionGUID())
         ClearComboPoints();
 
     if(duel->opponent->GetComboTarget()==GetGUID())
         duel->opponent->ClearComboPoints();
-    else if(duel->opponent->GetComboTarget()==GetPetGUID())
+    else if(duel->opponent->GetComboTarget()==GetMinionGUID())
         duel->opponent->ClearComboPoints();
 
     // Refresh in PvPZone
@@ -14975,14 +14976,21 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetCharm(0);
     
     // Override some data fields
-    uint32 bytes0 = 0;
-    bytes0 |= m_race;                               // race
-    bytes0 |= m_class << 8;                         // class
-    bytes0 |= m_gender << 16;                       // gender
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[LOAD_DATA_LEVEL].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[LOAD_DATA_XP].GetUInt32());
     SetUInt32Value(PLAYER_FIELD_COINAGE, fields[LOAD_DATA_MONEY].GetUInt32());
-    SetUInt32Value(UNIT_FIELD_BYTES_0, bytes0);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, m_race);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, m_class);
+    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, m_gender);
+
+    // check if race/class combination is valid
+    PlayerInfo const* info = sObjectMgr->GetPlayerInfo(GetRace(), GetClass());
+    if (!info)
+    {
+        TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player (%u) has wrong race/class (%u/%u), can't load.", guid, GetRace(), GetClass());
+        return false;
+    }
+
     SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
     //SetByteValue(PLAYER_BYTES_3, 0, m_gender);
     SetUInt32Value(PLAYER_BYTES, fields[LOAD_DATA_PLAYERBYTES].GetUInt32());   // PlayerBytes
@@ -15004,12 +15012,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
         SetMoney(MAX_MONEY_AMOUNT);
     
     // Override NativeDisplayId in case of race/faction change
-    PlayerInfo const* info = sObjectMgr->GetPlayerInfo(m_race, m_class);
-    if (!info) {
-        TC_LOG_ERROR("entities.player","Player has incorrect race/class pair. Can't be loaded.");
-        return false;
-    }
-    
     switch (m_gender) {
     case GENDER_FEMALE:
         SetDisplayId(info->displayId_f);
@@ -17608,7 +17610,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
             pet->RemoveCharmedBy(NULL);
             break;
         default:
-            if(GetPetGUID() == pet->GetGUID())
+            if(GetMinionGUID() == pet->GetGUID())
                 SetPet(NULL);
             break;
     }
@@ -17866,6 +17868,14 @@ void Player::PetSpellInitialize()
     }
 }
 
+void Player::SendRemoveControlBar() const
+{
+    //LK OK
+    WorldPacket data(SMSG_PET_SPELLS, 8);
+    data << uint64(0);
+    GetSession()->SendPacket(&data);
+}
+
 void Player::PossessSpellInitialize()
 {
     Unit* charm = GetCharm();
@@ -17905,8 +17915,7 @@ void Player::PossessSpellInitialize()
 
 void Player::CharmSpellInitialize()
 {
-    Unit* charm = GetCharm();
-
+    Unit* charm = GetFirstControlled();
     if(!charm)
         return;
 
@@ -18203,7 +18212,7 @@ bool Player::ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc 
         return false;
     }
 
-    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return false;
 
     // taximaster case
@@ -18429,7 +18438,7 @@ void Player::CleanupAfterTaxiFlight()
 {
     m_taxi.ClearTaxiDestinations();        // not destinations, clear source node
     Dismount();
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE | UNIT_FLAG_TAXI_FLIGHT);
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL | UNIT_FLAG_TAXI_FLIGHT);
     GetHostileRefManager().setOnlineOfflineState(true);
 }
 
@@ -21579,15 +21588,6 @@ void Player::HandleFallUnderMap()
     }
 }
 
-void Player::SetViewport(uint64 guid, bool moveable)
-{
-    WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, 8+1);
-    data.appendPackGUID(guid); // Packed guid of object to set client's view to
-    data << (moveable ? uint8(0x01) : uint8(0x00)); // 0 - can't move; 1 - can move
-    m_session->SendPacket(&data);
-    TC_LOG_DEBUG("entities.player","Viewport for " UI64FMTD " (%s) changed to " UI64FMTD , GetGUID(), GetName().c_str(), guid);
-}
-
 WorldObject* Player::GetFarsightTarget() const
 {
     // Players can have in farsight field another player's guid, a creature's guid, or a dynamic object's guid
@@ -22627,7 +22627,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     if (IsPetNeedBeTemporaryUnsummoned())
         return;
 
-    if (GetPetGUID())
+    if (GetMinionGUID())
         return;
 
     Pet* NewPet = new Pet;

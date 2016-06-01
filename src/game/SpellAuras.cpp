@@ -6391,7 +6391,7 @@ void Aura::PeriodicTick()
                 }
             }
 
-            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, m_spellProto ? m_spellProto->Id : 0);
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, m_spellProto ? m_spellProto->Id : 0);
             break;
         }
         case SPELL_AURA_PERIODIC_ENERGIZE:

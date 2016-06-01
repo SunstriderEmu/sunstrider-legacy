@@ -68,8 +68,9 @@ uint32 const LevelStartLoyalty[6] =
 Pet::Pet(PetType type) : Creature()
 {
     m_unitTypeMask |= UNIT_MASK_PET;
-    
-    m_IsPet = true;
+    if (type == HUNTER_PET)
+        m_unitTypeMask |= UNIT_MASK_HUNTER_PET;
+
     m_name = "Pet";
     m_petType = type;
 
@@ -88,7 +89,11 @@ Pet::Pet(PetType type) : Creature()
     m_auraUpdateMask = 0;
 
     // pets always have a charminfo, even if they are not actually charmed
-    InitCharmInfo();
+    if (!(m_unitTypeMask & UNIT_MASK_CONTROLABLE_GUARDIAN))
+    {
+        m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
+        InitCharmInfo();
+    }
 
     if(type == MINI_PET || type == POSSESSED_PET)                                    // always passive
         SetReactState(REACT_PASSIVE);
@@ -567,7 +572,7 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Unit* owner = GetOwner();
-            if(!owner || (!IsWithinDistInMap(owner, OWNER_MAX_DISTANCE) && !IsPossessed()) || (isControlled() && !owner->GetPetGUID()))
+            if(!owner || (!IsWithinDistInMap(owner, OWNER_MAX_DISTANCE) && !IsPossessed()) || (isControlled() && !owner->GetMinionGUID()))
             {
                 Remove(PET_SAVE_NOT_IN_SLOT, true);
                 return;
@@ -575,7 +580,7 @@ void Pet::Update(uint32 diff)
 
             if(isControlled())
             {
-                if( owner->GetPetGUID() != GetGUID() )
+                if( owner->GetMinionGUID() != GetGUID() )
                 {
                     Remove(getPetType()==HUNTER_PET?PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
                     return;
@@ -877,7 +882,7 @@ void Pet::Remove(PetSaveMode mode, bool returnreagent)
         }
 
         // only if current pet in slot
-        if(owner->GetPetGUID()==GetGUID())
+        if(owner->GetMinionGUID()==GetGUID())
             owner->SetPet(0);
     }
 

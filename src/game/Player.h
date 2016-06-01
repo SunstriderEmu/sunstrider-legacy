@@ -1125,7 +1125,6 @@ class Player : public Unit
         void AddToWorld();
         void RemoveFromWorld();
 
-        void SetViewport(uint64 guid, bool movable);
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
         WorldObject* GetFarsightTarget() const;
@@ -1644,6 +1643,7 @@ class Player : public Unit
         void PetSpellInitialize();
         void CharmSpellInitialize();
         void PossessSpellInitialize();
+        void SendRemoveControlBar() const;
         bool HasSpell(uint32 spell) const;
         bool HasSpellButDisabled(uint32 spell) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;

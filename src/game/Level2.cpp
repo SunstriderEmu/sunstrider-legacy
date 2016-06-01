@@ -3899,7 +3899,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
         return false;
     }
 
-    if(player->GetPetGUID())
+    if(player->GetMinionGUID())
     {
         PSendSysMessage("You already have a pet.");
         SetSentErrorMessage(true);

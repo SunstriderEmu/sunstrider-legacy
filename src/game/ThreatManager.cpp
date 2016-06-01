@@ -87,7 +87,7 @@ bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellIn
     if (threatSpell && threatSpell->HasAttribute(SPELL_ATTR1_NO_THREAT))
         return false;
 
-    if(hatedUnit->isTotem())
+    if(hatedUnit->IsTotem())
         return false;
 
     ASSERT(hatingUnit->GetTypeId() == TYPEID_UNIT);

@@ -30,7 +30,6 @@
 Totem::Totem() : Creature()
 {
     m_unitTypeMask |= UNIT_MASK_TOTEM;
-    m_isTotem = true;
     m_duration = 0;
     m_type = TOTEM_PASSIVE;
 }

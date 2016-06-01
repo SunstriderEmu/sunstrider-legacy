@@ -31,6 +31,7 @@ class Player;
 class GameObject;
 class GameObjectAI;
 class SpellInfo;
+class PlayerAI;
 
 #define TIME_INTERVAL_LOOK   5000
 #define VISIBILITY_RANGE    10000
@@ -64,33 +65,6 @@ enum SCEquip
 {
     EQUIP_NO_CHANGE = -1,
     EQUIP_UNEQUIP   = 0
-};
-
-//Selection method used by SelectSpellTarget
-enum SelectAggroTarget : int
-{
-    SELECT_TARGET_RANDOM = 0,                               //Just selects a random target
-    SELECT_TARGET_TOPAGGRO,                                 //Selects targes from top aggro to bottom
-    SELECT_TARGET_BOTTOMAGGRO,                              //Selects targets from bottom aggro to top
-    SELECT_TARGET_NEAREST,
-    SELECT_TARGET_FARTHEST,
-};
-
-class PlayerAI : public UnitAI
-{
-    protected:
-        Player *me;
-    public:
-        PlayerAI(Player *p) : UnitAI((Unit*)p), me(p) {}
-
-        void OnCharmed(Unit* charmer, bool apply);
-        void OnPossess(Unit* charmer, bool apply);
-};
-
-class SimpleCharmedAI : public PlayerAI
-{
-    public:
-        void UpdateAI(const uint32 diff);
 };
 
 class CreatureAI : public UnitAI
@@ -198,15 +172,11 @@ class CreatureAI : public UnitAI
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }
 
-        //Selects a unit from the creature's current aggro list
-        bool checkTarget(Unit* target, bool playersOnly, float radius, bool noTank = false);
+        // Called when a player is charmed by the creature
+        // If a PlayerAI* is returned, that AI is placed on the player instead of the default charm AI
+        // Object destruction is handled by Unit::RemoveCharmedBy
+        virtual PlayerAI* GetAIForCharmedPlayer(Player* /*who*/) { return nullptr; }
 
-        //SelectTargetFromPlayerList -> me->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0.0f, 500.0f, true)
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position);
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position, float dist, bool playerOnly, bool noTank = false);
-        Unit* SelectTarget(SelectAggroTarget target, uint32 position, float distNear, float distFar, bool playerOnly);
-        Unit* SelectTarget(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
-        void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

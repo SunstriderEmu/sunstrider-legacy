@@ -35,6 +35,7 @@
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "TemporarySummon.h"
+#include "PlayerAI.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -771,14 +772,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
     if (damagetype != NODAMAGE)
     {
-       // interrupting auras with AURA_INTERRUPT_FLAG_DAMAGE before checking !damage (absorbed damage breaks that type of auras)
+       // interrupting auras with AURA_INTERRUPT_FLAG_TAKE_DAMAGE before checking !damage (absorbed damage breaks that type of auras)
         if (spellProto)
         {
             if (!(spellProto->HasAttribute(SPELL_ATTR4_DAMAGE_DOESNT_BREAK_AURAS)))
-                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, spellProto->Id);
+                pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, spellProto->Id);
         }
         else
-            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_DAMAGE, 0);
+            pVictim->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TAKE_DAMAGE, 0);
             
         pVictim->RemoveSpellbyDamageTaken(damage, spellProto ? spellProto->Id : 0);
     }
@@ -955,7 +956,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             next = i; ++next;
             if (spellProto && spellProto->Id == se->Id) // Not drop auras added by self
                 continue;
-            if( se->AuraInterruptFlags & AURA_INTERRUPT_FLAG_DAMAGE )
+            if( se->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE )
             {
                 bool remove = true;
                 if (se->ProcFlags & (1<<3))
@@ -4903,12 +4904,52 @@ void Unit::_ApplyAllAuraMods()
     }
 }
 
+Aura* Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, AuraApplication* except) const
+{
+    for (uint32 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
+    {
+        AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
+        if (iter != m_Auras.end())
+        {
+            Aura* aura = iter->second;
+
+            if (((aura->GetEffectMask() & reqEffMask) == reqEffMask)
+                && (!casterGUID || aura->GetCasterGUID() == casterGUID)
+                && (!itemCasterGUID || aura->GetCastItemGUID() == itemCasterGUID)
+                && (!except || except != aura))
+            {
+                return aura;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 Aura* Unit::GetAura(uint32 spellId, uint32 effindex)
 {
     AuraMap::const_iterator iter = m_Auras.find(spellEffectPair(spellId, effindex));
     if (iter != m_Auras.end())
         return iter->second;
     return nullptr;
+}
+
+AuraApplication* Unit::GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask, AuraApplication* except) const
+{
+    uint32 rankSpell = sSpellMgr->GetFirstSpellInChain(spellId);
+    while (rankSpell)
+    {
+        if (AuraApplication * aurApp = GetAuraApplication(rankSpell, casterGUID, itemCasterGUID, reqEffMask, except))
+            return aurApp;
+        rankSpell = sSpellMgr->GetNextSpellInChain(rankSpell);
+    }
+    return NULL;
+}
+
+Aura* Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint8 reqEffMask) const
+{
+    AuraApplication * aurApp = GetAuraApplicationOfRankedSpell(spellId, casterGUID, itemCasterGUID, reqEffMask);
+    return aurApp ? aurApp->GetBase() : NULL;
 }
 
 Aura* Unit::GetAuraWithCaster(uint32 spellId, uint64 casterGUID)
@@ -7743,7 +7784,7 @@ Player* Unit::GetAffectingPlayer() const
 
 Pet* Unit::GetPet() const
 {
-    if(uint64 pet_guid = GetPetGUID())
+    if(uint64 pet_guid = GetMinionGUID())
     {
         if(!IS_PET_GUID(pet_guid))
             return nullptr;
@@ -7761,6 +7802,21 @@ Pet* Unit::GetPet() const
     }
 
     return nullptr;
+}
+
+Unit* Unit::GetGuardianPet() const
+{
+    if (uint64 pet_guid = GetPetGUID())
+    {
+        if (Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, pet_guid))
+            if (pet->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+                return (Unit*)pet;
+
+        TC_LOG_FATAL("entities.unit", "Unit::GetGuardianPet: Guardian " UI64FMTD " not exist.", pet_guid);
+        const_cast<Unit*>(this)->SetPetGUID(0);
+    }
+
+    return NULL;
 }
 
 Unit* Unit::GetCharm() const
@@ -7917,6 +7973,17 @@ Unit* Unit::GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
     }
     //no redirect
     return victim;
+}
+
+Unit* Unit::GetFirstControlled() const
+{
+    // Sequence: charmed, pet, other guardians
+    Unit* unit = GetCharm();
+    if (!unit)
+        if (uint64 guid = GetMinionGUID())
+            unit = ObjectAccessor::GetUnit(*this, guid);
+
+    return unit;
 }
 
 void Unit::SendHealSpellLog(Unit *pVictim, uint32 SpellID, uint32 Damage, bool critical)
@@ -8099,7 +8166,7 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffect
         }
         */
         // Dark Pact
-        if ((spellInfo->SpellFamilyFlags & 0x80000000LL) && spellInfo->SpellIconID == 154 && GetPetGUID())
+        if ((spellInfo->SpellFamilyFlags & 0x80000000LL) && spellInfo->SpellIconID == 154 && GetMinionGUID())
         {
             CastingTime = 3360;                         // 96% from +shadow damage
         }
@@ -9952,7 +10019,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
             Dismount();
     }
 
-    if(GetPetGUID()) 
+    if(GetMinionGUID()) 
     {
         if (Pet* pet = GetPet())
         {
@@ -10858,11 +10925,11 @@ bool Unit::CanHaveThreatList() const
         return false;
 
     // totems can not have threat list
-    if( (this->ToCreature())->IsTotem() )
+    if (this->IsTotem())
         return false;
 
-    // pets can not have a threat list, unless they are controlled by a creature
-    if( (this->ToCreature())->IsPet() && IS_PLAYER_GUID(((Pet*)this)->GetOwnerGUID()) )
+    // summons can not have a threat list, unless they are controlled by a creature
+    if (HasUnitTypeMask(UNIT_MASK_MINION | UNIT_MASK_GUARDIAN | UNIT_MASK_CONTROLABLE_GUARDIAN) && IS_PLAYER_GUID(((Pet*)this)->GetOwnerGUID()))
         return false;
 
     return true;
@@ -11952,29 +12019,78 @@ void Unit::CleanupsBeforeDelete(bool finalCleanup)
 
 void Unit::UpdateCharmAI()
 {
-    if(GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    if(i_disabledAI) // disabled AI must be primary AI
+    switch (GetTypeId())
     {
-        if(!IsCharmed())
+    case TYPEID_UNIT:
+        if (i_disabledAI) // disabled AI must be primary AI
         {
-            if(i_AI) delete i_AI;
-            i_AI = i_disabledAI;
-            i_disabledAI = NULL;
+            if (!IsCharmed())
+            {
+                if (i_AI) delete i_AI;
+                i_AI = i_disabledAI;
+                i_disabledAI = NULL;
+            }
         }
-    }
-    else
-    {
-        if(IsCharmed())
+        else
+        {
+            if (IsCharmed())
+            {
+                i_disabledAI = i_AI;
+                if (IsPossessed())
+                    i_AI = new PossessedAI(this->ToCreature());
+                else
+                    i_AI = new PetAI(this->ToCreature());
+            }
+        }
+        break;
+    case TYPEID_PLAYER:
+        if (IsCharmed()) // if we are currently being charmed, then we should apply charm AI
         {
             i_disabledAI = i_AI;
-            if(IsPossessed())
-                i_AI = new PossessedAI(this->ToCreature());
-            else
-                i_AI = new PetAI(this->ToCreature());
+
+            UnitAI* newAI = nullptr;
+            // first, we check if the creature's own AI specifies an override playerai for its owned players
+            Unit* charmer = GetCharmer();
+            if (charmer)
+            {
+                if (Creature* creatureCharmer = charmer->ToCreature())
+                {
+                    if (PlayerAI* charmAI = creatureCharmer->IsAIEnabled ? creatureCharmer->AI()->GetAIForCharmedPlayer(ToPlayer()) : nullptr)
+                        newAI = charmAI;
+                }
+                else
+                {
+                    TC_LOG_ERROR("misc", "Attempt to assign charm AI to player %u who is charmed by non-creature " UI64FMTD ".", GetGUIDLow(), GetCharmerGUID());
+                }
+            }
+            if (!newAI) // otherwise, we default to the generic one
+                newAI = new SimpleCharmedPlayerAI(ToPlayer());
+            i_AI = newAI;
+            newAI->OnCharmed(charmer, true);
         }
+        else
+        {
+            if (i_AI)
+            {
+                // we allow the charmed PlayerAI to clean up
+                i_AI->OnCharmed(GetCharmer(), false);
+                // then delete it
+                delete i_AI;
+            }
+            else
+            {
+                TC_LOG_ERROR("misc", "Attempt to remove charm AI from player %u who doesn't currently have charm AI.", GetGUIDLow());
+            }
+            // and restore our previous PlayerAI (if we had one)
+            i_AI = i_disabledAI;
+            i_disabledAI = nullptr;
+            // IsAIEnabled gets handled in the caller
+        }
+        break;
+    default:
+        TC_LOG_ERROR("misc", "Attempt to update charm AI for unit " UI64FMTD ", which is neither player nor creature.", GetGUID());
     }
+
 }
 
 CharmInfo* Unit::InitCharmInfo()
@@ -13774,155 +13890,7 @@ void Unit::SetConfused(bool apply)
     if (Player* player = ToPlayer())
         player->SetClientControl(this, !apply);
 }
-/* TODOSPELL old version
-bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp)
-{
-    if (!charmer)
-        return false;
 
-    // dismount players when charmed
-    if (GetTypeId() == TYPEID_PLAYER)
-        RemoveAurasByType(SPELL_AURA_MOUNTED);
-
-    if (charmer->GetTypeId() == TYPEID_PLAYER)
-        charmer->RemoveAurasByType(SPELL_AURA_MOUNTED);
-
-    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    ASSERT((type == CHARM_TYPE_VEHICLE) == IsVehicle());
-
-    TC_LOG_DEBUG("entities.unit", "SetCharmedBy: charmer %u (GUID %u), charmed %u (GUID %u), type %u.", charmer->GetEntry(), charmer->GetGUIDLow(), GetEntry(), GetGUIDLow(), uint32(type));
-
-    if (this == charmer)
-    {
-        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: Unit %u (GUID %u) is trying to charm itself!", GetEntry(), GetGUIDLow());
-        return false;
-    }
-
-    //if (HasUnitState(UNIT_STATE_UNATTACKABLE))
-    //    return false;
-
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetTransport())
-    {
-        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: Player on transport is trying to charm %u (GUID %u)", GetEntry(), GetGUIDLow());
-        return false;
-    }
-
-    // Already charmed
-    if (GetCharmerGUID())
-    {
-        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: %u (GUID %u) has already been charmed but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
-        return false;
-    }
-
-    CastStop();
-    CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
-    DeleteThreatList();
-
-    Player* playerCharmer = charmer->ToPlayer();
-
-    // Charmer stop charming
-    if (playerCharmer)
-    {
-        playerCharmer->StopCastingCharm();
-        playerCharmer->StopCastingBindSight();
-    }
-
-    // Charmed stop charming
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        ToPlayer()->StopCastingCharm();
-        ToPlayer()->StopCastingBindSight();
-    }
-
-    // StopCastingCharm may remove a possessed pet?
-    if (!IsInWorld())
-    {
-        TC_LOG_FATAL("entities.unit", "Unit::SetCharmedBy: %u (GUID %u) is not in world but %u (GUID %u) is trying to charm it!", GetEntry(), GetGUIDLow(), charmer->GetEntry(), charmer->GetGUIDLow());
-        return false;
-    }
-
-    // charm is set by aura, and aura effect remove handler was called during apply handler execution
-    // prevent undefined behaviour
-    if (aurApp && aurApp->GetRemoveMode())
-        return false;
-
-    _oldFactionId = getFaction();
-    SetFaction(charmer->getFaction());
-
-    // Set charmed
-    charmer->SetCharm(this, true);
-
-    if (GetTypeId() == TYPEID_UNIT)
-    {
-        ToCreature()->AI()->OnCharmed(true);
-        GetMotionMaster()->MoveIdle();
-    }
-    else
-    {
-        Player* player = ToPlayer();
-        if (player->IsAFK())
-            player->ToggleAFK();
-        player->SetClientControl(this, false);
-    }
-
-    // charm is set by aura, and aura effect remove handler was called during apply handler execution
-    // prevent undefined behaviour
-    if (aurApp && aurApp->GetRemoveMode())
-        return false;
-
-    // Pets already have a properly initialized CharmInfo, don't overwrite it.
-    if (type != CHARM_TYPE_VEHICLE && !GetCharmInfo())
-    {
-        InitCharmInfo();
-        if (type == CHARM_TYPE_POSSESS)
-            GetCharmInfo()->InitPossessCreateSpells();
-        else
-            GetCharmInfo()->InitCharmCreateSpells();
-    }
-
-    if (playerCharmer)
-    {
-        switch (type)
-        {
-            case CHARM_TYPE_VEHICLE:
-                SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                playerCharmer->SetClientControl(this, true);
-                playerCharmer->VehicleSpellInitialize();
-                break;
-            case CHARM_TYPE_POSSESS:
-                AddUnitState(UNIT_STATE_POSSESSED);
-                SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                playerCharmer->SetClientControl(this, true);
-                playerCharmer->PossessSpellInitialize();
-                break;
-            case CHARM_TYPE_CHARM:
-                if (GetTypeId() == TYPEID_UNIT && charmer->getClass() == CLASS_WARLOCK)
-                {
-                    CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
-                    if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
-                    {
-                        // to prevent client crash
-                        SetByteValue(UNIT_FIELD_BYTES_0, 1, (uint8)CLASS_MAGE);
-
-                        // just to enable stat window
-                        if (GetCharmInfo())
-                            GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
-
-                        // if charmed two demons the same session, the 2nd gets the 1st one's name
-                        SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped
-                    }
-                }
-                playerCharmer->CharmSpellInitialize();
-                break;
-            default:
-            case CHARM_TYPE_CONVERT:
-                break;
-        }
-    }
-    return true;
-}
-*/
 void Unit::SetCharmedBy(Unit* charmer, bool possess)
 {
     if(!charmer)
@@ -13978,7 +13946,8 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
     {
         if((this->ToPlayer())->IsAFK())
             (this->ToPlayer())->ToggleAFK();
-        (this->ToPlayer())->SetViewport(GetGUID(), false);
+
+        this->ToPlayer()->SetClientControl(this, false);
     }
 
     // Pets already have a properly initialized CharmInfo, don't overwrite it.
@@ -13997,8 +13966,8 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         AddUnitState(UNIT_STATE_POSSESSED);
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
         AddPlayerToVision(charmer->ToPlayer());
-        (charmer->ToPlayer())->SetViewport(GetGUID(), true);
-        charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+        charmer->ToPlayer()->SetClientControl(this, true);
+        charmer->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
     }
     // Charm demon
     else if(GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->GetClass() == CLASS_WARLOCK)
@@ -14024,112 +13993,6 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         (charmer->ToPlayer())->CharmSpellInitialize();
 }
 
-/* TODOSPELL old version
-void Unit::RemoveCharmedBy(Unit* charmer)
-{
-    if (!IsCharmed())
-        return;
-
-    if (!charmer)
-        charmer = GetCharmer();
-    if (charmer != GetCharmer()) // one aura overrides another?
-    {
-//        TC_LOG_FATAL("entities.unit", "Unit::RemoveCharmedBy: this: " UI64FMTD " true charmer: " UI64FMTD " false charmer: " UI64FMTD,
-//            GetGUID(), GetCharmerGUID(), charmer->GetGUID());
-//        ABORT();
-        return;
-    }
-
-    CharmType type;
-    if (HasUnitState(UNIT_STATE_POSSESSED))
-        type = CHARM_TYPE_POSSESS;
-    else if (charmer && charmer->IsOnVehicle(this))
-        type = CHARM_TYPE_VEHICLE;
-    else
-        type = CHARM_TYPE_CHARM;
-
-    CastStop();
-    CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
-    GetHostileRefManager().deleteReferences();
-    DeleteThreatList();
-
-    if (_oldFactionId)
-    {
-        SetFaction(_oldFactionId);
-        _oldFactionId = 0;
-    }
-    else
-        RestoreFaction();
-
-    GetMotionMaster()->InitDefault();
-
-    if (Creature* creature = ToCreature())
-    {
-        // Creature will restore its old AI on next update
-        if (creature->AI())
-            creature->AI()->OnCharmed(false);
-
-        // Vehicle should not attack its passenger after he exists the seat
-        if (type != CHARM_TYPE_VEHICLE)
-            LastCharmerGUID = charmer->GetGUID();
-    }
-
-    // If charmer still exists
-    if (!charmer)
-        return;
-
-    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
-    ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
-
-    charmer->SetCharm(this, false);
-
-    Player* playerCharmer = charmer->ToPlayer();
-
-    if (playerCharmer)
-    {
-        switch (type)
-        {
-            case CHARM_TYPE_VEHICLE:
-                playerCharmer->SetClientControl(this, false);
-                playerCharmer->SetClientControl(charmer, true);
-                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                break;
-            case CHARM_TYPE_POSSESS:
-                playerCharmer->SetClientControl(this, false);
-                playerCharmer->SetClientControl(charmer, true);
-                charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-                RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
-                ClearUnitState(UNIT_STATE_POSSESSED);
-                break;
-            case CHARM_TYPE_CHARM:
-                if (GetTypeId() == TYPEID_UNIT && charmer->getClass() == CLASS_WARLOCK)
-                {
-                    CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
-                    if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
-                    {
-                        SetByteValue(UNIT_FIELD_BYTES_0, 1, uint8(cinfo->unit_class));
-                        if (GetCharmInfo())
-                            GetCharmInfo()->SetPetNumber(0, true);
-                        else
-                            TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
-                    }
-                }
-                break;
-            case CHARM_TYPE_CONVERT:
-                break;
-        }
-    }
-
-    if (Player* player = ToPlayer())
-        player->SetClientControl(this, true);
-
-    // a guardian should always have charminfo
-    if (playerCharmer && this != charmer->GetFirstControlled())
-        playerCharmer->SendRemoveControlBar();
-    else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !ToCreature()->IsGuardian()))
-        DeleteCharmInfo();
-}
-*/
 void Unit::RemoveCharmedBy(Unit *charmer)
 {
     if(!IsCharmed())
@@ -14137,29 +14000,98 @@ void Unit::RemoveCharmedBy(Unit *charmer)
 
     if(!charmer)
         charmer = GetCharmer();
-    else if(charmer != GetCharmer()) // one aura overrides another?
+    else if (charmer != GetCharmer()) // one aura overrides another?
+    {
+        //        TC_LOG_FATAL("entities.unit", "Unit::RemoveCharmedBy: this: " UI64FMTD " true charmer: " UI64FMTD " false charmer: " UI64FMTD,
+        //            GetGUID(), GetCharmerGUID(), charmer->GetGUID());
+        //        ABORT();
         return;
+    }
 
-    bool possess = HasUnitState(UNIT_STATE_POSSESSED);
+    CharmType type;
+    if (HasUnitState(UNIT_STATE_POSSESSED))
+        type = CHARM_TYPE_POSSESS;
+#ifdef LICH_KING
+    else if (charmer && charmer->IsOnVehicle(this))
+        type = CHARM_TYPE_VEHICLE;
+#endif
+    else
+        type = CHARM_TYPE_CHARM;
 
     CastStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     GetHostileRefManager().deleteReferences();
     DeleteThreatList();
+    RestoreFaction();
+
     SetCharmerGUID(0);
     m_ControlledByPlayer = false;
-    RestoreFaction();
     GetMotionMaster()->InitDefault();
-    //reset emote state
     if(Creature* c = ToCreature())
         c->ResetCreatureEmote();
     
     HandleEmoteCommand(0);
 
-    if(possess)
+    if (Creature* creature = ToCreature())
     {
-        ClearUnitState(UNIT_STATE_POSSESSED);
-        RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+        // Creature will restore its old AI on next update
+        if (creature->AI())
+            creature->AI()->OnCharmed(charmer, false);
+
+#ifdef LICH_KING
+        // Vehicle should not attack its passenger after he exists the seat
+        if (type != CHARM_TYPE_VEHICLE)
+            LastCharmerGUID = ASSERT_NOTNULL(charmer)->GetGUID();
+#endif
+    }
+
+    // If charmer still exists
+    if (!charmer)
+        return;
+
+    ASSERT(type != CHARM_TYPE_POSSESS || charmer->GetTypeId() == TYPEID_PLAYER);
+#ifdef LICH_KING
+    ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
+#endif
+
+    Player* playerCharmer = charmer->ToPlayer();
+
+    if (playerCharmer)
+    {
+        switch (type)
+        {
+#ifdef LICH_KING
+        case CHARM_TYPE_VEHICLE:
+            playerCharmer->SetClientControl(this, false);
+            playerCharmer->SetClientControl(charmer, true);
+            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+            break;
+#endif
+        case CHARM_TYPE_POSSESS:
+            RemovePlayerFromVision(playerCharmer);
+            playerCharmer->SetClientControl(this, false);
+            playerCharmer->SetClientControl(charmer, true);
+            charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
+            RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+            ClearUnitState(UNIT_STATE_POSSESSED);
+            break;
+        case CHARM_TYPE_CHARM:
+            if (GetTypeId() == TYPEID_UNIT && charmer->GetClass() == CLASS_WARLOCK)
+            {
+                CreatureTemplate const* cinfo = ToCreature()->GetCreatureTemplate();
+                if (cinfo && cinfo->type == CREATURE_TYPE_DEMON)
+                {
+                    SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, uint8(cinfo->unit_class));
+                    if (GetCharmInfo())
+                        GetCharmInfo()->SetPetNumber(0, true);
+                    else
+                        TC_LOG_ERROR("entities.unit", "Aura::HandleModCharm: " UI64FMTD " has a charm aura but no charm info!", GetGUID());
+                }
+            }
+            break;
+        case CHARM_TYPE_CONVERT:
+            break;
+        }
     }
 
     if(GetTypeId() == TYPEID_UNIT)
@@ -14167,7 +14099,6 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         if(!(this->ToCreature())->IsPet())
             RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
-        (this->ToCreature())->AI()->OnCharmed(charmer, false);
         if(IsAlive() && (this->ToCreature())->IsAIEnabled)
         {
             if(charmer && !IsFriendlyTo(charmer))
@@ -14180,39 +14111,17 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             }
         }
     }
-    else
-        (this->ToPlayer())->SetViewport(GetGUID(), true);
-
-    // If charmer still exists
-    if(!charmer)
-        return;
-
-    assert(!possess || charmer->GetTypeId() == TYPEID_PLAYER);
 
     charmer->SetCharm(0);
-    if(possess)
-    {
-        RemovePlayerFromVision(charmer->ToPlayer());
-        (charmer->ToPlayer())->SetViewport(charmer->GetGUID(), true);
-        charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
-    }
-    // restore UNIT_FIELD_BYTES_0
-    else if(GetTypeId() == TYPEID_UNIT && charmer->GetTypeId() == TYPEID_PLAYER && charmer->GetClass() == CLASS_WARLOCK)
-    {
-        CreatureTemplate const *cinfo = (this->ToCreature())->GetCreatureTemplate();
-        if(cinfo && cinfo->type == CREATURE_TYPE_DEMON)
-        {
-            CreatureAddon const *cainfo = (this->ToCreature())->GetCreatureAddon();
-            if(cainfo && cainfo->bytes0 != 0)
-                SetUInt32Value(UNIT_FIELD_BYTES_0, cainfo->bytes0);
-            else
-                RemoveFlag(UNIT_FIELD_BYTES_0, 2048);
 
-            if(GetCharmInfo())
-                GetCharmInfo()->SetPetNumber(0, true);
-            else
-                TC_LOG_ERROR("spell.aura","Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
+    if (Player* player = ToPlayer())
+    {
+        if (charmer->GetTypeId() == TYPEID_UNIT) // charmed by a creature, this means we had PlayerAI
+        {
+            NeedChangeAI = true;
+            IsAIEnabled = false;
         }
+        player->SetClientControl(this, true);
     }
 
     if(GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet()))
@@ -14220,13 +14129,11 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         DeleteCharmInfo();
     }
 
-    if(possess || charmer->GetTypeId() == TYPEID_PLAYER)
-    {
-        // Remove pet spell action bar
-        WorldPacket data(SMSG_PET_SPELLS, 8);
-        data << uint64(0);
-        (charmer->ToPlayer())->SendDirectMessage(&data);
-    }
+    // a guardian should always have charminfo
+    if(playerCharmer && this != charmer->GetFirstControlled())
+        playerCharmer->SendRemoveControlBar();
+    else if (GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !IsGuardian()))
+        DeleteCharmInfo();
 }
 
 void Unit::RestoreFaction()
@@ -15653,4 +15560,27 @@ exitloopfounddest:
     Trinity::NormalizeMapCoord(targetPos.m_positionZ);
 
     return targetPos;
+}
+
+bool Unit::HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura) const
+{
+    AuraEffectList const& auras = GetAuraEffectsByType(type);
+    for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+        if ((!excludeAura || excludeAura != (*itr)->GetSpellInfo()->Id) && //Avoid self interrupt of channeled Crowd Control spells like Seduction
+            ((*itr)->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE)) 
+            return true;
+    return false;
+}
+
+bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) const
+{
+    uint32 excludeAura = 0;
+    if (Spell* currentChanneledSpell = excludeCasterChannel ? excludeCasterChannel->GetCurrentSpell(CURRENT_CHANNELED_SPELL) : NULL)
+        excludeAura = currentChanneledSpell->GetSpellInfo()->Id; //Avoid self interrupt of channeled Crowd Control spells like Seduction
+
+    return (HasBreakableByDamageAuraType(SPELL_AURA_MOD_CONFUSE, excludeAura)
+        || HasBreakableByDamageAuraType(SPELL_AURA_MOD_FEAR, excludeAura)
+        || HasBreakableByDamageAuraType(SPELL_AURA_MOD_STUN, excludeAura)
+        || HasBreakableByDamageAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
+        || HasBreakableByDamageAuraType(SPELL_AURA_TRANSFORM, excludeAura));
 }

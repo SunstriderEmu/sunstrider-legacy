@@ -28,7 +28,7 @@
 TemporarySummon::TemporarySummon( uint64 summoner ) :
 Creature(), m_type(TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN), m_timer(0), m_lifetime(0), m_summoner(summoner)
 {
-    m_summoned = true;
+    m_unitTypeMask |= UNIT_MASK_SUMMON;
 }
 
 void TemporarySummon::Update( uint32 diff )

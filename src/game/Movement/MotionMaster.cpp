@@ -201,7 +201,7 @@ void MotionMaster::MoveIdle()
 
 void MotionMaster::MoveRandom(float spawndist)
 {
-    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     if (_owner->GetTypeId() == TYPEID_UNIT)
@@ -238,7 +238,7 @@ void MotionMaster::MoveTargetedHome()
 
 void MotionMaster::MoveConfused()
 {
-    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -257,7 +257,7 @@ void MotionMaster::MoveConfused()
 void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 {
     // ignore movement request if target not exist
-    if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     //_owner->ClearUnitState(UNIT_STATE_FOLLOW);
@@ -282,7 +282,7 @@ void MotionMaster::MoveChase(Unit* target, float dist, float angle)
 void MotionMaster::MoveFollow(Unit* target, float dist, float angle, MovementSlot slot)
 {
     // ignore movement request if target not exist
-    if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (!target || target == _owner || _owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     //_owner->AddUnitState(UNIT_STATE_FOLLOW);
@@ -547,7 +547,7 @@ void MotionMaster::MoveCharge(PathGenerator const& path, float speed /*= SPEED_C
 
 void MotionMaster::MoveSeekAssistance(float x, float y, float z)
 {
-    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     if (_owner->GetTypeId() == TYPEID_PLAYER)
@@ -633,7 +633,7 @@ void MotionMaster::MoveTaxiFlight(uint32 path, uint32 pathnode)
 
 void MotionMaster::MoveSuspiciousLook(Unit const* target, uint32 timer)
 {
-    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE))
+    if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
 
     /*TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: " UI64FMTD ") almost detected target " UI64FMTD " (timer: %u)",

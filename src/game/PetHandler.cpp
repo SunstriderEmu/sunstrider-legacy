@@ -56,9 +56,9 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
         return;
     }
 
-    if(pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
+    if (pet != GetPlayer()->GetFirstControlled())
     {
-        TC_LOG_ERROR("network","HandlePetAction.Pet %u isn't pet of player %s.\n", uint32(GUID_LOPART(guid1)), GetPlayer()->GetName().c_str() );
+        TC_LOG_ERROR("network","HandlePetAction. %u does not beling to %u %s.\n", uint32(GUID_LOPART(guid1)), GetPlayer()->GetGUIDLow(), GetPlayer()->GetName().c_str() );
         return;
     }
 
@@ -388,8 +388,6 @@ bool WorldSession::CheckStableMaster(uint64 guid)
 
 void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 {
-    
-    
     CHECK_PACKET_SIZE(recvData, 8+4+2+2);
 
     TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
@@ -409,7 +407,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 
     Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, petguid);
 
-    if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
+    if(!pet || pet != _player->GetFirstControlled())
     {
         TC_LOG_ERROR("network", "HandlePetSetAction: Unknown pet or pet owner.\n" );
         return;
@@ -560,7 +558,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
     {
         if(pet->IsPet())
         {
-            if(pet->GetGUID() == _player->GetPetGUID())
+            if(pet->GetGUID() == _player->GetMinionGUID())
             {
                 uint32 feelty = pet->GetPower(POWER_HAPPINESS);
                 pet->SetPower(POWER_HAPPINESS ,(feelty-50000) > 0 ?(feelty-50000) : 0);

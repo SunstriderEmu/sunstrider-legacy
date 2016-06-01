@@ -199,7 +199,7 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData *data, Player *target) c
             updatetype = UPDATETYPE_CREATE_OBJECT2;
 
         // UPDATETYPE_CREATE_OBJECT2 for pets...
-        if(target->GetPetGUID() == GetGUID())
+        if(target->GetMinionGUID() == GetGUID())
             updatetype = UPDATETYPE_CREATE_OBJECT2;
 
         // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
@@ -1460,6 +1460,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     switch(petType)
     {
         case GUARDIAN_PET:
+            pet->AddUnitTypeMask(UNIT_MASK_GUARDIAN);
         case POSSESSED_PET:
             pet->SetUInt32Value(UNIT_FIELD_FLAGS,0);
             AddGuardian(pet);
