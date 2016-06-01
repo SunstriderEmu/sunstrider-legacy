@@ -103,6 +103,14 @@ void PetAI::UpdateAI(const uint32 diff)
     // i_pet.GetVictim() can't be used for check in case stop fighting, i_pet.GetVictim() clear at Unit death etc.
     if( i_pet.GetVictim() )
     {
+        // is only necessary to stop casting, the pet must not exit combat
+        if (!me->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && // ignore channeled spells (Pin, Seduction)
+            me->EnsureVictim()->HasBreakableByDamageCrowdControlAura(me))
+        {
+            me->InterruptNonMeleeSpells(false);
+            return;
+        }
+
         if( _needToStop() )
         {
             //TC_LOG_DEBUG("entities.pet","Pet AI stopped attacking [guid=%u]", i_pet.GetGUIDLow());
