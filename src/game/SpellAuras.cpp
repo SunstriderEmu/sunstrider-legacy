@@ -3496,8 +3496,8 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
             for(uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
             {
-                if((*iter)->m_currentSpells[i]
-                && (*iter)->m_currentSpells[i]->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
+                if((*iter)->GetCurrentSpell(i)
+                && (*iter)->GetCurrentSpell(i)->m_targets.GetUnitTargetGUID() == m_target->GetGUID())
                 {
                     (*iter)->InterruptSpell(i, false);
                 }
@@ -3529,8 +3529,8 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
 
         // prevent interrupt message
-        if(m_caster_guid==m_target->GetGUID() && m_target->m_currentSpells[CURRENT_GENERIC_SPELL])
-            m_target->m_currentSpells[CURRENT_GENERIC_SPELL]->finish();
+        if(m_caster_guid==m_target->GetGUID() && m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
+            m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL)->finish();
         m_target->InterruptNonMeleeSpells(true);
         m_target->GetHostileRefManager().deleteReferences();
     }

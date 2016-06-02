@@ -398,10 +398,10 @@ void GameObject::Update(uint32 diff)
                             Unit* caster = GetOwner();
                             if(caster && caster->GetTypeId()==TYPEID_PLAYER)
                             {
-                                if(caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                                if(caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                                 {
-                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                                    caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish(false);
+                                    caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->SendChannelUpdate(0);
+                                    caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->finish(false);
                                 }
 
                                 WorldPacket data(SMSG_FISH_NOT_HOOKED,0);
@@ -1413,10 +1413,10 @@ void GameObject::Use(Unit* user)
                 }
             }
 
-            if(player->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(player->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
             {
-                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-                player->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+                player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->SendChannelUpdate(0);
+                player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->finish();
             }
             return;
         }
@@ -1448,7 +1448,7 @@ void GameObject::Use(Unit* user)
             // in case summoning ritual caster is GO creator
             spellCaster = caster;
 
-            if(!caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+            if(!caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                 return;
 
             spellId = info->summoningRitual.spellId;
@@ -1461,8 +1461,8 @@ void GameObject::Use(Unit* user)
             }*/
 
             // finish spell
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->SendChannelUpdate(0);
-            caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->finish();
+            caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->SendChannelUpdate(0);
+            caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->finish();
 
             // can be deleted now
             SetLootState(GO_JUST_DEACTIVATED);

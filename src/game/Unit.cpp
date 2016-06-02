@@ -592,7 +592,7 @@ void Unit::UpdateInterruptMask()
         if(*i)
             m_interruptMask |= (*i)->GetSpellInfo()->AuraInterruptFlags;
     }
-    if(Spell* spell = m_currentSpells[CURRENT_CHANNELED_SPELL])
+    if(Spell* spell = GetCurrentSpell(CURRENT_CHANNELED_SPELL))
         if(spell->getState() == SPELL_STATE_CASTING)
             m_interruptMask |= spell->m_spellInfo->ChannelInterruptFlags;
 }
@@ -977,7 +977,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             {
                 if(damagetype != DOT)
                 {
-                    if(Spell* spell = pVictim->m_currentSpells[CURRENT_GENERIC_SPELL])
+                    if(Spell* spell = pVictim->GetCurrentSpell(CURRENT_GENERIC_SPELL))
                     {
                         if(spell->getState() == SPELL_STATE_PREPARING)
                         {
@@ -989,7 +989,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
                         }
                     }
 
-                    if(Spell* spell = pVictim->m_currentSpells[CURRENT_CHANNELED_SPELL])
+                    if(Spell* spell = pVictim->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
                     {
                         if(spell->getState() == SPELL_STATE_CASTING)
                         {
@@ -2058,9 +2058,9 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
         return;                                             // ignore ranged case
 
     // melee attack spell casted at main hand attack only
-    if (!extra && attType == BASE_ATTACK && m_currentSpells[CURRENT_MELEE_SPELL])
+    if (!extra && attType == BASE_ATTACK && GetCurrentSpell(CURRENT_MELEE_SPELL))
     {
-        m_currentSpells[CURRENT_MELEE_SPELL]->cast();
+        GetCurrentSpell(CURRENT_MELEE_SPELL)->cast();
         return;
     }
 
@@ -3261,16 +3261,16 @@ void Unit::_DeleteAuras()
 
 void Unit::_UpdateSpells( uint32 time )
 {
-    if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL])
+    if(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
         _UpdateAutoRepeatSpell();
 
     // remove finished spells from current pointers
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
-        if (m_currentSpells[i] && m_currentSpells[i]->getState() == SPELL_STATE_FINISHED)
+        if (GetCurrentSpell(i) && GetCurrentSpell(i)->getState() == SPELL_STATE_FINISHED)
         {
-            m_currentSpells[i]->SetReferencedFromCurrent(false);
-            m_currentSpells[i] = NULL;                      // remove pointer
+            GetCurrentSpell(i)->SetReferencedFromCurrent(false);
+            m_currentSpells[i] = nullptr;                      // remove pointer
         }
     }
 
@@ -3321,7 +3321,7 @@ void Unit::_UpdateAutoRepeatSpell()
     if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCast(false,false,true) )
     {
         // cancel wand shoot
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->GetCategory() == 351)
+        if(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo->GetCategory() == 351)
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         m_AutoRepeatFirstCast = true;
         return;
@@ -3336,15 +3336,15 @@ void Unit::_UpdateAutoRepeatSpell()
     if (IsAttackReady(RANGED_ATTACK))
     {
         // Check if able to cast
-        if(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true) != SPELL_CAST_OK)
+        if(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->CheckCast(true) != SPELL_CAST_OK)
         {
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
         }
 
         // we want to shoot
-        Spell* spell = new Spell(this, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo, true, 0);
-        spell->prepare(&(m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_targets));
+        Spell* spell = new Spell(this, GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo, true, 0);
+        spell->prepare(&(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_targets));
 
         // all went good, reset attack
         ResetAttackTimer(RANGED_ATTACK);
@@ -3476,12 +3476,12 @@ bool Unit::IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled, bool skipAu
             return(true);
 
     // channeled spells may be delayed, but they are still considered casted
-    else if ( !skipChanneled && m_currentSpells[CURRENT_CHANNELED_SPELL] &&
-        (m_currentSpells[CURRENT_CHANNELED_SPELL]->getState() != SPELL_STATE_FINISHED) )
+    else if ( !skipChanneled && GetCurrentSpell(CURRENT_CHANNELED_SPELL) &&
+        (GetCurrentSpell(CURRENT_CHANNELED_SPELL)->getState() != SPELL_STATE_FINISHED) )
         return(true);
 
     // autorepeat spells may be finished or delayed, but they are still considered casted
-    else if ( !skipAutorepeat && m_currentSpells[CURRENT_AUTOREPEAT_SPELL] )
+    else if ( !skipAutorepeat && GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL) )
         return(true);
 
     return(false);
@@ -3490,23 +3490,23 @@ bool Unit::IsNonMeleeSpellCast(bool withDelayed, bool skipChanneled, bool skipAu
 void Unit::InterruptNonMeleeSpells(bool withDelayed, uint32 spell_id, bool withInstant)
 {
     // generic spells are interrupted if they are not finished or delayed
-    if (m_currentSpells[CURRENT_GENERIC_SPELL] && (!spell_id || m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->Id==spell_id))
+    if (GetCurrentSpell(CURRENT_GENERIC_SPELL) && (!spell_id || GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->Id==spell_id))
         InterruptSpell(CURRENT_GENERIC_SPELL,withDelayed,withInstant);
 
     // autorepeat spells are interrupted if they are not finished or delayed
-    if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && (!spell_id || m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id==spell_id))
+    if (GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL) && (!spell_id || GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo->Id==spell_id))
         InterruptSpell(CURRENT_AUTOREPEAT_SPELL,withDelayed,withInstant);
 
     // channeled spells are interrupted if they are not finished, even if they are delayed
-    if (m_currentSpells[CURRENT_CHANNELED_SPELL] && (!spell_id || m_currentSpells[CURRENT_CHANNELED_SPELL]->m_spellInfo->Id==spell_id))
+    if (GetCurrentSpell(CURRENT_CHANNELED_SPELL) && (!spell_id || GetCurrentSpell(CURRENT_CHANNELED_SPELL)->m_spellInfo->Id==spell_id))
         InterruptSpell(CURRENT_CHANNELED_SPELL,true,true);
 }
 
 Spell* Unit::FindCurrentSpellBySpellId(uint32 spell_id) const
 {
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
-        if(m_currentSpells[i] && m_currentSpells[i]->m_spellInfo->Id==spell_id)
-            return m_currentSpells[i];
+        if(GetCurrentSpell(i) && GetCurrentSpell(i)->m_spellInfo->Id==spell_id)
+            return GetCurrentSpell(i);
     return NULL;
 }
 
@@ -4716,7 +4716,7 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
         if(caster && caster->IsAlive())
         {
             // stop caster chanelling state
-            if(caster->m_currentSpells[CURRENT_CHANNELED_SPELL]
+            if(caster->GetCurrentSpell(CURRENT_CHANNELED_SPELL)
                 //prevent recurential call
                 && caster->m_currentSpells[CURRENT_CHANNELED_SPELL]->getState() != SPELL_STATE_FINISHED)
             {
@@ -9977,15 +9977,15 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
     
-    if(m_currentSpells[CURRENT_GENERIC_SPELL] && m_currentSpells[CURRENT_GENERIC_SPELL]->getState() != SPELL_STATE_FINISHED)
+    if(GetCurrentSpell(CURRENT_GENERIC_SPELL) && GetCurrentSpell(CURRENT_GENERIC_SPELL)->getState() != SPELL_STATE_FINISHED)
     {
-        if(!m_currentSpells[CURRENT_GENERIC_SPELL]->m_spellInfo->CanBeUsedInCombat())
+        if(!GetCurrentSpell(CURRENT_GENERIC_SPELL)->m_spellInfo->CanBeUsedInCombat())
             InterruptSpell(CURRENT_GENERIC_SPELL);
     }
 
     if(IsNonMeleeSpellCast(false))
         for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
-            if(m_currentSpells[i] && !m_currentSpells[i]->m_spellInfo->CanBeUsedInCombat())
+            if(GetCurrentSpell(i) && !GetCurrentSpell(i)->m_spellInfo->CanBeUsedInCombat())
                 InterruptSpell(i,false);
 
     if (Creature* creature = ToCreature())

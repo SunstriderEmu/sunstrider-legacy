@@ -20932,8 +20932,8 @@ void Player::DisableItemDependentAurasAndCasts( Item * pItem )
     // currently casted spells can be dependent from item
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; i++)
     {
-        if( m_currentSpells[i] && m_currentSpells[i]->getState()!=SPELL_STATE_DELAYED &&
-            !HasItemFitToSpellRequirements(m_currentSpells[i]->m_spellInfo,pItem) )
+        if(GetCurrentSpell(i) && GetCurrentSpell(i)->getState()!=SPELL_STATE_DELAYED &&
+            !HasItemFitToSpellRequirements(GetCurrentSpell(i)->m_spellInfo,pItem) )
             InterruptSpell(i);
     }
 }

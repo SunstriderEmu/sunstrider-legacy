@@ -321,7 +321,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         // Client is resending autoshot cast opcode when other spell is casted during shoot rotation
         // Skip it to prevent "interrupt" message
-        if (_player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL] && _player->m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == spellInfo->Id)
+        if (_player->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL) && _player->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo->Id == spellInfo->Id)
             return;
     }
 
@@ -345,8 +345,6 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket,4);
 
     uint32 spellId;
@@ -361,11 +359,11 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
         return;
 
     // channeled spell case (it currently casted then)
-    if (spellInfo->IsChanneled()) {
-        if (Spell* spell = _player->m_currentSpells[CURRENT_CHANNELED_SPELL]) {
+    if (spellInfo->IsChanneled()) 
+    {
+        if (Spell* spell = _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)) 
             if (spell->m_spellInfo->Id==spellId)
                 spell->cancel();
-        }
         
         return;
     }
@@ -381,8 +379,6 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    
-    
     CHECK_PACKET_SIZE(recvPacket, 8+4);
 
     uint64 guid;

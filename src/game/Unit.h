@@ -1607,8 +1607,8 @@ class Unit : public WorldObject
         
         bool IsCCed() const;
 
-        Spell* GetCurrentSpell(CurrentSpellTypes spellType) const { return m_currentSpells[spellType]; }
-        Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
+        inline Spell* GetCurrentSpell(CurrentSpellTypes spellType) const { return m_currentSpells[spellType]; }
+        inline Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
