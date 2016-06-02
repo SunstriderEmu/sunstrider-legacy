@@ -3090,8 +3090,6 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
             {
                 uint32 appendValue = m_uint32Values[UNIT_NPC_FLAGS];
 
-                //remove server custom flags 
-                appendValue &= ~(UNIT_NPC_FLAG_GUARD | UNIT_NPC_FLAG_OUTDOORPVP);
 #ifdef LICH_KING
                 if (creature)
                     if (!target->CanSeeSpellClickOn(creature))

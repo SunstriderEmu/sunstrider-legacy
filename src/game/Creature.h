@@ -158,6 +158,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_DUAL_WIELD           = 0x00200000,       // can dual wield
     CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ = 0x00400000,       // creature does not need to take player damage for kill credit
     CREATURE_FLAG_EXTRA_NO_HEALTH_RESET      = 0x00800000,       // creature does not refill its health at reset
+    CREATURE_FLAG_EXTRA_GUARD                = 0x01000000,       // Creature is guard
 };
 
 static const uint32 CREATURE_REGEN_INTERVAL = 2 * SECOND * IN_MILLISECONDS;
@@ -561,6 +562,7 @@ class Creature : public Unit
 
             return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB);
         }
+        virtual bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
 
         uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
 
