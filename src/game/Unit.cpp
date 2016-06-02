@@ -10373,11 +10373,13 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
                     return false;
         }
     }
-    // PvC case - player can assist creature only if has specific type flags
+    // PvC case - player can assist creature only if has specific type flags or if player is charmed by it
     // !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) &&
     else if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE)
         && (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
-        && !target->IsPvP())
+        && !target->IsPvP()
+        && GetCharmerGUID() != target->GetGUID()
+        )
     {
         if (Creature const* creatureTarget = target->ToCreature())
             return 
