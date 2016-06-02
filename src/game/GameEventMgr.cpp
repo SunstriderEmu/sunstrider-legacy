@@ -166,7 +166,6 @@ void GameEventMgr::LoadVendors()
     uint32 count = 0;
     if (!result)
     {
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u vendor additions in game events", count);
     }
     else
@@ -219,7 +218,6 @@ void GameEventMgr::LoadVendors()
             vendors.push_back(newEntry);
 
         } while (result->NextRow());
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u vendor additions in game events", count);
     }
 
@@ -302,7 +300,6 @@ void GameEventMgr::LoadTrainers()
 
             ++count;
         } while (result->NextRow());
-        TC_LOG_INFO("server.loading", " ");
         TC_LOG_INFO("server.loading", ">> Loaded %u trainer spells in game events", count);
     }
 
@@ -324,8 +321,7 @@ void GameEventMgr::LoadFromDB()
         QueryResult result = WorldDatabase.Query("SELECT MAX(entry) FROM game_event");
         if( !result )
         {
-            TC_LOG_INFO("gameevent",">> Table game_event is empty.");
-            TC_LOG_INFO("gameevent"," ");
+            TC_LOG_INFO("server.loading",">> Table game_event is empty.");
             return;
         }
 
@@ -340,8 +336,7 @@ void GameEventMgr::LoadFromDB()
     if( !result )
     {
         mGameEvent.clear();
-        TC_LOG_INFO("gameevent",">> Table game_event is empty:");
-        TC_LOG_INFO("gameevent"," ");
+        TC_LOG_INFO("server.loading",">> Table game_event is empty:");
         return;
     }
 
@@ -355,7 +350,7 @@ void GameEventMgr::LoadFromDB()
         uint16 event_id = fields[0].GetUInt32();
         if(event_id==0)
         {
-            TC_LOG_ERROR("gameevent","`game_event` game event id (%i) is reserved and can't be used.",event_id);
+            TC_LOG_ERROR("sql.sql","`game_event` game event id (%i) is reserved and can't be used.",event_id);
             continue;
         }
 
@@ -372,7 +367,7 @@ void GameEventMgr::LoadFromDB()
 
         if(pGameEvent.length==0 && pGameEvent.state == GAMEEVENT_NORMAL)                            // length>0 is validity check
         {
-            TC_LOG_ERROR("gameevent","`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
+            TC_LOG_ERROR("sql.sql","`game_event` game event id (%i) isn't a world event and has length = 0, thus it can't be used.",event_id);
             continue;
         }
 
@@ -381,7 +376,7 @@ void GameEventMgr::LoadFromDB()
 
     } while( result->NextRow() );
 
-    TC_LOG_INFO( "gameevent",">> Loaded %u game events", count );
+    TC_LOG_INFO( "server.loading",">> Loaded %u game events", count );
 
     // load game event saves
     //                                       0         1      2
@@ -420,7 +415,6 @@ void GameEventMgr::LoadFromDB()
             ++count;
 
         } while( result->NextRow() );
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading",">> Loaded %u game event saves in game events", count );
     }
 
@@ -428,7 +422,6 @@ void GameEventMgr::LoadFromDB()
     result = WorldDatabase.Query("SELECT event_id, prerequisite_event FROM game_event_prerequisite");
     if( !result )
     {
-        TC_LOG_INFO("server.loading"," ");
         TC_LOG_INFO("server.loading", ">> Loaded %u game event prerequisites in game events", count );
     }
     else
