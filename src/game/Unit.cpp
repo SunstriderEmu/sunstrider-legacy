@@ -12026,9 +12026,12 @@ void Unit::UpdateCharmAI()
         {
             if (!IsCharmed())
             {
-                if (i_AI) delete i_AI;
+                delete i_AI;
                 i_AI = i_disabledAI;
-                i_disabledAI = NULL;
+                i_disabledAI = nullptr;
+
+                if (GetTypeId() == TYPEID_UNIT)
+                    ToCreature()->AI()->OnCharmed(nullptr, false);
             }
         }
         else
@@ -12036,7 +12039,11 @@ void Unit::UpdateCharmAI()
             if (IsCharmed())
             {
                 i_disabledAI = i_AI;
-                if (IsPossessed())
+                if (IsPossessed()
+#ifdef LICH_KING
+                    || IsVehicle()
+#endif
+                    )
                     i_AI = new PossessedAI(this->ToCreature());
                 else
                     i_AI = new PetAI(this->ToCreature());
@@ -13942,10 +13949,21 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         (this->ToCreature())->AI()->OnCharmed(charmer, true);
         GetMotionMaster()->MoveIdle();
     }
-    else
+    else if (Player* player = ToPlayer())
     {
-        if((this->ToPlayer())->IsAFK())
-            (this->ToPlayer())->ToggleAFK();
+        if(player->IsAFK())
+            player->ToggleAFK();
+
+        if (charmer->GetTypeId() == TYPEID_UNIT) // we are charmed by a creature
+        {
+            // change AI to charmed AI on next Update tick
+            NeedChangeAI = true;
+            if (IsAIEnabled)
+            {
+                IsAIEnabled = false;
+                player->AI()->OnCharmed(charmer, true);
+            }
+        }
 
         this->ToPlayer()->SetClientControl(this, false);
     }

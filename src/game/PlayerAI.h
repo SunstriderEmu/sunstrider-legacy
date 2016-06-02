@@ -44,7 +44,7 @@ class PlayerAI : public UnitAI
         struct TargetedSpell : public std::pair<Spell*, Unit*>
         {
             using std::pair<Spell*, Unit*>::pair;
-            explicit operator bool() { return !!first; }
+            explicit operator bool() { return bool(first); }
         };
         typedef std::pair<TargetedSpell, uint32> PossibleSpell;
         typedef std::vector<PossibleSpell> PossibleSpellVector;

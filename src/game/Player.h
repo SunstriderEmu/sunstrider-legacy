@@ -51,6 +51,7 @@ enum PetType : int;
 enum PetSaveMode : int;
 struct TrainerSpell;
 class SpellCastTargets;
+class PlayerAI;
 
 #ifdef PLAYERBOT
 // Playerbot mod
@@ -1119,6 +1120,8 @@ class Player : public Unit
     public:
         explicit Player (WorldSession *session);
         ~Player ( );
+
+        PlayerAI* AI() const { return reinterpret_cast<PlayerAI*>(i_AI); }
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
@@ -2768,7 +2771,6 @@ class Player : public Unit
         GridReference<Player> m_gridRef;
         MapReference m_mapRef;
 
-        void UpdateCharmedAI();
         UnitAI *i_AI;
         
         uint32 m_lastFallTime;

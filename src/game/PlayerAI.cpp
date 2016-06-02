@@ -381,8 +381,8 @@ enum Spells
 #else
     SPELL_LIGHTNING_BOLT    = 25449,
     SPELL_EARTH_SHOCK       = 25454,
-    SPELL_CHAIN_LIGHTNING   = 49271,
-    SPELL_FLAME_SHOCK       = 25442,
+    SPELL_CHAIN_LIGHTNING   = 25442,
+    SPELL_FLAME_SHOCK       = 29228,
 #endif
     SPELL_ELEMENTAL_MASTERY = 16166,
 
@@ -399,15 +399,17 @@ enum Spells
     SPELL_SHAMANISTIC_RAGE  = 30823,
 
     /* Shaman - Restoration*/
-    SPELL_SHA_NATURE_SWIFT  =   591,
-    SPELL_MANA_TIDE_TOTEM   =   590,
 #ifdef LICH_KING
     SPELL_EARTH_SHIELD      = 49284,
     SPELL_RIPTIDE           = 61295,
     SPELL_HEALING_WAVE      = 49273,
     SPELL_LESSER_HEAL_WAVE  = 49276,
     SPELL_TIDAL_FORCE       = 55198,
+    SPELL_MANA_TIDE_TOTEM   =   590,
+    SPELL_SHA_NATURE_SWIFT  =   591,
 #else
+    SPELL_SHA_NATURE_SWIFT  = 16188,
+    SPELL_MANA_TIDE_TOTEM   = 16190,
     SPELL_EARTH_SHIELD      = 32594,
     SPELL_HEALING_WAVE      = 25396,
     SPELL_LESSER_HEAL_WAVE  = 25420,
@@ -681,7 +683,7 @@ static const uint32 SPEC_ICONICS[MAX_CLASSES][NUM_TALENT_TREES][NUM_SPEC_ICONICS
 #else
         {0, SPELL_TOTEM_OF_WRATH, PASSIVE_ELEMENTAL_FOCUS}, // Elemental
         {0, SPELL_SHAMANISTIC_RAGE, PASSIVE_SPIRIT_WEAPONS}, // Enhancement
-        {0, SPELL_MANA_TIDE_TOTEM, SPELL_SHA_NATURE_SWIFT} // Restoration
+        { SPELL_EARTH_SHIELD, SPELL_MANA_TIDE_TOTEM, SPELL_SHA_NATURE_SWIFT} // Restoration
 #endif
     },
     { // CLASS_MAGE
@@ -1654,9 +1656,12 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
     {
         me->AttackStop();
         me->CastStop();
-        me->StopMoving();
-        me->GetMotionMaster()->Clear();
-        me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
+        {
+            me->StopMoving();
+            me->GetMotionMaster()->Clear();
+            me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+        }
     }
 }
 

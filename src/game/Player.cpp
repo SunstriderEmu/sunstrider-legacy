@@ -1227,11 +1227,13 @@ void Player::Update( uint32 p_time )
 
     UpdateAfkReport(now);
 
-    if(IsCharmed())
+    if (IsAIEnabled && GetAI())
+        GetAI()->UpdateAI(p_time);
+    else if (NeedChangeAI)
     {
-        if(Unit *charmer = GetCharmer())
-            if(charmer->GetTypeId() == TYPEID_UNIT && charmer->IsAlive())
-                UpdateCharmedAI();
+        UpdateCharmAI();
+        NeedChangeAI = false;
+        IsAIEnabled = (GetAI() != nullptr);
     }
 
     // Update items that have just a limited lifetime
@@ -21719,38 +21721,6 @@ bool Player::isTotalImmunity()
             return true;
 
     return false;
-}
-
-void Player::UpdateCharmedAI()
-{
-    //This should only called in Player::Update
-    Creature *charmer = GetCharmer()->ToCreature();
-
-    //kill self if charm aura has infinite duration
-    if(charmer->IsInEvadeMode())
-    {
-        AuraList const& auras = GetAurasByType(SPELL_AURA_MOD_CHARM);
-        for(AuraList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->IsPermanent())
-            {
-                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
-                return;
-            }
-    }
-
-    if(!charmer->IsInCombat())
-        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
-
-    Unit *target = GetVictim();
-    if(!target || charmer->CanAttack(target) != CAN_ATTACK_RESULT_OK)
-    {
-        target = charmer->SelectNearestTarget();
-        if(!target)
-            return;
-
-        GetMotionMaster()->MoveChase(target);
-        Attack(target, true);
-    }
 }
 
 void Player::AddGlobalCooldown(SpellInfo const *spellInfo, Spell const *spell, bool allowTinyCd)

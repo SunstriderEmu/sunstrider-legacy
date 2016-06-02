@@ -588,6 +588,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_spellInfo(info), 
     m_spellValue(new SpellValue(m_spellInfo)),
     m_caster(Caster),
+    m_castItemGUID(0),
     m_preGeneratedPath(nullptr),
     _scriptsLoaded(false)
 {
@@ -7058,10 +7059,8 @@ SpellCastResult Spell::CheckCasterAuras() const
 
 bool Spell::CanAutoCast(Unit* target)
 {
-    if (!target) {
-        TC_LOG_ERROR("FIXME","Spell::CanAutoCast: target was NULL!");
-        return false;
-    }
+    if (!target)
+        return (PetCanCast(target) == SPELL_CAST_OK);
     
     uint64 targetguid = target->GetGUID();
 
