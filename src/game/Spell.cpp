@@ -3316,7 +3316,9 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
                 tmpPlayer->SendSpectatorAddonMsgToBG(msg);
             }
 
-    if(m_IsTriggeredSpell)
+    //Containers for channeled spells have to be set
+    // Why check duration? 29350: channelled triggers channelled
+    if(m_IsTriggeredSpell && (!m_spellInfo->IsChanneled() || !m_spellInfo->GetMaxDuration()))
         cast(true);
     else
     {
@@ -3344,7 +3346,8 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
             
         TriggerGlobalCooldown();
 
-        if(!m_casttime && !m_spellInfo->StartRecoveryTime
+        if(    !m_casttime 
+         /* && !m_spellInfo->StartRecoveryTime */ //what is this used for? This is from TC code.
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
