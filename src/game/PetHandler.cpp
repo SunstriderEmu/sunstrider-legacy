@@ -79,7 +79,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
     {
         case ACT_COMMAND:                                   //0x0700
             // Possessed or shared vision pets are only able to attack
-            if ((pet->IsPossessed() || pet->HasAuraType(SPELL_AURA_BIND_SIGHT)) && spellid != COMMAND_ATTACK)
+            if ((pet->IsPossessed() || pet->HasAuraType(SPELL_AURA_BIND_SIGHT)) && spellid != COMMAND_ATTACK && spellid != COMMAND_ABANDON)
                 return;
 
             switch(spellid)
