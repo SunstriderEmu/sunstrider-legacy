@@ -622,7 +622,7 @@ void PathGenerator::BuildPointPath(const float *startPoint, const float *endPoin
 void PathGenerator::NormalizePath()
 {
     for (uint32 i = 0; i < _pathPoints.size(); ++i)
-        WorldObject::UpdateAllowedPositionZ(_sourceMapId,_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z,SourceCanSwim(),SourceCanFly()||SourceIgnorePathfinding(),SourceCanWaterwalk());
+        WorldObject::UpdateAllowedPositionZ(_sourceUnit ? _sourceUnit->GetPhaseMask() : PhaseMask(1), _sourceMapId,_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, SourceCanSwim(), SourceCanFly() || SourceIgnorePathfinding(), SourceCanWaterwalk());
 }
 
 void PathGenerator::BuildShortcut()

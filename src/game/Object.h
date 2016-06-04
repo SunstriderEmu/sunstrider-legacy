@@ -569,7 +569,7 @@ class WorldObject : public Object, public WorldLocation
         //Set Z to closest allowed position, depending on fly/swim/waterwalk ability of object
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
         //Set Z to closest allowed position, depending on given fly/swim/waterwalk abilities given
-        static void UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        static void UpdateAllowedPositionZ(PhaseMask phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 

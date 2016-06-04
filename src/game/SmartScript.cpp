@@ -1085,7 +1085,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     else
                         me->ForcedDespawn(e.action.forceDespawn.delay);
                 } else if(IsGameObject(*itr)) {
-                    (*itr)->ToGameObject()->SetDespawnTimer(e.action.forceDespawn.delay);
+                    (*itr)->ToGameObject()->SetDespawnTimer(e.action.forceDespawn.delay + 1);
                 }
             }
             

@@ -1198,10 +1198,10 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z, float maxDi
     }
 
     Position pos = GetPosition();
-    WorldObject::UpdateAllowedPositionZ(GetMapId(),x,y,z,canSwim,canFly,waterWalk,maxDist);
+    WorldObject::UpdateAllowedPositionZ(GetPhaseMask(), GetMapId(), x, y, z, canSwim, canFly, waterWalk, maxDist);
 }
 
-void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
+void WorldObject::UpdateAllowedPositionZ(PhaseMask phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist)
 {
     // non fly unit don't must be in air
     // non swim unit must be at ground (mostly speedup, because it don't must be in water and water level check less fast
@@ -1212,7 +1212,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
         if(canSwim || waterWalk)
             baseMap->GetWaterOrGroundLevel(x, y, z, &ground_z, true);
         else
-            ground_z = baseMap->GetHeight(PhaseMask(1), x, y, z, true, DEFAULT_HEIGHT_SEARCH);
+            ground_z = baseMap->GetHeight(phaseMask, x, y, z, true, DEFAULT_HEIGHT_SEARCH);
 
         if (ground_z == INVALID_HEIGHT)
             return;
@@ -1223,7 +1223,7 @@ void WorldObject::UpdateAllowedPositionZ(uint32 mapId, float x, float y, float &
     }
     else
     {
-        float ground_z = baseMap->GetHeight(PhaseMask(1), x, y, z, true, DEFAULT_HEIGHT_SEARCH);
+        float ground_z = baseMap->GetHeight(phaseMask, x, y, z, true, DEFAULT_HEIGHT_SEARCH);
         if (z < ground_z && std::fabs(z - ground_z) <= maxDist)
             z = ground_z;
     }
