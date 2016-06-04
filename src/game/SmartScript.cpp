@@ -1623,14 +1623,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (TransportBase* trans = me->GetTransport())
                         trans->CalculatePassengerPosition(dest.x, dest.y, dest.z);
 
-                //do not merge these two, else we'll get movement with creatures always facing 0.0 at the end
-                if(e.target.o)
-                    me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.target.o);
-                else
-                    me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z);
+                //MovePoint will ignore e.target.o if it is 0.0f
+                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.target.o, e.action.MoveToPos.disablePathfinding == 0);
             }
             else
-                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, e.action.MoveToPos.disablePathfinding == 0);
             break;
         }
         case SMART_ACTION_RESPAWN_TARGET:
