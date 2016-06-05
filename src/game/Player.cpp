@@ -581,7 +581,7 @@ void Player::CleanupsBeforeDelete(bool finalCleanup)
     if(m_uint32Values)                                      // only for fully created Object
     {
         TradeCancel(false);
-        DuelComplete(DUEL_INTERUPTED);
+        DuelComplete(DUEL_INTERRUPTED);
     }
     Unit::CleanupsBeforeDelete(finalCleanup);
 }
@@ -1859,7 +1859,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
             CombatStop();
 
-            DuelComplete(DUEL_INTERUPTED);
+            DuelComplete(DUEL_INTERRUPTED);
             ResetContestedPvP();
 
             // remove player from battleground on far teleport (when changing maps)
@@ -6992,12 +6992,19 @@ void Player::DuelComplete(DuelCompleteType type)
     if(!duel)
         return;
 
+	// Check if DuelComplete() has been called already up in the stack and in that case don't do anything else here
+	if (duel->isCompleted || ASSERT_NOTNULL(duel->opponent->duel)->isCompleted)
+		return;
+
+	duel->isCompleted = true;
+	duel->opponent->duel->isCompleted = true;
+
     WorldPacket data(SMSG_DUEL_COMPLETE, (1));
-    data << (uint8)((type != DUEL_INTERUPTED) ? 1 : 0);
+    data << (uint8)((type != DUEL_INTERRUPTED) ? 1 : 0);
     SendDirectMessage(&data);
     duel->opponent->SendDirectMessage(&data);
 
-    if(type != DUEL_INTERUPTED)
+    if(type != DUEL_INTERRUPTED)
     {
         data.Initialize(SMSG_DUEL_WINNER, (1+20));          // we guess size
         data << (uint8)((type==DUEL_WON) ? 0 : 1);          // 0 = just won; 1 = fled

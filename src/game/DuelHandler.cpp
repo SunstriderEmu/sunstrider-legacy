@@ -93,6 +93,6 @@ void WorldSession::HandleDuelCancelledOpcode(WorldPacket& recvPacket)
     uint64 guid;
     recvPacket >> guid;
 
-    GetPlayer()->DuelComplete(DUEL_INTERUPTED);
+    GetPlayer()->DuelComplete(DUEL_INTERRUPTED);
 }
 

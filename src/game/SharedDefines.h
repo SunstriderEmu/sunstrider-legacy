@@ -2515,7 +2515,7 @@ enum ActivateTaxiReply
 
 enum DuelCompleteType
 {
-    DUEL_INTERUPTED = 0,
+    DUEL_INTERRUPTED = 0,
     DUEL_WON        = 1,
     DUEL_FLED       = 2
 };
