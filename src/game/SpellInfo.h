@@ -329,6 +329,8 @@ private:
 
 class SpellInfo
 {
+	friend class SpellMgr;
+
 public:
     uint32 Id;
     //can be null

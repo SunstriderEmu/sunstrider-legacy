@@ -3046,6 +3046,12 @@ void SpellMgr::UnloadSpellInfoStore()
     mSpellInfoMap.clear();
 }
 
+void SpellMgr::UnloadSpellInfoImplicitTargetConditionLists()
+{
+	for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
+		if (mSpellInfoMap[i])
+			mSpellInfoMap[i]->_UnloadImplicitTargetConditionLists();
+}
 
 void SpellMgr::LoadSpellAreas()
 {

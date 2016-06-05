@@ -933,7 +933,8 @@ void ConditionMgr::LoadConditions(bool isReload)
 
         TC_LOG_INFO("misc", "Re-Loading `gossip_menu_option` Table for Conditions!");
         sObjectMgr->LoadGossipMenuItems();
-        //sSpellMgr->UnloadSpellInfoImplicitTargetConditionLists();
+
+        sSpellMgr->UnloadSpellInfoImplicitTargetConditionLists();
     }
 
     QueryResult result = WorldDatabase.Query("SELECT SourceTypeOrReferenceId, SourceGroup, SourceEntry, SourceId, ElseGroup, ConditionTypeOrReference, ConditionTarget, "
