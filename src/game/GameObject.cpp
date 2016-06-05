@@ -1163,6 +1163,7 @@ void GameObject::ResetDoorOrButton()
 
     SwitchDoorOrButton(false);
     SetLootState(GO_JUST_DEACTIVATED);
+	SetGoState(GO_STATE_READY);
     m_cooldownTime = 0;
 }
 
