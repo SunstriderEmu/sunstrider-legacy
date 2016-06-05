@@ -1111,7 +1111,8 @@ enum SMARTAI_TEMPLATE
     SMARTAI_TEMPLATE_PASSIVE        = 3,
     SMARTAI_TEMPLATE_CAGED_GO_PART  = 4, //creatureID, give credit at point end?,
     SMARTAI_TEMPLATE_CAGED_NPC_PART = 5, //gameObjectID, despawntime, run?, dist, TextGroupID
-    SMARTAI_TEMPLATE_END            = 6
+	SMARTAI_TEMPLATE_CASTER_SUN     = 6, //spellid, repeatMin, repeatMax, castFlags
+    SMARTAI_TEMPLATE_END            = 7
 };
 
 enum SMARTAI_TARGETS

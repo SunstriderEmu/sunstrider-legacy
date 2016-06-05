@@ -237,7 +237,8 @@ class ConditionMgr
         }
 
         void LoadConditions(bool isReload = false);
-        bool isConditionTypeValid(Condition* cond);
+		void AddCondition(Condition* cond);
+		bool isConditionTypeValid(Condition* cond);
         ConditionList GetConditionReferences(uint32 refId);
 
         uint32 GetSearcherTypeMaskForConditionList(ConditionList const& conditions);

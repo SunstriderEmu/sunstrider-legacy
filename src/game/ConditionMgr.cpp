@@ -905,6 +905,11 @@ ConditionList ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, ui
     return cond;
 }
 
+void ConditionMgr::AddCondition(Condition* cond)
+{
+	ConditionStore[cond->SourceType][cond->SourceEntry].push_back(cond);
+}
+
 void ConditionMgr::LoadConditions(bool isReload)
 {
     uint32 oldMSTime = GetMSTime();
