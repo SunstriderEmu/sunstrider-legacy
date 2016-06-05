@@ -528,11 +528,7 @@ class WorldObject : public Object, public WorldLocation
 
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint( WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
-        void GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float angle = 0) const
-        {
-            // angle calculated from current orientation
-            GetNearPoint(NULL,x,y,z,searcherSize,distance2d,GetOrientation() + angle);
-        }
+		void GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float angle = 0) const;
         void MovePosition(Position &pos, float dist, float angle);
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)
@@ -540,11 +536,7 @@ class WorldObject : public Object, public WorldLocation
             GetPosition(x, y, z);
             GetGroundPoint(x, y, z, dist, angle);
         }
-        void GetContactPoint( const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
-        {
-            // angle to face `obj` to `this` using distance includes size of `obj`
-            GetNearPoint(obj,x,y,z,obj->GetObjectSize(),distance2d,GetAngle( obj ));
-        }
+		void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
         
         /* Get first collision. Checks static & dynamic positions.
         ignoreContactDistance = false : move back CONTACT_DISTANCE at collision

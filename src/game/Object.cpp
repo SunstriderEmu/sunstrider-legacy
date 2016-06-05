@@ -1683,6 +1683,27 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
     UpdateGroundPositionZ(x, y, z);
 }
 
+void WorldObject::GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
+{
+	// angle calculated from current orientation
+	GetNearPoint(NULL, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
+}
+
+void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
+{
+	//on retail, creature follow approximatively at half the max melee distance
+	float offset = (GetObjectSize() + obj->GetObjectSize()) / 2.0f + distance2d;
+	float angle = GetAngle(obj);
+	x = GetPositionX() + offset * cos(angle);
+	y = GetPositionY() + offset * sin(angle);
+
+	Trinity::NormalizeMapCoord(x);
+	Trinity::NormalizeMapCoord(y);
+
+	z = GetPositionZ();
+	UpdateAllowedPositionZ(x, y, z, GetObjectSize());
+}
+
 bool WorldObject::GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float modifyDist)
 {
     float vmapHit_x, vmapHit_y, vmapHit_z;

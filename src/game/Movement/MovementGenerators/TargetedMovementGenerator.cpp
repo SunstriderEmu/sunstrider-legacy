@@ -53,7 +53,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         if (!i_offset)
         {
             // to nearest contact position
-            i_target->GetContactPoint(owner, x, y, z);
+			owner->GetContactPoint(i_target.getTarget(), x, y, z);
 
             //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
             if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE && !i_target->IsWithinLOS(x, y, z))
@@ -61,7 +61,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner, bool up
         }
         else
             // to at i_offset distance from target and i_angle from target facing
-            i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
+			owner->GetClosePoint(x, y, z, i_target->GetObjectSize(), i_offset, i_angle);
     }
     else
     {
@@ -134,7 +134,8 @@ template<class T, typename D>
 float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
 {
     //More distance let have better performance, less distance let have more sensitive reaction at target move.
-    return owner->GetCombatReach() + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset + 0.2f; //little offset to avoid having creature just at the max rang and looping on place movement
+	//Divide CombatReach by 2.0f, creature relocation is triggered long before being at max range
+	return owner->GetCombatReach() / 2.0f + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
 }
 
 template<class T, typename D>
