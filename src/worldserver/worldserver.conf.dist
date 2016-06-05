@@ -177,7 +177,7 @@ Locale = 0
 #        Max distance from movement target point (+moving unit size) and targeted object (+size)
 #        after that new target movmeent point calculated. Max: melee attack range (5), min: contact range (0.5)
 #        More distance let have better performence, less distance let have more sensitive reaction at target move.
-#        Default: 1.5
+#        Default: 0.5
 #
 #    UpdateUptimeInterval
 #        Update realm uptime period in minutes (for save data in 'uptime' table). Must be > 0
@@ -229,7 +229,7 @@ vmap.enableLOS = 1
 vmap.enableHeight = 1
 vmap.petLOS = 1
 mmap.enabled = 1
-TargetPosRecalculateRange = 1.5
+TargetPosRecalculateRange = 0.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0
 AddonChannel = 1
