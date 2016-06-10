@@ -5101,7 +5101,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!player->GetWeaponForAttack(BASE_ATTACK) || !player->IsUseEquipedWeapon(true))
                     return SPELL_FAILED_TARGET_NO_WEAPONS;
             }
-            else if (!unitTarget->HasMainWeapon())
+            else if (!target->HasMainWeapon())
                 return SPELL_FAILED_TARGET_NO_WEAPONS;
         }
 
