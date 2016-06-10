@@ -1026,28 +1026,28 @@ MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &di
 {
     uint32 tmpDiff = difficulty;
     MapDifficulty const* mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff));
-    if (!mapDiff)
+    if (!mapDiff && tmpDiff > 0)
     {
-        if (difficulty == 0)
-            return nullptr;
-
 #ifdef LICH_KING
-        if (tmpDiff > RAID_DIFFICULTY_25MAN_NORMAL) // heroic, downscale to normal
+        if (tmpDiff >= RAID_DIFFICULTY_10MAN_HEROIC) // heroic, downscale to normal (Ex: RAID_DIFFICULTY_10MAN_HEROIC - 2 = RAID_DIFFICULTY_10MAN_NORMAL)
             tmpDiff -= 2;
         else
 #endif
             tmpDiff -= 1;   // any non-normal mode for raids like tbc (only one mode)
 
-                            // pull new data
+        // pull new data
         mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff)); // we are 10 normal or 25 normal
-        if (!mapDiff)
+#ifdef LICH_KING
+        if (!mapDiff && tmpDiff > 0)
         {
             tmpDiff -= 1;
             mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff)); // 10 normal
         }
+#endif
     }
 
     difficulty = Difficulty(tmpDiff);
+	ASSERT(difficulty < MAX_DIFFICULTY);
     return mapDiff;
 }
 
