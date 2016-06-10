@@ -1661,7 +1661,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         target = m_caster->GetCharmerOrOwner();
         break;
     case TARGET_UNIT_PET:
-        target = m_caster->GetGuardianPet();
+        target = m_caster->GetPet(); /* TC: GetGuardianPet() */
         if (!target)
             target = m_caster->GetCharm();
         break;
@@ -6078,7 +6078,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (m_spellInfo->Effects[j].TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            if (!m_caster->GetGuardianPet() && !m_caster->GetCharm())
+            if (!m_caster->GetPet() /* TC: GetGuardianPet */ && !m_caster->GetCharm())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;
