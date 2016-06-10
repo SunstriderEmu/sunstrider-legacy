@@ -106,7 +106,8 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
     // use player orientation if player pet
     if (owner->HasUnitState(UNIT_STATE_FOLLOW) && isPlayerPet)
         if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
-            init.SetFacing(p->GetOrientation());
+			if(!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
+				init.SetFacing(p->GetOrientation());
 
 
     init.Launch();
