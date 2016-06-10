@@ -16360,13 +16360,13 @@ void Player::UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficu
         if(!unload) 
             CharacterDatabase.PExecute("DELETE FROM character_instance WHERE guid = '%u' AND instance = '%u'", GetGUIDLow(), itr->second.save->GetInstanceId());
 
-        /* LK
+#ifdef LICH_KING
         if (itr->second.perm)
         GetSession()->SendCalendarRaidLockout(itr->second.save, false);
-        */
+#endif
 
         itr->second.save->RemovePlayer(this);               // save can become invalid
-        m_boundInstances[difficulty].erase(itr++);
+        itr = m_boundInstances[difficulty].erase(itr);
     }
 }
 

@@ -75,8 +75,8 @@ Group::~Group()
     // will be unloaded first so we must be prepared for both cases
     // this may unload some instance saves
     for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
-        for(BoundInstancesMap::iterator itr = m_boundInstances[i].begin(); itr != m_boundInstances[i].end(); ++itr)
-            itr->second.save->RemoveGroup(this);
+        for(auto itr : m_boundInstances[i])
+            itr.second.save->RemoveGroup(this);
 
     // Sub group counters clean up
     if (m_subGroupsCounts)
@@ -1368,7 +1368,7 @@ void Group::_setLeader(const uint64 &guid)
                 if(itr->second.perm)
                 {
                     itr->second.save->RemoveGroup(this);
-                    m_boundInstances[i].erase(itr++);
+                    itr = m_boundInstances[i].erase(itr);
                 }
                 else
                     ++itr;
