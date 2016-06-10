@@ -137,7 +137,7 @@ float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
 template<class T, typename D>
 bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
 {
-    if (!i_target.isValid() || !i_target->IsInWorld())
+    if (!i_target.isValid() || !i_target->IsInWorld() || i_target->GetMap() != owner->GetMap())
         return false;
 
     if (!owner || !owner->IsAlive())
