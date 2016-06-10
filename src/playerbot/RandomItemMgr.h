@@ -15,7 +15,8 @@ enum RandomItemType
 class RandomItemPredicate
 {
 public:
-    virtual bool Apply(ItemTemplate const* proto) = 0;
+	virtual ~RandomItemPredicate() {}
+	virtual bool Apply(ItemTemplate const* proto) = 0;
 };
 
 typedef vector<uint32> RandomItemList;

@@ -4017,7 +4017,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
         } break;
 
         default:
-            TC_LOG_ERROR("entities.player", "Player::DeleteFromDB: Tried to delete player (%u) with unsupported delete method (%u).",
+            TC_LOG_ERROR("entities.player", "Player::DeleteFromDB: Tried to delete player (" UI64FMTD ") with unsupported delete method (%u).",
                 playerguid, charDelete_method);
             return;
     }

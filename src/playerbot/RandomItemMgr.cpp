@@ -14,6 +14,7 @@ char * strstri (const char* str1, const char* str2);
 class RandomItemGuildTaskPredicate : public RandomItemPredicate
 {
 public:
+	virtual ~RandomItemGuildTaskPredicate() {}
     virtual bool Apply(ItemTemplate const* proto)
     {
         if (proto->Bonding == BIND_WHEN_PICKED_UP ||
@@ -37,7 +38,8 @@ public:
 class RandomItemGuildTaskRewardPredicate : public RandomItemPredicate
 {
 public:
-    virtual bool Apply(ItemTemplate const* proto)
+	virtual ~RandomItemGuildTaskRewardPredicate() {}
+	virtual bool Apply(ItemTemplate const* proto)
     {
         if (proto->Bonding == BIND_WHEN_PICKED_UP ||
                 proto->Bonding == BIND_QUEST_ITEM ||
