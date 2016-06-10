@@ -3080,7 +3080,8 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
             {
             case UNIT_FIELD_HEALTH:
             {
-                if (m_uint32Values[UNIT_DYNAMIC_FLAGS] & UNIT_DYNFLAG_DEAD)
+				//for creatures, send 0 health. This prevents health from showing in the bottom right tooltip when mouse hovering over the creature
+                if (GetTypeId() == TYPEID_UNIT && m_uint32Values[UNIT_DYNAMIC_FLAGS] & UNIT_DYNFLAG_DEAD)
                     fieldBuffer << uint32(0);
                 else
                     fieldBuffer << m_uint32Values[index];
