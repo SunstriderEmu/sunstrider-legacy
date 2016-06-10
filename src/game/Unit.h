@@ -49,7 +49,7 @@ enum SpellChannelInterruptFlags
 enum SpellAuraInterruptFlags
 {
     AURA_INTERRUPT_FLAG_HITBYSPELL          = 0x00000001,   // 0    removed when getting hit by a negative spell?
-    AURA_INTERRUPT_FLAG_TAKE_DAMAGE              = 0x00000002,   // 1    removed by any damage
+    AURA_INTERRUPT_FLAG_TAKE_DAMAGE         = 0x00000002,   // 1    removed by any damage
     AURA_INTERRUPT_FLAG_CAST                = 0x00000004,   // 2    cast any spells
     AURA_INTERRUPT_FLAG_MOVE                = 0x00000008,   // 3    removed by any movement
     AURA_INTERRUPT_FLAG_TURNING             = 0x00000010,   // 4    removed by any turning
@@ -1512,6 +1512,8 @@ class Unit : public WorldObject
         void       DeleteCharmInfo();
         void UpdateCharmAI();
         //Renamed from TC: m_movedPlayer;
+		Unit* GetMover() const;
+		Player* GetPlayerMover() const;
         Player* m_movedByPlayer;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);

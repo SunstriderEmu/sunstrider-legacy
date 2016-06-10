@@ -10816,7 +10816,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
 #endif
     };
 
-    if (m_movedByPlayer) // unit controlled by a player.
+	if (Player* playerMover = GetPlayerMover()) // unit controlled by a player.
     {
         // Send notification to self. this packet is only sent to one client (the client of the player concerned by the change).
         WorldPacket self;
@@ -10826,7 +10826,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         if (mtype == MOVE_RUN)
             self << uint8(1);                               // unknown byte added in 2.1.0
         self << float(GetSpeed(mtype));
-        m_movedByPlayer->GetSession()->SendPacket(&self);
+		playerMover->GetSession()->SendPacket(&self);
 
         // Send notification to other players. sent to every clients (if in range) except one: the client of the player concerned by the change.
         WorldPacket data;
@@ -10834,7 +10834,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         data << GetPackGUID();
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
-        SendMessageToSet(&data, false);
+		playerMover->SendMessageToSet(&data, false);
     }
     else // unit controlled by AI.
     {
@@ -12311,6 +12311,20 @@ void CharmInfo::SetPetNumber(uint32 petnumber, bool statwindow)
         m_unit->SetUInt32Value(UNIT_FIELD_PETNUMBER, m_petnumber);
     else
         m_unit->SetUInt32Value(UNIT_FIELD_PETNUMBER, 0);
+}
+
+Unit* Unit::GetMover() const
+{
+	if (Player const* player = ToPlayer())
+		return player->m_mover;
+	return nullptr;
+}
+
+Player* Unit::GetPlayerMover() const
+{
+	if (Unit* mover = GetMover())
+		return mover->ToPlayer();
+	return nullptr;
 }
 
 //TODO : replace by AURA_STATE_FROZEN
