@@ -4824,6 +4824,18 @@ void Unit::RemoveAllAuras()
     m_Auras.clear();
 }
 
+void Unit::RemoveAllActiveAuras()
+{
+	AuraMap::iterator iter = m_Auras.begin();
+	while (iter != m_Auras.end())
+	{
+		if (iter->second->IsActive())
+			RemoveAura(iter);
+		else
+			iter++;
+	}
+}
+
 void Unit::RemoveAllAurasExcept(uint32 spellId)
 {
     AuraMap::iterator iter = m_Auras.begin();

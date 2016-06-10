@@ -1555,6 +1555,7 @@ class Unit : public WorldObject
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
+		void RemoveAllActiveAuras();
         void RemoveAllAurasExcept(uint32 spellId);
         void RemoveArenaAuras(bool onleave = false);
         void RemoveAllAurasOnDeath();

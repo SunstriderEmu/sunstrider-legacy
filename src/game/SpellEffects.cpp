@@ -6811,7 +6811,7 @@ void Spell::EffectDismissPet(uint32 /*i*/)
     if(!pet||!pet->IsAlive())
         return;
 
-    (m_caster->ToPlayer())->RemovePet(pet,PET_SAVE_NOT_IN_SLOT);
+    (m_caster->ToPlayer())->RemovePet(pet,PET_SAVE_NOT_IN_SLOT, REMOVE_PET_REASON_SCRIPT);
 }
 
 void Spell::EffectSummonObject(uint32 i)

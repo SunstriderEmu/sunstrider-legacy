@@ -7357,8 +7357,6 @@ bool ChatHandler::HandlePlayAllCommand(const char* args)
 
 bool ChatHandler::HandleFreezeCommand(const char *args)
 {
-    
-
     std::string name;
     Player* player;
     char* TargetName = strtok((char*)args, " "); //get entered name
@@ -7411,7 +7409,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
                 pet->SavePetToDB(PET_SAVE_AS_CURRENT);
                 // not let dismiss dead pet
                 if(pet && pet->IsAlive())
-                    player->RemovePet(pet,PET_SAVE_NOT_IN_SLOT);
+                    player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
             }
         }
 

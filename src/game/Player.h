@@ -176,6 +176,14 @@ enum ActionButtonType
 
 typedef std::map<uint8,ActionButton> ActionButtonList;
 
+enum RemovePetReason
+{
+	REMOVE_PET_REASON_OTHER,
+	REMOVE_PET_REASON_SCRIPT,
+	REMOVE_PET_REASON_PLAYER_DIED,
+	REMOVE_PET_REASON_DISMISSED,
+};
+
 typedef std::pair<uint16, uint8> CreateSpellPair;
 
 struct PlayerCreateInfoItem
@@ -1256,7 +1264,7 @@ class Player : public Unit
         void UpdateInnerTime (int time) { time_inn_enter = time; };
 
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
-        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
+        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false, RemovePetReason reason = REMOVE_PET_REASON_OTHER);
         void RemoveMiniPet();
         Pet* GetMiniPet() const;
         void SetMiniPet(Pet* pet);
