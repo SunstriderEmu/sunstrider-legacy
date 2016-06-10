@@ -559,6 +559,7 @@ void MotionMaster::MoveSeekAssistance(float x, float y, float z)
         /*TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: %u) seek assistance (X: %f Y: %f Z: %f)",
             _owner->GetEntry(), _owner->GetGUIDLow(), x, y, z); */
         _owner->AttackStop();
+		_owner->CastStop();
         _owner->ToCreature()->SetReactState(REACT_PASSIVE);
         Mutate(new AssistanceMovementGenerator(x, y, z), MOTION_SLOT_ACTIVE);
     }
