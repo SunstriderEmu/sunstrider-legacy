@@ -7823,8 +7823,11 @@ Unit* Unit::GetGuardianPet() const
             if (pet->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
                 return (Unit*)pet;
 
-        TC_LOG_FATAL("entities.unit", "Unit::GetGuardianPet: Guardian " UI64FMTD " not exist.", pet_guid);
+       /*
+	    //kelno: Commented from TC. Why would we want to reset pet if the pet is not a guardian ? This just seems wrongly copy pasted code from GetCharm
+		TC_LOG_FATAL("entities.unit", "Unit::GetGuardianPet: Guardian " UI64FMTD " not exist.", pet_guid);
         const_cast<Unit*>(this)->SetPetGUID(0);
+		*/
     }
 
     return NULL;
