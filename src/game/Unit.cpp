@@ -438,9 +438,11 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
         combat_reach = DEFAULT_COMBAT_REACH;
     }
     uint32 attacker_number = GetAttackers().size();
-    if(attacker_number > 0) --attacker_number;
-    GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm()
-                 , GetAngle(obj) + (attacker_number ? (M_PI/2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0));
+    if(attacker_number > 0) 
+		--attacker_number;
+
+	float angle = GetAngle(obj) + (attacker_number ? (M_PI / 2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0);
+    GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm(), angle);
 }
 
 void Unit::StartAutoRotate(uint8 type, uint32 fulltime, double Angle, bool attackVictimOnEnd)
@@ -10172,6 +10174,12 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if (this == target)
         return false;
 
+	// check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
+	bool isWorldTrigger = (GetEntry() == WORLD_TRIGGER);
+	Unit const* attacker = isWorldTrigger ? GetAffectingPlayer() : this;
+	if (!attacker)
+		attacker = this;
+
     // can't attack unattackable units or GMs
     if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
         || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()))
@@ -10181,7 +10189,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     // can't attack own vehicle or passenger
     if (m_vehicle)
         if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
-            if (!IsHostileTo(target)) // pussywizard: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
+            if (!attacker->IsHostileTo(target)) // pussywizard: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
                 return false;
 #endif
 
@@ -10193,7 +10201,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if ((m_invisibilityMask || target->m_invisibilityMask) && !CanDetectInvisibilityOf(target))
         return CAN_ATTACK_RESULT_CANNOT_DETECT_INVI;
 
-    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
+    if (!isWorldTrigger && target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
     {
         StealthDetectedStatus stealthDetectStatus = CanDetectStealthOf(target, GetDistance(target));
         if (stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
@@ -10212,27 +10220,31 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
-    if (Player const* playerAttacker = ToPlayer())
+    if (Player const* playerAttacker = attacker->ToPlayer())
     {
         if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_COMMENTATOR) /*|| playerAttacker->IsSpectator()*/)
             return false;
     }
-    // check flags
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16)
-        || (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
-        || (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
-        || (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
-        // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
-        || (GetEntry() != WORLD_TRIGGER && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
-        return false;
+
+	if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16))
+		return false;
+
+	if (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+		return false;
+
+	if (attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+		return false;
+
+	if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+		return false;
 
     // CvC case - can attack each other only when one of them is hostile
-    if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-        return GetReactionTo(target) <= REP_HOSTILE || target->GetReactionTo(this) <= REP_HOSTILE;
+    if (!attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+        return attacker->GetReactionTo(target) <= REP_HOSTILE || target->GetReactionTo(this) <= REP_HOSTILE;
 
     // PvP, PvC, CvP case
     // can't attack friendly targets
-    ReputationRank repThisToTarget = GetReactionTo(target);
+    ReputationRank repThisToTarget = attacker->GetReactionTo(target);
     ReputationRank repTargetToThis;
 
     if (repThisToTarget > REP_NEUTRAL
@@ -10272,7 +10284,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         return false;
 #endif
 
-    Player const* playerAffectingAttacker = HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : NULL;
+    Player const* playerAffectingAttacker = attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? GetAffectingPlayer() : NULL;
     Player const* playerAffectingTarget = target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) ? target->GetAffectingPlayer() : NULL;
 
     // check duel - before sanctuary checks
@@ -10282,7 +10294,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     // PvP case - can't attack when attacker or target are in sanctuary
     // however, 13850 client doesn't allow to attack when one of the unit's has sanctuary flag and is pvp
-    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && (target->IsInSanctuary() || IsInSanctuary()))
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && (target->IsInSanctuary() || attacker->IsInSanctuary()))
         return false;
 
     // additional checks - only PvP case
@@ -10291,10 +10303,10 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (target->IsPvP())
             return true;
 
-        if (IsFFAPvP() && target->IsFFAPvP())
+        if (attacker->IsFFAPvP() && target->IsFFAPvP())
             return true;
 
-        return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1);
+        return attacker->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1);
     }
     return true;
 }

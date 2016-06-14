@@ -1638,6 +1638,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
     if(Unit *owner = GetOwner())
     {
         trigger->SetFaction(owner->GetFaction());
+		trigger->SetOwnerGUID(owner->GetGUID());
         return trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
     }
     else

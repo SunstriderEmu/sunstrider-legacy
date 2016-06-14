@@ -53,12 +53,14 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
 
     if (!i_offset)
     {
-        // to nearest contact position
+		// to nearest contact position
 		i_target->GetContactPoint(owner, x, y, z);
-
-        //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
-        if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE && !i_target->IsWithinLOS(x, y, z))
-            i_target->GetPosition(x, y, z);
+		if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
+		{
+			//kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
+			if (!i_target->IsWithinLOS(x, y, z))
+				i_target->GetPosition(x, y, z);
+		}
     }
     else
         // to at i_offset distance from target and i_angle from target facing
@@ -108,7 +110,6 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
         if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
 			if(!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
 				init.SetFacing(p->GetOrientation());
-
 
     init.Launch();
 }
