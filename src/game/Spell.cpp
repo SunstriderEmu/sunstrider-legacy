@@ -4204,7 +4204,7 @@ void Spell::SendSpellStart()
 
     uint32 castFlags = CAST_FLAG_UNKNOWN_2;
 
-    if (((m_IsTriggeredSpell && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_spellInfo->IsChanneled())
+    if (((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_spellInfo->IsChanneled() && !m_cast_count)
         castFlags |= CAST_FLAG_PENDING;
 
     if (m_spellInfo->HasAttribute(SPELL_ATTR0_RANGED))
@@ -4252,7 +4252,7 @@ void Spell::SendSpellGo()
     uint32 castFlags = CAST_FLAG_UNKNOWN_9;
 
     // triggered spells with spell visual != 0 and not auto shot
-    if( (m_IsTriggeredSpell && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell)
+    if( ((IsTriggered() && !m_spellInfo->IsAutoRepeatRangedSpell()) || m_triggeredByAuraSpell) && !m_cast_count)
         castFlags |= CAST_FLAG_PENDING; 
 
     if(m_spellInfo->IsRangedWeaponSpell())
