@@ -9727,9 +9727,6 @@ bool Unit::IsInCombatWith(Unit const* enemy) const
 
 void Unit::CombatStart(Unit* target, bool updatePvP)
 {
-    if(HasUnitState(UNIT_STATE_EVADE) || target->HasUnitState(UNIT_STATE_EVADE))
-        return;
-
     if(!target->IsStandState()/* && !target->HasUnitState(UNIT_STATE_STUNNED)*/)
         target->SetStandState(PLAYER_STATE_NONE);
 
@@ -9779,7 +9776,7 @@ void Unit::SetInCombatState(bool PvP, Unit* enemy)
     if(PvP)
         m_CombatTimer = 5250;
 
-    if (IsInCombat() || HasUnitState(UNIT_STATE_EVADE))
+    if (IsInCombat())
         return;
 
     SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
