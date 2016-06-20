@@ -4350,7 +4350,6 @@ void Spell::SendSpellGo()
     }
 #endif
 
-
     m_caster->SendMessageToSet(&data, true);
 }
 
@@ -4444,8 +4443,8 @@ void Spell::WriteAmmoToPacket( WorldPacket * data )
                     ammoDisplayID = 5996;
                     break;
                 case ITEM_SUBCLASS_WEAPON_GUN:
+					ammoInventoryType = INVTYPE_AMMO;
                     ammoDisplayID = 5998;
-                    ammoInventoryType = INVTYPE_AMMO;
                     break;
                 }
                 break;
@@ -4736,7 +4735,7 @@ void Spell::SendPlaySpellVisual(uint32 SpellID)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
+    WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 8+4);
     data << uint64(m_caster->GetGUID());
     data << uint32(SpellID);                                // spell visual id?
     (m_caster->ToPlayer())->SendDirectMessage(&data);

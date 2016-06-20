@@ -8065,7 +8065,7 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
                     overTime = spellProto->GetDuration();
                 break;
             default:
-                /* From sunwell core. Why ?
+                /* From sunwell core. Why ? LK ?
                 // -5% per additional effect
                 ++effects;
                 */
@@ -8125,118 +8125,21 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffect
 {
     float forceDotCoeff = 0.0f;
     int32 CastingTime = 0;
-    //HACK TIME. This should move into spell_bonus_data table one day (when it exists)
+
     switch (spellInfo->SpellFamilyName)
     {
     case SPELLFAMILY_WARRIOR:
     case SPELLFAMILY_ROGUE:
     case SPELLFAMILY_HUNTER:
         return 0.0f;
-        /*
-    case SPELLFAMILY_GENERIC:
-        // Siphon Essence - 0%
-        if (spellInfo->AttributesEx == 0x10000000 && spellInfo->SpellIconID == 2027)
-            return 0.0f;
-        // Goblin Rocket Launcher - 0%
-        else if (spellInfo->SpellIconID == 184 && spellInfo->Attributes == 4259840)
-            return 0.0f; 
-        // Darkmoon Card: Vengeance - 0.1%
-        else if (spellInfo->HasVisual(9850) && spellInfo->SpellIconID == 2230)
-            CastingTime = 3500;
-        break;
-    case SPELLFAMILY_MAGE:
-        // Pyroblast - 115% of Fire Damage, DoT - 20% of Fire Damage
-        if ((spellInfo->SpellFamilyFlags & 0x400000LL) && spellInfo->SpellIconID == 184)
-        {
-            forceDotCoeff = damagetype == DOT ? 0.2f : 1.0f;
-            CastingTime = damagetype == DOT ? 3500 : 4025;
-        }
-        // Fireball - 100% of Fire Damage, DoT - 0% of Fire Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x1LL) && spellInfo->SpellIconID == 185)
-        {
-            CastingTime = 3500;
-            forceDotCoeff = damagetype == DOT ? 0.0f : 1.0f;
-        }
-        // Molten armor
-        else if (spellInfo->SpellFamilyFlags & 0x0000000800000000LL)
-        {
-            CastingTime = 0;
-        }
-        // Arcane Missiles triggered spell
-        else if ((spellInfo->SpellFamilyFlags & 0x200000LL) && spellInfo->SpellIconID == 225)
-        {
-            CastingTime = 1000;
-        }
-        // Blizzard triggered spell
-        else if ((spellInfo->SpellFamilyFlags & 0x80080LL) && spellInfo->SpellIconID == 285)
-        {
-            CastingTime = 500;
-        }
-        break;*/
     case SPELLFAMILY_WARLOCK:
-        /*
-        // Life Tap
-        if ((spellInfo->SpellFamilyFlags & 0x40000LL) && spellInfo->SpellIconID == 208)
-        {
-            CastingTime = 2800;                         // 80% from +shadow damage
-        }
-        */
-        // Dark Pact
+        // Dark Pact - Only if player has pet
         if ((spellInfo->SpellFamilyFlags & 0x80000000LL) && spellInfo->SpellIconID == 154 && GetMinionGUID())
         {
             CastingTime = 3360;                         // 96% from +shadow damage
         }
-        /*
-        // Soul Fire - 115% of Fire Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x8000000000LL) && spellInfo->SpellIconID == 184)
-        {
-            CastingTime = 4025;
-        }
-        // Curse of Agony - 120% of Shadow Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x0000000400LL) && spellInfo->SpellIconID == 544)
-        {
-            forceDotCoeff = 1.2f;
-        }
-        // Drain Mana - 0% of Shadow Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x10LL) && spellInfo->SpellIconID == 548)
-        {
-            CastingTime = 0;
-        }
-        // Drain Soul 214.3%
-        else if ((spellInfo->SpellFamilyFlags & 0x4000LL) && spellInfo->SpellIconID == 113)
-        {
-            CastingTime = 7500;
-        }
-        // Hellfire
-        else if ((spellInfo->SpellFamilyFlags & 0x40LL) && spellInfo->SpellIconID == 937)
-        {
-            CastingTime = damagetype == DOT ? 5000 : 500; // self damage seems to be so
-        }
-        // Unstable Affliction - 180%
-        else if (spellInfo->Id == 31117 && spellInfo->SpellIconID == 232)
-        {
-            CastingTime = 6300;
-        }
-        // Corruption 93%
-        else if ((spellInfo->SpellFamilyFlags & 0x2LL) && spellInfo->SpellIconID == 313)
-        {
-            forceDotCoeff = 0.93f;
-        }
-        */
         break;
     case SPELLFAMILY_PALADIN:
-        /*
-        // Seal and Judgement of Light
-        if (spellInfo->SpellFamilyFlags & 0x100040000LL)
-            CastingTime = 0;
-
-        // Consecration - 95% of Holy Damage
-        if ((spellInfo->SpellFamilyFlags & 0x20LL) && spellInfo->SpellIconID == 51)
-        {
-            forceDotCoeff = 0.95f;
-            CastingTime = 3500;
-        }
-        */
         // Seal of Righteousness - 10.2%/9.8% ( based on weapon type ) of Holy Damage, multiplied by weapon speed
         if ((spellInfo->SpellFamilyFlags & 0x8000000LL) && spellInfo->SpellIconID == 25)
         {
@@ -8248,119 +8151,6 @@ float Unit::CalculateDefaultCoefficient(SpellInfo const *spellInfo, DamageEffect
             else
                 CastingTime = uint32(wspeed * 3500 * 0.098f);
         }
-        /*
-        // Judgement of Righteousness - 73%
-        else if ((spellInfo->SpellFamilyFlags & 1024) && spellInfo->SpellIconID == 25)
-        {
-            CastingTime = 2555;
-        }
-        // Seal of Vengeance - 17% per Fully Stacked Tick - 5 Applications
-        else if ((spellInfo->SpellFamilyFlags & 0x80000000000LL) && spellInfo->SpellIconID == 2292)
-        {
-            forceDotCoeff = 0.85f;
-            CastingTime = 1850;
-        }
-        // Holy shield - 5% of Holy Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x4000000000LL) && spellInfo->SpellIconID == 453)
-        {
-            CastingTime = 175;
-        }
-        // Blessing of Sanctuary - 0%
-        else if ((spellInfo->SpellFamilyFlags & 0x10000000LL) && spellInfo->SpellIconID == 29)
-        {
-            CastingTime = 0;
-        }
-        break;
-    case  SPELLFAMILY_SHAMAN:
-        // Healing stream from totem (add 6% per tick from hill bonus owner)
-        if (spellInfo->SpellFamilyFlags & 0x000000002000LL)
-            CastingTime = 210;
-        // Earth Shield 30% per charge
-        else if (spellInfo->SpellFamilyFlags & 0x40000000000LL)
-            CastingTime = 1050;
-        // totem attack
-        else if (spellInfo->SpellFamilyFlags & 0x000040000000LL)
-        {
-            if (spellInfo->SpellIconID == 33)          // Fire Nova totem attack must be 21.4%(untested)
-                CastingTime = 749;                      // ignore CastingTime and use as modifier
-            else if (spellInfo->SpellIconID == 680)    // Searing Totem attack 8%
-                CastingTime = 280;                      // ignore CastingTime and use as modifier
-            else if (spellInfo->SpellIconID == 37)     // Magma totem attack must be 6.67%(untested)
-                CastingTime = 234;                      // ignore CastingTimePenalty and use as modifier
-        }
-        // Lightning Shield (and proc shield from T2 8 pieces bonus ) 33% per charge
-        else if ((spellInfo->SpellFamilyFlags & 0x00000000400LL) || spellInfo->Id == 23552)
-            CastingTime = 1155;                         // ignore CastingTimePenalty and use as modifier
-        break;
-    case SPELLFAMILY_PRIEST:
-        // Holy Nova - 14%
-        if ((spellInfo->SpellFamilyFlags & 0x8000000LL) && spellInfo->SpellIconID == 1874)
-            CastingTime = 500;
-        // Mana Burn - 0% of Shadow Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x10LL) && spellInfo->SpellIconID == 212)
-        {
-            CastingTime = 0;
-        }
-        // Mind Flay - 59% of Shadow Damage
-        else if ((spellInfo->SpellFamilyFlags & 0x800000LL) && spellInfo->SpellIconID == 548)
-        {
-            CastingTime = 2065;
-        }
-        // Holy Fire - 86.71%, DoT - 16.5%
-        else if ((spellInfo->SpellFamilyFlags & 0x100000LL) && spellInfo->SpellIconID == 156)
-        {
-            forceDotCoeff = damagetype == DOT ? 0.165f : 1.0f;
-            CastingTime = damagetype == DOT ? 3500 : 3035;
-        }
-        // Shadowguard - 28% per charge
-        else if ((spellInfo->SpellFamilyFlags & 0x2000000LL) && spellInfo->SpellIconID == 19)
-        {
-            CastingTime = 980;
-        }
-        // Touch of Weakeness - 10%
-        else if ((spellInfo->SpellFamilyFlags & 0x80000LL) && spellInfo->SpellIconID == 1591)
-        {
-            CastingTime = 350;
-        }
-        // Reflective Shield (back damage) - 0% (other spells fit to check not have damage effects/auras)
-        else if (spellInfo->SpellFamilyFlags == 0 && spellInfo->SpellIconID == 566)
-        {
-            CastingTime = 0;
-        }
-        // Holy Nova - 14%
-        else if ((spellInfo->SpellFamilyFlags & 0x400000LL) && spellInfo->SpellIconID == 1874)
-        {
-            CastingTime = 500;
-        }
-        break;
-    case SPELLFAMILY_DRUID:
-        // Hurricane triggered spell
-        if ((spellInfo->SpellFamilyFlags & 0x400000LL) && spellInfo->SpellIconID == 220)
-        {
-            CastingTime = 500;
-        }
-        // Lifebloom
-        else if (spellInfo->SpellFamilyFlags & 0x1000000000LL)
-        {
-            CastingTime = damagetype == DOT ? 3500 : 1200;
-            forceDotCoeff = damagetype == DOT ? 0.519f : 1.0f;
-        }
-        // Tranquility triggered spell
-        else if (spellInfo->SpellFamilyFlags & 0x80LL)
-            CastingTime = 667;
-        // Regrowth
-        else if (spellInfo->SpellFamilyFlags & 0x40LL)
-        {
-            forceDotCoeff = damagetype == DOT ? 0.705f : 1.0f;
-            CastingTime = damagetype == DOT ? 3500 : 1010;
-        }
-        // Improved Leader of the Pack
-        else if (spellInfo->AttributesEx2 == 536870912 && spellInfo->SpellIconID == 312
-            && spellInfo->AttributesEx3 == 33554432)
-        {
-            CastingTime = 0;
-        }
-        */
         break;
     default:
         break;
@@ -8842,7 +8632,6 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask, Unit* pVictim)
 
 int32 Unit::SpellBaseDamageBonusTaken(SpellSchoolMask schoolMask, bool isDoT)
 {
-
     int32 TakenAdvertisedBenefit = 0;
 
     AuraList const& mDamageTaken = GetAurasByType(SPELL_AURA_MOD_DAMAGE_TAKEN);
