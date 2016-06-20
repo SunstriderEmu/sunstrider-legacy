@@ -3022,16 +3022,25 @@ void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)
         for (auto i : sObjectMgr->GetSpellStore())
             mSpellInfoMap[i.first] = new SpellInfo(i.second);
     }
-    else {
+    else { //reload case
+		// A lot of the core uses pointers to spellInfoMap so we can't just clear and refill it.
+		// What we do here is create new SpellInfo's and replace old ones at their addresses (not sure we're allowed to do that but it seems to work)
+		// This has one consequence I can see:
+		// - We can't remove spells by reloading
+
         auto spellStore = sObjectMgr->GetSpellStore();
         for (uint32 i = 0; i < mSpellInfoMap.size(); i++)
         {
-            auto itr = spellStore.find(i);
-            if (itr == spellStore.end())
-                continue;
+			//get SpellEntry to create the new SpellInfo
+			auto itr = spellStore.find(i);
+			if (itr == spellStore.end())
+				continue;
 
             //replace old object by a new one, but keep it's adress, so that code having already pointers to some SpellInfos can continue.
-            *mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
+			if (mSpellInfoMap[i])
+				*mSpellInfoMap[i] = std::move(SpellInfo(itr->second));
+			else
+				mSpellInfoMap[i] = new SpellInfo(itr->second);
         }
     }
 
