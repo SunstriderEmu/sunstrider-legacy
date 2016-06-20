@@ -6925,17 +6925,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Blackout
         case 15326:
         {
-			//mind vision
-            if (procSpell->Id == 2096 || procSpell->Id == 10909)
-                return false;
-			//devouring plague
-			if (procSpell->SpellVisual == 346 && procSpell->SpellIconID == 9)
+			// Can't seems to have a good spell family mask that would exclude all the right spells so we also exclude Silence here
+			if (procSpell->Id == 15487) //Silence
 				return false;
-			//shackle undead
-			if (procSpell->Id == 9484 || procSpell->Id == 9485 || procSpell->Id == 10955)
-				return false;
-            if (procSpell->IsPositive())
-                return false;
             break;
         }
         // Persistent Shield (Scarab Brooch trinket)
