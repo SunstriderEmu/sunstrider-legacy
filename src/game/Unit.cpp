@@ -1370,6 +1370,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
 
     if(!pVictim)
         return;
+
     if(!this->IsAlive() || !pVictim->IsAlive())
         return;
 
@@ -6924,8 +6925,15 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Blackout
         case 15326:
         {
+			//mind vision
             if (procSpell->Id == 2096 || procSpell->Id == 10909)
                 return false;
+			//devouring plague
+			if (procSpell->SpellVisual == 346 && procSpell->SpellIconID == 9)
+				return false;
+			//shackle undead
+			if (procSpell->Id == 9484 || procSpell->Id == 9485 || procSpell->Id == 10955)
+				return false;
             if (procSpell->IsPositive())
                 return false;
             break;
