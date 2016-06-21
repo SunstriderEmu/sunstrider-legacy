@@ -1855,7 +1855,7 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
         MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
 
     //! Cannot walk on water without SPELL_AURA_WATER_WALK
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_WATER_WALK), // pussywizard: added m_mover
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_WATER_WALK) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_GHOST), // pussywizard: added m_mover
         MOVEMENTFLAG_WATERWALKING);
 
     //! Cannot feather fall without SPELL_AURA_FEATHER_FALL
