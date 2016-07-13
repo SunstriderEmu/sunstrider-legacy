@@ -6657,6 +6657,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              // Rain of Fire have 4 tick
              else if (procSpell->SpellFamilyFlags&0x0000000000000020LL)
                  tick = 4;  // was 4
+			 //soulfire : 0x8000000000
              else
                  return false;
 
