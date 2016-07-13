@@ -360,6 +360,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     else
     {
         LearnPetPassives();
+		if (map->IsBattleArena())
+			RemoveArenaAuras();
         CastPetAuras(current);
     }
 
