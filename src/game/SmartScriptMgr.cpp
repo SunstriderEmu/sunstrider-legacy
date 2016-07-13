@@ -1025,6 +1025,23 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
             break;
         }
+		case SMART_ACTION_SET_INST_DATA:
+		{
+			if (e.action.setInstanceData.type > 1)
+			{
+				TC_LOG_ERROR("sql.sql", "Entry %u SourceType %u Event %u Action %u uses invalid data type %u (value range 0-1), skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.setInstanceData.type);
+				return false;
+			}
+			else if (e.action.setInstanceData.type == 1)
+			{
+				if (e.action.setInstanceData.data > TO_BE_DECIDED)
+				{
+					TC_LOG_ERROR("sql.sql", "Entry %u SourceType %u Event %u Action %u uses invalid boss state %u (value range 0-5), skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.setInstanceData.data);
+					return false;
+				}
+			}
+			break;
+		}
     }
 
     if(e.GetActionType() >= SMART_ACTION_END)

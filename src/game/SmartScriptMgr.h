@@ -474,7 +474,7 @@ enum SMART_ACTION
     SMART_ACTION_RANDOM_PHASE_RANGE                 = 31,     // PhaseMin, PhaseMax
     SMART_ACTION_RESET_GOBJECT                      = 32,     //
     SMART_ACTION_CALL_KILLEDMONSTER                 = 33,     // CreatureId,
-    SMART_ACTION_SET_INST_DATA                      = 34,     // Field, Data
+    SMART_ACTION_SET_INST_DATA                      = 34,     // Field, Data, Type (0 = SetData, 1 = SetBossState)
     SMART_ACTION_SET_INST_DATA64                    = 35,     // Field,
     SMART_ACTION_UPDATE_TEMPLATE                    = 36,     // Entry, Team
     SMART_ACTION_DIE                                = 37,     // No Params
@@ -740,6 +740,7 @@ struct SmartAction
         {
             uint32 field;
             uint32 data;
+			uint32 type;
         } setInstanceData;
 
         struct
