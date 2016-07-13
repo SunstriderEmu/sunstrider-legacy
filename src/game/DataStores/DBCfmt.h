@@ -43,6 +43,11 @@ const char CreatureModelDatafmt[] ="nixxfxxxxxxxxxxffxxxxxxxxxxx";
 const char CreatureSpellDatafmt[]="nxxxxxxxx";
 const char DurabilityCostsfmt[]="niiiiiiiiiiiiiiiiiiiiiiiiiiiii";
 const char DurabilityQualityfmt[]="nf";
+#ifdef LICH_KING
+const char Emotesfmt[] = "nxxiiixx";
+#else
+const char Emotesfmt[] = "nxxiiix";
+#endif
 const char EmoteEntryfmt[]="nxixxxxxxxxxxxxxxxx";
 const char FactionEntryfmt[]="niiiiiiiiiiiiiiiiiissssssssssssssssxxxxxxxxxxxxxxxxxx";
 const char FactionTemplateEntryfmt[]="niiiiiiiiiiiii";

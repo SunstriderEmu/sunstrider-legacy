@@ -138,14 +138,14 @@ void CreatureTextMgr::LoadCreatureTexts()
             TC_LOG_ERROR("sql.sql", "CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Type %u but this chat type is not a valid chat type for creatures. Defaulting to 12 (CHAT_MSG_MONSTER_SAY)", temp.entry, temp.group, uint32(temp.type));
             temp.type = CHAT_MSG_MONSTER_SAY;
         }
-        /*if (temp.emote)
+        if (temp.emote)
         {
             if (!sEmotesStore.LookupEntry(temp.emote))
             {
                 TC_LOG_ERROR("FIXME","CreatureTextMgr: Entry %u, Group %u in table `creature_texts` has Emote %u but emote does not exist.", temp.entry, temp.group, uint32(temp.emote));
                 temp.emote = EMOTE_ONESHOT_NONE;
             }
-        }*/ //TODOSMARTAI: Merge Emotes.dbc loading from TC
+        }
 
         if (temp.BroadcastTextId)
         {

@@ -115,8 +115,8 @@ Quest::Quest(Field * questRecord)
     PointY = questRecord[108].GetFloat();
     PointOpt = questRecord[109].GetUInt32();
 
-    for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
-        DetailsEmote[i] = questRecord[110+i].GetUInt16();
+	for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+		DetailsEmote[i] = questRecord[110 + i].GetUInt16();
 
     for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
         DetailsEmoteDelay[i] = 0; //NYI
@@ -124,8 +124,8 @@ Quest::Quest(Field * questRecord)
     IncompleteEmote = questRecord[114].GetUInt16();
     CompleteEmote = questRecord[115].GetUInt16();
 
-    for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
-        OfferRewardEmote[i] = questRecord[116+i].GetInt16();
+	for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+		OfferRewardEmote[i] = questRecord[116 + i].GetInt16();
 
     for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
         OfferRewardEmoteDelay[i] = 0; //NYI

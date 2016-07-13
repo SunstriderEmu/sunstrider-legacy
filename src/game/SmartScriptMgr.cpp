@@ -1213,12 +1213,11 @@ bool SmartAIMgr::IsTextEmoteValid(SmartScriptHolder const& e, uint32 entry)
 
 bool SmartAIMgr::IsEmoteValid(SmartScriptHolder const& e, uint32 entry)
 {
-    /* if (!sEmotesStore.LookupEntry(entry))
+    if (!sEmotesStore.LookupEntry(entry))
     {
-    TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Emote entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
-    return false;
+		TC_LOG_ERROR("sql.sql","SmartAIMgr: Entry %d SourceType %u Event %u Action %u uses non-existent Emote entry %u, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), entry);
+		return false;
     }
-    */
     return true;
 }
 

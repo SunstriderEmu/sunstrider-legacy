@@ -794,11 +794,11 @@ void ObjectMgr::LoadCreatureAddons()
             }
         }
 
-        /*if (!sEmotesStore.LookupEntry(creatureAddon.emote))
+        if (!sEmotesStore.LookupEntry(creatureAddon.emote))
         {
             TC_LOG_ERROR("sql.sql", "Creature (GUID: %u) has invalid emote (%u) defined in `creature_addon`.", guid, creatureAddon.emote);
             creatureAddon.emote = 0;
-        }*/
+        }
 
         if(mCreatureDataMap.find(guid)==mCreatureDataMap.end())
             TC_LOG_ERROR("sql.sql","Creature (GUID: %u) does not exist but has a record in `creature_addon`",guid);
@@ -880,13 +880,11 @@ void ObjectMgr::LoadCreatureTemplateAddons()
                 creatureAddon.mount = 0;
             }
         }
-        /*
         if (!sEmotesStore.LookupEntry(creatureAddon.emote))
         {
             TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has invalid emote (%u) defined in `creature_template_addon`.", entry, creatureAddon.emote);
             creatureAddon.emote = 0;
         }
-        */
         ++count;
     }
     while (result->NextRow());
@@ -3638,6 +3636,39 @@ void ObjectMgr::LoadQuests()
             else
                 mQuestTemplates[qinfo->NextQuestInChain]->prevChainQuests.push_back(qinfo->GetQuestId());
         }
+
+		if (qinfo->CompleteEmote && !sEmotesStore.LookupEntry(qinfo->CompleteEmote))
+		{
+			TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
+			qinfo->CompleteEmote = 0;
+		}
+
+		for (uint8 i = 0; i < QUEST_EMOTE_COUNT; i++)
+		{
+			if (qinfo->DetailsEmote[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmote[i]))
+			{
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->DetailsEmote[i], qinfo->QuestId);
+				qinfo->DetailsEmote[i] = 0;
+			}
+
+			if (qinfo->DetailsEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmoteDelay[i]))
+			{
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->DetailsEmoteDelay[i], qinfo->QuestId);
+				qinfo->DetailsEmoteDelay[i] = 0;
+			}
+
+			if (qinfo->OfferRewardEmote[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmote[i]))
+			{
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmote[i], qinfo->QuestId);
+				qinfo->OfferRewardEmote[i] = 0;
+			}
+
+			if (qinfo->OfferRewardEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmoteDelay[i]))
+			{
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmoteDelay[i], qinfo->QuestId);
+				qinfo->OfferRewardEmoteDelay[i] = 0;
+			}
+		}
 
         // fill additional data stores
         if(qinfo->PrevQuestId)
@@ -8569,7 +8600,6 @@ void ObjectMgr::LoadBroadcastTexts()
             bct.Language = LANG_UNIVERSAL;
         }
         
-        /* TODO, we've no dbc store for emotes yet 
         if (bct.EmoteId0)
         {
             if (!sEmotesStore.LookupEntry(bct.EmoteId0))
@@ -8596,7 +8626,6 @@ void ObjectMgr::LoadBroadcastTexts()
                 bct.EmoteId2 = 0;
             }
         }
-        */
 
         _broadcastTextStore[bct.Id] = bct;
     }
