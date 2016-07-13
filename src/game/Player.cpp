@@ -16665,7 +16665,7 @@ void Player::SaveToDB(bool create /*=false*/)
     //TODO replace this with a Prepared Statement
     std::ostringstream ss;
     ss << "REPLACE INTO characters (guid,account,name,race,class,gender, level, xp, money, playerBytes, playerBytes2, playerFlags,"
-        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, data, "
+        "map, instance_id, dungeon_difficulty, position_x, position_y, position_z, orientation, "
         "taximask, online, cinematic, "
         "totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, resettalents_time, "
         "trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, "
@@ -16706,14 +16706,7 @@ void Player::SaveToDB(bool create /*=false*/)
         << finiteAlways(GetTeleportDest().m_orientation) << ", '";
     }
 
-    uint16 i;
-    for( i = 0; i < m_valuesCount; i++ )
-    {
-        ss << GetUInt32Value(i) << " ";
-    }
-
-    ss << "', '";
-
+	uint8 i;
     for( i = 0; i < 8; i++ )
         ss << m_taxi.GetTaximask(i) << " ";
 
@@ -21052,8 +21045,13 @@ bool Player::RewardPlayerAndGroupAtKill(Unit* pVictim)
                         uint32 itr_xp = (member_with_max_level == not_gray_member_with_max_level) ? uint32(xp*rate) : uint32((xp*rate/2)+1);
 
                         pGroupGuy->GiveXP(itr_xp, pVictim);
-                        if(Pet* pet = pGroupGuy->GetPet())
-                            pet->GivePetXP((float)itr_xp/1.5);
+						if (Pet* pet = pGroupGuy->GetPet())
+						{
+							// TODO: Pets need to get exp based on their level diff to the target, not the owners.
+							// the whole RewardGroupAtKill needs a rewrite to match up with this anyways:
+							// http://wowwiki.wikia.com/wiki/Formulas:Mob_XP?oldid=228414
+							pet->GivePetXP((float)itr_xp / 1.5);
+						}
                     }
 
                     // quest objectives updated only for alive group member or dead but with not released body
