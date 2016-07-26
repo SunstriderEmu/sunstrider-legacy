@@ -2520,7 +2520,8 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     bool lostControl = pVictim->HasUnitState(UNIT_STATE_LOST_CONTROL);
 
     bool canParry = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
-    bool canDodge = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
+    //bool canDodge = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
+	bool canDodge = canParry; //same condition for now, uncomment above line if it changes
     bool canBlock = spell->HasAttribute(SPELL_ATTR3_BLOCKABLE_SPELL) && !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
     bool canMiss = true;
 
