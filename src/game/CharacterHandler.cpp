@@ -243,7 +243,7 @@ void WorldSession::HandleCharEnumOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,1+1+1+1+1+1+1+1+1+1);
+    
 
     CharacterCreateInfo createInfo;
 
@@ -628,7 +628,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
 void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -703,7 +703,7 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     if(PlayerLoading() || GetPlayer() != NULL)
     {
@@ -1100,7 +1100,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,4+1);
+    
 
    // TC_LOG_DEBUG("network.opcode", "WORLD: Received CMSG_SET_FACTION_ATWAR" );
 
@@ -1124,7 +1124,7 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 //I think this function is never used :/ I dunno, but i guess this opcode not exists
 void WorldSession::HandleSetFactionCheat( WorldPacket & /*recvData*/ )
 {
-    //CHECK_PACKET_SIZE(recvData,4+4);
+    //
 
     //TC_LOG_DEBUG("FIXME","WORLD SESSION: HandleSetFactionCheat");
     /*
@@ -1188,7 +1188,7 @@ void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_WATCHED_FACTION");
     uint32 fact;
@@ -1198,7 +1198,7 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4+1);
+    
 
    // TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_FACTION_INACTIVE");
     uint32 replistid;
@@ -1226,7 +1226,7 @@ void WorldSession::HandleShowingCloakOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
 
     CharacterRenameInfo renameInfo;
 
@@ -1299,7 +1299,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
     uint64 guid;
 
-    CHECK_PACKET_SIZE(recvData, 8);
+    
     recvData >> guid;
 
     // not accept declined names for unsupported languages
@@ -1335,7 +1335,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
     std::string name2;
     DeclinedName declinedname;
 
-    CHECK_PACKET_SIZE(recvData, recvData.rpos() + 1);
+    
     recvData >> name2;
 
     if(name2 != name)                                       // character have different name
@@ -1349,7 +1349,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
     {
-        CHECK_PACKET_SIZE(recvData, recvData.rpos() + 1);
+        
         recvData >> declinedname.name[i];
         if(!normalizePlayerName(declinedname.name[i]))
         {

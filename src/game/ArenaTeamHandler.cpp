@@ -31,7 +31,7 @@
 
 void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 {
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -52,8 +52,6 @@ void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
 void WorldSession::HandleArenaTeamQueryOpcode(WorldPacket & recvData)
 {
     
-    
-    CHECK_PACKET_SIZE(recvData, 4);
 
     uint32 ArenaTeamId;
     recvData >> ArenaTeamId;
@@ -69,8 +67,6 @@ void WorldSession::HandleArenaTeamQueryOpcode(WorldPacket & recvData)
 void WorldSession::HandleArenaTeamRosterOpcode(WorldPacket & recvData)
 {
     
-    
-    CHECK_PACKET_SIZE(recvData, 4);
 
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
@@ -86,7 +82,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+1);
+    
 
     uint32 ArenaTeamId;                                     // arena team id
     std::string Invitedname;
@@ -203,7 +199,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
@@ -242,7 +238,7 @@ void WorldSession::HandleArenaTeamDisbandOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     uint32 ArenaTeamId;                                     // arena team id
     recvData >> ArenaTeamId;
@@ -265,7 +261,7 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+1);
+    
 
     uint32 ArenaTeamId;
     std::string name;
@@ -315,7 +311,7 @@ void WorldSession::HandleArenaTeamLeaderOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+1);
+    
 
     uint32 ArenaTeamId;
     std::string name;

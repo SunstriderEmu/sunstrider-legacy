@@ -49,7 +49,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+1+1+1+4+4+1+4+4+8+1);
+    
 
     uint64 mailbox, unk3;
     std::string receiver, subject, body;
@@ -59,17 +59,17 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     recvData >> receiver;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, 8+(receiver.size()+1)+1+1+4+4+1+4+4+8+1);
+    
 
     recvData >> subject;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, 8+(receiver.size()+1)+(subject.size()+1)+1+4+4+1+4+4+8+1);
+    
 
     recvData >> body;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, 8+(receiver.size()+1)+(subject.size()+1)+(body.size()+1)+4+4+1+4+4+8+1);
+    
 
     recvData >> StationeryID;
     recvData >> PackageID;
@@ -83,7 +83,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
         return;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, 8+(receiver.size()+1)+(subject.size()+1)+(body.size()+1)+4+4+1+items_count*(1+8)+4+4+8+1);
+    
 
     if(items_count)
     {
@@ -263,7 +263,7 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 mailbox;
     uint32 mailId;
@@ -287,7 +287,7 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 mailbox;
     uint32 mailId;
@@ -305,7 +305,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 mailbox;
     uint32 mailId;
@@ -409,7 +409,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+4);
+    
 
     uint64 mailbox;
     uint32 mailId;
@@ -480,7 +480,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 mailbox;
     uint32 mailId;
@@ -514,7 +514,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 mailbox;
     recvData >> mailbox;
@@ -635,7 +635,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+4+4);
+    
 
     uint32 itemTextId;
     uint32 mailId;                                          //this value can be item id in bag, but it is also mail id
@@ -654,7 +654,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 //used when player copies mail body to his inventory
 void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     /* Is this supposed to be BC ?
     uint64 mailbox;

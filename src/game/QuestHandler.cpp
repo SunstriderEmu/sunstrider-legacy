@@ -44,7 +44,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
     
 
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -90,7 +90,7 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -122,7 +122,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 guid;
     uint32 quest;
@@ -251,7 +251,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 guid;
     uint32 quest;
@@ -276,7 +276,7 @@ void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 quest;
     recvData >> quest;
@@ -292,7 +292,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+4);
+    
 
     uint32 quest, reward;
     uint64 guid;
@@ -355,7 +355,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint32 quest;
     uint64 guid;
@@ -386,7 +386,7 @@ void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1+1);
+    
 
     uint8 slot1, slot2;
     recvData >> slot1 >> slot2;
@@ -401,7 +401,7 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     uint8 slot;
     recvData >> slot;
@@ -425,7 +425,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
     /*
     
     
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 quest;
     recvData >> quest;
@@ -479,7 +479,7 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint32 questID;
     uint64 guid;
@@ -523,7 +523,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket,4);
+    
 
     uint32 quest;
     recvPacket >> quest;
@@ -599,7 +599,7 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket,8+1);
+    
 
     uint64 guid;
     uint8 msg;

@@ -173,7 +173,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_WHO Message");
 
-    CHECK_PACKET_SIZE(recvData,4+4+1+1+4+4+4+4);
+    
 
     uint32 level_min, level_max, racemask, classmask, zones_count, str_count;
     uint32 zoneids[10];                                     // 10 is client limit
@@ -184,12 +184,12 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     recvData >> player_name;                               // player name, case sensitive...
 
     // recheck
-    CHECK_PACKET_SIZE(recvData,4+4+(player_name.size()+1)+1+4+4+4+4);
+    
 
     recvData >> guild_name;                                // guild name, case sensitive...
 
     // recheck
-    CHECK_PACKET_SIZE(recvData,4+4+(player_name.size()+1)+(guild_name.size()+1)+4+4+4+4);
+    
 
     recvData >> racemask;                                  // race mask
     recvData >> classmask;                                 // class mask
@@ -199,7 +199,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         return;                                             // can't be received from real client or broken packet
 
     // recheck
-    CHECK_PACKET_SIZE(recvData,4+4+(player_name.size()+1)+(guild_name.size()+1)+4+4+4+(4*zones_count)+4);
+    
 
     for(uint32 i = 0; i < zones_count; i++)
     {
@@ -214,13 +214,13 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         return;                                             // can't be received from real client or broken packet
 
     // recheck
-    CHECK_PACKET_SIZE(recvData,4+4+(player_name.size()+1)+(guild_name.size()+1)+4+4+4+(4*zones_count)+4+(1*str_count));
+    
 
     std::wstring str[4];                                    // 4 is client limit
     for(uint32 i = 0; i < str_count; i++)
     {
         // recheck (have one more byte)
-        CHECK_PACKET_SIZE(recvData,recvData.rpos());
+        
 
         std::string temp;
         recvData >> temp;                                  // user entered string, it used as universal search pattern(guild+player name)?
@@ -506,7 +506,7 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
 
 void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 newZone;
     recvData >> newZone;
@@ -521,7 +521,7 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 {
     // When this packet send?
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid ;
     recvData >> guid;
@@ -538,7 +538,7 @@ void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -569,7 +569,7 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
     if(!_player->m_mover->IsAlive())
         return;
 
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     uint8 animstate;
     recvData >> animstate;
@@ -580,7 +580,7 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 4);
+    
     
     uint32 unk;
     recvData >> unk;
@@ -590,7 +590,7 @@ void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData, 1+1);
+    
 
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_ADD_FRIEND");
 
@@ -600,7 +600,7 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
     recvData >> friendName;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, (friendName.size()+1)+1);
+    
 
     recvData >> friendNote;
 
@@ -670,7 +670,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std
 
 void WorldSession::HandleDelFriendOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 friendGUID;
     recvData >> friendGUID;
@@ -682,7 +682,7 @@ void WorldSession::HandleDelFriendOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAddIgnoreOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_ADD_IGNORE");
 
@@ -744,7 +744,7 @@ void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     TC_LOG_DEBUG("network", "WORLD: Received CMSG_DEL_IGNORE");
 
@@ -759,7 +759,7 @@ void WorldSession::HandleDelIgnoreOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetContactNotesOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
     uint64 guid;
     std::string note;
     recvData >> guid >> note;
@@ -768,7 +768,7 @@ void WorldSession::HandleSetContactNotesOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBugOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,4+4+1+4+1);
+    
 
     uint32 suggestion, contentlen;
     std::string content;
@@ -778,7 +778,7 @@ void WorldSession::HandleBugOpcode( WorldPacket & recvData )
     recvData >> suggestion >> contentlen >> content;
 
     //recheck
-    CHECK_PACKET_SIZE(recvData,4+4+(content.size()+1)+4+1);
+    
 
     recvData >> typelen >> type;
 
@@ -789,7 +789,7 @@ void WorldSession::HandleBugOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     TC_LOG_DEBUG("network","WORLD: Received CMSG_RECLAIM_CORPSE");
     if (GetPlayer()->IsAlive())
@@ -830,7 +830,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
 
 void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
 {
-    CHECK_PACKET_SIZE(recvData,8+1);
+    
 
     TC_LOG_DEBUG("network","WORLD: Received CMSG_RESURRECT_RESPONSE");
 
@@ -857,7 +857,7 @@ void WorldSession::HandleResurrectResponseOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 triggerId;
     recvData >> triggerId;
@@ -1075,7 +1075,7 @@ void WorldSession::HandleRequestAccountData(WorldPacket& /*recvData*/)
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData,1+2+1+1);
+    
 
     uint8 button, misc, type;
     uint16 action;
@@ -1156,7 +1156,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
     /*
-        CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
+        
 
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
         recvData.hexlike();
@@ -1190,7 +1190,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
     // no used
     recvData.rfinish();                       // prevent warnings spam
     /*
-        CHECK_PACKET_SIZE(recvData,8+8+4+4+4+4+4);
+        
 
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
         recvData.hexlike();
@@ -1219,7 +1219,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 
 void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     uint8 ActionBar;
     recvData >> ActionBar;
@@ -1250,7 +1250,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     if (GetClientBuild() == BUILD_335)
         return;  //no support yet
 
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -1338,7 +1338,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -1363,7 +1363,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4+4+4+4+4+4);
+    
 
     // write in client console: worldport 469 452 6454 2536 180 or /console worldport 469 452 6454 2536 180
     // Received opcode CMSG_WORLD_TELEPORT
@@ -1403,7 +1403,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData, 1);
+    
 
     TC_LOG_DEBUG("network", "Received opcode CMSG_WHOIS");
 
@@ -1462,7 +1462,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 1+8);
+    
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_COMPLAIN");
 
@@ -1475,13 +1475,13 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     switch (ComplaintType)
     {
         case 0:
-            CHECK_PACKET_SIZE(recvData, recvData.rpos()+4+4+4);
+            
             recvData >> unk1;                              // const 0
             recvData >> unk2;                              // probably mail id
             recvData >> unk3;                              // const 0
             break;
         case 1:
-            CHECK_PACKET_SIZE(recvData, recvData.rpos()+4+4+4+4+1);
+            
             recvData >> unk1;                              // probably language
             recvData >> unk2;                              // message type?
             recvData >> unk3;                              // probably channel id
@@ -1509,7 +1509,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleRealmSplitOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     TC_LOG_DEBUG("network", "CMSG_REALM_SPLIT");
 
@@ -1532,7 +1532,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 1);
+    
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
@@ -1556,7 +1556,7 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     TC_LOG_DEBUG("network", "CMSG_SET_TITLE");
 
@@ -1579,7 +1579,7 @@ void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+4);
+    
 
     uint32 counter, time_;
     recvData >> counter >> time_;
@@ -1602,7 +1602,7 @@ void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     uint32 mode;
     recvData >> mode;
@@ -1679,7 +1679,7 @@ void WorldSession::HandleCancelMountAuraOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8+4+4);
+    
 
     uint64 guid = 0;                                            // guid - unused
     recvData >> guid;

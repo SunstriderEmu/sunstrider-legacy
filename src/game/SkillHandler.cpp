@@ -34,7 +34,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+4);
+    
 
     uint32 talent_id, requested_rank;
     recvData >> talent_id >> requested_rank;
@@ -159,7 +159,7 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTalentWipeConfirmOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     TC_LOG_DEBUG("network.opcode","MSG_TALENT_WIPE_CONFIRM");
     uint64 guid;

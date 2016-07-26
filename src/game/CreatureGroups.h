@@ -42,9 +42,16 @@ struct FormationInfo
 
 typedef std::unordered_map<uint32/*memberDBGUID*/, FormationInfo*>   CreatureGroupInfoType;
 
+struct MemberPosition
+{
+	float follow_angle;
+	float follow_dist;
+};
+
 class CreatureGroupManager
 {
     public:
+
         static CreatureGroupManager* instance()
         {
             static CreatureGroupManager instance;
@@ -53,7 +60,8 @@ class CreatureGroupManager
 
         ~CreatureGroupManager();
         
-        void AddCreatureToGroup(uint32 group_id, Creature* member);
+		//add creature to group (or create it if it does not exists), with current relative position to leader as position in formation, OR with position instead if specified
+        void AddCreatureToGroup(uint32 group_id, Creature* member, MemberPosition* position = nullptr);
         void RemoveCreatureFromGroup(uint32 group_id, Creature* member);
         void RemoveCreatureFromGroup(CreatureGroup *group, Creature* member);
         //empty group then delete it
@@ -104,7 +112,8 @@ class CreatureGroup
         bool IsAlive() const; //true if any member is alive
         bool isLootLinked(Creature* c);
 
-        void AddMember(Creature *member);
+		//add creature to group, with current relative position to leader as position in formation, OR with position instead if specified
+        void AddMember(Creature *member, MemberPosition* pos = nullptr);
         void RemoveMember(Creature *member);
         void FormationReset(bool dismiss);
         void SetLootable(bool lootable);

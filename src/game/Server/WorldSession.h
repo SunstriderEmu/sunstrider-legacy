@@ -56,8 +56,6 @@ class WorldSession;
 class LoginQueryHolder;
 class CharacterHandler;
 
-#define CHECK_PACKET_SIZE(P,S) if((P).size() < (S)) return WorldSession::SizeError((P),(S));
-
 #ifdef LICH_KING
 namespace lfg
 {

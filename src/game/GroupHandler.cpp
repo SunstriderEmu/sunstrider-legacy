@@ -257,7 +257,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -299,7 +299,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     std::string membername;
     recvData >> membername;
@@ -354,7 +354,7 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -400,7 +400,7 @@ void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+8+4);
+    
 
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -427,7 +427,7 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+1);
+    
 
     if(!GetPlayer()->GetGroup())
         return;
@@ -451,7 +451,7 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4+4);
+    
 
     if(!GetPlayer()->GetGroup())
         return;
@@ -475,7 +475,7 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
-    CHECK_PACKET_SIZE(recvData,4+4);
+    
 
     uint32 minimum, maximum, roll;
     recvData >> minimum;
@@ -506,7 +506,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -526,7 +526,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
     else                                                    // target icon update
     {
         // recheck
-        CHECK_PACKET_SIZE(recvData,1+8);
+        
 
         if(!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
             return;
@@ -562,7 +562,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1+1);
+    
 
     // we will get correct pointer for group here, so we don't have to check if group is BG raid
     Group *group = GetPlayer()->GetGroup();
@@ -574,7 +574,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
     recvData >> name;
 
     // recheck
-    CHECK_PACKET_SIZE(recvData,(name.size()+1)+1);
+    
 
     recvData >> groupNr;
 
@@ -597,7 +597,7 @@ void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+1);
+    
 
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -621,7 +621,7 @@ void WorldSession::HandlePartyAssignmentOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 1+1+8);
+    
 
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -861,7 +861,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode( WorldPacket &recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 Guid;
     recvData >> Guid;
@@ -995,7 +995,7 @@ void WorldSession::HandleOptOutOfLootOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     uint32 passOnLoot;
     recvData >> passOnLoot;

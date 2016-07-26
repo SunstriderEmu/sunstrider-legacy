@@ -703,18 +703,6 @@ void MotionMaster::MovePath(uint32 path_id)
     if (!path_id)
         return;
     //We set waypoint movement as new default movement generator
-    // clear ALL movement generators (including default)
-    /*while (!empty())
-    {
-        MovementGenerator *curr = top();
-        curr->Finalize(*_owner, true);
-        pop();
-        if (!isStatic(curr))
-            delete curr;
-    }*/
-
-    //_owner->GetTypeId() == TYPEID_PLAYER ?
-        //Mutate(new WaypointMovementGenerator<Player>(path_id, path_type, dir)):
     Mutate(new WaypointMovementGenerator<Creature>(path_id), MOTION_SLOT_IDLE);
 
    /* TC_LOG_DEBUG("misc", "%s (GUID: %u) start moving over path(Id: %u)",

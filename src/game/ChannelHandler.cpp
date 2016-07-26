@@ -25,7 +25,7 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 4+1+1+1);
+    
 
     uint32 channel_id;
     uint8 unknown1, hasVoice;
@@ -44,7 +44,7 @@ void WorldSession::HandleJoinChannel(WorldPacket& recvPacket)
         return;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, 4+1+1+(channelname.size()+1)+1);
+    
 
     recvPacket >> pass;
     if(ChannelMgr* cMgr = channelMgr(_player->GetTeam()))
@@ -56,7 +56,7 @@ void WorldSession::HandleLeaveChannel(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 4+1);
+    
 
     uint32 zoneChannelID;
     std::string channelname;
@@ -78,7 +78,7 @@ void WorldSession::HandleChannelList(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -92,13 +92,13 @@ void WorldSession::HandleChannelPassword(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, pass;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> pass;
 
@@ -111,13 +111,13 @@ void WorldSession::HandleChannelSetOwner(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, newp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> newp;
 
@@ -133,7 +133,7 @@ void WorldSession::HandleChannelOwner(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -146,13 +146,13 @@ void WorldSession::HandleChannelModerator(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -168,13 +168,13 @@ void WorldSession::HandleChannelUnmoderator(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -190,13 +190,13 @@ void WorldSession::HandleChannelMute(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -212,13 +212,13 @@ void WorldSession::HandleChannelUnmute(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -234,13 +234,13 @@ void WorldSession::HandleChannelInvite(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -256,13 +256,13 @@ void WorldSession::HandleChannelKick(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
     if(!normalizePlayerName(otp))
@@ -277,13 +277,13 @@ void WorldSession::HandleChannelBan(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -299,13 +299,13 @@ void WorldSession::HandleChannelUnban(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1+1);
+    
 
     std::string channelname, otp;
     recvPacket >> channelname;
 
     // recheck
-    CHECK_PACKET_SIZE(recvPacket, (channelname.size()+1)+1);
+    
 
     recvPacket >> otp;
 
@@ -321,7 +321,7 @@ void WorldSession::HandleChannelAnnouncements(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -334,7 +334,7 @@ void WorldSession::HandleChannelModerate(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -347,7 +347,7 @@ void WorldSession::HandleChannelDisplayListQuery(WorldPacket &recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -360,7 +360,7 @@ void WorldSession::HandleGetChannelMemberCount(WorldPacket &recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;
@@ -381,7 +381,7 @@ void WorldSession::HandleSetChannelWatch(WorldPacket &recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket, 1);
+    
 
     std::string channelname;
     recvPacket >> channelname;

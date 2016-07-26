@@ -43,7 +43,7 @@ void CreatureGroupManager::AddGroupMember(uint32 creature_lowguid, FormationInfo
     CreatureGroupMap[creature_lowguid] = group_member;
 }
 
-void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member)
+void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member, MemberPosition* pos)
 {
     Map *map = member->FindMap();
     if(!map)
@@ -53,13 +53,13 @@ void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member)
 
     //Add member to an existing group
     if(itr != map->CreatureGroupHolder.end())
-        itr->second->AddMember(member);
+        itr->second->AddMember(member, pos);
     //Create new group
     else
     {
         CreatureGroup* group = new CreatureGroup(groupId);
         map->CreatureGroupHolder[groupId] = group;
-        group->AddMember(member); //this will add creature as leader
+        group->AddMember(member, pos); //this will add creature as leader
     }
 }
 
@@ -196,7 +196,7 @@ void CreatureGroup::EmptyFormation()
         RemoveMember(m_members.begin()->first);
 }
 
-void CreatureGroup::AddMember(Creature *member)
+void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
 {
     uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
 
@@ -228,8 +228,15 @@ void CreatureGroup::AddMember(Creature *member)
         fInfo = new FormationInfo;
         if (m_leader != member) //next infos not needed if we're leader
         {
-            fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
-            fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+			if (pos)
+			{
+				fInfo->follow_angle = pos->follow_angle;
+				fInfo->follow_dist = pos->follow_dist;
+			}
+			else {
+				fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
+				fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+			}
         }
         fInfo->leaderGUID = m_leader->GetGUIDLow();
         sCreatureGroupMgr->AddGroupMember(memberGUID, fInfo);

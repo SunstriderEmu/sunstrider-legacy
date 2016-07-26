@@ -36,7 +36,7 @@
 
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8+2+2+8);
+    
 
     uint64 guid1;
     uint16 spellid;
@@ -321,7 +321,7 @@ void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+8);
+    
 
     TC_LOG_DEBUG("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
 
@@ -388,7 +388,7 @@ bool WorldSession::CheckStableMaster(uint64 guid)
 
 void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8+4+2+2);
+    
 
     TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
 
@@ -459,7 +459,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
 
     TC_LOG_DEBUG("network", "HandlePetRename. CMSG_PET_RENAME\n" );
 
@@ -471,7 +471,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 
     recvData >> petguid;
     recvData >> name;
-    CHECK_PACKET_SIZE(recvData, recvData.rpos() + 1);
+    
     recvData >> isdeclined;
 
     if(!GetPlayer())
@@ -511,7 +511,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     {
         for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
         {
-            CHECK_PACKET_SIZE(recvData, recvData.rpos() + 1);
+            
             recvData >> declinedname.name[i];
         }
 
@@ -545,7 +545,7 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;                                      //pet guid
@@ -575,7 +575,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket,8);
+    
 
     TC_LOG_DEBUG("network","CMSG_PET_UNLEARN");
     uint64 guid;
@@ -636,7 +636,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 {
     
     
-    CHECK_PACKET_SIZE(recvPacket,8+2+2+1);
+    
 
     TC_LOG_DEBUG("network","CMSG_PET_SPELL_AUTOCAST");
     uint64 guid;
@@ -694,7 +694,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
     TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
 
-    CHECK_PACKET_SIZE(recvPacket,8+4);
+    
     uint64 guid;
     uint32 spellid;
 

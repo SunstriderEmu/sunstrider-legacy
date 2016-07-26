@@ -49,7 +49,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+4+1);
+    
 
     uint32 type;
     uint32 lang;
@@ -525,7 +525,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
     
     if(!GetPlayer()->IsAlive())
         return;
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 emote;
     recvData >> emote;
@@ -545,7 +545,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         return;
     }
 
-    CHECK_PACKET_SIZE(recvData,4+4+8);
+    
 
     uint32 text_emote, emoteNum;
     uint64 guid;
@@ -607,7 +607,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
 
     uint64 iguid;
     uint8 reason;

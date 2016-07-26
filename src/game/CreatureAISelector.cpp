@@ -60,9 +60,9 @@ namespace FactorySelector
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("TotemAI");
             else if (creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
-            else if(creature->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
+            else if(creature->IsTrigger())
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
-            else if(creature->GetCreatureType() == CREATURE_TYPE_CRITTER)
+            else if(creature->IsCritter())
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("CritterAI");
         }
 

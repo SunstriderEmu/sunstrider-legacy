@@ -207,7 +207,7 @@ void WorldSession::HandleLfmSetOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4);
+    
 
     uint32 temp, entry, type;
     recvData >> temp;
@@ -227,7 +227,7 @@ void WorldSession::HandleLfgSetCommentOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,1);
+    
 
     std::string comment;
     recvData >> comment;
@@ -239,7 +239,7 @@ void WorldSession::HandleLookingForGroup(WorldPacket& recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+4+4);
+    
 
     uint32 type, entry, unk;
 
@@ -321,7 +321,7 @@ void WorldSession::HandleSetLfgOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,4+4);
+    
 
     uint32 slot, temp, entry, type;
     recvData >> slot >> temp;

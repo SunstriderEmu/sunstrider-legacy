@@ -20,7 +20,7 @@
 
 void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -161,7 +161,7 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+4+4+1);
+    
 
     uint64 guid;
     uint32 bgTypeId;
@@ -259,7 +259,7 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4);
+    
 
     uint32 bgTypeId;
     recvData >> bgTypeId;                                  // id from DBC
@@ -282,7 +282,7 @@ void WorldSession::HandleBattlefieldListOpcode( WorldPacket &recvData )
 
 void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 1+1+4+2+1);
+    
 
     uint8 type;                                             // arenatype if arena
     uint8 unk2;                                             // unk, can be 0x0 (may be if was invited?) and 0x1
@@ -599,7 +599,7 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     Battleground *bg = _player->GetBattleground();
     if(!bg)
@@ -620,7 +620,7 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     Battleground *bg = _player->GetBattleground();
     if(!bg)
@@ -641,7 +641,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 {     
-    CHECK_PACKET_SIZE(recvData, 8+1+1+1);
+    
 
     // ignore if we already in BG or BG queue
     if(_player->InBattleground())
@@ -886,7 +886,7 @@ void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 playerGuid;
     recvData >> playerGuid;

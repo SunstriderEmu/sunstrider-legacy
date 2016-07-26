@@ -38,7 +38,7 @@
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;                                            //NPC guid
     recvData >> guid;
@@ -162,7 +162,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+8+4+4+4);
+    
 
     uint64 auctioneerGUID, itemGUID;
     uint32 etime, bid, buyout;
@@ -291,7 +291,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+4);
+    
 
     uint64 auctioneerGUID;
     uint32 auctionId;
@@ -426,7 +426,7 @@ void WorldSession::HandleAuctionRemoveItem( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 auctioneerGUID;
     uint32 auctionId;
@@ -506,7 +506,7 @@ void WorldSession::HandleAuctionListBidderItems( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+4);
+    
 
     uint64 guid;                                            //NPC guid
     uint32 listfrom;                                        //page of auctions
@@ -564,7 +564,7 @@ void WorldSession::HandleAuctionListOwnerItems( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint32 listfrom;
     uint64 guid;
@@ -599,7 +599,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8+4+1+1+1+4+4+4+4+1);
+    
 
     std::string searchedname;
     uint8 levelmin, levelmax, usable;
@@ -611,7 +611,7 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
     recvData >> searchedname;
 
     // recheck with known string size
-    CHECK_PACKET_SIZE(recvData,8+4+(searchedname.size()+1)+1+1+4+4+4+4+1);
+    
 
     recvData >> levelmin >> levelmax;
     recvData >> auctionSlotID >> auctionMainCategory >> auctionSubCategory;

@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "WorldPacket.h"
@@ -231,8 +212,6 @@ void WorldSession::moveItems(std::vector<Item*> myItems, std::vector<Item*> hisI
 
 void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     std::vector<Item*> myItems(TRADE_SLOT_TRADED_COUNT, nullptr);
     std::vector<Item*> hisItems(TRADE_SLOT_TRADED_COUNT, nullptr);
     bool myCanCompleteTrade = true;
@@ -395,8 +374,6 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleUnacceptTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     if ( !GetPlayer()->pTrader )
         return;
 
@@ -406,8 +383,6 @@ void WorldSession::HandleUnacceptTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleBeginTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     if(!_player->pTrader)
         return;
 
@@ -428,8 +403,6 @@ void WorldSession::SendCancelTrade()
 
 void WorldSession::HandleCancelTradeOpcode(WorldPacket& /*recvPacket*/)
 {
-    
-    
     // sended also after LOGOUT COMPLETE
     if(_player)                                             // needed because STATUS_LOGGEDIN_OR_RECENTLY_LOGGOUT
         _player->TradeCancel(true);
@@ -437,10 +410,6 @@ void WorldSession::HandleCancelTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    CHECK_PACKET_SIZE(recvPacket,8);
-
     if( GetPlayer()->pTrader )
         return;
 
@@ -540,10 +509,6 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    CHECK_PACKET_SIZE(recvPacket,4);
-
     if(!_player->pTrader)
         return;
 
@@ -559,10 +524,6 @@ void WorldSession::HandleSetTradeGoldOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    CHECK_PACKET_SIZE(recvPacket,1+1+1);
-
     if(!_player->pTrader)
         return;
 
@@ -610,10 +571,6 @@ void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleClearTradeItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    CHECK_PACKET_SIZE(recvPacket,1);
-
     if(!_player->pTrader)
         return;
 

@@ -59,7 +59,7 @@ void WorldSession::HandleTabardVendorActivateOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -89,7 +89,7 @@ void WorldSession::HandleBankerActivateOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -119,7 +119,7 @@ void WorldSession::HandleTrainerListOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
 
@@ -213,7 +213,7 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8+4);
+    
 
     uint64 guid;
     uint32 spellId = 0;
@@ -277,7 +277,7 @@ void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 {
 //    TC_LOG_DEBUG("network", "WORLD: Received CMSG_GOSSIP_HELLO");
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
     recvData >> guid;
@@ -323,7 +323,7 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
 {
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 guid;
 
@@ -384,7 +384,7 @@ void WorldSession::HandleBinderActivateOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 npcGUID;
     recvData >> npcGUID;
@@ -429,7 +429,7 @@ void WorldSession::HandleListStabledPetsOpcode( WorldPacket & recvData )
     
     
     TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS");
-    CHECK_PACKET_SIZE(recvData,8);
+    
 
     uint64 npcGUID;
 
@@ -511,7 +511,7 @@ void WorldSession::HandleStablePet( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_PET");
     uint64 npcGUID;
@@ -591,7 +591,7 @@ void WorldSession::HandleUnstablePet( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+4);
+    
 
     TC_LOG_DEBUG("network", "WORLD: Recv CMSG_UNSTABLE_PET.");
     uint64 npcGUID;
@@ -681,7 +681,7 @@ void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 npcGUID;
 
@@ -816,7 +816,7 @@ void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+8+1);
+    
 
     uint64 npcGUID, itemGUID;
     uint8 guildBank;                                        // new in 2.3.2, bool that means from guild bank money

@@ -52,7 +52,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+8+4+1+5*8+2+1+4+4);
+    
 
     uint64 guidNPC;
     uint64 unk1, unk3, unk4, unk5, unk6, unk7;
@@ -68,7 +68,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     recvData >> name;                                      // name
 
     // recheck
-    CHECK_PACKET_SIZE(recvData, 8+8+4+(name.size()+1)+5*8+2+1+4+4);
+    
 
     recvData >> unk3;                                      // 0
     recvData >> unk4;                                      // 0
@@ -237,7 +237,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint8 signs = 0;
     uint64 petitionguid;
@@ -288,7 +288,7 @@ void WorldSession::HandlePetitionQueryOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+8);
+    
 
     uint32 guildguid;
     uint64 petitionguid;
@@ -369,7 +369,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
 
     uint64 petitionguid;
     uint32 type;
@@ -437,7 +437,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8+1);
+    
 
     Field *fields;
     uint64 petitionguid;
@@ -561,7 +561,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 petitionguid;
     uint64 ownerguid;
@@ -587,7 +587,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 4+8+8);
+    
 
     uint8 signs = 0;
     uint64 petitionguid, plguid;
@@ -687,7 +687,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     WorldPacket data;
     uint64 petitionguid;
@@ -825,7 +825,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
             return;
         }
 
-        CHECK_PACKET_SIZE(recvData, 8+5*4);
+        
         uint32 icon, iconcolor, border, bordercolor, backgroud;
         recvData >> backgroud >> icon >> iconcolor >> border >> bordercolor;
 
@@ -857,7 +857,7 @@ void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recvData)
 {
     
     
-    CHECK_PACKET_SIZE(recvData, 8);
+    
 
     uint64 guid;
     recvData >> guid;
