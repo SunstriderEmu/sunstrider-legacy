@@ -272,10 +272,10 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
     return me->SummonCreature(id,me->GetPositionX() + x,me->GetPositionY() + y,me->GetPositionZ() + z, angle, (TempSummonType)type, despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
 {
     //No target so we can't cast
-    if (!Target)
+    if (!target)
         return nullptr;
 
     //Silenced so we can't cast
@@ -331,13 +331,13 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* Target, int32 School, int32 Mecha
             continue;
 
         //Check if the spell meets our range requirements
-        if (RangeMin && RangeMin < TempSpell->GetMinRange())
+        if (RangeMin && RangeMin < me->GetSpellMinRangeForTarget(target, TempSpell))
             continue;
-        if (RangeMax && RangeMax > TempSpell->GetMaxRange())
+        if (RangeMax && RangeMax > me->GetSpellMaxRangeForTarget(target, TempSpell))
             continue;
 
         //Check if our target is in range
-        if (me->IsWithinDistInMap(Target, TempSpell->GetMinRange()) || !me->IsWithinDistInMap(Target, TempSpell->GetMaxRange()))
+        if (me->IsWithinDistInMap(target, me->GetSpellMinRangeForTarget(target, TempSpell)) || !me->IsWithinDistInMap(target, me->GetSpellMaxRangeForTarget(target, TempSpell)))
             continue;
 
         //All good so lets add it to the spell list

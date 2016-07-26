@@ -1028,7 +1028,7 @@ bool logChildren)
                 if (address == NULL || address == DWORD_PTR(-1))
                     logChildren = false;
 
-                pszCurrBuffer = DumpTypeIndex(pszCurrBuffer, modBase, innerTypeID, nestingLevel + 1,
+                pszCurrBuffer = DumpTypeIndex(pszCurrBuffer, modBase, innerTypeID,
                     address, bHandled, Name, addressStr, false, logChildren);
 
                 if (!bHandled)
@@ -1221,7 +1221,7 @@ bool logChildren)
         DWORD_PTR dwFinalOffset = offset + dwMemberOffset;
 
         pszCurrBuffer = DumpTypeIndex(pszCurrBuffer, modBase,
-            children.ChildId[i], nestingLevel+1,
+            children.ChildId[i],
             dwFinalOffset, bHandled2, ""/*Name */, "", true, true);
 
         // If the child wasn't a UDT, format it appropriately

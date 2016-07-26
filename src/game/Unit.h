@@ -1071,6 +1071,10 @@ class Unit : public WorldObject
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
         void ClearDiminishings() { m_Diminishing.clear(); }
 
+		// target dependent range checks
+		float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
+		float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
+
         virtual void Update( uint32 time );
 
         void SetAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }

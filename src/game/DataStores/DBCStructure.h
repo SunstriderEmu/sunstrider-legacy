@@ -884,9 +884,19 @@ struct SpellRadiusEntry
 struct SpellRangeEntry
 {
     uint32    ID;
+#ifdef LICH_KING
+	float MinRangeHostile;
+	float MinRangeFriend;
+	float MaxRangeHostile;
+	float MaxRangeFriend;
+	LocalizedString* DisplayName;
+	LocalizedString* DisplayNameShort;
+	uint8 Flags;
+#else
     float     minRange;
     float     maxRange;
-    uint32    type;
+	uint32    type;
+#endif
 };
 
 struct SpellShapeshiftEntry

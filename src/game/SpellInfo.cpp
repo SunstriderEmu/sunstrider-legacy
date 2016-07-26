@@ -891,7 +891,7 @@ bool SpellInfo::HasInitialAggro() const
 bool SpellInfo::IsRangedWeaponSpell() const
 {
     return ((EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED)
-        || (Attributes & SPELL_ATTR0_RANGED)); // Xinef: added
+        || (Attributes & SPELL_ATTR0_RANGED)); // sunwell
 }
 
 bool SpellInfo::IsAutoRepeatRangedSpell() const
@@ -1346,24 +1346,26 @@ float SpellInfo::GetMinRange(bool /* positive */) const
 {
     if (!RangeEntry)
         return 0.0f;
-    /* LK
+#ifdef LICH_KING
     if (positive)
         return RangeEntry->minRangeFriend;
     else
-        return RangeEntry->minRangeHostile; */
+        return RangeEntry->minRangeHostile;
+#endif
     return RangeEntry->minRange;
 }
 
-float SpellInfo::GetMaxRange(bool /* positive */, Unit* caster, Spell* spell) const
+float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
 {
     if (!RangeEntry)
         return 0.0f;
     float range;
-    /* LK
+#ifdef LICH_KING
     if (positive)
         range = RangeEntry->maxRangeFriend;
     else
-        range = RangeEntry->maxRangeHostile; */
+        range = RangeEntry->maxRangeHostile;
+#endif
     range = RangeEntry->maxRange;
     if (caster)
         if (Player* modOwner = caster->GetSpellModOwner())

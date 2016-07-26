@@ -421,7 +421,7 @@ bool Unit::IsWithinMeleeRange(Unit *obj, float dist) const
     float dz = GetPositionZ() - obj->GetPositionZ();
     float distsq = dx*dx + dy*dy + dz*dz;
 
-    float sizefactor = GetMeleeReach() + obj->GetMeleeReach();
+    float sizefactor = GetCombatReach() + obj->GetCombatReach() + 4.0f / 3.0f;
     float maxdist = dist + sizefactor;
 
     return distsq < maxdist * maxdist;
@@ -11214,6 +11214,36 @@ void Unit::ApplyDiminishingAura( DiminishingGroup group, bool apply )
 
         break;
     }
+}
+
+float Unit::GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const
+{
+	if (!spellInfo->RangeEntry)
+		return 0;
+#ifdef LICH_KING
+	if (spellInfo->RangeEntry->maxRangeFriend == spellInfo->RangeEntry->maxRangeHostile)
+		return spellInfo->GetMaxRange();
+	if (target == NULL)
+		return spellInfo->GetMaxRange(true);
+
+	return spellInfo->GetMaxRange(!IsHostileTo(target));
+#else
+	return spellInfo->GetMaxRange();
+#endif
+}
+
+float Unit::GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const
+{
+	if (!spellInfo->RangeEntry)
+		return 0;
+#ifdef LICH_KING
+	if (spellInfo->RangeEntry->minRangeFriend == spellInfo->RangeEntry->minRangeHostile)
+		return spellInfo->GetMinRange();
+
+	return spellInfo->GetMinRange(!IsHostileTo(target));
+#else
+	return spellInfo->GetMinRange();
+#endif
 }
 
 bool Unit::IsVisibleForInState( Player const* u, bool inVisibleList ) const
