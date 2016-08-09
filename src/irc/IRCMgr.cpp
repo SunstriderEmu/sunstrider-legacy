@@ -4,7 +4,7 @@
 #include "Guild.h"
 #include "World.h"
 #include "Runnable.h"
-#include <boost/regex.hpp>
+#include <regex>
 
 void IRCSession::run()
 {
@@ -223,7 +223,7 @@ void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
     //not working properly atm if there is multiple items or characters before the item :
 
     //IRC support only 16 colors, let's replace some wow known colors with close ones, or default to brown
-    std::string color = boost::regex_replace(msg, boost::regex("\\|c..(......)((?!\\|r).+)\\|r"), "$1");
+    std::string color = std::regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), "$1");
     color = color.erase(0,1); //FIXME regex_replace put a '32' first character, why ? hack delete here
     if(!color.compare("9d9d9d"))
         color = "DARKGRAY";
@@ -245,11 +245,11 @@ void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
 
     //replacecolor
     std::string formatter = "[COLOR=" + color + "]$2[/COLOR]";
-    msg = boost::regex_replace(msg, boost::regex("\\|c..(......)((?!\\|r).+)\\|r"), formatter); 
+    msg = std::regex_replace(msg, std::regex("\\|c..(......)((?!\\|r).+)\\|r"), formatter); 
    // TC_LOG_DEBUG("IRCMgr",msg.c_str());
 
     //remove some other junk (player:, spell:, ...)
-    msg = boost::regex_replace(msg, boost::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
+    msg = std::regex_replace(msg, std::regex("\\|H[^:]+:[^\\[]*([^\\|]+)\\|h"), "$1");
    // TC_LOG_DEBUG("IRCMgr",msg.c_str());
 
     //convert to irc format
