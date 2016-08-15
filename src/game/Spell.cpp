@@ -3215,7 +3215,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
     m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
 
     //Another spell in progress ?
-    if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count)
+    if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))
     {
         SendCastResult(SPELL_FAILED_SPELL_IN_PROGRESS);
         finish(false,false);
@@ -6106,7 +6106,7 @@ SpellCastResult Spell::PetCanCast(Unit* target)
             ) 
             return SPELL_FAILED_CASTER_DEAD;
 
-    if(m_caster->IsNonMeleeSpellCast(false) && !m_IsTriggeredSpell)  //prevent spellcast interruption by another spellcast
+    if(m_caster->IsNonMeleeSpellCast(false) && !m_IsTriggeredSpell && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))  //prevent spellcast interruption by another spellcast
         return SPELL_FAILED_SPELL_IN_PROGRESS;
     if(m_caster->IsInCombat() && !m_spellInfo->CanBeUsedInCombat())
         return SPELL_FAILED_AFFECTING_COMBAT;

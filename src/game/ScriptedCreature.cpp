@@ -222,10 +222,6 @@ void ScriptedAI::DoStopAttack()
 
 uint32 ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 {
-    //remove this?
-    if (me->HasUnitState(UNIT_STATE_CASTING) && !triggered)
-        return SPELL_FAILED_SPELL_IN_PROGRESS;
-
     uint32 reason = me->CastSpell(victim, spellId, triggered);
 
     //restore combat movement on out of mana
@@ -242,11 +238,6 @@ uint32 ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
 
 uint32 ScriptedAI::DoCastSpell(Unit* who,SpellInfo const *spellInfo, bool triggered)
 {
-    //remove this?
-    if (!who || me->IsNonMeleeSpellCast(false))
-        return SPELL_FAILED_SPELL_IN_PROGRESS;
-
-    me->StopMoving();
     return me->CastSpell(who, spellInfo, triggered);
 }
 
