@@ -56,8 +56,6 @@ void WorldSession::SendPartyResult(PartyOperation operation, const std::string& 
 
 void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 {
-    
-    
     std::string membername;
     recvData >> membername;
 
@@ -79,12 +77,20 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
         return;
     }
 
+	// player trying to invite himself (most likely cheating)
+	if (player == GetPlayer())
+	{
+		SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
+		return;
+	}
+
     // restrict invite to GMs
     if (!sWorld->getConfig(CONFIG_ALLOW_GM_GROUP) && !GetPlayer()->IsGameMaster() && player->IsGameMaster())
     {
         SendPartyResult(PARTY_OP_INVITE, membername, PARTY_RESULT_CANT_FIND_TARGET);
         return;
     }
+
     // can't group with
     if(!GetPlayer()->IsGameMaster() && !sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GROUP) && GetPlayer()->GetTeam() != player->GetTeam())
     {
@@ -154,6 +160,7 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
         }
         if(!group->AddInvite(player))
         {
+			group->RemoveAllInvites();
             delete group;
             return;
         }
