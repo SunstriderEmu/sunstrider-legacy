@@ -94,7 +94,7 @@ class CreatureAI : public UnitAI
         bool IsInMeleeRange() const;
 
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
-        virtual bool AssistPlayerInCombat(Unit* who);
+        virtual bool AssistPlayerInCombatAgainst(Unit* who);
 
         // Called at each *who move, AND if creature is aggressive
         virtual void MoveInLineOfSight(Unit *);

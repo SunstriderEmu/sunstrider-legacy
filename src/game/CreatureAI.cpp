@@ -24,7 +24,7 @@ void CreatureAI::Talk(uint8 id, WorldObject const* whisperTarget /*= nullptr*/)
     sCreatureTextMgr->SendChat(me, id, whisperTarget);
 }
 
-bool CreatureAI::AssistPlayerInCombat(Unit* who)
+bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
 {
     if (!who)
         return false;
@@ -76,7 +76,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-    if(AssistPlayerInCombat(who))
+    if(AssistPlayerInCombatAgainst(who))
         return;
 
     CanAttackResult result = me->CanAggro(who, false);
