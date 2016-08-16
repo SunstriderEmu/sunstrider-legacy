@@ -877,7 +877,7 @@ void Spell::EffectDummy(uint32 i)
                             if (!root->isSpawned())
                                 break;
                             m_caster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
-                            m_caster->SummonGameObject(187072, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ(), root->GetOrientation(), 0, 0, 0, 0, (root->GetRespawnTime()-time(NULL)));
+                            m_caster->SummonGameObject(187072, root->GetPosition(), 0, 0, 0, 0, (root->GetRespawnTime()-time(NULL)));
                             root->SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
@@ -1251,7 +1251,7 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->RemoveCorpse();
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
 
-                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(), creatureTarget->GetOrientation(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
+                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
                     m_caster->SendMessageToSet(&data,true);

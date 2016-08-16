@@ -1573,24 +1573,24 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const
+GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const
 {
     if(!IsInWorld())
-        return NULL;
+        return nullptr;
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if(!goinfo)
     {
-        TC_LOG_ERROR("FIXME","Gameobject template %u not found in database!", entry);
-        return NULL;
+        TC_LOG_ERROR("sql.sql","Gameobject template %u not found in database!", entry);
+        return nullptr;
     }
     Map *map = GetMap();
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
 
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map,x,y,z,ang,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map, pos, rotation0, rotation1, rotation2, rotation3,100, GO_STATE_READY))
     {
         delete go;
-        return NULL;
+        return nullptr;
     }
     go->SetRespawnTime(respawnTime);
     if(GetTypeId()==TYPEID_PLAYER || GetTypeId()==TYPEID_UNIT) //not sure how to handle this

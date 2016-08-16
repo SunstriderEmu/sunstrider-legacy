@@ -246,26 +246,26 @@ void GameObject::RemoveFromWorld()
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
 
-    Relocate(x,y,z,ang);
-    m_stationaryPosition.Relocate(x, y, z, ang);
+    Relocate(pos);
+    m_stationaryPosition.Relocate(pos);
 
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
     if(!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.gameobject","ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, x, y);
+        TC_LOG_ERROR("entities.gameobject","ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, pos.GetPositionX(), pos.GetPositionY());
         return false;
     }
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
     {
-        TC_LOG_ERROR("sql.sql","Gameobject (GUID: %u Entry: %u) not created: it have not exist entry in `gameobject_template`. Map: %u  (X: %f Y: %f Z: %f) ang: %f rotation0: %f rotation1: %f rotation2: %f rotation3: %f",guidlow, name_id, map->GetId(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3);
+        TC_LOG_ERROR("sql.sql","Gameobject (GUID: %u Entry: %u) not created: it have not exist entry in `gameobject_template`. Map: %u  (X: %f Y: %f Z: %f)",guidlow, name_id, map->GetId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         return false;
     }
 
@@ -282,10 +282,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, float x, float
         return false;
     }
 
-    SetFloatValue(GAMEOBJECT_POS_X, x);
-    SetFloatValue(GAMEOBJECT_POS_Y, y);
-    SetFloatValue(GAMEOBJECT_POS_Z, z);
-    SetFloatValue(GAMEOBJECT_FACING, ang);                  //this is not facing angle
+    SetFloatValue(GAMEOBJECT_POS_X, pos.GetPositionX());
+    SetFloatValue(GAMEOBJECT_POS_Y, pos.GetPositionY());
+    SetFloatValue(GAMEOBJECT_POS_Z, pos.GetPositionZ());
+    SetFloatValue(GAMEOBJECT_FACING, pos.GetOrientation());                  //this is not facing angle
 
     SetFloatValue (GAMEOBJECT_PARENTROTATION, rotation0);
     SetFloatValue (GAMEOBJECT_PARENTROTATION+1, rotation1);
@@ -331,7 +331,7 @@ void GameObject::Update(uint32 diff)
 {
     if(!m_AI)
         if (!AIM_Initialize())
-            TC_LOG_ERROR("FIXME","Could not initialize GameObjectAI");
+            TC_LOG_ERROR("misc","Could not initialize GameObjectAI");
 
     switch (m_lootState)
     {

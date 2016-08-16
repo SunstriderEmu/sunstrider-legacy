@@ -538,7 +538,7 @@ class GameObject : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
-        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
+        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
         void Update(uint32 diff);
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
