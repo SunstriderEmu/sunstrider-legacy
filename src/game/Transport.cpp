@@ -103,7 +103,7 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
     SetWorldRotation(G3D::Quat());
 #endif
     // pussywizard: no PathRotation for MotionTransports
-    SetTransportPathRotation(0.0f, 0.0f, 0.0f, 1.0f);
+    SetTransportPathRotation(G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f));
 
     m_model = CreateModel();
     return true;
@@ -716,21 +716,19 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 artKit)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
 {
-   // return GameObject::Create(guidlow, name_id, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, go_state, artKit);
-
     ASSERT(map);
     //sunwell SetMap(map);
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
 
-    Relocate(x, y, z, ang);
-    m_stationaryPosition.Relocate(x, y, z, ang);
+    Relocate(pos);
+    m_stationaryPosition.Relocate(pos);
 
     if (!IsPositionValid())
     {
-        TC_LOG_ERROR("entities.gameobject", "Gameobject (GUID: %u Entry: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, x, y);
+        TC_LOG_ERROR("entities.gameobject", "Gameobject (GUID: %u Entry: %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, pos.GetPositionX(), pos.GetPositionY());
         return false;
     }
 
@@ -750,7 +748,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
     {
-        TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry: %u) not created: non-existing entry in `gameobject_template`. Map: %u (X: %f Y: %f Z: %f)", guidlow, name_id, map->GetId(), x, y, z);
+        TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry: %u) not created: non-existing entry in `gameobject_template`. Map: %u (X: %f Y: %f Z: %f)", guidlow, name_id, map->GetId(), pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ());
         return false;
     }
 
@@ -774,13 +772,13 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, float x, 
 #ifdef LICH_KING
     SetWorldRotationAngles(NormalizeOrientation(GetOrientation()), 0.0f, 0.0f);
 #else
-    SetFloatValue(GAMEOBJECT_POS_X, x);
-    SetFloatValue(GAMEOBJECT_POS_Y, y);
-    SetFloatValue(GAMEOBJECT_POS_Z, z);
-    SetFloatValue(GAMEOBJECT_FACING, ang);                  //this is not facing angle
+    SetFloatValue(GAMEOBJECT_POS_X, pos.GetPositionX());
+    SetFloatValue(GAMEOBJECT_POS_Y, pos.GetPositionY());
+    SetFloatValue(GAMEOBJECT_POS_Z, pos.GetPositionZ());
+    SetFloatValue(GAMEOBJECT_FACING, pos.GetOrientation());                  //this is not facing angle
 #endif
     // pussywizard: PathRotation for StaticTransport (only StaticTransports have PathRotation)
-    SetTransportPathRotation(rotation0, rotation1, rotation2, rotation3);
+    SetTransportPathRotation(rotation);
 
     SetObjectScale(goinfo->size);
 

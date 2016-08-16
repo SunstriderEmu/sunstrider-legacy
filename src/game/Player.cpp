@@ -15559,6 +15559,11 @@ bool Player::IsAllowedToLoot(Creature const* creature) const
     if (loot->isLooted()) // nothing to loot or everything looted.
         return false;
 
+	/* TC, not tested
+	if (!loot->hasItemForAll() && !loot->hasItemFor(this)) // no loot in creature for this player
+        return false;
+		*/
+
     /*if (loot->loot_type == LOOT_SKINNING)
         return creature->GetSkinner() == GetGUID(); */
 
@@ -20588,7 +20593,7 @@ void Player::SetDailyQuestStatus( uint32 quest_id )
     }
 }
 
-bool Player::IsDailyQuestDone(uint32 quest_id)
+bool Player::IsDailyQuestDone(uint32 quest_id) const
 {
 	bool found = false;
 	if (sObjectMgr->GetQuestTemplate(quest_id))

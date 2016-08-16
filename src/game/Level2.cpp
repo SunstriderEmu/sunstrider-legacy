@@ -3222,10 +3222,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
         data.posY = chr->GetTransOffsetY();
         data.posZ = chr->GetTransOffsetZ();
         data.orientation = chr->GetTransOffsetO();
-        data.rotation0 = 0;
-        data.rotation1 = 0;
-        data.rotation2 = rot2;
-        data.rotation3 = rot3;
+		data.rotation = G3D::Quat(0, 0, rot2, rot3);
         data.spawntimesecs = 30;
         data.animprogress = 0;
         data.go_state = 1;
@@ -3255,7 +3252,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     GameObject* pGameObj = new GameObject;
     uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
-    if(!pGameObj->Create(db_lowGUID, goI->entry, map, x, y, z, o, 0, 0, rot2, rot3, 0, GO_STATE_READY))
+    if(!pGameObj->Create(db_lowGUID, goI->entry, map, Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return false;
@@ -4127,7 +4124,7 @@ bool ChatHandler::HandleTempGameObjectCommand(const char* args)
 
     uint32 id = atoi(charID);
 
-    chr->SummonGameObject(id,Position(x,y,z,ang),0,0,rot2,rot3,spawntm);
+    chr->SummonGameObject(id,Position(x,y,z,ang), G3D::Quat(0,0,rot2,rot3),spawntm);
 
     return true;
 }

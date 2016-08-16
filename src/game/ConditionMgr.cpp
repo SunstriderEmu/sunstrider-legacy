@@ -113,7 +113,7 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
 bool Condition::Meets(ConditionSourceInfo& sourceInfo)
 {
     ASSERT(ConditionTarget < MAX_CONDITION_TARGETS);
-    WorldObject* object = sourceInfo.mConditionTargets[ConditionTarget];
+    WorldObject const* object = sourceInfo.mConditionTargets[ConditionTarget];
     // object not present, return false
     if (!object)
     {
@@ -453,7 +453,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
         }
 		case CONDITION_STAND_STATE:
 		{
-			if (Unit* unit = object->ToUnit())
+			if (Unit const* unit = object->ToUnit())
 			{
 				if (ConditionValue1 == 0)
 					condMeets = (unit->GetStandState() == ConditionValue2);
@@ -466,20 +466,20 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
 		}
 		case CONDITION_DAILY_QUEST_DONE:
 		{
-			if (Player* player = object->ToPlayer())
+			if (Player const* player = object->ToPlayer())
 				condMeets = player->IsDailyQuestDone(ConditionValue1);
 			break;
 		}
 		case CONDITION_CHARMED:
 		{
-			if (Unit* unit = object->ToUnit())
+			if (Unit const* unit = object->ToUnit())
 				condMeets = unit->IsCharmed();
 			break;
 		}
 		case CONDITION_PET_TYPE:
 		{
-			if (Player* player = object->ToPlayer())
-				if (Pet* pet = player->GetPet())
+			if (Player const* player = object->ToPlayer())
+				if (Pet const* pet = player->GetPet())
 					condMeets = (((1 << pet->getPetType()) & ConditionValue1) != 0);
 			break;
 		}

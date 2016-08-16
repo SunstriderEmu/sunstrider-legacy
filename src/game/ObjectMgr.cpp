@@ -45,6 +45,7 @@
 #include "ItemEnchantmentMgr.h"
 #include "ScriptMgr.h"
 #include "SpellScript.h"
+#include "GameObject.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -1399,20 +1400,44 @@ void ObjectMgr::LoadGameobjects()
     {
         Field *fields = result->Fetch();
 
-        uint32 guid = fields[0].GetUInt32();
+        uint32 guid         = fields[0].GetUInt32();
+		uint32 entry        = fields[ 1].GetUInt32();
 
-        GameObjectData& data = mGameObjectDataMap[guid];
+		GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
+		if (!gInfo)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+			continue;
+		}
 
-        data.id             = fields[ 1].GetUInt32();
+		if (!gInfo->displayId)
+		{
+			switch (gInfo->type)
+			{
+			case GAMEOBJECT_TYPE_TRAP:
+			case GAMEOBJECT_TYPE_SPELL_FOCUS:
+				break;
+			default:
+				TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+				break;
+			}
+		}
+
+		if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+		{
+			TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+			continue;
+		}
+
+		GameObjectData& data = mGameObjectDataMap[guid];
+
+		data.id             = entry;
         data.mapid          = fields[ 2].GetUInt16();
         data.posX           = fields[ 3].GetFloat();
         data.posY           = fields[ 4].GetFloat();
         data.posZ           = fields[ 5].GetFloat();
         data.orientation    = fields[ 6].GetFloat();
-        data.rotation0      = fields[ 7].GetFloat();
-        data.rotation1      = fields[ 8].GetFloat();
-        data.rotation2      = fields[ 9].GetFloat();
-        data.rotation3      = fields[10].GetFloat();
+        data.rotation       = G3D::Quat(fields[ 7].GetFloat(), fields[ 8].GetFloat(), fields[ 9].GetFloat(), fields[10].GetFloat());
         data.spawntimesecs  = fields[11].GetInt32();
         data.animprogress   = fields[12].GetUInt8();
         data.go_state       = fields[13].GetUInt8();
@@ -1420,12 +1445,62 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
 
-        GameObjectTemplate const* gInfo = GetGameObjectTemplate(data.id);
-        if(!gInfo)
-        {
-            TC_LOG_ERROR("sql.sql","Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.",guid,data.id );
-            continue;
-        }
+		MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
+		if (!mapEntry)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.mapid);
+			continue;
+		}
+
+		if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
+		}
+
+		if (data.go_state >= MAX_GO_STATE)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, data.go_state);
+			continue;
+		}
+
+		if (std::abs(data.orientation) > 2 * float(M_PI))
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
+			data.orientation = Position::NormalizeOrientation(data.orientation);
+		}
+
+		if (data.rotation.x < -1.0f || data.rotation.x > 1.0f)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationX (%f) value, skip", guid, data.id, data.rotation.x);
+			continue;
+		}
+
+		if (data.rotation.y < -1.0f || data.rotation.y > 1.0f)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationY (%f) value, skip", guid, data.id, data.rotation.y);
+			continue;
+		}
+
+		if (data.rotation.z < -1.0f || data.rotation.z > 1.0f)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationZ (%f) value, skip", guid, data.id, data.rotation.z);
+			continue;
+		}
+
+		if (data.rotation.w < -1.0f || data.rotation.w > 1.0f)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationW (%f) value, skip", guid, data.id, data.rotation.w);
+			continue;
+		}
+
+#ifdef LICH_KING
+		if (data.phaseMask == 0)
+		{
+			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
+			data.phaseMask = 1;
+		}
+#endif
+
 
         if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System
             AddGameobjectToGrid(guid, &data);

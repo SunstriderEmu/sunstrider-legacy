@@ -246,7 +246,7 @@ void GameObject::RemoveFromWorld()
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
 
@@ -287,10 +287,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
     SetFloatValue(GAMEOBJECT_POS_Z, pos.GetPositionZ());
     SetFloatValue(GAMEOBJECT_FACING, pos.GetOrientation());                  //this is not facing angle
 
-    SetFloatValue (GAMEOBJECT_PARENTROTATION, rotation0);
-    SetFloatValue (GAMEOBJECT_PARENTROTATION+1, rotation1);
-    SetFloatValue (GAMEOBJECT_PARENTROTATION+2, rotation2);
-    SetFloatValue (GAMEOBJECT_PARENTROTATION+3, rotation3);
+    SetFloatValue (GAMEOBJECT_PARENTROTATION, rotation.x);
+    SetFloatValue (GAMEOBJECT_PARENTROTATION+1, rotation.y);
+    SetFloatValue (GAMEOBJECT_PARENTROTATION+2, rotation.z);
+    SetFloatValue (GAMEOBJECT_PARENTROTATION+3, rotation.w);
 
     SetObjectScale(goinfo->size);
 
@@ -716,10 +716,11 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.posY = GetFloatValue(GAMEOBJECT_POS_Y);
     data.posZ = GetFloatValue(GAMEOBJECT_POS_Z);
     data.orientation = GetFloatValue(GAMEOBJECT_FACING);
-    data.rotation0 = GetFloatValue(GAMEOBJECT_PARENTROTATION+0);
-    data.rotation1 = GetFloatValue(GAMEOBJECT_PARENTROTATION+1);
-    data.rotation2 = GetFloatValue(GAMEOBJECT_PARENTROTATION+2);
-    data.rotation3 = GetFloatValue(GAMEOBJECT_PARENTROTATION+3);
+	data.rotation = G3D::Quat(
+		GetFloatValue(GAMEOBJECT_PARENTROTATION + 0), 
+		GetFloatValue(GAMEOBJECT_PARENTROTATION + 1), 
+		GetFloatValue(GAMEOBJECT_PARENTROTATION + 2), 
+		GetFloatValue(GAMEOBJECT_PARENTROTATION + 3));
     data.spawntimesecs = m_spawnedByDefault ? m_respawnDelayTime : -(int32)m_respawnDelayTime;
     data.animprogress = GetGoAnimProgress();
     data.go_state = GetGoState();
@@ -760,7 +761,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
 
     if( !data )
     {
-        TC_LOG_ERROR("FIXME","ERROR: Gameobject (GUID: %u) not found in table `gameobject`, can't load. ",guid);
+        TC_LOG_ERROR("sql.sql","ERROR: Gameobject (GUID: %u) not found in table `gameobject`, can't load. ",guid);
         return false;
     }
 
@@ -770,11 +771,6 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     float z = data->posZ;
     float ang = data->orientation;
 
-    float rotation0 = data->rotation0;
-    float rotation1 = data->rotation1;
-    float rotation2 = data->rotation2;
-    float rotation3 = data->rotation3;
-
     uint32 animprogress = data->animprogress;
     uint32 go_state = data->go_state;
     uint32 ArtKit = data->ArtKit;
@@ -783,7 +779,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     if (map->GetInstanceId() != 0) 
         guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
-    if (!Create(guid,entry, map, x, y, z, ang, rotation0, rotation1, rotation2, rotation3, animprogress, GOState(go_state), ArtKit) )
+    if (!Create(guid,entry, map, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
         return false;
 
     switch(GetGOInfo()->type)
@@ -1814,12 +1810,12 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
     SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rotation3);
 }
 
-void GameObject::SetTransportPathRotation(float qx, float qy, float qz, float qw)
+void GameObject::SetTransportPathRotation(G3D::Quat const& rot)
 {
-    SetFloatValue(GAMEOBJECT_PARENTROTATION + 0, qx);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION + 1, qy);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, qz);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, qw);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 0, rot.x);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 1, rot.y);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 2, rot.z);
+    SetFloatValue(GAMEOBJECT_PARENTROTATION + 3, rot.w);
 }
 
 bool GameObject::AIM_Initialize()

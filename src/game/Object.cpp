@@ -1573,7 +1573,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime) const
+GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const
 {
     if(!IsInWorld())
         return nullptr;
@@ -1587,7 +1587,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, flo
     Map *map = GetMap();
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
 
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true),entry,map, pos, rotation0, rotation1, rotation2, rotation3,100, GO_STATE_READY))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), entry, map, pos, rot, 255, GO_STATE_READY))
     {
         delete go;
         return nullptr;
@@ -1600,6 +1600,18 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, flo
     map->Add(go);
 
     return go;
+}
+
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime)
+{
+	if (!x && !y && !z)
+	{
+		GetClosePoint(x, y, z, GetObjectSize());
+		ang = GetOrientation();
+	}
+
+	Position pos(x, y, z, ang);
+	return SummonGameObject(entry, pos, rot, respawnTime);
 }
 
 Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint32 duration, CreatureAI* (*GetAI)(Creature*))
@@ -1966,6 +1978,13 @@ void Position::GetPositionOffsetTo(const Position & endPos, Position & retOffset
     retOffset.m_positionY = dy * cos(GetOrientation()) - dx * sin(GetOrientation());
     retOffset.m_positionZ = endPos.GetPositionZ() - GetPositionZ();
     retOffset.m_orientation = endPos.GetOrientation() - GetOrientation();
+}
+
+Position Position::GetPositionWithOffset(Position const& offset) const
+{
+	Position ret(*this);
+	ret.RelocateOffset(offset);
+	return ret;
 }
 
 float Position::GetAngle(const Position *obj) const

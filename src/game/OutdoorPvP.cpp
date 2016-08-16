@@ -73,10 +73,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     data.posY           = y;
     data.posZ           = z;
     data.orientation    = o;
-    data.rotation0      = rotation0;
-    data.rotation1      = rotation1;
-    data.rotation2      = rotation2;
-    data.rotation3      = rotation3;
+	data.rotation       = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
     data.spawntimesecs  = 0;
     data.animprogress   = 100;
     data.spawnMask      = 1;
@@ -92,7 +89,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     if(!pMap)
         return true;
     GameObject * go = new GameObject;
-    if(!go->Create(guid,entry, pMap,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
+    if(!go->Create(guid,entry, pMap,Position(x,y,z,o),G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
         delete go;
@@ -230,10 +227,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     data.posY           = y;
     data.posZ           = z;
     data.orientation    = o;
-    data.rotation0      = rotation0;
-    data.rotation1      = rotation1;
-    data.rotation2      = rotation2;
-    data.rotation3      = rotation3;
+    data.rotation       = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
     data.spawntimesecs  = 1;
     data.animprogress   = 100;
     data.spawnMask      = 1;
@@ -254,7 +248,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
         return true;
     // add GO...
     GameObject * go = new GameObject;
-    if(!go->Create(guid,entry, pMap,x,y,z,o,rotation0,rotation1,rotation2,rotation3,100, GO_STATE_READY))
+    if(!go->Create(guid,entry, pMap, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
         delete go;

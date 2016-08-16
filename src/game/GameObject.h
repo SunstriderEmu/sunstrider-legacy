@@ -27,6 +27,7 @@
 #include "LootMgr.h"
 #include "Database/DatabaseEnv.h"
 #include "GameObjectAI.h"
+#include <G3D/Quat.h>
 
 class StaticTransport;
 class MotionTransport;
@@ -261,6 +262,9 @@ struct GameObjectTemplate
             uint32 spellId;                                 //0
             uint32 charges;                                 //1
             uint32 partyOnly;                               //2
+			uint32 allowMounted;                            //3 Is usable while on mount/vehicle. (0/1)
+			uint32 large;                                   //4 NYI
+			uint32 conditionID1;                            //5 NYI
         } spellcaster;
         //23 GAMEOBJECT_TYPE_MEETINGSTONE
         struct
@@ -280,6 +284,7 @@ struct GameObjectTemplate
             uint32 noDamageImmune;                          //5
             uint32 openTextID;                              //6
             uint32 losOK;                                   //7
+			uint32 conditionID1;                            //8 NYI
         } flagstand;
         //25 GAMEOBJECT_TYPE_FISHINGHOLE                    // not implemented yet
         struct
@@ -359,6 +364,20 @@ struct GameObjectTemplate
             uint32 state1Name;                              //2
             uint32 state2Name;                              //3
         } destructibleBuilding;
+		//34 GAMEOBJECT_TYPE_GUILDBANK
+		struct
+		{
+			uint32 conditionID1;                            //0
+		} guildbank;
+#ifdef LICH_KING
+		//35 GAMEOBJECT_TYPE_TRAPDOOR
+		struct
+		{
+			uint32 whenToPause;                             // 0
+			uint32 startOpen;                               // 1
+			uint32 autoClose;                               // 2
+		} trapDoor;
+#endif
 
         // not use for specific field access (only for output with loop by all filed), also this determinate max union size
         struct                                              // GAMEOBJECT_TYPE_SPELLCASTER
@@ -383,6 +402,28 @@ struct GameObjectTemplate
         default: break;
         }
         return autoCloseTime /* xinef: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
+    }
+
+	bool IsDespawnAtAction() const
+	{
+		switch (type)
+		{
+		case GAMEOBJECT_TYPE_CHEST:  return chest.consumable != 0;
+		case GAMEOBJECT_TYPE_GOOBER: return goober.consumable != 0;
+		default: return false;
+		}
+	}
+
+	bool IsUsableMounted() const
+    {
+        switch (type)
+        {
+            case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.allowMounted != 0;
+            case GAMEOBJECT_TYPE_TEXT: return text.allowMounted != 0;
+            case GAMEOBJECT_TYPE_GOOBER: return goober.allowMounted != 0;
+            case GAMEOBJECT_TYPE_SPELLCASTER: return spellcaster.allowMounted != 0;
+            default: return false;
+        }
     }
 
     uint32 GetLootId() const
@@ -427,6 +468,31 @@ struct GameObjectTemplate
         }
     }
 
+	bool GetDespawnPossibility() const                      // despawn at targeting of cast?
+	{
+		switch (type)
+		{
+		case GAMEOBJECT_TYPE_DOOR:       return door.noDamageImmune != 0;
+		case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune != 0;
+		case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune != 0;
+		case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune != 0;
+		case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune != 0;
+		case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune != 0;
+		default: return true;
+		}
+	}
+
+	uint32 GetLinkedGameObjectEntry() const
+	{
+		switch (type)
+		{
+		case GAMEOBJECT_TYPE_CHEST:       return chest.linkedTrapId;
+		case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.linkedTrapId;
+		case GAMEOBJECT_TYPE_GOOBER:      return goober.linkedTrapId;
+		default: return 0;
+		}
+	}
+
     uint32 GetLockId() const
     {
         switch (type)
@@ -445,6 +511,17 @@ struct GameObjectTemplate
             default: return 0;
         }
     }
+
+	uint32 GetEventScriptId() const
+	{
+		switch (type)
+		{
+		case GAMEOBJECT_TYPE_GOOBER:        return goober.eventId;
+		case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
+		case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
+		default: return 0;
+		}
+	}
 
     std::string AIName;
     uint32 ScriptId;
@@ -477,7 +554,9 @@ enum GOState: uint32
 {
     GO_STATE_ACTIVE             = 0,                        // show in world as used and not reset (closed door open)
     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
-    GO_STATE_ACTIVE_ALTERNATIVE = 2                         // show in world as used in alt way and not reset (closed door open by cannon fire)
+    GO_STATE_ACTIVE_ALTERNATIVE = 2,                        // show in world as used in alt way and not reset (closed door open by cannon fire)
+
+	MAX_GO_STATE,
 };
 
 // from `gameobject`
@@ -489,10 +568,7 @@ struct GameObjectData
     float posY;
     float posZ;
     float orientation;
-    float rotation0;
-    float rotation1;
-    float rotation2;
-    float rotation3;
+	G3D::Quat rotation;
     int32  spawntimesecs;
     uint32 animprogress;
     uint32 go_state;
@@ -538,7 +614,7 @@ class GameObject : public WorldObject
         void AddToWorld();
         void RemoveFromWorld();
 
-        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
+        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
         void Update(uint32 diff);
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
@@ -557,7 +633,7 @@ class GameObject : public WorldObject
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
         void UpdateRotationFields(float rotation2 = 0.0f, float rotation3 = 0.0f);
-        void SetTransportPathRotation(float qx, float qy, float qz, float qw);
+        void SetTransportPathRotation(G3D::Quat const& rot);
 
         // overwrite WorldObject function for proper name localization
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;

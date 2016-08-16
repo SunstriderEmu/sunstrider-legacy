@@ -416,10 +416,11 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     data.posY = trans->GetFloatValue(GAMEOBJECT_POS_Y);
     data.posZ = trans->GetFloatValue(GAMEOBJECT_POS_Z);
     data.orientation = trans->GetFloatValue(GAMEOBJECT_FACING);
-    data.rotation0 = trans->GetFloatValue(GAMEOBJECT_PARENTROTATION+0);
-    data.rotation1 = trans->GetFloatValue(GAMEOBJECT_PARENTROTATION+1);
-    data.rotation2 = trans->GetFloatValue(GAMEOBJECT_PARENTROTATION+2);
-    data.rotation3 = trans->GetFloatValue(GAMEOBJECT_PARENTROTATION+3);
+	data.rotation = G3D::Quat(
+		trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 0), 
+		trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 1), 
+		trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 2), 
+		trans->GetFloatValue(GAMEOBJECT_PARENTROTATION + 3));
     data.spawntimesecs = 0;
     data.animprogress = trans->GetGoAnimProgress();
     data.go_state = trans->GetGoState();

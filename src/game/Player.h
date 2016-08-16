@@ -1465,7 +1465,7 @@ class Player : public Unit
 
         void SetDailyQuestStatus( uint32 quest_id );
         void ResetDailyQuestStatus();
-		bool IsDailyQuestDone(uint32 quest_id);
+		bool IsDailyQuestDone(uint32 quest_id) const;
 
         uint16 FindQuestSlot( uint32 quest_id ) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }

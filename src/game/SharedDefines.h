@@ -1098,9 +1098,13 @@ enum GameobjectTypes
     GAMEOBJECT_TYPE_BARBER_CHAIR           = 32,
     GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING  = 33,
     GAMEOBJECT_TYPE_GUILD_BANK             = 34,
+#ifdef LICH_KING
+	GAMEOBJECT_TYPE_TRAPDOOR               = 35,
+#endif
+
+	MAX_GAMEOBJECT_TYPE,                         // sending to client this or greater value can crash client.
 };
 
-#define MAX_GAMEOBJECT_TYPE                  35             // sending to client this or greater value can crash client.
 #define MAX_GAMEOBJECT_DATA                  24             // Max number of uint32 vars in gameobject_template data field
 
 #define GAMEOBJECT_FISHINGNODE_ENTRY        35591           // Better to define it somewhere instead of hardcoding everywhere

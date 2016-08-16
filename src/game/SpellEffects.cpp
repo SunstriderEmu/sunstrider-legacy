@@ -877,7 +877,7 @@ void Spell::EffectDummy(uint32 i)
                             if (!root->isSpawned())
                                 break;
                             m_caster->GetMotionMaster()->MovePoint(0, root->GetPositionX(), root->GetPositionY(), root->GetPositionZ());
-                            m_caster->SummonGameObject(187072, root->GetPosition(), 0, 0, 0, 0, (root->GetRespawnTime()-time(NULL)));
+                            m_caster->SummonGameObject(187072, root->GetPosition(), G3D::Quat(), (root->GetRespawnTime()-time(NULL)));
                             root->SetLootState(GO_JUST_DEACTIVATED);
                         }
                         else
@@ -1001,8 +1001,7 @@ void Spell::EffectDummy(uint32 i)
                     if (!creatureTarget || !pGameObj) return;
 
                     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), 181574, creatureTarget->GetMap(),
-                        creatureTarget->GetPositionX(), creatureTarget->GetPositionY(), creatureTarget->GetPositionZ(),
-                        creatureTarget->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+                        creatureTarget->GetPosition(), G3D::Quat(), 255, GO_STATE_READY))
                     {
                         delete pGameObj;
                         return;
@@ -1251,7 +1250,7 @@ void Spell::EffectDummy(uint32 i)
                     creatureTarget->RemoveCorpse();
                     creatureTarget->SetHealth(0);                   // just for nice GM-mode view
 
-                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), 0, 0, 0, 0, creatureTarget->GetRespawnTime()-time(NULL));
+                    GameObject* Crystal_Prison = m_caster->SummonGameObject(179644, creatureTarget->GetPosition(), G3D::Quat(), creatureTarget->GetRespawnTime()-time(NULL));
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(Crystal_Prison->GetGUID());
                     m_caster->SendMessageToSet(&data,true);
@@ -5481,7 +5480,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     Map *map = target->GetMap();
 
     if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), gameobject_id, map,
-        x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+        Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -5534,7 +5533,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     {
         GameObject* linkedGO = new GameObject;
         if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), linkedEntry, map,
-            x, y, z, target->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+            Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
             linkedGO->SetSpellId(m_spellInfo->Id);
@@ -6487,10 +6486,10 @@ void Spell::EffectDuel(uint32 i)
 
     Map *map = m_caster->GetMap();
     if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), gameobject_id, map,
-        m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
+        Position( m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2 ,
         m_caster->GetPositionZ(),
-        m_caster->GetOrientation(), 0, 0, 0, 0, 0, GO_STATE_READY))
+        m_caster->GetOrientation()), G3D::Quat(), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -6882,7 +6881,7 @@ void Spell::EffectSummonObject(uint32 i)
         m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), go_id, map, x, y, z, m_caster->GetOrientation(), 0, 0, rot2, rot3, 0, GO_STATE_READY))
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), go_id, map, Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -7603,7 +7602,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     GameObject* pGameObj = new GameObject;
 
     if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), name_id, cMap,
-        fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+        Position(fx, fy, fz, m_caster->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -7660,7 +7659,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel() );
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    TC_LOG_DEBUG("FIXME","AddObject at SpellEfects.cpp EffectTransmitted\n");
+    TC_LOG_DEBUG("FIXME","AddObject at SpellEffects.cpp EffectTransmitted\n");
     //m_caster->AddGameObject(pGameObj);
     //m_ObjToDel.push_back(pGameObj);
 
@@ -7674,7 +7673,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     {
         GameObject* linkedGO = new GameObject;
         if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), linkedEntry, cMap,
-            fx, fy, fz, m_caster->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+            Position(fx, fy, fz, m_caster->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
             //linkedGO->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel() );
