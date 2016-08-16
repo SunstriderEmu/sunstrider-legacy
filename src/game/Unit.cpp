@@ -414,17 +414,23 @@ bool Unit::IsWithinCombatRange(Unit *obj, float dist2compare) const
 
 bool Unit::IsWithinMeleeRange(Unit *obj, float dist) const
 {
-    if (!obj || !IsInMap(obj)) return false;
+    if (!obj || !IsInMap(obj) || !InSamePhase(obj))
+		return false;
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
     float dz = GetPositionZ() - obj->GetPositionZ();
     float distsq = dx*dx + dy*dy + dz*dz;
 
-    float sizefactor = GetCombatReach() + obj->GetCombatReach() + 4.0f / 3.0f;
-    float maxdist = dist + sizefactor;
+	float maxdist = GetMeleeRange(obj);
 
     return distsq < maxdist * maxdist;
+}
+
+float Unit::GetMeleeRange(Unit const* target) const
+{
+	float range = GetCombatReach() + target->GetCombatReach() + 4.0f / 3.0f;
+	return std::max(range, NOMINAL_MELEE_RANGE);
 }
 
 void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const

@@ -554,6 +554,7 @@ class Spell
         void CancelGlobalCooldown();
 
         void SendLoot(uint64 guid, LootType loottype);
+		std::pair<float, float> GetMinMaxRange(bool strict);
 
         Unit* const m_caster;
 
