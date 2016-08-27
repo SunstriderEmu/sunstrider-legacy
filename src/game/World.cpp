@@ -73,6 +73,7 @@
 #include "AddonMgr.h"
 #include "Management/VMapManager2.h"
 #include "LogsDatabaseAccessor.h"
+#include "Memory.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAIConfig.h"

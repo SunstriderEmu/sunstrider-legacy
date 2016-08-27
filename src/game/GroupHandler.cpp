@@ -405,10 +405,6 @@ void WorldSession::HandleGroupDisbandOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;

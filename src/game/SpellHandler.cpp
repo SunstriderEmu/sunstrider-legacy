@@ -345,8 +345,6 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    
-
     uint32 spellId;
     recvPacket >> spellId;
 
