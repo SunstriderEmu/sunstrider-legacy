@@ -1704,6 +1704,9 @@ void World::SetInitialWorldSettings()
     //TC_LOG_INFO("server.loading","Initialize AuctionHouseBot...");
     //auctionbot.Initialize();
     
+    TC_LOG_INFO("server.loading", "Initializing Opcodes...");
+    opcodeTable.Initialize();
+
     TC_LOG_INFO("server.loading","Initialize Quest Pools...");
     LoadQuestPoolsData();
     

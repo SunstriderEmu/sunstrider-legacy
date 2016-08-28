@@ -53,6 +53,7 @@
 #include "PacketLog.h"
 #include "BattleGround.h"
 #include "WardenBase.h"
+#include "PacketUtilities.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -66,14 +67,14 @@ std::string const DefaultPlayerName = "<none>";
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
-	OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), m_pSession->GetClientBuild());
+    ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), m_pSession->GetClientBuild());
 
     //let's check if our opcode can be really processed in Map::Update()
-    if(opHandle->packetProcessing == PROCESS_INPLACE)
+    if(opHandle->ProcessingPlace == PROCESS_INPLACE)
         return true;
         
     //we do not process thread-unsafe packets
-    if(opHandle->packetProcessing == PROCESS_THREADUNSAFE)
+    if(opHandle->ProcessingPlace == PROCESS_THREADUNSAFE)
         return false;
 
     Player * plr = m_pSession->GetPlayer();
@@ -88,14 +89,14 @@ bool MapSessionFilter::Process(WorldPacket * packet)
 //OR packet handler is not thread-safe!
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
-	OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), m_pSession->GetClientBuild());
+    ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), m_pSession->GetClientBuild());
 
     //check if packet handler is supposed to be safe
-    if(opHandle->packetProcessing == PROCESS_INPLACE)
+    if(opHandle->ProcessingPlace == PROCESS_INPLACE)
         return true;
         
     //thread-unsafe packets should be processed in World::UpdateSessions()
-    if(opHandle->packetProcessing == PROCESS_THREADUNSAFE)
+    if(opHandle->ProcessingPlace == PROCESS_THREADUNSAFE)
         return true;
 
     //no player attached? -> our client! ^^
@@ -131,7 +132,7 @@ m_playerSave(false),
 m_latency(0), 
 m_clientTimeDelay(0),
 m_TutorialsChanged(false),
-_Warden(NULL), 
+_warden(NULL), 
 lastCheatWarn(time(NULL)),
 forceExit(false),
 expireTime(60000) // 1 min after socket loss, session is deleted /!\ DISABLED. See comment at expireTime usage.
@@ -162,8 +163,8 @@ WorldSession::~WorldSession()
         m_Socket = nullptr;
     }
     
-    if (_Warden)
-        delete _Warden;
+    if (_warden)
+        delete _warden;
 
     ///- empty incoming packet queue
     WorldPacket* packet = NULL;
@@ -179,21 +180,20 @@ ClientBuild WorldSession::GetClientBuild() const
     return m_clientBuild;
 }
 
-void WorldSession::SizeError(WorldPacket const& packet, uint32 size) const
-{
-    TC_LOG_ERROR("network","Client (account %u) send packet %s (%u) with size %u but expected %u (attempt crash server?), skipped",
-        GetAccountId(),LookupOpcodeName(packet.GetOpcode()), packet.GetOpcode(), uint32(packet.size()), size);
-}
-
 /// Get the player name
 std::string const& WorldSession::GetPlayerName() const
 {
     return GetPlayer() ? GetPlayer()->GetName() : DefaultPlayerName;
 }
 
-/// Send a packet to the client
+/** Send a packet to the client
+When sending a packet for a LK client: You can either use the BC or the LK enum. LK opcodes have offsetted opcode nums starting at OPCODE_START_EXTRA_OFFSET_AT,
+but this is handled in this function and you can safely ignore it.
+*/
 void WorldSession::SendPacket(WorldPacket* packet)
 {
+    ASSERT(packet->GetOpcode() != NULL_OPCODE);
+
     #ifdef PLAYERBOT
     // Playerbot mod: send packet to bot AI
     if (GetPlayer()) 
@@ -244,9 +244,18 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     #endif                                                  // !TRINITY_DEBUG
 
+    if(GetClientBuild() == BUILD_335)
+    {
+        uint16 opcode = packet->GetOpcode();
+        uint32 maxOpcodeBC = NUM_MSG_TYPES;
+        //a BC offset was givenn, offset it by one if needed
+        if(opcode < maxOpcodeBC && opcode >= OPCODE_START_EXTRA_OFFSET_AT)
+            packet->SetOpcode(opcode + 1);
+    }
+
     //    sScriptMgr->OnPacketSend(this, *packet);
 
-    TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetPlayerInfo().c_str(), GetOpcodeNameForLogging(packet->GetOpcode()).c_str());
+    TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetPlayerInfo().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet->GetOpcode())).c_str());
     m_Socket->SendPacket(*packet);
 }
 
@@ -260,7 +269,7 @@ void WorldSession::QueuePacket(WorldPacket* new_packet)
 void WorldSession::LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason)
 {
     TC_LOG_ERROR("network.opcode", "Received unexpected opcode %s Status: %s Reason: %s from %s",
-        GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), status, reason, GetPlayerInfo().c_str());
+        GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet->GetOpcode())).c_str(), status, reason, GetPlayerInfo().c_str());
 }
 
 /// Logging helper for unexpected opcodes
@@ -270,7 +279,7 @@ void WorldSession::LogUnprocessedTail(WorldPacket* packet)
         return;
 
     TC_LOG_TRACE("network.opcode", "Unprocessed tail data (read stop at %u from %u) Opcode %s from %s",
-        uint32(packet->rpos()), uint32(packet->wpos()), GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), GetPlayerInfo().c_str());
+        uint32(packet->rpos()), uint32(packet->wpos()), GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet->GetOpcode())).c_str(), GetPlayerInfo().c_str());
     packet->print_storage();
 }
 
@@ -325,25 +334,18 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     
     while (m_Socket && _recvQueue.next(packet, updater))
     {
-        if(packet->GetOpcode() >= NUM_MSG_TYPES)
-        {
-            TC_LOG_ERROR( "network","SESSION: received non-existed opcode %s (0x%.4X)",
-                LookupOpcodeName(packet->GetOpcode()),
-                packet->GetOpcode());
-          //  sScriptMgr->OnUnknownPacketReceive(this, *packet);
-        }
-        else
-        {
-			OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), GetClientBuild());
+		ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
 
-            try
-            {
-            switch (opHandle->status)
+        try
+        {
+            switch (opHandle->Status)
             {
                 case STATUS_LOGGEDIN:
                     if(!_player)
                     {
                         // skip STATUS_LOGGEDIN opcode unexpected errors if player logout sometime ago - this can be network lag delayed packets
+                        //! If player didn't log out a while ago, it means packets are being sent while the server does not recognize
+                        //! the client to be in world yet. We will re-add the packets to the bottom of the queue and process them later.
                         if(!m_playerRecentlyLogout)
                         {
                             //! Prevent infinite loop
@@ -358,8 +360,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     }
                     else if(_player->IsInWorld() && AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle->handler)(*packet);
+                        //sScriptMgr->OnPacketReceive(this, *packet);
+                        opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
 
                         #ifdef PLAYERBOT
@@ -376,8 +378,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         else if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                         {
                             // not expected _player or must checked in packet handler
-                            //                            sScriptMgr->OnPacketReceive(this, *packet);
-                            (this->*opHandle->handler)(*packet);
+                            //sScriptMgr->OnPacketReceive(this, *packet);
+                            opHandle->Call(this, *packet);
                             LogUnprocessedTail(packet);
                         }
                         break;
@@ -388,8 +390,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         LogUnexpectedOpcode(packet, "STATUS_TRANSFER", "the player is still in world");
                     else if(AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
-                        //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle->handler)(*packet);
+                        //sScriptMgr->OnPacketReceive(this, *packet);
+                        opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
                     }
                     break;
@@ -408,27 +410,31 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
- //                        //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle->handler)(*packet);
+                        //sScriptMgr->OnPacketReceive(this, *packet);
+                        opHandle->Call(this, *packet);
                         LogUnprocessedTail(packet);
                     }
                     break;
                 case STATUS_NEVER:
                     TC_LOG_ERROR("network.opcode", "Received not allowed opcode %s from %s", GetOpcodeNameForLogging(packet->GetOpcode()).c_str()
                             , GetPlayerInfo().c_str());
-                     break;
+                        break;
                 case STATUS_UNHANDLED:
                     TC_LOG_DEBUG("network.opcode", "Received not handled opcode %s from %s", GetOpcodeNameForLogging(packet->GetOpcode()).c_str()
                             , GetPlayerInfo().c_str());
                     break;
             }
-            }
-            catch (ByteBufferException const&)
-            {
-                TC_LOG_ERROR("misc", "WorldSession::Update ByteBufferException occured while parsing a packet (opcode: %u) from client %s, accountid=%i. Skipped packet.",
-                        packet->GetOpcode(), GetRemoteAddress().c_str(), GetAccountId());
-                packet->hexlike();
-            }
+        }
+        catch (WorldPackets::PacketArrayMaxCapacityException const& pamce)
+        {
+            TC_LOG_ERROR("network", "PacketArrayMaxCapacityException: %s while parsing %s from %s.",
+                pamce.what(), GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet->GetOpcode())).c_str(), GetPlayerInfo().c_str());
+        }
+        catch (ByteBufferException const&)
+        {
+            TC_LOG_ERROR("misc", "WorldSession::Update ByteBufferException occured while parsing a packet (opcode: %u) from client %s, accountid=%i. Skipped packet.",
+                    packet->GetOpcode(), GetRemoteAddress().c_str(), GetAccountId());
+            packet->hexlike();
         }
 
         if (deletePacket)
@@ -453,8 +459,8 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     _recvQueue.readd(requeuePackets.begin(), requeuePackets.end());
 
-    if (m_Socket && m_Socket->IsOpen() && _Warden)
-        _Warden->Update();
+    if (m_Socket && m_Socket->IsOpen() && _warden)
+        _warden->Update();
 
     ProcessQueryCallbacks();
 
@@ -465,16 +471,20 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     {
         ///- If necessary, log the player out
         time_t currTime = time(NULL);
-        if (!m_Socket || (ShouldLogOut(currTime) && !m_playerLoading))
+        if (ShouldLogOut(currTime) && !m_playerLoading)
             LogoutPlayer(true);
+
+        if (m_Socket && GetPlayer() && _warden)
+            _warden->Update();
 
         ///- Cleanup socket pointer if need
         if (m_Socket && !m_Socket->IsOpen())
         {
-           /* next condition from trinity. Disabled. What use is this ? A closed socket can't be reopened so why wait ?
-           expireTime -= expireTime > diff ? diff : expireTime;
-            if (expirezTime < diff || forceExit || !GetPlayer()) */
+            expireTime -= expireTime > diff ? diff : expireTime;
+            if (expireTime < diff || forceExit || !GetPlayer())
+            {
                 m_Socket = nullptr;
+            }
         }
 
         if (!m_Socket)
@@ -592,11 +602,11 @@ void WorldSession::ProcessQueryCallbacks()
 void WorldSession::InitWarden(BigNumber *K, std::string os)
 {
     if (os == "Win" || os == "niW")                                        // Windows
-        _Warden = (WardenBase*)new WardenWin();
+        _warden = (WardenBase*)new WardenWin();
     else                                                    // MacOS
-        _Warden = (WardenBase*)new WardenMac();
+        _warden = (WardenBase*)new WardenMac();
 
-    _Warden->Init(this, K);
+    _warden->Init(this, K);
 }
 
 /// %Log the player out
@@ -860,32 +870,27 @@ const char * WorldSession::GetTrinityString( int32 entry ) const
     return sObjectMgr->GetTrinityString(entry,GetSessionDbcLocale());
 }
 
-void WorldSession::Handle_NULL( WorldPacket& recvPacket )
+void WorldSession::Handle_NULL( WorldPacket& null )
 {
-    TC_LOG_ERROR("network.opcode", "SESSION: received unhandled opcode %s (0x%.4X)",
-        LookupOpcodeName(recvPacket.GetOpcode()),
-        recvPacket.GetOpcode());
+    TC_LOG_ERROR("network.opcode", "Received unhandled opcode %s from %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(null.GetOpcode())).c_str(), GetPlayerInfo().c_str());
 }
 
 void WorldSession::Handle_EarlyProccess( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("network.opcode", "SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
-        LookupOpcodeName(recvPacket.GetOpcode()),
-        recvPacket.GetOpcode());
+    TC_LOG_ERROR("network.opcode", "Received opcode %s that must be processed in WorldSocket::OnRead from %s"
+        , GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvPacket.GetOpcode())).c_str(), GetPlayerInfo().c_str());
 }
 
 void WorldSession::Handle_ServerSide( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("network.opcode", "SESSION: received server-side opcode %s (0x%.4X)",
-        LookupOpcodeName(recvPacket.GetOpcode()),
-        recvPacket.GetOpcode());
+    TC_LOG_ERROR("network.opcode", "Received server-side opcode %s from %s"
+        , GetOpcodeNameForLogging(static_cast<OpcodeServer>(recvPacket.GetOpcode())).c_str(), GetPlayerInfo().c_str());
 }
 
 void WorldSession::Handle_Deprecated( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("network.opcode", "SESSION: received deprecated opcode %s (0x%.4X)",
-        LookupOpcodeName(recvPacket.GetOpcode()),
-        recvPacket.GetOpcode());
+    TC_LOG_ERROR("network.opcode", "Received deprecated opcode %s from %s"
+        , GetOpcodeNameForLogging(static_cast<OpcodeClient>(recvPacket.GetOpcode())).c_str(), GetPlayerInfo().c_str());
 }
 
 void WorldSession::SendAuthWaitQue(uint32 position)
@@ -1302,7 +1307,7 @@ bool WorldSession::DosProtection::EvaluateOpcode(WorldPacket& p, time_t time) co
 
     TC_LOG_WARN("network", "AntiDOS: Account %u, IP: %s, Ping: %u, Character: %s, flooding packet (opc: %s (0x%X), count: %u)",
         Session->GetAccountId(), Session->GetRemoteAddress().c_str(), Session->GetLatency(), Session->GetPlayerName().c_str(),
-        opcodeTable[p.GetOpcode()].name, p.GetOpcode(), packetCounter.amountCounter);
+        GetOpcodeNameForLogging(static_cast<OpcodeClient>(p.GetOpcode())).c_str(), p.GetOpcode(), packetCounter.amountCounter);
 
     switch (_policy)
     {
@@ -1940,15 +1945,14 @@ void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* p
 }
 
 
-
 #ifdef PLAYERBOT
 void WorldSession::HandleBotPackets()
 {
     WorldPacket* packet;
     while (_recvQueue.next(packet))
     {
-		OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), BUILD_243);
-        (this->*opHandle->handler)(*packet);
+        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), BUILD_335);
+        opHandle->Call(this, *packet);
         delete packet;
     }
 }

@@ -181,7 +181,7 @@ void WardenWin::HandleHashResult(ByteBuffer &buff)
     iCrypto.Init(InputKey);
     oCrypto.Init(OutputKey);
     m_initialized = true;
-    _WardenTimer = GetMSTime();
+    _wardenTimer = GetMSTime();
 }
 
 void WardenWin::RequestData()
@@ -300,13 +300,13 @@ void WardenWin::RequestData()
     WorldPacket pkt(SMSG_WARDEN_DATA, buff.size());
     pkt.append(buff);
     Client->SendPacket(&pkt);
-    _WardenDataSent = true;
+    _wardenDataSent = true;
 }
 
 void WardenWin::HandleData(ByteBuffer &buff)
 {
-    _WardenDataSent = false;
-    _WardenKickTimer = 0;
+    _wardenDataSent = false;
+    _wardenKickTimer = 0;
     uint16 Length;
     buff >> Length;
     uint32 Checksum;

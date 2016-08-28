@@ -118,10 +118,10 @@ class WardenBase
         ARC4 iCrypto;
         ARC4 oCrypto;
         
-        uint32 _WardenCheckTimer;                          // timer between data packets
-        bool _WardenDataSent;
-        uint32 _WardenKickTimer;                           // time after send packet
-        uint32 _WardenTimer;
+        uint32 _wardenCheckTimer;                          // timer between data packets
+        bool _wardenDataSent;
+        uint32 _wardenKickTimer;                           // time after send packet
+        uint32 _wardenTimer;
         ClientWardenModule *Module;
         bool m_initialized;
 };

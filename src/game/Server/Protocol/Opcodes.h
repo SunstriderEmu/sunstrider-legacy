@@ -23,14 +23,11 @@
 #ifndef _OPCODES_H
 #define _OPCODES_H
 
-// Note: this include need for be sure have full definition of class WorldSession
-//       if this class definition not complete then VS for x64 release use different size for
-//       struct OpcodeHandler in this header and Opcode.cpp and get totally wrong data from
-//       table opcodeTable in source when Opcode.h included but WorldSession.h not included
-#include "WorldSession.h"
+#include "Common.h"
+#include <iomanip>
 
 /// List of Opcodes
-enum Opcodes
+enum Opcodes : uint16
 {
     MSG_NULL_ACTION                                 = 0x000,
     CMSG_BOOTME                                     = 0x001, 
@@ -1029,7 +1026,7 @@ enum Opcodes
     SMSG_COMSAT_CONNECT_FAIL                        = 0x3E1,
     SMSG_VOICE_CHAT_STATUS                          = 0x3E2,
     CMSG_REPORT_PVP_AFK                             = 0x3E3,
-    CMSG_REPORT_PVP_AFK_RESULT                      = 0x3E4,
+    SMSG_REPORT_PVP_AFK_RESULT                      = 0x3E4,
     CMSG_GUILD_BANKER_ACTIVATE                      = 0x3E5,
     CMSG_GUILD_BANK_QUERY_TAB                       = 0x3E6,
     SMSG_GUILD_BANK_LIST                            = 0x3E7,
@@ -1073,7 +1070,7 @@ enum Opcodes
     CMSG_REFER_A_FRIEND                             = 0x40D,
     MSG_GM_CHANGE_ARENA_RATING                      = 0x40E,
     CMSG_DECLINE_CHANNEL_INVITE                     = 0x40F,
-    CMSG_GROUPACTION_THROTTLED                      = 0x410,
+    SMSG_GROUPACTION_THROTTLED                      = 0x410,
     SMSG_OVERRIDE_LIGHT                             = 0x411, 
     SMSG_TOTEM_CREATED                              = 0x412,
     CMSG_TOTEM_DESTROYED                            = 0x413,
@@ -1097,7 +1094,7 @@ enum Opcodes
     NUM_MSG_TYPES                                   = 0x424
 };
 
-enum LK_Opcodes
+enum LK_Opcodes : uint16
 {
     LK_MSG_NULL_ACTION                                 = 0x000,
     LK_CMSG_BOOTME                                     = 0x001, 
@@ -1764,7 +1761,7 @@ enum LK_Opcodes
     LK_CMSG_LFG_GET_STATUS                             = 0x296,
     LK_SMSG_SHOW_MAILBOX                               = 0x297,
     LK_SMSG_RESET_RANGED_COMBAT_TIMER                  = 0x298,
-	SMSG_CHAT_NOT_IN_PARTY    = 0x299,
+	LK_SMSG_CHAT_NOT_IN_PARTY                          = 0x299,
     LK_CMSG_GMTICKETSYSTEM_TOGGLE                      = 0x29A,
     LK_CMSG_CANCEL_GROWTH_AURA                         = 0x29B,
     LK_SMSG_CANCEL_AUTO_REPEAT                         = 0x29C,
@@ -2414,6 +2411,16 @@ enum LK_Opcodes
 
     LK_NUM_MSG_TYPES                                   = 0x51F,
 };
+
+enum OpcodeMisc : uint16
+{
+    NUM_OPCODE_HANDLERS = NUM_MSG_TYPES + LK_NUM_MSG_TYPES,
+    NULL_OPCODE = 0x0000
+};
+
+typedef Opcodes OpcodeClient;
+typedef Opcodes OpcodeServer;
+
 /// Player state
 enum SessionStatus
 {
@@ -2435,34 +2442,106 @@ enum PacketProcessing
 class WorldSession;
 class WorldPacket;
 
-struct OpcodeHandler
+#pragma pack(push, 1)
+
+class OpcodeHandler
 {
-    char const* name;
-    SessionStatus status;
-    PacketProcessing packetProcessing;
-    void (WorldSession::*handler)(WorldPacket& recvPacket);
+public:
+    OpcodeHandler(char const* name, SessionStatus status) : Name(name), Status(status) { }
+    virtual ~OpcodeHandler() { }
+
+    char const* Name;
+    SessionStatus Status;
 };
 
-extern OpcodeHandler opcodeTable[NUM_MSG_TYPES];
-extern OpcodeHandler LK_opcodeTable[LK_NUM_MSG_TYPES];
+//start storing LK handler after the BC ones
+#define OPCODE_LK_INTERNAL_OFFSET NUM_MSG_TYPES
+//opcodes are offsetted by one from this point between LK and BC
+#define OPCODE_START_EXTRA_OFFSET_AT SMSG_VOICE_PARENTAL_CONTROLS
 
-extern inline OpcodeHandler const* GetOpcodeHandlerForBuild(uint16 opcode, ClientBuild build = BUILD_243);
+
+class ClientOpcodeHandler : public OpcodeHandler
+{
+public:
+    ClientOpcodeHandler(char const* name, SessionStatus status, PacketProcessing processing)
+        : OpcodeHandler(name, status), ProcessingPlace(processing) { }
+
+    virtual void Call(WorldSession* session, WorldPacket& packet) const = 0;
+
+    PacketProcessing ProcessingPlace;
+};
+
+class ServerOpcodeHandler : public OpcodeHandler
+{
+public:
+    ServerOpcodeHandler(char const* name, SessionStatus status)
+        : OpcodeHandler(name, status) { }
+};
+
+class OpcodeTable
+{
+public:
+    OpcodeTable()
+    {
+        memset(_internalTableClient, 0, sizeof(_internalTableClient));
+    }
+
+    OpcodeTable(OpcodeTable const&) = delete;
+    OpcodeTable& operator=(OpcodeTable const&) = delete;
+
+    ~OpcodeTable()
+    {
+        for (uint16 i = 0; i < NUM_OPCODE_HANDLERS; ++i)
+        {
+            delete _internalTableClient[i];
+        }
+    }
+
+    void Initialize();
+
+    /* Trinity function, use function below instead 
+    ClientOpcodeHandler const* operator[](Opcodes index) const
+    {
+        return _internalTableClient[index];
+    }
+    */
+
+    ClientOpcodeHandler const* GetHandler(Opcodes index, ClientBuild build) const;
+
+private:
+    template<typename Handler, Handler HandlerFunction>
+    void ValidateAndSetClientOpcode(OpcodeClient opcode, char const* name, SessionStatus status, PacketProcessing processing);
+
+    void ValidateAndSetServerOpcode(OpcodeServer opcode, char const* name, SessionStatus status);
+
+    ClientOpcodeHandler* _internalTableClient[NUM_OPCODE_HANDLERS];
+};
+
+extern OpcodeTable opcodeTable;
+extern OpcodeHandler LK_opcodeTable;
+
+#pragma pack(pop)
 
 //TODO: adapt for LK too
-/// Lookup opcode name for human understandable logging
-inline const char* LookupOpcodeName(uint16 id)
+/// Lookup opcode name for human understandable logging (T = OpcodeClient|OpcodeServer)
+template<typename T>
+inline std::string GetOpcodeNameForLogging(T id)
 {
-    if (id >= NUM_MSG_TYPES)
-        return "Received unknown opcode, it's more than max!";
-
-    return opcodeTable[id].name;
-}
-
-//TODO: adapt for LK too
-inline std::string GetOpcodeNameForLogging(uint16 opcode)
-{
+    uint16 opcode = uint16(id);
     std::ostringstream ss;
-    ss << '[' << LookupOpcodeName(opcode) << " 0x" << std::hex << std::uppercase << opcode << std::nouppercase << " (" << std::dec << opcode << ")]";
+    ss << '[';
+
+    if (static_cast<uint16>(id) < NUM_OPCODE_HANDLERS)
+    {
+        if (OpcodeHandler const* handler = opcodeTable.GetHandler(static_cast<Opcodes>(id), BUILD_243)) //TODO
+            ss << handler->Name;
+        else
+            ss << "UNKNOWN OPCODE";
+    }
+    else
+        ss << "INVALID OPCODE";
+
+    ss << " 0x" << std::hex << std::setw(4) << std::setfill('0') << std::uppercase << opcode << std::nouppercase << std::dec << " (" << opcode << ")]";
     return ss.str();
 }
 

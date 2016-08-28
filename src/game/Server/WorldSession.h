@@ -243,8 +243,6 @@ class WorldSession
         bool Anti__ReportCheat(const char* Reason,float Speed,const char* Op=NULL,float Val1=0.0f,uint32 Val2=0,MovementInfo* MvInfo=NULL);
         time_t lastCheatWarn;
 
-        void SizeError(WorldPacket const& packet, uint32 size) const;
-
         void SendPacket(WorldPacket* packet);
         void SendNotification(const char *format,...) ATTR_PRINTF(2,3);
         void SendNotification(int32 string_id,...);
@@ -999,7 +997,7 @@ class WorldSession
         void ReadAddon(ByteBuffer& data);
 
         // Warden
-        WardenBase* _Warden;
+        WardenBase* _warden;
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue

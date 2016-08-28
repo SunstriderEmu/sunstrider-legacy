@@ -34,7 +34,7 @@
 #include "WardenWin.h"
 #include "Cryptography/ARC4.h"
 
-WardenBase::WardenBase() : iCrypto(16), oCrypto(16), _WardenCheckTimer(10000/*10 sec*/), _WardenKickTimer(0), _WardenDataSent(false), m_initialized(false)
+WardenBase::WardenBase() : iCrypto(16), oCrypto(16), _wardenCheckTimer(10000/*10 sec*/), _wardenKickTimer(0), _wardenDataSent(false), m_initialized(false)
 {
 }
 
@@ -124,13 +124,13 @@ void WardenBase::Update()
     if (m_initialized)
     {
         uint32 ticks = GetMSTime();
-        uint32 diff = ticks - _WardenTimer;
-        _WardenTimer = ticks;
-        if (_WardenDataSent)
+        uint32 diff = ticks - _wardenTimer;
+        _wardenTimer = ticks;
+        if (_wardenDataSent)
         {
             // 1.5 minutes after send packet
             uint32 maxClientResponseDelay = sWorld->getConfig(CONFIG_WARDEN_CLIENT_RESPONSE_DELAY);
-            if ((_WardenKickTimer > maxClientResponseDelay * IN_MILLISECONDS)) {
+            if ((_wardenKickTimer > maxClientResponseDelay * IN_MILLISECONDS)) {
                 if (sWorld->getConfig(CONFIG_WARDEN_KICK))
                     Client->KickPlayer();
                 
@@ -138,17 +138,17 @@ void WardenBase::Update()
                     //LogsDatabase.PQuery("INSERT INTO warden_fails (guid, account, check_id, comment, time) VALUES (%u, %u, 0, 'Response timeout', %u)", Client->GetPlayer() ? Client->GetPlayer()->GetGUIDLow() : 0, Client->GetAccountId(), time(NULL));
             }
             else
-                _WardenKickTimer += diff;
+                _wardenKickTimer += diff;
         }
-        else if (_WardenCheckTimer > 0)
+        else if (_wardenCheckTimer > 0)
         {
-            if (diff >= _WardenCheckTimer)
+            if (diff >= _wardenCheckTimer)
             {
                 RequestData();
-                _WardenCheckTimer = sWorld->getConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF) * IN_MILLISECONDS;
+                _wardenCheckTimer = sWorld->getConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF) * IN_MILLISECONDS;
             }
             else
-                _WardenCheckTimer -= diff;
+                _wardenCheckTimer -= diff;
         }
     }
 }
@@ -188,26 +188,26 @@ void WorldSession::HandleWardenDataOpcode(WorldPacket & recvData)
 {
     
     
-    _Warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
+    _warden->DecryptData(const_cast<uint8*>(recvData.contents()), recvData.size());
     uint8 Opcode;
     recvData >> Opcode;
 
     switch(Opcode)
     {
         case WARDEN_CMSG_MODULE_MISSING:
-            _Warden->SendModuleToClient();
+            _warden->SendModuleToClient();
             break;
         case WARDEN_CMSG_MODULE_OK:
-            _Warden->RequestHash();
+            _warden->RequestHash();
             break;
         case WARDEN_CMSG_CHEAT_CHECKS_RESULT:
-            _Warden->HandleData(recvData);
+            _warden->HandleData(recvData);
             break;
         case WARDEN_CMSG_MEM_CHECKS_RESULT:
             break;
         case WARDEN_CMSG_HASH_RESULT:
-            _Warden->HandleHashResult(recvData);
-            _Warden->InitializeModule();
+            _warden->HandleHashResult(recvData);
+            _warden->InitializeModule();
             break;
         case WARDEN_CMSG_MODULE_FAILED:
             break;

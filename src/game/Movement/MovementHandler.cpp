@@ -415,14 +415,14 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                     plrMover->m_anti_NextLenCheck = CurTime + 500;
                     plrMover->m_anti_MovedLen = 0.0f;
                     if (delta_xyt > 0.04f && delta <= 80.0f) {
-                        Anti__CheatOccurred(CurTime, "Speed hack", delta_xyt, LookupOpcodeName(opcode),
+                        Anti__CheatOccurred(CurTime, "Speed hack", delta_xyt, GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(),
                                 (float) (plrMover->GetMotionMaster()->GetCurrentMovementGeneratorType()),
                                 (float) (CurTime - (FH__Tmp1 - 500)), &movementInfo);
                     }
                 }
         
                 if (delta > 80.0f) {
-                    Anti__ReportCheat("Tele hack", delta, LookupOpcodeName(opcode));
+                    Anti__ReportCheat("Tele hack", delta, GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str());
                 }
 
                 // Check for waterwalking
@@ -561,7 +561,7 @@ CMSG_FORCE_TURN_RATE_CHANGE_ACK
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 {
     uint32 opcode = recvData.GetOpcode();
-    TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", LookupOpcodeName(opcode), opcode, opcode);
+    TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)), opcode, opcode);
 
     /* extract packet */
     uint64 guid;

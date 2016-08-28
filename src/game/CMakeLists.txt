@@ -30,6 +30,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
   ${CMAKE_SOURCE_DIR}/src/game/Server
   ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
+  ${CMAKE_SOURCE_DIR}/src/game/Server/Packets
   ${CMAKE_SOURCE_DIR}/src/game/Warden
   ${CMAKE_SOURCE_DIR}/src/playerbot
   ${CMAKE_SOURCE_DIR}/src/scripts/include
