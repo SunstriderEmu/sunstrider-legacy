@@ -7991,7 +7991,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                 loot->FillLoot(lootid, LootTemplates_Gameobject, this);
 
                 //if chest apply 2.1.x rules
-                if((go->GetGoType() == GAMEOBJECT_TYPE_CHEST)&&(go->GetGOInfo()->chest.groupLootRules))
+                if((go->GetGoType() == GAMEOBJECT_TYPE_CHEST) && (go->GetGOInfo()->chest.groupLootRules))
                 {
                     if(Group* group = this->GetGroup())
                     {

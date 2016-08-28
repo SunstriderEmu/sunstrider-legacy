@@ -49,7 +49,24 @@
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
 
-GameObject::GameObject() : WorldObject(), m_AI(nullptr), m_model(nullptr), m_goValue()
+GameObject::GameObject() : WorldObject(), 
+    m_AI(nullptr), 
+    m_model(nullptr), 
+    m_goValue(),
+    m_respawnTime(0),
+    m_respawnDelayTime(25),
+    m_despawnTime(0),
+    m_lootState(GO_NOT_READY),
+    m_spawnedByDefault(true),
+    m_usetimes(0),
+    m_spellId(0),
+    m_charges(5),
+    m_cooldownTime(0),
+    m_inactive(false),
+    m_goInfo(NULL),
+    m_DBTableGuid(0),
+    manual_unlock(false),
+    m_prevGoState(GO_STATE_ACTIVE)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -61,21 +78,6 @@ GameObject::GameObject() : WorldObject(), m_AI(nullptr), m_model(nullptr), m_goV
 #endif
 
     m_valuesCount = GAMEOBJECT_END;
-    m_respawnTime = 0;
-    m_respawnDelayTime = 25;
-    m_despawnTime = 0;
-    m_lootState = GO_NOT_READY;
-    m_spawnedByDefault = true;
-    m_usetimes = 0;
-    m_spellId = 0;
-    m_charges = 5;
-    m_cooldownTime = 0;
-    m_inactive = false;
-    m_goInfo = NULL;
-
-    m_DBTableGuid = 0;
-    
-    manual_unlock = false;
 
     m_stationaryPosition.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -305,6 +307,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
     m_model = CreateModel();
     
     SetGoType(GameobjectTypes(goinfo->type));
+    m_prevGoState = go_state;
     SetGoState(GOState(go_state));
     SetGoAnimProgress(animprogress);
 
@@ -1158,7 +1161,9 @@ void GameObject::ResetDoorOrButton()
     if (m_lootState == GO_READY || m_lootState == GO_JUST_DEACTIVATED)
         return;
 
-    SwitchDoorOrButton(false);
+    RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+    SetGoState(m_prevGoState);
+
     SetLootState(GO_JUST_DEACTIVATED);
 	SetGoState(GO_STATE_READY);
     m_cooldownTime = 0;

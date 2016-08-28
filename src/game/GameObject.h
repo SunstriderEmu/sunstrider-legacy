@@ -831,6 +831,7 @@ class GameObject : public WorldObject
         bool        m_spawnedByDefault;
         time_t      m_cooldownTime;                         // used as internal reaction delay time store (not state change reaction).
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
+        GOState     m_prevGoState;                          // What state to set whenever resetting
         bool        m_inactive;
         std::list<uint32> m_SkillupList;
 
