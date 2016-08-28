@@ -576,7 +576,8 @@ bool AuthSession::HandleLogonProof()
         stmt->setString(1, GetRemoteIpAddress().to_string().c_str());
         stmt->setUInt32(2, GetLocaleByName(_localizationName));
         stmt->setString(3, _os);
-        stmt->setString(4, _accountInfo.Login);
+        stmt->setUInt16(4, _build);
+        stmt->setString(5, _accountInfo.Login);
         LoginDatabase.DirectExecute(stmt);
 
         // Finish SRP6 and send the final result to the client

@@ -66,13 +66,14 @@ std::string const DefaultPlayerName = "<none>";
 
 bool MapSessionFilter::Process(WorldPacket * packet)
 {
-    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+	OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), m_pSession->GetClientBuild());
+
     //let's check if our opcode can be really processed in Map::Update()
-    if(opHandle.packetProcessing == PROCESS_INPLACE)
+    if(opHandle->packetProcessing == PROCESS_INPLACE)
         return true;
         
     //we do not process thread-unsafe packets
-    if(opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+    if(opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return false;
 
     Player * plr = m_pSession->GetPlayer();
@@ -87,13 +88,14 @@ bool MapSessionFilter::Process(WorldPacket * packet)
 //OR packet handler is not thread-safe!
 bool WorldSessionFilter::Process(WorldPacket* packet)
 {
-    OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+	OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), m_pSession->GetClientBuild());
+
     //check if packet handler is supposed to be safe
-    if(opHandle.packetProcessing == PROCESS_INPLACE)
+    if(opHandle->packetProcessing == PROCESS_INPLACE)
         return true;
         
     //thread-unsafe packets should be processed in World::UpdateSessions()
-    if(opHandle.packetProcessing == PROCESS_THREADUNSAFE)
+    if(opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return true;
 
     //no player attached? -> our client! ^^
@@ -106,7 +108,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 }
 
 /// WorldSession constructor
-WorldSession::WorldSession(uint32 id, uint32 clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
+WorldSession::WorldSession(uint32 id, ClientBuild clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
 m_clientBuild(clientBuild),
 LookingForGroup_auto_join(false), 
 LookingForGroup_auto_add(false), 
@@ -172,7 +174,7 @@ WorldSession::~WorldSession()
     CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
 }
 
-uint32 WorldSession::GetClientBuild()
+ClientBuild WorldSession::GetClientBuild() const
 {
     return m_clientBuild;
 }
@@ -194,7 +196,8 @@ void WorldSession::SendPacket(WorldPacket* packet)
 {
     #ifdef PLAYERBOT
     // Playerbot mod: send packet to bot AI
-    if (GetPlayer()) {
+    if (GetPlayer()) 
+    {
         if (GetPlayer()->GetPlayerbotAI())
             GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(*packet);
         else if (GetPlayer()->GetPlayerbotMgr())
@@ -331,10 +334,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         }
         else
         {
-            OpcodeHandler const& opHandle = opcodeTable[packet->GetOpcode()];
+			OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), GetClientBuild());
+
             try
             {
-            switch (opHandle.status)
+            switch (opHandle->status)
             {
                 case STATUS_LOGGEDIN:
                     if(!_player)
@@ -355,7 +359,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if(_player->IsInWorld() && AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle.handler)(*packet);
+                        (this->*opHandle->handler)(*packet);
                         LogUnprocessedTail(packet);
 
                         #ifdef PLAYERBOT
@@ -373,7 +377,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                         {
                             // not expected _player or must checked in packet handler
                             //                            sScriptMgr->OnPacketReceive(this, *packet);
-                            (this->*opHandle.handler)(*packet);
+                            (this->*opHandle->handler)(*packet);
                             LogUnprocessedTail(packet);
                         }
                         break;
@@ -385,7 +389,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     else if(AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
                         //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle.handler)(*packet);
+                        (this->*opHandle->handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
                     break;
@@ -405,7 +409,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                     if (AntiDOS.EvaluateOpcode(*packet, currentTime))
                     {
  //                        //                        sScriptMgr->OnPacketReceive(this, *packet);
-                        (this->*opHandle.handler)(*packet);
+                        (this->*opHandle->handler)(*packet);
                         LogUnprocessedTail(packet);
                     }
                     break;
@@ -600,7 +604,7 @@ void WorldSession::LogoutPlayer(bool Save)
 {
     // finish pending transfers before starting the logout
     while (_player && _player->IsBeingTeleportedFar())
-        HandleMoveWorldportAckOpcode();
+        HandleMoveWorldportAck();
 
     m_playerLogout = true;
     m_playerSave = Save;
@@ -694,7 +698,7 @@ void WorldSession::LogoutPlayer(bool Save)
         // Repop at GraveYard or other player far teleport will prevent saving player because of not present map
         // Teleport player immediately for correct player save
         while (_player->IsBeingTeleportedFar())
-            HandleMoveWorldportAckOpcode();
+            HandleMoveWorldportAck();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
         Guild *guild = sObjectMgr->GetGuildById(_player->GetGuildId());
@@ -858,28 +862,28 @@ const char * WorldSession::GetTrinityString( int32 entry ) const
 
 void WorldSession::Handle_NULL( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("FIXME", "SESSION: received unhandled opcode %s (0x%.4X)",
+    TC_LOG_ERROR("network.opcode", "SESSION: received unhandled opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_EarlyProccess( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("FIXME", "SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
+    TC_LOG_ERROR("network.opcode", "SESSION: received opcode %s (0x%.4X) that must be processed in WorldSocket::OnRead",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_ServerSide( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("FIXME", "SESSION: received server-side opcode %s (0x%.4X)",
+    TC_LOG_ERROR("network.opcode", "SESSION: received server-side opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
 
 void WorldSession::Handle_Deprecated( WorldPacket& recvPacket )
 {
-    TC_LOG_ERROR("FIXME", "SESSION: received deprecated opcode %s (0x%.4X)",
+    TC_LOG_ERROR("network.opcode", "SESSION: received deprecated opcode %s (0x%.4X)",
         LookupOpcodeName(recvPacket.GetOpcode()),
         recvPacket.GetOpcode());
 }
@@ -977,7 +981,7 @@ std::string WorldSession::GetPlayerInfo() const
     return ss.str();
 }
 
-//same structure LK & BC for the begining, not sure for the BannedAddonList part
+//same structure LK & BC
 void WorldSession::SendAddonsInfo()
 {
     uint8 addonPublicKey[256] =
@@ -1004,18 +1008,22 @@ void WorldSession::SendAddonsInfo()
 
     for (auto itr = m_addonsList.begin(); itr != m_addonsList.end(); ++itr)
     {
+        if(itr->build != GetClientBuild())
+            continue;
+
         data << uint8(itr->State);
 
         uint8 crcpub = itr->UsePublicKeyOrCRC;
         data << uint8(crcpub);
         if (crcpub)
         {
-            uint8 usepk = (itr->CRC != AddonMgr::GetStandardAddonCRC(GetClientBuild())); // If addon is Standard addon CRC
+            uint64 standardCRC = AddonMgr::GetStandardAddonCRC(GetClientBuild());
+            uint8 usepk = (itr->CRC != standardCRC); // If addon is Standard addon CRC
             data << uint8(usepk);
             if (usepk)                                      // if CRC is wrong, add public key (client need it)
             {
                 TC_LOG_INFO("misc", "ADDON: CRC (0x%x) for addon %s is wrong (does not match expected 0x%lx), sending pubkey",
-                    itr->CRC, itr->Name.c_str(), AddonMgr::GetStandardAddonCRC(GetClientBuild()));
+                    itr->CRC, itr->Name.c_str(), standardCRC);
 
                 data.append(addonPublicKey, sizeof(addonPublicKey));
             }
@@ -1043,6 +1051,44 @@ void WorldSession::SendAddonsInfo()
     }
 
     SendPacket(&data);
+}
+
+void WorldSession::ReadAddon(ByteBuffer& addonInfo) 
+{
+    // check next addon data format correctness
+    if (addonInfo.rpos() + 1 > addonInfo.size())
+        return;
+
+    std::string addonName;
+    uint8 enabled;
+    uint32 crc, unk1;
+    ClientBuild build = GetClientBuild();
+
+    addonInfo >> addonName;
+
+    addonInfo >> enabled >> crc >> unk1;
+
+    TC_LOG_TRACE("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
+
+    AddonInfo addon(addonName, enabled, crc, 2, true, build);
+
+    SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName, build);
+    if (savedAddon)
+    {
+        if (addon.CRC != savedAddon->CRC)
+            TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
+        else
+            TC_LOG_TRACE("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
+    }
+    else
+    {
+        AddonMgr::SaveAddon(addon);
+
+        TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
+    }
+
+    /// @todo Find out when to not use CRC/pubkey, and other possible states.
+    m_addonsList.push_back(addon);
 }
 
 void WorldSession::ReadAddonsInfo(ByteBuffer &data)
@@ -1073,98 +1119,24 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
     {
         switch(GetClientBuild())
         {
-        case BUILD_335:
-        {
-            uint32 addonsCount;
-            addonInfo >> addonsCount;                         // addons count
-
-            for (uint32 i = 0; i < addonsCount; ++i)
+            case BUILD_335:
             {
-                std::string addonName;
-                uint8 enabled;
-                uint32 crc, unk1;
+                uint32 addonsCount;
+                addonInfo >> addonsCount;                         // addons count
 
-                // check next addon data format correctness
-                if (addonInfo.rpos() + 1 > addonInfo.size())
-                    return;
+                for (uint32 i = 0; i < addonsCount; ++i)
+                    ReadAddon(addonInfo);
 
-                addonInfo >> addonName;
-
-                addonInfo >> enabled >> crc >> unk1;
-
-                TC_LOG_TRACE("misc", "ADDON: Name: %s, Enabled: 0x%x, CRC: 0x%x, Unknown2: 0x%x", addonName.c_str(), enabled, crc, unk1);
-
-                AddonInfo addon(addonName, enabled, crc, 2, true);
-
-                SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
-                if (savedAddon)
-                {
-                    if (addon.CRC != savedAddon->CRC)
-                        TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
-                    else
-                        TC_LOG_TRACE("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
-                }
-                else
-                {
-                    AddonMgr::SaveAddon(addon);
-
-                    TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
-                }
-
-                /// @todo Find out when to not use CRC/pubkey, and other possible states.
-                m_addonsList.push_back(addon);
-            }
-
-            uint32 currentTime;
-            addonInfo >> currentTime;
-            TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
-        }
-        break;
-        case BUILD_243:
-        default:
-        {
-            while(addonInfo.rpos() < addonInfo.size())
+                uint32 currentTime;
+                addonInfo >> currentTime;
+                TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
+            } break;
+            case BUILD_243:
+            default:
             {
-                std::string addonName;
-                uint32 crc, unk1;
-                uint8 unk2;
-            
-                // check next addon data format correctness
-                if(addonInfo.rpos()+1+4+4+1 > addonInfo.size())
-                    return;
-
-                addonInfo >> addonName;
-
-                // recheck next addon data format correctness
-                if(addonInfo.rpos()+4+4+1 > addonInfo.size())
-                    return;
-
-                addonInfo >> crc >> unk1 >> unk2;
-
-                TC_LOG_DEBUG("misc", "ADDON: Name: %s, CRC: 0x%x, Unknown1: 0x%x, Unknown2: 0x%x", addonName.c_str(), crc, unk1, unk2);
-
-                AddonInfo addon(addonName, true, crc, 2, true);
-
-                SavedAddon const* savedAddon = AddonMgr::GetAddonInfo(addonName);
-                if (savedAddon)
-                {
-                    if (addon.CRC != savedAddon->CRC)
-                        TC_LOG_DEBUG("misc", "ADDON: %s was known, but didn't match known CRC (0x%x)!", addon.Name.c_str(), savedAddon->CRC);
-                    else
-                        TC_LOG_DEBUG("misc", "ADDON: %s was known, CRC is correct (0x%x)", addon.Name.c_str(), savedAddon->CRC);
-                }
-                else
-                {
-                    AddonMgr::SaveAddon(addon);
-
-                    TC_LOG_DEBUG("misc", "ADDON: %s (0x%x) was not known, saving...", addon.Name.c_str(), addon.CRC);
-                }
-
-                /// @todo Find out when to not use CRC/pubkey, and other possible states.
-                m_addonsList.push_back(addon);
-            }
-        }
-        break;
+                while(addonInfo.rpos() < addonInfo.size())
+                    ReadAddon(addonInfo);
+            } break;
         }
     }
     else
@@ -1939,14 +1911,44 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 }
 
 
+// send update packet with apropriate version for session. Will build packets for version only if needed. 
+// /!\ You'll need to destroy them yourself by calling this
+void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* packetBC, WorldPacket* packetLK, WorldSession* session, bool hasTransport)
+{
+    switch(session->GetClientBuild())
+    {
+    case BUILD_335:
+        if(!packetLK)
+        {
+            packetLK = new WorldPacket();
+            data.BuildPacket(packetLK, BUILD_335, hasTransport);
+        }
+
+        session->SendPacket(packetLK);
+        break;
+    case BUILD_243:
+    default:
+        if(!packetBC)
+        {
+            packetBC = new WorldPacket();
+            data.BuildPacket(packetBC, BUILD_243, hasTransport);
+        }
+
+        session->SendPacket(packetBC);
+        break;
+    }
+}
+
+
+
 #ifdef PLAYERBOT
 void WorldSession::HandleBotPackets()
 {
     WorldPacket* packet;
     while (_recvQueue.next(packet))
     {
-        OpcodeHandler& opHandle = opcodeTable[packet->GetOpcode()];
-        (this->*opHandle.handler)(*packet);
+		OpcodeHandler const* opHandle = GetOpcodeHandlerForBuild(packet->GetOpcode(), BUILD_243);
+        (this->*opHandle->handler)(*packet);
         delete packet;
     }
 }

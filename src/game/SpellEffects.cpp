@@ -7661,7 +7661,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel() );
     pGameObj->SetSpellId(m_spellInfo->Id);
 
-    TC_LOG_DEBUG("FIXME","AddObject at SpellEffects.cpp EffectTransmitted\n");
+    //TC_LOG_DEBUG("FIXME","AddObject at SpellEffects.cpp EffectTransmitted\n");
     //m_caster->AddGameObject(pGameObj);
     //m_ObjToDel.push_back(pGameObj);
 

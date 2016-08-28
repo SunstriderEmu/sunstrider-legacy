@@ -176,7 +176,7 @@ void Object::SendUpdateToPlayer(Player* player)
     WorldPacket packet;
 
     BuildCreateUpdateBlockForPlayer(&upd, player);
-    upd.BuildPacket(&packet);
+    upd.BuildPacket(&packet, player->GetSession()->GetClientBuild());
     player->SendDirectMessage(&packet);
 }
 
@@ -337,11 +337,12 @@ void Object::DestroyForPlayer(Player *target, bool onDeath /*= false*/) const
 
     WorldPacket data(SMSG_DESTROY_OBJECT, 8);
     data << GetGUID();
-        /* LK
+    if(target->GetSession()->GetClientBuild() == BUILD_335)
+    {
         //! If the following bool is true, the client will call "void CGUnit_C::OnDeath()" for this object.
         //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
         data << uint8(onDeath ? 1 : 0);
-        */
+    }
     target->SendDirectMessage( &data );
 }
 
@@ -2372,6 +2373,12 @@ struct WorldObjectChangeAccumulator
         }
     }
 
+    /*todo perf: As I understand it, what changes from player to player is visibility, we build almost the same packet for every players here, this could be vastly improved.
+    Maybe we could:
+    - Do a first pass where we just count players in range that should receive the packet
+    - If that count passes a certain threshold (maybe a very low one like 2-3?), send all those players a packet containing all the changes
+    I'm almost sure that a client ignore "privates" field anyway (like those with UF_OWNER) so that shouldn't cause problems
+    */
     void BuildPacket(Player* player)
     {
         // Only send update once to a player

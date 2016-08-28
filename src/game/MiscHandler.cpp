@@ -173,8 +173,6 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 {
     TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_WHO Message");
 
-    
-
     uint32 level_min, level_max, racemask, classmask, zones_count, str_count;
     uint32 zoneids[10];                                     // 10 is client limit
     std::string player_name, guild_name;
@@ -183,13 +181,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     recvData >> level_max;                                 // minimal player level, default 100 (MAX_LEVEL)
     recvData >> player_name;                               // player name, case sensitive...
 
-    // recheck
-    
-
     recvData >> guild_name;                                // guild name, case sensitive...
-
-    // recheck
-    
 
     recvData >> racemask;                                  // race mask
     recvData >> classmask;                                 // class mask
@@ -197,9 +189,6 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 
     if(zones_count > 10)
         return;                                             // can't be received from real client or broken packet
-
-    // recheck
-    
 
     for(uint32 i = 0; i < zones_count; i++)
     {
@@ -213,15 +202,9 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     if(str_count > 4)
         return;                                             // can't be received from real client or broken packet
 
-    // recheck
-    
-
     std::wstring str[4];                                    // 4 is client limit
     for(uint32 i = 0; i < str_count; i++)
     {
-        // recheck (have one more byte)
-        
-
         std::string temp;
         recvData >> temp;                                  // user entered string, it used as universal search pattern(guild+player name)?
 
@@ -389,24 +372,33 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     if (uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
 
-    //Can not logout if...
-    if( GetPlayer()->IsInCombat() ||                        //...is in combat
-        GetPlayer()->duel         ||                        //...is in Duel
-        GetPlayer()->HasAuraEffect(9454,0)         ||             //...is frozen by GM via freeze command
-        GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_JUMPING_OR_FALLING))  //...is jumping ...is falling
-    {
-        WorldPacket data( SMSG_LOGOUT_RESPONSE, (2+4) ) ;
-        data << (uint8)0xC;
-        data << uint32(0);
-        data << uint8(0);
-        SendPacket( &data );
-        LogoutRequest(0);
-        return;
-    }
+	bool canLogoutInCombat = GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+
+	bool instantLogout = canLogoutInCombat ||
+		GetPlayer()->IsInFlight() || GetSecurity() >= sWorld->getConfig(CONFIG_INSTANT_LOGOUT);
+
+	uint8 reason = 0;
+	if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
+		reason = 1;
+	else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
+		reason = 3;                                           
+	else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
+		reason = 0xC;  //not right id, need to get the correct value    
+
+
+	WorldPacket data(SMSG_LOGOUT_RESPONSE, 4+1);
+	data << uint32(reason);
+	data << uint8(instantLogout);
+	SendPacket(&data);
+
+	if (reason)
+	{
+		LogoutRequest(0);
+		return;
+	}
 
     //instant logout in taverns/cities or on taxi or for admins, gm's, mod's if its enabled in mangosd.conf
-    if (GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING) || GetPlayer()->IsInFlight() ||
-        GetSecurity() >= sWorld->getConfig(CONFIG_INSTANT_LOGOUT))
+    if (instantLogout)
     {
         LogoutPlayer(true);
         return;
@@ -425,21 +417,17 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-    WorldPacket data( SMSG_LOGOUT_RESPONSE, 5 );
-    data << uint32(0);
-    data << uint8(0);
-    SendPacket( &data );
-    LogoutRequest(time(NULL));
+	LogoutRequest(time(NULL));
 }
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
 {
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_PLAYER_LOGOUT Message");
+    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_PLAYER_LOGOUT Message");
 }
 
 void WorldSession::HandleLogoutCancelOpcode( WorldPacket & /*recvData*/ )
 {
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_CANCEL Message");
+    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_LOGOUT_CANCEL Message");
 
     // Player have already logged out serverside, too late to cancel
     if (!GetPlayer())
@@ -580,19 +568,15 @@ void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 {
-    
-    
     uint32 unk;
     recvData >> unk;
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_CONTACT_LIST - Unk: %d", unk);
+    // TC_LOG_DEBUG("network", "WORLD: Received CMSG_CONTACT_LIST - Unk: %d", unk);
     _player->GetSocial()->SendSocialList();
 }
 
 void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 {
-    
-
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_ADD_FRIEND");
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_ADD_FRIEND");
 
     std::string friendName = GetTrinityString(LANG_FRIEND_IGNORE_UNKNOWN);
     std::string friendNote;
@@ -1361,8 +1345,6 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 {
-    
-
     // write in client console: worldport 469 452 6454 2536 180 or /console worldport 469 452 6454 2536 180
     // Received opcode CMSG_WORLD_TELEPORT
     // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
@@ -1390,8 +1372,8 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     recvData >> PositionZ;
     recvData >> Orientation;                               // o (3.141593 = 180 degrees)
 
-    TC_LOG_DEBUG("network", "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f",
-        GetPlayer()->GetName().c_str(), time, mapid, PositionX, PositionY, PositionZ, Orientation);
+    /* TC_LOG_DEBUG("network", "CMSG_WORLD_TELEPORT: Player = %s, Time = %u, map = %u, x = %f, y = %f, z = %f, o = %f",
+        GetPlayer()->GetName().c_str(), time, mapid, PositionX, PositionY, PositionZ, Orientation); */
 
     if (GetSecurity() >= SEC_GAMEMASTER3)
         GetPlayer()->TeleportTo(mapid,PositionX,PositionY,PositionZ,Orientation);
@@ -1401,9 +1383,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
 {
-    
-
-    TC_LOG_DEBUG("network", "Received opcode CMSG_WHOIS");
+    // TC_LOG_DEBUG("network", "Received opcode CMSG_WHOIS");
 
     std::string charname;
     recvData >> charname;

@@ -160,6 +160,10 @@ struct ChrClassesEntry
                                                             // 55, unused
     uint32      spellfamily;                                // 56
                                                             // 57, unused
+#ifdef LICH_KING
+	uint32  CinematicSequence;                              // 58 id from CinematicSequences.dbc
+	uint32  expansion;                                      // 59 (0 - original race, 1 - tbc addon, ...)
+#endif
 };
 
 struct ChrRacesEntry
@@ -173,7 +177,7 @@ struct ChrRacesEntry
                                                             // 6-7 unused
     uint32      TeamID;                                     // 8 (7-Alliance 1-Horde)
                                                             // 9-12 unused
-    uint32      startmovie;                                 // 13 id from CinematicCamera.dbc
+    uint32      cinematicSequence;                          // 13 id from CinematicCamera.dbc
     char*       name[16];                                   // 14-29 used for DBC language detection/selection
                                                             // 30 string flags, unused
     //char*       nameFemale[16];                           // 31-46, if different from base (male) case

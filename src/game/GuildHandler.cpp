@@ -33,10 +33,6 @@
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint32 guildId;
     Guild *guild;
 
@@ -706,7 +702,7 @@ void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    if(guild->GetNrRanks() >= GUILD_MAX_RANKS)              // client not let create more 10 than ranks
+    if(guild->GetNrRanks() >= GUILD_MAX_RANKS_COUNT)              // client not let create more 10 than ranks
         return;
 
     recvPacket >> rankname;

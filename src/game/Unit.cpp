@@ -10443,7 +10443,7 @@ void Unit::DestroyForNearbyPlayers()
         if(*iter != this && (*iter)->GetTypeId() == TYPEID_PLAYER
             && ((*iter)->ToPlayer())->HaveAtClient(this))
         {
-            DestroyForPlayer((*iter)->ToPlayer());
+            DestroyForPlayer((*iter)->ToPlayer()/*TODO LK  ,ToUnit()->IsDuringRemoveFromWorld() && ToCreature()->isDead() */);
             ((*iter)->ToPlayer())->m_clientGUIDs.erase(GetGUID());
         }
 }
@@ -10725,7 +10725,7 @@ void Unit::SetOwnerGUID(uint64 owner)
     UpdateData udata;
     WorldPacket packet;
     BuildValuesUpdateBlockForPlayer(&udata, player);
-    udata.BuildPacket(&packet);
+    udata.BuildPacket(&packet, player->GetSession()->GetClientBuild());
     player->SendDirectMessage(&packet);
 
     RemoveFieldNotifyFlag(UF_FLAG_OWNER);

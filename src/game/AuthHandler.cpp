@@ -45,9 +45,7 @@ void WorldSession::SendClientCacheVersion(uint32 version)
         return;
     }
 
-    /*TODOLK
-    WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
+    WorldPacket data(LK_SMSG_CLIENTCACHE_VERSION, 4);
     data << uint32(version);
     SendPacket(&data);
-    */
 }

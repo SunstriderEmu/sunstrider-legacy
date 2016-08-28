@@ -319,11 +319,7 @@ void WorldSession::HandlePetStopAttack(WorldPacket &recvData)
 }
 void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
 {
-    
-    
-    
-
-    TC_LOG_DEBUG("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
+    // TC_LOG_DEBUG("network", "HandlePetNameQuery. CMSG_PET_NAME_QUERY\n" );
 
     uint32 petnumber;
     uint64 petguid;
@@ -337,8 +333,20 @@ void WorldSession::HandlePetNameQuery( WorldPacket & recvData )
 void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
 {
     Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, petguid);
-    if(!pet || !pet->GetCharmInfo() || pet->GetCharmInfo()->GetPetNumber() != petnumber)
-        return;
+	if (!pet || !pet->GetCharmInfo() || pet->GetCharmInfo()->GetPetNumber() != petnumber)
+	{
+		// Our (BC) core didn't respond anything in this case before, not sure this is normal. Anyway, LK expects this:
+		if (GetClientBuild() == BUILD_335)
+		{
+			WorldPacket data(SMSG_PET_NAME_QUERY_RESPONSE, (4 + 1 + 4 + 1));
+			data << uint32(petnumber);
+			data << uint8(0);
+			data << uint32(0);
+			data << uint8(0);
+			_player->GetSession()->SendPacket(&data);
+		}
+		return;
+	}
 
     std::string name = pet->GetName();
 

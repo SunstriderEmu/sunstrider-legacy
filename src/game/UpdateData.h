@@ -23,6 +23,7 @@
 
 #include "ObjectGuid.h"
 class WorldPacket;
+enum ClientBuild : uint32;
 
 enum OBJECT_UPDATE_TYPE
 {
@@ -70,7 +71,7 @@ class UpdateData
         /** Build a WorldPacket from this update data 
             @packet an unitialized WorldPacket
         */
-        bool BuildPacket(WorldPacket* packet, bool hasTransport = false);
+        bool BuildPacket(WorldPacket* packet, ClientBuild build, bool hasTransport = false);
         bool HasData() { return m_blockCount > 0 || !m_outOfRangeGUIDs.empty(); }
         void Clear();
 

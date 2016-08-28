@@ -22,6 +22,7 @@
 #include "Log.h"
 #include "Timer.h"
 #include <openssl/md5.h>
+#include "WorldSession.h"
 
 namespace AddonMgr
 {
@@ -42,7 +43,7 @@ void LoadFromDB()
 {
     uint32 oldMSTime = GetMSTime();
 
-    QueryResult result = CharacterDatabase.Query("SELECT name, crc FROM addons");
+    QueryResult result = CharacterDatabase.Query("SELECT name, crc, gamebuild FROM addons");
     if (result)
     {
         uint32 count = 0;
@@ -53,8 +54,9 @@ void LoadFromDB()
 
             std::string name = fields[0].GetString();
             uint32 crc = fields[1].GetUInt32();
+            uint32 build = fields[2].GetUInt32();
 
-            m_knownAddons.push_back(SavedAddon(name, crc));
+            m_knownAddons.push_back(SavedAddon(name, crc, build));
 
             ++count;
         }
@@ -119,18 +121,19 @@ void SaveAddon(AddonInfo const& addon)
 
     stmt->setString(0, name);
     stmt->setUInt32(1, addon.CRC);
+    stmt->setUInt32(2, addon.build);
 
     CharacterDatabase.Execute(stmt);
 
-    m_knownAddons.push_back(SavedAddon(addon.Name, addon.CRC));
+    m_knownAddons.push_back(SavedAddon(addon.Name, addon.CRC, addon.build));
 }
 
-SavedAddon const* GetAddonInfo(const std::string& name)
+SavedAddon const* GetAddonInfo(const std::string& name, ClientBuild build)
 {
     for (SavedAddonsList::const_iterator it = m_knownAddons.begin(); it != m_knownAddons.end(); ++it)
     {
         SavedAddon const& addon = (*it);
-        if (addon.Name == name)
+        if (addon.Name == name && addon.build == uint32(build))
             return &addon;
     }
 

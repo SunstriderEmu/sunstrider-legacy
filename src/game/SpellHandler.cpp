@@ -424,16 +424,12 @@ void WorldSession::HandleCancelGrowthAuraOpcode( WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
 {
-    
-
     // cancel and prepare for deleting
     _player->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
 }
 
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
-    
-
     // ignore for remote control state (for player case)
     Unit* mover = _player->m_mover;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
@@ -447,10 +443,6 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
-    
-    
-    
-
     // ignore for remote control state
     if (_player->m_mover != _player)
         return;
@@ -473,10 +465,6 @@ void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 
 void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 {
-    
-    
-//    
-
     if(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL))
     {
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
@@ -489,10 +477,6 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
 
 void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint64 guid;
     recvData >> guid;
 
@@ -575,4 +559,9 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     }
 
     SendPacket(&data);
+}
+
+void WorldSession::HandleReadyForAccountDataTimes(WorldPacket& recvData)
+{
+    SendAccountDataTimes(GLOBAL_CACHE_MASK);
 }

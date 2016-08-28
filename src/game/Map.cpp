@@ -488,9 +488,11 @@ bool Map::Add(MotionTransport* obj, bool /* checkTransport */)
             {
                 UpdateData data;
                 obj->BuildCreateUpdateBlockForPlayer(&data, itr->GetSource());
-                WorldPacket packet;
-                data.BuildPacket(&packet,true);
-                itr->GetSource()->SendDirectMessage(&packet);
+                WorldPacket* packetBC = nullptr;
+                WorldPacket* packetLK = nullptr;
+                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr->GetSource()->GetSession(), true);
+                delete packetBC;
+                delete packetLK;
             }
         }
     }
@@ -971,11 +973,14 @@ void Map::Remove(MotionTransport *obj, bool remove)
     {
         UpdateData data;
         obj->BuildOutOfRangeUpdateBlock(&data);
-        WorldPacket packet;
-        data.BuildPacket(&packet);
+        WorldPacket* packetBC = nullptr;
+        WorldPacket* packetLK = nullptr;
         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-        if (itr->GetSource()->GetTransport() != obj)
-            itr->GetSource()->SendDirectMessage(&packet);
+            if (itr->GetSource()->GetTransport() != obj)
+                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr->GetSource()->GetSession());
+
+        delete packetBC;
+        delete packetLK;
     }
 
     if (_transportsUpdateIter != _transports.end())
@@ -1914,7 +1919,7 @@ void Map::SendInitSelf( Player * player)
             }
 
     WorldPacket packet;
-    data.BuildPacket(&packet, hasTransport);
+    data.BuildPacket(&packet, player->GetSession()->GetClientBuild(), hasTransport);
     player->SendDirectMessage(&packet);
 }
 
@@ -1931,7 +1936,7 @@ void Map::SendInitTransports( Player * player)
             }
 
     WorldPacket packet;
-    transData.BuildPacket(&packet,hasTransport);
+    transData.BuildPacket(&packet, player->GetSession()->GetClientBuild(), hasTransport);
     player->SendDirectMessage(&packet);
 }
 
@@ -1956,7 +1961,7 @@ void Map::SendRemoveTransports(Player* player)
     }
 
     WorldPacket packet;
-    transData.BuildPacket(&packet);
+    transData.BuildPacket(&packet, player->GetSession()->GetClientBuild());
     player->SendDirectMessage(&packet);
 }
 

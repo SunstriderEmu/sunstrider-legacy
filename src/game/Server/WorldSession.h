@@ -44,6 +44,7 @@ enum MailMessageType : uint32;
 class Transaction;
 typedef std::shared_ptr<Transaction> SQLTransaction;
 enum WeatherState : int;
+class UpdateData;
 
 class Creature;
 class Item;
@@ -162,8 +163,9 @@ public:
 class WorldSessionFilter : public PacketFilter
 {
 public:
-    explicit WorldSessionFilter(WorldSession * pSession) : PacketFilter(pSession) {}
-    ~WorldSessionFilter() {}
+    explicit WorldSessionFilter(WorldSession* pSession) : PacketFilter(pSession) {}
+	~WorldSessionFilter()
+	{}
 
     virtual bool Process(WorldPacket* packet);
 };
@@ -209,7 +211,7 @@ struct PacketCounter
     uint32 amountCounter;
 };
 
-enum ClientBuild
+enum ClientBuild : uint32
 {
     BUILD_335 = 12340,
     BUILD_243 = 8606,
@@ -220,7 +222,7 @@ class WorldSession
 {
     friend class CharacterHandler;
     public:
-        WorldSession(uint32 id, uint32 clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
+        WorldSession(uint32 id, ClientBuild clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter);
         ~WorldSession();
 
         void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
@@ -231,7 +233,7 @@ class WorldSession
         bool PlayerLogoutWithSave() const { return m_playerLogout && m_playerSave; }
         bool PlayerRecentlyLoggedOut() const { return m_playerRecentlyLogout; }
         
-        uint32 GetClientBuild();
+        ClientBuild GetClientBuild() const;
 
         void ReadAddonsInfo(ByteBuffer &data);
         void SendAddonsInfo();
@@ -426,6 +428,9 @@ class WorldSession
 
         void DoLootRelease( uint64 lguid );
         
+        // send update packet with apropriate version for session. Will build packets for version only if needed. You'll need to construct WorldPacket and destroy them yourself by calling this.
+        static void SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* packetBC, WorldPacket* packetLK, WorldSession* session, bool hasTransport = false);
+
         // Account mute time
         time_t m_muteTime;
 
@@ -576,7 +581,7 @@ class WorldSession
         void HandleGameObjectQueryOpcode(WorldPacket& recvPacket);
 
         void HandleMoveWorldportAckOpcode(WorldPacket& recvPacket);
-        void HandleMoveWorldportAckOpcode();                // for server-side calls
+        void HandleMoveWorldportAck();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
         void HandlePossessedMovement(WorldPacket& recvData, MovementInfo& movementInfo, uint32& MovementFlags);
@@ -902,6 +907,12 @@ class WorldSession
 
         void HandleMirrorImageDataRequest(WorldPacket& recvData);
 
+        /* LK ONLY */
+
+        void HandleReadyForAccountDataTimes(WorldPacket& recvData);
+
+        /* */
+
 #ifdef TRINITY_DEBUG
         //for HandleDebugValuesSnapshot command
         std::vector<uint32> snapshot_values;
@@ -980,11 +991,12 @@ class WorldSession
         uint32 _accountId;
         std::string _accountName;
         uint8 m_expansion;
-        uint32 m_clientBuild;
+        ClientBuild m_clientBuild;
 
        // uint32 _groupid;
         
         typedef std::list<AddonInfo> AddonsList;
+        void ReadAddon(ByteBuffer& data);
 
         // Warden
         WardenBase* _Warden;
@@ -999,7 +1011,7 @@ class WorldSession
         LocaleConstant m_sessionDbLocaleIndex;
         uint32 m_latency;
         uint32 m_clientTimeDelay;
-        //only lk
+        
         AccountData m_accountData[NUM_ACCOUNT_DATA_TYPES];
         uint32 m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
         bool   m_TutorialsChanged;

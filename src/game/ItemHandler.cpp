@@ -306,8 +306,6 @@ void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
 // Only _static_ data send in this packet !!!
 void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_ITEM_QUERY_SINGLE");
     uint32 item;
     recvData >> item;
@@ -334,10 +332,10 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         }
                                                             // guess size
         WorldPacket data( SMSG_ITEM_QUERY_SINGLE_RESPONSE, 600);
-        data << pProto->ItemId;
-        data << pProto->Class;
-        data << pProto->SubClass;
-        data << uint32(-1);                                 // new 2.0.3, not exist in wdb cache?
+		data << uint32(pProto->ItemId);
+		data << uint32(pProto->Class);
+		data << uint32(pProto->SubClass);
+        data << uint32(pProto->SoundOverrideSubclass);
         data << Name;
         data << uint8(0x00);                                //pProto->Name2; // blizz not send name there, just uint8(0x00); <-- \0 = empty string = empty name...
         data << uint8(0x00);                                //pProto->Name3; // blizz not send name there, just uint8(0x00);
@@ -345,6 +343,14 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->DisplayInfoID;
         data << pProto->Quality;
         data << pProto->Flags;
+		if (GetClientBuild() == BUILD_335)
+		{
+#ifdef LICH_KING
+			data << pProto->Flags2;
+#else
+			data << uint32(0);
+#endif
+		}
         data << pProto->BuyPrice;
         data << pProto->SellPrice;
         data << pProto->InventoryType;
@@ -359,15 +365,36 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->RequiredCityRank;
         data << pProto->RequiredReputationFaction;
         data << pProto->RequiredReputationRank;
-        data << pProto->MaxCount;
-        data << pProto->Stackable;
+        data << int32(pProto->MaxCount);
+        data << int32(pProto->Stackable);
         data << pProto->ContainerSlots;
-        for(int i = 0; i < 10; i++)
+#ifdef LICH_KING
+		uint32 statCount = pProto->StatsCount;
+#else
+		uint32 statCount = MAX_ITEM_PROTO_STATS;
+#endif
+		if (GetClientBuild() == BUILD_335)
+			data << statCount;                         // item stats count
+
+        for(int i = 0; i < statCount; i++)
         {
             data << pProto->ItemStat[i].ItemStatType;
             data << pProto->ItemStat[i].ItemStatValue;
         }
-        for(int i = 0; i < 5; i++)
+#ifdef LICH_KING
+		uint32 scalingStatDistribution = pProto->ScalingStatDistribution;
+		uint32 scalingStatValue = pProto->ScalingStatValue;
+#else
+		uint32 scalingStatDistribution = 0;
+		uint32 scalingStatValue = 0;
+#endif
+		if (GetClientBuild() == BUILD_335)
+		{
+			data << scalingStatDistribution;            // scaling stats distribution
+			data << scalingStatValue;                   // some kind of flags used to determine stat values column
+		}
+
+        for(int i = 0; i < MAX_ITEM_PROTO_DAMAGES; i++)
         {
             data << pProto->Damage[i].DamageMin;
             data << pProto->Damage[i].DamageMax;
@@ -387,7 +414,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->AmmoType;
         data << pProto->RangedModRange;
 
-        for(int s = 0; s < 5; s++)
+        for(int s = 0; s < MAX_ITEM_PROTO_SPELLS; s++)
         {
             // send DBC data for cooldowns in same way as it used in Spell::SendSpellCooldown
             // use `item_template` or if not set then only use spell cooldowns
@@ -430,7 +457,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->PageMaterial;
         data << pProto->StartQuest;
         data << pProto->LockID;
-        data << pProto->Material;
+        data << int32(pProto->Material);
         data << pProto->Sheath;
         data << pProto->RandomProperty;
         data << pProto->RandomSuffix;
@@ -441,7 +468,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->Map;                                // Added in 1.12.x & 2.0.1 client branch
         data << pProto->BagFamily;
         data << pProto->TotemCategory;
-        for(int s = 0; s < 3; s++)
+        for(int s = 0; s < MAX_ITEM_PROTO_SOCKETS; s++)
         {
             data << pProto->Socket[s].Color;
             data << pProto->Socket[s].Content;
@@ -450,7 +477,21 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->GemProperties;
         data << pProto->RequiredDisenchantSkill;
         data << pProto->ArmorDamageModifier;
-        data << uint32(0);                                  // added in 2.4.2.8209, duration (seconds)
+		data << pProto->Duration;                                 // added in 2.4.2.8209, duration (seconds)
+
+#ifdef LICH_KING
+		uint32 itemLimitCategory = pProto->ItemLimitCategory;
+		uint32 holidayId = pProto->HolidayId;
+#else
+		uint32 itemLimitCategory = 0;
+		uint32 holidayId = 0;
+#endif
+
+		if (GetClientBuild() == BUILD_335)
+		{
+			data << itemLimitCategory;                  // WotLK, ItemLimitCategory
+			data << holidayId;                          // Holiday.dbc?
+		}
         SendPacket( &data );
     }
     else
@@ -1024,11 +1065,17 @@ void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
         GetPlayer()->SetAmmo(item);
 }
 
-void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster,uint32 ItemID,uint32 SpellID)
+void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
 {
-    WorldPacket data(SMSG_ENCHANTMENTLOG, (8+8+4+4+1));     // last check 2.0.10
-    data << Target;
-    data << Caster;
+	WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
+	if (GetClientBuild() == BUILD_335)
+	{
+		data << PackedGuid(Target);
+		data << PackedGuid(Caster);
+	} else {
+		data << Target;
+		data << Caster;
+	}
     data << ItemID;
     data << SpellID;
     data << uint8(0);
@@ -1048,10 +1095,6 @@ void WorldSession::SendItemEnchantTimeUpdate(uint64 Playerguid, uint64 Itemguid,
 
 void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     uint32 itemid;
     recvData >> itemid;
     ItemTemplate const *pProto = sObjectMgr->GetItemTemplate( itemid );

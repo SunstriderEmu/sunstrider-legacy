@@ -23,28 +23,33 @@
 #include <string>
 #include <list>
 
+enum ClientBuild : uint32;
+
 struct AddonInfo
 {
-    AddonInfo(const std::string& name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey)
-        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey), Enabled(enabled)
+    AddonInfo(const std::string& name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey, uint32 build)
+        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey), Enabled(enabled), build(build)
         { }
 
     std::string Name;
     uint8 Enabled; //LK only
     uint32 CRC;
+    uint32 build;
     uint8 State;
     bool UsePublicKeyOrCRC;
 };
 
 struct SavedAddon
 {
-    SavedAddon(std::string const& name, uint32 crc) : Name(name)
-    {
-        CRC = crc;
-    }
+    SavedAddon(std::string const& name, uint32 crc, uint32 build) :
+        Name(name),
+        CRC(crc),
+        build(build)
+    { }
 
     std::string Name;
     uint32 CRC;
+    uint32 build;
 };
 
 struct BannedAddon
@@ -64,7 +69,7 @@ namespace AddonMgr
 {
     void LoadFromDB();
     void SaveAddon(AddonInfo const& addon);
-    SavedAddon const* GetAddonInfo(const std::string& name);
+    SavedAddon const* GetAddonInfo(const std::string& name, ClientBuild build);
 
     typedef std::list<BannedAddon> BannedAddonList;
     BannedAddonList const* GetBannedAddons();

@@ -84,8 +84,15 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
         }
     }
 
+    ClientBuild build = BUILD_243;
+
+    //Todo: select build depending on build in realmlist. At this point, client hasn't given its build yet. (though it gave it to worldserver)
+    /*
+    BUILD_335 = 12340,
+    BUILD_243 = 8606,
+    */
     AsyncRead();
-    HandleSendAuthSession();
+    HandleSendAuthSession(build);
 }
 
 bool WorldSocket::Update()
@@ -139,25 +146,28 @@ bool WorldSocket::Update()
     return true;
 }
 
-void WorldSocket::HandleSendAuthSession()
+void WorldSocket::HandleSendAuthSession(ClientBuild build)
 {
-    //at this point, realm knows client build but we don't
-#ifdef LICH_KING
-    WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
-    packet << uint32(1);                                    // 1...31
-    packet << uint32(_authSeed);
-
-    BigNumber seed1;
-    seed1.SetRand(16 * 8);
-    packet.append(seed1.AsByteArray(16).get(), 16);               // new encryption seeds
-
-    BigNumber seed2;
-    seed2.SetRand(16 * 8);
-    packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
-#else
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
-    packet << uint32(_authSeed);
-#endif
+    //at this point, realm knows client build but we don't
+    if(build == BUILD_335)
+    {
+        packet.reserve(37);
+
+        packet << uint32(1);                                    // 1...31
+        packet << uint32(_authSeed);
+
+        BigNumber seed1;
+        seed1.SetRand(16 * 8);
+        packet.append(seed1.AsByteArray(16).get(), 16);               // new encryption seeds
+
+        BigNumber seed2;
+        seed2.SetRand(16 * 8);
+        packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
+    } else {
+        packet << uint32(_authSeed);
+    }
+
     SendPacketAndLogOpcode(packet);
 }
 
@@ -509,13 +519,15 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         return;
     }
 
-    if (authSession->Build == BUILD_335 && authSession->RealmID != realmID)
+    /* Disabled this check for now to allow connection from multiple realm
+    if (authSession->RealmID != realmID)
     {
         SendAuthResponseError(REALM_LIST_REALM_NOT_FOUND);
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (bad realm).");
         DelayedCloseSocket();
         return;
     }
+    */
 
     // Must be done before WorldSession is created
     bool wardenActive = sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED);
@@ -619,7 +631,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     //    sScriptMgr->OnAccountLogin(account.Id);
 
     _authed = true;
-    _worldSession = new WorldSession(account.Id, authSession->Build, std::move(authSession->Account), shared_from_this(), account.Security,
+    _worldSession = new WorldSession(account.Id, ClientBuild(authSession->Build), std::move(authSession->Account), shared_from_this(), account.Security,
         account.Expansion, mutetime, account.Locale, account.Recruiter, account.IsRectuiter);
     _worldSession->ReadAddonsInfo(authSession->AddonInfo);
 
@@ -629,7 +641,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     if (wardenActive)
         _worldSession->InitWarden(&account.SessionKey, account.OS);
 
-#ifdef LICH_KING
+#ifdef TRINITYCORE
     _queryCallback = std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1);
     _queryFuture = _worldSession->LoadPermissionsAsync();
 #else
@@ -641,7 +653,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 void WorldSocket::LoadSessionPermissionsCallback(PreparedQueryResult result)
 {
     // RBAC must be loaded before adding session to check for skip queue permission
-#ifdef LICH_KING
+#ifdef TRINITYCORE
     _worldSession->GetRBACData()->LoadFromDBCallback(result);
     sWorld->AddSession(_worldSession);
 #endif

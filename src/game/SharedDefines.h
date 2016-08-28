@@ -2256,7 +2256,7 @@ enum PetDiet
 #define GUILD_BANK_MAX_SLOTS        98
 #define GUILD_BANK_MAX_LOGS         24
 #define GUILD_EVENTLOG_MAX_ENTRIES  100
-#define GUILD_MAX_RANKS             10
+#define GUILD_MAX_RANKS_COUNT       10
 
 enum AIReaction
 {

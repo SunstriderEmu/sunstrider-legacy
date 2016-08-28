@@ -274,18 +274,13 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 quest;
     recvData >> quest;
 
-    Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest);
-    if ( pQuest )
-    {
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_QUEST_QUERY quest = %u", questId);
+
+    if(Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest))
         _player->PlayerTalkClass->SendQuestQueryResponse( pQuest );
-    }
 }
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )

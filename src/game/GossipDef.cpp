@@ -559,7 +559,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     std::string questDetails = quest->GetDetails();
     std::string questObjectives = quest->GetObjectives();
     std::string questEndText = quest->GetEndText();
-    std::string questCompletedText = ""; //LK TrinityCore : quest->GetCompletedText();
+#ifdef LICH_KING
+    std::string questCompletedText = quest->GetCompletedText();
+#endif
 
     std::string questObjectiveText[QUEST_OBJECTIVES_COUNT];
     for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
@@ -574,7 +576,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             ObjectMgr::GetLocaleString(localeData->Details, locale, questDetails);
             ObjectMgr::GetLocaleString(localeData->Objectives, locale, questObjectives);
             ObjectMgr::GetLocaleString(localeData->EndText, locale, questEndText);
-         //LK TrinityCore :   ObjectMgr::GetLocaleString(localeData->CompletedText, locale, questCompletedText);
+#ifdef LICH_KING
+            ObjectMgr::GetLocaleString(localeData->CompletedText, locale, questCompletedText);
+#endif
 
             for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
                 ObjectMgr::GetLocaleString(localeData->ObjectiveText[i], locale, questObjectiveText[i]);
@@ -596,12 +600,13 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << uint32(quest->GetRepObjectiveFaction());        // shown in quest log as part of quest objective
     data << uint32(quest->GetRepObjectiveValue());          // shown in quest log as part of quest objective
     
-        /* TrinityCore LK
+#ifdef LICH_KING
     data << uint32(quest->GetRepObjectiveFaction2());       // shown in quest log as part of quest objective OPPOSITE faction
     data << uint32(quest->GetRepObjectiveValue2());         // shown in quest log as part of quest objective OPPOSITE faction
-    */
-    data << uint32(0);
-    data << uint32(0);
+#else
+    data << uint32(0); //always 0 on BC
+    data << uint32(0); //always 0 on BC
+#endif
 
     data << uint32(quest->GetNextQuestInChain());           // client will request this quest from NPC, if not 0
 
@@ -683,15 +688,21 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << float(quest->GetPointY());
     data << uint32(quest->GetPointOpt());
 
-  /*TrinityCore  if (sWorld->getBoolConfig(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
-        AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());*/
+#ifdef LICH_KING
+    if (sWorld->getBoolConfig(CONFIG_UI_QUESTLEVELS_IN_DIALOGS))
+        AddQuestLevelToTitle(questTitle, quest->GetQuestLevel());
+#endif
 
     data << questTitle;
     data << questObjectives;
     data << questDetails;
     data << questEndText;
     if(_session->GetClientBuild() == BUILD_335)
+#ifdef LICH_KING
         data << questCompletedText;                                 // display in quest objectives window once all objectives are completed
+#else
+        data << "";
+#endif
 
     for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
     {
@@ -702,18 +713,18 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
 
         data << uint32(quest->RequiredNpcOrGoCount[i]);
         data << uint32(quest->RequiredItemId[i]);
-        data << uint32(quest->RequiredItemCount[i]);                                  // TrinityCore has 0 here
+        data << uint32(quest->RequiredItemCount[i]); 
+        /* Trinity core for the last two ones.
+        data << uint32(quest->ItemDrop[i]);
+        data << uint32(0);                                  // req source count?
+        */
     }
 
     if(_session->GetClientBuild() == BUILD_335)
         for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
         {
-            /*
             data << uint32(quest->RequiredItemId[i]);
             data << uint32(quest->RequiredItemCount[i]);
-            */
-            data << uint32(0);
-            data << uint32(0);
         }
 
     for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)

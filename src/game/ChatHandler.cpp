@@ -47,10 +47,6 @@
 
 void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 type;
     uint32 lang;
 
@@ -273,7 +269,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 GetPlayer()->GetTotalPlayedTime() < 1 * DAY)
             {
                 //"Vous devez atteindre le niveau %u ou avoir un temps de jeu total de 24h pour pouvoir chuchoter aux autres joueurs."
-                ChatHandler(this).PSendSysMessage("You must reached level %u or have at least 24 hours of played to be able to whisper other players.", sWorld->getConfig(CONFIG_WHISPER_MINLEVEL));
+                ChatHandler(this).PSendSysMessage("You must reach level %u or have at least 24 hours of played to be able to whisper other players.", sWorld->getConfig(CONFIG_WHISPER_MINLEVEL));
                 break;
             }
 

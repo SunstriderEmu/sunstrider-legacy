@@ -676,7 +676,7 @@ void Guild::BroadcastPacketToRank(WorldPacket *packet, uint32 rankId)
 
 void Guild::CreateRank(std::string name_,uint32 rights, SQLTransaction trans)
 {
-    if(m_ranks.size() >= GUILD_MAX_RANKS)
+    if(m_ranks.size() >= GUILD_MAX_RANKS_COUNT)
         return;
 
     AddRank(name_,rights,0);
@@ -843,10 +843,10 @@ void Guild::Query(WorldSession *session)
 {
     WorldPacket data(SMSG_GUILD_QUERY_RESPONSE, (8*32+200));// we can only guess size
 
-    data << Id;
+    data << uint32(Id);
     data << name;
 
-    for (size_t i = 0 ; i < 10; ++i)                        // show always 10 ranks
+    for (size_t i = 0 ; i < GUILD_MAX_RANKS_COUNT; ++i)                        // show always 10 ranks
     {
         if(i < m_ranks.size())
             data << m_ranks[i].name;
@@ -859,6 +859,8 @@ void Guild::Query(WorldSession *session)
     data << uint32(BorderStyle);
     data << uint32(BorderColor);
     data << uint32(BackgroundColor);
+	if(session->GetClientBuild() == BUILD_335)
+		data << uint32(m_ranks.size());                                // Number of ranks used
 
     session->SendPacket( &data );
 }

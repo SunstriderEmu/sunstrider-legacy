@@ -103,14 +103,13 @@ void UpdateData::Compress(void* dst, uint32 *dst_size, void* src, int src_size)
     *dst_size = c_stream.total_out;
 }
 
-bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
+bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTransport)
 {
     ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
-#ifndef LICH_KING
-    buf << (uint8) (hasTransport ? true : false);
-#endif
+    if(build == BUILD_243)
+        buf << (uint8) (hasTransport ? true : false);
 
     if(!m_outOfRangeGUIDs.empty())
     {
@@ -119,12 +118,13 @@ bool UpdateData::BuildPacket(WorldPacket *packet, bool hasTransport)
 
         for (auto i : m_outOfRangeGUIDs)
         {
-#ifdef LICH_KING
-            buf << i->WriteAsPacked();
-#else
-            buf << (uint8)0xFF;
-            buf << (uint64)i;
-#endif
+            if(build == BUILD_335)
+            {
+                buf << PackedGuid(i);
+            } else {
+                buf << (uint8)0xFF;
+                buf << (uint64)i;
+            }
         }
     }
 
