@@ -53,6 +53,7 @@ class WorldSocket : public Socket<WorldSocket>
 
 public:
     WorldSocket(tcp::socket&& socket);
+    ~WorldSocket();
 
     WorldSocket(WorldSocket const& right) = delete;
     WorldSocket& operator=(WorldSocket const& right) = delete;
@@ -101,7 +102,7 @@ private:
     bool HandlePing(WorldPacket& recvPacket);
 
     uint32 _authSeed;
-    AuthCrypt _authCrypt;
+    AuthCrypt* _authCrypt; //nullptr until initialized
 
     std::chrono::steady_clock::time_point _LastPingTime;
     uint32 _OverSpeedPings;

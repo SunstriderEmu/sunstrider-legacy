@@ -22,6 +22,7 @@
 #include "Cryptography/ARC4.h"
 
 class BigNumber;
+enum ClientBuild : uint32;
 
 #ifdef LICH_KING
 class AuthCrypt
@@ -45,27 +46,30 @@ class AuthCrypt
 class AuthCrypt
 {
     public:
-        AuthCrypt();
-        ~AuthCrypt();
+        AuthCrypt(ClientBuild build);
 
         const static size_t CRYPTED_SEND_LEN = 4;
         const static size_t CRYPTED_RECV_LEN = 6;
 
-        void Init();
         void Init(BigNumber *);
-        void SetKey(BigNumber *);
 
         void DecryptRecv(uint8 *, size_t);
         void EncryptSend(uint8 *, size_t);
 
         bool IsInitialized() { return _initialized; }
 
-        static void GenerateKey(uint8 *, BigNumber *);
 
     private:
+        bool _initialized;
+        ClientBuild clientBuild;
+
+        //only used for LK
+        ARC4* _clientDecrypt;
+        ARC4* _serverEncrypt;
+
+        //only used for BC
         std::vector<uint8> _key;
         uint8 _send_i, _send_j, _recv_i, _recv_j;
-        bool _initialized;
 };
 #endif
 #endif

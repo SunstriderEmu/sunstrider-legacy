@@ -43,9 +43,14 @@ private:
 using boost::asio::ip::tcp;
 
 WorldSocket::WorldSocket(tcp::socket&& socket)
-    : Socket(std::move(socket)), _authSeed(rand32()), _OverSpeedPings(0), _worldSession(nullptr), _authed(false)
+    : Socket(std::move(socket)), _authSeed(rand32()), _OverSpeedPings(0), _worldSession(nullptr), _authed(false), _authCrypt(nullptr)
 {
     _headerBuffer.Resize(sizeof(ClientPktHeader));
+}
+
+WorldSocket::~WorldSocket()
+{
+    delete _authCrypt;
 }
 
 void WorldSocket::Start()
@@ -84,7 +89,7 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
         }
     }
 
-    ClientBuild build = BUILD_243;
+    static ClientBuild build = BUILD_243;
 
     //Todo: select build depending on build in realmlist. At this point, client hasn't given its build yet. (though it gave it to worldserver)
     /*
@@ -102,8 +107,8 @@ bool WorldSocket::Update()
     while (_bufferQueue.Dequeue(queued))
     {
         ServerPktHeader header(queued->size() + 2, queued->GetOpcode());
-        if (queued->NeedsEncryption())
-            _authCrypt.EncryptSend(header.header, header.getHeaderLength());
+        if (_authCrypt && queued->NeedsEncryption())
+            _authCrypt->EncryptSend(header.header, header.getHeaderLength());
 
         if (buffer.GetRemainingSpace() < queued->size() + header.getHeaderLength())
         {
@@ -245,7 +250,8 @@ bool WorldSocket::ReadHeaderHandler()
 {
     ASSERT(_headerBuffer.GetActiveSize() == sizeof(ClientPktHeader));
 
-    _authCrypt.DecryptRecv(_headerBuffer.GetReadPointer(), sizeof(ClientPktHeader));
+    if(_authCrypt)
+        _authCrypt->DecryptRecv(_headerBuffer.GetReadPointer(), sizeof(ClientPktHeader));
 
     ClientPktHeader* header = reinterpret_cast<ClientPktHeader*>(_headerBuffer.GetReadPointer());
     EndianConvertReverse(header->size);
@@ -450,7 +456,7 @@ void WorldSocket::SendPacket(WorldPacket const& packet)
             _lastPacketsSent.push_back(packet);
     }
 
-    _bufferQueue.Enqueue(new EncryptablePacket(packet, _authCrypt.IsInitialized()));
+    _bufferQueue.Enqueue(new EncryptablePacket(packet, _authCrypt && _authCrypt->IsInitialized()));
 }
 
 void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
@@ -514,7 +520,8 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
     // This also allows to check for possible "hack" attempts on account
 
     // even if auth credentials are bad, try using the session key we have - client cannot read auth response error without it
-    _authCrypt.Init(&account.SessionKey);
+    _authCrypt = new AuthCrypt(ClientBuild(authSession->Build));
+    _authCrypt->Init(&account.SessionKey);
 
     // First reject the connection if packet contains invalid data or realm state doesn't allow logging in
     if (sWorld->IsClosed())

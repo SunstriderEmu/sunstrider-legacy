@@ -1538,7 +1538,7 @@ void Player::SetDeathState(DeathState s)
 }
 
 //result must be deleted by caller
-bool Player::BuildEnumData(PreparedQueryResult  result, WorldPacket * p_data, WorldSession const* session)
+bool Player::BuildEnumData(PreparedQueryResult result, WorldPacket * p_data, WorldSession const* session)
 {
 	/* SEE CHAR_SEL_ENUM
 			   0      1       2        3        4            5             6             7       8        9
@@ -1598,7 +1598,7 @@ bool Player::BuildEnumData(PreparedQueryResult  result, WorldPacket * p_data, Wo
 		char_flags |= CHARACTER_FLAG_RENAME;
 	// always send the flag if declined names aren't used
 	// to let the client select a default method of declining the name
-	if (!sWorld->getConfig(CONFIG_DECLINED_NAMES_USED))
+	if (sWorld->getConfig(CONFIG_DECLINED_NAMES_USED))
 		char_flags |= CHARACTER_FLAG_DECLINED;
 
 	*p_data << (uint32)char_flags;                          // character flags
@@ -1648,10 +1648,10 @@ bool Player::BuildEnumData(PreparedQueryResult  result, WorldPacket * p_data, Wo
 	*p_data << (uint32)petFamily;
 
 	Tokens equipCache = StrSplit(fields[19].GetString(), " ");
-	for (uint8 slot = 0; slot < 38; slot++)
+	for (uint8 slot = 0; slot < EQUIPMENT_SLOT_END; slot++)
 	{
-		uint32 itemId = GetUInt32ValueFromArray(equipCache, slot);
-		slot++;     // Next field is enchantmentId
+        uint32 visualBase = slot * 2;
+		uint32 itemId = GetUInt32ValueFromArray(equipCache, visualBase);
 		const ItemTemplate *proto = sObjectMgr->GetItemTemplate(itemId);
 		if (!proto)
 		{
@@ -1662,7 +1662,7 @@ bool Player::BuildEnumData(PreparedQueryResult  result, WorldPacket * p_data, Wo
 		}
 		SpellItemEnchantmentEntry const *enchant = NULL;
 
-		uint32 enchants = GetUInt32ValueFromArray(equipCache, slot);
+		uint32 enchants = GetUInt32ValueFromArray(equipCache, visualBase + 1);
 		for (uint8 enchantSlot = PERM_ENCHANTMENT_SLOT; enchantSlot <= TEMP_ENCHANTMENT_SLOT; ++enchantSlot)
 		{
 			// values stored in 2 uint16
@@ -1679,6 +1679,16 @@ bool Player::BuildEnumData(PreparedQueryResult  result, WorldPacket * p_data, Wo
 		*p_data << (uint8)proto->InventoryType;
 		*p_data << (uint32)(enchant ? enchant->aura_id : 0);
 	}
+    //LK also sends bag
+    if(session->GetClientBuild() == BUILD_335)
+    {
+        for(uint8 slot = INVENTORY_SLOT_BAG_START; slot < INVENTORY_SLOT_BAG_END; slot++)
+        {
+            *p_data << (uint32)0;
+            *p_data << (uint8)0;
+            *p_data << (uint32)0;
+        }
+    }
 	if (session->GetClientBuild() == BUILD_243)
 	{
 		//first bag info ?
@@ -16828,7 +16838,7 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << " ";
     ss << "', '";
     for (uint32 i = 0; i < 304; ++i) {
-        if (i%16 == 2 || i%16 == 3)
+        if (i%16 == 2 || i%16 == 3) //save only PLAYER_VISIBLE_ITEM_*_0 + PLAYER_VISIBLE_ITEM_*_PROPERTIES
             ss << GetUInt32Value(PLAYER_VISIBLE_ITEM_1_CREATOR + i) << " ";
     }
     ss << "', ";

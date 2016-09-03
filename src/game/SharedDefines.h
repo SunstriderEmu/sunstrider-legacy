@@ -46,6 +46,12 @@ enum Expansions
     MAX_EXPANSIONS                     = 3
 };
 
+enum ClientBuild : uint32
+{
+    BUILD_335 = 12340,
+    BUILD_243 = 8606,
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,

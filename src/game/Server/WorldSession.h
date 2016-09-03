@@ -211,12 +211,6 @@ struct PacketCounter
     uint32 amountCounter;
 };
 
-enum ClientBuild : uint32
-{
-    BUILD_335 = 12340,
-    BUILD_243 = 8606,
-};
-
 /// Player session in the World
 class WorldSession
 {
