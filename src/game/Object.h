@@ -77,6 +77,11 @@ class MotionTransport;
 class WorldObject;
 class CreatureAI;
 
+namespace G3D
+{
+    class Vector3;
+}
+
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 typedef std::unordered_set<uint32> UpdatePlayerSet;
 
@@ -90,6 +95,8 @@ struct Position
     Position(const WorldObject* obj);
 
     Position(const Position &loc) { Relocate(loc); }
+
+    Position(G3D::Vector3 const& vect);
 
     struct PositionXYZStreamer
     {

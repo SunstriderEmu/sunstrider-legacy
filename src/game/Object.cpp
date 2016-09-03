@@ -46,6 +46,7 @@
 #include "MovementPacketBuilder.h"
 #include "MapInstanced.h"
 #include "UpdateFieldFlags.h"
+#include <G3D/Vector3.h>
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"
@@ -1888,6 +1889,11 @@ bool Position::HasInArc(float arc, const Position *obj, float border) const
     float lborder = -1 * (arc/border);                        // in range -pi..0
     float rborder = (arc/border);                             // in range 0..pi
     return ((angle >= lborder) && (angle <= rborder));
+}
+
+Position::Position(G3D::Vector3 const& vect)
+{
+    Relocate(vect.x, vect.y, vect.z, 0.f);
 }
 
 bool Position::operator==(Position const &a)
