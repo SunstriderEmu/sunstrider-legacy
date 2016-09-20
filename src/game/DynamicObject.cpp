@@ -48,6 +48,7 @@ DynamicObject::DynamicObject() : WorldObject()
     m_objectTypeId = TYPEID_DYNAMICOBJECT;
                                                             // 2.3.2 - 0x58
     m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION);
+    m_updateFlagLK = (LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_POSITION);
 
     m_valuesCount = DYNAMICOBJECT_END;
 }

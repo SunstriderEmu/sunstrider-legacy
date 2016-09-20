@@ -1100,15 +1100,17 @@ void WorldSession::HandleNextCinematicCamera( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
+    //TC_LOG_DEBUG("network", "WORLD: Received CMSG_MOVE_TIME_SKIPPED");
 
     uint64 guid;
     uint32 time_skipped;
-#ifdef LICH_KING
-    recvData.readPackGUID(guid);
-#else
-    recvData >> guid;
+#ifdef BUILD_335_SUPPORT
+    if(GetClientBuild() == BUILD_335)
+        recvData.readPackGUID(guid);
+    else
 #endif
+        recvData >> guid;
+
     recvData >> time_skipped;
 
     // ignore updates for not us
@@ -1116,11 +1118,13 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
         return;
 
     WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
-#ifdef LICH_KING
-    data << _player->GetPackGUID();
-#else
-    data << guid;
+#ifdef BUILD_335_SUPPORT
+    if(GetClientBuild() == BUILD_335)
+        data << _player->GetPackGUID();
+    else
 #endif
+        data << guid;
+
     data << time_skipped;
 
     _player->SendMessageToSet(&data, false);

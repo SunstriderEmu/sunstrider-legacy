@@ -421,7 +421,7 @@ class WorldSession
         void DoLootRelease( uint64 lguid );
         
         // send update packet with apropriate version for session. Will build packets for version only if needed. You'll need to construct WorldPacket and destroy them yourself by calling this.
-        static void SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* packetBC, WorldPacket* packetLK, WorldSession* session, bool hasTransport = false);
+        static void SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket*& packetBC, WorldPacket*& packetLK, WorldSession* session, bool hasTransport = false);
 
         // Account mute time
         time_t m_muteTime;

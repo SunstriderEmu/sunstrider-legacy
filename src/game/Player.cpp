@@ -18193,7 +18193,7 @@ void Player::RemoveSpellMods(Spell const* spell)
 void Player::SendProficiency(uint8 pr1, uint32 pr2)
 {
     WorldPacket data(SMSG_SET_PROFICIENCY, 8);
-    data << pr1 << pr2;
+    data << uint8(pr1) << uint32(pr2);
     GetSession()->SendPacket (&data);
 }
 
@@ -20012,12 +20012,15 @@ void Player::SendTransferAborted(uint32 mapid, uint16 reason)
 {
 	WorldPacket data(SMSG_TRANSFER_ABORTED, 4 + 2);
 	data << uint32(mapid);
+#ifdef BUILD_335_SUPPORT
 	if (GetSession()->GetClientBuild() == BUILD_335)
 	{
 		//TODO: enum is offset on LK here, need to find a good way to convert it
 		data << uint8(0x1 /* TRANSFER_ABORT_ERROR*/);
 	} 
-	else {
+	else 
+#endif
+    {
 		data << uint16(reason);                                 // transfer abort reason
 	}
     SendDirectMessage(&data);

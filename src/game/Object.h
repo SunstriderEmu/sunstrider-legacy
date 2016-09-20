@@ -374,11 +374,6 @@ class Object
             Mark this object for destroying at client in update data
         */
         void BuildOutOfRangeUpdateBlock(UpdateData *data) const;
-        /**
-            Adds the movement update block data to update data
-            (not sure of how this should be used, update this comment if you know)
-        */
-        void BuildMovementUpdateBlock(UpdateData* data, uint32 flags = 0) const;
 
         virtual void DestroyForPlayer(Player *target, bool onDeath = false) const;
 
@@ -485,7 +480,7 @@ class Object
 
         uint32 GetUpdateFieldData(Player const* target, uint32*& flags) const;
 
-        void BuildMovementUpdate(ByteBuffer* data, uint16 flags) const;
+        void BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild build) const;
         /**
             Second step of filling updateData ByteBuffer with data from this object, for given target
         */
@@ -495,6 +490,7 @@ class Object
 
         uint8 m_objectTypeId;
         uint8 m_updateFlag;
+        uint16 m_updateFlagLK; //used for 335 support
 
         union
         {

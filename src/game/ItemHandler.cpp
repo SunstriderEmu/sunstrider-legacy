@@ -343,6 +343,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->DisplayInfoID;
         data << pProto->Quality;
         data << pProto->Flags;
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 		{
 #ifdef LICH_KING
@@ -351,6 +352,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 			data << uint32(0);
 #endif
 		}
+#endif
         data << pProto->BuyPrice;
         data << pProto->SellPrice;
         data << pProto->InventoryType;
@@ -373,8 +375,10 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 #else
 		uint32 statCount = MAX_ITEM_PROTO_STATS;
 #endif
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 			data << statCount;                         // item stats count
+#endif
 
         for(int i = 0; i < statCount; i++)
         {
@@ -487,11 +491,13 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 		uint32 holidayId = 0;
 #endif
 
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 		{
 			data << itemLimitCategory;                  // WotLK, ItemLimitCategory
 			data << holidayId;                          // Holiday.dbc?
 		}
+#endif
         SendPacket( &data );
     }
     else
@@ -1068,11 +1074,14 @@ void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
 void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
 {
 	WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
+#ifdef BUILD_335_SUPPORT
 	if (GetClientBuild() == BUILD_335)
 	{
 		data << PackedGuid(Target);
 		data << PackedGuid(Caster);
-	} else {
+	} else 
+#endif
+    {
 		data << Target;
 		data << Caster;
 	}

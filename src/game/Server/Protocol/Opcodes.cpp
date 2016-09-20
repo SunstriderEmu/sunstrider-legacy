@@ -1276,7 +1276,7 @@ void OpcodeTable::Initialize()
     /*0x061*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_CREATURE_QUERY_RESPONSE,    STATUS_NEVER);
     /*0x062*/ DEFINE_HANDLER_LK(LK_CMSG_WHO,                                      STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleWhoOpcode );
     /*0x063*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_WHO,                        STATUS_NEVER);
-    /*0x064*/ DEFINE_HANDLER_LK(LK_CMSG_WHOIS,                                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleWhoisOpcode );
+    /*0x064*/ DEFINE_HANDLER_LK(LK_CMSG_WHOIS,                                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleWhoisOpcode ); //last checked LK OK
     /*0x065*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_WHOIS,                      STATUS_NEVER);
     /*0x066*/ DEFINE_HANDLER_LK(LK_CMSG_CONTACT_LIST,                             STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleContactListOpcode );
     /*0x067*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_CONTACT_LIST,               STATUS_NEVER);
@@ -1346,7 +1346,7 @@ void OpcodeTable::Initialize()
     /*0x0A7*/ DEFINE_HANDLER_LK(LK_CMSG_CHANNEL_ANNOUNCEMENTS,                    STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleChannelAnnouncements );
     /*0x0A8*/ DEFINE_HANDLER_LK(LK_CMSG_CHANNEL_MODERATE,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::Handle_NULL );
     /*0x0A9*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_UPDATE_OBJECT,              STATUS_NEVER);
-    /*0x0AA*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_DESTROY_OBJECT,             STATUS_NEVER);
+    /*0x0AA*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_DESTROY_OBJECT,             STATUS_NEVER); // LK OK
     /*0x0AB*/ DEFINE_HANDLER_LK(LK_CMSG_USE_ITEM,                                 STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleUseItemOpcode );
     /*0x0AC*/ DEFINE_HANDLER_LK(LK_CMSG_OPEN_ITEM,                                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleOpenItemOpcode );
     /*0x0AD*/ DEFINE_HANDLER_LK(LK_CMSG_READ_ITEM,                                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleReadItem );
@@ -1471,7 +1471,7 @@ void OpcodeTable::Initialize()
     /*0x124*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_FACTION_STANDING,       STATUS_NEVER);
     /*0x125*/ DEFINE_HANDLER_LK(LK_CMSG_SET_FACTION_ATWAR,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetFactionAtWar );
     /*0x126*/ DEFINE_HANDLER_LK(LK_CMSG_SET_FACTION_CHEAT,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetFactionCheat );
-    /*0x127*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_PROFICIENCY,            STATUS_NEVER);
+    /*0x127*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_PROFICIENCY,            STATUS_NEVER); // LK OK
     /*0x128*/ DEFINE_HANDLER_LK(LK_CMSG_SET_ACTION_BUTTON,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetActionButtonOpcode );
     /*0x129*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_ACTION_BUTTONS,             STATUS_NEVER);
     /*0x12A*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_INITIAL_SPELLS,             STATUS_NEVER);
@@ -1791,7 +1791,7 @@ void OpcodeTable::Initialize()
     /*0x264*/ DEFINE_HANDLER_LK(LK_CMSG_AUCTION_LIST_BIDDER_ITEMS,                STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleAuctionListBidderItems );
     /*0x265*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_AUCTION_BIDDER_LIST_RESULT, STATUS_NEVER);
     /*0x266*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_FLAT_SPELL_MODIFIER,    STATUS_NEVER);
-    /*0x267*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_PCT_SPELL_MODIFIER,     STATUS_NEVER);
+    /*0x267*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_SET_PCT_SPELL_MODIFIER,     STATUS_NEVER); // LK OK
     /*0x268*/ DEFINE_HANDLER_LK(LK_CMSG_SET_AMMO,                                 STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetAmmoOpcode );
     /*0x269*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_CORPSE_RECLAIM_DELAY,       STATUS_NEVER);
     /*0x26A*/ DEFINE_HANDLER_LK(LK_CMSG_SET_ACTIVE_MOVER,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleSetActiveMoverOpcode );
@@ -1894,7 +1894,7 @@ void OpcodeTable::Initialize()
     /*0x2CB*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_INSTANCE_SAVE_CREATED,      STATUS_NEVER);
     /*0x2CC*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_RAID_INSTANCE_INFO,         STATUS_NEVER);
     /*0x2CD*/ DEFINE_HANDLER_LK(LK_CMSG_REQUEST_RAID_INFO,                        STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleRequestRaidInfoOpcode );
-    /*0x2CE*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_TIME_SKIPPED,                        STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleMoveTimeSkippedOpcode );
+    /*0x2CE*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_TIME_SKIPPED,                        STATUS_LOGGEDIN, PROCESS_INPLACE,      &WorldSession::HandleMoveTimeSkippedOpcode ); // OK
     /*0x2CF*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_FEATHER_FALL_ACK,                    STATUS_LOGGEDIN, PROCESS_THREADSAFE,   &WorldSession::HandleFeatherFallAck );
     /*0x2D0*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_WATER_WALK_ACK,                      STATUS_LOGGEDIN, PROCESS_THREADSAFE,   &WorldSession::HandleMoveWaterWalkAck );
     /*0x2D1*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_NOT_ACTIVE_MOVER,                    STATUS_LOGGEDIN, PROCESS_THREADSAFE,   &WorldSession::HandleMoveNotActiveMover );
@@ -2498,8 +2498,10 @@ void OpcodeTable::Initialize()
 ClientOpcodeHandler const* OpcodeTable::GetHandler(Opcodes index, ClientBuild build) const
 {
     uint16 _opcode = index;
+#ifdef BUILD_335_SUPPORT
     if (build == BUILD_335)
         _opcode += OPCODE_LK_INTERNAL_OFFSET;
+#endif
 
     return _internalTableClient[_opcode];
 }

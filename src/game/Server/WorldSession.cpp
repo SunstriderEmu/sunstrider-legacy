@@ -244,14 +244,16 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     #endif                                                  // !TRINITY_DEBUG
 
+#ifdef BUILD_335_SUPPORT
     if(GetClientBuild() == BUILD_335)
     {
         uint16 opcode = packet->GetOpcode();
         uint32 maxOpcodeBC = NUM_MSG_TYPES;
-        //a BC offset was givenn, offset it by one if needed
+        //a BC offset was given, offset it by one if needed
         if(opcode < maxOpcodeBC && opcode >= OPCODE_START_EXTRA_OFFSET_AT)
             packet->SetOpcode(opcode + 1);
     }
+#endif
 
     //    sScriptMgr->OnPacketSend(this, *packet);
 
@@ -1124,6 +1126,7 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
     {
         switch(GetClientBuild())
         {
+#ifdef BUILD_335_SUPPORT
             case BUILD_335:
             {
                 uint32 addonsCount;
@@ -1136,6 +1139,7 @@ void WorldSession::ReadAddonsInfo(ByteBuffer &data)
                 addonInfo >> currentTime;
                 TC_LOG_DEBUG("network", "ADDON: CurrentTime: %u", currentTime);
             } break;
+#endif
             case BUILD_243:
             default:
             {
@@ -1277,11 +1281,13 @@ void WorldSession::InitializeSessionCallback(SQLQueryHolder* realmHolder)
     ResetTimeOutTime();
 
     SendAddonsInfo();
+#ifdef BUILD_335_SUPPORT
     if (GetClientBuild() == BUILD_335)
     {
         SendClientCacheVersion(sWorld->getIntConfig(CONFIG_CLIENTCACHE_VERSION));
         SendTutorialsData(); //ON 243 it seems to be sent after adding player to map
     }
+#endif
 
     delete realmHolder;
 }
@@ -1614,6 +1620,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask /* = 0 */)
 {
     switch(GetClientBuild())
     {
+#ifdef BUILD_335_SUPPORT
     case BUILD_335:
     {
         WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4 + 1 + 4 + NUM_ACCOUNT_DATA_TYPES * 4);
@@ -1626,6 +1633,7 @@ void WorldSession::SendAccountDataTimes(uint32 mask /* = 0 */)
         SendPacket(&data);
     }
     break;
+#endif
     case BUILD_243:
     default:
     {
@@ -1918,10 +1926,11 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 
 // send update packet with apropriate version for session. Will build packets for version only if needed. 
 // /!\ You'll need to destroy them yourself by calling this
-void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* packetBC, WorldPacket* packetLK, WorldSession* session, bool hasTransport)
+void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket*& packetBC, WorldPacket*& packetLK, WorldSession* session, bool hasTransport)
 {
     switch(session->GetClientBuild())
     {
+#ifdef BUILD_335_SUPPORT
     case BUILD_335:
         if(!packetLK)
         {
@@ -1931,6 +1940,7 @@ void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket* p
 
         session->SendPacket(packetLK);
         break;
+#endif
     case BUILD_243:
     default:
         if(!packetBC)

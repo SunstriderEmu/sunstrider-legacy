@@ -37,24 +37,29 @@ enum OBJECT_UPDATE_TYPE
 
 enum OBJECT_UPDATE_FLAGS
 {
-    UPDATEFLAG_NONE                 = 0x00,
-    UPDATEFLAG_SELF                 = 0x01,
-    UPDATEFLAG_TRANSPORT            = 0x02,
-    UPDATEFLAG_HAS_TARGET           = 0x04,
-#ifdef LICH_KING
-    UPDATEFLAG_UNKNOWN              = 0x0008,
-    UPDATEFLAG_LOWGUID              = 0x0010,
-    UPDATEFLAG_LIVING               = 0x0020,
-    UPDATEFLAG_STATIONARY_POSITION  = 0x0040,
-    UPDATEFLAG_VEHICLE              = 0x0080,
-    UPDATEFLAG_POSITION             = 0x0100,
-    UPDATEFLAG_ROTATION             = 0x0200
-#else
-    UPDATEFLAG_LOWGUID              = 0x08,
-    UPDATEFLAG_HIGHGUID             = 0x10,
-    UPDATEFLAG_LIVING               = 0x20,
-    UPDATEFLAG_STATIONARY_POSITION  = 0x40
-#endif
+    UPDATEFLAG_NONE                    = 0x000,
+    UPDATEFLAG_SELF                    = 0x001,
+    UPDATEFLAG_TRANSPORT               = 0x002,
+    UPDATEFLAG_HAS_TARGET              = 0x004,
+    UPDATEFLAG_LOWGUID                 = 0x008,
+    UPDATEFLAG_HIGHGUID                = 0x010,
+    UPDATEFLAG_LIVING                  = 0x020,
+    UPDATEFLAG_STATIONARY_POSITION     = 0x040
+};
+
+enum LK_OBJECT_UPDATE_FLAGS
+{
+    LK_UPDATEFLAG_NONE                 = 0x000,
+    LK_UPDATEFLAG_SELF                 = 0x001,
+    LK_UPDATEFLAG_TRANSPORT            = 0x002,
+    LK_UPDATEFLAG_HAS_TARGET           = 0x004,
+    LK_UPDATEFLAG_UNKNOWN              = 0x008,
+    LK_UPDATEFLAG_LOWGUID              = 0x010,
+    LK_UPDATEFLAG_LIVING               = 0x020,
+    LK_UPDATEFLAG_STATIONARY_POSITION  = 0x040,
+    LK_UPDATEFLAG_VEHICLE              = 0x080,
+    LK_UPDATEFLAG_POSITION             = 0x100,
+    LK_UPDATEFLAG_ROTATION             = 0x200
 };
 
 /**

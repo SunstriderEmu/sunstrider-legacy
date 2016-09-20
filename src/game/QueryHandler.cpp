@@ -31,6 +31,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     GlobalPlayerData const* nameData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid));
 
 	WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
+#ifdef BUILD_335_SUPPORT
 	if (GetClientBuild() == BUILD_335)
 	{
 		data.appendPackGUID(guid);
@@ -42,8 +43,9 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
 		}
 
 		data << uint8(0);                               // name known
-	}
-	else {
+	} else
+#endif
+	{
 		if (!nameData)
 			return; //simply ignore request
 					// guess size
@@ -130,6 +132,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << (uint32)ci->type;
         data << (uint32)ci->family;                         // family         wdbFeild9
         data << (uint32)ci->rank;                           // rank           wdbFeild10
+#ifdef BUILD_335_SUPPORT
         if(GetClientBuild() == BUILD_335)
         {
 #ifdef LICH_KING
@@ -139,7 +142,9 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
             data << uint32(0);
             data << uint32(0);
 #endif
-        } else {
+        } else 
+#endif
+        {
             data << (uint32)0;                              // unknown        wdbFeild11
             data << (uint32)ci->PetSpellDataId;             // Id from CreatureSpellData.dbc    wdbField12
         }
@@ -151,6 +156,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
         data << float(ci->ModMana);                         // dmg/mana modifier
         data << (uint8)ci->RacialLeader;
 
+#ifdef BUILD_335_SUPPORT
         if(GetClientBuild() == BUILD_335)
         {
 #ifdef LICH_KING
@@ -170,6 +176,7 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
             data << uint32(0);
 #endif
         }
+#endif
 
         SendPacket( &data );
     }
@@ -233,6 +240,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << uint8(0);                                   // 2.0.3, probably string
         data.append(info->raw.data,MAX_GAMEOBJECT_DATA);
 
+#ifdef BUILD_335_SUPPORT
         if (GetClientBuild() == BUILD_335)
         {
 #ifdef LICH_KING
@@ -243,6 +251,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
                 data << uint32(0);
 #endif
         }
+#endif
 
         SendPacket( &data );
     }

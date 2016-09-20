@@ -29,11 +29,8 @@ uint32 Transport::GetPathProgress() const
 
 MotionTransport::MotionTransport() : Transport(), _transportInfo(NULL), _isMoving(true), _pendingStop(false), _triggeredArrivalEvent(false), _triggeredDepartureEvent(false), _passengersLoaded(false), _delayedTeleport(false)
 {
-#ifdef LICH_KING
-    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
-#else
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
-#endif
+    m_updateFlagLK = LK_UPDATEFLAG_TRANSPORT | LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_ROTATION;
 }
 
 MotionTransport::~MotionTransport()
@@ -704,11 +701,8 @@ void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
 
 StaticTransport::StaticTransport() : Transport(), _needDoInitialRelocation(false)
 {
-#ifdef LICH_KING
-    m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
-#else
     m_updateFlag = UPDATEFLAG_TRANSPORT | UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION;
-#endif
+    m_updateFlagLK = LK_UPDATEFLAG_TRANSPORT | LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_ROTATION;
 }
 
 StaticTransport::~StaticTransport()

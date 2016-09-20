@@ -42,13 +42,15 @@ namespace Movement
         MonsterMoveFacingAngle  = 4
     };
 
-    void PacketBuilder::WriteCommonMonsterMovePart(const MoveSpline& move_spline, ByteBuffer& data)
+    void PacketBuilder::WriteCommonMonsterMovePart(const MoveSpline& move_spline, ByteBuffer& data, ClientBuild build)
     {
         MoveSplineFlag splineflags = move_spline.splineflags;
 
-#ifdef LICH_KING
-        data << uint8(0);
+#ifdef BUILD_335_SUPPORT
+        if(build == BUILD_335) 
+            data << uint8(0);  // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
 #endif
+
         data << move_spline.spline.getPoint(move_spline.spline.first());
         data << move_spline.GetId();
 
@@ -73,16 +75,38 @@ namespace Movement
 
         // add fake Enter_Cycle flag - needed for client-side cyclic movement (client will erase first spline vertex after first cycle done)
         splineflags.enter_cycle = move_spline.isCyclic();
-        // add fake Walkmode flag - client has strange issues without that flag
-        data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move | MoveSplineFlag::Walkmode);
+#ifdef BUILD_335_SUPPORT
+        if(build == BUILD_335) 
+            // add fake Walkmode flag - client has strange issues without that flag
+            data << uint32(splineflags & ~MoveSplineFlag::Mask_No_Monster_Move | MoveSplineFlag::Walkmode);
+        else
+#endif
+            data << uint32(splineflags & uint32(~MoveSplineFlag::Mask_No_Monster_Move));
+
+#ifdef LICH_KING
+        if (build == BUILD_335 && splineflags.animation)
+        {
+            data << splineflags.getAnimationId();
+            data << move_spline.effect_start_time;
+        }
+#endif
         
         data << move_spline.Duration();
+
+#ifdef LICH_KING
+        if (build == BUILD_335 && splineflags.parabolic)
+        {
+            data << move_spline.vertical_acceleration;
+            data << move_spline.effect_start_time;
+        }
+#endif
     }
 
-    void PacketBuilder::WriteStopMovement(Vector3 const& pos, uint32 splineId, ByteBuffer& data)
+    void PacketBuilder::WriteStopMovement(Vector3 const& pos, uint32 splineId, ByteBuffer& data, ClientBuild build)
     {
-#ifdef LICH_KING
-        data << uint8(0);  // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
+#ifdef BUILD_335_SUPPORT
+        if(build == BUILD_335)
+            data << uint8(0);  // sets/unsets MOVEMENTFLAG2_UNK7 (0x40)
 #endif
         data << pos;
         data << splineId;
@@ -124,9 +148,9 @@ namespace Movement
         data.append<Vector3>(&spline.getPoint(1), count);
     }
 
-    void PacketBuilder::WriteMonsterMove(const MoveSpline& move_spline, ByteBuffer& data)
+    void PacketBuilder::WriteMonsterMove(const MoveSpline& move_spline, ByteBuffer& data, ClientBuild build)
     {
-        WriteCommonMonsterMovePart(move_spline, data);
+        WriteCommonMonsterMovePart(move_spline, data, build);
 
         const Spline<int32>& spline = move_spline.spline;
         MoveSplineFlag splineflags = move_spline.splineflags;
@@ -141,7 +165,7 @@ namespace Movement
             WriteLinearPath(spline, data);
     }
 
-    void PacketBuilder::WriteCreate(const MoveSpline& move_spline, ByteBuffer& data)
+    void PacketBuilder::WriteCreate(const MoveSpline& move_spline, ByteBuffer& data, ClientBuild build)
     {
         //WriteClientStatus(mov, data);
         //data.append<float>(&mov.m_float_values[SpeedWalk], SpeedMaxCount);
@@ -168,17 +192,24 @@ namespace Movement
             data << move_spline.Duration();
             data << move_spline.GetId();
 
-            /*
-            data << float(1.f);                             // splineInfo.duration_mod; added in 3.1
-            data << float(1.f);                             // splineInfo.duration_mod_next; added in 3.1
+#ifdef BUILD_335_SUPPORT
+            if(build == BUILD_335)
+            {
+                data << float(1.f);                             // splineInfo.duration_mod; added in 3.1
+                data << float(1.f);                             // splineInfo.duration_mod_next; added in 3.1
 
-            data << move_spline.vertical_acceleration;      // added in 3.1
-            data << move_spline.effect_start_time;          // added in 3.1
-            */
+                data << move_spline.vertical_acceleration;      // added in 3.1
+                data << move_spline.effect_start_time;          // added in 3.1
+            }
+#endif
+
             uint32 nodes = move_spline.getPath().size();
             data << nodes;
             data.append<Vector3>(&move_spline.getPath()[0], nodes);
-           // data << uint8(move_spline.spline.mode());       // added in 3.1
+#ifdef BUILD_335_SUPPORT
+            if(build == BUILD_335)
+                data << uint8(move_spline.spline.mode());       // added in 3.1
+#endif
             data << (move_spline.isCyclic() ? Vector3::zero() : move_spline.FinalDestination());
         }
     }

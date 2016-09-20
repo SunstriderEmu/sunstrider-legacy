@@ -158,6 +158,7 @@ m_is_updating_environment(false)
     m_objectTypeId = TYPEID_UNIT;
                                                             // 2.3.2 - 0x70
     m_updateFlag = (UPDATEFLAG_HIGHGUID | UPDATEFLAG_LIVING | UPDATEFLAG_STATIONARY_POSITION);
+    m_updateFlagLK = (LK_UPDATEFLAG_LIVING | LK_UPDATEFLAG_STATIONARY_POSITION);
 
     m_attackTimer[BASE_ATTACK]   = 0;
     m_attackTimer[OFF_ATTACK]    = 0;

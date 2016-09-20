@@ -55,6 +55,67 @@ namespace Movement
         return MOVE_RUN;
     }
 
+    // Prepare spline move packet with opcode, unit guid & transport seat
+    void PrepareMovePacketForVersion(WorldPacket*& packet, ClientBuild build, Unit const* unit, bool transport)
+    {
+        packet = new WorldPacket(SMSG_MONSTER_MOVE, 64);
+        if (transport)
+        {
+            packet->SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            packet->appendPackGUID(unit->GetTransGUID());
+#ifdef BUILD_335_SUPPORT
+            if(build == BUILD_335)
+            {
+#ifdef LICH_KING
+                packetLK << int8(unit->GetTransSeat());
+#else
+                *packet << int8(0);
+#endif
+            }
+#endif
+        }
+    }
+
+    // will build packet if needed
+    void SendLaunchPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport)
+    {
+        if(packet = nullptr)
+        {
+            PrepareMovePacketForVersion(packet, build, unit, transport);
+            PacketBuilder::WriteMonsterMove(*(unit->movespline), *packet, build);
+        }
+        session->SendPacket(packet);
+    }
+
+    // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
+    void SendLaunchToSet(Unit* unit, bool transport)
+    {
+        WorldPacket* packetBC = nullptr;
+#ifdef BUILD_335_SUPPORT
+        WorldPacket* packetLK = nullptr;
+#endif
+
+        auto& players = unit->GetMap()->GetPlayers();
+        for(auto& itr : players)
+        {
+            if(!itr.GetSource()->HaveAtClient(unit))
+                continue;
+
+            WorldSession* session = itr.GetSource()->GetSession();
+#ifdef BUILD_335_SUPPORT
+            if(session->GetClientBuild() == BUILD_335)
+                SendLaunchPacketForVersion(packetLK, session, BUILD_335, unit, transport);
+            else
+#endif
+                SendLaunchPacketForVersion(packetBC, session, BUILD_243, unit, transport);
+        }
+
+        delete packetBC;
+#ifdef BUILD_335_SUPPORT
+        delete packetLK;
+#endif
+    }
+
     int32 MoveSplineInit::Launch()
     {
         MoveSpline& move_spline = *unit->movespline;
@@ -119,21 +180,49 @@ namespace Movement
         unit->m_movementInfo.SetMovementFlags(moveFlags);
         move_spline.Initialize(args);
 
-        WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data << unit->GetPackGUID();
-        if (transport)
-        {
-            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data.appendPackGUID(unit->GetTransGUID());
-#ifdef LICH_KING
-            data << int8(unit->GetTransSeat());
-#endif
-        }
-
-        PacketBuilder::WriteMonsterMove(move_spline, data);
-        unit->SendMessageToSet(&data, true);
+        SendLaunchToSet(unit, transport);
 
         return move_spline.Duration();
+    }
+
+    // will build packet if needed
+    void SendStopPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport, Location& loc, uint32 splineId)
+    {
+        if(packet = nullptr)
+        {
+            PrepareMovePacketForVersion(packet, build, unit, transport);
+            PacketBuilder::WriteStopMovement(loc, splineId, *packet, build);
+        }
+        session->SendPacket(packet);
+    }
+
+    // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
+    void SendStopToSet(Unit* unit, bool transport, Location& loc, uint32 splineId)
+    {
+        WorldPacket* packetBC = nullptr;
+#ifdef BUILD_335_SUPPORT
+        WorldPacket* packetLK = nullptr;
+#endif
+
+        auto& players = unit->GetMap()->GetPlayers();
+        for(auto& itr : players)
+        {
+            if(!itr.GetSource()->HaveAtClient(unit))
+                continue;
+
+            WorldSession* session = itr.GetSource()->GetSession();
+#ifdef BUILD_335_SUPPORT
+            if(session->GetClientBuild() == BUILD_335)
+                SendStopPacketForVersion(packetLK, session, BUILD_335, unit, transport, loc, splineId);
+            else
+#endif
+                SendStopPacketForVersion(packetBC, session, BUILD_243, unit, transport, loc, splineId);
+        }
+
+        delete packetBC;
+#ifdef BUILD_335_SUPPORT
+        delete packetLK;
+#endif
     }
 
     void MoveSplineInit::Stop()
@@ -167,22 +256,10 @@ namespace Movement
         move_spline.onTransport = transport;
         move_spline.Initialize(args);
 
-        WorldPacket data(SMSG_MONSTER_MOVE, 64);
-        data << unit->GetPackGUID();
-        if (transport)
-        {
-            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
-            data.appendPackGUID(unit->GetTransGUID());
-#ifdef LICH_KING
-            data << int8(unit->GetTransSeat());
-#endif
-        }
-
         // Xinef: increase z position in packet
         loc.z += unit->GetHoverHeight();
 
-        PacketBuilder::WriteStopMovement(loc, args.splineId, data);
-        unit->SendMessageToSet(&data, true);
+        SendStopToSet(unit, transport, loc, args.splineId);
     }
 
     MoveSplineInit::MoveSplineInit(Unit* m) : unit(m)

@@ -118,13 +118,13 @@ class HostileReference : public Reference<Unit, ThreatManager>
         //=================================================
 
         // Tell our refTo (target) object that we have a link
-        void targetObjectBuildLink();
+        void targetObjectBuildLink() override;
 
         // Tell our refTo (taget) object, that the link is cut
-        void targetObjectDestroyLink();
+        void targetObjectDestroyLink() override;
 
         // Tell our refFrom (source) object, that the link is cut (Target destroyed)
-        void sourceObjectDestroyLink();
+        void sourceObjectDestroyLink() override;
 };
 
 //==============================================================

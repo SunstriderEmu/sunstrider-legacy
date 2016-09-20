@@ -107,7 +107,7 @@ class Roll : public LootValidatorRef
         ~Roll() { }
         void setLoot(Loot *pLoot) { link(pLoot, this); }
         Loot *getLoot() { return getTarget(); }
-        void targetObjectBuildLink();
+        void targetObjectBuildLink() override;
 
         uint64 itemGUID;
         uint32 itemid;

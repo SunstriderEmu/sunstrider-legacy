@@ -911,8 +911,10 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 	{
 		//LK OK
 		WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 3 + 4 + 2);
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 			data << uint8(0);  // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
+#endif
 		data.appendPackGUID(Guid);
 		data << (uint32)GROUP_UPDATE_FLAG_STATUS;
 		data << (uint16)MEMBER_STATUS_OFFLINE;
@@ -925,8 +927,10 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 
 	//LK OK
 	WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4 + 2 + 2 + 2 + 1 + 2 * 6 + 8 + 1 + 8);
+#ifdef BUILD_335_SUPPORT
 	if (GetClientBuild() == BUILD_335)
 		data << uint8(0);  // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
+#endif
 	data << player->GetPackGUID();
 
 	uint32 updateFlags = GROUP_UPDATE_FLAG_STATUS | GROUP_UPDATE_FLAG_CUR_HP | GROUP_UPDATE_FLAG_MAX_HP
@@ -969,11 +973,14 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 
 	data << (uint32)updateFlags;                                 // group update mask
 	data << (uint16)playerStatus;                  // member's online status
+#ifdef BUILD_335_SUPPORT
 	if (GetClientBuild() == BUILD_335)
 	{
 		data << (uint32)player->GetHealth();                   // GROUP_UPDATE_FLAG_CUR_HP
 		data << (uint32)player->GetMaxHealth();                // GROUP_UPDATE_FLAG_MAX_HP
-	} else {
+	} else 
+#endif
+    {
 		data << (uint16)player->GetHealth();                   // GROUP_UPDATE_FLAG_CUR_HP
 		data << (uint16)player->GetMaxHealth();                // GROUP_UPDATE_FLAG_MAX_HP
 	}
@@ -1011,15 +1018,19 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 	data << uint16(pet ? pet->GetDisplayId() : 0);          // GROUP_UPDATE_FLAG_PET_MODEL_ID
 
 	if (updateFlags & GROUP_UPDATE_FLAG_PET_CUR_HP)
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 			data << uint32(pet->GetHealth());
 		else
+#endif
 			data << uint16(pet->GetHealth());
 
 	if (updateFlags & GROUP_UPDATE_FLAG_PET_MAX_HP)
+#ifdef BUILD_335_SUPPORT
 		if (GetClientBuild() == BUILD_335)
 			data << uint32(pet->GetMaxHealth());
 		else
+#endif
 			data << uint16(pet->GetMaxHealth());
 
 	Powers petpowertype = pet->GetPowerType();
@@ -1040,9 +1051,11 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 		if (uint32 petaura = pet->GetUInt32Value(UNIT_FIELD_AURA + i))
 		{
 			petauramask |= (uint64(1) << i);
+#ifdef BUILD_335_SUPPORT
 			if (GetClientBuild() == BUILD_335)
 				data << (uint32)petaura;
 			else
+#endif
 				data << (uint16)petaura;
 			data << (uint8)1; //aura flags
 		}

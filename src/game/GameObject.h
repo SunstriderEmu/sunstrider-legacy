@@ -632,7 +632,6 @@ class GameObject : public WorldObject
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
-        void UpdateRotationFields(float rotation2 = 0.0f, float rotation3 = 0.0f);
         void SetTransportPathRotation(G3D::Quat const& rot);
 
         // overwrite WorldObject function for proper name localization

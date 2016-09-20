@@ -155,6 +155,7 @@ void WorldSocket::HandleSendAuthSession(ClientBuild build)
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 4);
     //at this point, realm knows client build but we don't
+#ifdef BUILD_335_SUPPORT
     if(build == BUILD_335)
     {
         packet.reserve(37);
@@ -169,7 +170,9 @@ void WorldSocket::HandleSendAuthSession(ClientBuild build)
         BigNumber seed2;
         seed2.SetRand(16 * 8);
         packet.append(seed2.AsByteArray(16).get(), 16);               // new encryption seeds
-    } else {
+    } else 
+#endif
+    {
         packet << uint32(_authSeed);
     }
 
@@ -469,6 +472,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     switch (authSession->Build)
     {
+#ifdef BUILD_335_SUPPORT
     case BUILD_335:
         recvPacket >> authSession->LoginServerType;
         recvPacket >> authSession->LocalChallenge;
@@ -477,6 +481,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         recvPacket >> authSession->RealmID;               // realmId from auth_database.realmlist table
         recvPacket >> authSession->DosResponse;
         break;
+#endif
     case BUILD_243:
         recvPacket >> authSession->LocalChallenge;
         authSession->RealmID = 0;

@@ -108,7 +108,9 @@ bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTra
     ByteBuffer buf(m_data.size() + 10 + m_outOfRangeGUIDs.size()*8);
 
     buf << (uint32) (!m_outOfRangeGUIDs.empty() ? m_blockCount + 1 : m_blockCount);
+#ifdef BUILD_335_SUPPORT
     if(build == BUILD_243)
+#endif
         buf << (uint8) (hasTransport ? true : false);
 
     if(!m_outOfRangeGUIDs.empty())
@@ -118,10 +120,13 @@ bool UpdateData::BuildPacket(WorldPacket *packet, ClientBuild build, bool hasTra
 
         for (auto i : m_outOfRangeGUIDs)
         {
+#ifdef BUILD_335_SUPPORT
             if(build == BUILD_335)
             {
                 buf << PackedGuid(i);
-            } else {
+            } else
+#endif
+            {
                 buf << (uint8)0xFF;
                 buf << (uint64)i;
             }

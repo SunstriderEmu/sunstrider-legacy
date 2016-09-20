@@ -71,11 +71,8 @@ GameObject::GameObject() : WorldObject(),
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
 
-#ifdef LICH_KING
-    m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_POSITION | UPDATEFLAG_ROTATION);
-#else
     m_updateFlag = (UPDATEFLAG_LOWGUID | UPDATEFLAG_HIGHGUID | UPDATEFLAG_STATIONARY_POSITION); // 2.3.2 - 0x58
-#endif
+    m_updateFlagLK = (LK_UPDATEFLAG_LOWGUID | LK_UPDATEFLAG_STATIONARY_POSITION | LK_UPDATEFLAG_POSITION | LK_UPDATEFLAG_ROTATION);
 
     m_valuesCount = GAMEOBJECT_END;
 
@@ -272,7 +269,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
     }
 
     if (goinfo->type == GAMEOBJECT_TYPE_TRANSPORT)
+    {
         m_updateFlag = (m_updateFlag | UPDATEFLAG_TRANSPORT);
+        m_updateFlagLK = (m_updateFlagLK | LK_UPDATEFLAG_TRANSPORT) & ~LK_UPDATEFLAG_POSITION;
+    }
 
     Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT);
 
@@ -1784,36 +1784,6 @@ private:
 GameObjectModel* GameObject::CreateModel()
 {
     return GameObjectModel::Create(Trinity::make_unique<GameObjectModelOwnerImpl>(this));
-}
-
-void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3 /*=0.0f*/)
-{
-    static double const atan_pow = atan(pow(2.0f, -20.0f));
-
-    double f_rot1 = std::sin(GetOrientation() / 2.0f);
-    double f_rot2 = std::cos(GetOrientation() / 2.0f);
-
-    //int64 i_rot1 = int64(f_rot1 / atan_pow *(f_rot2 >= 0 ? 1.0f : -1.0f));
-    //int64 rotation = (i_rot1 << 43 >> 43) & 0x00000000001FFFFF;
-
-    //float f_rot2 = std::sin(0.0f / 2.0f);
-    //int64 i_rot2 = f_rot2 / atan(pow(2.0f, -20.0f));
-    //rotation |= (((i_rot2 << 22) >> 32) >> 11) & 0x000003FFFFE00000;
-
-    //float f_rot3 = std::sin(0.0f / 2.0f);
-    //int64 i_rot3 = f_rot3 / atan(pow(2.0f, -21.0f));
-    //rotation |= (i_rot3 >> 42) & 0x7FFFFC0000000000;
-
-//LK    m_rotation = rotation;
-
-    if (rotation2 == 0.0f && rotation3 == 0.0f)
-    {
-        rotation2 = (float)f_rot1;
-        rotation3 = (float)f_rot2;
-    }
-
-    SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rotation2);
-    SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rotation3);
 }
 
 void GameObject::SetTransportPathRotation(G3D::Quat const& rot)
