@@ -4859,6 +4859,18 @@ void Unit::RemoveAllAurasExcept(uint32 spellId)
     }
 }
 
+void Unit::RemoveAllAurasExceptType(AuraType type)
+{
+    AuraMap::iterator iter = m_Auras.begin();
+    while (iter != m_Auras.end())
+    {
+        if(!(iter->second->GetAuraType() == type))
+            RemoveAura(iter);
+        else 
+            iter++;
+    }
+}
+
 void Unit::RemoveArenaAuras(bool onleave)
 {
     // in join, remove positive buffs, on end, remove negative
@@ -4882,6 +4894,20 @@ void Unit::RemoveArenaAuras(bool onleave)
         else
             plr->RemoveAllCurrentPetAuras(); //still remove auras if the players hasnt called his pet yet
     }
+}
+
+void Unit::RemoveAurasOnEvade()
+{
+    if (IsCharmedOwnedByPlayerOrPlayer()) // if it is a player owned creature it should not remove the aura
+        return;
+
+    // don't remove vehicle auras, passengers aren't supposed to drop off the vehicle
+    // don't remove clone caster on evade (to be verified)
+#ifdef LICH_KING
+    RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE, SPELL_AURA_CLONE_CASTER);
+#else
+    RemoveAllAurasExceptType(SPELL_AURA_CLONE_CASTER);
+#endif
 }
 
 void Unit::RemoveAllAurasOnDeath()
@@ -7802,6 +7828,11 @@ Player* Unit::GetAffectingPlayer() const
         return owner->GetCharmerOrOwnerPlayerOrPlayerItself();
 
     return NULL;
+}
+
+bool Unit::IsCharmedOwnedByPlayerOrPlayer() const 
+{ 
+    return IS_PLAYER_GUID(GetCharmerOrOwnerOrOwnGUID()); 
 }
 
 Pet* Unit::GetPet() const

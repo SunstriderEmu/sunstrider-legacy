@@ -177,6 +177,8 @@ class CreatureAI : public UnitAI
         // Object destruction is handled by Unit::RemoveCharmedBy
         virtual PlayerAI* GetAIForCharmedPlayer(Player* /*who*/) { return nullptr; }
 
+    protected:
+        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);        
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

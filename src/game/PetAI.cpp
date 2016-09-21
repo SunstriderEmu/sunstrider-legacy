@@ -69,7 +69,7 @@ void PetAI::ResetMovement()
 
     if(owner && i_pet.IsAlive() && i_pet.GetCharmInfo() && i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW))
     {
-        i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+        i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,owner->GetFollowAngle());
     }
     else
     {
@@ -133,7 +133,7 @@ void PetAI::UpdateAI(const uint32 diff)
                     AttackStart(owner->GetAttackerForHelper());
                 }
                 else if(i_pet.GetCharmInfo()->HasCommandState(COMMAND_FOLLOW) && !i_pet.HasUnitState(UNIT_STATE_FOLLOW))
-                    i_pet.GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+                    i_pet.GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, i_pet.GetFollowAngle());
             }
         }
     }

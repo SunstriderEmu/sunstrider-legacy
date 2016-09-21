@@ -1660,7 +1660,7 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
         {
             me->StopMoving();
             me->GetMotionMaster()->Clear();
-            me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, me->GetFollowAngle());
         }
     }
 }

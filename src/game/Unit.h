@@ -1496,6 +1496,7 @@ class Unit : public WorldObject
         }
         Player* GetCharmerOrOwnerPlayerOrPlayerItself() const;
         Player* GetAffectingPlayer() const;
+        bool IsCharmedOwnedByPlayerOrPlayer() const;
 
         void SetPet(Pet* pet);
         void SetCharm(Unit* pet);
@@ -1563,8 +1564,10 @@ class Unit : public WorldObject
         void RemoveAllAuras();
 		void RemoveAllActiveAuras();
         void RemoveAllAurasExcept(uint32 spellId);
+        void RemoveAllAurasExceptType(AuraType type);
         void RemoveArenaAuras(bool onleave = false);
         void RemoveAllAurasOnDeath();
+        void RemoveAurasOnEvade();
         void DelayAura(uint32 spellId, uint32 effindex, int32 delaytime);
 
         float GetResistanceBuffMods(SpellSchools school, bool positive) const { return GetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school ); }
@@ -1721,6 +1724,8 @@ class Unit : public WorldObject
 #endif
             : 0.0f; 
         }
+
+        virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
         // compat TC
         bool IsVisible() const { return m_Visibility != VISIBILITY_OFF; }

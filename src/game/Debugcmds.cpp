@@ -1288,6 +1288,7 @@ bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
     return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(this, args);
 #else
     SendSysMessage("Core not build with playerbot");
+    return true;
 #endif
 }
 
@@ -1297,5 +1298,6 @@ bool ChatHandler::HandlePlayerbotMgrCommand(const char* args)
     return PlayerbotMgr::HandlePlayerbotMgrCommand(this, args);
 #else
     SendSysMessage("Core not build with playerbot");
+    return true;
 #endif
 }

@@ -182,7 +182,7 @@ void ScriptedAI::EnterEvadeMode(EvadeReason why)
         if(Unit* owner = me->GetOwner())
         {
             if(owner->IsAlive())
-                me->GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,PET_FOLLOW_ANGLE);
+                me->GetMotionMaster()->MoveFollow(owner,PET_FOLLOW_DIST,me->GetFollowAngle());
         }
         else
             me->GetMotionMaster()->MoveTargetedHome();

@@ -3410,7 +3410,7 @@ void Aura::HandleModPossessPet(bool apply, bool Real)
         (caster->ToPlayer())->PetSpellInitialize();
         if(!m_target->GetVictim())
         {
-            m_target->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+            m_target->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, m_target->GetFollowAngle());
             m_target->GetCharmInfo()->SetCommandState(COMMAND_FOLLOW);
         }
     }

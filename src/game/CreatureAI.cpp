@@ -125,20 +125,60 @@ bool CreatureAI::UpdateVictim(bool evade)
 
 void CreatureAI::EnterEvadeMode(EvadeReason why)
 {
-    me->RemoveAllAuras();
-    me->DeleteThreatList();
-    me->CombatStop();
-    me->InitCreatureAddon();
-    me->SetLootRecipient(NULL);
-    me->ResetPlayerDamageReq();
+    if (!_EnterEvadeMode(why))
+        return;
+
+    //TC_LOG_DEBUG("entities.unit", "Creature %u enters evade mode.", me->GetEntry());
+
+#ifdef LICH_KING
+    if (!me->GetVehicle()) // otherwise me will be in evade mode forever
+    {
+#endif
+        if (Unit* owner = me->GetCharmerOrOwner())
+        {
+            me->GetMotionMaster()->Clear(false);
+            me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MOTION_SLOT_ACTIVE);
+        }
+        else
+        {
+            // Required to prevent attacking creatures that are evading and cause them to reenter combat
+            // Does not apply to MoveFollow
+            me->AddUnitState(UNIT_STATE_EVADE);
+            me->GetMotionMaster()->MoveTargetedHome();
+        }
+#ifdef LICH_KING
+    }
+#endif
 
     if(me->IsAlive())
     {
         me->AddUnitState(UNIT_STATE_EVADE);
         me->GetMotionMaster()->MoveTargetedHome();
     }
-    
+
+    Reset();
+
+#ifdef LICH_KING
+    if (me->IsVehicle()) // use the same sequence of addtoworld, aireset may remove all summons!
+        me->GetVehicleKit()->Reset(true);
+#endif
+}
+
+bool CreatureAI::_EnterEvadeMode(EvadeReason /*why*/)
+{
+    me->RemoveAurasOnEvade();
+    me->DeleteThreatList();
+    me->CombatStop();
+    me->InitCreatureAddon();
+    me->SetLootRecipient(NULL);
+    me->ResetPlayerDamageReq();
     me->SetLastDamagedTime(0);
+    me->SetCannotReachTarget(false);
+
+    if (me->IsInEvadeMode())
+        return false;
+
+    return true;
 }
 
 bool CreatureAI::IsInMeleeRange() const

@@ -359,9 +359,9 @@ enum SpellAttr2
     SPELL_ATTR2_REQ_DEAD_PET               = 0x00040000,           // 18 Only Revive pet
     SPELL_ATTR2_NOT_NEED_SHAPESHIFT        = 0x00080000,           // 19 does not necessarly need shapeshift
     SPELL_ATTR2_BEHIND_TARGET              = 0x00100000,           // 20 must be behind target
-    SPELL_ATTR2_UNK21                      = 0x00200000,           // 21 for ice blocks, pala immunity buffs, priest absorb shields, but used also for other spells -> not sure!
+    SPELL_ATTR2_UNK21                      = 0x00200000,           // 21 for ice blocks, pala immunity buffs, priest absorb shields, but used also for other spells -> not sure! //TC SPELL_ATTR2_DAMAGE_REDUCED_SHIELD
     SPELL_ATTR2_UNK22                      = 0x00400000,           // 22
-    SPELL_ATTR2_UNK23                      = 0x00800000,           // 23 Only mage Arcane Concentration have this flag
+    SPELL_ATTR2_UNK23                      = 0x00800000,           // 23 Only mage Arcane Concentration have this flag //TC SPELL_ATTR2_IS_ARCANE_CONCENTRATION
     SPELL_ATTR2_UNK24                      = 0x01000000,           // 24
     SPELL_ATTR2_UNK25                      = 0x02000000,           // 25
     SPELL_ATTR2_UNK26                      = 0x04000000,           // 26 unaffected by school immunity
