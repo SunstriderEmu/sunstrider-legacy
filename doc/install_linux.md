@@ -61,7 +61,7 @@ http://stackoverflow.com/questions/19171021/auto-authenticate-password-in-mysql
 
 You can skip this step by downloading [the already extracted data folders][githubdata] and extracting them into your `<root_install_folder>/data` folder.
 
-Otherwise, if those files were missing, outdated, if if you want to do it by yourself, here are how to make them.
+Otherwise, if those files were missing, outdated, if if you want to do it by yourself, here are instructions to extract them:
 
 1. If everything compiled correctly, the following binaries should have been created in your `<root_install_folder>/bin` folder:  
 
@@ -70,6 +70,7 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
 	- **vmap4assembler**
 	- **mmaps_generator**
 	
+	If not, make sure the TOOLS cmake option was enabled when building.  
 	You'll need a WoW client to extract to use them. Copy all those binaries into the WoW 2.4.3 client folder.
 2. Run `mapextractor.exe` in the game directory. This will create two directories
   named `maps` and `dbc`.
@@ -84,7 +85,7 @@ Otherwise, if those files were missing, outdated, if if you want to do it by you
   directory.
 
 6. Move the directories `maps`, `dbc`, `vmaps` and `mmaps` from your game
-  directory to your `<root_install_folder>`. You can delete the `Buildings` directory.
+  directory to `<root_install_folder>/data`. You can delete the `Buildings` directory generated at step 3.
 
 [githubdata]:
 https://github.com/kelno/sunstrider/releases
@@ -109,8 +110,7 @@ https://github.com/kelno/sunstrider/releases
 	- **LogsDir***: Because you'll probably want logs. See info in conf file. I suggest setting this `<root_install_folder>/logs` (create the folder yourself).
 
 Local realmlist entries are already configured in database for BC and LK, so you don't need
-to add one yourself for development. If you need to, just look at the structure
-of the `realmlist` table in the `auth` database.
+to add one yourself for development. 
 
 Some dummy accounts are already in the database, from `test1` to `test5`. The
 password are the usernames.
@@ -120,6 +120,6 @@ password are the usernames.
 
 Just run both the **worldserver** and the **authserver** in the `<root_install_folder>/bin` folder.  
 
-Sunstrider now also has some auto restarter scripts that you can use, see [this wiki page][restarterscripts].
+Sunstrider now also has some systemd scripts that you can use, see [this directory][restarterscripts].
 [restarterscripts]:
-http://www.sunstrider.cf/wiki/Restarter_scripts
+https://github.com/kelno/sunstrider/tree/master/contrib/sunstrider
