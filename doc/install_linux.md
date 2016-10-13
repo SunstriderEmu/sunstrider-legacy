@@ -15,7 +15,7 @@ Clang is now the supported compiler, but gcc should work too.
 https://downloads.mariadb.org/mariadb/repositories/
 [llvmrepository]:
 http://apt.llvm.org/
-[llvm-gpg-key]
+[llvm-gpg-key]:
 http://llvm.org/apt/llvm-snapshot.gpg.key
 
 <!----------------------------------------------------------------------------->
