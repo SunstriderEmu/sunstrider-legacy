@@ -28,7 +28,7 @@ Inside, create the following folders :
 	Then execute it (also from the build folder). This will create the make files into your build folder.  
 
 3. The server is now ready to be compiled, stay in the same folder and type:  
-`make install -j <x>`   <sub>where <x\> is a number of processors to use for the compilation.</sub>   
+`make install -j <x>`   <sub>where x is a number of processors to use for the compilation.</sub>   
 	This will install the server binaries in `<root_install_folder>/bin`, and the configurations files in `<root_install_folder>/etc`
 
 
