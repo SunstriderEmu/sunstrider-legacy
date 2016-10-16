@@ -80,7 +80,7 @@ namespace Movement
     // will build packet if needed
     void SendLaunchPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport)
     {
-        if(packet = nullptr)
+        if(packet == nullptr)
         {
             packet = PrepareMovePacketForVersion(build, unit, transport);
             PacketBuilder::WriteMonsterMove(*(unit->movespline), *packet, build);
@@ -189,7 +189,7 @@ namespace Movement
     // will build packet if needed
     void SendStopPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport, Location& loc, uint32 splineId)
     {
-        if(packet = nullptr)
+        if(packet == nullptr)
         {
             packet = PrepareMovePacketForVersion(build, unit, transport);
             PacketBuilder::WriteStopMovement(loc, splineId, *packet, build);
