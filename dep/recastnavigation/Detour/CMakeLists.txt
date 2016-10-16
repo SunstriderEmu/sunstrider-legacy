@@ -25,7 +25,7 @@ target_include_directories(Detour
 
 target_link_libraries(Detour
   PUBLIC
-    zlib)
+    ${ZLIB_LIBRARIES})
 
 set_target_properties(Detour
     PROPERTIES

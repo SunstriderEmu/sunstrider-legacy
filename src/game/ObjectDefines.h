@@ -73,7 +73,6 @@ uint16 PAIR32_LOPART(uint32 x)
 
 #define IS_EMPTY_GUID(Guid)          ( Guid == 0 )
 
-#define IS_PLAYER_GUID(Guid)         ( Guid != 0 && GUID_HIPART(Guid) == HIGHGUID_PLAYER ) //first condition to avoid returning true on guid 0 case
 #define IS_CREATURE_GUID(Guid)       ( GUID_HIPART(Guid) == HIGHGUID_UNIT )
 #define IS_VEHICLE_GUID(Guid)        ( GUID_HIPART(Guid) == HIGHGUID_VEHICLE)
 #define IS_CREATURE_OR_VEHICLE_GUID(Guid) ( IS_CREATURE_GUID(Guid) || IS_VEHICLE_GUID(Guid) )
