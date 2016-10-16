@@ -56,9 +56,9 @@ namespace Movement
     }
 
     // Prepare spline move packet with opcode, unit guid & transport seat
-    void PrepareMovePacketForVersion(WorldPacket*& packet, ClientBuild build, Unit const* unit, bool transport)
+    WorldPacket* PrepareMovePacketForVersion(ClientBuild build, Unit const* unit, bool transport)
     {
-        packet = new WorldPacket(SMSG_MONSTER_MOVE, 64);
+        WorldPacket* packet = new WorldPacket(SMSG_MONSTER_MOVE, 64);
         if (transport)
         {
             packet->SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
@@ -74,6 +74,7 @@ namespace Movement
             }
 #endif
         }
+        return packet;
     }
 
     // will build packet if needed
@@ -81,7 +82,7 @@ namespace Movement
     {
         if(packet = nullptr)
         {
-            PrepareMovePacketForVersion(packet, build, unit, transport);
+            packet = PrepareMovePacketForVersion(build, unit, transport);
             PacketBuilder::WriteMonsterMove(*(unit->movespline), *packet, build);
         }
         session->SendPacket(packet);
@@ -190,7 +191,7 @@ namespace Movement
     {
         if(packet = nullptr)
         {
-            PrepareMovePacketForVersion(packet, build, unit, transport);
+            packet = PrepareMovePacketForVersion(build, unit, transport);
             PacketBuilder::WriteStopMovement(loc, splineId, *packet, build);
         }
         session->SendPacket(packet);
