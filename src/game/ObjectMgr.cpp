@@ -3714,7 +3714,7 @@ void ObjectMgr::LoadQuests()
 
 		if (qinfo->CompleteEmote && !sEmotesStore.LookupEntry(qinfo->CompleteEmote))
 		{
-			TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
+			TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
 			qinfo->CompleteEmote = 0;
 		}
 
@@ -3722,25 +3722,25 @@ void ObjectMgr::LoadQuests()
 		{
 			if (qinfo->DetailsEmote[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmote[i]))
 			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->DetailsEmote[i], qinfo->QuestId);
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmote[i], qinfo->QuestId);
 				qinfo->DetailsEmote[i] = 0;
 			}
 
 			if (qinfo->DetailsEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmoteDelay[i]))
 			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->DetailsEmoteDelay[i], qinfo->QuestId);
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmoteDelay[i], qinfo->QuestId);
 				qinfo->DetailsEmoteDelay[i] = 0;
 			}
 
 			if (qinfo->OfferRewardEmote[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmote[i]))
 			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmote[i], qinfo->QuestId);
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmote[i], qinfo->QuestId);
 				qinfo->OfferRewardEmote[i] = 0;
 			}
 
 			if (qinfo->OfferRewardEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmoteDelay[i]))
 			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote%i (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmoteDelay[i], qinfo->QuestId);
+				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmoteDelay[i], qinfo->QuestId);
 				qinfo->OfferRewardEmoteDelay[i] = 0;
 			}
 		}
