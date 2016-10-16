@@ -1049,8 +1049,8 @@ MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &di
 #endif
     }
 
+    ASSERT(tmpDiff < MAX_DIFFICULTY);
     difficulty = Difficulty(tmpDiff);
-	ASSERT(difficulty < MAX_DIFFICULTY);
     return mapDiff;
 }
 

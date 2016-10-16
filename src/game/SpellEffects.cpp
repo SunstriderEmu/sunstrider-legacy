@@ -958,7 +958,7 @@ void Spell::EffectDummy(uint32 i)
 				{
 					if (unitTarget && m_CastItem)
 					{
-						uint32 roll = (0, 9);
+						uint32 roll = urand(0, 9);
 						if (roll == 1 && unitTarget->GetTypeId() == TYPEID_PLAYER)
 							unitTarget->CastSpell(m_caster, 13181, true, m_CastItem);
 						else if (roll)
