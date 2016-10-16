@@ -20,7 +20,7 @@
 #define _BYTEBUFFER_H
 
 #include "Define.h"
-#include "Errors.h"
+#include "Debugging/Errors.h"
 #include "ByteConverter.h"
 #include "Util.h"
 

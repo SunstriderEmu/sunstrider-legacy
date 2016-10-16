@@ -19,7 +19,7 @@
 #define NetworkThread_h__
 
 #include "Define.h"
-#include "Errors.h"
+#include "Debugging/Errors.h"
 #include "Log.h"
 #include "Timer.h"
 #include <boost/asio/ip/tcp.hpp>

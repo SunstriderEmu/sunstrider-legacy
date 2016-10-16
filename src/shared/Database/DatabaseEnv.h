@@ -3,7 +3,7 @@
 #define DATABASEENV_H
 
 #include "Common.h"
-#include "Errors.h"
+#include "Debugging/Errors.h"
 #include "Log.h"
 
 #include "Field.h"

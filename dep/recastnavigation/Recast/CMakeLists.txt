@@ -29,7 +29,7 @@ target_include_directories(Recast
 
 target_link_libraries(Recast
   PUBLIC
-    zlib)
+      ${ZLIB_LIBRARIES})
 
 set_target_properties(Recast
     PROPERTIES
