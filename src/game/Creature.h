@@ -524,7 +524,7 @@ class Creature : public Unit
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
 
-        void Update( uint32 time );                         // overwrited Unit::Update
+        void Update( uint32 time ) override;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
@@ -661,7 +661,7 @@ class Creature : public Unit
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
         uint32 m_GlobalCooldown;
 
-        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const override;
         bool IsWithinSightDist(Unit const* u) const;
         /* Return if creature can aggro and start attacking target, depending on faction, distance, LoS, if target is attackable, ...
         @assistAggro check for assisting instead of standard aggro. This changes the allowed distance only.
@@ -694,7 +694,7 @@ class Creature : public Unit
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
 
-        bool IsVisibleInGridForPlayer(Player const* pl) const;
+        bool IsVisibleInGridForPlayer(Player const* pl) const override;
 
         void RemoveCorpse(bool setSpawnTime = true);
         
@@ -816,7 +816,7 @@ class Creature : public Unit
         bool SetHover(bool enable, bool packetOnly = false) override;
 
         // Handling caster facing during spellcast
-        void SetTarget(uint64 guid);
+        void SetTarget(uint64 guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
 

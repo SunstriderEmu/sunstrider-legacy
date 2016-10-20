@@ -1152,8 +1152,8 @@ class Player : public Unit
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
@@ -1188,14 +1188,14 @@ class Player : public Unit
         bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
         bool Create( uint32 guidlow, const std::string& name, uint8 race, uint8 class_, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair, uint8 outfitId );
 
-        void Update( uint32 time );
+        void Update( uint32 time ) override;
 
         static bool BuildEnumData( PreparedQueryResult  result,  WorldPacket * p_data, WorldSession const* session );
 
         void SetInWater(bool apply);
 
-        bool IsInWater() const { return m_isInWater; }
-        bool IsUnderWater() const;
+        bool IsInWater() const override { return m_isInWater; }
+        bool IsUnderWater() const override;
 
         void SendInitialPacketsBeforeAddToMap();
         void SendInitialPacketsAfterAddToMap();
@@ -1256,7 +1256,7 @@ class Player : public Unit
         uint32 GetLevelPlayedTime() { return m_Played_time[1]; };
         uint32 GetTotalAccountPlayedTime();
 
-        void SetDeathState(DeathState s);                   // overwrite Unit::setDeathState
+        void SetDeathState(DeathState s) override;                   // overwrite Unit::setDeathState
 
         void InnEnter (int time,uint32 mapid, float x,float y,float z)
         {
@@ -1675,7 +1675,7 @@ class Player : public Unit
         void CharmSpellInitialize();
         void PossessSpellInitialize();
         void SendRemoveControlBar() const;
-        bool HasSpell(uint32 spell) const;
+        bool HasSpell(uint32 spell) const override;
         bool HasSpellButDisabled(uint32 spell) const;
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;
         bool IsSpellFitByClassAndRace( uint32 spell_id ) const;
@@ -1735,7 +1735,7 @@ class Player : public Unit
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
         void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
         void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
-        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs );
+        void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveArenaSpellCooldowns();
         void RemoveAllSpellCooldown();
@@ -1866,13 +1866,13 @@ class Player : public Unit
         float GetHealthBonusFromStamina() const;
         float GetManaBonusFromIntellect() const;
 
-        bool UpdateStats(Stats stat);
-        bool UpdateAllStats();
-        void UpdateResistances(uint32 school);
-        void UpdateArmor();
-        void UpdateMaxHealth();
-        void UpdateMaxPower(Powers power);
-        void UpdateAttackPowerAndDamage(bool ranged = false);
+        bool UpdateStats(Stats stat) override;
+        bool UpdateAllStats() override;
+        void UpdateResistances(uint32 school) override;
+        void UpdateArmor() override;
+        void UpdateMaxHealth() override;
+        void UpdateMaxPower(Powers power) override;
+        void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void UpdateShieldBlockValue();
         void UpdateSpellDamageAndHealingBonus();
 
@@ -1936,12 +1936,12 @@ class Player : public Unit
         void SendResetFailedNotify(uint32 mapid);
 
         bool SetPosition(float x, float y, float z, float orientation, bool teleport = false);
-        void UpdateUnderwaterState( Map * m, float x, float y, float z );
+        void UpdateUnderwaterState( Map * m, float x, float y, float z ) override;
 
-        void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSet
-        void SendMessageToSetInRange(WorldPacket *data, float fist, bool self, bool to_possessor = true);// overwrite Object::SendMessageToSetInRange
+        void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true) override;
+        void SendMessageToSetInRange(WorldPacket *data, float fist, bool self, bool to_possessor = true) override;
         void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
-        void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
+        void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr) override;
 
         void SendTeleportAckPacket();
 
@@ -2361,7 +2361,7 @@ class Player : public Unit
         bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
 
         bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool IsVisibleInGridForPlayer(Player const* pl) const;
+        bool IsVisibleInGridForPlayer(Player const* pl) const override;
         bool IsVisibleGloballyFor(Player* pl) const;
 
         void UpdateVisibilityOf(WorldObject* target);

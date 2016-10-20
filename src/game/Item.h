@@ -285,12 +285,12 @@ class Item : public Object
             uState = state;
         }
 
-        bool HasQuest(uint32 quest_id) const
+        bool HasQuest(uint32 quest_id) const override
         {
             ItemTemplate const *itemProto = GetTemplate();
             return itemProto && itemProto->StartQuest == quest_id;
         }
-        bool HasInvolvedQuest(uint32 /*quest_id*/) const { return false; }
+        bool HasInvolvedQuest(uint32 /*quest_id*/) const override { return false; }
 
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet&) override;
 

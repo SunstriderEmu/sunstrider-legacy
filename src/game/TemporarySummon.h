@@ -29,7 +29,7 @@ class TemporarySummon : public Creature
     public:
         explicit TemporarySummon(uint64 summoner = 0);
         virtual ~TemporarySummon(){};
-        void Update(uint32 time);
+        void Update(uint32 time) override;
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();
         void SaveToDB(uint32 mapid, uint8 spawnMask) override { }
