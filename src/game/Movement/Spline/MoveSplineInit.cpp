@@ -91,10 +91,11 @@ namespace Movement
     // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
     void SendLaunchToSet(Unit* unit, bool transport)
     {
-        WorldPacket* packetBC = nullptr;
 #ifdef BUILD_335_SUPPORT
+        // this part currently buggy, most monsters do not appear to move (only first move visible ?)
+        // One difference with #else code : the broadcast is sent to every player with unit at client, instead of broadcasting to all players in visibility range
+        WorldPacket* packetBC = nullptr;
         WorldPacket* packetLK = nullptr;
-#endif
 
         auto& players = unit->GetMap()->GetPlayers();
         for(auto& itr : players)
@@ -103,17 +104,25 @@ namespace Movement
                 continue;
 
             WorldSession* session = itr.GetSource()->GetSession();
-#ifdef BUILD_335_SUPPORT
             if(session->GetClientBuild() == BUILD_335)
                 SendLaunchPacketForVersion(packetLK, session, BUILD_335, unit, transport);
             else
-#endif
-                SendLaunchPacketForVersion(packetBC, session, BUILD_243, unit, transport);
+                
         }
 
         delete packetBC;
-#ifdef BUILD_335_SUPPORT
         delete packetLK;
+#else //simpler logic for performance
+        WorldPacket data(SMSG_MONSTER_MOVE, 64);
+        data << unit->GetPackGUID();
+        if (transport)
+        {
+            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            data.appendPackGUID(unit->GetTransGUID());
+        }
+
+        PacketBuilder::WriteMonsterMove(*(unit->movespline), data, BUILD_243);
+        unit->SendMessageToSet(&data, true);
 #endif
     }
 
