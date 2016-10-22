@@ -25,7 +25,7 @@ public:
     PlayerBotMap::const_iterator GetPlayerBotsBegin() const { return playerBots.begin(); }
     PlayerBotMap::const_iterator GetPlayerBotsEnd()   const { return playerBots.end();   }
 
-    virtual void UpdateAIInternal(uint32 elapsed);
+    void UpdateAIInternal(uint32 elapsed) override;
     void UpdateSessions(uint32 elapsed);
 
     void LogoutAllBots();
@@ -46,21 +46,21 @@ class PlayerbotMgr : public PlayerbotHolder
 {
 public:
     PlayerbotMgr(Player* const master);
-    virtual ~PlayerbotMgr();
+    ~PlayerbotMgr() override;
 
     static bool HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args);
     void HandleMasterIncomingPacket(const WorldPacket& packet);
     void HandleMasterOutgoingPacket(const WorldPacket& packet);
     void HandleCommand(uint32 type, const std::string& text);
 
-    virtual void UpdateAIInternal(uint32 elapsed);
+    void UpdateAIInternal(uint32 elapsed) override;
 
     Player* GetMaster() const { return master; };
 
     void SaveToDB();
 
 protected:
-    virtual void OnBotLoginInternal(Player * const bot);
+    void OnBotLoginInternal(Player * const bot) override;
 
 private:
     Player* const master;

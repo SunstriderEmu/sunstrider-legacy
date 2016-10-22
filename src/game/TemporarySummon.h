@@ -28,7 +28,7 @@ class TemporarySummon : public Creature
 {
     public:
         explicit TemporarySummon(uint64 summoner = 0);
-        virtual ~TemporarySummon(){};
+        ~TemporarySummon() override{};
         void Update(uint32 time) override;
         void Summon(TempSummonType type, uint32 lifetime);
         void UnSummon();

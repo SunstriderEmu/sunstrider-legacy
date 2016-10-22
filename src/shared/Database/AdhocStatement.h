@@ -29,7 +29,7 @@ class BasicStatementTask : public SQLOperation
 {
     public:
         BasicStatementTask(const char* sql, bool async = false);
-        ~BasicStatementTask();
+        ~BasicStatementTask() override;
 
         bool Execute() override;
         QueryResultFuture GetFuture() { return m_result->get_future(); }

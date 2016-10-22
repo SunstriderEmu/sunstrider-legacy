@@ -41,7 +41,7 @@ class MessageBuffer;
 class ByteBufferException : public std::exception
 {
 public:
-    ~ByteBufferException() throw() { }
+    ~ByteBufferException() throw() override { }
 
     char const* what() const throw() override { return msg_.c_str(); }
 
@@ -57,7 +57,7 @@ class ByteBufferPositionException : public ByteBufferException
 public:
     ByteBufferPositionException(bool add, size_t pos, size_t size, size_t valueSize);
 
-    ~ByteBufferPositionException() throw() { }
+    ~ByteBufferPositionException() throw() override { }
 };
 
 class ByteBufferSourceException : public ByteBufferException
@@ -65,7 +65,7 @@ class ByteBufferSourceException : public ByteBufferException
 public:
     ByteBufferSourceException(size_t pos, size_t size, size_t valueSize);
 
-    ~ByteBufferSourceException() throw() { }
+    ~ByteBufferSourceException() throw() override { }
 };
 
 class ByteBuffer

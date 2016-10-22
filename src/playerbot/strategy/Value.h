@@ -34,7 +34,7 @@ namespace ai
         virtual ~CalculatedValue() {}
 
 	public:
-        virtual T Get()
+        T Get() override
         {
             if (ticksElapsed >= checkInterval) {
                 ticksElapsed = 0;
@@ -42,8 +42,8 @@ namespace ai
             }
             return value;
         }
-        virtual void Set(T value) { this->value = value; }
-        virtual void Update()
+        void Set(T value) override { this->value = value; }
+        void Update() override
         {
             if (ticksElapsed < checkInterval) {
                 ticksElapsed++;
@@ -65,7 +65,7 @@ namespace ai
         Uint8CalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<uint8>(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             std::ostringstream out; out << (int)Calculate();
             return out.str();
@@ -78,7 +78,7 @@ namespace ai
         Uint32CalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<uint32>(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             std::ostringstream out; out << (int)Calculate();
             return out.str();
@@ -91,7 +91,7 @@ namespace ai
         FloatCalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<float>(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             std::ostringstream out; out << Calculate();
             return out.str();
@@ -104,7 +104,7 @@ namespace ai
         BoolCalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<bool>(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             return Calculate() ? "true" : "false";
         }
@@ -116,7 +116,7 @@ namespace ai
         UnitCalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<Unit*>(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             Unit* unit = Calculate();
             return unit ? unit->GetName() : "<none>";
@@ -129,7 +129,7 @@ namespace ai
         ObjectGuidListCalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) :
             CalculatedValue<std::list<ObjectGuid> >(ai, name, checkInterval) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             std::ostringstream out; out << "{";
             std::list<ObjectGuid> guids = Calculate();
@@ -152,10 +152,10 @@ namespace ai
         virtual ~ManualSetValue() {}
 
     public:
-        virtual T Get() { return value; }
-        virtual void Set(T value) { this->value = value; }
-        virtual void Update() { }
-        virtual void Reset() { value = defaultValue; }
+        T Get() override { return value; }
+        void Set(T value) override { this->value = value; }
+        void Update() override { }
+        void Reset() override { value = defaultValue; }
 
     protected:
         T value;
@@ -168,7 +168,7 @@ namespace ai
         UnitManualSetValue(PlayerbotAI* ai, Unit* defaultValue, std::string name = "value") :
             ManualSetValue<Unit*>(ai, defaultValue, name) {}
 
-        virtual std::string Format()
+        std::string Format() override
         {
             Unit* unit = Get();
             return unit ? unit->GetName() : "<none>";

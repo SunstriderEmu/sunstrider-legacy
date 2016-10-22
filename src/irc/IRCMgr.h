@@ -83,7 +83,7 @@ public:
     {
     }
     
-    void run();
+    void run() override;
     
 private:
     IRCServer* _server;
@@ -96,11 +96,11 @@ public:
     explicit IRCHandler() {}
 
     // overwrite functions
-    const char *GetTrinityString(int32 entry) const;
-    bool isAvailable(ChatCommand const& cmd) const;
+    const char *GetTrinityString(int32 entry) const override;
+    bool isAvailable(ChatCommand const& cmd) const override;
     void SendSysMessage(const char *str, bool escapeCharacters = false) override;
     std::string const GetName() const override;
-    bool needReportToTarget(Player* chr) const;
+    bool needReportToTarget(Player* chr) const override;
 
     int ParseCommands(irc_session_t* session, const char* origin, const char* params);
 private:

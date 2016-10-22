@@ -32,12 +32,12 @@ class Bag : public Item
     public:
 
         Bag();
-        ~Bag();
+        ~Bag() override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
-        bool Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto);
+        bool Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplate const *itemProto) override;
 
         void Clear();
         void StoreItem( uint8 slot, Item *pItem, bool update );

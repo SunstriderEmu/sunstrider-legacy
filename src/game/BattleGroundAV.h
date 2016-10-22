@@ -1487,7 +1487,7 @@ class BattlegroundAVScore : public BattlegroundScore
 {
     public:
         BattlegroundAVScore() : GraveyardsAssaulted(0), GraveyardsDefended(0), TowersAssaulted(0), TowersDefended(0), MinesCaptured(0), LeadersKilled(0), SecondaryObjectives(0) {};
-        virtual ~BattlegroundAVScore() {};
+        ~BattlegroundAVScore() override {};
         uint32 GraveyardsAssaulted;
         uint32 GraveyardsDefended;
         uint32 TowersAssaulted;
@@ -1503,25 +1503,25 @@ class BattlegroundAV : public Battleground
 
     public:
         BattlegroundAV();
-        ~BattlegroundAV();
-        void Update(time_t diff);
+        ~BattlegroundAV() override;
+        void Update(time_t diff) override;
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        void AddPlayer(Player *plr) override;
 
-        void RemovePlayer(Player *plr,uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        bool SetupBattleground();
-        virtual void ResetBGSubclass();
+        void RemovePlayer(Player *plr,uint64 guid) override;
+        void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
+        bool SetupBattleground() override;
+        void ResetBGSubclass() override;
 
         /*general stuff*/
         void UpdateScore(uint16 team, int16 points);
-        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
 
         /*handlestuff*/ //these are functions which get called from extern
-        virtual void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj);
-        void HandleKillPlayer(Player* player, Player *killer);
-        void HandleKillUnit(Creature *unit, Player *killer);
+        void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj) override;
+        void HandleKillPlayer(Player* player, Player *killer) override;
+        void HandleKillUnit(Creature *unit, Player *killer) override;
         void HandleQuestComplete(uint32 questid, Player *player);
         bool PlayerCanDoMineQuest(int32 GOId,uint32 team);
 
@@ -1530,7 +1530,7 @@ class BattlegroundAV : public Battleground
 
         void EndBattleground(uint32 winner);
 
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team);
+        WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
 
     private:
         /* Nodes occupying */
@@ -1556,7 +1556,7 @@ class BattlegroundAV : public Battleground
         void ChangeMineOwner(uint8 mine, uint32 team, bool initial=false);
 
         /*worldstates*/
-        void FillInitialWorldStates(WorldPacket& data);
+        void FillInitialWorldStates(WorldPacket& data) override;
         const uint8 GetWorldStateType(uint8 state, uint16 team);
         void SendMineWorldStates(uint32 mine);
         void UpdateNodeWorldState(BG_AV_Nodes node);

@@ -120,7 +120,7 @@ class Map : public GridRefManager<NGridType>
     friend class MapReference;
     public:
         Map(uint32 id, uint32 InstanceId, uint8 SpawnMode);
-        virtual ~Map();
+        ~Map() override;
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
 
@@ -485,7 +485,7 @@ class InstanceMap : public Map
 {
     public:
         InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode);
-        ~InstanceMap();
+        ~InstanceMap() override;
         bool Add(Player *) override;
         void Remove(Player *, bool) override;
         void Update(const uint32&) override;
@@ -500,7 +500,7 @@ class InstanceMap : public Map
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
 
-        virtual void InitVisibilityDistance() override;
+        void InitVisibilityDistance() override;
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -512,7 +512,7 @@ class BattlegroundMap : public Map
 {
     public:
         BattlegroundMap(uint32 id, uint32 InstanceId);
-        ~BattlegroundMap();
+        ~BattlegroundMap() override;
 
         bool Add(Player *) override;
         void Remove(Player *, bool) override;
@@ -523,7 +523,7 @@ class BattlegroundMap : public Map
 
         void HandleCrash() override;
 
-        virtual void InitVisibilityDistance() override;
+        void InitVisibilityDistance() override;
         Battleground* GetBG() { return m_bg; }
         void SetBG(Battleground* bg) { m_bg = bg; }
     private:

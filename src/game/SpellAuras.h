@@ -413,8 +413,8 @@ class AreaAura : public Aura
 {
     public:
         AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
-        ~AreaAura();
-        void Update(uint32 diff);
+        ~AreaAura() override;
+        void Update(uint32 diff) override;
         bool CheckTarget(Unit *target);
     private:
         float m_radius;
@@ -428,7 +428,7 @@ class PersistentAreaAura : public Aura
 {
     public:
         PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
-        ~PersistentAreaAura();
+        ~PersistentAreaAura() override;
         void Update(uint32 diff) override;
         void AddSource(DynamicObject* dynObj);
     public:

@@ -1056,12 +1056,12 @@ class Unit : public WorldObject
         typedef std::set<AuraType> AuraTypeSet;
         typedef std::set<uint32> ComboPointHolderSet;
 
-        virtual ~Unit ( );
+        ~Unit ( ) override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
-        virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;  // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
+        void CleanupsBeforeDelete(bool finalCleanup = true) override;  // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
 
         UnitAI* GetAI() { return i_AI; }
 
@@ -1075,7 +1075,7 @@ class Unit : public WorldObject
 		float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
 		float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
 
-        virtual void Update( uint32 time );
+        void Update( uint32 time ) override;
 
         void SetAttackTimer(WeaponAttackType type, uint32 time) { m_attackTimer[type] = time; }
         void ResetAttackTimer(WeaponAttackType type = BASE_ATTACK);
@@ -1741,7 +1741,7 @@ class Unit : public WorldObject
         StealthDetectedStatus CanDetectStealthOf(Unit const* u, float distance) const;
 
         // virtual functions for all world objects types
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
         // function for low level grid visibility checks in player/creature cases
         virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
@@ -2152,7 +2152,7 @@ class RedirectSpellEvent : public BasicEvent
 {
 public:
     RedirectSpellEvent(Unit& self, uint64 auraOwnerGUID, AuraEffect* auraEffect) : _self(self), _auraOwnerGUID(auraOwnerGUID), _auraEffect(auraEffect) { }
-    bool Execute(uint64 e_time, uint32 p_time);
+    bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
     Unit& _self;

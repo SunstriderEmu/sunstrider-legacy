@@ -124,7 +124,7 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Should return a fully valid SpellScript pointer.
     virtual SpellScript* GetSpellScript() const { return NULL; }
@@ -170,7 +170,7 @@ public:
     virtual void OnPlayerLeave(TMap* /*map*/, Player* /*player*/) { }
 
     // Called on every map update tick.
-    virtual void OnUpdate(TMap* /*map*/, uint32 /*diff*/) { }
+    void OnUpdate(TMap* /*map*/, uint32 /*diff*/) override { }
 };
 
 class WorldMapScript : public ScriptObject, public MapScript<Map>
@@ -188,7 +188,7 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Gets an InstanceScript object for this instance.
     virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return NULL; }
@@ -209,7 +209,7 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Called when a player accepts a quest from the item.
     virtual bool OnQuestAccept(Player* /*player*/, Item* /*item*/, Quest const* /*quest*/) { return false; }
@@ -229,11 +229,11 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
 protected:
 
     CreatureScript(const char* name);
-    ~CreatureScript();
+    ~CreatureScript() override;
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Called when a player opens a gossip dialog with the creature.
     virtual bool OnGossipHello(Player* player, Creature* creature) // { return false; }
@@ -334,7 +334,7 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Called when a player opens a gossip dialog with the gameobject.
     virtual bool OnGossipHello(Player* /*player*/, GameObject* /*go*/) { return false; }
@@ -378,7 +378,7 @@ protected:
 
 public:
 
-    bool IsDatabaseBound() const { return true; }
+    bool IsDatabaseBound() const override { return true; }
 
     // Called when the area trigger is activated by a player.
     virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }

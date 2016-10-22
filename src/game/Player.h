@@ -1146,11 +1146,11 @@ class Player : public Unit
     friend void Item::RemoveFromUpdateQueueOf(Player *player);
     public:
         explicit Player (WorldSession *session);
-        ~Player ( );
+        ~Player ( ) override;
 
         PlayerAI* AI() const { return reinterpret_cast<PlayerAI*>(i_AI); }
 
-        virtual void CleanupsBeforeDelete(bool finalCleanup = true) override;
+        void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
         void AddToWorld() override;
         void RemoveFromWorld() override;
@@ -1314,7 +1314,7 @@ class Player : public Unit
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
-        virtual bool HasMainWeapon() const override;
+        bool HasMainWeapon() const override;
         Item* GetShield(bool useable = false) const;
         static uint32 GetAttackBySlot( uint8 slot );        // MAX_ATTACK if not weapon slot
         std::vector<Item *> &GetItemUpdateQueue() { return m_itemUpdateQueue; }
@@ -1781,7 +1781,7 @@ class Player : public Unit
         void UpdatePvP(bool state, bool ovrride=false);
         void UpdateZone(uint32 newZone);
         void UpdateArea(uint32 newArea);
-        virtual bool IsInSanctuary() const override { return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY); }
+        bool IsInSanctuary() const override { return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY); }
 
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
         void UpdateAreaDependentAuras( uint32 area_id );    // subzones
@@ -2360,7 +2360,7 @@ class Player : public Unit
 
         bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
 
-        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
+        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const override;
         bool IsVisibleInGridForPlayer(Player const* pl) const override;
         bool IsVisibleGloballyFor(Player* pl) const;
 

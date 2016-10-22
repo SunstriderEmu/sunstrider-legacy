@@ -118,26 +118,26 @@ namespace Trinity
     struct MessageDeliverer : public Deliverer
     {
         MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
-        void VisitObject(Player* plr);
+        void VisitObject(Player* plr) override;
     };
 
     struct ObjectMessageDeliverer : public Deliverer
     {
         explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
+        void VisitObject(Player* plr) override { SendPacket(plr); }
     };
 
     struct MessageDistDeliverer : public Deliverer
     {
         bool i_ownTeamOnly;
         MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
-        void VisitObject(Player* plr);
+        void VisitObject(Player* plr) override;
     };
 
     struct ObjectMessageDistDeliverer : public Deliverer
     {
         ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
-        void VisitObject(Player* plr) { SendPacket(plr); }
+        void VisitObject(Player* plr) override { SendPacket(plr); }
     };
 
     struct ObjectUpdater

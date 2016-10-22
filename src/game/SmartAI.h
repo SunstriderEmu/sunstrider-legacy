@@ -27,7 +27,7 @@ enum SmartEscortVars
 class SmartAI : public CreatureAI
 {
     public:
-        ~SmartAI(){ }
+        ~SmartAI() override{ }
         explicit SmartAI(Creature* c);
 
         // Check whether we are currently permitted to make the creature take action
@@ -232,11 +232,11 @@ class SmartGameObjectAI : public GameObjectAI
 {
     public:
         SmartGameObjectAI(GameObject* g) : GameObjectAI(g) { }
-        ~SmartGameObjectAI() { }
+        ~SmartGameObjectAI() override { }
 
-        void UpdateAI(const uint32 diff);
-        void InitializeAI();
-        void Reset();
+        void UpdateAI(const uint32 diff) override;
+        void InitializeAI() override;
+        void Reset() override;
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
@@ -251,7 +251,7 @@ class SmartGameObjectAI : public GameObjectAI
         void OnGameEvent(bool start, uint16 eventId); //FIXME
         void OnStateChanged(GOState state, Unit* unit) override;
         void OnLootStateChanged(LootState state, Unit* unit) override;
-        void EventInform(uint32 eventId); //FIXME
+        void EventInform(uint32 eventId) override; //FIXME
 
     private:
         SmartScript mScript;

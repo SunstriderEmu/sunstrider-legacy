@@ -37,7 +37,7 @@ class HostileRefManager : public RefManager<Unit, ThreatManager>
         Unit *iOwner;
     public:
         explicit HostileRefManager(Unit *pOwner) { iOwner = pOwner; }
-        ~HostileRefManager();
+        ~HostileRefManager() override;
 
         Unit* GetOwner() { return iOwner; }
 

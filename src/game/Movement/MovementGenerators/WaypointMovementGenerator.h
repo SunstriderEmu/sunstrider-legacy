@@ -100,7 +100,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
         WaypointMovementGenerator(Movement::PointsArray& points);
         // If path_id is left at 0, will try to get path id from Creature::GetWaypointPathId()
         WaypointMovementGenerator(uint32 _path_id = 0);
-        ~WaypointMovementGenerator();
+        ~WaypointMovementGenerator() override;
         bool DoInitialize(Creature*);
         void DoFinalize(Creature*);
         void DoReset(Creature*);
@@ -110,7 +110,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
 
         void MovementInform(Creature*, uint32 DBNodeId);
 
-        MovementGeneratorType GetMovementGeneratorType() { return WAYPOINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return WAYPOINT_MOTION_TYPE; }
 
         uint32 GetSplineId() const override { return _splineId; }
 
@@ -215,7 +215,7 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
         void DoReset(Player*);
         void DoFinalize(Player*);
         bool DoUpdate(Player*, uint32);
-        MovementGeneratorType GetMovementGeneratorType() { return FLIGHT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return FLIGHT_MOTION_TYPE; }
 
         TaxiPathNodeList const& GetPath() { return i_path; }
         uint32 GetPathAtMapEnd() const;

@@ -37,9 +37,9 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 
         void MovementInform(T*);
 
-        void UnitSpeedChanged() { i_recalculateSpeed = true; }
+        void UnitSpeedChanged() override { i_recalculateSpeed = true; }
 
-        MovementGeneratorType GetMovementGeneratorType() { return POINT_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return POINT_MOTION_TYPE; }
 
         void GetDestination(float& x, float& y, float& z) const { x = i_x; y = i_y; z = i_z; }
     private:
@@ -58,7 +58,7 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
         AssistanceMovementGenerator(float _x, float _y, float _z) :
             PointMovementGenerator<Creature>(0, _x, _y, _z, 0.0f, true) { }
 
-        MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_MOTION_TYPE; }
+        MovementGeneratorType GetMovementGeneratorType() override { return ASSISTANCE_MOTION_TYPE; }
         void Finalize(Unit*, bool) override;
 };
 
@@ -67,11 +67,11 @@ class EffectMovementGenerator : public MovementGenerator
 {
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) { }
-        bool Initialize(Unit*) { return true;  }
+        bool Initialize(Unit*) override { return true;  }
         void Finalize(Unit*, bool) override;
-        void Reset(Unit*) { }
-        bool Update(Unit*, uint32);
-        MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
+        void Reset(Unit*) override { }
+        bool Update(Unit*, uint32) override;
+        MovementGeneratorType GetMovementGeneratorType() override { return EFFECT_MOTION_TYPE; }
     private:
         uint32 m_Id;
 };

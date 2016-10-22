@@ -524,7 +524,7 @@ class Object
 class WorldObject : public Object, public WorldLocation
 {
     public:
-        virtual ~WorldObject ( ) {}
+        ~WorldObject ( ) override {}
 
         virtual void Update ( uint32 /*time_diff*/ ) { }
 

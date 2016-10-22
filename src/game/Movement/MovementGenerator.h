@@ -87,7 +87,7 @@ struct MovementGeneratorFactory : public SelectableMovement
 {
     MovementGeneratorFactory(MovementGeneratorType mgt) : SelectableMovement(mgt) { }
 
-    MovementGenerator* Create(void *) const;
+    MovementGenerator* Create(void *) const override;
 };
 
 typedef FactoryHolder<MovementGenerator, MovementGeneratorType> MovementGeneratorCreator;

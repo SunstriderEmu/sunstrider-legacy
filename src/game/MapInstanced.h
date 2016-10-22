@@ -31,16 +31,16 @@ class MapInstanced : public Map
         typedef std::unordered_map< uint32, Map* > InstancedMaps;
 
         MapInstanced(uint32 id);
-        ~MapInstanced() {}
+        ~MapInstanced() override {}
 
         // functions overwrite Map versions
-        void Update(const uint32&);
-        void DelayedUpdate(const uint32 diff);
-        void MoveAllCreaturesInMoveList();
-        void RemoveAllObjectsInRemoveList();
-        bool RemoveBones(uint64 guid, float x, float y);
-        void UnloadAll();
-        bool CanEnter(Player* player);
+        void Update(const uint32&) override;
+        void DelayedUpdate(const uint32 diff) override;
+        void MoveAllCreaturesInMoveList() override;
+        void RemoveAllObjectsInRemoveList() override;
+        bool RemoveBones(uint64 guid, float x, float y) override;
+        void UnloadAll() override;
+        bool CanEnter(Player* player) override;
 
         Map* GetInstance(const WorldObject* obj);
         Map* FindInstanceMap(uint32 InstanceId);
@@ -59,7 +59,7 @@ class MapInstanced : public Map
         }
 
         InstancedMaps &GetInstancedMaps() { return m_InstancedMaps; }
-        virtual void InitVisibilityDistance();
+        void InitVisibilityDistance() override;
 
         void MapCrashed(Map* map);
     private:
