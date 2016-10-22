@@ -1,5 +1,3 @@
-#include <omp.h>
-
 #include "Log.h"
 
 #include "WorldPacket.h"

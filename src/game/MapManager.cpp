@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <omp.h>
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
 #include "Database/DatabaseEnv.h"
