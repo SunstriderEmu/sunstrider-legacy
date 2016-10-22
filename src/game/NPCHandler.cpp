@@ -350,7 +350,7 @@ void WorldSession::SendSpiritResurrect()
     _player->DurabilityLossAll(0.25f,true);
 
     // get corpse nearest graveyard
-    WorldSafeLocsEntry const *corpseGrave = NULL;
+    WorldSafeLocsEntry const *corpseGrave = nullptr;
     Corpse *corpse = _player->GetCorpse();
     if(corpse)
         corpseGrave = sObjectMgr->GetClosestGraveYard(
@@ -669,7 +669,7 @@ void WorldSession::HandleUnstablePetCallback2(PreparedQueryResult result, uint32
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
-        newPet = NULL;
+        newPet = nullptr;
         SendStableResult(STABLE_ERR_STABLE);
         return;
     }

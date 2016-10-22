@@ -82,7 +82,7 @@ class ZoneScript
         //Handle open / close objects
         //use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
         //use HandleGameObject(GUID,boolen,NULL); in any other script
-        void HandleGameObject(uint64 GUID, bool open, GameObject *go = NULL);
+        void HandleGameObject(uint64 GUID, bool open, GameObject *go = nullptr);
         
         //Respawns a GO having negative spawntimesecs in gameobject-table
         void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);

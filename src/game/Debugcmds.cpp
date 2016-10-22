@@ -75,7 +75,7 @@ bool ChatHandler::HandleDebugBatchAttack(const char* args)
     }
 
     WeaponAttackType type = BASE_ATTACK;
-    if(char* cType = strtok(NULL, ""))
+    if(char* cType = strtok(nullptr, ""))
     {
         type = WeaponAttackType(atoi(cType));
         if(type > RANGED_ATTACK)
@@ -142,7 +142,7 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
     }
 
     char* icon_text = strtok((char*)args, " ");
-    char* flags_text = strtok(NULL, " ");
+    char* flags_text = strtok(nullptr, " ");
     if(!icon_text || !flags_text)
         return false;
 
@@ -157,28 +157,28 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
 bool ChatHandler::HandleEquipErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
-    m_session->GetPlayer()->SendEquipError(msg, 0, 0);
+    m_session->GetPlayer()->SendEquipError(msg, nullptr, nullptr);
     return true;
 }
 
 bool ChatHandler::HandleSellErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
-    m_session->GetPlayer()->SendSellError(msg, 0, 0, 0);
+    m_session->GetPlayer()->SendSellError(msg, nullptr, 0, 0);
     return true;
 }
 
 bool ChatHandler::HandleBuyErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
-    m_session->GetPlayer()->SendBuyError(msg, 0, 0, 0);
+    m_session->GetPlayer()->SendBuyError(msg, nullptr, 0, 0);
     return true;
 }
 
 bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 {
     Unit *unit = GetSelectedUnit();
-    Player *player = NULL;
+    Player *player = nullptr;
     if (!unit || (unit->GetTypeId() != TYPEID_PLAYER))
         player = m_session->GetPlayer();
     else
@@ -274,7 +274,7 @@ bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
 bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
 {
     char* w = strtok((char*)args, " ");
-    char* s = strtok(NULL, " ");
+    char* s = strtok(nullptr, " ");
 
     if (!w || !s)
         return false;
@@ -456,7 +456,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
                     error = true; continue;
                 }
 
-                if (updateQueue[qp] == NULL)
+                if (updateQueue[qp] == nullptr)
                 {
                     PSendSysMessage("Item at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", item->GetSlot(), item->GetGUIDLow(), qp);
                     error = true; continue;
@@ -517,7 +517,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
                             error = true; continue;
                         }
 
-                        if (updateQueue[qp] == NULL)
+                        if (updateQueue[qp] == nullptr)
                         {
                             PSendSysMessage("Item in bag: %d at slot: %d guid: %d has a queuepos (%d) that points to NULL in the queue!", bag->GetSlot(), item->GetSlot(), item->GetGUIDLow(), qp);
                             error = true; continue;
@@ -558,7 +558,7 @@ bool ChatHandler::HandleGetItemState(const char* args)
             if (item->GetState() == ITEM_REMOVED) continue;
             Item *test = player->GetItemByPos( item->GetBagSlot(), item->GetSlot());
 
-            if (test == NULL)
+            if (test == nullptr)
             {
                 PSendSysMessage("queue(%d): the bag(%d) and slot(%d) values for the item with guid %d are incorrect, the player doesn't have an item at that position!", (uint32)i, item->GetBagSlot(), item->GetSlot(), item->GetGUIDLow());
                 error = true; continue;
@@ -920,7 +920,7 @@ bool ChatHandler::HandleDebugMapHeight(const char* args)
     bool teleport = false;
 
     char* sWalkableOnly = strtok((char*)args, " ");
-    char* sTeleport = strtok(NULL, " ");
+    char* sTeleport = strtok(nullptr, " ");
     if(sWalkableOnly)
         walkableOnly = atoi(sWalkableOnly);
     if(sTeleport)
@@ -1230,7 +1230,7 @@ bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
 bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
 {
     char* sWeatherId = strtok((char*)args, " ");
-    char* sIntensity = strtok(NULL, " ");
+    char* sIntensity = strtok(nullptr, " ");
 
     uint32 weatherId = 0;
     float intensity = 0.999f;

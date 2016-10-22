@@ -460,7 +460,7 @@ void LogsDatabaseAccessor::CleanupOldMonitorLogs()
     {
         TC_LOG_DEBUG("sql.sql", "Cleaning old logs from monitoring system. ( > 1 month old)");
 
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         time_t limit = now - (keepDays * DAY);
 
         SQLTransaction trans = LogsDatabase.BeginTransaction();
@@ -560,7 +560,7 @@ void LogsDatabaseAccessor::CleanupOldLogs()
     //0 means keep forever
     TC_LOG_DEBUG("sql.sql", "Cleaning old logs");
 
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
 
     SQLTransaction trans = LogsDatabase.BeginTransaction();
 

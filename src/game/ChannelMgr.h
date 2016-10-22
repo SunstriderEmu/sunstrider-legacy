@@ -54,7 +54,7 @@ class ChannelMgr
                 WorldPacket data;
                 MakeNotOnPacket(&data,name);
                 p->SendDirectMessage(&data);
-                return NULL;
+                return nullptr;
             }
             else
                 return i->second;
@@ -66,7 +66,7 @@ class ChannelMgr
             if (i != channels.end())
                 return i->second;
                 
-            return NULL;
+            return nullptr;
         }
         void LeftChannel(const std::string& name)
         {
@@ -105,7 +105,7 @@ inline ChannelMgr* channelMgr(uint32 team)
         return &allianceChannelMgr;
     if(team == TEAM_HORDE)
         return &hordeChannelMgr;
-    return NULL;
+    return nullptr;
 }
 #endif
 

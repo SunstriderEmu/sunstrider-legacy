@@ -111,7 +111,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, flo
         return false;
     }
 
-    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, nullptr);
     CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(displayId);
     if (!minfo)
         return false;
@@ -188,7 +188,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
         return false;
 
     // create capture point creature
-    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, NULL);
+    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, nullptr);
 
     uint32 creature_guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
 
@@ -627,7 +627,7 @@ void OutdoorPvP::HandleKill(Player *killer, Unit * killed)
 {
     if(Group * pGroup = killer->GetGroup())
     {
-        for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player *pGroupGuy = itr->GetSource();
 

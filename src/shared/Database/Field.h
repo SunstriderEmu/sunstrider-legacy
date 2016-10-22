@@ -100,7 +100,7 @@ public:
 
         if (data.raw)
             return *reinterpret_cast<int8*>(data.value);
-        return static_cast<int8>(strtol((char*)data.value, NULL, 10));
+        return static_cast<int8>(strtol((char*)data.value, nullptr, 10));
     }
 
     uint16 GetUInt16() const
@@ -136,7 +136,7 @@ public:
 
         if (data.raw)
             return *reinterpret_cast<int16*>(data.value);
-        return static_cast<int16>(strtol((char*)data.value, NULL, 10));
+        return static_cast<int16>(strtol((char*)data.value, nullptr, 10));
     }
 
     uint32 GetUInt32() const
@@ -172,7 +172,7 @@ public:
 
         if (data.raw)
             return *reinterpret_cast<int32*>(data.value);
-        return static_cast<int32>(strtol((char*)data.value, NULL, 10));
+        return static_cast<int32>(strtol((char*)data.value, nullptr, 10));
     }
 
     uint64 GetUInt64() const
@@ -208,7 +208,7 @@ public:
 
         if (data.raw)
             return *reinterpret_cast<int64*>(data.value);
-        return static_cast<int64>(strtoll((char*)data.value, NULL, 10));
+        return static_cast<int64>(strtoll((char*)data.value, nullptr, 10));
     }
 
     float GetFloat() const
@@ -250,7 +250,7 @@ public:
     char const* GetCString() const
     {
         if (!data.value)
-            return NULL;
+            return nullptr;
 
 #ifdef TRINITY_DEBUG
         if (IsNumeric())
@@ -277,7 +277,7 @@ public:
 
     bool IsNull() const
     {
-        return data.value == NULL;
+        return data.value == nullptr;
     }
 
     struct Metadata
@@ -309,7 +309,7 @@ protected:
         // Field does not own the data if fetched with prepared statement
         if (!data.raw)
             delete[]((char*)data.value);
-        data.value = NULL;
+        data.value = nullptr;
     }
 
     static size_t SizeForType(MYSQL_FIELD* field)

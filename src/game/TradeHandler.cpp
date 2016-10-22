@@ -88,7 +88,7 @@ void WorldSession::HandleBusyTradeOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::SendUpdateTrade()
 {
-    Item *item = NULL;
+    Item *item = nullptr;
 
     if( !_player || !_player->pTrader )
         return;
@@ -116,7 +116,7 @@ void WorldSession::SendUpdateTrade()
 
     for(uint8 i = 0; i < TRADE_SLOT_COUNT; i++)
     {
-        item = (_player->pTrader->tradeItems[i] != NULL_SLOT ? _player->pTrader->GetItemByPos( _player->pTrader->tradeItems[i] ) : NULL);
+        item = (_player->pTrader->tradeItems[i] != NULL_SLOT ? _player->pTrader->GetItemByPos( _player->pTrader->tradeItems[i] ) : nullptr);
 
         data << (uint8) i;                                  // trade slot number, if not specified, then end of packet
 
@@ -163,8 +163,8 @@ void WorldSession::moveItems(std::vector<Item*> myItems, std::vector<Item*> hisI
     {
         ItemPosCountVec traderDst;
         ItemPosCountVec playerDst;
-        bool traderCanTrade = (myItems[i]==NULL || _player->pTrader->CanStoreItem( NULL_BAG, NULL_SLOT, traderDst, myItems[i], false ) == EQUIP_ERR_OK);
-        bool playerCanTrade = (hisItems[i]==NULL || _player->CanStoreItem( NULL_BAG, NULL_SLOT, playerDst, hisItems[i], false ) == EQUIP_ERR_OK);
+        bool traderCanTrade = (myItems[i]==nullptr || _player->pTrader->CanStoreItem( NULL_BAG, NULL_SLOT, traderDst, myItems[i], false ) == EQUIP_ERR_OK);
+        bool playerCanTrade = (hisItems[i]==nullptr || _player->CanStoreItem( NULL_BAG, NULL_SLOT, playerDst, hisItems[i], false ) == EQUIP_ERR_OK);
         if(traderCanTrade && playerCanTrade )
         {
             // Ok, if trade item exists and can be stored
@@ -363,8 +363,8 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         _player->pTrader->GetSession()->SendTradeStatus(TRADE_STATUS_TRADE_COMPLETE);
         SendTradeStatus(TRADE_STATUS_TRADE_COMPLETE);
 
-        _player->pTrader->pTrader = NULL;
-        _player->pTrader = NULL;
+        _player->pTrader->pTrader = nullptr;
+        _player->pTrader = nullptr;
     }
     else
     {

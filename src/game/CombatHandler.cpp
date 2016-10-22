@@ -45,7 +45,7 @@ void WorldSession::HandleAttackSwingOpcode( WorldPacket & recvData )
             TC_LOG_ERROR("FIXME","WORLD: Enemy %s %u not found", GetLogNameForGuid(guid), GUID_LOPART(guid));
 
         // stop attack state at client
-        SendMeleeAttackStop(NULL);
+        SendMeleeAttackStop(nullptr);
         return;
     }
 

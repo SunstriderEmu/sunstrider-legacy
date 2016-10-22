@@ -203,7 +203,7 @@ class BattlegroundMgr
             if(i != m_Battlegrounds.end())
                 return i->second;
             else
-                return NULL;
+                return nullptr;
         };
 
         BattlegroundSet GetBattlegroundByType(uint32 bgTypeId);

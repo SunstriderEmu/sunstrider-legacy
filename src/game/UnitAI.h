@@ -84,7 +84,7 @@ class UnitAI
         {
             ThreatContainer::StorageType const& threatlist = me->getThreatManager().getThreatList();
             if (position >= threatlist.size())
-                return NULL;
+                return nullptr;
 
             std::list<Unit*> targetList;
             for (ThreatContainer::StorageType::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
@@ -92,7 +92,7 @@ class UnitAI
                     targetList.push_back((*itr)->getTarget());
 
             if (position >= targetList.size())
-                return NULL;
+                return nullptr;
 
             if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
                 targetList.sort(Trinity::ObjectDistanceOrderPred(me));
@@ -123,7 +123,7 @@ class UnitAI
                 break;
             }
 
-            return NULL;
+            return nullptr;
         }
 
         Unit* SelectTarget(SelectAggroTarget target, uint32 position);

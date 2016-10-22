@@ -120,7 +120,7 @@ public:
     float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
     uint8 getTerrainType(float x, float y) const;
-    ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data = 0);
+    ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data = nullptr);
     
     static bool ExistMap(uint32 mapid, int x, int y);
     static bool ExistVMap(uint32 mapid, int x, int y);

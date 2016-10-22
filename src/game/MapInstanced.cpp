@@ -203,7 +203,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
                     return CreateBattleground(instanceId, bg);
             }
         } else {
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -216,7 +216,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
                 return map;
         }
         else if (instanceId != pSave->GetInstanceId()) // cannot go from one instance to another
-            return NULL;
+            return nullptr;
         // else log in at a saved instance
 
         return CreateInstance(instanceId, pSave, pSave->GetDifficulty());
@@ -226,16 +226,16 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
         if (!instanceId)
             instanceId = sMapMgr->GenerateInstanceId();
 
-        return CreateInstance(instanceId, NULL, player->GetDifficulty());
+        return CreateInstance(instanceId, nullptr, player->GetDifficulty());
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
 {
     InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
-    return(i == m_InstancedMaps.end() ? NULL : i->second);
+    return(i == m_InstancedMaps.end() ? nullptr : i->second);
 }
 
 InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save, Difficulty difficulty)
@@ -265,7 +265,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
     InstanceMap *map = new InstanceMap(GetId(), InstanceId, difficulty);
     assert(map->IsDungeon());
 
-    bool load_data = save != NULL;
+    bool load_data = save != nullptr;
     map->CreateInstanceScript(load_data);
 
     m_InstancedMaps[InstanceId] = map;

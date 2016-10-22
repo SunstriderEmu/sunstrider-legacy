@@ -256,7 +256,7 @@ void ThreatContainer::clearReferences()
 // Return the HostileReference of NULL, if not found
 HostileReference* ThreatContainer::getReferenceByTarget(Unit* pVictim) const
 {
-    HostileReference* result = NULL;
+    HostileReference* result = nullptr;
     uint64 guid = pVictim->GetGUID();
     for(std::list<HostileReference*>::const_iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
     {
@@ -322,8 +322,8 @@ void ThreatContainer::update()
 
 HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, HostileReference* pCurrentVictim)
 {
-    HostileReference* currentRef = NULL;
-    HostileReference* fallback = NULL;
+    HostileReference* currentRef = nullptr;
+    HostileReference* fallback = nullptr;
     bool found = false;
 
     std::list<HostileReference*>::iterator lastRef = iThreatList.end();
@@ -346,7 +346,7 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, Hostile
         {
             // current victim is a second choice target, so don't compare threat with it below
             if(currentRef == pCurrentVictim)
-                pCurrentVictim = NULL;
+                pCurrentVictim = nullptr;
             continue;
         }
 
@@ -387,7 +387,7 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, Hostile
         }
     }
     if(!found)
-        currentRef = NULL;
+        currentRef = nullptr;
         
     // Prevent evade if rooted and no one in melee range
     if (!found && pAttacker->IsCombatStationary())
@@ -402,7 +402,7 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, Hostile
 //=================== ThreatManager ==========================
 //============================================================
 
-ThreatManager::ThreatManager(Unit* owner) : iCurrentVictim(NULL), iOwner(owner)
+ThreatManager::ThreatManager(Unit* owner) : iCurrentVictim(nullptr), iOwner(owner)
 {
 }
 
@@ -412,7 +412,7 @@ void ThreatManager::clearReferences()
 {
     iThreatContainer.clearReferences();
     iThreatOfflineContainer.clearReferences();
-    iCurrentVictim = NULL;
+    iCurrentVictim = nullptr;
 }
 
 //============================================================
@@ -475,7 +475,7 @@ Unit* ThreatManager::getHostilTarget()
     iThreatContainer.update();
     HostileReference* nextVictim = iThreatContainer.selectNextVictim(GetOwner()->ToCreature(), getCurrentVictim());
     setCurrentVictim(nextVictim);
-    return getCurrentVictim() != NULL ? getCurrentVictim()->getTarget() : NULL;
+    return getCurrentVictim() != nullptr ? getCurrentVictim()->getTarget() : nullptr;
 }
 
 //============================================================
@@ -574,7 +574,7 @@ bool ThreatManager::processThreatEvent(const UnitBaseEvent* pUnitBaseEvent)
             {
                 if (hostilReference == getCurrentVictim())
                 {
-                    setCurrentVictim(NULL);
+                    setCurrentVictim(nullptr);
                     setDirty(true);
                 }
                 iThreatContainer.remove(hostilReference);
@@ -591,7 +591,7 @@ bool ThreatManager::processThreatEvent(const UnitBaseEvent* pUnitBaseEvent)
         case UEV_THREAT_REF_REMOVE_FROM_LIST:
             if (hostilReference == getCurrentVictim())
             {
-                setCurrentVictim(NULL);
+                setCurrentVictim(nullptr);
                 setDirty(true);
             }
             if(hostilReference->isOnline())

@@ -244,7 +244,7 @@ void PetAI::UpdateAI(const uint32 diff)
 void PetAI::UpdateAllies()
 {
     Unit* owner = i_pet.GetCharmerOrOwner();
-    Group *pGroup = NULL;
+    Group *pGroup = nullptr;
 
     m_updateAlliesTimer = 10000;                            //update friendly targets every 10 seconds, lesser checks increase performance
 
@@ -264,7 +264,7 @@ void PetAI::UpdateAllies()
     m_AllySet.insert(i_pet.GetGUID());
     if(pGroup)                                              //add group
     {
-        for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player* Target = itr->GetSource();
             if(!Target || !pGroup->SameSubGroup(owner->ToPlayer(), Target))

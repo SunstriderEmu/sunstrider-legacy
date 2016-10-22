@@ -118,7 +118,7 @@ World::World()
     m_allowedSecurityLevel = SEC_PLAYER;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
-    m_gameTime=time(NULL);
+    m_gameTime=time(nullptr);
     m_startTime=m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
@@ -156,7 +156,7 @@ World::~World()
     for (WeatherMap::iterator itr = m_weathers.begin(); itr != m_weathers.end(); ++itr)
         delete itr->second;
 
-    CliCommandHolder* command = NULL;
+    CliCommandHolder* command = nullptr;
     while (cliCmdQueue.next(command))
         delete command;
 
@@ -184,7 +184,7 @@ Player* World::FindPlayerInZone(uint32 zone)
             return player;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool World::IsClosed() const
@@ -208,7 +208,7 @@ WorldSession* World::FindSession(uint32 id) const
     if(itr != m_sessions.end())
         return itr->second;                                 // also can return NULL for kicked session
     else
-        return NULL;
+        return nullptr;
 }
 
 /// Remove a given session
@@ -306,7 +306,7 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
     {
         for(DisconnectMap::iterator i = m_disconnects.begin(); i != m_disconnects.end(); ++i)
         {
-            if(difftime(i->second, time(NULL)) < tolerance)
+            if(difftime(i->second, time(nullptr)) < tolerance)
             {
                 if(i->first == session->GetAccountId())
                     return true;
@@ -396,7 +396,7 @@ Weather* World::FindWeather(uint32 id) const
     if(itr != m_weathers.end())
         return itr->second;
     else
-        return 0;
+        return nullptr;
 }
 
 /// Remove a Weather object for the given zoneid
@@ -419,7 +419,7 @@ Weather* World::AddWeather(uint32 zone_id)
 
     // zone not have weather, ignore
     if(!weatherChances)
-        return NULL;
+        return nullptr;
 
     Weather* w = new Weather(zone_id,weatherChances);
     m_weathers[w->GetZone()] = w;
@@ -733,7 +733,7 @@ void World::LoadConfigSettings(bool reload)
         else if(i==1)
             pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
         else
-            pvp_ranks[i] = atoi(strtok (NULL, ","));
+            pvp_ranks[i] = atoi(strtok (nullptr, ","));
     }
 
     std::string s_leaderTeams = sConfigMgr->GetStringDefault("Arena.NewTitleDistribution.StaticLeaders", "0,0,0,0,0,0,0,0,0,0,0,0");
@@ -1144,11 +1144,11 @@ void World::LoadConfigSettings(bool reload)
     strncpy(forbiddenMaps, forbiddenmaps.c_str(), forbiddenmaps.length());
     const char * delim = ",";
     char * token = strtok(forbiddenMaps, delim);
-    while(token != NULL)
+    while(token != nullptr)
     {
-        int32 mapid = strtol(token, NULL, 10);
+        int32 mapid = strtol(token, nullptr, 10);
         m_forbiddenMapIds.insert(mapid);
-        token = strtok(NULL,delim);
+        token = strtok(nullptr,delim);
     }
     delete[] forbiddenMaps;
     
@@ -1247,7 +1247,7 @@ void World::SetInitialWorldSettings()
     uint32 serverStartingTime = GetMSTime();
 
     ///- Initialize the random number generator
-    srand((unsigned int)time(NULL));
+    srand((unsigned int)time(nullptr));
     
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
@@ -1633,7 +1633,7 @@ void World::SetInitialWorldSettings()
     sSmartScriptMgr->LoadSmartAIFromDB();
 
     ///- Initialize game time and timers
-    m_gameTime = time(NULL);
+    m_gameTime = time(nullptr);
     m_startTime=m_gameTime;
 
     tm local;
@@ -2035,7 +2035,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_ANNOUNCES].Reset();
         
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
-            time_t curTime = time(NULL);
+            time_t curTime = time(nullptr);
             for (std::map<uint32, AutoAnnounceMessage*>::iterator itr = autoAnnounces.begin(); itr != autoAnnounces.end(); itr++) {
                 if (itr->second->nextAnnounce <= curTime) {
                     SendWorldText(LANG_AUTO_ANN, itr->second->message.c_str());
@@ -2143,7 +2143,7 @@ void World::ScriptsProcess()
     {
         ScriptAction const& step = iter->second;
 
-        Object* source = NULL;
+        Object* source = nullptr;
 
         if(step.sourceGUID)
         {
@@ -2191,7 +2191,7 @@ void World::ScriptsProcess()
 
         //if(source && !source->IsInWorld()) source = NULL;
 
-        Object* target = NULL;
+        Object* target = nullptr;
 
         if(step.targetGUID)
         {
@@ -2437,7 +2437,7 @@ void World::ScriptsProcess()
                     break;
                 }
 
-                GameObject *go = NULL;
+                GameObject *go = nullptr;
                 int32 time_to_despawn = step.script->datalong2<5 ? 5 : (int32)step.script->datalong2;
 
                 CellCoord p(Trinity::ComputeCellCoord(summoner->GetPositionX(), summoner->GetPositionY()));
@@ -2497,7 +2497,7 @@ void World::ScriptsProcess()
 
                 Unit* caster = (Unit*)source;
 
-                GameObject *door = NULL;
+                GameObject *door = nullptr;
                 int32 time_to_close = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
                 CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
@@ -2552,7 +2552,7 @@ void World::ScriptsProcess()
 
                 Unit* caster = (Unit*)source;
 
-                GameObject *door = NULL;
+                GameObject *door = nullptr;
                 int32 time_to_open = step.script->datalong2 < 15 ? 15 : (int32)step.script->datalong2;
 
                 CellCoord p(Trinity::ComputeCellCoord(caster->GetPositionX(), caster->GetPositionY()));
@@ -2765,7 +2765,7 @@ void World::ScriptsProcess()
                     break;
                 }
                 //our target
-                Creature* target = NULL;
+                Creature* target = nullptr;
 
                 if(source) //using grid searcher
                 {
@@ -2790,7 +2790,7 @@ void World::ScriptsProcess()
                     break;
                 //TC_LOG_DEBUG("scripts","target passed");
                 //Lets choose our ScriptMap map
-                ScriptMapMap *datamap = NULL;
+                ScriptMapMap *datamap = nullptr;
                 switch(step.script->dataint)
                 {
                     case 1://QUEST END SCRIPTMAP
@@ -2821,7 +2821,7 @@ void World::ScriptsProcess()
 
                 uint32 script_id = step.script->datalong2;
                 //insert script into schedule but do not start it
-                ScriptsStart(*datamap, script_id, target, NULL, false);
+                ScriptsStart(*datamap, script_id, target, nullptr, false);
                 break;
             }
 
@@ -2840,7 +2840,7 @@ void World::ScriptsProcess()
                 if(!source || (source->ToCreature())->IsDead())
                     break;
 
-                (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
                 switch(step.script->dataint)
                 {
@@ -3131,7 +3131,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
 
     //AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
 
-    QueryResult resultAccounts = NULL;                     //used for kicking
+    QueryResult resultAccounts = nullptr;                     //used for kicking
     
     uint32 authorGUID = sObjectMgr->GetPlayerLowGUIDByName(safe_author);
 
@@ -3232,7 +3232,7 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
 void World::_UpdateGameTime()
 {
     ///- update the time
-    time_t thisTime = time(NULL);
+    time_t thisTime = time(nullptr);
     uint32 elapsed = uint32(thisTime - m_gameTime);
     m_gameTime = thisTime;
 
@@ -3252,7 +3252,7 @@ void World::_UpdateGameTime()
         {
             m_ShutdownTimer -= elapsed;
 
-            ShutdownMsg(false, NULL, m_ShutdownReason);
+            ShutdownMsg(false, nullptr, m_ShutdownReason);
         }
     }
 }
@@ -3279,7 +3279,7 @@ void World::ShutdownServ(uint32 time, uint32 options, const char* reason)
     else
     {
         m_ShutdownTimer = time;
-        ShutdownMsg(true, NULL, m_ShutdownReason);
+        ShutdownMsg(true, nullptr, m_ShutdownReason);
     }
 
     #ifdef PLAYERBOT
@@ -3358,7 +3358,7 @@ void World::SendServerMessage(uint32 type, const char *text, Player* player)
 void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
-    WorldSession* sess = NULL;
+    WorldSession* sess = nullptr;
     while (addSessQueue.next(sess))
         AddSession_(sess);
 
@@ -3375,7 +3375,7 @@ void World::UpdateSessions(uint32 diff)
         if (!pSession->Update(diff, updater))    // As interval = 0
         {
             if (!RemoveQueuedPlayer(itr->second) && itr->second && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = time(NULL);
+                m_disconnects[itr->second->GetAccountId()] = time(nullptr);
             RemoveQueuedPlayer(pSession);
             m_sessions.erase(itr);
             delete pSession;
@@ -3442,9 +3442,9 @@ void World::updateArenaLeadersTitles()
 // This handles the issued and queued CLI commands
 void World::ProcessCliCommands()
 {
-    CliCommandHolder::Print* zprint = NULL;
-    void* callbackArg = NULL;
-    CliCommandHolder* command = NULL;
+    CliCommandHolder::Print* zprint = nullptr;
+    void* callbackArg = nullptr;
+    CliCommandHolder* command = nullptr;
     while (cliCmdQueue.next(command))
     {
         TC_LOG_INFO("misc", "CLI command under processing...");
@@ -3502,7 +3502,7 @@ void World::InitDailyQuestResetTime()
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = 6;
     localTm.tm_min  = 0;
@@ -3538,7 +3538,7 @@ void World::ResetDailyQuests()
     TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
     
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
     bool reinitConsortium = false;
     if (localTm.tm_mday == 1) {
@@ -3744,7 +3744,7 @@ void World::UpdateMonitoring(uint32 diff)
     std::string monpath;
     std::string filename;
     char data[64];
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
 
     monpath = sConfigMgr->GetStringDefault("Monitor.path", "");
     monpath += "/";
@@ -3755,7 +3755,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.players", "players");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     sprintf(data, "%u %u", GetActiveSessionCount(), GetQueuedSessionCount());
     trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", (uint32)now, GetActiveSessionCount(), GetQueuedSessionCount());
@@ -3766,7 +3766,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.timediff", "timediff");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     sprintf(data, "%u", fastTd);
     trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", (uint32)now, fastTd);
@@ -3806,7 +3806,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.maps", "maps");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     fputs(maps.c_str(), fp);
     fputs("\n", fp);
@@ -3828,7 +3828,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.bgwait", "bgwait");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     fputs(bgs.c_str(), fp);
     fputs("\n", fp);
@@ -3839,7 +3839,7 @@ void World::UpdateMonitoring(uint32 diff)
 
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.creatureguid", "creatureguid");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     sprintf(data, "%u", sObjectMgr->GetMaxCreatureGUID());
     fputs(data, fp);
@@ -3885,7 +3885,7 @@ void World::UpdateMonitoring(uint32 diff)
     
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.races", "races");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     fputs(races.c_str(), fp);
     fputs("\n", fp);
@@ -3894,7 +3894,7 @@ void World::UpdateMonitoring(uint32 diff)
     
     filename = monpath;
     filename += sConfigMgr->GetStringDefault("Monitor.classes", "classes");
-    if ((fp = fopen(filename.c_str(), "w")) == NULL)
+    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
         return;
     fputs(classes.c_str(), fp);
     fputs("\n", fp);
@@ -3922,7 +3922,7 @@ void World::LoadAutoAnnounce()
         uint32 hour = fields[2].GetUInt32();
         uint32 mins = fields[3].GetUInt32();
 
-        time_t curTime = time(NULL);
+        time_t curTime = time(nullptr);
         tm localTm = *localtime(&curTime);
         localTm.tm_hour = hour;
         localTm.tm_min  = mins;
@@ -3943,7 +3943,7 @@ void World::LoadAutoAnnounce()
 CharTitlesEntry const* World::getGladiatorTitle(uint8 rank)
 {
     if(rank < 1 || rank > 3)
-        return NULL;
+        return nullptr;
 
     uint8 id = 0;
     switch(rank)
@@ -3959,7 +3959,7 @@ CharTitlesEntry const* World::getGladiatorTitle(uint8 rank)
 CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)
 {
     if(rank < 1 || rank > 3)
-        return NULL;
+        return nullptr;
 
     uint8 id = 0;
     switch(rank)
@@ -4198,7 +4198,7 @@ GlobalPlayerData const* World::GetGlobalPlayerData(uint32 guid) const
     GlobalPlayerDataMap::const_iterator itr = _globalPlayerDataStore.find(guid);
     if (itr != _globalPlayerDataStore.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 uint32 World::GetGlobalPlayerGUID(std::string const& name) const

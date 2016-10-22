@@ -56,7 +56,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
         gmbanned.clear();
         std::string safe_name = name;
         CharacterDatabase.EscapeString(safe_name);
-        QueryResult result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " UI64FMTD " ORDER BY expire", safe_name.c_str(), time(NULL));
+        QueryResult result = CharacterDatabase.PQuery("SELECT accountid, expire FROM channel_ban WHERE channel = '%s' AND expire > " UI64FMTD " ORDER BY expire", safe_name.c_str(), time(nullptr));
         if (result) {
             do {
                 Field *fields = result->Fetch();
@@ -83,7 +83,7 @@ bool Channel::IsBannedByGM(uint64 const guid)
     
     GMBannedList::const_iterator itr = gmbanned.find(accountId);
     if (itr != gmbanned.end()) {        // Account is banned, check expiration date
-        if (itr->second > time(NULL))
+        if (itr->second > time(nullptr))
             return true;
     }
     
@@ -239,7 +239,7 @@ void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
     else
     {
         Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
-        if(bad == NULL || !IsOn(bad->GetGUID()))
+        if(bad == nullptr || !IsOn(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -301,7 +301,7 @@ void Channel::UnBan(uint64 good, std::string const& badname)
     else
     {
         Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
-        if(bad == NULL || !IsBanned(bad->GetGUID()))
+        if(bad == nullptr || !IsBanned(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -442,7 +442,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
     }
 
     Player *newp = sObjectAccessor->FindConnectedPlayerByName(newname);
-    if(newp == NULL || !IsOn(newp->GetGUID()))
+    if(newp == nullptr || !IsOn(newp->GetGUID()))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);
@@ -1058,7 +1058,7 @@ void Channel::LeaveNotify(uint64 guid)
 
 void Channel::RemoveGMBan(uint64 accountid)
 {
-    gmbanned[accountid] = time(NULL);
+    gmbanned[accountid] = time(nullptr);
 }
 
 uint32 Channel::GetNumPlayers()

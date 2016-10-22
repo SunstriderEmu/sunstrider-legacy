@@ -149,7 +149,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             GetPlayer()->UpdateSpeakTime();
             if ( !_player->CanSpeak() )
             {
-                std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+                std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
                 SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
                 return;
             }
@@ -318,7 +318,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             #ifdef PLAYERBOT
             // Playerbot mod: broadcast message to bot members
-            for(GroupReference* itr = group->GetFirstMember(); itr != NULL; itr=itr->next())
+            for(GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr=itr->next())
             {
                 Player* player = itr->GetSource();
                 if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
@@ -397,7 +397,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             #ifdef PLAYERBOT
             // Playerbot mod: broadcast message to bot members
-            for(GroupReference* itr = targetGroup->GetFirstMember(); itr != NULL; itr=itr->next())
+            for(GroupReference* itr = targetGroup->GetFirstMember(); itr != nullptr; itr=itr->next())
             {
                 Player* player = itr->GetSource();
                 if (player && player->GetPlayerbotAI() && lang != LANG_ADDON)
@@ -536,7 +536,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
     GetPlayer()->UpdateSpeakTime();
     if (!GetPlayer()->CanSpeak())
     {
-        std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+        std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
         return;
     }

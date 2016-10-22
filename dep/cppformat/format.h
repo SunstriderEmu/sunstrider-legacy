@@ -1641,7 +1641,7 @@ class ArgMap {
 
   const internal::Arg* find(const fmt::BasicStringRef<Char> &name) const {
     typename MapType::const_iterator it = map_.find(name);
-    return it != map_.end() ? &it->second : 0;
+    return it != map_.end() ? &it->second : nullptr;
   }
 };
 
@@ -1670,7 +1670,7 @@ class ArgFormatterBase : public ArgVisitor<Impl, void> {
   }
 
   void write(const char *value) {
-    Arg::StringValue<char> str = {value, value != 0 ? std::strlen(value) : 0};
+    Arg::StringValue<char> str = {value, value != nullptr ? std::strlen(value) : 0};
     writer_.write_str(str, spec_);
   }
 

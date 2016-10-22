@@ -178,21 +178,21 @@ class Map : public GridRefManager<NGridType>
         float GetHeight(float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         float GetMinHeight(float x, float y) const;
         /* Get map level (checking vmaps) or liquid level at given point */
-        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
+        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr, bool swim = false) const;
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
         float GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         bool GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
         void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
-        Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = NULL);
+        Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = nullptr);
 
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask = (PhaseMask)0) const;
         void Balance() { _dynamicTree.balance(); }
         //get dynamic collision (gameobjects only ?)
         bool getObjectHitPos(PhaseMask phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
-        ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData *data = 0) const;
+        ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData *data = nullptr) const;
 
         uint32 GetAreaId(float x, float y, float z, bool *isOutdoors) const;
         bool GetAreaInfo(float x, float y, float z, uint32 &mogpflags, int32 &adtId, int32 &rootId, int32 &groupId) const;
@@ -202,7 +202,7 @@ class Map : public GridRefManager<NGridType>
         uint8 GetTerrainType(float x, float y) const;
         float GetWaterLevel(float x, float y) const;
         //IsUnderWater is implied by this
-        bool IsInWater(float x, float y, float z, LiquidData *data = 0) const;
+        bool IsInWater(float x, float y, float z, LiquidData *data = nullptr) const;
         bool IsUnderWater(float x, float y, float z) const;
 
         uint32 GetAreaId(float x, float y, float z) const;
@@ -263,14 +263,14 @@ class Map : public GridRefManager<NGridType>
         //avoid using as much as possible, this locks HashMapHolder
         Creature* GetCreatureWithTableGUID(uint32 tableGUID) const;
 
-        MapInstanced* ToMapInstanced() { if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return NULL; }
-        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return NULL; }
+        MapInstanced* ToMapInstanced() { if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return nullptr; }
+        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return nullptr; }
 
-        InstanceMap* ToInstanceMap() { if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return NULL; }
-        const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return NULL; }
+        InstanceMap* ToInstanceMap() { if (IsDungeon())  return reinterpret_cast<InstanceMap*>(this); else return nullptr; }
+        const InstanceMap* ToInstanceMap() const { if (IsDungeon())  return (const InstanceMap*)((InstanceMap*)this); else return nullptr; }
 
-        BattlegroundMap* ToBattlegroundMap() { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap*>(this); else return NULL; }
-        const BattlegroundMap* ToBattlegroundMap() const { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap const*>(this); return NULL; }
+        BattlegroundMap* ToBattlegroundMap() { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap*>(this); else return nullptr; }
+        const BattlegroundMap* ToBattlegroundMap() const { if (IsBattlegroundOrArena()) return reinterpret_cast<BattlegroundMap const*>(this); return nullptr; }
 
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
@@ -369,7 +369,7 @@ class Map : public GridRefManager<NGridType>
         GameObjectMoveList i_gameObjectsToMove;
 
         bool loaded(const GridPair &) const;
-        void EnsureGridLoaded(const Cell&, Player* player = NULL);
+        void EnsureGridLoaded(const Cell&, Player* player = nullptr);
         void EnsureGridCreated(const GridPair &);
         void EnsureGridCreated_i(const GridPair &);
 

@@ -126,8 +126,8 @@ void SpellDestination::RelocateOffset(Position const& offset)
 
 SpellCastTargets::SpellCastTargets() : m_elevation(0), m_speed(0), m_strTarget()
 {
-    m_objectTarget = NULL;
-    m_itemTarget = NULL;
+    m_objectTarget = nullptr;
+    m_itemTarget = nullptr;
 
     m_objectTargetGUID = 0;
     m_itemTargetGUID = 0;
@@ -275,7 +275,7 @@ Unit* SpellCastTargets::GetUnitTarget() const
 {
     if (m_objectTarget)
         return m_objectTarget->ToUnit();
-    return NULL;
+    return nullptr;
 }
 
 void SpellCastTargets::SetUnitTarget(Unit* target)
@@ -305,7 +305,7 @@ GameObject* SpellCastTargets::GetGOTarget() const
 {
     if (m_objectTarget)
         return m_objectTarget->ToGameObject();
-    return NULL;
+    return nullptr;
 }
 
 
@@ -334,7 +334,7 @@ Corpse* SpellCastTargets::GetCorpseTarget() const
 {
     if (m_objectTarget)
         return m_objectTarget->ToCorpse();
-    return NULL;
+    return nullptr;
 }
 
 WorldObject* SpellCastTargets::GetObjectTarget() const
@@ -349,7 +349,7 @@ uint64 SpellCastTargets::GetObjectTargetGUID() const
 
 void SpellCastTargets::RemoveObjectTarget()
 {
-    m_objectTarget = NULL;
+    m_objectTarget = nullptr;
     m_objectTargetGUID = 0LL;
     m_targetMask &= ~(TARGET_FLAG_UNIT_MASK | TARGET_FLAG_CORPSE_MASK | TARGET_FLAG_GAMEOBJECT_MASK);
 }
@@ -492,7 +492,7 @@ void SpellCastTargets::SetDstChannel(SpellDestination const& spellDest)
 
 WorldObject* SpellCastTargets::GetObjectTargetChannel(Unit* caster) const
 {
-    return m_objectTargetGUIDChannel ? ((m_objectTargetGUIDChannel == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUIDChannel, caster)) : NULL;
+    return m_objectTargetGUIDChannel ? ((m_objectTargetGUIDChannel == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUIDChannel, caster)) : nullptr;
 }
 
 bool SpellCastTargets::HasDstChannel() const
@@ -507,9 +507,9 @@ SpellDestination const* SpellCastTargets::GetDstChannel() const
 
 void SpellCastTargets::Update(Unit* caster)
 {
-    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUID, (WorldObject*)caster)) : NULL;
+    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUID, (WorldObject*)caster)) : nullptr;
 
-    m_itemTarget = NULL;
+    m_itemTarget = nullptr;
     if (caster->GetTypeId() == TYPEID_PLAYER)
     {
         Player* player = caster->ToPlayer();
@@ -593,7 +593,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     _scriptsLoaded(false)
 {
     m_skipHitCheck = skipCheck;
-    m_selfContainer = NULL;
+    m_selfContainer = nullptr;
     m_triggeringContainer = triggeringContainer;
     m_referencedFromCurrentSpell = false;
     m_executedCurrently = false;
@@ -649,7 +649,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     else
     {
         m_originalCaster = ObjectAccessor::GetUnit(*m_caster,m_originalCasterGUID);
-        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = NULL;
+        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = nullptr;
     }
 
     for(int i=0; i <3; ++i)
@@ -661,14 +661,14 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_TriggerSpells.clear();
     m_IsTriggeredSpell = triggered;
     //m_AreaAura = false;
-    m_CastItem = NULL;
+    m_CastItem = nullptr;
 
-    unitTarget = NULL;
-    itemTarget = NULL;
-    gameObjTarget = NULL;
-    focusObject = NULL;
+    unitTarget = nullptr;
+    itemTarget = nullptr;
+    gameObjTarget = nullptr;
+    focusObject = nullptr;
     m_cast_count = 0;
-    m_triggeredByAuraSpell  = NULL;
+    m_triggeredByAuraSpell  = nullptr;
 
     effectHandleMode = SPELL_EFFECT_HANDLE_LAUNCH;
 
@@ -745,7 +745,7 @@ void Spell::InitExplicitTargets(SpellCastTargets const& targets)
         // try to select correct unit target if not provided by client or by serverside cast
         if (neededTargets & (TARGET_FLAG_UNIT_MASK))
         {
-            Unit* unit = NULL;
+            Unit* unit = nullptr;
             // try to use player selection as a target
             if (Player* playerCaster = m_caster->ToPlayer())
             {
@@ -813,7 +813,7 @@ void Spell::SelectExplicitTargets()
                 redirect = m_caster->GetMeleeHitRedirectTarget(target, m_spellInfo);
                 break;
             default:
-                redirect = NULL;
+                redirect = nullptr;
                 break;
             }
             if (redirect && (redirect != target))
@@ -839,7 +839,7 @@ void Spell::SelectSpellTargets()
             {
                 // non-standard target selection
                 float max_range = m_spellInfo->GetMaxRange(false, m_caster->GetSpellModOwner(), this);
-                WorldObject* result = NULL;
+                WorldObject* result = nullptr;
 
                 Trinity::CannibalizeObjectCheck u_check(m_caster, max_range);
                 Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(m_caster, result, u_check);
@@ -879,7 +879,7 @@ void Spell::SelectSpellTargets()
             }
             case 40160: // Throw Bomb
             {
-                GameObject* go = NULL;
+                GameObject* go = nullptr;
 
                 CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell(pair);
@@ -902,7 +902,7 @@ void Spell::SelectSpellTargets()
             }
             case 33655: // Dropping the Nether Modulator
             {
-                GameObject* go = NULL;
+                GameObject* go = nullptr;
 
                 CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell(pair);
@@ -922,7 +922,7 @@ void Spell::SelectSpellTargets()
                     break;
                 }
 
-                go = NULL;
+                go = nullptr;
 
                 CellCoord pair2(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell2(pair2);
@@ -1356,7 +1356,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
 void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType, uint32 effMask)
 {
-    Unit* referer = NULL;
+    Unit* referer = nullptr;
     switch (targetType.GetReferenceType())
     {
     case TARGET_REFERENCE_TYPE_SRC:
@@ -1387,7 +1387,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
     if (!referer)
         return;
 
-    Position const* center = NULL;
+    Position const* center = nullptr;
     switch (targetType.GetReferenceType())
     {
     case TARGET_REFERENCE_TYPE_SRC:
@@ -1648,7 +1648,7 @@ void Spell::SelectImplicitDestDestTargets(SpellEffIndex effIndex, SpellImplicitT
 
 void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImplicitTargetInfo const& targetType)
 {
-    WorldObject* target = NULL;
+    WorldObject* target = nullptr;
     bool checkIfValid = true;
 
     switch (targetType.GetTarget())
@@ -1950,7 +1950,7 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
     if (!targetMask)
         return;
 
-    WorldObject* target = NULL;
+    WorldObject* target = nullptr;
 
     switch (m_spellInfo->Effects[effIndex].GetImplicitTargetType())
     {
@@ -2073,10 +2073,10 @@ void Spell::SearchTargets(SEARCHER& searcher, uint32 containerMask, Unit* refere
 
 WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList)
 {
-    WorldObject* target = NULL;
+    WorldObject* target = nullptr;
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
     if (!containerTypeMask)
-        return NULL;
+        return nullptr;
     Trinity::WorldObjectSpellNearbyTargetCheck check(range, m_caster, m_spellInfo, selectionType, condList);
     Trinity::WorldObjectLastSearcher<Trinity::WorldObjectSpellNearbyTargetCheck> searcher(m_caster, target, check, containerTypeMask);
     SearchTargets<Trinity::WorldObjectLastSearcher<Trinity::WorldObjectSpellNearbyTargetCheck> >(searcher, containerTypeMask, m_caster, m_caster, range);
@@ -2527,7 +2527,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (mask == 0)                                          // No effects
         return;
 
-    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetObjectInWorld(target->targetGUID,(Unit*)NULL);
+    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetObjectInWorld(target->targetGUID,(Unit*)nullptr);
     if (!unit)
     {
         uint8 farMask = 0;
@@ -2549,7 +2549,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         // can't use default call because of threading, do stuff as fast as possible
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (farMask & (1 << i))
-                HandleEffects(unit, NULL, NULL, i, SPELL_EFFECT_HANDLE_HIT_TARGET);
+                HandleEffects(unit, nullptr, nullptr, i, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
         return;
     }
@@ -2617,7 +2617,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (crit)
         {
             procEx |= PROC_EX_CRITICAL_HIT;
-            addhealth = caster->SpellCriticalBonus(m_spellInfo, addhealth, NULL);
+            addhealth = caster->SpellCriticalBonus(m_spellInfo, addhealth, nullptr);
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
@@ -2691,7 +2691,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN && m_spellInfo->SpellFamilyFlags & 0x0000000800000000LL && m_spellInfo->SpellIconID==153)
         {
             int32 damagePoint  = damageInfo.damage * 33 / 100;
-            m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, NULL, NULL, true);
+            m_caster->CastCustomSpell(m_caster, 32220, &damagePoint, nullptr, nullptr, true);
         }
         // Bloodthirst
         else if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR && m_spellInfo->SpellFamilyFlags & 0x40000000000LL)
@@ -2782,7 +2782,7 @@ bool Spell::UpdateChanneledTargetList()
             for (int i = EFFECT_0; i <= EFFECT_2; ++i)
                 if (channelAuraMask & (1 << i) && m_spellInfo->Effects[i].RadiusEntry)
                 {
-                    range = m_spellInfo->Effects[i].CalcRadius(NULL, NULL);
+                    range = m_spellInfo->Effects[i].CalcRadius(nullptr, nullptr);
                     break;
                 }
 
@@ -2980,11 +2980,11 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         }
 
         if (effectMask & (1<<effectNumber))
-            HandleEffects(unit,NULL,NULL,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
+            HandleEffects(unit,nullptr,nullptr,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
     }
 
     if (sanct_effect >= 0 && (effectMask & (1 << sanct_effect)))
-        HandleEffects(unit, NULL, NULL, sanct_effect, SPELL_EFFECT_HANDLE_HIT_TARGET);
+        HandleEffects(unit, nullptr, nullptr, sanct_effect, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
     if(unit->GetTypeId() == TYPEID_UNIT && (unit->ToCreature())->IsAIEnabled) 
     {
@@ -3002,7 +3002,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         {
             if(roll_chance_i(i->second))
             {
-                caster->CastSpell(unit, i->first, true, NULL, NULL, 0, true);
+                caster->CastSpell(unit, i->first, true, nullptr, nullptr, 0, true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration
                 // set duration equal to triggering spell
                 if (i->first->GetDuration() == -1)
@@ -3035,7 +3035,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
                 if(*i < 0)
                     unit->RemoveAurasDueToSpell(-(*i));
                 else
-                    unit->CastSpell(unit, *i, true, 0, 0, caster->GetGUID());
+                    unit->CastSpell(unit, *i, true, nullptr, nullptr, caster->GetGUID());
             }
         }
     }
@@ -3060,7 +3060,7 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
 
     for(uint32 effectNumber = 0; effectNumber < MAX_SPELL_EFFECTS; effectNumber++)
         if (effectMask & (1 << effectNumber))
-            HandleEffects(NULL,NULL,go,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
+            HandleEffects(nullptr,nullptr,go,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
     // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
     // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )
@@ -3082,7 +3082,7 @@ void Spell::DoAllEffectOnTarget(ItemTargetInfo *target)
 
     for (uint32 effectNumber = 0; effectNumber < MAX_SPELL_EFFECTS; ++effectNumber)
         if (effectMask & (1 << effectNumber))
-            HandleEffects(NULL, target->item, NULL, effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
+            HandleEffects(nullptr, target->item, nullptr, effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
     CallScriptOnHitHandlers();
     CallScriptAfterHitHandlers();
@@ -3362,7 +3362,7 @@ void Spell::cancel()
 
     SetReferencedFromCurrent(false);
     if(m_selfContainer && *m_selfContainer == this)
-        *m_selfContainer = NULL;
+        *m_selfContainer = nullptr;
 
     uint32 oldState = m_spellState;
     m_spellState = SPELL_STATE_FINISHED;
@@ -3557,7 +3557,7 @@ void Spell::cast(bool skipCheck)
             if(SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(auraSpellInfo->Effects[auraSpellIdx].TriggerSpell))
             {
                 // Calculate chance at that moment (can be depend for example from combo points)
-                int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), NULL);
+                int32 chance = m_caster->CalculateSpellDamage(auraSpellInfo, auraSpellIdx, (*i)->GetBasePoints(), nullptr);
                 m_ChanceTriggerSpells.push_back(std::make_pair(spellInfo, chance * (*i)->GetStackAmount()));
             }
         }
@@ -3800,7 +3800,7 @@ void Spell::_handle_immediate_phase()
         if (!m_spellInfo->Effects[j].IsEffect())
             continue;
 
-         HandleEffects(m_originalCaster, NULL, NULL, j, SPELL_EFFECT_HANDLE_HIT);
+         HandleEffects(m_originalCaster, nullptr, nullptr, j, SPELL_EFFECT_HANDLE_HIT);
 
          // Don't do spell log, if is school damage spell
          if (m_spellInfo->Effects[j].Effect == SPELL_EFFECT_SCHOOL_DAMAGE || m_spellInfo->Effects[j].Effect == 0)
@@ -3839,7 +3839,7 @@ void Spell::SendSpellCooldown()
     // Cooldown started on SendCooldownEvent call
     if (m_spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
     {
-        _player->AddSpellCooldown(m_spellInfo->Id, 0, time(NULL) - 1);
+        _player->AddSpellCooldown(m_spellInfo->Id, 0, time(nullptr) - 1);
         return;
     }
 
@@ -3898,7 +3898,7 @@ void Spell::SendSpellCooldown()
     if( rec == 0 && catrec == 0)
         return;
 
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
 
     time_t catrecTime = catrec ? curTime+catrec/1000 : 0;   // in secs
     time_t recTime    = rec ? curTime+rec/1000 : catrecTime;// in secs
@@ -4014,7 +4014,7 @@ void Spell::update(uint32 difftime)
                             continue;
 
                         Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster,target->targetGUID);
-                        if (unit==NULL)
+                        if (unit==nullptr)
                             continue;
 
                         (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
@@ -4681,7 +4681,7 @@ void Spell::SendChannelUpdate(uint32 time, uint32 spellId)
 
 void Spell::SendChannelStart(uint32 duration)
 {
-    WorldObject* target = NULL;
+    WorldObject* target = nullptr;
 
     // select first not resisted target from target list for _0_ effect
     if(!m_UniqueTargetInfo.empty())
@@ -4818,9 +4818,9 @@ void Spell::TakeCastItem()
 
         // prevent crash at access to deleted m_targets.getItemTarget
         if(m_CastItem==m_targets.GetItemTarget())
-            m_targets.SetItemTarget(NULL);
+            m_targets.SetItemTarget(nullptr);
 
-        m_CastItem = NULL;
+        m_CastItem = nullptr;
     }
 }
 
@@ -4950,13 +4950,13 @@ void Spell::TakeReagents()
                     }
                 }
 
-                m_CastItem = NULL;
+                m_CastItem = nullptr;
             }
         }
 
         // if getItemTarget is also spell reagent
         if (m_targets.GetItemTargetEntry()==itemid)
-            m_targets.SetItemTarget(NULL);
+            m_targets.SetItemTarget(nullptr);
 
         p_caster->DestroyItemCount(itemid, itemcount, true);
     }
@@ -5006,7 +5006,7 @@ void Spell::HandleEffects(Unit *pUnitTarget,Item *pItemTarget,GameObject *pGOTar
         return;
 
     //we do not need DamageMultiplier here.
-    damage = CalculateDamage(i, NULL);
+    damage = CalculateDamage(i, nullptr);
 
     bool preventDefault = CallScriptEffectHandlers((SpellEffIndex)i, mode);
 
@@ -5612,7 +5612,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     return SPELL_FAILED_TRY_AGAIN;
 
                 // get the lock entry
-                LockEntry const *lockInfo = NULL;
+                LockEntry const *lockInfo = nullptr;
                 if (GameObject* go=m_targets.GetGOTarget())
                     lockInfo = sLockStore.LookupEntry(go->GetLockId());
                 else if(Item* itm=m_targets.GetItemTarget())
@@ -5791,7 +5791,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     if (m_caster->GetTypeId()==TYPEID_PLAYER && m_caster->GetClass()==CLASS_WARLOCK)
                     {
                         if (strict)                         //starting cast, trigger pet stun (cast by pet so it doesn't attack player)
-                            pet->CastSpell(pet, 32752, true, NULL, NULL, pet->GetGUID());
+                            pet->CastSpell(pet, 32752, true, nullptr, nullptr, pet->GetGUID());
                     }
                     else if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET))
                         return SPELL_FAILED_ALREADY_HAVE_SUMMON;
@@ -6571,7 +6571,7 @@ SpellCastResult Spell::CheckItems()
         Cell cell(p);
         cell.data.Part.reserved = ALL_DISTRICT;
 
-        GameObject* ok = NULL;
+        GameObject* ok = nullptr;
         Trinity::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
         Trinity::GameObjectSearcher<Trinity::GameObjectFocusCheck> checker(ok,go_check);
 
@@ -6664,7 +6664,7 @@ SpellCastResult Spell::CheckItems()
                     uint8 msg = p_caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, m_spellInfo->Effects[i].ItemType, 1 );
                     if (msg != EQUIP_ERR_OK )
                     {
-                        p_caster->SendEquipError( msg, NULL, NULL );
+                        p_caster->SendEquipError( msg, nullptr, nullptr );
                         return SPELL_FAILED_DONT_REPORT;
                     }
                 }
@@ -6925,7 +6925,7 @@ bool Spell::UpdatePointers()
     else
     {
         m_originalCaster = ObjectAccessor::GetUnit(*m_caster,m_originalCasterGUID);
-        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = NULL;
+        if(m_originalCaster && !m_originalCaster->IsInWorld()) m_originalCaster = nullptr;
     }
 
     if(m_castItemGUID && m_caster->GetTypeId() == TYPEID_PLAYER)
@@ -7113,7 +7113,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
     // else no break intended
     default:                                            // normal case
                                                         // Get GO cast coordinates if original caster -> GO
-        WorldObject* caster = NULL;
+        WorldObject* caster = nullptr;
         if (IS_GAMEOBJECT_GUID(m_originalCasterGUID))
             caster = m_caster->GetMap()->GetGameObject(m_originalCasterGUID);
         if (!caster)
@@ -7460,7 +7460,7 @@ void Spell::HandleLaunchPhase()
         if (!m_spellInfo->Effects[i].IsEffect())
             continue;
 
-        HandleEffects(NULL, NULL, NULL, i, SPELL_EFFECT_HANDLE_LAUNCH);
+        HandleEffects(nullptr, nullptr, nullptr, i, SPELL_EFFECT_HANDLE_LAUNCH);
     }
 
     float multiplier[MAX_SPELL_EFFECTS];
@@ -7519,7 +7519,7 @@ void Spell::HandleLaunchPhase()
 
 void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier, bool firstTarget)
 {
-    Unit* unit = NULL;
+    Unit* unit = nullptr;
     // In case spell hit target, do all effect on that target
     if (targetInfo.missCondition == SPELL_MISS_NONE)
         unit = m_caster->GetGUID() == targetInfo.targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, targetInfo.targetGUID);
@@ -7537,7 +7537,7 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
             m_damage = 0;
             m_healing = 0;
 
-            HandleEffects(unit, NULL, NULL, i, SPELL_EFFECT_HANDLE_LAUNCH_TARGET);
+            HandleEffects(unit, nullptr, nullptr, i, SPELL_EFFECT_HANDLE_LAUNCH_TARGET);
 
             if (m_damage > 0)
             {
@@ -7731,9 +7731,9 @@ namespace Trinity
         _targetSelectionType(selectionType), _condList(condList)
     {
         if (condList)
-            _condSrcInfo = new ConditionSourceInfo(NULL, caster);
+            _condSrcInfo = new ConditionSourceInfo(nullptr, caster);
         else
-            _condSrcInfo = NULL;
+            _condSrcInfo = nullptr;
     }
 
     WorldObjectSpellTargetCheck::~WorldObjectSpellTargetCheck()

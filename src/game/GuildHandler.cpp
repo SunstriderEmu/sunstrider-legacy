@@ -85,7 +85,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INVITE");
 
-    Player * player = NULL;
+    Player * player = nullptr;
 
     recvPacket >> Invitedname;
 
@@ -1168,14 +1168,14 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             uint8 msg = pGuild->CanStoreItem(BankTabDst,BankTabSlotDst,dest,SplitedAmount,pItemSrc,false);
             if( msg != EQUIP_ERR_OK )
             {
-                pl->SendEquipError( msg, pItemSrc, NULL );
+                pl->SendEquipError( msg, pItemSrc, nullptr );
                 return;
             }
 
             Item *pNewItem = pItemSrc->CloneItem( SplitedAmount );
             if( !pNewItem )
             {
-                pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemSrc, NULL );
+                pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemSrc, nullptr );
                 return;
             }
 
@@ -1209,7 +1209,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 uint8 msg = pGuild->CanStoreItem(BankTabDst,BankTabSlotDst,gDest,pItemSrc->GetCount(),pItemSrc,true);
                 if( msg != EQUIP_ERR_OK )
                 {
-                    pl->SendEquipError( msg, pItemSrc, NULL );
+                    pl->SendEquipError( msg, pItemSrc, nullptr );
                     return;
                 }
 
@@ -1217,7 +1217,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 msg = pGuild->CanStoreItem(BankTab,BankTabSlot,gSrc,pItemDst->GetCount(),pItemDst,true);
                 if( msg != EQUIP_ERR_OK )
                 {
-                    pl->SendEquipError( msg, pItemDst, NULL );
+                    pl->SendEquipError( msg, pItemDst, nullptr );
                     return;
                 }
 
@@ -1263,7 +1263,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     // allow work with inventory only
     if(!Player::IsInventoryPos(PlayerBag,PlayerSlot) && !(PlayerBag == NULL_BAG && PlayerSlot == NULL_SLOT) )
     {
-        _player->SendEquipError( EQUIP_ERR_NONE, NULL, NULL );
+        _player->SendEquipError( EQUIP_ERR_NONE, nullptr, nullptr );
         return;
     }
 
@@ -1292,7 +1292,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             Item *pNewItem = pItemBank->CloneItem( SplitedAmount );
             if( !pNewItem )
             {
-                pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemBank, NULL );
+                pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemBank, nullptr );
                 return;
             }
 
@@ -1300,7 +1300,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             uint8 msg = pl->CanStoreItem(PlayerBag, PlayerSlot, dest, pNewItem, false);
             if( msg != EQUIP_ERR_OK )
             {
-                pl->SendEquipError( msg, pNewItem, NULL );
+                pl->SendEquipError( msg, pNewItem, nullptr );
                 delete pNewItem;
                 return;
             }
@@ -1360,7 +1360,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 {
                     if(!pItemChar->CanBeTraded())
                     {
-                        _player->SendEquipError( EQUIP_ERR_ITEMS_CANT_BE_SWAPPED, pItemChar, NULL );
+                        _player->SendEquipError( EQUIP_ERR_ITEMS_CANT_BE_SWAPPED, pItemChar, nullptr );
                         return;
                     }
                 }
@@ -1369,7 +1369,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 msg = pl->CanStoreItem(PlayerBag, PlayerSlot, iDest, pItemBank, true);
                 if( msg != EQUIP_ERR_OK )
                 {
-                    pl->SendEquipError( msg, pItemBank, NULL );
+                    pl->SendEquipError( msg, pItemBank, nullptr );
                     return;
                 }
 
@@ -1379,7 +1379,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                     msg = pGuild->CanStoreItem(BankTab,BankTabSlot,gDest,pItemChar->GetCount(),pItemChar,true);
                     if( msg != EQUIP_ERR_OK )
                     {
-                        pl->SendEquipError( msg, pItemChar, NULL );
+                        pl->SendEquipError( msg, pItemChar, nullptr );
                         return;
                     }
                 }
@@ -1424,7 +1424,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
     if(!pItemChar->CanBeTraded())
     {
-        _player->SendEquipError( EQUIP_ERR_ITEMS_CANT_BE_SWAPPED, pItemChar, NULL );
+        _player->SendEquipError( EQUIP_ERR_ITEMS_CANT_BE_SWAPPED, pItemChar, nullptr );
         return;
     }
 
@@ -1443,14 +1443,14 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         uint8 msg = pGuild->CanStoreItem(BankTab,BankTabSlot,dest,SplitedAmount,pItemChar,false);
         if( msg != EQUIP_ERR_OK )
         {
-            pl->SendEquipError( msg, pItemChar, NULL );
+            pl->SendEquipError( msg, pItemChar, nullptr );
             return;
         }
 
         Item *pNewItem = pItemChar->CloneItem( SplitedAmount );
         if( !pNewItem )
         {
-            pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemChar, NULL );
+            pl->SendEquipError( EQUIP_ERR_ITEM_NOT_FOUND, pItemChar, nullptr );
             return;
         }
        
@@ -1497,7 +1497,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
                 msg = pl->CanStoreItem(PlayerBag, PlayerSlot, iDest, pItemBank, true);
                 if( msg != EQUIP_ERR_OK )
                 {
-                    pl->SendEquipError( msg, pItemBank, NULL );
+                    pl->SendEquipError( msg, pItemBank, nullptr );
                     return;
                 }
             }
@@ -1506,7 +1506,7 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
             msg = pGuild->CanStoreItem(BankTab,BankTabSlot,gDest,pItemChar->GetCount(),pItemChar,true);
             if( msg != EQUIP_ERR_OK )
             {
-                pl->SendEquipError( msg, pItemChar, NULL );
+                pl->SendEquipError( msg, pItemChar, nullptr );
                 return;
             }
 

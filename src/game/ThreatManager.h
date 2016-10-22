@@ -40,8 +40,8 @@ class SpellInfo;
 class ThreatCalcHelper
 {
     public:
-        static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
-        static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = NULL);
+        static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = nullptr);
+        static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = nullptr);
 };
 
 //==============================================================
@@ -164,7 +164,7 @@ class ThreatContainer
 
         bool empty() const { return(iThreatList.empty()); }
 
-        HostileReference* getMostHated() { return iThreatList.empty() ? NULL : iThreatList.front(); }
+        HostileReference* getMostHated() { return iThreatList.empty() ? nullptr : iThreatList.front(); }
 
         HostileReference* getReferenceByTarget(Unit* pVictim) const;
 
@@ -191,7 +191,7 @@ class ThreatManager
         void clearReferences();
         void clearCurrentVictim() { iCurrentVictim = nullptr; }
 
-        void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = NULL);
+        void addThreat(Unit* pVictim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = nullptr);
 
         void doAddThreat(Unit* victim, float threat);
 

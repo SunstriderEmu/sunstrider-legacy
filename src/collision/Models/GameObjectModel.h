@@ -49,7 +49,7 @@ public:
 
 class GameObjectModel /*, public Intersectable*/
 {
-    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(NULL) { }
+    GameObjectModel() : phasemask(0), iInvScale(0), iScale(0), iModel(nullptr) { }
 public:
     std::string name;
 

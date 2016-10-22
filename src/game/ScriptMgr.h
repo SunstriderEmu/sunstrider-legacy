@@ -127,7 +127,7 @@ public:
     bool IsDatabaseBound() const override { return true; }
 
     // Should return a fully valid SpellScript pointer.
-    virtual SpellScript* GetSpellScript() const { return NULL; }
+    virtual SpellScript* GetSpellScript() const { return nullptr; }
 
     // Should return a fully valid AuraScript pointer.
   //NYI  virtual AuraScript* GetAuraScript() const { return NULL; }
@@ -191,7 +191,7 @@ public:
     bool IsDatabaseBound() const override { return true; }
 
     // Gets an InstanceScript object for this instance.
-    virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return NULL; }
+    virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return nullptr; }
 };
 
 class BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
@@ -367,7 +367,7 @@ public:
     virtual void OnGameObjectStateChanged(GameObject* /*go*/, uint32 /*state*/) { }
 
     // Called when a GameObjectAI object is needed for the gameobject.
-    virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return NULL; }
+    virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return nullptr; }
 };
 
 class AreaTriggerScript : public ScriptObject
@@ -586,7 +586,7 @@ class ScriptMgr
 };
 
 //Generic scripting text function
-void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = NULL);
+void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = nullptr);
 
 #define sScriptMgr ScriptMgr::instance()
 
@@ -677,7 +677,7 @@ public:
         if (it != ScriptPointerList.end())
             return it->second;
 
-        return NULL;
+        return nullptr;
     }
 
 private:

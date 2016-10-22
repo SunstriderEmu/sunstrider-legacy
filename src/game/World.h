@@ -631,11 +631,11 @@ class World
         void SendWorldText(int32 string_id, ...);
         void SendGlobalText(const char* text, WorldSession *self);
         void SendGMText(int32 string_id, ...);
-        void SendGlobalMessage(WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
-        void SendGlobalGMMessage(WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
-        void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = 0, uint32 team = 0);
-        void SendZoneText(uint32 zone, const char *text, WorldSession *self = 0, uint32 team = 0);
-        void SendServerMessage(uint32 type, const char *text = "", Player* player = NULL);
+        void SendGlobalMessage(WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
+        void SendGlobalGMMessage(WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
+        void SendZoneMessage(uint32 zone, WorldPacket *packet, WorldSession *self = nullptr, uint32 team = 0);
+        void SendZoneText(uint32 zone, const char *text, WorldSession *self = nullptr, uint32 team = 0);
+        void SendServerMessage(uint32 type, const char *text = "", Player* player = nullptr);
 
         //Force all connected clients to clear specified player cache
         void InvalidatePlayerDataToAllClient(uint64 guid);
@@ -651,7 +651,7 @@ class World
         uint32 const GetShutDownTimeLeft() { return m_ShutdownTimer; }
         void ShutdownServ(uint32 time, uint32 options, /*uint8 exitcode*/ const char* reason);
         void ShutdownCancel();
-        void ShutdownMsg(bool show = false, Player* player = NULL, std::string reason = "");
+        void ShutdownMsg(bool show = false, Player* player = nullptr, std::string reason = "");
         std::string GetShutdownReason() { return m_ShutdownReason; }
         static uint8 GetExitCode() { return m_ExitCode; }
         static void StopNow(uint8 exitcode) { m_stopEvent = true; m_ExitCode = exitcode; }

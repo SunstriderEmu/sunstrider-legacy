@@ -283,9 +283,9 @@ public:
 #endif
     std::list<Condition*>* ImplicitTargetConditions;
 
-    SpellEffectInfo() : _spellInfo(NULL), _effIndex(0), Effect(0), ApplyAuraName(0), Amplitude(0), DieSides(0),
+    SpellEffectInfo() : _spellInfo(nullptr), _effIndex(0), Effect(0), ApplyAuraName(0), Amplitude(0), DieSides(0),
         RealPointsPerLevel(0), BasePoints(0), PointsPerComboPoint(0), ValueMultiplier(0), DamageMultiplier(0),
-        MiscValue(0), MiscValueB(0), Mechanic(MECHANIC_NONE), RadiusEntry(NULL), ChainTarget(0),
+        MiscValue(0), MiscValueB(0), Mechanic(MECHANIC_NONE), RadiusEntry(nullptr), ChainTarget(0),
         ItemType(0), TriggerSpell(0), /*ImplicitTargetConditions(NULL) */
 #ifdef LICH_KING
         BonusMultiplier(0)
@@ -305,12 +305,12 @@ public:
     bool IsFarDestTargetEffect() const;
     bool IsUnitOwnedAuraEffect() const;
 
-    float CalcValueMultiplier(Unit* caster, Spell* spell = NULL) const;
-    float CalcDamageMultiplier(Unit* caster, Spell* spell = NULL) const;
+    float CalcValueMultiplier(Unit* caster, Spell* spell = nullptr) const;
+    float CalcDamageMultiplier(Unit* caster, Spell* spell = nullptr) const;
 
     bool HasRadius() const;
     //always use GetSpellModOwner() for caster
-    float CalcRadius(Unit* caster = NULL, Spell* = NULL) const;
+    float CalcRadius(Unit* caster = nullptr, Spell* = nullptr) const;
 
     uint32 GetProvidedTargetMask() const;
     uint32 GetMissingTargetMask(bool srcSet = false, bool destSet = false, uint32 mask = 0) const;
@@ -516,12 +516,12 @@ public:
 
     float GetMinRange(bool positive = false) const;
     //always use GetSpellModOwner() for caster
-    float GetMaxRange(bool positive = false, Unit* caster = NULL, Spell* spell = NULL) const;
+    float GetMaxRange(bool positive = false, Unit* caster = nullptr, Spell* spell = nullptr) const;
 
     bool IsSingleTarget() const;
 
     SpellCastResult CheckTarget(Unit const* caster, WorldObject const* target, bool implicit = true) const;
-    SpellCastResult CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget = NULL) const;
+    SpellCastResult CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget = nullptr) const;
     bool CheckTargetCreatureType(Unit const* target) const;
 private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()

@@ -253,7 +253,7 @@ void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
         delete group;
     }
 
-    GetPlayer()->SetGroupInvite(NULL);
+    GetPlayer()->SetGroupInvite(nullptr);
 
     WorldPacket data( SMSG_GROUP_DECLINE, 10 );             // guess size
     data << GetPlayer()->GetName();

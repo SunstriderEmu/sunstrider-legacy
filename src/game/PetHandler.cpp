@@ -185,7 +185,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
             if(guid2)
                 unit_target = ObjectAccessor::GetUnit(*_player,guid2);
             else
-                unit_target = NULL;
+                unit_target = nullptr;
 
             if ((pet->ToCreature())->GetGlobalCooldown() > 0)
                 return;
@@ -497,13 +497,13 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     PetNameInvalidReason res = ObjectMgr::CheckPetName(name);
     if (res != PET_NAME_SUCCESS)
     {
-        SendPetNameInvalid(res, name, NULL);
+        SendPetNameInvalid(res, name, nullptr);
         return;
     }
 
     if(sObjectMgr->IsReservedName(name))
     {
-        SendPetNameInvalid(PET_NAME_RESERVED, name, NULL);
+        SendPetNameInvalid(PET_NAME_RESERVED, name, nullptr);
         return;
     }
 
@@ -546,7 +546,7 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     trans->PAppend("UPDATE character_pet SET name = '%s', renamed = '1' WHERE owner = '%u' AND id = '%u'", name.c_str(), _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
     CharacterDatabase.CommitTransaction(trans);
 
-    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
+    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
 }
 
 void WorldSession::HandlePetAbandon( WorldPacket & recvData )
@@ -611,7 +611,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
     if (GetPlayer()->GetMoney() < cost)
     {
-        GetPlayer()->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+        GetPlayer()->SendBuyError( BUY_ERR_NOT_ENOUGHT_MONEY, nullptr, 0, 0);
         return;
     }
 
@@ -633,7 +633,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     // relearn pet passives
     pet->LearnPetPassives();
 
-    pet->m_resetTalentsTime = time(NULL);
+    pet->m_resetTalentsTime = time(nullptr);
     pet->m_resetTalentsCost = cost;
     GetPlayer()->ModifyMoney(-(int32)cost);
 
@@ -750,7 +750,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
     Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;
 
-    SpellCastResult result = spell->PetCanCast(NULL);
+    SpellCastResult result = spell->PetCanCast(nullptr);
     if (spellid == 33395) { //Water elemental Freeze HACKZ
         result = spell->CheckRange(true);
     }

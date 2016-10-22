@@ -63,7 +63,7 @@ GameObject::GameObject() : WorldObject(),
     m_charges(5),
     m_cooldownTime(0),
     m_inactive(false),
-    m_goInfo(NULL),
+    m_goInfo(nullptr),
     m_DBTableGuid(0),
     manual_unlock(false),
     m_prevGoState(GO_STATE_ACTIVE)
@@ -347,16 +347,16 @@ void GameObject::Update(uint32 diff)
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
                     if (owner && owner->IsInCombat())
-                        m_cooldownTime = time(NULL) + GetGOInfo()->GetCooldown();
+                        m_cooldownTime = time(nullptr) + GetGOInfo()->GetCooldown();
                     else if (GetEntry() == 180647)
-                        m_cooldownTime = time(NULL) + GetGOInfo()->GetCooldown();
+                        m_cooldownTime = time(nullptr) + GetGOInfo()->GetCooldown();
                     m_lootState = GO_READY;
                     break;
                 }
                 case GAMEOBJECT_TYPE_FISHINGNODE:
                 {
                     // fishing code (bobber ready)
-                    if( time(NULL) > m_respawnTime - FISHING_BOBBER_READY_TIME )
+                    if( time(nullptr) > m_respawnTime - FISHING_BOBBER_READY_TIME )
                     {
                         // splash bobber (bobber ready now)
                         Unit* caster = GetOwner();
@@ -389,7 +389,7 @@ void GameObject::Update(uint32 diff)
         {
             if (m_respawnTime > 0)                          // timer on
             {
-                if (m_respawnTime <= time(NULL))            // timer expired
+                if (m_respawnTime <= time(nullptr))            // timer expired
                 {
                     m_respawnTime = 0;
                     m_SkillupList.clear();
@@ -447,9 +447,9 @@ void GameObject::Update(uint32 diff)
 
                 // traps
                 Unit* owner = GetOwner();
-                Unit* trapTarget =  NULL;                            // pointer to appropriate target if found any
+                Unit* trapTarget =  nullptr;                            // pointer to appropriate target if found any
 
-                if(m_cooldownTime > time(NULL))
+                if(m_cooldownTime > time(nullptr))
                     return;
 
                 bool IsBattlegroundTrap = false;
@@ -500,7 +500,7 @@ void GameObject::Update(uint32 diff)
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
 
                     // affect only players
-                    Player* p_ok = NULL;
+                    Player* p_ok = nullptr;
                     Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
                     this->VisitNearbyWorldObject(radius, checker);
@@ -514,7 +514,7 @@ void GameObject::Update(uint32 diff)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
-                    m_cooldownTime = time(NULL) + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() : 4);
+                    m_cooldownTime = time(nullptr) + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() : 4);
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -529,7 +529,7 @@ void GameObject::Update(uint32 diff)
                 }
             }
 
-            if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(NULL)))
+            if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(nullptr)))
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
 
             break;
@@ -541,7 +541,7 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if(GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
+                    if(GetAutoCloseTime() && (m_cooldownTime < time(nullptr)))
                     {
                         SwitchDoorOrButton(false);
                         SetLootState(GO_JUST_DEACTIVATED);
@@ -623,7 +623,7 @@ void GameObject::Update(uint32 diff)
                 return;
             }
 
-            m_respawnTime = time(NULL) + m_respawnDelayTime;
+            m_respawnTime = time(nullptr) + m_respawnDelayTime;
 
             // if option not set then object will be saved at grid unload
             if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
@@ -677,10 +677,10 @@ void GameObject::getFishLoot(Loot *fishloot)
 
     // if subzone loot exist use it
     if(LootTemplates_Fishing.HaveLootFor(subzone))
-        fishloot->FillLoot(subzone, LootTemplates_Fishing, NULL);
+        fishloot->FillLoot(subzone, LootTemplates_Fishing, nullptr);
     // else use zone loot
     else
-        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, NULL);
+        fishloot->FillLoot(GetZoneId(), LootTemplates_Fishing, nullptr);
 }
 
 void GameObject::SaveToDB()
@@ -804,7 +804,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
                 m_respawnTime = sObjectMgr->GetGORespawnTime(m_DBTableGuid, map->GetInstanceId());
 
                                                             // ready to respawn
-                if(m_respawnTime && m_respawnTime <= time(NULL))
+                if(m_respawnTime && m_respawnTime <= time(nullptr))
                 {
                     m_respawnTime = 0;
                     sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(),GetInstanceId(),0);
@@ -987,7 +987,7 @@ Unit* GameObject::GetOwner() const
 
 void GameObject::SaveRespawnTime()
 {
-    if(m_respawnTime > time(NULL) && m_spawnedByDefault)
+    if(m_respawnTime > time(nullptr) && m_spawnedByDefault)
         sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),m_respawnTime);
 }
 
@@ -1060,7 +1060,7 @@ void GameObject::Respawn()
 {
     if(m_spawnedByDefault && m_respawnTime > 0)
     {
-        m_respawnTime = time(NULL);
+        m_respawnTime = time(nullptr);
         sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
     }
     this->loot.ClearRemovedItemsList();
@@ -1118,7 +1118,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
     float range = float(target->GetSpellMaxRangeForTarget(GetOwner(), trapSpell));
 
     // search nearest linked GO
-    GameObject* trapGO = NULL;
+    GameObject* trapGO = nullptr;
     {
         // using original GO distance
         Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target,trapEntry,range);
@@ -1133,7 +1133,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
 
 GameObject* GameObject::LookupFishingHoleAround(float range)
 {
-    GameObject* ok = NULL;
+    GameObject* ok = nullptr;
 
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
     Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
@@ -1153,7 +1153,7 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternat
     SwitchDoorOrButton(true,alternative);
     SetLootState(GO_ACTIVATED,user);
 
-    m_cooldownTime = time_to_restore ? (time(NULL) + time_to_restore) : 0;
+    m_cooldownTime = time_to_restore ? (time(nullptr) + time_to_restore) : 0;
 }
 
 void GameObject::ResetDoorOrButton()
@@ -1641,7 +1641,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
     {
         trigger->SetFaction(owner->GetFaction());
 		trigger->SetOwnerGUID(owner->GetGUID());
-        return trigger->CastSpell(target, spell, true, 0, 0, originalCaster ? originalCaster : owner->GetGUID());
+        return trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
@@ -1725,13 +1725,13 @@ void GameObject::AddUse()
 
 void GameObject::SetRespawnTime(int32 respawn)
 {
-    m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
+    m_respawnTime = respawn > 0 ? time(nullptr) + respawn : 0;
     m_respawnDelayTime = respawn > 0 ? respawn : 0;
 }
 
 void GameObject::SetDespawnTimer(uint32 timer)
 {
-    m_despawnTime = time(NULL) + timer;
+    m_despawnTime = time(nullptr) + timer;
 }
 
 float GameObject::GetInteractionDistance()

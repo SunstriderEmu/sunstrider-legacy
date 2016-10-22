@@ -106,7 +106,7 @@ Object::~Object( )
         }
 
         delete [] m_uint32Values;
-        m_uint32Values = NULL;
+        m_uint32Values = nullptr;
     }
 }
 
@@ -391,7 +391,7 @@ void Object::BuildValuesUpdate(uint8 updateType, ByteBuffer * data, Player *targ
     UpdateMask updateMask;
     updateMask.SetCount(m_valuesCount);
 
-    uint32* flags = NULL;
+    uint32* flags = nullptr;
     uint32 visibleFlag = GetUpdateFieldData(target, flags);
     ASSERT(flags);
 
@@ -809,7 +809,7 @@ WorldObject::WorldObject() :
 
     m_mapId             = 0;
     m_InstanceId        = 0;
-    m_map               = NULL;
+    m_map               = nullptr;
 
     m_name = "";
 
@@ -896,7 +896,7 @@ void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
 InstanceScript* WorldObject::GetInstanceScript()
 {
     Map *map = GetMap();
-    return map->IsDungeon() ? ((InstanceMap*)map)->GetInstanceScript() : NULL;
+    return map->IsDungeon() ? ((InstanceMap*)map)->GetInstanceScript() : nullptr;
 }
 
                                                             //slow
@@ -1341,7 +1341,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id))
     {
         delete pCreature;
-        return NULL;
+        return nullptr;
     }
 
     if (x == 0.0f && y == 0.0f && z == 0.0f)
@@ -1353,7 +1353,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     {
         TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
-        return NULL;
+        return nullptr;
     }
 
     pCreature->SetHomePosition(x, y, z, ang);
@@ -1371,7 +1371,7 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
     {
         if(GetTypeId() == TYPEID_UNIT || GetTypeId() == TYPEID_PLAYER)
             pCreature->SetFaction(((Unit*)this)->GetFaction());
-        pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, 0, 0, GetGUID());
+        pCreature->CastSpell(pCreature, pCreature->m_spells[0], false, nullptr, nullptr, GetGUID());
     }
 
     // allow summoned creatures to keep grids active for 2 minutes, so that we may use AI summoning creatures far away and coming to them
@@ -1403,14 +1403,14 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         if(duration > 0)
             pet->SetDuration(duration);
 
-        return NULL;
+        return nullptr;
     }
 
     // petentry==0 for hunter "call pet" (current pet summoned if any)
     if(!entry)
     {
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     Map *map = GetMap();
@@ -1419,7 +1419,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     {
         TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     pet->Relocate(x, y, z, ang);
@@ -1428,7 +1428,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     {
         TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     pet->SetOwnerGUID(GetGUID());
@@ -1508,7 +1508,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     if(!entry)
     {
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     Map *map = GetMap();
@@ -1517,7 +1517,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     {
         TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     pet->Relocate(x, y, z, ang);
@@ -1526,7 +1526,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     {
         TC_LOG_ERROR("FIXME","ERROR: Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)",pet->GetGUIDLow(),pet->GetEntry(),pet->GetPositionX(),pet->GetPositionY());
         delete pet;
-        return NULL;
+        return nullptr;
     }
 
     pet->SetOwnerGUID(GetGUID());
@@ -1609,7 +1609,7 @@ Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint3
     TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     Creature* summon = SummonCreature(WORLD_TRIGGER, x, y, z, ang, summonType, duration);
     if(!summon)
-        return NULL;
+        return nullptr;
 
     //summon->SetName(GetName());
     if(GetTypeId()==TYPEID_PLAYER || GetTypeId()==TYPEID_UNIT)
@@ -1625,7 +1625,7 @@ Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint3
 
 Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive) const
 {
-       Creature *creature = NULL;
+       Creature *creature = nullptr;
        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(*this, entry, alive, range);
        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(creature, checker);
        VisitNearbyObject(range, searcher);
@@ -1634,7 +1634,7 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
 
 GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 {
-    GameObject *go = NULL;
+    GameObject *go = nullptr;
     Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, go, checker);
     VisitNearbyGridObject(range, searcher);
@@ -1643,7 +1643,7 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
 
 GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float range) const
 {
-    GameObject* go = NULL;
+    GameObject* go = nullptr;
     Trinity::NearestGameObjectTypeInObjectRangeCheck checker(*this, type, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(this, go, checker);
     VisitNearbyGridObject(range, searcher);
@@ -1652,7 +1652,7 @@ GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float
 
 Player* WorldObject::FindNearestPlayer(float range) const
 {
-       Player* pl = NULL;
+       Player* pl = nullptr;
        Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, pl, checker);
        VisitNearbyObject(range, searcher);
@@ -1688,7 +1688,7 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
 void WorldObject::GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
 {
 	// angle calculated from current orientation
-	GetNearPoint(NULL, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
+	GetNearPoint(nullptr, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
 }
 
 void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
@@ -2060,8 +2060,8 @@ void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList
 
 void Object::BuildMovementUpdate(ByteBuffer* data, uint16 flags, ClientBuild build) const
 {
-    Unit const* unit = NULL;
-    WorldObject const* object = NULL;
+    Unit const* unit = nullptr;
+    WorldObject const* object = nullptr;
 
     if (isType(TYPEMASK_UNIT))
         unit = ToUnit();
@@ -2318,7 +2318,7 @@ struct WorldObjectChangeAccumulator
 
     void Visit(PlayerMapType &m)
     {
-        Player* source = NULL;
+        Player* source = nullptr;
         for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             source = iter->GetSource();
@@ -2338,7 +2338,7 @@ struct WorldObjectChangeAccumulator
     //add vision from creatures whom we share vision with
     void Visit(CreatureMapType &m)
     {
-        Creature* source = NULL;
+        Creature* source = nullptr;
         for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             source = iter->GetSource();
@@ -2355,7 +2355,7 @@ struct WorldObjectChangeAccumulator
     //add vision from far sight dynamic objects
     void Visit(DynamicObjectMapType &m)
     {
-        DynamicObject* source = NULL;
+        DynamicObject* source = nullptr;
         for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         {
             source = iter->GetSource();

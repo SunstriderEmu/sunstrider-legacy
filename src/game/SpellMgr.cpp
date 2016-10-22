@@ -582,7 +582,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const * spellP
         procEvent_procEx = spellProcEvent->procEx;
 
         // For melee triggers
-        if (procSpell == NULL)
+        if (procSpell == nullptr)
         {
             // Check (if set) for school (melee attack have Normal school)
             if(spellProcEvent->schoolMask && (spellProcEvent->schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0)
@@ -1013,7 +1013,7 @@ SpellLearnSkillNode const* SpellMgr::GetSpellLearnSkill(uint32 spell_id) const
     if (itr != mSpellLearnSkills.end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 SpellLearnSpellMapBounds SpellMgr::GetSpellLearnSpellMapBounds(uint32 spell_id) const
@@ -1072,7 +1072,7 @@ SpellInfo const* SpellMgr::SelectAuraRankForPlayerLevel(SpellInfo const* spellIn
     }
 
     // not found
-    return NULL;
+    return nullptr;
 }
 
 void SpellMgr::LoadSpellRequired()
@@ -1082,7 +1082,7 @@ void SpellMgr::LoadSpellRequired()
 
     QueryResult result = WorldDatabase.Query("SELECT spell_id, req_spell from spell_required");
 
-    if(result == NULL)
+    if(result == nullptr)
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 spell required records" );
         TC_LOG_ERROR("server.loading","`spell_required` table is empty!");
@@ -1142,7 +1142,7 @@ struct SpellRankValue
 void SpellMgr::UnloadSpellInfoChains()
 {
     for (SpellChainMap::iterator itr = mSpellChains.begin(); itr != mSpellChains.end(); ++itr)
-        mSpellInfoMap[itr->first]->ChainEntry = NULL;
+        mSpellInfoMap[itr->first]->ChainEntry = nullptr;
 
     mSpellChains.clear();
 }
@@ -1358,7 +1358,7 @@ void SpellMgr::LoadSpellChains()
             itr2++;
 
             if (spell_id==RankedSpells.back())
-                mSpellChains[spell_id].next=0;
+                mSpellChains[spell_id].next=nullptr;
             else
             {
                 //Scare Beast rank 2 hack
@@ -2990,7 +2990,7 @@ SpellBonusEntry const* SpellMgr::GetSpellBonusData(uint32 spellId) const
         if (itr2 != mSpellBonusMap.end())
             return &itr2->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
@@ -3005,7 +3005,7 @@ SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
         if (itr != mSpellThreatMap.end())
             return &itr->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 void SpellMgr::LoadSpellInfoStore(bool reload /* = false */)

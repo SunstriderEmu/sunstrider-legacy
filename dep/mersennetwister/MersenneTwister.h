@@ -266,7 +266,7 @@ inline void MTRand::seed( uint32 *const bigSeed, const uint32 seedLength )
 inline void MTRand::seed()
 {
     // Seed the generator with hash of time() and clock() values
-    seed( hash( time(NULL), clock() ) );
+    seed( hash( time(nullptr), clock() ) );
 }
 
 

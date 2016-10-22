@@ -781,7 +781,7 @@ void BattlegroundWS::FillInitialWorldStates(WorldPacket& data)
 // Hack to respawn players at graveyard when they die in starting area: that building is a WorldSafeLoc, and is considered as Closest Graveyard by default.
 WorldSafeLocsEntry const *BattlegroundWS::GetClosestGraveYard(float x, float y, float z, uint32 team)
 {
-    WorldSafeLocsEntry const* entry = NULL;
+    WorldSafeLocsEntry const* entry = nullptr;
     if (GetStatus() == STATUS_IN_PROGRESS) {
         uint32 entryId = (team == TEAM_HORDE) ? 772 : 771;
         entry = sWorldSafeLocsStore.LookupEntry(entryId);
@@ -791,7 +791,7 @@ WorldSafeLocsEntry const *BattlegroundWS::GetClosestGraveYard(float x, float y, 
     
     if (!entry) {
         TC_LOG_ERROR("FIXME","BattlegroundWS: Not found the team graveyard. Graveyard system isn't working!");
-        return NULL;
+        return nullptr;
     }
     
     return entry;

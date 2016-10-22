@@ -125,11 +125,11 @@ void Map::LoadMap(uint32 mapid, uint32 instanceid, int x,int y)
 
         TC_LOG_DEBUG("maps","Unloading already loaded map %u before reloading.",mapid);
         delete (GridMaps[x][y]);
-        GridMaps[x][y]=NULL;
+        GridMaps[x][y]=nullptr;
     }
 
     // map file name
-    char *tmp=NULL;
+    char *tmp=nullptr;
     // Pihhan: dataPath length + "maps/" + 3+2+2+ ".map" length may be > 32 !
     int len = sWorld->GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
     tmp = new char[len];
@@ -170,8 +170,8 @@ Map::Map(uint32 id, uint32 InstanceId, uint8 SpawnMode)
         for(unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
         {
             //z code
-            GridMaps[idx][j] =NULL;
-            setNGrid(NULL, idx, j);
+            GridMaps[idx][j] =nullptr;
+            setNGrid(nullptr, idx, j);
         }
     }
 
@@ -314,7 +314,7 @@ void Map::SwitchGridContainers(T* obj, bool on)
 
     TC_LOG_DEBUG("maps","Switch object " UI64FMTD " from grid[%u,%u] %u", obj->GetGUID(), cell.data.Part.grid_x, cell.data.Part.grid_y, on);
     NGridType *ngrid = getNGrid(cell.GridX(), cell.GridY());
-    assert( ngrid != NULL);
+    assert( ngrid != nullptr);
 
     GridType &grid = (*ngrid)(cell.CellX(), cell.CellY());
 
@@ -398,7 +398,7 @@ Map::EnsureGridLoaded(const Cell &cell, Player *player)
     EnsureGridCreated(GridPair(cell.GridX(), cell.GridY()));
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
 
-    assert(grid != NULL);
+    assert(grid != nullptr);
     if (!isGridObjectDataLoaded(cell.GridX(), cell.GridY()))
     {
         if (player)
@@ -520,7 +520,7 @@ bool Map::Add(T *obj, bool checkTransport)
         EnsureGridCreated(GridPair(cell.GridX(), cell.GridY()));
 
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    assert( grid != NULL);
+    assert( grid != nullptr);
 
     AddToGrid(obj,grid,cell);
     obj->AddToWorld();
@@ -636,7 +636,7 @@ void Map::RelocationNotify()
     //Move backlog to notify list
     for(std::vector<uint64>::iterator iter = i_unitsToNotifyBacklog.begin(); iter != i_unitsToNotifyBacklog.end(); ++iter)
     {
-        if(Unit *unit = ObjectAccessor::GetObjectInWorld(*iter, (Unit*)NULL))
+        if(Unit *unit = ObjectAccessor::GetObjectInWorld(*iter, (Unit*)nullptr))
         {
             i_unitsToNotify.push_back(unit);
         }
@@ -897,7 +897,7 @@ void Map::Remove(Player *player, bool remove)
 
     //TC_LOG_DEBUG("maps","Remove player %s from grid[%u,%u]", player->GetName(), cell.GridX(), cell.GridY());
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    assert(grid != NULL);
+    assert(grid != nullptr);
 
     player->RemoveFromWorld();
     RemoveFromGrid(player,grid,cell);
@@ -916,7 +916,7 @@ bool Map::RemoveBones(uint64 guid, float x, float y)
 {
    // if (IsRemovalGrid(x, y))
     //{
-        Corpse * corpse = sObjectAccessor->GetObjectInWorld(GetId(), x, y, guid, (Corpse*)NULL);
+        Corpse * corpse = sObjectAccessor->GetObjectInWorld(GetId(), x, y, guid, (Corpse*)nullptr);
         if(corpse && corpse->GetTypeId() == TYPEID_CORPSE && corpse->GetType() == CORPSE_BONES)
             corpse->DeleteBonesFromWorld();
      //   else
@@ -942,7 +942,7 @@ Map::Remove(T *obj, bool remove)
 
     TC_LOG_DEBUG("maps","Remove object " UI64FMTD " from grid[%u,%u]", obj->GetGUID(), cell.data.Part.grid_x, cell.data.Part.grid_y);
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    assert( grid != NULL);
+    assert( grid != nullptr);
 
     obj->RemoveFromWorld();
     if(obj->isActiveObject())
@@ -1350,7 +1350,7 @@ bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
 bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
 {
     NGridType *grid = getNGrid(x, y);
-    assert( grid != NULL);
+    assert( grid != nullptr);
 
     {
         if(!unloadAll)
@@ -1390,7 +1390,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
         assert(i_objectsToRemove.empty());
 
         delete grid;
-        setNGrid(NULL, x, y);
+        setNGrid(nullptr, x, y);
     }
     int gx=63-x;
     int gy=63-y;
@@ -1411,7 +1411,7 @@ bool Map::UnloadGrid(const uint32 &x, const uint32 &y, bool unloadAll)
         else
             ((MapInstanced*)(sMapMgr->GetBaseMap(i_id)))->RemoveGridMapReference(GridPair(gx, gy));
 
-        GridMaps[gx][gy] = NULL;
+        GridMaps[gx][gy] = nullptr;
     }
     TC_LOG_DEBUG("maps","Unloading grid[%u,%u] for map %u finished", x,y, i_id);
     return true;
@@ -1511,7 +1511,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
                         return staticTrans->ToTransport();
             }
 
-    return NULL;
+    return nullptr;
 }
 
 float Map::GetHeight(float x, float y, float z, bool checkVMap, float maxSearchDist/*=DEFAULT_HEIGHT_SEARCH*/, bool walkableOnly /* = false */) const
@@ -1651,7 +1651,7 @@ bool Map::IsOutdoors(float x, float y, float z) const
     if(!GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
         return true;
 
-    AreaTableEntry const* atEntry = 0;
+    AreaTableEntry const* atEntry = nullptr;
     WMOAreaTableEntry const* wmoEntry= GetWMOAreaTableEntryByTripple(rootId, adtId, groupId);
     if(wmoEntry)
     {
@@ -1684,8 +1684,8 @@ uint32 Map::GetAreaId(float x, float y, float z, bool *isOutdoors) const
 {
     uint32 mogpFlags;
     int32 adtId, rootId, groupId;
-    WMOAreaTableEntry const* wmoEntry = 0;
-    AreaTableEntry const* atEntry = 0;
+    WMOAreaTableEntry const* wmoEntry = nullptr;
+    AreaTableEntry const* atEntry = nullptr;
     bool haveAreaInfo = false;
 
     if (GetAreaInfo(x, y, z, mogpFlags, adtId, rootId, groupId))
@@ -2170,18 +2170,18 @@ void Map::RemoveFromForceActive( Creature* c)
 
 Creature* Map::GetCreature(uint64 guid)
 {
-    Creature * ret = NULL;
+    Creature * ret = nullptr;
     if(IS_CREATURE_GUID(guid))
-        ret = ObjectAccessor::GetObjectInWorld(guid, (Creature*)NULL);
+        ret = ObjectAccessor::GetObjectInWorld(guid, (Creature*)nullptr);
 
     if(!ret)
-        return NULL;
+        return nullptr;
 
     if(ret->GetMapId() != GetId())
-        return NULL;
+        return nullptr;
 
     if(ret->GetInstanceId() != GetInstanceId())
-        return NULL;
+        return nullptr;
 
     return ret;
 }
@@ -2211,13 +2211,13 @@ Creature* Map::GetCreatureWithTableGUID(uint32 tableGUID) const
 
 GameObject* Map::GetGameObject(uint64 guid)
 {
-    GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)NULL);
+    GameObject * ret = ObjectAccessor::GetObjectInWorld(guid, (GameObject*)nullptr);
     if(!ret)
-        return NULL;
+        return nullptr;
     if(ret->GetMapId() != GetId())
-        return NULL;
+        return nullptr;
     if(ret->GetInstanceId() != GetInstanceId())
-        return NULL;
+        return nullptr;
     return ret;
 }
 
@@ -2300,7 +2300,7 @@ template void Map::Remove(DynamicObject *, bool);
 /* ******* Dungeon Instance Maps ******* */
 
 InstanceMap::InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode)
-  : Map(id, InstanceId, SpawnMode), i_data(NULL),
+  : Map(id, InstanceId, SpawnMode), i_data(nullptr),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false)
 {
     //lets initialize visibility distance for dungeons
@@ -2316,7 +2316,7 @@ InstanceMap::~InstanceMap()
     if(i_data)
     {
         delete i_data;
-        i_data = NULL;
+        i_data = nullptr;
     }
     
     // unload instance specific navigation data
@@ -2496,7 +2496,7 @@ void InstanceMap::Remove(Player *player, bool remove)
 Player* Map::GetPlayer(uint64 guid)
 {
     Player * obj = HashMapHolder<Player>::Find(guid);
-    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
+    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = nullptr;
     return obj;
 }
 
@@ -2514,7 +2514,7 @@ inline GridMap *Map::GetGrid(float x, float y)
 
 void InstanceMap::CreateInstanceScript(bool load)
 {
-    if(i_data != NULL)
+    if(i_data != nullptr)
         return;
 
     InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(GetId());
@@ -2843,13 +2843,13 @@ Transport* Map::GetTransport(uint64 guid)
 #endif
 
     GameObject* go = GetGameObject(guid);
-    return go ? go->ToTransport() : NULL;
+    return go ? go->ToTransport() : nullptr;
 }
 
 DynamicObject* Map::GetDynamicObject(uint64 guid)
 {
     DynamicObject * obj = HashMapHolder<DynamicObject>::Find(guid);
-    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = NULL;
+    if(obj && obj->GetInstanceId() != GetInstanceId()) obj = nullptr;
     return obj;
 }
 /*--------------------------TRINITY-------------------------*/

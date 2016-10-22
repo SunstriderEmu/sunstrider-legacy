@@ -364,7 +364,7 @@ class DBCStorage
                             return false;
                         }
 
-                        fields = NULL;
+                        fields = nullptr;
                         ++rowIndex;
                     } while (result->NextRow());
                 }

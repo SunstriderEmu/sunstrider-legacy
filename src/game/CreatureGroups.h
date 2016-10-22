@@ -102,7 +102,7 @@ class CreatureGroup
     
     public:
         //Group cannot be created empty
-        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(NULL), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
+        explicit CreatureGroup(uint32 id) : m_groupID(id), m_leader(nullptr), m_Formed(false), inCombat(false), justAlive(true), respawnTimer(RESPAWN_TIMER) {}
         ~CreatureGroup();
         
         Creature* getLeader() const { return m_leader; }

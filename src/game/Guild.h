@@ -351,10 +351,10 @@ class Guild
                     return &itr->second;
                 }
             }
-            return NULL;
+            return nullptr;
         }
 
-        void Roster(WorldSession *session = NULL);          // NULL = broadcast
+        void Roster(WorldSession *session = nullptr);          // NULL = broadcast
         void Query(WorldSession *session);
 
         void UpdateLogoutTime(uint64 guid);
@@ -384,7 +384,7 @@ class Guild
         void   SendGuildBankTabText(WorldSession *session, uint8 TabId);
         void   SetGuildBankTabInfo(uint8 TabId, std::string name, std::string icon);
         void   CreateBankRightForTab(uint32 rankid, uint8 TabId, SQLTransaction trans);
-        const  GuildBankTab *GetBankTab(uint8 index) { if(index >= m_TabListMap.size()) return NULL; return m_TabListMap[index]; }
+        const  GuildBankTab *GetBankTab(uint8 index) { if(index >= m_TabListMap.size()) return nullptr; return m_TabListMap[index]; }
         const  uint8 GetPurchasedTabs() const { return purchased_tabs; }
         uint32 GetBankRights(uint32 rankId, uint8 TabId) const;
         bool   IsMemberHaveRights(uint32 LowGuid, uint8 TabId,uint32 rights) const;

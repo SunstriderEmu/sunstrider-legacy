@@ -507,7 +507,7 @@ class ObjectMgr
         //return a new displayId with same gender and race as baseModel, if possible. Else return model info for displayID. Race NYI
         CreatureModelInfo const* GetCreatureModelSameGenderAndRaceAs(uint32& displayID, uint32 baseDisplayId);
         CreatureModelInfo const* GetCreatureModelRandomGender(uint32& displayID);
-        static uint32 ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data = NULL);
+        static uint32 ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data = nullptr);
         EquipmentInfo const* GetEquipmentInfo( uint32 entry );
         CreatureAddon const *GetCreatureAddon( uint32 lowguid );
         CreatureAddon const *GetCreatureTemplateAddon( uint32 entry );
@@ -525,17 +525,17 @@ class ObjectMgr
 
         PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const
         {
-            if(class_ >= MAX_CLASSES) return NULL;
+            if(class_ >= MAX_CLASSES) return nullptr;
             return &playerClassInfo[class_];
         }
         void GetPlayerClassLevelInfo(uint32 class_,uint32 level, PlayerClassLevelInfo* info) const;
 
         PlayerInfo const* GetPlayerInfo(uint32 race, uint32 class_) const
         {
-            if(race   >= MAX_RACES)   return NULL;
-            if(class_ >= MAX_CLASSES) return NULL;
+            if(race   >= MAX_RACES)   return nullptr;
+            if(class_ >= MAX_CLASSES) return nullptr;
             PlayerInfo const* info = &playerInfo[race][class_];
-            if(info->displayId_m==0 || info->displayId_f==0) return NULL;
+            if(info->displayId_m==0 || info->displayId_f==0) return nullptr;
             return info;
         }
         void GetPlayerLevelInfo(uint32 race, uint32 class_,uint32 level, PlayerLevelInfo* info) const;
@@ -554,7 +554,7 @@ class ObjectMgr
         Quest const* GetQuestTemplate(uint32 quest_id) const
         {
             QuestMap::const_iterator itr = mQuestTemplates.find(quest_id);
-            return itr != mQuestTemplates.end() ? itr->second : NULL;
+            return itr != mQuestTemplates.end() ? itr->second : nullptr;
         }
         QuestMap const& GetQuestTemplates() const { return mQuestTemplates; }
 
@@ -591,7 +591,7 @@ class ObjectMgr
             AreaTriggerMap::const_iterator itr = mAreaTriggers.find( trigger );
             if( itr != mAreaTriggers.end( ) )
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         AccessRequirement const* GetAccessRequirement(uint32 requirement) const
@@ -599,7 +599,7 @@ class ObjectMgr
             AccessRequirementMap::const_iterator itr = mAccessRequirements.find( requirement );
             if( itr != mAccessRequirements.end( ) )
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         AreaTrigger const* GetGoBackTrigger(uint32 Map) const;
@@ -613,7 +613,7 @@ class ObjectMgr
             RepOnKillMap::const_iterator itr = mRepOnKill.find(id);
             if(itr != mRepOnKill.end())
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         PointOfInterest const* GetPointOfInterest(uint32 id) const
@@ -621,7 +621,7 @@ class ObjectMgr
             PointOfInterestContainer::const_iterator itr = _pointsOfInterestStore.find(id);
             if (itr != _pointsOfInterestStore.end())
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         PetCreateSpellEntry const* GetPetCreateSpellEntry(uint32 id) const
@@ -629,7 +629,7 @@ class ObjectMgr
             PetCreateSpellMap::const_iterator itr = mPetCreateSpell.find(id);
             if(itr != mPetCreateSpell.end())
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         void LoadGuilds();
@@ -787,7 +787,7 @@ class ObjectMgr
             if(itr != mWeatherZoneMap.end())
                 return &itr->second;
             else
-                return NULL;
+                return nullptr;
         }
 
         CellObjectGuids const& GetCellObjectGuids(uint16 mapid, uint8 spawnMode, uint32 cell_id)
@@ -805,13 +805,13 @@ class ObjectMgr
             BroadcastTextContainer::const_iterator itr = _broadcastTextStore.find(id);
             if (itr != _broadcastTextStore.end())
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         CreatureData const* GetCreatureData(uint32 guid) const
         {
             CreatureDataMap::const_iterator itr = mCreatureDataMap.find(guid);
-            if(itr==mCreatureDataMap.end()) return NULL;
+            if(itr==mCreatureDataMap.end()) return nullptr;
             return &itr->second;
         }
         CreatureData& NewOrExistCreatureData(uint32 guid) { return mCreatureDataMap[guid]; }
@@ -825,37 +825,37 @@ class ObjectMgr
         CreatureLocale const* GetCreatureLocale(uint32 entry) const
         {
             CreatureLocaleMap::const_iterator itr = _creatureLocaleStore.find(entry);
-            if(itr==_creatureLocaleStore.end()) return NULL;
+            if(itr==_creatureLocaleStore.end()) return nullptr;
             return &itr->second;
         }
         GameObjectLocale const* GetGameObjectLocale(uint32 entry) const
         {
             GameObjectLocaleMap::const_iterator itr = mGameObjectLocaleMap.find(entry);
-            if(itr==mGameObjectLocaleMap.end()) return NULL;
+            if(itr==mGameObjectLocaleMap.end()) return nullptr;
             return &itr->second;
         }
         ItemLocale const* GetItemLocale(uint32 entry) const
         {
             ItemLocaleMap::const_iterator itr = mItemLocaleMap.find(entry);
-            if(itr==mItemLocaleMap.end()) return NULL;
+            if(itr==mItemLocaleMap.end()) return nullptr;
             return &itr->second;
         }
         QuestLocale const* GetQuestLocale(uint32 entry) const
         {
             QuestLocaleMap::const_iterator itr = mQuestLocaleMap.find(entry);
-            if(itr==mQuestLocaleMap.end()) return NULL;
+            if(itr==mQuestLocaleMap.end()) return nullptr;
             return &itr->second;
         }
         NpcTextLocale const* GetNpcTextLocale(uint32 entry) const
         {
             NpcTextLocaleMap::const_iterator itr = mGossipTextLocaleMap.find(entry);
-            if(itr==mGossipTextLocaleMap.end()) return NULL;
+            if(itr==mGossipTextLocaleMap.end()) return nullptr;
             return &itr->second;
         }
         PageTextLocale const* GetPageTextLocale(uint32 entry) const
         {
             PageTextLocaleMap::const_iterator itr = mPageTextLocaleMap.find(entry);
-            if(itr==mPageTextLocaleMap.end()) return NULL;
+            if(itr==mPageTextLocaleMap.end()) return nullptr;
             return &itr->second;
         }
         GossipMenuItemsLocale const* GetGossipMenuItemsLocale(uint16 menuId, uint16 optionIndex) const
@@ -869,14 +869,14 @@ class ObjectMgr
         PointOfInterestLocale const* GetPointOfInterestLocale(uint32 poi_id) const
         {
             PointOfInterestLocaleContainer::const_iterator itr = _pointOfInterestLocaleStore.find(poi_id);
-            if (itr == _pointOfInterestLocaleStore.end()) return NULL;
+            if (itr == _pointOfInterestLocaleStore.end()) return nullptr;
             return &itr->second;
         }
 
         GameObjectData const* GetGOData(uint32 guid) const
         {
             GameObjectDataMap::const_iterator itr = mGameObjectDataMap.find(guid);
-            if(itr==mGameObjectDataMap.end()) return NULL;
+            if(itr==mGameObjectDataMap.end()) return nullptr;
             return &itr->second;
         }
         GameObjectData& NewGOData(uint32 guid) { return mGameObjectDataMap[guid]; }
@@ -885,7 +885,7 @@ class ObjectMgr
         TrinityStringLocale const* GetTrinityStringLocale(int32 entry) const
         {
             TrinityStringLocaleMap::const_iterator itr = mTrinityStringLocaleMap.find(entry);
-            if( itr == mTrinityStringLocaleMap.end()) return NULL;
+            if( itr == mTrinityStringLocaleMap.end()) return nullptr;
             return &itr->second;
         }
 
@@ -1006,7 +1006,7 @@ class ObjectMgr
         {
             CacheTrainerSpellMap::const_iterator  iter = m_mCacheTrainerSpellMap.find(entry);
             if(iter == m_mCacheTrainerSpellMap.end())
-                return NULL;
+                return nullptr;
 
             return &iter->second;
         }
@@ -1015,13 +1015,13 @@ class ObjectMgr
         {
             CacheVendorItemMap::const_iterator  iter = m_mCacheVendorItemMap.find(entry);
             if(iter == m_mCacheVendorItemMap.end())
-                return NULL;
+                return nullptr;
 
             return &iter->second;
         }
         void AddVendorItem(uint32 entry,ItemTemplate const *proto, uint32 maxcount, uint32 incrtime, uint32 ExtendedCost, bool savetodb = true); // for event
         bool RemoveVendorItem(uint32 entry,ItemTemplate const *proto, bool savetodb = true); // for event
-        bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = NULL, std::set<uint32>* skip_vendors = NULL, uint32 ORnpcflag = 0 ) const;
+        bool IsVendorItemValid( uint32 vendor_entry, ItemTemplate const *proto, uint32 maxcount, uint32 ptime, uint32 ExtendedCost, Player* pl = nullptr, std::set<uint32>* skip_vendors = nullptr, uint32 ORnpcflag = 0 ) const;
         bool AddTrainerSpell(uint32 creatureId, TrainerSpell const& spell);
         bool RemoveTrainerSpell(uint32 creatureId, uint32 spellId);
 
@@ -1038,7 +1038,7 @@ class ObjectMgr
             if((*i) && (*i)->guid == ticketGuid) 
               return (*i);
 
-          return NULL;
+          return nullptr;
         }
         GM_Ticket *GetGMTicketByPlayer(uint64 playerGuid)
         {
@@ -1046,7 +1046,7 @@ class ObjectMgr
             if((*i) && (*i)->playerGuid == playerGuid && (*i)->closed == 0) 
               return (*i);
 
-          return NULL;        
+          return nullptr;        
         }
 
         void AddOrUpdateGMTicket(GM_Ticket &ticket, bool create = false);

@@ -789,7 +789,7 @@ class SpellMgr
             SpellProcEventMap::const_iterator itr = mSpellProcEventMap.find(spellId);
             if( itr != mSpellProcEventMap.end( ) )
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         static bool IsSpellProcEventCanTriggeredBy( SpellProcEventEntry const * spellProcEvent, uint32 EventProcFlag, SpellInfo const * procSpell, uint32 ProcFlags, uint32 procExtra, bool active);
@@ -799,7 +799,7 @@ class SpellMgr
             SpellEnchantProcEventMap::const_iterator itr = mSpellEnchantProcEventMap.find(enchId);
             if( itr != mSpellEnchantProcEventMap.end( ) )
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         // Spell target coordinates. effIndex NYI
@@ -808,7 +808,7 @@ class SpellMgr
             SpellTargetPositionMap::const_iterator itr = mSpellTargetPositions.find( spell_id );
             if( itr != mSpellTargetPositions.end( ) )
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
 
         // Spell ranks chains
@@ -816,7 +816,7 @@ class SpellMgr
         {
             SpellChainMap::const_iterator itr = mSpellChains.find(spell_id);
             if(itr == mSpellChains.end())
-                return NULL;
+                return nullptr;
 
             return &itr->second;
         }
@@ -873,7 +873,7 @@ class SpellMgr
         }
 
         // Spell correctess for client using
-        static bool IsSpellValid(SpellInfo const * spellInfo, Player* pl = NULL, bool msg = true);
+        static bool IsSpellValid(SpellInfo const * spellInfo, Player* pl = nullptr, bool msg = true);
 
         SkillLineAbilityMapBounds GetSkillLineAbilityMapBounds(uint32 spell_id) const;
 
@@ -891,13 +891,13 @@ class SpellMgr
             if(itr != mSpellPetAuraMap.end())
                 return &itr->second;
             else
-                return NULL;
+                return nullptr;
         }
         
         const std::vector<int32> *GetSpellLinked(int32 spell_id) const
         {
             SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
-            return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
+            return itr != mSpellLinkedMap.end() ? &(itr->second) : nullptr;
         }
 
         // Spell area
@@ -950,7 +950,7 @@ class SpellMgr
         void LoadSpellAreas();
 
         // SpellInfo object management
-        SpellInfo const* GetSpellInfo(uint32 spellId) const { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : NULL; }
+        SpellInfo const* GetSpellInfo(uint32 spellId) const { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : nullptr; }
         // Use this only with 100% valid spellIds
         SpellInfo const* EnsureSpellInfo(uint32 spellId) const
         {
@@ -962,7 +962,7 @@ class SpellMgr
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap.size(); }
 
     private:
-        SpellInfo* _GetSpellInfo(uint32 spellId) { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : NULL; }
+        SpellInfo* _GetSpellInfo(uint32 spellId) { return spellId < GetSpellInfoStoreSize() ? mSpellInfoMap[spellId] : nullptr; }
         
         SpellBonusMap                mSpellBonusMap;
         SpellThreatMap               mSpellThreatMap;

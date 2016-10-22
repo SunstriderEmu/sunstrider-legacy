@@ -127,7 +127,7 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
 
 void OutdoorPvPObjectiveNA::SpawnNPCsForTeam(uint32 team)
 {
-    const creature_type * creatures = NULL;
+    const creature_type * creatures = nullptr;
     if (team == TEAM_ALLIANCE)
         creatures = AllianceControlNPCs;
     else if (team == TEAM_HORDE)
@@ -147,7 +147,7 @@ void OutdoorPvPObjectiveNA::DeSpawnNPCs()
 
 void OutdoorPvPObjectiveNA::SpawnGOsForTeam(uint32 team)
 {
-    const go_type * gos = NULL;
+    const go_type * gos = nullptr;
     if (team == TEAM_ALLIANCE)
         gos = AllianceControlGOs;
     else if (team == TEAM_HORDE)
@@ -453,7 +453,7 @@ int32 OutdoorPvPObjectiveNA::HandleOpenGo(Player* plr, uint64 guid)
 {
     int32 retval = OutdoorPvPObjective::HandleOpenGo(plr, guid);
     if (retval >= 0) {
-        const go_type* gos = NULL;
+        const go_type* gos = nullptr;
         if (m_ControllingFaction == TEAM_ALLIANCE)
             gos = AllianceControlGOs;
         else if (m_ControllingFaction == TEAM_HORDE)

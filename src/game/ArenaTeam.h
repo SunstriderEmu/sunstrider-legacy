@@ -179,7 +179,7 @@ class ArenaTeam
                 if(itr->guid == guid)
                     return &(*itr);
 
-            return NULL;
+            return nullptr;
         }
 
         ArenaTeamMember* GetMember(const std::string& name)

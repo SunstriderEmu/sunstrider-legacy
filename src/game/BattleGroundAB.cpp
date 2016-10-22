@@ -427,7 +427,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
     std::vector<uint64> ghost_list = m_ReviveQueue[m_BgCreatures[node]];
     if( !ghost_list.empty() )
     {
-        WorldSafeLocsEntry const *ClosestGrave = NULL;
+        WorldSafeLocsEntry const *ClosestGrave = nullptr;
         Player *plr;
         for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
@@ -633,7 +633,7 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(float x, float y, 
         if( m_Nodes[i] == teamIndex + 3 )
             nodes.push_back(i);
 
-    WorldSafeLocsEntry const* good_entry = NULL;
+    WorldSafeLocsEntry const* good_entry = nullptr;
     // If so, select the closest node to place ghost on
     if( !nodes.empty() )
     {

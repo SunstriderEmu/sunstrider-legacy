@@ -43,7 +43,7 @@ void HostileRefManager::threatAssist(Unit* pVictim, float pThreat, SpellInfo con
     if(!skipModifiers)
         pThreat = ThreatCalcHelper::calcThreat(pVictim, iOwner, pThreat, (pThreatSpell ? pThreatSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL), pThreatSpell);
     pThreat /= size;
-    while(ref != NULL)
+    while(ref != nullptr)
     {
         if (ThreatCalcHelper::isValidProcess(pVictim, ref->GetSource()->GetOwner(), pThreatSpell))
         {
@@ -61,7 +61,7 @@ void HostileRefManager::threatAssist(Unit* pVictim, float pThreat, SpellInfo con
 void HostileRefManager::addThreatPercent(int32 pValue)
 {
     HostileReference* ref = getFirst();
-    while(ref != NULL)
+    while(ref != nullptr)
     {
         ref->addThreatPercent(pValue);
         ref = ref->next();
@@ -74,7 +74,7 @@ void HostileRefManager::addThreatPercent(int32 pValue)
 void HostileRefManager::setOnlineOfflineState(bool pIsOnline)
 {
     HostileReference* ref = getFirst();
-    while(ref != NULL)
+    while(ref != nullptr)
     {
         ref->setOnlineOfflineState(pIsOnline);
         ref = ref->next();

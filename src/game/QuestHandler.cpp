@@ -170,7 +170,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
             {
                 if (Group* pGroup = _player->GetGroup())
                 {
-                    for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                    for (GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
                     {
                         Player* pPlayer = itr->GetSource();
 
@@ -531,7 +531,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
             Group *pGroup = _player->GetGroup();
             if( pGroup )
             {
-                for(GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+                for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
                 {
                     Player *pPlayer = itr->GetSource();
                     if (!pPlayer || pPlayer == _player)     // skip self

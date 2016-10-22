@@ -68,7 +68,7 @@ bool RecupMgr::HandleRecupParseCommand(Player *player, std::string command, uint
                     Item *item = player->StoreNewItem(dest, itemId, true);
                     player->SendNewItem(item, 1, true, true);
                 } else {
-                    player->SendEquipError(msg, NULL, NULL);
+                    player->SendEquipError(msg, nullptr, nullptr);
                     if (chatHandler) chatHandler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, 1);
                 }
             } while(result->NextRow() || error);

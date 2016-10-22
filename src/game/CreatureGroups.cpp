@@ -252,13 +252,13 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
 void CreatureGroup::RemoveMember(Creature *member)
 {
     if(m_leader == member)
-        m_leader = NULL;
+        m_leader = nullptr;
 
     auto itr = m_members.find(member);
     if (itr != m_members.end())
         m_members.erase(member);
 
-    member->SetFormation(NULL);
+    member->SetFormation(nullptr);
 }
 
 void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
@@ -457,7 +457,7 @@ void CreatureGroup::Update(uint32 diff)
         for(auto itr : m_members)
         {
             if(itr.second->linkedLoot == true)
-                itr.first->SetCorpseRemoveTime(time(NULL) + itr.first->GetCorpseDelay());
+                itr.first->SetCorpseRemoveTime(time(nullptr) + itr.first->GetCorpseDelay());
         }
     } else {
         if(justAlive)

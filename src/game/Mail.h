@@ -106,7 +106,7 @@ struct MailItemInfo
 
 struct MailItem
 {
-    MailItem() : item_slot(0), item_guidlow(0), item_template(0), item(NULL) {}
+    MailItem() : item_slot(0), item_guidlow(0), item_template(0), item(nullptr) {}
 
     uint8 item_slot;                                        // slot in mail
     uint32 item_guidlow;                                    // item guid (low part)

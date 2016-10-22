@@ -128,7 +128,7 @@ struct InstanceGroupBind
     bool perm;
     /* permanent InstanceGroupBinds exist iff the leader has a permanent
        PlayerInstanceBind for the same instance. */
-    InstanceGroupBind() : save(NULL), perm(false) {}
+    InstanceGroupBind() : save(nullptr), perm(false) {}
 };
 
 /** request member stats checken **/
@@ -159,7 +159,7 @@ class Group
 
         // group manipulation methods
         bool   Create(const uint64 &guid, std::string const& name, SQLTransaction trans);
-        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result = NULL, bool loadMembers = true);
+        bool   LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result = nullptr, bool loadMembers = true);
         bool   LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant);
         bool   AddInvite(Player *player);
         void   RemoveInvite(Player *player);
@@ -181,7 +181,7 @@ class Group
         // properties accessories
         bool IsFull() const { return (m_groupType==GROUPTYPE_NORMAL) ? (m_memberSlots.size()>=MAXGROUPSIZE) : (m_memberSlots.size()>=MAXRAIDSIZE); }
         bool isRaidGroup() const { return m_groupType==GROUPTYPE_RAID; }
-        bool isBGGroup()   const { return m_bgGroup != NULL; }
+        bool isBGGroup()   const { return m_bgGroup != nullptr; }
         //only for TC compat
         bool isBFGroup()   const { return false; }
         bool IsCreated()   const { return GetMembersCount() > 0; }

@@ -31,7 +31,7 @@ public:
     void LogoutAllBots();
     void OnBotLogin(Player * const bot);
 
-    list<std::string> HandlePlayerbotCommand(char const* args, Player* master = NULL);
+    list<std::string> HandlePlayerbotCommand(char const* args, Player* master = nullptr);
     std::string ProcessBotCommand(std::string cmd, ObjectGuid guid, bool admin, uint32 masterAccountId, uint32 masterGuildId);
     uint32 GetAccountId(std::string name);
 

@@ -43,7 +43,7 @@ class ObjectRegistry
         const T* GetRegistryItem(Key key) const
         {
             typename RegistryMapType::const_iterator iter = i_registeredObjects.find(key);
-            return( iter == i_registeredObjects.end() ? NULL : iter->second );
+            return( iter == i_registeredObjects.end() ? nullptr : iter->second );
         }
 
         /// Inserts a registry item

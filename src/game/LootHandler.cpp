@@ -108,14 +108,14 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
         loot = &pCreature->loot;
     }
 
-    QuestItem *qitem = NULL;
-    QuestItem *ffaitem = NULL;
-    QuestItem *conditem = NULL;
+    QuestItem *qitem = nullptr;
+    QuestItem *ffaitem = nullptr;
+    QuestItem *conditem = nullptr;
 
     LootItem *item = loot->LootItemInSlot(lootSlot,player,&qitem,&ffaitem,&conditem);
     if(!item)
     {
-        player->SendEquipError( EQUIP_ERR_ALREADY_LOOTED, NULL, NULL );
+        player->SendEquipError( EQUIP_ERR_ALREADY_LOOTED, nullptr, nullptr );
         return;
     }
 
@@ -167,7 +167,7 @@ void WorldSession::HandleAutostoreLootItemOpcode( WorldPacket & recvData )
         player->SendNewItem(newitem, uint32(item->count), false, false, true);
     }
     else
-        player->SendEquipError( msg, NULL, NULL );
+        player->SendEquipError( msg, nullptr, nullptr );
 
     // If player is removing the last LootItem, delete the empty container.
     if (loot->isLooted() && IS_ITEM_GUID(lguid))
@@ -181,7 +181,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
     if(!guid)
         return;
 
-    Loot *pLoot = NULL;
+    Loot *pLoot = nullptr;
 
     switch(GUID_HIPART(guid))
     {
@@ -242,7 +242,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
             Group *group = player->GetGroup();
 
             std::vector<Player*> playersNear;
-            for(GroupReference *itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for(GroupReference *itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 Player* playerGroup = itr->GetSource();
                 if(!playerGroup)
@@ -486,7 +486,7 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
                 if (Group* group = player->GetGroup())
                 {
-                    group->SendLooter(pCreature, NULL);
+                    group->SendLooter(pCreature, nullptr);
 
                     // force update of dynamic flags, otherwise other group's players still not able to loot.
                     pCreature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
@@ -585,7 +585,7 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         else
             _player->SendLootError(lootguid, LOOT_ERROR_MASTER_OTHER);
 
-        target->SendEquipError( msg, NULL, NULL );
+        target->SendEquipError( msg, nullptr, nullptr );
         return;
     }
 

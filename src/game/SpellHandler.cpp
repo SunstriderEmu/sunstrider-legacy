@@ -38,13 +38,13 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
         return;
     }
 
     if(pItem->GetGUID() != item_guid)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
         return;
     }
 
@@ -53,21 +53,21 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     ItemTemplate const *proto = pItem->GetTemplate();
     if(!proto)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr );
         return;
     }
 
     // some item classes can be used only in equipped state
     if(proto->InventoryType != INVTYPE_NON_EQUIP && !pItem->IsEquipped())
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr );
         return;
     }
 
     uint8 msg = pUser->CanUseItem(pItem);
     if( msg != EQUIP_ERR_OK )
     {
-        pUser->SendEquipError( msg, pItem, NULL );
+        pUser->SendEquipError( msg, pItem, nullptr );
         return;
     }
 
@@ -76,7 +76,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
         !(proto->Flags & ITEM_FLAG_USEABLE_IN_ARENA) &&
         pUser->InArena())
     {
-        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH,pItem,NULL);
+        pUser->SendEquipError(EQUIP_ERR_NOT_DURING_ARENA_MATCH,pItem,nullptr);
         return;
     }
 
@@ -88,7 +88,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
             {
                 if (!spellInfo->CanBeUsedInCombat())
                 {
-                    pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT,pItem,NULL);
+                    pUser->SendEquipError(EQUIP_ERR_NOT_IN_COMBAT,pItem,nullptr);
                     return;
                 }
             }
@@ -144,20 +144,20 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
     if(!pItem)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr );
         return;
     }
 
     ItemTemplate const *proto = pItem->GetTemplate();
     if(!proto)
     {
-        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, NULL );
+        pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, pItem, nullptr );
         return;
     }
 
     if (pItem->IsBag())
     {
-        pUser->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW, pItem, NULL);
+        pUser->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW, pItem, nullptr);
         return;
     }
 
@@ -169,7 +169,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
         if (!lockInfo)
         {
-            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
+            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
             TC_LOG_ERROR("network", "WORLD::OpenItem: item [guid = %u] has an unknown lockId: %u!", pItem->GetGUIDLow() , lockId);
             return;
         }
@@ -177,7 +177,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         // required picklocking
         if (lockInfo->requiredminingskill)
         {
-            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
+            pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
             return;
         }
         
@@ -194,7 +194,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
                 }
                 
                 //not found
-                pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, NULL );
+                pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
                 return;
             }
         }
@@ -469,7 +469,7 @@ void WorldSession::HandleSelfResOpcode( WorldPacket & /* recvData */)
     {
         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(_player->GetUInt32Value(PLAYER_SELF_RES_SPELL));
         if(spellInfo)
-            _player->CastSpell(_player,spellInfo,false,0);
+            _player->CastSpell(_player,spellInfo,false,nullptr);
 
         _player->SetUInt32Value(PLAYER_SELF_RES_SPELL, 0);
     }
@@ -481,7 +481,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     recvData >> guid;
 
     // Get unit for which data is needed by client
-    Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);
+    Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)nullptr);
     if (!unit)
         return;
 

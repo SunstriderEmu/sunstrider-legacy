@@ -133,7 +133,7 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
         if (oldBidder && _player)
             oldBidder->GetSession()->SendAuctionBidderNotification( auction->GetHouseId(), auction->Id, _player->GetGUID(), newPrice, auction->GetAuctionOutBid(), auction->item_template);
 
-        WorldSession::SendMailTo(oldBidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionOutbiddedSubject.str(), 0, NULL, auction->bid, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(oldBidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionOutbiddedSubject.str(), 0, nullptr, auction->bid, 0, MAIL_CHECK_MASK_NONE);
     }
 }
 
@@ -153,7 +153,7 @@ void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
         std::ostringstream msgAuctionCancelledSubject;
         msgAuctionCancelledSubject << auction->item_template << ":0:" << AUCTION_CANCELLED_TO_BIDDER;
 
-        WorldSession::SendMailTo(bidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionCancelledSubject.str(), 0, NULL, auction->bid, 0, MAIL_CHECK_MASK_NONE);
+        WorldSession::SendMailTo(bidder, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->bidder, msgAuctionCancelledSubject.str(), 0, nullptr, auction->bid, 0, MAIL_CHECK_MASK_NONE);
     }
 }
 
@@ -265,10 +265,10 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
     AH->bidder = 0;
     AH->bid = 0;
     AH->buyout = buyout;
-    AH->expire_time = time(NULL) + auction_time;
+    AH->expire_time = time(nullptr) + auction_time;
     AH->deposit = deposit;
     AH->auctionHouseEntry = auctionHouseEntry;
-    AH->deposit_time = time(NULL);
+    AH->deposit_time = time(nullptr);
 
     TC_LOG_DEBUG("auctionHouse","selling item %u to auctioneer %u with initial bid %u with buyout %u and with time %u (in sec) in auctionhouse %u", GUID_LOPART(itemGUID), AH->auctioneer, bid, buyout, auction_time, AH->GetHouseId());
     auctionHouse->AddAuction(AH);
@@ -331,9 +331,9 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
     
     // AH bot protection: in the first 10 seconds after auction deposit, only player with same ip as auction owner can buyout
-    if ((auction->deposit_time + 60) > time(NULL)) {
+    if ((auction->deposit_time + 60) > time(nullptr)) {
         if (auction_owner && auction_owner->GetSession()->GetRemoteAddress() != pl->GetSession()->GetRemoteAddress()) {
-            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - time(NULL)));
+            pl->GetSession()->SendNotification("You must wait %u seconds before buying this item.", uint32((auction->deposit_time + 60) - time(nullptr)));
             return;
         }
     }

@@ -1105,7 +1105,7 @@ void SmartAIMgr::LoadHelperStores()
 {
     uint32 oldMSTime = GetMSTime();
 
-    SpellInfo const* spellInfo = NULL;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
+    SpellInfo const* spellInfo = nullptr;// sSpellMgr->GetSpellInfo(e.event.spellHit.spell);
     for (auto itr = sObjectMgr->GetSpellStore().begin(); itr != sObjectMgr->GetSpellStore().end(); itr++)
     {
         uint32 id = itr->first;

@@ -97,7 +97,7 @@ class AuctionHouseObject
     AuctionEntry* GetAuction(uint32 id) const
     {
         AuctionEntryMap::const_iterator itr = AuctionsMap.find( id );
-        return itr != AuctionsMap.end() ? itr->second : NULL;
+        return itr != AuctionsMap.end() ? itr->second : nullptr;
     }
 
     bool RemoveAuction(uint32 id)
@@ -145,7 +145,7 @@ class AuctionHouseMgr
             {
                 return itr->second;
             }
-            return NULL;
+            return nullptr;
         }
 
         //auction messages

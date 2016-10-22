@@ -170,7 +170,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionE
         std::ostringstream msgAuctionSalePendingBody;
         uint32 auctionCut = auction->GetAuctionCut();
 
-        time_t distrTime = time(NULL) + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
+        time_t distrTime = time(nullptr) + sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY);
 
         msgAuctionSalePendingBody.width(16);
         msgAuctionSalePendingBody << std::right << std::hex << auction->bidder;
@@ -180,7 +180,7 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionE
 
         uint32 itemTextId = sObjectMgr->CreateItemText( trans, msgAuctionSalePendingBody.str() );
 
-        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->owner, msgAuctionSalePendingSubject.str(), itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_AUCTION);
+        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->owner, msgAuctionSalePendingSubject.str(), itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_AUCTION);
     }
 }
 
@@ -217,7 +217,7 @@ void AuctionHouseMgr::SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEn
             owner->GetSession()->SendAuctionOwnerNotification( auction );
         }
 
-        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->owner, msgAuctionSuccessfulSubject.str(), itemTextId, NULL, profit, 0, MAIL_CHECK_MASK_AUCTION, sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY));
+        WorldSession::SendMailTo(trans, owner, MAIL_AUCTION, MAIL_STATIONERY_AUCTION, auction->GetHouseId(), auction->owner, msgAuctionSuccessfulSubject.str(), itemTextId, nullptr, profit, 0, MAIL_CHECK_MASK_AUCTION, sWorld->getConfig(CONFIG_MAIL_DELIVERY_DELAY));
     }
     else
         TC_LOG_ERROR("auctionHouse","SendAuctionSuccessfulMail: Mail not sent for some reason to player %s (GUID %u, account %u).", owner ? owner->GetName().c_str() : "<unknown> (maybe offline)", owner ? owner->GetGUIDLow() : 0, owner_accId);
@@ -673,7 +673,7 @@ bool AuctionEntry::BuildAuctionInfo(WorldPacket & data) const
     data << (uint32) (bid ? GetAuctionOutBid() : 0);
     //minimal outbid
     data << (uint32) buyout;                                //auction->buyout
-    data << (uint32) (expire_time - time(NULL))* 1000;      //time left
+    data << (uint32) (expire_time - time(nullptr))* 1000;      //time left
     data << (uint64) bidder;                                //auction->bidder current
     data << (uint32) bid;                                   //current bid
     return true;

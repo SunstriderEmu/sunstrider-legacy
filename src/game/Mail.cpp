@@ -41,7 +41,7 @@ void MailItem::deleteItem( bool inDB )
             CharacterDatabase.PExecute("DELETE FROM item_instance WHERE guid='%u'", item->GetGUIDLow());
 
         delete item;
-        item=NULL;
+        item=nullptr;
     }
 }
 
@@ -313,7 +313,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
     recvData >> mailId;
     Player *pl = _player;
     Mail *m = pl->GetMail(mailId);
-    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
     {
         pl->SendMailResult(mailId, MAIL_RETURNED_TO_SENDER, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -420,7 +420,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
     Player* pl = _player;
 
     Mail* m = pl->GetMail(mailId);
-    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
     {
         pl->SendMailResult(mailId, MAIL_ITEM_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -452,7 +452,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
             // check player existence
             if(receive || sender_accId)
             {
-                WorldSession::SendMailTo(receive, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, m->receiver, m->sender, m->subject, 0, NULL, m->COD, 0, MAIL_CHECK_MASK_COD_PAYMENT);
+                WorldSession::SendMailTo(receive, MAIL_NORMAL, MAIL_STATIONERY_NORMAL, m->receiver, m->sender, m->subject, 0, nullptr, m->COD, 0, MAIL_CHECK_MASK_COD_PAYMENT);
             }
 
             pl->ModifyMoney( -int32(m->COD) );
@@ -489,7 +489,7 @@ void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
     Player *pl = _player;
 
     Mail* m = pl->GetMail(mailId);
-    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(NULL))
+    if(!m || m->state == MAIL_STATE_DELETED || m->deliver_time > time(nullptr))
     {
         pl->SendMailResult(mailId, MAIL_MONEY_TAKEN, MAIL_ERR_INTERNAL_ERROR);
         return;
@@ -538,7 +538,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
 
     WorldPacket data(SMSG_MAIL_LIST_RESULT, (200));         // guess size
     data << uint8(0);                                       // mail's count
-    time_t cur_time = time(NULL);
+    time_t cur_time = time(nullptr);
 
     for(PlayerMails::iterator itr = pl->GetmailBegin(); itr != pl->GetmailEnd(); ++itr)
     {
@@ -578,7 +578,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
         data << (uint32) (*itr)->money;                     // Gold
         data << (uint32) 0x04;                              // unknown, 0x4 - auction, 0x10 - normal
                                                             // Time
-        data << (float)  ((*itr)->expire_time-time(NULL))/DAY;
+        data << (float)  ((*itr)->expire_time-time(nullptr))/DAY;
         data << (uint32) (*itr)->mailTemplateId;            // mail template (MailTemplate.dbc)
         data << (*itr)->subject;                            // Subject string - once 00, when mail type = 3
 
@@ -720,7 +720,7 @@ void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
         data << (uint32) 0;                                 // count
 
         uint32 count = 0;
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         std::set<uint32> sentSenders;
         for(PlayerMails::iterator itr = _player->GetmailBegin(); itr != _player->GetmailEnd(); ++itr)
         {
@@ -770,7 +770,7 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
     }
     uint32 mailId = sObjectMgr->GenerateMailID();
 
-    time_t deliver_time = time(NULL) + deliver_delay;
+    time_t deliver_time = time(nullptr) + deliver_delay;
 
     //expire time if COD 3 days, if no COD 30 days, if auction sale pending 1 hour
     uint32 expire_delay;

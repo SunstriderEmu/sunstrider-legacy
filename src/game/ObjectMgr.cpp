@@ -106,7 +106,7 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
             return &lang_description[i];
     }
 
-    return NULL;
+    return nullptr;
 }
 
 ObjectMgr::ObjectMgr()
@@ -210,7 +210,7 @@ Group * ObjectMgr::GetGroupByLeader(const uint64 &guid) const
         if ((*itr)->GetLeaderGUID() == guid)
             return *itr;
 
-    return NULL;
+    return nullptr;
 }
 
 Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
@@ -227,7 +227,7 @@ Guild * ObjectMgr::GetGuildById(const uint32 GuildId)
 
     guild->Disband();
     delete guild;
-    return NULL;
+    return nullptr;
 }
 
 Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
@@ -244,7 +244,7 @@ Guild * ObjectMgr::GetGuildByName(const std::string& guildname)
 
     guild->Disband();
     delete guild;
-    return NULL;
+    return nullptr;
 }
 
 std::string ObjectMgr::GetGuildNameById(const uint32 GuildId)
@@ -270,7 +270,7 @@ Guild* ObjectMgr::GetGuildByLeader(const uint64 &guid) const
         if (itr->second->GetLeaderGUID() == guid)
             return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 bool ObjectMgr::IsGuildLeader(const uint64 &guid) const
@@ -312,7 +312,7 @@ ArenaTeam* ObjectMgr::_GetArenaTeamById(const uint32 arenateamid) const
     if (itr != mArenaTeamMap.end())
         return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid)
@@ -328,7 +328,7 @@ ArenaTeam* ObjectMgr::GetArenaTeamById(const uint32 arenateamid)
     }
 
     delete team;
-    return NULL;
+    return nullptr;
 }
 
 ArenaTeam* ObjectMgr::_GetArenaTeamByName(const std::string& arenateamname) const
@@ -337,7 +337,7 @@ ArenaTeam* ObjectMgr::_GetArenaTeamByName(const std::string& arenateamname) cons
         if (itr->second->GetName() == arenateamname)
             return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname)
@@ -353,7 +353,7 @@ ArenaTeam* ObjectMgr::GetArenaTeamByName(const std::string& arenateamname)
     }
 
     delete team;
-    return NULL;
+    return nullptr;
 }
 
 ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(uint64 const& guid) const
@@ -362,7 +362,7 @@ ArenaTeam* ObjectMgr::_GetArenaTeamByCaptain(uint64 const& guid) const
         if (itr->second->GetCaptain() == guid)
             return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 bool ObjectMgr::IsArenaTeamCaptain(uint64 const& guid) const
@@ -390,7 +390,7 @@ CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
     if (itr != _creatureTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
@@ -399,7 +399,7 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
     if (itr != _gameObjectTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadCreatureLocales()
@@ -817,7 +817,7 @@ CreatureAddon const* ObjectMgr::GetCreatureAddon(uint32 lowguid)
     if (itr != _creatureAddonStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadCreatureTemplateAddons()
@@ -899,14 +899,14 @@ CreatureAddon const* ObjectMgr::GetCreatureTemplateAddon(uint32 entry)
     if (itr != _creatureTemplateAddonStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry)
 {
     EquipmentInfoContainer::const_iterator itr = _equipmentInfoStore.find(entry);
     if (itr == _equipmentInfoStore.end())
-        return NULL;
+        return nullptr;
     /*
     if (itr->second.empty())
         return NULL;
@@ -1015,7 +1015,7 @@ ItemTemplate const* ObjectMgr::GetItemTemplate(uint32 entry)
     if (itr != _itemTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
@@ -1024,7 +1024,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
     if (itr != _creatureModelStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 uint32 ObjectMgr::ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data)
@@ -1044,7 +1044,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32& display
 {
     CreatureModelInfo const* modelInfo = GetCreatureModelInfo(displayID);
     if (!modelInfo)
-        return NULL;
+        return nullptr;
 
     // If a model for another gender exists, 50% chance to use it
     if (modelInfo->modelid_other_gender != 0 && urand(0, 1) == 0)
@@ -2338,7 +2338,7 @@ void ObjectMgr::LoadPetLevelInfo()
 
             PetLevelInfo*& pInfoMapEntry = petInfo[creature_id];
 
-            if(pInfoMapEntry==NULL)
+            if(pInfoMapEntry==nullptr)
                 pInfoMapEntry =  new PetLevelInfo[sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)];
 
             // data for level 1 stored in [0] array element, ...
@@ -2389,7 +2389,7 @@ PetLevelInfo const* ObjectMgr::GetPetLevelInfo(uint32 creature_id, uint32 level)
 
     PetLevelInfoMap::const_iterator itr = petInfo.find(creature_id);
     if(itr == petInfo.end())
-        return NULL;
+        return nullptr;
 
     return &itr->second[level-1];                           // data for level 1 stored in [0] array element, ...
 }
@@ -2539,7 +2539,7 @@ void ObjectMgr::LoadPlayerInfo()
     // Load playercreate spells
     {
 
-        QueryResult result = NULL;
+        QueryResult result = nullptr;
         if(sWorld->getConfig(CONFIG_START_ALL_SPELLS))
             result = WorldDatabase.Query("SELECT race, class, Spell, Active FROM playercreateinfo_spell_custom");
         else
@@ -2988,7 +2988,7 @@ void ObjectMgr::LoadArenaTeams()
 void ObjectMgr::LoadGroups()
 {
     // -- loading groups --
-    Group *group = NULL;
+    Group *group = nullptr;
     uint64 leaderGuid = 0;
     uint32 count = 0;
     //                                                     0         1              2           3           4              5      6      7      8      9      10     11     12     13      14          15
@@ -3020,7 +3020,7 @@ void ObjectMgr::LoadGroups()
 
     // -- loading members --
     count = 0;
-    group = NULL;
+    group = nullptr;
     leaderGuid = 0;
     //                                        0           1          2         3
     result = CharacterDatabase.Query("SELECT memberGuid, assistant, subgroup, leaderGuid FROM group_member ORDER BY leaderGuid");
@@ -3066,7 +3066,7 @@ void ObjectMgr::LoadGroups()
 
     // -- loading instances --
     count = 0;
-    group = NULL;
+    group = nullptr;
     leaderGuid = 0;
     result = CharacterDatabase.Query(
         //      0           1    2         3          4           5
@@ -3144,7 +3144,7 @@ void ObjectMgr::LoadQuests()
         " FROM quest_template "
         " LEFT JOIN quest_bugs ON bugged = 1 and quest_bugs.entry = quest_template.entry "
         );
-    if(result == NULL)
+    if(result == nullptr)
     {
         TC_LOG_INFO("server.loading", ">> Loaded 0 quests definitions" );
         TC_LOG_ERROR("server.loading","`quest_template` table is empty!");
@@ -4452,7 +4452,7 @@ PageText const* ObjectMgr::GetPageText(uint32 pageEntry)
     if (itr != _pageTextStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadPageTextLocales()
@@ -4582,7 +4582,7 @@ InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
     if (itr != _instanceTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
@@ -4591,7 +4591,7 @@ InstanceTemplateAddon const* ObjectMgr::GetInstanceTemplateAddon(uint32 mapID)
     if (itr != _instanceTemplateAddonStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::AddGossipText(GossipText *pGText)
@@ -4619,7 +4619,7 @@ GossipText *ObjectMgr::GetGossipText(uint32 Text_ID)
         if(itr->second->Text_ID == Text_ID)
             return itr->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadGossipText()
@@ -4738,7 +4738,7 @@ void ObjectMgr::LoadGossipTextLocales()
 //not very fast function but it is called only once a day, or on starting-up
 void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 {
-    time_t basetime = time(NULL);
+    time_t basetime = time(nullptr);
     //delete all old mails without item and without body immediately, if starting server
     if (!serverUp)
         CharacterDatabase.PExecute("DELETE FROM mail WHERE expire_time < '" UI64FMTD "' AND has_items = '0' AND itemTextId = 0", (uint64)basetime);
@@ -4767,7 +4767,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->checked = fields[8].GetUInt8();
         m->mailTemplateId = fields[9].GetInt32();
 
-        Player *pl = 0;
+        Player *pl = nullptr;
         if (serverUp)
             pl = GetPlayer((uint64)m->receiver);
         if (pl && pl->m_mailsLoaded)
@@ -5129,21 +5129,21 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
     if(graveLow==graveUp)
     {
         TC_LOG_ERROR("FIXME","Table `game_graveyard_zone` incomplete: Zone %u Team %u does not have a linked graveyard.",zoneId,team);
-        return NULL;
+        return nullptr;
     }
 
     // at corpse map
     bool foundNear = false;
     float distNear;
-    WorldSafeLocsEntry const* entryNear = NULL;
+    WorldSafeLocsEntry const* entryNear = nullptr;
 
     // at entrance map for corpse map
     bool foundEntr = false;
     float distEntr;
-    WorldSafeLocsEntry const* entryEntr = NULL;
+    WorldSafeLocsEntry const* entryEntr = nullptr;
 
     // some where other
-    WorldSafeLocsEntry const* entryFar = NULL;
+    WorldSafeLocsEntry const* entryFar = nullptr;
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(MapId);
 
@@ -5234,7 +5234,7 @@ GraveYardData const* ObjectMgr::FindGraveYardData(uint32 id, uint32 zoneId)
             return &itr->second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool ObjectMgr::AddGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool inDB)
@@ -5484,7 +5484,7 @@ void ObjectMgr::LoadAccessRequirements()
 AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
 {
     const MapEntry *mapEntry = sMapStore.LookupEntry(Map);
-    if(!mapEntry) return NULL;
+    if(!mapEntry) return nullptr;
     for (AreaTriggerMap::const_iterator itr = mAreaTriggers.begin(); itr != mAreaTriggers.end(); ++itr)
     {
         if(itr->second.target_mapId == mapEntry->entrance_map)
@@ -5494,7 +5494,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
                 return &itr->second;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -5511,7 +5511,7 @@ AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
                 return &itr->second;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::SetHighestGuids()
@@ -7050,7 +7050,7 @@ bool PlayerCondition::Meets(Player const * player) const
         case CONDITION_OLD_ITEM:
             return player->HasItemCount(value1, value2);
         case CONDITION_OLD_ITEM_EQUIPPED:
-            return player->GetItemOrItemWithGemEquipped(value1) != NULL;
+            return player->GetItemOrItemWithGemEquipped(value1) != nullptr;
         case CONDITION_OLD_ZONEID:
             return player->GetZoneId() == value1;
         case CONDITION_OLD_REPUTATION_RANK:
@@ -7499,7 +7499,7 @@ void ObjectMgr::LoadVendors()
         uint32 incrtime     = fields[3].GetUInt32();
         uint32 ExtendedCost = fields[4].GetUInt32();
 
-        if(!IsVendorItemValid(entry,proto,maxcount,incrtime,ExtendedCost,NULL,&skip_vendors))
+        if(!IsVendorItemValid(entry,proto,maxcount,incrtime,ExtendedCost,nullptr,&skip_vendors))
             continue;
 
         VendorItemData& vList = m_mCacheVendorItemMap[entry];
@@ -8076,7 +8076,7 @@ void ObjectMgr::RemoveGMTicket(GM_Ticket *ticket, int64 source, bool permanently
       {
         CharacterDatabase.PExecute("DELETE FROM `gm_tickets` WHERE `guid` = '%u'", ticket->guid);
         i = m_GMTicketList.erase(i);
-        ticket = NULL;
+        ticket = nullptr;
         return;
       }
       (*i)->closed = source;
@@ -8172,7 +8172,7 @@ void ObjectMgr::LoadSpellTemplates()
         fields = result->Fetch();
         id = fields[0].GetUInt32();        
         auto itr = spellTemplates.find(id);
-        SpellEntry* spell = NULL;
+        SpellEntry* spell = nullptr;
         if (itr != spellTemplates.end()) { // Already existing
             spell = itr->second;
         }
@@ -8330,7 +8330,7 @@ SpellEntry const* ObjectMgr::GetSpellTemplate(uint32 id) const
     if (itr != spellTemplates.end())
         return itr->second;
         
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadFactionChangeItems()

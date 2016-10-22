@@ -59,7 +59,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
 {
     Map *m = FindBaseMap(id);
 
-    if( m == NULL )
+    if( m == nullptr )
     {
         std::lock_guard<std::mutex> lock(_mapsLock);
 
@@ -83,7 +83,7 @@ Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
 {
     Map* map = FindBaseMap(mapId);
     if (map && map->Instanceable())
-        return NULL;
+        return nullptr;
     return map;
 }
 

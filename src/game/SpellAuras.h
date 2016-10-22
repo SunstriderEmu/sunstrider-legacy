@@ -358,7 +358,7 @@ class Aura
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
-        Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = NULL, Item* castItem = NULL);
+        Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
 
         Modifier m_modifier;
         SpellModifier *m_spellmod;

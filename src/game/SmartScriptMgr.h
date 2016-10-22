@@ -1545,7 +1545,7 @@ class SmartWaypointMgr
         {
             if (waypoint_map.find(id) != waypoint_map.end())
                 return waypoint_map[id];
-            else return 0;
+            else return nullptr;
         }
 
     private:

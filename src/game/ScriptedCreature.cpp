@@ -84,7 +84,7 @@ Creature* SummonList::GetCreatureWithEntry(uint32 entry) const
                 return summon;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void BumpHelper::Update(const uint32 diff)
@@ -175,7 +175,7 @@ void ScriptedAI::EnterEvadeMode(EvadeReason why)
     me->DeleteThreatList();
     me->CombatStop();
     me->InitCreatureAddon();
-    me->SetLootRecipient(NULL);
+    me->SetLootRecipient(nullptr);
 
     if(me->IsAlive())
     {
@@ -214,7 +214,7 @@ void ScriptedAI::DoStartNoMovement(Unit* victim)
 
 void ScriptedAI::DoStopAttack()
 {
-    if (me->GetVictim() != NULL)
+    if (me->GetVictim() != nullptr)
     {
         me->AttackStop();
     }
@@ -233,7 +233,7 @@ uint32 ScriptedAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
 
 uint32 ScriptedAI::DoCastAOE(uint32 spellId, bool triggered)
 {
-    return DoCast((Unit*)NULL, spellId, triggered);
+    return DoCast((Unit*)nullptr, spellId, triggered);
 }
 
 uint32 ScriptedAI::DoCastSpell(Unit* who,SpellInfo const *spellInfo, bool triggered)
@@ -275,10 +275,10 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mecha
 
     //Using the extended script system we first create a list of viable spells
     SpellInfo const* Spell[4];
-    Spell[0] = 0;
-    Spell[1] = 0;
-    Spell[2] = 0;
-    Spell[3] = 0;
+    Spell[0] = nullptr;
+    Spell[1] = nullptr;
+    Spell[2] = nullptr;
+    Spell[3] = nullptr;
 
     uint32 SpellCount = 0;
 
@@ -391,9 +391,9 @@ bool ScriptedAI::EnterEvadeIfOutOfCombatArea()
     if (me->IsInEvadeMode() || !me->IsInCombat())
         return false;
 
-    if (_evadeCheckCooldown == time(NULL))
+    if (_evadeCheckCooldown == time(nullptr))
         return false;
-    _evadeCheckCooldown = time(NULL);
+    _evadeCheckCooldown = time(nullptr);
 
     if (!CheckEvadeIfOutOfCombatArea())
         return false;
@@ -416,7 +416,7 @@ void ScriptedAI::DoResetThreat()
 
     for(itr = m_threatlist.begin(); itr != m_threatlist.end(); ++itr)
     {
-        Unit* pUnit = NULL;
+        Unit* pUnit = nullptr;
         pUnit = ObjectAccessor::GetUnit((*me), (*itr)->getUnitGuid());
         if(pUnit && me->GetThreat(pUnit))
             DoModifyThreatPercent(pUnit, -100);
@@ -467,7 +467,7 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
 BossAI::BossAI(Creature* creature, uint32 bossId) : ScriptedAI(creature),
 instance(creature->GetInstanceScript()),
 summons(creature),
-_boundary(instance ? instance->GetBossBoundary(bossId) : NULL),
+_boundary(instance ? instance->GetBossBoundary(bossId) : nullptr),
 _bossId(bossId)
 {
 }
@@ -604,8 +604,8 @@ void BossAI::UpdateAI(uint32 diff)
 Creature* FindCreature(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
-        return NULL;
-    Creature* target = NULL;
+        return nullptr;
+    Creature* target = nullptr;
 
 
     Trinity::AllCreaturesOfEntryInRange check(Finder, entry, range);
@@ -625,8 +625,8 @@ void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* 
 GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
-        return NULL;
-    GameObject* target = NULL;
+        return nullptr;
+    GameObject* target = nullptr;
 
     Trinity::AllGameObjectsWithEntryInGrid go_check(entry);
     Trinity::GameObjectSearcher<Trinity::AllGameObjectsWithEntryInGrid> searcher(target, go_check);
@@ -636,7 +636,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
 
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
-    Unit* pUnit = NULL;
+    Unit* pUnit = nullptr;
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
     me->VisitNearbyObject(range, searcher);

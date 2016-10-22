@@ -66,7 +66,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
         return;
 
     // get bg instance or bg template if instance not found
-    Battleground * bg = 0;
+    Battleground * bg = nullptr;
     if(instanceId)
         bg = sBattlegroundMgr->GetBattleground(instanceId);
 
@@ -117,7 +117,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
     if(joinAsGroup /* && _player->GetGroup()*/)
     {
         GroupQueueInfo * ginfo = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, 0, false, 0);
-        for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+        for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player *member = itr->GetSource();
             if(!member) continue;   // this should never happen
@@ -316,7 +316,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 if(!itrPlayerStatus->second.GroupInfo)
                     continue;
 
-                Battleground * bg = NULL;
+                Battleground * bg = nullptr;
 
                 // get possibly needed data from groupinfo
                 bgTypeId = itrPlayerStatus->second.GroupInfo->BgTypeId;
@@ -672,7 +672,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         // Close rated arena during the night to block wintraders
         bool closeAtNight = sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 1;
         bool alsoCloseSkirmish = sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_CLOSE_AT_NIGHT_MASK) & 2;
-        time_t curTime = time(NULL);
+        time_t curTime = time(nullptr);
         tm localTm = *localtime(&curTime);
         if (closeAtNight && (isRated || alsoCloseSkirmish))
         {
@@ -729,7 +729,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     }
 
     //check existance
-    Battleground* bg = NULL;
+    Battleground* bg = nullptr;
     if( !(bg = sBattlegroundMgr->GetBattlegroundTemplate(BATTLEGROUND_AA)) )
     {
         TC_LOG_ERROR("bg.battleground","Battleground: template bg (all arenas) not found");
@@ -782,7 +782,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         // get the personal ratings for queueing
         uint32 avg_pers_rating = 0;
         uint32 max_pers_rating = 0;
-        for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+        for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player *member = itr->GetSource();
             
@@ -844,7 +844,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     if(asGroup)
     {
         GroupQueueInfo * ginfo = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddGroup(_player, bgTypeId, arenatype, isRated, arenaRating, ateamId);
-        for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+        for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             Player *member = itr->GetSource();
             if(!member) continue;

@@ -641,7 +641,7 @@ class GameObject : public WorldObject
         void SaveToDB(uint32 mapid, uint8 spawnMask);
         bool LoadFromDB(uint32 guid, Map *map);
         void DeleteFromDB();
-        void SetLootState(LootState state, Unit* unit = NULL);
+        void SetLootState(LootState state, Unit* unit = nullptr);
         uint32 GetLockId() const
         {
             if (manual_unlock)
@@ -667,7 +667,7 @@ class GameObject : public WorldObject
         time_t GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const
         {
-            time_t now = time(NULL);
+            time_t now = time(nullptr);
             if(m_respawnTime > now)
                 return m_respawnTime;
             else
@@ -732,7 +732,7 @@ class GameObject : public WorldObject
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id) const override;
         bool ActivateToQuest(Player *pTarget) const;
-        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);
+        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = nullptr);
         void ResetDoorOrButton();
 
         uint32 GetLinkedGameObjectEntry() const
@@ -781,21 +781,21 @@ class GameObject : public WorldObject
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         
         GameObjectModel * m_model;
-        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL) const;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr) const;
         
         float GetInteractionDistance();
 
         bool IsStaticTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT; }
         bool IsMotionTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT; }
 
-        Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport*>(this); else return NULL; }
-        Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return NULL; }
+        Transport* ToTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport*>(this); else return nullptr; }
+        Transport const* ToTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT || GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<Transport const*>(this); else return nullptr; }
 
-        StaticTransport* ToStaticTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport*>(this); else return NULL; }
-        StaticTransport const* ToStaticTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport const*>(this); else return NULL; }
+        StaticTransport* ToStaticTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport*>(this); else return nullptr; }
+        StaticTransport const* ToStaticTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT) return reinterpret_cast<StaticTransport const*>(this); else return nullptr; }
 
-        MotionTransport* ToMotionTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport*>(this); else return NULL; }
-        MotionTransport const* ToMotionTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport const*>(this); else return NULL; }
+        MotionTransport* ToMotionTransport() { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport*>(this); else return nullptr; }
+        MotionTransport const* ToMotionTransport() const { if (GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT) return reinterpret_cast<MotionTransport const*>(this); else return nullptr; }
 
         void UpdateModelPosition();
 

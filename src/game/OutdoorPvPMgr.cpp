@@ -155,7 +155,7 @@ OutdoorPvP * OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
     if(itr == m_OutdoorPvPMap.end())
     {
         // no handle for this zone, return
-        return NULL;
+        return nullptr;
     }
     return itr->second;
 }

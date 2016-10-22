@@ -175,7 +175,7 @@ void BattlegroundEY::AddPoints(uint32 Team, uint32 Points)
 
 void BattlegroundEY::CheckSomeoneJoinedPoint()
 {
-    GameObject *obj = NULL;
+    GameObject *obj = nullptr;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
         obj = HashMapHolder<GameObject>::Find(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
@@ -215,7 +215,7 @@ void BattlegroundEY::CheckSomeoneLeftPoint()
     //reset current point counts
     for (uint8 i = 0; i < 2*EY_POINTS_MAX; ++i)
         m_CurrentPointPlayersCount[i] = 0;
-    GameObject *obj = NULL;
+    GameObject *obj = nullptr;
     for(uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
         obj = HashMapHolder<GameObject>::Find(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
@@ -505,7 +505,7 @@ bool BattlegroundEY::SetupBattleground()
             TC_LOG_ERROR("FIXME","BattlegroundEY: Cannot spawn buff");
     }
 
-    WorldSafeLocsEntry const *sg = NULL;
+    WorldSafeLocsEntry const *sg = nullptr;
     sg = sWorldSafeLocsStore.LookupEntry(EY_GRAVEYARD_MAIN_ALLIANCE);
     if( !sg || !AddSpiritGuide(EY_SPIRIT_MAIN_ALLIANCE, sg->x, sg->y, sg->z, 3.124139f, TEAM_ALLIANCE) )
     {
@@ -737,7 +737,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     if(m_BgCreatures[Point])
         DelCreature(Point);
 
-    WorldSafeLocsEntry const *sg = NULL;
+    WorldSafeLocsEntry const *sg = nullptr;
     sg = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[Point].GraveYardId);
     if(!sg || !AddSpiritGuide(Point, sg->x, sg->y, sg->z, 3.124139f, Team))
         TC_LOG_ERROR("FIXME","BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
@@ -862,19 +862,19 @@ WorldSafeLocsEntry const *BattlegroundEY::GetClosestGraveYard(float x, float y, 
     else if(team == TEAM_HORDE)
         g_id = EY_GRAVEYARD_MAIN_HORDE;
     else
-        return NULL;
+        return nullptr;
 
     float distance, nearestDistance;
 
-    WorldSafeLocsEntry const* entry = NULL;
-    WorldSafeLocsEntry const* nearestEntry = NULL;
+    WorldSafeLocsEntry const* entry = nullptr;
+    WorldSafeLocsEntry const* nearestEntry = nullptr;
     entry = sWorldSafeLocsStore.LookupEntry(g_id);
     nearestEntry = entry;
 
     if(!entry)
     {
         TC_LOG_ERROR("FIXME","BattlegroundEY: Not found the main team graveyard. Graveyard system isn't working!");
-        return NULL;
+        return nullptr;
     }
 
     distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);

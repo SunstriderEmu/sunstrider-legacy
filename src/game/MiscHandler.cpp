@@ -68,7 +68,7 @@ void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
     }
 
     //this is spirit release confirm?
-    GetPlayer()->RemovePet(NULL,PET_SAVE_NOT_IN_SLOT, true);
+    GetPlayer()->RemovePet(nullptr,PET_SAVE_NOT_IN_SLOT, true);
     GetPlayer()->BuildPlayerRepop();
     GetPlayer()->RepopAtGraveyard();
 }
@@ -97,8 +97,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     if (_player->PlayerTalkClass->GetGossipMenu().GetSenderGUID() != guid)
         return;
 
-    Creature* unit = NULL;
-    GameObject* go = NULL;
+    Creature* unit = nullptr;
+    GameObject* go = nullptr;
     if (IS_CREATURE_OR_VEHICLE_GUID(guid))
     {
         unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_GOSSIP);
@@ -417,7 +417,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-	LogoutRequest(time(NULL));
+	LogoutRequest(time(nullptr));
 }
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
@@ -483,7 +483,7 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     else
     {
         if(!GetPlayer()->pvpInfo.inHostileArea && GetPlayer()->IsPvP())
-            GetPlayer()->pvpInfo.endTimer = time(NULL);     // start toggle-off
+            GetPlayer()->pvpInfo.endTimer = time(nullptr);     // start toggle-off
     }
 
     if(OutdoorPvP * pvp = _player->GetOutdoorPvP())
@@ -793,7 +793,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket &recvData)
         return;
 
     // prevent resurrect before 30-sec delay after body release not finished
-    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(NULL))
+    if(GetPlayer()->GetDeathTime() + GetPlayer()->GetCorpseReclaimDelay(corpse->GetType()==CORPSE_RESURRECTABLE_PVP) > time(nullptr))
         return;
 
     float dist = corpse->GetDistance2d(GetPlayer());
@@ -920,7 +920,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     {
         // set resting flag we are in the inn
         GetPlayer()->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        GetPlayer()->InnEnter(time(NULL), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
+        GetPlayer()->InnEnter(time(nullptr), atEntry->mapid, atEntry->x, atEntry->y, atEntry->z);
         GetPlayer()->SetRestType(REST_TYPE_IN_TAVERN);
 
         if(sWorld->IsFFAPvPRealm())
@@ -1114,7 +1114,7 @@ void WorldSession::HandleMoveTimeSkippedOpcode( WorldPacket & recvData )
     recvData >> time_skipped;
 
     // ignore updates for not us
-    if (_player == NULL || guid != _player->GetGUID())
+    if (_player == nullptr || guid != _player->GetGUID())
         return;
 
     WorldPacket data(MSG_MOVE_TIME_SKIPPED, 12);
@@ -1614,7 +1614,7 @@ void WorldSession::HandleSetDungeonDifficultyOpcode( WorldPacket & recvData )
     {
         if(group->IsLeader(_player->GetGUID()))
         {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 Player* groupGuy = itr->GetSource();
                 if (!groupGuy)

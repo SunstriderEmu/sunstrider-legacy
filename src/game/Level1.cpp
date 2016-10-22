@@ -52,7 +52,7 @@ bool ChatHandler::HandleNpcSayCommand(const char* args)
         return false;
     }
 
-    pCreature->Say(args, LANG_UNIVERSAL, 0);
+    pCreature->Say(args, LANG_UNIVERSAL, nullptr);
 
     // make some emotes
     char lastchar = args[strlen(args) - 1];
@@ -78,7 +78,7 @@ bool ChatHandler::HandleNpcYellCommand(const char* args)
         return false;
     }
 
-    pCreature->Yell(args, LANG_UNIVERSAL, 0);
+    pCreature->Yell(args, LANG_UNIVERSAL, nullptr);
 
     // make an emote
     pCreature->HandleEmoteCommand(EMOTE_ONESHOT_SHOUT);
@@ -100,7 +100,7 @@ bool ChatHandler::HandleNpcTextEmoteCommand(const char* args)
         return false;
     }
 
-    pCreature->TextEmote(args, 0);
+    pCreature->TextEmote(args, nullptr);
 
     return true;
 }
@@ -111,7 +111,7 @@ bool ChatHandler::HandleNpcWhisperCommand(const char* args)
     ARGS_CHECK
 
     char* receiver_str = strtok((char*)args, " ");
-    char* text = strtok(NULL, "");
+    char* text = strtok(nullptr, "");
 
     uint64 guid = m_session->GetPlayer()->GetTarget();
     Creature* pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(), guid);
@@ -294,8 +294,8 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, data ? data->name.c_str() : "<name not found>", data ? data->name.c_str() : "<name not found>");
     if (showAge)
     {
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(NULL) - ticket->createtime, true, false)).c_str());
-        ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(NULL) - ticket->timestamp, true, false)).c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTAGECREATE, (secsToTimeString(time(nullptr) - ticket->createtime, true, false)).c_str());
+        ss << PGetParseString(LANG_COMMAND_TICKETLISTAGE, (secsToTimeString(time(nullptr) - ticket->timestamp, true, false)).c_str());
     }
     if (showAssign)
     {
@@ -317,7 +317,7 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
 
 bool ChatHandler::HandleGMTicketList(bool onlineOnly, bool closedOnly)
 {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     for (GmTicketList::iterator itr = sObjectMgr->m_GMTicketList.begin(); itr != sObjectMgr->m_GMTicketList.end(); ++itr)
     {
         bool closed = ((*itr)->closed != 0);
@@ -371,7 +371,7 @@ bool ChatHandler::HandleGMTicketGetByIdCommand(const char* args)
         return true;
     }
 
-    SendTicket(ticket, time(NULL), true, true);
+    SendTicket(ticket, time(nullptr), true, true);
     return true;
 }
 
@@ -393,7 +393,7 @@ bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
         return true;
     }
 
-    SendTicket(ticket, time(NULL), true, true);
+    SendTicket(ticket, time(nullptr), true, true);
     return true;
 }
 
@@ -413,10 +413,10 @@ bool ChatHandler::HandleGMTicketCloseByIdCommand(const char* args)
     PSendSysMessage(LANG_COMMAND_TICKETCANNOTCLOSE, ticket->guid);
     return true;
   }
-  SendTicket(ticket, time(NULL), false, false, false, false, true);
+  SendTicket(ticket, time(nullptr), false, false, false, false, true);
 
   Player *plr = sObjectMgr->GetPlayer(ticket->playerGuid);
-  ticket->timestamp = time(NULL);
+  ticket->timestamp = time(nullptr);
   sObjectMgr->RemoveGMTicket(ticket, m_session ? m_session->GetAccountId() : 0); 
 
   if(!plr || !plr->IsInWorld())
@@ -435,7 +435,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
 
   char* tguid = strtok((char*)args, " ");
   uint64 ticketGuid = atoi(tguid);
-  char* targetgm = strtok( NULL, " ");
+  char* targetgm = strtok( nullptr, " ");
 
   if(!targetgm)
     return false;
@@ -524,7 +524,7 @@ bool ChatHandler::HandleGMTicketCommentCommand(const char* args)
 
   char* tguid = strtok((char*)args, " ");
   uint64 ticketGuid = atoi(tguid);
-  char* comment = strtok( NULL, "\n");
+  char* comment = strtok( nullptr, "\n");
 
   if(!comment)
     return false;
@@ -582,7 +582,7 @@ bool ChatHandler::HandleGMTicketDeleteByIdCommand(const char* args)
     plr->SendDirectMessage( &data );
   }
 
-  ticket = NULL;
+  ticket = nullptr;
   return true;
 }
 
@@ -624,7 +624,7 @@ bool ChatHandler::HandleVisibleCommand(const char* args)
 
 bool ChatHandler::HandleGPSSCommand(const char* args)
 {
-    WorldObject *obj = NULL;
+    WorldObject *obj = nullptr;
     if (*args)
     {
         std::string name = args;
@@ -655,7 +655,7 @@ bool ChatHandler::HandleGPSSCommand(const char* args)
 
 bool ChatHandler::HandleGPSCommand(const char* args)
 {
-    WorldObject *obj = NULL;
+    WorldObject *obj = nullptr;
     if (*args)
     {
         std::string name = args;
@@ -716,7 +716,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
         
         uint32 mogpFlags;
         int32 adtId, rootId, groupId;
-        WMOAreaTableEntry const* wmoEntry = 0;
+        WMOAreaTableEntry const* wmoEntry = nullptr;
 
         if (map->GetAreaInfo(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), mogpFlags, adtId, rootId, groupId))
         {
@@ -937,7 +937,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
             {
                 Group *group = _player->GetGroup();
                 // if no bind exists, create a solo bind
-                InstanceGroupBind *gBind = group ? group->GetBoundInstance(target->GetDifficulty(), target->GetMapId()) : NULL;
+                InstanceGroupBind *gBind = group ? group->GetBoundInstance(target->GetDifficulty(), target->GetMapId()) : nullptr;
                 if (!gBind)
                     if (InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(target->GetInstanceId()))
                         _player->BindToInstance(save, !save->CanReset());
@@ -1006,7 +1006,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 // Teleport player to last position
 bool ChatHandler::HandleRecallCommand(const char* args)
 {
-    Player* chr = NULL;
+    Player* chr = nullptr;
 
     if(!*args)
     {
@@ -1118,7 +1118,7 @@ bool ChatHandler::HandleModifyHPCommand(const char* args)
         hpm = 500000000;            
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1161,7 +1161,7 @@ bool ChatHandler::HandleModifyManaCommand(const char* args)
     }
 
     Unit* unit = GetSelectedUnit();
-    if (unit == NULL)
+    if (unit == nullptr)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -1252,7 +1252,7 @@ bool ChatHandler::HandleModifyRageCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1321,13 +1321,13 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
 
     // else, creature case :
     uint32 flag;
-    char *pflag = strtok(NULL, " ");
+    char *pflag = strtok(nullptr, " ");
     if (!pflag)
         flag = u->GetUInt32Value(UNIT_FIELD_FLAGS);
     else
         flag = atoi(pflag);
 
-    char* pnpcflag = strtok(NULL, " ");
+    char* pnpcflag = strtok(nullptr, " ");
 
     uint32 npcflag;
     if(!pnpcflag)
@@ -1335,7 +1335,7 @@ bool ChatHandler::HandleModifyFactionCommand(const char* args)
     else
         npcflag = atoi(pnpcflag);
 
-    char* pdyflag = strtok(NULL, " ");
+    char* pdyflag = strtok(nullptr, " ");
 
     uint32  dyflag;
     if(!pdyflag)
@@ -1361,17 +1361,17 @@ bool ChatHandler::HandleModifySpellCommand(const char* args)
     if (!pspellflatid)
         return false;
 
-    char* pop = strtok(NULL, " ");
+    char* pop = strtok(nullptr, " ");
     if (!pop)
         return false;
 
-    char* pval = strtok(NULL, " ");
+    char* pval = strtok(nullptr, " ");
     if (!pval)
         return false;
 
     uint16 mark;
 
-    char* pmark = strtok(NULL, " ");
+    char* pmark = strtok(nullptr, " ");
 
     uint8 spellflatid = atoi(pspellflatid);
     uint8 op   = atoi(pop);
@@ -1382,7 +1382,7 @@ bool ChatHandler::HandleModifySpellCommand(const char* args)
         mark = atoi(pmark);
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1471,7 +1471,7 @@ bool ChatHandler::HandleModifyASpeedCommand(const char* args)
     }
 
     Unit* u = GetSelectedUnit();
-    if (u == NULL)
+    if (u == nullptr)
     {
         SendSysMessage(LANG_NO_SELECTION);
         SetSentErrorMessage(true);
@@ -1524,7 +1524,7 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1562,7 +1562,7 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1600,7 +1600,7 @@ bool ChatHandler::HandleModifyBWalkCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1638,7 +1638,7 @@ bool ChatHandler::HandleModifyFlyCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1668,7 +1668,7 @@ bool ChatHandler::HandleModifyScaleCommand(const char* args)
     }
 
     Unit* u = GetSelectedUnit();
-    if (u == NULL)
+    if (u == nullptr)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -1912,7 +1912,7 @@ bool ChatHandler::HandleModifyMountCommand(const char* args)
     }
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -1948,7 +1948,7 @@ bool ChatHandler::HandleModifyMoneyCommand(const char* args)
     ARGS_CHECK
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -2003,7 +2003,7 @@ bool ChatHandler::HandleModifyBitCommand(const char* args)
     ARGS_CHECK
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -2014,7 +2014,7 @@ bool ChatHandler::HandleModifyBitCommand(const char* args)
     if (!pField)
         return false;
 
-    char* pBit = strtok(NULL, " ");
+    char* pBit = strtok(nullptr, " ");
     if (!pBit)
         return false;
 
@@ -2304,7 +2304,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
     if(!pName)
         return false;
 
-    char* tail1 = strtok(NULL, "");
+    char* tail1 = strtok(nullptr, "");
     if(!tail1)
         return false;
 
@@ -2316,13 +2316,13 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         char* space = strtok(tail1, "\"");
         if(!space)
             return false;
-        msgSubject = strtok(NULL, "\"");
+        msgSubject = strtok(nullptr, "\"");
     }
 
     if (!msgSubject)
         return false;
 
-    char* tail2 = strtok(NULL, "");
+    char* tail2 = strtok(nullptr, "");
     if(!tail2)
         return false;
 
@@ -2334,7 +2334,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         char* space = strtok(tail2, "\"");
         if(!space)
             return false;
-        msgText = strtok(NULL, "\"");
+        msgText = strtok(nullptr, "\"");
     }
 
     if (!msgText)
@@ -2369,7 +2369,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
 
     Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver, messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -2394,7 +2394,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
         return false;
     }
 
-    char* tail = strtok(NULL, "");
+    char* tail = strtok(nullptr, "");
     if(!tail)
         return false;
 
@@ -2490,7 +2490,7 @@ bool ChatHandler::HandleGroupTeleCommand(const char * args)
         return false;
     }
 
-    for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player *pl = itr->GetSource();
 
@@ -2568,7 +2568,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    for(GroupReference *itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         Player *pl = itr->GetSource();
 
@@ -2626,8 +2626,8 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pmapid = strtok(NULL, " ");
+    char* py = strtok(nullptr, " ");
+    char* pmapid = strtok(nullptr, " ");
 
     if (!px || !py)
         return false;
@@ -2672,9 +2672,9 @@ bool ChatHandler::HandleGoXYZCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
-    char* pmapid = strtok(NULL, " ");
+    char* py = strtok(nullptr, " ");
+    char* pz = strtok(nullptr, " ");
+    char* pmapid = strtok(nullptr, " ");
 
     if (!px || !py || !pz)
         return false;
@@ -2717,10 +2717,10 @@ bool ChatHandler::HandleGoXYZOCommand(const char* args)
         Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
-    char* po = strtok(NULL, " ");
-    char* pmapid = strtok(NULL, " ");
+    char* py = strtok(nullptr, " ");
+    char* pz = strtok(nullptr, " ");
+    char* po = strtok(nullptr, " ");
+    char* pmapid = strtok(nullptr, " ");
 
     if (!px || !py || !pz || !po)
         return false;
@@ -2765,8 +2765,8 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* tail = strtok(NULL,"");
+    char* py = strtok(nullptr, " ");
+    char* tail = strtok(nullptr,"");
 
     char* cAreaId = extractKeyFromLink(tail,"Harea");       // string or [name] Shift-click form |color|Harea:area_id|h[name]|h|r
 
@@ -2831,8 +2831,8 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     Player* _player = m_session->GetPlayer();
 
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
-    char* pmapid = strtok(NULL, " ");
+    char* py = strtok(nullptr, " ");
+    char* pmapid = strtok(nullptr, " ");
 
     if (!px || !py)
         return false;

@@ -38,7 +38,7 @@ inline uint32_t superFastHash (const void* _data, size_t numBytes) {
     uint32_t tmp;
     int rem;
 
-    if ((numBytes <= 0) || (data == NULL)) {
+    if ((numBytes <= 0) || (data == nullptr)) {
         return 0;
     }
 

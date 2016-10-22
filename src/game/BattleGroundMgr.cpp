@@ -591,7 +591,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
     // if selection pools are ready, create the new bg
     if (bAllyOK && bHordeOK)
     {
-        Battleground * bg2 = 0;
+        Battleground * bg2 = nullptr;
         // special handling for arenas
         if(bg_template->IsArena())
         {
@@ -773,7 +773,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             // create random arena
             uint8 arenas[] = {BATTLEGROUND_NA, BATTLEGROUND_BE, BATTLEGROUND_RL};
             uint32 arena_num = urand(0,2);
-            Battleground* bg2 = NULL;
+            Battleground* bg2 = nullptr;
             if( !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[arena_num%3])) &&
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+1)%3])) &&
                 !(bg2 = sBattlegroundMgr->CreateNewBattleground(arenas[(arena_num+2)%3])) )
@@ -1023,10 +1023,10 @@ void BattlegroundMgr::Update(time_t diff)
     {
         if(m_AutoDistributionTimeChecker < diff)
         {
-            if(time(NULL) > m_NextAutoDistributionTime)
+            if(time(nullptr) > m_NextAutoDistributionTime)
             {
                 DistributeArenaPoints();
-                m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+                m_NextAutoDistributionTime = time(nullptr) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
                 CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '" UI64FMTD "'", m_NextAutoDistributionTime);
             }
             m_AutoDistributionTimeChecker = 600000; // check 10 minutes
@@ -1303,13 +1303,13 @@ void BattlegroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, uint32 te
 
 Battleground * BattlegroundMgr::GetBattlegroundTemplate(uint32 bgTypeId)
 {
-    return BGFreeSlotQueue[bgTypeId].empty() ? NULL : BGFreeSlotQueue[bgTypeId].back();
+    return BGFreeSlotQueue[bgTypeId].empty() ? nullptr : BGFreeSlotQueue[bgTypeId].back();
 }
 
 // create a new battleground that will really be used to play
 Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
 {
-    Battleground *bg = NULL;
+    Battleground *bg = nullptr;
 
     // get the template BG
     Battleground *bg_template = GetBattlegroundTemplate(bgTypeId);
@@ -1317,7 +1317,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
     if(!bg_template)
     {
         TC_LOG_ERROR("bg.battleground","Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
-        return 0;
+        return nullptr;
     }
 
     // create a copy of the BG template
@@ -1349,7 +1349,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
             break;
         default:
             //bg = new Battleground;
-            return 0;
+            return nullptr;
             break;             // placeholder for non implemented BG
     }
 
@@ -1381,7 +1381,7 @@ Battleground * BattlegroundMgr::CreateNewBattleground(uint32 bgTypeId)
 uint32 BattlegroundMgr::CreateBattleground(uint32 bgTypeId, uint32 MinPlayersPerTeam, uint32 MaxPlayersPerTeam, uint32 LevelMin, uint32 LevelMax, char* BattlegroundName, uint32 MapID, float Team1StartLocX, float Team1StartLocY, float Team1StartLocZ, float Team1StartLocO, float Team2StartLocX, float Team2StartLocY, float Team2StartLocZ, float Team2StartLocO)
 {
     // Create the BG
-    Battleground *bg = NULL;
+    Battleground *bg = nullptr;
 
     switch(bgTypeId)
     {
@@ -1547,7 +1547,7 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
         if(!result)
         {
             TC_LOG_ERROR("battleground","Battleground: Next arena point distribution time not found in SavedVariables, reseting it now.");
-            m_NextAutoDistributionTime = time(NULL) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
+            m_NextAutoDistributionTime = time(nullptr) + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
             CharacterDatabase.PExecute("INSERT INTO saved_variables (NextArenaPointDistributionTime) VALUES ('" UI64FMTD "')", m_NextAutoDistributionTime);
         }
         else
@@ -1560,9 +1560,9 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
 void BattlegroundMgr::DistributeArenaPoints()
 {
     // used to distribute arena points based on last week's stats
-    sWorld->SendGlobalText("Flushing Arena points based on team ratings, this may take a few minutes. Please stand by...", NULL);
+    sWorld->SendGlobalText("Flushing Arena points based on team ratings, this may take a few minutes. Please stand by...", nullptr);
 
-    sWorld->SendGlobalText("Distributing arena points to players...", NULL);
+    sWorld->SendGlobalText("Distributing arena points to players...", nullptr);
 
     //temporary structure for storing maximum points to add values for all players
     std::map<uint32, uint32> PlayerPoints;
@@ -1590,9 +1590,9 @@ void BattlegroundMgr::DistributeArenaPoints()
 
     PlayerPoints.clear();
 
-    sWorld->SendGlobalText("Finished setting arena points for online players.", NULL);
+    sWorld->SendGlobalText("Finished setting arena points for online players.", nullptr);
 
-    sWorld->SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", NULL);
+    sWorld->SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", nullptr);
     for(ObjectMgr::ArenaTeamMap::iterator titr = sObjectMgr->GetArenaTeamMapBegin(); titr != sObjectMgr->GetArenaTeamMapEnd(); ++titr)
     {
         if(ArenaTeam * at = titr->second)
@@ -1609,9 +1609,9 @@ void BattlegroundMgr::DistributeArenaPoints()
     if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
         sWorld->updateArenaLeadersTitles();
 
-    sWorld->SendGlobalText("Modification done.", NULL);
+    sWorld->SendGlobalText("Modification done.", nullptr);
 
-    sWorld->SendGlobalText("Done flushing Arena points.", NULL);
+    sWorld->SendGlobalText("Done flushing Arena points.", nullptr);
 }
 
 void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket *data, uint64 guid, Player* plr, uint32 bgTypeId)

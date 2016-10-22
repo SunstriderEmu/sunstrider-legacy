@@ -193,7 +193,7 @@ LootTemplate const* LootStore::GetLootFor(uint32 loot_id) const
     LootTemplateMap::const_iterator tab = m_LootTemplates.find(loot_id);
 
     if (tab == m_LootTemplates.end())
-        return NULL;
+        return nullptr;
 
     return tab->second;
 }
@@ -212,7 +212,7 @@ LootTemplate* LootStore::GetLootForConditionFill(uint32 loot_id)
     LootTemplateMap::iterator tab = m_LootTemplates.find(loot_id);
 
     if (tab == m_LootTemplates.end())
-        return NULL;
+        return nullptr;
 
     return tab->second;
 }
@@ -500,7 +500,7 @@ void Loot::FillLoot(uint32 loot_id, LootStore const& store, Player* loot_owner)
     {
         roundRobinPlayer = loot_owner->GetGUID();
 
-        for (GroupReference *itr = pGroup->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             //fill the quest item map for every player in the recipient's group
             Player* pl = itr->GetSource();
@@ -531,7 +531,7 @@ QuestItemList* Loot::FillFFALoot(Player* player)
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerFFAItems[player->GetGUIDLow()] = ql;
@@ -540,7 +540,7 @@ QuestItemList* Loot::FillFFALoot(Player* player)
 
 QuestItemList* Loot::FillQuestLoot(Player* player)
 {
-    if (items.size() == MAX_NR_LOOT_ITEMS) return NULL;
+    if (items.size() == MAX_NR_LOOT_ITEMS) return nullptr;
     QuestItemList *ql = new QuestItemList();
 
     for(uint8 i = 0; i < quest_items.size(); i++)
@@ -566,7 +566,7 @@ QuestItemList* Loot::FillQuestLoot(Player* player)
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerQuestItems[player->GetGUIDLow()] = ql;
@@ -593,7 +593,7 @@ QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(Player* player)
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerNonQuestNonFFAConditionalItems[player->GetGUIDLow()] = ql;
@@ -682,7 +682,7 @@ void Loot::generateMoneyLoot( uint32 minAmount, uint32 maxAmount )
 
 LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qitem, QuestItem **ffaitem, QuestItem **conditem)
 {
-    LootItem* item = NULL;
+    LootItem* item = nullptr;
     bool is_looted = true;
     if (lootSlot >= items.size())
     {
@@ -738,7 +738,7 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot, Player* player, QuestItem **qite
     }
 
     if(is_looted)
-        return NULL;
+        return nullptr;
 
     return item;
 }
@@ -888,7 +888,7 @@ LootStoreItem const* LootTemplate::LootGroup::Roll() const
     if (!EqualChanced.empty())                              // If nothing selected yet - an item is taken from equal-chanced part
         return Trinity::Containers::SelectRandomContainerElement(EqualChanced);
 
-    return NULL;                                            // Empty drop from the group
+    return nullptr;                                            // Empty drop from the group
 }
 
 // True if group includes at least 1 quest drop entry
@@ -928,7 +928,7 @@ void LootTemplate::LootGroup::CopyConditions(ConditionList /*conditions*/)
 void LootTemplate::LootGroup::Process(Loot& loot) const
 {
     LootStoreItem const * item = Roll();
-    if (item != NULL)
+    if (item != nullptr)
         loot.AddItem(*item);
 }
 
@@ -1013,7 +1013,7 @@ void LootTemplate::AddEntry(LootStoreItem* item)
     if (item->group > 0 && item->mincountOrRef > 0)           // Group
     {
         if (item->group >= Groups.size())
-            Groups.resize(item->group, NULL);                      // Adds new group the the loot template if needed
+            Groups.resize(item->group, nullptr);                      // Adds new group the the loot template if needed
         if (!Groups[item->group - 1])
             Groups[item->group - 1] = new LootGroup();
 

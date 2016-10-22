@@ -43,7 +43,7 @@ Corpse::Corpse(CorpseType type) : WorldObject()
 
     m_type = type;
 
-    m_time = time(NULL);
+    m_time = time(nullptr);
 
     lootForBody = false;
 }
@@ -148,7 +148,7 @@ void Corpse::DeleteFromDB(SQLTransaction trans)
 
 bool Corpse::LoadFromDB(uint32 guid, QueryResult result, uint32 InstanceId)
 {
-    bool external = (result != NULL);
+    bool external = (result != nullptr);
     if (!external)
         //                                        0          1          2          3           4   5    6    7           8
         result = CharacterDatabase.PQuery("SELECT position_x,position_y,position_z,orientation,map,data,time,corpse_type,instanceId FROM corpse WHERE guid = '%u'",guid);

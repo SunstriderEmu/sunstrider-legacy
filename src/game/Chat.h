@@ -60,7 +60,7 @@ class ChatHandler
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
         static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, WorldObject const* sender, WorldObject const* receiver, std::string const& message, uint32 achievementId = 0, std::string const& channelName = "", LocaleConstant locale = DEFAULT_LOCALE);
 
-        static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = NULL; return start; }
+        static char* LineFromMessage(char*& pos) { char* start = strtok(pos,"\n"); pos = nullptr; return start; }
         
         // function with different implementation for chat/console
         virtual bool HasPermission(uint32 permission) const { return m_session->HasPermission(permission); }
@@ -95,14 +95,14 @@ class ChatHandler
         WorldSession* GetSession() { return m_session; }
 
         static void SendMessageWithoutAuthor(char const* channel, const char* msg);
-        char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
+        char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = nullptr);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
         std::string GetNameLink(Player* chr) const { return playerLink(chr->GetName()); }
 
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
-        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
+        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = nullptr, std::string* player_name = nullptr);
 
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
@@ -110,7 +110,7 @@ class ChatHandler
         void SendGlobalSysMessage(const char *str);
         void SendGlobalGMSysMessage(const char *str);
     protected:
-        explicit ChatHandler() : m_session(NULL) {}      // for CLI subclass
+        explicit ChatHandler() : m_session(nullptr) {}      // for CLI subclass
         static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand, bool allowIRC);
 
         bool hasStringAbbr(const char* name, const char* part) const;
@@ -664,7 +664,7 @@ class ChatHandler
         Creature* GetSelectedCreature() const;
         Unit*     GetSelectedUnit() const;
         Player*   GetSelectedPlayerOrSelf() const;
-        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = NULL);
+        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = nullptr);
         uint32    extractSpellIdFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
         bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, Group* &group, uint64 &guid, bool offline = false);

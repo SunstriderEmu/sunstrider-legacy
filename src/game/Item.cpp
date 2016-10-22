@@ -46,7 +46,7 @@ void AddItemsSetItem(Player*player,Item *item)
     if( set->required_skill_id && player->GetSkillValue(set->required_skill_id) < set->required_skill_value )
         return;
 
-    ItemSetEffect *eff = NULL;
+    ItemSetEffect *eff = nullptr;
 
     for(size_t x = 0; x < player->ItemSetEff.size(); ++x)
     {
@@ -105,7 +105,7 @@ void AddItemsSetItem(Player*player,Item *item)
                 }
 
                 // spell casted only if fit form requirement, in other case will casted at form change
-                player->ApplyEquipSpell(spellInfo,NULL,true);
+                player->ApplyEquipSpell(spellInfo,nullptr,true);
                 eff->spells[y] = spellInfo;
                 break;
             }
@@ -125,7 +125,7 @@ void RemoveItemsSetItem(Player*player,ItemTemplate const *proto)
         return;
     }
 
-    ItemSetEffect *eff = NULL;
+    ItemSetEffect *eff = nullptr;
     size_t setindex = 0;
     for(;setindex < player->ItemSetEff.size(); setindex++)
     {
@@ -156,8 +156,8 @@ void RemoveItemsSetItem(Player*player,ItemTemplate const *proto)
             if(eff->spells[z] && eff->spells[z]->Id==set->spells[x])
             {
                 // spell can be not active if not fit form requirement
-                player->ApplyEquipSpell(eff->spells[z],NULL,false);
-                eff->spells[z]=NULL;
+                player->ApplyEquipSpell(eff->spells[z],nullptr,false);
+                eff->spells[z]=nullptr;
                 break;
             }
         }
@@ -167,7 +167,7 @@ void RemoveItemsSetItem(Player*player,ItemTemplate const *proto)
     {
         assert(eff == player->ItemSetEff[setindex]);
         delete eff;
-        player->ItemSetEff[setindex] = NULL;
+        player->ItemSetEff[setindex] = nullptr;
     }
 }
 
@@ -244,7 +244,7 @@ Item::Item( )
     m_slot = 0;
     uState = ITEM_NEW;
     uQueuePos = -1;
-    m_container = NULL;
+    m_container = nullptr;
     m_lootGenerated = false;
     mb_in_trade = false;
 
@@ -735,7 +735,7 @@ void Item::RemoveFromUpdateQueueOf(Player *player)
 
     if (player->m_itemUpdateQueueBlocked) return;
 
-    player->m_itemUpdateQueue[uQueuePos] = NULL;
+    player->m_itemUpdateQueue[uQueuePos] = nullptr;
     uQueuePos = -1;
 }
 

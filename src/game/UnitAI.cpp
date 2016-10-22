@@ -118,7 +118,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget target, uint32 position)
     std::list<HostileReference*>::reverse_iterator r = m_threatlist.rbegin();
 
     if (position >= m_threatlist.size() || !m_threatlist.size())
-        return NULL;
+        return nullptr;
 
     switch (target)
     {
@@ -135,14 +135,14 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget target, uint32 position)
         break;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float radius, bool playersOnly, bool noTank)
 {
     std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
     if (position >= threatlist.size())
-        return NULL;
+        return nullptr;
 
     std::list<Unit*> targetList;
     for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
@@ -150,7 +150,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
             targetList.push_back((*itr)->getTarget());
 
     if (position >= targetList.size())
-        return NULL;
+        return nullptr;
 
     if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
         targetList.sort(Trinity::ObjectDistanceOrderPred(me));
@@ -181,7 +181,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
         break;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 struct TargetDistanceOrder : public std::binary_function<const Unit, const Unit, bool>
@@ -200,7 +200,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
     if (targetType == SELECT_TARGET_NEAREST || targetType == SELECT_TARGET_FARTHEST)
     {
         std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
-        if (m_threatlist.empty()) return NULL;
+        if (m_threatlist.empty()) return nullptr;
         std::list<Unit*> targetList;
         std::list<HostileReference*>::iterator itr = m_threatlist.begin();
         for (; itr != m_threatlist.end(); ++itr)
@@ -218,7 +218,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
             targetList.push_back(target);
         }
         if (position >= targetList.size())
-            return NULL;
+            return nullptr;
         targetList.sort(TargetDistanceOrder(me));
         if (targetType == SELECT_TARGET_NEAREST)
         {
@@ -271,7 +271,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // selects random unit not having aura
@@ -303,7 +303,7 @@ Unit* UnitAI::SelectTarget(uint32 position, float distNear, float distFar, bool 
             return target;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets, SelectAggroTarget targetType, float radius, bool playersOnly, uint32 notHavingAuraId, uint8 effIndex)

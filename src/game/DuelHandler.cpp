@@ -56,7 +56,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
         plTarget->RemoveArenaSpellCooldowns();
     }
 
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     pl->duel->startTimer = now;
     plTarget->duel->startTimer = now;
 

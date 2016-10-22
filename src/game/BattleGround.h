@@ -120,7 +120,7 @@ struct BattlegroundPlayer
 
 struct BattlegroundObjectInfo
 {
-    BattlegroundObjectInfo() : object(NULL), timer(0), spellid(0) {}
+    BattlegroundObjectInfo() : object(nullptr), timer(0), spellid(0) {}
 
     GameObject  *object;
     int32       timer;
@@ -368,7 +368,7 @@ class Battleground
         /* Packet Transfer */
         // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
-        void SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender = NULL, bool self = true);
+        void SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender = nullptr, bool self = true);
         void SendPacketToAll(WorldPacket *packet);
         void PlaySoundToTeam(uint32 SoundID, uint32 TeamID);
         void PlaySoundToAll(uint32 SoundID);
@@ -388,7 +388,7 @@ class Battleground
         void BlockMovement(Player *plr);
 
         void SendWarningToAll(int32 entry, ...);
-        void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = NULL);
+        void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = nullptr);
         void PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...);
 
         // specialized version with 2 string id args
@@ -402,7 +402,7 @@ class Battleground
         void SetBgRaid(uint32 TeamID, Group *bg_raid)
         {
             Group* &old_raid = TeamID == TEAM_ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
-            if(old_raid) old_raid->SetBattlegroundGroup(NULL);
+            if(old_raid) old_raid->SetBattlegroundGroup(nullptr);
             if(bg_raid) bg_raid->SetBattlegroundGroup(this);
             old_raid = bg_raid;
         }
@@ -443,7 +443,7 @@ class Battleground
         void EventPlayerLoggedOut(Player* player);
 
         /* Death related */
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float /*x*/, float /*y*/, float /*z*/, uint32 /*team*/)  { return NULL; }
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float /*x*/, float /*y*/, float /*z*/, uint32 /*team*/)  { return nullptr; }
 
         virtual void AddPlayer(Player *plr);                // must be implemented in BG subclass
 

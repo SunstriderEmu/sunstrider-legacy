@@ -205,7 +205,7 @@ struct PlayerClassLevelInfo
 
 struct PlayerClassInfo
 {
-    PlayerClassInfo() : levelInfo(NULL) { }
+    PlayerClassInfo() : levelInfo(nullptr) { }
 
     PlayerClassLevelInfo* levelInfo;                        //[level-1] 0..MaxPlayerLevel-1
 };
@@ -220,7 +220,7 @@ struct PlayerLevelInfo
 struct PlayerInfo
 {
                                                             // existence checked by displayId != 0             // existence checked by displayId != 0
-    PlayerInfo() : displayId_m(0),displayId_f(0),levelInfo(NULL)
+    PlayerInfo() : displayId_m(0),displayId_f(0),levelInfo(nullptr)
     {
         positionZ = 0.0f;
         positionX = 0.0f;
@@ -253,7 +253,7 @@ struct PvPInfo
 
 struct DuelInfo
 {
-    DuelInfo() : initiator(NULL), opponent(NULL), startTimer(0), startTime(0), outOfBound(0), isCompleted(false) {}
+    DuelInfo() : initiator(nullptr), opponent(nullptr), startTimer(0), startTime(0), outOfBound(0), isCompleted(false) {}
 
     Player *initiator;
     Player *opponent;
@@ -389,7 +389,7 @@ typedef std::set<uint64> GuardianPetList;
 
 struct EnchantDuration
 {
-    EnchantDuration() : item(NULL), slot(MAX_ENCHANTMENT_SLOT), leftduration(0) {};
+    EnchantDuration() : item(nullptr), slot(MAX_ENCHANTMENT_SLOT), leftduration(0) {};
     EnchantDuration(Item * _item, EnchantmentSlot _slot, uint32 _leftduration) : item(_item), slot(_slot), leftduration(_leftduration) { assert(item); };
 
     Item * item;
@@ -1037,7 +1037,7 @@ struct InstancePlayerBind
     //EXTENDED - won't be promoted to EXPIRED at next reset period, will instead be promoted to NORMAL
     //BindExtensionState extendState;
     */
-    InstancePlayerBind() : save(NULL), perm(false) {}
+    InstancePlayerBind() : save(nullptr), perm(false) {}
 };
 
 struct AccessRequirement
@@ -1173,7 +1173,7 @@ class Player : public Unit
 
         void SetSummonPoint(uint32 mapid, float x, float y, float z)
         {
-            m_summon_expire = time(NULL) + MAX_PLAYER_SUMMON_DELAY;
+            m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY;
             m_summon_mapid = mapid;
             m_summon_x = x;
             m_summon_y = y;
@@ -1182,7 +1182,7 @@ class Player : public Unit
         }
         void SummonIfPossible(bool agree);
         bool IsBeingInvitedForSummon() { return m_invite_summon; }
-        void UpdateSummonExpireTime() { m_summon_expire = time(NULL) + MAX_PLAYER_SUMMON_DELAY; }
+        void UpdateSummonExpireTime() { m_summon_expire = time(nullptr) + MAX_PLAYER_SUMMON_DELAY; }
         time_t GetSummonExpireTimer() const { return m_summon_expire; }
 
         bool Create(uint32 guidlow, CharacterCreateInfo* createInfo);
@@ -1220,7 +1220,7 @@ class Player : public Unit
 
         PlayerTaxi m_taxi;
         void InitTaxiNodesForLevel() { m_taxi.InitTaxiNodesForLevel(GetRace(),GetLevel()); }
-        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc = NULL, uint32 spellid = 0);
+        bool ActivateTaxiPathTo(std::vector<uint32> const& nodes, Creature* npc = nullptr, uint32 spellid = 0);
         bool ActivateTaxiPathTo(uint32 taxi_path_id, uint32 spellid = 0);
         void CleanupAfterTaxiFlight();
         void ContinueTaxiFlight();
@@ -1309,7 +1309,7 @@ class Player : public Unit
         void SetVirtualItemSlot( uint8 i, Item* item);
         void SetSheath(SheathState sheathed ) override;
         uint8 FindEquipSlot( ItemTemplate const* proto, uint32 slot, bool swap ) const;
-        uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = NULL ) const;
+        uint32 GetItemCount( uint32 item, bool inBankAlso = false, Item* skipItem = nullptr ) const;
         Item* GetItemByGuid( uint64 guid ) const;
         Item* GetItemByPos( uint16 pos ) const;
         Item* GetItemByPos( uint8 bag, uint8 slot ) const;
@@ -1330,20 +1330,20 @@ class Player : public Unit
         bool HasBankBagSlot( uint8 slot ) const;
         bool HasItemCount( uint32 item, uint32 count, bool inBankAlso = false ) const;
         uint32 GetEmptyBagSlotsCount() const;
-        bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = NULL);
+        bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = nullptr);
         Item* GetItemOrItemWithGemEquipped( uint32 item ) const;
         InventoryResult CanTakeMoreSimilarItems(Item* pItem) const { return _CanTakeMoreSimilarItems(pItem->GetEntry(),pItem->GetCount(),pItem); }
-        InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,NULL); }
+        InventoryResult CanTakeMoreSimilarItems(uint32 entry, uint32 count) const { return _CanTakeMoreSimilarItems(entry,count,nullptr); }
         InventoryResult CanStoreNewItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 item, uint32 count, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const
         {
-            return _CanStoreItem(bag, slot, dest, item, count, NULL, false, no_space_count, proto );
+            return _CanStoreItem(bag, slot, dest, item, count, nullptr, false, no_space_count, proto );
         }
         InventoryResult CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, Item *pItem, bool swap = false ) const
         {
             if(!pItem)
                 return EQUIP_ERR_ITEM_NOT_FOUND;
             uint32 count = pItem->GetCount();
-            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, NULL, pItem ? pItem->GetTemplate() : nullptr );
+            return _CanStoreItem( bag, slot, dest, pItem->GetEntry(), count, pItem, swap, nullptr, pItem ? pItem->GetTemplate() : nullptr );
 
         }
         InventoryResult CanStoreItems( std::vector<Item*> const& items, uint32 count) const;
@@ -1365,8 +1365,8 @@ class Player : public Unit
         uint32 GetEquipedItemsLevelSum();
         void UnequipAllItems(bool force = false); //destroy items if no room
 
-        InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = NULL) const;
-        InventoryResult _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = NULL, bool swap = false, uint32* no_space_count = NULL, ItemTemplate const* proto = nullptr ) const;
+        InventoryResult _CanTakeMoreSimilarItems(uint32 entry, uint32 count, Item* pItem, uint32* no_space_count = nullptr) const;
+        InventoryResult _CanStoreItem( uint8 bag, uint8 slot, ItemPosCountVec& dest, uint32 entry, uint32 count, Item *pItem = nullptr, bool swap = false, uint32* no_space_count = nullptr, ItemTemplate const* proto = nullptr ) const;
 
         void ApplyEquipCooldown( Item * pItem );
         void SetAmmo( uint32 item );
@@ -1651,7 +1651,7 @@ class Player : public Unit
             if (itr != mMitems.end())
                 return itr->second;
 
-            return NULL;
+            return nullptr;
         }
 
         void AddMItem(Item* it)
@@ -1713,28 +1713,28 @@ class Player : public Unit
         void AddSpellMod(SpellModifier*& mod, bool apply);
         int32 GetTotalFlatMods(uint32 spellId, SpellModOp op);
         int32 GetTotalPctMods(uint32 spellId, SpellModOp op);
-        bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = NULL);
-        template <class T> void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = NULL);
+        bool IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod, Spell const* spell = nullptr);
+        template <class T> void ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell const* spell = nullptr);
         void RemoveSpellMods(Spell const* spell);
         void RestoreSpellMods(Spell const* spell);
 
         bool HasSpellCooldown(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            return itr != m_spellCooldowns.end() && itr->second.end > time(NULL);
+            return itr != m_spellCooldowns.end() && itr->second.end > time(nullptr);
         }
         uint32 GetSpellCooldownDelay(uint32 spell_id) const
         {
             SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
-            time_t t = time(NULL);
+            time_t t = time(nullptr);
             return itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0;
         }
         static uint32 const infinityCooldownDelay = MONTH;  // used for set "infinity cooldowns" for spells and check
         static uint32 const infinityCooldownDelayCheck = MONTH/2;
 
         void AddSpellCooldown(uint32 spell_id, uint32 itemid, time_t end_time);
-        void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = NULL, bool infinityCooldown = false);
-        void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = NULL, bool setCooldown = true);
+        void AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 itemId, Spell* spell = nullptr, bool infinityCooldown = false);
+        void SendCooldownEvent(SpellInfo const *spellInfo, uint32 itemId = 0, Spell* spell = nullptr, bool setCooldown = true);
         void ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs) override;
         void RemoveSpellCooldown(uint32 spell_id, bool update = false);
         void RemoveArenaSpellCooldowns();
@@ -1814,7 +1814,7 @@ class Player : public Unit
 
         bool IsGroupVisibleFor(Player* p) const;
         bool IsInSameGroupWith(Player const* p) const;
-        bool IsInSameRaidWith(Player const* p) const { return p==this || (GetGroup() != NULL && GetGroup() == p->GetGroup()); }
+        bool IsInSameRaidWith(Player const* p) const { return p==this || (GetGroup() != nullptr && GetGroup() == p->GetGroup()); }
         void UninviteFromGroup();
         static void RemoveFromGroup(Group* group, uint64 guid);
         void RemoveFromGroup() { RemoveFromGroup(GetGroup(),GetGUID()); }
@@ -2121,8 +2121,8 @@ class Player : public Unit
         void ApplyItemEquipSpell(Item *item, bool apply, bool form_change = false);
         void ApplyEquipSpell(SpellInfo const* spellInfo, Item* item, bool apply, bool form_change = false);
         void UpdateEquipSpellsAtFormChange();
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo = NULL);
-        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell = NULL);
+        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, SpellInfo const *spellInfo = nullptr);
+        void CastItemCombatSpell(Unit *target, WeaponAttackType attType, uint32 procVictim, uint32 procEx, Item *item, ItemTemplate const * proto, SpellInfo const *spell = nullptr);
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);

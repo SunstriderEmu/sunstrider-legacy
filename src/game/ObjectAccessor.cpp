@@ -63,15 +63,15 @@ Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const &u, uint64
 
 Creature* ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
 {
-    Creature * ret = GetObjectInWorld(guid, (Creature*)NULL);
+    Creature * ret = GetObjectInWorld(guid, (Creature*)nullptr);
     if(!ret)
-        return NULL;
+        return nullptr;
 
     if(ret->GetMapId() != u.GetMapId())
-        return NULL;
+        return nullptr;
 
     if(ret->GetInstanceId() != u.GetInstanceId())
-        return NULL;
+        return nullptr;
 
     return ret;
 }
@@ -79,7 +79,7 @@ Creature* ObjectAccessor::GetCreature(WorldObject const &u, uint64 guid)
 Unit* ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
 {
     if(!guid)
-        return NULL;
+        return nullptr;
 
     if(IS_PLAYER_GUID(guid))
         return FindPlayer(guid);
@@ -89,8 +89,8 @@ Unit* ObjectAccessor::GetUnit(WorldObject const &u, uint64 guid)
 
 Corpse* ObjectAccessor::GetCorpse(WorldObject const &u, uint64 guid)
 {
-    Corpse * ret = GetObjectInWorld(guid, (Corpse*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
+    Corpse * ret = GetObjectInWorld(guid, (Corpse*)nullptr);
+    if(ret && ret->GetMapId() != u.GetMapId()) ret = nullptr;
     return ret;
 }
 
@@ -98,7 +98,7 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
 {
     
     
-    Object *obj = NULL;
+    Object *obj = nullptr;
 
     if(typemask & TYPEMASK_PLAYER)
     {
@@ -130,27 +130,27 @@ Object* ObjectAccessor::GetObjectByTypeMask(Player const &p, uint64 guid, uint32
         if(obj) return obj;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 GameObject*
 ObjectAccessor::GetGameObject(WorldObject const &u, uint64 guid)
 {
-    GameObject * ret = GetObjectInWorld(guid, (GameObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
+    GameObject * ret = GetObjectInWorld(guid, (GameObject*)nullptr);
+    if(ret && ret->GetMapId() != u.GetMapId()) ret = nullptr;
     return ret;
 }
 
 DynamicObject* ObjectAccessor::GetDynamicObject(Unit const &u, uint64 guid)
 {
-    DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)NULL);
-    if(ret && ret->GetMapId() != u.GetMapId()) ret = NULL;
+    DynamicObject * ret = GetObjectInWorld(guid, (DynamicObject*)nullptr);
+    if(ret && ret->GetMapId() != u.GetMapId()) ret = nullptr;
     return ret;
 }
 
 Player* ObjectAccessor::FindPlayer(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Player*)NULL);
+    return GetObjectInWorld(guid, (Player*)nullptr);
 }
 
 Player* ObjectAccessor::FindPlayer(uint32 guidLow)
@@ -165,7 +165,7 @@ Player* ObjectAccessor::FindConnectedPlayer(uint64 guid)
 
 Unit* ObjectAccessor::FindUnit(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Unit*)NULL);
+    return GetObjectInWorld(guid, (Unit*)nullptr);
 }
 
 void ObjectAccessor::SaveAllPlayers()
@@ -191,7 +191,7 @@ void ObjectAccessor::RemoveUpdateObject(Object *obj)
 
 Pet* ObjectAccessor::GetPet(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Pet*)NULL);
+    return GetObjectInWorld(guid, (Pet*)nullptr);
 }
 
 Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
@@ -199,7 +199,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
 
     Player2CorpsesMapType::iterator iter = i_player2corpse.find(guid);
-    if( iter == i_player2corpse.end() ) return NULL;
+    if( iter == i_player2corpse.end() ) return nullptr;
 
     assert(iter->second->GetType() != CORPSE_BONES);
 
@@ -270,7 +270,7 @@ Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia
         //in fact this function is called from several places
         //even when player doesn't have a corpse, not an error
         //TC_LOG_ERROR("FIXME","ERROR: Try remove corpse that not in map for GUID %ul", player_guid);
-        return NULL;
+        return nullptr;
     }
 
     TC_LOG_DEBUG("FIXME","Deleting Corpse and spawning bones.\n");
@@ -390,13 +390,13 @@ WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
     {
         case HIGHGUID_UNIT:
         case HIGHGUID_PET:
-        case HIGHGUID_PLAYER:        return GetObjectInWorld(guid, (Unit*)NULL);
+        case HIGHGUID_PLAYER:        return GetObjectInWorld(guid, (Unit*)nullptr);
         case HIGHGUID_TRANSPORT:
         case HIGHGUID_MO_TRANSPORT:
-        case HIGHGUID_GAMEOBJECT:    return GetObjectInWorld(guid, (GameObject*)NULL);
-        case HIGHGUID_DYNAMICOBJECT: return GetObjectInWorld(guid, (DynamicObject*)NULL);
-        case HIGHGUID_CORPSE:        return GetObjectInWorld(guid, (Corpse*)NULL);
-        default:                     return NULL;
+        case HIGHGUID_GAMEOBJECT:    return GetObjectInWorld(guid, (GameObject*)nullptr);
+        case HIGHGUID_DYNAMICOBJECT: return GetObjectInWorld(guid, (DynamicObject*)nullptr);
+        case HIGHGUID_CORPSE:        return GetObjectInWorld(guid, (Corpse*)nullptr);
+        default:                     return nullptr;
     }
 }
 
@@ -404,13 +404,13 @@ WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
 Player* ObjectAccessor::GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/)
 {
     Player* player = HashMapHolder<Player>::Find(guid);
-    return player && player->IsInWorld() ? player : NULL;
+    return player && player->IsInWorld() ? player : nullptr;
 }
 
 Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit* /*fake*/)
 {
     if (!guid)
-        return NULL;
+        return nullptr;
 
     if (IS_PLAYER_GUID(guid))
         return (Unit*)HashMapHolder<Player>::Find(guid);

@@ -31,7 +31,7 @@ namespace FactorySelector
 {
     CreatureAI* selectAI(Creature *creature)
     {
-        const CreatureAICreator *ai_factory = NULL;
+        const CreatureAICreator *ai_factory = nullptr;
 
         // Always PetAI for hunter pets
         if (creature->IsPet() && creature->ToPet()->getPetType() == HUNTER_PET)
@@ -42,7 +42,7 @@ namespace FactorySelector
             if (CreatureAI* scriptedAI = sScriptMgr->GetCreatureAI(creature))
                 return scriptedAI;
 
-        assert( creature->GetCreatureTemplate() != NULL );
+        assert( creature->GetCreatureTemplate() != nullptr );
         CreatureTemplate const *cinfo=creature->GetCreatureTemplate();
 
         if(!ai_factory) // else try to select AI by NPC flags
@@ -76,7 +76,7 @@ namespace FactorySelector
             {
                 const CreatureAICreator *factory = iter->second;
                 const SelectableAI *p = dynamic_cast<const SelectableAI *>(factory);
-                assert( p != NULL );
+                assert( p != nullptr );
                 int val = p->Permit(creature);
                 if( val > best_val )
                 {
@@ -86,13 +86,13 @@ namespace FactorySelector
             }
         }
 
-        return ( ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature) );
+        return ( ai_factory == nullptr ? new NullCreatureAI(creature) : ai_factory->Create(creature) );
     }
 
     MovementGenerator* selectMovementGenerator(Creature *creature)
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRegistry::instance());
-        assert( creature->GetCreatureTemplate() != NULL );
+        assert( creature->GetCreatureTemplate() != nullptr );
         MovementGeneratorType defaultMovementType = creature->GetDefaultMovementType();
         //override default WAYPOINT_MOTION_TYPE type if no waypoint path id found for creature (or WAYPOINT_MOTION_TYPE will fail anyway)
         if (defaultMovementType == WAYPOINT_MOTION_TYPE && creature->GetWaypointPathId() == 0)
@@ -118,13 +118,13 @@ namespace FactorySelector
             }
         }*/
 
-        return ( mv_factory == NULL ? NULL : mv_factory->Create(creature) );
+        return ( mv_factory == nullptr ? nullptr : mv_factory->Create(creature) );
 
     }
     
     GameObjectAI* SelectGameObjectAI(GameObject *go)
     {
-        const GameObjectAICreator *ai_factory = NULL;
+        const GameObjectAICreator *ai_factory = nullptr;
         
         if (GameObjectAI* scriptedAI = sScriptMgr->GetGameObjectAI(go))
             return scriptedAI;
@@ -133,11 +133,11 @@ namespace FactorySelector
 
         //future goAI types go here
 
-        std::string ainame = (ai_factory == NULL) ? "NullGameObjectAI" : ai_factory->key();
+        std::string ainame = (ai_factory == nullptr) ? "NullGameObjectAI" : ai_factory->key();
 
         //sLog->outStaticDebug("GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
 
-        return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(go));
+        return (ai_factory == nullptr ? new NullGameObjectAI(go) : ai_factory->Create(go));
     }
 } // namespace FactorySelector
 

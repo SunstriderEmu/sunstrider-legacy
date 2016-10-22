@@ -116,7 +116,7 @@ inline Logger const* Log::GetLoggerByType(std::string const& type) const
         return &(it->second);
 
     if (type == LOGGER_ROOT)
-        return NULL;
+        return nullptr;
 
     std::string parentLogger = LOGGER_ROOT;
     size_t found = type.find_last_of(".");

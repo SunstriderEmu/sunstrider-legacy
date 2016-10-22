@@ -14,7 +14,7 @@
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
-    time_t currenttime = time(NULL);
+    time_t currenttime = time(nullptr);
     // if the state is conditions or nextphase, then the event should be active
     if (mGameEvent[entry].state == GAMEEVENT_WORLD_CONDITIONS || mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE) {
         return true;
@@ -47,7 +47,7 @@ bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 
 uint32 GameEventMgr::NextCheck(uint16 entry) const
 {
-    time_t currenttime = time(NULL);
+    time_t currenttime = time(nullptr);
 
     // for NEXTPHASE state world events, return the delay to start the next event, so the followup event will be checked correctly
     if ((mGameEvent[entry].state == GAMEEVENT_WORLD_NEXTPHASE || mGameEvent[entry].state == GAMEEVENT_WORLD_FINISHED) && mGameEvent[entry].nextstart >= currenttime)
@@ -92,7 +92,7 @@ bool GameEventMgr::StartEvent( uint16 event_id, bool overwrite )
         ApplyNewEvent(event_id);
         if(overwrite)
         {
-            mGameEvent[event_id].start = time(NULL);
+            mGameEvent[event_id].start = time(nullptr);
             if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
                 mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
         }
@@ -132,7 +132,7 @@ void GameEventMgr::StopEvent( uint16 event_id, bool overwrite )
 
     if(overwrite && !serverwide_evt)
     {
-        mGameEvent[event_id].start = time(NULL) - mGameEvent[event_id].length * MINUTE;
+        mGameEvent[event_id].start = time(nullptr) - mGameEvent[event_id].length * MINUTE;
         if(mGameEvent[event_id].end <= mGameEvent[event_id].start)
             mGameEvent[event_id].end = mGameEvent[event_id].start+mGameEvent[event_id].length;
     }
@@ -212,7 +212,7 @@ void GameEventMgr::LoadVendors()
                 newEntry.entry = data->id;
 
             // check validity with event's npcflag
-            if (!sObjectMgr->IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, NULL, NULL, event_npc_flag))
+            if (!sObjectMgr->IsVendorItemValid(newEntry.entry, newEntry.proto, newEntry.maxcount, newEntry.incrtime, newEntry.ExtendedCost, nullptr, nullptr, event_npc_flag))
                 continue;
             ++count;
             vendors.push_back(newEntry);
@@ -877,7 +877,7 @@ uint32 GameEventMgr::Initialize()                              // return the nex
 
 uint32 GameEventMgr::Update()                                  // return the next event delay in ms
 {
-    time_t currenttime = time(NULL);
+    time_t currenttime = time(nullptr);
     uint32 nextEventDelay = max_ge_check_delay;             // 1 day
     uint32 calcDelay;
     std::set<uint16> activate, deactivate;
@@ -1146,7 +1146,7 @@ void GameEventMgr::UnspawnCreature(uint32 guid,uint16 event_id)
     {
         sObjectMgr->RemoveCreatureFromGrid(guid, data);
 
-        if( Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL) )
+        if( Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr) )
         {
             pCreature->AI()->DespawnDueToGameEventEnd(event_id);
             pCreature->AddObjectToRemoveList();
@@ -1161,7 +1161,7 @@ void GameEventMgr::UnspawnGameObject(uint32 guid)
     {
         sObjectMgr->RemoveGameobjectFromGrid(guid, data);
 
-        if( GameObject* pGameobject = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL) )
+        if( GameObject* pGameobject = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr) )
             pGameobject->AddObjectToRemoveList();
     }
 }
@@ -1209,7 +1209,7 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(itr.first, data->id,HIGHGUID_UNIT), (Creature*)NULL);
+        Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(itr.first, data->id,HIGHGUID_UNIT), (Creature*)nullptr);
         if (pCreature)
         {
             if (activate)
@@ -1478,7 +1478,7 @@ bool GameEventMgr::CheckOneGameEventConditions(uint16 event_id)
     // set the followup events' start time
     if(!mGameEvent[event_id].nextstart)
     {
-        time_t currenttime = time(NULL);
+        time_t currenttime = time(nullptr);
         mGameEvent[event_id].nextstart = currenttime + mGameEvent[event_id].length * 60;
     }
     return true;
@@ -1531,7 +1531,7 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
     if(data)
     {
-        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
+        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr);
         if(ShouldHaveObjectsSpawned(event_id))
         {
             if(!c || !c->IsInWorld())
@@ -1569,7 +1569,7 @@ bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
     if(data)
     {
-        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
+        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr);
         if (ShouldHaveObjectsSpawned(event_id))
         {
             if(!go || !go->IsInWorld())
@@ -1610,7 +1610,7 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
     if(data)
     {
-        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL);
+        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr);
         if(ShouldHaveObjectsSpawned(event_id) && (!c || !c->IsInWorld()))
         {
             SpawnCreature(guid);
@@ -1646,7 +1646,7 @@ bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
     if(data)
     {
-        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL);
+        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr);
         if(ShouldHaveObjectsSpawned(event_id) && (!go || !go->IsInWorld()))
         {
             SpawnGameObject(guid);

@@ -230,7 +230,7 @@ Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
 {
     uint32 level;
     bool isStatic=false;
-    Creature* creature = NULL;
+    Creature* creature = nullptr;
     assert(type <= AV_CPLACE_MAX + AV_STATICCPLACE_MAX);
     if(type>=AV_CPLACE_MAX) //static
     {
@@ -246,7 +246,7 @@ Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type )
         level = ( BG_AV_CreatureInfo[cinfoid][2] == BG_AV_CreatureInfo[cinfoid][3] ) ? BG_AV_CreatureInfo[cinfoid][2] : urand(BG_AV_CreatureInfo[cinfoid][2],BG_AV_CreatureInfo[cinfoid][3]);
     }
     if(!creature)
-        return NULL;
+        return nullptr;
     if(creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0]) {
         creature->SetRespawnDelay(RESPAWN_ONE_DAY); // TODO: look if this can be done by database + also add this for the wingcommanders
     }
@@ -1169,7 +1169,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
             if( !ghost_list.empty() )
             {
                 Player *plr;
-                WorldSafeLocsEntry const *ClosestGrave = NULL;
+                WorldSafeLocsEntry const *ClosestGrave = nullptr;
                 for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
                     plr = sObjectMgr->GetPlayer(*ghost_list.begin());
@@ -1302,7 +1302,7 @@ void BattlegroundAV::SendMineWorldStates(uint32 mine)
 
 WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(float x, float y, float z, uint32 team)
 {
-    WorldSafeLocsEntry const* good_entry = NULL;
+    WorldSafeLocsEntry const* good_entry = nullptr;
     if( GetStatus() == STATUS_IN_PROGRESS)
     {
         // Is there any occupied node for this team?

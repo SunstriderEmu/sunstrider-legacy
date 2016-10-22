@@ -100,7 +100,7 @@ bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplat
     for (uint8 i = 0; i < MAX_BAG_SIZE; i++)
     {
         SetUInt64Value(CONTAINER_FIELD_SLOT_1 + (i*2), 0);
-        m_bagslot[i] = NULL;
+        m_bagslot[i] = nullptr;
     }
 
     return true;
@@ -124,7 +124,7 @@ bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid)
         if (m_bagslot[i])
         {
             delete m_bagslot[i];
-            m_bagslot[i] = NULL;
+            m_bagslot[i] = nullptr;
         }
     }
 
@@ -155,9 +155,9 @@ void Bag::RemoveItem( uint8 slot, bool /*update*/ )
     assert(slot < MAX_BAG_SIZE);
 
     if (m_bagslot[slot])
-        m_bagslot[slot]->SetContainer(NULL);
+        m_bagslot[slot]->SetContainer(nullptr);
 
-    m_bagslot[slot] = NULL;
+    m_bagslot[slot] = nullptr;
     SetUInt64Value( CONTAINER_FIELD_SLOT_1 + (slot * 2), 0 );
 }
 
@@ -226,7 +226,7 @@ uint32 Bag::GetItemCount( uint32 item, Item* eItem ) const
 uint8 Bag::GetSlotByItemGUID(uint64 guid) const
 {
     for(uint32 i = 0; i < GetBagSize(); ++i)
-        if(m_bagslot[i] != 0)
+        if(m_bagslot[i] != nullptr)
             if(m_bagslot[i]->GetGUID() == guid)
                 return i;
 
@@ -238,6 +238,6 @@ Item* Bag::GetItemByPos( uint8 slot ) const
     if( slot < GetBagSize() )
         return m_bagslot[slot];
 
-    return NULL;
+    return nullptr;
 }
 

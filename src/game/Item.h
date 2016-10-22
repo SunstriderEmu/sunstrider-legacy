@@ -243,7 +243,7 @@ class Item : public Object
         uint16 GetPos() const { return uint16(GetBagSlot()) << 8 | GetSlot(); }
         void SetContainer(Bag *container) { m_container = container; }
 
-        bool IsInBag() const { return m_container != NULL; }
+        bool IsInBag() const { return m_container != nullptr; }
         bool IsEquipped() const;
 
         uint32 GetSkill();
@@ -275,7 +275,7 @@ class Item : public Object
 
         // Update States
         ItemUpdateState GetState() const { return uState; }
-        void SetState(ItemUpdateState state, Player *forplayer = NULL);
+        void SetState(ItemUpdateState state, Player *forplayer = nullptr);
         void AddToUpdateQueueOf(Player *player);
         void RemoveFromUpdateQueueOf(Player *player);
         bool IsInUpdateQueue() const { return uQueuePos != -1; }

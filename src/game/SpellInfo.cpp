@@ -345,14 +345,14 @@ SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* 
     Mechanic = Mechanics(spellEntry->EffectMechanic[effIndex]);
     TargetA = SpellImplicitTargetInfo(spellEntry->EffectImplicitTargetA[effIndex]);
     TargetB = SpellImplicitTargetInfo(spellEntry->EffectImplicitTargetB[effIndex]);
-    RadiusEntry = spellEntry->EffectRadiusIndex[effIndex] ? sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[effIndex]) : NULL;
+    RadiusEntry = spellEntry->EffectRadiusIndex[effIndex] ? sSpellRadiusStore.LookupEntry(spellEntry->EffectRadiusIndex[effIndex]) : nullptr;
     ChainTarget = spellEntry->EffectChainTarget[effIndex];
     ItemType = spellEntry->EffectItemType[effIndex];
     TriggerSpell = spellEntry->EffectTriggerSpell[effIndex];
 #ifdef LICH_KING
     SpellClassMask = spellEntry->EffectSpellClassMask[effIndex];
 #endif
-    ImplicitTargetConditions = NULL;
+    ImplicitTargetConditions = nullptr;
 }
 
 bool SpellEffectInfo::IsEffect() const
@@ -596,7 +596,7 @@ SpellSpecificType SpellInfo::GetSpellElixirSpecific() const
 SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 {
     Id = spellEntry->Id;
-    Category = spellEntry->Category ? sSpellCategoryStore.LookupEntry(spellEntry->Category) : NULL;
+    Category = spellEntry->Category ? sSpellCategoryStore.LookupEntry(spellEntry->Category) : nullptr;
     Dispel = spellEntry->Dispel;
     Mechanic = spellEntry->Mechanic;
     Attributes = spellEntry->Attributes;
@@ -629,7 +629,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ExcludeTargetAuraSpell = spellEntry->excludeTargetAuraSpell;
 #else
 #endif
-    CastTimeEntry = spellEntry->CastingTimeIndex ? sSpellCastTimesStore.LookupEntry(spellEntry->CastingTimeIndex) : NULL;
+    CastTimeEntry = spellEntry->CastingTimeIndex ? sSpellCastTimesStore.LookupEntry(spellEntry->CastingTimeIndex) : nullptr;
     RecoveryTime = spellEntry->RecoveryTime;
     CategoryRecoveryTime = spellEntry->CategoryRecoveryTime;
     StartRecoveryCategory = spellEntry->StartRecoveryCategory;
@@ -643,7 +643,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     MaxLevel = spellEntry->MaxLevel;
     BaseLevel = spellEntry->BaseLevel;
     SpellLevel = spellEntry->SpellLevel;
-    DurationEntry = spellEntry->DurationIndex ? sSpellDurationStore.LookupEntry(spellEntry->DurationIndex) : NULL;
+    DurationEntry = spellEntry->DurationIndex ? sSpellDurationStore.LookupEntry(spellEntry->DurationIndex) : nullptr;
     PowerType = spellEntry->PowerType;
     ManaCost = spellEntry->ManaCost;
     ManaCostPerlevel = spellEntry->ManaCostPerlevel;
@@ -653,7 +653,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 #ifdef LICH_KING
     RuneCostID = spellEntry->runeCostID;
 #endif
-    RangeEntry = spellEntry->rangeIndex ? sSpellRangeStore.LookupEntry(spellEntry->rangeIndex) : NULL;
+    RangeEntry = spellEntry->rangeIndex ? sSpellRangeStore.LookupEntry(spellEntry->rangeIndex) : nullptr;
     Speed = spellEntry->speed;
     StackAmount = spellEntry->StackAmount;
     for (uint8 i = 0; i < 2; ++i)
@@ -703,7 +703,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
     //custom attributes from database. More custom attributes to be loaded 
     AttributesCu = spellEntry->CustomAttributesFlags;
-    ChainEntry = NULL;
+    ChainEntry = nullptr;
 
     ExplicitTargetMask = _GetExplicitTargetMask();
 
@@ -713,7 +713,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 
 bool SpellInfo::IsRanked() const
 {
-    return ChainEntry != NULL;
+    return ChainEntry != nullptr;
 }
 
 uint8 SpellInfo::GetRank() const
@@ -733,21 +733,21 @@ SpellInfo const* SpellInfo::GetFirstRankSpell() const
 SpellInfo const* SpellInfo::GetLastRankSpell() const
 {
     if (!ChainEntry)
-        return NULL;
+        return nullptr;
     return ChainEntry->last;
 }
 
 SpellInfo const* SpellInfo::GetNextRankSpell() const
 {
     if (!ChainEntry)
-        return NULL;
+        return nullptr;
     return ChainEntry->next;
 }
 
 SpellInfo const* SpellInfo::GetPrevRankSpell() const
 {
     if (!ChainEntry)
-        return NULL;
+        return nullptr;
     return ChainEntry->prev;
 }
 
@@ -778,7 +778,7 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
     if (!needRankSelection)
         return this;
 
-    for (SpellInfo const* nextSpellInfo = this; nextSpellInfo != NULL; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
+    for (SpellInfo const* nextSpellInfo = this; nextSpellInfo != nullptr; nextSpellInfo = nextSpellInfo->GetPrevRankSpell())
     {
         // if found appropriate level
         if (uint32(level + 10) >= nextSpellInfo->SpellLevel)
@@ -788,7 +788,7 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
     }
 
     // not found
-    return NULL;
+    return nullptr;
 }
 
 bool SpellInfo::IsRankOf(SpellInfo const* spellInfo) const
@@ -1550,7 +1550,7 @@ bool SpellInfo::IsAbilityLearnedWithProfession() const
 float SpellEffectInfo::CalcValueMultiplier(Unit* caster, Spell* spell) const
 {
     float multiplier = ValueMultiplier;
-    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : nullptr))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_VALUE_MULTIPLIER, multiplier, spell);
     return multiplier;
 }
@@ -1558,7 +1558,7 @@ float SpellEffectInfo::CalcValueMultiplier(Unit* caster, Spell* spell) const
 float SpellEffectInfo::CalcDamageMultiplier(Unit* caster, Spell* spell) const
 {
     float multiplierPercent = DamageMultiplier * 100.0f;
-    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : nullptr))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_DAMAGE_MULTIPLIER, multiplierPercent, spell);
         
     return multiplierPercent / 100.0f; 
@@ -1566,7 +1566,7 @@ float SpellEffectInfo::CalcDamageMultiplier(Unit* caster, Spell* spell) const
 
 bool SpellEffectInfo::HasRadius() const
 {
-    return RadiusEntry != NULL;
+    return RadiusEntry != nullptr;
 }
 
 float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
@@ -2448,7 +2448,7 @@ void SpellInfo::_UnloadImplicitTargetConditionLists()
         for (uint8 j = i; j < MAX_SPELL_EFFECTS; ++j)
         {
             if (Effects[j].ImplicitTargetConditions == cur)
-                Effects[j].ImplicitTargetConditions = NULL;
+                Effects[j].ImplicitTargetConditions = nullptr;
         }
         delete cur;
     }

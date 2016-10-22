@@ -1929,7 +1929,7 @@ CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 {
     ASSERT(creature);
 
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetAI(creature);
 }
 
@@ -2036,7 +2036,7 @@ GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* go)
 {
     ASSERT(go);
 
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetAI(go);
 }
 
@@ -2098,7 +2098,7 @@ InstanceScript* ScriptMgr::CreateInstanceScript(InstanceMap* map)
 {
     ASSERT(map);
 
-    GET_SCRIPT_RET(InstanceMapScript, map->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(InstanceMapScript, map->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetInstanceScript(map);
 }
 

@@ -394,7 +394,7 @@ class Spell
         void EffectPlayMusic(uint32 i);
         void EffectForceCastWithValue(uint32 i);
 
-        Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = NULL, bool skipCheck = false);
+        Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 originalCasterGUID = 0, Spell** triggeringContainer = nullptr, bool skipCheck = false);
         ~Spell();
 
         void InitExplicitTargets(SpellCastTargets const& targets);
@@ -419,12 +419,12 @@ class Spell
         uint32 GetSearcherTypeMask(SpellTargetObjectTypes objType, ConditionList* condList);
         template<class SEARCHER> void SearchTargets(SEARCHER& searcher, uint32 containerMask, Unit* referer, Position const* pos, float radius);
 
-        WorldObject* SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList = NULL);
+        WorldObject* SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList = nullptr);
         void SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList);
         void SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionList* condList, bool isChainHeal);
 
         //return SpellCastResult
-        uint32 prepare(SpellCastTargets const* targets, Aura* triggeredByAura = NULL);
+        uint32 prepare(SpellCastTargets const* targets, Aura* triggeredByAura = nullptr);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);

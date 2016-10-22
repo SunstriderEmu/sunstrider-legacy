@@ -40,7 +40,7 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         // Tell our refFrom (source) object, that the link is cut (Target destroyed)
         virtual void sourceObjectDestroyLink() = 0;
     public:
-        Reference() { iRefTo = NULL; iRefFrom = NULL; }
+        Reference() { iRefTo = nullptr; iRefFrom = nullptr; }
         virtual ~Reference() {}
 
         // Create new link
@@ -49,7 +49,7 @@ template <class TO, class FROM> class Reference : public LinkedListElement
             ASSERT(fromObj);                                // fromObj MUST not be NULL
             if(isValid())
                 unlink();
-            if(toObj != NULL)
+            if(toObj != nullptr)
             {
                 iRefTo = toObj;
                 iRefFrom = fromObj;
@@ -59,18 +59,18 @@ template <class TO, class FROM> class Reference : public LinkedListElement
 
         // We don't need the reference anymore. Call comes from the refFrom object
         // Tell our refTo object, that the link is cut
-        inline void unlink() { targetObjectDestroyLink(); delink(); iRefTo = NULL; iRefFrom = NULL; }
+        inline void unlink() { targetObjectDestroyLink(); delink(); iRefTo = nullptr; iRefFrom = nullptr; }
 
         // Link is invalid due to destruction of referenced target object. Call comes from the refTo object
         // Tell our refFrom object, that the link is cut
         inline void invalidate()                            // the iRefFrom MUST remain!!
         {
-            sourceObjectDestroyLink(); delink(); iRefTo = NULL;
+            sourceObjectDestroyLink(); delink(); iRefTo = nullptr;
         }
 
         inline bool isValid() const                         // Only check the iRefTo
         {
-            return iRefTo != NULL;
+            return iRefTo != nullptr;
         }
 
         Reference<TO,FROM>       * next()       { return((Reference<TO,FROM>       *) LinkedListElement::next()); }

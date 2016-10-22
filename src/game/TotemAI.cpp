@@ -76,14 +76,14 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     float max_range = spellInfo->GetMaxRange(false, me->GetSpellModOwner());
 
     // pointer to appropriate target if found any
-    Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(i_totem, i_victimGuid) : NULL;
+    Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(i_totem, i_victimGuid) : nullptr;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if( !victim ||
         i_totem.CanAttack(victim) != CAN_ATTACK_RESULT_OK || !i_totem.IsWithinDistInMap(victim, max_range) ||
         i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
     {
-        victim = NULL;
+        victim = nullptr;
         Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
         Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
         me->VisitNearbyObject(max_range, checker);

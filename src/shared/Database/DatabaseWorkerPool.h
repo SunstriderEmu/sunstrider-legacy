@@ -59,7 +59,7 @@ class DatabaseWorkerPool
 
     public:
         /* Activity state */
-        DatabaseWorkerPool() : _connectionInfo(NULL)
+        DatabaseWorkerPool() : _connectionInfo(nullptr)
         {
             _queue = new ProducerConsumerQueue<SQLOperation*>();
             memset(_connectionCount, 0, sizeof(_connectionCount));
@@ -203,7 +203,7 @@ class DatabaseWorkerPool
 
         //! Directly executes an SQL query in string format that will block the calling thread until finished.
         //! Returns reference counted auto pointer, no need for manual memory management in upper level code.
-        QueryResult Query(const char* sql, T* conn = NULL)
+        QueryResult Query(const char* sql, T* conn = nullptr)
         {
             if (!conn)
                 conn = GetFreeConnection();
@@ -213,7 +213,7 @@ class DatabaseWorkerPool
             if (!result || !result->GetRowCount() || !result->NextRow())
             {
                 //delete result;
-                return QueryResult(NULL);
+                return QueryResult(nullptr);
             }
 
             return QueryResult(result);
@@ -225,7 +225,7 @@ class DatabaseWorkerPool
         QueryResult PQuery(const char* sql, T* conn, Args const&... args)
         {
             if (!sql)
-                return QueryResult(NULL);
+                return QueryResult(nullptr);
 
             return Query(Trinity::StringFormat(sql, args...).c_str(), conn);
         }
@@ -236,7 +236,7 @@ class DatabaseWorkerPool
         QueryResult PQuery(const char* sql, Args const&... args)
         {
             if (!sql)
-                return QueryResult(NULL);
+                return QueryResult(nullptr);
 
             return Query(Trinity::StringFormat(sql, args...).c_str());
         }
@@ -256,7 +256,7 @@ class DatabaseWorkerPool
             if (!ret || !ret->GetRowCount())
             {
                 delete ret;
-                return PreparedQueryResult(NULL);
+                return PreparedQueryResult(nullptr);
             }
 
             return PreparedQueryResult(ret);
@@ -508,7 +508,7 @@ class DatabaseWorkerPool
         {
             uint8 i = 0;
             size_t num_cons = _connectionCount[IDX_SYNCH];
-            T* t = NULL;
+            T* t = nullptr;
             //! Block forever until a connection is free
             for (;;)
             {

@@ -83,7 +83,7 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     if (Player* captain = sObjectMgr->GetPlayer(GetCaptain()))
         ip = captain->GetSession()->GetRemoteAddress();
     LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_CREATE), GetType(), GUID_LOPART(GetCaptain()), ip.c_str(), time(NULL));
+            GetId(), uint32(AT_EV_CREATE), GetType(), GUID_LOPART(GetCaptain()), ip.c_str(), time(nullptr));
     
     return true;
 }
@@ -139,7 +139,7 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
             pl->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", pl->GetName().c_str(), pl->GetGUIDLow(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(PlayerGuid), (pl ? pl->GetSession()->GetRemoteAddress().c_str() : ""), time(NULL));
+            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(PlayerGuid), (pl ? pl->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
 
     }
     return true;
@@ -264,7 +264,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
         newcaptain->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + 1 + (GetSlot() * 6), 0);
         TC_LOG_DEBUG("arena", "Player: %s [GUID: " UI64FMTD "] promoted player : %s[GUID:" UI64FMTD "] to leader of arena team[Id:%u][Type:%u].", oldcaptain ? oldcaptain->GetName().c_str() : "", oldcaptain ? oldcaptain->GetGUID() : 0, newcaptain->GetName().c_str(), newcaptain->GetGUID(), GetId(), GetType());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_PROMOTE), GetType(), GUID_LOPART(guid), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(NULL));
+            GetId(), uint32(AT_EV_PROMOTE), GetType(), GUID_LOPART(guid), newcaptain->GetSession()->GetRemoteAddress().c_str(), time(nullptr));
     }
 }
 
@@ -296,7 +296,7 @@ void ArenaTeam::DelMember(uint64 guid)
         }
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] left arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_LEAVE), GetType(), GUID_LOPART(guid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(NULL));
+            GetId(), uint32(AT_EV_LEAVE), GetType(), GUID_LOPART(guid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
     }
     CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
 }
@@ -327,7 +327,7 @@ void ArenaTeam::Disband(WorldSession *session)
         TC_LOG_DEBUG("arena","Player: %s [GUID: %u] disbanded arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
   
     LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUIDLow() : 0), session->GetRemoteAddress().c_str(), time(NULL));
+            GetId(), uint32(AT_EV_DISBAND), GetType(), (player ? player->GetGUIDLow() : 0), session->GetRemoteAddress().c_str(), time(nullptr));
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
@@ -339,7 +339,7 @@ void ArenaTeam::Disband(WorldSession *session)
 
 void ArenaTeam::Roster(WorldSession *session)
 {
-    Player *pl = NULL;
+    Player *pl = nullptr;
     WorldPacket data(SMSG_ARENA_TEAM_ROSTER, 100);
     data << uint32(GetId());                                // arena team id
     if(session->GetClientBuild() == BUILD_335)

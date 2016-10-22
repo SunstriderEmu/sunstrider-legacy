@@ -69,7 +69,7 @@ class Corpse : public WorldObject
         uint64 GetOwnerGUID() const;
 
         time_t const& GetGhostTime() const { return m_time; }
-        void ResetGhostTime() { m_time = time(NULL); }
+        void ResetGhostTime() { m_time = time(nullptr); }
         CorpseType GetType() const { return m_type; }
 
         GridPair const& GetGrid() const { return m_grid; }

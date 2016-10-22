@@ -41,7 +41,7 @@ namespace Trinity
     class BattlegroundChatBuilder
     {
     public:
-        BattlegroundChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, va_list* args = NULL)
+        BattlegroundChatBuilder(ChatMsg msgtype, int32 textId, Player const* source, va_list* args = nullptr)
             : _msgtype(msgtype), _textId(textId), _source(source), _args(args) { }
 
         void operator()(WorldPacket& data, LocaleConstant loc_idx)
@@ -211,7 +211,7 @@ Battleground::~Battleground()
         if(map->IsBattlegroundOrArena())
         {
             ((BattlegroundMap*)map)->SetUnload();
-            ((BattlegroundMap*)map)->SetBG(NULL);
+            ((BattlegroundMap*)map)->SetBG(nullptr);
         }
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
@@ -294,7 +294,7 @@ void Battleground::Update(time_t diff)
         {
             for(std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
             {
-                Creature *sh = NULL;
+                Creature *sh = nullptr;
                 for(std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
                 {
                     Player *plr = sObjectMgr->GetPlayer(*itr2);
@@ -529,14 +529,14 @@ void Battleground::EndBattleground(uint32 winner)
 {
     this->RemoveFromBGFreeSlotQueue();
     uint32 almost_winning_team = TEAM_HORDE;
-    ArenaTeam * winner_arena_team = NULL;
-    ArenaTeam * loser_arena_team = NULL;
+    ArenaTeam * winner_arena_team = nullptr;
+    ArenaTeam * loser_arena_team = nullptr;
     uint32 loser_rating = 0;
     uint32 winner_rating = 0;
     uint32 final_loser_rating = 0;
     uint32 final_winner_rating = 0;
     WorldPacket data;
-    Player *Source = NULL;
+    Player *Source = nullptr;
     const char *winmsg = "";
     
     // Stats
@@ -582,7 +582,7 @@ void Battleground::EndBattleground(uint32 winner)
     }
 
     if (isBattleground())
-        LogsDatabaseAccessor::BattlegroundStats(GetMapId(), GetStartTimestamp(), time(NULL), Team(winner), finalScoreAlliance, finalScoreHorde);
+        LogsDatabaseAccessor::BattlegroundStats(GetMapId(), GetStartTimestamp(), time(nullptr), Team(winner), finalScoreAlliance, finalScoreHorde);
 
     SetStatus(STATUS_WAIT_LEAVE);
     m_RemovalTime = 0;
@@ -667,7 +667,7 @@ void Battleground::EndBattleground(uint32 winner)
                 ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
             for (uint8 i = 0; i < (5 - m_team2LogInfo.size()); i++)
                 ss << "0, '', 0, 0, 0, ";
-            ss << GetStartTimestamp() << ", " << time(NULL) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
+            ss << GetStartTimestamp() << ", " << time(nullptr) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
             ss << final_winner_rating << ", " << final_loser_rating;
             if (winner == TEAM_ALLIANCE)
                 ss << ", '" << winner_arena_team->GetName() << "', '" << loser_arena_team->GetName() << "')";
@@ -1125,8 +1125,8 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 if(isRated() && GetStatus() == STATUS_IN_PROGRESS)
                 {
                     //left a rated match while the encounter was in progress, consider as loser
-                    ArenaTeam * winner_arena_team = 0;
-                    ArenaTeam * loser_arena_team = 0;
+                    ArenaTeam * winner_arena_team = nullptr;
+                    ArenaTeam * loser_arena_team = nullptr;
                     if(team == TEAM_HORDE)
                     {
                         winner_arena_team = sObjectMgr->GetArenaTeamById(GetArenaTeamIdForTeam(TEAM_ALLIANCE));
@@ -1167,7 +1167,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             {
                 if(!group->RemoveMember(guid, 0))               // group was disbanded
                 {
-                    SetBgRaid(team, NULL);
+                    SetBgRaid(team, nullptr);
                     delete group;
                 }
             }
@@ -1237,7 +1237,7 @@ void Battleground::Reset()
 void Battleground::StartBattleground()
 {
     SetLastResurrectTime(0);
-    SetStartTimestamp(time(NULL));
+    SetStartTimestamp(time(nullptr));
     if(m_IsRated) 
         TC_LOG_DEBUG("arena","Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE]);
 }
@@ -1435,7 +1435,7 @@ void Battleground::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
             if(isBattleground())
             {
                 // reward honor instantly
-                if(Source->RewardHonor(NULL, 1, value))
+                if(Source->RewardHonor(nullptr, 1, value))
                     itr->second->BonusHonor += value;
             }
             break;
@@ -1470,7 +1470,7 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(SPELL_WAITING_FOR_RESURRECT);
     if(spellInfo)
     {
-        Aura *Aur = CreateAura(spellInfo, 0, NULL, plr);
+        Aura *Aur = CreateAura(spellInfo, 0, nullptr, plr);
         plr->AddAura(Aur);
     }
 }
@@ -1611,14 +1611,14 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
 {
     Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceID());
     if(!map)
-        return NULL;
+        return nullptr;
 
     Creature* pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, entry))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;
-        return NULL;
+        return nullptr;
     }
 
     pCreature->Relocate(x, y, z, o);
@@ -1627,7 +1627,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
     {
         TC_LOG_ERROR("battleground","ERROR: Creature (guidlow %d, entry %d) not added to battleground. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
         delete pCreature;
-        return NULL;
+        return nullptr;
     }
 
     pCreature->SetHomePosition(x, y, z, o);

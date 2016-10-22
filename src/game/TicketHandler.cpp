@@ -56,12 +56,12 @@ void WorldSession::HandleGMTicketCreateOpcode( WorldPacket & recvData )
     ticket->guid = sObjectMgr->GenerateGMTicketId();
     ticket->playerGuid = GetPlayer()->GetGUID();
     ticket->message = ticketText;
-    ticket->createtime = time(NULL);
+    ticket->createtime = time(nullptr);
     ticket->map = map;
     ticket->pos_x = x;
     ticket->pos_y = y;
     ticket->pos_z = z;
-    ticket->timestamp = time(NULL);
+    ticket->timestamp = time(nullptr);
     ticket->closed = 0;
     ticket->assignedToGM = 0;
     ticket->comment = "";
@@ -90,7 +90,7 @@ void WorldSession::HandleGMTicketUpdateOpcode( WorldPacket & recvData)
     }
 
     ticket->message = message;
-    ticket->timestamp = time(NULL);
+    ticket->timestamp = time(nullptr);
 
     sObjectMgr->AddOrUpdateGMTicket(*ticket);
 
@@ -113,7 +113,7 @@ void WorldSession::HandleGMTicketDeleteOpcode( WorldPacket & /*recvData*/)
 
         sWorld->SendGMText(LANG_COMMAND_TICKETPLAYERABANDON, GetPlayer()->GetName().c_str(), ticket->guid );
         sObjectMgr->RemoveGMTicket(ticket, GetPlayer()->GetGUID(), false);
-        SendGMTicketGetTicket(0x0A, 0);
+        SendGMTicketGetTicket(0x0A, nullptr);
     }
 }
 
@@ -122,7 +122,7 @@ void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
     
     
     WorldPacket data( SMSG_QUERY_TIME_RESPONSE, 4+4 );
-    data << (uint32)time(NULL);
+    data << (uint32)time(nullptr);
     data << (uint32)0;
     SendPacket( &data );
 
@@ -131,7 +131,7 @@ void WorldSession::HandleGMTicketGetTicketOpcode( WorldPacket & /*recvData*/)
     if(ticket)
       SendGMTicketGetTicket(0x06, ticket->message.c_str());
     else
-      SendGMTicketGetTicket(0x0A, 0);
+      SendGMTicketGetTicket(0x0A, nullptr);
 }
 
 void WorldSession::HandleGMTicketSystemStatusOpcode( WorldPacket & /*recvData*/)

@@ -864,8 +864,8 @@ bool ChatHandler::HandleAccountSetGmLevelCommand(const char* args)
     uint32 targetSecurity = 0;
     uint32 gm = 0;
     char* arg1 = strtok((char*)args, " ");
-    char* arg2 = strtok(NULL, " ");
-    char* arg3 = strtok(NULL, " ");
+    char* arg2 = strtok(nullptr, " ");
+    char* arg3 = strtok(nullptr, " ");
     bool isAccountNameGiven = true;
 
     if (!arg3)
@@ -960,8 +960,8 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
 
     ///- Get the command line arguments
     char *szAccount = strtok ((char*)args," ");
-    char *szPassword1 =  strtok (NULL," ");
-    char *szPassword2 =  strtok (NULL," ");
+    char *szPassword1 =  strtok (nullptr," ");
+    char *szPassword2 =  strtok (nullptr," ");
 
     if (!szAccount||!szPassword1 || !szPassword2)
         return false;
@@ -1044,12 +1044,12 @@ bool ChatHandler::HandleSetSkillCommand(const char* args)
     if(!skill_p)
         return false;
 
-    char *level_p = strtok (NULL, " ");
+    char *level_p = strtok (nullptr, " ");
 
     if( !level_p)
         return false;
 
-    char *max_p   = strtok (NULL, " ");
+    char *max_p   = strtok (nullptr, " ");
 
     int32 skill = atoi(skill_p);
 
@@ -1109,7 +1109,7 @@ bool ChatHandler::HandleUnLearnCommand(const char* args)
         return false;
 
     // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r
-    char* tail = strtok(NULL,"");
+    char* tail = strtok(nullptr,"");
 
     uint32 max_id = extractSpellIdFromLink(tail);
 
@@ -1951,7 +1951,7 @@ bool ChatHandler::HandleLearnAllLangCommand(const char* /*args*/)
 bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
 {
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     if (pName)
     {
         std::string name = pName;
@@ -2055,12 +2055,12 @@ bool ChatHandler::HandleAddItemCommand(const char* args)
         itemId = atol(cId);
     }
 
-    char* ccount = strtok(NULL, " ");
+    char* ccount = strtok(nullptr, " ");
 
     int32 count = 1;
 
     if (ccount)
-        count = strtol(ccount, NULL, 10);
+        count = strtol(ccount, nullptr, 10);
 
     if (count == 0)
         count = 1;
@@ -2174,7 +2174,7 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
             }
             else
             {
-                pl->SendEquipError( msg, NULL, NULL );
+                pl->SendEquipError( msg, nullptr, nullptr );
                 PSendSysMessage(LANG_ITEM_CANNOT_CREATE, pProto->ItemId, 1);
             }
         }
@@ -2215,7 +2215,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         return false;
     }
 
-    char* c_count = strtok(NULL, " ");
+    char* c_count = strtok(nullptr, " ");
     int count = c_count ? atol(c_count) : 10;
 
     if(count < 0)
@@ -2250,7 +2250,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             uint32 owner_acc = fields[4].GetUInt32();
             std::string owner_name = fields[5].GetString();
 
-            char const* item_pos = 0;
+            char const* item_pos = nullptr;
             if(Player::IsEquipmentPos(item_bag,item_slot))
                 item_pos = "[equipped]";
             else if(Player::IsInventoryPos(item_bag,item_slot))
@@ -2290,7 +2290,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             item_id,uint32(count));
     }
     else
-        result = NULL;
+        result = nullptr;
 
     if(result)
     {
@@ -2336,7 +2336,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             item_id,uint32(count));
     }
     else
-        result = NULL;
+        result = nullptr;
 
     if(result)
     {
@@ -2422,7 +2422,7 @@ bool ChatHandler::HandleListObjectCommand(const char* args)
         return false;
     }
 
-    char* c_count = strtok(NULL, " ");
+    char* c_count = strtok(nullptr, " ");
     int count = c_count ? atol(c_count) : 10;
 
     if(count < 0)
@@ -2570,7 +2570,7 @@ bool ChatHandler::HandleObjectStateCommand(const char* args)
     if(!lowguid)
         return false;
 
-    GameObject* gobj = NULL;
+    GameObject* gobj = nullptr;
 
     if(GameObjectData const* goData = sObjectMgr->GetGOData(lowguid))
         gobj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid, goData->id);
@@ -2582,7 +2582,7 @@ bool ChatHandler::HandleObjectStateCommand(const char* args)
         return false;
     }
 
-    char* cstate = strtok(NULL, " ");
+    char* cstate = strtok(nullptr, " ");
     if(!cstate)
         return false;
 
@@ -2622,7 +2622,7 @@ bool ChatHandler::HandleListCreatureCommand(const char* args)
         return false;
     }
 
-    char* c_count = strtok(NULL, " ");
+    char* c_count = strtok(nullptr, " ");
     int count = c_count ? atol(c_count) : 10;
 
     if(count < 0)
@@ -3219,7 +3219,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
     ARGS_CHECK
 
     char *lname = strtok ((char*)args, " ");
-    char *gname = strtok (NULL, "");
+    char *gname = strtok (nullptr, "");
 
     if (!lname)
         return false;
@@ -3265,7 +3265,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
-    char* par2 = strtok (NULL, "");
+    char* par2 = strtok (nullptr, "");
     if(!par1 || !par2)
         return false;
 
@@ -3365,7 +3365,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
-    char* par2 = strtok (NULL, " ");
+    char* par2 = strtok (nullptr, " ");
     if (!par1 || !par2)
         return false;
     std::string plName = par1;
@@ -3410,13 +3410,13 @@ bool ChatHandler::HandleGuildDeleteCommand(const char* args)
     ARGS_CHECK
 
     char* par1 = strtok ((char*)args, " ");
-    char* par2 = strtok(NULL, " ");
+    char* par2 = strtok(nullptr, " ");
     if (!par1)
         return false;
 
     std::string gld = par1;
 
-    Guild* targetGuild = NULL;
+    Guild* targetGuild = nullptr;
     if (gld == "id") {
         if (!par2)
             return false;
@@ -3477,7 +3477,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     }
  
     char* pItemID = strtok((char*)args, " ");
-    char* pSlot = strtok(NULL, " ");
+    char* pSlot = strtok(nullptr, " ");
  
     if (!pItemID)
         return false;
@@ -3588,12 +3588,12 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     if(damage <=0)
         return true;
 
-    char* schoolStr = strtok((char*)NULL, " ");
+    char* schoolStr = strtok((char*)nullptr, " ");
 
     // flat melee damage without resistence/etc reduction
     if(!schoolStr)
     {
-        m_session->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        m_session->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_NORMAL, 0);
         return true;
     }
@@ -3607,7 +3607,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
     if ( schoolmask & SPELL_SCHOOL_MASK_NORMAL )
         damage = m_session->GetPlayer()->CalcArmorReducedDamage(target, damage);
 
-    char* spellStr = strtok((char*)NULL, " ");
+    char* spellStr = strtok((char*)nullptr, " ");
 
     // melee damage by specific school
     if(!spellStr)
@@ -3622,7 +3622,7 @@ bool ChatHandler::HandleDamageCommand(const char * args)
 
         damage -= absorb + resist;
 
-        m_session->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, schoolmask, NULL, false);
+        m_session->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
         m_session->GetPlayer()->SendAttackStateUpdate (HITINFO_NORMALSWING2, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_NORMAL, 0);
         return true;
     }
@@ -3661,7 +3661,7 @@ bool ChatHandler::HandleModifyArenaCommand(const char * args)
 
 bool ChatHandler::HandleReviveCommand(const char* args)
 {
-    Player* SelectedPlayer = NULL;
+    Player* SelectedPlayer = nullptr;
 
     if (*args)
     {
@@ -3718,7 +3718,7 @@ bool ChatHandler::HandleAuraCommand(const char* args)
                 eff == SPELL_EFFECT_APPLY_AURA  ||
                 eff == SPELL_EFFECT_PERSISTENT_AREA_AURA )
             {
-                Aura *Aur = CreateAura(spellInfo, i, NULL, target);
+                Aura *Aur = CreateAura(spellInfo, i, nullptr, target);
                 target->AddAura(Aur);
             }
         }
@@ -3768,7 +3768,7 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
 
     uint32 g_team;
 
-    char* px2 = strtok(NULL, " ");
+    char* px2 = strtok(nullptr, " ");
 
     if (!px2)
         g_team = 0;
@@ -3879,7 +3879,7 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
 {
     char* cState = strtok((char*)args, " ");
-    char* cPermanent = strtok((char*)NULL, " ");
+    char* cPermanent = strtok((char*)nullptr, " ");
 
     if(!cState) 
         return false;
@@ -3929,7 +3929,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     uint32 Entry = target->GetEntry();
     CreatureTemplate const* cInfo = target->GetCreatureTemplate();
 
-    int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
+    int32 curRespawnDelay = target->GetRespawnTimeEx()-time(nullptr);
     if(curRespawnDelay < 0)
         curRespawnDelay = 0;
     std::string curRespawnDelayStr = secsToTimeString(curRespawnDelay,true);
@@ -3981,7 +3981,7 @@ bool ChatHandler::HandleExploreCheatCommand(const char* args)
     int flag = atoi((char*)args);
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -4172,10 +4172,10 @@ bool ChatHandler::HandleWaterwalkCheatCommand(const char* args)
 bool ChatHandler::HandleLevelUpCommand(const char* args)
 {
     char* px = strtok((char*)args, " ");
-    char* py = strtok((char*)NULL, " ");
+    char* py = strtok((char*)nullptr, " ");
 
     // command format parsing
-    char* pname = (char*)NULL;
+    char* pname = (char*)nullptr;
     int addlevel = 1;
 
     if(px && py)                                            // .levelup name level
@@ -4193,7 +4193,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     // else .levelup - nothing do for preparing
 
     // player
-    Player *chr = NULL;
+    Player *chr = nullptr;
     uint64 chr_guid = 0;
 
     std::string name;
@@ -4224,7 +4224,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
     {
         chr = GetSelectedPlayerOrSelf();
 
-        if (chr == NULL)
+        if (chr == nullptr)
         {
             SendSysMessage(LANG_NO_CHAR_SELECTED);
             SetSentErrorMessage(true);
@@ -4278,7 +4278,7 @@ bool ChatHandler::HandleShowAreaCommand(const char* args)
     int area = atoi((char*)args);
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -4309,7 +4309,7 @@ bool ChatHandler::HandleHideAreaCommand(const char* args)
     int area = atoi((char*)args);
 
     Player *chr = GetSelectedPlayerOrSelf();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_NO_CHAR_SELECTED);
         SetSentErrorMessage(true);
@@ -4343,7 +4343,7 @@ bool ChatHandler::HandleUpdateCommand(const char* args)
     char* pUpdateIndex = strtok((char*)args, " ");
 
     Unit* chr = GetSelectedUnit();
-    if (chr == NULL)
+    if (chr == nullptr)
     {
         SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
         SetSentErrorMessage(true);
@@ -4365,7 +4365,7 @@ bool ChatHandler::HandleUpdateCommand(const char* args)
         if (updateIndex>=UNIT_END) return true;
     }
 
-    char*  pvalue = strtok(NULL, " ");
+    char*  pvalue = strtok(nullptr, " ");
     if (!pvalue)
     {
         value=chr->GetUInt32Value(updateIndex);
@@ -4407,7 +4407,7 @@ bool ChatHandler::HandleChangeWeather(const char* args)
 
     //*Change the weather of a cell
     char* px = strtok((char*)args, " ");
-    char* py = strtok(NULL, " ");
+    char* py = strtok(nullptr, " ");
 
     if (!px || !py)
         return false;
@@ -4520,7 +4520,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     if(!guid) 
         return false;
 
-     GameObject* target = NULL;
+     GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
@@ -4595,7 +4595,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
     if(!guid) 
         return false;
 
-     GameObject* target = NULL;
+     GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
         target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
@@ -4744,7 +4744,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 bool ChatHandler::HandleResetHonorCommand (const char * args)
 {
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     if (pName)
     {
         std::string name = pName;
@@ -4849,7 +4849,7 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
 bool ChatHandler::HandleResetLevelCommand(const char * args)
 {
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     if (pName)
     {
         std::string name = pName;
@@ -4893,7 +4893,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
 bool ChatHandler::HandleResetStatsCommand(const char * args)
 {
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     if (pName)
     {
         std::string name = pName;
@@ -4932,7 +4932,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
     
 
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     uint64 playerGUID = 0;
     if (pName)
     {
@@ -4982,7 +4982,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
     
 
     char* pName = strtok((char*)args, "");
-    Player *player = NULL;
+    Player *player = nullptr;
     uint64 playerGUID = 0;
     if (pName)
     {
@@ -5072,7 +5072,7 @@ bool ChatHandler::HandleServerShutDownCommand(const char* args)
     ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
-    char* reason = strtok (NULL, "");
+    char* reason = strtok (nullptr, "");
 
     int32 time = atoi (time_str);
 
@@ -5109,7 +5109,7 @@ bool ChatHandler::HandleServerRestartCommand(const char* args)
     ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
-    char* reason = strtok (NULL, "");
+    char* reason = strtok (nullptr, "");
 
     int32 time = atoi (time_str);
 
@@ -5130,7 +5130,7 @@ bool ChatHandler::HandleServerIdleRestartCommand(const char* args)
     ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
-    char* reason = strtok (NULL, "");
+    char* reason = strtok (nullptr, "");
 
     int32 time = atoi (time_str);
 
@@ -5151,7 +5151,7 @@ bool ChatHandler::HandleServerIdleShutDownCommand(const char* args)
     ARGS_CHECK
 
     char* time_str = strtok ((char*) args, " ");
-    char* reason = strtok (NULL, "");
+    char* reason = strtok (nullptr, "");
 
     int32 time = atoi (time_str);
 
@@ -5213,7 +5213,7 @@ bool ChatHandler::HandleAddQuest(const char* args)
     // ok, normal (creature/GO starting) quest
     if( player->CanAddQuest( pQuest, true ) )
     {
-        player->AddQuest( pQuest, NULL );
+        player->AddQuest( pQuest, nullptr );
 
         if ( player->CanCompleteQuest( entry ) )
             player->CompleteQuest( entry );
@@ -5445,7 +5445,7 @@ bool ChatHandler::HandleReportQuest(const char* args)
     if (!questId)
         return false;
         
-    char* comment = strtok(NULL, "");
+    char* comment = strtok(nullptr, "");
     if (!comment)
         return false;
         
@@ -5560,11 +5560,11 @@ bool ChatHandler::HandleBanHelper(SanctionType mode, const char* args)
 
     std::string nameOrIP = cnameOrIP;
 
-    char* duration = strtok (NULL," ");
+    char* duration = strtok (nullptr," ");
     if(!duration || !atoi(duration))
         return false;
 
-    char* reason = strtok (NULL,"");
+    char* reason = strtok (nullptr,"");
     if(!reason)
         return false;
 
@@ -5749,7 +5749,7 @@ bool ChatHandler::HandleBanInfoHelper(uint32 accountid, char const* accountname)
 
         time_t unbandate = time_t(fields[3].GetUInt64());
         bool active = false;
-        if(fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unbandate >= time(NULL)) )
+        if(fields[2].GetBool() && (fields[1].GetUInt64() == (uint64)0 ||unbandate >= time(nullptr)) )
             active = true;
         bool permanent = (fields[1].GetUInt64() == (uint64)0);
         std::string bantime = permanent?GetTrinityString(LANG_BANINFO_INFINITE):secsToTimeString(fields[1].GetUInt64(), true);
@@ -5831,7 +5831,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         if (!nameResult)
             authorname = "<Unknown>";
 
-        chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (account %u) at %s (%s).", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), authorAccount, TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(NULL))) ? " (actif)" : "");
+        chatHandler.PSendSysMessage("Account %u: Mute %s for %s by %s (account %u) at %s (%s).", accountid, secsToTimeString(duration).c_str(), reason.c_str(), authorname.c_str(), authorAccount, TimeToTimestampStr(muteTime), (unbantimestamp > uint64(time(nullptr))) ? " (actif)" : "");
     } while (result2->NextRow());
 
     return true;
@@ -6155,7 +6155,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
     if(!file)
         return false;
 
-    char * account = strtok(NULL, " ");
+    char * account = strtok(nullptr, " ");
     if(!account)
         return false;
 
@@ -6186,8 +6186,8 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
         return false;
     }
 
-    char* guid_str = NULL;
-    char* name_str = strtok(NULL, " ");
+    char* guid_str = nullptr;
+    char* name_str = strtok(nullptr, " ");
 
     std::string name;
     if(name_str)
@@ -6208,7 +6208,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
             return false;
         }
 
-        guid_str = strtok(NULL, " ");
+        guid_str = strtok(nullptr, " ");
     }
 
     uint32 guid = 0;
@@ -6281,7 +6281,7 @@ bool ChatHandler::HandleNpcChangeEntryCommand(const char *args)
 bool ChatHandler::HandleWritePDumpCommand(const char *args)
 {
     char* file = strtok((char*)args, " ");
-    char* p2 = strtok(NULL, " ");
+    char* p2 = strtok(nullptr, " ");
 
     if(!file || !p2)
         return false;
@@ -6373,7 +6373,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
                 break;
             case CHASE_MOTION_TYPE:
             {
-                Unit* target = NULL;
+                Unit* target = nullptr;
                 if (unit->GetTypeId() == TYPEID_PLAYER)
                     target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
                 else
@@ -6389,7 +6389,7 @@ bool ChatHandler::HandleMovegensCommand(const char* /*args*/)
             }
             case FOLLOW_MOTION_TYPE:
             {
-                Unit* target = NULL;
+                Unit* target = nullptr;
                 if (unit->GetTypeId() == TYPEID_PLAYER)
                     target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
                 else
@@ -6515,7 +6515,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
         return false;
     }
 
-    char* trig_str = strtok(NULL, " ");
+    char* trig_str = strtok(nullptr, " ");
     if(trig_str)
     {
         int l = strlen(trig_str);
@@ -6523,7 +6523,7 @@ bool ChatHandler::HandleCastCommand(const char* args)
             return false;
     }
 
-    bool triggered = (trig_str != NULL);
+    bool triggered = (trig_str != nullptr);
 
     m_session->GetPlayer()->CastSpell(target,spell,triggered);
 
@@ -6548,7 +6548,7 @@ bool ChatHandler::HandleCastBatchCommand(const char* args)
     if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
-    char* countStr = strtok(NULL, " ");
+    char* countStr = strtok(nullptr, " ");
     int count = 0;
     if(countStr)
     {
@@ -6580,7 +6580,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
     if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
-    char* trig_str = strtok(NULL, " ");
+    char* trig_str = strtok(nullptr, " ");
     if(trig_str)
     {
         int l = strlen(trig_str);
@@ -6588,7 +6588,7 @@ bool ChatHandler::HandleCastBackCommand(const char* args)
             return false;
     }
 
-    bool triggered = (trig_str != NULL);
+    bool triggered = (trig_str != nullptr);
 
     // update orientation at server
     caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
@@ -6624,14 +6624,14 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
         return false;
     }
 
-    char *distStr = strtok(NULL, " ");
+    char *distStr = strtok(nullptr, " ");
 
     float dist = 0;
 
     if(distStr)
         sscanf(distStr, "%f", &dist);
 
-    char* trig_str = strtok(NULL, " ");
+    char* trig_str = strtok(nullptr, " ");
     if(trig_str)
     {
         int l = strlen(trig_str);
@@ -6639,7 +6639,7 @@ bool ChatHandler::HandleCastDistCommand(const char* args)
             return false;
     }
 
-    bool triggered = (trig_str != NULL);
+    bool triggered = (trig_str != nullptr);
 
     float x,y,z;
     m_session->GetPlayer()->GetClosePoint(x,y,z,dist);
@@ -6673,7 +6673,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
     if(!spell || !sSpellMgr->GetSpellInfo(spell))
         return false;
 
-    char* trig_str = strtok(NULL, " ");
+    char* trig_str = strtok(nullptr, " ");
     if(trig_str)
     {
         int l = strlen(trig_str);
@@ -6681,7 +6681,7 @@ bool ChatHandler::HandleCastTargetCommand(const char* args)
             return false;
     }
 
-    bool triggered = (trig_str != NULL);
+    bool triggered = (trig_str != nullptr);
 
     // update orientation at server
     caster->SetOrientation(caster->GetAngle(m_session->GetPlayer()));
@@ -6710,7 +6710,7 @@ bool ChatHandler::HandleComeToMeCommand(const char *args)
     if(!newFlagStr)
         return false;
 
-    uint32 newFlags = (uint32)strtoul(newFlagStr, NULL, 0);
+    uint32 newFlags = (uint32)strtoul(newFlagStr, nullptr, 0);
 
     Creature* caster = GetSelectedCreature();
     if(!caster)
@@ -6784,7 +6784,7 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
         for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
         {
             InstanceSave *save = itr->second.save;
-            std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+            std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
             PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
             counter++;
         }
@@ -6800,7 +6800,7 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
             for(Group::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
             {
                 InstanceSave *save = itr->second.save;
-                std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
                 PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
                 counter++;
             }
@@ -6829,7 +6829,7 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
                 if(itr->first != player->GetMapId())
                 {
                     InstanceSave *save = itr->second.save;
-                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
                     PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
                     player->UnbindInstance(itr, Difficulty(i));
                     counter++;
@@ -6917,7 +6917,7 @@ bool ChatHandler::HandleServerSetConfigCommand(const char* args)
     ARGS_CHECK
 
     char* cConfigIndex = strtok((char*)args, " ");
-    char* cConfigValue = strtok(NULL, " ");
+    char* cConfigValue = strtok(nullptr, " ");
 
     if (!cConfigIndex || !cConfigValue)
         return false;
@@ -6942,7 +6942,7 @@ bool ChatHandler::HandleAccountSetAddonCommand(const char* args)
 {
     ///- Get the command line arguments
     char *szAcc = strtok((char*)args," ");
-    char *szExp = strtok(NULL," ");
+    char *szExp = strtok(nullptr," ");
 
     if(!szAcc)
         return false;
@@ -7001,7 +7001,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     if(!pName)
         return false;
 
-    char* tail1 = strtok(NULL, "");
+    char* tail1 = strtok(nullptr, "");
     if(!tail1)
         return false;
 
@@ -7013,13 +7013,13 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         char* space = strtok(tail1, "\"");
         if(!space)
             return false;
-        msgSubject = strtok(NULL, "\"");
+        msgSubject = strtok(nullptr, "\"");
     }
 
     if (!msgSubject)
         return false;
 
-    char* tail2 = strtok(NULL, "");
+    char* tail2 = strtok(nullptr, "");
     if(!tail2)
         return false;
 
@@ -7031,7 +7031,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         char* space = strtok(tail2, "\"");
         if(!space)
             return false;
-        msgText = strtok(NULL, "\"");
+        msgText = strtok(nullptr, "\"");
     }
 
     if (!msgText)
@@ -7048,17 +7048,17 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     ItemPairs items;
 
     // get all tail string
-    char* tail = strtok(NULL, "");
+    char* tail = strtok(nullptr, "");
 
     // get from tail next item str
     while(char* itemStr = strtok(tail, " "))
     {
         // and get new tail
-        tail = strtok(NULL, "");
+        tail = strtok(nullptr, "");
 
         // parse item str
         char* itemIdStr = strtok(itemStr, ":");
-        char* itemCountStr = strtok(NULL, " ");
+        char* itemCountStr = strtok(nullptr, " ");
 
         uint32 item_id = atoi(itemIdStr);
         if(!item_id)
@@ -7126,7 +7126,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for(ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
     {
-        if(Item* item = Item::CreateItem(itr->first,itr->second,m_session ? m_session->GetPlayer() : 0))
+        if(Item* item = Item::CreateItem(itr->first,itr->second,m_session ? m_session->GetPlayer() : nullptr))
         {
             item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
             mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);
@@ -7151,7 +7151,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
     if (!pName)
         return false;
 
-    char* tail1 = strtok(NULL, "");
+    char* tail1 = strtok(nullptr, "");
     if (!tail1)
         return false;
 
@@ -7163,13 +7163,13 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         char* space = strtok(tail1, "\"");
         if (!space)
             return false;
-        msgSubject = strtok(NULL, "\"");
+        msgSubject = strtok(nullptr, "\"");
     }
 
     if (!msgSubject)
         return false;
 
-    char* tail2 = strtok(NULL, "");
+    char* tail2 = strtok(nullptr, "");
     if (!tail2)
         return false;
 
@@ -7181,13 +7181,13 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         char* space = strtok(tail2, "\"");
         if (!space)
             return false;
-        msgText = strtok(NULL, "\"");
+        msgText = strtok(nullptr, "\"");
     }
 
     if (!msgText)
         return false;
 
-    char* money_str = strtok(NULL, "");
+    char* money_str = strtok(nullptr, "");
     int32 money = money_str ? atoi(money_str) : 0;
     if (money <= 0)
         return false;
@@ -7221,7 +7221,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
 
     Player *receiver = sObjectMgr->GetPlayer(receiver_guid);
 
-    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, NULL, money, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(receiver,messagetype, stationery, sender_guidlo, GUID_LOPART(receiver_guid), subject, itemTextId, nullptr, money, 0, MAIL_CHECK_MASK_NONE);
 
     PSendSysMessage(LANG_MAIL_SENT, name.c_str());
     return true;
@@ -7232,7 +7232,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
 {
     ///- Get the command line arguments
     char* name_str = strtok((char*)args, " ");
-    char* msg_str = strtok(NULL, "");
+    char* msg_str = strtok(nullptr, "");
 
     if(!name_str || !msg_str)
         return false;
@@ -7291,7 +7291,7 @@ bool ChatHandler::HandleModifyGenderCommand(const char *args)
     int gender_len = strlen(gender_str);
 
     uint32 displayId = player->GetNativeDisplayId();
-    char const* gender_full = NULL;
+    char const* gender_full = nullptr;
     uint32 new_displayId = displayId;
     Gender gender;
 
@@ -7433,7 +7433,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
                     eff == SPELL_EFFECT_PERSISTENT_AREA_AURA || eff == SPELL_EFFECT_APPLY_AREA_AURA_FRIEND ||
                     eff == SPELL_EFFECT_APPLY_AREA_AURA_ENEMY)
                 {
-                    Aura *Aur = CreateAura(spellInfo, i, NULL, player);
+                    Aura *Aur = CreateAura(spellInfo, i, nullptr, player);
                     player->AddAura(Aur);
                 }
             }
@@ -7536,8 +7536,8 @@ bool ChatHandler::HandleListFreezeCommand(const char* args)
 
 bool ChatHandler::HandleGroupLeaderCommand(const char* args)
 {
-    Player* plr  = NULL;
-    Group* group = NULL;
+    Player* plr  = nullptr;
+    Group* group = nullptr;
     uint64 guid  = 0;
     char* cname  = strtok((char*)args, " ");
 
@@ -7550,8 +7550,8 @@ bool ChatHandler::HandleGroupLeaderCommand(const char* args)
 
 bool ChatHandler::HandleGroupDisbandCommand(const char* args)
 {
-    Player* plr  = NULL;
-    Group* group = NULL;
+    Player* plr  = nullptr;
+    Group* group = nullptr;
     uint64 guid  = 0;
     char* cname  = strtok((char*)args, " ");
 
@@ -7564,8 +7564,8 @@ bool ChatHandler::HandleGroupDisbandCommand(const char* args)
 
 bool ChatHandler::HandleGroupRemoveCommand(const char* args)
 {
-    Player* plr  = NULL;
-    Group* group = NULL;
+    Player* plr  = nullptr;
+    Group* group = nullptr;
     uint64 guid  = 0;
     char* cname  = strtok((char*)args, " ");
 
@@ -7653,7 +7653,7 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     char *displid = strtok((char *)args, " ");
     if (!displid)
         return false;
-    char *factid = strtok(NULL, " ");
+    char *factid = strtok(nullptr, " ");
 
     uint16 display_id = (uint16)atoi((char *)args);
     uint8 faction_id = factid ? (uint8)atoi(factid) : 0;
@@ -7678,7 +7678,7 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
     if (!entryid)
         return false;
 
-    char *factid = strtok(NULL, " ");
+    char *factid = strtok(nullptr, " ");
     if (!factid)
         return false;
 
@@ -7888,7 +7888,7 @@ bool ChatHandler::HandleInstanceSetDataCommand(const char* args)
         
     uint32 dataId = uint32(atoi(chrDataId));
     
-    char *chrDataValue = strtok(NULL, " ");
+    char *chrDataValue = strtok(nullptr, " ");
     if (!chrDataValue)
         return false;
         
@@ -8171,7 +8171,7 @@ bool ChatHandler::HandleGuildRenameCommand(const char* args)
     if (!guildIdStr)
         return false;
         
-    char* newName = strtok(NULL, "");
+    char* newName = strtok(nullptr, "");
     if (!newName)
         return false;
     
@@ -8255,9 +8255,9 @@ bool ChatHandler::HandleNpcAllowCombatMovementCommand(const char* args)
 /* if no args given, tell if the selected creature is linked to a game_event. Else usage is .npc linkgameevent #eventid [#guid] (a guid may be given, overiding the selected creature)*/
 bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
 {
-    CreatureData const* data = NULL;
+    CreatureData const* data = nullptr;
     char* cEvent = strtok((char*)args, " ");
-    char* cCreatureGUID = strtok(NULL, " ");
+    char* cCreatureGUID = strtok(nullptr, " ");
     int16 event = 0;
     uint32 creatureGUID = 0;
     bool justShowInfo = false;
@@ -8317,8 +8317,8 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
 /* .npc unlinkgameevent [#guid] */
 bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
 {
-    Creature* creature = NULL;
-    CreatureData const* data = NULL;
+    Creature* creature = nullptr;
+    CreatureData const* data = nullptr;
     char* cCreatureGUID = strtok((char*)args, " ");
     uint32 creatureGUID = 0;
 
@@ -8365,9 +8365,9 @@ bool ChatHandler::HandleNpcUnlinkGameEventCommand(const char* args)
 /* .gobject linkgameevent #event #guid */
 bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
 {
-    GameObjectData const* data = NULL;
+    GameObjectData const* data = nullptr;
     char* cEvent = strtok((char*)args, " ");
-    char* cGobGUID = strtok(NULL, " ");
+    char* cGobGUID = strtok(nullptr, " ");
     int16 event = 0;
     uint32 gobGUID = 0;
 
@@ -8416,7 +8416,7 @@ bool ChatHandler::HandleGobLinkGameEventCommand(const char* args)
 /*.gobject unlinkgameevent #guid*/
 bool ChatHandler::HandleGobUnlinkGameEventCommand(const char* args)
 {
-    GameObjectData const* data = NULL;
+    GameObjectData const* data = nullptr;
     char* cGobGUID = strtok((char*)args, " ");
     uint32 gobGUID = 0;
 
@@ -8498,7 +8498,7 @@ bool ChatHandler::HandleWpChangePathDirectionCommand(const char* args)
         return false;
     }
 
-    char* dirStr = strtok(NULL, " ");
+    char* dirStr = strtok(nullptr, " ");
     if(dirStr) //if the second argument was given
     { //setter
         uint32 dir = uint32(atoi(dirStr));
@@ -8594,7 +8594,7 @@ bool ChatHandler::HandleWpTeleportToPathCommand(const char* args)
         return false;
 
     uint32 pointId = 0;
-    if (char* pointStr = strtok(NULL, " "))
+    if (char* pointStr = strtok(nullptr, " "))
         pointId = atoi(pointStr);
 
     WaypointPath* path = (WaypointPath*)sWaypointMgr->GetPath(pathId);
@@ -8644,7 +8644,7 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
         return false;
     }
 
-    char* typeStr = strtok(NULL, " ");
+    char* typeStr = strtok(nullptr, " ");
     if(typeStr) //if the second argument was given
     { //setter
         uint32 type = uint32(atoi(typeStr));

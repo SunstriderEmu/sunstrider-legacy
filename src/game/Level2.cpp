@@ -73,11 +73,11 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
     std::string cname = charname;
 
-    char* timetonotspeak = strtok(NULL, " ");
+    char* timetonotspeak = strtok(nullptr, " ");
     if(!timetonotspeak)
         return false;
 
-    char* mutereason = strtok(NULL, "");
+    char* mutereason = strtok(nullptr, "");
     std::string mutereasonstr;
     if (!mutereason)
         return false;
@@ -126,7 +126,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     }
 
     uint32 duration = notspeaktime*MINUTE;
-    time_t mutetime = time(NULL) + duration;
+    time_t mutetime = time(nullptr) + duration;
 
     if (chr)
         chr->GetSession()->m_muteTime = mutetime;
@@ -297,7 +297,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 
     if(target)
     {
-        int32 curRespawnDelay = target->GetRespawnTimeEx()-time(NULL);
+        int32 curRespawnDelay = target->GetRespawnTimeEx()-time(nullptr);
         if(curRespawnDelay < 0)
             curRespawnDelay = 0;
 
@@ -323,7 +323,7 @@ bool ChatHandler::HandleGoObjectCommand(const char* args)
     uint32 mapid;
 
     if (strcmp(cId, "id") == 0) {
-        char* cEntry = strtok(NULL, "");
+        char* cEntry = strtok(nullptr, "");
         if (!cEntry)
             return false;
 
@@ -549,7 +549,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
 
         // Get the "creature_template.entry"
         // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
-        char* tail = strtok(NULL,"");
+        char* tail = strtok(nullptr,"");
         if(!tail)
             return false;
         char* cId = extractKeyFromLink(tail,"Hcreature_entry");
@@ -688,7 +688,7 @@ bool ChatHandler::HandleLookupFactionCommand(const char* args)
         FactionEntry const *factionEntry = sFactionStore.LookupEntry (id);
         if (factionEntry)
         {
-            FactionState const* repState = NULL;
+            FactionState const* repState = nullptr;
             if(target)
             {
                 FactionStateList::const_iterator repItr = target->m_factions.find (factionEntry->reputationListID);
@@ -781,7 +781,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
     uint32 factionId = atoi(factionTxt);
 
     int32 amount = 0;
-    char *rankTxt = strtok(NULL, " ");
+    char *rankTxt = strtok(nullptr, " ");
     if (!factionTxt || !rankTxt)
         return false;
 
@@ -810,7 +810,7 @@ bool ChatHandler::HandleModifyRepCommand(const char * args)
 
             if(wrank.substr(0,wrankStr.size())==wrankStr)
             {
-                char *deltaTxt = strtok(NULL, " ");
+                char *deltaTxt = strtok(nullptr, " ");
                 if (deltaTxt)
                 {
                     int32 delta = atoi(deltaTxt);
@@ -887,7 +887,7 @@ bool ChatHandler::HandleItemMoveCommand(const char* args)
     if (!pParam1)
         return false;
 
-    char* pParam2 = strtok(NULL, " ");
+    char* pParam2 = strtok(nullptr, " ");
     if (!pParam2)
         return false;
 
@@ -992,7 +992,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
 {
     
 
-    Creature* unit = NULL;
+    Creature* unit = nullptr;
 
     if(*args)
     {
@@ -1039,7 +1039,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
     if(!lowguid)
         return false;
 
-    GameObject* obj = NULL;
+    GameObject* obj = nullptr;
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -1088,7 +1088,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     if(!lowguid)
         return false;
 
-    GameObject* obj = NULL;
+    GameObject* obj = nullptr;
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -1101,7 +1101,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
         return false;
     }
 
-    char* po = strtok(NULL, " ");
+    char* po = strtok(nullptr, " ");
     float o;
 
     if (po)
@@ -1282,7 +1282,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     if(!lowguid)
         return false;
 
-    GameObject* obj = NULL;
+    GameObject* obj = nullptr;
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -1295,9 +1295,9 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         return false;
     }
 
-    char* px = strtok(NULL, " ");
-    char* py = strtok(NULL, " ");
-    char* pz = strtok(NULL, " ");
+    char* px = strtok(nullptr, " ");
+    char* py = strtok(nullptr, " ");
+    char* pz = strtok(nullptr, " ");
 
     if (!px)
     {
@@ -1354,7 +1354,7 @@ bool ChatHandler::HandleAccountMailChangeCommand(const char* args)
     ARGS_CHECK
 
     char* sAccount = strtok((char*)args, " ");
-    char* mail = strtok(NULL, " ");
+    char* mail = strtok(nullptr, " ");
 
     if (!sAccount || !mail)
         return false;
@@ -1408,17 +1408,17 @@ bool ChatHandler::HandleAddVendorItemCommand(const char* args)
 
     uint32 itemId = atol(pitem);
 
-    char* fmaxcount = strtok(NULL, " ");                    //add maxcount, default: 0
+    char* fmaxcount = strtok(nullptr, " ");                    //add maxcount, default: 0
     uint32 maxcount = 0;
     if (fmaxcount)
         maxcount = atol(fmaxcount);
 
-    char* fincrtime = strtok(NULL, " ");                    //add incrtime, default: 0
+    char* fincrtime = strtok(nullptr, " ");                    //add incrtime, default: 0
     uint32 incrtime = 0;
     if (fincrtime)
         incrtime = atol(fincrtime);
 
-    char* fextendedcost = strtok(NULL, " ");                //add ExtendedCost, default: 0
+    char* fextendedcost = strtok(nullptr, " ");                //add ExtendedCost, default: 0
     uint32 extendedcost = fextendedcost ? atol(fextendedcost) : 0;
 
     Creature* vendor = GetSelectedCreature();
@@ -1510,8 +1510,8 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
     //        later switched on/off according to special events (like escort
     //        quests, etc)
     char* guid_str = strtok((char*)args, " ");
-    char* type_str = strtok((char*)NULL, " ");
-    char* dontdel_str = strtok((char*)NULL, " ");
+    char* type_str = strtok((char*)nullptr, " ");
+    char* dontdel_str = strtok((char*)nullptr, " ");
 
     bool doNotDelete = false;
 
@@ -1519,7 +1519,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         return false;
 
     uint32 lowguid = 0;
-    Creature* pCreature = NULL;
+    Creature* pCreature = nullptr;
 
     if( dontdel_str )
     {
@@ -1545,7 +1545,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
             {
                 //TC_LOG_ERROR("command","DEBUG: type_str, NODEL ");
                 doNotDelete = true;
-                type_str = NULL;
+                type_str = nullptr;
             }
         }
     }
@@ -1781,7 +1781,7 @@ bool ChatHandler::HandleNpcFactionIdCommand(const char* args)
 bool ChatHandler::HandleKickPlayerCommand(const char *args)
 {
     const char* kickName = strtok((char*)args, " ");
-    char* kickReason = strtok(NULL, "\n");
+    char* kickReason = strtok(nullptr, "\n");
     std::string reason = "No Reason";
     std::string kicker = "Console";
     if(kickReason)
@@ -1901,12 +1901,12 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
 
         target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if (target)
-            py = strtok(NULL, " ");
+            py = strtok(nullptr, " ");
         else
         {
             targetGUID = sObjectMgr->GetPlayerGUIDByName(name);
             if(targetGUID)
-                py = strtok(NULL, " ");
+                py = strtok(nullptr, " ");
             else
                 py = px;
         }
@@ -2126,7 +2126,7 @@ bool ChatHandler::HandleWpAddCommand(const char* args)
 {
     
     // optional
-    char* path_number = NULL;
+    char* path_number = nullptr;
     uint32 pathid = 0;
 
     if(*args)
@@ -2184,7 +2184,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
     ARGS_CHECK
 
     // optional
-    char* path_number = NULL;
+    char* path_number = nullptr;
 
     if(*args)
         path_number = strtok((char*)args, " ");
@@ -2248,7 +2248,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
     target->LoadPath(pathid);
     target->SetDefaultMovementType(WAYPOINT_MOTION_TYPE);
     target->GetMotionMaster()->Initialize();
-    target->Say("Path loaded.",LANG_UNIVERSAL,0);
+    target->Say("Path loaded.",LANG_UNIVERSAL,nullptr);
 
     return true;
 }
@@ -2296,7 +2296,7 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
             target->SetDefaultMovementType(IDLE_MOTION_TYPE);
             target->GetMotionMaster()->MoveTargetedHome();
             target->GetMotionMaster()->Initialize();
-            target->Say("Path unloaded.",LANG_UNIVERSAL,0);
+            target->Say("Path unloaded.",LANG_UNIVERSAL,nullptr);
             return true;
         }
         PSendSysMessage("%s%s|r", "|cffff33ff", "Target have no loaded path. (1)");
@@ -2321,7 +2321,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
     if(show == "add")
     {
     uint32 id = 0;
-    char* arg_id = strtok(NULL, " ");
+    char* arg_id = strtok(nullptr, " ");
 
     if(arg_id)
         id = atoi(arg_id);
@@ -2357,7 +2357,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
     if(show == "listid")
     {
         uint32 id;
-        char* arg_id = strtok(NULL, " ");
+        char* arg_id = strtok(nullptr, " ");
 
         if(!arg_id)
         {
@@ -2401,7 +2401,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
     if(show == "del")
     {
-        char* arg_id = strtok(NULL, " ");
+        char* arg_id = strtok(nullptr, " ");
         uint32 id = atoi(arg_id);
 
         QueryResult result = WorldDatabase.PQuery( "SELECT `guid` FROM waypoint_scripts WHERE guid = %u", id);
@@ -2421,7 +2421,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
     if(show == "mod")
     {
-        char* arg_1 = strtok(NULL," ");
+        char* arg_1 = strtok(nullptr," ");
 
         if(!arg_1)
         {
@@ -2437,7 +2437,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
             return true;
         }
 
-        char* arg_2 = strtok(NULL," ");
+        char* arg_2 = strtok(nullptr," ");
 
         if(!arg_2)
         {   
@@ -2457,7 +2457,7 @@ bool ChatHandler::HandleWpEventCommand(const char* args)
 
         char* arg_3;
         std::string arg_str_2 = arg_2;
-        arg_3 = strtok(NULL," ");
+        arg_3 = strtok(nullptr," ");
 
         if(!arg_3)
         {
@@ -2553,7 +2553,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     }
 
     // Next arg is: <PATHID> <WPNUM> <ARGUMENT>
-    char* arg_str = NULL;
+    char* arg_str = nullptr;
 
     // Did user provide a GUID
     // or did the user select a creature?
@@ -2570,7 +2570,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
     }
 
     // The visual waypoint
-    Creature* wpCreature = NULL;
+    Creature* wpCreature = nullptr;
     wpGuid = target->GetGUIDLow();
 
     // Did the user select a visual spawnpoint?
@@ -2618,11 +2618,11 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
         // We have the waypoint number and the GUID of the "master npc"
         // Text is enclosed in "<>", all other arguments not
-        arg_str = strtok((char*)NULL, " ");
+        arg_str = strtok((char*)nullptr, " ");
     }
 
     // Check for argument
-    if(show != "del" && show != "move" && arg_str == NULL)
+    if(show != "del" && show != "move" && arg_str == nullptr)
     {
         PSendSysMessage(LANG_WAYPOINT_ARGUMENTREQ, show_str);
         return false;
@@ -2633,7 +2633,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         PSendSysMessage("|cff00ff00DEBUG: wp modify del, PathID: |r|cff00ffff%u|r", pathid);
 
         // wpCreature
-        Creature* wpCreature = NULL;
+        Creature* wpCreature = nullptr;
 
         if( wpGuid != 0 )
         {
@@ -2662,7 +2662,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
         Map *map = chr->GetMap();
         {
             // wpCreature
-            Creature* wpCreature = NULL;
+            Creature* wpCreature = nullptr;
             // What to do:
             // Move the visual spawnpoint
             // Respawn the owner of the waypoints
@@ -2707,7 +2707,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
     const char *text = arg_str;
 
-    if( text == 0 )
+    if( text == nullptr )
     {
         // show_str check for present in list of correct values, no sql injection possible
         WorldDatabase.PExecute("UPDATE waypoint_data SET %s=NULL WHERE id='%u' AND point='%u'",
@@ -2739,7 +2739,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         return false;
     }
     // second arg: GUID (optional, if a creature is selected)
-    char* guid_str = strtok((char*)NULL, " ");
+    char* guid_str = strtok((char*)nullptr, " ");
 
     uint32 pathid = 0;
     Creature* target = GetSelectedCreature();
@@ -3078,7 +3078,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
 //rename characters
 bool ChatHandler::HandleRenameCommand(const char* args)
 {
-    Player* target = NULL;
+    Player* target = nullptr;
     uint64 targetGUID = 0;
     std::string oldname;
 
@@ -3131,8 +3131,8 @@ bool ChatHandler::HandleRenameCommand(const char* args)
 bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
 {
     char* playerName = strtok((char*)args, " ");
-    char* cType = strtok(NULL, " ");
-    char* newName = strtok(NULL, "");
+    char* cType = strtok(nullptr, " ");
+    char* newName = strtok(nullptr, "");
     if(!playerName || !cType || !newName)
         return false;
 
@@ -3190,7 +3190,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     if(!id)
         return false;
 
-    char* spawntimeSecs = strtok(NULL, " ");
+    char* spawntimeSecs = strtok(nullptr, " ");
 
     const GameObjectTemplate *goI = sObjectMgr->GetGameObjectTemplate(id);
 
@@ -3310,7 +3310,7 @@ bool ChatHandler::HandleAddHonorCommand(const char* args)
     }
 
     uint32 amount = (uint32)atoi(args);
-    target->RewardHonor(NULL, 1, amount);
+    target->RewardHonor(nullptr, 1, amount);
     return true;
 }
 
@@ -3453,8 +3453,8 @@ bool ChatHandler::HandleEventInfoCommand(const char* args)
     std::string endTimeStr = TimeToTimestampStr(eventData.end);
 
     uint32 delay = sGameEventMgr->NextCheck(event_id);
-    time_t nextTime = time(NULL)+delay;
-    std::string nextStr = nextTime >= eventData.start && nextTime < eventData.end ? TimeToTimestampStr(time(NULL)+delay) : "-";
+    time_t nextTime = time(nullptr)+delay;
+    std::string nextStr = nextTime >= eventData.start && nextTime < eventData.end ? TimeToTimestampStr(time(nullptr)+delay) : "-";
 
     std::string occurenceStr = secsToTimeString(eventData.occurence * MINUTE);
     std::string lengthStr = secsToTimeString(eventData.length * MINUTE);
@@ -3704,7 +3704,7 @@ bool ChatHandler::HandleLookupPlayerIpCommand(const char* args)
     ARGS_CHECK
 
     std::string ip = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
+    char* limit_str = strtok (nullptr, " ");
     int32 limit = limit_str ? atoi (limit_str) : -1;
 
     LoginDatabase.EscapeString(ip);
@@ -3719,7 +3719,7 @@ bool ChatHandler::HandleLookupPlayerAccountCommand(const char* args)
     ARGS_CHECK
 
     std::string account = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
+    char* limit_str = strtok (nullptr, " ");
     int32 limit = limit_str ? atoi (limit_str) : -1;
 
     if (!AccountMgr::normalizeString (account))
@@ -3737,7 +3737,7 @@ bool ChatHandler::HandleLookupPlayerEmailCommand(const char* args)
     ARGS_CHECK
 
     std::string email = strtok ((char*)args, " ");
-    char* limit_str = strtok (NULL, " ");
+    char* limit_str = strtok (nullptr, " ");
     int32 limit = limit_str ? atoi (limit_str) : -1;
 
     LoginDatabase.EscapeString(email);
@@ -4054,7 +4054,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
     if(!lowguid)
         return false;
 
-    GameObject* obj = NULL;
+    GameObject* obj = nullptr;
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -4108,7 +4108,7 @@ bool ChatHandler::HandleTempGameObjectCommand(const char* args)
 
     Player *chr = m_session->GetPlayer();
 
-    char* spawntime = strtok(NULL, " ");
+    char* spawntime = strtok(nullptr, " ");
     uint32 spawntm = 0;
 
     if( spawntime )
@@ -4231,7 +4231,7 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
     }
 
     formation->RemoveMember(pCreature);
-    pCreature->SetFormation(NULL);
+    pCreature->SetFormation(nullptr);
     WorldDatabase.PExecute("DELETE ROM `creature_formations` WHERE memberGUID = %u",pCreature->GetGUIDLow());
 
     PSendSysMessage("Creature removed from formation.");
@@ -4297,11 +4297,11 @@ bool ChatHandler::HandleChanBan(const char* args)
         return true;
     }
     
-    char* duration = strtok (NULL," ");
+    char* duration = strtok (nullptr," ");
     if (!duration || !atoi(duration))
         return false;
 
-    char* reason = strtok (NULL,"");
+    char* reason = strtok (nullptr,"");
     std::string reasonstr;
     if (!reason)
     {
@@ -4315,7 +4315,7 @@ bool ChatHandler::HandleChanBan(const char* args)
         
     uint32 durationSecs = TimeStringToSecs(duration);
     
-    CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(NULL)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
+    CharacterDatabase.PExecute("INSERT INTO channel_ban VALUES (%u, %lu, \"%s\", \"%s\")", accountid, time(nullptr)+durationSecs, channelNamestr.c_str(), reasonstr.c_str());
     LogsDatabaseAccessor::Sanction(m_session, accountid, 0, SANCTION_CHAN_BAN, durationSecs, reasonstr);
  
     PSendSysMessage("You banned %s from World channed with the reason: %s.", charNamestr.c_str(), reasonstr.c_str());
@@ -4327,7 +4327,7 @@ bool ChatHandler::HandleChanBan(const char* args)
     if (ChannelMgr* cMgr = channelMgr(player->GetTeam())) {
         if (Channel *chn = cMgr->GetChannel(channelNamestr.c_str(), player)) {
             chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
-            chn->AddNewGMBan(accountid, time(NULL)+durationSecs);
+            chn->AddNewGMBan(accountid, time(nullptr)+durationSecs);
             //TODO translate
             //ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
             ChatHandler(player).PSendSysMessage("Vous avez été banni du channel world avec la raison suivante : %s", reasonstr.c_str());
@@ -4363,7 +4363,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
         return false;
     }
         
-    CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u AND expire > %lu", time(NULL), accountid, time(NULL));
+    CharacterDatabase.PExecute("UPDATE channel_ban SET expire = %lu WHERE accountid = %u AND expire > %lu", time(nullptr), accountid, time(nullptr));
     
     if(m_session) 
     {
@@ -4420,7 +4420,7 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
             std::string expiredate = fields[1].GetString();
             time_t expiretimestamp = time_t(fields[2].GetUInt32());
 
-            PSendSysMessage("Reason: \"%s\" - Expires in: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(NULL)) ? "(actif)" : "");
+            PSendSysMessage("Reason: \"%s\" - Expires in: %s %s", reason.c_str(), expiredate.c_str(), (expiretimestamp > time(nullptr)) ? "(actif)" : "");
         } while (result->NextRow());
     }
     else {
@@ -4528,7 +4528,7 @@ bool ChatHandler::HandleMmapLocCommand(const char* /*args*/)
     // navmesh poly -> navmesh tile location
     dtQueryFilter filter = dtQueryFilter();
     dtPolyRef polyRef = INVALID_POLYREF;
-    navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, NULL);
+    navmeshquery->findNearestPoly(location, extents, &filter, &polyRef, nullptr);
 
     if (polyRef == INVALID_POLYREF)
         PSendSysMessage("Dt     [??,??] (invalid poly, probably no tile loaded)");
@@ -4648,7 +4648,7 @@ bool ChatHandler::HandlePetRenameCommand(const char* args)
         (owner->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET_NAME);
         
     targetPet->SetName(args);
-    targetPet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(NULL));
+    targetPet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, time(nullptr));
     
     return true;
 }
@@ -4659,7 +4659,7 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     ARGS_CHECK
 
     std::string fromPlayerName = args;
-    Player* fromPlayer = NULL;
+    Player* fromPlayer = nullptr;
     Player* toPlayer = GetSelectedPlayerOrSelf();
 
     if(normalizePlayerName(fromPlayerName))

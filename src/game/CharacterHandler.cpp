@@ -105,9 +105,9 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
     QueryResultHolderFuture future = CharacterDatabase.DelayQueryHolder(holder);
     future.get();
 
-    WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : NULL;
+    WorldSession* masterSession = masterAccount ? sWorld->FindSession(masterAccount) : nullptr;
     uint32 botAccountId = holder->GetAccountId();
-    WorldSession *botSession = new WorldSession(botAccountId, BUILD_243, "rndbot", NULL, SEC_PLAYER, 2, 0, LOCALE_enUS, 0, false);
+    WorldSession *botSession = new WorldSession(botAccountId, BUILD_243, "rndbot", nullptr, SEC_PLAYER, 2, 0, LOCALE_enUS, 0, false);
 
     botSession->HandlePlayerLogin(holder); // will delete lqh
 
@@ -116,7 +116,7 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 		return;
 
 	PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
-	bot->SetPlayerbotMgr(NULL);
+	bot->SetPlayerbotMgr(nullptr);
 	delete mgr;
 	sRandomPlayerbotMgr.OnPlayerLogout(bot);
 
@@ -159,7 +159,7 @@ bool LoginQueryHolder::Initialize()
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADREPUTATION,      "SELECT faction,standing,flags FROM character_reputation WHERE guid = '%u'", lowGuid);
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADINVENTORY,       "SELECT bag,slot,item,item_template FROM character_inventory JOIN item_instance ON character_inventory.item = item_instance.guid WHERE character_inventory.guid = '%u' ORDER BY bag,slot", lowGuid);
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADACTIONS,         "SELECT button,action,type,misc FROM character_action WHERE guid = '%u' ORDER BY button", lowGuid);
-    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILCOUNT,       "SELECT COUNT(id) FROM mail WHERE receiver = '%u' AND (checked & 1)=0 AND deliver_time <= '" UI64FMTD "'", lowGuid,(uint64)time(NULL));
+    res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILCOUNT,       "SELECT COUNT(id) FROM mail WHERE receiver = '%u' AND (checked & 1)=0 AND deliver_time <= '" UI64FMTD "'", lowGuid,(uint64)time(nullptr));
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADMAILDATE,        "SELECT MIN(deliver_time) FROM mail WHERE receiver = '%u' AND (checked & 1)=0", lowGuid);
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADSOCIALLIST,      "SELECT friend,flags,note FROM character_social WHERE guid = '%u' LIMIT 255", lowGuid);
     res &= SetPQuery(PLAYER_LOGIN_QUERY_LOADHOMEBIND,        "SELECT map,zone,position_x,position_y,position_z FROM character_homebind WHERE guid = '%u'", lowGuid);
@@ -504,7 +504,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             }
 
             _charCreateCallback.NextStage();
-            HandleCharCreateCallback(PreparedQueryResult(NULL), createInfo);   // Will jump to case 3
+            HandleCharCreateCallback(PreparedQueryResult(nullptr), createInfo);   // Will jump to case 3
         }
         break;
         case 3:
@@ -697,7 +697,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 {
-    if(PlayerLoading() || GetPlayer() != NULL)
+    if(PlayerLoading() || GetPlayer() != nullptr)
     {
         //TC_LOG_ERROR("network.opcode","Player tryes to login again, AccountId = %d",GetAccountId());
         return;
@@ -964,8 +964,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     {
         // not blizz like, we must correctly save and load player instead...
         if(pCurrChar->GetRace() == RACE_NIGHTELF)
-            pCurrChar->CastSpell(pCurrChar, 20584, true, 0);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
-        pCurrChar->CastSpell(pCurrChar, 8326, true, 0);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
+            pCurrChar->CastSpell(pCurrChar, 20584, true, nullptr);// auras SPELL_AURA_INCREASE_SPEED(+speed in wisp form), SPELL_AURA_INCREASE_SWIM_SPEED(+swim speed in wisp form), SPELL_AURA_TRANSFORM (to wisp form)
+        pCurrChar->CastSpell(pCurrChar, 8326, true, nullptr);     // auras SPELL_AURA_GHOST, SPELL_AURA_INCREASE_SPEED(why?), SPELL_AURA_INCREASE_SWIM_SPEED(why?)
 
         pCurrChar->SetMovement(MOVE_WATER_WALK);
     }

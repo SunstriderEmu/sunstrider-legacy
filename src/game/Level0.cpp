@@ -206,8 +206,8 @@ bool ChatHandler::HandlePasswordCommand(const char* args)
     ARGS_CHECK
 
     char *old_pass = strtok ((char*)args, " ");
-    char *new_pass = strtok (NULL, " ");
-    char *new_pass_c  = strtok (NULL, " ");
+    char *new_pass = strtok (nullptr, " ");
+    char *new_pass_c  = strtok (nullptr, " ");
 
     if (!old_pass || !new_pass || !new_pass_c)
         return false;
@@ -869,7 +869,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
     std::string subject = "Welcome!";
     uint32 itemTextId = sObjectMgr->CreateItemText("Bienvenue sur Sunstrider !\n\nVous, qui avez récemment récupéré un personnage sur le serveur, êtes peut-être à la recherche d'une guilde. Si c'est le cas, consultez la section Générale du forum du serveur (forums.sunstrider.fr) : un topic épinglé liste les différentes guildes intéressées par de nouveaux arrivants comme vous. Par ailleurs en cas de question, n'hésitez pas à nous contacter via ce même topic, ou par MP à un membre du staff.\n\nCordialement,\n\nL'équipe Sunstrider.");
 
-    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, NULL, 0, 0, MAIL_CHECK_MASK_NONE);
+    WorldSession::SendMailTo(player, MAIL_NORMAL, MAIL_STATIONERY_GM, 0, player->GetGUIDLow(), subject, itemTextId, nullptr, 0, 0, MAIL_CHECK_MASK_NONE);
 
     player->SaveToDB();
     return true;
@@ -1188,7 +1188,7 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
                         Item *item = player->StoreNewItem(dest, itemId, true);
                         player->SendNewItem(item, 1, true, true);
                     } else {
-                        player->SendEquipError(msg, NULL, NULL);
+                        player->SendEquipError(msg, nullptr, nullptr);
                         PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itemId, 1);
                     }
                 } while (result->NextRow() || error);
@@ -1199,13 +1199,13 @@ bool ChatHandler::HandleBuyInShopCommand(const char *args)
     }
 
     if (can_take_credits == true) {
-        LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(NULL), account_id);
+        LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - cost, time(nullptr), account_id);
      //   CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", player->GetGUID(), actions.c_str(), time(NULL));
         player->SaveToDB();
 
         return true;
     } else {
-        TC_LOG_INFO("command", "Shop error - actions : %s - GUID : " UI64FMTD " price : %u - hour : %u", actions.c_str(), player->GetGUID(), cost, uint32(time(NULL)));
+        TC_LOG_INFO("command", "Shop error - actions : %s - GUID : " UI64FMTD " price : %u - hour : %u", actions.c_str(), player->GetGUID(), cost, uint32(time(nullptr)));
         return false;
     }
 }
@@ -1279,9 +1279,9 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     if (t_race != m_race /*|| t_gender != m_gender */|| t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
         
-    if (m_session->GetPlayer()->GetLastGenderChange() > (time(NULL) - sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
+    if (m_session->GetPlayer()->GetLastGenderChange() > (time(nullptr) - sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
         if (t_gender != m_gender) {
-            uint32 delta = time(NULL) - m_session->GetPlayer()->GetLastGenderChange();
+            uint32 delta = time(nullptr) - m_session->GetPlayer()->GetLastGenderChange();
             uint32 days = uint32(delta / 86400.0f);
             uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
             uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
@@ -1300,11 +1300,11 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     m_session->GetPlayer()->SetByteValue(PLAYER_BYTES_2, 2, bankBags);
     m_session->GetPlayer()->SetGender(t_gender);
     if (t_gender != m_gender) {
-        m_session->GetPlayer()->SetLastGenderChange(time(NULL));
+        m_session->GetPlayer()->SetLastGenderChange(time(nullptr));
         //CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '4' WHERE guid ='%u'", m_session->GetPlayer()->GetGUIDLow()); //TODO: to be discussed
     }
 
-    LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(NULL), account_id);
+    LoginDatabase.PExecute("UPDATE account_credits SET amount = %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", credits - 1, time(nullptr), account_id);
    // CharacterDatabase.PExecute("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", m_session->GetPlayer()->GetGUID(), "reskin", time(NULL));
 
     m_session->GetPlayer()->SaveToDB();
@@ -1321,12 +1321,12 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     ARGS_CHECK
         
     char* targetName = strtok((char*)args, " ");
-    char* cForce  = strtok (NULL, " "); //skip same account check (for players that already have max characters count on their account)
+    char* cForce  = strtok (nullptr, " "); //skip same account check (for players that already have max characters count on their account)
     std::string safeTargetName = targetName;
     CharacterDatabase.EscapeString(safeTargetName);
     uint64 account_id = m_session->GetAccountId();
-    QueryResult result = NULL;
-    Field* fields = NULL;
+    QueryResult result = nullptr;
+    Field* fields = nullptr;
     bool force = (cForce && strcmp(cForce,"force") == 0);
     
     if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_ENABLED)) {
@@ -1868,7 +1868,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     }
 
     if (m_session->GetSecurity() <= SEC_PLAYER) {
-        LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(NULL), account_id);
+        LoginDatabase.PExecute("UPDATE account_credits SET amount = amount - %u, last_update = %u, `from` = 'Boutique' WHERE id = %u", cost, time(nullptr), account_id);
       //  trans->PAppend("INSERT INTO character_purchases (guid, actions, time) VALUES (%u, '%s', %u)", plr->GetGUID(), "Changement de faction", time(NULL));
     }
 
@@ -2083,7 +2083,7 @@ bool ChatHandler::HandleUpdatePvPTitleCommand(const char *args)
 
 bool ChatHandler::HandleReportLagCommand(const char* args)
 {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     Player* player = GetSession()->GetPlayer();
     if (now - player->lastLagReport > 10) { // Spam prevention
         TC_LOG_INFO("misc","[LAG] Player %s (GUID: %u - IP: %s) reported lag - Current timediff: %u",
@@ -2105,7 +2105,7 @@ bool ChatHandler::HandleBattlegroundCommand(const char* args)
         return true;
 
     char* cBGType = strtok((char*)args, " ");
-    char* cAsGroup  = strtok (NULL, " ");
+    char* cAsGroup  = strtok (nullptr, " ");
 
     uint32 bgTypeId = 0;
     if(strcmp(cBGType,"warsong") == 0)
