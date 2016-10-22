@@ -85,7 +85,7 @@ class CreatureAI : public UnitAI
 
         CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
 
-        virtual ~CreatureAI() {}
+        ~CreatureAI() override {}
 
         void AttackStartIfCan(Unit* victim);
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);
@@ -125,7 +125,7 @@ class CreatureAI : public UnitAI
         virtual void SpellHitTarget(Unit* target, const SpellInfo*) {}
 
         // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
-        virtual void AttackedBy(Unit* /*attacker*/) { }
+        void AttackedBy(Unit* /*attacker*/) override { }
         virtual bool IsEscorted() const { return false; }
         virtual void AttackedUnitDied(Unit* /* attacked */) { }
 
@@ -154,8 +154,8 @@ class CreatureAI : public UnitAI
         // called when the corpse of this creature gets removed
         virtual void CorpseRemoved(uint32& respawnDelay) {}
 
-        void OnCharmed(Unit* charmer, bool apply);
-        void OnPossess(Unit* charmer, bool apply);
+        void OnCharmed(Unit* charmer, bool apply) override;
+        void OnPossess(Unit* charmer, bool apply) override;
         
         // Called when creature's master (pet case) killed a unit
         virtual void MasterKilledUnit(Unit* unit) {}
@@ -192,9 +192,9 @@ struct CreatureAIFactory : public SelectableAI
 {
     CreatureAIFactory(const char *name) : SelectableAI(name) {}
 
-    CreatureAI* Create(void *) const;
+    CreatureAI* Create(void *) const override;
 
-    int Permit(const Creature *c) const { return REAL_AI::Permissible(c); }
+    int Permit(const Creature *c) const override { return REAL_AI::Permissible(c); }
 };
 
 enum Permitions
@@ -223,9 +223,9 @@ struct GameObjectAIFactory : public SelectableGameObjectAI
 {
     GameObjectAIFactory(const char *name) : SelectableGameObjectAI(name) {}
 
-    GameObjectAI* Create(void *) const;
+    GameObjectAI* Create(void *) const override;
 
-    int Permit(const GameObject *g) const { return REAL_GO_AI::Permissible(g); }
+    int Permit(const GameObject *g) const override { return REAL_GO_AI::Permissible(g); }
 };
 
 template<class REAL_GO_AI>

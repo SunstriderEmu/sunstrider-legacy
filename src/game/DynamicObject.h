@@ -31,11 +31,11 @@ class DynamicObject : public WorldObject
         typedef std::set<Unit*> AffectedSet;
         explicit DynamicObject();
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
         bool Create(uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius);
-        void Update(uint32 p_time);
+        void Update(uint32 p_time) override;
         void Delete();
         uint32 GetSpellId() const { return m_spellId; }
         uint32 GetEffIndex() const { return m_effIndex; }
@@ -47,7 +47,7 @@ class DynamicObject : public WorldObject
         void AddAffected(Unit *unit);
         void RemoveAffected(Unit *unit) { m_affected.erase(unit); }
         void Delay(int32 delaytime);
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
 
         GridReference<DynamicObject> &GetGridRef() { return m_gridRef; }
     protected:

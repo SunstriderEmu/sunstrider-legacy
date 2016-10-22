@@ -145,10 +145,10 @@ class Pet : public Creature
 {
     public:
         explicit Pet(PetType type = MAX_PET_TYPE);
-        virtual ~Pet();
+        ~Pet() override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
         PetType getPetType() const { return m_petType; }
         void setPetType(PetType type) { m_petType = type; }
@@ -163,11 +163,11 @@ class Pet : public Creature
         void Remove(PetSaveMode mode, bool returnreagent = false);
         static void DeleteFromDB(uint32 guidlow);
 
-        void SetDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
-        void Update(uint32 diff);                           // overwrite virtual Creature::Update and Unit::Update
+        void SetDeathState(DeathState s) override;                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
+        void Update(uint32 diff) override;                           // overwrite virtual Creature::Update and Unit::Update
 
-        uint8 GetPetAutoSpellSize() const { return m_autospells.size(); }
-        uint32 GetPetAutoSpellOnPos(uint8 pos) const
+        uint8 GetPetAutoSpellSize() const override { return m_autospells.size(); }
+        uint32 GetPetAutoSpellOnPos(uint8 pos) const override
         {
             if (pos >= m_autospells.size())
                 return 0;
@@ -196,13 +196,13 @@ class Pet : public Creature
         int32 GetBonusDamage() { return m_bonusdamage; }
         void SetBonusDamage(int32 damage) { m_bonusdamage = damage; }
 
-        bool UpdateStats(Stats stat);
-        bool UpdateAllStats();
-        void UpdateResistances(uint32 school);
-        void UpdateArmor();
-        void UpdateMaxHealth();
-        void UpdateMaxPower(Powers power);
-        void UpdateAttackPowerAndDamage(bool ranged = false);
+        bool UpdateStats(Stats stat) override;
+        bool UpdateAllStats() override;
+        void UpdateResistances(uint32 school) override;
+        void UpdateArmor() override;
+        void UpdateMaxHealth() override;
+        void UpdateMaxPower(Powers power) override;
+        void UpdateAttackPowerAndDamage(bool ranged = false) override;
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage, Unit* target = nullptr) override;
         //void UpdateDamagePhysical(WeaponAttackType attType) override;
 
@@ -211,7 +211,7 @@ class Pet : public Creature
         bool   HasTPForSpell(uint32 spellid);
         int32  GetTPForSpell(uint32 spellid);
 
-        bool HasSpell(uint32 spell) const;
+        bool HasSpell(uint32 spell) const override;
         void AddTeachSpell(uint32 learned_id, uint32 source_id) { m_teachspells[learned_id] = source_id; }
 
         void LearnPetPassives();
@@ -266,11 +266,11 @@ class Pet : public Creature
         DeclinedName *m_declinedname;
 
     private:
-        void SaveToDB(uint32, uint8)                        // overwrited of Creature::SaveToDB     - don't must be called
+        void SaveToDB(uint32, uint8) override                        // overwrited of Creature::SaveToDB     - don't must be called
         {
             ABORT();
         }
-        void DeleteFromDB()                                 // overwrited of Creature::DeleteFromDB - don't must be called
+        void DeleteFromDB() override                                 // overwrited of Creature::DeleteFromDB - don't must be called
         {
             ABORT();
         }

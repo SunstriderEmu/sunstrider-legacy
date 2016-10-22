@@ -43,7 +43,7 @@ class MapReference : public Reference<Map, Player>
         }
     public:
         MapReference() : Reference<Map, Player>() {}
-        ~MapReference() { unlink(); }
+        ~MapReference() override { unlink(); }
         MapReference *next() { return (MapReference*)Reference<Map, Player>::next(); }
         MapReference const *next() const { return (MapReference const*)Reference<Map, Player>::next(); }
         MapReference *nockeck_prev() { return (MapReference*)Reference<Map, Player>::nocheck_prev(); }

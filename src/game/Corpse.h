@@ -51,10 +51,10 @@ class Corpse : public WorldObject
 {
     public:
         explicit Corpse( CorpseType type = CORPSE_BONES );
-        ~Corpse( );
+        ~Corpse( ) override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
         bool Create( uint32 guidlow );
         bool Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float y, float z, float ang );
@@ -75,7 +75,7 @@ class Corpse : public WorldObject
         GridPair const& GetGrid() const { return m_grid; }
         void SetGrid(GridPair const& grid) { m_grid = grid; }
 
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
 
         Loot loot;                                          // remove insignia ONLY at BG
         Player* lootRecipient;

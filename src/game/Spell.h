@@ -926,11 +926,11 @@ class SpellEvent : public BasicEvent
 {
     public:
         SpellEvent(Spell* spell);
-        virtual ~SpellEvent();
+        ~SpellEvent() override;
 
-        virtual bool Execute(uint64 e_time, uint32 p_time);
-        virtual void Abort(uint64 e_time);
-        virtual bool IsDeletable() const;
+        bool Execute(uint64 e_time, uint32 p_time) override;
+        void Abort(uint64 e_time) override;
+        bool IsDeletable() const override;
     protected:
         Spell* m_Spell;
 };
@@ -940,7 +940,7 @@ class ReflectEvent : public BasicEvent
 {
 public:
     ReflectEvent(uint64 casterGUID, uint64 targetGUID, const SpellInfo* spellInfo) : _casterGUID(casterGUID), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
-    virtual bool Execute(uint64 e_time, uint32 p_time);
+    bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
     uint64 _casterGUID;

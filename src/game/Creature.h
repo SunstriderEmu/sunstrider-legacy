@@ -501,10 +501,10 @@ class Creature : public Unit
     public:
 
         explicit Creature();
-        virtual ~Creature();
+        ~Creature() override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
         
         void DisappearAndDie();
 
@@ -519,7 +519,7 @@ class Creature : public Unit
         void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
         //Get ItemSubclassWeapon based on UNIT_VIRTUAL_ITEM_INFO
         ItemSubclassWeapon GetWeaponSubclass(WeaponSlot slot);
-        virtual bool HasMainWeapon() const override;
+        bool HasMainWeapon() const override;
 
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
@@ -543,7 +543,7 @@ class Creature : public Unit
                                                             // redefine Unit::IsImmunedToSpell
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const override;
                                                             // redefine Unit::IsImmunedToSpellEffect
-        void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/);
+        void ProhibitSpellSchool(SpellSchoolMask /*idSchoolMask*/, uint32 /*unTimeMs*/) override;
         void UpdateProhibitedSchools(uint32 const diff);
         bool IsSpellSchoolMaskProhibited(SpellSchoolMask /*idSchoolMask*/);
         bool isElite() const
@@ -562,9 +562,9 @@ class Creature : public Unit
 
             return (GetCreatureTemplate()->rank == CREATURE_ELITE_WORLDBOSS) || (GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_BOSS_MOB);
         }
-        virtual bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
+        bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
 
-        uint32 GetLevelForTarget(Unit const* target) const; // overwrite Unit::GetLevelForTarget for boss level support
+        uint32 GetLevelForTarget(Unit const* target) const override; // overwrite Unit::GetLevelForTarget for boss level support
 
         bool isMoving();
         bool IsInEvadeMode() const;
@@ -579,12 +579,12 @@ class Creature : public Unit
 
         CreatureAI* AI() { return (CreatureAI*)i_AI; }
 
-        uint32 GetShieldBlockValue() const                  //dunno mob block value
+        uint32 GetShieldBlockValue() const override                  //dunno mob block value
         {
             return (GetLevel()/2 + uint32(GetStat(STAT_STRENGTH)/20));
         }
 
-        SpellSchoolMask GetMeleeDamageSchoolMask() const { return m_meleeDamageSchoolMask; }
+        SpellSchoolMask GetMeleeDamageSchoolMask() const override { return m_meleeDamageSchoolMask; }
         void SetMeleeDamageSchool(SpellSchools school) { m_meleeDamageSchoolMask = SpellSchoolMask(1 << school); }
 
         void _AddCreatureSpellCooldown(uint32 spell_id, time_t end_time);
@@ -593,7 +593,7 @@ class Creature : public Unit
         bool HasSpellCooldown(uint32 spell_id) const;
         bool HasCategoryCooldown(uint32 spell_id) const;
 
-        bool HasSpell(uint32 spellID) const;
+        bool HasSpell(uint32 spellID) const override;
 
         bool UpdateEntry(uint32 entry, const CreatureData* data = nullptr);
         /* 
@@ -634,7 +634,7 @@ class Creature : public Unit
         // overwrite WorldObject function for proper name localization
         std::string const& GetNameForLocaleIdx(LocaleConstant locale_idx) const override;
 
-        void SetDeathState(DeathState s);                   // overwrite virtual Unit::setDeathState
+        void SetDeathState(DeathState s) override;                   // overwrite virtual Unit::setDeathState
 
         bool LoadFromDB(uint32 guid, Map *map);
         void SaveToDB();
@@ -705,7 +705,7 @@ class Creature : public Unit
         time_t GetRespawnTimeEx() const;
         void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(NULL) + respawn : 0; }
         void Respawn(bool force = false);
-        void SaveRespawnTime();
+        void SaveRespawnTime() override;
 
         uint32 GetRespawnDelay() const { return m_respawnDelay; }
         void SetRespawnDelay(uint32 delay) { m_respawnDelay = delay; }
@@ -719,8 +719,8 @@ class Creature : public Unit
 
         void SendZoneUnderAttackMessage(Player* attacker);
 
-        bool HasQuest(uint32 quest_id) const;
-        bool HasInvolvedQuest(uint32 quest_id)  const;
+        bool HasQuest(uint32 quest_id) const override;
+        bool HasInvolvedQuest(uint32 quest_id)  const override;
 
         GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }
@@ -800,8 +800,8 @@ class Creature : public Unit
         //Play message for current creature when given time is elapsed. /!\ These events are udpated only if creature is alive
         void AddMessageEvent(uint64 timer, uint32 messageId, uint64 data = 0);
 
-        bool CanWalk() const { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
-        bool CanSwim() const { return GetCreatureTemplate()->InhabitType & INHABIT_WATER || IsPet(); }
+        bool CanWalk() const override { return GetCreatureTemplate()->InhabitType & INHABIT_GROUND; }
+        bool CanSwim() const override { return GetCreatureTemplate()->InhabitType & INHABIT_WATER || IsPet(); }
         bool CanFly() const override { return m_canFly; }
 
         bool SetWalk(bool enable) override;
@@ -925,7 +925,7 @@ class AssistDelayEvent : public BasicEvent
     public:
         AssistDelayEvent(const uint64& victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
 
-        bool Execute(uint64 e_time, uint32 p_time);
+        bool Execute(uint64 e_time, uint32 p_time) override;
         void AddAssistant(const uint64& guid) { m_assistants.push_back(guid); }
     private:
         AssistDelayEvent();
@@ -939,7 +939,7 @@ class ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
         ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
-        bool Execute(uint64 e_time, uint32 p_time);
+        bool Execute(uint64 e_time, uint32 p_time) override;
 
     private:
         Creature& m_owner;
@@ -954,7 +954,7 @@ public:
         data(data)
     {}
 
-    bool Execute(uint64 /*e_time*/, uint32 /*p_time*/);
+    bool Execute(uint64 /*e_time*/, uint32 /*p_time*/) override;
 
 private:
     Creature& owner;

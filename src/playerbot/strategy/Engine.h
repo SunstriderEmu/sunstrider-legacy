@@ -27,10 +27,10 @@ namespace ai
 
     // ActionExecutionListener
     public:
-        virtual bool Before(Action* action, Event event);
-        virtual bool AllowExecution(Action* action, Event event);
-        virtual void After(Action* action, bool executed, Event event);
-        virtual bool OverrideResult(Action* action, bool executed, Event event);
+        bool Before(Action* action, Event event) override;
+        bool AllowExecution(Action* action, Event event) override;
+        void After(Action* action, bool executed, Event event) override;
+        bool OverrideResult(Action* action, bool executed, Event event) override;
 
     public:
         void Add(ActionExecutionListener* listener)

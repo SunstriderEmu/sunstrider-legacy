@@ -107,8 +107,8 @@ public:
 	virtual ~PlayerbotAI();
 
 public:
-	virtual void UpdateAI(uint32 elapsed);
-	virtual void UpdateAIInternal(uint32 elapsed);
+	void UpdateAI(uint32 elapsed) override;
+	void UpdateAIInternal(uint32 elapsed) override;
 	string HandleRemoteCommand(std::string command);
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer);
 	void HandleBotOutgoingPacket(const WorldPacket& packet);

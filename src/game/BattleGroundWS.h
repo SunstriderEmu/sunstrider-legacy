@@ -138,7 +138,7 @@ class BattlegroundWGScore : public BattlegroundScore
 {
     public:
         BattlegroundWGScore() : FlagCaptures(0), FlagReturns(0) {};
-        virtual ~BattlegroundWGScore() {};
+        ~BattlegroundWGScore() override {};
         uint32 FlagCaptures;
         uint32 FlagReturns;
 };
@@ -150,11 +150,11 @@ class BattlegroundWS : public Battleground
     public:
         /* Construction */
         BattlegroundWS();
-        ~BattlegroundWS();
-        void Update(time_t diff);
+        ~BattlegroundWS() override;
+        void Update(time_t diff) override;
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        void AddPlayer(Player *plr) override;
 
         /* BG Flags */
         uint64 GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[BG_TEAM_ALLIANCE]; }
@@ -176,19 +176,19 @@ class BattlegroundWS : public Battleground
         void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj) override;
         void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType) override;
 
-        void RemovePlayer(Player *plr, uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        void HandleKillPlayer(Player *player, Player *killer);
-        bool SetupBattleground();
+        void RemovePlayer(Player *plr, uint64 guid) override;
+        void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
+        void HandleKillPlayer(Player *player, Player *killer) override;
+        bool SetupBattleground() override;
         void ResetBGSubclass() override;
 
         void UpdateFlagState(uint32 team, uint32 value);
         void UpdateTeamScore(uint32 team);
-        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
         void SetDroppedFlagGUID(uint64 guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
         uint64 GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
-        virtual void FillInitialWorldStates(WorldPacket& data);
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team);
+        void FillInitialWorldStates(WorldPacket& data) override;
+        WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
 
         /* Scorekeeping */
         uint32 GetTeamScore(uint32 TeamID) const            { return m_TeamScores[GetTeamIndexByTeamId(TeamID)]; }

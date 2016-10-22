@@ -83,7 +83,7 @@ public:
     {
     }
     
-    void run();
+    void run() override;
     
 private:
     IRCServer* _server;

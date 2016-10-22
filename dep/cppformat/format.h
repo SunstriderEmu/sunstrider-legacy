@@ -605,12 +605,12 @@ class MemoryBuffer : private Allocator, public Buffer<T> {
   }
 
  protected:
-  void grow(std::size_t size);
+  void grow(std::size_t size) override;
 
  public:
   explicit MemoryBuffer(const Allocator &alloc = Allocator())
       : Allocator(alloc), Buffer<T>(data_, SIZE) {}
-  ~MemoryBuffer() { deallocate(); }
+  ~MemoryBuffer() override { deallocate(); }
 
 #if FMT_USE_RVALUE_REFERENCES
  private:

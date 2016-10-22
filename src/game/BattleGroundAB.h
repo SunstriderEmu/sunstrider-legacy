@@ -225,7 +225,7 @@ class BattlegroundABScore : public BattlegroundScore
 {
     public:
         BattlegroundABScore(): BasesAssaulted(0), BasesDefended(0) {};
-        virtual ~BattlegroundABScore() {};
+        ~BattlegroundABScore() override {};
         uint32 BasesAssaulted;
         uint32 BasesDefended;
 };
@@ -236,23 +236,23 @@ class BattlegroundAB : public Battleground
 
     public:
         BattlegroundAB();
-        ~BattlegroundAB();
+        ~BattlegroundAB() override;
 
-        void Update(time_t diff);
-        void AddPlayer(Player *plr);
-        void RemovePlayer(Player *plr,uint64 guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        virtual bool SetupBattleground();
-        virtual void ResetBGSubclass();
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team);
+        void Update(time_t diff) override;
+        void AddPlayer(Player *plr) override;
+        void RemovePlayer(Player *plr,uint64 guid) override;
+        void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
+        bool SetupBattleground() override;
+        void ResetBGSubclass() override;
+        WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
 
         /* Scorekeeping */
-        virtual void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
 
-        virtual void FillInitialWorldStates(WorldPacket& data);
+        void FillInitialWorldStates(WorldPacket& data) override;
 
         /* Nodes occupying */
-        virtual void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj);
+        void EventPlayerClickedOnFlag(Player *source, GameObject* target_obj) override;
 
     private:
         /* Gameobject spawning/despawning */

@@ -61,7 +61,7 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 struct ScriptedAI : public CreatureAI
 {
     ScriptedAI(Creature* creature);
-    ~ScriptedAI() {}
+    ~ScriptedAI() override {}
 
     //*************
     //CreatureAI Functions
@@ -154,7 +154,7 @@ struct ScriptedAI : public CreatureAI
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
 
-    void DoAction(const int32 param) {}
+    void DoAction(const int32 param) override {}
 
     //Teleports a player without dropping threat (only teleports to same map)
     void DoTeleportPlayer(Unit* pUnit, float x, float y, float z, float o);
@@ -191,7 +191,7 @@ private:
 struct NullCreatureAI : public ScriptedAI
 {
     NullCreatureAI(Creature* c) : ScriptedAI(c) {}
-    ~NullCreatureAI() {}
+    ~NullCreatureAI() override {}
 
     void Reset() override {}
     void EnterCombat(Unit*) override {}
@@ -207,15 +207,15 @@ class BossAI : public ScriptedAI
 {
 public:
     BossAI(Creature* creature, uint32 bossId);
-    virtual ~BossAI() {}
+    ~BossAI() override {}
 
     InstanceScript* const instance;
     BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
-    void JustSummoned(Creature* summon);
-    void SummonedCreatureDespawn(Creature* summon);
+    void JustSummoned(Creature* summon) override;
+    void SummonedCreatureDespawn(Creature* summon) override;
 
-    virtual void UpdateAI(const uint32 diff) override;
+    void UpdateAI(const uint32 diff) override;
 
     // Hook used to execute events scheduled into EventMap without the need
     // to override UpdateAI

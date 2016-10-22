@@ -288,7 +288,7 @@ class BattlegroundEYScore : public BattlegroundScore
 {
     public:
         BattlegroundEYScore () : FlagCaptures(0) {};
-        virtual ~BattlegroundEYScore() {};
+        ~BattlegroundEYScore() override {};
         uint32 FlagCaptures;
 };
 
@@ -298,11 +298,11 @@ class BattlegroundEY : public Battleground
 
     public:
         BattlegroundEY();
-        ~BattlegroundEY();
-        void Update(time_t diff);
+        ~BattlegroundEY() override;
+        void Update(time_t diff) override;
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        void AddPlayer(Player *plr) override;
 
         /* BG Flags */
         uint64 GetFlagPickerGUID() const    { return m_FlagKeeper; }
@@ -312,22 +312,22 @@ class BattlegroundEY : public Battleground
         void RespawnFlag(bool send_message);
         void RespawnFlagAfterDrop();
 
-        void RemovePlayer(Player *plr,uint64 guid);
+        void RemovePlayer(Player *plr,uint64 guid) override;
         void HandleBuffUse(uint64 const& buff_guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        void HandleKillPlayer(Player *player, Player *killer);
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team);
-        virtual bool SetupBattleground();
-        virtual void ResetBGSubclass();
+        void HandleAreaTrigger(Player *Source, uint32 Trigger) override;
+        void HandleKillPlayer(Player *player, Player *killer) override;
+        WorldSafeLocsEntry const* GetClosestGraveYard(float x, float y, float z, uint32 team) override;
+        bool SetupBattleground() override;
+        void ResetBGSubclass() override;
         void UpdateTeamScore(uint32 Team);
-        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
-        virtual void FillInitialWorldStates(WorldPacket& data);
+        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value) override;
+        void FillInitialWorldStates(WorldPacket& data) override;
         void SetDroppedFlagGUID(uint64 guid)       { m_DroppedFlagGUID = guid;}
         uint64 GetDroppedFlagGUID() const          { return m_DroppedFlagGUID;}
 
         /* Battleground Events */
-        virtual void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj);
-        virtual void EventPlayerDroppedFlag(Player *Source);
+        void EventPlayerClickedOnFlag(Player *Source, GameObject* target_obj) override;
+        void EventPlayerDroppedFlag(Player *Source) override;
 
     private:
         void EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType) override;

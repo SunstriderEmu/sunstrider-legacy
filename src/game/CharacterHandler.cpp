@@ -629,7 +629,7 @@ void WorldSession::HandleCharDeleteOpcode( WorldPacket & recvData )
     uint64 guid;
     recvData >> guid;
 
-    uint32 initAccountId = GetAccountId();
+    //uint32 initAccountId = GetAccountId();
 
     // can't delete loaded character
     if (ObjectAccessor::FindPlayer(guid))

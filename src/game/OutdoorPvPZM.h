@@ -153,14 +153,14 @@ class OutdoorPvPObjectiveZM_Beacon : public OutdoorPvPObjective
 friend class OutdoorPvPZM;
 public:
     OutdoorPvPObjectiveZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
+    bool HandlePlayerEnter(Player * plr) override;
+    void HandlePlayerLeave(Player * plr) override;
     void UpdateTowerState();
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
+    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
 protected:
     ZM_BeaconType m_TowerType;
     uint32 m_TowerState;
@@ -177,13 +177,13 @@ class OutdoorPvPObjectiveZM_GraveYard : public OutdoorPvPObjective
 friend class OutdoorPvPZM;
 public:
     OutdoorPvPObjectiveZM_GraveYard(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     void UpdateTowerState();
-    int32 HandleOpenGo(Player *plr, uint64 guid);
+    int32 HandleOpenGo(Player *plr, uint64 guid) override;
     void SetBeaconState(uint32 controlling_team); // not good atm
-    bool HandleGossipOption(Player * plr, uint64 guid, uint32 gossipid);
-    bool HandleDropFlag(Player * plr, uint32 spellId);
+    bool HandleGossipOption(Player * plr, uint64 guid, uint32 gossipid) override;
+    bool HandleDropFlag(Player * plr, uint32 spellId) override;
     bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 private:
     uint32 m_GraveYardState;
@@ -197,13 +197,13 @@ class OutdoorPvPZM : public OutdoorPvP
 friend class OutdoorPvPObjectiveZM_Beacon;
 public:
     OutdoorPvPZM();
-    bool SetupOutdoorPvP();
-    void HandlePlayerEnterZone(Player *plr, uint32 zone);
-    void HandlePlayerLeaveZone(Player *plr, uint32 zone);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket &data);
-    void SendRemoveWorldStates(Player * plr);
-    void HandleKillImpl(Player * plr, Unit * killed);
+    bool SetupOutdoorPvP() override;
+    void HandlePlayerEnterZone(Player *plr, uint32 zone) override;
+    void HandlePlayerLeaveZone(Player *plr, uint32 zone) override;
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket &data) override;
+    void SendRemoveWorldStates(Player * plr) override;
+    void HandleKillImpl(Player * plr, Unit * killed) override;
     void BuffTeam(uint32 team);
 private:
     OutdoorPvPObjectiveZM_GraveYard * m_GraveYard;

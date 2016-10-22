@@ -26,7 +26,7 @@ class MThread: public Base
     public:
         static MThread *Start (void (*routine) (void *arg), void *arg);
         MThread ();
-        ~MThread ();
+        ~MThread () override;
         bool SetPriority (ThreadPriority prio);
 
         void (*routine) (void *arg);
@@ -54,7 +54,7 @@ class MMutex :  public Base
     #endif
         static MMutex *Create ();
         MMutex ();
-        virtual ~MMutex ();
+        ~MMutex () override;
         virtual bool Lock ();
         virtual bool TryLock ();
         virtual void Unlock ();

@@ -607,15 +607,15 @@ class GameObject : public WorldObject
 {
     public:
         explicit GameObject();
-        ~GameObject();
+        ~GameObject() override;
 
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
-        void AddToWorld();
-        void RemoveFromWorld();
+        void AddToWorld() override;
+        void RemoveFromWorld() override;
 
         virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
-        void Update(uint32 diff);
+        void Update(uint32 diff) override;
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
         GameObjectValue const* GetGOValue() const { return &m_goValue; }
@@ -725,12 +725,12 @@ class GameObject : public WorldObject
         uint32 GetUseCount() const { return m_usetimes; }
         uint32 GetUniqueUseCount() const { return m_unique_users.size(); }
 
-        void SaveRespawnTime();
+        void SaveRespawnTime() override;
 
         Loot        loot;
 
-        bool HasQuest(uint32 quest_id) const;
-        bool HasInvolvedQuest(uint32 quest_id) const;
+        bool HasQuest(uint32 quest_id) const override;
+        bool HasInvolvedQuest(uint32 quest_id) const override;
         bool ActivateToQuest(Player *pTarget) const;
         void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);
         void ResetDoorOrButton();
@@ -764,7 +764,7 @@ class GameObject : public WorldObject
 
         void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
 
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const;
+        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
         bool canDetectTrap(Player const* u, float distance) const;
 
         GameObject* LookupFishingHoleAround(float range);

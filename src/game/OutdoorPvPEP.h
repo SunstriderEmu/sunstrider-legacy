@@ -183,13 +183,13 @@ class OutdoorPvPObjectiveEP_EWT : public OutdoorPvPObjective
 friend class OutdoorPvPEP;
 public:
     OutdoorPvPObjectiveEP_EWT(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
+    bool HandlePlayerEnter(Player * plr) override;
+    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
+    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonSupportUnitAtNorthpassTower(uint32 team);
     void UpdateTowerState();
 protected:
@@ -202,13 +202,13 @@ class OutdoorPvPObjectiveEP_NPT : public OutdoorPvPObjective
 friend class OutdoorPvPEP;
 public:
     OutdoorPvPObjectiveEP_NPT(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
+    bool HandlePlayerEnter(Player * plr) override;
+    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
+    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonGO(uint32 team);
     void UpdateTowerState();
 protected:
@@ -221,13 +221,13 @@ class OutdoorPvPObjectiveEP_CGT : public OutdoorPvPObjective
 friend class OutdoorPvPEP;
 public:
     OutdoorPvPObjectiveEP_CGT(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
+    bool HandlePlayerEnter(Player * plr) override;
+    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
+    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void LinkGraveYard(uint32 team);
     void UpdateTowerState();
 protected:
@@ -240,15 +240,15 @@ class OutdoorPvPObjectiveEP_PWT : public OutdoorPvPObjective
 friend class OutdoorPvPEP;
 public:
     OutdoorPvPObjectiveEP_PWT(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
-    bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid);
+    bool HandlePlayerEnter(Player * plr) override;
+    void HandlePlayerLeave(Player * plr) override;
+    bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid) override;
     bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
+    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonFlightMaster(uint32 team);
     void UpdateTowerState();
 protected:
@@ -264,12 +264,12 @@ friend class OutdoorPvPObjectiveEP_PWT;
 friend class OutdoorPvPObjectiveEP_CGT;
 public:
     OutdoorPvPEP();
-    bool SetupOutdoorPvP();
-    void HandlePlayerEnterZone(Player *plr, uint32 zone);
-    void HandlePlayerLeaveZone(Player *plr, uint32 zone);
-    bool Update(uint32 diff);
-    void FillInitialWorldStates(WorldPacket &data);
-    void SendRemoveWorldStates(Player * plr);
+    bool SetupOutdoorPvP() override;
+    void HandlePlayerEnterZone(Player *plr, uint32 zone) override;
+    void HandlePlayerLeaveZone(Player *plr, uint32 zone) override;
+    bool Update(uint32 diff) override;
+    void FillInitialWorldStates(WorldPacket &data) override;
+    void SendRemoveWorldStates(Player * plr) override;
     void BuffTeams();
 private:
     // how many towers are controlled
