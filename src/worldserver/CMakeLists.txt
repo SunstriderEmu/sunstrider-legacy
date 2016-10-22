@@ -71,6 +71,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
     ${CMAKE_SOURCE_DIR}/src/game/Server
     ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
+    ${CMAKE_SOURCE_DIR}/src/irc
     ${CMAKE_SOURCE_DIR}/src/scripts/include
     ${CMAKE_SOURCE_DIR}/src/shared
     ${CMAKE_SOURCE_DIR}/src/shared/Configuration
@@ -85,7 +86,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/shared/Utilities
     ${CMAKE_SOURCE_DIR}/src/shared/Threading
-    ${CMAKE_SOURCE_DIR}/src/irc
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/CommandLine
     ${CMAKE_CURRENT_SOURCE_DIR}/RemoteAccess

@@ -1,4 +1,3 @@
-#include <omp.h>
 
 #include "Log.h"
 

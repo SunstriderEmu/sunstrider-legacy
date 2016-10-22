@@ -63,7 +63,12 @@
 #include "IRCMgr.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
-#include "PathGenerator.h"                                  // for mmap commands                                
+#include "PathGenerator.h"                                  // for mmap commands      
+
+#ifdef TESTS
+    #define CATCH_CONFIG_RUNNER
+    #include "catch.hpp"
+#endif
 
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)
@@ -8688,5 +8693,52 @@ bool ChatHandler::HandleWpChangePathTypeCommand(const char* args)
             PSendSysMessage("Memory : Path id %u has type set to %s (%u)", pathId, pathTypeStr.c_str(), type);
         }
     }
+    return true;
+}
+
+bool ChatHandler::HandleTestsCommand(const char* args)
+{
+#ifdef TESTS
+    // Convert args input to argc & argv
+    Tokenizer tokens(args, ' ');
+    if(tokens.size() == 0)
+        return false;
+
+    int argc = tokens.size() + 1;
+    char** argv = new char*[argc];
+    std::string const& osef = "LOLILOL";
+    argv[0] = new char[osef.size() + 1];
+    std::strcpy(argv[0], osef.c_str());
+    for(size_t i = 0; i < tokens.size(); i++)
+    {
+        std::string const& str = tokens[i];
+        argv[i + 1] = new char[str.size() + 1];
+        std::strcpy(argv[i + 1], str.c_str());
+    }
+
+    // Prepare Catch. CatchSession may be initialized only once, so we store it as static
+    static Catch::Session* catch_session = nullptr;
+    if(catch_session == nullptr)
+        new Catch::Session(); //will never be deleted but hey, this is not meant to be use in production
+
+    // Execute Catch
+    int result = -1;
+    try {
+        result = catch_session->run( argc, argv );
+    } catch (std::exception const& e) {
+        PSendSysMessage("Catch threw exception %s", e.what());
+    }
+
+    if(result != -1)
+        PSendSysMessage("Catch finished running with result %i", result);
+
+    // Cleaning up
+    for(size_t i = 0; i < argc; i++)
+        delete argv[i];
+    delete argv;
+
+#else
+    SendSysMessage("Core has not been compiled with tests");
+#endif
     return true;
 }

@@ -3,15 +3,16 @@ file(GLOB_RECURSE game_STAT_SRCS *.cpp *.h)
 set(game_STAT_PCH_HDR PrecompiledHeaders/gamePCH.h)
 set(game_STAT_PCH_SRC PrecompiledHeaders/gamePCH.cpp)
 
-IF(PLAYERBOT)	
+IF(PLAYERBOT)
 	set(playerbot_SRC ${CMAKE_BINARY_DIR}/src/playerbot)
 ENDIF()
 
 include_directories(
   ${CMAKE_BINARY_DIR}
+  ${CMAKE_SOURCE_DIR}/dep/
+  ${CMAKE_SOURCE_DIR}/dep/catch
   ${CMAKE_SOURCE_DIR}/dep/cppformat
   ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-  ${CMAKE_SOURCE_DIR}/dep/
   ${CMAKE_SOURCE_DIR}/dep/libircclient/include
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include

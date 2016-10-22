@@ -9,6 +9,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
   ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
   ${CMAKE_SOURCE_DIR}/dep/segvcatch
+  ${CMAKE_SOURCE_DIR}/dep/catch
   ${CMAKE_SOURCE_DIR}/dep/zlib
   ${CMAKE_SOURCE_DIR}/src/collision
   ${CMAKE_SOURCE_DIR}/src/framework
@@ -60,4 +61,11 @@ Detour
 Recast
 segvcatch
 ${MYSQL_LIBRARY}
+${Boost_LIBRARIES}
+${OPENSSL_LIBRARIES}
+${READLINE_LIBRARY}
+${UNIX_LIBS}
+${ZLIB_LIBRARIES}
+${playerbot_lib}
 )
+
