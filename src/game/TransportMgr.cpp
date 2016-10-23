@@ -175,8 +175,10 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
 
     if (transport->mapsUsed.size() > 1)
     {
-        for (unsigned int itr : transport->mapsUsed)
+        for (uint32 itr : transport->mapsUsed)
+        {
             ASSERT(!sMapStore.LookupEntry(itr)->Instanceable());
+        }
 
         transport->inInstance = false;
     }
@@ -497,7 +499,7 @@ void TransportMgr::CreateInstanceTransports(Map* map)
         return;
 
     // create transports
-    for (unsigned int itr : mapTransports->second)
+    for (uint32 itr : mapTransports->second)
         CreateTransport(itr, 0, map);
 }
 

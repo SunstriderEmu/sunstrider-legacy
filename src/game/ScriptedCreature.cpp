@@ -57,7 +57,7 @@ void SummonList::DespawnEntry(uint32 entry)
 
 void SummonList::DespawnAll(bool withoutWorldBoss)
 {
-    for(unsigned long & i : *this)
+    for(uint64 & i : *this)
     {
         if(Creature *summon = ObjectAccessor::GetCreature(*me, i))
         {
@@ -77,7 +77,7 @@ bool SummonList::IsEmpty()
 
 Creature* SummonList::GetCreatureWithEntry(uint32 entry) const
 {
-    for (unsigned long i : *this)
+    for (uint64 i : *this)
     {
         if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
             if (summon->GetEntry() == entry)
@@ -285,7 +285,7 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mecha
     SpellInfo const* TempSpell;
 
     //Check if each spell is viable(set it to null if not)
-    for (unsigned int m_spell : me->m_spells)
+    for (uint32 m_spell : me->m_spells)
     {
         TempSpell = sSpellMgr->GetSpellInfo(m_spell);
 

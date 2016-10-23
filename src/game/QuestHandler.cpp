@@ -216,7 +216,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
                     // destroy not required for quest finish quest starting item
                     bool destroyItem = true;
-                    for(unsigned int i : qInfo->RequiredItemId)
+                    for(uint32 i : qInfo->RequiredItemId)
                     {
                         if ((i == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetTemplate()->MaxCount != 0))
                         {
@@ -723,7 +723,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
     WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
     data << uint32(count);                                  // placeholder
 
-    for(unsigned long m_clientGUID : _player->m_clientGUIDs)
+    for(uint64 m_clientGUID : _player->m_clientGUIDs)
     {
         uint8 questStatus = DIALOG_STATUS_NONE;
         uint8 defstatus = DIALOG_STATUS_NONE;

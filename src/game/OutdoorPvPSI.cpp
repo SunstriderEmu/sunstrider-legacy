@@ -57,7 +57,7 @@ void OutdoorPvPSI::UpdateWorldState()
 
 bool OutdoorPvPSI::SetupOutdoorPvP()
 {
-    for(unsigned int OutdoorPvPSIBuffZone : OutdoorPvPSIBuffZones)
+    for(uint32 OutdoorPvPSIBuffZone : OutdoorPvPSIBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZone,this);
     return true;
 }
@@ -85,12 +85,12 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
@@ -98,12 +98,12 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
     }
     else if(team == TEAM_HORDE)
     {
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
         }
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
@@ -111,12 +111,12 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
     }
     else
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);

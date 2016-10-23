@@ -190,7 +190,7 @@ typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTyp
 typedef TypeMapContainer<AllGridObjectTypes> GridTypeMapContainer;
 typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
 
-template<const unsigned int LIMIT>
+template<const uint32 LIMIT>
 struct CoordPair
 {
     CoordPair(uint32 x=0, uint32 y=0) : x_coord(x), y_coord(y) {}

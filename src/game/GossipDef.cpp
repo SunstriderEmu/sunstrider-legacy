@@ -784,7 +784,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum
 
     uint32 emoteCount = 0;
-    for (unsigned int i : quest->OfferRewardEmote)
+    for (uint32 i : quest->OfferRewardEmote)
     {
         if (i <= 0)
             break;

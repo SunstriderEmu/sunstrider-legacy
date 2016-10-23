@@ -181,7 +181,7 @@ m_is_updating_environment(false)
 
     m_addDmgOnce = 0;
 
-    for(unsigned long & i : m_TotemSlot)
+    for(uint64 & i : m_TotemSlot)
         i  = 0;
 
     m_ObjectSlot[0] = m_ObjectSlot[1] = m_ObjectSlot[2] = m_ObjectSlot[3] = 0;
@@ -242,7 +242,7 @@ m_is_updating_environment(false)
     m_misdirectionLastTargetGUID = 0;
 
     // remove aurastates allowing special moves
-    for(unsigned int & i : m_reactiveTimer)
+    for(uint32 & i : m_reactiveTimer)
         i = 0;
         
     IsRotating = 0;
@@ -304,7 +304,7 @@ Unit::~Unit()
     assert(m_sharedVision.empty());
 
 #ifdef WITH_UNIT_CRASHFIX
-    for (unsigned int i = 0; i < TOTAL_AURAS; i++) {
+    for (uint32 i = 0; i < TOTAL_AURAS; i++) {
         if (m_modAuras[i]._M_impl._M_node._M_prev == NULL) {
             TC_LOG_ERROR("AURA:Corrupted m_modAuras _M_prev (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
             m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
@@ -7657,7 +7657,7 @@ void Unit::CombatStopWithPets(bool cast)
     if(GetTypeId()==TYPEID_PLAYER)
     {
         GuardianPetList const& guardians = (this->ToPlayer())->GetGuardians();
-        for(unsigned long itr : guardians)
+        for(uint64 itr : guardians)
             if(Unit* guardian = ObjectAccessor::GetUnit(*this,itr))
                 guardian->CombatStop(cast);
     }
@@ -7676,7 +7676,7 @@ bool Unit::IsAttackingPlayer() const
     if(charmed && charmed->IsAttackingPlayer())
         return true;
 
-    for (unsigned long i : m_TotemSlot)
+    for (uint64 i : m_TotemSlot)
     {
         if(i)
         {
@@ -7944,7 +7944,7 @@ void Unit::RemoveCharmAuras()
 
 void Unit::UnsummonAllTotems()
 {
-    for (unsigned long i : m_TotemSlot)
+    for (uint64 i : m_TotemSlot)
     {
         if(!i)
             continue;
@@ -12790,7 +12790,7 @@ void Unit::ClearComboPointHolders()
 void Unit::ClearAllReactives()
 {
 
-    for(unsigned int & i : m_reactiveTimer)
+    for(uint32 & i : m_reactiveTimer)
         i = 0;
 
     if (HasAuraState( AURA_STATE_DEFENSE))
@@ -13401,7 +13401,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 if (pet->IsAIEnabled)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
-            for (unsigned long slot : m_TotemSlot) {
+            for (uint64 slot : m_TotemSlot) {
                 if (Creature* totem = ObjectAccessor::GetCreature(*this, slot))
                     totem->AI()->MasterKilledUnit(pVictim);
             }
@@ -13449,7 +13449,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
                 if (pet->IsAIEnabled)
                     pet->AI()->MasterKilledUnit(pVictim);
             }
-            for (unsigned long slot : m_TotemSlot) {
+            for (uint64 slot : m_TotemSlot) {
                 if (Creature* totem = ObjectAccessor::GetCreature(*this, slot))
                     totem->AI()->MasterKilledUnit(pVictim);
             }

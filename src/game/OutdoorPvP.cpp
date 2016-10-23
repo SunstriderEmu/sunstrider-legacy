@@ -607,7 +607,7 @@ void OutdoorPvPObjective::SendObjectiveComplete(uint32 id,uint64 guid)
     }
 
     // send to all players present in the area
-    for(unsigned long itr : m_ActivePlayerGuids[team])
+    for(uint64 itr : m_ActivePlayerGuids[team])
     {
         Player * plr = sObjectMgr->GetPlayer(itr);
         if(plr)

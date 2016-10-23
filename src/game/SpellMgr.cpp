@@ -1185,7 +1185,7 @@ void SpellMgr::LoadSpellChains()
         if (AbilityInfo->skillId == 125)
             continue;
         bool found=false;
-        for (unsigned int ChainedSpell : ChainedSpells)
+        for (uint32 ChainedSpell : ChainedSpells)
         {
            if (ChainedSpell==spell_id)
                found=true;
@@ -1619,7 +1619,7 @@ void SpellMgr::LoadSpellCustomAttr()
         if(!spellInfo)
             continue;
 
-        for(unsigned int j : spellInfo->Effect)
+        for(uint32 j : spellInfo->Effect)
         {
             switch(j)
             {

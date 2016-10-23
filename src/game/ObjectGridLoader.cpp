@@ -125,7 +125,7 @@ template<> void AddUnitState(Creature *obj, CellCoord const& cell_pair)
 template <class T>
 void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> &m, uint32 &count, Map* map)
 {
-    for(unsigned int guid : guid_set)
+    for(uint32 guid : guid_set)
     {
         //ugly hackkk
         T* obj = nullptr;
@@ -245,10 +245,10 @@ void ObjectGridLoader::LoadN()
 {
     i_gameObjects = 0; i_creatures = 0; i_corpses = 0;
     i_cell.data.Part.cell_y = 0;
-    for(unsigned int x=0; x < MAX_NUMBER_OF_CELLS; ++x)
+    for(uint32 x=0; x < MAX_NUMBER_OF_CELLS; ++x)
     {
         i_cell.data.Part.cell_x = x;
-        for(unsigned int y=0; y < MAX_NUMBER_OF_CELLS; ++y)
+        for(uint32 y=0; y < MAX_NUMBER_OF_CELLS; ++y)
         {
             i_cell.data.Part.cell_y = y;
             GridLoader<Player, AllWorldObjectTypes, AllGridObjectTypes> loader;
@@ -259,9 +259,9 @@ void ObjectGridLoader::LoadN()
 
 void ObjectGridUnloader::MoveToRespawnN()
 {
-    for(unsigned int x=0; x < MAX_NUMBER_OF_CELLS; ++x)
+    for(uint32 x=0; x < MAX_NUMBER_OF_CELLS; ++x)
     {
-        for(unsigned int y=0; y < MAX_NUMBER_OF_CELLS; ++y)
+        for(uint32 y=0; y < MAX_NUMBER_OF_CELLS; ++y)
         {
             ObjectGridRespawnMover mover;
             mover.Move(i_grid(x, y));

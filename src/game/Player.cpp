@@ -196,7 +196,7 @@ void PlayerTaxi::AppendTaximaskTo( ByteBuffer& data, bool all )
 {
     if(all)
     {
-        for (unsigned int i : sTaxiNodesMask)
+        for (uint32 i : sTaxiNodesMask)
             data << uint32(i);              // all existed nodes
     }
     else
@@ -266,7 +266,7 @@ std::string PlayerTaxi::SaveTaxiDestinationsToString()
 
     std::ostringstream ss;
 
-    for(unsigned int m_TaxiDestination : m_TaxiDestinations)
+    for(uint32 m_TaxiDestination : m_TaxiDestinations)
         ss << m_TaxiDestination << " ";
 
     return ss.str();
@@ -3060,7 +3060,7 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
         {
             if(TalentEntry const *talentInfo = sTalentStore.LookupEntry( talentPos->talent_id ))
             {
-                for(unsigned int rankSpellId : talentInfo->RankID)
+                for(uint32 rankSpellId : talentInfo->RankID)
                 {
                     // skip learning spell and no rank spell case
                     if(!rankSpellId || rankSpellId==spell_id)
@@ -3624,7 +3624,7 @@ bool Player::ResetTalents(bool no_cost)
         }
     }
 
-    for (unsigned int i = 0; i < sTalentStore.GetNumRows(); i++)
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
     {
         TalentEntry const *talentInfo = sTalentStore.LookupEntry(i);
 
@@ -3641,7 +3641,7 @@ bool Player::ResetTalents(bool no_cost)
         if( (GetClassMask() & talentTabInfo->ClassMask) == 0 )
             continue;
 
-        for (unsigned int j : talentInfo->RankID)
+        for (uint32 j : talentInfo->RankID)
         {
             for(auto itr = GetSpellMap().begin(); itr != GetSpellMap().end();)
             {
@@ -6078,7 +6078,7 @@ void Player::SetFactionVisible(FactionState* faction)
 
 void Player::SetInitialFactions()
 {
-    for(unsigned int i = 1; i < sFactionStore.GetNumRows(); i++)
+    for(uint32 i = 1; i < sFactionStore.GetNumRows(); i++)
     {
         FactionEntry const *factionEntry = sFactionStore.LookupEntry(i);
 
@@ -6217,7 +6217,7 @@ bool Player::ModifyFactionReputation(FactionEntry const* factionEntry, int32 sta
     if (flist)
     {
         bool res = false;
-        for (unsigned int itr : *flist)
+        for (uint32 itr : *flist)
         {
             FactionEntry const *factionEntryCalc = sFactionStore.LookupEntry(itr);
             if(factionEntryCalc)
@@ -6306,7 +6306,7 @@ bool Player::SetFactionReputation(FactionEntry const* factionEntry, int32 standi
     if (flist)
     {
         bool res = false;
-        for (unsigned int itr : *flist)
+        for (uint32 itr : *flist)
         {
             FactionEntry const *factionEntryCalc = sFactionStore.LookupEntry(itr);
             if(factionEntryCalc)
@@ -7065,7 +7065,7 @@ void Player::DuelComplete(DuelCompleteType type)
             auras2remove.push_back(vAura.second->GetId());
     }
 
-    for(unsigned int i : auras2remove)
+    for(uint32 i : auras2remove)
         duel->opponent->RemoveAurasDueToSpell(i);
 
     auras2remove.clear();
@@ -7075,7 +7075,7 @@ void Player::DuelComplete(DuelCompleteType type)
         if (!aura.second->IsPositive() && aura.second->GetCasterGUID() == duel->opponent->GetGUID() && aura.second->GetAuraApplyTime() >= duel->startTime)
             auras2remove.push_back(aura.second->GetId());
     }
-    for(unsigned int i : auras2remove)
+    for(uint32 i : auras2remove)
         RemoveAurasDueToSpell(i);
 
     // cleanup combo points
@@ -13283,13 +13283,13 @@ void Player::AddQuest( Quest const *pQuest, Object *questGiver )
 
     if ( pQuest->HasFlag( QUEST_TRINITY_FLAGS_DELIVER ) )
     {
-        for(unsigned int & i : questStatusData.m_itemcount)
+        for(uint32 & i : questStatusData.m_itemcount)
             i = 0;
     }
 
     if ( pQuest->HasFlag(QUEST_TRINITY_FLAGS_KILL_OR_CAST | QUEST_TRINITY_FLAGS_SPEAKTO) )
     {
-        for(unsigned int & i : questStatusData.m_creatureOrGOcount)
+        for(uint32 & i : questStatusData.m_creatureOrGOcount)
             i = 0;
     }
 
@@ -13935,7 +13935,7 @@ bool Player::SatisfyQuestPrevChain( Quest const* qInfo, bool msg )
     if( qInfo->prevChainQuests.empty())
         return true;
 
-    for(unsigned int prevId : qInfo->prevChainQuests)
+    for(uint32 prevId : qInfo->prevChainQuests)
     {
         auto i_prevstatus = m_QuestStatus.find( prevId );
 
@@ -17113,7 +17113,7 @@ void Player::_SaveMail(SQLTransaction trans)
                 m->itemTextId, m->HasItems() ? 1 : 0, (uint64)m->expire_time, (uint64)m->deliver_time, m->money, m->COD, m->checked, m->messageID);
             if(m->removedItems.size())
             {
-                for(unsigned int & removedItem : m->removedItems)
+                for(uint32 & removedItem : m->removedItems)
                     trans->PAppend("DELETE FROM mail_items WHERE item_guid = '%u'", removedItem);
                 m->removedItems.clear();
             }
@@ -17758,7 +17758,7 @@ bool Player::HasGuardianWithEntry(uint32 entry)
 {
     // pet guid middle part is entry (and creature also)
     // and in guardian list must be guardians with same entry _always_
-    for(unsigned long m_guardianPet : m_guardianPets)
+    for(uint64 m_guardianPet : m_guardianPets)
         if(GUID_ENPART(m_guardianPet)==entry)
             return true;
 
@@ -19046,7 +19046,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         SpellCategoryStore::const_iterator i_scstore = sSpellsByCategoryStore.find(cat);
         if (i_scstore != sSpellsByCategoryStore.end())
         {
-            for (unsigned int i_scset : i_scstore->second)
+            for (uint32 i_scset : i_scstore->second)
             {
                 if (i_scset == spellInfo->Id)                    // skip main spell, already handled above
                     continue;
@@ -20368,7 +20368,7 @@ void Player::LearnAllClassSpells()
             LearnSpell(1515, false); //taming spell
             //pet spells
             uint32 spellsId [119] = {5149,883,1515,6991,2641,982,17254,737,17262,24424,26184,3530,26185,35303,311,26184,17263,7370,35299,35302,17264,1749,231,2441,23111,2976,23111,17266,2981,17262,24609,2976,26094,2982,298,1747,17264,24608,26189,24454,23150,24581,2977,1267,1748,26065,24455,1751,17265,23146,17267,23112,17265,2310,23100,24451,175,24607,2315,2981,24641,25013,25014,17263,3667,24584,3667,2975,23146,25015,1749,26185,1750,35388,17266,24607,25016,23149,24588,23149,295,27361,26202,35306,2619,2977,16698,3666,3666,24582,23112,26202,1751,16698,24582,17268,24599,24589,25017,35391,3489,28343,35307,27347,27349,353,24599,35324,27347,35348,27348,17268,27348,27346,24845,27361,2751,24632,35308 };
-            for (unsigned int i : spellsId)
+            for (uint32 i : spellsId)
                 AddSpell(i,true);
             break;
         }
@@ -20526,7 +20526,7 @@ void Player::DoPack58(uint8 step)
             case CLASS_SHAMAN:
             {
                 uint32 totemsId[4] = {5176,5177,5175,5178};
-                for(unsigned int i : totemsId)
+                for(uint32 i : totemsId)
                 {
                     ItemPosCountVec dest2;
                     msg = CanStoreNewItem( NULL_BAG, NULL_SLOT, dest2, i, 1 );
@@ -20805,7 +20805,7 @@ void Player::UpdateForQuestWorldObjects()
 
     UpdateData udata;
     WorldPacket packet;
-    for(unsigned long m_clientGUID : m_clientGUIDs)
+    for(uint64 m_clientGUID : m_clientGUIDs)
     {
         if(IS_GAMEOBJECT_GUID(m_clientGUID))
         {

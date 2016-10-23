@@ -3913,7 +3913,7 @@ void Spell::SendSpellCooldown()
         SpellCategoryStore::const_iterator i_scstore = sSpellsByCategoryStore.find(cat);
         if (i_scstore != sSpellsByCategoryStore.end())
         {
-            for(unsigned int i_scset : i_scstore->second)
+            for(uint32 i_scset : i_scstore->second)
             {
                 if(i_scset == m_spellInfo->Id)             // skip main spell, already handled above
                     continue;
@@ -6618,7 +6618,7 @@ SpellCastResult Spell::CheckItems()
     }
 
     uint32 totems = 2;
-    for(unsigned int i : m_spellInfo->Totem)
+    for(uint32 i : m_spellInfo->Totem)
     {
         if(i != 0)
         {
@@ -6635,7 +6635,7 @@ SpellCastResult Spell::CheckItems()
 
     //Check items for TotemCategory
     uint32 TotemCategory = 2;
-    for(unsigned int i : m_spellInfo->TotemCategory)
+    for(uint32 i : m_spellInfo->TotemCategory)
     {
         if(i != 0)
         {

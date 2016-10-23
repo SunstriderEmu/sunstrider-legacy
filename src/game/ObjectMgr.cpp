@@ -570,7 +570,7 @@ void ObjectMgr::LoadCreatureTemplate(Field* fields)
     for (int & i : creatureTemplate.resistance) //SPELL_SCHOOL_NORMAL is not handled here so, -1
         i = fields[f++].GetInt16();
 
-    for (unsigned int & spell : creatureTemplate.spells)
+    for (uint32 & spell : creatureTemplate.spells)
         spell = fields[f++].GetUInt32();
 
     creatureTemplate.PetSpellDataId = fields[f++].GetUInt32();
@@ -2290,8 +2290,10 @@ void ObjectMgr::LoadItemTemplates()
         }
     }
 
-    for (unsigned int itr : notFoundOutfit)
+    for (uint32 itr : notFoundOutfit)
+    {
         TC_LOG_ERROR("sql.sql", "Item (Entry: %u) does not exist in `item_template` but is referenced in `CharStartOutfit.dbc`", itr);
+    }
 
     TC_LOG_INFO("server.loading", ">> Loaded %u item templates in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
@@ -7944,7 +7946,9 @@ void ObjectMgr::LoadDbScriptStrings()
     CheckScripts(sWaypointScripts,ids);
 
     for(int id : ids)
+    {
         TC_LOG_ERROR("sql.sql","Table `db_script_string` has unused string id  %u", id);
+    }
 }
 
 // Functions for scripting access
@@ -8304,7 +8308,7 @@ void ObjectMgr::LoadSpellTemplates()
             continue;
         SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(skillLine->spellId);
         if(spellInfo && (spellInfo->Attributes & 0x1D0) == 0x1D0) {
-            for (unsigned int i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
+            for (uint32 i = 1; i < sCreatureFamilyStore.GetNumRows(); ++i)
             {
                 CreatureFamilyEntry const* cFamily = sCreatureFamilyStore.LookupEntry(i);
                 if(!cFamily)

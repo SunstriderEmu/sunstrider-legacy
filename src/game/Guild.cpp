@@ -168,7 +168,7 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans)
     newmember.Pnote = (std::string)"";
     newmember.logout_time = time(nullptr);
     newmember.BankResetTimeMoney = 0;                       // this will force update at first query
-    for (unsigned int & i : newmember.BankResetTimeTab)
+    for (uint32 & i : newmember.BankResetTimeTab)
         i = 0;
     members[GUID_LOPART(plGuid)] = newmember;
 

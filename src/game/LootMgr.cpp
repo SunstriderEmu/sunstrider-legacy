@@ -234,13 +234,15 @@ void LootStore::CheckLootRefs(LootIdSet* ref_set) const
 void LootStore::ReportUnusedIds(LootIdSet const& ids_set) const
 {
     // all still listed ids isn't referenced
-    for(unsigned int itr : ids_set)
-        TC_LOG_ERROR("sql.sql","Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), itr,GetEntryName());
+    for(uint32 itr : ids_set)
+    {
+        TC_LOG_ERROR("sql.sql", "Table '%s' entry %d isn't %s and not referenced from loot, and then useless.", GetName(), itr, GetEntryName());
+    }
 }
 
 void LootStore::ReportNotExistedId(uint32 id) const
 {
-    TC_LOG_ERROR("sql.sql","Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id,GetEntryName());
+    TC_LOG_ERROR("sql.sql","Table '%s' entry %d (%s) not exist but used as loot id in DB.", GetName(), id, GetEntryName());
 }
 
 //
@@ -1270,7 +1272,7 @@ void LoadLootTemplates_Creature()
             }
         }
     }
-    for(unsigned int itr : ids_setUsed)
+    for(uint32 itr : ids_setUsed)
         ids_set.erase(itr);
 
     // output error for any still listed (not referenced from appropriate table) ids
@@ -1297,7 +1299,7 @@ void LoadLootTemplates_Disenchant()
             }
         }
     }
-    for(unsigned int itr : ids_setUsed)
+    for(uint32 itr : ids_setUsed)
         ids_set.erase(itr);
     // output error for any still listed (not referenced from appropriate table) ids
     LootTemplates_Disenchant.ReportUnusedIds(ids_set);
@@ -1341,7 +1343,7 @@ void LoadLootTemplates_Gameobject()
             }
         }
     }
-    for(unsigned int itr : ids_setUsed)
+    for(uint32 itr : ids_setUsed)
         ids_set.erase(itr);
 
     // output error for any still listed (not referenced from appropriate table) ids
@@ -1384,7 +1386,7 @@ void LoadLootTemplates_Pickpocketing()
             }
         }
     }
-    for(unsigned int itr : ids_setUsed)
+    for(uint32 itr : ids_setUsed)
         ids_set.erase(itr);
 
     // output error for any still listed (not referenced from appropriate table) ids
@@ -1442,7 +1444,7 @@ void LoadLootTemplates_Skinning()
             }
         }
     }
-    for(unsigned int itr : ids_setUsed)
+    for(uint32 itr : ids_setUsed)
         ids_set.erase(itr);
 
     // output error for any still listed (not referenced from appropriate table) ids

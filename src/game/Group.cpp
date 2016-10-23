@@ -50,7 +50,7 @@ Group::Group() :
     m_raidDifficulty(RAID_DIFFICULTY_NORMAL),
     m_dungeonDifficulty(DUNGEON_DIFFICULTY_NORMAL)
 {
-    for(unsigned long & m_targetIcon : m_targetIcons)
+    for(uint64 & m_targetIcon : m_targetIcons)
         m_targetIcon = 0;
 }
 
@@ -1279,7 +1279,7 @@ bool Group::_addMember(const uint64 &guid, std::string name, bool isAssistant, u
 
     if(!isRaidGroup())                                      // reset targetIcons for non-raid-groups
     {
-        for(unsigned long & m_targetIcon : m_targetIcons)
+        for(uint64 & m_targetIcon : m_targetIcons)
             m_targetIcon = 0;
     }
 

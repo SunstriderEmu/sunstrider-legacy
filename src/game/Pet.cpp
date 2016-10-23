@@ -1781,7 +1781,7 @@ void Pet::InitPetCreateSpells()
     PetCreateSpellEntry const* CreateSpells = sObjectMgr->GetPetCreateSpellEntry(GetEntry());
     if(CreateSpells)
     {
-        for(unsigned int i : CreateSpells->spellid)
+        for(uint32 i : CreateSpells->spellid)
         {
             if(!i)
                 break;
@@ -2087,7 +2087,7 @@ void Pet::LearnPetPassives()
         // For general hunter pets skill 270
         // Passive 01~10, Passive 00 (20782, not used), Ferocious Inspiration (34457)
         // Scale 01~03 (34902~34904, bonus from owner, not used)
-        for(unsigned int petSet : petStore->second)
+        for(uint32 petSet : petStore->second)
             AddSpell(petSet, ACT_DECIDE, PETSPELL_NEW, 0xffff, PETSPELL_FAMILY);
     }
 }

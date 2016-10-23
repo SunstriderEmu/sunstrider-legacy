@@ -3,8 +3,7 @@
 
 ## Compiling The Server
 
-The only windows compiler supported for now is MSVC 14 (Visual Studio Community 2015). The server can be compiled
-in x64 or x86, in Release or Debug mode.
+The only windows compiler supported for now is MSVC 14 (Visual Studio Community 2015 Update 3).
 
 When downloading dependencies (such as OpenSSL, Boost or MariaDB) you must get the
 version corresponding to the compiler version (x86 or x64) you will use, else

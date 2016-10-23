@@ -84,7 +84,7 @@ PlayerVisibilityNotifier::Notify()
 
     //remaining i_clientGUIDs are out of range and should be destroyed at client
     i_data.AddOutOfRangeGUID(i_clientGUIDs);
-    for(unsigned long i_clientGUID : i_clientGUIDs)
+    for(uint64 i_clientGUID : i_clientGUIDs)
     {
         i_player.m_clientGUIDs.erase(i_clientGUID);
 
@@ -106,7 +106,7 @@ PlayerVisibilityNotifier::Notify()
 
         // send out of range to other players if need
         std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();
-        for(unsigned long iter : oor)
+        for(uint64 iter : oor)
         {
             if(!IS_PLAYER_GUID(iter))
                 continue;

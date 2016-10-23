@@ -713,7 +713,7 @@ class GameObject : public WorldObject
         void AddToSkillupList(uint32 PlayerGuidLow) { m_SkillupList.push_back(PlayerGuidLow); }
         bool IsInSkillupList(uint32 PlayerGuidLow) const
         {
-            for (unsigned int i : m_SkillupList)
+            for (uint32 i : m_SkillupList)
                 if (i == PlayerGuidLow) return true;
             return false;
         }

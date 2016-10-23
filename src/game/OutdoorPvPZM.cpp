@@ -202,7 +202,7 @@ bool OutdoorPvPZM::SetupOutdoorPvP()
     m_HordeTowersControlled = 0;
 
     // add the zones affected by the pvp buff
-    for(unsigned int OutdoorPvPZMBuffZone : OutdoorPvPZMBuffZones)
+    for(uint32 OutdoorPvPZMBuffZone : OutdoorPvPZMBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPZMBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveZM_Beacon(this,ZM_BEACON_WEST));
@@ -228,12 +228,12 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
@@ -241,12 +241,12 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
     }
     else if(team == TEAM_HORDE)
     {
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
         }
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
@@ -254,12 +254,12 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
     }
     else
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);

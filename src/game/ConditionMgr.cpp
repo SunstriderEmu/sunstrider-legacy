@@ -1299,7 +1299,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
     {
         // check if effect is already a part of some shared mask
         bool found = false;
-        for (unsigned int & sharedMask : sharedMasks)
+        for (uint32 & sharedMask : sharedMasks)
         {
             if ((1<<i) & sharedMask)
             {
@@ -1321,7 +1321,7 @@ bool ConditionMgr::addToSpellImplicitTargetConditions(Condition* cond)
         sharedMasks.push_back(sharedMask);
     }
 
-    for (unsigned int & sharedMask : sharedMasks)
+    for (uint32 & sharedMask : sharedMasks)
     {
         // some effect indexes should have same data
         if (uint32 commonMask = sharedMask & conditionEffMask)

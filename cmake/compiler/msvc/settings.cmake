@@ -64,6 +64,8 @@ message(STATUS "MSVC: Disabled NON-SECURE warnings")
 #Ignore warnings about POSIX deprecation
 add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
 message(STATUS "MSVC: Disabled POSIX warnings")
+ 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
 
 # Ignore specific warnings
 # C4351: new behavior: elements of array 'x' will be default initialized

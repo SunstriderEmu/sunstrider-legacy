@@ -773,7 +773,7 @@ OutdoorPvPEP::OutdoorPvPEP()
 
 bool OutdoorPvPEP::SetupOutdoorPvP()
 {
-    for(unsigned int EPBuffZone : EPBuffZones)
+    for(uint32 EPBuffZone : EPBuffZones)
         sOutdoorPvPMgr->AddZone(EPBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveEP_EWT(this));
@@ -789,7 +789,7 @@ bool OutdoorPvPEP::Update(uint32 diff)
     {
         m_AllianceTowersControlled = 0;
         m_HordeTowersControlled = 0;
-        for(unsigned int EP_Control : EP_Controls)
+        for(uint32 EP_Control : EP_Controls)
         {
             if(EP_Control == TEAM_ALLIANCE)
                 ++m_AllianceTowersControlled;
@@ -825,12 +825,12 @@ void OutdoorPvPEP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
     // remove buffs
     if(plr->GetTeam() == TEAM_ALLIANCE)
     {
-        for(unsigned int EP_AllianceBuff : EP_AllianceBuffs)
+        for(uint32 EP_AllianceBuff : EP_AllianceBuffs)
             plr->RemoveAurasDueToSpell(EP_AllianceBuff);
     }
     else
     {
-        for(unsigned int EP_HordeBuff : EP_HordeBuffs)
+        for(uint32 EP_HordeBuff : EP_HordeBuffs)
             plr->RemoveAurasDueToSpell(EP_HordeBuff);
     }
     OutdoorPvP::HandlePlayerLeaveZone(plr, zone);
@@ -838,21 +838,21 @@ void OutdoorPvPEP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 
 void OutdoorPvPEP::BuffTeams()
 {
-    for(unsigned long itr : m_PlayerGuids[0])
+    for(uint64 itr : m_PlayerGuids[0])
     {
         if(Player * plr = sObjectMgr->GetPlayer(itr))
         {
-            for(unsigned int EP_AllianceBuff : EP_AllianceBuffs)
+            for(uint32 EP_AllianceBuff : EP_AllianceBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_AllianceBuff);
             if(m_AllianceTowersControlled && m_AllianceTowersControlled < 5)
                 if(plr->IsInWorld()) plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1],true);
         }
     }
-    for(unsigned long itr : m_PlayerGuids[1])
+    for(uint64 itr : m_PlayerGuids[1])
     {
         if(Player * plr = sObjectMgr->GetPlayer(itr))
         {
-            for(unsigned int EP_HordeBuff : EP_HordeBuffs)
+            for(uint32 EP_HordeBuff : EP_HordeBuffs)
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_HordeBuff);
             if(m_HordeTowersControlled && m_HordeTowersControlled < 5)
                 if(plr->IsInWorld()) plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1],true);

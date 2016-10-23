@@ -4302,7 +4302,7 @@ void Spell::EffectDispel(uint32 i)
             data << uint64(m_caster->GetGUID());            // Caster GUID
             data << uint64(unitTarget->GetGUID());          // Victim GUID
             data << uint32(m_spellInfo->Id);                // dispel spell id
-            for (unsigned int & j : fail_list)
+            for (uint32 & j : fail_list)
                 data << uint32(j);                         // Spell Id
             m_caster->SendMessageToSet(&data, true);
         }
@@ -7438,7 +7438,7 @@ void Spell::EffectDestroyAllTotems(uint32 /*i*/)
         return;
 
     float mana = 0;
-    for(unsigned long slot : m_caster->m_TotemSlot)
+    for(uint64 slot : m_caster->m_TotemSlot)
     {
         if(!slot)
             continue;
@@ -7889,7 +7889,7 @@ void Spell::EffectStealBeneficialBuff(uint32 i)
             data << uint64(m_caster->GetGUID());            // Caster GUID
             data << uint64(unitTarget->GetGUID());          // Victim GUID
             data << uint32(m_spellInfo->Id);                // dispel spell id
-            for (unsigned int & j : fail_list)
+            for (uint32 & j : fail_list)
                 data << uint32(j);                         // Spell Id
             m_caster->SendMessageToSet(&data, true);
         }

@@ -1238,7 +1238,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     Item *Gems[3];
     bool SocketBonusActivated, SocketBonusToBeActivated;
 
-    for(unsigned long & guid : guids)
+    for(uint64 & guid : guids)
         recvData >> guid;
 
     if(!guids[0])

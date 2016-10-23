@@ -165,9 +165,9 @@ Map::Map(uint32 id, uint32 InstanceId, uint8 SpawnMode)
    _defaultLight(GetDefaultMapLight(id)),
    i_lock(true)
 {
-    for(unsigned int idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
+    for(uint32 idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
     {
-        for(unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
+        for(uint32 j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
         {
             //z code
             GridMaps[idx][j] =nullptr;
@@ -634,7 +634,7 @@ bool Map::loaded(const GridPair &p) const
 void Map::RelocationNotify()
 {
     //Move backlog to notify list
-    for(unsigned long & iter : i_unitsToNotifyBacklog)
+    for(uint64 & iter : i_unitsToNotifyBacklog)
     {
         if(Unit *unit = ObjectAccessor::GetObjectInWorld(iter, (Unit*)nullptr))
         {

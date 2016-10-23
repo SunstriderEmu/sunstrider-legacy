@@ -1502,7 +1502,7 @@ public:
             //sanitize list using m_guidList
             m_objectList->clear();
 
-            for (unsigned long & itr : *m_guidList)
+            for (uint64 & itr : *m_guidList)
             {
                 if(WorldObject* obj = ObjectAccessor::GetObjectInWorld(itr,m_baseObject))
                     m_objectList->push_back(obj);

@@ -69,7 +69,7 @@ bool OutdoorPvPHP::SetupOutdoorPvP()
     m_AllianceTowersControlled = 0;
     m_HordeTowersControlled = 0;
     // add the zones affected by the pvp buff
-    for(unsigned int OutdoorPvPHPBuffZone : OutdoorPvPHPBuffZones)
+    for(uint32 OutdoorPvPHPBuffZone : OutdoorPvPHPBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPHPBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveHP(this,HP_TOWER_BROKEN_HILL));
@@ -330,12 +330,12 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,AllianceBuff,true);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);
@@ -343,12 +343,12 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
     }
     else if(team == TEAM_HORDE)
     {
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,HordeBuff,true);
         }
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
@@ -356,12 +356,12 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
     }
     else
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);

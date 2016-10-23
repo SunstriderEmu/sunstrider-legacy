@@ -173,7 +173,7 @@ Creature::Creature() :
 {
     m_valuesCount = UNIT_END;
 
-    for(unsigned int & m_spell : m_spells)
+    for(uint32 & m_spell : m_spells)
         m_spell = 0;
 
     m_CreatureSpellCooldowns.clear();
@@ -1698,7 +1698,7 @@ void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs
 
 void Creature::UpdateProhibitedSchools(uint32 const diff)
 {
-    for (unsigned int & m_prohibitedSchool : m_prohibitedSchools) {
+    for (uint32 & m_prohibitedSchool : m_prohibitedSchools) {
         if (m_prohibitedSchool == 0)
             continue;
 
@@ -1730,7 +1730,7 @@ SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
     if(!pVictim)
         return nullptr;
 
-    for(unsigned int m_spell : m_spells)
+    for(uint32 m_spell : m_spells)
     {
         if(!m_spell)
             continue;
@@ -1777,7 +1777,7 @@ SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
     if(!pVictim)
         return nullptr;
 
-    for(unsigned int m_spell : m_spells)
+    for(uint32 m_spell : m_spells)
     {
         if(!m_spell)
             continue;

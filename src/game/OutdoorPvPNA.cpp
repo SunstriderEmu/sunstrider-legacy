@@ -82,13 +82,13 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
 void OutdoorPvPNA::BuffTeam(uint32 team)
 {
     if (team == TEAM_ALLIANCE) {
-        for(unsigned long itr : m_PlayerGuids[0]) {
+        for(uint64 itr : m_PlayerGuids[0]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
-        for(unsigned long itr : m_PlayerGuids[1]) {
+        for(uint64 itr : m_PlayerGuids[1]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
@@ -96,13 +96,13 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
         }
     }
     else if (team == TEAM_HORDE) {
-        for (unsigned long itr : m_PlayerGuids[1]) {
+        for (uint64 itr : m_PlayerGuids[1]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
-        for (unsigned long itr : m_PlayerGuids[0]) {
+        for (uint64 itr : m_PlayerGuids[0]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
@@ -110,13 +110,13 @@ void OutdoorPvPNA::BuffTeam(uint32 team)
         }
     }
     else {
-        for (unsigned long itr : m_PlayerGuids[0]) {
+        for (uint64 itr : m_PlayerGuids[0]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
-        for (unsigned long itr : m_PlayerGuids[1]) {
+        for (uint64 itr : m_PlayerGuids[1]) {
             if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);

@@ -118,7 +118,7 @@ Quest::Quest(Field * questRecord)
 	for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
 		DetailsEmote[i] = questRecord[110 + i].GetUInt16();
 
-    for (unsigned int & i : DetailsEmoteDelay)
+    for (uint32 & i : DetailsEmoteDelay)
         i = 0; //NYI
 
     IncompleteEmote = questRecord[114].GetUInt16();
@@ -127,7 +127,7 @@ Quest::Quest(Field * questRecord)
 	for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
 		OfferRewardEmote[i] = questRecord[116 + i].GetInt16();
 
-    for (unsigned int & i : OfferRewardEmoteDelay)
+    for (uint32 & i : OfferRewardEmoteDelay)
         i = 0; //NYI
 
     QuestStartScript = questRecord[120].GetUInt32();
@@ -147,13 +147,13 @@ Quest::Quest(Field * questRecord)
             ++m_reqCreatureOrGOcount;
     }
 
-    for (unsigned int i : RewardItemId)
+    for (uint32 i : RewardItemId)
     {
         if ( i )
             ++m_rewitemscount;
     }
 
-    for (unsigned int i : RewardChoiceItemId)
+    for (uint32 i : RewardChoiceItemId)
     {
         if (i)
             ++m_rewchoiceitemscount;

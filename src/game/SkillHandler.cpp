@@ -94,8 +94,8 @@ void WorldSession::HandleLearnTalentOpcode( WorldPacket & recvData )
     uint32 tTab = talentInfo->TalentTab;
     if (talentInfo->Row > 0)
     {
-        unsigned int numRows = sTalentStore.GetNumRows();
-        for (unsigned int i = 0; i < numRows; i++)          // Loop through all talents.
+        uint32 numRows = sTalentStore.GetNumRows();
+        for (uint32 i = 0; i < numRows; i++)          // Loop through all talents.
         {
             // Someday, someone needs to revamp
             const TalentEntry *tmpTalent = sTalentStore.LookupEntry(i);

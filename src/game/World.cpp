@@ -1247,7 +1247,7 @@ void World::SetInitialWorldSettings()
     uint32 serverStartingTime = GetMSTime();
 
     ///- Initialize the random number generator
-    srand((unsigned int)time(nullptr));
+    srand((uint32)time(nullptr));
     
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);

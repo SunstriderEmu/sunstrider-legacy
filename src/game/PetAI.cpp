@@ -179,7 +179,7 @@ void PetAI::UpdateAI(const uint32 diff)
             else
             {
                 bool spellUsed = false;
-                for(unsigned long tar : m_AllySet)
+                for(uint64 tar : m_AllySet)
                 {
                     Unit* Target = ObjectAccessor::GetUnit(i_pet,tar);
 

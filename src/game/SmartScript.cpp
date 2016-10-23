@@ -408,7 +408,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             emotes[5] = e.action.randomEmote.emote6;
             uint32 temp[SMART_ACTION_PARAM_COUNT];
             uint32 count = 0;
-            for (unsigned int emote : emotes)
+            for (uint32 emote : emotes)
             {
                 if (emote)
                 {
@@ -899,7 +899,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             phases[5] = e.action.randomPhase.phase6;
             uint32 temp[SMART_ACTION_PARAM_COUNT];
             uint32 count = 0;
-            for (unsigned int phase : phases)
+            for (uint32 phase : phases)
             {
                 if (phase > 0)
                 {
@@ -1933,7 +1933,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             actions[5] = e.action.randTimedActionList.entry6;
             uint32 temp[SMART_ACTION_PARAM_COUNT];
             uint32 count = 0;
-            for (unsigned int action : actions)
+            for (uint32 action : actions)
             {
                 if (action > 0)
                 {
@@ -2440,7 +2440,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 {
                     if (IsSmart(target))
                     {
-                        for (unsigned int waypoint : waypoints)
+                        for (uint32 waypoint : waypoints)
                         {
                             if (!waypoint)
                                 continue;
@@ -3916,7 +3916,7 @@ void SmartScript::OnUpdate(uint32 const diff)
 
     if (!mRemIDs.empty())
     {
-        for (unsigned int & mRemID : mRemIDs)
+        for (uint32 & mRemID : mRemIDs)
         {
              RemoveStoredEvent(mRemID);
         }

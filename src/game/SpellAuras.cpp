@@ -375,7 +375,7 @@ m_periodicTimer(0), m_amplitude(0), m_PeriodicEventId(0), m_AuraDRGroup(DIMINISH
                     SpellItemEnchantmentEntry const *pEnchant = sSpellItemEnchantmentStore.LookupEntry(item_rand_suffix->enchant_id[k]);
                     if(pEnchant)
                     {
-                        for (unsigned int t : pEnchant->spellid)
+                        for (uint32 t : pEnchant->spellid)
                             if(t == m_spellProto->Id)
                         {
                             damage = uint32((item_rand_suffix->prefix[k]*castItem->GetItemSuffixFactor()) / 10000 );
@@ -1952,7 +1952,7 @@ void Aura::TriggerSpell()
                             return;
 
                         bool all = true;
-                        for(unsigned long i : caster->m_TotemSlot)
+                        for(uint64 i : caster->m_TotemSlot)
                         {
                             if(!i)
                             {

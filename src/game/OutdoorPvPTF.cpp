@@ -137,12 +137,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF,true);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
@@ -150,12 +150,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     }
     else if(team == TEAM_HORDE)
     {
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,TF_CAPTURE_BUFF,true);
         }
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
@@ -163,12 +163,12 @@ void OutdoorPvPTF::BuffTeam(uint32 team)
     }
     else
     {
-        for(unsigned long itr : m_PlayerGuids[0])
+        for(uint64 itr : m_PlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
         }
-        for(unsigned long itr : m_PlayerGuids[1])
+        for(uint64 itr : m_PlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(TF_CAPTURE_BUFF);
@@ -180,7 +180,7 @@ void OutdoorPvPObjectiveTF::RewardDailyQuest(uint32 team)
 {
     if (team == TEAM_ALLIANCE)
     {
-        for(unsigned long itr : m_ActivePlayerGuids[0])
+        for(uint64 itr : m_ActivePlayerGuids[0])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11505) == QUEST_STATUS_INCOMPLETE)
@@ -190,7 +190,7 @@ void OutdoorPvPObjectiveTF::RewardDailyQuest(uint32 team)
     }
     else if (team == TEAM_HORDE)
     {
-        for(unsigned long itr : m_ActivePlayerGuids[1])
+        for(uint64 itr : m_ActivePlayerGuids[1])
         {
             if(Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if(plr->IsInWorld() && plr->GetQuestStatus(11506) == QUEST_STATUS_INCOMPLETE)
@@ -302,7 +302,7 @@ bool OutdoorPvPTF::SetupOutdoorPvP()
     first_digit = 0;
 
     // add the zones affected by the pvp buff
-    for(unsigned int OutdoorPvPTFBuffZone : OutdoorPvPTFBuffZones)
+    for(uint32 OutdoorPvPTFBuffZone : OutdoorPvPTFBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPTFBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveTF(this,TF_TOWER_NW));

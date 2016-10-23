@@ -324,7 +324,7 @@ void Battleground::Update(time_t diff)
     }
     else if (m_LastResurrectTime > 500)    // Resurrect players only half a second later, to see spirit heal effect on NPC
     {
-        for(unsigned long & itr : m_ResurrectQueue)
+        for(uint64 & itr : m_ResurrectQueue)
         {
             Player *plr = sObjectMgr->GetPlayer(itr);
             if(!plr)
@@ -374,7 +374,7 @@ void Battleground::Update(time_t diff)
                 m_RemovedPlayers[m_Player.first] = 1;           // add to remove list (BG)
             }
 
-            for (unsigned long m_Spectator : m_Spectators)
+            for (uint64 m_Spectator : m_Spectators)
             {
                 m_RemovedPlayers[m_Spectator] = 1;
             }
@@ -755,7 +755,7 @@ void Battleground::EndBattleground(uint32 winner)
         plr->SendDirectMessage(&data);
     }
 
-    for (unsigned long m_Spectator : m_Spectators)
+    for (uint64 m_Spectator : m_Spectators)
     {
         Player *plr = sObjectMgr->GetPlayer(m_Spectator);
         if(!plr)
@@ -1937,13 +1937,13 @@ void Battleground::SendSpectateAddonsMsg(SpectatorAddonMsg msg)
     if (!HaveSpectators())
         return;
 
-    for (unsigned long m_Spectator : m_Spectators)
+    for (uint64 m_Spectator : m_Spectators)
         msg.SendPacket(m_Spectator);
 }
 
 bool Battleground::isSpectator(uint64 guid)
 {
-    for(unsigned long m_Spectator : m_Spectators)
+    for(uint64 m_Spectator : m_Spectators)
     {
         if (guid == m_Spectator)
             return true;

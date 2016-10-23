@@ -1084,7 +1084,7 @@ class PlayerTaxi
         uint32 GetTaximask( uint8 index ) const { return m_taximask[index]; }
         bool IsTaximaskNodeKnown(uint32 nodeidx) const;
         void ResetTaximask() {
-            for (unsigned int & i : m_taximask)
+            for (uint32 & i : m_taximask)
                 i = 0;
         }
         bool SetTaximaskNode(uint32 nodeidx)
