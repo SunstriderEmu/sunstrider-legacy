@@ -104,7 +104,7 @@ class Roll : public LootValidatorRef
         Roll(uint64 _guid, LootItem const& li)
             : itemGUID(_guid), itemid(li.itemid), itemRandomPropId(li.randomPropertyId), itemRandomSuffix(li.randomSuffix),
             totalPlayersRolling(0), totalNeed(0), totalGreed(0), totalPass(0), itemSlot(0) {}
-        ~Roll() override { }
+        ~Roll() override = default;
         void setLoot(Loot *pLoot) { link(pLoot, this); }
         Loot *getLoot() { return getTarget(); }
         void targetObjectBuildLink() override;
@@ -210,7 +210,7 @@ class Group
         }
         bool IsAssistant(uint64 guid) const
         {
-            member_citerator mslot = _getMemberCSlot(guid);
+            auto mslot = _getMemberCSlot(guid);
             if(mslot==m_memberSlots.end())
                 return false;
 
@@ -222,7 +222,7 @@ class Group
 
         bool SameSubGroup(uint64 guid1,const uint64& guid2) const
         {
-            member_citerator mslot2 = _getMemberCSlot(guid2);
+            auto mslot2 = _getMemberCSlot(guid2);
             if(mslot2==m_memberSlots.end())
                 return false;
 
@@ -231,7 +231,7 @@ class Group
 
         bool SameSubGroup(uint64 guid1, MemberSlot const* slot2) const
         {
-            member_citerator mslot1 = _getMemberCSlot(guid1);
+            auto mslot1 = _getMemberCSlot(guid1);
             if(mslot1==m_memberSlots.end() || !slot2)
                 return false;
 
@@ -252,7 +252,7 @@ class Group
         void GetDataForXPAtKill(Unit const* victim, uint32& count,uint32& sum_level, Player* & member_with_max_level, Player* & not_gray_member_with_max_level);
         uint8  GetMemberGroup(uint64 guid) const
         {
-            member_citerator mslot = _getMemberCSlot(guid);
+            auto mslot = _getMemberCSlot(guid);
             if(mslot==m_memberSlots.end())
                 return (MAXRAIDSIZE/MAXGROUPSIZE+1);
 
@@ -399,7 +399,7 @@ class Group
 
         member_citerator _getMemberCSlot(uint64 Guid) const
         {
-            for(member_citerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+            for(auto itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
                 if (itr->guid == Guid)
                     return itr;
@@ -409,7 +409,7 @@ class Group
 
         member_witerator _getMemberWSlot(uint64 Guid)
         {
-            for(member_witerator itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
+            for(auto itr = m_memberSlots.begin(); itr != m_memberSlots.end(); ++itr)
             {
                 if (itr->guid == Guid)
                     return itr;

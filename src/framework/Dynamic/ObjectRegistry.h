@@ -96,7 +96,7 @@ class ObjectRegistry
             return i_registeredObjects;
         }
 
-        ObjectRegistry() { }
+        ObjectRegistry() = default;
         ~ObjectRegistry()
         {
             for (typename RegistryMapType::iterator iter=i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)

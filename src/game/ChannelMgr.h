@@ -32,15 +32,15 @@ class ChannelMgr
         ChannelMgr() {}
         ~ChannelMgr()
         {
-            for(ChannelMap::iterator itr = channels.begin();itr!=channels.end(); ++itr)
-                delete itr->second;
+            for(auto & channel : channels)
+                delete channel.second;
             channels.clear();
         }
         Channel *GetJoinChannel(const std::string& name, uint32 channel_id)
         {
             if(channels.count(name) == 0)
             {
-                Channel *nchan = new Channel(name,channel_id);
+                auto nchan = new Channel(name,channel_id);
                 channels[name] = nchan;
             }
             return channels[name];

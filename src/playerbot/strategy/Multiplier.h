@@ -7,7 +7,7 @@ namespace ai
     {
     public:
         Multiplier(PlayerbotAI* ai, std::string name) : AiNamedObject(ai, name) {}
-        virtual ~Multiplier() {}
+        virtual ~Multiplier() = default;
 
     public:
         virtual float GetValue(Action* action) { return 1.0f; }

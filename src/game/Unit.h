@@ -1099,13 +1099,13 @@ class Unit : public WorldObject
 
         void _addAttacker(Unit *pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
-            AttackerSet::iterator itr = m_attackers.find(pAttacker);
+            auto itr = m_attackers.find(pAttacker);
             if(itr == m_attackers.end())
                 m_attackers.insert(pAttacker);
         }
         void _removeAttacker(Unit *pAttacker)               // must be called only from Unit::AttackStop()
         {
-            AttackerSet::iterator itr = m_attackers.find(pAttacker);
+            auto itr = m_attackers.find(pAttacker);
             if(itr != m_attackers.end())
                 m_attackers.erase(itr);
         }

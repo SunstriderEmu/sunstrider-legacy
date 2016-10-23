@@ -120,7 +120,7 @@ class TransportMgr
 
         TransportTemplate const* GetTransportTemplate(uint32 entry) const
         {
-            TransportTemplates::const_iterator itr = _transportTemplates.find(entry);
+            auto itr = _transportTemplates.find(entry);
             if (itr != _transportTemplates.end())
                 return &itr->second;
             return nullptr;
@@ -128,7 +128,7 @@ class TransportMgr
 
         TransportAnimation const* GetTransportAnimInfo(uint32 entry) const
         {
-            TransportAnimationContainer::const_iterator itr = _transportAnimations.find(entry);
+            auto itr = _transportAnimations.find(entry);
             if (itr != _transportAnimations.end())
                 return &itr->second;
 

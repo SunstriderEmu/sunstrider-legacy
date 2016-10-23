@@ -31,7 +31,7 @@ namespace ai
         CalculatedValue(PlayerbotAI* ai, std::string name = "value", int checkInterval = 1) : UntypedValue(ai, name),
             checkInterval(checkInterval), ticksElapsed(checkInterval)
         { }
-        virtual ~CalculatedValue() {}
+        virtual ~CalculatedValue() = default;
 
 	public:
         T Get() override
@@ -133,9 +133,8 @@ namespace ai
         {
             std::ostringstream out; out << "{";
             std::list<ObjectGuid> guids = Calculate();
-            for (std::list<ObjectGuid>::iterator i = guids.begin(); i != guids.end(); ++i)
+            for (auto guid : guids)
             {
-                ObjectGuid guid = *i;
                 out << guid.GetRawValue() << ",";
             }
             out << "}";
@@ -149,7 +148,7 @@ namespace ai
     public:
         ManualSetValue(PlayerbotAI* ai, T defaultValue, std::string name = "value") :
             UntypedValue(ai, name), value(defaultValue), defaultValue(defaultValue) {}
-        virtual ~ManualSetValue() {}
+        virtual ~ManualSetValue() = default;
 
     public:
         T Get() override { return value; }

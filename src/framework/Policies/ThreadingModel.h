@@ -57,7 +57,7 @@ namespace Trinity
 
             struct Lock                                     // empty object
             {
-                Lock() {}
+                Lock() = default;
                 Lock(const T &) {}
                 Lock(const SingleThreaded<T> &)             // for single threaded we ignore this
                 {
@@ -105,7 +105,7 @@ namespace Trinity
             friend class Lock;
             typedef volatile T VolatileType;
 
-            ClassLevelLockable() {}
+            ClassLevelLockable() = default;
 
             class Lock
             {

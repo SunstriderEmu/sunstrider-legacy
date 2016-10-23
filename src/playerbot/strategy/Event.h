@@ -13,10 +13,10 @@ namespace ai
             owner = other.owner;
         }
         Event() {}
-        Event(std::string source) : source(source) {}
-        Event(std::string source, std::string param, Player* owner = nullptr) : source(source), param(param), owner(owner) {}
-        Event(std::string source, WorldPacket &packet, Player* owner = nullptr) : source(source), packet(packet), owner(owner) {}
-        virtual ~Event() {}
+        Event(std::string source) : source(std::move(source)) {}
+        Event(std::string source, std::string param, Player* owner = nullptr) : source(std::move(source)), param(std::move(param)), owner(owner) {}
+        Event(std::string source, WorldPacket &packet, Player* owner = nullptr) : source(std::move(source)), packet(packet), owner(owner) {}
+        virtual ~Event() = default;
 
 	public:
         std::string getSource() { return source; }

@@ -58,8 +58,8 @@ enum AppenderFlags
 
 struct LogMessage
 {
-    LogMessage(LogLevel _level, std::string const& _type, std::string&& _text)
-        : level(_level), type(_type), text(std::forward<std::string>(_text)), mtime(time(nullptr))
+    LogMessage(LogLevel _level, std::string  _type, std::string&& _text)
+        : level(_level), type(std::move(_type)), text(std::forward<std::string>(_text)), mtime(time(nullptr))
     { }
 
     LogMessage(LogMessage const& /*other*/) = delete;

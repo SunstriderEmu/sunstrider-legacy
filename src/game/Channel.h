@@ -214,7 +214,7 @@ class Channel
 
         uint8 GetPlayerFlags(uint64 p) const
         {
-            PlayerList::const_iterator p_itr = players.find(p);
+            auto p_itr = players.find(p);
             if(p_itr == players.end())
                 return 0;
 

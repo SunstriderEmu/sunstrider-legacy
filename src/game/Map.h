@@ -453,7 +453,7 @@ class Map : public GridRefManager<NGridType>
             // Map::Update for active object in proccess
             if(m_activeForcedNonPlayersIter != m_activeForcedNonPlayers.end())
             {
-                ActiveForcedNonPlayers::iterator itr = m_activeForcedNonPlayers.find(obj);
+                auto itr = m_activeForcedNonPlayers.find(obj);
                 if(itr == m_activeForcedNonPlayers.end())
                     return;
                 if(itr==m_activeForcedNonPlayersIter)

@@ -166,12 +166,12 @@ struct SqlDbc
     {
         // Convert dbc file name to sql table name
         sqlTableName = *_filename;
-        for (uint32 i = 0; i< sqlTableName.size(); ++i)
+        for (char & i : sqlTableName)
         {
-            if (isalpha(sqlTableName[i]))
-                sqlTableName[i] = char(tolower(sqlTableName[i]));
-            else if (sqlTableName[i] == '.')
-                sqlTableName[i] = '_';
+            if (isalpha(i))
+                i = char(tolower(i));
+            else if (i == '.')
+                i = '_';
         }
 
         // Get sql index position

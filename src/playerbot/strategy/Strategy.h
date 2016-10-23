@@ -36,7 +36,7 @@ namespace ai
     {
     public:
         Strategy(PlayerbotAI* ai);
-        virtual ~Strategy() {}
+        virtual ~Strategy() = default;
 
     public:
         virtual NextAction** getDefaultActions() { return nullptr; }

@@ -33,8 +33,8 @@ class FactoryHolder
     public:
         typedef ObjectRegistry<FactoryHolder<T, Key >, Key > FactoryHolderRegistry;
 
-        FactoryHolder(Key k) : i_key(k) {}
-        virtual ~FactoryHolder() {}
+        FactoryHolder(Key k) : i_key(std::move(k)) {}
+        virtual ~FactoryHolder() = default;
         inline Key key() const { return i_key; }
 
         void RegisterSelf(void) { FactoryHolderRegistry::instance()->InsertItem(this, i_key); }
@@ -54,7 +54,7 @@ template<class T>
 class Permissible
 {
     public:
-        virtual ~Permissible() {}
+        virtual ~Permissible() = default;
         virtual int Permit(const T *) const = 0;
 };
 #endif

@@ -33,7 +33,7 @@ class ZoneScript
     public:
 
         explicit ZoneScript(Map *map) : instance(map) {}
-        virtual ~ZoneScript() {}
+        virtual ~ZoneScript() = default;
 
 
         virtual uint32 GetCreatureEntry(uint32 /*guidlow*/, CreatureData const* data) { return data->id; }

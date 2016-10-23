@@ -51,7 +51,7 @@ class ChatHandler
     public:
         explicit ChatHandler(WorldSession* session) : m_session(session) {}
         explicit ChatHandler(Player* player) : m_session(player->GetSession()) {}
-         ~ChatHandler() {}
+         ~ChatHandler() = default;
 
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
          static size_t BuildChatPacket(WorldPacket& data, ChatMsg chatType, Language language, uint64 senderGUID, uint64 receiverGUID, std::string const& message, uint8 chatTag = 0,

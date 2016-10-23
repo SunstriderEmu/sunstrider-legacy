@@ -138,7 +138,7 @@ class GossipMenu
 
         GossipMenuItem const* GetItem(uint32 id) const
         {
-            GossipMenuItemContainer::const_iterator itr = _menuItems.find(id);
+            auto itr = _menuItems.find(id);
             if (itr != _menuItems.end())
                 return &itr->second;
 
@@ -147,7 +147,7 @@ class GossipMenu
 
         GossipMenuItemData const* GetItemData(uint32 indexId) const
         {
-            GossipMenuItemDataContainer::const_iterator itr = _menuItemData.find(indexId);
+            auto itr = _menuItemData.find(indexId);
             if (itr != _menuItemData.end())
                 return &itr->second;
 

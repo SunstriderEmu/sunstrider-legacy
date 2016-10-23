@@ -182,32 +182,32 @@ inline bool isNumericOrSpace(wchar_t wchar)
 
 inline bool isBasicLatinString(std::wstring wstr, bool numericOrSpace)
 {
-    for(size_t i = 0; i < wstr.size(); ++i)
-        if(!isBasicLatinCharacter(wstr[i]) && (!numericOrSpace || !isNumericOrSpace(wstr[i])))
+    for(wchar_t i : wstr)
+        if(!isBasicLatinCharacter(i) && (!numericOrSpace || !isNumericOrSpace(i)))
             return false;
     return true;
 }
 
 inline bool isExtendedLatinString(std::wstring wstr, bool numericOrSpace)
 {
-    for(size_t i = 0; i < wstr.size(); ++i)
-        if(!isExtendedLatinCharacter(wstr[i]) && (!numericOrSpace || !isNumericOrSpace(wstr[i])))
+    for(wchar_t i : wstr)
+        if(!isExtendedLatinCharacter(i) && (!numericOrSpace || !isNumericOrSpace(i)))
             return false;
     return true;
 }
 
 inline bool isCyrillicString(std::wstring wstr, bool numericOrSpace)
 {
-    for(size_t i = 0; i < wstr.size(); ++i)
-        if(!isCyrillicCharacter(wstr[i]) && (!numericOrSpace || !isNumericOrSpace(wstr[i])))
+    for(wchar_t i : wstr)
+        if(!isCyrillicCharacter(i) && (!numericOrSpace || !isNumericOrSpace(i)))
             return false;
     return true;
 }
 
 inline bool isEastAsianString(std::wstring wstr, bool numericOrSpace)
 {
-    for(size_t i = 0; i < wstr.size(); ++i)
-        if(!isEastAsianCharacter(wstr[i]) && (!numericOrSpace || !isNumericOrSpace(wstr[i])))
+    for(wchar_t i : wstr)
+        if(!isEastAsianCharacter(i) && (!numericOrSpace || !isNumericOrSpace(i)))
             return false;
     return true;
 }

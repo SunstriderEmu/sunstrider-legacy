@@ -22,7 +22,7 @@ namespace ai
     class AiNamedObject : public AiObject
     {
     public:
-        AiNamedObject(PlayerbotAI* ai, std::string name) : AiObject(ai), name(name) {}
+        AiNamedObject(PlayerbotAI* ai, std::string name) : AiObject(ai), name(std::move(name)) {}
 
     public:
         virtual std::string getName() { return name; }

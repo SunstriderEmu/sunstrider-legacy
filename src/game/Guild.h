@@ -248,7 +248,7 @@ struct MemberSlot
 
 struct RankInfo
 {
-    RankInfo(const std::string& _name, uint32 _rights, uint32 _money) : name(_name), rights(_rights), BankMoneyPerDay(_money)
+    RankInfo(std::string  _name, uint32 _rights, uint32 _money) : name(std::move(_name)), rights(_rights), BankMoneyPerDay(_money)
     {
         for(uint8 i = 0; i < GUILD_BANK_MAX_TABS; ++i)
         {
@@ -343,12 +343,12 @@ class Guild
         }
         MemberSlot* GetMemberSlot(const std::string& name, uint64& guid)
         {
-            for(MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+            for(auto & member : members)
             {
-                if(itr->second.name == name)
+                if(member.second.name == name)
                 {
-                    guid = itr->first;
-                    return &itr->second;
+                    guid = member.first;
+                    return &member.second;
                 }
             }
             return nullptr;

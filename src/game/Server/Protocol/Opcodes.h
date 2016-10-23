@@ -2448,7 +2448,7 @@ class OpcodeHandler
 {
 public:
     OpcodeHandler(char const* name, SessionStatus status) : Name(name), Status(status) { }
-    virtual ~OpcodeHandler() { }
+    virtual ~OpcodeHandler() = default;
 
     char const* Name;
     SessionStatus Status;
@@ -2491,9 +2491,9 @@ public:
 
     ~OpcodeTable()
     {
-        for (uint16 i = 0; i < NUM_OPCODE_HANDLERS; ++i)
+        for (auto & i : _internalTableClient)
         {
-            delete _internalTableClient[i];
+            delete i;
         }
     }
 

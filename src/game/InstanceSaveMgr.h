@@ -186,7 +186,7 @@ public:
     void LoadResetTimes();
     time_t GetResetTimeFor(uint32 mapid, Difficulty d) const
     {
-        ResetTimeByMapDifficultyMap::const_iterator itr = m_resetTimeByMapDifficulty.find(MAKE_PAIR32(mapid, d));
+        auto itr = m_resetTimeByMapDifficulty.find(MAKE_PAIR32(mapid, d));
         return itr != m_resetTimeByMapDifficulty.end() ? itr->second : 0;
     }
     time_t GetSubsequentResetTime(uint32 mapid, Difficulty difficulty, time_t resetTime) const;
@@ -200,7 +200,7 @@ public:
     // Use this only when updating existing reset times
     void SetResetTimeFor(uint32 mapid, Difficulty d, time_t t)
     {
-        ResetTimeByMapDifficultyMap::iterator itr = m_resetTimeByMapDifficulty.find(MAKE_PAIR32(mapid, d));
+        auto itr = m_resetTimeByMapDifficulty.find(MAKE_PAIR32(mapid, d));
         ASSERT(itr != m_resetTimeByMapDifficulty.end());
         itr->second = t;
     }

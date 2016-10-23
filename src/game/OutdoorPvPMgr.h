@@ -33,7 +33,7 @@ class OutdoorPvPMgr
 {
 private:
     OutdoorPvPMgr();
-    ~OutdoorPvPMgr() {}
+    ~OutdoorPvPMgr() = default;
 public:
     static OutdoorPvPMgr* instance()
     {

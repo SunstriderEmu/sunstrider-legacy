@@ -60,8 +60,8 @@ class TransactionTask : public SQLOperation
     friend class DatabaseWorker;
 
     public:
-        TransactionTask(SQLTransaction trans) : m_trans(trans) { }
-        ~TransactionTask() override{ }
+        TransactionTask(SQLTransaction trans) : m_trans(std::move(trans)) { }
+        ~TransactionTask() override= default;
 
     protected:
         bool Execute() override;
