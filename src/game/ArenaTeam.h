@@ -239,7 +239,8 @@ class ArenaTeam
 
         void NotifyStatsChanged();
 
-        void FinishWeek();
+        //return true if any match played this week
+        bool FinishWeek();
 
     protected:
 

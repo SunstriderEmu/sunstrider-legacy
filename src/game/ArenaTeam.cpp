@@ -723,12 +723,19 @@ void ArenaTeam::SaveToDB()
     CharacterDatabase.PExecute("UPDATE arena_team_stats SET rating = '%u',games = '%u',played = '%u',rank = '%u',wins = '%u',wins2 = '%u', nonplayedweeks = '%u' WHERE arenateamid = '%u'", stats.rating, stats.games_week, stats.games_season, stats.rank, stats.wins_week, stats.wins_season, stats.non_played_weeks, GetId());
     for(MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
     {
+        // Save effort
+        if(itr->games_week == 0)
+            continue;
+
         CharacterDatabase.PExecute("UPDATE arena_team_member SET played_week = '%u', wons_week = '%u', played_season = '%u', wons_season = '%u', personal_rating = '%u' WHERE arenateamid = '%u' AND guid = '%u'", itr->games_week, itr->wins_week, itr->games_season, itr->wins_season, itr->personal_rating, Id, itr->guid);
     }
 }
 
-void ArenaTeam::FinishWeek()
+bool ArenaTeam::FinishWeek()
 {
+    if(stats.games_week == 0)
+        return false;
+
     stats.games_week = 0;                                   // played this week
     stats.wins_week = 0;                                    // wins this week
     for(MemberList::iterator itr = members.begin(); itr !=  members.end(); ++itr)
@@ -736,6 +743,8 @@ void ArenaTeam::FinishWeek()
         itr->games_week = 0;
         itr->wins_week = 0;
     }
+
+    return true;
 }
 
 void ArenaTeam::GetMembers(std::list<ArenaTeamMember*>& memberList)
