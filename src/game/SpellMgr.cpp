@@ -1402,21 +1402,32 @@ void SpellMgr::LoadSpellLearnSkills()
 
         for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if(entry->Effects[i].Effect==SPELL_EFFECT_SKILL)
+            SpellLearnSkillNode dbc_node;
+            switch(entry->Effects[i].Effect)
             {
-                SpellLearnSkillNode dbc_node;
+            case SPELL_EFFECT_SKILL:
+
                 dbc_node.skill    = entry->Effects[i].MiscValue;
                 dbc_node.step     = entry->Effects[i].BasePoints;
-                if ( dbc_node.skill != SKILL_RIDING )
+                if (dbc_node.skill != SKILL_RIDING)
                     dbc_node.value    = 1;
                 else
                     dbc_node.value    = (entry->Effects[i].BasePoints+1)*75;
+
                 dbc_node.maxvalue = (entry->Effects[i].BasePoints+1)*75;
-                
-                mSpellLearnSkills[spellId] = dbc_node;
-                ++dbc_count;
                 break;
+            case SPELL_EFFECT_DUAL_WIELD:
+                dbc_node.skill = SKILL_DUAL_WIELD;
+                dbc_node.step = 1;
+                dbc_node.value = 1;
+                dbc_node.maxvalue = 1;
+                break;
+            default:
+                continue;
             }
+
+            mSpellLearnSkills[spellId] = dbc_node;
+            ++dbc_count;
         }
     }
 
