@@ -2126,7 +2126,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(const Unit *pVictim, WeaponAttackT
     float parry_chance = pVictim->GetUnitParryChance(); 
 
     // Useful if want to specify crit & miss chances for melee, else it could be removed
-    TC_LOG_DEBUG ("entities.unit","MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
+    // TC_LOG_DEBUG ("entities.unit","MELEE OUTCOME: miss %f crit %f dodge %f parry %f block %f", miss_chance,crit_chance,dodge_chance,parry_chance,block_chance);
 
     return RollMeleeOutcomeAgainst(pVictim, attType, int32(crit_chance*100), int32(miss_chance*100), int32(dodge_chance*100),int32(parry_chance*100),int32(block_chance*100), false);
 }
@@ -2155,24 +2155,24 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     int32    skillBonus  = 4 * ( attackerWeaponSkill - victimMaxSkillValueForLevel );
     int32    skillBonus2 = 4 * ( attackerMaxSkillValueForLevel - victimDefenseSkill );
     int32    sum = 0, tmp = 0;
-    int32    roll = GetMap()->urand (0, 10000);
+    int32    roll = GetMap()->urand (0, 9999);
 
-    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
-    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
-        roll, miss_chance, dodge_chance, parry_chance, block_chance, crit_chance);
+    //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: skill bonus of %d for attacker", skillBonus);
+    /*TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: rolled %d, miss %d, dodge %d, parry %d, block %d, crit %d",
+        roll, miss_chance, dodge_chance, parry_chance, block_chance, crit_chance); */
 
     tmp = miss_chance;
 
     if (tmp > 0 && roll < (sum += tmp ))
     {
-        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: MISS");
+        //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: MISS");
         return MELEE_HIT_MISS;
     }
 
     // always crit against a sitting target (except 0 crit chance)
     if( pVictim->GetTypeId() == TYPEID_PLAYER && crit_chance > 0 && !pVictim->IsStandState() )
     {
-        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT (sitting victim)");
+        //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT (sitting victim)");
         return MELEE_HIT_CRIT;
     }
 
@@ -2181,7 +2181,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // only players can't dodge if attacker is behind
     if (pVictim->GetTypeId() == TYPEID_PLAYER && !pVictim->HasInArc(M_PI,this))
     {
-        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
+        //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind and victim was a player.");
     }
     else
     {
@@ -2200,7 +2200,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             if (   (real_dodge_chance > 0)                                        
                 && roll < (sum += real_dodge_chance))
             {
-                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-real_dodge_chance, sum);
+                //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: DODGE <%d, %d)", sum-real_dodge_chance, sum);
                 return MELEE_HIT_DODGE;
             }
         }
@@ -2211,7 +2211,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
     // check if attack comes from behind, nobody can parry or block if attacker is behind
     if (!pVictim->HasInArc(M_PI,this))
     {
-        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind.");
+        //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: attack came from behind.");
     }
     else
     {
@@ -2227,7 +2227,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             if (   (real_parry_chance > 0)     
                 && (roll < (sum += real_parry_chance)))
             {
-                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-real_parry_chance, sum);
+                // TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: PARRY <%d, %d)", sum-real_parry_chance, sum);
                 ((Unit*)pVictim)->HandleParryRush();
                 return MELEE_HIT_PARRY;
             }
@@ -2248,11 +2248,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
                 {
                     if ( roll_chance_i(blocked_crit_chance/100))
                     {
-                        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCKED CRIT");
+                        // TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCKED CRIT");
                         return MELEE_HIT_BLOCK_CRIT;
                     }
                 }
-                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-blocked_crit_chance, sum);
+                // TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: BLOCK <%d, %d)", sum-blocked_crit_chance, sum);
                 return MELEE_HIT_BLOCK;
             }
         }
@@ -2263,7 +2263,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
 
     if (real_crit_chance > 0 && roll < (sum += real_crit_chance))
     {
-        TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
+        // TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT <%d, %d)", sum-real_crit_chance, sum);
         if(GetTypeId() == TYPEID_UNIT && ((this->ToCreature())->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRIT))
             TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRIT DISABLED)");
         else
@@ -2281,11 +2281,13 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
         int32 maxskill = attackerMaxSkillValueForLevel;
         skill = (skill > maxskill) ? maxskill : skill;
 
-        tmp = (10 + (victimDefenseSkill - skill)) * 100;
-        tmp = tmp > 4000 ? 4000 : tmp;
-        if (roll < (sum += tmp))
+        // against boss-level targets - 24% chance of 25% average damage reduction (damage reduction range : 20-30%)
+        // against level 72 elites - 18% chance of 15% average damage reduction (damage reduction range : 10-20%)
+        tmp = 600 + (victimDefenseSkill - skill) * 120; // 3 level = 24%, 2 level = 18%, 1 level = 12%
+        tmp = std::min(tmp, 4000); //max 40%
+        if (tmp > 0 && roll < (sum += tmp))
         {
-            TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
+            //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             return MELEE_HIT_GLANCING;
         }
     }
@@ -2306,13 +2308,13 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit *pVictim, WeaponAttack
             tmp = tmp * 200 - 1500;
             if (roll < (sum += tmp))
             {
-                TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
+                //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: CRUSHING <%d, %d)", sum-tmp, sum);
                 return MELEE_HIT_CRUSHING;
             }
         }
     }
 
-    TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: NORMAL");
+    //TC_LOG_DEBUG ("entities.unit","RollMeleeOutcomeAgainst: NORMAL");
     return MELEE_HIT_NORMAL;
 }
 
