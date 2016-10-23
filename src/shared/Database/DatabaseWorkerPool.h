@@ -135,7 +135,7 @@ class DatabaseWorkerPool
             if (!sql)
                 return;
 
-            BasicStatementTask* task = new BasicStatementTask(sql);
+            auto  task = new BasicStatementTask(sql);
             Enqueue(task);
         }
 
@@ -154,7 +154,7 @@ class DatabaseWorkerPool
         //! Statement must be prepared with CONNECTION_ASYNC flag.
         void Execute(PreparedStatement* stmt)
         {
-            PreparedStatementTask* task = new PreparedStatementTask(stmt);
+            auto  task = new PreparedStatementTask(stmt);
             Enqueue(task);
         }
 
@@ -270,7 +270,7 @@ class DatabaseWorkerPool
         //! The return value is then processed in ProcessQueryCallback methods.
         QueryResultFuture AsyncQuery(const char* sql)
         {
-            BasicStatementTask* task = new BasicStatementTask(sql, true);
+            auto  task = new BasicStatementTask(sql, true);
             // Store future result before enqueueing - task might get already processed and deleted before returning from this method
             QueryResultFuture result = task->GetFuture();
             Enqueue(task);
@@ -290,7 +290,7 @@ class DatabaseWorkerPool
         //! Statement must be prepared with CONNECTION_ASYNC flag.
         PreparedQueryResultFuture AsyncQuery(PreparedStatement* stmt)
         {
-            PreparedStatementTask* task = new PreparedStatementTask(stmt, true);
+            auto  task = new PreparedStatementTask(stmt, true);
             // Store future result before enqueueing - task might get already processed and deleted before returning from this method
             PreparedQueryResultFuture result = task->GetFuture();
             Enqueue(task);
@@ -303,7 +303,7 @@ class DatabaseWorkerPool
         //! Any prepared statements added to this holder need to be prepared with the CONNECTION_ASYNC flag.
         QueryResultHolderFuture DelayQueryHolder(SQLQueryHolder* holder)
         {
-            SQLQueryHolderTask* task = new SQLQueryHolderTask(holder);
+            auto  task = new SQLQueryHolderTask(holder);
             // Store future result before enqueueing - task might get already processed and deleted before returning from this method
             QueryResultHolderFuture result = task->GetFuture();
             Enqueue(task);
@@ -413,7 +413,7 @@ class DatabaseWorkerPool
             if (str.empty())
                 return;
 
-            char* buf = new char[str.size() * 2 + 1];
+            auto  buf = new char[str.size() * 2 + 1];
             EscapeString(buf, str.c_str(), str.size());
             str = buf;
             delete[] buf;

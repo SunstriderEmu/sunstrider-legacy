@@ -20,7 +20,7 @@
 #include "Log.h"
 
 PreparedStatement::PreparedStatement(uint32 index) :
-m_stmt(NULL),
+m_stmt(nullptr),
 m_index(index) { }
 
 PreparedStatement::~PreparedStatement() { }
@@ -199,9 +199,9 @@ void PreparedStatement::setNull(const uint8 index)
 }
 
 MySQLPreparedStatement::MySQLPreparedStatement(MYSQL_STMT* stmt) :
-m_stmt(NULL),
+m_stmt(nullptr),
 m_Mstmt(stmt),
-m_bind(NULL)
+m_bind(nullptr)
 {
     /// Initialize variable parameters
     m_paramCount = mysql_stmt_param_count(stmt);
@@ -231,9 +231,9 @@ void MySQLPreparedStatement::ClearParameters()
     for (uint32 i=0; i < m_paramCount; ++i)
     {
         delete m_bind[i].length;
-        m_bind[i].length = NULL;
+        m_bind[i].length = nullptr;
         delete[] (char*) m_bind[i].buffer;
-        m_bind[i].buffer = NULL;
+        m_bind[i].buffer = nullptr;
         m_paramsSet[i] = false;
     }
 }
@@ -363,11 +363,11 @@ void MySQLPreparedStatement::setNull(const uint8 index)
     MYSQL_BIND* param = &m_bind[index];
     param->buffer_type = MYSQL_TYPE_NULL;
     delete [] static_cast<char *>(param->buffer);
-    param->buffer = NULL;
+    param->buffer = nullptr;
     param->buffer_length = 0;
     param->is_null_value = 1;
     delete param->length;
-    param->length = NULL;
+    param->length = nullptr;
 }
 
 void MySQLPreparedStatement::setValue(MYSQL_BIND* param, enum_field_types type, const void* value, uint32 len, bool isUnsigned)
@@ -377,7 +377,7 @@ void MySQLPreparedStatement::setValue(MYSQL_BIND* param, enum_field_types type, 
     param->buffer = new char[len];
     param->buffer_length = 0;
     param->is_null_value = 0;
-    param->length = NULL;               // Only != NULL for strings
+    param->length = nullptr;               // Only != NULL for strings
     param->is_unsigned = isUnsigned;
 
     memcpy(param->buffer, value, len);
@@ -388,48 +388,48 @@ std::string MySQLPreparedStatement::getQueryString(std::string const& sqlPattern
     std::string queryString = sqlPattern;
 
     size_t pos = 0;
-    for (uint32 i = 0; i < m_stmt->statement_data.size(); i++)
+    for (auto & i : m_stmt->statement_data)
     {
         pos = queryString.find('?', pos);
         std::stringstream ss;
 
-        switch (m_stmt->statement_data[i].type)
+        switch (i.type)
         {
             case TYPE_BOOL:
-                ss << uint16(m_stmt->statement_data[i].data.boolean);
+                ss << uint16(i.data.boolean);
                 break;
             case TYPE_UI8:
-                ss << uint16(m_stmt->statement_data[i].data.ui8);  // stringstream will append a character with that code instead of numeric representation
+                ss << uint16(i.data.ui8);  // stringstream will append a character with that code instead of numeric representation
                 break;
             case TYPE_UI16:
-                ss << m_stmt->statement_data[i].data.ui16;
+                ss << i.data.ui16;
                 break;
             case TYPE_UI32:
-                ss << m_stmt->statement_data[i].data.ui32;
+                ss << i.data.ui32;
                 break;
             case TYPE_I8:
-                ss << int16(m_stmt->statement_data[i].data.i8);  // stringstream will append a character with that code instead of numeric representation
+                ss << int16(i.data.i8);  // stringstream will append a character with that code instead of numeric representation
                 break;
             case TYPE_I16:
-                ss << m_stmt->statement_data[i].data.i16;
+                ss << i.data.i16;
                 break;
             case TYPE_I32:
-                ss << m_stmt->statement_data[i].data.i32;
+                ss << i.data.i32;
                 break;
             case TYPE_UI64:
-                ss << m_stmt->statement_data[i].data.ui64;
+                ss << i.data.ui64;
                 break;
             case TYPE_I64:
-                ss << m_stmt->statement_data[i].data.i64;
+                ss << i.data.i64;
                 break;
             case TYPE_FLOAT:
-                ss << m_stmt->statement_data[i].data.f;
+                ss << i.data.f;
                 break;
             case TYPE_DOUBLE:
-                ss << m_stmt->statement_data[i].data.d;
+                ss << i.data.d;
                 break;
             case TYPE_STRING:
-                ss << '\'' << m_stmt->statement_data[i].str << '\'';
+                ss << '\'' << i.str << '\'';
                 break;
             case TYPE_NULL:
                 ss << "NULL";
@@ -468,7 +468,7 @@ bool PreparedStatementTask::Execute()
         if (!result || !result->GetRowCount())
         {
             //delete result;
-            m_result->set_value(PreparedQueryResult(NULL));
+            m_result->set_value(PreparedQueryResult(nullptr));
             return false;
         }
         m_result->set_value(PreparedQueryResult(result));

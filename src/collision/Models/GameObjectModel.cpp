@@ -36,8 +36,8 @@ using G3D::AABox;
 
 struct GameobjectModelData
 {
-    GameobjectModelData(const std::string& name_, const AABox& box) :
-        bound(box), name(name_) { }
+    GameobjectModelData(std::string  name_, AABox  box) :
+        bound(std::move(box)), name(std::move(name_)) { }
 
     AABox bound;
     std::string name;
@@ -138,11 +138,11 @@ bool GameObjectModel::initialize(std::unique_ptr<GameObjectModelOwnerBase> model
 
 GameObjectModel* GameObjectModel::Create(std::unique_ptr<GameObjectModelOwnerBase> modelOwner)
 {
-    GameObjectModel* mdl = new GameObjectModel();
+    auto  mdl = new GameObjectModel();
     if (!mdl->initialize(std::move(modelOwner)))
     {
         delete mdl;
-        return NULL;
+        return nullptr;
     }
 
     return mdl;

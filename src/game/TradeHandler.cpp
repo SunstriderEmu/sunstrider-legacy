@@ -554,9 +554,9 @@ void WorldSession::HandleSetTradeItemOpcode(WorldPacket& recvPacket)
     uint16 pos = (bag << 8) | slot;
 
     // prevent place single item into many trade slots using cheating and client bugs
-    for(int i = 0; i < TRADE_SLOT_COUNT; ++i)
+    for(unsigned short tradeItem : _player->tradeItems)
     {
-        if(_player->tradeItems[i]==pos)
+        if(tradeItem==pos)
         {
             // cheating attempt
             SendTradeStatus(TRADE_STATUS_TRADE_CANCELED);

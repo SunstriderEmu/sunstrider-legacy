@@ -27,12 +27,12 @@ class PassiveAI : public CreatureAI
 {
     public:
         PassiveAI(Creature *c) : CreatureAI(c) {}
-        ~PassiveAI() {}
+        ~PassiveAI() override {}
 
-        void MoveInLineOfSight(Unit *) {}
-        void AttackStart(Unit *) {}
+        void MoveInLineOfSight(Unit *) override {}
+        void AttackStart(Unit *) override {}
 
-        void UpdateAI(const uint32);
+        void UpdateAI(const uint32) override;
         static int Permissible(const Creature *) { return PERMIT_BASE_IDLE;  }
 };
 

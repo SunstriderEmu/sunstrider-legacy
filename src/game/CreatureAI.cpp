@@ -195,9 +195,9 @@ bool CreatureAI::IsInMeleeRange() const
     Map::PlayerList const &PlayerList = pMap->GetPlayers();
     if (!PlayerList.isEmpty())
     {
-        for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        for (const auto & i : PlayerList)
         {
-            if (me->IsWithinMeleeRange(i->GetSource()))
+            if (me->IsWithinMeleeRange(i.GetSource()))
                 return true;
         }
     }
@@ -228,9 +228,9 @@ void CreatureAI::DoZoneInCombat(Unit* pUnit, bool force)
     }
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
-    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+    for (const auto & i : PlayerList)
     {
-        if (Player* i_pl = i->GetSource())
+        if (Player* i_pl = i.GetSource())
             if (i_pl->IsAlive()
                 && !i_pl->IsGameMaster())
             {

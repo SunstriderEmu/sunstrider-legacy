@@ -38,9 +38,9 @@ void MapInstanced::InitVisibilityDistance()
     if (m_InstancedMaps.empty())
         return;
     //initialize visibility distances for all instance copies
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
+    for (auto & m_InstancedMap : m_InstancedMaps)
     {
-        (*i).second->InitVisibilityDistance();
+        m_InstancedMap.second->InitVisibilityDistance();
     }
 }
 
@@ -50,7 +50,7 @@ void MapInstanced::Update(const uint32& t)
     Map::Update(t);
 
     // update the instanced maps
-    InstancedMaps::iterator i = m_InstancedMaps.begin();
+    auto i = m_InstancedMaps.begin();
 
     while (i != m_InstancedMaps.end())
     {
@@ -103,8 +103,8 @@ void MapInstanced::Update(const uint32& t)
 
 void MapInstanced::DelayedUpdate(const uint32 diff)
 {
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-        i->second->DelayedUpdate(diff);
+    for (auto & m_InstancedMap : m_InstancedMaps)
+        m_InstancedMap.second->DelayedUpdate(diff);
 
     Map::DelayedUpdate(diff); // this may be removed
 }
@@ -121,9 +121,9 @@ void MapInstanced::MapCrashed(Map* map)
 
 void MapInstanced::MoveAllCreaturesInMoveList()
 {
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
+    for (auto & m_InstancedMap : m_InstancedMaps)
     {
-        i->second->MoveAllCreaturesInMoveList();
+        m_InstancedMap.second->MoveAllCreaturesInMoveList();
     }
 
     Map::MoveAllCreaturesInMoveList();
@@ -131,9 +131,9 @@ void MapInstanced::MoveAllCreaturesInMoveList()
 
 void MapInstanced::RemoveAllObjectsInRemoveList()
 {
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
+    for (auto & m_InstancedMap : m_InstancedMaps)
     {
-        i->second->RemoveAllObjectsInRemoveList();
+        m_InstancedMap.second->RemoveAllObjectsInRemoveList();
     }
 
     Map::RemoveAllObjectsInRemoveList();
@@ -143,9 +143,9 @@ bool MapInstanced::RemoveBones(uint64 guid, float x, float y)
 {
     bool remove_result = false;
 
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
+    for (auto & m_InstancedMap : m_InstancedMaps)
     {
-        remove_result = remove_result || i->second->RemoveBones(guid, x, y);
+        remove_result = remove_result || m_InstancedMap.second->RemoveBones(guid, x, y);
     }
 
     return remove_result || Map::RemoveBones(guid,x,y);
@@ -154,12 +154,12 @@ bool MapInstanced::RemoveBones(uint64 guid, float x, float y)
 void MapInstanced::UnloadAll()
 {
     // Unload instanced maps
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-        i->second->UnloadAll();
+    for (auto & m_InstancedMap : m_InstancedMaps)
+        m_InstancedMap.second->UnloadAll();
 
     // Delete the maps only after everything is unloaded to prevent crashes
-    for (InstancedMaps::iterator i = m_InstancedMaps.begin(); i != m_InstancedMaps.end(); ++i)
-        delete i->second;
+    for (auto & m_InstancedMap : m_InstancedMaps)
+        delete m_InstancedMap.second;
 
     m_InstancedMaps.clear();
 
@@ -234,7 +234,7 @@ Map* MapInstanced::GetInstance(const WorldObject* obj)
 
 Map* MapInstanced::FindInstanceMap(uint32 InstanceId)
 {
-    InstancedMaps::iterator i = m_InstancedMaps.find(InstanceId);
+    auto i = m_InstancedMaps.find(InstanceId);
     return(i == m_InstancedMaps.end() ? nullptr : i->second);
 }
 
@@ -262,7 +262,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 
-    InstanceMap *map = new InstanceMap(GetId(), InstanceId, difficulty);
+    auto map = new InstanceMap(GetId(), InstanceId, difficulty);
     assert(map->IsDungeon());
 
     bool load_data = save != nullptr;
@@ -279,7 +279,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
-    BattlegroundMap *map = new BattlegroundMap(GetId(), InstanceId);
+    auto map = new BattlegroundMap(GetId(), InstanceId);
     assert(map->IsBattlegroundOrArena());
     map->SetBG(bg);
 
@@ -289,7 +289,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
 
 bool MapInstanced::DestroyInstance(uint32 InstanceId)
 {
-    InstancedMaps::iterator itr = m_InstancedMaps.find(InstanceId);
+    auto itr = m_InstancedMaps.find(InstanceId);
     if(itr != m_InstancedMaps.end())
        return DestroyInstance(itr);
 

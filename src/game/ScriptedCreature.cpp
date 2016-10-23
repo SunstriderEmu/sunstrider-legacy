@@ -26,7 +26,7 @@ struct TSpellSummary
 void SummonList::Despawn(Creature *summon)
 {
     uint64 guid = summon->GetGUID();
-    for(iterator i = begin(); i != end(); ++i)
+    for(auto i = begin(); i != end(); ++i)
     {
         if(*i == guid)
         {
@@ -57,9 +57,9 @@ void SummonList::DespawnEntry(uint32 entry)
 
 void SummonList::DespawnAll(bool withoutWorldBoss)
 {
-    for(iterator i = begin(); i != end(); ++i)
+    for(unsigned long & i : *this)
     {
-        if(Creature *summon = ObjectAccessor::GetCreature(*me, *i))
+        if(Creature *summon = ObjectAccessor::GetCreature(*me, i))
         {
             if (withoutWorldBoss && summon->IsWorldBoss())
                 continue;
@@ -77,9 +77,9 @@ bool SummonList::IsEmpty()
 
 Creature* SummonList::GetCreatureWithEntry(uint32 entry) const
 {
-    for (auto i = begin(); i != end(); ++i)
+    for (unsigned long i : *this)
     {
-        if (Creature* summon = ObjectAccessor::GetCreature(*me, *i))
+        if (Creature* summon = ObjectAccessor::GetCreature(*me, i))
             if (summon->GetEntry() == entry)
                 return summon;
     }
@@ -104,7 +104,7 @@ void BumpHelper::Update(const uint32 diff)
 //return true if not yet present in list
 bool BumpHelper::AddCooldown(Unit* p, uint32 customValue)
 {
-    std::map<uint64,uint32>::iterator found = find(p->GetGUID());
+    auto found = find(p->GetGUID());
     if(found != end())
         return false;
 
@@ -285,9 +285,9 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mecha
     SpellInfo const* TempSpell;
 
     //Check if each spell is viable(set it to null if not)
-    for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
+    for (unsigned int m_spell : me->m_spells)
     {
-        TempSpell = sSpellMgr->GetSpellInfo(me->m_spells[i]);
+        TempSpell = sSpellMgr->GetSpellInfo(m_spell);
 
         //This spell doesn't exist
         if (!TempSpell)
@@ -295,11 +295,11 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mecha
 
         // Targets and Effects checked first as most used restrictions
         //Check the spell targets if specified
-        if (Targets && !(SpellSummary[me->m_spells[i]].Targets & (1 << (Targets - 1))))
+        if (Targets && !(SpellSummary[m_spell].Targets & (1 << (Targets - 1))))
             continue;
 
         //Check the type of spell if we are looking for a specific spell type
-        if (Effects && !(SpellSummary[me->m_spells[i]].Effects & (1 << (Effects - 1))))
+        if (Effects && !(SpellSummary[m_spell].Effects & (1 << (Effects - 1))))
             continue;
 
         //Check for school if specified
@@ -455,8 +455,8 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
         return;
 
     Map::PlayerList const &PlayerList = map->GetPlayers();
-    for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-        if (Player* i_pl = i->GetSource())
+    for(const auto & i : PlayerList)
+        if (Player* i_pl = i.GetSource())
             if (i_pl->IsAlive())
                 i_pl->TeleportTo(me->GetMapId(), x, y, z, o, TELE_TO_NOT_LEAVE_COMBAT);
 }
@@ -529,40 +529,40 @@ bool BossAI::CheckBoundary(Unit* who)
     if (!GetBoundary() || !who)
         return true;
 
-    for (BossBoundaryMap::const_iterator itr = GetBoundary()->begin(); itr != GetBoundary()->end(); ++itr)
+    for (const auto & itr : *GetBoundary())
     {
-        switch (itr->first)
+        switch (itr.first)
         {
         case BOUNDARY_N:
-            if (who->GetPositionX() > itr->second)
+            if (who->GetPositionX() > itr.second)
                 return false;
             break;
         case BOUNDARY_S:
-            if (who->GetPositionX() < itr->second)
+            if (who->GetPositionX() < itr.second)
                 return false;
             break;
         case BOUNDARY_E:
-            if (who->GetPositionY() < itr->second)
+            if (who->GetPositionY() < itr.second)
                 return false;
             break;
         case BOUNDARY_W:
-            if (who->GetPositionY() > itr->second)
+            if (who->GetPositionY() > itr.second)
                 return false;
             break;
         case BOUNDARY_NW:
-            if (who->GetPositionX() + who->GetPositionY() > itr->second)
+            if (who->GetPositionX() + who->GetPositionY() > itr.second)
                 return false;
             break;
         case BOUNDARY_SE:
-            if (who->GetPositionX() + who->GetPositionY() < itr->second)
+            if (who->GetPositionX() + who->GetPositionY() < itr.second)
                 return false;
             break;
         case BOUNDARY_NE:
-            if (who->GetPositionX() - who->GetPositionY() > itr->second)
+            if (who->GetPositionX() - who->GetPositionY() > itr.second)
                 return false;
             break;
         case BOUNDARY_SW:
-            if (who->GetPositionX() - who->GetPositionY() < itr->second)
+            if (who->GetPositionX() - who->GetPositionY() < itr.second)
                 return false;
             break;
         default:

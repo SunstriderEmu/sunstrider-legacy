@@ -578,8 +578,8 @@ void GameObject::Update(uint32 diff)
 
                 if(spellId)
                 {
-                    std::set<uint32>::iterator it = m_unique_users.begin();
-                    std::set<uint32>::iterator end = m_unique_users.end();
+                    auto it = m_unique_users.begin();
+                    auto end = m_unique_users.end();
                     for (; it != end; it++)
                     {
                         Unit* owner = ObjectAccessor::GetUnit(*this, uint64(*it));
@@ -953,7 +953,7 @@ GameObjectTemplate const *GameObject::GetGOInfo() const
 bool GameObject::HasQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mGOQuestRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
             return true;
@@ -964,7 +964,7 @@ bool GameObject::HasQuest(uint32 quest_id) const
 bool GameObject::HasInvolvedQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mGOQuestInvolvedRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
             return true;
@@ -1619,7 +1619,7 @@ void GameObject::Use(Unit* user)
         return;
     }
 
-    Spell *spell = new Spell(spellCaster, spellInfo, false);
+    auto spell = new Spell(spellCaster, spellInfo, false);
 
     // spell target is user of GO
     SpellCastTargets targets;

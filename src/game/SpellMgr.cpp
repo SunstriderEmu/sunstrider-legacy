@@ -178,8 +178,8 @@ bool IsAuraAddedBySpell(uint32 auraType, uint32 spellId)
     SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
     if (!spellproto) return false;
 
-    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
-        if (spellproto->Effects[i].ApplyAuraName == auraType)
+    for (const auto & Effect : spellproto->Effects)
+        if (Effect.ApplyAuraName == auraType)
             return true;
     return false;
 }
@@ -281,9 +281,9 @@ void SpellMgr::LoadSpellTargetPositions()
         }
 
         bool found = false;
-        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        for(const auto & Effect : spellInfo->Effects)
         {
-            if( spellInfo->Effects[i].TargetA.GetTarget()==TARGET_DEST_DB || spellInfo->Effects[i].TargetB.GetTarget()==TARGET_DEST_DB )
+            if( Effect.TargetA.GetTarget()==TARGET_DEST_DB || Effect.TargetB.GetTarget()==TARGET_DEST_DB )
             {
                 found = true;
                 break;
@@ -820,21 +820,21 @@ bool SpellMgr::canStackSpellRanks(SpellInfo const *spellInfo)
         return false;
 
     // All stance spells. if any better way, change it.
-    for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
+    for (const auto & Effect : spellInfo->Effects)
     {
         // Paladin aura Spell
         if(spellInfo->SpellFamilyName == SPELLFAMILY_PALADIN
-            && spellInfo->Effects[i].Effect==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
+            && Effect.Effect==SPELL_EFFECT_APPLY_AREA_AURA_PARTY)
             return false;
         // Druid form Spell
         if(spellInfo->SpellFamilyName == SPELLFAMILY_DRUID
-            && spellInfo->Effects[i].Effect==SPELL_EFFECT_APPLY_AURA
-            && spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+            && Effect.Effect==SPELL_EFFECT_APPLY_AURA
+            && Effect.ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
             return false;
         // Rogue Stealth
         if(spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE
-            && spellInfo->Effects[i].Effect==SPELL_EFFECT_APPLY_AURA
-            && spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
+            && Effect.Effect==SPELL_EFFECT_APPLY_AURA
+            && Effect.ApplyAuraName == SPELL_AURA_MOD_SHAPESHIFT)
             return false;
     }
     
@@ -905,11 +905,11 @@ bool SpellMgr::IsNoStackSpellDueToSpell(uint32 spellId_1, uint32 spellId_2, bool
         if (spellInfo_1->HasAttribute(SPELL_ATTR3_STACK_FOR_DIFF_CASTERS))
             return true;
             
-        for(uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i) {
-            if (spellInfo_1->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA
-                || spellInfo_1->Effects[i].Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA) {
+        for(const auto & Effect : spellInfo_1->Effects) {
+            if (Effect.Effect == SPELL_EFFECT_APPLY_AURA
+                || Effect.Effect == SPELL_EFFECT_PERSISTENT_AREA_AURA) {
                 // not area auras (shaman totem)
-                switch(spellInfo_1->Effects[i].ApplyAuraName)
+                switch(Effect.ApplyAuraName)
                 {
                     case SPELL_AURA_MOD_DECREASE_SPEED:
                         // Mind Flay
@@ -1009,7 +1009,7 @@ bool SpellMgr::IsNearbyEntryEffect(SpellInfo const* spellInfo, uint8 eff) const
 
 SpellLearnSkillNode const* SpellMgr::GetSpellLearnSkill(uint32 spell_id) const
 {
-    SpellLearnSkillMap::const_iterator itr = mSpellLearnSkills.find(spell_id);
+    auto itr = mSpellLearnSkills.find(spell_id);
     if (itr != mSpellLearnSkills.end())
         return &itr->second;
     else
@@ -1029,7 +1029,7 @@ bool SpellMgr::IsSpellLearnSpell(uint32 spell_id) const
 bool SpellMgr::IsSpellLearnToSpell(uint32 spell_id1, uint32 spell_id2) const
 {
     SpellLearnSpellMapBounds bounds = GetSpellLearnSpellMapBounds(spell_id1);
-    for (SpellLearnSpellMap::const_iterator i = bounds.first; i != bounds.second; ++i)
+    for (auto i = bounds.first; i != bounds.second; ++i)
         if (i->second.spell == spell_id2)
             return true;
     return false;
@@ -1141,8 +1141,8 @@ struct SpellRankValue
 
 void SpellMgr::UnloadSpellInfoChains()
 {
-    for (SpellChainMap::iterator itr = mSpellChains.begin(); itr != mSpellChains.end(); ++itr)
-        mSpellInfoMap[itr->first]->ChainEntry = nullptr;
+    for (auto & mSpellChain : mSpellChains)
+        mSpellInfoMap[mSpellChain.first]->ChainEntry = nullptr;
 
     mSpellChains.clear();
 }
@@ -1185,9 +1185,9 @@ void SpellMgr::LoadSpellChains()
         if (AbilityInfo->skillId == 125)
             continue;
         bool found=false;
-        for (uint32 i=0; i<ChainedSpells.size(); i++)
+        for (unsigned int ChainedSpell : ChainedSpells)
         {
-           if (ChainedSpells.at(i)==spell_id)
+           if (ChainedSpell==spell_id)
                found=true;
         }
         if (found)
@@ -1245,16 +1245,16 @@ void SpellMgr::LoadSpellChains()
 
     uint32 count=0;
 
-    for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr = RankMap.begin();itr!=RankMap.end();)
+    for (auto itr = RankMap.begin();itr!=RankMap.end();)
     {
         SpellRankEntry entry = itr->first;
         //trac errors in extracted data
         std::multimap<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator> RankErrorMap;
-        for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
+        for (auto itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
         {
             RankErrorMap.insert(std::pair<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator>(itr2->second.Rank,itr2));
         }
-        for (std::multimap<char const *, std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator>::iterator itr2 = RankErrorMap.begin();itr2!=RankErrorMap.end();)
+        for (auto itr2 = RankErrorMap.begin();itr2!=RankErrorMap.end();)
         {
             char const * err_entry=itr2->first;
             uint32 rank_count=RankErrorMap.count(itr2->first);
@@ -1285,7 +1285,7 @@ void SpellMgr::LoadSpellChains()
         std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator min_itr;
         for (;RankMap.count(entry);)
         {
-            for (std::multimap<SpellRankEntry, SpellRankValue,SpellRankEntry>::iterator itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
+            for (auto itr2 = RankMap.lower_bound(entry);itr2!=RankMap.upper_bound(entry);itr2++)
             {
                 SpellInfo const *SpellInfo=sSpellMgr->GetSpellInfo(itr2->second.Id);
                 if (SpellInfo->SpellLevel<min_spell_lvl || itr2==RankMap.lower_bound(entry))
@@ -1300,7 +1300,7 @@ void SpellMgr::LoadSpellChains()
 
         //use data from talent.dbc
         uint16 talent_id=0;
-        for(std::list<uint32>::iterator itr2 = RankedSpells.begin();itr2!=RankedSpells.end();)
+        for(auto itr2 = RankedSpells.begin();itr2!=RankedSpells.end();)
         {
             if (TalentSpellPos const* TalentPos=GetTalentSpellPos(*itr2))
             {
@@ -1326,7 +1326,7 @@ void SpellMgr::LoadSpellChains()
         SpellInfo const* prevSpell = nullptr;
         itr=RankMap.upper_bound(entry);
         uint32 spell_rank=1;
-        for(std::list<uint32>::iterator itr2 = RankedSpells.begin();itr2!=RankedSpells.end();spell_rank++)
+        for(auto itr2 = RankedSpells.begin();itr2!=RankedSpells.end();spell_rank++)
         {
             uint32 spell_id=*itr2;
 
@@ -1400,21 +1400,21 @@ void SpellMgr::LoadSpellLearnSkills()
         if(!entry)
             continue;
 
-        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        for(const auto & Effect : entry->Effects)
         {
             SpellLearnSkillNode dbc_node;
-            switch(entry->Effects[i].Effect)
+            switch(Effect.Effect)
             {
             case SPELL_EFFECT_SKILL:
 
-                dbc_node.skill    = entry->Effects[i].MiscValue;
-                dbc_node.step     = entry->Effects[i].BasePoints;
+                dbc_node.skill    = Effect.MiscValue;
+                dbc_node.step     = Effect.BasePoints;
                 if (dbc_node.skill != SKILL_RIDING)
                     dbc_node.value    = 1;
                 else
-                    dbc_node.value    = (entry->Effects[i].BasePoints+1)*75;
+                    dbc_node.value    = (Effect.BasePoints+1)*75;
 
-                dbc_node.maxvalue = (entry->Effects[i].BasePoints+1)*75;
+                dbc_node.maxvalue = (Effect.BasePoints+1)*75;
                 break;
             case SPELL_EFFECT_DUAL_WIELD:
                 dbc_node.skill = SKILL_DUAL_WIELD;
@@ -1485,18 +1485,18 @@ void SpellMgr::LoadSpellLearnSpells()
         if(!spellInfo)
             continue;
 
-        for(int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        for(const auto & Effect : spellInfo->Effects)
         {
-            if(spellInfo->Effects[i].Effect ==SPELL_EFFECT_LEARN_SPELL)
+            if(Effect.Effect ==SPELL_EFFECT_LEARN_SPELL)
             {
                 SpellLearnSpellNode dbc_node;
-                dbc_node.spell       = spellInfo->Effects[i].TriggerSpell;
+                dbc_node.spell       = Effect.TriggerSpell;
                 dbc_node.autoLearned = true;
 
                 SpellLearnSpellMapBounds spell_bounds = sSpellMgr->GetSpellLearnSpellMapBounds(spellId);
 
                 bool found = false;
-                for(SpellLearnSpellMap::const_iterator itr = spell_bounds.first; itr != spell_bounds.second; ++itr)
+                for(auto itr = spell_bounds.first; itr != spell_bounds.second; ++itr)
                 {
                     if(itr->second.spell == dbc_node.spell)
                     {
@@ -1541,7 +1541,7 @@ void SpellMgr::LoadSpellPetAuras()
         uint16 pet = fields[1].GetUInt32();
         uint16 aura = fields[2].GetUInt32();
 
-        SpellPetAuraMap::iterator itr = mSpellPetAuraMap.find(spell);
+        auto itr = mSpellPetAuraMap.find(spell);
         if(itr != mSpellPetAuraMap.end())
         {
             itr->second.AddAura(pet, aura);
@@ -1619,9 +1619,9 @@ void SpellMgr::LoadSpellCustomAttr()
         if(!spellInfo)
             continue;
 
-        for(uint32 j = 0; j < 3; ++j)
+        for(unsigned int j : spellInfo->Effect)
         {
-            switch(spellInfo->Effect[j])
+            switch(j)
             {
                 case SPELL_EFFECT_CHARGE:
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
@@ -2425,9 +2425,9 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
     bool need_check_reagents = false;
 
     // check effects
-    for(int i=0; i<3; ++i)
+    for(const auto & Effect : spellInfo->Effects)
     {
-        switch(spellInfo->Effects[i].Effect)
+        switch(Effect.Effect)
         {
             case 0:
                 continue;
@@ -2435,14 +2435,14 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
                 // craft spell for crafting non-existed item (break client recipes list show)
             case SPELL_EFFECT_CREATE_ITEM:
             {
-                if(!sObjectMgr->GetItemTemplate( spellInfo->Effects[i].ItemType ))
+                if(!sObjectMgr->GetItemTemplate( Effect.ItemType ))
                 {
                     if(msg)
                     {
                         if(pl)
-                            ChatHandler(pl).PSendSysMessage("Craft spell %u create not-exist in DB item (Entry: %u) and then...",spellInfo->Id,spellInfo->Effects[i].ItemType);
+                            ChatHandler(pl).PSendSysMessage("Craft spell %u create not-exist in DB item (Entry: %u) and then...",spellInfo->Id,Effect.ItemType);
                         else
-                            TC_LOG_ERROR("sql.sql","Craft spell %u create not-exist in DB item (Entry: %u) and then...",spellInfo->Id,spellInfo->Effects[i].ItemType);
+                            TC_LOG_ERROR("sql.sql","Craft spell %u create not-exist in DB item (Entry: %u) and then...",spellInfo->Id,Effect.ItemType);
                     }
                     return false;
                 }
@@ -2452,15 +2452,15 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
             }
             case SPELL_EFFECT_LEARN_SPELL:
             {
-                SpellInfo const* spellInfo2 = sSpellMgr->GetSpellInfo(spellInfo->Effects[i].TriggerSpell);
+                SpellInfo const* spellInfo2 = sSpellMgr->GetSpellInfo(Effect.TriggerSpell);
                 if( !IsSpellValid(spellInfo2,pl,msg) )
                 {
                     if(msg)
                     {
                         if(pl)
-                            ChatHandler(pl).PSendSysMessage("Spell %u learn to broken spell %u, and then...",spellInfo->Id,spellInfo->Effects[i].TriggerSpell);
+                            ChatHandler(pl).PSendSysMessage("Spell %u learn to broken spell %u, and then...",spellInfo->Id,Effect.TriggerSpell);
                         else
-                            TC_LOG_ERROR("sql.sql","Spell %u learn to invalid spell %u, and then...",spellInfo->Id,spellInfo->Effects[i].TriggerSpell);
+                            TC_LOG_ERROR("sql.sql","Spell %u learn to invalid spell %u, and then...",spellInfo->Id,Effect.TriggerSpell);
                     }
                     return false;
                 }
@@ -2471,16 +2471,16 @@ bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* pl, bool msg)
 
     if(need_check_reagents)
     {
-        for(int j = 0; j < 8; ++j)
+        for(int j : spellInfo->Reagent)
         {
-            if(spellInfo->Reagent[j] > 0 && !sObjectMgr->GetItemTemplate( spellInfo->Reagent[j] ))
+            if(j > 0 && !sObjectMgr->GetItemTemplate( j ))
             {
                 if(msg)
                 {
                     if(pl)
-                        ChatHandler(pl).PSendSysMessage("Craft spell %u have not-exist reagent in DB item (Entry: %u) and then...",spellInfo->Id,spellInfo->Reagent[j]);
+                        ChatHandler(pl).PSendSysMessage("Craft spell %u have not-exist reagent in DB item (Entry: %u) and then...",spellInfo->Id,j);
                     else
-                        TC_LOG_ERROR("sql.sql","Craft spell %u have not-exist reagent in DB item (Entry: %u) and then...",spellInfo->Id,spellInfo->Reagent[j]);
+                        TC_LOG_ERROR("sql.sql","Craft spell %u have not-exist reagent in DB item (Entry: %u) and then...",spellInfo->Id,j);
                 }
                 return false;
             }
@@ -2804,28 +2804,28 @@ DiminishingGroup GetDiminishingReturnsGroupForSpell(SpellInfo const* spellproto,
     }
 
     // Get by mechanic
-    for (uint8 i=0;i<3;++i)
+    for (const auto & Effect : spellproto->Effects)
     {
-        if (spellproto->Mechanic      == MECHANIC_STUN    || spellproto->Effects[i].Mechanic == MECHANIC_STUN)
+        if (spellproto->Mechanic      == MECHANIC_STUN    || Effect.Mechanic == MECHANIC_STUN)
             return triggered ? DIMINISHING_TRIGGER_STUN : DIMINISHING_CONTROL_STUN;
-        else if (spellproto->Mechanic == MECHANIC_SLEEP   || spellproto->Effects[i].Mechanic == MECHANIC_SLEEP)
+        else if (spellproto->Mechanic == MECHANIC_SLEEP   || Effect.Mechanic == MECHANIC_SLEEP)
             return DIMINISHING_SLEEP;
-        else if (spellproto->Mechanic == MECHANIC_ROOT    || spellproto->Effects[i].Mechanic == MECHANIC_ROOT)
+        else if (spellproto->Mechanic == MECHANIC_ROOT    || Effect.Mechanic == MECHANIC_ROOT)
             return triggered ? DIMINISHING_TRIGGER_ROOT : DIMINISHING_CONTROL_ROOT;
-        else if (spellproto->Mechanic == MECHANIC_FEAR    || spellproto->Effects[i].Mechanic == MECHANIC_FEAR)
+        else if (spellproto->Mechanic == MECHANIC_FEAR    || Effect.Mechanic == MECHANIC_FEAR)
             return DIMINISHING_FEAR;
-        else if (spellproto->Mechanic == MECHANIC_CHARM   || spellproto->Effects[i].Mechanic == MECHANIC_CHARM)
+        else if (spellproto->Mechanic == MECHANIC_CHARM   || Effect.Mechanic == MECHANIC_CHARM)
             return DIMINISHING_CHARM;
      /*   else if (spellproto->Mechanic == MECHANIC_SILENCE || spellproto->Effects[i].Mechanic == MECHANIC_SILENCE)
             return DIMINISHING_SILENCE; */
-        else if (spellproto->Mechanic == MECHANIC_DISARM  || spellproto->Effects[i].Mechanic == MECHANIC_DISARM)
+        else if (spellproto->Mechanic == MECHANIC_DISARM  || Effect.Mechanic == MECHANIC_DISARM)
             return DIMINISHING_DISARM;
-        else if (spellproto->Mechanic == MECHANIC_FREEZE  || spellproto->Effects[i].Mechanic == MECHANIC_FREEZE)
+        else if (spellproto->Mechanic == MECHANIC_FREEZE  || Effect.Mechanic == MECHANIC_FREEZE)
             return DIMINISHING_FREEZE;
-        else if (spellproto->Mechanic == MECHANIC_KNOCKOUT|| spellproto->Effects[i].Mechanic == MECHANIC_KNOCKOUT ||
-                 spellproto->Mechanic == MECHANIC_SAPPED  || spellproto->Effects[i].Mechanic == MECHANIC_SAPPED)
+        else if (spellproto->Mechanic == MECHANIC_KNOCKOUT|| Effect.Mechanic == MECHANIC_KNOCKOUT ||
+                 spellproto->Mechanic == MECHANIC_SAPPED  || Effect.Mechanic == MECHANIC_SAPPED)
             return DIMINISHING_KNOCKOUT;
-        else if (spellproto->Mechanic == MECHANIC_BANISH  || spellproto->Effects[i].Mechanic == MECHANIC_BANISH)
+        else if (spellproto->Mechanic == MECHANIC_BANISH  || Effect.Mechanic == MECHANIC_BANISH)
             return DIMINISHING_BANISH;
     }
 
@@ -2956,30 +2956,30 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
         return false;
 
     bool doDamage = false;
-    for(uint8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+    for(const auto & Effect : spell->Effects)
     {
-        if( spell->Effects[i].Effect == 0 )
+        if( Effect.Effect == 0 )
             continue;
 
         //always binary if at least a control effect
-        if(    spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_CONFUSE
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_CHARM
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_FEAR
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STUN
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_ROOT
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_SILENCE
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_MOD_DECREASE_SPEED)
+        if(    Effect.ApplyAuraName == SPELL_AURA_MOD_CONFUSE
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_CHARM
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_FEAR
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_STUN
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_ROOT
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_SILENCE
+            || Effect.ApplyAuraName == SPELL_AURA_MOD_DECREASE_SPEED)
         {
             return true;
         }
 
         // else not binary if spell does damage
-        if(    spell->Effects[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE
-            || spell->Effects[i].Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE_PERCENT
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE
-            || spell->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
+        if(    Effect.Effect == SPELL_EFFECT_SCHOOL_DAMAGE
+            || Effect.Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE
+            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE
+            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE_PERCENT
+            || Effect.ApplyAuraName == SPELL_AURA_PROC_TRIGGER_DAMAGE
+            || Effect.ApplyAuraName == SPELL_AURA_PERIODIC_LEECH ) // Also be partial resistable
         {
             doDamage = true;
         } 
@@ -2991,13 +2991,13 @@ bool SpellMgr::IsBinaryMagicResistanceSpell(SpellInfo const* spell)
 SpellBonusEntry const* SpellMgr::GetSpellBonusData(uint32 spellId) const
 {
     // Lookup data
-    SpellBonusMap::const_iterator itr = mSpellBonusMap.find(spellId);
+    auto itr = mSpellBonusMap.find(spellId);
     if (itr != mSpellBonusMap.end())
         return &itr->second;
     // Not found, try lookup for 1 spell rank if exist
     if (uint32 rank_1 = GetFirstSpellInChain(spellId))
     {
-        SpellBonusMap::const_iterator itr2 = mSpellBonusMap.find(rank_1);
+        auto itr2 = mSpellBonusMap.find(rank_1);
         if (itr2 != mSpellBonusMap.end())
             return &itr2->second;
     }
@@ -3006,7 +3006,7 @@ SpellBonusEntry const* SpellMgr::GetSpellBonusData(uint32 spellId) const
 
 SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
 {
-    SpellThreatMap::const_iterator itr = mSpellThreatMap.find(spellID);
+    auto itr = mSpellThreatMap.find(spellID);
     if (itr != mSpellThreatMap.end())
         return &itr->second;
     else
@@ -3123,7 +3123,7 @@ void SpellMgr::LoadSpellAreas()
         {
             bool ok = true;
             SpellAreaMapBounds sa_bounds = GetSpellAreaMapBounds(spellArea.spellId);
-            for (SpellAreaMap::const_iterator itr = sa_bounds.first; itr != sa_bounds.second; ++itr)
+            for (auto itr = sa_bounds.first; itr != sa_bounds.second; ++itr)
             {
                 if (spellArea.spellId != itr->second.spellId)
                     continue;
@@ -3191,7 +3191,7 @@ void SpellMgr::LoadSpellAreas()
             {
                 bool chain = false;
                 SpellAreaForAuraMapBounds saBound = GetSpellAreaForAuraMapBounds(spellArea.spellId);
-                for (SpellAreaForAuraMap::const_iterator itr = saBound.first; itr != saBound.second; ++itr)
+                for (auto itr = saBound.first; itr != saBound.second; ++itr)
                 {
                     if (itr->second->autocast && itr->second->auraSpell > 0)
                     {
@@ -3207,7 +3207,7 @@ void SpellMgr::LoadSpellAreas()
                 }
 
                 SpellAreaMapBounds saBound2 = GetSpellAreaMapBounds(spellArea.auraSpell);
-                for (SpellAreaMap::const_iterator itr2 = saBound2.first; itr2 != saBound2.second; ++itr2)
+                for (auto itr2 = saBound2.first; itr2 != saBound2.second; ++itr2)
                 {
                     if (itr2->second.autocast && itr2->second.auraSpell > 0)
                     {
@@ -3437,7 +3437,7 @@ uint32 SpellMgr::GetLastSpellInChain(uint32 spell_id) const
 
 uint8 SpellMgr::IsHighRankOfSpell(uint32 spell1, uint32 spell2) const
 {
-    SpellChainMap::const_iterator itr = mSpellChains.find(spell1);
+    auto itr = mSpellChains.find(spell1);
 
     uint32 rank2 = GetSpellRank(spell2);
 

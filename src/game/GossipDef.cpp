@@ -84,7 +84,7 @@ void GossipMenu::AddMenuItem(uint32 menuId, uint32 menuItemId, uint32 sender, ui
         return;
 
     /// Iterate over each of them.
-    for (GossipMenuItemsContainer::const_iterator itr = bounds.first; itr != bounds.second; ++itr)
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
     {
         /// Find the one with the given menu item id.
         if (itr->second.OptionIndex != menuItemId)
@@ -160,7 +160,7 @@ void GossipMenu::AddGossipMenuItemData(uint32 menuItemId, uint32 gossipActionMen
 
 uint32 GossipMenu::GetMenuItemSender(uint32 menuItemId) const
 {
-    GossipMenuItemContainer::const_iterator itr = _menuItems.find(menuItemId);
+    auto itr = _menuItems.find(menuItemId);
     if (itr == _menuItems.end())
         return 0;
 
@@ -169,7 +169,7 @@ uint32 GossipMenu::GetMenuItemSender(uint32 menuItemId) const
 
 uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
 {
-    GossipMenuItemContainer::const_iterator itr = _menuItems.find(menuItemId);
+    auto itr = _menuItems.find(menuItemId);
     if (itr == _menuItems.end())
         return 0;
 
@@ -178,7 +178,7 @@ uint32 GossipMenu::GetMenuItemAction(uint32 menuItemId) const
 
 bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
 {
-    GossipMenuItemContainer::const_iterator itr = _menuItems.find(menuItemId);
+    auto itr = _menuItems.find(menuItemId);
     if (itr == _menuItems.end())
         return false;
 
@@ -218,10 +218,10 @@ void PlayerMenu::SendGossipMenuTextID(uint32 titleTextId, uint64 senderGUID)
     data << uint32(titleTextId);
     data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x10
 
-    for (GossipMenuItemContainer::const_iterator itr = _gossipMenu.GetMenuItems().begin(); itr != _gossipMenu.GetMenuItems().end(); ++itr)
+    for (const auto & itr : _gossipMenu.GetMenuItems())
     {
-        GossipMenuItem const& item = itr->second;
-        data << uint32(itr->first);
+        GossipMenuItem const& item = itr.second;
+        data << uint32(itr.first);
         data << uint8(item.MenuItemIcon);
         data << uint8(item.IsCoded);                    // makes pop up box password
         data << uint32(item.BoxMoney);                  // money required to open menu, 2.0.3
@@ -349,8 +349,8 @@ void QuestMenu::AddMenuItem(uint32 QuestId, uint8 Icon)
 
 bool QuestMenu::HasItem(uint32 questId) const
 {
-    for (QuestMenuItemList::const_iterator i = _questMenuItems.begin(); i != _questMenuItems.end(); ++i)
-        if (i->QuestId == questId)
+    for (auto _questMenuItem : _questMenuItems)
+        if (_questMenuItem.QuestId == questId)
             return true;
 
     return false;
@@ -738,8 +738,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             data << uint32(quest->RequiredItemCount[i]);
         }
 
-    for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        data << questObjectiveText[i];
+    for (auto & i : questObjectiveText)
+        data << i;
 
     _session->SendPacket(&data);
     TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());
@@ -784,9 +784,9 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum
 
     uint32 emoteCount = 0;
-    for (uint8 i = 0; i < QUEST_EMOTE_COUNT; ++i)
+    for (unsigned int i : quest->OfferRewardEmote)
     {
-        if (quest->OfferRewardEmote[i] <= 0)
+        if (i <= 0)
             break;
         ++emoteCount;
     }

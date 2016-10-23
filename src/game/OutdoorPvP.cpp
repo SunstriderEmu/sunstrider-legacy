@@ -88,7 +88,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
     if(!pMap)
         return true;
-    GameObject * go = new GameObject;
+    auto  go = new GameObject;
     if(!go->Create(guid,entry, pMap,Position(x,y,z,o),G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
@@ -145,7 +145,7 @@ bool OutdoorPvPObjective::AddCreature(uint32 type, uint32 entry, uint32 map, flo
     Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
     if(!pMap)
         return true;
-    Creature* pCreature = new Creature;
+    auto  pCreature = new Creature;
     if (!pCreature->Create(guid, pMap, entry))
     {
         TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
@@ -247,7 +247,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     if(!pMap)
         return true;
     // add GO...
-    GameObject * go = new GameObject;
+    auto  go = new GameObject;
     if(!go->Create(guid,entry, pMap, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
@@ -260,7 +260,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
         pMap->Add(go);
     }
     // add creature...
-    Creature* pCreature = new Creature;
+    auto  pCreature = new Creature;
     if (!pCreature->Create(creature_guid, pMap, OPVP_TRIGGER_CREATURE_ENTRY))
     {
         TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
@@ -379,17 +379,17 @@ bool OutdoorPvPObjective::DelCapturePoint()
 
 void OutdoorPvPObjective::DeleteSpawns()
 {
-    for(std::map<uint32,uint64>::iterator i = m_Objects.begin(); i != m_Objects.end(); ++i)
-        DelObject(i->first);
-    for(std::map<uint32,uint64>::iterator i = m_Creatures.begin(); i != m_Creatures.end(); ++i)
-        DelCreature(i->first);
+    for(auto & m_Object : m_Objects)
+        DelObject(m_Object.first);
+    for(auto & m_Creature : m_Creatures)
+        DelCreature(m_Creature.first);
     DelCapturePoint();
 }
 
 void OutdoorPvP::DeleteSpawns()
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
-        (*itr)->DeleteSpawns();
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
+        m_OutdoorPvPObjective->DeleteSpawns();
 }
 
 OutdoorPvP::OutdoorPvP()
@@ -414,8 +414,8 @@ void OutdoorPvP::HandlePlayerEnterZone(Player * plr, uint32 zone)
 void OutdoorPvP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 {
     // inform the objectives of the leaving
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
-        (*itr)->HandlePlayerLeave(plr);
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
+        m_OutdoorPvPObjective->HandlePlayerLeave(plr);
     // remove the world state information from the player (we can't keep everyone up to date, so leave out those who are not in the concerning zones)
     if(zone != plr->GetZoneId())
         SendRemoveWorldStates(plr);
@@ -428,8 +428,8 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
 bool OutdoorPvP::Update(uint32 diff)
 {
     bool objective_changed = false;
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
-        objective_changed |= (*itr)->Update(diff);
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
+        objective_changed |= m_OutdoorPvPObjective->Update(diff);
     return objective_changed;
 }
 
@@ -437,10 +437,10 @@ void OutdoorPvPObjective::UpdateActivePlayerProximityCheck()
 {
     if(GameObject *cp = HashMapHolder<GameObject>::Find(m_CapturePoint))
     {
-        for(int team = 0; team < 2; ++team)
+        for(auto & m_ActivePlayerGuid : m_ActivePlayerGuids)
         {
             std::set<uint64>::iterator itr, next;
-            for(itr = m_ActivePlayerGuids[team].begin(); itr != m_ActivePlayerGuids[team].end(); itr = next)
+            for(itr = m_ActivePlayerGuid.begin(); itr != m_ActivePlayerGuid.end(); itr = next)
             {
                 next = itr;
                 ++next;
@@ -560,10 +560,10 @@ bool OutdoorPvPObjective::HandleCaptureCreaturePlayerMoveInLos(Player * p, Creat
 void OutdoorPvP::SendUpdateWorldState(uint32 field, uint32 value)
 {
     // send to both factions
-    for(int i = 0; i < 2; ++i)
+    for(auto & m_PlayerGuid : m_PlayerGuids)
     {
         // send to all players present in the area
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[i].begin(); itr != m_PlayerGuids[i].end(); ++itr)
+        for(auto itr = m_PlayerGuid.begin(); itr != m_PlayerGuid.end(); ++itr)
         {
             Player * plr = sObjectMgr->GetPlayer(*itr);
             if(plr)
@@ -576,10 +576,10 @@ void OutdoorPvP::SendUpdateWorldState(uint32 field, uint32 value)
 
 void OutdoorPvPObjective::SendUpdateWorldState(uint32 field, uint32 value)
 {
-    for(uint32 team = 0; team < 2; ++team)
+    for(auto & m_ActivePlayerGuid : m_ActivePlayerGuids)
     {
         // send to all players present in the area
-        for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[team].begin(); itr != m_ActivePlayerGuids[team].end(); ++itr)
+        for(auto itr = m_ActivePlayerGuid.begin(); itr != m_ActivePlayerGuid.end(); ++itr)
         {
             Player * plr = sObjectMgr->GetPlayer(*itr);
             if(plr)
@@ -607,9 +607,9 @@ void OutdoorPvPObjective::SendObjectiveComplete(uint32 id,uint64 guid)
     }
 
     // send to all players present in the area
-    for(std::set<uint64>::iterator itr = m_ActivePlayerGuids[team].begin(); itr != m_ActivePlayerGuids[team].end(); ++itr)
+    for(unsigned long itr : m_ActivePlayerGuids[team])
     {
-        Player * plr = sObjectMgr->GetPlayer(*itr);
+        Player * plr = sObjectMgr->GetPlayer(itr);
         if(plr)
         {
             plr->KilledMonsterCredit(id,guid);
@@ -619,8 +619,8 @@ void OutdoorPvPObjective::SendObjectiveComplete(uint32 id,uint64 guid)
 
 void OutdoorPvP::HandlePlayerActivityChanged(Player * plr)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
-        (*itr)->HandlePlayerActivityChanged(plr);
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
+        m_OutdoorPvPObjective->HandlePlayerActivityChanged(plr);
 }
 
 void OutdoorPvP::HandleKill(Player *killer, Unit * killed)
@@ -658,9 +658,9 @@ void OutdoorPvP::HandleKill(Player *killer, Unit * killed)
 
 bool OutdoorPvP::IsInsideObjective(Player *plr)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->IsInsideObjective(plr))
+        if(m_OutdoorPvPObjective->IsInsideObjective(plr))
             return true;
     }
     return false;
@@ -669,15 +669,15 @@ bool OutdoorPvP::IsInsideObjective(Player *plr)
 bool OutdoorPvPObjective::IsInsideObjective(Player *plr)
 {
     uint32 team = (plr->GetTeam() == TEAM_HORDE) ? 1 : 0;
-    std::set<uint64>::iterator itr = m_ActivePlayerGuids[team].find(plr->GetGUID());
+    auto itr = m_ActivePlayerGuids[team].find(plr->GetGUID());
     return itr != m_ActivePlayerGuids[team].end();
 }
 
 bool OutdoorPvP::HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->HandleCustomSpell(plr,spellId,go))
+        if(m_OutdoorPvPObjective->HandleCustomSpell(plr,spellId,go))
             return true;
     }
     return false;
@@ -692,9 +692,9 @@ bool OutdoorPvPObjective::HandleCustomSpell(Player *plr, uint32 spellId, GameObj
 
 bool OutdoorPvP::HandleOpenGo(Player *plr, uint64 guid)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->HandleOpenGo(plr,guid) >= 0)
+        if(m_OutdoorPvPObjective->HandleOpenGo(plr,guid) >= 0)
             return true;
     }
     return false;
@@ -702,9 +702,9 @@ bool OutdoorPvP::HandleOpenGo(Player *plr, uint64 guid)
 
 bool OutdoorPvP::HandleCaptureCreaturePlayerMoveInLos(Player * p, Creature * c)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->HandleCaptureCreaturePlayerMoveInLos(p, c))
+        if(m_OutdoorPvPObjective->HandleCaptureCreaturePlayerMoveInLos(p, c))
             return true;
     }
     return false;
@@ -712,9 +712,9 @@ bool OutdoorPvP::HandleCaptureCreaturePlayerMoveInLos(Player * p, Creature * c)
 
 bool OutdoorPvP::HandleGossipOption(Player * plr, uint64 guid, uint32 id)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->HandleGossipOption(plr, guid, id))
+        if(m_OutdoorPvPObjective->HandleGossipOption(plr, guid, id))
             return true;
     }
     return false;
@@ -722,9 +722,9 @@ bool OutdoorPvP::HandleGossipOption(Player * plr, uint64 guid, uint32 id)
 
 bool OutdoorPvP::CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->CanTalkTo(plr, c, gso))
+        if(m_OutdoorPvPObjective->CanTalkTo(plr, c, gso))
             return true;
     }
     return false;
@@ -732,9 +732,9 @@ bool OutdoorPvP::CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gs
 
 bool OutdoorPvP::HandleDropFlag(Player * plr, uint32 id)
 {
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        if((*itr)->HandleDropFlag(plr, id))
+        if(m_OutdoorPvPObjective->HandleDropFlag(plr, id))
             return true;
     }
     return false;
@@ -757,7 +757,7 @@ bool OutdoorPvPObjective::HandleDropFlag(Player * plr, uint32 id)
 
 int32 OutdoorPvPObjective::HandleOpenGo(Player *plr, uint64 guid)
 {
-    std::map<uint64,uint32>::iterator itr = m_ObjectTypes.find(guid);
+    auto itr = m_ObjectTypes.find(guid);
     if(itr != m_ObjectTypes.end())
     {
         return itr->second;

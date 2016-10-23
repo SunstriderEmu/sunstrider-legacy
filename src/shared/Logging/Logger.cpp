@@ -58,7 +58,7 @@ void Logger::write(LogMessage* message) const
         return;
     }
 
-    for (AppenderMap::const_iterator it = appenders.begin(); it != appenders.end(); ++it)
-        if (it->second)
-            it->second->write(message);
+    for (const auto & appender : appenders)
+        if (appender.second)
+            appender.second->write(message);
 }

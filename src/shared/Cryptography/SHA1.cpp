@@ -62,7 +62,7 @@ void SHA1Hash::Initialize()
     SHA1_Init(&mC);
 }
 
-void SHA1Hash::Finalize(void)
+void SHA1Hash::Finalize()
 {
     SHA1_Final(mDigest, &mC);
 }

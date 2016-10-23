@@ -212,7 +212,7 @@ struct PlayerClassInfo
 
 struct PlayerLevelInfo
 {
-    PlayerLevelInfo() { for(int i=0; i < MAX_STATS; ++i ) stats[i] = 0; }
+    PlayerLevelInfo() { for(unsigned char & stat : stats) stat = 0; }
 
     uint8 stats[MAX_STATS];
 };
@@ -421,24 +421,24 @@ struct LookingForGroup
     bool HaveInSlot(LookingForGroupSlot const& slot) const { return HaveInSlot(slot.entry,slot.type); }
     bool HaveInSlot(uint32 _entry, uint32 _type) const
     {
-        for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-            if(slots[i].Is(_entry,_type))
+        for(auto slot : slots)
+            if(slot.Is(_entry,_type))
                 return true;
         return false;
     }
 
     bool canAutoJoin() const
     {
-        for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-            if(slots[i].canAutoJoin())
+        for(auto slot : slots)
+            if(slot.canAutoJoin())
                 return true;
         return false;
     }
 
     bool Empty() const
     {
-        for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-            if(!slots[i].Empty())
+        for(auto slot : slots)
+            if(!slot.Empty())
                 return false;
         return more.Empty();
     }
@@ -1075,7 +1075,7 @@ class PlayerTaxi
 {
     public:
         PlayerTaxi();
-        ~PlayerTaxi() {}
+        ~PlayerTaxi() = default;
         // Nodes
         void InitTaxiNodesForLevel(uint32 race, uint32 level);
         void LoadTaxiMask(const char* data);
@@ -1084,8 +1084,8 @@ class PlayerTaxi
         uint32 GetTaximask( uint8 index ) const { return m_taximask[index]; }
         bool IsTaximaskNodeKnown(uint32 nodeidx) const;
         void ResetTaximask() {
-            for (uint8 i = 0; i < TaxiMaskSize; i++)
-                m_taximask[i] = 0;
+            for (unsigned int & i : m_taximask)
+                i = 0;
         }
         bool SetTaximaskNode(uint32 nodeidx)
         {
@@ -1663,7 +1663,7 @@ class Player : public Unit
 
         bool RemoveMItem(uint32 id)
         {
-            ItemMap::iterator i = mMitems.find(id);
+            auto i = mMitems.find(id);
             if (i == mMitems.end())
                 return false;
 
@@ -1720,12 +1720,12 @@ class Player : public Unit
 
         bool HasSpellCooldown(uint32 spell_id) const
         {
-            SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
+            auto itr = m_spellCooldowns.find(spell_id);
             return itr != m_spellCooldowns.end() && itr->second.end > time(nullptr);
         }
         uint32 GetSpellCooldownDelay(uint32 spell_id) const
         {
-            SpellCooldowns::const_iterator itr = m_spellCooldowns.find(spell_id);
+            auto itr = m_spellCooldowns.find(spell_id);
             time_t t = time(nullptr);
             return itr != m_spellCooldowns.end() && itr->second.end > t ? itr->second.end - t : 0;
         }
@@ -2154,8 +2154,8 @@ class Player : public Unit
 
         bool InBattlegroundQueue() const
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattlegroundQueueID[i].bgQueueType != 0)
+            for (auto i : m_bgBattlegroundQueueID)
+                if (i.bgQueueType != 0)
                     return true;
             return false;
         }
@@ -2170,9 +2170,9 @@ class Player : public Unit
         }
         bool IsInvitedForBattlegroundQueueType(uint32 bgQueueType) const
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattlegroundQueueID[i].bgQueueType == bgQueueType)
-                    return m_bgBattlegroundQueueID[i].invitedToInstance != 0;
+            for (auto i : m_bgBattlegroundQueueID)
+                if (i.bgQueueType == bgQueueType)
+                    return i.invitedToInstance != 0;
             return PLAYER_MAX_BATTLEGROUND_QUEUES;
         }
         bool InBattlegroundQueueForBattlegroundQueueType(uint32 bgQueueType) const
@@ -2196,33 +2196,33 @@ class Player : public Unit
         }
         bool HasFreeBattlegroundQueueId()
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattlegroundQueueID[i].bgQueueType == 0)
+            for (auto & i : m_bgBattlegroundQueueID)
+                if (i.bgQueueType == 0)
                     return true;
             return false;
         }
         void RemoveBattlegroundQueueId(uint32 val)
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
+            for (auto & i : m_bgBattlegroundQueueID)
             {
-                if (m_bgBattlegroundQueueID[i].bgQueueType == val)
+                if (i.bgQueueType == val)
                 {
-                    m_bgBattlegroundQueueID[i].bgQueueType = 0;
-                    m_bgBattlegroundQueueID[i].invitedToInstance = 0;
+                    i.bgQueueType = 0;
+                    i.invitedToInstance = 0;
                     return;
                 }
             }
         }
         void SetInviteForBattlegroundQueueType(uint32 bgQueueType, uint32 instanceId)
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattlegroundQueueID[i].bgQueueType == bgQueueType)
-                    m_bgBattlegroundQueueID[i].invitedToInstance = instanceId;
+            for (auto & i : m_bgBattlegroundQueueID)
+                if (i.bgQueueType == bgQueueType)
+                    i.invitedToInstance = instanceId;
         }
         bool IsInvitedForBattlegroundInstance(uint32 instanceId) const
         {
-            for (int i=0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; i++)
-                if (m_bgBattlegroundQueueID[i].invitedToInstance == instanceId)
+            for (auto i : m_bgBattlegroundQueueID)
+                if (i.invitedToInstance == instanceId)
                     return true;
             return false;
         }
@@ -2829,10 +2829,8 @@ void Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell co
     float totalmul = 1.0f;
     int32 totalflat = 0;
 
-    for (SpellModList::iterator itr = m_spellMods[op].begin(); itr != m_spellMods[op].end(); ++itr)
+    for (auto mod : m_spellMods[op])
     {
-        SpellModifier *mod = *itr;
-
         // Charges can be set only for mods with auras
         /* TC
         if (!mod->ownerAura)

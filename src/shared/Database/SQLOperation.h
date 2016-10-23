@@ -57,7 +57,7 @@ class SQLOperation
 {
     public:
         SQLOperation(): m_conn(nullptr) { }
-        virtual ~SQLOperation() { }
+        virtual ~SQLOperation() = default;
 
         virtual int call()
         {

@@ -27,7 +27,7 @@ class UnitAI
         bool m_restoreCombatMovementOnOOM;
     public:
         UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
-        virtual ~UnitAI() { }
+        virtual ~UnitAI() = default;
         
         virtual void AttackStart(Unit *);
         void AttackStartCaster(Unit* victim, float dist);
@@ -87,9 +87,9 @@ class UnitAI
                 return nullptr;
 
             std::list<Unit*> targetList;
-            for (ThreatContainer::StorageType::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-                if (predicate((*itr)->getTarget()))
-                    targetList.push_back((*itr)->getTarget());
+            for (auto itr : threatlist)
+                if (predicate(itr->getTarget()))
+                    targetList.push_back(itr->getTarget());
 
             if (position >= targetList.size())
                 return nullptr;
@@ -102,20 +102,20 @@ class UnitAI
             case SELECT_TARGET_NEAREST:
             case SELECT_TARGET_TOPAGGRO:
             {
-                std::list<Unit*>::iterator itr = targetList.begin();
+                auto itr = targetList.begin();
                 std::advance(itr, position);
                 return *itr;
             }
             case SELECT_TARGET_FARTHEST:
             case SELECT_TARGET_BOTTOMAGGRO:
             {
-                std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
+                auto ritr = targetList.rbegin();
                 std::advance(ritr, position);
                 return *ritr;
             }
             case SELECT_TARGET_RANDOM:
             {
-                std::list<Unit*>::iterator itr = targetList.begin();
+                auto itr = targetList.begin();
                 std::advance(itr, urand(position, targetList.size() - 1));
                 return *itr;
             }

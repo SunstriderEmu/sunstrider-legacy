@@ -33,7 +33,7 @@ class MapUpdater
 public:
 
     MapUpdater() : _cancelationToken(false), pending_requests(0) {}
-    ~MapUpdater() { };
+    ~MapUpdater() = default;;
 
     friend class MapUpdateRequest;
 

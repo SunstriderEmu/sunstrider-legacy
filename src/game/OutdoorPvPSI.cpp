@@ -57,8 +57,8 @@ void OutdoorPvPSI::UpdateWorldState()
 
 bool OutdoorPvPSI::SetupOutdoorPvP()
 {
-    for(int i = 0; i < OutdoorPvPSIBuffZonesNum; ++i)
-        sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZones[i],this);
+    for(unsigned int OutdoorPvPSIBuffZone : OutdoorPvPSIBuffZones)
+        sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZone,this);
     return true;
 }
 
@@ -85,40 +85,40 @@ void OutdoorPvPSI::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
     else if(team == TEAM_HORDE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,SI_CENARION_FAVOR,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
     else
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
         }
     }
@@ -198,7 +198,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     if(plr->GetDistance(atEntry->x,atEntry->y,atEntry->z) > 5.0f + atEntry->radius)
                     {
                         // he dropped it further, summon mound
-                        GameObject * go = new GameObject;
+                        auto  go = new GameObject;
                         Map * map = sMapMgr->CreateMap(plr->GetMapId(), plr);
                         if(!map){
 
@@ -229,7 +229,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                     if(plr->GetDistance(atEntry->x,atEntry->y,atEntry->z) > 5.0f + atEntry->radius)
                     {
                         // he dropped it further, summon mound
-                        GameObject * go = new GameObject;
+                        auto  go = new GameObject;
                         Map * map = sMapMgr->CreateMap(plr->GetMapId(), plr);
                         if(!map)
                         {

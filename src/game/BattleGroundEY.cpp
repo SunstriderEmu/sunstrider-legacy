@@ -112,8 +112,8 @@ void BattlegroundEY::Update(time_t diff)
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
 
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player *plr = sObjectMgr->GetPlayer(itr->first))
+            for(const auto & itr : GetPlayers())
+                if(Player *plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -213,8 +213,8 @@ void BattlegroundEY::CheckSomeoneJoinedPoint()
 void BattlegroundEY::CheckSomeoneLeftPoint()
 {
     //reset current point counts
-    for (uint8 i = 0; i < 2*EY_POINTS_MAX; ++i)
-        m_CurrentPointPlayersCount[i] = 0;
+    for (unsigned char & i : m_CurrentPointPlayersCount)
+        i = 0;
     GameObject *obj = nullptr;
     for(uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
@@ -349,7 +349,7 @@ void BattlegroundEY::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map
-    BattlegroundEYScore* sc = new BattlegroundEYScore;
+    auto  sc = new BattlegroundEYScore;
 
     m_PlayersNearPoint[EY_POINTS_MAX].push_back(plr->GetGUID());
 
@@ -787,7 +787,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
 
 void BattlegroundEY::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
-    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found
         return;

@@ -501,7 +501,7 @@ void Channel::List(Player* player)
         //uint32 gmLevelInWhoList = sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
         uint32 count  = 0;
 
-        for(PlayerList::iterator i = players.begin(); i != players.end(); ++i)
+        for(auto & player : players)
         {
             /*
             Player *plr = sObjectMgr->GetPlayer(i->first);
@@ -511,10 +511,10 @@ void Channel::List(Player* player)
             if (plr && (player->GetSession()->GetSecurity() > SEC_PLAYER || plr->GetSession()->GetSecurity() <= gmLevelInWhoList) && 
                     plr->IsVisibleGloballyFor(player))
                     */
-            if(!(i->second.invisible))
+            if(!(player.second.invisible))
             {
-                data << uint64(i->first);
-                data << uint8(i->second.flags);             // flags seems to be changed...
+                data << uint64(player.first);
+                data << uint8(player.second.flags);             // flags seems to be changed...
                 ++count;
             }
         }
@@ -703,7 +703,7 @@ void Channel::SetOwner(uint64 guid, bool exclaim)
     if(m_ownerGUID)
     {
         // [] will re-add player after it possible removed
-        PlayerList::iterator p_itr = players.find(m_ownerGUID);
+        auto p_itr = players.find(m_ownerGUID);
         if(p_itr != players.end())
             p_itr->second.SetOwner(false);
     }
@@ -728,9 +728,9 @@ void Channel::SetOwner(uint64 guid, bool exclaim)
 
 void Channel::SendToAll(WorldPacket *data, uint64 p)
 {
-    for(PlayerList::iterator i = players.begin(); i != players.end(); ++i)
+    for(auto & player : players)
     {
-        Player *plr = sObjectMgr->GetPlayer(i->first);
+        Player *plr = sObjectMgr->GetPlayer(player.first);
         if(plr)
         {
             if(!p || !plr->GetSocial()->HasIgnore(GUID_LOPART(p)))
@@ -741,11 +741,11 @@ void Channel::SendToAll(WorldPacket *data, uint64 p)
 
 void Channel::SendToAllButOne(WorldPacket *data, uint64 who)
 {
-    for(PlayerList::iterator i = players.begin(); i != players.end(); ++i)
+    for(auto & player : players)
     {
-        if(i->first != who)
+        if(player.first != who)
         {
-            Player *plr = sObjectMgr->GetPlayer(i->first);
+            Player *plr = sObjectMgr->GetPlayer(player.first);
             if(plr)
                 plr->SendDirectMessage(data);
         }

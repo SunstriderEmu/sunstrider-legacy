@@ -320,8 +320,8 @@ enum SpellLinkedType
 
 inline bool IsSpellHaveEffect(SpellInfo const *spellInfo, SpellEffects effect)
 {
-    for(int i= 0; i < MAX_SPELL_EFFECTS; ++i)
-        if(spellInfo->Effects[i].Effect == uint32(effect))
+    for(const auto & Effect : spellInfo->Effects)
+        if(Effect.Effect == uint32(effect))
             return true;
     return false;
 }
@@ -640,12 +640,12 @@ class PetAura
 
         uint16 GetAura(uint16 petEntry) const
         {
-            std::map<uint16, uint16>::const_iterator itr = auras.find(petEntry);
+            auto itr = auras.find(petEntry);
             if(itr != auras.end())
                 return itr->second;
             else
             {
-                std::map<uint16, uint16>::const_iterator itr2 = auras.find(0);
+                auto itr2 = auras.find(0);
                 if(itr2 != auras.end())
                     return itr2->second;
                 else
@@ -764,7 +764,7 @@ class SpellMgr
         // Spell affects
         uint64 GetSpellAffectMask(uint16 spellId, uint8 effectId) const
         {
-            SpellAffectMap::const_iterator itr = mSpellAffectMap.find((spellId<<8) + effectId);
+            auto itr = mSpellAffectMap.find((spellId<<8) + effectId);
             if( itr != mSpellAffectMap.end( ) )
                 return itr->second;
             return 0;
@@ -776,7 +776,7 @@ class SpellMgr
 
         uint32 GetSpellElixirMask(uint32 spellid) const
         {
-            SpellElixirMap::const_iterator itr = mSpellElixirs.find(spellid);
+            auto itr = mSpellElixirs.find(spellid);
             if(itr==mSpellElixirs.end())
                 return 0x0;
 
@@ -786,7 +786,7 @@ class SpellMgr
         // Spell proc events
         SpellProcEventEntry const* GetSpellProcEvent(uint32 spellId) const
         {
-            SpellProcEventMap::const_iterator itr = mSpellProcEventMap.find(spellId);
+            auto itr = mSpellProcEventMap.find(spellId);
             if( itr != mSpellProcEventMap.end( ) )
                 return &itr->second;
             return nullptr;
@@ -796,7 +796,7 @@ class SpellMgr
 
         SpellEnchantProcEntry const* GetSpellEnchantProcEvent(uint32 enchId) const
         {
-            SpellEnchantProcEventMap::const_iterator itr = mSpellEnchantProcEventMap.find(enchId);
+            auto itr = mSpellEnchantProcEventMap.find(enchId);
             if( itr != mSpellEnchantProcEventMap.end( ) )
                 return &itr->second;
             return nullptr;
@@ -805,7 +805,7 @@ class SpellMgr
         // Spell target coordinates. effIndex NYI
         SpellTargetPosition const* GetSpellTargetPosition(uint32 spell_id, SpellEffIndex /* effIndex */) const
         {
-            SpellTargetPositionMap::const_iterator itr = mSpellTargetPositions.find( spell_id );
+            auto itr = mSpellTargetPositions.find( spell_id );
             if( itr != mSpellTargetPositions.end( ) )
                 return &itr->second;
             return nullptr;
@@ -814,7 +814,7 @@ class SpellMgr
         // Spell ranks chains
         SpellChainNode const* GetSpellChainNode(uint32 spell_id) const
         {
-            SpellChainMap::const_iterator itr = mSpellChains.find(spell_id);
+            auto itr = mSpellChains.find(spell_id);
             if(itr == mSpellChains.end())
                 return nullptr;
 
@@ -823,7 +823,7 @@ class SpellMgr
 
         uint32 GetSpellRequired(uint32 spell_id) const
         {
-            SpellRequiredMap::const_iterator itr = mSpellReq.find(spell_id);
+            auto itr = mSpellReq.find(spell_id);
             if(itr == mSpellReq.end())
                 return 0;
 
@@ -896,7 +896,7 @@ class SpellMgr
         
         const std::vector<int32> *GetSpellLinked(int32 spell_id) const
         {
-            SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
+            auto itr = mSpellLinkedMap.find(spell_id);
             return itr != mSpellLinkedMap.end() ? &(itr->second) : nullptr;
         }
 

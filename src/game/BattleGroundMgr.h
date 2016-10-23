@@ -138,7 +138,7 @@ class BGQueueInviteEvent : public BasicEvent
 {
     public:
         BGQueueInviteEvent(uint64 pl_guid, uint32 BgInstanceGUID) : m_PlayerGuid(pl_guid), m_BgInstanceGUID(BgInstanceGUID) {};
-        ~BGQueueInviteEvent() override {};
+        ~BGQueueInviteEvent() override = default;;
 
         bool Execute(uint64 e_time, uint32 p_time) override;
         void Abort(uint64 e_time) override;
@@ -154,7 +154,7 @@ class BGQueueRemoveEvent : public BasicEvent
 {
     public:
         BGQueueRemoveEvent(uint64 pl_guid, uint32 bgInstanceGUID, uint32 playersTeam) : m_PlayerGuid(pl_guid), m_BgInstanceGUID(bgInstanceGUID), m_PlayersTeam(playersTeam) {};
-        ~BGQueueRemoveEvent() override {};
+        ~BGQueueRemoveEvent() override = default;;
 
         bool Execute(uint64 e_time, uint32 p_time) override;
         void Abort(uint64 e_time) override;
@@ -199,7 +199,7 @@ class BattlegroundMgr
 
         Battleground* GetBattleground(uint32 ID)
         {
-            BattlegroundSet::iterator i = m_Battlegrounds.find(ID);
+            auto i = m_Battlegrounds.find(ID);
             if(i != m_Battlegrounds.end())
                 return i->second;
             else

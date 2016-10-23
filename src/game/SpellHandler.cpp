@@ -82,9 +82,9 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
     if (pUser->IsInCombat())
     {
-        for(int i = 0; i < 5; ++i)
+        for(const auto & Spell : proto->Spells)
         {
-            if (SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(proto->Spells[i].SpellId))
+            if (SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(Spell.SpellId))
             {
                 if (!spellInfo->CanBeUsedInCombat())
                 {
@@ -325,7 +325,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             return;
     }
 
-    Spell *spell = new Spell(_player, spellInfo, false);
+    auto spell = new Spell(_player, spellInfo, false);
     spell->m_cast_count = cast_count;                       // set count of casts
     spell->prepare(&targets);
 }

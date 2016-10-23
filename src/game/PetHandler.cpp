@@ -198,9 +198,9 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
                 return;
             }
 
-            for(uint32 i = 0; i < MAX_SPELL_EFFECTS;i++)
+            for(const auto & Effect : spellInfo->Effects)
             {
-                if(spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY || spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY || spellInfo->Effects[i].TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
+                if(Effect.TargetA.GetTarget() == TARGET_UNIT_SRC_AREA_ENEMY || Effect.TargetA.GetTarget() == TARGET_UNIT_DEST_AREA_ENEMY || Effect.TargetA.GetTarget() == TARGET_DEST_DYNOBJ_ENEMY)
                     return;
             }
 
@@ -210,7 +210,7 @@ void WorldSession::HandlePetAction( WorldPacket & recvData )
 
             pet->ClearUnitState(UNIT_STATE_FOLLOW);
 
-            Spell *spell = new Spell(pet, spellInfo, false);
+            auto spell = new Spell(pet, spellInfo, false);
             int16 result = spell->PetCanCast(unit_target);
 
                                                             //auto turn to target unless possessed
@@ -358,8 +358,8 @@ void WorldSession::SendPetNameQuery( uint64 petguid, uint32 petnumber)
     if( pet->IsPet() && ((Pet*)pet)->GetDeclinedNames() )
     {
         data << uint8(1);
-        for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            data << ((Pet*)pet)->GetDeclinedNames()->name[i];
+        for(const auto & i : ((Pet*)pet)->GetDeclinedNames()->name)
+            data << i;
     }
     else
         data << uint8(0);
@@ -517,10 +517,10 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 
     if(isdeclined)
     {
-        for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+        for(auto & i : declinedname.name)
         {
             
-            recvData >> declinedname.name[i];
+            recvData >> i;
         }
 
         std::wstring wname;
@@ -535,8 +535,8 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     if(isdeclined)
     {
-        for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            CharacterDatabase.EscapeString(declinedname.name[i]);
+        for(auto & i : declinedname.name)
+            CharacterDatabase.EscapeString(i);
         trans->PAppend("DELETE FROM character_pet_declinedname WHERE owner = '%u' AND id = '%u'", _player->GetGUIDLow(), pet->GetCharmInfo()->GetPetNumber());
         trans->PAppend("INSERT INTO character_pet_declinedname (id, owner, genitive, dative, accusative, instrumental, prepositional) VALUES ('%u','%u','%s','%s','%s','%s','%s')",
             pet->GetCharmInfo()->GetPetNumber(), _player->GetGUIDLow(), declinedname.name[0].c_str(), declinedname.name[1].c_str(), declinedname.name[2].c_str(), declinedname.name[3].c_str(), declinedname.name[4].c_str());
@@ -615,7 +615,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
         return;
     }
 
-    for(PetSpellMap::iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end();)
+    for(auto itr = pet->m_spells.begin(); itr != pet->m_spells.end();)
     {
         uint32 spell_id = itr->first;                       // Pet::removeSpell can invalidate iterator at erase NEW spell
         ++itr;
@@ -747,7 +747,7 @@ void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 
     caster->ClearUnitState(UNIT_STATE_FOLLOW);
 
-    Spell *spell = new Spell(caster, spellInfo, spellid == 33395);
+    auto spell = new Spell(caster, spellInfo, spellid == 33395);
     spell->m_targets = targets;
 
     SpellCastResult result = spell->PetCanCast(nullptr);
@@ -803,8 +803,8 @@ void WorldSession::SendPetNameInvalid(uint32 error, const std::string& name, Dec
     if(declinedName)
     {
         data << uint8(1);
-        for(uint32 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-            data << declinedName->name[i];
+        for(auto & i : declinedName->name)
+            data << i;
     }
     else
         data << uint8(0);

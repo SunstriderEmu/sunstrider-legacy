@@ -77,8 +77,8 @@ class AuctionHouseObject
     AuctionHouseObject() {}
     ~AuctionHouseObject()
     {
-        for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end(); ++itr)
-            delete itr->second;
+        for (auto & itr : AuctionsMap)
+            delete itr.second;
     }
 
     typedef std::map<uint32, AuctionEntry*> AuctionEntryMap;
@@ -96,7 +96,7 @@ class AuctionHouseObject
 
     AuctionEntry* GetAuction(uint32 id) const
     {
-        AuctionEntryMap::const_iterator itr = AuctionsMap.find( id );
+        auto itr = AuctionsMap.find( id );
         return itr != AuctionsMap.end() ? itr->second : nullptr;
     }
 

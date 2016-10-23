@@ -36,7 +36,7 @@ void AuthCrypt::Init(BigNumber* K)
     case BUILD_243:
     {
         _send_i = _send_j = _recv_i = _recv_j = 0;
-        uint8* key = new uint8[SHA_DIGEST_LENGTH];
+        auto  key = new uint8[SHA_DIGEST_LENGTH];
 
         uint8 temp[SEED_KEY_SIZE] = { 0x38, 0xA7, 0x83, 0x15, 0xF8, 0x92, 0x25, 0x30, 0x71, 0x98, 0x67, 0xB1, 0x8C, 0x4, 0xE2, 0xAA };
         HmacHash hash(16,temp);

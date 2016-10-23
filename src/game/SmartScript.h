@@ -138,7 +138,7 @@ class SmartScript
 
         ObjectList* GetTargetList(uint32 id)
         {
-            ObjectListMap::iterator itr = mTargetStorage->find(id);
+            auto itr = mTargetStorage->find(id);
             if (itr != mTargetStorage->end())
                 return (*itr).second->GetObjectList();
 
@@ -161,7 +161,7 @@ class SmartScript
 
         uint32 GetCounterId(uint32 id)
         {
-            CounterMap::iterator itr = mCounterList.find(id);
+            auto itr = mCounterList.find(id);
             if (itr != mCounterList.end())
                 return itr->first;
             return 0;
@@ -169,7 +169,7 @@ class SmartScript
 
         uint32 GetCounterValue(uint32 id)
         {
-            CounterMap::iterator itr = mCounterList.find(id);
+            auto itr = mCounterList.find(id);
             if (itr != mCounterList.end())
                 return itr->second;
             return 0;
@@ -312,7 +312,7 @@ class SmartScript
         {
             if (!mStoredEvents.empty())
             {
-                for (SmartAIEventList::iterator i = mStoredEvents.begin(); i != mStoredEvents.end(); ++i)
+                for (auto i = mStoredEvents.begin(); i != mStoredEvents.end(); ++i)
                 {
                     if (i->event_id == id)
                     {
@@ -326,11 +326,11 @@ class SmartScript
         {
             if (!mEvents.empty())
             {
-                for (SmartAIEventList::iterator i = mEvents.begin(); i != mEvents.end(); ++i)
+                for (auto & mEvent : mEvents)
                 {
-                    if (i->event_id == link)
+                    if (mEvent.event_id == link)
                     {
-                        return (*i);
+                        return mEvent;
                     }
                 }
             }

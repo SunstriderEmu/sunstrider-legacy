@@ -50,7 +50,7 @@ namespace ai
 	{
 	public:
         Action(PlayerbotAI* ai, std::string name = "action") : verbose(false), AiNamedObject(ai, name) { }
-        virtual ~Action(void) {}
+        virtual ~Action(void) = default;
 
     public:
         virtual bool Execute(Event event) { return true; }
@@ -114,7 +114,7 @@ namespace ai
 	public:
         ActionBasket(ActionNode* action, float relevance, bool skipPrerequisites, Event event) :
           action(action), relevance(relevance), skipPrerequisites(skipPrerequisites), event(event) {}
-        virtual ~ActionBasket(void) {}
+        virtual ~ActionBasket(void) = default;
 	public:
 		float getRelevance() {return relevance;}
 		ActionNode* getAction() {return action;}

@@ -66,11 +66,11 @@ std::string GetConfigStringDefault(std::string base, const char* name, const cha
 
 Appender* Log::GetAppenderByName(std::string const& name)
 {
-    AppenderMap::iterator it = appenders.begin();
+    auto it = appenders.begin();
     while (it != appenders.end() && it->second && it->second->getName() != name)
         ++it;
 
-    return it == appenders.end() ? NULL : it->second;
+    return it == appenders.end() ? nullptr : it->second;
 }
 
 void Log::CreateAppenderFromConfig(std::string const& appenderName)
@@ -84,7 +84,7 @@ void Log::CreateAppenderFromConfig(std::string const& appenderName)
     std::string options = sConfigMgr->GetStringDefault(appenderName.c_str(), "");
 
     Tokenizer tokens(options, ',');
-    Tokenizer::const_iterator iter = tokens.begin();
+    auto iter = tokens.begin();
 
     size_t size = tokens.size();
     std::string name = appenderName.substr(9);
@@ -112,7 +112,7 @@ void Log::CreateAppenderFromConfig(std::string const& appenderName)
     {
         case APPENDER_CONSOLE:
         {
-            AppenderConsole* appender = new AppenderConsole(NextAppenderId(), name, level, flags);
+            auto  appender = new AppenderConsole(NextAppenderId(), name, level, flags);
             appenders[appender->getId()] = appender;
             if (size > 3)
                 appender->InitColors(*iter++);
@@ -183,7 +183,7 @@ void Log::CreateLoggerFromConfig(std::string const& appenderName)
     }
 
     Tokenizer tokens(options, ',');
-    Tokenizer::const_iterator iter = tokens.begin();
+    auto iter = tokens.begin();
 
     if (tokens.size() != 2)
     {
@@ -310,7 +310,7 @@ bool Log::SetLogLevel(std::string const& name, const char* newLevelc, bool isLog
 
     if (isLogger)
     {
-        LoggerMap::iterator it = loggers.begin();
+        auto it = loggers.begin();
         while (it != loggers.end() && it->second.getName() != name)
             ++it;
 
@@ -354,18 +354,18 @@ void Log::outCharDump(char const* str, uint32 accountId, uint64 guid, char const
 
 void Log::SetRealmId(uint32 id)
 {
-    for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
-        if (it->second && it->second->getType() == APPENDER_DB)
-            static_cast<AppenderDB*>(it->second)->setRealmId(id);
+    for (auto & appender : appenders)
+        if (appender.second && appender.second->getType() == APPENDER_DB)
+            static_cast<AppenderDB*>(appender.second)->setRealmId(id);
 }
 
 void Log::Close()
 {
     loggers.clear();
-    for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
+    for (auto & appender : appenders)
     {
-        delete it->second;
-        it->second = NULL;
+        delete appender.second;
+        appender.second = nullptr;
     }
     appenders.clear();
 }

@@ -61,9 +61,9 @@ BattlegroundQueue::~BattlegroundQueue()
     for (int i = 0; i < MAX_BATTLEGROUND_QUEUE_RANGES; i++)
     {
         m_QueuedPlayers[i].clear();
-        for(QueuedGroupsList::iterator itr = m_QueuedGroups[i].begin(); itr!= m_QueuedGroups[i].end(); ++itr)
+        for(auto & itr : m_QueuedGroups[i])
         {
-            delete (*itr);
+            delete itr;
         }
         m_QueuedGroups[i].clear();
     }
@@ -127,7 +127,7 @@ void BattlegroundQueue::SelectionPool::Init(EligibleGroups * curr)
 void BattlegroundQueue::SelectionPool::RemoveGroup(GroupQueueInfo *ginfo)
 {
     // find what to remove
-    for(std::list<GroupQueueInfo *>::iterator itr = SelectedGroups.begin(); itr != SelectedGroups.end(); ++itr)
+    for(auto itr = SelectedGroups.begin(); itr != SelectedGroups.end(); ++itr)
     {
         if((*itr)==ginfo)
         {
@@ -156,7 +156,7 @@ GroupQueueInfo * BattlegroundQueue::AddGroup(Player *leader, uint32 BgTypeId, ui
     // create new ginfo
     // cannot use the method like in addplayer, because that could modify an in-queue group's stats
     // (e.g. leader leaving queue then joining as individual again)
-    GroupQueueInfo* ginfo = new GroupQueueInfo;
+    auto  ginfo = new GroupQueueInfo;
     ginfo->BgTypeId                  = BgTypeId;
     ginfo->ArenaType                 = ArenaType;
     ginfo->ArenaTeamId               = arenateamid;
@@ -244,7 +244,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
     // if only player there, remove group
 
     // remove player queue info from group queue info
-    std::map<uint64, PlayerQueueInfo*>::iterator pitr = group->Players.find(guid);
+    auto pitr = group->Players.find(guid);
 
     if(pitr != group->Players.end())
         group->Players.erase(pitr);
@@ -314,7 +314,7 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, Battleground * b
         ginfo->IsInvitedToBGInstanceGUID = bg->GetInstanceID();
         uint32 bgQueueTypeId = sBattlegroundMgr->BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
         // loop through the players
-        for(std::map<uint64,PlayerQueueInfo*>::iterator itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
+        for(auto itr = ginfo->Players.begin(); itr != ginfo->Players.end(); ++itr)
         {
             // set status
             itr->second->InviteTime = GetMSTime();
@@ -350,12 +350,12 @@ bool BattlegroundQueue::InviteGroupToBG(GroupQueueInfo * ginfo, Battleground * b
 bool BattlegroundQueue::SelectionPool::Build(uint32 MinPlayers, uint32 MaxPlayers, EligibleGroups::iterator startitr)
 {
     // start from the specified start iterator
-    for(EligibleGroups::iterator itr1 = startitr; itr1 != m_CurrEligGroups->end(); ++itr1)
+    for(auto itr1 = startitr; itr1 != m_CurrEligGroups->end(); ++itr1)
     {
         // if it fits in, select it
         if(GetPlayerCount() + (*itr1)->Players.size() <= MaxPlayers)
         {
-            EligibleGroups::iterator next = itr1;
+            auto next = itr1;
             ++next;
             AddGroup((*itr1));
             if(GetPlayerCount() >= MinPlayers)
@@ -438,7 +438,7 @@ void BattlegroundQueue::BGEndedRemoveInvites(Battleground *bg)
             for(int i = 0; i < to_remove; ++i)
             {
                 // always remove the first one in the group
-                std::map<uint64, PlayerQueueInfo * >::iterator itr2 = ginfo->Players.begin();
+                auto itr2 = ginfo->Players.begin();
                 if(itr2 == ginfo->Players.end())
                 {
                     TC_LOG_ERROR("battleground","Empty Players in ginfo, this should never happen!");
@@ -505,20 +505,20 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             Battleground* bg = *itr; //we have to store battleground pointer here, because when battleground is full, it is removed from free queue (not yet implemented!!)
             // and iterator is invalid
 
-            for(QueuedGroupsList::iterator itr = m_QueuedGroups[queue_id].begin(); itr != m_QueuedGroups[queue_id].end(); ++itr)
+            for(auto & itr : m_QueuedGroups[queue_id])
             {
                 // did the group join for this bg type?
-                if((*itr)->BgTypeId != bgTypeId)
+                if(itr->BgTypeId != bgTypeId)
                     continue;
                 // if so, check if fits in
-                if(bg->GetFreeSlotsForTeam((*itr)->Team) >= (*itr)->Players.size())
+                if(bg->GetFreeSlotsForTeam(itr->Team) >= itr->Players.size())
                 {
                     // if group fits in, invite it
-                    InviteGroupToBG((*itr),bg,(*itr)->Team);
+                    InviteGroupToBG(itr,bg,itr->Team);
                 }
                 // invite group if it has enough free slots in absolute (not with GetFreeSlotsForTeam)
-                if ((*itr)->Players.size() > 1 && (bg->GetInvitedCount((*itr)->Team) + (*itr)->Players.size()) < bg->GetMaxPlayersPerTeam()) {
-                    InviteGroupToBG((*itr),bg,(*itr)->Team);
+                if (itr->Players.size() > 1 && (bg->GetInvitedCount(itr->Team) + itr->Players.size()) < bg->GetMaxPlayersPerTeam()) {
+                    InviteGroupToBG(itr,bg,itr->Team);
                 }
             }
 
@@ -693,8 +693,8 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
         if (isRated)
         {
-            std::list<GroupQueueInfo* >::iterator itr_alliance = m_SelectionPools[NORMAL_ALLIANCE].SelectedGroups.begin();
-            std::list<GroupQueueInfo* >::iterator itr_horde = m_SelectionPools[NORMAL_HORDE].SelectedGroups.begin();
+            auto itr_alliance = m_SelectionPools[NORMAL_ALLIANCE].SelectedGroups.begin();
+            auto itr_horde = m_SelectionPools[NORMAL_HORDE].SelectedGroups.begin();
             (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
             (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
         }
@@ -840,8 +840,8 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
             if (isRated)
             {
-                std::list<GroupQueueInfo* >::iterator itr_alliance = m_SelectionPools[mode1].SelectedGroups.begin();
-                std::list<GroupQueueInfo* >::iterator itr_horde = m_SelectionPools[mode2].SelectedGroups.begin();
+                auto itr_alliance = m_SelectionPools[mode1].SelectedGroups.begin();
+                auto itr_horde = m_SelectionPools[mode2].SelectedGroups.begin();
                 (*itr_alliance)->OpponentsTeamRating = (*itr_horde)->ArenaTeamRating;
                 (*itr_horde)->OpponentsTeamRating = (*itr_alliance)->ArenaTeamRating;
             }
@@ -881,7 +881,7 @@ bool BGQueueInviteEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
         {
             // check if player is invited to this bg ... this check must be here, because when player leaves queue and joins another, it would cause a problems
             BattlegroundQueue::QueuedPlayersMap const& qpMap = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[plr->GetBattlegroundQueueIdFromLevel()];
-            BattlegroundQueue::QueuedPlayersMap::const_iterator qItr = qpMap.find(m_PlayerGuid);
+            auto qItr = qpMap.find(m_PlayerGuid);
             if (qItr != qpMap.end() && qItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID)
             {
                 WorldPacket data;
@@ -915,7 +915,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES) // player is in queue
     {
         // check if player is invited to this bg ... this check must be here, because when player leaves queue and joins another, it would cause a problems
-        BattlegroundQueue::QueuedPlayersMap::iterator qMapItr = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[plr->GetBattlegroundQueueIdFromLevel()].find(m_PlayerGuid);
+        auto qMapItr = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[plr->GetBattlegroundQueueIdFromLevel()].find(m_PlayerGuid);
         if (qMapItr != sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[plr->GetBattlegroundQueueIdFromLevel()].end() && qMapItr->second.GroupInfo && qMapItr->second.GroupInfo->IsInvitedToBGInstanceGUID == m_BgInstanceGUID)
         {
             if (qMapItr->second.GroupInfo->IsRated)
@@ -970,7 +970,7 @@ BattlegroundMgr::~BattlegroundMgr()
 
 void BattlegroundMgr::DeleteAllBattlegrounds()
 {
-    for(BattlegroundSet::iterator itr = m_Battlegrounds.begin(); itr != m_Battlegrounds.end();)
+    for(auto itr = m_Battlegrounds.begin(); itr != m_Battlegrounds.end();)
     {
         Battleground * bg = itr->second;
         m_Battlegrounds.erase(itr++);
@@ -978,11 +978,11 @@ void BattlegroundMgr::DeleteAllBattlegrounds()
     }
 
     // destroy template battlegrounds that listed only in queues (other already terminated)
-    for(uint32 bgTypeId = 0; bgTypeId < MAX_BATTLEGROUND_TYPE_ID; ++bgTypeId)
+    for(auto & bgTypeId : BGFreeSlotQueue)
     {
         // ~Battleground call unregistring BG from queue
-        while(!BGFreeSlotQueue[bgTypeId].empty())
-            delete BGFreeSlotQueue[bgTypeId].front();
+        while(!bgTypeId.empty())
+            delete bgTypeId.front();
     }
 }
 
@@ -1157,7 +1157,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
 
     *data << plScSize;
 
-    for (std::map<uint64, BattlegroundScore*>::const_iterator itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr) {
+    for (auto itr = bg->GetPlayerScoresBegin(); itr != bg->GetPlayerScoresEnd(); ++itr) {
         *data << uint64(itr->first); // GUID
         *data << uint32(itr->second->KillingBlows);
         
@@ -1295,9 +1295,9 @@ void BattlegroundMgr::InvitePlayer(Player* plr, uint32 bgInstanceGUID, uint32 te
 
     // create invite events:
     //add events to player's counters ---- this is not good way - there should be something like global event processor, where we should add those events
-    BGQueueInviteEvent* inviteEvent = new BGQueueInviteEvent(plr->GetGUID(), bgInstanceGUID);
+    auto  inviteEvent = new BGQueueInviteEvent(plr->GetGUID(), bgInstanceGUID);
     plr->m_Events.AddEvent(inviteEvent, plr->m_Events.CalculateTime(INVITE_ACCEPT_WAIT_TIME/2));
-    BGQueueRemoveEvent* removeEvent = new BGQueueRemoveEvent(plr->GetGUID(), bgInstanceGUID, team);
+    auto  removeEvent = new BGQueueRemoveEvent(plr->GetGUID(), bgInstanceGUID, team);
     plr->m_Events.AddEvent(removeEvent, plr->m_Events.CalculateTime(INVITE_ACCEPT_WAIT_TIME));
 }
 
@@ -1568,7 +1568,7 @@ void BattlegroundMgr::DistributeArenaPoints()
     std::map<uint32, uint32> PlayerPoints;
 
     //at first update all points for all team members
-    for(ObjectMgr::ArenaTeamMap::iterator team_itr = sObjectMgr->GetArenaTeamMapBegin(); team_itr != sObjectMgr->GetArenaTeamMapEnd(); ++team_itr)
+    for(auto team_itr = sObjectMgr->GetArenaTeamMapBegin(); team_itr != sObjectMgr->GetArenaTeamMapEnd(); ++team_itr)
     {
         if(ArenaTeam * at = team_itr->second)
         {
@@ -1577,15 +1577,15 @@ void BattlegroundMgr::DistributeArenaPoints()
     }
 
     //cycle that gives points to all players
-    for (std::map<uint32, uint32>::iterator plr_itr = PlayerPoints.begin(); plr_itr != PlayerPoints.end(); ++plr_itr)
+    for (auto & PlayerPoint : PlayerPoints)
     {
         // Update database
-        CharacterDatabase.PExecute("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", plr_itr->second, plr_itr->first);
+        CharacterDatabase.PExecute("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", PlayerPoint.second, PlayerPoint.first);
         
         // Add points if player is online
-        Player* pl = ObjectAccessor::FindConnectedPlayer(plr_itr->first);
+        Player* pl = ObjectAccessor::FindConnectedPlayer(PlayerPoint.first);
         if (pl)
-            pl->ModifyArenaPoints(plr_itr->second);
+            pl->ModifyArenaPoints(PlayerPoint.second);
     }
 
     PlayerPoints.clear();
@@ -1593,7 +1593,7 @@ void BattlegroundMgr::DistributeArenaPoints()
     sWorld->SendGlobalText("Finished setting arena points for online players.", nullptr);
 
     sWorld->SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", nullptr);
-    for(ObjectMgr::ArenaTeamMap::iterator titr = sObjectMgr->GetArenaTeamMapBegin(); titr != sObjectMgr->GetArenaTeamMapEnd(); ++titr)
+    for(auto titr = sObjectMgr->GetArenaTeamMapBegin(); titr != sObjectMgr->GetArenaTeamMapEnd(); ++titr)
     {
         if(ArenaTeam * at = titr->second)
         {
@@ -1637,11 +1637,11 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket *data, uint64 guid
         uint32 count = 0;
         *data << uint32(0x00);                              // number of bg instances
 
-        for(std::map<uint32, Battleground*>::iterator itr = m_Battlegrounds.begin(); itr != m_Battlegrounds.end(); ++itr)
+        for(auto & m_Battleground : m_Battlegrounds)
         {
-            if(itr->second->GetTypeID() == bgTypeId && (PlayerLevel >= itr->second->GetMinLevel()) && (PlayerLevel <= itr->second->GetMaxLevel()))
+            if(m_Battleground.second->GetTypeID() == bgTypeId && (PlayerLevel >= m_Battleground.second->GetMinLevel()) && (PlayerLevel <= m_Battleground.second->GetMaxLevel()))
             {
-                *data << uint32(itr->second->GetInstanceID());
+                *data << uint32(m_Battleground.second->GetInstanceID());
                 ++count;
             }
         }
@@ -1682,7 +1682,7 @@ void BattlegroundMgr::SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *
 
 void BattlegroundMgr::RemoveBattleground(uint32 instanceID)
 {
-    BattlegroundSet::iterator itr = m_Battlegrounds.find(instanceID);
+    auto itr = m_Battlegrounds.find(instanceID);
     if(itr!=m_Battlegrounds.end())
         m_Battlegrounds.erase(itr);
 }
@@ -1808,9 +1808,9 @@ void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
 BattlegroundSet BattlegroundMgr::GetBattlegroundByType(uint32 bgTypeId)
 {
     BattlegroundSet Battlegrounds;
-    for (BattlegroundSet::iterator itr = m_Battlegrounds.begin(); itr != m_Battlegrounds.end(); ++itr)
+    for (auto & m_Battleground : m_Battlegrounds)
     {
-        Battleground* bg = itr->second;
+        Battleground* bg = m_Battleground.second;
         if (bg->GetTypeID() == bgTypeId)
             Battlegrounds[bg->GetInstanceID()]= bg;
     }

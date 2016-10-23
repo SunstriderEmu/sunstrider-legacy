@@ -214,33 +214,33 @@ void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder
         {
             uint32 areaId = source->GetAreaId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if (itr->GetSource()->GetAreaId() == areaId && (!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    localizer(itr->GetSource());
+            for (const auto & player : players)
+                if (player.GetSource()->GetAreaId() == areaId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    localizer(player.GetSource());
             return;
         }
         case TEXT_RANGE_ZONE:
         {
             uint32 zoneId = source->GetZoneId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if (itr->GetSource()->GetZoneId() == zoneId && (!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    localizer(itr->GetSource());
+            for (const auto & player : players)
+                if (player.GetSource()->GetZoneId() == zoneId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    localizer(player.GetSource());
             return;
         }
         case TEXT_RANGE_MAP:
         {
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if ((!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    localizer(itr->GetSource());
+            for (const auto & player : players)
+                if ((!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    localizer(player.GetSource());
             return;
         }
         case TEXT_RANGE_WORLD:
         {
             SessionMap const& smap = sWorld->GetAllSessions();
-            for (SessionMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
-                if (Player* player = iter->second->GetPlayer())
+            for (const auto & iter : smap)
+                if (Player* player = iter.second->GetPlayer())
                     if ((!team || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
                         localizer(player);
             return;

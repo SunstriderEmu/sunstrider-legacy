@@ -95,7 +95,7 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
     if (accountId == 0)
         return;
 
-    PlayerbotLoginQueryHolder *holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
+    auto holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
     if(!holder->Initialize())
     {
         delete holder;                                      // delete all unprocessed queries
@@ -710,7 +710,7 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 
     recvData >> playerGuid;
 
-    LoginQueryHolder *holder = new LoginQueryHolder(GetAccountId(), playerGuid);
+    auto holder = new LoginQueryHolder(GetAccountId(), playerGuid);
     if(!holder->Initialize())
     {
         delete holder;                                      // delete all unprocessed queries
@@ -725,7 +725,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 {
 	uint64 playerGuid = holder->GetGuid();
 
-	Player* pCurrChar = new Player(this);
+	auto  pCurrChar = new Player(this);
 	// for send server info and strings (config)
 	ChatHandler chH = ChatHandler(pCurrChar);
 
@@ -1118,7 +1118,7 @@ void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
     recvData >> repListID;
     recvData >> flag;
 
-    FactionStateList::iterator itr = GetPlayer()->m_factions.find(repListID);
+    auto itr = GetPlayer()->m_factions.find(repListID);
     if (itr == GetPlayer()->m_factions.end())
         return;
 
@@ -1213,7 +1213,7 @@ void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
     uint8 inactive;
     recvData >> replistid >> inactive;
 
-    FactionStateList::iterator itr = _player->m_factions.find(replistid);
+    auto itr = _player->m_factions.find(replistid);
     if (itr == _player->m_factions.end())
         return;
 
@@ -1355,11 +1355,11 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
         return;
     }
 
-    for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
+    for(auto & i : declinedname.name)
     {
         
-        recvData >> declinedname.name[i];
-        if(!normalizePlayerName(declinedname.name[i]))
+        recvData >> i;
+        if(!normalizePlayerName(i))
         {
             WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
             data << uint32(1);
@@ -1378,8 +1378,8 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
         return;
     }
 
-    for(int i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
-        CharacterDatabase.EscapeString(declinedname.name[i]);
+    for(auto & i : declinedname.name)
+        CharacterDatabase.EscapeString(i);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM character_declinedname WHERE guid = '%u'", GUID_LOPART(guid));

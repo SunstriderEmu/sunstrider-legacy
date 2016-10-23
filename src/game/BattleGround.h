@@ -210,8 +210,7 @@ class BattlegroundScore
     public:
         BattlegroundScore() : KillingBlows(0), HonorableKills(0), Deaths(0), DamageDone(0), HealingDone(0), BonusHonor(0) {};
         virtual ~BattlegroundScore()                        //virtual destructor is used when deleting score from scores map
-        {
-        };
+        = default;;
         uint32 KillingBlows;
         uint32 Deaths;
         uint32 HonorableKills;

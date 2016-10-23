@@ -35,6 +35,8 @@ include(FindPCHSupport)
 # set default buildoptions and print them
 include(cmake/options.cmake)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+
 if(UNIX)
     find_package(ZLIB)
     if(ZLIB_FOUND)
@@ -66,6 +68,7 @@ endif(OPENSSL_FOUND)
 find_package(Git) 
 FIND_MYSQL()
 
+#For Windows, use prebuilt libircclient library instead of building it
 if (WIN32)
     if(PLATFORM EQUAL 64)
         set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/lib/x64_release/libircclient.lib)
@@ -92,16 +95,13 @@ if(UNIX)
     endif(READLINE_FOUND)
 endif(UNIX)
 
-if(PROFILING)
-    add_definitions(-DPROFILING)
-endif()
 
 if(PLAYERBOT)
     add_definitions(-DPLAYERBOT)
 endif()
 
 if(TESTS)
-    #this variable so that library trying to link testing lib don't complain
+    #this variable so that libraries trying to link testing lib don't complain
     set(TESTING_LIB testing)
     add_definitions(-DTESTS)
 endif()

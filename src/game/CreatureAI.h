@@ -85,7 +85,7 @@ class CreatureAI : public UnitAI
 
         CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
 
-        ~CreatureAI() override {}
+        ~CreatureAI() override = default;
 
         void AttackStartIfCan(Unit* victim);
         void Talk(uint8 id, WorldObject const* whisperTarget = nullptr);

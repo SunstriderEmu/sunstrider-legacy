@@ -159,5 +159,5 @@ Realm const* RealmList::GetRealm(RealmHandle const& id) const
     if (itr != _realms.end())
         return &itr->second;
 
-    return NULL;
+    return nullptr;
 }

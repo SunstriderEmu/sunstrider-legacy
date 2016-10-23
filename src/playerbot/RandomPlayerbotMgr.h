@@ -17,14 +17,14 @@ class RandomPlayerbotMgr : public PlayerbotHolder
 {
     public:
         RandomPlayerbotMgr();
-        virtual ~RandomPlayerbotMgr();
+        ~RandomPlayerbotMgr() override;
         static RandomPlayerbotMgr& instance()
         {
             static RandomPlayerbotMgr instance;
             return instance;
         }
 
-        virtual void UpdateAIInternal(uint32 elapsed);
+        void UpdateAIInternal(uint32 elapsed) override;
 
 	public:
         static bool HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args);
@@ -49,7 +49,7 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         void RandomTeleportForLevel(Player* bot);
 
 	protected:
-	    virtual void OnBotLoginInternal(Player * const bot) {}
+	    void OnBotLoginInternal(Player * const bot) override {}
 
     private:
         uint32 GetEventValue(uint32 bot, std::string event);

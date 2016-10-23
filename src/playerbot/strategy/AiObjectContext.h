@@ -12,7 +12,7 @@ namespace ai
     {
     public:
         AiObjectContext(PlayerbotAI* ai);
-        virtual ~AiObjectContext() {}
+        virtual ~AiObjectContext() = default;
 
     public:
         virtual Strategy* GetStrategy(std::string name) { return strategyContexts.GetObject(name, ai); }
@@ -49,9 +49,9 @@ namespace ai
         {
             std::ostringstream out;
             set<std::string> names = valueContexts.GetCreated();
-            for (set<std::string>::iterator i = names.begin(); i != names.end(); ++i)
+            for (const auto & name : names)
             {
-                UntypedValue* value = GetUntypedValue(*i);
+                UntypedValue* value = GetUntypedValue(name);
                 if (!value)
                     continue;
 
@@ -59,7 +59,7 @@ namespace ai
                 if (text == "?")
                     continue;
 
-                out << "{" << *i << "=" << text << "} ";
+                out << "{" << name << "=" << text << "} ";
             }
             return out.str();
         }

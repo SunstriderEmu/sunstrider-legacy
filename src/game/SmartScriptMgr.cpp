@@ -34,12 +34,12 @@ void SmartWaypointMgr::LoadFromDB()
 {
     uint32 oldMSTime = GetMSTime();
 
-    for (std::unordered_map<uint32, WPPath*>::iterator itr = waypoint_map.begin(); itr != waypoint_map.end(); ++itr)
+    for (auto & itr : waypoint_map)
     {
-        for (WPPath::iterator pathItr = itr->second->begin(); pathItr != itr->second->end(); ++pathItr)
+        for (auto pathItr = itr.second->begin(); pathItr != itr.second->end(); ++pathItr)
             delete pathItr->second;
 
-        delete itr->second;
+        delete itr.second;
     }
 
     waypoint_map.clear();
@@ -93,12 +93,12 @@ void SmartWaypointMgr::LoadFromDB()
 
 SmartWaypointMgr::~SmartWaypointMgr()
 {
-    for (std::unordered_map<uint32, WPPath*>::iterator itr = waypoint_map.begin(); itr != waypoint_map.end(); ++itr)
+    for (auto & itr : waypoint_map)
     {
-        for (WPPath::iterator pathItr = itr->second->begin(); pathItr != itr->second->end(); ++pathItr)
+        for (auto pathItr = itr.second->begin(); pathItr != itr.second->end(); ++pathItr)
             delete pathItr->second;
 
-        delete itr->second;
+        delete itr.second;
     }
 }
 
@@ -111,8 +111,8 @@ void SmartAIMgr::LoadSmartAIFromDB()
 
     uint32 oldMSTime = GetMSTime();
 
-    for (uint8 i = 0; i < SMART_SCRIPT_TYPE_MAX; i++)
-        mEventMap[i].clear();  //Drop Existing SmartAI List
+    for (auto & i : mEventMap)
+        i.clear();  //Drop Existing SmartAI List
 
     QueryResult result = WorldDatabase.Query("SELECT entryorguid, source_type, id, link, event_type, \
                                              event_phase_mask, event_chance, event_flags, event_param1, \
@@ -855,7 +855,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
 
             CacheSpellContainerBounds sBounds = GetSummonCreatureSpellContainerBounds(e.action.summonCreature.creature);
-            for (CacheSpellContainer::const_iterator itr = sBounds.first; itr != sBounds.second; ++itr)
+            for (auto itr = sBounds.first; itr != sBounds.second; ++itr)
                 SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u creature summon: There is a summon spell for creature entry %u (SpellId: %u, effect: %u)",
                                 e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.summonCreature.creature, itr->second.first, itr->second.second);
 
@@ -878,7 +878,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
 
             CacheSpellContainerBounds sBounds = GetKillCreditSpellContainerBounds(e.action.killedMonster.creature);
-            for (CacheSpellContainer::const_iterator itr = sBounds.first; itr != sBounds.second; ++itr)
+            for (auto itr = sBounds.first; itr != sBounds.second; ++itr)
                 SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u Kill Credit: There is a killcredit spell for creatureEntry %u (SpellId: %u effect: %u)",
                                 e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.killedMonster.creature, itr->second.first, itr->second.second);
 
@@ -915,7 +915,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                 return false;
 
             CacheSpellContainerBounds sBounds = GetSummonGameObjectSpellContainerBounds(e.action.summonGO.entry);
-            for (CacheSpellContainer::const_iterator itr = sBounds.first; itr != sBounds.second; ++itr)
+            for (auto itr = sBounds.first; itr != sBounds.second; ++itr)
                 SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Warning: Entry %d SourceType %u Event %u Action %u gameobject summon: There is a summon spell for gameobject entry %u (SpellId: %u, effect: %u)",
                                 e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.summonGO.entry, itr->second.first, itr->second.second);
 

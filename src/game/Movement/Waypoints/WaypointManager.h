@@ -81,7 +81,7 @@ class WaypointMgr
         // Returns the path from a given id
         WaypointPath const* GetPath(uint32 id) const
         {
-            WaypointPathContainer::const_iterator itr = _waypointStore.find(id);
+            auto itr = _waypointStore.find(id);
             if (itr != _waypointStore.end())
                 return &itr->second;
 

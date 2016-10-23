@@ -23,8 +23,8 @@
 
 SpectatorAddonMsg::SpectatorAddonMsg()
 {
-    for (uint8 i = 0; i < SPECTATOR_PREFIX_COUNT; ++i)
-        prefixFlags[i] = false;
+    for (bool & prefixFlag : prefixFlags)
+        prefixFlag = false;
 
     player    = "";
     target    = "";

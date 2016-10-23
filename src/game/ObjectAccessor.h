@@ -70,7 +70,7 @@ class HashMapHolder
         {
             boost::shared_lock<boost::shared_mutex> lock(_lock);
 
-            typename MapType::iterator itr = m_objectMap.find(guid);
+            auto itr = m_objectMap.find(guid);
             return (itr != m_objectMap.end()) ? itr->second : nullptr;
         }
 
@@ -80,7 +80,7 @@ class HashMapHolder
     private:
 
         //Non instanceable only static
-        HashMapHolder() {}
+        HashMapHolder() = default;
 
         static boost::shared_mutex _lock;
         static MapType  m_objectMap;
@@ -229,7 +229,7 @@ class ObjectAccessor
 
             std::lock_guard<std::mutex> lock(_objectLock);
 
-            std::set<Object *>::iterator iter2 = std::find(i_objects.begin(), i_objects.end(), (Object *)pl);
+            auto iter2 = std::find(i_objects.begin(), i_objects.end(), (Object *)pl);
             if( iter2 != i_objects.end() )
                 i_objects.erase(iter2);
         }

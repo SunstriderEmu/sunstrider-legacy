@@ -133,9 +133,9 @@ bool Bag::LoadFromDB(uint32 guid, uint64 owner_guid)
 
 void Bag::DeleteFromDB()
 {
-    for (int i = 0; i < MAX_BAG_SIZE; i++)
-        if (m_bagslot[i])
-            m_bagslot[i]->DeleteFromDB();
+    for (auto & i : m_bagslot)
+        if (i)
+            i->DeleteFromDB();
 
     Item::DeleteFromDB();
 }

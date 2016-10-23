@@ -44,7 +44,7 @@ class MapManager
         Map* CreateBaseMap(uint32 id);
         Map* FindBaseMap(uint32 id) const
         {
-            MapMapType::const_iterator iter = i_maps.find(id);
+            auto iter = i_maps.find(id);
             return (iter == i_maps.end() ? nullptr : iter->second);
         }
         Map* FindBaseNonInstanceMap(uint32 mapId) const;

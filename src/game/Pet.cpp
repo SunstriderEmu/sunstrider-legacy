@@ -113,8 +113,8 @@ Pet::~Pet()
 {
     if(m_uint32Values)                                      // only for fully created Object
     {
-        for (PetSpellMap::iterator i = m_spells.begin(); i != m_spells.end(); ++i)
-            delete i->second;
+        for (auto & m_spell : m_spells)
+            delete m_spell.second;
         sObjectAccessor->RemoveObject(this);
     }
 
@@ -491,7 +491,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
         //save spells the pet can teach to it's Master
         {
             int i = 0;
-            for(TeachSpellMap::iterator itr = m_teachspells.begin(); i < 4 && itr != m_teachspells.end(); ++i, ++itr)
+            for(auto itr = m_teachspells.begin(); i < 4 && itr != m_teachspells.end(); ++i, ++itr)
                 ss << itr->first << " " << itr->second << " ";
             for(; i < 4; ++i)
                 ss << uint32(0) << " " << uint32(0) << " ";
@@ -651,9 +651,9 @@ void Pet::RegenerateFocus()
     float addvalue = 24 * sWorld->GetRate(RATE_POWER_FOCUS);
 
     AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for(AuraList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
-        if ((*i)->GetModifier()->m_miscvalue == POWER_FOCUS)
-            addvalue *= ((*i)->GetModifierValue() + 100) / 100.0f;
+    for(auto ModPowerRegenPCTAura : ModPowerRegenPCTAuras)
+        if (ModPowerRegenPCTAura->GetModifier()->m_miscvalue == POWER_FOCUS)
+            addvalue *= (ModPowerRegenPCTAura->GetModifierValue() + 100) / 100.0f;
 
     ModifyPower(POWER_FOCUS, (int32)addvalue);
 }
@@ -766,13 +766,13 @@ bool Pet::CanTakeMoreActiveSpells(uint32 spellid)
 
     chainstartstore[0] = sSpellMgr->GetFirstSpellInChain(spellid);
 
-    for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    for (auto & m_spell : m_spells)
     {
-        spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+        spellInfo = sSpellMgr->GetSpellInfo(m_spell.first);
         if(spellInfo && spellInfo->IsPassive())
             continue;
 
-        uint32 chainstart = sSpellMgr->GetFirstSpellInChain(itr->first);
+        uint32 chainstart = sSpellMgr->GetFirstSpellInChain(m_spell.first);
 
         uint8 x;
 
@@ -806,7 +806,7 @@ int32 Pet::GetTPForSpell(uint32 spellid)
     uint32 basetrainp = 0;
 
     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellid);
-    for(SkillLineAbilityMap::const_iterator _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
+    for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
     {
         if(!_spell_idx->second->reqtrainpoints)
             return 0;
@@ -818,15 +818,15 @@ int32 Pet::GetTPForSpell(uint32 spellid)
     uint32 spenttrainp = 0;
     uint32 chainstart = sSpellMgr->GetFirstSpellInChain(spellid);
 
-    for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    for (auto & m_spell : m_spells)
     {
-        if(itr->second->state == PETSPELL_REMOVED)
+        if(m_spell.second->state == PETSPELL_REMOVED)
             continue;
 
-        if(sSpellMgr->GetFirstSpellInChain(itr->first) == chainstart)
+        if(sSpellMgr->GetFirstSpellInChain(m_spell.first) == chainstart)
         {
-            SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(itr->first);
-            for(SkillLineAbilityMap::const_iterator _spell_idx2 = skill_bounds.first; _spell_idx2 != skill_bounds.second; ++_spell_idx2)
+            SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(m_spell.first);
+            for(auto _spell_idx2 = skill_bounds.first; _spell_idx2 != skill_bounds.second; ++_spell_idx2)
             {
                 if(_spell_idx2->second->reqtrainpoints > spenttrainp)
                 {
@@ -1438,7 +1438,7 @@ void Pet::_SaveSpellCooldowns()
     time_t curTime = time(nullptr);
 
     // remove oudated and save active
-    for(CreatureSpellCooldowns::iterator itr = m_CreatureSpellCooldowns.begin();itr != m_CreatureSpellCooldowns.end();)
+    for(auto itr = m_CreatureSpellCooldowns.begin();itr != m_CreatureSpellCooldowns.end();)
     {
         if(itr->second <= curTime)
             m_CreatureSpellCooldowns.erase(itr++);
@@ -1490,8 +1490,8 @@ void Pet::_SaveSpells()
 void Pet::_LoadAuras(uint32 timediff)
 {
     m_Auras.clear();
-    for (int i = 0; i < TOTAL_AURAS; i++)
-        m_modAuras[i].clear();
+    for (auto & m_modAura : m_modAuras)
+        m_modAura.clear();
 
     // all aura related fields
     for(int i = UNIT_FIELD_AURA; i <= UNIT_FIELD_AURASTATE; ++i)
@@ -1549,8 +1549,8 @@ void Pet::_LoadAuras(uint32 timediff)
                 continue;
                 
             bool abort = false;
-            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; i++) { // Don't load these, they make the core crash sometimes
-                if (spellproto->Effects[i].ApplyAuraName == SPELL_AURA_IGNORED)
+            for (const auto & Effect : spellproto->Effects) { // Don't load these, they make the core crash sometimes
+                if (Effect.ApplyAuraName == SPELL_AURA_IGNORED)
                     abort = true;
             }
 
@@ -1588,9 +1588,9 @@ void Pet::_SaveAuras()
         return;
     }
     
-    for(AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
+    for(const auto & itr : auras)
     {
-        Aura* aura = itr->second;
+        Aura* aura = itr.second;
         SpellInfo const *spellInfo = aura->GetSpellInfo();
 
         //skip if passive
@@ -1598,11 +1598,11 @@ void Pet::_SaveAuras()
             continue;
 
         // skip all auras from spell that apply at cast SPELL_AURA_MOD_SHAPESHIFT or pet area auras.
-        for (int i = 0; i < MAX_SPELL_EFFECTS; i++)
+        for (const auto & Effect : spellInfo->Effects)
         {
-            if (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_MOD_STEALTH ||
-                spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
-                spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET )
+            if (Effect.ApplyAuraName == SPELL_AURA_MOD_STEALTH ||
+                Effect.Effect == SPELL_EFFECT_APPLY_AREA_AURA_OWNER ||
+                Effect.Effect == SPELL_EFFECT_APPLY_AREA_AURA_PET )
                 continue;
         }
 
@@ -1640,7 +1640,7 @@ bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
     if (spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET))
         active = ACT_CAST;
 
-    PetSpellMap::iterator itr = m_spells.find(spell_id);
+    auto itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
         if (itr->second->state == PETSPELL_REMOVED)
@@ -1661,7 +1661,7 @@ bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
 
     uint32 oldspell_id = 0;
 
-    PetSpell *newspell = new PetSpell;
+    auto newspell = new PetSpell;
     newspell->state = state;
     newspell->type = type;
     
@@ -1677,20 +1677,20 @@ bool Pet::AddSpell(uint16 spell_id, uint16 active, PetSpellState state, uint16 s
 
     uint32 chainstart = sSpellMgr->GetFirstSpellInChain(spell_id);
 
-    for (PetSpellMap::iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    for (auto & m_spell : m_spells)
     {
-        if(itr->second->state == PETSPELL_REMOVED) continue;
+        if(m_spell.second->state == PETSPELL_REMOVED) continue;
 
-        if(sSpellMgr->GetFirstSpellInChain(itr->first) == chainstart)
+        if(sSpellMgr->GetFirstSpellInChain(m_spell.first) == chainstart)
         {
-            slot_id = itr->second->slotId;
-            newspell->active = itr->second->active;
+            slot_id = m_spell.second->slotId;
+            newspell->active = m_spell.second->active;
 
             if(newspell->active == ACT_ENABLED)
-                ToggleAutocast(itr->first, false);
+                ToggleAutocast(m_spell.first, false);
 
-            oldspell_id = itr->first;
-            RemoveSpell(itr->first);
+            oldspell_id = m_spell.first;
+            RemoveSpell(m_spell.first);
         }
     }
 
@@ -1742,7 +1742,7 @@ bool Pet::LearnSpell(uint16 spell_id)
 
 void Pet::RemoveSpell(uint16 spell_id)
 {
-    PetSpellMap::iterator itr = m_spells.find(spell_id);
+    auto itr = m_spells.find(spell_id);
     if (itr == m_spells.end())
         return;
 
@@ -1762,7 +1762,7 @@ void Pet::RemoveSpell(uint16 spell_id)
 
 bool Pet::_removeSpell(uint16 spell_id)
 {
-    PetSpellMap::iterator itr = m_spells.find(spell_id);
+    auto itr = m_spells.find(spell_id);
     if (itr != m_spells.end())
     {
         delete itr->second;
@@ -1781,12 +1781,12 @@ void Pet::InitPetCreateSpells()
     PetCreateSpellEntry const* CreateSpells = sObjectMgr->GetPetCreateSpellEntry(GetEntry());
     if(CreateSpells)
     {
-        for(uint8 i = 0; i < 4; i++)
+        for(unsigned int i : CreateSpells->spellid)
         {
-            if(!CreateSpells->spellid[i])
+            if(!i)
                 break;
 
-            SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(CreateSpells->spellid[i]);
+            SpellInfo const *learn_spellproto = sSpellMgr->GetSpellInfo(i);
             if(!learn_spellproto)
                 continue;
 
@@ -1812,7 +1812,7 @@ void Pet::InitPetCreateSpells()
                 AddSpell(petspellid);
 
             SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(learn_spellproto->Effects[0].TriggerSpell);
-            for(SkillLineAbilityMap::const_iterator _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
+            for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
             {
                 usedtrainpoints += _spell_idx->second->reqtrainpoints;
                 break;
@@ -1838,7 +1838,7 @@ void Pet::CheckLearning(uint32 spellid)
     if(m_teachspells.empty() || !owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    TeachSpellMap::iterator itr = m_teachspells.find(spellid);
+    auto itr = m_teachspells.find(spellid);
     if(itr == m_teachspells.end())
         return;
 
@@ -1892,7 +1892,7 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
     }
     else
     {
-        AutoSpellList::iterator itr2 = m_autospells.begin();
+        auto itr2 = m_autospells.begin();
         for (i = 0; i < m_autospells.size() && m_autospells[i] != spellid; i++, itr2++);
         if (i < m_autospells.size())
         {
@@ -2087,8 +2087,8 @@ void Pet::LearnPetPassives()
         // For general hunter pets skill 270
         // Passive 01~10, Passive 00 (20782, not used), Ferocious Inspiration (34457)
         // Scale 01~03 (34902~34904, bonus from owner, not used)
-        for(PetFamilySpellsSet::const_iterator petSet = petStore->second.begin(); petSet != petStore->second.end(); ++petSet)
-            AddSpell(*petSet, ACT_DECIDE, PETSPELL_NEW, 0xffff, PETSPELL_FAMILY);
+        for(unsigned int petSet : petStore->second)
+            AddSpell(petSet, ACT_DECIDE, PETSPELL_NEW, 0xffff, PETSPELL_FAMILY);
     }
 }
 
@@ -2101,7 +2101,7 @@ void Pet::CastPetAuras(bool current)
     if(getPetType() != HUNTER_PET && (getPetType() != SUMMON_PET || owner->GetClass() != CLASS_WARLOCK))
         return;
 
-    for(PetAuraSet::iterator itr = owner->m_petAuras.begin(); itr != owner->m_petAuras.end();)
+    for(auto itr = owner->m_petAuras.begin(); itr != owner->m_petAuras.end();)
     {
         PetAura const* pa = *itr;
         ++itr;

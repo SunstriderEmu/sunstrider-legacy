@@ -127,8 +127,8 @@ void MotionTransport::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
     if (players.isEmpty())
         return;
 
-    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-        BuildFieldsUpdate(itr->GetSource(), data_map);
+    for (const auto & player : players)
+        BuildFieldsUpdate(player.GetSource(), data_map);
 
     ClearUpdateMask(true);
 }
@@ -330,7 +330,7 @@ void MotionTransport::RemovePassenger(WorldObject* passenger, bool withAll)
 Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* data)
 {
     Map* map = GetMap();
-    Creature* creature = new Creature();
+    auto  creature = new Creature();
 
     if (!creature->LoadFromDB(guid, map)) //do not add to map yet
     {
@@ -436,16 +436,16 @@ void MotionTransport::LoadStaticPassengers()
     {
         CellObjectGuidsMap const& cells = sObjectMgr->GetMapObjectGuids(mapId, GetMap()->GetSpawnMode());
         CellGuidSet::const_iterator guidEnd;
-        for (CellObjectGuidsMap::const_iterator cellItr = cells.begin(); cellItr != cells.end(); ++cellItr)
+        for (const auto & cell : cells)
         {
             // Creatures on transport
-            guidEnd = cellItr->second.creatures.end();
-            for (CellGuidSet::const_iterator guidItr = cellItr->second.creatures.begin(); guidItr != guidEnd; ++guidItr)
+            guidEnd = cell.second.creatures.end();
+            for (auto guidItr = cell.second.creatures.begin(); guidItr != guidEnd; ++guidItr)
                 CreateNPCPassenger(*guidItr, sObjectMgr->GetCreatureData(*guidItr));
 
             // GameObjects on transport
-            guidEnd = cellItr->second.gameobjects.end();
-            for (CellGuidSet::const_iterator guidItr = cellItr->second.gameobjects.begin(); guidItr != guidEnd; ++guidItr)
+            guidEnd = cell.second.gameobjects.end();
+            for (auto guidItr = cell.second.gameobjects.begin(); guidItr != guidEnd; ++guidItr)
                 CreateGOPassenger(*guidItr, sObjectMgr->GetGOData(*guidItr));
         }
     }
@@ -463,14 +463,14 @@ void MotionTransport::UnloadStaticPassengers()
 
 void MotionTransport::UnloadNonStaticPassengers()
 {
-    for (PassengerSet::iterator itr = _passengers.begin(); itr != _passengers.end(); )
+    for (auto itr = _passengers.begin(); itr != _passengers.end(); )
     {
         if ((*itr)->GetTypeId() == TYPEID_PLAYER)
         {
             ++itr;
             continue;
         }
-        PassengerSet::iterator itr2 = itr++;
+        auto itr2 = itr++;
         (*itr2)->AddObjectToRemoveList();
     }
 }
@@ -576,7 +576,7 @@ void MotionTransport::DelayedTeleportTransport()
         o = _nextFrame->InitialOrientation;
 
     PassengerSet _passengersCopy = _passengers;
-    for (PassengerSet::iterator itr = _passengersCopy.begin(); itr != _passengersCopy.end(); )
+    for (auto itr = _passengersCopy.begin(); itr != _passengersCopy.end(); )
     {
         WorldObject* obj = (*itr++);
 
@@ -635,9 +635,8 @@ void MotionTransport::DelayedTeleportTransport()
 
 void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
 {
-    for (PassengerSet::iterator itr = passengers.begin(); itr != passengers.end(); ++itr)
+    for (auto passenger : passengers)
     {
-        WorldObject* passenger = *itr;
         // transport teleported but passenger not yet (can happen for players)
         if (passenger->GetMap() != GetMap())
             continue;
@@ -843,8 +842,8 @@ void StaticTransport::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
     if (players.isEmpty())
         return;
 
-    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-        BuildFieldsUpdate(itr->GetSource(), data_map);
+    for (const auto & player : players)
+        BuildFieldsUpdate(player.GetSource(), data_map);
 
     ClearUpdateMask(true);
 }
@@ -963,10 +962,9 @@ void StaticTransport::UpdatePosition(float x, float y, float z, float o)
 
 void StaticTransport::UpdatePassengerPositions()
 {
-    for (PassengerSet::iterator itr = _passengers.begin(); itr != _passengers.end(); ++itr)
+    for (auto passenger : _passengers)
     {
-        WorldObject* passenger = *itr;
-
+        
 #ifdef LICH_KING
         // if passenger is on vehicle we have to assume the vehicle is also on transport and its the vehicle that will be updating its passengers
         if (Unit* unit = passenger->ToUnit())

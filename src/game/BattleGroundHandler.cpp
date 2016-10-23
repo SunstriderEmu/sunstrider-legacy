@@ -307,7 +307,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 uint32 queue_id = _player->GetBattlegroundQueueId(i);
                 if(!queue_id)
                     continue;
-                BattlegroundQueue::QueuedPlayersMap::iterator itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
+                auto itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
                 // if the player is not in queue, contine
                 if(itrPlayerStatus == sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end())
                     continue;
@@ -397,7 +397,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
         uint32 rating = 0;
         uint32 opponentsRating = 0;
         // get the team info from the queue
-        BattlegroundQueue::QueuedPlayersMap::iterator pitr = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
+        auto pitr = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
         if(pitr !=sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end()
             && pitr->second.GroupInfo )
         {
@@ -539,7 +539,7 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
                 uint8 isRated = 0;
                 if (i == queueSlot || !queue_id)                            // we need to get the instance ids
                     continue;
-                BattlegroundQueue::QueuedPlayersMap::iterator itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
+                auto itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
                 if(itrPlayerStatus == sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end())
                     continue;
                 if(itrPlayerStatus->second.GroupInfo)
@@ -570,7 +570,7 @@ void WorldSession::HandleBattlefieldStatusOpcode( WorldPacket & /*recvData*/ )
             uint8 arenatype = sBattlegroundMgr->BGArenaType(queue_id);
             uint8 isRated = 0;
             Battleground *bg = sBattlegroundMgr->GetBattlegroundTemplate(bgTypeId);
-            BattlegroundQueue::QueuedPlayersMap::iterator itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
+            auto itrPlayerStatus = sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].find(_player->GetGUID());
             if(itrPlayerStatus == sBattlegroundMgr->m_BattlegroundQueues[queue_id].m_QueuedPlayers[_player->GetBattlegroundQueueIdFromLevel()].end())
                 continue;
             if(itrPlayerStatus->second.GroupInfo)

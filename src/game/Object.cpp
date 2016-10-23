@@ -250,7 +250,7 @@ void Object::BuildValuesUpdateBlockForPlayer(UpdateData *data, Player *target) c
 
 void Object::BuildFieldsUpdate(Player* player, UpdateDataMapType& data_map) const
 {
-    UpdateDataMapType::iterator iter = data_map.find(player);
+    auto iter = data_map.find(player);
     if (iter == data_map.end())
     {
         std::pair<UpdateDataMapType::iterator, bool> p = data_map.emplace(player, UpdateData());
@@ -1336,7 +1336,7 @@ float WorldObject::GetVisibilityRange() const
 
 Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype,uint32 despwtime) const
 {
-    TemporarySummon* pCreature = new TemporarySummon(GetGUID());
+    auto  pCreature = new TemporarySummon(GetGUID());
 
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), GetMap(), id))
     {
@@ -1383,13 +1383,13 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
-    Pet* pet = new Pet(petType);
+    auto  pet = new Pet(petType);
 
     if(petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
     {
         // Remove Demonic Sacrifice auras (known pet)
         Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-        for(Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
+        for(auto itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if((*itr)->GetModifier()->m_miscvalue==2228)
             {
@@ -1474,7 +1474,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     {
         // Remove Demonic Sacrifice auras (known pet)
         Unit::AuraList const& auraClassScripts = GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-        for(Unit::AuraList::const_iterator itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
+        for(auto itr = auraClassScripts.begin();itr!=auraClassScripts.end();)
         {
             if((*itr)->GetModifier()->m_miscvalue==2228)
             {
@@ -1502,7 +1502,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 duration)
 {
     PetType petType = SUMMON_PET;
-    Pet* pet = new Pet(petType);
+    auto  pet = new Pet(petType);
 
     // petentry==0 for hunter "call pet" (current pet summoned if any)
     if(!entry)
@@ -2319,9 +2319,9 @@ struct WorldObjectChangeAccumulator
     void Visit(PlayerMapType &m)
     {
         Player* source = nullptr;
-        for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        for (auto & iter : m)
         {
-            source = iter->GetSource();
+            source = iter.GetSource();
             BuildPacket(source);
 
             //also add vision to player if he has shared vision with us
@@ -2339,9 +2339,9 @@ struct WorldObjectChangeAccumulator
     void Visit(CreatureMapType &m)
     {
         Creature* source = nullptr;
-        for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        for (auto & iter : m)
         {
-            source = iter->GetSource();
+            source = iter.GetSource();
             if (!source->GetSharedVisionList().empty())
             {
                 //has player shared vision with us ?
@@ -2356,9 +2356,9 @@ struct WorldObjectChangeAccumulator
     void Visit(DynamicObjectMapType &m)
     {
         DynamicObject* source = nullptr;
-        for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+        for (auto & iter : m)
         {
-            source = iter->GetSource();
+            source = iter.GetSource();
             uint64 guid = source->GetCasterGUID();
 
             if (IS_PLAYER_GUID(guid))

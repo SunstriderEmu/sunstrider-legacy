@@ -125,10 +125,8 @@ template<> void AddUnitState(Creature *obj, CellCoord const& cell_pair)
 template <class T>
 void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> &m, uint32 &count, Map* map)
 {
-    for(CellGuidSet::const_iterator i_guid = guid_set.begin(); i_guid != guid_set.end(); ++i_guid)
+    for(unsigned int guid : guid_set)
     {
-        uint32 guid = *i_guid;
-
         //ugly hackkk
         T* obj = nullptr;
         
@@ -166,12 +164,12 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapTyp
     if(cell_corpses.empty())
         return;
 
-    for(CellCorpseSet::const_iterator itr = cell_corpses.begin(); itr != cell_corpses.end(); ++itr)
+    for(const auto & cell_corpse : cell_corpses)
     {
-        if(itr->second != map->GetInstanceId())
+        if(cell_corpse.second != map->GetInstanceId())
             continue;
 
-        uint32 player_guid = itr->first;
+        uint32 player_guid = cell_corpse.first;
 
         Corpse *obj = sObjectAccessor->GetCorpseForPlayerGUID(player_guid);
         if(!obj)
@@ -243,7 +241,7 @@ ObjectGridLoader::Load(GridType &grid)
     }
 }
 
-void ObjectGridLoader::LoadN(void)
+void ObjectGridLoader::LoadN()
 {
     i_gameObjects = 0; i_creatures = 0; i_corpses = 0;
     i_cell.data.Part.cell_y = 0;
@@ -307,14 +305,14 @@ void
 ObjectGridStoper::Visit(CreatureMapType &m)
 {
     // stop any fights at grid de-activation and remove dynobjects created at cast by creatures
-    for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
+    for(auto & iter : m)
     {
-        iter->GetSource()->RemoveAllDynObjects();
-        if(iter->GetSource()->IsInCombat())
+        iter.GetSource()->RemoveAllDynObjects();
+        if(iter.GetSource()->IsInCombat())
         {
-            iter->GetSource()->CombatStop();
-            iter->GetSource()->DeleteThreatList();
-            iter->GetSource()->AI()->EnterEvadeMode();
+            iter.GetSource()->CombatStop();
+            iter.GetSource()->DeleteThreatList();
+            iter.GetSource()->AI()->EnterEvadeMode();
         }
     }
 }
@@ -329,8 +327,8 @@ ObjectGridCleaner::Stop(GridType &grid)
 void
 ObjectGridCleaner::Visit(CreatureMapType &m)
 {
-    for(CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
-        iter->GetSource()->CleanupsBeforeDelete();
+    for(auto & iter : m)
+        iter.GetSource()->CleanupsBeforeDelete();
 }
 
 template<class T>

@@ -70,16 +70,16 @@ Tokens StrSplit(const std::string &src, const std::string &sep)
 {
     Tokens r;
     std::string s;
-    for (std::string::const_iterator i = src.begin(); i != src.end(); i++)
+    for (char i : src)
     {
-        if (sep.find(*i) != std::string::npos)
+        if (sep.find(i) != std::string::npos)
         {
             if (s.length()) r.push_back(s);
             s = "";
         }
         else
         {
-            s += *i;
+            s += i;
         }
     }
     if (s.length()) r.push_back(s);
@@ -162,16 +162,16 @@ int32 MoneyStringToMoney(const std::string& moneyString)
         return 0; // Bad format
 
     Tokenizer tokens(moneyString, ' ');
-    for (Tokenizer::const_iterator itr = tokens.begin(); itr != tokens.end(); ++itr)
+    for (auto token : tokens)
     {
-        std::string tokenString(*itr);
+        std::string tokenString(token);
         size_t gCount = std::count(tokenString.begin(), tokenString.end(), 'g');
         size_t sCount = std::count(tokenString.begin(), tokenString.end(), 's');
         size_t cCount = std::count(tokenString.begin(), tokenString.end(), 'c');
         if (gCount + sCount + cCount != 1)
             return 0;
 
-        uint32 amount = atoi(*itr);
+        uint32 amount = atoi(token);
         if (gCount == 1)
             money += amount * 100 * 100;
         else if (sCount == 1)
@@ -189,16 +189,16 @@ uint32 TimeStringToSecs(const std::string& timestring)
     uint32 buffer     = 0;
     uint32 multiplier = 0;
 
-    for(std::string::const_iterator itr = timestring.begin(); itr != timestring.end(); itr++ )
+    for(char itr : timestring)
     {
-        if(isdigit(*itr))
+        if(isdigit(itr))
         {
             buffer*=10;
-            buffer+= (*itr)-'0';
+            buffer+= itr-'0';
         }
         else
         {
-            switch(*itr)
+            switch(itr)
             {
                 case 'd': multiplier = DAY;     break;
                 case 'h': multiplier = HOUR;    break;
@@ -245,7 +245,7 @@ bool IsIPAddress(char const* ipaddress)
 uint32 CreatePIDFile(const std::string& filename)
 {
     FILE * pid_file = fopen (filename.c_str(), "w" );
-    if (pid_file == NULL)
+    if (pid_file == nullptr)
         return 0;
 
 #ifdef WIN32
@@ -406,12 +406,12 @@ std::wstring GetMainPartOfName(std::wstring wname, uint32 declension)
     static wchar_t const j_End[]    = { wchar_t(1), wchar_t(0x0439),wchar_t(0x0000)};
 
     static wchar_t const* const dropEnds[6][8] = {
-        { &a_End[1],  &o_End[1],    &ya_End[1],   &ie_End[1],  &soft_End[1], &j_End[1],    NULL,       NULL },
-        { &a_End[1],  &ya_End[1],   &yeru_End[1], &i_End[1],   NULL,         NULL,         NULL,       NULL },
-        { &ie_End[1], &u_End[1],    &yu_End[1],   &i_End[1],   NULL,         NULL,         NULL,       NULL },
-        { &u_End[1],  &yu_End[1],   &o_End[1],    &ie_End[1],  &soft_End[1], &ya_End[1],   &a_End[1],  NULL },
-        { &oj_End[1], &io_j_End[1], &ie_j_End[1], &o_m_End[1], &io_m_End[1], &ie_m_End[1], &yu_End[1], NULL },
-        { &ie_End[1], &i_End[1],    NULL,         NULL,        NULL,         NULL,         NULL,       NULL }
+        { &a_End[1],  &o_End[1],    &ya_End[1],   &ie_End[1],  &soft_End[1], &j_End[1],    nullptr,       nullptr },
+        { &a_End[1],  &ya_End[1],   &yeru_End[1], &i_End[1],   nullptr,         nullptr,         nullptr,       nullptr },
+        { &ie_End[1], &u_End[1],    &yu_End[1],   &i_End[1],   nullptr,         nullptr,         nullptr,       nullptr },
+        { &u_End[1],  &yu_End[1],   &o_End[1],    &ie_End[1],  &soft_End[1], &ya_End[1],   &a_End[1],  nullptr },
+        { &oj_End[1], &io_j_End[1], &ie_j_End[1], &o_m_End[1], &io_m_End[1], &ie_m_End[1], &yu_End[1], nullptr },
+        { &ie_End[1], &i_End[1],    nullptr,         nullptr,        nullptr,         nullptr,         nullptr,       nullptr }
     };
 
     for(wchar_t const * const* itr = &dropEnds[declension][0]; *itr; ++itr)

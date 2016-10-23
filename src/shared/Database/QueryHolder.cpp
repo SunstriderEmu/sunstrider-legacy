@@ -34,7 +34,7 @@ bool SQLQueryHolder::SetQuery(size_t index, const char *sql)
     element.element.query = strdup(sql);
 
     SQLResultSetUnion result;
-    result.qresult = NULL;
+    result.qresult = nullptr;
 
     m_queries[index] = SQLResultPair(element, result);
     return true;
@@ -54,7 +54,7 @@ bool SQLQueryHolder::SetPreparedQuery(size_t index, PreparedStatement* stmt)
     element.element.stmt = stmt;
 
     SQLResultSetUnion result;
-    result.presult = NULL;
+    result.presult = nullptr;
 
     m_queries[index] = SQLResultPair(element, result);
     return true;
@@ -67,12 +67,12 @@ QueryResult SQLQueryHolder::GetResult(size_t index)
     {
         ResultSet* result = m_queries[index].second.qresult;
         if (!result || !result->GetRowCount() || !result->NextRow())
-            return QueryResult(NULL);
+            return QueryResult(nullptr);
 
         return QueryResult(result);
     }
     else
-        return QueryResult(NULL);
+        return QueryResult(nullptr);
 }
 
 PreparedQueryResult SQLQueryHolder::GetPreparedResult(size_t index)
@@ -82,12 +82,12 @@ PreparedQueryResult SQLQueryHolder::GetPreparedResult(size_t index)
     {
         PreparedResultSet* result = m_queries[index].second.presult;
         if (!result || !result->GetRowCount())
-            return PreparedQueryResult(NULL);
+            return PreparedQueryResult(nullptr);
 
         return PreparedQueryResult(result);
     }
     else
-        return PreparedQueryResult(NULL);
+        return PreparedQueryResult(nullptr);
 }
 
 void SQLQueryHolder::SetResult(size_t index, ResultSet* result)
@@ -95,7 +95,7 @@ void SQLQueryHolder::SetResult(size_t index, ResultSet* result)
     if (result && !result->GetRowCount())
     {
         //delete result;
-        result = NULL;
+        result = nullptr;
     }
 
     /// store the result in the holder
@@ -108,7 +108,7 @@ void SQLQueryHolder::SetPreparedResult(size_t index, PreparedResultSet* result)
     if (result && !result->GetRowCount())
     {
         //delete result;
-        result = NULL;
+        result = nullptr;
     }
 
     /// store the result in the holder
@@ -118,11 +118,11 @@ void SQLQueryHolder::SetPreparedResult(size_t index, PreparedResultSet* result)
 
 SQLQueryHolder::~SQLQueryHolder()
 {
-    for (size_t i = 0; i < m_queries.size(); i++)
+    for (auto & m_querie : m_queries)
     {
         /// if the result was never used, free the resources
         /// results used already (getresult called) are expected to be deleted
-        if (SQLElementData* data = &m_queries[i].first)
+        if (SQLElementData* data = &m_querie.first)
         {
             switch (data->type)
             {

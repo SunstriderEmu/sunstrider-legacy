@@ -44,7 +44,7 @@ namespace Trinity
             static T& Instance();
 
         protected:
-            Singleton() {};
+            Singleton() = default;;
 
         private:
 

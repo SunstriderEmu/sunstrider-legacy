@@ -41,7 +41,7 @@ class MessageBuffer;
 class ByteBufferException : public std::exception
 {
 public:
-    ~ByteBufferException() throw() override { }
+    ~ByteBufferException() throw() override = default;
 
     char const* what() const throw() override { return msg_.c_str(); }
 
@@ -57,7 +57,7 @@ class ByteBufferPositionException : public ByteBufferException
 public:
     ByteBufferPositionException(bool add, size_t pos, size_t size, size_t valueSize);
 
-    ~ByteBufferPositionException() throw() override { }
+    ~ByteBufferPositionException() throw() override = default;
 };
 
 class ByteBufferSourceException : public ByteBufferException
@@ -65,7 +65,7 @@ class ByteBufferSourceException : public ByteBufferException
 public:
     ByteBufferSourceException(size_t pos, size_t size, size_t valueSize);
 
-    ~ByteBufferSourceException() throw() override { }
+    ~ByteBufferSourceException() throw() override = default;
 };
 
 class ByteBuffer
@@ -87,8 +87,7 @@ public:
     ByteBuffer(ByteBuffer&& buf) : _rpos(buf._rpos), _wpos(buf._wpos),
         _storage(std::move(buf._storage)) { }
 
-    ByteBuffer(ByteBuffer const& right) : _rpos(right._rpos), _wpos(right._wpos),
-        _storage(right._storage) { }
+    ByteBuffer(ByteBuffer const& right) = default;
 
     ByteBuffer(MessageBuffer&& buffer);
 
@@ -104,7 +103,7 @@ public:
         return *this;
     }
 
-    virtual ~ByteBuffer() { }
+    virtual ~ByteBuffer() = default;
 
     void clear()
     {

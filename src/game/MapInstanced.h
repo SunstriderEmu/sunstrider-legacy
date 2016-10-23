@@ -31,7 +31,7 @@ class MapInstanced : public Map
         typedef std::unordered_map< uint32, Map* > InstancedMaps;
 
         MapInstanced(uint32 id);
-        ~MapInstanced() override {}
+        ~MapInstanced() override = default;
 
         // functions overwrite Map versions
         void Update(const uint32&) override;

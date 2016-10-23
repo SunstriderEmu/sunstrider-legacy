@@ -26,7 +26,7 @@ namespace ai
 			this->checkInterval = checkInterval;
 			ticksElapsed = 0;
         }
-        virtual ~Trigger() {}
+        virtual ~Trigger() = default;
 
 	public:
         virtual Event Check();

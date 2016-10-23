@@ -256,10 +256,10 @@ Unit* HostileReference::getSourceUnit()
 
 void ThreatContainer::clearReferences()
 {
-    for(std::list<HostileReference*>::iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
+    for(auto & i : iThreatList)
     {
-        (*i)->unlink();
-        delete (*i);
+        i->unlink();
+        delete i;
     }
     iThreatList.clear();
 }
@@ -270,11 +270,11 @@ HostileReference* ThreatContainer::getReferenceByTarget(Unit* pVictim) const
 {
     HostileReference* result = nullptr;
     uint64 guid = pVictim->GetGUID();
-    for(std::list<HostileReference*>::const_iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
+    for(auto i : iThreatList)
     {
-        if((*i)->getUnitGuid() == guid)
+        if(i->getUnitGuid() == guid)
         {
-            result = (*i);
+            result = i;
             break;
         }
     }
@@ -338,10 +338,10 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, Hostile
     HostileReference* fallback = nullptr;
     bool found = false;
 
-    std::list<HostileReference*>::iterator lastRef = iThreatList.end();
+    auto lastRef = iThreatList.end();
     lastRef--;
 
-    for(std::list<HostileReference*>::iterator iter = iThreatList.begin(); iter != iThreatList.end() && !found; ++iter)
+    for(auto iter = iThreatList.begin(); iter != iThreatList.end() && !found; ++iter)
     {
         currentRef = (*iter);
 
@@ -465,7 +465,7 @@ void ThreatManager::_addThreat(Unit *pVictim, float threat)
     if(!ref)                                                // there was no ref => create a new one
     {
                                                             // threat has to be 0 here
-        HostileReference* hostilReference = new HostileReference(pVictim, this, 0);
+        auto  hostilReference = new HostileReference(pVictim, this, 0);
         iThreatContainer.addReference(hostilReference);
         hostilReference->addThreat(threat);                 // now we add the real threat
         if(pVictim->GetTypeId() == TYPEID_PLAYER && ((pVictim->ToPlayer())->IsGameMaster() || (pVictim->ToPlayer())->isSpectator()))

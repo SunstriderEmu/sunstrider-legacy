@@ -51,7 +51,7 @@ namespace ai
         set<std::string> supports()
         {
             set<std::string> keys;
-            for (typename map<string, ActionCreator>::iterator it = creators.begin(); it != creators.end(); it++)
+            for (auto it = creators.begin(); it != creators.end(); it++)
                 keys.insert(it->first);
             return keys;
         }
@@ -79,7 +79,7 @@ namespace ai
 
         void Clear()
         {
-            for (typename map<string, T*>::iterator i = created.begin(); i != created.end(); i++)
+            for (auto i = created.begin(); i != created.end(); i++)
             {
                 if (i->second)
                     delete i->second;
@@ -112,7 +112,7 @@ namespace ai
         set<std::string> GetCreated()
         {
             set<std::string> keys;
-            for (typename map<string, T*>::iterator it = created.begin(); it != created.end(); it++)
+            for (auto it = created.begin(); it != created.end(); it++)
                 keys.insert(it->first);
             return keys;
         }
@@ -128,7 +128,7 @@ namespace ai
     public:
         virtual ~NamedObjectContextList()
         {
-            for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
+            for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
                 NamedObjectContext<T>* context = *i;
                 if (!context->IsShared())
@@ -143,7 +143,7 @@ namespace ai
 
         T* GetObject(std::string name, PlayerbotAI* ai)
         {
-            for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
+            for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
                 T* object = (*i)->create(name, ai);
                 if (object) return object;
@@ -170,13 +170,13 @@ namespace ai
 
         set<std::string> GetSiblings(std::string name)
         {
-            for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
+            for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
                 if (!(*i)->IsSupportsSiblings())
                     continue;
 
                 set<std::string> supported = (*i)->supports();
-                set<std::string>::iterator found = supported.find(name);
+                auto found = supported.find(name);
                 if (found == supported.end())
                     continue;
 
@@ -191,12 +191,12 @@ namespace ai
         {
             set<std::string> result;
 
-            for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
+            for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
                 set<std::string> supported = (*i)->supports();
 
-                for (set<std::string>::iterator j = supported.begin(); j != supported.end(); j++)
-                    result.insert(*j);
+                for (const auto & j : supported)
+                    result.insert(j);
             }
             return result;
         }
@@ -205,12 +205,12 @@ namespace ai
         {
             set<std::string> result;
 
-            for (typename list<NamedObjectContext<T>*>::iterator i = contexts.begin(); i != contexts.end(); i++)
+            for (auto i = contexts.begin(); i != contexts.end(); i++)
             {
                 set<std::string> createdKeys = (*i)->GetCreated();
 
-                for (set<std::string>::iterator j = createdKeys.begin(); j != createdKeys.end(); j++)
-                    result.insert(*j);
+                for (const auto & createdKey : createdKeys)
+                    result.insert(createdKey);
             }
             return result;
         }
@@ -224,7 +224,7 @@ namespace ai
     public:
         virtual ~NamedObjectFactoryList()
         {
-            for (typename list<NamedObjectFactory<T>*>::iterator i = factories.begin(); i != factories.end(); i++)
+            for (auto i = factories.begin(); i != factories.end(); i++)
                 delete *i;
         }
 

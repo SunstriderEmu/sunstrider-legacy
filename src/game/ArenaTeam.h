@@ -175,24 +175,24 @@ class ArenaTeam
 
         ArenaTeamMember* GetMember(const uint64& guid)
         {
-            for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-                if(itr->guid == guid)
-                    return &(*itr);
+            for (auto & member : members)
+                if(member.guid == guid)
+                    return &member;
 
             return nullptr;
         }
 
         ArenaTeamMember* GetMember(const std::string& name)
         {
-            for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+            for (auto & member : members)
             {
                 std::string fetchedName;
-                bool result = sObjectMgr->GetPlayerNameByGUID(itr->guid, fetchedName);
+                bool result = sObjectMgr->GetPlayerNameByGUID(member.guid, fetchedName);
                 if(!result)
                     return nullptr;
 
                 if(fetchedName == name)
-                    return &(*itr);
+                    return &member;
             }
 
             return nullptr;
@@ -202,9 +202,9 @@ class ArenaTeam
 
         bool IsFighting() const
         {
-            for (MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
+            for (const auto & member : members)
             {
-                if (Player *p = sObjectMgr->GetPlayer(itr->guid))
+                if (Player *p = sObjectMgr->GetPlayer(member.guid))
                 {
                     if (p->GetMap()->IsBattleArena())
                         return true;

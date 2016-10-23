@@ -173,8 +173,8 @@ void ObjectAccessor::SaveAllPlayers()
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
 
     HashMapHolder<Player>::MapType const& m = GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
-        itr->second->SaveToDB();
+    for (const auto & itr : m)
+        itr.second->SaveToDB();
 }
 
 void ObjectAccessor::AddUpdateObject(Object *obj)
@@ -198,7 +198,7 @@ Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
 
-    Player2CorpsesMapType::iterator iter = i_player2corpse.find(guid);
+    auto iter = i_player2corpse.find(guid);
     if( iter == i_player2corpse.end() ) return nullptr;
 
     assert(iter->second->GetType() != CORPSE_BONES);
@@ -211,7 +211,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
-    Player2CorpsesMapType::iterator iter = i_player2corpse.find(corpse->GetOwnerGUID());
+    auto iter = i_player2corpse.find(corpse->GetOwnerGUID());
     if( iter == i_player2corpse.end() )
         return;
 
@@ -244,20 +244,20 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
 void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
-    for(Player2CorpsesMapType::iterator iter = i_player2corpse.begin(); iter != i_player2corpse.end(); ++iter)
-        if(iter->second->GetGrid()==gridpair)
+    for(auto & iter : i_player2corpse)
+        if(iter.second->GetGrid()==gridpair)
     {
         // verify, if the corpse in our instance (add only corpses which are)
         if (map->Instanceable())
         {
-            if (iter->second->GetInstanceId() == map->GetInstanceId())
+            if (iter.second->GetInstanceId() == map->GetInstanceId())
             {
-                grid.AddWorldObject(iter->second);
+                grid.AddWorldObject(iter.second);
             }
         }
         else
         {
-            grid.AddWorldObject(iter->second);
+            grid.AddWorldObject(iter.second);
         }
     }
 }
@@ -347,10 +347,10 @@ void ObjectAccessor::Update(uint32 diff)
 
     //send those to players
     WorldPacket packet;                                     // here we allocate a std::vector with a size of 0x10000
-    for(UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+    for(auto & update_player : update_players)
     {
-        iter->second.BuildPacket(&packet, iter->first->GetSession()->GetClientBuild());
-        iter->first->SendDirectMessage(&packet);
+        update_player.second.BuildPacket(&packet, update_player.first->GetSession()->GetClientBuild());
+        update_player.first->SendDirectMessage(&packet);
         packet.clear();                                     // clean the string
     }
 }
@@ -440,14 +440,14 @@ ObjectAccessor::FindPlayerByName(std::string const& name)
     std::string nameStr = name;
     std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), ::tolower);
     HashMapHolder<Player>::MapType const& m = GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (const auto & iter : m)
     {
-        if (!iter->second->IsInWorld())
+        if (!iter.second->IsInWorld())
             continue;
-        std::string currentName = iter->second->GetName();
+        std::string currentName = iter.second->GetName();
         std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
         if (nameStr.compare(currentName) == 0)
-            return iter->second;
+            return iter.second;
     }
     return nullptr;
 }
@@ -459,12 +459,12 @@ Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
     std::string nameStr = name;
     std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), ::tolower);
     HashMapHolder<Player>::MapType const& m = GetPlayers();
-    for (HashMapHolder<Player>::MapType::const_iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (const auto & iter : m)
     {
-        std::string currentName = iter->second->GetName();
+        std::string currentName = iter.second->GetName();
         std::transform(currentName.begin(), currentName.end(), currentName.begin(), ::tolower);
         if (nameStr.compare(currentName) == 0)
-            return iter->second;
+            return iter.second;
     }
 
     //TODO :use some kind of cache

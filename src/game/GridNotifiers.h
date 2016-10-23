@@ -244,31 +244,31 @@ template<class Check>
 
         void Visit(GameObjectMapType &m)
         {
-            for(GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         void Visit(PlayerMapType &m)
         {
-            for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
         void Visit(CreatureMapType &m)
         {
-            for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         void Visit(CorpseMapType &m)
         {
-            for(CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         void Visit(DynamicObjectMapType &m)
         {
-            for(DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
@@ -472,8 +472,8 @@ template<class Check>
 
         void Visit(PlayerMapType &m)
         {
-            for(PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
@@ -491,9 +491,9 @@ template<class Check>
 
         void Visit(PlayerMapType &m)
         {
-            for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                if (itr->GetSource()->InSamePhase(i_searcher) && itr->GetSource()->IsWithinDistInMap(i_searcher, i_dist))
-                    i_do(itr->GetSource());
+            for (auto & itr : m)
+                if (itr.GetSource()->InSamePhase(i_searcher) && itr.GetSource()->IsWithinDistInMap(i_searcher, i_dist))
+                    i_do(itr.GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) { }
@@ -508,8 +508,8 @@ template<class Check>
 
         void Visit(CreatureMapType &m)
         {
-            for(CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-                i_do(itr->GetSource());
+            for(auto & itr : m)
+                i_do(itr.GetSource());
         }
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
@@ -522,7 +522,7 @@ template<class Check>
     class RespawnDo
     {
         public:
-            RespawnDo() {}
+            RespawnDo() = default;
             void operator()(Creature* u) const;
             void operator()(GameObject* u) const;
             void operator()(WorldObject*) const {}

@@ -56,7 +56,7 @@ void BigNumber::SetQword(uint64 val)
 
 void BigNumber::SetBinary(uint8 const* bytes, int32 len)
 {
-    uint8* array = new uint8[len];
+    auto  array = new uint8[len];
 
     for (int i = 0; i < len; i++)
         array[i] = bytes[len - 1 - i];
@@ -113,7 +113,7 @@ BigNumber BigNumber::operator/=(BigNumber const& bn)
     BN_CTX *bnctx;
 
     bnctx = BN_CTX_new();
-    BN_div(_bn, NULL, _bn, bn._bn, bnctx);
+    BN_div(_bn, nullptr, _bn, bn._bn, bnctx);
     BN_CTX_free(bnctx);
 
     return *this;
@@ -154,7 +154,7 @@ BigNumber BigNumber::ModExp(BigNumber const& bn1, BigNumber const& bn2)
     return ret;
 }
 
-int32 BigNumber::GetNumBytes(void)
+int32 BigNumber::GetNumBytes()
 {
     return BN_num_bytes(_bn);
 }
@@ -178,7 +178,7 @@ std::unique_ptr<uint8[]> BigNumber::AsByteArray(int32 minSize, bool littleEndian
 {
     int length = (minSize >= GetNumBytes()) ? minSize : GetNumBytes();
 
-    uint8* array = new uint8[length];
+    auto  array = new uint8[length];
 
     // If we need more bytes than length of BigNumber set the rest to 0
     if (length > GetNumBytes())

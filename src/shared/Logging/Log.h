@@ -65,7 +65,7 @@ class Log
         template<typename... Args>
         inline void outMessage(std::string const& filter, LogLevel const level, const char* fmt, Args const&... args)
         {
-            write(std::unique_ptr<LogMessage>(new LogMessage(level, filter, Trinity::StringFormat(fmt, args...))));
+            write(std::make_unique<LogMessage>(level, filter, Trinity::StringFormat(fmt, args...)));
         }
 
         template<typename... Args>
@@ -111,7 +111,7 @@ class Log
 
 inline Logger const* Log::GetLoggerByType(std::string const& type) const
 {
-    LoggerMap::const_iterator it = loggers.find(type);
+    auto it = loggers.find(type);
     if (it != loggers.end())
         return &(it->second);
 

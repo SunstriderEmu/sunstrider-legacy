@@ -72,11 +72,11 @@ namespace TOTP
     {
         size_t keySize = strlen(b32key);
         int bufsize = (keySize + 7)/8*5;
-        char* encoded = new char[bufsize];
+        auto  encoded = new char[bufsize];
         memset(encoded, 0, bufsize);
         unsigned int hmacResSize = HMAC_RES_SIZE;
         unsigned char hmacRes[HMAC_RES_SIZE];
-        unsigned long timestamp = time(NULL)/30;
+        unsigned long timestamp = time(nullptr)/30;
         unsigned char challenge[8];
 
         for (int i = 8; i--;timestamp >>= 8)

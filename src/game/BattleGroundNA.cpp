@@ -88,8 +88,8 @@ void BattlegroundNA::Update(time_t diff)
             SetStatus(STATUS_IN_PROGRESS);
             SetStartDelayTime(0);
 
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player *plr = sObjectMgr->GetPlayer(itr->first))
+            for(const auto & itr : GetPlayers())
+                if(Player *plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
             if(!GetPlayersCountByTeam(TEAM_ALLIANCE) && GetPlayersCountByTeam(TEAM_HORDE))
@@ -109,7 +109,7 @@ void BattlegroundNA::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattlegroundNAScore* sc = new BattlegroundNAScore;
+    auto  sc = new BattlegroundNAScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 

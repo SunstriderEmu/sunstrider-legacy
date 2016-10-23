@@ -114,8 +114,8 @@ bool UnitAI::GetRestoreCombatMovementOnOOM()
 Unit* UnitAI::SelectTarget(SelectAggroTarget target, uint32 position)
 {
     std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
-    std::list<HostileReference*>::iterator i = m_threatlist.begin();
-    std::list<HostileReference*>::reverse_iterator r = m_threatlist.rbegin();
+    auto i = m_threatlist.begin();
+    auto r = m_threatlist.rbegin();
 
     if (position >= m_threatlist.size() || !m_threatlist.size())
         return nullptr;
@@ -160,20 +160,20 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
     case SELECT_TARGET_NEAREST:
     case SELECT_TARGET_TOPAGGRO:
     {
-        std::list<Unit*>::iterator itr = targetList.begin();
+        auto itr = targetList.begin();
         std::advance(itr, position);
         return *itr;
     }
     case SELECT_TARGET_FARTHEST:
     case SELECT_TARGET_BOTTOMAGGRO:
     {
-        std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
+        auto ritr = targetList.rbegin();
         std::advance(ritr, position);
         return *ritr;
     }
     case SELECT_TARGET_RANDOM:
     {
-        std::list<Unit*>::iterator itr = targetList.begin();
+        auto itr = targetList.begin();
         std::advance(itr, urand(position, targetList.size() - 1));
         return *itr;
     }
@@ -202,7 +202,7 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
         std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
         if (m_threatlist.empty()) return nullptr;
         std::list<Unit*> targetList;
-        std::list<HostileReference*>::iterator itr = m_threatlist.begin();
+        auto itr = m_threatlist.begin();
         for (; itr != m_threatlist.end(); ++itr)
         {
             Unit *target = ObjectAccessor::GetUnit(*me, (*itr)->getUnitGuid());
@@ -222,13 +222,13 @@ Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float 
         targetList.sort(TargetDistanceOrder(me));
         if (targetType == SELECT_TARGET_NEAREST)
         {
-            std::list<Unit*>::iterator i = targetList.begin();
+            auto i = targetList.begin();
             advance(i, position);
             return *i;
         }
         else
         {
-            std::list<Unit*>::reverse_iterator i = targetList.rbegin();
+            auto i = targetList.rbegin();
             advance(i, position);
             return *i;
         }
@@ -312,10 +312,10 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets, Sel
     if (threatlist.empty())
         return;
 
-    for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
-        if (checkTarget((*itr)->getTarget(), playersOnly, radius)
-            && (!notHavingAuraId || !((*itr)->getTarget()->HasAuraEffect(notHavingAuraId, effIndex))))
-            targetList.push_back((*itr)->getTarget());
+    for (auto itr : threatlist)
+        if (checkTarget(itr->getTarget(), playersOnly, radius)
+            && (!notHavingAuraId || !(itr->getTarget()->HasAuraEffect(notHavingAuraId, effIndex))))
+            targetList.push_back(itr->getTarget());
 
     if (targetList.size() < maxTargets)
         return;

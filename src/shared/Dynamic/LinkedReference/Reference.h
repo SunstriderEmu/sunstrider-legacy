@@ -42,7 +42,7 @@ class Reference : public LinkedListElement
         virtual void sourceObjectDestroyLink() = 0;
     public:
         Reference() { iRefTo = nullptr; iRefFrom = nullptr; }
-        virtual ~Reference() {}
+        virtual ~Reference() = default;
 
         // Create new link
         inline void link(TO* toObj, FROM* fromObj)

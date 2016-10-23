@@ -103,7 +103,7 @@ void handle_segv()
     //get backtrace as string array
     char** backtrace = backtrace_symbols(arr, size);
     //print to a dump file in exec folder as well
-    std::string outputFileName = "mapcrash_" + std::to_string(time(NULL));
+    std::string outputFileName = "mapcrash_" + std::to_string(time(nullptr));
     std::ofstream dumpFile(outputFileName, std::ios::out);
     if (dumpFile.is_open())
     {
@@ -673,7 +673,7 @@ AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
     std::string raListener = sConfigMgr->GetStringDefault("Ra.IP", "0.0.0.0");
     TC_LOG_INFO("server.worldserver", "Starting RA listener on address '%s' and port %u", raListener.c_str(), raPort);
 
-    AsyncAcceptor* acceptor = new AsyncAcceptor(ioService, raListener, raPort);
+    auto  acceptor = new AsyncAcceptor(ioService, raListener, raPort);
     acceptor->AsyncAccept<RASession>();
     return acceptor;
 }

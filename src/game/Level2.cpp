@@ -246,15 +246,15 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
         eventFilter << " AND (event IS NULL ";
         bool initString = true;
 
-        for (GameEventMgr::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
+        for (unsigned short itr : activeEventsList)
         {
             if (initString)
             {
-                eventFilter  <<  "OR event IN (" <<*itr;
+                eventFilter  <<  "OR event IN (" <<itr;
                 initString =false;
             }
             else
-                eventFilter << "," << *itr;
+                eventFilter << "," << itr;
         }
 
         if (!initString)
@@ -960,7 +960,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
             return true;
         }
 
-    Creature* pCreature = new Creature;
+    auto  pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, id))
     {
         delete pCreature;
@@ -2673,7 +2673,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
                 wpCreature->DeleteFromDB();
                 wpCreature->AddObjectToRemoveList();
                 // re-create
-                Creature* wpCreature2 = new Creature;
+                auto  wpCreature2 = new Creature;
                 if (!wpCreature2->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, true), map, VISUAL_WAYPOINT))
                 {
                     PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
@@ -3249,7 +3249,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 #endif
     }
 
-    GameObject* pGameObj = new GameObject;
+    auto  pGameObj = new GameObject;
     uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
     if(!pGameObj->Create(db_lowGUID, goI->entry, map, Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
@@ -3398,9 +3398,8 @@ bool ChatHandler::HandleEventActiveListCommand(const char* args)
 
     char const* active = GetTrinityString(LANG_ACTIVE);
 
-    for(GameEventMgr::ActiveEvents::const_iterator itr = activeEvents.begin(); itr != activeEvents.end(); ++itr )
+    for(unsigned short event_id : activeEvents)
     {
-        uint32 event_id = *itr;
         GameEventData const& eventData = events[event_id];
 
         if(m_session)
@@ -3904,7 +3903,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     }
 
     // Everything looks OK, create new pet
-    Pet* pet = new Pet(HUNTER_PET);
+    auto  pet = new Pet(HUNTER_PET);
 
     if(!pet)
       return false;
@@ -4483,8 +4482,8 @@ bool ChatHandler::HandleMmapPathCommand(const char* args)
     if (!player->IsGameMaster())
         PSendSysMessage("Enable GM mode to see the path points.");
 
-    for (uint32 i = 0; i < pointPath.size(); ++i)
-        player->SummonCreature(VISUAL_WAYPOINT, pointPath[i].x, pointPath[i].y, pointPath[i].z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+    for (const auto & i : pointPath)
+        player->SummonCreature(VISUAL_WAYPOINT, i.x, i.y, i.z, 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
 
     return true;
 }

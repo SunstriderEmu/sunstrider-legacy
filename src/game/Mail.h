@@ -149,9 +149,9 @@ class MailItemsInfo
 
         void deleteIncludedItems(bool inDB = false)
         {
-            for(MailItemMap::iterator mailItemIter = begin(); mailItemIter != end(); ++mailItemIter)
+            for(auto & mailItemIter : *this)
             {
-                MailItem& mailItem = mailItemIter->second;
+                MailItem& mailItem = mailItemIter.second;
                 mailItem.deleteItem(inDB);
             }
         }
@@ -188,16 +188,16 @@ struct Mail
 
     void AddAllItems(MailItemsInfo& pMailItemsInfo)
     {
-        for(MailItemMap::iterator mailItemIter = pMailItemsInfo.begin(); mailItemIter != pMailItemsInfo.end(); ++mailItemIter)
+        for(auto & mailItemIter : pMailItemsInfo)
         {
-            MailItem& mailItem = mailItemIter->second;
+            MailItem& mailItem = mailItemIter.second;
             AddItem(mailItem.item_guidlow, mailItem.item_template);
         }
     }
 
     bool RemoveItem(uint32 itemId)
     {
-        for(std::vector<MailItemInfo>::iterator itr = items.begin(); itr != items.end(); ++itr)
+        for(auto itr = items.begin(); itr != items.end(); ++itr)
         {
             if(itr->item_guid == itemId)
             {

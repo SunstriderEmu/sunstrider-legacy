@@ -69,12 +69,12 @@ char* command_finder(const char* text, int state)
             return strdup(ret);
     }
 
-    return ((char*)NULL);
+    return ((char*)nullptr);
 }
 
 char** cli_completion(const char* text, int start, int /*end*/)
 {
-    char** matches = NULL;
+    char** matches = nullptr;
 
     if (start)
         rl_bind_key('\t', rl_abort);
@@ -166,7 +166,7 @@ void CliThread()
         rl_bind_key('\t', rl_complete);
 #endif
 
-        if (command_str != NULL)
+        if (command_str != nullptr)
         {
             for (int x=0; command_str[x]; ++x)
                 if (command_str[x] == '\r' || command_str[x] == '\n')
@@ -197,7 +197,7 @@ void CliThread()
             }
 
             fflush(stdout);
-            sWorld->QueueCliCommand(new CliCommandHolder(NULL, command.c_str(), &utf8print, &commandFinished));
+            sWorld->QueueCliCommand(new CliCommandHolder(nullptr, command.c_str(), &utf8print, &commandFinished));
 #if PLATFORM != PLATFORM_WINDOWS
             add_history(command.c_str());
             free(command_str);
