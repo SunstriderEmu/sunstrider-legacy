@@ -792,7 +792,7 @@ class World
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(PreparedQueryResult resultCharCount);
 
-        void InitDailyQuestResetTime();
+        void InitDailyQuestResetTime(bool loading = true);
         void InitNewDataForQuestPools();
         void LoadQuestPoolsData();
         void UpdateMonitoring(uint32 diff);

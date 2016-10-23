@@ -1918,7 +1918,7 @@ void World::Update(time_t diff)
     {
         ResetDailyQuests();
         InitNewDataForQuestPools();
-        m_NextDailyQuestReset += DAY;
+        InitDailyQuestResetTime(false);
     }
 
     /// <ul><li> Handle auctions when the timer has passed
@@ -3486,19 +3486,19 @@ void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
     }
 }
 
-void World::InitDailyQuestResetTime()
+void World::InitDailyQuestResetTime(bool loading)
 {
-    time_t mostRecentQuestTime;
+    time_t mostRecentQuestTime = 0;
 
-    QueryResult result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
-    if(result)
+    if(loading)
     {
-        Field *fields = result->Fetch();
-
-        mostRecentQuestTime = (time_t)fields[0].GetUInt64();
+        QueryResult result = CharacterDatabase.Query("SELECT MAX(time) FROM character_queststatus_daily");
+        if(result)
+        {
+            Field *fields = result->Fetch();
+            mostRecentQuestTime = (time_t)fields[0].GetUInt64();
+        }
     }
-    else
-        mostRecentQuestTime = 0;
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
