@@ -482,15 +482,15 @@ bool Map::Add(MotionTransport* obj, bool /* checkTransport */)
     // Broadcast creation to players
     if (!GetPlayers().isEmpty())
     {
-        for (Map::PlayerList::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
+        for (const auto & itr : GetPlayers())
         {
-            if (itr->GetSource()->GetTransport() != obj)
+            if (itr.GetSource()->GetTransport() != obj)
             {
                 UpdateData data;
-                obj->BuildCreateUpdateBlockForPlayer(&data, itr->GetSource());
+                obj->BuildCreateUpdateBlockForPlayer(&data, itr.GetSource());
                 WorldPacket* packetBC = nullptr;
                 WorldPacket* packetLK = nullptr;
-                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr->GetSource()->GetSession(), true);
+                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr.GetSource()->GetSession(), true);
                 delete packetBC;
                 delete packetLK;
             }
@@ -634,9 +634,9 @@ bool Map::loaded(const GridPair &p) const
 void Map::RelocationNotify()
 {
     //Move backlog to notify list
-    for(std::vector<uint64>::iterator iter = i_unitsToNotifyBacklog.begin(); iter != i_unitsToNotifyBacklog.end(); ++iter)
+    for(unsigned long & iter : i_unitsToNotifyBacklog)
     {
-        if(Unit *unit = ObjectAccessor::GetObjectInWorld(*iter, (Unit*)nullptr))
+        if(Unit *unit = ObjectAccessor::GetObjectInWorld(iter, (Unit*)nullptr))
         {
             i_unitsToNotify.push_back(unit);
         }
@@ -644,9 +644,8 @@ void Map::RelocationNotify()
     i_unitsToNotifyBacklog.clear();
 
     //Notify
-    for(std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
+    for(auto unit : i_unitsToNotify)
     {
-        Unit *unit = *iter;
         if(unit->m_Notified || !unit->IsInWorld() || unit->GetMapId() != GetId())
             continue;
 
@@ -678,9 +677,9 @@ void Map::RelocationNotify()
         }
 
     }
-    for(std::vector<Unit*>::iterator iter = i_unitsToNotify.begin(); iter != i_unitsToNotify.end(); ++iter)
+    for(auto & iter : i_unitsToNotify)
     {
-        (*iter)->m_Notified = false;
+        iter->m_Notified = false;
     }
     i_unitsToNotify.clear();
 }
@@ -802,7 +801,7 @@ void Map::Update(const uint32 &t_diff)
             if(obj->isType(TYPEMASK_UNIT))
             {
                 if(!((Unit*)obj)->GetSharedVisionList().empty()) {
-                    for(SharedVisionList::const_iterator itr = ((Unit*)obj)->GetSharedVisionList().begin(); itr != ((Unit*)obj)->GetSharedVisionList().end(); ++itr)
+                    for(auto itr = ((Unit*)obj)->GetSharedVisionList().begin(); itr != ((Unit*)obj)->GetSharedVisionList().end(); ++itr)
                     {
                         if(!*itr)
                         {
@@ -975,9 +974,9 @@ void Map::Remove(MotionTransport *obj, bool remove)
         obj->BuildOutOfRangeUpdateBlock(&data);
         WorldPacket* packetBC = nullptr;
         WorldPacket* packetLK = nullptr;
-        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            if (itr->GetSource()->GetTransport() != obj)
-                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, itr->GetSource()->GetSession());
+        for (const auto & player : players)
+            if (player.GetSource()->GetTransport() != obj)
+                WorldSession::SendUpdateDataPacketForBuild(data, packetBC, packetLK, player.GetSource()->GetSession());
 
         delete packetBC;
         delete packetLK;
@@ -985,7 +984,7 @@ void Map::Remove(MotionTransport *obj, bool remove)
 
     if (_transportsUpdateIter != _transports.end())
     {
-        TransportsContainer::iterator itr = _transports.find(obj);
+        auto itr = _transports.find(obj);
         if (itr == _transports.end())
             return;
         if (itr == _transportsUpdateIter)
@@ -1114,7 +1113,7 @@ void Map::MoveAllCreaturesInMoveList()
     while(!i_creaturesToMove.empty())
     {
         // get data and remove element;
-        CreatureMoveList::iterator iter = i_creaturesToMove.begin();
+        auto iter = i_creaturesToMove.begin();
         Creature* c = iter->first;
         ObjectMover cm = iter->second;
         i_creaturesToMove.erase(iter);
@@ -1155,7 +1154,7 @@ void Map::MoveAllGameObjectsInMoveList()
     while(!i_creaturesToMove.empty())
     {
         // get data and remove element;
-        GameObjectMoveList::iterator iter = i_gameObjectsToMove.begin();
+        auto iter = i_gameObjectsToMove.begin();
         GameObject* go = iter->first;
         ObjectMover mover = iter->second;
         i_gameObjectsToMove.erase(iter);
@@ -1433,7 +1432,7 @@ void Map::UnloadAll()
     if (!AllTransportsEmpty())
         AllTransportsRemovePassengers();
 
-    for (TransportsContainer::iterator itr = _transports.begin(); itr != _transports.end();)
+    for (auto itr = _transports.begin(); itr != _transports.end();)
     {
         MotionTransport* transport = *itr;
         ++itr;
@@ -1491,13 +1490,13 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
 {
     G3D::Vector3 v(x, y, z + 2.0f);
     G3D::Ray r(v, G3D::Vector3(0, 0, -1));
-    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
-        if ((*itr)->IsInWorld() && (*itr)->GetExactDistSq(x, y, z) < 75.0f*75.0f && (*itr)->m_model)
+    for (auto _transport : _transports)
+        if (_transport->IsInWorld() && _transport->GetExactDistSq(x, y, z) < 75.0f*75.0f && _transport->m_model)
         {
             float dist = 30.0f;
-            bool hit = (*itr)->m_model->intersectRay(r, dist, true, phase);
+            bool hit = _transport->m_model->intersectRay(r, dist, true, phase);
             if (hit)
-                return *itr;
+                return _transport;
         }
 
     if (worldobject)
@@ -1911,11 +1910,11 @@ void Map::SendInitSelf( Player * player)
 
     // build other passengers at transport also (they always visible and marked as visible and will not send at visibility update at add to map
     if(Transport* transport = player->GetTransport())
-        for(Transport::PassengerSet::const_iterator itr = transport->GetPassengers().begin();itr!=transport->GetPassengers().end();++itr)
-            if(player!=(*itr) && player->HaveAtClient(*itr))
+        for(auto itr : transport->GetPassengers())
+            if(player!=itr && player->HaveAtClient(itr))
             {
                 hasTransport = true;
-                (*itr)->BuildCreateUpdateBlockForPlayer(&data, player);
+                itr->BuildCreateUpdateBlockForPlayer(&data, player);
             }
 
     WorldPacket packet;
@@ -1928,10 +1927,10 @@ void Map::SendInitTransports( Player * player)
     // Hack to send out transports
     UpdateData transData;
     bool hasTransport = false;
-    for (TransportsContainer::const_iterator i = _transports.begin(); i != _transports.end(); ++i)
-        if (*i != player->GetTransport())
+    for (auto _transport : _transports)
+        if (_transport != player->GetTransport())
             {
-                (*i)->BuildCreateUpdateBlockForPlayer(&transData, player);
+                _transport->BuildCreateUpdateBlockForPlayer(&transData, player);
                 hasTransport = true;
             }
 
@@ -1944,12 +1943,12 @@ void Map::SendRemoveTransports(Player* player)
 {
     // Hack to send out transports
     UpdateData transData;
-    for (TransportsContainer::const_iterator i = _transports.begin(); i != _transports.end(); ++i)
-        if (*i != player->GetTransport())
-            (*i)->BuildOutOfRangeUpdateBlock(&transData);
+    for (auto _transport : _transports)
+        if (_transport != player->GetTransport())
+            _transport->BuildOutOfRangeUpdateBlock(&transData);
 
     // pussywizard: remove static transports from client
-    for (Player::ClientGUIDs::const_iterator it = player->m_clientGUIDs.begin(); it != player->m_clientGUIDs.end(); )
+    for (auto it = player->m_clientGUIDs.begin(); it != player->m_clientGUIDs.end(); )
     {
         if (IS_TRANSPORT(*it))
         {
@@ -2006,7 +2005,7 @@ void Map::AddObjectToSwitchList(WorldObject *obj, bool on)
 {
     assert(obj->GetMapId()==GetId() && obj->GetInstanceId()==GetInstanceId());
 
-    std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.find(obj);
+    auto itr = i_objectsToSwitch.find(obj);
     if(itr == i_objectsToSwitch.end())
         i_objectsToSwitch.insert(itr, std::make_pair(obj, on));
     else if(itr->second != on)
@@ -2019,7 +2018,7 @@ void Map::RemoveAllObjectsInRemoveList()
 {
     while(!i_objectsToSwitch.empty())
     {
-        std::map<WorldObject*, bool>::iterator itr = i_objectsToSwitch.begin();
+        auto itr = i_objectsToSwitch.begin();
         WorldObject *obj = itr->first;
         bool on = itr->second;
         i_objectsToSwitch.erase(itr);
@@ -2036,7 +2035,7 @@ void Map::RemoveAllObjectsInRemoveList()
     //TC_LOG_DEBUG("maps","Object remover 1 check.");
     while(!i_objectsToRemove.empty())
     {
-        std::set<WorldObject*>::iterator itr = i_objectsToRemove.begin();
+        auto itr = i_objectsToRemove.begin();
         WorldObject* obj = *itr;
 
         switch(obj->GetTypeId())
@@ -2078,16 +2077,16 @@ void Map::RemoveAllObjectsInRemoveList()
 uint32 Map::GetPlayersCountExceptGMs() const
 {
     uint32 count = 0;
-    for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-        if(!itr->GetSource()->IsGameMaster())
+    for(const auto & itr : m_mapRefManager)
+        if(!itr.GetSource()->IsGameMaster())
             ++count;
     return count;
 }
 
 void Map::SendToPlayers(WorldPacket* data) const
 {
-    for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-        itr->GetSource()->SendDirectMessage(data);
+    for(const auto & itr : m_mapRefManager)
+        itr.GetSource()->SendDirectMessage(data);
 }
 
 bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
@@ -2107,9 +2106,9 @@ bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
     cell_max >> cell_range;
     cell_max += cell_range;
 
-    for(MapRefManager::const_iterator iter = m_mapRefManager.begin(); iter != m_mapRefManager.end(); ++iter)
+    for(const auto & iter : m_mapRefManager)
     {
-        Player* plr = iter->GetSource();
+        Player* plr = iter.GetSource();
 
         CellCoord p = Trinity::ComputeCellCoord(plr->GetPositionX(), plr->GetPositionY());
         if( (cell_min.x_coord <= p.x_coord && p.x_coord <= cell_max.x_coord) &&
@@ -2117,10 +2116,8 @@ bool Map::ActiveObjectsNearGrid(uint32 x, uint32 y) const
             return true;
     }
 
-    for(ActiveForcedNonPlayers::const_iterator iter = m_activeForcedNonPlayers.begin(); iter != m_activeForcedNonPlayers.end(); ++iter)
+    for(auto obj : m_activeForcedNonPlayers)
     {
-        WorldObject* obj = *iter;
-
         CellCoord p = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
         if( (cell_min.x_coord <= p.x_coord && p.x_coord <= cell_max.x_coord) &&
             (cell_min.y_coord <= p.y_coord && p.y_coord <= cell_max.y_coord))
@@ -2223,7 +2220,7 @@ GameObject* Map::GetGameObject(uint64 guid)
 
 void Map::AddCreatureToPool(Creature *cre, uint32 poolId)
 {
-    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    auto itr = m_cpmembers.find(poolId);
     if (itr == m_cpmembers.end()) {
         std::set<uint64> newSet;
         newSet.insert(cre->GetGUID());
@@ -2235,7 +2232,7 @@ void Map::AddCreatureToPool(Creature *cre, uint32 poolId)
 
 void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
 {
-    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    auto itr = m_cpmembers.find(poolId);
     if (itr != m_cpmembers.end()) {
         std::set<uint64> membersSet = itr->second;
         auto itr = membersSet.find(cre->GetGUID());
@@ -2255,7 +2252,7 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 {
     std::list<Creature*> creatureList;
 
-    CreaturePoolMember::iterator itr = m_cpmembers.find(poolId);
+    auto itr = m_cpmembers.find(poolId);
     if (itr != m_cpmembers.end())
     {
         for(auto guid : itr->second)
@@ -2273,8 +2270,8 @@ std::list<Creature*> Map::GetAllCreaturesFromPool(uint32 poolId)
 
 bool Map::AllTransportsEmpty() const
 {
-    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
-        if (!(*itr)->GetPassengers().empty())
+    for (auto _transport : _transports)
+        if (!_transport->GetPassengers().empty())
             return false;
 
     return true;
@@ -2282,9 +2279,9 @@ bool Map::AllTransportsEmpty() const
 
 void Map::AllTransportsRemovePassengers()
 {
-    for (TransportsContainer::const_iterator itr = _transports.begin(); itr != _transports.end(); ++itr)
-        while (!(*itr)->GetPassengers().empty())
-            (*itr)->RemovePassenger(*((*itr)->GetPassengers().begin()), true);
+    for (auto _transport : _transports)
+        while (!_transport->GetPassengers().empty())
+            _transport->RemovePassenger(*(_transport->GetPassengers().begin()), true);
 }
 
 template bool Map::Add(Corpse *, bool);
@@ -2556,16 +2553,16 @@ bool InstanceMap::Reset(uint8 method)
         if(method == INSTANCE_RESET_ALL)
         {
             // notify the players to leave the instance so it can be reset
-            for(MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-                itr->GetSource()->SendResetFailedNotify(GetId());
+            for(auto & itr : m_mapRefManager)
+                itr.GetSource()->SendResetFailedNotify(GetId());
         }
         else
         {
             if(method == INSTANCE_RESET_GLOBAL)
             {
                 // set the homebind timer for players inside (1 minute)
-                for(MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-                    itr->GetSource()->m_InstanceValid = false;
+                for(auto & itr : m_mapRefManager)
+                    itr.GetSource()->m_InstanceValid = false;
             }
 
             // the unload timer is not started
@@ -2595,9 +2592,9 @@ void InstanceMap::PermBindAllPlayers(Player *player)
 
     Group *group = player->GetGroup();
     // group members outside the instance group don't get bound
-    for(MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+    for(auto & itr : m_mapRefManager)
     {
-        Player* plr = itr->GetSource();
+        Player* plr = itr.GetSource();
         // players inside an instance cannot be bound to other instances
         // some players may already be permanently bound, in this case nothing happens
         InstancePlayerBind *bind = plr->GetBoundInstance(save->GetMapId(), save->GetDifficulty());
@@ -2619,9 +2616,9 @@ void Map::RemoveAllPlayers()
 {
     if (HavePlayers())
     {
-        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
+        for (auto & itr : m_mapRefManager)
         {
-            Player* player = itr->GetSource();
+            Player* player = itr.GetSource();
             if (!player->IsBeingTeleportedFar())
             {
                 TC_LOG_ERROR("maps", "Map::UnloadAll: player %s is still in map %u during unload, this should not happen!", player->GetName().c_str(), GetId());
@@ -2639,8 +2636,8 @@ void InstanceMap::UnloadAll()
         TC_LOG_ERROR("maps","InstanceMap::UnloadAll: there are still players in the instance at unload, should not happen!");
         std::list<Player*> players;
         //dont teleport players in this loop at this will invalidate our iterator
-        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-            players.push_back(itr->GetSource());
+        for (auto & itr : m_mapRefManager)
+            players.push_back(itr.GetSource());
 
         for (auto plr : players)
         {
@@ -2664,8 +2661,8 @@ void InstanceMap::HandleCrash()
     {
         std::list<Player*> players;
         //dont teleport players in this loop at this will invalidate our iterator
-        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-            players.push_back(itr->GetSource());
+        for (auto & itr : m_mapRefManager)
+            players.push_back(itr.GetSource());
 
         for (auto plr : players)
         {
@@ -2691,8 +2688,8 @@ void InstanceMap::HandleCrash()
 
 void InstanceMap::SendResetWarnings(uint32 timeLeft) const
 {
-    for(MapRefManager::const_iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-        itr->GetSource()->SendInstanceResetWarning(GetId(), timeLeft);
+    for(const auto & itr : m_mapRefManager)
+        itr.GetSource()->SendInstanceResetWarning(GetId(), timeLeft);
 }
 
 void InstanceMap::SetResetSchedule(bool on)
@@ -2809,8 +2806,8 @@ void BattlegroundMap::SetUnload()
 void BattlegroundMap::RemoveAllPlayers()
 {
     if (HavePlayers())
-        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-            if (Player* player = itr->GetSource())
+        for (auto & itr : m_mapRefManager)
+            if (Player* player = itr.GetSource())
                 if (!player->IsBeingTeleportedFar())
                     player->TeleportTo(player->GetBattlegroundEntryPoint());
 }
@@ -2821,8 +2818,8 @@ void BattlegroundMap::HandleCrash()
     {
         std::list<Player*> players;
         //dont teleport players in this loop at this will invalidate our iterator
-        for (MapRefManager::iterator itr = m_mapRefManager.begin(); itr != m_mapRefManager.end(); ++itr)
-            players.push_back(itr->GetSource());
+        for (auto & itr : m_mapRefManager)
+            players.push_back(itr.GetSource());
 
         for (auto plr : players)
         {
@@ -2881,8 +2878,8 @@ void Map::SetZoneMusic(uint32 zoneId, uint32 musicId)
     Map::PlayerList const& players = GetPlayers();
     if (!players.isEmpty())
     {
-        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            if (Player* player = itr->GetSource())
+        for (const auto & itr : players)
+            if (Player* player = itr.GetSource())
                 if (player->GetZoneId() == zoneId)
                     player->GetSession()->SendPlayMusic(musicId);
     }
@@ -2900,8 +2897,8 @@ void Map::SetZoneWeather(uint32 zoneId, WeatherState weatherId, float weatherGra
 
     if (!players.isEmpty())
     {
-        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            if (Player* player = itr->GetSource())
+        for (const auto & itr : players)
+            if (Player* player = itr.GetSource())
                 if (player->GetZoneId() == zoneId)
                     player->GetSession()->SendWeather(weatherId, weatherGrade, 0);
     }
@@ -2924,8 +2921,8 @@ void Map::SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime)
         data << uint32(lightId);
         data << uint32(fadeInTime);
 
-        for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-            if (Player* player = itr->GetSource())
+        for (const auto & itr : players)
+            if (Player* player = itr.GetSource())
                 if (player->GetZoneId() == zoneId)
                     player->SendDirectMessage(&data);
     }

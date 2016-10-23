@@ -121,8 +121,8 @@ void BattlegroundWS::Update(time_t diff)
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
 
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player* plr = sObjectMgr->GetPlayer(itr->first))
+            for(const auto & itr : GetPlayers())
+                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -208,7 +208,7 @@ void BattlegroundWS::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattlegroundWGScore* sc = new BattlegroundWGScore;
+    auto  sc = new BattlegroundWGScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 }
@@ -313,9 +313,9 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player *Source, uint32 BgObjectType
         RewardHonorToTeam(BG_WSG_Honor[m_HonorMode][BG_WSG_FLAG_CAP], TEAM_HORDE);                       // +40 bonushonor
     }
     
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if(!plr)
             continue;
@@ -726,7 +726,7 @@ void BattlegroundWS::HandleKillPlayer(Player *player, Player *killer)
 void BattlegroundWS::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
 
-    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found
         return;

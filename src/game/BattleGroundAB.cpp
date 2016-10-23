@@ -123,8 +123,8 @@ void BattlegroundAB::Update(time_t diff)
             PlaySoundToAll(SOUND_BG_START);
             SetStatus(STATUS_IN_PROGRESS);
 
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player* plr = sObjectMgr->GetPlayer(itr->first))
+            for(const auto & itr : GetPlayers())
+                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
 
@@ -242,7 +242,7 @@ void BattlegroundAB::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in the constructor
-    BattlegroundABScore* sc = new BattlegroundABScore;
+    auto  sc = new BattlegroundABScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 }
@@ -357,10 +357,10 @@ void BattlegroundAB::FillInitialWorldStates(WorldPacket& data)
 
     // How many bases each team owns
     uint8 ally = 0, horde = 0;
-    for (uint8 node = 0; node < BG_AB_DYNAMIC_NODES_COUNT; ++node)
-        if( m_Nodes[node] == BG_AB_NODE_STATUS_ALLY_OCCUPIED )
+    for (unsigned char m_Node : m_Nodes)
+        if( m_Node == BG_AB_NODE_STATUS_ALLY_OCCUPIED )
             ++ally;
-        else if( m_Nodes[node] == BG_AB_NODE_STATUS_HORDE_OCCUPIED )
+        else if( m_Node == BG_AB_NODE_STATUS_HORDE_OCCUPIED )
             ++horde;
 
     data << uint32(BG_AB_OP_OCCUPIED_BASES_ALLY)  << uint32(ally);
@@ -390,10 +390,10 @@ void BattlegroundAB::_SendNodeUpdate(uint8 node)
 
     // How many bases each team owns
     uint8 ally = 0, horde = 0;
-    for (uint8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
-        if( m_Nodes[i] == BG_AB_NODE_STATUS_ALLY_OCCUPIED )
+    for (unsigned char m_Node : m_Nodes)
+        if( m_Node == BG_AB_NODE_STATUS_ALLY_OCCUPIED )
             ++ally;
-        else if( m_Nodes[i] == BG_AB_NODE_STATUS_HORDE_OCCUPIED )
+        else if( m_Node == BG_AB_NODE_STATUS_HORDE_OCCUPIED )
             ++horde;
 
     UpdateWorldState(BG_AB_OP_OCCUPIED_BASES_ALLY, ally);
@@ -407,9 +407,9 @@ void BattlegroundAB::_NodeOccupied(uint8 node,Team team)
 //   SpawnBGCreature(node,RESPAWN_IMMEDIATELY);
 
     uint8 capturedNodes = 0;
-    for (uint8 i = 0; i < BG_AB_DYNAMIC_NODES_COUNT; ++i)
+    for (int m_NodeTimer : m_NodeTimers)
     {
-        if( m_Nodes[node] == GetTeamIndexByTeamId(team) + BG_AB_NODE_TYPE_OCCUPIED && !m_NodeTimers[i])
+        if( m_Nodes[node] == GetTeamIndexByTeamId(team) + BG_AB_NODE_TYPE_OCCUPIED && !m_NodeTimer)
             ++capturedNodes;
     }
     if(capturedNodes >= 5)
@@ -429,7 +429,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
     {
         WorldSafeLocsEntry const *ClosestGrave = nullptr;
         Player *plr;
-        for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
+        for (auto itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
             plr = sObjectMgr->GetPlayer(*ghost_list.begin());
             if( !plr )
@@ -638,9 +638,9 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(float x, float y, 
     if( !nodes.empty() )
     {
         float mindist = 999999.0f;
-        for (uint8 i = 0; i < nodes.size(); ++i)
+        for (unsigned char node : nodes)
         {
-            WorldSafeLocsEntry const*entry = sWorldSafeLocsStore.LookupEntry( BG_AB_GraveyardIds[nodes[i]] );
+            WorldSafeLocsEntry const*entry = sWorldSafeLocsStore.LookupEntry( BG_AB_GraveyardIds[node] );
             if( !entry )
                 continue;
             float dist = (entry->x - x)*(entry->x - x)+(entry->y - y)*(entry->y - y);
@@ -661,7 +661,7 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(float x, float y, 
 
 void BattlegroundAB::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
-    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = m_PlayerScores.find(Source->GetGUID());
 
     if( itr == m_PlayerScores.end() )                         // player not found...
         return;

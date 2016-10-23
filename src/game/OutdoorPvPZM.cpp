@@ -202,8 +202,8 @@ bool OutdoorPvPZM::SetupOutdoorPvP()
     m_HordeTowersControlled = 0;
 
     // add the zones affected by the pvp buff
-    for(int i = 0; i < OutdoorPvPZMBuffZonesNum; ++i)
-        sOutdoorPvPMgr->AddZone(OutdoorPvPZMBuffZones[i],this);
+    for(unsigned int OutdoorPvPZMBuffZone : OutdoorPvPZMBuffZones)
+        sOutdoorPvPMgr->AddZone(OutdoorPvPZMBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveZM_Beacon(this,ZM_BEACON_WEST));
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveZM_Beacon(this,ZM_BEACON_EAST));
@@ -228,40 +228,40 @@ void OutdoorPvPZM::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
     else if(team == TEAM_HORDE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,ZM_CAPTURE_BUFF,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
     else
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
         }
     }
@@ -395,7 +395,7 @@ void OutdoorPvPObjectiveZM_GraveYard::SetBeaconState(uint32 controlling_faction)
 bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player* plr, Creature* c, GossipMenuItems const& gso)
 {
     uint64 guid = c->GetGUID();
-    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
         if(itr->second == ZM_ALLIANCE_FIELD_SCOUT && plr->GetTeam() == TEAM_ALLIANCE && m_BothControllingFaction == TEAM_ALLIANCE && !m_FlagCarrierGUID && m_GraveYardState != ZM_GRAVEYARD_A)
@@ -414,7 +414,7 @@ bool OutdoorPvPObjectiveZM_GraveYard::CanTalkTo(Player* plr, Creature* c, Gossip
 
 bool OutdoorPvPObjectiveZM_GraveYard::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
 {
-    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
         Creature * cr = HashMapHolder<Creature>::Find(guid);
@@ -457,9 +457,9 @@ bool OutdoorPvPObjectiveZM_GraveYard::HandleDropFlag(Player * plr, uint32 spellI
 void OutdoorPvPZM::FillInitialWorldStates(WorldPacket &data)
 {
     data << ZM_WORLDSTATE_UNK_1 << uint32(1);
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        (*itr)->FillInitialWorldStates(data);
+        m_OutdoorPvPObjective->FillInitialWorldStates(data);
     }
 }
 

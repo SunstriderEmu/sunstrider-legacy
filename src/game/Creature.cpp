@@ -56,23 +56,23 @@
 
 void TrainerSpellData::Clear()
 {
-    for (TrainerSpellList::iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
-        delete (*itr);
+    for (auto & itr : spellList)
+        delete itr;
     spellList.empty();
 }
 
 TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
 {
-    for(TrainerSpellList::const_iterator itr = spellList.begin(); itr != spellList.end(); ++itr)
-        if((*itr)->spell == spell_id)
-            return *itr;
+    for(auto itr : spellList)
+        if(itr->spell == spell_id)
+            return itr;
 
     return nullptr;
 }
 
 bool VendorItemData::RemoveItem( uint32 item_id )
 {
-    for(VendorItemList::iterator i = m_items.begin(); i != m_items.end(); ++i )
+    for(auto i = m_items.begin(); i != m_items.end(); ++i )
     {
         if((*i)->proto->ItemId==item_id)
         {
@@ -93,9 +93,9 @@ size_t VendorItemData::FindItemSlot(uint32 item_id) const
 
 VendorItem const* VendorItemData::FindItem(uint32 item_id) const
 {
-    for(VendorItemList::const_iterator i = m_items.begin(); i != m_items.end(); ++i )
-        if((*i)->proto->ItemId==item_id)
-            return *i;
+    for(auto m_item : m_items)
+        if(m_item->proto->ItemId==item_id)
+            return m_item;
     return nullptr;
 }
 
@@ -173,8 +173,8 @@ Creature::Creature() :
 {
     m_valuesCount = UNIT_END;
 
-    for(int i =0; i < CREATURE_MAX_SPELLS; ++i)
-        m_spells[i] = 0;
+    for(unsigned int & m_spell : m_spells)
+        m_spell = 0;
 
     m_CreatureSpellCooldowns.clear();
     m_CreatureCategoryCooldowns.clear();
@@ -257,7 +257,7 @@ void Creature::SearchFormation()
         return;
 
     auto CreatureGroupMap = sCreatureGroupMgr->GetGroupMap();
-    CreatureGroupInfoType::iterator frmdata = CreatureGroupMap.find(lowguid);
+    auto frmdata = CreatureGroupMap.find(lowguid);
     if(frmdata != CreatureGroupMap.end())
         sCreatureGroupMgr->AddCreatureToGroup(frmdata->second->leaderGUID, this);
 
@@ -587,8 +587,8 @@ void Creature::Update(uint32 diff)
                 if(m_areaCombatTimer < diff)
                 {
                     std::list<HostileReference *> t_list = getThreatManager().getThreatList();
-                    for(std::list<HostileReference *>::iterator i = t_list.begin(); i != t_list.end(); ++i)
-                        if((*i) && IS_PLAYER_GUID((*i)->getUnitGuid()))
+                    for(auto & i : t_list)
+                        if(i && IS_PLAYER_GUID(i->getUnitGuid()))
                         {
                             AreaCombat();
                             break;
@@ -1304,7 +1304,7 @@ bool Creature::HasMainWeapon() const
 bool Creature::HasQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mCreatureQuestRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
             return true;
@@ -1315,7 +1315,7 @@ bool Creature::HasQuest(uint32 quest_id) const
 bool Creature::HasInvolvedQuest(uint32 quest_id) const
 {
     QuestRelations const& qr = sObjectMgr->mCreatureQuestInvolvedRelations;
-    for(QuestRelations::const_iterator itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
+    for(auto itr = qr.lower_bound(GetEntry()); itr != qr.upper_bound(GetEntry()); ++itr)
     {
         if(itr->second==quest_id)
             return true;
@@ -1643,7 +1643,7 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
 {
     if (timeMSToDespawn)
     {
-        ForcedDespawnDelayEvent* pEvent = new ForcedDespawnDelayEvent(*this);
+        auto  pEvent = new ForcedDespawnDelayEvent(*this);
 
         m_Events.AddEvent(pEvent, m_Events.CalculateTime(timeMSToDespawn));
         return;
@@ -1698,16 +1698,16 @@ void Creature::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs
 
 void Creature::UpdateProhibitedSchools(uint32 const diff)
 {
-    for (uint8 i = 0; i < MAX_SPELL_SCHOOL; i++) {
-        if (m_prohibitedSchools[i] == 0)
+    for (unsigned int & m_prohibitedSchool : m_prohibitedSchools) {
+        if (m_prohibitedSchool == 0)
             continue;
 
-        if (m_prohibitedSchools[i] <= diff) {
-            m_prohibitedSchools[i] = 0;
+        if (m_prohibitedSchool <= diff) {
+            m_prohibitedSchool = 0;
             continue;
         }
 
-        m_prohibitedSchools[i] -= diff;
+        m_prohibitedSchool -= diff;
     }
 }
 
@@ -1730,24 +1730,24 @@ SpellInfo const *Creature::reachWithSpellAttack(Unit *pVictim)
     if(!pVictim)
         return nullptr;
 
-    for(uint32 i=0; i < CREATURE_MAX_SPELLS; i++)
+    for(unsigned int m_spell : m_spells)
     {
-        if(!m_spells[i])
+        if(!m_spell)
             continue;
-        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spell );
         if(!spellInfo)
         {
-            TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spells[i]);
+            TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spell);
             continue;
         }
 
         bool bcontinue = true;
-        for(uint32 j=0;j<3;j++)
+        for(const auto & Effect : spellInfo->Effects)
         {
-            if( (spellInfo->Effects[j].Effect == SPELL_EFFECT_SCHOOL_DAMAGE )       ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_INSTAKILL)            ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
-                (spellInfo->Effects[j].Effect == SPELL_EFFECT_HEALTH_LEECH )
+            if( (Effect.Effect == SPELL_EFFECT_SCHOOL_DAMAGE )       ||
+                (Effect.Effect == SPELL_EFFECT_INSTAKILL)            ||
+                (Effect.Effect == SPELL_EFFECT_ENVIRONMENTAL_DAMAGE) ||
+                (Effect.Effect == SPELL_EFFECT_HEALTH_LEECH )
                 )
             {
                 bcontinue = false;
@@ -1777,21 +1777,21 @@ SpellInfo const *Creature::reachWithSpellCure(Unit *pVictim)
     if(!pVictim)
         return nullptr;
 
-    for(uint32 i=0; i < CREATURE_MAX_SPELLS; i++)
+    for(unsigned int m_spell : m_spells)
     {
-        if(!m_spells[i])
+        if(!m_spell)
             continue;
-        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spells[i] );
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_spell );
         if(!spellInfo)
         {
-            TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spells[i]);
+            TC_LOG_ERROR("FIXME","WORLD: unknown spell id %i\n", m_spell);
             continue;
         }
 
         bool bcontinue = true;
-        for(uint32 j=0;j<3;j++)
+        for(const auto & Effect : spellInfo->Effects)
         {
-            if( (spellInfo->Effects[j].Effect == SPELL_EFFECT_HEAL ) )
+            if( (Effect.Effect == SPELL_EFFECT_HEAL ) )
             {
                 bcontinue = false;
                 break;
@@ -1964,7 +1964,7 @@ void Creature::CallAssistance()
             if (!assistList.empty())
             {
                 uint32 count = 0;
-                AssistDelayEvent *e = new AssistDelayEvent(GetVictim()->GetGUID(), *this);
+                auto e = new AssistDelayEvent(GetVictim()->GetGUID(), *this);
                 while (!assistList.empty())
                 {
                     ++count;
@@ -2187,13 +2187,13 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
     if (spellInfo->StartRecoveryCategory > 0 && m_GlobalCooldown > 0)
         return true;
 
-    CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->GetCategory());
+    auto itr = m_CreatureCategoryCooldowns.find(spellInfo->GetCategory());
     return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / 1000)) > time(nullptr));
 }
 
 bool Creature::HasSpellCooldown(uint32 spell_id) const
 {
-    CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spell_id);
+    auto itr = m_CreatureSpellCooldowns.find(spell_id);
     return (itr != m_CreatureSpellCooldowns.end() && itr->second > time(nullptr)) || HasCategoryCooldown(spell_id);
 }
 
@@ -2311,7 +2311,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
     if(!vItem->maxcount)
         return vItem->maxcount;
 
-    VendorItemCounts::iterator itr = m_vendorItemCounts.begin();
+    auto itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
         if(itr->itemId==vItem->proto->ItemId)
             break;
@@ -2346,7 +2346,7 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
     if(!vItem->maxcount)
         return 0;
 
-    VendorItemCounts::iterator itr = m_vendorItemCounts.begin();
+    auto itr = m_vendorItemCounts.begin();
     for(; itr != m_vendorItemCounts.end(); ++itr)
         if(itr->itemId==vItem->proto->ItemId)
             break;
@@ -2442,9 +2442,9 @@ void Creature::AreaCombat()
             range += 100.0f;
 
         Map::PlayerList const &PlayerList = map->GetPlayers();
-        for(Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+        for(const auto & i : PlayerList)
         {
-            if (Player* i_pl = i->GetSource())
+            if (Player* i_pl = i.GetSource())
                 if (i_pl->IsAlive() && IsWithinCombatRange(i_pl, range) && CanAttack(i_pl, false) == CAN_ATTACK_RESULT_OK)
                 {
                     SetInCombatWith(i_pl);
@@ -2509,7 +2509,7 @@ bool AIMessageEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 void Creature::AddMessageEvent(uint64 timer, uint32 messageId, uint64 data)
 {
-    AIMessageEvent* messageEvent = new AIMessageEvent(*this,messageId,data);
+    auto  messageEvent = new AIMessageEvent(*this,messageId,data);
     m_Events.AddEvent(messageEvent, m_Events.CalculateTime(timer), false);
 }
 
@@ -2834,7 +2834,7 @@ CreatureTextRepeatIds Creature::GetTextRepeatGroup(uint8 textGroup)
 
 void Creature::ClearTextRepeatGroup(uint8 textGroup)
 {
-    CreatureTextRepeatGroup::iterator groupItr = m_textRepeat.find(textGroup);
+    auto groupItr = m_textRepeat.find(textGroup);
     if (groupItr != m_textRepeat.end())
         groupItr->second.clear();
 }

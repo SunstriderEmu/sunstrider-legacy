@@ -35,9 +35,9 @@ static void AttemptJoin(Player* _player)
     auto lock = HashMapHolder<Player>::GetLock();
     lock->lock();
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+    for(const auto & player : players)
     {
-        Player *plr = iter->second;
+        Player *plr = player.second;
 
         // skip enemies and self
         if(!plr || plr==_player || plr->GetTeam() != _player->GetTeam())
@@ -55,7 +55,7 @@ static void AttemptJoin(Player* _player)
         // attempt create group, or skip
         if(!plr->GetGroup())
         {
-            Group* group = new Group;
+            auto  group = new Group;
             if(!group->Create(plr->GetGUID(), plr->GetName(), trans))
             {
                 delete group;
@@ -93,9 +93,9 @@ static void AttemptAddMore(Player* _player)
 
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+    for(const auto & player : players)
     {
-        Player *plr = iter->second;
+        Player *plr = player.second;
 
         // skip enemies and self
         if(!plr || plr==_player || plr->GetTeam() != _player->GetTeam())
@@ -112,7 +112,7 @@ static void AttemptAddMore(Player* _player)
         // attempt create group if need, or stop attempts
         if(!_player->GetGroup())
         {
-            Group* group = new Group;
+            auto  group = new Group;
             if(!group->Create(_player->GetGUID(), _player->GetName(), trans))
             {
                 delete group;
@@ -189,8 +189,8 @@ void WorldSession::HandleLfgClearOpcode( WorldPacket & /*recvData */ )
 {
     
     
-    for(int i = 0; i < MAX_LOOKING_FOR_GROUP_SLOT; ++i)
-        _player->m_lookingForGroup.slots[i].Clear();
+    for(auto & slot : _player->m_lookingForGroup.slots)
+        slot.Clear();
 
     if( sWorld->getConfig(CONFIG_RESTRICTED_LFG_CHANNEL) && _player->GetSession()->GetSecurity() == SEC_PLAYER )
         _player->LeaveLFGChannel();
@@ -267,9 +267,9 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
 
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+    for(const auto & player : players)
     {
-        Player *plr = iter->second;
+        Player *plr = player.second;
 
         if(!plr || plr->GetTeam() != _player->GetTeam())
             continue;
@@ -284,9 +284,9 @@ void WorldSession::SendLfgResult(uint32 type, uint32 entry, uint8 lfg_type)
         data << plr->GetZoneId();                           // current zone
         data << lfg_type;                                   // 0x00 - LFG, 0x01 - LFM
 
-        for(uint8 j = 0; j < MAX_LOOKING_FOR_GROUP_SLOT; ++j)
+        for(auto & slot : plr->m_lookingForGroup.slots)
         {
-            data << uint32( plr->m_lookingForGroup.slots[j].entry | (plr->m_lookingForGroup.slots[j].type << 24) );
+            data << uint32( slot.entry | (slot.type << 24) );
         }
         data << plr->m_lookingForGroup.comment;
 

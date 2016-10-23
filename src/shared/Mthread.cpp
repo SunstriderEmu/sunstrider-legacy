@@ -38,28 +38,28 @@ MThread::~MThread ()
     if (tid && (pthread_self () != tid))
     {
         pthread_cancel (tid);
-        pthread_join (tid, NULL);
+        pthread_join (tid, nullptr);
     }
 }
 
 static void *thread_start_routine (void *arg)
 {
     MThread *newthr = (MThread *)arg;
-    pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+    pthread_setcanceltype (PTHREAD_CANCEL_ASYNCHRONOUS, nullptr);
     newthr->routine (newthr->arg);
-    return NULL;
+    return nullptr;
 }
 
 MThread *MThread::Start (void (*routine) (void *arg), void *arg)
 {
-    MThread *newthr = new MThread ();
+    auto newthr = new MThread ();
     newthr->routine = routine;
     newthr->arg = arg;
-    int rc = pthread_create (&newthr->tid, NULL, thread_start_routine, newthr);
+    int rc = pthread_create (&newthr->tid, nullptr, thread_start_routine, newthr);
     if (rc)
     {
         newthr->DecRef ();
-        return NULL;
+        return nullptr;
     }
 
     return newthr;

@@ -219,7 +219,7 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, WorldObject 
     }
 
     CreatureTextHolder const& textHolder = sList->second;
-    CreatureTextHolder::const_iterator itr = textHolder.find(textGroup);
+    auto itr = textHolder.find(textGroup);
     if (itr == textHolder.end())
     {
         TC_LOG_ERROR("sql.sql", "CreatureTextMgr: Could not find TextGroup %u for Creature %s (Entry %u, GUID " UI64FMTD ") in 'creature_text' table. Ignoring.", uint32(textGroup), source->GetName().c_str(), source->GetEntry(), source->GetGUID());
@@ -230,9 +230,9 @@ uint32 CreatureTextMgr::SendChat(Creature* source, uint8 textGroup, WorldObject 
     CreatureTextRepeatIds repeatGroup = GetRepeatGroup(source, textGroup);//has all textIDs from the group that were already said
     CreatureTextGroup tempGroup;//will use this to talk after sorting repeatGroup
 
-    for (CreatureTextGroup::const_iterator giter = textGroupContainer.begin(); giter != textGroupContainer.end(); ++giter)
-        if (std::find(repeatGroup.begin(), repeatGroup.end(), giter->id) == repeatGroup.end())
-            tempGroup.push_back(*giter);
+    for (const auto & giter : textGroupContainer)
+        if (std::find(repeatGroup.begin(), repeatGroup.end(), giter.id) == repeatGroup.end())
+            tempGroup.push_back(giter);
 
     if (tempGroup.empty())
     {
@@ -327,33 +327,33 @@ void CreatureTextMgr::SendNonChatPacket(WorldObject* source, WorldPacket* data, 
         {
             uint32 areaId = source->GetAreaId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if (itr->GetSource()->GetAreaId() == areaId && (!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    itr->GetSource()->SendDirectMessage(data);
+            for (const auto & player : players)
+                if (player.GetSource()->GetAreaId() == areaId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    player.GetSource()->SendDirectMessage(data);
             return;
         }
         case TEXT_RANGE_ZONE:
         {
             uint32 zoneId = source->GetZoneId();
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if (itr->GetSource()->GetZoneId() == zoneId && (!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    itr->GetSource()->SendDirectMessage(data);
+            for (const auto & player : players)
+                if (player.GetSource()->GetZoneId() == zoneId && (!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    player.GetSource()->SendDirectMessage(data);
             return;
         }
         case TEXT_RANGE_MAP:
         {
             Map::PlayerList const& players = source->GetMap()->GetPlayers();
-            for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                if ((!team || Team(itr->GetSource()->GetTeam()) == team) && (!gmOnly || itr->GetSource()->IsGameMaster()))
-                    itr->GetSource()->SendDirectMessage(data);
+            for (const auto & player : players)
+                if ((!team || Team(player.GetSource()->GetTeam()) == team) && (!gmOnly || player.GetSource()->IsGameMaster()))
+                    player.GetSource()->SendDirectMessage(data);
             return;
         }
         case TEXT_RANGE_WORLD:
         {
             SessionMap const& smap = sWorld->GetAllSessions();
-            for (SessionMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
-                if (Player* player = iter->second->GetPlayer())
+            for (const auto & iter : smap)
+                if (Player* player = iter.second->GetPlayer())
                     if (player->GetSession()  && (!team || Team(player->GetTeam()) == team) && (!gmOnly || player->IsGameMaster()))
                         player->SendDirectMessage(data);
             return;
@@ -431,15 +431,15 @@ bool CreatureTextMgr::TextExist(uint32 sourceEntry, uint8 textGroup)
 
 std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, uint8 textGroup, uint32 id, LocaleConstant locale) const
 {
-    CreatureTextMap::const_iterator mapitr = mTextMap.find(entry);
+    auto mapitr = mTextMap.find(entry);
     if (mapitr == mTextMap.end())
         return "";
 
-    CreatureTextHolder::const_iterator holderItr = mapitr->second.find(textGroup);
+    auto holderItr = mapitr->second.find(textGroup);
     if (holderItr == mapitr->second.end())
         return "";
 
-    CreatureTextGroup::const_iterator groupItr = holderItr->second.begin();
+    auto groupItr = holderItr->second.begin();
     for (; groupItr != holderItr->second.end(); ++groupItr)
         if (groupItr->id == id)
             break;
@@ -460,7 +460,7 @@ std::string CreatureTextMgr::GetLocalizedChatString(uint32 entry, uint8 gender, 
 
     if (locale != DEFAULT_LOCALE && !bct)
     {
-        LocaleCreatureTextMap::const_iterator locItr = mLocaleTextMap.find(CreatureTextId(entry, uint32(textGroup), id));
+        auto locItr = mLocaleTextMap.find(CreatureTextId(entry, uint32(textGroup), id));
         if (locItr != mLocaleTextMap.end())
             ObjectMgr::GetLocaleString(locItr->second.Text, locale, baseText);
     }

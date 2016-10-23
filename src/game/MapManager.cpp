@@ -51,8 +51,8 @@ void MapManager::Initialize()
 
 void MapManager::InitializeVisibilityDistanceInfo()
 {
-    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        (*iter).second->InitVisibilityDistance();
+    for (auto & i_map : i_maps)
+        i_map.second->InitVisibilityDistance();
 }
 
 Map* MapManager::CreateBaseMap(uint32 id)
@@ -201,20 +201,20 @@ void MapManager::Update(time_t diff)
     if( !i_timer.Passed() )
         return;
 
-    for (auto iter = i_maps.begin(); iter != i_maps.end(); ++iter)
+    for (auto & i_map : i_maps)
     {
         if (m_updater.activated())
-            m_updater.schedule_update(*iter->second, uint32(i_timer.GetCurrent()));
+            m_updater.schedule_update(*i_map.second, uint32(i_timer.GetCurrent()));
         else
-            iter->second->Update(uint32(i_timer.GetCurrent()));
+            i_map.second->Update(uint32(i_timer.GetCurrent()));
     }
 
     if (m_updater.activated())
         m_updater.wait();
 
     //delayed map update (from sunwell core)
-    for (auto iter = i_maps.begin(); iter != i_maps.end(); ++iter)
-        iter->second->DelayedUpdate(uint32(i_timer.GetCurrent()));
+    for (auto & i_map : i_maps)
+        i_map.second->DelayedUpdate(uint32(i_timer.GetCurrent()));
 
     sObjectAccessor->Update(i_timer.GetCurrent());
     sWorld->RecordTimeDiff("UpdateObjectAccessor");
@@ -245,7 +245,7 @@ bool MapManager::IsValidMAP(uint32 mapid, bool startUp)
 
 void MapManager::UnloadAll()
 {
-    for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end();)
+    for (auto iter = i_maps.begin(); iter != i_maps.end();)
     {
         iter->second->UnloadAll();
         delete iter->second;
@@ -261,14 +261,14 @@ uint32 MapManager::GetNumInstances()
     std::lock_guard<std::mutex> lock(_mapsLock);
 
     uint32 ret = 0;
-    for(MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
+    for(auto & i_map : i_maps)
     {
-        Map *map = itr->second;
+        Map *map = i_map.second;
         if(!map->Instanceable()) 
             continue;
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
-        for(MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
-            if(mitr->second->IsDungeon()) ret++;
+        for(auto & map : maps)
+            if(map.second->IsDungeon()) ret++;
     }
     return ret;
 }
@@ -278,15 +278,15 @@ uint32 MapManager::GetNumPlayersInInstances()
     std::lock_guard<std::mutex> lock(_mapsLock);
 
     uint32 ret = 0;
-    for(MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
+    for(auto & i_map : i_maps)
     {
-        Map *map = itr->second;
+        Map *map = i_map.second;
         if(!map->Instanceable()) 
             continue;
         MapInstanced::InstancedMaps &maps = ((MapInstanced *)map)->GetInstancedMaps();
-        for(MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
-            if(mitr->second->IsDungeon())
-                ret += ((InstanceMap*)mitr->second)->GetPlayers().getSize();
+        for(auto & map : maps)
+            if(map.second->IsDungeon())
+                ret += ((InstanceMap*)map.second)->GetPlayers().getSize();
     }
     return ret;
 }
@@ -297,9 +297,9 @@ uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
 
     uint32 ret = 0;
 
-    for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
+    for (auto & i_map : i_maps)
     {
-        Map* map = itr->second;
+        Map* map = i_map.second;
 
         if (map->GetId() != mapId)
             continue;
@@ -309,8 +309,8 @@ uint32 MapManager::GetNumPlayersInMap(uint32 mapId)
             break;
         } else {
             MapInstanced::InstancedMaps& maps = ((MapInstanced *)map)->GetInstancedMaps();
-            for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
-                ret += ((InstanceMap *)mitr->second)->GetPlayers().getSize();
+            for (auto & map : maps)
+                ret += ((InstanceMap *)map.second)->GetPlayers().getSize();
         }
     }
 

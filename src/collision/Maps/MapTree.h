@@ -69,7 +69,7 @@ namespace VMAP
             static void unpackTileID(uint32 ID, uint32 &tileX, uint32 &tileY) { tileX = ID>>16; tileY = ID&0xFF; }
             static bool CanLoadMap(const std::string &basePath, uint32 mapID, uint32 tileX, uint32 tileY);
 
-            StaticMapTree(uint32 mapID, const std::string &basePath);
+            StaticMapTree(uint32 mapID, std::string basePath);
             ~StaticMapTree();
 
             bool isInLineOfSight(const G3D::Vector3& pos1, const G3D::Vector3& pos2) const;

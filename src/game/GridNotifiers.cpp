@@ -33,12 +33,12 @@ using namespace Trinity;
 void
 VisibleChangesNotifier::Visit(PlayerMapType &m)
 {
-    for(PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
+    for(auto & iter : m)
     {
-        if(iter->GetSource() == &i_object)
+        if(iter.GetSource() == &i_object)
             continue;
 
-        iter->GetSource()->UpdateVisibilityOf(&i_object);
+        iter.GetSource()->UpdateVisibilityOf(&i_object);
     }
 }
 
@@ -50,26 +50,26 @@ PlayerVisibilityNotifier::Notify()
 
     if(Transport* transport = i_player.GetTransport())
     {
-        for(Transport::PassengerSet::const_iterator itr = transport->GetPassengers().begin();itr!=transport->GetPassengers().end();++itr)
+        for(auto itr : transport->GetPassengers())
         {
-            if(i_clientGUIDs.find((*itr)->GetGUID())!=i_clientGUIDs.end())
+            if(i_clientGUIDs.find(itr->GetGUID())!=i_clientGUIDs.end())
             {
-                i_clientGUIDs.erase((*itr)->GetGUID());
+                i_clientGUIDs.erase(itr->GetGUID());
 
-                switch ((*itr)->GetTypeId())
+                switch (itr->GetTypeId())
                 {
                     case TYPEID_GAMEOBJECT:
-                        i_player.UpdateVisibilityOf((*itr)->ToGameObject(), i_data, i_visibleNow);
+                        i_player.UpdateVisibilityOf(itr->ToGameObject(), i_data, i_visibleNow);
                         break;
                     case TYPEID_PLAYER:
-                        i_player.UpdateVisibilityOf((*itr)->ToPlayer(), i_data, i_visibleNow);
-                        (*itr)->ToPlayer()->UpdateVisibilityOf(&i_player);
+                        i_player.UpdateVisibilityOf(itr->ToPlayer(), i_data, i_visibleNow);
+                        itr->ToPlayer()->UpdateVisibilityOf(&i_player);
                         break;
                     case TYPEID_UNIT:
-                        i_player.UpdateVisibilityOf((*itr)->ToCreature(), i_data, i_visibleNow);
+                        i_player.UpdateVisibilityOf(itr->ToCreature(), i_data, i_visibleNow);
                         break;
                     case TYPEID_DYNAMICOBJECT:
-                        i_player.UpdateVisibilityOf((*itr)->ToDynObject(), i_data, i_visibleNow);
+                        i_player.UpdateVisibilityOf(itr->ToDynObject(), i_data, i_visibleNow);
                         break;
                     default:
                         break;
@@ -84,11 +84,11 @@ PlayerVisibilityNotifier::Notify()
 
     //remaining i_clientGUIDs are out of range and should be destroyed at client
     i_data.AddOutOfRangeGUID(i_clientGUIDs);
-    for(Player::ClientGUIDs::iterator itr = i_clientGUIDs.begin();itr!=i_clientGUIDs.end();++itr)
+    for(unsigned long i_clientGUID : i_clientGUIDs)
     {
-        i_player.m_clientGUIDs.erase(*itr);
+        i_player.m_clientGUIDs.erase(i_clientGUID);
 
-        TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is out of range (no in active cells set) now for player %u",GUID_LOPART(*itr),GuidHigh2TypeId(GUID_HIPART(*itr)),i_player.GetGUIDLow());
+        TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is out of range (no in active cells set) now for player %u",GUID_LOPART(i_clientGUID),GuidHigh2TypeId(GUID_HIPART(i_clientGUID)),i_player.GetGUIDLow());
     }
 
     if( i_data.HasData() )
@@ -106,12 +106,12 @@ PlayerVisibilityNotifier::Notify()
 
         // send out of range to other players if need
         std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();
-        for(std::set<uint64>::const_iterator iter = oor.begin(); iter != oor.end(); ++iter)
+        for(unsigned long iter : oor)
         {
-            if(!IS_PLAYER_GUID(*iter))
+            if(!IS_PLAYER_GUID(iter))
                 continue;
 
-            if(Player* plr = ObjectAccessor::FindPlayer(*iter))
+            if(Player* plr = ObjectAccessor::FindPlayer(iter))
                 plr->UpdateVisibilityOf(&i_player);
         }
     }
@@ -120,9 +120,9 @@ PlayerVisibilityNotifier::Notify()
 
     // target aura duration for caster show only if target exist at caster client
     // send data at target visibility change (adding to client)
-    for(std::set<WorldObject*>::const_iterator vItr = i_visibleNow.begin(); vItr != i_visibleNow.end(); ++vItr)
-        if((*vItr)!=&i_player && (*vItr)->isType(TYPEMASK_UNIT))
-            i_player.SendInitialVisiblePackets((Unit*)(*vItr));
+    for(auto vItr : i_visibleNow)
+        if(vItr!=&i_player && vItr->isType(TYPEMASK_UNIT))
+            i_player.SendInitialVisiblePackets((Unit*)vItr);
 
     if(i_visibleNow.size() >= 30)
         i_player.SetToNotify();
@@ -131,16 +131,16 @@ PlayerVisibilityNotifier::Notify()
 void
 Deliverer::Visit(PlayerMapType &m)
 {
-    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (auto & iter : m)
     {
-        if (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist)
+        if (!i_dist || iter.GetSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the player's vision
-            for (auto itr : iter->GetSource()->GetSharedVisionList())
+            for (auto itr : iter.GetSource()->GetSharedVisionList())
                 if(Player* p = ObjectAccessor::FindPlayer(itr))
                     SendPacket(p);
 
-            VisitObject(iter->GetSource());
+            VisitObject(iter.GetSource());
         }
     }
 }
@@ -148,12 +148,12 @@ Deliverer::Visit(PlayerMapType &m)
 void
 Deliverer::Visit(CreatureMapType &m)
 {
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (auto & iter : m)
     {
-        if (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist)
+        if (!i_dist || iter.GetSource()->GetDistance(&i_source) <= i_dist)
         {
             // Send packet to all who are sharing the creature's vision
-            for (auto itr : iter->GetSource()->GetSharedVisionList())
+            for (auto itr : iter.GetSource()->GetSharedVisionList())
                 if(Player* p = ObjectAccessor::FindPlayer(itr))
                     SendPacket(p);
         }

@@ -409,22 +409,22 @@ void BattlegroundAV::Update(time_t diff)
             DoorOpen(BG_AV_OBJECT_DOOR_A);
 
             // Add auras to marshals/warmasters
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr) {
-                if(Player* plr = sObjectMgr->GetPlayer(itr->first)) {
-                    for (std::vector<uint64>::iterator itr2 = m_allianceMarshals.begin(); itr2 != m_allianceMarshals.end(); itr2++) {
-                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr2)))
+            for(const auto & itr : GetPlayers()) {
+                if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
+                    for (unsigned long & m_allianceMarshal : m_allianceMarshals) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
-                    for (std::vector<uint64>::iterator itr2 = m_hordeMarshals.begin(); itr2 != m_hordeMarshals.end(); itr2++) {
-                        if (Creature *marshal = plr->GetMap()->GetCreature((*itr2)))
+                    for (unsigned long & m_hordeMarshal : m_hordeMarshals) {
+                        if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                     break;
                 }
             }
 
-            for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-                if(Player* plr = sObjectMgr->GetPlayer(itr->first))
+            for(const auto & itr : GetPlayers())
+                if(Player* plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_PREPARATION);
         }
     }
@@ -485,16 +485,16 @@ void BattlegroundAV::Update(time_t diff)
             }
             
         // Add auras to marshals/warmasters if they don't have it (after reset for example)
-        for(BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr) {
-            if(Player* plr = sObjectMgr->GetPlayer(itr->first)) {
-                for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
-                    if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
+        for(const auto & itr : GetPlayers()) {
+            if(Player* plr = sObjectMgr->GetPlayer(itr.first)) {
+                for (unsigned long & m_allianceMarshal : m_allianceMarshals) {
+                    if (Creature *marshal = plr->GetMap()->GetCreature(m_allianceMarshal)) {
                         if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
                 }
-                for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
-                    if (Creature *marshal = plr->GetMap()->GetCreature((*itr))) {
+                for (unsigned long & m_hordeMarshal : m_hordeMarshals) {
+                    if (Creature *marshal = plr->GetMap()->GetCreature(m_hordeMarshal)) {
                         if (!marshal->HasAuraEffect(GetAuraFromMarshalEntry(marshal->GetEntry())))
                             marshal->CastSpell(marshal, GetAuraFromMarshalEntry(marshal->GetEntry()), true);
                     }
@@ -509,7 +509,7 @@ void BattlegroundAV::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattlegroundAVScore* sc = new BattlegroundAVScore;
+    auto  sc = new BattlegroundAVScore;
     m_PlayerScores[plr->GetGUID()] = sc;
     if(m_MaxLevel==0)
         m_MaxLevel=(plr->GetLevel()%10 == 0)? plr->GetLevel() : (plr->GetLevel()-(plr->GetLevel()%10))+10; //TODO: just look at the code \^_^/ --but queue-info should provide this information..
@@ -633,7 +633,7 @@ void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
 void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
 {
 
-    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found...
         return;
@@ -727,14 +727,14 @@ void BattlegroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
                     break;
                 }
                 if (faction == TEAM_ALLIANCE) {
-                    for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
-                        if (Creature *marshal = cr->GetMap()->GetCreature((*itr)))
+                    for (unsigned long & m_allianceMarshal : m_allianceMarshals) {
+                        if (Creature *marshal = cr->GetMap()->GetCreature(m_allianceMarshal))
                             marshal->RemoveAurasDueToSpell(auraToRemove);
                     }
                 }
                 else if (faction == TEAM_HORDE) {
-                    for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
-                        if (Creature *marshal = cr->GetMap()->GetCreature((*itr)))
+                    for (unsigned long & m_hordeMarshal : m_hordeMarshals) {
+                        if (Creature *marshal = cr->GetMap()->GetCreature(m_hordeMarshal))
                             marshal->RemoveAurasDueToSpell(auraToRemove);
                     }
                 }
@@ -1170,7 +1170,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
             {
                 Player *plr;
                 WorldSafeLocsEntry const *ClosestGrave = nullptr;
-                for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
+                for (auto itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
                     plr = sObjectMgr->GetPlayer(*ghost_list.begin());
                     if( !plr )
@@ -1601,8 +1601,8 @@ void BattlegroundAV::RemoveMarshalAura(Unit *killer, uint32 entry)
     case 14763:
     case 14764:
     case 14765:
-        for (std::vector<uint64>::iterator itr = m_allianceMarshals.begin(); itr != m_allianceMarshals.end(); itr++) {
-            if (Creature *marshal = killer->GetMap()->GetCreature((*itr)))
+        for (unsigned long & m_allianceMarshal : m_allianceMarshals) {
+            if (Creature *marshal = killer->GetMap()->GetCreature(m_allianceMarshal))
                 marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
         }
         break;
@@ -1610,8 +1610,8 @@ void BattlegroundAV::RemoveMarshalAura(Unit *killer, uint32 entry)
     case 14776:
     case 14772:
     case 14777:
-        for (std::vector<uint64>::iterator itr = m_hordeMarshals.begin(); itr != m_hordeMarshals.end(); itr++) {
-            if (Creature *marshal = killer->GetMap()->GetCreature((*itr)))
+        for (unsigned long & m_hordeMarshal : m_hordeMarshals) {
+            if (Creature *marshal = killer->GetMap()->GetCreature(m_hordeMarshal))
                 marshal->RemoveAurasDueToSpell(GetAuraFromMarshalEntry(entry));
         }
         break;

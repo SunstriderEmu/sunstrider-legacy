@@ -757,7 +757,7 @@ void GameEventMgr::LoadFromDB()
                 continue;
             }
 
-            std::map<uint32, GameEventFinishCondition>::iterator itr = mGameEvent[event_id].conditions.find(condition);
+            auto itr = mGameEvent[event_id].conditions.find(condition);
             if(itr != mGameEvent[event_id].conditions.end())
             {
                 itr->second.done = fields[2].GetFloat();
@@ -1074,7 +1074,7 @@ void GameEventMgr::SpawnCreature(uint32 guid)
         // We use spawn coords to spawn
         if(!map->Instanceable())
         {
-            Creature* pCreature = new Creature;
+            auto  pCreature = new Creature;
             //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
             if (!pCreature->LoadFromDB(guid, map))
             {
@@ -1375,10 +1375,10 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
             if(!hasCreatureQuestActiveEventExcept(itr.second,event_id))
             {
                 // Remove the pair(id,quest) from the multimap
-                QuestRelations::iterator qitr = CreatureQuestMap.find(itr.first);
+                auto qitr = CreatureQuestMap.find(itr.first);
                 if (qitr == CreatureQuestMap.end())
                     continue;
-                QuestRelations::iterator lastElement = CreatureQuestMap.upper_bound(itr.first);
+                auto lastElement = CreatureQuestMap.upper_bound(itr.first);
                 for ( ;qitr != lastElement;++qitr)
                 {
                     if (qitr->second == itr.second)
@@ -1400,10 +1400,10 @@ void GameEventMgr::UpdateEventQuests(uint16 event_id, bool Activate)
             if(!hasGameObjectQuestActiveEventExcept(itr.second,event_id))
             {
                 // Remove the pair(id,quest) from the multimap
-                QuestRelations::iterator qitr = GameObjectQuestMap.find(itr.first);
+                auto qitr = GameObjectQuestMap.find(itr.first);
                 if (qitr == GameObjectQuestMap.end())
                     continue;
-                QuestRelations::iterator lastElement = GameObjectQuestMap.upper_bound(itr.first);
+                auto lastElement = GameObjectQuestMap.upper_bound(itr.first);
                 for ( ;qitr != lastElement;++qitr)
                 {
                     if (qitr->second == itr.second)
@@ -1424,7 +1424,7 @@ GameEventMgr::GameEventMgr()
 void GameEventMgr::HandleQuestComplete(uint32 quest_id)
 {
     // translate the quest to event and condition
-    QuestIdToEventConditionMap::iterator itr = mQuestToEventConditions.find(quest_id);
+    auto itr = mQuestToEventConditions.find(quest_id);
     // quest is registered
     if(itr != mQuestToEventConditions.end())
     {

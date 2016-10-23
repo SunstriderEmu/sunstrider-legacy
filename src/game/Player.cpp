@@ -570,8 +570,8 @@ Player::~Player ()
 
     // clean up player-instance binds, may unload some instance saves
     for(auto & m_boundInstance : m_boundInstances)
-        for(auto itr = m_boundInstance.begin(); itr != m_boundInstance.end(); ++itr)
-            itr->second.save->RemovePlayer(this);
+        for(auto & itr : m_boundInstance)
+            itr.second.save->RemovePlayer(this);
 
     delete m_declinedname;
 }
@@ -16488,9 +16488,9 @@ void Player::SendSavedInstances()
 
     for(auto & m_boundInstance : m_boundInstances)
     {
-        for (auto itr = m_boundInstance.begin(); itr != m_boundInstance.end(); ++itr)
+        for (auto & itr : m_boundInstance)
         {
-            if(itr->second.perm)                                // only permanent binds are sent
+            if(itr.second.perm)                                // only permanent binds are sent
             {
                 hasBeenSaved = true;
                 break;
@@ -16508,12 +16508,12 @@ void Player::SendSavedInstances()
 
     for(auto & m_boundInstance : m_boundInstances)
     {
-        for (auto itr = m_boundInstance.begin(); itr != m_boundInstance.end(); ++itr)
+        for (auto & itr : m_boundInstance)
         {
-            if(itr->second.perm)
+            if(itr.second.perm)
             {
                 data.Initialize(SMSG_UPDATE_LAST_INSTANCE);
-                data << uint32(itr->second.save->GetMapId());
+                data << uint32(itr.second.save->GetMapId());
                 SendDirectMessage(&data);
             }
         }
@@ -18133,10 +18133,8 @@ void Player::RestoreSpellMods(Spell const* spell)
 
     for(auto & m_spellMod : m_spellMods)
     {
-        for (auto itr = m_spellMod.begin(); itr != m_spellMod.end();++itr)
+        for (auto mod : m_spellMod)
         {
-            SpellModifier *mod = *itr;
-
             if (mod && mod->charges == -1 && mod->lastAffected == spell)
             {
                 mod->lastAffected = nullptr;

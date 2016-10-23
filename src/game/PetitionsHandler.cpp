@@ -797,7 +797,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
 
     if(type == 9)                                           // create guild
     {
-        Guild* guild = new Guild;
+        auto  guild = new Guild;
         if(!guild->create(_player->GetGUID(), name))
         {
             delete guild;
@@ -817,7 +817,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     }
     else                                                    // or arena team
     {
-        ArenaTeam* at = new ArenaTeam;
+        auto  at = new ArenaTeam;
         if(!at->Create(_player->GetGUID(), type, name))
         {
             TC_LOG_ERROR("FIXME","PetitionsHandler: arena team create failed.");

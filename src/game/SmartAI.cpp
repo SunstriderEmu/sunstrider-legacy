@@ -250,11 +250,11 @@ void SmartAI::EndPath(bool fail, bool died)
             }
         }else
         {
-            for (ObjectList::iterator iter = targets->begin(); iter != targets->end(); ++iter)
+            for (auto & target : *targets)
             {
-                if (GetScript()->IsPlayer((*iter)))
+                if (GetScript()->IsPlayer(target))
                 {
-                    Player* player = (*iter)->ToPlayer();
+                    Player* player = target->ToPlayer();
                     if (!fail && player->IsAtGroupRewardDistance(me) && !player->GetCorpse())
                         player->AreaExploredOrEventHappens(mEscortQuestID);
                     if (fail && player->GetQuestStatus(mEscortQuestID) == QUEST_STATUS_INCOMPLETE)
@@ -412,11 +412,11 @@ bool SmartAI::IsEscortInvokerInRange()
             }
         }else
         {
-            for (ObjectList::iterator iter = targets->begin(); iter != targets->end(); ++iter)
+            for (auto & target : *targets)
             {
-                if (GetScript()->IsPlayer((*iter)))
+                if (GetScript()->IsPlayer(target))
                 {
-                    if (me->GetDistance((*iter)->ToPlayer()) <= SMART_ESCORT_MAX_PLAYER_DIST)
+                    if (me->GetDistance(target->ToPlayer()) <= SMART_ESCORT_MAX_PLAYER_DIST)
                         return true;
                 }
             }
@@ -449,7 +449,7 @@ void SmartAI::MovementInform(uint32 MovementType, uint32 Data)
 void SmartAI::RemoveAuras()
 {
     Unit::AuraMap& auras = me->GetAuras();
-    for(Unit::AuraMap::iterator itr = auras.begin(); itr != auras.end();)
+    for(auto itr = auras.begin(); itr != auras.end();)
     {
         if (!itr->second->IsPassive() && itr->second->GetCasterGUID() != me->GetGUID())
             me->RemoveAura(itr);

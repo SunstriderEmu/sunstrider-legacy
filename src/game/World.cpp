@@ -153,8 +153,8 @@ World::~World()
     }
 
     ///- Empty the WeatherMap
-    for (WeatherMap::iterator itr = m_weathers.begin(); itr != m_weathers.end(); ++itr)
-        delete itr->second;
+    for (auto & m_weather : m_weathers)
+        delete m_weather.second;
 
     CliCommandHolder* command = nullptr;
     while (cliCmdQueue.next(command))
@@ -203,7 +203,7 @@ void World::SetClosed(bool val)
 /// Find a session by its id
 WorldSession* World::FindSession(uint32 id) const
 {
-    SessionMap::const_iterator itr = m_sessions.find(id);
+    auto itr = m_sessions.find(id);
 
     if(itr != m_sessions.end())
         return itr->second;                                 // also can return NULL for kicked session
@@ -215,7 +215,7 @@ WorldSession* World::FindSession(uint32 id) const
 bool World::RemoveSession(uint32 id)
 {
     ///- Find the session, kick the user, but we can't delete session at this moment to prevent iterator invalidation
-    SessionMap::iterator itr = m_sessions.find(id);
+    auto itr = m_sessions.find(id);
 
     if(itr != m_sessions.end() && itr->second)
     {
@@ -304,7 +304,7 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
 
     if(uint32 tolerance = getConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
     {
-        for(DisconnectMap::iterator i = m_disconnects.begin(); i != m_disconnects.end(); ++i)
+        for(auto i = m_disconnects.begin(); i != m_disconnects.end(); ++i)
         {
             if(difftime(i->second, time(nullptr)) < tolerance)
             {
@@ -322,7 +322,7 @@ int32 World::GetQueuePos(WorldSession* sess)
 {
     uint32 position = 1;
 
-    for(Queue::iterator iter = m_QueuedPlayer.begin(); iter != m_QueuedPlayer.end(); ++iter, ++position)
+    for(auto iter = m_QueuedPlayer.begin(); iter != m_QueuedPlayer.end(); ++iter, ++position)
         if((*iter) == sess)
             return position;
 
@@ -344,7 +344,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
     uint32 sessions = GetActiveSessionCount();
 
     uint32 position = 1;
-    Queue::iterator iter = m_QueuedPlayer.begin();
+    auto iter = m_QueuedPlayer.begin();
 
     // search to remove and count skipped positions
     bool found = false;
@@ -391,7 +391,7 @@ bool World::RemoveQueuedPlayer(WorldSession* sess)
 /// Find a Weather object by the given zoneid
 Weather* World::FindWeather(uint32 id) const
 {
-    WeatherMap::const_iterator itr = m_weathers.find(id);
+    auto itr = m_weathers.find(id);
 
     if(itr != m_weathers.end())
         return itr->second;
@@ -403,7 +403,7 @@ Weather* World::FindWeather(uint32 id) const
 void World::RemoveWeather(uint32 id)
 {
     // not called at the moment. Kept for completeness
-    WeatherMap::iterator itr = m_weathers.find(id);
+    auto itr = m_weathers.find(id);
 
     if(itr != m_weathers.end())
     {
@@ -421,7 +421,7 @@ Weather* World::AddWeather(uint32 zone_id)
     if(!weatherChances)
         return nullptr;
 
-    Weather* w = new Weather(zone_id,weatherChances);
+    auto  w = new Weather(zone_id,weatherChances);
     m_weathers[w->GetZone()] = w;
     w->ReGenerate();
     w->UpdateWeather();
@@ -746,9 +746,9 @@ void World::LoadConfigSettings(bool reload)
     confGladiators.clear();
     std::string s_Gladiators = sConfigMgr->GetStringDefault("Arena.NewTitleDistribution.Gladiators", ""); //format : "<playerguid> <rank [1-3]>, <playerguid2> <rank>,..."
     Tokens gladtokens = StrSplit(s_Gladiators, ",");
-    for (int i = 0; i < gladtokens.size(); i++)
+    for (auto & gladtoken : gladtokens)
     {
-        Tokens subTokens = StrSplit(gladtokens[i], " ");
+        Tokens subTokens = StrSplit(gladtoken, " ");
         if(subTokens.size() != 2)
         {
             TC_LOG_ERROR("server.loading","ERROR in config file in Arena.NewTitleDistribution.Gladiators, skipped this entry.");
@@ -1139,7 +1139,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDuration", 0);
 
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
-    char * forbiddenMaps = new char[forbiddenmaps.length() + 1];
+    auto  forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;
     strncpy(forbiddenMaps, forbiddenmaps.c_str(), forbiddenmaps.length());
     const char * delim = ",";
@@ -1905,10 +1905,10 @@ void World::Update(time_t diff)
     }
 
     ///- Update the different timers
-    for(int i = 0; i < WUPDATE_COUNT; i++)
-        if(m_timers[i].GetCurrent()>=0)
-            m_timers[i].Update(diff);
-    else m_timers[i].SetCurrent(0);
+    for(auto & m_timer : m_timers)
+        if(m_timer.GetCurrent()>=0)
+            m_timer.Update(diff);
+    else m_timer.SetCurrent(0);
 
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
@@ -1952,7 +1952,7 @@ void World::Update(time_t diff)
         RecordTimeDiff("UpdateSessions");
 
         // Update groups
-        for (ObjectMgr::GroupSet::iterator itr = sObjectMgr->GetGroupSetBegin(); itr != sObjectMgr->GetGroupSetEnd(); ++itr)
+        for (auto itr = sObjectMgr->GetGroupSetBegin(); itr != sObjectMgr->GetGroupSetEnd(); ++itr)
             (*itr)->Update(diff);
         RecordTimeDiff("UpdateGroups");
     }
@@ -2036,10 +2036,10 @@ void World::Update(time_t diff)
         
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
             time_t curTime = time(nullptr);
-            for (std::map<uint32, AutoAnnounceMessage*>::iterator itr = autoAnnounces.begin(); itr != autoAnnounces.end(); itr++) {
-                if (itr->second->nextAnnounce <= curTime) {
-                    SendWorldText(LANG_AUTO_ANN, itr->second->message.c_str());
-                    itr->second->nextAnnounce += DAY;
+            for (auto & autoAnnounce : autoAnnounces) {
+                if (autoAnnounce.second->nextAnnounce <= curTime) {
+                    SendWorldText(LANG_AUTO_ANN, autoAnnounce.second->message.c_str());
+                    autoAnnounce.second->nextAnnounce += DAY;
                 }
             }
         }
@@ -2075,7 +2075,7 @@ void World::ForceGameEventUpdate()
 void World::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source, Object* target, bool start)
 {
     ///- Find the script map
-    ScriptMapMap::const_iterator s = scripts.find(id);
+    auto s = scripts.find(id);
     if (s == scripts.end())
         return;
 
@@ -2087,17 +2087,17 @@ void World::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source,
     ///- Schedule script execution for all scripts in the script map
     ScriptMap const *s2 = &(s->second);
     bool immedScript = false;
-    for (ScriptMap::const_iterator iter = s2->begin(); iter != s2->end(); ++iter)
+    for (const auto & iter : *s2)
     {
         ScriptAction sa;
         sa.sourceGUID = sourceGUID;
         sa.targetGUID = targetGUID;
         sa.ownerGUID  = ownerGUID;
 
-        sa.script = &iter->second;
+        sa.script = &iter.second;
         //TC_LOG_INFO("SCRIPT: Inserting script with source guid " UI64FMTD " target guid " UI64FMTD " owner guid " UI64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, id);
-        m_scriptSchedule.insert(std::pair<time_t, ScriptAction>(m_gameTime + iter->first, sa));
-        if (iter->first == 0)
+        m_scriptSchedule.insert(std::pair<time_t, ScriptAction>(m_gameTime + iter.first, sa));
+        if (iter.first == 0)
             immedScript = true;
     }
     ///- If one of the effects should be immediate, launch the script execution
@@ -2137,7 +2137,7 @@ void World::ScriptsProcess()
         return;
 
     ///- Process overdue queued scripts
-    std::multimap<time_t, ScriptAction>::iterator iter = m_scriptSchedule.begin();
+    auto iter = m_scriptSchedule.begin();
                                                             // ok as multimap is a *sorted* associative container
     while (!m_scriptSchedule.empty() && (iter->first <= m_gameTime))
     {
@@ -2928,12 +2928,12 @@ void World::SendWorldText(int32 string_id, ...)
 {
     std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
 
-    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+    for(auto & m_session : m_sessions)
     {
-        if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
+        if(!m_session.second || !m_session.second->GetPlayer() || !m_session.second->GetPlayer()->IsInWorld() )
             continue;
 
-        LocaleConstant loc_idx = itr->second->GetSessionDbcLocale();
+        LocaleConstant loc_idx = m_session.second->GetSessionDbcLocale();
         uint32 cache_idx = loc_idx+1;
 
         std::vector<WorldPacket*>* data_list;
@@ -2959,7 +2959,7 @@ void World::SendWorldText(int32 string_id, ...)
 
             while(char* line = ChatHandler::LineFromMessage(pos))
             {
-                WorldPacket* data = new WorldPacket();
+                auto  data = new WorldPacket();
                 ChatHandler::BuildChatPacket(*data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
                 data_list->push_back(data);
             }
@@ -2967,26 +2967,26 @@ void World::SendWorldText(int32 string_id, ...)
         else
             data_list = &data_cache[cache_idx];
 
-        for(int i = 0; i < data_list->size(); ++i)
-            itr->second->SendPacket((*data_list)[i]);
+        for(auto & i : *data_list)
+            m_session.second->SendPacket(i);
     }
 
     // free memory
-    for(int i = 0; i < data_cache.size(); ++i)
-        for(int j = 0; j < data_cache[i].size(); ++j)
-            delete data_cache[i][j];
+    for(auto & i : data_cache)
+        for(auto & j : i)
+            delete j;
 }
 
 void World::SendGMText(int32 string_id, ...)
 {
     std::vector<std::vector<WorldPacket*> > data_cache;     // 0 = default, i => i-1 locale index
 
-    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
+    for(auto & m_session : m_sessions)
     {
-        if(!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld() )
+        if(!m_session.second || !m_session.second->GetPlayer() || !m_session.second->GetPlayer()->IsInWorld() )
             continue;
 
-        LocaleConstant loc_idx = itr->second->GetSessionDbcLocale();
+        LocaleConstant loc_idx = m_session.second->GetSessionDbcLocale();
         uint32 cache_idx = loc_idx+1;
 
         std::vector<WorldPacket*>* data_list;
@@ -3012,7 +3012,7 @@ void World::SendGMText(int32 string_id, ...)
 
             while(char* line = ChatHandler::LineFromMessage(pos))
             {
-                WorldPacket* data = new WorldPacket();
+                auto  data = new WorldPacket();
                 ChatHandler::BuildChatPacket(*data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
                 data_list->push_back(data);
             }
@@ -3020,15 +3020,15 @@ void World::SendGMText(int32 string_id, ...)
         else
             data_list = &data_cache[cache_idx];
 
-        for(int i = 0; i < data_list->size(); ++i)
-            if(itr->second->GetSecurity() > SEC_PLAYER)
-            itr->second->SendPacket((*data_list)[i]);
+        for(auto & i : *data_list)
+            if(m_session.second->GetSecurity() > SEC_PLAYER)
+            m_session.second->SendPacket(i);
     }
 
     // free memory
-    for(int i = 0; i < data_cache.size(); ++i)
-        for(int j = 0; j < data_cache[i].size(); ++j)
-            delete data_cache[i][j];
+    for(auto & i : data_cache)
+        for(auto & j : i)
+            delete j;
 }
 
 /// Send a System Message to all players (except self if mentioned)
@@ -3081,17 +3081,17 @@ void World::KickAll()
     m_QueuedPlayer.clear();                                 // prevent send queue update packet and login queued sessions
 
     // session not removed at kick and will removed in next update tick
-    for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        itr->second->KickPlayer();
+    for (auto & m_session : m_sessions)
+        m_session.second->KickPlayer();
 }
 
 /// Kick (and save) all players with security level less `sec`
 void World::KickAllLess(AccountTypes sec)
 {
     // session not removed at kick and will removed in next update tick
-    for (SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-        if(itr->second->GetSecurity() < sec)
-            itr->second->KickPlayer();
+    for (auto & m_session : m_sessions)
+        if(m_session.second->GetSecurity() < sec)
+            m_session.second->KickPlayer();
 }
 
 /// Kick (and save) the designated player
@@ -3547,14 +3547,14 @@ void World::ResetDailyQuests()
     }
     
     CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus_daily");
-    for(SessionMap::iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr) {
-        if(itr->second->GetPlayer()) {
-            itr->second->GetPlayer()->ResetDailyQuestStatus();
+    for(auto & m_session : m_sessions) {
+        if(m_session.second->GetPlayer()) {
+            m_session.second->GetPlayer()->ResetDailyQuestStatus();
             if (reinitConsortium) {
-                itr->second->GetPlayer()->SetQuestStatus(9884, QUEST_STATUS_NONE);
-                itr->second->GetPlayer()->SetQuestStatus(9885, QUEST_STATUS_NONE);
-                itr->second->GetPlayer()->SetQuestStatus(9886, QUEST_STATUS_NONE);
-                itr->second->GetPlayer()->SetQuestStatus(9887, QUEST_STATUS_NONE);
+                m_session.second->GetPlayer()->SetQuestStatus(9884, QUEST_STATUS_NONE);
+                m_session.second->GetPlayer()->SetQuestStatus(9885, QUEST_STATUS_NONE);
+                m_session.second->GetPlayer()->SetQuestStatus(9886, QUEST_STATUS_NONE);
+                m_session.second->GetPlayer()->SetQuestStatus(9887, QUEST_STATUS_NONE);
             }
         }
     }
@@ -3799,8 +3799,8 @@ void World::UpdateMonitoring(uint32 diff)
     cnts << sMapMgr->GetNumPlayersInMap(580);
     
     int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
-    for (int i = 0; i < 14; i++)
-        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapIds[i], sMapMgr->GetNumPlayersInMap(mapIds[i]));
+    for (int & mapId : mapIds)
+        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapId, sMapMgr->GetNumPlayersInMap(mapId));
     // arenas
     trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", (uint32)now, arena_cnt); // Nagrand!
 
@@ -3858,9 +3858,9 @@ void World::UpdateMonitoring(uint32 diff)
     auto lock = HashMapHolder<Player>::GetLock();
     lock->lock();
     HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
-    for (HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr) {
-        racesCount[itr->second->GetRace()]++;
-        classesCount[itr->second->GetClass()]++;
+    for (auto & itr : m) {
+        racesCount[itr.second->GetRace()]++;
+        classesCount[itr.second->GetClass()]++;
     }
     lock->unlock();
     
@@ -3917,7 +3917,7 @@ void World::LoadAutoAnnounce()
     do {
         Field* fields = result->Fetch();
         
-        AutoAnnounceMessage* ann = new AutoAnnounceMessage;
+        auto  ann = new AutoAnnounceMessage;
         ann->message = fields[1].GetString();
         uint32 hour = fields[2].GetUInt32();
         uint32 mins = fields[3].GetUInt32();
@@ -3999,7 +3999,7 @@ void World::ProcessQueryCallbacks()
 {
     PreparedQueryResult result;
 
-    for (std::deque<std::future<PreparedQueryResult>>::iterator itr = m_realmCharCallbacks.begin(); itr != m_realmCharCallbacks.end(); )
+    for (auto itr = m_realmCharCallbacks.begin(); itr != m_realmCharCallbacks.end(); )
     {
         if ((*itr).wait_for(std::chrono::seconds(0)) != std::future_status::ready)
         {
@@ -4106,7 +4106,7 @@ void World::AddGlobalPlayerData(uint32 guid, uint32 accountId, std::string const
 
 void World::UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& name, uint8 level, uint8 gender, uint8 race, uint8 playerClass)
 {
-    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr == _globalPlayerDataStore.end())
         return;
 
@@ -4128,7 +4128,7 @@ void World::UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& n
 
 void World::UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add)
 {
-    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr == _globalPlayerDataStore.end())
         return;
 
@@ -4146,7 +4146,7 @@ void World::UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add)
 
 void World::UpdateGlobalPlayerGuild(uint32 guid, uint32 guildId)
 {
-    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr == _globalPlayerDataStore.end())
         return;
 
@@ -4154,7 +4154,7 @@ void World::UpdateGlobalPlayerGuild(uint32 guid, uint32 guildId)
 }
 void World::UpdateGlobalPlayerGroup(uint32 guid, uint32 groupId)
 {
-    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr == _globalPlayerDataStore.end())
         return;
 
@@ -4163,7 +4163,7 @@ void World::UpdateGlobalPlayerGroup(uint32 guid, uint32 groupId)
 
 void World::UpdateGlobalPlayerArenaTeam(uint32 guid, uint8 slot, uint32 arenaTeamId)
 {
-    GlobalPlayerDataMap::iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr == _globalPlayerDataStore.end())
         return;
 
@@ -4186,7 +4186,7 @@ void World::DeleteGlobalPlayerData(uint32 guid, std::string const& name)
 
 bool World::HasGlobalPlayerData(uint32 guid) const
 {
-    GlobalPlayerDataMap::const_iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr != _globalPlayerDataStore.end())
         return true;
     else
@@ -4195,7 +4195,7 @@ bool World::HasGlobalPlayerData(uint32 guid) const
 
 GlobalPlayerData const* World::GetGlobalPlayerData(uint32 guid) const
 {
-    GlobalPlayerDataMap::const_iterator itr = _globalPlayerDataStore.find(guid);
+    auto itr = _globalPlayerDataStore.find(guid);
     if (itr != _globalPlayerDataStore.end())
         return &itr->second;
     return nullptr;
@@ -4203,7 +4203,7 @@ GlobalPlayerData const* World::GetGlobalPlayerData(uint32 guid) const
 
 uint32 World::GetGlobalPlayerGUID(std::string const& name) const
 {
-    GlobalPlayerNameMap::const_iterator itr = _globalPlayerNameStore.find(name);
+    auto itr = _globalPlayerNameStore.find(name);
     if (itr != _globalPlayerNameStore.end())
         return itr->second;
     return 0;

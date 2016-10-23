@@ -168,7 +168,7 @@ void PetAI::UpdateAI(const uint32 diff)
                     continue;
             }
 
-            Spell *spell = new Spell(&i_pet, spellInfo, false, 0);
+            auto spell = new Spell(&i_pet, spellInfo, false, 0);
 
             if(inCombat && !i_pet.HasUnitState(UNIT_STATE_FOLLOW) && spell->CanAutoCast(i_pet.GetVictim()))
             {
@@ -179,9 +179,9 @@ void PetAI::UpdateAI(const uint32 diff)
             else
             {
                 bool spellUsed = false;
-                for(std::set<uint64>::iterator tar = m_AllySet.begin(); tar != m_AllySet.end(); ++tar)
+                for(unsigned long tar : m_AllySet)
                 {
-                    Unit* Target = ObjectAccessor::GetUnit(i_pet,*tar);
+                    Unit* Target = ObjectAccessor::GetUnit(i_pet,tar);
 
                     //only buff targets that are in combat, unless the spell can only be cast while out of combat
                     if(!Target)

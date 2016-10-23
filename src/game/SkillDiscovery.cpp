@@ -99,7 +99,7 @@ void LoadSkillDiscoveryTable()
                     continue;
                 }
 
-                for(SkillLineAbilityMap::const_iterator _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
+                for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
                 {
                     SkillDiscoveryStore[-int32(_spell_idx->second->skillId)].push_back( SkillDiscoveryEntry(spellId, chance) );
                 }
@@ -127,15 +127,15 @@ void LoadSkillDiscoveryTable()
 uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
 {
     // check spell case
-    SkillDiscoveryMap::iterator tab = SkillDiscoveryStore.find(spellId);
+    auto tab = SkillDiscoveryStore.find(spellId);
 
     if(tab != SkillDiscoveryStore.end())
     {
-        for(SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
+        for(auto & item_iter : tab->second)
         {
-            if( roll_chance_f(item_iter->chance * sWorld->GetRate(RATE_SKILL_DISCOVERY))
-                && !player->HasSpell(item_iter->spellId) )
-                return item_iter->spellId;
+            if( roll_chance_f(item_iter.chance * sWorld->GetRate(RATE_SKILL_DISCOVERY))
+                && !player->HasSpell(item_iter.spellId) )
+                return item_iter.spellId;
         }
 
         return 0;
@@ -145,11 +145,11 @@ uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
     tab = SkillDiscoveryStore.find(-(int32)skillId);
     if(tab != SkillDiscoveryStore.end())
     {
-        for(SkillDiscoveryList::iterator item_iter = tab->second.begin(); item_iter != tab->second.end(); ++item_iter)
+        for(auto & item_iter : tab->second)
         {
-            if( roll_chance_f(item_iter->chance * sWorld->GetRate(RATE_SKILL_DISCOVERY))
-                && !player->HasSpell(item_iter->spellId) )
-                return item_iter->spellId;
+            if( roll_chance_f(item_iter.chance * sWorld->GetRate(RATE_SKILL_DISCOVERY))
+                && !player->HasSpell(item_iter.spellId) )
+                return item_iter.spellId;
         }
 
         return 0;

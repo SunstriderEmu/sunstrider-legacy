@@ -216,10 +216,10 @@ Battleground::~Battleground()
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
     
-    for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team1LogInfo.begin(); itr != m_team1LogInfo.end(); itr++)
-        delete itr->second;
-    for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team2LogInfo.begin(); itr != m_team2LogInfo.end(); itr++)
-        delete itr->second;
+    for (auto & itr : m_team1LogInfo)
+        delete itr.second;
+    for (auto & itr : m_team2LogInfo)
+        delete itr.second;
 }
 
 void Battleground::Update(time_t diff)
@@ -235,10 +235,10 @@ void Battleground::Update(time_t diff)
 
     if(GetRemovedPlayersSize())
     {
-        for(std::map<uint64, uint8>::iterator itr = m_RemovedPlayers.begin(); itr != m_RemovedPlayers.end(); ++itr)
+        for(auto & m_RemovedPlayer : m_RemovedPlayers)
         {
-            Player *plr = sObjectMgr->GetPlayer(itr->first);
-            switch(itr->second)
+            Player *plr = sObjectMgr->GetPlayer(m_RemovedPlayer.first);
+            switch(m_RemovedPlayer.second)
             {
                 //following code is handled by event:
                 /*case 0:
@@ -252,12 +252,12 @@ void Battleground::Update(time_t diff)
                     break;*/
                 case 1:                                     // currently in bg and was removed from bg
                     if(plr)
-                        RemovePlayerAtLeave(itr->first, true, true);
+                        RemovePlayerAtLeave(m_RemovedPlayer.first, true, true);
                     else
-                        RemovePlayerAtLeave(itr->first, false, false);
+                        RemovePlayerAtLeave(m_RemovedPlayer.first, false, false);
                     break;
                 case 2:                                     // revive queue
-                    RemovePlayerFromResurrectQueue(itr->first);
+                    RemovePlayerFromResurrectQueue(m_RemovedPlayer.first);
                     break;
                 default:
                     TC_LOG_ERROR("bg.battleground","Battleground: Unknown remove player case!");
@@ -269,7 +269,7 @@ void Battleground::Update(time_t diff)
     // remove offline players from bg after MAX_OFFLINE_TIME
     if(GetPlayersSize())
     {
-        for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+        for(auto itr = m_Players.begin(); itr != m_Players.end(); ++itr)
         {
             Player *plr = sObjectMgr->GetPlayer(itr->first);
 
@@ -292,10 +292,10 @@ void Battleground::Update(time_t diff)
     {
         if(GetReviveQueueSize())
         {
-            for(std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+            for(auto & itr : m_ReviveQueue)
             {
                 Creature *sh = nullptr;
-                for(std::vector<uint64>::iterator itr2 = (itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
+                for(auto itr2 = (itr.second).begin(); itr2 != (itr.second).end(); ++itr2)
                 {
                     Player *plr = sObjectMgr->GetPlayer(*itr2);
                     if(!plr)
@@ -303,7 +303,7 @@ void Battleground::Update(time_t diff)
 
                     if (!sh)
                     {
-                        sh = ObjectAccessor::GetCreature(*plr, itr->first);
+                        sh = ObjectAccessor::GetCreature(*plr, itr.first);
                         // only for visual effect
                         if (sh)
                             sh->CastSpell(sh, SPELL_SPIRIT_HEAL, true);   // Spirit Heal, effect 117
@@ -312,7 +312,7 @@ void Battleground::Update(time_t diff)
                     plr->CastSpell(plr, SPELL_RESURRECTION_VISUAL, true);   // Resurrection visual
                     m_ResurrectQueue.push_back(*itr2);
                 }
-                (itr->second).clear();
+                (itr.second).clear();
             }
 
             m_ReviveQueue.clear();
@@ -324,14 +324,14 @@ void Battleground::Update(time_t diff)
     }
     else if (m_LastResurrectTime > 500)    // Resurrect players only half a second later, to see spirit heal effect on NPC
     {
-        for(std::vector<uint64>::iterator itr = m_ResurrectQueue.begin(); itr != m_ResurrectQueue.end(); ++itr)
+        for(unsigned long & itr : m_ResurrectQueue)
         {
-            Player *plr = sObjectMgr->GetPlayer(*itr);
+            Player *plr = sObjectMgr->GetPlayer(itr);
             if(!plr)
                 continue;
             plr->ResurrectPlayer(1.0f);
             plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
-            sObjectAccessor->ConvertCorpseForPlayer(*itr);
+            sObjectAccessor->ConvertCorpseForPlayer(itr);
         }
         m_ResurrectQueue.clear();
     }
@@ -369,14 +369,14 @@ void Battleground::Update(time_t diff)
         m_RemovalTime += diff;
         if(m_RemovalTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
         {
-            for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+            for(auto & m_Player : m_Players)
             {
-                m_RemovedPlayers[itr->first] = 1;           // add to remove list (BG)
+                m_RemovedPlayers[m_Player.first] = 1;           // add to remove list (BG)
             }
 
-            for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+            for (unsigned long m_Spectator : m_Spectators)
             {
-                m_RemovedPlayers[*itr] = 1;
+                m_RemovedPlayers[m_Spectator] = 1;
             }
             // do not change any battleground's private variables
         }
@@ -398,9 +398,9 @@ void Battleground::SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, flo
 
 void Battleground::SendPacketToAll(WorldPacket *packet)
 {
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
         if(plr)
             plr->SendDirectMessage(packet);
     }
@@ -408,9 +408,9 @@ void Battleground::SendPacketToAll(WorldPacket *packet)
 
 void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender, bool self)
 {
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if (!plr)
             continue;
@@ -418,7 +418,7 @@ void Battleground::SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *
         if(!self && sender == plr)
             continue;
 
-        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        uint32 team = m_Player.second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
@@ -437,14 +437,14 @@ void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 {
     WorldPacket data;
 
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if (!plr)
             continue;
 
-        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        uint32 team = m_Player.second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
@@ -457,14 +457,14 @@ void Battleground::PlaySoundToTeam(uint32 SoundID, uint32 TeamID)
 
 void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 {
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if (!plr)
             continue;
 
-        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        uint32 team = m_Player.second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
@@ -474,14 +474,14 @@ void Battleground::CastSpellOnTeam(uint32 SpellID, uint32 TeamID)
 
 void Battleground::RewardHonorToTeam(uint32 Honor, uint32 TeamID)
 {
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if(!plr)
             continue;
 
-        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        uint32 team = m_Player.second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
@@ -496,14 +496,14 @@ void Battleground::RewardReputationToTeam(uint32 faction_id, uint32 Reputation, 
     if(!factionEntry)
         return;
 
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
         if(!plr)
             continue;
 
-        uint32 team = itr->second.Team;//GetPlayerTeam(plr->GetGUID());
+        uint32 team = m_Player.second.Team;//GetPlayerTeam(plr->GetGUID());
         if(!team) team = plr->GetTeam();
 
         if(team == TeamID)
@@ -621,13 +621,13 @@ void Battleground::EndBattleground(uint32 winner)
             final_winner_rating = winner_arena_team->GetStats().rating;
 
             TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_TEAM_ALLIANCE], m_ArenaTeamIds[BG_TEAM_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
-            for (BattlegroundScoreMap::const_iterator itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
+            for (auto itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
                 if (Player* player = sObjectMgr->GetPlayer(itr->first)) {
                     TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     //LogsDatabase.PExecute("INSERT INTO arena_match_player (match_id, player_guid, player_name, team, ip, heal, damage, killing_blows) VALUES (%u, " UI64FMTD ", '%s', %u, '%s', %u, %u, %u)", matchId, itr->first, player->GetName(), player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
                     uint32 team = GetPlayerTeam(itr->first);
                     if (team == TEAM_ALLIANCE) {
-                        std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team1LogInfo.find(itr->first);
+                        auto itr2 = m_team1LogInfo.find(itr->first);
                         if (itr2 != m_team1LogInfo.end()) {
                             itr2->second->damage = itr->second->DamageDone;
                             itr2->second->heal = itr->second->HealingDone;
@@ -635,7 +635,7 @@ void Battleground::EndBattleground(uint32 winner)
                         }
                     }
                     else {
-                        std::map<uint64, PlayerLogInfo*>::iterator itr2 = m_team2LogInfo.find(itr->first);
+                        auto itr2 = m_team2LogInfo.find(itr->first);
                         if (itr2 != m_team2LogInfo.end()) {
                             itr2->second->damage = itr->second->DamageDone;
                             itr2->second->heal = itr->second->HealingDone;
@@ -658,13 +658,13 @@ void Battleground::EndBattleground(uint32 winner)
             ss << "team2_member5, team2_member5_ip, team2_member5_heal, team2_member5_damage, team2_member5_kills, ";
             ss << "start_time, end_time, winner, rating_change, winner_rating, loser_rating, team1_name, team2_name) VALUES (";
             ss << uint32(m_ArenaType) << ", " << m_ArenaTeamIds[BG_TEAM_ALLIANCE] << ", ";
-            for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team1LogInfo.begin(); itr != m_team1LogInfo.end(); itr++)
-                ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
+            for (auto & itr : m_team1LogInfo)
+                ss << itr.second->guid << ", '" << itr.second->ip.c_str() << "', " << itr.second->heal << ", " << itr.second->damage << ", " << uint32(itr.second->kills) << ", ";
             for (uint8 i = 0; i < (5 - m_team1LogInfo.size()); i++)
                 ss << "0, '', 0, 0, 0, ";
             ss << m_ArenaTeamIds[BG_TEAM_HORDE] << ", ";
-            for (std::map<uint64, PlayerLogInfo*>::iterator itr = m_team2LogInfo.begin(); itr != m_team2LogInfo.end(); itr++)
-                ss << itr->second->guid << ", '" << itr->second->ip.c_str() << "', " << itr->second->heal << ", " << itr->second->damage << ", " << uint32(itr->second->kills) << ", ";
+            for (auto & itr : m_team2LogInfo)
+                ss << itr.second->guid << ", '" << itr.second->ip.c_str() << "', " << itr.second->heal << ", " << itr.second->damage << ", " << uint32(itr.second->kills) << ", ";
             for (uint8 i = 0; i < (5 - m_team2LogInfo.size()); i++)
                 ss << "0, '', 0, 0, 0, ";
             ss << GetStartTimestamp() << ", " << time(nullptr) << ", " << winner_arena_team->GetId() << ", " << winner_change << ", ";
@@ -690,9 +690,9 @@ void Battleground::EndBattleground(uint32 winner)
             almost_winning_team = TEAM_ALLIANCE;
     }
 
-    for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(auto & m_Player : m_Players)
     {
-        Player *plr = sObjectMgr->GetPlayer(itr->first);
+        Player *plr = sObjectMgr->GetPlayer(m_Player.first);
         if(!plr)
             continue;
 
@@ -706,7 +706,7 @@ void Battleground::EndBattleground(uint32 winner)
             plr->SpawnCorpseBones();
         }
 
-        uint32 team = itr->second.Team;
+        uint32 team = m_Player.second.Team;
         if(!team) team = plr->GetTeam();
 
         // per player calculation
@@ -755,9 +755,9 @@ void Battleground::EndBattleground(uint32 winner)
         plr->SendDirectMessage(&data);
     }
 
-    for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+    for (unsigned long m_Spectator : m_Spectators)
     {
-        Player *plr = sObjectMgr->GetPlayer(*itr);
+        Player *plr = sObjectMgr->GetPlayer(m_Spectator);
         if(!plr)
             continue;
 
@@ -896,7 +896,7 @@ void Battleground::RewardMark(Player *plr,uint32 count)
    
     // Give less marks if the player has been disconnected during the battleground
     if (count == 3) { // Winner
-        std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.find(plr->GetGUIDLow());
+        auto itr = m_Players.find(plr->GetGUIDLow());
         if (itr != m_Players.end()) {
             float ratio = itr->second.ElapsedTimeDisconnected / (float) MAX_OFFLINE_TIME * 100.f;
             if (ratio <= 33.3f)
@@ -907,7 +907,7 @@ void Battleground::RewardMark(Player *plr,uint32 count)
                 count = 1;
         }
     } else if (count == 1) { // Loser
-        std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.find(plr->GetGUIDLow());
+        auto itr = m_Players.find(plr->GetGUIDLow());
         if (itr != m_Players.end()) {
             float ratio = itr->second.ElapsedTimeDisconnected / (float) MAX_OFFLINE_TIME * 100.f;
             if (ratio <= 50.0f)
@@ -1046,7 +1046,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
     uint32 team = GetPlayerTeam(guid);
     bool participant = false;
     // Remove from lists/maps
-    std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.find(guid);
+    auto itr = m_Players.find(guid);
     if(itr != m_Players.end())
     {
         UpdatePlayersCountByTeam(team, true);   // -1 player
@@ -1055,11 +1055,11 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
         participant = true;
     }
 
-    std::map<uint64, BattlegroundScore*>::iterator itr2 = m_PlayerScores.find(guid);
+    auto itr2 = m_PlayerScores.find(guid);
     if(itr2 != m_PlayerScores.end())
     {
         if (team == TEAM_ALLIANCE) {
-            std::map<uint64, PlayerLogInfo*>::iterator itr3 = m_team1LogInfo.find(itr2->first);
+            auto itr3 = m_team1LogInfo.find(itr2->first);
             if (itr3 != m_team1LogInfo.end()) {
                 itr3->second->damage = itr2->second->DamageDone;
                 itr3->second->heal = itr2->second->HealingDone;
@@ -1067,7 +1067,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
             }
         }
         else {
-            std::map<uint64, PlayerLogInfo*>::iterator itr3 = m_team2LogInfo.find(itr2->first);
+            auto itr3 = m_team2LogInfo.find(itr2->first);
             if (itr3 != m_team2LogInfo.end()) {
                 itr3->second->damage = itr2->second->DamageDone;
                 itr3->second->heal = itr2->second->HealingDone;
@@ -1115,7 +1115,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 // summon old pet if there was one and there isn't a current pet
                 if(!plr->GetPet() && plr->GetTemporaryUnsummonedPetNumber())
                 {
-                    Pet* NewPet = new Pet;
+                    auto  NewPet = new Pet;
                     if(!NewPet->LoadPetFromDB(plr, 0, plr->GetTemporaryUnsummonedPetNumber(), true))
                         delete NewPet;
 
@@ -1335,7 +1335,7 @@ void Battleground::RemoveFromBGFreeSlotQueue()
     // set to be able to re-add if needed
     m_InBGFreeSlotQueue = false;
     // uncomment this code when battlegrounds will work like instances
-    for (std::deque<Battleground*>::iterator itr = sBattlegroundMgr->BGFreeSlotQueue[m_TypeID].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[m_TypeID].end(); ++itr)
+    for (auto itr = sBattlegroundMgr->BGFreeSlotQueue[m_TypeID].begin(); itr != sBattlegroundMgr->BGFreeSlotQueue[m_TypeID].end(); ++itr)
     {
         if ((*itr)->GetInstanceID() == m_InstanceID)
         {
@@ -1414,7 +1414,7 @@ bool Battleground::HasFreeSlots() const
 void Battleground::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
 {
     //this procedure is called from virtual function implemented in bg subclass
-    std::map<uint64, BattlegroundScore*>::iterator itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = m_PlayerScores.find(Source->GetGUID());
 
     if(itr == m_PlayerScores.end())                         // player not found...
         return;
@@ -1477,13 +1477,13 @@ void Battleground::AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid
 
 void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
 {
-    for(std::map<uint64, std::vector<uint64> >::iterator itr = m_ReviveQueue.begin(); itr != m_ReviveQueue.end(); ++itr)
+    for(auto & itr : m_ReviveQueue)
     {
-        for(std::vector<uint64>::iterator itr2 =(itr->second).begin(); itr2 != (itr->second).end(); ++itr2)
+        for(auto itr2 =(itr.second).begin(); itr2 != (itr.second).end(); ++itr2)
         {
             if(*itr2 == player_guid)
             {
-                (itr->second).erase(itr2);
+                (itr.second).erase(itr2);
 
                 Player *plr = sObjectMgr->GetPlayer(player_guid);
                 if(!plr)
@@ -1613,7 +1613,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
     if(!map)
         return nullptr;
 
-    Creature* pCreature = new Creature;
+    auto  pCreature = new Creature;
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), map, entry))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
@@ -1793,9 +1793,9 @@ void Battleground::HandleKillPlayer( Player *player, Player *killer )
         UpdatePlayerScore(killer, SCORE_HONORABLE_KILLS, 1);
         UpdatePlayerScore(killer, SCORE_KILLING_BLOWS, 1);
 
-        for(std::map<uint64, BattlegroundPlayer>::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+        for(auto & m_Player : m_Players)
         {
-            Player *plr = sObjectMgr->GetPlayer(itr->first);
+            Player *plr = sObjectMgr->GetPlayer(m_Player.first);
 
             if(!plr || plr == killer)
                 continue;
@@ -1852,11 +1852,11 @@ void Battleground::PlayerRelogin(uint64 guid)
 uint32 Battleground::GetAlivePlayersCountByTeam(uint32 Team) const
 {
     int count = 0;
-    for(std::map<uint64, BattlegroundPlayer>::const_iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
+    for(const auto & m_Player : m_Players)
     {
-        if(itr->second.Team == Team)
+        if(m_Player.second.Team == Team)
         {
-            Player * pl = sObjectMgr->GetPlayer(itr->first);
+            Player * pl = sObjectMgr->GetPlayer(m_Player.first);
             if(pl && pl->IsAlive())
                 ++count;
         }
@@ -1919,7 +1919,7 @@ void Battleground::EventPlayerLoggedOut(Player* player)
 
 void Battleground::PlayerInvitedInRatedArena(Player* player, uint32 team)
 {
-    PlayerLogInfo* logInfo = new PlayerLogInfo;
+    auto  logInfo = new PlayerLogInfo;
     logInfo->guid = player->GetGUIDLow();
     logInfo->ip = player->GetSession()->GetRemoteAddress();
     logInfo->heal = 0;
@@ -1937,15 +1937,15 @@ void Battleground::SendSpectateAddonsMsg(SpectatorAddonMsg msg)
     if (!HaveSpectators())
         return;
 
-    for (SpectatorList::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
-        msg.SendPacket(*itr);
+    for (unsigned long m_Spectator : m_Spectators)
+        msg.SendPacket(m_Spectator);
 }
 
 bool Battleground::isSpectator(uint64 guid)
 {
-    for(std::set<uint64>::iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+    for(unsigned long m_Spectator : m_Spectators)
     {
-        if (guid == *itr)
+        if (guid == m_Spectator)
             return true;
     }
 

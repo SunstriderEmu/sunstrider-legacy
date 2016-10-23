@@ -833,7 +833,7 @@ PlayerAI::TargetedSpell PlayerAI::VerifySpellCast(uint32 spellId, Unit* target)
     //TC if (me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
         return {};
 
-    Spell* spell = new Spell(me, spellInfo, false);
+    auto  spell = new Spell(me, spellInfo, false);
     if (spell->CanAutoCast(target))
         return{ spell, target };
 
@@ -1584,8 +1584,8 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
     if (charmer->IsInEvadeMode())
     {
         Player::AuraEffectList const& auras = me->GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
-        for (Player::AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
-            if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
+        for (auto aura : auras)
+            if (aura->GetCasterGUID() == charmer->GetGUID() && aura->GetBase()->IsPermanent())
             {
                 me->KillSelf();
                 return;

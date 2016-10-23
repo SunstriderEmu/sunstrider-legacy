@@ -40,8 +40,8 @@ AuctionHouseMgr::AuctionHouseMgr()
 
 AuctionHouseMgr::~AuctionHouseMgr()
 {
-    for(ItemMap::iterator itr = mAitems.begin(); itr != mAitems.end(); ++itr)
-        delete itr->second;
+    for(auto & mAitem : mAitems)
+        delete mAitem.second;
 }
 
 AuctionHouseObject * AuctionHouseMgr::GetAuctionsMap( uint32 factionTemplateId )
@@ -416,7 +416,7 @@ void AuctionHouseMgr::AddAItem( Item* it )
 
 bool AuctionHouseMgr::RemoveAItem( uint32 id )
 {
-    ItemMap::iterator i = mAitems.find(id);
+    auto i = mAitems.find(id);
     if (i == mAitems.end())
     {
         return false;
@@ -485,7 +485,7 @@ void AuctionHouseObject::Update()
     ///- Handle expired auctions
     AuctionEntryMap::iterator next;
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
+    for (auto itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
     {
         next = itr;
         ++next;
@@ -520,7 +520,7 @@ void AuctionHouseObject::Update()
 void AuctionHouseObject::RemoveAllAuctionsOf(SQLTransaction& trans, uint32 ownerGUID)
 {
     AuctionEntryMap::iterator next;
-    for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
+    for (auto itr = AuctionsMap.begin(); itr != AuctionsMap.end();itr = next)
     {
         next = itr;
         ++next;

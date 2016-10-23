@@ -49,7 +49,7 @@ void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member, 
     if(!map)
         return;
 
-    CreatureGroupHolderType::iterator itr = map->CreatureGroupHolder.find(groupId);
+    auto itr = map->CreatureGroupHolder.find(groupId);
 
     //Add member to an existing group
     if(itr != map->CreatureGroupHolder.end())
@@ -57,7 +57,7 @@ void CreatureGroupManager::AddCreatureToGroup(uint32 groupId, Creature *member, 
     //Create new group
     else
     {
-        CreatureGroup* group = new CreatureGroup(groupId);
+        auto  group = new CreatureGroup(groupId);
         map->CreatureGroupHolder[groupId] = group;
         group->AddMember(member, pos); //this will add creature as leader
     }
@@ -69,7 +69,7 @@ void CreatureGroupManager::RemoveCreatureFromGroup(uint32 groupId, Creature *mem
     if (!map)
         return;
 
-    CreatureGroupHolderType::iterator itr = map->CreatureGroupHolder.find(groupId);
+    auto itr = map->CreatureGroupHolder.find(groupId);
     if (itr == map->CreatureGroupHolder.end())
         return;
 
@@ -269,7 +269,7 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
     uint32 memberGUID = CreatureGroupManager::GetCreatureGUIDForStore(member);
 
     CreatureGroupInfoType const& groupMap = sCreatureGroupMgr->GetGroupMap();
-    CreatureGroupInfoType::const_iterator fInfo = groupMap.find(memberGUID);
+    auto fInfo = groupMap.find(memberGUID);
     if (fInfo == groupMap.end() || !fInfo->second)
         return;
 
@@ -280,20 +280,20 @@ void CreatureGroup::MemberAttackStart(Creature *member, Unit *target)
     if (groupAI == GROUP_AI_LEADER_SUPPORT && member != m_leader)
         return;
 
-    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    for(auto & m_member : m_members)
     {
         //Skip one check
-        if(!itr->first || itr->first == member)
+        if(!m_member.first || m_member.first == member)
             continue;
 
-        if(!itr->first->IsAlive())
+        if(!m_member.first->IsAlive())
             continue;
 
-        if(itr->first->GetVictim())
+        if(m_member.first->GetVictim())
             continue;
 
-        if(itr->first->CanAttack(target) == CAN_ATTACK_RESULT_OK) {
-            itr->first->AI()->AttackStart(target);
+        if(m_member.first->CanAttack(target) == CAN_ATTACK_RESULT_OK) {
+            m_member.first->AI()->AttackStart(target);
         }
     }
 }
@@ -303,14 +303,14 @@ void CreatureGroup::FormationReset(bool dismiss)
     if (m_members.size() && m_members.begin()->second->groupAI == GROUP_AI_NONE)
         return;
 
-    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    for(auto & m_member : m_members)
     {
-        if(itr->first != m_leader && itr->first->IsAlive())
+        if(m_member.first != m_leader && m_member.first->IsAlive())
         {
             if(dismiss)
-                itr->first->GetMotionMaster()->Initialize();
+                m_member.first->GetMotionMaster()->Initialize();
             else
-                itr->first->GetMotionMaster()->MoveIdle();
+                m_member.first->GetMotionMaster()->MoveIdle();
         }
     }
     m_Formed = !dismiss;
@@ -363,9 +363,9 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
     float pathDist = m_leader->GetExactDist(x, y, z);
     float pathAngle = m_leader->GetAngle(x, y);
 
-    for(CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
+    for(auto & m_member : m_members)
     {
-        Creature *member = itr->first;
+        Creature *member = m_member.first;
         if(member == m_leader || !member->IsAlive() || member->GetVictim())
             continue;
 
@@ -380,10 +380,10 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
             // pussywizard: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
             // pussywizard: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
             // if (m_leader->GetCurrentWaypointID()+1 == itr->second->point_1 || m_leader->GetCurrentWaypointID()+1 == itr->second->point_2)
-            itr->second->follow_angle = Position::NormalizeOrientation(itr->second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
+            m_member.second->follow_angle = Position::NormalizeOrientation(m_member.second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
         }
 
-        Position memberDest = CalculateMemberDestination(member, Position(x, y, z), itr->second->follow_angle, itr->second->follow_dist, pathAngle);
+        Position memberDest = CalculateMemberDestination(member, Position(x, y, z), m_member.second->follow_angle, m_member.second->follow_dist, pathAngle);
 
         member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
         // pussywizard: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
@@ -477,7 +477,7 @@ void CreatureGroup::SetLootable(bool lootable)
 
 bool CreatureGroup::isLootLinked(Creature* c)
 {
-    CreatureGroupMemberType::iterator itr = m_members.find(c);
+    auto itr = m_members.find(c);
     if(itr != m_members.end())
     {
         return itr->second->linkedLoot;

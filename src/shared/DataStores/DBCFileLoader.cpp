@@ -23,7 +23,7 @@
 #include "DBCFileLoader.h"
 #include "Errors.h"
 
-DBCFileLoader::DBCFileLoader() : recordSize(0), recordCount(0), fieldCount(0), stringSize(0), fieldsOffset(NULL), data(NULL), stringTable(NULL) { }
+DBCFileLoader::DBCFileLoader() : recordSize(0), recordCount(0), fieldCount(0), stringSize(0), fieldsOffset(nullptr), data(nullptr), stringTable(nullptr) { }
 
 bool DBCFileLoader::Load(const char* filename, const char* fmt)
 {
@@ -31,7 +31,7 @@ bool DBCFileLoader::Load(const char* filename, const char* fmt)
     if (data)
     {
         delete [] data;
-        data = NULL;
+        data = nullptr;
     }
 
     FILE* f = fopen(filename, "rb");
@@ -185,7 +185,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
 
     typedef char* ptr;
     if (strlen(format) != fieldCount)
-        return NULL;
+        return nullptr;
 
     //get struct size and index pos
     int32 i;
@@ -217,7 +217,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
         indexTable = new ptr[recordCount + sqlRecordCount];
     }
 
-    char* dataTable = new char[(recordCount + sqlRecordCount) * recordsize];
+    auto  dataTable = new char[(recordCount + sqlRecordCount) * recordsize];
 
     uint32 offset = 0;
 
@@ -246,7 +246,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
                     offset += sizeof(uint8);
                     break;
                 case FT_STRING:
-                    *((char**)(&dataTable[offset])) = NULL;   // will replace non-empty or "" strings in AutoProduceStrings
+                    *((char**)(&dataTable[offset])) = nullptr;   // will replace non-empty or "" strings in AutoProduceStrings
                     offset += sizeof(char*);
                     break;
                 case FT_LOGIC:
@@ -271,9 +271,9 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
 char* DBCFileLoader::AutoProduceStrings(const char* format, char* dataTable)
 {
     if (strlen(format) != fieldCount)
-        return NULL;
+        return nullptr;
 
-    char* stringPool = new char[stringSize];
+    auto  stringPool = new char[stringSize];
     memcpy(stringPool, stringTable, stringSize);
 
     uint32 offset = 0;

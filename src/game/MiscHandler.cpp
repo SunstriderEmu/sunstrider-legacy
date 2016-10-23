@@ -240,54 +240,54 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
 
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for(auto & itr : m)
     {
         if (security == SEC_PLAYER)
         {
             // player can see member of other team only if CONFIG_ALLOW_TWO_SIDE_WHO_LIST
-            if (itr->second->GetTeam() != team && !allowTwoSideWhoList )
+            if (itr.second->GetTeam() != team && !allowTwoSideWhoList )
                 continue;
 
             // player can see MODERATOR, GAME MASTER, ADMINISTRATOR only if CONFIG_GM_IN_WHO_LIST
-            if ((itr->second->GetSession()->GetSecurity() > gmLevelInWhoList))
+            if ((itr.second->GetSession()->GetSecurity() > gmLevelInWhoList))
                 continue;
         }
 
         // check if target is globally visible for player
-        if (!(itr->second->IsVisibleGloballyFor(_player)))
+        if (!(itr.second->IsVisibleGloballyFor(_player)))
             continue;
 
         // check if target's level is in level range
-        uint32 lvl = itr->second->GetLevel();
+        uint32 lvl = itr.second->GetLevel();
         if (lvl < level_min || lvl > level_max)
             continue;
 
         // check if class matches classmask
-        uint32 class_ = itr->second->GetClass();
+        uint32 class_ = itr.second->GetClass();
         if (!(classmask & (1 << class_)))
             continue;
 
         // check if race matches racemask
-        uint32 race = itr->second->GetRace();
+        uint32 race = itr.second->GetRace();
         if (!(racemask & (1 << race)))
             continue;
 
-        uint32 pzoneid = itr->second->GetZoneId();
+        uint32 pzoneid = itr.second->GetZoneId();
         //do not show players in arenas
         if(pzoneid == 3698 || pzoneid == 3968 || pzoneid == 3702)
         {
-            uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
+            uint32 mapId = itr.second->GetBattlegroundEntryPointMap();
             Map * map = sMapMgr->FindBaseNonInstanceMap(mapId);
             if(map) 
             {
-                float x = itr->second->GetBattlegroundEntryPointX();
-                float y = itr->second->GetBattlegroundEntryPointY();
-                float z = itr->second->GetBattlegroundEntryPointZ();
+                float x = itr.second->GetBattlegroundEntryPointX();
+                float y = itr.second->GetBattlegroundEntryPointY();
+                float z = itr.second->GetBattlegroundEntryPointZ();
                 pzoneid = map->GetZoneId(x,y,z);
             }
         }
         
-        uint8 gender = itr->second->GetGender();
+        uint8 gender = itr.second->GetGender();
 
         bool z_show = true;
         for(uint32 i = 0; i < zones_count; i++)
@@ -303,7 +303,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         if (!z_show)
             continue;
 
-        std::string pname = itr->second->GetName();
+        std::string pname = itr.second->GetName();
         std::wstring wpname;
         if(!Utf8toWStr(pname,wpname))
             continue;
@@ -312,7 +312,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
         if (!(wplayer_name.empty() || wpname.find(wplayer_name) != std::wstring::npos))
             continue;
 
-        std::string gname = sObjectMgr->GetGuildNameById(itr->second->GetGuildId());
+        std::string gname = sObjectMgr->GetGuildNameById(itr.second->GetGuildId());
         std::wstring wgname;
         if(!Utf8toWStr(gname,wgname))
             continue;
@@ -322,7 +322,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
             continue;
 
         std::string aname;
-        if(AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(itr->second->GetAreaId()))
+        if(AreaTableEntry const* areaEntry = sAreaTableStore.LookupEntry(itr.second->GetAreaId()))
             aname = areaEntry->area_name[GetSessionDbcLocale()];
 
         bool s_show = true;

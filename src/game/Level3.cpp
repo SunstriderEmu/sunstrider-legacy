@@ -2149,9 +2149,9 @@ bool ChatHandler::HandleAddItemSetCommand(const char* args)
     bool found = false;
 
     ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+    for (const auto & it : *its)
     {
-        ItemTemplate const *pProto = &(itr->second);
+        ItemTemplate const *pProto = &(it.second);
         if (!pProto)
             continue;
 
@@ -2686,10 +2686,10 @@ bool ChatHandler::HandleLookupItemCommand(const char* args)
 
     // Search in `item_template`
     ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+    for (const auto & it : *its)
     {
-        uint32 id = itr->first;
-        ItemTemplate const *pProto = &(itr->second);
+        uint32 id = it.first;
+        ItemTemplate const *pProto = &(it.second);
         if(!pProto)
             continue;
 
@@ -2977,9 +2977,9 @@ bool ChatHandler::HandleLookupQuestCommand(const char* args)
     uint32 counter = 0 ;
 
     ObjectMgr::QuestMap const& qTemplates = sObjectMgr->GetQuestTemplates();
-    for (ObjectMgr::QuestMap::const_iterator iter = qTemplates.begin(); iter != qTemplates.end(); ++iter)
+    for (const auto & qTemplate : qTemplates)
     {
-        Quest * qinfo = iter->second;
+        Quest * qinfo = qTemplate.second;
 
         LocaleConstant loc_idx = GetSessionDbcLocale();
         if ( loc_idx >= 0 )
@@ -3088,10 +3088,10 @@ bool ChatHandler::HandleLookupCreatureCommand(const char* args)
     uint32 counter = 0;
 
     CreatureTemplateContainer const* ctc = sObjectMgr->GetCreatureTemplates();
-    for (CreatureTemplateContainer::const_iterator itr = ctc->begin(); itr != ctc->end(); ++itr)
+    for (const auto & itr : *ctc)
     {
-        uint32 id = itr->second.Entry;
-        CreatureTemplate const* cInfo = &(itr->second);
+        uint32 id = itr.second.Entry;
+        CreatureTemplate const* cInfo = &(itr.second);
         if(!cInfo)
             continue;
 
@@ -3155,10 +3155,10 @@ bool ChatHandler::HandleLookupObjectCommand(const char* args)
     
     
     GameObjectTemplateContainer const* gotc = sObjectMgr->GetGameObjectTemplateStore();
-    for (GameObjectTemplateContainer::const_iterator itr = gotc->begin(); itr != gotc->end(); ++itr)
+    for (const auto & itr : *gotc)
     {
-        uint32 id = itr->first;
-        GameObjectTemplate const* gInfo = &(itr->second);
+        uint32 id = itr.first;
+        GameObjectTemplate const* gInfo = &(itr.second);
         if(!gInfo)
             continue;
 
@@ -3247,7 +3247,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
         return true;
     }
 
-    Guild *guild = new Guild;
+    auto guild = new Guild;
     if (!guild->create (player->GetGUID (),guildname))
     {
         delete guild;
@@ -4716,7 +4716,7 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
 
     Unit::AuraMap const& uAuras = unit->GetAuras();
     PSendSysMessage(LANG_COMMAND_TARGET_LISTAURAS, uAuras.size());
-    for (Unit::AuraMap::const_iterator itr = uAuras.begin(); itr != uAuras.end(); ++itr)
+    for (auto itr = uAuras.begin(); itr != uAuras.end(); ++itr)
     {
         bool talent = GetTalentSpellCost(itr->second->GetId()) > 0;
         PSendSysMessage(LANG_COMMAND_TARGET_AURADETAIL, itr->second->GetId(), itr->second->GetEffIndex(),
@@ -4730,12 +4730,12 @@ bool ChatHandler::HandleListAurasCommand (const char * /*args*/)
         Unit::AuraList const& uAuraList = unit->GetAurasByType(AuraType(i));
         if (uAuraList.empty()) continue;
         PSendSysMessage(LANG_COMMAND_TARGET_LISTAURATYPE, uAuraList.size(), i);
-        for (Unit::AuraList::const_iterator itr = uAuraList.begin(); itr != uAuraList.end(); ++itr)
+        for (auto itr : uAuraList)
         {
-            bool talent = GetTalentSpellCost((*itr)->GetId()) > 0;
-            PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, (*itr)->GetId(), (*itr)->GetEffIndex(),
-                (*itr)->GetSpellInfo()->SpellName[GetSessionDbcLocale()],((*itr)->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
-                IS_PLAYER_GUID((*itr)->GetCasterGUID()) ? "player" : "creature",GUID_LOPART((*itr)->GetCasterGUID()));
+            bool talent = GetTalentSpellCost(itr->GetId()) > 0;
+            PSendSysMessage(LANG_COMMAND_TARGET_AURASIMPLE, itr->GetId(), itr->GetEffIndex(),
+                itr->GetSpellInfo()->SpellName[GetSessionDbcLocale()],(itr->IsPassive() ? passiveStr : ""),(talent ? talentStr : ""),
+                IS_PLAYER_GUID(itr->GetCasterGUID()) ? "player" : "creature",GUID_LOPART(itr->GetCasterGUID()));
         }
     }
     return true;
@@ -5055,8 +5055,8 @@ bool ChatHandler::HandleResetAllCommand(const char * args)
     CharacterDatabase.PExecute("UPDATE characters SET at_login = at_login | '%u' WHERE (at_login & '%u') = '0'",atLogin,atLogin);
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType const& plist = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::const_iterator itr = plist.begin(); itr != plist.end(); ++itr)
-        itr->second->SetAtLoginFlag(atLogin);
+    for(const auto & itr : plist)
+        itr.second->SetAtLoginFlag(atLogin);
 
     return true;
 }
@@ -5196,9 +5196,9 @@ bool ChatHandler::HandleAddQuest(const char* args)
 
     // check item starting quest (it can work incorrectly if added without item in inventory)
     ItemTemplateContainer const* its = sObjectMgr->GetItemTemplateStore();
-    for (ItemTemplateContainer::const_iterator itr = its->begin(); itr != its->end(); ++itr)
+    for (const auto & it : *its)
     {
-        ItemTemplate const *pProto = &(itr->second);
+        ItemTemplate const *pProto = &(it.second);
         if (!pProto)
             continue;
 
@@ -6781,11 +6781,11 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
     for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
     {
         Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
-        for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
+        for(auto & bind : binds)
         {
-            InstanceSave *save = itr->second.save;
+            InstanceSave *save = bind.second.save;
             std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
-            PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+            PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", bind.first, save->GetInstanceId(), bind.second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
             counter++;
         }
     }
@@ -6797,11 +6797,11 @@ bool ChatHandler::HandleInstanceListBindsCommand(const char* /*args*/)
         for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
         {
             Group::BoundInstancesMap &binds = group->GetBoundInstances(Difficulty(i));
-            for(Group::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ++itr)
+            for(auto & bind : binds)
             {
-                InstanceSave *save = itr->second.save;
+                InstanceSave *save = bind.second.save;
                 std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
-                PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
+                PSendSysMessage("map: %d inst: %d perm: %s diff: %s canReset: %s TTR: %s", bind.first, save->GetInstanceId(), bind.second.perm ? "yes" : "no",  save->GetDifficulty() == REGULAR_DIFFICULTY ? "normal" : "heroic", save->CanReset() ? "yes" : "no", timeleft.c_str());
                 counter++;
             }
         }
@@ -6824,7 +6824,7 @@ bool ChatHandler::HandleInstanceUnbindCommand(const char* args)
         for(uint8 i = 0; i < MAX_DIFFICULTY; i++)
         {
             Player::BoundInstancesMap &binds = player->GetBoundInstances(Difficulty(i));
-            for(Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end();)
+            for(auto itr = binds.begin(); itr != binds.end();)
             {
                 if(itr->first != player->GetMapId())
                 {
@@ -7637,8 +7637,8 @@ bool ChatHandler::HandleZoneBuffCommand(const char* args)
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     Player *p;
 
-    for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
-        p = it->second;
+    for (const auto & player : players) {
+        p = player.second;
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId())
             p->CastSpell(p, atoi(bufid), true);
     }
@@ -7662,8 +7662,8 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     HashMapHolder<Player>::MapType const& players = ObjectAccessor::GetPlayers();
     Player *p;
 
-    for (HashMapHolder<Player>::MapType::const_iterator it = players.begin(); it != players.end(); it++) {
-        p = it->second;
+    for (const auto & player : players) {
+        p = player.second;
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId() &&
             ((faction_id == 1 && p->GetTeam() == TEAM_ALLIANCE) || (faction_id == 2 && p->GetTeam() == TEAM_HORDE) || faction_id == 0))
             p->SetDisplayId(display_id);
@@ -7805,17 +7805,17 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for(auto & itr : m)
     {
-        if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())
+        if (itr.second && itr.second->GetSession()->GetPlayer() && itr.second->GetSession()->GetPlayer()->IsInWorld())
         {
-            if(ChannelMgr* cMgr = channelMgr(itr->second->GetSession()->GetPlayer()->GetTeam()))
+            if(ChannelMgr* cMgr = channelMgr(itr.second->GetSession()->GetPlayer()->GetTeam()))
             {
-                if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
+                if(Channel *chn = cMgr->GetChannel(channel, itr.second->GetSession()->GetPlayer()))
                 {
                     WorldPacket data;
-                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr->second->GetSession()->GetPlayer(),itr->second->GetSession()->GetPlayer(), msg, 0, channel);
-                    itr->second->SendDirectMessage(&data);
+                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr.second->GetSession()->GetPlayer(),itr.second->GetSession()->GetPlayer(), msg, 0, channel);
+                    itr.second->SendDirectMessage(&data);
                 }
             }
         }
@@ -7834,10 +7834,10 @@ bool ChatHandler::HandleDebugAurasList(const char* args)
     
     PSendSysMessage("Aura list:");
     Unit::AuraMap& tAuras = unit->GetAuras();
-    for (Unit::AuraMap::iterator itr = tAuras.begin(); itr != tAuras.end(); itr++)
+    for (auto & tAura : tAuras)
     {
-        SpellInfo const* spellProto = (*itr).second->GetSpellInfo();
-        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], (*itr).second->GetStackAmount(), (*itr).second->GetEffIndex(), (*itr).second->GetModifierValue(), (*itr).second->IsActive() ? "" : "[inactive]");
+        SpellInfo const* spellProto = tAura.second->GetSpellInfo();
+        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], tAura.second->GetStackAmount(), tAura.second->GetEffIndex(), tAura.second->GetModifierValue(), tAura.second->IsActive() ? "" : "[inactive]");
     }
     
     return true;

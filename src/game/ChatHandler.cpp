@@ -74,9 +74,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
         Unit::AuraList const& langAuras = _player->GetAurasByType(SPELL_AURA_COMPREHEND_LANGUAGE);
         bool foundAura = false;
-        for(Unit::AuraList::const_iterator i = langAuras.begin();i != langAuras.end(); ++i)
+        for(auto langAura : langAuras)
         {
-            if((*i)->GetModifier()->m_miscvalue == lang)
+            if(langAura->GetModifier()->m_miscvalue == lang)
             {
                 foundAura = true;
                 break;
@@ -354,7 +354,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             PlayerbotMgr *mgr = GetPlayer()->GetPlayerbotMgr();
             if (mgr && lang != LANG_ADDON)
             {
-                for (PlayerBotMap::const_iterator it = mgr->GetPlayerBotsBegin(); it != mgr->GetPlayerBotsEnd(); ++it)
+                for (auto it = mgr->GetPlayerBotsBegin(); it != mgr->GetPlayerBotsEnd(); ++it)
                 {
                     Player* const bot = it->second;
                     if (bot->GetGuildId() == GetPlayer()->GetGuildId())

@@ -35,19 +35,19 @@ bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char
     //make text point on next word
     while (*text == ' ') ++text;
 
-    for (uint32 i = 0; i < table.size(); i++)
+    for (auto & i : table)
     {
-        if (!table[i].Name)
+        if (!i.Name)
             return false;
 
         // for data fill use full explicit command names
-        if (table[i].Name != cmd)
+        if (i.Name != cmd)
             continue;
 
         // select subcommand from child commands list (including "")
-        if (!table[i].ChildCommands.empty())
+        if (!i.ChildCommands.empty())
         {
-            if (SetDataForCommandInTable(table[i].ChildCommands, text, securityLevel, help, fullcommand, allowIrc))
+            if (SetDataForCommandInTable(i.ChildCommands, text, securityLevel, help, fullcommand, allowIrc))
                 return true;
             else if (*text)
                 return false;
@@ -61,13 +61,13 @@ bool ChatHandler::SetDataForCommandInTable(std::vector<ChatCommand>& table, char
             return false;
         }
 
-        if (table[i].SecurityLevel != securityLevel)
-            TC_LOG_DEBUG("misc", "Table `command` overwrite for command '%s' default permission (%u) by %u", fullcommand.c_str(), table[i].SecurityLevel, securityLevel);
+        if (i.SecurityLevel != securityLevel)
+            TC_LOG_DEBUG("misc", "Table `command` overwrite for command '%s' default permission (%u) by %u", fullcommand.c_str(), i.SecurityLevel, securityLevel);
 
-        table[i].SecurityLevel = securityLevel;
-        table[i].Help = help;
+        i.SecurityLevel = securityLevel;
+        i.Help = help;
         //note that command with AllowIRC set to true still aren't allowed on irc if noSessionNeeded is set to false.
-        table[i].AllowIRC = allowIrc;
+        i.AllowIRC = allowIrc;
         return true;
     }
 
@@ -832,15 +832,15 @@ void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
     HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
-    for(HashMapHolder<Player>::MapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for(auto & itr : m)
     {
-        if (itr->second && itr->second->GetSession()->GetPlayer() && itr->second->GetSession()->GetPlayer()->IsInWorld())
+        if (itr.second && itr.second->GetSession()->GetPlayer() && itr.second->GetSession()->GetPlayer()->IsInWorld())
         {
-            if(ChannelMgr* cMgr = channelMgr(itr->second->GetSession()->GetPlayer()->GetTeam()))
+            if(ChannelMgr* cMgr = channelMgr(itr.second->GetSession()->GetPlayer()->GetTeam()))
             {
-                if(Channel *chn = cMgr->GetChannel(channel, itr->second->GetSession()->GetPlayer()))
+                if(Channel *chn = cMgr->GetChannel(channel, itr.second->GetSession()->GetPlayer()))
                 {
-                    itr->second->SendDirectMessage(&data);
+                    itr.second->SendDirectMessage(&data);
                 }
             }
         }
@@ -1009,12 +1009,12 @@ bool ChatHandler::ExecuteCommandInTable(std::vector<ChatCommand> const& table, c
         bool match = false;
         if (strlen(table[i].Name) > cmd.length())
         {
-            for (uint32 j = 0; j < table.size(); ++j)
+            for (const auto & j : table)
             {
-                if (!hasStringAbbr(table[j].Name, cmd.c_str()))
+                if (!hasStringAbbr(j.Name, cmd.c_str()))
                     continue;
 
-                if (strcmp(table[j].Name, cmd.c_str()) == 0)
+                if (strcmp(j.Name, cmd.c_str()) == 0)
                 {
                     match = true;
                     break;
@@ -1107,14 +1107,14 @@ int ChatHandler::ParseCommands(const char* text)
 bool ChatHandler::ShowHelpForSubCommands(std::vector<ChatCommand> const& table, char const* cmd, char const* subcmd)
 {
     std::string list;
-    for (uint32 i = 0; i < table.size(); ++i)
+    for (const auto & i : table)
     {
         // must be available (ignore handler existence for show command with possibe avalable subcomands
-        if(!isAvailable(table[i]))
+        if(!isAvailable(i))
             continue;
 
         // for empty subcmd show all available
-        if( *subcmd && !hasStringAbbr(table[i].Name, subcmd))
+        if( *subcmd && !hasStringAbbr(i.Name, subcmd))
             continue;
 
         if(m_session)
@@ -1122,9 +1122,9 @@ bool ChatHandler::ShowHelpForSubCommands(std::vector<ChatCommand> const& table, 
         else
             list += "\n\r    ";
 
-        list += table[i].Name;
+        list += i.Name;
 
-        if(!table[i].ChildCommands.empty())
+        if(!i.ChildCommands.empty())
             list += " ...";
     }
 
@@ -1146,53 +1146,53 @@ bool ChatHandler::ShowHelpForCommand(std::vector<ChatCommand> const& table, cons
 {
     if(*cmd)
     {
-        for (uint32 i = 0; i < table.size(); ++i)
+        for (const auto & i : table)
         {
             // must be available (ignore handler existence for show command with possibe avalable subcomands
-            if(!isAvailable(table[i]))
+            if(!isAvailable(i))
                 continue;
 
-            if( !hasStringAbbr(table[i].Name, cmd) )
+            if( !hasStringAbbr(i.Name, cmd) )
                 continue;
 
             // have subcommand
             char const* subcmd = (*cmd) ? strtok(nullptr, " ") : "";
 
-            if(!table[i].ChildCommands.empty() && subcmd && *subcmd)
+            if(!i.ChildCommands.empty() && subcmd && *subcmd)
             {
-                if(ShowHelpForCommand(table[i].ChildCommands, subcmd))
+                if(ShowHelpForCommand(i.ChildCommands, subcmd))
                     return true;
             }
 
-            if(!table[i].Help.empty())
-                SendSysMessage(table[i].Help.c_str());
+            if(!i.Help.empty())
+                SendSysMessage(i.Help.c_str());
 
-            if(!table[i].ChildCommands.empty())
-                if(ShowHelpForSubCommands(table[i].ChildCommands,table[i].Name,subcmd ? subcmd : ""))
+            if(!i.ChildCommands.empty())
+                if(ShowHelpForSubCommands(i.ChildCommands,i.Name,subcmd ? subcmd : ""))
                     return true;
 
-            return !table[i].Help.empty();
+            return !i.Help.empty();
         }
     }
     else
     {
-        for (uint32 i = 0; i < table.size(); ++i)
+        for (const auto & i : table)
         {
             // must be available (ignore handler existence for show command with possibe avalable subcomands
-            if(!isAvailable(table[i]))
+            if(!isAvailable(i))
                 continue;
 
-            if(strlen(table[i].Name))
+            if(strlen(i.Name))
                 continue;
 
-            if(!table[i].Help.empty())
-                SendSysMessage(table[i].Help.c_str());
+            if(!i.Help.empty())
+                SendSysMessage(i.Help.c_str());
 
-            if(!table[i].ChildCommands.empty())
-                if(ShowHelpForSubCommands(table[i].ChildCommands,"",""))
+            if(!i.ChildCommands.empty())
+                if(ShowHelpForSubCommands(i.ChildCommands,"",""))
                     return true;
 
-            return !table[i].Help.empty();
+            return !i.Help.empty();
         }
     }
 

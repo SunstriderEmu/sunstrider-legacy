@@ -102,7 +102,7 @@ namespace VMAP
             std::set<std::string> spawnedModelFiles;
 
         public:
-            TileAssembler(const std::string& pSrcDirName, const std::string& pDestDirName);
+            TileAssembler(std::string  pSrcDirName, std::string  pDestDirName);
             virtual ~TileAssembler();
 
             bool convertWorld2();

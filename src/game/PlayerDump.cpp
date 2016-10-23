@@ -154,7 +154,7 @@ bool changetoknth(std::string &str, int n, const char *with, bool insert = false
 
 uint32 registerNewGuid(uint32 oldGuid, std::map<uint32, uint32> &guidMap, uint32 hiGuid)
 {
-    std::map<uint32, uint32>::iterator itr = guidMap.find(oldGuid);
+    auto itr = guidMap.find(oldGuid);
     if(itr != guidMap.end())
         return itr->second;
 
@@ -231,7 +231,7 @@ std::string PlayerDumpWriter::GenerateWhereStr(char const* field, GUIDs const& g
             break;
         }
 
-        GUIDs::const_iterator itr2 = itr;
+        auto itr2 = itr;
         if(++itr2 != guids.end())
             wherestr << "','";
     }
@@ -327,8 +327,8 @@ void PlayerDumpWriter::DumpTable(std::string& dump, uint32 guid, char const*tabl
 std::string PlayerDumpWriter::GetDump(uint32 guid)
 {
     std::string dump;
-    for(int i = 0; i < DUMP_TABLE_COUNT; i++)
-        DumpTable(dump, guid, dumpTables[i].name, dumpTables[i].name, dumpTables[i].type);
+    for(auto & dumpTable : dumpTables)
+        DumpTable(dump, guid, dumpTable.name, dumpTable.name, dumpTable.type);
 
     // TODO: Add instance/group..
     // TODO: Add a dump level option to skip some non-important tables

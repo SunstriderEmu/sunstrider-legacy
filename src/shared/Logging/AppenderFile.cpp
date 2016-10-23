@@ -24,7 +24,7 @@
 
 AppenderFile::AppenderFile(uint8 id, std::string const& name, LogLevel level, const char* _filename, const char* _logDir, const char* _mode, AppenderFlags _flags, uint64 fileSize):
     Appender(id, name, APPENDER_FILE, level, _flags),
-    logfile(NULL),
+    logfile(nullptr),
     filename(_filename),
     logDir(_logDir),
     mode(_mode),
@@ -80,7 +80,7 @@ FILE* AppenderFile::OpenFile(std::string const &filename, std::string const &mod
         CloseFile();
         std::string newName(fullName);
         newName.push_back('.');
-        newName.append(LogMessage::getTimeStr(time(NULL)));
+        newName.append(LogMessage::getTimeStr(time(nullptr)));
         std::replace(newName.begin(), newName.end(), ':', '-');
         rename(fullName.c_str(), newName.c_str()); // no error handling... if we couldn't make a backup, just ignore
     }
@@ -91,7 +91,7 @@ FILE* AppenderFile::OpenFile(std::string const &filename, std::string const &mod
         return ret;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void AppenderFile::CloseFile()
@@ -99,6 +99,6 @@ void AppenderFile::CloseFile()
     if (logfile)
     {
         fclose(logfile);
-        logfile = NULL;
+        logfile = nullptr;
     }
 }

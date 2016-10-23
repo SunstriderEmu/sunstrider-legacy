@@ -168,11 +168,11 @@ void Player::UpdateArmor()
 
     //add dynamic flat mods
     AuraList const& mResbyIntellect = GetAurasByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
-    for(AuraList::const_iterator i = mResbyIntellect.begin();i != mResbyIntellect.end(); ++i)
+    for(auto i : mResbyIntellect)
     {
-        Modifier const* mod = (*i)->GetModifier();
+        Modifier const* mod = i->GetModifier();
         if(mod->m_miscvalue & SPELL_SCHOOL_MASK_NORMAL)
-            value += int32(GetStat(Stats((*i)->GetMiscBValue())) * (*i)->GetModifierValue() / 100.0f);
+            value += int32(GetStat(Stats(i->GetMiscBValue())) * i->GetModifierValue() / 100.0f);
     }
 
     value *= GetModifierValue(unitMod, TOTAL_PCT);
@@ -308,12 +308,12 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
                     case FORM_MOONKIN:
                     {
                         Unit::AuraList const& mDummy = GetAurasByType(SPELL_AURA_DUMMY);
-                        for(Unit::AuraList::const_iterator itr = mDummy.begin(); itr != mDummy.end(); ++itr)
+                        for(auto itr : mDummy)
                         {
                             // Predatory Strikes
-                            if ((*itr)->GetSpellInfo()->SpellIconID == 1563)
+                            if (itr->GetSpellInfo()->SpellIconID == 1563)
                             {
-                                mLevelMult = (*itr)->GetModifier()->m_amount / 100.0f;
+                                mLevelMult = itr->GetModifier()->m_amount / 100.0f;
                                 break;
                             }
                         }
@@ -350,8 +350,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
     if( ranged && (GetClassMask() & CLASSMASK_WAND_USERS)==0)
     {
         AuraList const& mRAPbyIntellect = GetAurasByType(SPELL_AURA_MOD_RANGED_ATTACK_POWER_OF_STAT_PERCENT);
-        for(AuraList::const_iterator i = mRAPbyIntellect.begin();i != mRAPbyIntellect.end(); ++i)
-            attPowerMod += int32(GetStat(Stats((*i)->GetModifier()->m_miscvalue)) * (*i)->GetModifierValue() / 100.0f);
+        for(auto i : mRAPbyIntellect)
+            attPowerMod += int32(GetStat(Stats(i->GetModifier()->m_miscvalue)) * i->GetModifierValue() / 100.0f);
     }
 #ifdef LICH_KING
     else
@@ -613,14 +613,14 @@ void Player::UpdateExpertise(WeaponAttackType attack)
     Item *weapon = GetWeaponForAttack(attack);
 
     AuraList const& expAuras = GetAurasByType(SPELL_AURA_MOD_EXPERTISE);
-    for(AuraList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
+    for(auto expAura : expAuras)
     {
         // item neutral spell
-        if((*itr)->GetSpellInfo()->EquippedItemClass == -1)
-            expertise += (*itr)->GetModifierValue();
+        if(expAura->GetSpellInfo()->EquippedItemClass == -1)
+            expertise += expAura->GetModifierValue();
         // item dependent spell
-        else if(weapon && weapon->IsFitToSpellRequirements((*itr)->GetSpellInfo()))
-            expertise += (*itr)->GetModifierValue();
+        else if(weapon && weapon->IsFitToSpellRequirements(expAura->GetSpellInfo()))
+            expertise += expAura->GetModifierValue();
     }
 
     if(expertise < 0)
@@ -647,18 +647,18 @@ void Player::UpdateManaRegen()
 
     // Get bonus from SPELL_AURA_MOD_MANA_REGEN_FROM_STAT aura
     AuraList const& regenAura = GetAurasByType(SPELL_AURA_MOD_MANA_REGEN_FROM_STAT);
-    for(AuraList::const_iterator i = regenAura.begin();i != regenAura.end(); ++i)
+    for(auto i : regenAura)
     {
-        Modifier const* mod = (*i)->GetModifier();
-        power_regen_mp5 += GetStat(Stats(mod->m_miscvalue)) * (*i)->GetModifierValue() / 500.0f;
+        Modifier const* mod = i->GetModifier();
+        power_regen_mp5 += GetStat(Stats(mod->m_miscvalue)) * i->GetModifierValue() / 500.0f;
     }
 
     // Bonus from some dummy auras
     AuraList const& mDummyAuras = GetAurasByType(SPELL_AURA_PERIODIC_DUMMY);
-    for(AuraList::const_iterator i = mDummyAuras.begin();i != mDummyAuras.end(); ++i)
-        if((*i)->GetId() == 34074)                          // Aspect of the Viper
+    for(auto mDummyAura : mDummyAuras)
+        if(mDummyAura->GetId() == 34074)                          // Aspect of the Viper
         {
-            power_regen_mp5 += (*i)->GetModifier()->m_amount * Intellect / 500.0f;
+            power_regen_mp5 += mDummyAura->GetModifier()->m_amount * Intellect / 500.0f;
             // Add regen bonus from level in this dummy
             power_regen_mp5 += GetLevel() * 35 / 100;
         }

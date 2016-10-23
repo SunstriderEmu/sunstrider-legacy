@@ -26,11 +26,11 @@ namespace MMAP
     MMapManager* g_MMapManager = nullptr;
 
     // stores list of mapids which do not use pathfinding
-    std::set<uint32>* g_mmapDisabledIds = NULL;
+    std::set<uint32>* g_mmapDisabledIds = nullptr;
 
     MMapManager* MMapFactory::createOrGetMMapManager()
     {
-        if (g_MMapManager == NULL)
+        if (g_MMapManager == nullptr)
             g_MMapManager = new MMapManager();
 
         return g_MMapManager;
@@ -42,14 +42,14 @@ namespace MMAP
             g_mmapDisabledIds = new std::set<uint32>();
 
         uint32 strLenght = strlen(ignoreMapIds)+1;
-        char* mapList = new char[strLenght];
+        auto  mapList = new char[strLenght];
         memcpy(mapList, ignoreMapIds, sizeof(char)*strLenght);
 
         char* idstr = strtok(mapList, ",");
         while (idstr)
         {
             g_mmapDisabledIds->insert(uint32(atoi(idstr)));
-            idstr = strtok(NULL, ",");
+            idstr = strtok(nullptr, ",");
         }
 
         delete[] mapList;
@@ -66,7 +66,7 @@ namespace MMAP
         if (g_MMapManager)
         {
             delete g_MMapManager;
-            g_MMapManager = NULL;
+            g_MMapManager = nullptr;
         }
     }
 }

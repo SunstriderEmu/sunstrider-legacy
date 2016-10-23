@@ -168,8 +168,8 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans)
     newmember.Pnote = (std::string)"";
     newmember.logout_time = time(nullptr);
     newmember.BankResetTimeMoney = 0;                       // this will force update at first query
-    for (int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
-        newmember.BankResetTimeTab[i] = 0;
+    for (unsigned int & i : newmember.BankResetTimeTab)
+        i = 0;
     members[GUID_LOPART(plGuid)] = newmember;
 
     std::string dbPnote = newmember.Pnote;
@@ -458,7 +458,7 @@ bool Guild::FillPlayerData(uint64 guid, MemberSlot* memslot)
 
 void Guild::LoadPlayerStatsByGuid(uint64 guid)
 {
-    MemberList::iterator itr = members.find(GUID_LOPART(guid));
+    auto itr = members.find(GUID_LOPART(guid));
     if (itr == members.end() )
         return;
 
@@ -495,18 +495,18 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
         MemberSlot* oldLeader = nullptr;
         MemberSlot* best = nullptr;
         uint64 newLeaderGUID = 0;
-        for(Guild::MemberList::iterator i = members.begin(); i != members.end(); ++i)
+        for(auto & member : members)
         {
-            if(i->first == GUID_LOPART(guid))
+            if(member.first == GUID_LOPART(guid))
             {
-                oldLeader = &(i->second);
+                oldLeader = &(member.second);
                 continue;
             }
 
-            if(!best || best->RankId > i->second.RankId)
+            if(!best || best->RankId > member.second.RankId)
             {
-                best = &(i->second);
-                newLeaderGUID = i->first;
+                best = &(member.second);
+                newLeaderGUID = member.first;
             }
         }
         if(!best)
@@ -554,7 +554,7 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
 
 void Guild::ChangeRank(uint64 guid, uint32 newRank)
 {
-    MemberList::iterator itr = members.find(GUID_LOPART(guid));
+    auto itr = members.find(GUID_LOPART(guid));
     if( itr != members.end() )
         itr->second.RankId = newRank;
 
@@ -568,7 +568,7 @@ void Guild::ChangeRank(uint64 guid, uint32 newRank)
 
 void Guild::SetPNOTE(uint64 guid,std::string pnote)
 {
-    MemberList::iterator itr = members.find(GUID_LOPART(guid));
+    auto itr = members.find(GUID_LOPART(guid));
     if( itr == members.end() )
         return;
 
@@ -581,7 +581,7 @@ void Guild::SetPNOTE(uint64 guid,std::string pnote)
 
 void Guild::SetOFFNOTE(uint64 guid,std::string offnote)
 {
-    MemberList::iterator itr = members.find(GUID_LOPART(guid));
+    auto itr = members.find(GUID_LOPART(guid));
     if( itr == members.end() )
         return;
     itr->second.OFFnote = offnote;
@@ -638,7 +638,7 @@ void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, L
 {
     if (session && session->GetPlayer() && HasRankRight(session->GetPlayer()->GetRank(),GR_RIGHT_OFFCHATSPEAK))
     {
-        for(MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+        for(auto itr = members.begin(); itr != members.end(); ++itr)
         {
             WorldPacket data;
             ChatHandler::BuildChatPacket(data, CHAT_MSG_OFFICER, language, session->GetPlayer(), nullptr, msg);
@@ -653,7 +653,7 @@ void Guild::BroadcastToOfficers(WorldSession *session, const std::string& msg, L
 
 void Guild::BroadcastPacket(WorldPacket *packet)
 {
-    for(MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+    for(auto itr = members.begin(); itr != members.end(); ++itr)
     {
         Player *player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));
         if(player)
@@ -663,7 +663,7 @@ void Guild::BroadcastPacket(WorldPacket *packet)
 
 void Guild::BroadcastPacketToRank(WorldPacket *packet, uint32 rankId)
 {
-    for(MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
+    for(auto itr = members.begin(); itr != members.end(); ++itr)
     {
         if (itr->second.RankId == rankId)
         {
@@ -750,7 +750,7 @@ void Guild::SetRankRights(uint32 rankId, uint32 rights)
 
 int32 Guild::GetRank(uint32 LowGuid)
 {
-    MemberList::iterator itr = members.find(LowGuid);
+    auto itr = members.find(LowGuid);
     if (itr==members.end())
         return -1;
 
@@ -765,7 +765,7 @@ void Guild::Disband()
 
     while (!members.empty())
     {
-        MemberList::iterator itr = members.begin();
+        auto itr = members.begin();
         DelMember(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER), true);
     }
 
@@ -878,7 +878,7 @@ void Guild::SetEmblem(uint32 emblemStyle, uint32 emblemColor, uint32 borderStyle
 
 void Guild::UpdateLogoutTime(uint64 guid)
 {
-    MemberList::iterator itr = members.find(GUID_LOPART(guid));
+    auto itr = members.find(GUID_LOPART(guid));
     if (itr == members.end() )
         return;
 
@@ -948,7 +948,7 @@ void Guild::LoadGuildEventLogFromDB()
     do
     {
         Field *fields = result->Fetch();
-        GuildEventlogEntry *NewEvent = new GuildEventlogEntry;
+        auto NewEvent = new GuildEventlogEntry;
         // Fill entry
         NewEvent->LogGuid = fields[0].GetUInt32();
         NewEvent->EventType = fields[1].GetUInt8();
@@ -1007,7 +1007,7 @@ void Guild::RenumGuildEventlog()
 // Add entry to guild eventlog
 void Guild::LogGuildEvent(uint8 EventType, uint32 PlayerGuid1, uint32 PlayerGuid2, uint8 NewRank)
 {
-    GuildEventlogEntry *NewEvent = new GuildEventlogEntry;
+    auto NewEvent = new GuildEventlogEntry;
     // Fill entry
     NewEvent->LogGuid = GuildEventlogMaxGuid++;
     NewEvent->EventType = EventType;
@@ -1139,8 +1139,8 @@ void Guild::DisplayGuildBankContentUpdate(uint8 TabId, GuildItemPosCountVec cons
 
     data << uint8(slots.size());                            // updates count
 
-    for(GuildItemPosCountVec::const_iterator itr = slots.begin(); itr != slots.end(); ++itr)
-        AppendDisplayGuildBankSlot(data, tab, itr->slot);
+    for(auto slot : slots)
+        AppendDisplayGuildBankSlot(data, tab, slot.slot);
 
     for(MemberList::const_iterator itr = members.begin(); itr != members.end(); ++itr)
     {
@@ -1198,7 +1198,7 @@ void Guild::CreateNewBankTab()
 
     ++purchased_tabs;
 
-    GuildBankTab* AnotherTab = new GuildBankTab;
+    auto  AnotherTab = new GuildBankTab;
     memset(AnotherTab->Slots, 0, GUILD_BANK_MAX_SLOTS * sizeof(Item*));
     m_TabListMap.resize(purchased_tabs);
     m_TabListMap[purchased_tabs-1] = AnotherTab;
@@ -1275,7 +1275,7 @@ void Guild::LoadGuildBankFromDB()
         Field *fields = result->Fetch();
         uint8 TabId = fields[0].GetUInt8();
 
-        GuildBankTab *NewTab = new GuildBankTab;
+        auto NewTab = new GuildBankTab;
         memset(NewTab->Slots, 0, GUILD_BANK_MAX_SLOTS * sizeof(Item*));
 
         NewTab->Name = fields[1].GetString();
@@ -1339,12 +1339,12 @@ void Guild::UnloadGuildBank()
         return;
     for (uint8 i = 0 ; i < purchased_tabs ; ++i )
     {
-        for (uint8 j = 0 ; j < GUILD_BANK_MAX_SLOTS ; ++j)
+        for (auto & Slot : m_TabListMap[i]->Slots)
         {
-            if (m_TabListMap[i]->Slots[j])
+            if (Slot)
             {
-                m_TabListMap[i]->Slots[j]->RemoveFromWorld();
-                delete m_TabListMap[i]->Slots[j];
+                Slot->RemoveFromWorld();
+                delete Slot;
             }
         }
         delete m_TabListMap[i];
@@ -1386,7 +1386,7 @@ bool Guild::MemberMoneyWithdraw(uint32 amount, uint32 LowGuid, SQLTransaction tr
 
     if (MoneyWithDrawRight < WITHDRAW_MONEY_UNLIMITED)
     {
-        MemberList::iterator itr = members.find(LowGuid);
+        auto itr = members.find(LowGuid);
         if (itr == members.end() )
             return false;
         itr->second.BankRemMoney -= amount;
@@ -1418,7 +1418,7 @@ bool Guild::MemberItemWithdraw(uint8 TabId, uint32 LowGuid)
 
     if (SlotsWithDrawRight < WITHDRAW_SLOT_UNLIMITED)
     {
-        MemberList::iterator itr = members.find(LowGuid);
+        auto itr = members.find(LowGuid);
         if (itr == members.end() )
             return false;
         --itr->second.BankRemSlotsTab[TabId];
@@ -1430,7 +1430,7 @@ bool Guild::MemberItemWithdraw(uint8 TabId, uint32 LowGuid)
 
 bool Guild::IsMemberHaveRights(uint32 LowGuid, uint8 TabId, uint32 rights) const
 {
-    MemberList::const_iterator itr = members.find(LowGuid);
+    auto itr = members.find(LowGuid);
     if (itr == members.end() )
         return false;
 
@@ -1442,7 +1442,7 @@ bool Guild::IsMemberHaveRights(uint32 LowGuid, uint8 TabId, uint32 rights) const
 
 uint32 Guild::GetMemberSlotWithdrawRem(uint32 LowGuid, uint8 TabId)
 {
-    MemberList::iterator itr = members.find(LowGuid);
+    auto itr = members.find(LowGuid);
     if (itr == members.end() )
         return 0;
 
@@ -1465,7 +1465,7 @@ uint32 Guild::GetMemberSlotWithdrawRem(uint32 LowGuid, uint8 TabId)
 
 uint32 Guild::GetMemberMoneyWithdrawRem(uint32 LowGuid)
 {
-    MemberList::iterator itr = members.find(LowGuid);
+    auto itr = members.find(LowGuid);
     if (itr == members.end() )
         return 0;
 
@@ -1494,9 +1494,9 @@ void Guild::SetBankMoneyPerDay(uint32 rankId, uint32 money)
 
     m_ranks[rankId].BankMoneyPerDay = money;
 
-    for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-        if (itr->second.RankId == rankId)
-            itr->second.BankResetTimeMoney = 0;
+    for (auto & member : members)
+        if (member.second.RankId == rankId)
+            member.second.BankResetTimeMoney = 0;
 
     CharacterDatabase.PExecute("UPDATE guild_rank SET BankMoneyPerDay='%u' WHERE rid='%u' AND guildid='%u'", money, (rankId+1), Id);
     CharacterDatabase.PExecute("UPDATE guild_member SET BankResetTimeMoney='0' WHERE guildid='%u' AND rank='%u'", Id, rankId);
@@ -1520,10 +1520,10 @@ void Guild::SetBankRightsAndSlots(uint32 rankId, uint8 TabId, uint32 right, uint
 
     if (db)
     {
-        for (MemberList::iterator itr = members.begin(); itr != members.end(); ++itr)
-            if (itr->second.RankId == rankId)
+        for (auto & member : members)
+            if (member.second.RankId == rankId)
                 for (int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
-                    itr->second.BankResetTimeTab[i] = 0;
+                    member.second.BankResetTimeTab[i] = 0;
 
         //CharacterDatabase.PExecute("DELETE FROM guild_bank_right WHERE guildid='%u' AND TabId='%u' AND rid='%u'", Id, uint32(TabId), rankId);
         CharacterDatabase.PExecute("REPLACE INTO guild_bank_right (guildid,TabId,rid,gbright,SlotPerDay) VALUES "
@@ -1592,7 +1592,7 @@ void Guild::LoadGuildBankEventLogFromDB()
     do
     {
         Field *fields = result->Fetch();
-        GuildBankEvent *NewEvent = new GuildBankEvent;
+        auto NewEvent = new GuildBankEvent;
 
         NewEvent->LogGuid = fields[0].GetUInt32();
         NewEvent->LogEntry = fields[1].GetUInt8();
@@ -1629,12 +1629,12 @@ void Guild::LoadGuildBankEventLogFromDB()
         CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid=%u AND LogGuid < %u",
             Id, m_GuildBankEventLog_Money.front()->LogGuid);
     }
-    for (int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
+    for (auto & i : m_GuildBankEventLog_Item)
     {
-        if (!m_GuildBankEventLog_Item[i].empty())
+        if (!i.empty())
         {
             CharacterDatabase.PExecute("DELETE FROM guild_bank_eventlog WHERE guildid=%u AND LogGuid < %u",
-                Id, m_GuildBankEventLog_Item[i].front()->LogGuid);
+                Id, i.front()->LogGuid);
         }
     }
 }
@@ -1652,16 +1652,16 @@ void Guild::UnloadGuildBankEventLog()
         }while( !m_GuildBankEventLog_Money.empty() );
     }
 
-    for (int i = 0; i < GUILD_BANK_MAX_TABS; ++i)
+    for (auto & i : m_GuildBankEventLog_Item)
     {
-        if( !m_GuildBankEventLog_Item[i].empty() )
+        if( !i.empty() )
         {
             do
             {
-                EventLogEntry = *(m_GuildBankEventLog_Item[i].begin());
-                m_GuildBankEventLog_Item[i].pop_front();
+                EventLogEntry = *(i.begin());
+                i.pop_front();
                 delete EventLogEntry;
-            }while( !m_GuildBankEventLog_Item[i].empty() );
+            }while( !i.empty() );
         }
     }
 }
@@ -1709,7 +1709,7 @@ void Guild::DisplayGuildBankLogs(WorldSession *session, uint8 TabId)
 
 void Guild::LogBankEvent(uint8 LogEntry, uint8 TabId, uint32 PlayerGuidLow, uint32 ItemOrMoney, uint8 ItemStackCount, uint8 DestTabId)
 {
-    GuildBankEvent *NewEvent = new GuildBankEvent;
+    auto NewEvent = new GuildBankEvent;
 
     NewEvent->LogGuid = LogMaxGuid++;
     NewEvent->LogEntry = LogEntry;
@@ -1809,7 +1809,7 @@ Item* Guild::StoreItem(uint8 tabId, GuildItemPosCountVec const& dest, Item* pIte
 
     Item* lastItem = pItem;
 
-    for(GuildItemPosCountVec::const_iterator itr = dest.begin(); itr != dest.end(); )
+    for(auto itr = dest.begin(); itr != dest.end(); )
     {
         uint8 slot = itr->slot;
         uint32 count = itr->count;
@@ -2066,8 +2066,8 @@ void Guild::SendGuildBankTabText(WorldSession *session, uint8 TabId)
 
 bool GuildItemPosCount::isContainedIn(GuildItemPosCountVec const &vec) const
 {
-    for(GuildItemPosCountVec::const_iterator itr = vec.begin(); itr != vec.end();++itr)
-        if(itr->slot == slot)
+    for(auto itr : vec)
+        if(itr.slot == slot)
             return true;
 
     return false;

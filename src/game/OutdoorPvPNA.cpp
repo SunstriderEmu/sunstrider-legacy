@@ -43,7 +43,7 @@ void OutdoorPvPNA::HandleKillImpl(Player* plr, Unit* killed)
 uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
 {
     uint32 cnt = 0;
-    for(std::map<uint32, uint64>::iterator itr = m_Creatures.begin(); itr != m_Creatures.end(); ++itr) {
+    for(auto itr = m_Creatures.begin(); itr != m_Creatures.end(); ++itr) {
         switch(itr->first)
         {
         case NA_NPC_GUARD_01:
@@ -82,42 +82,42 @@ uint32 OutdoorPvPObjectiveNA::GetAliveGuardsCount()
 void OutdoorPvPNA::BuffTeam(uint32 team)
 {
     if (team == TEAM_ALLIANCE) {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for(unsigned long itr : m_PlayerGuids[0]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for(unsigned long itr : m_PlayerGuids[1]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
     }
     else if (team == TEAM_HORDE) {
-        for (std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for (unsigned long itr : m_PlayerGuids[1]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->CastSpell(plr, NA_CAPTURE_BUFF, true);
             }
         }
-        for (std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for (unsigned long itr : m_PlayerGuids[0]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
     }
     else {
-        for (std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for (unsigned long itr : m_PlayerGuids[0]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }
         }
-        for (std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr) {
-            if (Player * plr = sObjectMgr->GetPlayer(*itr)) {
+        for (unsigned long itr : m_PlayerGuids[1]) {
+            if (Player * plr = sObjectMgr->GetPlayer(itr)) {
                 if (plr->IsInWorld())
                     plr->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
             }

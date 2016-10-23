@@ -169,9 +169,9 @@ void DynamicObject::Delete()
 void DynamicObject::Delay(int32 delaytime)
 {
     m_aliveDuration -= delaytime;
-    for(AffectedSet::iterator iunit= m_affected.begin();iunit != m_affected.end();++iunit)
-        if (*iunit)
-            (*iunit)->DelayAura(m_spellId, m_effIndex, delaytime);
+    for(auto iunit : m_affected)
+        if (iunit)
+            iunit->DelayAura(m_spellId, m_effIndex, delaytime);
 }
 
 bool DynamicObject::IsVisibleForInState(Player const* u, bool inVisibleList) const

@@ -173,9 +173,9 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     if (items_count)
     {
-        for(MailItemMap::iterator mailItemIter = mi.begin(); mailItemIter != mi.end(); ++mailItemIter)
+        for(auto & mailItemIter : mi)
         {
-            MailItem& mailItem = mailItemIter->second;
+            MailItem& mailItem = mailItemIter.second;
 
             if(!mailItem.item_guidlow)
             {
@@ -227,9 +227,9 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
         if (items_count > 0)
         {
-            for(MailItemMap::iterator mailItemIter = mi.begin(); mailItemIter != mi.end(); ++mailItemIter)
+            for(auto & mailItemIter : mi)
             {
-                MailItem& mailItem = mailItemIter->second;
+                MailItem& mailItem = mailItemIter.second;
                 if(!mailItem.item)
                     continue;
 
@@ -330,9 +330,9 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
 
     if(m->HasItems())
     {
-        for(std::vector<MailItemInfo>::iterator itr2 = m->items.begin(); itr2 != m->items.end(); ++itr2)
+        for(auto & itr2 : m->items)
         {
-            Item *item = pl->GetMItem(itr2->item_guid);
+            Item *item = pl->GetMItem(itr2.item_guid);
             if(item)
                 mi.AddItem(item->GetGUIDLow(), item->GetEntry(), item);
             else
@@ -340,7 +340,7 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
                 //WTF?
             }
 
-            pl->RemoveMItem(itr2->item_guid);
+            pl->RemoveMItem(itr2.item_guid);
         }
     }
 
@@ -387,9 +387,9 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
         needItemDelay = sender_acc != rc_account;
 
         // set owner to new receiver (to prevent delete item with sender char deleting)
-        for(MailItemMap::iterator mailItemIter = mi->begin(); mailItemIter != mi->end(); ++mailItemIter)
+        for(auto & mailItemIter : *mi)
         {
-            MailItem& mailItem = mailItemIter->second;
+            MailItem& mailItem = mailItemIter.second;
             mailItem.item->SaveToDB(trans);                  // item not in inventory and can be save standalone
             // owner in data will set at mail receive and item extracting
             trans->PAppend("UPDATE item_instance SET owner_guid = '%u' WHERE guid='%u'", receiver_guid, mailItem.item->GetGUIDLow());
@@ -540,7 +540,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
     data << uint8(0);                                       // mail's count
     time_t cur_time = time(nullptr);
 
-    for(PlayerMails::iterator itr = pl->GetmailBegin(); itr != pl->GetmailEnd(); ++itr)
+    for(auto itr = pl->GetmailBegin(); itr != pl->GetmailEnd(); ++itr)
     {
         // skip deleted or not delivered (deliver delay not expired) mails
         if ((*itr)->state == MAIL_STATE_DELETED || cur_time < (*itr)->deliver_time)
@@ -722,7 +722,7 @@ void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
         uint32 count = 0;
         time_t now = time(nullptr);
         std::set<uint32> sentSenders;
-        for(PlayerMails::iterator itr = _player->GetmailBegin(); itr != _player->GetmailEnd(); ++itr)
+        for(auto itr = _player->GetmailBegin(); itr != _player->GetmailEnd(); ++itr)
         {
             Mail *m = (*itr);
             // must be not checked yet
@@ -799,7 +799,7 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
 
         if ( receiver->IsMailsLoaded() )
         {
-            Mail * m = new Mail;
+            auto  m = new Mail;
             m->messageID = mailId;
             m->messageType = messageType;
             m->stationery = stationery;
@@ -823,9 +823,9 @@ void WorldSession::SendMailTo(SQLTransaction& trans, Player* receiver, MailMessa
 
             if(mi)
             {
-                for(MailItemMap::iterator mailItemIter = mi->begin(); mailItemIter != mi->end(); ++mailItemIter)
+                for(auto & mailItemIter : *mi)
                 {
-                    MailItem& mailItem = mailItemIter->second;
+                    MailItem& mailItem = mailItemIter.second;
                     if(mailItem.item)
                         receiver->AddMItem(mailItem.item);
                 }

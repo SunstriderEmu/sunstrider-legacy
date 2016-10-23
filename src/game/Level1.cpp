@@ -318,7 +318,7 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
 bool ChatHandler::HandleGMTicketList(bool onlineOnly, bool closedOnly)
 {
     time_t now = time(nullptr);
-    for (GmTicketList::iterator itr = sObjectMgr->m_GMTicketList.begin(); itr != sObjectMgr->m_GMTicketList.end(); ++itr)
+    for (auto itr = sObjectMgr->m_GMTicketList.begin(); itr != sObjectMgr->m_GMTicketList.end(); ++itr)
     {
         bool closed = ((*itr)->closed != 0);
         //skip closed if closedOnly is not set 
@@ -2204,17 +2204,17 @@ bool ChatHandler::HandleLookupTeleCommand(const char * args)
     std::ostringstream reply;
 
     GameTeleContainer const & teleMap = sObjectMgr->GetGameTeleMap();
-    for(GameTeleContainer::const_iterator itr = teleMap.begin(); itr != teleMap.end(); ++itr)
+    for(const auto & itr : teleMap)
     {
-        GameTele const* tele = &itr->second;
+        GameTele const* tele = &itr.second;
 
         if(tele->wnameLow.find(wnamepart) == std::wstring::npos)
             continue;
 
         if (m_session)
-            reply << "  |cffffffff|Htele:" << itr->first << "|h[" << tele->name << "]|h|r\n";
+            reply << "  |cffffffff|Htele:" << itr.first << "|h[" << tele->name << "]|h|r\n";
         else
-            reply << "  " << itr->first << " " << tele->name << "\n";
+            reply << "  " << itr.first << " " << tele->name << "\n";
     }
 
     if(reply.str().empty())

@@ -393,9 +393,8 @@ bool ChatHandler::HandleGetItemState(const char* args)
     if (list_queue)
     {
         std::vector<Item *> &updateQueue = player->GetItemUpdateQueue();
-        for(size_t i = 0; i < updateQueue.size(); i++)
+        for(auto item : updateQueue)
         {
-            Item *item = updateQueue[i];
             if(!item) continue;
 
             Bag *container = item->GetContainer();
@@ -768,11 +767,11 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
         
     SendSysMessage("Attackers list:");
     char msg[256];
-    for (Unit::AttackerSet::const_iterator itr = target->GetAttackers().begin(); itr != target->GetAttackers().end(); ++itr) {
-        if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName().c_str(), (*itr)->GetGUIDLow(), (*itr)->GetGUID());
+    for (auto itr : target->GetAttackers()) {
+        if (itr->GetTypeId() == TYPEID_PLAYER)
+            snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", itr->GetName().c_str(), itr->GetGUIDLow(), itr->GetGUID());
         else
-            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", (*itr)->GetName().c_str(), (*itr)->GetEntry(), (*itr)->ToCreature()->GetDBTableGUIDLow(), (*itr)->GetGUID());
+            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", itr->GetName().c_str(), itr->GetEntry(), itr->ToCreature()->GetDBTableGUIDLow(), itr->GetGUID());
             
         SendSysMessage(msg);
     }

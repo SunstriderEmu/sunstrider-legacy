@@ -37,6 +37,6 @@ namespace VMAP
     void VMapFactory::clear()
     {
         delete gVMapManager;
-        gVMapManager = NULL;
+        gVMapManager = nullptr;
     }
 }

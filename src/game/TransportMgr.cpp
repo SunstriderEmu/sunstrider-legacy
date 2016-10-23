@@ -26,11 +26,11 @@ TransportTemplate::~TransportTemplate()
 {
     // Collect shared pointers into a set to avoid deleting the same memory more than once
     std::set<TransportSpline*> splines;
-    for (size_t i = 0; i < keyFrames.size(); ++i)
-        splines.insert(keyFrames[i].Spline);
+    for (auto & keyFrame : keyFrames)
+        splines.insert(keyFrame.Spline);
 
-    for (std::set<TransportSpline*>::iterator itr = splines.begin(); itr != splines.end(); ++itr)
-        delete *itr;
+    for (auto spline : splines)
+        delete spline;
 }
 
 TransportMgr::TransportMgr() { }
@@ -117,8 +117,8 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
     std::vector<KeyFrame>& keyFrames = transport->keyFrames;
     Movement::PointsArray splinePath, allPoints;
     bool mapChange = false;
-    for (size_t i = 0; i < path.size(); ++i)
-        allPoints.push_back(G3D::Vector3(path[i]->LocX, path[i]->LocY, path[i]->LocZ));
+    for (auto i : path)
+        allPoints.push_back(G3D::Vector3(i->LocX, i->LocY, i->LocZ));
 
     // Add extra points to allow derivative calculations for all path nodes
     allPoints.insert(allPoints.begin(), allPoints.front().lerp(allPoints[1], -0.2f));
@@ -175,8 +175,8 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
 
     if (transport->mapsUsed.size() > 1)
     {
-        for (std::set<uint32>::const_iterator itr = transport->mapsUsed.begin(); itr != transport->mapsUsed.end(); ++itr)
-            ASSERT(!sMapStore.LookupEntry(*itr)->Instanceable());
+        for (unsigned int itr : transport->mapsUsed)
+            ASSERT(!sMapStore.LookupEntry(itr)->Instanceable());
 
         transport->inInstance = false;
     }
@@ -213,7 +213,7 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
         if (keyFrames[i - 1].Teleport || i + 1 == keyFrames.size())
         {
             size_t extra = !keyFrames[i - 1].Teleport ? 1 : 0;
-            TransportSpline* spline = new TransportSpline();
+            auto  spline = new TransportSpline();
             spline->init_spline(&splinePath[start], i - start + extra, Movement::SplineBase::ModeCatmullrom);
             spline->initLengths();
             for (size_t j = start; j < i + extra; ++j)
@@ -274,32 +274,32 @@ void TransportMgr::GeneratePath(GameObjectTemplate const* goInfo, TransportTempl
             tmpDist = 0.0f;
     }
 
-    for (size_t i = 0; i < keyFrames.size(); ++i)
+    for (auto & keyFrame : keyFrames)
     {
-        float total_dist = keyFrames[i].DistSinceStop + keyFrames[i].DistUntilStop;
+        float total_dist = keyFrame.DistSinceStop + keyFrame.DistUntilStop;
         if (total_dist < 2 * accel_dist) // won't reach full speed
         {
-            if (keyFrames[i].DistSinceStop < keyFrames[i].DistUntilStop) // is still accelerating
+            if (keyFrame.DistSinceStop < keyFrame.DistUntilStop) // is still accelerating
             {
                 // calculate accel+brake time for this short segment
-                float segment_time = 2.0f * sqrt((keyFrames[i].DistUntilStop + keyFrames[i].DistSinceStop) / accel);
+                float segment_time = 2.0f * sqrt((keyFrame.DistUntilStop + keyFrame.DistSinceStop) / accel);
                 // substract acceleration time
-                keyFrames[i].TimeTo = segment_time - sqrt(2 * keyFrames[i].DistSinceStop / accel);
+                keyFrame.TimeTo = segment_time - sqrt(2 * keyFrame.DistSinceStop / accel);
             }
             else // slowing down
-                keyFrames[i].TimeTo = sqrt(2 * keyFrames[i].DistUntilStop / accel);
+                keyFrame.TimeTo = sqrt(2 * keyFrame.DistUntilStop / accel);
         }
-        else if (keyFrames[i].DistSinceStop < accel_dist) // still accelerating (but will reach full speed)
+        else if (keyFrame.DistSinceStop < accel_dist) // still accelerating (but will reach full speed)
         {
             // calculate accel + cruise + brake time for this long segment
-            float segment_time = (keyFrames[i].DistUntilStop + keyFrames[i].DistSinceStop) / speed + (speed / accel);
+            float segment_time = (keyFrame.DistUntilStop + keyFrame.DistSinceStop) / speed + (speed / accel);
             // substract acceleration time
-            keyFrames[i].TimeTo = segment_time - sqrt(2 * keyFrames[i].DistSinceStop / accel);
+            keyFrame.TimeTo = segment_time - sqrt(2 * keyFrame.DistSinceStop / accel);
         }
-        else if (keyFrames[i].DistUntilStop < accel_dist) // already slowing down (but reached full speed)
-            keyFrames[i].TimeTo = sqrt(2 * keyFrames[i].DistUntilStop / accel);
+        else if (keyFrame.DistUntilStop < accel_dist) // already slowing down (but reached full speed)
+            keyFrame.TimeTo = sqrt(2 * keyFrame.DistUntilStop / accel);
         else // at full speed
-            keyFrames[i].TimeTo = (keyFrames[i].DistUntilStop / speed) + (0.5f * speed / accel);
+            keyFrame.TimeTo = (keyFrame.DistUntilStop / speed) + (0.5f * speed / accel);
     }
 
     // calculate tFrom times from tTo times
@@ -376,7 +376,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     }
 
     // create transport...
-    MotionTransport* trans = new MotionTransport();
+    auto  trans = new MotionTransport();
 
     // ...at first waypoint
     TaxiPathNodeEntry const* startNode = tInfo->keyFrames.begin()->Node;
@@ -497,8 +497,8 @@ void TransportMgr::CreateInstanceTransports(Map* map)
         return;
 
     // create transports
-    for (std::set<uint32>::const_iterator itr = mapTransports->second.begin(); itr != mapTransports->second.end(); ++itr)
-        CreateTransport(*itr, 0, map);
+    for (unsigned int itr : mapTransports->second)
+        CreateTransport(itr, 0, map);
 }
 
 bool TransportAnimation::GetAnimNode(uint32 time, TransportAnimationEntry const* &curr, TransportAnimationEntry const* &next, float &percPos) const
@@ -506,7 +506,7 @@ bool TransportAnimation::GetAnimNode(uint32 time, TransportAnimationEntry const*
     if (Path.empty())
         return false;
 
-    for (TransportPathContainer::const_reverse_iterator itr = Path.rbegin(); itr != Path.rend(); ++itr)
+    for (auto itr = Path.rbegin(); itr != Path.rend(); ++itr)
         if (time >= itr->first)
         {
             curr = itr->second;

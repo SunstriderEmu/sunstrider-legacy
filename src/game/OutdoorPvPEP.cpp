@@ -724,7 +724,7 @@ bool OutdoorPvPObjectiveEP_PWT::CanTalkTo(Player * p, Creature * c, GossipMenuIt
 
 bool OutdoorPvPObjectiveEP_PWT::HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid)
 {
-    std::map<uint64,uint32>::iterator itr = m_CreatureTypes.find(guid);
+    auto itr = m_CreatureTypes.find(guid);
     if(itr != m_CreatureTypes.end())
     {
         Creature * cr = HashMapHolder<Creature>::Find(guid);
@@ -773,8 +773,8 @@ OutdoorPvPEP::OutdoorPvPEP()
 
 bool OutdoorPvPEP::SetupOutdoorPvP()
 {
-    for(int i = 0; i < EPBuffZonesNum; ++i)
-        sOutdoorPvPMgr->AddZone(EPBuffZones[i],this);
+    for(unsigned int EPBuffZone : EPBuffZones)
+        sOutdoorPvPMgr->AddZone(EPBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveEP_EWT(this));
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveEP_PWT(this));
@@ -789,11 +789,11 @@ bool OutdoorPvPEP::Update(uint32 diff)
     {
         m_AllianceTowersControlled = 0;
         m_HordeTowersControlled = 0;
-        for(int i = 0; i < EP_TOWER_NUM; ++i)
+        for(unsigned int EP_Control : EP_Controls)
         {
-            if(EP_Controls[i] == TEAM_ALLIANCE)
+            if(EP_Control == TEAM_ALLIANCE)
                 ++m_AllianceTowersControlled;
-            else if(EP_Controls[i] == TEAM_HORDE)
+            else if(EP_Control == TEAM_HORDE)
                 ++m_HordeTowersControlled;
             SendUpdateWorldState(EP_UI_TOWER_COUNT_A,m_AllianceTowersControlled);
             SendUpdateWorldState(EP_UI_TOWER_COUNT_H,m_HordeTowersControlled);
@@ -825,35 +825,35 @@ void OutdoorPvPEP::HandlePlayerLeaveZone(Player * plr, uint32 zone)
     // remove buffs
     if(plr->GetTeam() == TEAM_ALLIANCE)
     {
-        for(int i = 0; i < 4; ++i)
-            plr->RemoveAurasDueToSpell(EP_AllianceBuffs[i]);
+        for(unsigned int EP_AllianceBuff : EP_AllianceBuffs)
+            plr->RemoveAurasDueToSpell(EP_AllianceBuff);
     }
     else
     {
-        for(int i = 0; i < 4; ++i)
-            plr->RemoveAurasDueToSpell(EP_HordeBuffs[i]);
+        for(unsigned int EP_HordeBuff : EP_HordeBuffs)
+            plr->RemoveAurasDueToSpell(EP_HordeBuff);
     }
     OutdoorPvP::HandlePlayerLeaveZone(plr, zone);
 }
 
 void OutdoorPvPEP::BuffTeams()
 {
-    for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+    for(unsigned long itr : m_PlayerGuids[0])
     {
-        if(Player * plr = sObjectMgr->GetPlayer(*itr))
+        if(Player * plr = sObjectMgr->GetPlayer(itr))
         {
-            for(int i = 0; i < 4; ++i)
-                if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_AllianceBuffs[i]);
+            for(unsigned int EP_AllianceBuff : EP_AllianceBuffs)
+                if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_AllianceBuff);
             if(m_AllianceTowersControlled && m_AllianceTowersControlled < 5)
                 if(plr->IsInWorld()) plr->CastSpell(plr,EP_AllianceBuffs[m_AllianceTowersControlled-1],true);
         }
     }
-    for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+    for(unsigned long itr : m_PlayerGuids[1])
     {
-        if(Player * plr = sObjectMgr->GetPlayer(*itr))
+        if(Player * plr = sObjectMgr->GetPlayer(itr))
         {
-            for(int i = 0; i < 4; ++i)
-                if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_HordeBuffs[i]);
+            for(unsigned int EP_HordeBuff : EP_HordeBuffs)
+                if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(EP_HordeBuff);
             if(m_HordeTowersControlled && m_HordeTowersControlled < 5)
                 if(plr->IsInWorld()) plr->CastSpell(plr,EP_HordeBuffs[m_HordeTowersControlled-1],true);
         }
@@ -867,9 +867,9 @@ void OutdoorPvPEP::FillInitialWorldStates(WorldPacket & data)
     data << EP_UI_TOWER_SLIDER_DISPLAY << uint32(0);
     data << EP_UI_TOWER_SLIDER_POS << uint32(50);
     data << EP_UI_TOWER_SLIDER_N << uint32(100);
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        (*itr)->FillInitialWorldStates(data);
+        m_OutdoorPvPObjective->FillInitialWorldStates(data);
     }
 }
 

@@ -81,12 +81,12 @@ bool IRCMgr::configure()
     uint32 count = 0;
     uint32 id;
     Field* fields = res->Fetch();
-    QueryResult res2 = NULL;
-    Field* fields2 = NULL;
+    QueryResult res2 = nullptr;
+    Field* fields2 = nullptr;
     do {
-        IRCServer* server = new IRCServer;
+        auto  server = new IRCServer;
         id = fields[0].GetUInt32();
-        server->session = NULL;
+        server->session = nullptr;
         server->host = fields[1].GetString();
         server->port = fields[2].GetUInt32();
         server->ssl = fields[3].GetBool();
@@ -205,17 +205,17 @@ void IRCMgr::onIngameGuildMessage(uint32 guildId, std::string const& origin, con
 
 void IRCMgr::EnableServer(IRCServer* server, bool enable)
 {
-    for(auto itr = _guildsToIRC.begin(); itr != _guildsToIRC.end();itr++)
-        if(itr->second->server == server)
-            itr->second->enabled = enable;
+    for(auto & itr : _guildsToIRC)
+        if(itr.second->server == server)
+            itr.second->enabled = enable;
 
-    for(auto itr = _channelToIRC_A.begin(); itr != _channelToIRC_A.end();itr++)
-        if(itr->second->server == server)
-            itr->second->enabled = enable;
+    for(auto & itr : _channelToIRC_A)
+        if(itr.second->server == server)
+            itr.second->enabled = enable;
 
-    for(auto itr = _channelToIRC_H.begin(); itr != _channelToIRC_H.end();itr++)
-        if(itr->second->server == server)
-            itr->second->enabled = enable;
+    for(auto & itr : _channelToIRC_H)
+        if(itr.second->server == server)
+            itr.second->enabled = enable;
 }
 
 void IRCMgr::ConvertWoWColorsToIRC(std::string& msg)
@@ -321,14 +321,13 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
     msg = msg.substr(0, msg.find_first_of("!"));
     msg += "] ";
     msg += params[1];
-    for (uint32 i = 0; i < server->channels.size(); i++) {
-        auto chan = server->channels[i];
+    for (auto chan : server->channels) {
         if (strcmp(chan->name.c_str(), params[0])) // Maybe we can achieve better perfs with a map instead of iterating on a vector
             continue;
         
         // 1: Linked guild channels
-        for (uint32 j = 0; j < chan->guilds.size(); j++) {
-            if (Guild* guild = sObjectMgr->GetGuildById(chan->guilds[j].guildId))
+        for (auto & j : chan->guilds) {
+            if (Guild* guild = sObjectMgr->GetGuildById(j.guildId))
                 guild->BroadcastToGuildFromIRC(msg);
         }
         // 2: Linked custom channels
@@ -338,13 +337,13 @@ void IRCMgr::onIRCChannelEvent(irc_session_t* session, const char* event, const 
 
 void IRCMgr::stopSessions()
 {
-    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); itr++)
+    for(auto & sessionThread : sessionThreads)
     {
-        (*itr)->stop();
+        sessionThread->stop();
     }
 
     //Delete sessions
-    for( IRCThreadList::iterator itr = sessionThreads.begin( ); itr != sessionThreads.end( ); )
+    for( auto itr = sessionThreads.begin( ); itr != sessionThreads.end( ); )
     {
         delete *itr;
         itr = sessionThreads.erase(itr);
@@ -360,8 +359,8 @@ void IRCMgr::startSessions()
 
     // Start one thread per session
     Runnable* lastSpawned;
-    for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
-        lastSpawned = new IRCSession(itr->second);
+    for (auto & _server : _servers) {
+        lastSpawned = new IRCSession(_server.second);
         lastSpawned->start();
         sessionThreads.push_back(lastSpawned);
     }
@@ -369,7 +368,7 @@ void IRCMgr::startSessions()
 
 void IRCMgr::connect()
 {
-    for (IRCServers::iterator itr = _servers.begin(); itr != _servers.end(); itr++) {
+    for (auto itr = _servers.begin(); itr != _servers.end(); itr++) {
         if (itr->second->session && irc_is_connected(itr->second->session))
         {
             TC_LOG_WARN("IRCMgr", "IRCMgr: Could not create IRC session for server %u (%s:%u), session is already connected.", itr->first, itr->second->host.c_str(), itr->second->port);
@@ -386,7 +385,7 @@ void IRCMgr::connect()
         irc_set_ctx(itr->second->session, itr->second);
         irc_option_set(itr->second->session, LIBIRC_OPTION_SSL_NO_VERIFY);
         
-        if (irc_connect(itr->second->session, itr->second->host.c_str(), itr->second->port, 0, itr->second->nick.c_str(), itr->second->nick.c_str(), "Sunstrider irc bridge")) {
+        if (irc_connect(itr->second->session, itr->second->host.c_str(), itr->second->port, nullptr, itr->second->nick.c_str(), itr->second->nick.c_str(), "Sunstrider irc bridge")) {
             TC_LOG_ERROR("IRCMgr","IRCMgr: Could not connect to server %u (%s:%u, %susing SSL): %s",
                     itr->first, itr->second->host.c_str(), itr->second->port, (itr->second->ssl ? "" : "not "), irc_strerror(irc_errno(itr->second->session)));
         }
@@ -396,10 +395,10 @@ void IRCMgr::connect()
 void IRCMgr::onIRCConnectEvent(irc_session_t* session, const char* event, const char* origin, const char** params, unsigned int count)
 {
     IRCServer* server = (IRCServer*) irc_get_ctx(session);
-    for (uint32 i = 0; i < server->channels.size(); i++) {
-        irc_cmd_join(session, server->channels[i]->name.c_str(), 
-                (server->channels[i]->password != "" ? server->channels[i]->password.c_str() : NULL));
-        irc_cmd_msg(session, server->channels[i]->name.c_str(), server->channels[i]->joinmsg.c_str());
+    for (auto & channel : server->channels) {
+        irc_cmd_join(session, channel->name.c_str(), 
+                (channel->password != "" ? channel->password.c_str() : nullptr));
+        irc_cmd_msg(session, channel->name.c_str(), channel->joinmsg.c_str());
     }
 }
 
@@ -411,13 +410,12 @@ void IRCMgr::HandleChatCommand(irc_session_t* session, const char* _channel, con
     if (strncmp(params, "!who", 4) == 0) {
         IRCServer* server = (IRCServer*) irc_get_ctx(session);
         if(!server) return;
-        for (uint32 i = 0; i < server->channels.size(); i++) 
+        for (auto chan : server->channels) 
         {
-            auto chan = server->channels[i];
             if(chan->name != _channel || !chan->enabled) continue;
-            for (uint32 j = 0; j < chan->guilds.size(); j++) 
+            for (auto & j : chan->guilds) 
             {
-                if (Guild* guild = sObjectMgr->GetGuildById(chan->guilds[j].guildId))
+                if (Guild* guild = sObjectMgr->GetGuildById(j.guildId))
                 {
                     std::stringstream msg;
                     msg << "Connected <" << guild->GetName() << ">: " << guild->GetOnlineMembersName();
@@ -437,7 +435,7 @@ void IRCMgr::sendToIRCFromGuild(uint32 guildId, std::string msg)
     std::pair <GuildToIRCMap::iterator, GuildToIRCMap::iterator> range;
     range = _guildsToIRC.equal_range(guildId);
   
-    for( GuildToIRCMap::iterator itr = range.first; itr != range.second; ++itr) {
+    for( auto itr = range.first; itr != range.second; ++itr) {
         if(!itr->second->enabled)
             continue;
 
@@ -481,7 +479,7 @@ void IRCMgr::sendToIRCFromChannel(const char* channel, ChannelFaction faction, s
     else //CHAN_FACTION_HORDE
         range = _channelToIRC_H.equal_range(channel);
   
-    for( ChannelToIRCMap::iterator itr = range.first; itr != range.second; ++itr) 
+    for( auto itr = range.first; itr != range.second; ++itr) 
     {
         if(!itr->second->enabled)
             continue;

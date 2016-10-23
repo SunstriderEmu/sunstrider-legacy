@@ -52,8 +52,8 @@ namespace VMAP
 
     //=================================================================
 
-    TileAssembler::TileAssembler(const std::string& pSrcDirName, const std::string& pDestDirName)
-        : iDestDir(pDestDirName), iSrcDir(pSrcDirName), iFilterMethod(NULL), iCurrentUniqueNameId(0)
+    TileAssembler::TileAssembler(std::string  pSrcDirName, std::string  pDestDirName)
+        : iDestDir(std::move(pDestDirName)), iSrcDir(std::move(pSrcDirName)), iFilterMethod(nullptr), iCurrentUniqueNameId(0)
     {
         //mkdir(iDestDir);
         //init();
@@ -71,7 +71,7 @@ namespace VMAP
             return false;
 
         // export Map data
-        for (MapData::iterator map_iter = mapData.begin(); map_iter != mapData.end() && success; ++map_iter)
+        for (auto map_iter = mapData.begin(); map_iter != mapData.end() && success; ++map_iter)
         {
             // build global map tree
             std::vector<ModelSpawn*> mapSpawns;
@@ -136,7 +136,7 @@ namespace VMAP
             // global map spawns (WDT), if any (most instances)
             if (success && fwrite("GOBJ", 4, 1, mapfile) != 1) success = false;
 
-            for (TileMap::iterator glob=globalRange.first; glob != globalRange.second && success; ++glob)
+            for (auto glob=globalRange.first; glob != globalRange.second && success; ++glob)
             {
                 success = ModelSpawn::writeToFile(mapfile, map_iter->second->UniqueEntries[glob->second]);
             }
@@ -174,7 +174,7 @@ namespace VMAP
                         const ModelSpawn &spawn2 = map_iter->second->UniqueEntries[tile->second];
                         success = success && ModelSpawn::writeToFile(tilefile, spawn2);
                         // MapTree nodes to update when loading tile:
-                        std::map<uint32, uint32>::iterator nIdx = modelNodeIdx.find(spawn2.ID);
+                        auto nIdx = modelNodeIdx.find(spawn2.ID);
                         if (success && fwrite(&nIdx->second, sizeof(uint32), 1, tilefile) != 1) success = false;
                     }
                     fclose(tilefile);
@@ -187,21 +187,21 @@ namespace VMAP
         exportGameobjectModels();
         // export objects
         std::cout << "\nConverting Model Files" << std::endl;
-        for (std::set<std::string>::iterator mfile = spawnedModelFiles.begin(); mfile != spawnedModelFiles.end(); ++mfile)
+        for (const auto & spawnedModelFile : spawnedModelFiles)
         {
-            std::cout << "Converting " << *mfile << std::endl;
-            if (!convertRawFile(*mfile))
+            std::cout << "Converting " << spawnedModelFile << std::endl;
+            if (!convertRawFile(spawnedModelFile))
             {
-                std::cout << "error converting " << *mfile << std::endl;
+                std::cout << "error converting " << spawnedModelFile << std::endl;
                 success = false;
                 break;
             }
         }
 
         //cleanup:
-        for (MapData::iterator map_iter = mapData.begin(); map_iter != mapData.end(); ++map_iter)
+        for (auto & map_iter : mapData)
         {
-            delete map_iter->second;
+            delete map_iter.second;
         }
         return success;
     }
@@ -232,7 +232,7 @@ namespace VMAP
                 break;
 
             MapSpawns *current;
-            MapData::iterator map_iter = mapData.find(mapID);
+            auto map_iter = mapData.find(mapID);
             if (map_iter == mapData.end())
             {
                 printf("spawning Map %d\n", mapID);
@@ -375,9 +375,9 @@ namespace VMAP
             spawnedModelFiles.insert(model_name);
             AABox bounds;
             bool boundEmpty = true;
-            for (uint32 g = 0; g < raw_model.groupsArray.size(); ++g)
+            for (auto & g : raw_model.groupsArray)
             {
-                std::vector<Vector3>& vertices = raw_model.groupsArray[g].vertexArray;
+                std::vector<Vector3>& vertices = g.vertexArray;
 
                 uint32 nvectors = vertices.size();
                 for (uint32 i = 0; i < nvectors; ++i)
@@ -448,7 +448,7 @@ namespace VMAP
         READ_OR_RETURN(&nindexes, sizeof(uint32));
         if (nindexes >0)
         {
-            uint16 *indexarray = new uint16[nindexes];
+            auto indexarray = new uint16[nindexes];
             READ_OR_RETURN_WITH_DELETE(indexarray, nindexes*sizeof(uint16));
             triangles.reserve(nindexes / 3);
             for (uint32 i=0; i<nindexes; i+=3)
@@ -466,7 +466,7 @@ namespace VMAP
 
         if (nvectors >0)
         {
-            float *vectorarray = new float[nvectors*3];
+            auto vectorarray = new float[nvectors*3];
             READ_OR_RETURN_WITH_DELETE(vectorarray, nvectors*sizeof(float)*3);
             for (uint32 i=0; i<nvectors; ++i)
                 vertexArray.push_back( Vector3(vectorarray + 3*i) );
@@ -474,7 +474,7 @@ namespace VMAP
             delete[] vectorarray;
         }
         // ----- liquid
-        liquid = 0;
+        liquid = nullptr;
         if (liquidflags& 1)
         {
             WMOLiquidHeader hlq;

@@ -27,8 +27,8 @@ enum ClientBuild : uint32;
 
 struct AddonInfo
 {
-    AddonInfo(const std::string& name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey, uint32 build)
-        : Name(name), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey), Enabled(enabled), build(build)
+    AddonInfo(std::string  name, uint8 enabled, uint32 crc, uint8 state, bool crcOrPubKey, uint32 build)
+        : Name(std::move(name)), CRC(crc), State(state), UsePublicKeyOrCRC(crcOrPubKey), Enabled(enabled), build(build)
         { }
 
     std::string Name;
@@ -41,8 +41,8 @@ struct AddonInfo
 
 struct SavedAddon
 {
-    SavedAddon(std::string const& name, uint32 crc, uint32 build) :
-        Name(name),
+    SavedAddon(std::string  name, uint32 crc, uint32 build) :
+        Name(std::move(name)),
         CRC(crc),
         build(build)
     { }

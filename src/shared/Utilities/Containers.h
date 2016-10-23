@@ -36,7 +36,7 @@ namespace Trinity
 
             while (list_size > size)
             {
-                typename std::list<T>::iterator itr = list.begin();
+                auto itr = list.begin();
                 std::advance(itr, urand(0, list_size - 1));
                 list.erase(itr);
                 --list_size;

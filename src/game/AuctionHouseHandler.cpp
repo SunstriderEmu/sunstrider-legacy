@@ -251,7 +251,7 @@ void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 
     uint32 auction_time = uint32(etime * sWorld->GetRate(RATE_AUCTION_TIME));
 
-    AuctionEntry *AH = new AuctionEntry;
+    auto AH = new AuctionEntry;
     AH->Id = sObjectMgr->GenerateAuctionID();
     if(sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
         AH->auctioneer = 23442;

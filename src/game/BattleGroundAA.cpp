@@ -41,7 +41,7 @@ void BattlegroundAA::AddPlayer(Player *plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
-    BattlegroundAAScore* sc = new BattlegroundAAScore;
+    auto  sc = new BattlegroundAAScore;
 
     m_PlayerScores[plr->GetGUID()] = sc;
 }

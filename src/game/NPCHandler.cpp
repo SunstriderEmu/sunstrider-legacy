@@ -177,10 +177,8 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
     float fDiscountMod = _player->GetReputationPriceDiscount(unit);
 
     uint32 count = 0;
-    for(TrainerSpellList::const_iterator itr = trainer_spells->spellList.begin(); itr != trainer_spells->spellList.end(); ++itr)
+    for(auto tSpell : trainer_spells->spellList)
     {
-        TrainerSpell const* tSpell = *itr;
-
         if(!_player->IsSpellFitByClassAndRace(tSpell->spell))
             continue;
 
@@ -665,7 +663,7 @@ void WorldSession::HandleUnstablePetCallback2(PreparedQueryResult result, uint32
         return;
     }
 
-    Pet* newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -802,7 +800,7 @@ void WorldSession::HandleStableSwapPetCallback(PreparedQueryResult result, uint3
     _player->RemovePet(pet, PetSaveMode(slot));
 
     // summon unstabled pet
-    Pet* newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;

@@ -216,9 +216,9 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
                     // destroy not required for quest finish quest starting item
                     bool destroyItem = true;
-                    for(int i = 0; i < QUEST_OBJECTIVES_COUNT; i++)
+                    for(unsigned int i : qInfo->RequiredItemId)
                     {
-                        if ((qInfo->RequiredItemId[i] == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetTemplate()->MaxCount != 0))
+                        if ((i == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetTemplate()->MaxCount != 0))
                         {
                             destroyItem = false;
                             break;
@@ -643,7 +643,7 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
             return DIALOG_STATUS_NONE;
     }
 
-    for(QuestRelations::const_iterator i = qir->lower_bound(questgiver->GetEntry()); i != qir->upper_bound(questgiver->GetEntry()); ++i )
+    for(auto i = qir->lower_bound(questgiver->GetEntry()); i != qir->upper_bound(questgiver->GetEntry()); ++i )
     {
         uint32 result2 = 0;
         uint32 quest_id = i->second;
@@ -671,7 +671,7 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
             result = result2;
     }
 
-    for(QuestRelations::const_iterator i = qr->lower_bound(questgiver->GetEntry()); i != qr->upper_bound(questgiver->GetEntry()); ++i )
+    for(auto i = qr->lower_bound(questgiver->GetEntry()); i != qr->upper_bound(questgiver->GetEntry()); ++i )
     {
         uint32 result2 = 0;
         uint32 quest_id = i->second;
@@ -723,14 +723,14 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
     WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
     data << uint32(count);                                  // placeholder
 
-    for(Player::ClientGUIDs::iterator itr = _player->m_clientGUIDs.begin(); itr != _player->m_clientGUIDs.end(); ++itr)
+    for(unsigned long m_clientGUID : _player->m_clientGUIDs)
     {
         uint8 questStatus = DIALOG_STATUS_NONE;
         uint8 defstatus = DIALOG_STATUS_NONE;
 
-        if(IS_CREATURE_GUID(*itr))
+        if(IS_CREATURE_GUID(m_clientGUID))
         {
-            Creature *questgiver = ObjectAccessor::GetCreature(*_player, *itr);
+            Creature *questgiver = ObjectAccessor::GetCreature(*_player, m_clientGUID);
             if(!questgiver || questgiver->IsHostileTo(_player))
                 continue;
             if(!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
@@ -743,9 +743,9 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
             data << uint8(questStatus);
             ++count;
         }
-        else if(IS_GAMEOBJECT_GUID(*itr))
+        else if(IS_GAMEOBJECT_GUID(m_clientGUID))
         {
-            GameObject *questgiver = ObjectAccessor::GetGameObject(*_player, *itr);
+            GameObject *questgiver = ObjectAccessor::GetGameObject(*_player, m_clientGUID);
             if(!questgiver)
                 continue;
             if(questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)

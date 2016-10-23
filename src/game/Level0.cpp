@@ -175,7 +175,7 @@ bool ChatHandler::HandleGMListIngameCommand(const char* /*args*/)
     bool first = true;
 
     HashMapHolder<Player>::MapType &m = HashMapHolder<Player>::GetContainer();
-    HashMapHolder<Player>::MapType::iterator itr = m.begin();
+    auto itr = m.begin();
     for(; itr != m.end(); ++itr)
     {
         AccountTypes itr_sec = (AccountTypes)itr->second->GetSession()->GetSecurity();
@@ -1859,7 +1859,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     // Remove instance tag
     for (uint8 i = 0; i < MAX_DIFFICULTY; i++) {
         Player::BoundInstancesMap &binds = plr->GetBoundInstances(Difficulty(i));
-        for (Player::BoundInstancesMap::iterator itr = binds.begin(); itr != binds.end(); ) {
+        for (auto itr = binds.begin(); itr != binds.end(); ) {
             if (itr->first != plr->GetMapId())
                 plr->UnbindInstance(itr, Difficulty(i));
             else

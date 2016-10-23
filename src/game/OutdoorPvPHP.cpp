@@ -69,8 +69,8 @@ bool OutdoorPvPHP::SetupOutdoorPvP()
     m_AllianceTowersControlled = 0;
     m_HordeTowersControlled = 0;
     // add the zones affected by the pvp buff
-    for(int i = 0; i < OutdoorPvPHPBuffZonesNum; ++i)
-        sOutdoorPvPMgr->AddZone(OutdoorPvPHPBuffZones[i],this);
+    for(unsigned int OutdoorPvPHPBuffZone : OutdoorPvPHPBuffZones)
+        sOutdoorPvPMgr->AddZone(OutdoorPvPHPBuffZone,this);
 
     m_OutdoorPvPObjectives.push_back(new OutdoorPvPObjectiveHP(this,HP_TOWER_BROKEN_HILL));
 
@@ -154,9 +154,9 @@ void OutdoorPvPHP::FillInitialWorldStates(WorldPacket &data)
     data << uint32(HP_UI_TOWER_SLIDER_DISPLAY) << uint32(0);
     data << uint32(HP_UI_TOWER_SLIDER_POS) << uint32(50);
     data << uint32(HP_UI_TOWER_SLIDER_N) << uint32(100);
-    for(OutdoorPvPObjectiveSet::iterator itr = m_OutdoorPvPObjectives.begin(); itr != m_OutdoorPvPObjectives.end(); ++itr)
+    for(auto & m_OutdoorPvPObjective : m_OutdoorPvPObjectives)
     {
-        (*itr)->FillInitialWorldStates(data);
+        m_OutdoorPvPObjective->FillInitialWorldStates(data);
     }
 }
 
@@ -330,40 +330,40 @@ void OutdoorPvPHP::BuffTeam(uint32 team)
 {
     if(team == TEAM_ALLIANCE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,AllianceBuff,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);
         }
     }
     else if(team == TEAM_HORDE)
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->CastSpell(plr,HordeBuff,true);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
         }
     }
     else
     {
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[0].begin(); itr != m_PlayerGuids[0].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[0])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(AllianceBuff);
         }
-        for(std::set<uint64>::iterator itr = m_PlayerGuids[1].begin(); itr != m_PlayerGuids[1].end(); ++itr)
+        for(unsigned long itr : m_PlayerGuids[1])
         {
-            if(Player * plr = sObjectMgr->GetPlayer(*itr))
+            if(Player * plr = sObjectMgr->GetPlayer(itr))
                 if(plr->IsInWorld()) plr->RemoveAurasDueToSpell(HordeBuff);
         }
     }

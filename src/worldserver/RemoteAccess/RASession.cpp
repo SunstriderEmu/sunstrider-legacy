@@ -195,7 +195,7 @@ bool RASession::ProcessCommand(std::string& command)
     delete _commandExecuting;
     _commandExecuting = new std::promise<void>();
 
-    CliCommandHolder* cmd = new CliCommandHolder(this, command.c_str(), &RASession::CommandPrint, &RASession::CommandFinished);
+    auto  cmd = new CliCommandHolder(this, command.c_str(), &RASession::CommandPrint, &RASession::CommandFinished);
     sWorld->QueueCliCommand(cmd);
 
     // Wait for the command to finish
