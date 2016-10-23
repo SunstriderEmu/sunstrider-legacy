@@ -50,7 +50,7 @@ class HostileReference : public Reference<Unit, ThreatManager>
 {
     private:
         float iThreat;
-        float iTempThreatModifyer;                          // used for taunt
+        float iTempThreatModifier;                          // used for taunt and for SPELL_AURA_MOD_TOTAL_THREAT (ex: Fade spell)
         uint64 iUnitGuid;
         bool iOnline;
         bool iAccessible;
@@ -65,11 +65,11 @@ class HostileReference : public Reference<Unit, ThreatManager>
         //=================================================
         void addThreat(float pMod);
 
-        void setThreat(float pThreat) { addThreat(pThreat - getThreat()); }
+        void setThreat(float pThreat) { addThreat(pThreat - iThreat; }
 
-        void addThreatPercent(int32 pPercent) { float tmpThreat = iThreat; tmpThreat = tmpThreat * (pPercent+100) / 100; addThreat(tmpThreat-iThreat); }
+        void addThreatPercent(int32 percent);
 
-        float getThreat() const { return iThreat; }
+        float getThreat() const { return iThreat + iTempThreatModifier; }
 
         bool isOnline() const { return iOnline; }
 
@@ -77,19 +77,28 @@ class HostileReference : public Reference<Unit, ThreatManager>
         // in this case online = true, but accessible = false
         bool isAccessible() const { return iAccessible; }
 
-        // used for temporary setting a threat and reducting it later again.
+        // used for temporary setting a threat and reducing it later again.
         // the threat modification is stored
-        void setTempThreat(float pThreat) { iTempThreatModifyer = pThreat - getThreat(); if(iTempThreatModifyer != 0.0f) addThreat(iTempThreatModifyer);  }
+        void setTempThreat(float threat) 
+        { 
+            addTempThreat(threat - iTempThreatModifier);
+        }
+
+        void addTempThreat(float threat)          
+        {
+            iTempThreatModifier += threat;
+                
+            ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, threat);
+            fireStatusChanged(event);
+        }		         
 
         void resetTempThreat()
         {
-            if(iTempThreatModifyer != 0.0f)
-            {
-                addThreat(-iTempThreatModifyer);  iTempThreatModifyer = 0.0f;
-            }
+            addTempThreat(-iTempThreatModifier);
+            ASSERT(iTempThreatModifier == 0);
         }
 
-        float getTempThreatModifyer() { return iTempThreatModifyer; }
+        float getTempThreatModifier() { return iTempThreatModifier; }
 
         //=================================================
         // check, if source can reach target and set the status

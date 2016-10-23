@@ -25,7 +25,8 @@
 
 //=====================================================
 
-template <class TO, class FROM> class Reference : public LinkedListElement
+template <class TO, class FROM> 
+class Reference : public LinkedListElement
 {
     private:
         TO* iRefTo;
@@ -87,6 +88,10 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         inline TO* getTarget() const { return iRefTo; }
 
         inline FROM* GetSource() const { return iRefFrom; }
+
+    private:
+        Reference(Reference const&) = delete;
+        Reference& operator=(Reference const&) = delete;
 };
 
 //=====================================================

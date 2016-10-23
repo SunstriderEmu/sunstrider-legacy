@@ -35,7 +35,6 @@ class LinkedListElement
         LinkedListElement* iPrev;
     public:
         LinkedListElement() { iNext = nullptr; iPrev = nullptr; }
-        ~LinkedListElement() { delink(); }
 
         bool hasNext() const { return(iNext->iNext != nullptr); }
         bool hasPrev() const { return(iPrev->iPrev != nullptr); }
@@ -53,10 +52,13 @@ class LinkedListElement
 
         void delink()
         {
-            if(isInList())
-            {
-                iNext->iPrev = iPrev; iPrev->iNext = iNext; iNext = nullptr; iPrev = nullptr;
-            }
+            if(!isInList())
+                return;
+
+            iNext->iPrev = iPrev; 
+            iPrev->iNext = iNext; 
+            iNext = nullptr; 
+            iPrev = nullptr;
         }
 
         void insertBefore(LinkedListElement* pElem)
@@ -74,6 +76,14 @@ class LinkedListElement
             iNext->iPrev = pElem;
             iNext = pElem;
         }
+
+    private:
+        //prevent copy construction
+        LinkedListElement(LinkedListElement const&) = delete;
+        LinkedListElement& operator=(LinkedListElement const&) = delete;
+
+    protected:
+        ~LinkedListElement() { delink(); }
 };
 
 //============================================

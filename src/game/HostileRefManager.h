@@ -33,16 +33,14 @@ class SpellInfo;
 
 class HostileRefManager : public RefManager<Unit, ThreatManager>
 {
-    private:
-        Unit *iOwner;
     public:
-        explicit HostileRefManager(Unit *pOwner) { iOwner = pOwner; }
+        explicit HostileRefManager(Unit *pOwner) : iOwner(pOwner) { }
         ~HostileRefManager() override;
 
-        Unit* GetOwner() { return iOwner; }
+        Unit* GetOwner() const { return iOwner; }
 
-        // send threat to all my hateres for the pVictim
-        // The pVictim is hated than by them as well
+        // send threat to all my haters for the pVictim
+        // The pVictim is then hated by them as well
         // use for buffs and healing threat functionality
         void threatAssist(Unit *pVictim, float threat, SpellInfo const* threatSpell = nullptr, bool pSingleTarget = false, bool skipModifiers = false);
 
@@ -63,6 +61,8 @@ class HostileRefManager : public RefManager<Unit, ThreatManager>
 
         // delete one reference, defined by Unit
         void deleteReference(Unit *pCreature);
+    private:
+        Unit *iOwner;
 };
 //=================================================
 #endif

@@ -189,6 +189,10 @@ class LootTemplate
     private:
         LootStoreItemList Entries;                          // not grouped only
         LootGroups        Groups;                           // groups have own (optimised) processing, grouped entries go there
+
+        // Objects of this class must never be copied, we are storing pointers in container
+        LootTemplate(LootTemplate const&) = delete;
+        LootTemplate& operator=(LootTemplate const&) = delete;
 };
 
 //=====================================================

@@ -33,7 +33,7 @@
 //==============================================================
 
 // Apply modifiers from spells mods (SPELLMOD_THREAT) and global threat modifiers (SPELL_AURA_MOD_THREAT). Also brought to you with some dirty hacks.
-float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellInfo const *pThreatSpell)
+float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pThreat, SpellSchoolMask schoolMask, SpellInfo const *pThreatSpell /* = nullptr */)
 {
     if(pThreatSpell)
     {
@@ -52,7 +52,7 @@ float ThreatCalcHelper::calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float pT
     return pThreat;
 }
 
-bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell)
+bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell /* = nullptr */)
 {
     //function deals with adding threat and adding players and pets into ThreatList
     //mobs, NPCs, guards have ThreatList and HateOfflineList
@@ -102,7 +102,7 @@ bool ThreatCalcHelper::isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellIn
 HostileReference::HostileReference(Unit* pUnit, ThreatManager *pThreatManager, float pThreat)
 {
     iThreat = pThreat;
-    iTempThreatModifyer = 0.0f;
+    iTempThreatModifier = 0.0f;
     link(pUnit, pThreatManager);
     iUnitGuid = pUnit->GetGUID();
     iOnline = true;
@@ -142,22 +142,34 @@ void HostileReference::fireStatusChanged(const ThreatRefStatusChangeEvent& pThre
 
 //============================================================
 
-void HostileReference::addThreat(float pMod)
+void HostileReference::addThreat(float modThreat)
 {
-    iThreat += pMod;
+    if(!modThreat)
+        return;
+
+    iThreat += modThreat;
+
     // the threat is changed. Source and target unit have to be availabe
     // if the link was cut before relink it again
     if(!isOnline())
         updateOnlineStatus();
-    if(pMod != 0.0f)
-        fireStatusChanged(ThreatRefStatusChangeEvent(UEV_THREAT_REF_THREAT_CHANGE, this, pMod));
-    if(isValid() && pMod >= 0)
+
+    ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, modThreat);
+    fireStatusChanged(event);
+
+    if(isValid() && modThreat >= 0)
     {
         Unit* victim_owner = getTarget()->GetCharmerOrOwner();
         if(victim_owner && victim_owner->IsAlive())
             GetSource()->addThreat(victim_owner, 0.0f);     // create a threat to the owner of a pet, if the pet attacks
     }
 }
+
+void HostileReference::addThreatPercent(int32 percent) 
+{ 
+    addThreat(CalculatePct(iThreat, percent));
+}
+
 
 //============================================================
 // check, if source can reach target and set the status
@@ -217,7 +229,7 @@ void HostileReference::setAccessibleState(bool pIsAccessible)
     if(iAccessible != pIsAccessible)
     {
         iAccessible = pIsAccessible;
-        fireStatusChanged(ThreatRefStatusChangeEvent(UEV_THREAT_REF_ASSECCIBLE_STATUS, this));
+        fireStatusChanged(ThreatRefStatusChangeEvent(UEV_THREAT_REF_ACCESSIBLE_STATUS, this));
     }
 }
 
@@ -498,7 +510,7 @@ void ThreatManager::tauntApply(Unit* pTaunter)
     HostileReference* ref = iThreatContainer.getReferenceByTarget(pTaunter);
     if(getCurrentVictim() && ref && (ref->getThreat() < getCurrentVictim()->getThreat()))
     {
-        if(ref->getTempThreatModifyer() == 0.0f)
+        if(ref->getTempThreatModifier() == 0.0f)
                                                             // Ok, temp threat is unused
             ref->setTempThreat(getCurrentVictim()->getThreat());
     }
@@ -520,7 +532,7 @@ void ThreatManager::detauntApply(Unit* pDetaunter)
     HostileReference* ref = iThreatContainer.getReferenceByTarget(pDetaunter);
     if (ref)
     {
-        if (ref->getTempThreatModifyer() == 0.0f)
+        if (ref->getTempThreatModifier() == 0.0f)
             ref->setTempThreat(0);
     }
 }
