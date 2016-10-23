@@ -4163,6 +4163,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
                 if((spell->GetSchoolMask() & school_mask)//Check for school mask
                     && !( spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)   //Spells unaffected by invulnerability
                     && !iter->second->IsPositive()          //Don't remove positive spells
+                    && !spell->IsPassive()                  //Don't remove passive auras
                     && spell->Id != GetId()                 //Don't remove self
                     && spell->Id != 12042                   //Don't remove Arcane Power, don't know why it got removed...
                     && spell->Id != 37441                   // Improved Arcane Blast

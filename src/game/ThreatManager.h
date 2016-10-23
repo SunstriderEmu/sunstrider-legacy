@@ -65,7 +65,7 @@ class HostileReference : public Reference<Unit, ThreatManager>
         //=================================================
         void addThreat(float pMod);
 
-        void setThreat(float pThreat) { addThreat(pThreat - iThreat; }
+        void setThreat(float pThreat) { addThreat(pThreat - iThreat); }
 
         void addThreatPercent(int32 percent);
 
