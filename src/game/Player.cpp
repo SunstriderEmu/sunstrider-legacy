@@ -13825,8 +13825,19 @@ bool Player::SatisfyQuestReputation( Quest const* qInfo, bool msg )
     return true;
 }
 
-bool Player::SatisfyQuestStatus( Quest const* qInfo, bool msg )
+bool Player::SatisfyQuestStatus(Quest const* qInfo, bool msg)
 {
+    if (GetQuestStatus(qInfo->GetQuestId()) == QUEST_STATUS_REWARDED)
+    {
+        if (msg)
+        {
+            SendCanTakeQuestResponse(INVALIDREASON_QUEST_ALREADY_DONE);
+            TC_LOG_DEBUG("misc", "Player::SatisfyQuestStatus: Sent QUEST_STATUS_REWARDED (QuestID: %u) because player '%s' (%u) quest status is already REWARDED.",
+                    qInfo->GetQuestId(), GetName().c_str(), GetGUIDLow());
+        }
+        return false;
+    }
+
     QuestStatusMap::iterator itr = m_QuestStatus.find( qInfo->GetQuestId() );
     if  ( itr != m_QuestStatus.end() && itr->second.m_status != QUEST_STATUS_NONE )
     {
