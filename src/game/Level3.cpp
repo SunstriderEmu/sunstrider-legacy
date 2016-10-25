@@ -61,14 +61,10 @@
 #include "SmartAI.h"
 #include "GameEventMgr.h"
 #include "IRCMgr.h"
+#include "test.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
 #include "PathGenerator.h"                                  // for mmap commands      
-
-#ifdef TESTS
-    #define CATCH_CONFIG_RUNNER
-    #include "catch.hpp"
-#endif
 
 //reload commands
 bool ChatHandler::HandleReloadCommand(const char* arg)
@@ -8706,7 +8702,7 @@ bool ChatHandler::HandleTestsCommand(const char* args)
 
     int argc = tokens.size() + 1;
     char** argv = new char*[argc];
-    std::string const& osef = "LOLILOL";
+    std::string const& osef = "worldserver";
     argv[0] = new char[osef.size() + 1];
     std::strcpy(argv[0], osef.c_str());
     for(size_t i = 0; i < tokens.size(); i++)
@@ -8716,15 +8712,10 @@ bool ChatHandler::HandleTestsCommand(const char* args)
         std::strcpy(argv[i + 1], str.c_str());
     }
 
-    // Prepare Catch. CatchSession may be initialized only once, so we store it as static
-    static Catch::Session* catch_session = nullptr;
-    if(catch_session == nullptr)
-        new Catch::Session(); //will never be deleted but hey, this is not meant to be use in production
-
     // Execute Catch
     int result = -1;
     try {
-        result = catch_session->run( argc, argv );
+        result = Testing::RunCatch(argc, argv);
     } catch (std::exception const& e) {
         PSendSysMessage("Catch threw exception %s", e.what());
     }

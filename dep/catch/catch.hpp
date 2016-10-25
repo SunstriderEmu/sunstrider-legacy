@@ -6343,6 +6343,14 @@ namespace Catch {
             Catch::cleanUp();
         }
 
+        //KELNO: Added to allow multiple runs
+        void reset() {
+            // m_cli never changes
+            // m_unusedTokens already reset at new exec
+            m_configData = ConfigData();
+            // m_config already reset at the end of each exec
+        }
+
         void showHelp( std::string const& processName ) {
             Catch::cout() << "\nCatch v" << libraryVersion << "\n";
 
