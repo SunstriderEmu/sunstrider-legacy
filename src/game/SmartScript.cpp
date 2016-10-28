@@ -3949,7 +3949,7 @@ void SmartScript::FillScript(SmartAIEventList e, WorldObject* obj, AreaTriggerEn
     for (auto & i : e)
     {
         #ifndef TRINITY_DEBUG
-            if ((*i).event.event_flags & SMART_EVENT_FLAG_DEBUG_ONLY)
+            if (i.event.event_flags & SMART_EVENT_FLAG_DEBUG_ONLY)
                 continue;
         #endif
 
