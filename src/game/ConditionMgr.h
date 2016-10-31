@@ -128,7 +128,7 @@ enum ConditionSourceType
     CONDITION_SOURCE_TYPE_SPELL                          = 17,
     CONDITION_SOURCE_TYPE_SPELL_CLICK_EVENT              = 18, //Not implemented
     CONDITION_SOURCE_TYPE_QUEST_ACCEPT                   = 19,
-    CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK                = 20,
+    //CONDITION_SOURCE_TYPE_QUEST_SHOW_MARK                = 20,
     CONDITION_SOURCE_TYPE_VEHICLE_SPELL                  = 21, //Not implemented
     CONDITION_SOURCE_TYPE_SMART_EVENT                    = 22,
     CONDITION_SOURCE_TYPE_NPC_VENDOR                     = 23,
