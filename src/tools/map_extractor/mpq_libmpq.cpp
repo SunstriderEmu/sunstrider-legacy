@@ -52,6 +52,12 @@ MPQArchive::MPQArchive(const char* filename)
     gOpenArchives.push_front(this);
 }
 
+bool MPQArchive::isOpened() const
+{
+    return std::find(gOpenArchives.begin(), gOpenArchives.end(), this) != gOpenArchives.end();
+}
+
+
 void MPQArchive::close()
 {
     //gOpenArchives.erase(erase(&mpq_a);

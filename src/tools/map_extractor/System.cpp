@@ -1129,7 +1129,7 @@ void LoadCommonMPQFiles()
 inline void CloseMPQFiles()
 {
     for (ArchiveSet::iterator j = gOpenArchives.begin(); j != gOpenArchives.end(); ++j) (*j)->close();
-    gOpenArchives.clear();
+        gOpenArchives.clear();
 }
 
 int main(int argc, char * arg[])

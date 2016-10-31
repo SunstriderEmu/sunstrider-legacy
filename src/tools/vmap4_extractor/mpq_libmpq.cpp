@@ -58,6 +58,11 @@ void MPQArchive::close()
     libmpq__archive_close(mpq_a);
 }
 
+bool MPQArchive::isOpened() const
+{
+    return std::find(gOpenArchives.begin(), gOpenArchives.end(), this) != gOpenArchives.end();
+}
+
 MPQFile::MPQFile(const char* filename) :
     eof(false),
     buffer(0),
