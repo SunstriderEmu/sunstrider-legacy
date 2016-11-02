@@ -29,6 +29,8 @@ class Creature;
 class Player;
 class Unit;
 struct GameTele;
+struct GM_Ticket;
+class GameObject;
 
 class ChatCommand
 {

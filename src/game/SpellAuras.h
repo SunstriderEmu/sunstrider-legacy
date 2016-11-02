@@ -327,7 +327,7 @@ class Aura
 
         int32 m_procCharges;
         void SetCharges(int32 charges) { m_procCharges = charges; }
-        int32 GetCharges() { return m_procCharges; }
+        int32 GetCharges() const { return m_procCharges; }
         uint8 CalcMaxCharges(Unit* caster) const;
         uint8 CalcMaxCharges() const { return CalcMaxCharges(GetCaster()); }
         bool ModCharges(int32 num, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);

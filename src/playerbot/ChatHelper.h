@@ -5,6 +5,7 @@ using namespace std;
 typedef set<uint32> ItemIds;
 typedef set<uint32> SpellIds;
 
+enum ChatMsg : uint32;
 
 
 namespace ai

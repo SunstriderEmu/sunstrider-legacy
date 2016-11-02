@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "WorldPacket.h"
@@ -34,8 +15,6 @@
 
 void WorldSession::HandleSplitItemOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_SPLIT_ITEM");
     uint8 srcbag, srcslot, dstbag, dstslot, count;
 
@@ -68,8 +47,6 @@ void WorldSession::HandleSplitItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_SWAP_INV_ITEM");
     uint8 srcslot, dstslot;
 
@@ -107,9 +84,6 @@ void WorldSession::HandleSwapInvItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recvData )
 {
-    
-    
-    
     uint64 itemguid;
     uint8 dstslot;
     recvData >> itemguid >> dstslot;
@@ -129,8 +103,6 @@ void WorldSession::HandleAutoEquipItemSlotOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSwapItem( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_SWAP_ITEM");
     uint8 dstbag, dstslot, srcbag, srcslot;
 
@@ -161,8 +133,6 @@ void WorldSession::HandleSwapItem( WorldPacket & recvData )
 
 void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_AUTOEQUIP_ITEM");
     uint8 srcbag, srcslot;
 
@@ -264,8 +234,6 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleDestroyItemOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_DESTROYITEM");
     uint8 bag, slot, count, data1, data2, data3;
 
@@ -510,8 +478,6 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleReadItem( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode", "WORLD: CMSG_READ_ITEM");
 
     uint8 bag, slot;
@@ -545,8 +511,6 @@ void WorldSession::HandleReadItem( WorldPacket & recvData )
 
 void WorldSession::HandlePageQuerySkippedOpcode( WorldPacket & recvData )
 {
-    
-
     uint32 itemid;
     uint64 guid;
 
@@ -555,10 +519,6 @@ void WorldSession::HandlePageQuerySkippedOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 vendorguid, itemguid;
     uint8 _count;
 
@@ -671,10 +631,6 @@ void WorldSession::HandleSellItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 {
-    
-    
-    
-
     uint64 vendorguid;
     uint32 slot;
 
@@ -723,10 +679,6 @@ void WorldSession::HandleBuybackItem(WorldPacket & recvData)
 
 void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 vendorguid, bagguid;
     uint32 item;
     uint8 slot, count;
@@ -738,10 +690,6 @@ void WorldSession::HandleBuyItemInSlotOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 vendorguid;
     uint32 item;
     uint8 count, unk1; //slot?
@@ -753,10 +701,6 @@ void WorldSession::HandleBuyItemOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleListInventoryOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
 
     recvData >> guid;
@@ -865,8 +809,6 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 
 void WorldSession::HandleAutoStoreBagItemOpcode( WorldPacket & recvData )
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: CMSG_AUTOSTORE_BAG_ITEM");
     uint8 srcbag, srcslot, dstbag;
 
@@ -958,10 +900,6 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint8 srcbag, srcslot;
     recvPacket >> srcbag >> srcslot;
 
@@ -1000,10 +938,6 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint8 srcbag, srcslot;
     recvPacket >> srcbag >> srcslot;
 
@@ -1052,10 +986,6 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     if(!GetPlayer()->IsAlive())
     {
         GetPlayer()->SendEquipError( EQUIP_ERR_YOU_ARE_DEAD, nullptr, nullptr );
@@ -1124,10 +1054,6 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint8 gift_bag, gift_slot, item_bag, item_slot;
     //recvData.hexlike();
 
@@ -1229,10 +1155,6 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint64 guids[4];
     uint32 GemEnchants[3], OldEnchants[3];
     Item *Gems[3];
@@ -1358,10 +1280,6 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleCancelTempEnchantmentOpcode(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint32 eslot;
 
     recvData >> eslot;

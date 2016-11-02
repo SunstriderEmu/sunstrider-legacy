@@ -530,7 +530,7 @@ vector<uint32> RandomPlayerbotMgr::GetFreeBots(bool alliance)
         do
         {
             Field* fields = results->Fetch();
-            uint32 bot = fields[0].GetUInt32();
+            uint32 bot = uint64(fields[0].GetUInt64());
             bots.insert(bot);
         } while (results->NextRow());
     }

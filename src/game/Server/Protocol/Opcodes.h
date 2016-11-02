@@ -26,6 +26,8 @@
 #include "Common.h"
 #include <iomanip>
 
+enum ClientBuild : uint32;
+
 /// List of Opcodes
 enum Opcodes : uint16
 {

@@ -1357,6 +1357,10 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading InstanceTemplate" );
     sObjectMgr->LoadInstanceTemplate();
 
+    // sunwell: Global Storage, should be loaded asap
+    TC_LOG_INFO("server.loading", "Load Global Player Data...");
+    sWorld->LoadGlobalPlayerDataStore();
+
     ///- Clean up and pack instances
     // Must be called before `creature_respawn`/`gameobject_respawn` tables
     TC_LOG_INFO("server.loading", "Loading instances..." );

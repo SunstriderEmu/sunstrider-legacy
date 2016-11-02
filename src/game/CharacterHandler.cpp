@@ -83,23 +83,23 @@ public:
     PlayerbotHolder* GetPlayerbotHolder() { return playerbotHolder; }
 };
 
-void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
+Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 {
     // has bot already been added?x
 	Player* bot = sObjectMgr->GetPlayer(playerGuid);
 
 	if (bot && bot->IsInWorld())
-        return;
+        return nullptr;
 
     uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(playerGuid);
     if (accountId == 0)
-        return;
+        return nullptr;
 
     auto holder = new PlayerbotLoginQueryHolder(this, masterAccount, accountId, playerGuid);
     if(!holder->Initialize())
     {
         delete holder;                                      // delete all unprocessed queries
-        return;
+        return nullptr;
     }
 
     QueryResultHolderFuture future = CharacterDatabase.DelayQueryHolder(holder);
@@ -113,7 +113,7 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 
 	bot = botSession->GetPlayer();
 	if (!bot)
-		return;
+		return nullptr;
 
 	PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
 	bot->SetPlayerbotMgr(nullptr);
@@ -136,6 +136,7 @@ void PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
         ch.PSendSysMessage("You are not allowed to control bot %s...", bot->GetName().c_str());
         LogoutPlayerBot(bot->GetGUID());
     }
+    return bot;
 }
 
 #endif

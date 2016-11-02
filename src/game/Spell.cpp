@@ -3000,7 +3000,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         int _duration=0;
         for(ChanceTriggerSpells::const_iterator i = m_ChanceTriggerSpells.begin(); i != m_ChanceTriggerSpells.end(); ++i)
         {
-            if(roll_chance_i(i->second))
+            if(i->second == 100 || roll_chance_i(i->second))
             {
                 caster->CastSpell(unit, i->first, true, nullptr, nullptr, 0, true);
                 // SPELL_AURA_ADD_TARGET_TRIGGER auras shouldn't trigger auras without duration

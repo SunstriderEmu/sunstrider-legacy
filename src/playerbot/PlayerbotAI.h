@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef PLAYERBOT_AI_H
+#define PLAYERBOT_AI_H
+
 
 #include "PlayerbotMgr.h"
 #include "PlayerbotAIBase.h"
@@ -9,11 +12,11 @@
 #include "ChatFilter.h"
 #include "PlayerbotSecurity.h"
 #include "ChatHelper.h"
+#include "Chat.h"
 #include <stack>
 
 class Player;
 class PlayerbotMgr;
-class ChatHandler;
 
 using namespace std;
 using namespace ai;
@@ -185,3 +188,4 @@ protected:
     PlayerbotSecurity security;
 };
 
+#endif

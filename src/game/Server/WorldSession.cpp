@@ -1961,7 +1961,7 @@ void WorldSession::HandleBotPackets()
     WorldPacket* packet;
     while (_recvQueue.next(packet))
     {
-        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), BUILD_335);
+        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), BUILD_243);
         opHandle->Call(this, *packet);
         delete packet;
     }

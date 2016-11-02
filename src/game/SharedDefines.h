@@ -2159,7 +2159,7 @@ enum CorpseDynFlags
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_5s     6119
 #define SPELL_ID_WEAPON_SWITCH_COOLDOWN_1_0s     6123
 
-enum WeatherType
+enum WeatherType : uint32
 {
     WEATHER_TYPE_FINE       = 0,
     WEATHER_TYPE_RAIN       = 1,
@@ -2171,7 +2171,7 @@ enum WeatherType
 
 #define MAX_WEATHER_TYPE 4
 
-enum ChatMsg
+enum ChatMsg : uint32
 {
     CHAT_MSG_ADDON                  = 0xFFFFFFFF,
     CHAT_MSG_SYSTEM                 = 0x00,
@@ -2241,7 +2241,7 @@ enum ChatMsg
 #endif
 
 // Values from ItemPetFood (power of (value-1) used for compare with CreatureFamilyEntry.petDietMask
-enum PetDiet
+enum PetDiet : uint32
 {
     PET_DIET_MEAT     = 1,
     PET_DIET_FISH     = 2,
@@ -2264,7 +2264,7 @@ enum PetDiet
 #define GUILD_EVENTLOG_MAX_ENTRIES  100
 #define GUILD_MAX_RANKS_COUNT       10
 
-enum AIReaction
+enum AIReaction : uint32
 {
     AI_REACTION_ALERT    = 0,                               // pre-aggro (used in client packet handler)
     AI_REACTION_FRIENDLY = 1,                               // (NOT used in client packet handler)
@@ -2274,7 +2274,7 @@ enum AIReaction
 };
 
 // Diminishing Returns Types
-enum DiminishingReturnsType
+enum DiminishingReturnsType : uint32
 {
     DRTYPE_NONE         = 0,                                // this spell is not diminished, but may have limited it's duration to 10s
     DRTYPE_PLAYER       = 1,                                // this spell is diminished only when applied on players
@@ -2282,7 +2282,7 @@ enum DiminishingReturnsType
 };
 
 // Diminishing Return Groups
-enum DiminishingGroup
+enum DiminishingGroup : uint32
 {
     // Common Groups
     DIMINISHING_NONE,
@@ -2312,7 +2312,7 @@ enum DiminishingGroup
     DIMINISHING_LIMITONLY
 };
 
-enum NavTerrain
+enum NavTerrain : uint32
 {
     NAV_EMPTY   = 0x00,
     NAV_GROUND  = 0x01,
@@ -2326,7 +2326,7 @@ enum NavTerrain
     // we only have 8 bits
 };
 
-enum SummonCategory
+enum SummonCategory : uint32
 {
     SUMMON_CATEGORY_WILD = 0,
     SUMMON_CATEGORY_ALLY = 1,
@@ -2339,7 +2339,7 @@ enum SummonCategory
 #endif
 };
 
-enum SummonType
+enum SummonType : uint32
 {
     SUMMON_TYPE_CRITTER     = 41,
     SUMMON_TYPE_GUARDIAN    = 61,
@@ -2362,7 +2362,7 @@ enum SummonType
     SUMMON_TYPE_POSESSED2   = 428
 };
 
-enum EventId
+enum EventId : uint32
 {
     EVENT_CHARGE            = 1003,
     EVENT_JUMP              = 1004,
@@ -2373,7 +2373,7 @@ enum EventId
     EVENT_CHARGE_PREPATH    = 1005
 };
 
-enum MountResult
+enum MountResult : uint32
 {
     MOUNT_RESULT_CANT_MOUNT_UNIT                      = 0x0,
     MOUNT_RESULT_TOO_FAR                              = 0x1,
@@ -2382,7 +2382,7 @@ enum MountResult
     MOUNT_RESULT_MOUNT_ISNT_YOUR_PET                  = 0x4,
 };
 
-enum ResponseCodes
+enum ResponseCodes : uint32
 {
     RESPONSE_SUCCESS                                       = 0x00,
     RESPONSE_FAILURE                                       = 0x01,
@@ -2498,20 +2498,20 @@ enum SanctionType : uint32
 };
 
 /// Ban function return codes
-enum BanReturn
+enum BanReturn : uint32
 {
     BAN_SUCCESS,
     BAN_SYNTAX_ERROR,
     BAN_NOTFOUND
 };
 
-enum ScriptType
+enum ScriptType : uint32
 {
     SCRIPT_TYPE_CREATURE    = 0,
     SCRIPT_TYPE_SPELL       = 1
 };
 
-enum ActivateTaxiReply
+enum ActivateTaxiReply : uint32
 {
     ERR_TAXIOK                      = 0,
     ERR_TAXIUNSPECIFIEDSERVERERROR  = 1,
@@ -2528,7 +2528,7 @@ enum ActivateTaxiReply
     ERR_TAXINOTSTANDING             = 12
 };
 
-enum DuelCompleteType
+enum DuelCompleteType : uint32
 {
     DUEL_INTERRUPTED = 0,
     DUEL_WON        = 1,
@@ -2539,7 +2539,7 @@ enum DuelCompleteType
 #define MAX_QUEUED_PLAYERS_MAP 7
 
 // indexes of BattlemasterList.dbc
-enum BattlegroundTypeId
+enum BattlegroundTypeId : uint32
 {
     BATTLEGROUND_TYPE_NONE      = 0, // None
     BATTLEGROUND_AV             = 1, // Alterac Valley
@@ -2566,7 +2566,7 @@ enum BattlegroundTypeId
 #define MAX_BATTLEGROUND_QUEUE_RANGES 7                           // for level ranges 10-19, 20-29, 30-39, 40-49, 50-59, 60-69, 70+
 
 // handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
-enum BattlegroundQueueTypeId
+enum BattlegroundQueueTypeId : uint32
 {
     BATTLEGROUND_QUEUE_AV     = 1,
     BATTLEGROUND_QUEUE_WS     = 2,

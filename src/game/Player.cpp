@@ -51,6 +51,8 @@
 #include "IRCMgr.h"
 #include "ScriptMgr.h"
 #include "LogsDatabaseAccessor.h"
+#include "Mail.h"
+#include "Bag.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"

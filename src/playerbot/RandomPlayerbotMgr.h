@@ -5,6 +5,7 @@
 #include "PlayerbotAIBase.h"
 #include "PlayerbotMgr.h"
 
+class WorldLocation;
 class WorldPacket;
 class Player;
 class Unit;
@@ -48,6 +49,8 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         void Refresh(Player* bot);
         void RandomTeleportForLevel(Player* bot);
 
+        //made public for testing
+        uint32 AddRandomBot(bool alliance);
 	protected:
 	    void OnBotLoginInternal(Player * const bot) override {}
 
@@ -56,7 +59,6 @@ class RandomPlayerbotMgr : public PlayerbotHolder
         uint32 SetEventValue(uint32 bot, std::string event, uint32 value, uint32 validIn);
         list<uint32> GetBots();
         vector<uint32> GetFreeBots(bool alliance);
-        uint32 AddRandomBot(bool alliance);
         bool ProcessBot(uint32 bot);
         void ScheduleRandomize(uint32 bot, uint32 time);
         void RandomTeleport(Player* bot, uint16 mapId, float teleX, float teleY, float teleZ);
