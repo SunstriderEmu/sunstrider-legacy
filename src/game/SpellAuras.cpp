@@ -5249,8 +5249,7 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
                     m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i,GetModifierValue(),apply);
             }
         }
-        Pet* pet = m_target->GetPet();
-        if(pet)
+        if(Pet* pet = m_target->GetPet())
             pet->UpdateAttackPowerAndDamage();
     }
 }
@@ -5694,6 +5693,23 @@ bool Aura::CanBeSaved() const
     if (   GetSpellInfo()->HasAuraEffect(SPELL_AURA_MOD_SHAPESHIFT)
         || GetSpellInfo()->HasAuraEffect(SPELL_AURA_MOD_STEALTH)
         )
+        return false;
+
+#ifdef LICH_KING
+    // Can't be saved - aura handler relies on calculated amount and changes it
+    if (HasEffectType(SPELL_AURA_CONVERT_RUNE))
+        return false;
+
+    // No point in saving this, since the stable dialog can't be open on aura load anyway.
+    if (HasAuraEffect(SPELL_AURA_OPEN_STABLE))
+        return false;
+    // Can't save vehicle auras, it requires both caster & target to be in world
+    if (HasEffectType(SPELL_AURA_CONTROL_VEHICLE))
+        return false;
+#endif
+
+    // don't save auras removed by proc system
+    if (IsUsingCharges() && !GetCharges())
         return false;
 
     return true;
