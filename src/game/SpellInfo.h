@@ -498,6 +498,9 @@ public:
     bool IsAutoRepeatRangedSpell() const;
     bool HasInitialAggro() const;
 
+    //familyFlags = override spell familty flags
+    bool IsAffectedBySpell(uint32 spellId, uint8 effectId, uint64 familyFlags) const;
+
     SpellSchoolMask GetSchoolMask() const;
     uint32 GetAllEffectsMechanicMask() const;
     uint32 GetEffectMechanicMask(uint8 effIndex) const;

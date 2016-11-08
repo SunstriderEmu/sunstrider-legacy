@@ -18103,7 +18103,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const *spellInfo, SpellModifier *mod
 /*    if (spellInfo && spell)
         TC_LOG_INFO("entities.player","IsAffectedBySpellmod2: spell %u against spell %u: %u %u %u", spellInfo->Id, spell->m_spellInfo->Id, mod->op, mod->type, mod->value);*/
 
-    return sSpellMgr->IsAffectedBySpell(spellInfo,mod->spellId,mod->effectId,mod->mask);
+    return spellInfo->IsAffectedBySpell(mod->spellId, mod->effectId, mod->mask);
 }
 
 void Player::AddSpellMod(SpellModifier*& mod, bool apply)

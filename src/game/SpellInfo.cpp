@@ -888,6 +888,37 @@ bool SpellInfo::HasInitialAggro() const
     return !(HasAttribute(SPELL_ATTR1_NO_THREAT) || HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO));
 }
 
+bool SpellInfo::IsAffectedBySpell(uint32 spellId, uint8 effectId, uint64 familyFlags) const
+{
+    SpellInfo const *affect_spell = sSpellMgr->GetSpellInfo(spellId);
+    // false for affect_spell == NULL
+    if (!affect_spell)
+        return false;
+
+    //TC : Core/Spell: apply SPELLFAMILY_GENERIC mods to all spells by default
+    if (affect_spell->SpellFamilyName == SPELLFAMILY_GENERIC)
+        return true;
+
+    // False if spellFamily not equal
+    if (affect_spell->SpellFamilyName != this->SpellFamilyName)
+        return false;
+
+    // If familyFlags == 0
+    if (!familyFlags)
+    {
+        // Get it from spellAffect table
+        familyFlags = sSpellMgr->GetSpellAffectMask(spellId,effectId);
+        // false if familyFlags == 0
+        if (!familyFlags)
+            return false;
+    }
+    // true
+    if (familyFlags & this->SpellFamilyFlags)
+        return true;
+
+    return false;
+}
+
 bool SpellInfo::IsRangedWeaponSpell() const
 {
     return ((EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED)

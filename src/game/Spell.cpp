@@ -6972,7 +6972,7 @@ bool Spell::UpdatePointers()
 
 bool Spell::IsAffectedBy(SpellInfo const *spellInfo, uint32 effectId)
 {
-    return sSpellMgr->IsAffectedBySpell(m_spellInfo,spellInfo->Id,effectId,spellInfo->Effects[effectId].ItemType);
+    return m_spellInfo->IsAffectedBySpell(spellInfo->Id, effectId, spellInfo->Effects[effectId].ItemType);
 }
 
 bool Spell::CheckTargetCreatureType(Unit* target) const

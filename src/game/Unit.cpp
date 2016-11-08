@@ -8429,7 +8429,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const *spellProto, uin
     AuraList const& mOverrideClassScript = owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
     for (auto i : mOverrideClassScript)
     {
-        if(!sSpellMgr->IsAffectedBySpell(spellProto, i->GetId(), i->GetEffIndex(), 0 ))
+        if(!spellProto->IsAffectedBySpell(i->GetId(), i->GetEffIndex(), 0 ))
             continue;
         /*sif (!(*i)->IsAffectedOnSpell(spellProto))
             continue;*/
@@ -8865,7 +8865,7 @@ float Unit::SpellPctHealingModsDone(Unit* victim, SpellInfo const *spellProto, D
     AuraList const& mOverrideClassScript = owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
     for (auto i : mOverrideClassScript)
     {
-        if (!sSpellMgr->IsAffectedBySpell(spellProto, i->GetId(), i->GetEffIndex(), 0))
+        if (!spellProto->IsAffectedBySpell(i->GetId(), i->GetEffIndex(), 0))
         continue;
         /*
         if (!(*i)->IsAffectedOnSpell(spellProto))
@@ -9155,7 +9155,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const *spellProto, ui
     AuraList const& mOverrideClassScript = owner->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
     for (auto i : mOverrideClassScript)
     {
-        if (!sSpellMgr->IsAffectedBySpell(spellProto, i->GetId(), i->GetEffIndex(), 0))
+        if (!spellProto->IsAffectedBySpell(i->GetId(), i->GetEffIndex(), 0))
             continue;
         /*if (!(*i)->IsAffectedOnSpell(spellProto))
             continue;*/

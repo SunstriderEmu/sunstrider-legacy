@@ -401,37 +401,6 @@ void SpellMgr::LoadSpellAffects()
     }
 }
 
-bool SpellMgr::IsAffectedBySpell(SpellInfo const *spellInfo, uint32 spellId, uint8 effectId, uint64 familyFlags) const
-{
-    // false for spellInfo == NULL
-    if (!spellInfo)
-        return false;
-
-    SpellInfo const *affect_spell = sSpellMgr->GetSpellInfo(spellId);
-    // false for affect_spell == NULL
-    if (!affect_spell)
-        return false;
-
-    // False if spellFamily not equal
-    if (affect_spell->SpellFamilyName != spellInfo->SpellFamilyName)
-        return false;
-
-    // If familyFlags == 0
-    if (!familyFlags)
-    {
-        // Get it from spellAffect table
-        familyFlags = GetSpellAffectMask(spellId,effectId);
-        // false if familyFlags == 0
-        if (!familyFlags)
-            return false;
-    }
-    // true
-    if (familyFlags & spellInfo->SpellFamilyFlags)
-        return true;
-        
-    return false;
-}
-
 void SpellMgr::LoadSpellProcEvents()
 {
     mSpellProcEventMap.clear();                             // need for reload case
