@@ -7,6 +7,11 @@ if(POLICY CMP0043)
     cmake_policy(SET CMP0043 OLD) # Disable 'Ignore COMPILE_DEFINITIONS_<Config> properties'
 endif(POLICY CMP0043)
 
+if(POLICY CMP0054)
+  cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted - prevents intepreting if (SOME_STRING_VARIABLE MATCHES "MSVC") as if (SOME_STRING_VARIABLE MATCHES "1")
+endif()
+
+# add this options before PROJECT keyword
 set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
@@ -14,26 +19,33 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(SUNLIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 # Set RPATH-handing (CMake parameters)
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_SKIP_BUILD_RPATH 0)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH 0)
 set(CMAKE_INSTALL_RPATH "${LIBSDIR}")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
 # set macro-directory
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/macros")
 
-include(CheckIncludeFiles)
-include(CheckPlatform)
-include(PlatformRelatedSettings)
+# build in Release-mode by default if not explicitly set
+if( NOT CMAKE_BUILD_TYPE )
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
 
-include(FindThreads)
-include(FindMySql)
-include(FindReadline)
-include(ConfigureBoost)
-include(FindPCHSupport)
+include(CheckIncludeFiles)
+include(ConfigureScripts)
 
 # set default buildoptions and print them
 include(cmake/options.cmake)
+
+include(CheckPlatform)
+include(GroupSources)
+include(AutoCollect)
+include(PlatformRelatedSettings)
+
+include(FindThreads)
+find_package(MySQL)
+include(FindPCHSupport)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
@@ -55,18 +67,7 @@ if(UNIX)
     endif(BZIP2_FOUND)
 endif()
 
-find_package(OpenSSL)
-
-if(OPENSSL_FOUND)
-    message(STATUS "Found OpenSSL library (version ${OPENSSL_VERSION}) : ${OPENSSL_LIBRARIES}")
-    message(STATUS "Include dir is: ${OPENSSL_INCLUDE_DIR}")
-else(OPENSSL_FOUND)
-    message(SEND_ERROR "** OpenSSL library not found! Sunstrider cannot be compiled!")
-    return()
-endif(OPENSSL_FOUND)
-
 find_package(Git) 
-FIND_MYSQL()
 
 #For Windows, use prebuilt libircclient library instead of building it
 if (WIN32)
@@ -82,19 +83,6 @@ endif()
 if(DO_DEBUG)
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
-
-if(UNIX)
-    FIND_READLINE()
-    if(READLINE_FOUND)
-        message(STATUS "Found Readline library: ${READLINE_LIBRARY}")
-        message(STATUS "Include dir is: ${READLINE_INCLUDE_DIR}")
-    else(READLINE_FOUND)
-        message(SEND_ERROR "** Readline library not found!")
-        message(SEND_ERROR "** Your distro may provide a binary for Readline e.g. for ubuntu try apt-get install libreadline5-dev")
-        return()
-    endif(READLINE_FOUND)
-endif(UNIX)
-
 
 if(PLAYERBOT)
     add_definitions(-DPLAYERBOT)

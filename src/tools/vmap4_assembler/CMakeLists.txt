@@ -1,39 +1,14 @@
-# Copyright (C) 2005-2009 MaNGOS project <http://getmangos.com/>
-# Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
-#
-# This file is free software; as a special exception the author gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-include_directories(
-  ${CMAKE_SOURCE_DIR}/dep/
-  ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-  ${CMAKE_SOURCE_DIR}/src/framework
-  ${CMAKE_SOURCE_DIR}/src/framework/Platform
-  ${CMAKE_SOURCE_DIR}/src/game
-  ${CMAKE_SOURCE_DIR}/src/shared
-  ${CMAKE_SOURCE_DIR}/src/shared/Debugging
-  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic
-  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
-  ${CMAKE_SOURCE_DIR}/src/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/src/collision
-  ${CMAKE_SOURCE_DIR}/src/collision/Maps
-  ${CMAKE_SOURCE_DIR}/src/collision/Models
-  ${CMAKE_SOURCE_DIR}/src/framework/Platform
-  ${ZLIB_INCLUDE_DIR}
-)
-
 add_executable(vmap4assembler VMapAssembler.cpp)
+
 target_link_libraries(vmap4assembler
-  collision
-  g3dlib
-  ${ZLIB_LIBRARIES}
-)
+  common
+  zlib
+  )
+
+set_target_properties(vmap4assembler
+    PROPERTIES
+      FOLDER
+        "tools")
 
 if( UNIX )
   install(TARGETS vmap4assembler DESTINATION bin)

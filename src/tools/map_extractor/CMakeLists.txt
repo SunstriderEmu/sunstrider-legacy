@@ -1,49 +1,39 @@
-# Copyright (C) 2005-2009 MaNGOS project <http://getmangos.com/>
-# Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
-#
-# This file is free software; as a special exception the author gives
-# unlimited permission to copy and/or distribute it, with or without
-# modifications, as long as this notice is preserved.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
-# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-file(GLOB_RECURSE sources *.cpp *.h)
- 
-set(include_Dirs
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/dep/libmpq
-	${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/loadlib
-    ${CMAKE_SOURCE_DIR}/src/shared
-	${CMAKE_SOURCE_DIR}/src/shared/Utilities
-	${CMAKE_SOURCE_DIR}/src/framework/Platform
-	${CMAKE_SOURCE_DIR}/dep/cppformat
-)
-
-if( WIN32 )
-  set(include_Dirs
-    ${include_Dirs}
-    ${CMAKE_SOURCE_DIR}/dep/libmpq/win
-  )
-endif()
-
-include_directories(${include_Dirs})
+CollectSourceFiles(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  PRIVATE_SOURCES)
 
 add_executable(mapextractor
-  ${sources}
+  ${PRIVATE_SOURCES}
 )
 
+target_include_directories(mapextractor
+  PUBLIC
+    ${CMAKE_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/loadlib)
+
 target_link_libraries(mapextractor
-  shared
-  format
-  g3dlib
-  mpq
-  ${BZIP2_LIBRARIES}
-  ${ZLIB_LIBRARIES}
-  ${Boost_LIBRARIES}
-)
+  PUBLIC
+    common
+    mpq
+	g3dlite
+	cppformat
+	)
+
+CollectIncludeDirectories(
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  PUBLIC_INCLUDES)
+
+target_include_directories(mapextractor
+  PUBLIC
+    ${PUBLIC_INCLUDES}
+  PRIVATE
+    ${CMAKE_CURRENT_BINARY_DIR})
+
+set_target_properties(mapextractor
+    PROPERTIES
+      FOLDER
+        "tools")
 
 if( UNIX )
   install(TARGETS mapextractor DESTINATION bin)

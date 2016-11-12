@@ -1,22 +1,8 @@
-set(sources_windows_Debugging
-  ${CMAKE_SOURCE_DIR}/src/shared/Debugging/WheatyExceptionReport.cpp
-  ${CMAKE_SOURCE_DIR}/src/shared/Debugging/WheatyExceptionReport.h
-)
-
-add_subdirectory(authserver)
-add_subdirectory(collision)
-add_subdirectory(framework)
-add_subdirectory(game)
 add_subdirectory(genrev)
-add_subdirectory(irc)
-add_subdirectory(malloc)
-IF(PLAYERBOT)	
-add_subdirectory(playerbot)
-ENDIF()
-add_subdirectory(scripts)
-add_subdirectory(shared)
-IF(TESTS)	
-add_subdirectory(testing)
-ENDIF()
-add_subdirectory(tools)
-add_subdirectory(worldserver)
+add_subdirectory(common)
+add_subdirectory(server)
+
+if(TOOLS)
+  add_subdirectory(tools)
+endif(TOOLS)
+
