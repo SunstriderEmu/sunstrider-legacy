@@ -8,7 +8,7 @@
 #include "ItemPrototype.h"
 #include "Item.h"
 
-class Bag : public Item
+class TC_GAME_API Bag : public Item
 {
     public:
 

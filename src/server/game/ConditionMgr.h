@@ -212,7 +212,7 @@ typedef std::map<std::pair<int32, uint32 /*SAI source_type*/>, ConditionTypeCont
 
 typedef std::map<uint32, ConditionList> ConditionReferenceContainer;//only used for references
 
-class ConditionMgr
+class TC_GAME_API ConditionMgr
 {
     private:
         ConditionMgr();

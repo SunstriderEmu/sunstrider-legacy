@@ -26,7 +26,7 @@ namespace WorldPackets
         WorldPacket _worldPacket;
     };
 
-    class ServerPacket : public Packet
+    class TC_GAME_API ServerPacket : public Packet
     {
     public:
         ServerPacket(OpcodeServer opcode, size_t initialSize = 200) : Packet(WorldPacket(opcode, initialSize)) { }
@@ -39,7 +39,7 @@ namespace WorldPackets
         OpcodeServer GetOpcode() const { return OpcodeServer(_worldPacket.GetOpcode()); }
     };
 
-    class ClientPacket : public Packet
+    class TC_GAME_API ClientPacket : public Packet
     {
     public:
         ClientPacket(WorldPacket&& packet) : Packet(std::move(packet)) { }

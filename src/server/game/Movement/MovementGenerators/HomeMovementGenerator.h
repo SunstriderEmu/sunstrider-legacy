@@ -27,7 +27,7 @@ template < class T >
 class HomeMovementGenerator;
 
 template <>
-class HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
+class TC_GAME_API HomeMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, HomeMovementGenerator<Creature> >
 {
     public:
 

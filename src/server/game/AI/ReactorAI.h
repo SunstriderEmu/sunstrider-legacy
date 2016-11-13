@@ -7,7 +7,7 @@
 class Unit;
 
 //Default AI for civilian creatures
-class ReactorAI : public CreatureAI
+class TC_GAME_API ReactorAI : public CreatureAI
 {
     public:
 

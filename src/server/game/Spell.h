@@ -97,7 +97,7 @@ struct SpellDestination
 #endif
 };
 
-class SpellCastTargets
+class TC_GAME_API SpellCastTargets
 {
 public:
     SpellCastTargets();
@@ -262,7 +262,7 @@ enum SpellTargets
     SPELL_TARGETS_CHAINHEAL,
 };
 
-class Spell
+class TC_GAME_API Spell
 {
     friend struct Trinity::SpellNotifierCreatureAndPlayer;
     friend class SpellScript;
@@ -903,7 +903,7 @@ namespace Trinity
 typedef void(Spell::*pEffect)(uint32 i);
 
 //update spell. Reschedule itself if necessary
-class SpellEvent : public BasicEvent
+class TC_GAME_API SpellEvent : public BasicEvent
 {
     public:
         SpellEvent(Spell* spell);
@@ -917,7 +917,7 @@ class SpellEvent : public BasicEvent
 };
 
 //procs for reflects + remove reflect
-class ReflectEvent : public BasicEvent
+class TC_GAME_API ReflectEvent : public BasicEvent
 {
 public:
     ReflectEvent(uint64 casterGUID, uint64 targetGUID, const SpellInfo* spellInfo) : _casterGUID(casterGUID), _targetGUID(targetGUID), _spellInfo(spellInfo) { }

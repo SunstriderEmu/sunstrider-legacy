@@ -79,7 +79,7 @@ struct NPCVendorEntry
 
 class Player;
 
-class GameEventMgr
+class TC_GAME_API GameEventMgr
 {
    private:
         GameEventMgr();

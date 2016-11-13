@@ -79,7 +79,7 @@ static const uint8 GroupUpdateLength[GROUP_UPDATE_FLAGS_COUNT] = { 0, 2, 2, 2, 1
 
 class InstanceSave;
 
-class Roll : public LootValidatorRef
+class TC_GAME_API Roll : public LootValidatorRef
 {
     public:
         Roll(uint64 _guid, LootItem const& li)
@@ -114,7 +114,7 @@ struct InstanceGroupBind
 
 /** request member stats checken **/
 /** todo: uninvite people that not accepted invite **/
-class Group
+class TC_GAME_API Group
 {
     public:
         struct MemberSlot

@@ -18,48 +18,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef TRINITY_TOTEMAI_H
-#define TRINITY_TOTEMAI_H
+#ifndef TRINITY_GUARDAI_H
+#define TRINITY_GUARDAI_H
 
 #include "CreatureAI.h"
 #include "Timer.h"
 
 class Creature;
-class Totem;
 
-class TotemAI : public CreatureAI
+class TC_GAME_API GuardAI : public CreatureAI
 {
+    enum GuardState
+    {
+        STATE_NORMAL = 1,
+        STATE_LOOK_AT_VICTIM = 2
+    };
+
     public:
 
-        TotemAI(Creature *c);
-        ~TotemAI() override;
+        GuardAI(Creature *c);
 
         void MoveInLineOfSight(Unit *) override;
-        void AttackStart(Unit *) override;
         void EnterEvadeMode(EvadeReason /* why */) override;
+        void JustDied(Unit *) override;
 
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
 
     private:
-        Totem &i_totem;
+        Creature &i_creature;
         uint64 i_victimGuid;
+        GuardState i_state;
+        TimeTracker i_tracker;
 };
-
-//simply kill self
-class KillMagnetEvent : public BasicEvent
-{
-public:
-    KillMagnetEvent(Unit& self) : _self(self) { }
-    bool Execute(uint64 e_time, uint32 p_time) override
-    {
-        _self.SetDeathState(JUST_DIED);
-        return true;
-    }
-
-protected:
-    Unit& _self;
-};
-
 #endif
 

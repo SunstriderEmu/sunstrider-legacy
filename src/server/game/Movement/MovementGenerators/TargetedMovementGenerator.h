@@ -25,7 +25,7 @@
 #include "Unit.h"
 #include "PathGenerator.h"
 
-class TargetedMovementGeneratorBase
+class TC_GAME_API TargetedMovementGeneratorBase
 {
     public:
         TargetedMovementGeneratorBase(Unit* target) { i_target.link(target, this); }
@@ -35,7 +35,7 @@ class TargetedMovementGeneratorBase
 };
 
 template<class T, typename D>
-class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
+class TC_GAME_API TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
         /**
@@ -82,7 +82,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
 };
 
 template<class T>
-class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >
+class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >
 {
     public:
         ChaseMovementGenerator(Unit* target)
@@ -106,7 +106,7 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 };
 
 template<class T>
-class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
+class TC_GAME_API FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
 {
     public:
         FollowMovementGenerator(Unit* target)

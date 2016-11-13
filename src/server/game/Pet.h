@@ -122,7 +122,7 @@ extern const uint32 LevelStartLoyalty[6];
 
 #define PET_FOLLOW_DIST  0.7
 
-class Pet : public Creature
+class TC_GAME_API Pet : public Creature
 {
     public:
         explicit Pet(PetType type = MAX_PET_TYPE);

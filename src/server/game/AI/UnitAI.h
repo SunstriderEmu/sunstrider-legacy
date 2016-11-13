@@ -17,7 +17,7 @@ enum SelectAggroTarget : int
     SELECT_TARGET_FARTHEST,
 };
 
-class UnitAI
+class TC_GAME_API UnitAI
 {
     protected:
         Unit *me;

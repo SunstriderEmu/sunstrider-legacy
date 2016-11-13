@@ -13,7 +13,7 @@ enum TotemType
 
 #define SENTRY_TOTEM_ENTRY  3968
 
-class Totem : public Creature
+class TC_GAME_API Totem : public Creature
 {
     public:
         explicit Totem();

@@ -63,7 +63,7 @@ struct WaypointPath : public std::vector<WaypointData*>
 
 typedef std::unordered_map<uint32, WaypointPath> WaypointPathContainer;
 
-class WaypointMgr
+class TC_GAME_API WaypointMgr
 {
     public:
         static WaypointMgr* instance()

@@ -47,7 +47,7 @@ class WORLD_OBJECT_TYPES,
 class GRID_OBJECT_TYPES,
 class ThreadModel = Trinity::SingleThreaded<ACTIVE_OBJECT>
 >
-class Grid
+class TC_GAME_API Grid
 {
     // allows the GridLoader to access its internals
     template<class A, class T, class O> friend class GridLoader;

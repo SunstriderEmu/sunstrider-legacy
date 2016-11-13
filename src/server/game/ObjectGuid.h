@@ -84,7 +84,7 @@ struct PackedGuidReader
     uint64* GuidPtr;
 };
 
-class ObjectGuid
+class TC_GAME_API ObjectGuid
 {
     public:
         static ObjectGuid const Empty;
@@ -216,7 +216,7 @@ typedef std::unordered_set<uint64> GuidUnorderedSet;
 // minimum buffer size for packed guid is 9 bytes
 #define PACKED_GUID_MIN_BUFFER_SIZE 9
 
-class PackedGuid
+class TC_GAME_API PackedGuid
 {
         friend ByteBuffer& operator<<(ByteBuffer& buf, PackedGuid const& guid);
 
@@ -233,7 +233,7 @@ class PackedGuid
 };
 
 template<HighGuid high>
-class ObjectGuidGenerator
+class TC_GAME_API ObjectGuidGenerator
 {
     public:
         explicit ObjectGuidGenerator(uint32 start = 1) : _nextGuid(start) { }

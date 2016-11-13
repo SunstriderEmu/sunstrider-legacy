@@ -22,7 +22,7 @@ CollectIncludeDirectories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PUBLIC_INCLUDES
   # Exclude
-  # ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
+  ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   )
 
 target_include_directories(shared
@@ -59,5 +59,3 @@ endif()
 if(WIN32 AND MSVC)
     add_definitions(/openmp)
 endif()
-
-add_dependencies(shared revision_data.h)

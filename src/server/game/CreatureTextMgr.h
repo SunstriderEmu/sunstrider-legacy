@@ -73,7 +73,7 @@ typedef std::unordered_map<uint32, CreatureTextHolder> CreatureTextMap;     //al
 
 typedef std::map<CreatureTextId, CreatureTextLocale> LocaleCreatureTextMap;
 
-class CreatureTextMgr
+class TC_GAME_API CreatureTextMgr
 {
     private:
         CreatureTextMgr() { }
@@ -112,7 +112,7 @@ class CreatureTextMgr
 
 
 template<class Builder>
-class CreatureTextLocalizer
+class TC_GAME_API CreatureTextLocalizer
 {
     public:
         CreatureTextLocalizer(Builder const& builder, ChatMsg msgType) : _builder(builder), _msgType(msgType)

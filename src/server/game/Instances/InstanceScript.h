@@ -94,7 +94,7 @@ typedef std::pair<DoorInfoMap::const_iterator, DoorInfoMap::const_iterator> Door
 
 //NYI typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 
-class InstanceScript : public ZoneScript
+class TC_GAME_API InstanceScript : public ZoneScript
 {
     public:
 
@@ -183,7 +183,7 @@ struct DialogueEntryTwoSide
 };
 
 /// Helper class handling a dialogue given as static const array of DialogueEntry or DialogueEntryTwoSide
-class DialogueHelper
+class TC_GAME_API DialogueHelper
 {
     public:
         // The array MUST be terminated by {0,0,0}

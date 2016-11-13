@@ -26,7 +26,7 @@
 class Creature;
 
 //Default AI for non civilian creatures
-class AggressorAI : public CreatureAI
+class TC_GAME_API AggressorAI : public CreatureAI
 {
     public:
         explicit AggressorAI(Creature* c) : CreatureAI(c) {}

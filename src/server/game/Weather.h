@@ -49,7 +49,7 @@ enum WeatherState : int
 struct WeatherZoneChances;
 
 /// Weather for one zone
-class Weather
+class TC_GAME_API Weather
 {
     public:
         Weather(uint32 zone, WeatherZoneChances const* weatherChances);

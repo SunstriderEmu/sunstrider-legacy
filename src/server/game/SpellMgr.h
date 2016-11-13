@@ -624,7 +624,7 @@ enum EffectRadiusIndex
 };
 
 // Spell pet auras
-class PetAura
+class TC_GAME_API PetAura
 {
     public:
         PetAura()
@@ -676,7 +676,7 @@ class PetAura
 typedef std::map<uint16, PetAura> SpellPetAuraMap;
 
 
-struct SpellArea
+struct TC_GAME_API SpellArea
 {
     uint32 spellId;
     uint32 areaId;                                          // zone/subzone/or 0 is not limited to zone
@@ -746,7 +746,7 @@ typedef std::vector<SpellInfo*> SpellInfoMap;
 
 typedef std::map<int32, std::vector<int32> > SpellLinkedMap;
 
-class SpellMgr
+class TC_GAME_API SpellMgr
 {
     // Constructors
     public:

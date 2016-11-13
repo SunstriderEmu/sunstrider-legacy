@@ -245,7 +245,7 @@ struct RankInfo
     uint32 TabSlotPerDay[GUILD_BANK_MAX_TABS];
 };
 
-class Guild
+class TC_GAME_API Guild
 {
     public:
         Guild();

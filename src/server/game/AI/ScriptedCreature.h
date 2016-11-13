@@ -25,7 +25,7 @@ T* EnsureAI(U* ai)
     return cast_ai;
 };
 
-class SummonList : public std::list<uint64>
+class TC_GAME_API SummonList : public std::list<uint64>
 {
 public:
     SummonList(Creature* creature) : me(creature) {}
@@ -40,7 +40,7 @@ private:
     Creature* me;
 };
 
-class BumpHelper : std::map<uint64,uint32>
+class TC_GAME_API BumpHelper : std::map<uint64,uint32>
 {
 public:
     BumpHelper(uint32 cooldown) : m_cooldown(cooldown) {}
@@ -58,7 +58,7 @@ void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* 
 //Get a single gameobject of given entry
 GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
-struct ScriptedAI : public CreatureAI
+struct TC_GAME_API ScriptedAI : public CreatureAI
 {
     ScriptedAI(Creature* creature);
     ~ScriptedAI() override {}
@@ -188,7 +188,7 @@ private:
 
 };
 
-struct NullCreatureAI : public ScriptedAI
+struct TC_GAME_API NullCreatureAI : public ScriptedAI
 {
     NullCreatureAI(Creature* c) : ScriptedAI(c) {}
     ~NullCreatureAI() override {}
@@ -203,7 +203,7 @@ struct NullCreatureAI : public ScriptedAI
 };
 
 
-class BossAI : public ScriptedAI
+class TC_GAME_API BossAI : public ScriptedAI
 {
 public:
     BossAI(Creature* creature, uint32 bossId);

@@ -26,7 +26,7 @@
 class Group;
 class Player;
 
-class GroupReference : public Reference<Group, Player>
+class TC_GAME_API GroupReference : public Reference<Group, Player>
 {
     protected:
         uint8 iSubGroup;

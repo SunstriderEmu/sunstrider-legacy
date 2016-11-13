@@ -2,6 +2,8 @@
 #ifndef TRINITY_SPELLAURAEFFECTS_H
 #define TRINITY_SPELLAURAEFFECTS_H
 
+//NYI 
+
 class AuraEffect
 {
 public:

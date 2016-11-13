@@ -21,7 +21,7 @@
 
 #include "MovementGenerator.h"
 
-class IdleMovementGenerator : public MovementGenerator
+class TC_GAME_API IdleMovementGenerator : public MovementGenerator
 {
     public:
 

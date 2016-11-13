@@ -29,7 +29,7 @@
 enum GOState: uint32;
 enum LootState: uint32;
 
-class GameObjectAI
+class TC_GAME_API GameObjectAI
 {
     protected:
         GameObject * const go;
@@ -60,7 +60,7 @@ class GameObjectAI
         virtual void OnLootStateChanged(LootState /*state*/, Unit* /*unit*/) { }
 };
 
-class NullGameObjectAI : public GameObjectAI
+class TC_GAME_API NullGameObjectAI : public GameObjectAI
 {
     public:
         explicit NullGameObjectAI(GameObject *g);

@@ -62,7 +62,7 @@ typedef void(Aura::*pAuraHandler)(bool Apply, bool Real);
 //      each setting object update field code line moved under if(Real) check is significant Trinity speedup, and less server->client data sends
 //      each packet sending code moved under if(Real) check is _large_ Trinity speedup, and lot less server->client data sends
 
-class Aura
+class TC_GAME_API Aura
 {
     friend Aura* CreateAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem);
 
@@ -409,7 +409,7 @@ class Aura
         void SetAuraApplication(uint32 slot, int8 count);
 };
 
-class AreaAura : public Aura
+class TC_GAME_API AreaAura : public Aura
 {
     public:
         AreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
@@ -424,7 +424,7 @@ class AreaAura : public Aura
 /* PersistentAreaAura are maintained by a list of multiple dynamic objects from the same caster.
 The aura is removed if we can't find any sources dynobjects in range.
 */
-class PersistentAreaAura : public Aura
+class TC_GAME_API PersistentAreaAura : public Aura
 {
     public:
         PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);

@@ -79,7 +79,7 @@ class Unit;
 struct GossipMenuItems;
 
 class OutdoorPvP;
-class OutdoorPvPObjective
+class TC_GAME_API OutdoorPvPObjective
 {
 public:
     OutdoorPvPObjective(OutdoorPvP * pvp);
@@ -159,7 +159,7 @@ protected:
 };
 
 // base class for specific outdoor pvp handlers
-class OutdoorPvP
+class TC_GAME_API OutdoorPvP
 {
 public:
     // ctor

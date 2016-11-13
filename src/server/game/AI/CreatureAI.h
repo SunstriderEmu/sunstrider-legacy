@@ -67,7 +67,7 @@ enum SCEquip
     EQUIP_UNEQUIP   = 0
 };
 
-class CreatureAI : public UnitAI
+class TC_GAME_API CreatureAI : public UnitAI
 {
     protected:
         Creature *me;

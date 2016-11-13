@@ -48,7 +48,7 @@ struct MemberPosition
 	float follow_dist;
 };
 
-class CreatureGroupManager
+class TC_GAME_API CreatureGroupManager
 {
     public:
 
@@ -86,7 +86,7 @@ class CreatureGroupManager
 
 #define RESPAWN_TIMER 15000
 
-class CreatureGroup
+class TC_GAME_API CreatureGroup
 {
     friend CreatureGroupManager;
     private:

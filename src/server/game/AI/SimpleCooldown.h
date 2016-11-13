@@ -6,7 +6,7 @@
 // General warning : negative cooldown (or another value) are ALLOWED !
 // So, be cautious...
 
-class SimpleCooldown
+class TC_GAME_API SimpleCooldown
 {    
 public :
     // Constructors

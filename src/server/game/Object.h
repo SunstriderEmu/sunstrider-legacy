@@ -306,7 +306,7 @@ struct MovementInfo
 
 #define MAPID_INVALID 0xFFFFFFFF
 
-class WorldLocation : public Position
+class TC_GAME_API WorldLocation : public Position
 {
     public:
         explicit WorldLocation(uint32 _mapid = MAPID_INVALID, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
@@ -321,7 +321,7 @@ class WorldLocation : public Position
 };
 
 
-class Object
+class TC_GAME_API Object
 {
     public:
         virtual ~Object ( );
@@ -522,7 +522,7 @@ class Object
         Object& operator=(Object const&);                   // prevent generation assigment operator
 };
 
-class WorldObject : public Object, public WorldLocation
+class TC_GAME_API WorldObject : public Object, public WorldLocation
 {
     public:
         ~WorldObject ( ) override = default;

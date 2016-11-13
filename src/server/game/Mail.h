@@ -104,7 +104,7 @@ struct MailItemInfo
     uint32 item_template;
 };
 
-struct MailItem
+struct TC_GAME_API MailItem
 {
     MailItem() : item_slot(0), item_guidlow(0), item_template(0), item(nullptr) {}
 
@@ -118,7 +118,7 @@ struct MailItem
 
 typedef std::map<uint32, MailItem> MailItemMap;
 
-class MailItemsInfo
+class TC_GAME_API MailItemsInfo
 {
     public:
         MailItemMap::const_iterator begin() const { return i_MailItemMap.begin(); }
@@ -159,7 +159,7 @@ class MailItemsInfo
         MailItemMap i_MailItemMap;                          // Keep the items in a map to avoid duplicate guids (which can happen), store only low part of guid
 };
 
-struct Mail
+struct TC_GAME_API Mail
 {
     uint32 messageID;
     uint8 messageType;

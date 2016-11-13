@@ -477,7 +477,7 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
-class Creature : public Unit
+class TC_GAME_API Creature : public Unit
 {
     public:
 
@@ -901,7 +901,7 @@ class Creature : public Unit
         CreatureTextRepeatGroup m_textRepeat;
 };
 
-class AssistDelayEvent : public BasicEvent
+class TC_GAME_API AssistDelayEvent : public BasicEvent
 {
     public:
         AssistDelayEvent(const uint64& victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
@@ -916,7 +916,7 @@ class AssistDelayEvent : public BasicEvent
         Unit&             m_owner;
 };
 
-class ForcedDespawnDelayEvent : public BasicEvent
+class TC_GAME_API ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
         ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
@@ -926,7 +926,7 @@ class ForcedDespawnDelayEvent : public BasicEvent
         Creature& m_owner;
 };
 
-class AIMessageEvent : public BasicEvent
+class TC_GAME_API AIMessageEvent : public BasicEvent
 {
 public:
     AIMessageEvent(Creature& owner, uint32 id, uint64 data = 0) : 

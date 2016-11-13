@@ -22,7 +22,7 @@
 #include "MovementGenerator.h"
 
 template<class T>
-class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
+class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
         FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) { }
@@ -42,7 +42,7 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
         TimeTracker i_nextCheckTime;
 };
 
-class TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
+class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
 {
     public:
         TimedFleeingMovementGenerator(uint64 fright, uint32 time) :

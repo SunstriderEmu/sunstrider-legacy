@@ -62,7 +62,7 @@ enum PathOptions
     PATHFIND_OPTION_IGNOREPATHFINDING = 0x10,
 };
 
-class PathGenerator
+class TC_GAME_API PathGenerator
 {
     public:
         explicit PathGenerator(Unit const* owner);

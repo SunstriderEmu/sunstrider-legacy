@@ -1052,7 +1052,7 @@ enum PlayerCommandStates
     CHEAT_WATERWALK = 0x10
 };
 
-class PlayerTaxi
+class TC_GAME_API PlayerTaxi
 {
     public:
         PlayerTaxi();
@@ -1120,7 +1120,7 @@ struct Gladiator {
 
 #define MAX_GLADIATORS_RANK 3
 
-class Player : public Unit
+class TC_GAME_API Player : public Unit
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);

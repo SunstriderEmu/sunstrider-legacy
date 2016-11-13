@@ -584,7 +584,7 @@ class GameObjectModel;
 //time before chest are automatically despawned after first loot
 #define CHEST_DESPAWN_TIME 300
 
-class GameObject : public WorldObject
+class TC_GAME_API GameObject : public WorldObject
 {
     public:
         explicit GameObject();

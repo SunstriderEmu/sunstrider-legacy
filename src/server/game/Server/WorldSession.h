@@ -212,7 +212,7 @@ struct PacketCounter
 };
 
 /// Player session in the World
-class WorldSession
+class TC_GAME_API WorldSession
 {
     friend class CharacterHandler;
     public:

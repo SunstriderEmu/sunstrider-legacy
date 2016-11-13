@@ -25,7 +25,7 @@
 
 class Unit;
 
-class DynamicObject : public WorldObject
+class TC_GAME_API DynamicObject : public WorldObject
 {
     public:
         typedef std::set<Unit*> AffectedSet;

@@ -1527,7 +1527,7 @@ public:
 };
 typedef  std::unordered_map<uint32, ObjectGuidList*> ObjectListMap;
 
-class SmartWaypointMgr
+class TC_GAME_API SmartWaypointMgr
 {
     public:
         SmartWaypointMgr() { }
@@ -1570,7 +1570,7 @@ typedef std::map<int32, std::list<std::string> > SmartAIDBErrorMap;
     sSmartScriptMgr->LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
     }
 
-class SmartAIMgr
+class TC_GAME_API SmartAIMgr
 {
     public:
         SmartAIMgr() { }

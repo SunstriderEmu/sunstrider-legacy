@@ -30,7 +30,7 @@ class ChatCommand
         std::vector<ChatCommand>      ChildCommands;
 };
 
-class ChatHandler
+class TC_GAME_API ChatHandler
 {
     public:
         explicit ChatHandler(WorldSession* session) : m_session(session) {}

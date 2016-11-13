@@ -52,7 +52,7 @@ enum SpellScriptState
 #define SPELL_SCRIPT_STATE_END SPELL_SCRIPT_STATE_UNLOADING + 1
 
 // helper class from which SpellScript and SpellAura derive, use these classes instead
-class _SpellScript
+class TC_GAME_API _SpellScript
 {
     // internal use classes & functions
     // DO NOT THESE IN SCRIPTS
@@ -158,7 +158,7 @@ enum SpellScriptHookType
 #define HOOK_SPELL_END SPELL_SCRIPT_HOOK_CHECK_CAST + 1
 #define HOOK_SPELL_COUNT HOOK_SPELL_END - HOOK_SPELL_START
 
-class SpellScript : public _SpellScript
+class TC_GAME_API SpellScript : public _SpellScript
 {
     // internal use classes & functions
     // DO NOT THESE IN SCRIPTS
@@ -481,7 +481,7 @@ enum AuraScriptHookType
 #define HOOK_AURA_EFFECT_COUNT HOOK_AURA_EFFECT_END - HOOK_AURA_EFFECT_START
 */
 /* NYI
-class AuraScript : public _SpellScript
+class TC_GAME_API AuraScript : public _SpellScript
 {
     // internal use classes & functions
     // DO NOT THESE IN SCRIPTS

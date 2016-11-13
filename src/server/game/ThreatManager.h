@@ -37,7 +37,7 @@ class SpellInfo;
 //==============================================================
 // Class to calculate the real threat based
 
-class ThreatCalcHelper
+class TC_GAME_API ThreatCalcHelper
 {
     public:
         static float calcThreat(Unit* pHatedUnit, Unit* pHatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const *threatSpell = nullptr);
@@ -46,7 +46,7 @@ class ThreatCalcHelper
 
 //==============================================================
 
-class HostileReference : public Reference<Unit, ThreatManager>
+class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
 {
     private:
         float iThreat;
@@ -139,7 +139,7 @@ class HostileReference : public Reference<Unit, ThreatManager>
 //==============================================================
 class ThreatManager;
 
-class ThreatContainer
+class TC_GAME_API ThreatContainer
 {
     public:
         typedef std::list<HostileReference*> StorageType;
@@ -183,7 +183,7 @@ class ThreatContainer
 
 //=================================================
 
-class ThreatManager
+class TC_GAME_API ThreatManager
 {
     private:
         HostileReference* iCurrentVictim;

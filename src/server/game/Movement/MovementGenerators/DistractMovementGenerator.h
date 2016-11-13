@@ -3,7 +3,7 @@
 
 #include "MovementGenerator.h"
 
-class DistractMovementGenerator : public MovementGenerator
+class TC_GAME_API DistractMovementGenerator : public MovementGenerator
 {
     public:
         explicit DistractMovementGenerator(Unit const* owner, float targetOrientation, uint32 timer);
@@ -20,7 +20,7 @@ class DistractMovementGenerator : public MovementGenerator
         float targetOrientation;
 };
 
-class AssistanceDistractMovementGenerator : public MovementGenerator
+class TC_GAME_API AssistanceDistractMovementGenerator : public MovementGenerator
 {
     public:
         AssistanceDistractMovementGenerator(uint32 timer);

@@ -40,7 +40,7 @@ Is referenced in three cases:
 - player-instance binds for permanent heroic/raid saves
 - group-instance binds (both solo and permanent) cache the player binds for the group leader
 */
-class InstanceSave
+class TC_GAME_API InstanceSave
 {
     friend class InstanceSaveManager;
 public:
@@ -146,7 +146,7 @@ private:
 
 typedef std::unordered_map<uint32 /*PAIR32(map, difficulty)*/, time_t /*resetTime*/> ResetTimeByMapDifficultyMap;
 
-class InstanceSaveManager
+class TC_GAME_API InstanceSaveManager
 {
     friend class InstanceSave;
 

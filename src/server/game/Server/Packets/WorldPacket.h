@@ -23,7 +23,7 @@
 #include "ByteBuffer.h"
 #include "Opcodes.h"
 
-class WorldPacket : public ByteBuffer
+class TC_GAME_API WorldPacket : public ByteBuffer
 {
     public:
                                                             // just container for later use

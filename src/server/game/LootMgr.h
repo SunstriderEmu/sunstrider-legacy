@@ -127,7 +127,7 @@ typedef std::unordered_map<uint32, LootTemplate*> LootTemplateMap;
 
 typedef std::set<uint32> LootIdSet;
 
-class LootStore
+class TC_GAME_API LootStore
 {
     public:
         explicit LootStore(char const* name, char const* entryName) : m_name(name), m_entryName(entryName) {}
@@ -159,7 +159,7 @@ class LootStore
         char const* m_entryName;
 };
 
-class LootTemplate
+class TC_GAME_API LootTemplate
 {
     class  LootGroup;                                       // A set of loot definitions for items (refs are not allowed inside)
     typedef std::vector<LootGroup*> LootGroups;
@@ -197,7 +197,7 @@ class LootTemplate
 
 //=====================================================
 
-class LootValidatorRef :  public Reference<Loot, LootValidatorRef>
+class TC_GAME_API LootValidatorRef :  public Reference<Loot, LootValidatorRef>
 {
     public:
         LootValidatorRef() {}
@@ -207,7 +207,7 @@ class LootValidatorRef :  public Reference<Loot, LootValidatorRef>
 
 //=====================================================
 
-class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
+class TC_GAME_API LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
 {
     public:
         typedef LinkedListHead::Iterator< LootValidatorRef > iterator;
@@ -223,7 +223,7 @@ class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
 
 //=====================================================
 
-struct Loot
+struct TC_GAME_API Loot
 {
     QuestItemMap const& GetPlayerQuestItems() const { return PlayerQuestItems; }
     QuestItemMap const& GetPlayerFFAItems() const { return PlayerFFAItems; }

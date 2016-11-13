@@ -523,7 +523,7 @@ private:
     CliCommandHolder& operator=(CliCommandHolder const& right) = delete;
 };
 /// The World
-class World
+class TC_GAME_API World
 {
     public:
         static volatile uint32 m_worldLoopCounter;

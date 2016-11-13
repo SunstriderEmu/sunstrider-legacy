@@ -395,7 +395,7 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang);
 
 class PlayerDumpReader;
 
-class ObjectMgr
+class TC_GAME_API ObjectMgr
 {
     friend class PlayerDumpReader;
 

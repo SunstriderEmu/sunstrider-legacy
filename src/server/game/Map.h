@@ -96,7 +96,7 @@ typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
 
-class Map : public GridRefManager<NGridType>
+class TC_GAME_API Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
@@ -462,7 +462,7 @@ enum InstanceResetMethod
     INSTANCE_RESET_RESPAWN_DELAY
 };
 
-class InstanceMap : public Map
+class TC_GAME_API InstanceMap : public Map
 {
     public:
         InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode);
@@ -489,7 +489,7 @@ class InstanceMap : public Map
         uint32 i_script_id;
 };
 
-class BattlegroundMap : public Map
+class TC_GAME_API BattlegroundMap : public Map
 {
     public:
         BattlegroundMap(uint32 id, uint32 InstanceId);

@@ -24,7 +24,7 @@
 #include "Creature.h"
 #include "ObjectAccessor.h"
 
-class TemporarySummon : public Creature
+class TC_GAME_API TemporarySummon : public Creature
 {
     public:
         explicit TemporarySummon(uint64 summoner = 0);
