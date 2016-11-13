@@ -21,6 +21,8 @@
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #include "ScriptMgr.h"
+#include "ScriptReloadMgr.h"
+#include "ScriptLoader.h"
 #include "OutdoorPvPMgr.h"
 #include "Realm/Realm.h"
 #include "World.h"
@@ -85,7 +87,6 @@ void ShutdownThreadPool(std::vector<std::thread>& threadPool);
 void ShutdownCLIThread(std::thread* cliThread);
 variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& cfg_service);
 
-bool MAP_CRASH_RECOVERY_ENABLED = false;
 //segv handler, print stack to dump file
 void handle_segv()
 {
@@ -153,9 +154,8 @@ extern int main(int argc, char **argv)
         return 1;
     }
 
-    if (sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false))
+	if (sWorld->getConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
     {
-        MAP_CRASH_RECOVERY_ENABLED = true;
         segvcatch::init_segv(handle_segv);
         segvcatch::init_fpe(handle_segv);
     }
@@ -225,7 +225,10 @@ extern int main(int argc, char **argv)
     // Set server offline (not connectable)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_VERSION_MISMATCH, realmID);
 
+	LoadRealmInfo();
+
     // Initialize the World
+	sScriptMgr->SetScriptLoader(AddScripts);
     sWorld->SetInitialWorldSettings();
     
     // Launch CliRunnable thread
@@ -588,5 +591,58 @@ AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
     auto  acceptor = new AsyncAcceptor(ioService, raListener, raPort);
     acceptor->AsyncAccept<RASession>();
     return acceptor;
+}
+
+bool LoadRealmInfo()
+{
+	boost::asio::ip::tcp::resolver resolver(_ioService);
+	boost::asio::ip::tcp::resolver::iterator end;
+
+	QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
+	if (!result)
+		return false;
+
+	Field* fields = result->Fetch();
+	realm.Name = fields[1].GetString();
+	boost::asio::ip::tcp::resolver::query externalAddressQuery(ip::tcp::v4(), fields[2].GetString(), "");
+
+	boost::system::error_code ec;
+	boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
+	if (endPoint == end || ec)
+	{
+		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[2].GetString().c_str());
+		return false;
+	}
+
+	realm.ExternalAddress = (*endPoint).endpoint().address();
+
+	boost::asio::ip::tcp::resolver::query localAddressQuery(ip::tcp::v4(), fields[3].GetString(), "");
+	endPoint = resolver.resolve(localAddressQuery, ec);
+	if (endPoint == end || ec)
+	{
+		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[3].GetString().c_str());
+		return false;
+	}
+
+	realm.LocalAddress = (*endPoint).endpoint().address();
+
+	boost::asio::ip::tcp::resolver::query localSubmaskQuery(ip::tcp::v4(), fields[4].GetString(), "");
+	endPoint = resolver.resolve(localSubmaskQuery, ec);
+	if (endPoint == end || ec)
+	{
+		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[4].GetString().c_str());
+		return false;
+	}
+
+	realm.LocalSubnetMask = (*endPoint).endpoint().address();
+
+	realm.Port = fields[5].GetUInt16();
+	realm.Type = fields[6].GetUInt8();
+	realm.Flags = RealmFlags(fields[7].GetUInt8());
+	realm.Timezone = fields[8].GetUInt8();
+	realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
+	realm.PopulationLevel = fields[10].GetFloat();
+	realm.Build = fields[11].GetUInt32();
+	return true;
 }
 /// @}

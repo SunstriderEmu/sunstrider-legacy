@@ -1220,7 +1220,7 @@ bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
     if (!map)
         return false;
 
-    map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS);
+    map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS); //fade over 10 seconds
     PSendSysMessage("Changed zone light to %u", lightId);
     return true;
 }

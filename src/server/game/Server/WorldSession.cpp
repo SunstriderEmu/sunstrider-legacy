@@ -1210,7 +1210,7 @@ PreparedQueryResultFuture WorldSession::LoadPermissionsAsync()
     TC_LOG_DEBUG("rbac", "WorldSession::LoadPermissions [AccountId: %u, Name: %s, realmId: %d, secLevel: %u]",
         id, _accountName.c_str(), realmID, secLevel);
 
-    _RBACData = new rbac::RBACData(id, _accountName, realmID, secLevel);
+    _RBACData = new rbac::RBACData(id, _accountName, realm.Id.Realm, secLevel);
     return _RBACData->LoadFromDBAsync();
 
 }

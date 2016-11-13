@@ -24,6 +24,7 @@
 #include "Define.h"
 #include "Map.h"
 #include "MapUpdater.h"
+#include "MapInstanced.h"
 
 class WorldLocation;
 
@@ -113,6 +114,13 @@ class MapManager
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
         void MapCrashed(Map& map);
+
+		template<typename Worker>
+		void DoForAllMaps(Worker&& worker);
+
+		template<typename Worker>
+		void DoForAllMapsWithMapId(uint32 mapId, Worker&& worker);
+
     private:
         typedef std::vector<bool> InstanceIds;
 
@@ -120,7 +128,7 @@ class MapManager
         ~MapManager();
 
         MapManager(const MapManager &);
-        MapManager& operator=(const MapManager &);
+        MapManager& operator=(const MapManager &) = delete;
         
         MapMapType i_maps;
         IntervalTimer i_timer;
@@ -130,6 +138,46 @@ class MapManager
         uint32 _nextInstanceId;
         MapUpdater m_updater;
 };
+
+template<typename Worker>
+void MapManager::DoForAllMaps(Worker&& worker)
+{
+	std::lock_guard<std::mutex> lock(_mapsLock);
+
+	for (auto& mapPair : i_maps)
+	{
+		Map* map = mapPair.second;
+		if (MapInstanced* mapInstanced = map->ToMapInstanced())
+		{
+			MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+			for (auto& instancePair : instances)
+				worker(instancePair.second);
+		}
+		else
+			worker(map);
+	}
+}
+
+template<typename Worker>
+inline void MapManager::DoForAllMapsWithMapId(uint32 mapId, Worker&& worker)
+{
+	std::lock_guard<std::mutex> lock(_mapsLock);
+
+	auto itr = i_maps.find(mapId);
+	if (itr != i_maps.end())
+	{
+		Map* map = itr->second;
+		if (MapInstanced* mapInstanced = map->ToMapInstanced())
+		{
+			MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+			for (auto& p : instances)
+				worker(p.second);
+		}
+		else
+			worker(map);
+	}
+}
+
 #define sMapMgr MapManager::instance()
 #endif
 

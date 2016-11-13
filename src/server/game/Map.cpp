@@ -30,6 +30,7 @@
 #include "BattleGround.h"
 #include "GridMap.h"
 #include "ObjectGridLoader.h"
+#include "Pet.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50

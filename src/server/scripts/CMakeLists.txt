@@ -1,9 +1,6 @@
+message("")
 
-# Display the script graph
-message("* Script configuration (${SCRIPTS}):
-    |")
-
-	# Make the script module list available in the current scope
+# Make the script module list available in the current scope
 GetScriptModuleList(SCRIPT_MODULE_LIST)
 
 # Make the native install offset available in this scope
@@ -66,6 +63,10 @@ endforeach()
 list(SORT GRAPH_KEYS)
 list(REMOVE_DUPLICATES GRAPH_KEYS)
 
+# Display the script graph
+message("* Script configuration (${SCRIPTS}):
+    |")
+
 foreach(GRAPH_KEY ${GRAPH_KEYS})
   if (NOT GRAPH_KEY STREQUAL "disabled")
     message("    +- ${GRAPH_VALUE_DISPLAY_${GRAPH_KEY}}")
@@ -79,42 +80,10 @@ foreach(GRAPH_KEY ${GRAPH_KEYS})
 endforeach()
 
 
-set(scripts_STAT_PCH_HDR ScriptPCH.h)
-set(scripts_STAT_PCH_SRC ScriptPCH.cpp)
+set(PRIVATE_PCH_HEADER ScriptPCH.h)
+set(PRIVATE_PCH_SOURCE ScriptPCH.cpp)
 
-include_directories(
-  ${CMAKE_BINARY_DIR}
-  ${CMAKE_SOURCE_DIR}/dep/cppformat
-  ${CMAKE_SOURCE_DIR}/src/collision
-  ${CMAKE_SOURCE_DIR}/src/shared/Logging
-  ${CMAKE_SOURCE_DIR}/src/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/src/framework
-  ${CMAKE_SOURCE_DIR}/src/framework/Platform
-  ${CMAKE_SOURCE_DIR}/src/scripts/include
-  ${CMAKE_SOURCE_DIR}/src/shared
-  ${CMAKE_SOURCE_DIR}/src/shared/Database
-  ${CMAKE_SOURCE_DIR}/src/shared/DataStores
-  ${CMAKE_SOURCE_DIR}/src/shared/Debugging
-  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic
-  ${CMAKE_SOURCE_DIR}/src/shared/Dynamic/LinkedReference
-  ${CMAKE_SOURCE_DIR}/src/shared/Logging
-  ${CMAKE_SOURCE_DIR}/src/shared/Packets
-  ${CMAKE_SOURCE_DIR}/src/shared/Threading
-  ${CMAKE_SOURCE_DIR}/src/shared/Utilities
-  ${CMAKE_SOURCE_DIR}/dep/
-  ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
-  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour
-  ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-  ${CMAKE_SOURCE_DIR}/src/game
-  ${CMAKE_SOURCE_DIR}/src/game/DataStores
-  ${CMAKE_SOURCE_DIR}/src/game/Movement
-  ${CMAKE_SOURCE_DIR}/src/game/Movement/Spline
-  ${CMAKE_SOURCE_DIR}/src/game/Movement/Waypoints
-  ${CMAKE_SOURCE_DIR}/src/game/Server
-  ${CMAKE_SOURCE_DIR}/src/game/Server/Protocol
-  ${CMAKE_CURRENT_SOURCE_DIR}/
-  ${MYSQL_INCLUDE_DIR}
-)
+GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Configures the scriptloader with the given name and stores the output in the LOADER_OUT variable.
 # It is possible to expose multiple subdirectories from the same scriptloader through passing
@@ -219,9 +188,10 @@ set(WORLDSERVER_DYNAMIC_SCRIPT_MODULES_DEPENDENCIES ${DYNAMIC_SCRIPT_MODULE_PROJ
 ConfigureScriptLoader("static" SCRIPT_MODULE_PRIVATE_SCRIPTLOADER OFF ${STATIC_SCRIPT_MODULES})
 
 add_library(scripts STATIC 
-  ${PRIVATE_SOURCES}
-  ${scripts_STAT_PCH_SRC}
+  ScriptLoader.h
+  ${PRIVATE_PCH_SOURCE}
   ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER}
+  ${PRIVATE_SOURCES}
 )
 
 target_link_libraries(scripts
@@ -237,11 +207,9 @@ set_target_properties(scripts
     FOLDER
       "scripts")
 	  
-add_dependencies(scripts revision_data.h)
-
 # Generate precompiled header
 list(APPEND ALL_SCRIPT_PROJECTS scripts ${DYNAMIC_SCRIPT_MODULE_PROJECTS})
-add_cxx_pch(scripts ${scripts_STAT_PCH_HDR} ${scripts_STAT_PCH_SRC})
+add_cxx_pch(scripts ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
 
 
 # Remove all shared libraries in the installl directory which
@@ -256,3 +224,5 @@ if (DISABLED_SCRIPT_MODULE_PROJECTS)
     endforeach()
   ")
 endif()
+
+message("")

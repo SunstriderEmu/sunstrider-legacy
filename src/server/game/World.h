@@ -361,6 +361,8 @@ enum WorldConfigs
     CONFIG_HOTSWAP_INSTALL_ENABLED,
     CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED,
 
+	CONFIG_MAP_CRASH_RECOVERY_ENABLED,
+
     CONFIG_VALUE_COUNT,
 };
 
@@ -898,7 +900,7 @@ class World
         std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;
 };
 
-extern uint32 realmID;
+TC_GAME_API extern Realm realm;
 
 #define sWorld World::instance()
 #endif

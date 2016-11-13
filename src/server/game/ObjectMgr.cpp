@@ -7926,18 +7926,18 @@ std::string const& ObjectMgr::GetScriptName(uint32 id) const
     return (id < _scriptNamesStore.size()) ? _scriptNamesStore[id] : empty;
 }
 
-uint32 ObjectMgr::GetScriptId(const char *name)
+uint32 ObjectMgr::GetScriptId(std::string const& name)
 {
     // use binary search to find the script name in the sorted vector
     // assume "" is the first element
-    if(!name) 
+	if (name.empty())
         return 0;
 
     ScriptNameContainer::const_iterator itr = std::lower_bound(_scriptNamesStore.begin(), _scriptNamesStore.end(), name);
-    if(itr == _scriptNamesStore.end() || *itr != name) 
+    if (itr == _scriptNamesStore.end() || *itr != name) 
         return 0;
 
-    return itr - _scriptNamesStore.begin();
+	return uint32(itr - _scriptNamesStore.begin());
 }
 
 void ObjectMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)

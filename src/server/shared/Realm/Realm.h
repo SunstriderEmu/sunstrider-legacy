@@ -37,7 +37,7 @@ enum RealmFlags
     REALM_FLAG_FULL             = 0x80
 };
 
-struct RealmHandle
+struct TC_SHARED_API RealmHandle
 {
     RealmHandle() : Realm(0) { }
     RealmHandle(uint32 index) : Realm(index) { }
@@ -66,7 +66,7 @@ enum RealmType
 };
 
 // Storage object for a realm
-struct Realm
+struct TC_SHARED_API Realm
 {
     RealmHandle Id;
     uint32 Build;

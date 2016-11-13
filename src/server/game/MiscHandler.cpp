@@ -239,7 +239,7 @@ void WorldSession::HandleWhoOpcode( WorldPacket & recvData )
     data << uint32(displaycount);
 
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
+    HashMapHolder<Player>::MapType const& m = ObjectAccessor::GetPlayers();
     for(auto & itr : m)
     {
         if (security == SEC_PLAYER)

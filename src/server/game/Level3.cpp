@@ -7801,7 +7801,7 @@ bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
     char const* channel = "pvp";
     
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
+    HashMapHolder<Player>::MapType const& m = ObjectAccessor::GetPlayers();
     for(auto & itr : m)
     {
         if (itr.second && itr.second->GetSession()->GetPlayer() && itr.second->GetSession()->GetPlayer()->IsInWorld())

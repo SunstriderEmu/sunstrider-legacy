@@ -14,6 +14,7 @@
 #include "CreatureTextMgr.h"
 #include "DBCStores.h"
 #include "GameEventMgr.h"
+#include "GameObjectModel.h"
 #include "GitRevision.h"
 #include "GlobalEvents.h"
 #include "GridNotifiersImpl.h"
@@ -271,7 +272,7 @@ World::AddSession_(WorldSession* s)
         float popu = GetActiveSessionCount (); //updated number of users on the server
         popu /= pLimit;
         popu *= 2;
-        LoginDatabase.AsyncPQuery("UPDATE realmlist SET population = '%f' WHERE id = '%d'", popu, realmID);
+        LoginDatabase.AsyncPQuery("UPDATE realmlist SET population = '%f' WHERE id = '%d'", popu, realm.Id.Realm);
     }
 }
 
@@ -1204,9 +1205,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_HOTSWAP_BUILD_FILE_RECREATION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnableBuildFileRecreation", true);
     m_configs[CONFIG_HOTSWAP_INSTALL_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnableInstall", true);
     m_configs[CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnablePrefixCorrection", true);
-}
 
-extern void LoadGameObjectModelList(std::string const& dataPath);
+	m_configs[CONFIG_MAP_CRASH_RECOVERY_ENABLED] = sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false);
+}
 
 /// Initialize the World
 void World::SetInitialWorldSettings()
@@ -1262,7 +1263,7 @@ void World::SetInitialWorldSettings()
     // not send custom type REALM_FFA_PVP to realm list
     uint32 server_type = IsFFAPvPRealm() ? REALM_TYPE_PVP : getConfig(CONFIG_GAME_TYPE);
     uint32 realm_zone = getConfig(CONFIG_REALM_ZONE);
-    LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realmID);
+    LoginDatabase.PExecute("UPDATE realmlist SET icon = %u, timezone = %u WHERE id = '%d'", server_type, realm_zone, realm.Id.Realm);
 
     ///- Remove the bones after a restart
     CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0'");
@@ -1618,7 +1619,7 @@ void World::SetInitialWorldSettings()
         local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision, maxplayers) VALUES('%u', " UI64FMTD ", 0, '%s', 0)",
-        realmID, uint64(m_startTime), isoDate, GitRevision::GetFullVersion().c_str();
+		realm.Id.Realm, uint64(m_startTime), isoDate, GitRevision::GetFullVersion());
 
     m_timers[WUPDATE_OBJECTS].SetInterval(1);
     m_timers[WUPDATE_SESSIONS].SetInterval(1);
@@ -1967,7 +1968,7 @@ void World::Update(time_t diff)
         uint32 maxClientsNum = GetMaxActiveSessionCount();
 
         m_timers[WUPDATE_UPTIME].Reset();
-        LoginDatabase.PExecute("UPDATE uptime SET uptime = %u, maxplayers = %u WHERE realmid = %u AND starttime = " UI64FMTD, tmpDiff, maxClientsNum, realmID, uint64(m_startTime));
+        LoginDatabase.PExecute("UPDATE uptime SET uptime = %u, maxplayers = %u WHERE realmid = %u AND starttime = " UI64FMTD, tmpDiff, maxClientsNum, realm.Id.Realm, uint64(m_startTime));
     }
 
     /// <li> Handle all other objects
@@ -3413,7 +3414,7 @@ void World::updateArenaLeadersTitles()
 
     //update all online players
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
-    HashMapHolder<Player>::MapType& onlinePlayers = ObjectAccessor::GetPlayers();
+    HashMapHolder<Player>::MapType& onlinePlayers = const_cast<HashMapHolder<Player>::MapType&>(ObjectAccessor::GetPlayers());
     for (auto itr : onlinePlayers)
     {
         if(itr.second)
@@ -3457,13 +3458,13 @@ void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
 
         PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_REALM_CHARACTERS_BY_REALM);
         stmt->setUInt32(0, accountId);
-        stmt->setUInt32(1, realmID);
+        stmt->setUInt32(1, realm.Id.Realm);
         LoginDatabase.Execute(stmt);
 
         stmt = LoginDatabase.GetPreparedStatement(LOGIN_INS_REALM_CHARACTERS);
         stmt->setUInt8(0, charCount);
         stmt->setUInt32(1, accountId);
-        stmt->setUInt32(2, realmID);
+        stmt->setUInt32(2, realm.Id.Realm);
         LoginDatabase.Execute(stmt);
     }
 }
@@ -3508,7 +3509,7 @@ void World::InitDailyQuestResetTime(bool loading)
 
 void World::UpdateAllowedSecurity()
 {
-     QueryResult result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realmID);
+     QueryResult result = LoginDatabase.PQuery("SELECT allowedSecurityLevel from realmlist WHERE id = '%d'", realm.Id.Realm);
      if (result)
      {
         m_allowedSecurityLevel = AccountTypes(result->Fetch()->GetUInt16());
@@ -3839,7 +3840,7 @@ void World::UpdateMonitoring(uint32 diff)
     uint32 classesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     auto lock = HashMapHolder<Player>::GetLock();
     lock->lock();
-    HashMapHolder<Player>::MapType& m = ObjectAccessor::GetPlayers();
+    HashMapHolder<Player>::MapType const & m = ObjectAccessor::GetPlayers();
     for (auto & itr : m) {
         racesCount[itr.second->GetRace()]++;
         classesCount[itr.second->GetClass()]++;
@@ -4190,3 +4191,5 @@ uint32 World::GetGlobalPlayerGUID(std::string const& name) const
         return itr->second;
     return 0;
 }
+
+Realm realm;

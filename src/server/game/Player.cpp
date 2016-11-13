@@ -5768,12 +5768,12 @@ void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
     sMapMgr->CreateMap(GetMapId(), this)->MessageBroadcast(skipped_rcvr, data, false, false);
 }
 
-void Player::SendDirectMessage(WorldPacket *data)
+void Player::SendDirectMessage(WorldPacket *data) const
 {
     GetSession()->SendPacket(data);
 }
 
-void Player::SendCinematicStart(uint32 CinematicSequenceId)
+void Player::SendCinematicStart(uint32 CinematicSequenceId) const
 {
     WorldPacket data(SMSG_TRIGGER_CINEMATIC, 4);
     data << uint32(CinematicSequenceId);
@@ -5784,7 +5784,7 @@ void Player::SendCinematicStart(uint32 CinematicSequenceId)
 	*/
 }
 
-void Player::SendMovieStart(uint32 MovieId)
+void Player::SendMovieStart(uint32 MovieId) const
 {
 #ifdef LICH_KING
     WorldPacket data(SMSG_TRIGGER_MOVIE, 4);

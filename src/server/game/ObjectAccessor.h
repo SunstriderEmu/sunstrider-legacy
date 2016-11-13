@@ -186,7 +186,7 @@ class TC_GAME_API ObjectAccessor
         /* when using this, you must use the hashmapholder's lock
          Example: boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
         */
-        static HashMapHolder<Player>::MapType& GetPlayers()
+        static HashMapHolder<Player>::MapType const& GetPlayers()
         {
             return HashMapHolder<Player>::GetContainer();
         }

@@ -51,6 +51,24 @@ template<class H, class T> struct ContainerMapList<TypeList<H, T> >
     ContainerMapList<T> _TailElements;
 };
 
+template<class OBJECT, class KEY_TYPE>
+struct ContainerUnorderedMap
+{
+	std::unordered_map<KEY_TYPE, OBJECT*> _element;
+};
+
+template<class KEY_TYPE>
+struct ContainerUnorderedMap<TypeNull, KEY_TYPE>
+{
+};
+
+template<class H, class T, class KEY_TYPE>
+struct ContainerUnorderedMap<TypeList<H, T>, KEY_TYPE>
+{
+	ContainerUnorderedMap<H, KEY_TYPE> _elements;
+	ContainerUnorderedMap<T, KEY_TYPE> _TailElements;
+};
+
 #include "TypeContainerFunctions.h"
 
 /*
@@ -86,5 +104,35 @@ class TypeMapContainer
     private:
         ContainerMapList<OBJECT_TYPES> i_elements;
 };
+
+template<class OBJECT_TYPES, class KEY_TYPE>
+class TypeUnorderedMapContainer
+{
+public:
+	template<class SPECIFIC_TYPE>
+	bool Insert(KEY_TYPE const& handle, SPECIFIC_TYPE* obj)
+	{
+		return Trinity::Insert(_elements, handle, obj);
+	}
+
+	template<class SPECIFIC_TYPE>
+	bool Remove(KEY_TYPE const& handle)
+	{
+		return Trinity::Remove(_elements, handle, (SPECIFIC_TYPE*)NULL);
+	}
+
+	template<class SPECIFIC_TYPE>
+	SPECIFIC_TYPE* Find(KEY_TYPE const& handle)
+	{
+		return Trinity::Find(_elements, handle, (SPECIFIC_TYPE*)NULL);
+	}
+
+	ContainerUnorderedMap<OBJECT_TYPES, KEY_TYPE>& GetElements() { return _elements; }
+	ContainerUnorderedMap<OBJECT_TYPES, KEY_TYPE> const& GetElements() const { return _elements; }
+
+private:
+	ContainerUnorderedMap<OBJECT_TYPES, KEY_TYPE> _elements;
+};
+
 #endif
 

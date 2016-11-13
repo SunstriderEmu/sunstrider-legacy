@@ -2107,7 +2107,7 @@ class Player : public Unit
 
         void SendInitWorldStates(bool force = false, uint32 forceZoneId = 0);
         void SendUpdateWorldState(uint32 Field, uint32 Value);
-        void SendDirectMessage(WorldPacket *data);
+        void SendDirectMessage(WorldPacket *data) const;
 
         void SendAuraDurationsForTarget(Unit* target);
 
@@ -2372,8 +2372,8 @@ class Player : public Unit
         bool IsXpBlocked() const { return m_isXpBlocked; }
         void SetXpBlocked(bool blocked) { m_isXpBlocked = blocked; }
 
-        void SendCinematicStart(uint32 CinematicSequenceId);
-        void SendMovieStart(uint32 MovieId);
+        void SendCinematicStart(uint32 CinematicSequenceId) const;
+        void SendMovieStart(uint32 MovieId) const;
 
         /*********************************************************/
         /***                 INSTANCE SYSTEM                   ***/

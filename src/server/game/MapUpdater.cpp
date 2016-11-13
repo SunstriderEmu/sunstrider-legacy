@@ -22,8 +22,7 @@
 #include "MapUpdater.h"
 #include "Map.h"
 #include "LagWatcher.h"
-
-extern bool MAP_CRASH_RECOVERY_ENABLED;
+#include "World.h"
 
 class MapUpdateRequest
 {
@@ -32,18 +31,22 @@ class MapUpdateRequest
         Map& m_map;
         MapUpdater& m_updater;
         uint32 m_diff;
+		bool const crash_recovery_enabled = false;
 
     public:
 
         MapUpdateRequest(Map& m, MapUpdater& u, uint32 d)
-            : m_map(m), m_updater(u), m_diff(d)
+            : m_map(m), 
+			m_updater(u), 
+			m_diff(d), 
+			crash_recovery_enabled(sWorld->getBoolConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
         {
         }
 
         void call()
         {
             sLagWatcher->MapUpdateStart(m_map);
-            if (MAP_CRASH_RECOVERY_ENABLED)
+            if (crash_recovery_enabled)
             {
                 try
                 {

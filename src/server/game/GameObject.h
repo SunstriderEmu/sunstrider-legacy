@@ -801,6 +801,8 @@ class GameObject : public WorldObject
         float GetStationaryZ() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetPositionZ(); return GetPositionZ(); }
         float GetStationaryO() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetOrientation(); return GetOrientation(); }
 
+		bool AIM_Initialize();
+		void AIM_Destroy();
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;
@@ -823,8 +825,6 @@ class GameObject : public WorldObject
         GameObjectValue m_goValue;
         bool manual_unlock;
         
-        void AIM_Destroy();
-        bool AIM_Initialize();
         GameObjectModel* CreateModel();
         void UpdateModel();                                 // updates model in case displayId were changed
 

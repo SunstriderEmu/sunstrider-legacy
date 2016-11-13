@@ -42,12 +42,16 @@ target_include_directories(game
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
 	
+IF(PLAYERBOT)	
+    set(PLAYERBOT_LIB playerbot)
+ENDIF()
+
 target_link_libraries(game
   PUBLIC
     game-interface
   PRIVATE
     efsw
-	playerbot
+	${PLAYERBOT_LIB}
 	irc
 	segvcatch
 	catch

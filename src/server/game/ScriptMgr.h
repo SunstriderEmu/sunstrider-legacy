@@ -215,9 +215,9 @@ class TC_GAME_API CreatureScript : public ScriptObject, public UpdatableScript<C
 protected:
 
     CreatureScript(const char* name);
-    ~CreatureScript() override;
 
 public:
+	~CreatureScript() override;
 
     // Called when a player opens a gossip dialog with the creature.
     virtual bool OnGossipHello(Player* player, Creature* creature) // { return false; }
