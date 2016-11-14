@@ -61,6 +61,9 @@ target_link_libraries(worldserver
     readline
 	${playerbot_lib}
 	${UNIX_LIBS}
+  PRIVATE
+	irc
+	segvcatch
 	)
 
 CollectIncludeDirectories(

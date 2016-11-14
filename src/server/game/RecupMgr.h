@@ -37,7 +37,7 @@ enum RecupStuffLevel
     RECUP_STUFF_LEVEL_0 = 0,
 };
 
-class RecupMgr
+class TC_GAME_API RecupMgr
 {
     public:
 		static bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip = false, ChatHandler* handler = nullptr);

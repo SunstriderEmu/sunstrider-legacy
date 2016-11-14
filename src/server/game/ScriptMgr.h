@@ -123,7 +123,7 @@ public:
 };
 
 template<class TMap> 
-class MapScript : public UpdatableScript<TMap>
+class TC_GAME_API MapScript : public UpdatableScript<TMap>
 {
     MapEntry const* _mapEntry;
 
@@ -603,7 +603,7 @@ public: /* Script contexts */
 };
 
 //Generic scripting text function
-void DoScriptText(int32 textEntry, Unit* pSource, Unit* target = nullptr);
+void TC_GAME_API DoScriptText(int32 textEntry, Unit* pSource, Unit* target = nullptr);
 
 #define sScriptMgr ScriptMgr::instance()
 

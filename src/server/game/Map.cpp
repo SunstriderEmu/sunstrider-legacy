@@ -2266,15 +2266,15 @@ void Map::AllTransportsRemovePassengers()
             _transport->RemovePassenger(*(_transport->GetPassengers().begin()), true);
 }
 
-template bool Map::Add(Corpse *, bool);
-template bool Map::Add(Creature *, bool);
-template bool Map::Add(GameObject *, bool);
-template bool Map::Add(DynamicObject *, bool);
+template TC_GAME_API bool Map::Add(Corpse *, bool);
+template TC_GAME_API bool Map::Add(Creature *, bool);
+template TC_GAME_API bool Map::Add(GameObject *, bool);
+template TC_GAME_API bool Map::Add(DynamicObject *, bool);
 
-template void Map::Remove(Corpse *,bool);
-template void Map::Remove(Creature *,bool);
-template void Map::Remove(GameObject *, bool);
-template void Map::Remove(DynamicObject *, bool);
+template TC_GAME_API void Map::Remove(Corpse *,bool);
+template TC_GAME_API void Map::Remove(Creature *,bool);
+template TC_GAME_API void Map::Remove(GameObject *, bool);
+template TC_GAME_API void Map::Remove(DynamicObject *, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 

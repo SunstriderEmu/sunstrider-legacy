@@ -93,7 +93,7 @@ TODO:
 - cyclic choz (check if position equals then skip
 */
 template<>
-class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
+class TC_GAME_API WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Creature, WaypointMovementGenerator<Creature> >,
     public PathMovementBase<Creature, WaypointPath const*>
 {
     public:
@@ -198,7 +198,7 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
 /** FlightPathMovementGenerator generates movement of the player for the paths
  * and hence generates ground and activities for the player.
  */
-class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, FlightPathMovementGenerator >,
+class TC_GAME_API FlightPathMovementGenerator : public MovementGeneratorMedium< Player, FlightPathMovementGenerator >,
     public PathMovementBase<Player, TaxiPathNodeList>
 {
     public:

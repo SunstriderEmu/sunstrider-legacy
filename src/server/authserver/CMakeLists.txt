@@ -76,7 +76,4 @@ elseif( WIN32 )
 endif()
 
 # Generate precompiled header
-message(STATUS "HEADER: " ${PRIVATE_PCH_HEADER})
-message(STATUS "SRC: " ${PRIVATE_PCH_SOURCE})
-
 add_cxx_pch(authserver ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})

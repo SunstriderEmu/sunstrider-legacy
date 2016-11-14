@@ -36,6 +36,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <openssl/opensslv.h>
 #include <openssl/crypto.h>
 #include "AppenderDB.h"
@@ -77,7 +78,6 @@ boost::asio::deadline_timer* _dbPingTimer;
 uint32 _dbPingInterval;
 boost::asio::deadline_timer* _banExpiryCheckTimer;
 uint32 _banExpiryCheckInterval;
-LoginDatabaseWorkerPool LoginDatabase;
 
 int main(int argc, char** argv)
 {
@@ -90,16 +90,18 @@ int main(int argc, char** argv)
 
 
 #if PLATFORM == PLATFORM_WINDOWS
+	/*
     if (configService.compare("install") == 0)
         return WinServiceInstall() == true ? 0 : 1;
     else if (configService.compare("uninstall") == 0)
         return WinServiceUninstall() == true ? 0 : 1;
     else if (configService.compare("run") == 0)
         return WinServiceRun() ? 0 : 1;
+	*/
 #endif
 
     std::string configError;
-	if (!sConfigMgr->LoadIni	tial(configFile.generic_string(),
+	if (!sConfigMgr->LoadInitial(configFile.generic_string(),
 		std::vector<std::string>(argv, argv + argc),
 		configError))
 	{
@@ -112,7 +114,7 @@ int main(int argc, char** argv)
 
     TC_LOG_INFO("server.authserver", "%s (authserver)", GitRevision::GetFullVersion());
     TC_LOG_INFO("server.authserver", "<Ctrl-C> to stop.\n");
-    TC_LOG_INFO("server.authserver", "Using configuration file %s.", configFile.c_str());
+    TC_LOG_INFO("server.authserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
     TC_LOG_INFO("server.authserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
     TC_LOG_INFO("server.authserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
@@ -301,7 +303,26 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
     if (variablesMap.count("help"))
         std::cout << all << "\n";
     else if (variablesMap.count("version"))
-        std::cout << GitRevision::GetFullVersion( << "\n";
+        std::cout << GitRevision::GetFullVersion() << "\n";
 
     return variablesMap;
 }
+
+#if PLATFORM == PLATFORM_WINDOWS
+void ServiceStatusWatcher(boost::system::error_code const& error)
+{
+	if (!error)
+	{
+		if (m_ServiceStatus == 0)
+		{
+			_ioService->stop();
+			delete _serviceStatusWatchTimer;
+		}
+		else
+		{
+			_serviceStatusWatchTimer->expires_from_now(boost::posix_time::seconds(1));
+			_serviceStatusWatchTimer->async_wait(ServiceStatusWatcher);
+		}
+	}
+}
+#endif

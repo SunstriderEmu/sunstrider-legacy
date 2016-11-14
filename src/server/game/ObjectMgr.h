@@ -381,7 +381,7 @@ typedef std::map<uint32, SpellEntry*> SpellEntryStore;
 #define MAX_PET_NAME             12                         // max allowed by client name length
 #define MAX_CHARTER_NAME         24                         // max allowed by client name length
 
-bool normalizePlayerName(std::string& name);
+TC_GAME_API bool normalizePlayerName(std::string& name);
 
 struct LanguageDesc
 {

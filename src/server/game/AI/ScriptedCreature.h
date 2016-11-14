@@ -51,12 +51,12 @@ private:
 };
 
 //Get a single creature of given entry
-Creature* FindCreature(uint32 entry, float range, Unit* Finder);
+TC_GAME_API Creature* FindCreature(uint32 entry, float range, Unit* Finder);
 //Get every creatures of given entry within given range
-void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder);
+TC_GAME_API void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder);
 
 //Get a single gameobject of given entry
-GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
+TC_GAME_API GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
 
 struct TC_GAME_API ScriptedAI : public CreatureAI
 {
@@ -188,21 +188,6 @@ private:
 
 };
 
-struct TC_GAME_API NullCreatureAI : public ScriptedAI
-{
-    NullCreatureAI(Creature* c) : ScriptedAI(c) {}
-    ~NullCreatureAI() override {}
-
-    void Reset() override {}
-    void EnterCombat(Unit*) override {}
-    void MoveInLineOfSight(Unit *) override {}
-    void AttackStart(Unit *) override {}
-    void EnterEvadeMode(EvadeReason /* why */) override {}
-
-    void UpdateAI(const uint32) override {}
-};
-
-
 class TC_GAME_API BossAI : public ScriptedAI
 {
 public:
@@ -256,8 +241,8 @@ private:
 };
 
 // SD2 grid searchers.
-Creature* GetClosestCreatureWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange, bool alive = true);
-GameObject* GetClosestGameObjectWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange);
+TC_GAME_API Creature* GetClosestCreatureWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange, bool alive = true);
+TC_GAME_API GameObject* GetClosestGameObjectWithEntry(WorldObject const* source, uint32 entry, float maxSearchRange);
 
 #endif
 

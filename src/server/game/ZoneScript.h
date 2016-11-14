@@ -28,7 +28,7 @@ class GameObject;
 class Creature;
 
 
-class ZoneScript
+class TC_GAME_API ZoneScript
 {
     public:
 

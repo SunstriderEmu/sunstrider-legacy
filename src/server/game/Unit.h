@@ -935,7 +935,7 @@ enum CharmType
     CHARM_TYPE_CONVERT
 };
 
-struct CharmInfo
+class TC_GAME_API CharmInfo
 {
     public:
         explicit CharmInfo(Unit* unit);

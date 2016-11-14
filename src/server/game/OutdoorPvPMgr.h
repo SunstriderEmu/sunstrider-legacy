@@ -29,7 +29,7 @@ class Creature;
 struct GossipMenuItems;
 
 // class to handle player enter / leave / areatrigger / GO use events
-class OutdoorPvPMgr
+class TC_GAME_API OutdoorPvPMgr
 {
 private:
     OutdoorPvPMgr();

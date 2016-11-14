@@ -3,11 +3,13 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
 
 #include "GitRevision.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
+#include "DatabaseLoader.h"
 #include "Config.h"
 #include "Log.h"
 #include "BigNumber.h"
@@ -85,6 +87,7 @@ void WorldUpdateLoop();
 void ClearOnlineAccounts();
 void ShutdownThreadPool(std::vector<std::thread>& threadPool);
 void ShutdownCLIThread(std::thread* cliThread);
+bool LoadRealmInfo();
 variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& cfg_service);
 
 //segv handler, print stack to dump file
@@ -137,12 +140,14 @@ extern int main(int argc, char **argv)
         return 0;
 
 #ifdef _WIN32
+	/*
     if (configService.compare("install") == 0)
         return WinServiceInstall() == true ? 0 : 1;
     else if (configService.compare("uninstall") == 0)
         return WinServiceUninstall() == true ? 0 : 1;
     else if (configService.compare("run") == 0)
         WinServiceRun();
+		*/
 #endif
 
     std::string configError;
@@ -173,7 +178,7 @@ extern int main(int argc, char **argv)
     TC_LOG_INFO("server.worldserver", "  ___) | | |_| | | | | | \\__ \\ | |_  | |    | | | (_| | |  __/ | |   ");
     TC_LOG_INFO("server.worldserver", " |____/   \\__,_| |_| |_| |___/  \\__| |_|    |_|  \\__,_|  \\___| |_|   ");
     TC_LOG_INFO("server.worldserver", " ");
-    TC_LOG_INFO("server.worldserver", "Using configuration file %s.", configFile.c_str());
+    TC_LOG_INFO("server.worldserver", "Using configuration file %s.", sConfigMgr->GetFilename().c_str());
     TC_LOG_INFO("server.worldserver", "Using SSL version: %s (library: %s)", OPENSSL_VERSION_TEXT, SSLeay_version(SSLEAY_VERSION));
     TC_LOG_INFO("server.worldserver", "Using Boost version: %i.%i.%i", BOOST_VERSION / 100000, BOOST_VERSION / 100 % 1000, BOOST_VERSION % 100);
 
@@ -473,7 +478,7 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
 		("help,h", "print usage message")
 		("version,v", "print version build info")
 		("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_WORLD_SERVER_CONFIG)),
-			"use <arg> as configuration file")
+			"use <arg> as configuration file");
 #ifdef _WIN32
     options_description win("Windows platform specific options");
     win.add_options()

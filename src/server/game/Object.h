@@ -88,7 +88,7 @@ typedef std::unordered_set<uint32> UpdatePlayerSet;
 
 #define POSITION_GET_X_Y_Z(a) (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ()
 
-struct Position
+struct TC_GAME_API Position
 {
     Position(float x = 0.0f, float y = 0.0f, float z = 0.0f, float o = 0.0f)
         : m_positionX(x), m_positionY(y), m_positionZ(z), m_orientation(NormalizeOrientation(o)) { }
@@ -221,10 +221,10 @@ struct Position
         return !(operator==(a));
     }
 };
-ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
-ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
-ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
-ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
+TC_GAME_API ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
+TC_GAME_API ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
+TC_GAME_API ByteBuffer &operator>>(ByteBuffer& buf, Position::PositionXYZStreamer const & streamer);
+TC_GAME_API ByteBuffer & operator<<(ByteBuffer& buf, Position::PositionXYZOStreamer const & streamer);
 
 
 struct MovementInfo

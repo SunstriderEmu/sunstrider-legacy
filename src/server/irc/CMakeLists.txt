@@ -32,12 +32,10 @@ ExternalProject_Add(libircclient
     #todo custom clean
 endif ( UNIX )
 
-
-SET(irc_srcs
-    ${PRIVATE_SOURCES}
+add_library(irc STATIC
+	${PRIVATE_SOURCES}
 )
 
-add_library(irc STATIC ${irc_srcs})
 IF(UNIX)
 	#libircclient is built on linux only (and imported on windows)
 	add_dependencies(irc libircclient)

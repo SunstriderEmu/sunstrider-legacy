@@ -174,7 +174,7 @@ class TC_GAME_API SpellScript : public _SpellScript
 
         SPELLSCRIPT_FUNCTION_TYPE_DEFINES(SpellScript)
 
-        class CastHandler
+        class TC_GAME_API CastHandler
         {
             public:
                 CastHandler(SpellCastFnType _pCastHandlerScript);
@@ -183,7 +183,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellCastFnType pCastHandlerScript;
         };
 
-        class CheckCastHandler
+        class TC_GAME_API CheckCastHandler
         {
             public:
                 CheckCastHandler(SpellCheckCastFnType checkCastHandlerScript);
@@ -192,7 +192,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellCheckCastFnType _checkCastHandlerScript;
         };
 
-        class EffectHandler : public  _SpellScript::EffectNameCheck, public _SpellScript::EffectHook
+        class TC_GAME_API EffectHandler : public  _SpellScript::EffectNameCheck, public _SpellScript::EffectHook
         {
             public:
                 EffectHandler(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName);
@@ -203,7 +203,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellEffectFnType pEffectHandlerScript;
         };
 
-        class HitHandler
+        class TC_GAME_API HitHandler
         {
             public:
                 HitHandler(SpellHitFnType _pHitHandlerScript);
@@ -212,7 +212,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellHitFnType pHitHandlerScript;
         };
 
-        class TargetHook : public _SpellScript::EffectHook
+        class TC_GAME_API TargetHook : public _SpellScript::EffectHook
         {
             public:
                 TargetHook(uint8 _effectIndex, uint16 _targetType, bool _area, bool _dest);
@@ -225,7 +225,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 bool dest;
         };
 
-        class ObjectAreaTargetSelectHandler : public TargetHook
+        class TC_GAME_API ObjectAreaTargetSelectHandler : public TargetHook
         {
             public:
                 ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
@@ -234,7 +234,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellObjectAreaTargetSelectFnType pObjectAreaTargetSelectHandlerScript;
         };
 
-        class ObjectTargetSelectHandler : public TargetHook
+        class TC_GAME_API ObjectTargetSelectHandler : public TargetHook
         {
             public:
                 ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
@@ -243,7 +243,7 @@ class TC_GAME_API SpellScript : public _SpellScript
                 SpellObjectTargetSelectFnType pObjectTargetSelectHandlerScript;
         };
 
-        class DestinationTargetSelectHandler : public TargetHook
+        class TC_GAME_API DestinationTargetSelectHandler : public TargetHook
         {
             public:
                 DestinationTargetSelectHandler(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);

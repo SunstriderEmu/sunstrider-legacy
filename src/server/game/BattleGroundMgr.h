@@ -39,7 +39,7 @@ struct GroupQueueInfo                                       // stores informatio
 };
 
 class Battleground;
-class BattlegroundQueue
+class TC_GAME_API BattlegroundQueue
 {
     public:
         BattlegroundQueue();
@@ -144,7 +144,7 @@ class BGQueueRemoveEvent : public BasicEvent
         uint32 m_PlayersTeam;
 };
 
-class BattlegroundMgr
+class TC_GAME_API BattlegroundMgr
 {
     private:
         BattlegroundMgr();

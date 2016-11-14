@@ -28,7 +28,7 @@
 
 class WorldLocation;
 
-class MapManager
+class TC_GAME_API MapManager
 {
     typedef std::unordered_map<uint32, Map*> MapMapType;
     typedef std::pair<std::unordered_map<uint32, Map*>::iterator, bool>  MapMapPair;

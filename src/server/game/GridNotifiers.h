@@ -35,7 +35,7 @@
 
 namespace Trinity
 {
-    struct PlayerVisibilityNotifier
+    struct TC_GAME_API PlayerVisibilityNotifier
     {
         Player &i_player;
         UpdateData i_data;
@@ -49,7 +49,7 @@ namespace Trinity
         void Notify(void);
     };
 
-    struct PlayerRelocationNotifier : public PlayerVisibilityNotifier
+    struct TC_GAME_API PlayerRelocationNotifier : public PlayerVisibilityNotifier
     {
         PlayerRelocationNotifier(Player &player) : PlayerVisibilityNotifier(player) {}
         template<class T> inline void Visit(GridRefManager<T> &m) { PlayerVisibilityNotifier::Visit(m); }
@@ -59,7 +59,7 @@ namespace Trinity
         #endif
     };
 
-    struct CreatureRelocationNotifier
+    struct TC_GAME_API CreatureRelocationNotifier
     {
         Creature &i_creature;
         CreatureRelocationNotifier(Creature &c) : i_creature(c) {}
@@ -70,7 +70,7 @@ namespace Trinity
         #endif
     };
 
-    struct VisibleChangesNotifier
+    struct TC_GAME_API VisibleChangesNotifier
     {
         WorldObject &i_object;
 
@@ -98,7 +98,7 @@ namespace Trinity
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
-    struct Deliverer
+    struct TC_GAME_API Deliverer
     {
         WorldObject &i_source;
         WorldPacket *i_message;
@@ -115,32 +115,32 @@ namespace Trinity
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
     };
 
-    struct MessageDeliverer : public Deliverer
+    struct TC_GAME_API MessageDeliverer : public Deliverer
     {
         MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
         void VisitObject(Player* plr) override;
     };
 
-    struct ObjectMessageDeliverer : public Deliverer
+    struct TC_GAME_API ObjectMessageDeliverer : public Deliverer
     {
         explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
         void VisitObject(Player* plr) override { SendPacket(plr); }
     };
 
-    struct MessageDistDeliverer : public Deliverer
+    struct TC_GAME_API MessageDistDeliverer : public Deliverer
     {
         bool i_ownTeamOnly;
         MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
         void VisitObject(Player* plr) override;
     };
 
-    struct ObjectMessageDistDeliverer : public Deliverer
+    struct TC_GAME_API ObjectMessageDistDeliverer : public Deliverer
     {
         ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
         void VisitObject(Player* plr) override { SendPacket(plr); }
     };
 
-    struct ObjectUpdater
+    struct TC_GAME_API ObjectUpdater
     {
         uint32 i_timeDiff;
         explicit ObjectUpdater(const uint32 &diff) : i_timeDiff(diff) {}
@@ -150,7 +150,7 @@ namespace Trinity
         void Visit(CreatureMapType &);
     };
 
-    struct DynamicObjectUpdater
+    struct TC_GAME_API DynamicObjectUpdater
     {
         DynamicObject &i_dynobject;
         Unit* i_check;
@@ -519,7 +519,7 @@ template<class Check>
 
     // WorldObject do classes
 
-    class RespawnDo
+    class TC_GAME_API RespawnDo
     {
         public:
             RespawnDo() = default;
@@ -529,7 +529,7 @@ template<class Check>
             void operator()(Corpse*) const {}
     };
 
-    class FactionDo
+    class TC_GAME_API FactionDo
     {
         public:
             FactionDo(uint32 id, uint32 f) : i_entry(id), i_faction(f) {}
@@ -545,7 +545,7 @@ template<class Check>
 
     //UNIT SEARCHERS
     
-    class CannibalizeObjectCheck
+    class TC_GAME_API CannibalizeObjectCheck
     {
         public:
             CannibalizeObjectCheck(Unit* funit, float range) : i_funit(funit), i_range(range) {}
@@ -558,7 +558,7 @@ template<class Check>
             float i_range;
     };
 
-    class AnyUnfriendlyUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnfriendlyUnitInObjectRangeCheck
     {
         public:
             AnyUnfriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
@@ -569,7 +569,7 @@ template<class Check>
             float i_range;
     };
 
-    class AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck
     {
         public:
             AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
@@ -581,7 +581,7 @@ template<class Check>
     };
 
 
-    class AnyFriendlyUnitInObjectRangeCheck
+    class TC_GAME_API AnyFriendlyUnitInObjectRangeCheck
     {
         public:
             AnyFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
@@ -593,7 +593,7 @@ template<class Check>
             bool i_playerOnly;
     };
 
-    class AnyFriendlyUnitInObjectRangeCheckWithRangeReturned
+    class TC_GAME_API AnyFriendlyUnitInObjectRangeCheckWithRangeReturned
     {
         public:
             AnyFriendlyUnitInObjectRangeCheckWithRangeReturned(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
@@ -605,7 +605,7 @@ template<class Check>
             bool i_playerOnly;
     };
 
-    class NearestFriendlyUnitInObjectRangeCheck
+    class TC_GAME_API NearestFriendlyUnitInObjectRangeCheck
     {
         public:
             NearestFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false, bool furthest = false) : i_obj(obj), i_funit(funit), i_range(range), i_minRange(0), i_playerOnly(playerOnly), i_furthest(furthest) {}
@@ -617,7 +617,7 @@ template<class Check>
             bool i_playerOnly, i_furthest;
     };
 
-    class AnyUnitInObjectRangeCheck
+    class TC_GAME_API AnyUnitInObjectRangeCheck
     {
         public:
             AnyUnitInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
@@ -628,7 +628,7 @@ template<class Check>
     };
 
     // Success at unit in range, range update for next check (this can be use with UnitLastSearcher to find nearest unit)
-    class NearestAttackableUnitInObjectRangeCheck
+    class TC_GAME_API NearestAttackableUnitInObjectRangeCheck
     {
         public:
             NearestAttackableUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range) : i_obj(obj), i_funit(funit), i_range(range) {}
@@ -642,7 +642,7 @@ template<class Check>
             NearestAttackableUnitInObjectRangeCheck(NearestAttackableUnitInObjectRangeCheck const&);
     };
 
-    class AnyAoETargetUnitInObjectRangeCheck
+    class TC_GAME_API AnyAoETargetUnitInObjectRangeCheck
     {
         public:
             AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range);
@@ -655,7 +655,7 @@ template<class Check>
     };
 
     // do attack at call of help to friendly creature
-    class CallOfHelpCreatureInRangeDo
+    class TC_GAME_API CallOfHelpCreatureInRangeDo
     {
     public:
         CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range);
@@ -666,19 +666,19 @@ template<class Check>
         float i_range;
     };
 
-    struct AnyDeadUnitCheck
+    struct TC_GAME_API AnyDeadUnitCheck
     {
         bool operator()(Unit* u);
     };
 
-    struct AnyStealthedCheck
+    struct TC_GAME_API AnyStealthedCheck
     {
         bool operator()(Unit* u);
     };
 
     // Creature checks
 
-    class NearestHostileUnitInAttackDistanceCheck
+    class TC_GAME_API NearestHostileUnitInAttackDistanceCheck
     {
         public:
             explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
@@ -697,7 +697,7 @@ template<class Check>
             NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
     };
 
-    class AllWorldObjectsInRange
+    class TC_GAME_API AllWorldObjectsInRange
     {
         public:
             AllWorldObjectsInRange(const WorldObject* pObject, float fMaxRange) : m_pObject(pObject), m_fRange(fMaxRange) {}
@@ -707,7 +707,7 @@ template<class Check>
             float m_fRange;
     };
     
-    class ObjectGUIDCheck
+    class TC_GAME_API ObjectGUIDCheck
     {
     public:
         ObjectGUIDCheck(uint64 GUID, bool equals) : _GUID(GUID), _equals(equals) {}
@@ -721,7 +721,7 @@ template<class Check>
         bool _equals;
     };
 
-    class MostHPMissingInRange
+    class TC_GAME_API MostHPMissingInRange
     {
     public:
         MostHPMissingInRange(Unit const* obj, float range, uint32 hp) : i_obj(obj), i_range(range), i_hp(hp) {}
@@ -732,7 +732,7 @@ template<class Check>
         uint32 i_hp;
     };
 
-    class FriendlyCCedInRange
+    class TC_GAME_API FriendlyCCedInRange
     {
     public:
         FriendlyCCedInRange(Unit const* obj, float range) : i_obj(obj), i_range(range) {}
@@ -742,7 +742,7 @@ template<class Check>
         float i_range;
     };
 
-    class FriendlyMissingBuffInRange
+    class TC_GAME_API FriendlyMissingBuffInRange
     {
     public:
         FriendlyMissingBuffInRange(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
@@ -753,7 +753,7 @@ template<class Check>
         uint32 i_spell;
     };
     
-    class FriendlyMissingBuffInRangeOutOfCombat
+    class TC_GAME_API FriendlyMissingBuffInRangeOutOfCombat
     {
     public:
         FriendlyMissingBuffInRangeOutOfCombat(Unit const* obj, float range, uint32 spellid) : i_obj(obj), i_range(range), i_spell(spellid) {}
@@ -766,7 +766,7 @@ template<class Check>
 
     //PLAYERS SEARCHERS
     
-    class AllPlayersInRange
+    class TC_GAME_API AllPlayersInRange
     {
     public:
         AllPlayersInRange(WorldObject const* obj, float range) : i_object(obj), i_range(range) {}
@@ -776,7 +776,7 @@ template<class Check>
         float i_range;
     };
 
-    class AnyPlayerInObjectRangeCheck
+    class TC_GAME_API AnyPlayerInObjectRangeCheck
     {
     public:
         AnyPlayerInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range) {}
@@ -786,7 +786,7 @@ template<class Check>
         float i_range;
     };
 
-    class NearestPlayerInObjectRangeCheck
+    class TC_GAME_API NearestPlayerInObjectRangeCheck
     {
     public:
         public:
@@ -847,7 +847,7 @@ template<class Check>
 
     //CREATURES SEARCHERS
 
-    class AllFriendlyCreaturesInGrid
+    class TC_GAME_API AllFriendlyCreaturesInGrid
     {
     public:
         AllFriendlyCreaturesInGrid(Unit const* obj) : pUnit(obj) {}
@@ -857,7 +857,7 @@ template<class Check>
     };
 
     // Success at unit in range, range update for next check (this can be use with CreatureLastSearcher to find nearest creature)
-    class NearestCreatureEntryWithLiveStateInObjectRangeCheck
+    class TC_GAME_API NearestCreatureEntryWithLiveStateInObjectRangeCheck
     {
         public:
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(WorldObject const& obj,uint32 entry, bool alive, float range)
@@ -875,7 +875,7 @@ template<class Check>
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&);
     };
 
-    class CreatureWithDbGUIDCheck
+    class TC_GAME_API CreatureWithDbGUIDCheck
     {
         public:
             CreatureWithDbGUIDCheck(WorldObject const* obj, uint32 lowguid) : i_obj(obj), i_lowguid(lowguid) {}
@@ -885,7 +885,7 @@ template<class Check>
             uint32 i_lowguid;
     };
 
-    class AllCreaturesOfEntryInRange
+    class TC_GAME_API AllCreaturesOfEntryInRange
     {
     public:
         AllCreaturesOfEntryInRange(Unit const* obj, uint32 ent, float ran) : pUnit(obj), entry(ent), range(ran) {}
@@ -896,7 +896,7 @@ template<class Check>
         float range;
     };
 
-    class AllCreaturesInRange
+    class TC_GAME_API AllCreaturesInRange
     {
     public:
         AllCreaturesInRange(Unit const* obj, float ran) : pUnit(obj), range(ran) {}
@@ -906,7 +906,7 @@ template<class Check>
         float range;
     };
 
-    class AllCreatures
+    class TC_GAME_API AllCreatures
     {
     public:
         AllCreatures(Unit const* obj) : pUnit(obj) {}
@@ -915,7 +915,7 @@ template<class Check>
         Unit const* pUnit;
     };
 
-    class AnyAssistCreatureInRangeCheck
+    class TC_GAME_API AnyAssistCreatureInRangeCheck
     {
         public:
             AnyAssistCreatureInRangeCheck(Unit* funit, Unit* enemy, float range)
@@ -931,7 +931,7 @@ template<class Check>
     };
 
     
-    class NearestAssistCreatureInCreatureRangeCheck
+    class TC_GAME_API NearestAssistCreatureInCreatureRangeCheck
     {
         public:
             NearestAssistCreatureInCreatureRangeCheck(Creature* obj,Unit* enemy, float range)
@@ -948,7 +948,7 @@ template<class Check>
             NearestAssistCreatureInCreatureRangeCheck(NearestAssistCreatureInCreatureRangeCheck const&);
     };
 
-    class NearestGeneralizedAssistCreatureInCreatureRangeCheck
+    class TC_GAME_API NearestGeneralizedAssistCreatureInCreatureRangeCheck
     {
         public:
             NearestGeneralizedAssistCreatureInCreatureRangeCheck(Creature* obj, uint32 entry, uint32 faction, float range)
@@ -970,7 +970,7 @@ template<class Check>
 
     //GOBJECT SEARCHERS
 
-    class GameObjectFocusCheck
+    class TC_GAME_API GameObjectFocusCheck
     {
         public:
             GameObjectFocusCheck(Unit const* unit,uint32 focusId) : i_unit(unit), i_focusId(focusId) {}
@@ -981,7 +981,7 @@ template<class Check>
     };
 
     // Find the nearest Fishing hole and return true only if source object is in range of hole
-    class NearestGameObjectFishingHole
+    class TC_GAME_API NearestGameObjectFishingHole
     {
         public:
             NearestGameObjectFishingHole(WorldObject const& obj, float range) : i_obj(obj), i_range(range) {}
@@ -995,7 +995,7 @@ template<class Check>
             NearestGameObjectFishingHole(NearestGameObjectFishingHole const&);
     };
 
-    class AllGameObjectsWithEntryInGrid
+    class TC_GAME_API AllGameObjectsWithEntryInGrid
     {
     public:
         AllGameObjectsWithEntryInGrid(uint32 ent) : entry(ent) {}
@@ -1004,7 +1004,7 @@ template<class Check>
         uint32 entry;
     };
     
-    class AllGameObjectsWithEntryInRange
+    class TC_GAME_API AllGameObjectsWithEntryInRange
     {
     public:
         AllGameObjectsWithEntryInRange(const WorldObject* pObject, uint32 uiEntry, float fMaxRange) : m_pObject(pObject), m_uiEntry(uiEntry), m_fRange(fMaxRange) {}
@@ -1016,7 +1016,7 @@ template<class Check>
     };
 
     //2D check
-    class AllGameObjectsInRange
+    class TC_GAME_API AllGameObjectsInRange
     {
     public:
         AllGameObjectsInRange(float x, float y, float z, float fMaxRange) : m_X(x), m_Y(y), m_Z(z), m_fRange(fMaxRange) {}
@@ -1029,7 +1029,7 @@ template<class Check>
     };
 
     // Success at unit in range, range update for next check (this can be use with GameobjectLastSearcher to find nearest GO)
-    class NearestGameObjectEntryInObjectRangeCheck
+    class TC_GAME_API NearestGameObjectEntryInObjectRangeCheck
     {
         public:
             NearestGameObjectEntryInObjectRangeCheck(WorldObject const& obj,uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
@@ -1045,7 +1045,7 @@ template<class Check>
     };
 
     // Success at unit in range, range update for next check (this can be use with GameobjectLastSearcher to find nearest GO with a certain type)
-    class NearestGameObjectTypeInObjectRangeCheck
+    class TC_GAME_API NearestGameObjectTypeInObjectRangeCheck
     {
     public:
         NearestGameObjectTypeInObjectRangeCheck(WorldObject const& obj, GameobjectTypes type, float range) : i_obj(obj), i_type(type), i_range(range) {}
@@ -1067,7 +1067,7 @@ template<class Check>
         NearestGameObjectTypeInObjectRangeCheck(NearestGameObjectTypeInObjectRangeCheck const&);
     };
 
-    class GameObjectWithDbGUIDCheck
+    class TC_GAME_API GameObjectWithDbGUIDCheck
     {
         public:
             GameObjectWithDbGUIDCheck(WorldObject const& obj,uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
