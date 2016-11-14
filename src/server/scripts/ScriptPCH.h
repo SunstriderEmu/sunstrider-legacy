@@ -30,6 +30,5 @@
 #include <windows.h>
 #endif
 
-
 #endif
 

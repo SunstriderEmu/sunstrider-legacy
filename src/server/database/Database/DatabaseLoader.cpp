@@ -23,8 +23,8 @@
 #include <mysqld_error.h>
 
 DatabaseLoader::DatabaseLoader(std::string const& logger, uint32 const defaultUpdateMask)
-    : _logger(logger), _autoSetup(sConfigMgr->GetBoolDefault("Updates.AutoSetup", true)),
-    _updateFlags(sConfigMgr->GetIntDefault("Updates.EnableDatabases", defaultUpdateMask))
+    : _logger(logger), _autoSetup(/*sConfigMgr->GetBoolDefault("Updates.AutoSetup", true)*/ false),
+    _updateFlags(/*sConfigMgr->GetIntDefault("Updates.EnableDatabases", defaultUpdateMask)*/ false)
 {
 }
 
@@ -122,7 +122,7 @@ DatabaseLoader& DatabaseLoader::AddDatabase(DatabaseWorkerPool<T>& pool, std::st
             if (error)
             {
                 TC_LOG_ERROR("sql.driver", "\nDatabasePool %s NOT opened. There were errors opening the MySQL connections. Check your SQLDriverLogFile "
-                    "for specific errors. Read wiki at http://www.trinitycore.info/display/tc/TrinityCore+Home", name.c_str());
+                    "for specific errors. Read wiki at http://www.trinitycore.info/display/tc/TrinityCore+Home. Error %u.", name.c_str(), error);
 
                 return false;
             }

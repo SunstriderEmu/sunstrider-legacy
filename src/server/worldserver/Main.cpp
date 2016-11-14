@@ -270,7 +270,15 @@ extern int main(int argc, char **argv)
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
     std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-    sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort);
+	int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
+
+	if (networkThreads <= 0)
+	{
+		TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
+		return false;
+	}
+
+    sWorldSocketMgr.StartNetwork(_ioService, worldListener, worldPort, networkThreads);
     TC_LOG_INFO("server.worldserver", "Start listening on %s:%u", worldListener.c_str(), worldPort);
 
     //    sScriptMgr->OnNetworkStart();
@@ -410,15 +418,17 @@ void ShutdownCLIThread(std::thread* cliThread)
 bool StartDB()
 {
     MySQL::Library_Init();
-
+	
     // Load databases
     DatabaseLoader loader("server.worldserver", DatabaseLoader::DATABASE_NONE);
     loader
         .AddDatabase(LoginDatabase, "Login")
         .AddDatabase(CharacterDatabase, "Character")
-        .AddDatabase(WorldDatabase, "World")
-        .AddDatabase(WorldDatabase, "Logs");
+        .AddDatabase(WorldDatabase, "World");
 
+	loader.AddDatabase(LogsDatabase, "Logs"); //Strange reference bug when I append this to the last command, so I kept this out
+	auto a = nullptr;
+	
     if (!loader.Load())
         return false;
 
