@@ -4,6 +4,7 @@
 
 #include "MapTree.h"
 #include "ModelInstance.h"
+#include "MapDefines.h"
 
 #include "DetourNavMeshBuilder.h"
 #include "DetourNavMesh.h"

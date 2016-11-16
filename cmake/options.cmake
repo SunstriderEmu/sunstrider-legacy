@@ -1,8 +1,12 @@
 option(DO_DEBUG "Debug mode (No optimization and debug symbols)" 0)
 option(DO_WARN "Enable all compilation warnings" 0)
 option(TOOLS "Build map/vmap/mmap extraction/assembler tools" 0)
-option(PLAYERBOT "Include playerbot system (DO NOT USE, WIP, not compiling)" 0)
+option(PLAYERBOT "Include playerbot system" 0)
 option(TESTS "Include tests fonctionalities" 0)
+if(TESTS AND NOT PLAYERBOT)
+	message("Tests are enabled, playerbot system is needed and will be compiled too")
+	set(PLAYERBOT ON CACHE BOOL "Include playerbot system" FORCE)
+endif(TESTS AND NOT PLAYERBOT)
 
 option(WITH_DYNAMIC_LINKING "Enable dynamic library linking." 0)
 IsDynamicLinkingRequired(WITH_DYNAMIC_LINKING_FORCED)

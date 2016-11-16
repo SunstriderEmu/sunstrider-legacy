@@ -31,3 +31,12 @@
 #include "Corpse.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#ifdef PLAYERBOT
+	#include "playerbot.h"
+	#include "GenericActions.h"
+	#include "NonCombatStrategy.h"
+	#include "CombatStrategy.h"
+	#include "RangedCombatStrategy.h"
+	#include "GenericTriggers.h"
+	#include "AiObjectContext.h"
+#endif

@@ -27,6 +27,23 @@
 	#define UINT64_C(x)  (x ## ULL)
 #endif
 
+enum HighGuid
+{
+	HIGHGUID_ITEM           = 0x4000,                      // blizz 4000
+	HIGHGUID_CONTAINER      = 0x4000,                      // blizz 4000
+	HIGHGUID_PLAYER         = 0x0000,                      // blizz 0000
+	HIGHGUID_GAMEOBJECT     = 0xF110,                      // blizz F110
+	HIGHGUID_TRANSPORT      = 0xF120,                      // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
+	HIGHGUID_UNIT           = 0xF130,                      // blizz F130
+	HIGHGUID_PET            = 0xF140,                      // blizz F140
+	HIGHGUID_VEHICLE        = 0xF150,                      // blizz F550
+	HIGHGUID_DYNAMICOBJECT  = 0xF100,                      // blizz F100
+	HIGHGUID_CORPSE         = 0xF101,                      // blizz F100
+	HIGHGUID_MO_TRANSPORT   = 0x1FC0,                      // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
+	HIGHGUID_INSTANCE       = 0x1F40,                      // blizz 1F40
+	HIGHGUID_GROUP          = 0x1F50
+};
+
 // used for creating values for respawn for example
 inline uint64 MAKE_PAIR64(uint32 l, uint32 h);
 inline uint32 PAIR64_HIPART(uint64 x);
@@ -78,7 +95,7 @@ uint16 PAIR32_LOPART(uint32 x)
 #define IS_CREATURE_OR_VEHICLE_GUID(Guid) ( IS_CREATURE_GUID(Guid) || IS_VEHICLE_GUID(Guid) )
 #define IS_PET_GUID(Guid)            ( GUID_HIPART(Guid) == HIGHGUID_PET )
 #define IS_CREATURE_OR_PET_GUID(Guid)( IS_CREATURE_GUID(Guid) || IS_PET_GUID(Guid) )
-#define IS_PLAYER_GUID(Guid)         ( GUID_HIPART(Guid) == HIGHGUID_PLAYER && Guid!=0 )  // special case for empty guid need check (since HIGHGUID_PLAYER == 0)
+#define IS_PLAYER_GUID(Guid)         ( GUID_HIPART(Guid) == HIGHGUID_PLAYER && Guid != 0 )  // special case for empty guid need check (since HIGHGUID_PLAYER == 0)
 #define IS_UNIT_GUID(Guid)           ( IS_CREATURE_OR_PET_GUID(Guid) || IS_PLAYER_GUID(Guid) )
 #define IS_ITEM_GUID(Guid)           ( GUID_HIPART(Guid) == HIGHGUID_ITEM )
 #define IS_GAMEOBJECT_GUID(Guid)     ( GUID_HIPART(Guid) == HIGHGUID_GAMEOBJECT )

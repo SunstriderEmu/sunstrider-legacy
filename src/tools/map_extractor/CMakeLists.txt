@@ -16,7 +16,7 @@ target_link_libraries(mapextractor
   PUBLIC
     common
     mpq
-	g3dlite
+	g3dlib
 	cppformat
 	)
 

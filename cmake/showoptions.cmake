@@ -47,10 +47,6 @@ else()
     message("* Use gperftools:         No ")
 endif()
 
-if(DO_DEBUG)
-	message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
-endif(DO_DEBUG)
-
 if (BUILD_SHARED_LIBS)
   message("")
   message(" *** WITH_DYNAMIC_LINKING - INFO!")

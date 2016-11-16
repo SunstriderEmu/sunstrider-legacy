@@ -70,6 +70,7 @@ endif()
 find_package(Git) 
 
 #For Windows, use prebuilt libircclient library instead of building it
+#todo: check this to maybe do it cleaner: https://cmake.org/cmake/help/v3.3/manual/cmake-buildsystem.7.html#imported-targets 
 if (WIN32)
     if(PLATFORM EQUAL 64)
         set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/lib/x64_release/libircclient.lib)
@@ -106,3 +107,6 @@ add_subdirectory(dep)
 # add core sources
 add_subdirectory(src)
 
+if(DO_DEBUG)
+	message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+endif(DO_DEBUG)

@@ -7,6 +7,7 @@
 #include "VMapManager2.h"
 #include "MapTree.h"
 #include "ModelInstance.h"
+#include "MapDefines.h"
 
 // ******************************************
 // Map file format defines

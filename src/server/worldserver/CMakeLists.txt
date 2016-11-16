@@ -41,11 +41,6 @@ endif()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 
-IF(PLAYERBOT)	
-	set(playerbot_SRC ${CMAKE_BINARY_DIR}/src/playerbot)
-	set(playerbot_lib playerbot)
-ENDIF()
-
 IF(USE_GPERFTOOLS)
 	set(gperftools_libs
 		profiler
@@ -59,7 +54,6 @@ target_link_libraries(worldserver
     game
     gsoap
     readline
-	${playerbot_lib}
 	${UNIX_LIBS}
   PRIVATE
 	irc
