@@ -6,7 +6,7 @@ class ChatHandler;
 
 using namespace std;
 
-class PlayerbotAIBase
+class TC_GAME_API PlayerbotAIBase
 {
 public:
 	PlayerbotAIBase();

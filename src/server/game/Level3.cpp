@@ -60,9 +60,7 @@
 #include "SmartAI.h"
 #include "GameEventMgr.h"
 #include "IRCMgr.h"
-#ifdef TESTS
-	#include "test.h"
-#endif
+#include "TestMgr.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
 #include "PathGenerator.h"                                  // for mmap commands      

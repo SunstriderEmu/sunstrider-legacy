@@ -13,7 +13,7 @@ class Item;
 
 typedef map<uint64, Player*> PlayerBotMap;
 
-class PlayerbotHolder : public PlayerbotAIBase
+class TC_GAME_API PlayerbotHolder : public PlayerbotAIBase
 {
 public:
     PlayerbotHolder();

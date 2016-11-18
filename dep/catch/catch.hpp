@@ -7,9 +7,17 @@
  *
  *  Distributed under the Boost Software License, Version 1.0. (See accompanying
  *  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+
+
+ * Edited for Sunstrider:
+ All edition are marked with a comment "Sunstrider", except for the added TC_GAME_API
  */
 #ifndef TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
 #define TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
+
+//sun
+#include "Define.h"
 
 #define TWOBLUECUBES_CATCH_HPP_INCLUDED
 
@@ -383,7 +391,7 @@ namespace Catch {
         std::string m_label;
     };
 
-    struct SourceLineInfo {
+    struct TC_GAME_API SourceLineInfo {
 
         SourceLineInfo();
         SourceLineInfo( char const* _file, std::size_t _line );
@@ -673,7 +681,7 @@ void registerTestCase
         NameAndDesc const& nameAndDesc,
         SourceLineInfo const& lineInfo );
 
-struct AutoReg {
+struct TC_GAME_API AutoReg {
 
     AutoReg
         (   TestFunction function,
@@ -1225,7 +1233,7 @@ namespace Catch {
         std::ostringstream oss;
     };
 
-    class ResultBuilder {
+    class TC_GAME_API ResultBuilder {
     public:
         ResultBuilder(  char const* macroName,
                         SourceLineInfo const& lineInfo,
@@ -1567,35 +1575,35 @@ std::string toString( T const& value );
 
 // Built in overloads
 
-std::string toString( std::string const& value );
-std::string toString( std::wstring const& value );
-std::string toString( const char* const value );
-std::string toString( char* const value );
-std::string toString( const wchar_t* const value );
-std::string toString( wchar_t* const value );
-std::string toString( int value );
-std::string toString( unsigned long value );
-std::string toString( unsigned int value );
-std::string toString( const double value );
-std::string toString( const float value );
-std::string toString( bool value );
-std::string toString( char value );
-std::string toString( signed char value );
-std::string toString( unsigned char value );
+TC_GAME_API std::string toString( std::string const& value );
+TC_GAME_API std::string toString( std::wstring const& value );
+TC_GAME_API std::string toString( const char* const value );
+TC_GAME_API std::string toString( char* const value );
+TC_GAME_API std::string toString( const wchar_t* const value );
+TC_GAME_API std::string toString( wchar_t* const value );
+TC_GAME_API std::string toString( int value );
+TC_GAME_API std::string toString( unsigned long value );
+TC_GAME_API std::string toString( unsigned int value );
+TC_GAME_API std::string toString( const double value );
+TC_GAME_API std::string toString( const float value );
+TC_GAME_API std::string toString( bool value );
+TC_GAME_API std::string toString( char value );
+TC_GAME_API std::string toString( signed char value );
+TC_GAME_API std::string toString( unsigned char value );
 
 #ifdef CATCH_CONFIG_CPP11_LONG_LONG
-std::string toString( long long value );
-std::string toString( unsigned long long value );
+TC_GAME_API std::string toString( long long value );
+TC_GAME_API std::string toString( unsigned long long value );
 #endif
 
 #ifdef CATCH_CONFIG_CPP11_NULLPTR
-std::string toString( std::nullptr_t );
+TC_GAME_API std::string toString( std::nullptr_t );
 #endif
 
 #ifdef __OBJC__
-    std::string toString( NSString const * const& nsstring );
-    std::string toString( NSString * CATCH_ARC_STRONG const& nsstring );
-    std::string toString( NSObject* const& nsObject );
+TC_GAME_API std::string toString( NSString const * const& nsstring );
+TC_GAME_API std::string toString( NSString * CATCH_ARC_STRONG const& nsstring );
+TC_GAME_API std::string toString( NSObject* const& nsObject );
 #endif
 
 namespace Detail {
@@ -1665,7 +1673,7 @@ namespace Detail {
         }
     };
 
-    std::string rawMemoryToString( const void *object, std::size_t size );
+	TC_GAME_API std::string rawMemoryToString( const void *object, std::size_t size );
 
     template<typename T>
     inline std::string rawMemoryToString( const T& object ) {
@@ -2009,8 +2017,8 @@ namespace Catch {
 
 namespace Catch{
 
-    bool isDebuggerActive();
-    void writeToDebugConsole( std::string const& text );
+	TC_GAME_API bool isDebuggerActive();
+	TC_GAME_API void writeToDebugConsole( std::string const& text );
 }
 
 #ifdef CATCH_PLATFORM_MAC
@@ -2255,7 +2263,7 @@ namespace Catch {
 
 namespace Catch {
 
-    struct SectionInfo {
+    struct TC_GAME_API SectionInfo {
         SectionInfo
             (   SourceLineInfo const& _lineInfo,
                 std::string const& _name,
@@ -2266,7 +2274,7 @@ namespace Catch {
         SourceLineInfo lineInfo;
     };
 
-    struct SectionEndInfo {
+    struct TC_GAME_API SectionEndInfo {
         SectionEndInfo( SectionInfo const& _sectionInfo, Counts const& _prevAssertions, double _durationInSeconds )
         : sectionInfo( _sectionInfo ), prevAssertions( _prevAssertions ), durationInSeconds( _durationInSeconds )
         {}
@@ -2289,7 +2297,7 @@ typedef unsigned long long uint64_t;
 
 namespace Catch {
 
-    class Timer {
+    class TC_GAME_API Timer {
     public:
         Timer() : m_ticks( 0 ) {}
         void start();
@@ -2307,7 +2315,7 @@ namespace Catch {
 
 namespace Catch {
 
-    class Section : NonCopyable {
+    class TC_GAME_API Section : NonCopyable {
     public:
         Section( SectionInfo const& info );
         ~Section();
@@ -2540,6 +2548,8 @@ namespace Catch {
         virtual IReporterRegistry const& getReporterRegistry() const = 0;
         virtual ITestCaseRegistry const& getTestCaseRegistry() const = 0;
         virtual IExceptionTranslatorRegistry& getExceptionTranslatorRegistry() = 0;
+		//sunstrider
+		virtual void clearAllTestsFromRegistry() = 0;
     };
 
     struct IMutableRegistryHub {
@@ -6343,8 +6353,8 @@ namespace Catch {
             Catch::cleanUp();
         }
 
-        //KELNO: Added to allow multiple runs
-        void reset() {
+        //Sunstrider: Added to allow multiple runs
+        void resetConfigData() {
             // m_cli never changes
             // m_unusedTokens already reset at new exec
             m_configData = ConfigData();
@@ -6571,6 +6581,13 @@ namespace Catch {
             return m_sortedFunctions;
         }
 
+		//sun, needed for reloadable tests
+		virtual void clearAllTests() {
+			m_functions.clear();
+			m_sortedFunctions.clear();
+			m_unnamedCount = 0;
+		}
+
     private:
         std::vector<TestCase> m_functions;
         mutable RunTests::InWhatOrder m_currentSortOrder;
@@ -6766,6 +6783,10 @@ namespace Catch {
             virtual IExceptionTranslatorRegistry& getExceptionTranslatorRegistry() CATCH_OVERRIDE {
                 return m_exceptionTranslatorRegistry;
             }
+			//sunstrider
+			virtual void clearAllTestsFromRegistry() CATCH_OVERRIDE {
+				return m_testCaseRegistry.clearAllTests();
+			}
 
         public: // IMutableRegistryHub
             virtual void registerReporter( std::string const& name, Ptr<IReporterFactory> const& factory ) CATCH_OVERRIDE {
@@ -7954,7 +7975,7 @@ namespace Catch {
 
         // Returns true if the current process is being debugged (either
         // running under the debugger or has a debugger attached post facto).
-        bool isDebuggerActive(){
+		bool isDebuggerActive(){
 
             int                 mib[4];
             struct kinfo_proc   info;
@@ -8050,7 +8071,7 @@ namespace Detail {
         };
     }
 
-    std::string rawMemoryToString( const void *object, std::size_t size )
+	std::string rawMemoryToString( const void *object, std::size_t size )
     {
         // Reverse order for little endian architectures
         int i = 0, end = static_cast<int>( size ), inc = 1;

@@ -2,12 +2,11 @@
 #include "catch.hpp"
 #include <vector>
 
-
-#include "test.h"
 #include "Player.h"
 #include "Creature.h"
+#include "test_utils.h"
 
-void Testing::Touch_test_auras() {}
+void Touch_test_auras() {}
 
 void TestStacksCount(Player* caster, Unit* target, uint32 talent, uint32 castSpell, uint32 testSpell, uint32 requireCount)
 {
@@ -24,7 +23,7 @@ void TestStacksCount(Player* caster, Unit* target, uint32 talent, uint32 castSpe
 }
 
 TEST_CASE( "Aura stacking limit", "[aura,stacking]" ) {
-
+	
     // Setting up
     Player* playerBot = nullptr;
     Creature* targetCreature = nullptr;

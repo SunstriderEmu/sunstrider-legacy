@@ -49,8 +49,6 @@ function(GetScriptModuleList variable)
     ${BASE_PATH}
     ${BASE_PATH}/*)
   
-	#message(STATUS "${LOCALE_SCRIPT_MODULE_LIST}")
-	
   set(${variable})
   foreach(SCRIPT_MODULE ${LOCALE_SCRIPT_MODULE_LIST})
     GetPathToScriptModule(${SCRIPT_MODULE} SCRIPT_MODULE_PATH)

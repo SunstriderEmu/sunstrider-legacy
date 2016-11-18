@@ -102,7 +102,7 @@ private:
     uint32 type;
 };
 
-class PlayerbotAI : public PlayerbotAIBase
+class TC_GAME_API PlayerbotAI : public PlayerbotAIBase
 {
 public:
 	PlayerbotAI();

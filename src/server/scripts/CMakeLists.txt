@@ -2,6 +2,9 @@ message("")
 
 # Make the script module list available in the current scope
 GetScriptModuleList(SCRIPT_MODULE_LIST)
+if(NOT TESTS)
+	list(REMOVE_ITEM SCRIPT_MODULE_LIST Tests)
+endif(NOT TESTS)
 
 # Make the native install offset available in this scope
 GetInstallOffset(INSTALL_OFFSET)
@@ -117,6 +120,10 @@ function(ConfigureScriptLoader SCRIPTLOADER_NAME LOADER_OUT IS_DYNAMIC_SCRIPTLOA
   set(${LOADER_OUT} ${GENERATED_LOADER} PARENT_SCOPE)
 endfunction()
 
+IF(NOT TESTS)
+	set(EXCLUDE_TESTING ${CMAKE_CURRENT_SOURCE_DIR}/Tests)
+ENDIF(NOT TESTS)
+
 # Generates the actual script projects
 # Fills the STATIC_SCRIPT_MODULES and DYNAMIC_SCRIPT_MODULE_PROJECTS variables
 # which contain the names which scripts are linked statically/dynamically and
@@ -135,13 +142,13 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
       # Add the module name to STATIC_SCRIPT_MODULES
       list(APPEND STATIC_SCRIPT_MODULES ${SCRIPT_MODULE})
       # Add the module content to the whole static module
-      CollectSourceFiles(${SCRIPT_MODULE_PATH} PRIVATE_SOURCES)
+      CollectSourceFiles(${SCRIPT_MODULE_PATH} PRIVATE_SOURCES ${EXCLUDE_TESTING})
     endif()
   elseif(${SCRIPT_MODULE_VARIABLE} STREQUAL "dynamic")
     # Generate an own dynamic module which is loadable on runtime
     # Add the module content to the whole static module
     unset(SCRIPT_MODULE_PRIVATE_SOURCES)
-    CollectSourceFiles(${SCRIPT_MODULE_PATH} SCRIPT_MODULE_PRIVATE_SOURCES)
+    CollectSourceFiles(${SCRIPT_MODULE_PATH} SCRIPT_MODULE_PRIVATE_SOURCES ${EXCLUDE_TESTING})
     # Configure the scriptloader
     ConfigureScriptLoader(${SCRIPT_MODULE} SCRIPT_MODULE_PRIVATE_SCRIPTLOADER ON ${SCRIPT_MODULE})
     GetProjectNameOfScriptModule(${SCRIPT_MODULE} SCRIPT_MODULE_PROJECT_NAME)
@@ -154,7 +161,11 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
       ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER})
     target_link_libraries(${SCRIPT_MODULE_PROJECT_NAME}
       PUBLIC
-        game)
+        game
+	  PRIVATE
+		#sunstrider: this one is only used for tests but let's keep this simple
+		catch
+	)
     set_target_properties(${SCRIPT_MODULE_PROJECT_NAME}
       PROPERTIES
         FOLDER
@@ -196,7 +207,8 @@ add_library(scripts STATIC
 
 target_link_libraries(scripts
   PUBLIC
-    game-interface)
+    game-interface
+)
 
 target_include_directories(scripts
   PUBLIC

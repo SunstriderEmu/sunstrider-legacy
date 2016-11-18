@@ -14,7 +14,7 @@ class Item;
 
 using namespace std;
 
-class RandomPlayerbotMgr : public PlayerbotHolder
+class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
 {
     public:
         RandomPlayerbotMgr();

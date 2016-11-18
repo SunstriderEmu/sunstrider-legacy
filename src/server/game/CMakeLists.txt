@@ -2,17 +2,12 @@ IF(NOT PLAYERBOT)
 	SET(EXCLUDE_PLAYERBOT ${CMAKE_CURRENT_SOURCE_DIR}/playerbot)
 ENDIF(NOT PLAYERBOT)
 
-IF(NOT TESTS)
-	SET(EXCLUDE_TESTING ${CMAKE_CURRENT_SOURCE_DIR}/testing)
-ENDIF(NOT TESTS)
-
 CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}
   PRIVATE_SOURCES
   # Exclude
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
-  ${EXCLUDE_PLAYERBOT}
-  ${EXCLUDE_TESTING})
+  ${EXCLUDE_PLAYERBOT})
 
   
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
@@ -106,8 +101,8 @@ if(PLAYERBOT)
 	endif()
 
 	if( UNIX )
-	  install(FILES aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
+	  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
 	elseif( WIN32 )
-	  install(FILES aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
+	  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
 	endif()
 endif(PLAYERBOT)
