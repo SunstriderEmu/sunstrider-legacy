@@ -77,6 +77,12 @@ void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
     PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_REALMLIST);
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
+	std::map<RealmHandle, std::string> existingRealms;
+	for (auto const& p : _realms)
+		existingRealms[p.first] = p.second.Name;
+
+	_realms.clear();
+
     // Circle through results and add them to the realm map
     if (result)
     {
@@ -145,6 +151,9 @@ void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
         }
         while (result->NextRow());
     }
+
+	for (auto itr = existingRealms.begin(); itr != existingRealms.end(); ++itr)
+		TC_LOG_INFO("server.authserver", "Removed realm \"%s\".", itr->second.c_str());
 
     if (_updateInterval)
     {
