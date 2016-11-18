@@ -28,7 +28,7 @@ class TC_DATABASE_API AppenderDB: public Appender
         AppenderDB(uint8 id, std::string const& name, LogLevel level, AppenderFlags flags, ExtraAppenderArgs extraArgs);
         ~AppenderDB();
 
-        void setRealmId(uint32 realmId);
+        void setRealmId(uint32 realmId) override;
         AppenderType getType() const override { return TypeIndex::value; }
 
     private:
