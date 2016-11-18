@@ -29,7 +29,7 @@ TEST_CASE( "Aura stacking limit", "[aura,stacking]" ) {
     Creature* targetCreature = nullptr;
     Testing::PrepareCasterAndTarget(playerBot, targetCreature);
 
-    SECTION( "Improved Scorch talent ('Fire Vulnerability' aura)" ) {
+    SECTION( "Improved Scorch talent ('Fire Vulnerability' aura)" ) {	
         uint32 TALENT_IMPROVED_SCORCH = 12873;
         uint32 SPELL_SCORCH = 10207;
         uint32 SPELL_FIRE_VULNERABILITY = 22959;

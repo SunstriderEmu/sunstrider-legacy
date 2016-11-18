@@ -37,7 +37,7 @@
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & /*recvData*/)
 {
-    TC_LOG_DEBUG("network", "WORLD: got MSG_MOVE_WORLDPORT_ACK.");
+   // TC_LOG_DEBUG("network", "WORLD: got MSG_MOVE_WORLDPORT_ACK.");
     HandleMoveWorldportAck();
 }
 
@@ -561,7 +561,7 @@ CMSG_FORCE_TURN_RATE_CHANGE_ACK
 void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 {
     uint32 opcode = recvData.GetOpcode();
-    TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), opcode, opcode);
+   // TC_LOG_DEBUG("network", "WORLD: Recvd %s (%u, 0x%X) opcode", GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str(), opcode, opcode);
 
     /* extract packet */
     uint64 guid;
@@ -638,7 +638,7 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 // sent by client when gaining control of a unit
 void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
+    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_SET_ACTIVE_MOVER");
 
     //LK OK
     uint64 guid;
@@ -655,7 +655,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
 //sent by client when loosing control of a unit
 void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
+    //TC_LOG_DEBUG("network", "WORLD: Recvd CMSG_MOVE_NOT_ACTIVE_MOVER");
 
     uint64 old_mover_guid;
 #ifdef LICH_KING
@@ -690,7 +690,7 @@ void WorldSession::HandleMountSpecialAnimOpcode(WorldPacket& /*recvData*/)
 // CMSG_MOVE_KNOCK_BACK_ACK
 void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");
+    //TC_LOG_DEBUG("network", "CMSG_MOVE_KNOCK_BACK_ACK");
 
     uint64 guid;
 #ifdef LICH_KING
@@ -745,7 +745,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
 //BC structure confirmed
 void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "CMSG_MOVE_HOVER_ACK");
+    //TC_LOG_DEBUG("network", "CMSG_MOVE_HOVER_ACK");
 
     uint64 guid;                                            // guid - unused
 #ifdef LICH_KING
@@ -766,7 +766,7 @@ void WorldSession::HandleMoveHoverAck(WorldPacket& recvData)
 //BC structure confirmed
 void WorldSession::HandleMoveWaterWalkAck(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "CMSG_MOVE_WATER_WALK_ACK");
+    //TC_LOG_DEBUG("network", "CMSG_MOVE_WATER_WALK_ACK");
 
     uint64 guid;                                            // guid - unused
     recvData >> guid;
