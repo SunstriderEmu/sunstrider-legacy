@@ -25,7 +25,7 @@ before_install:
   - echo "Y" | sudo apt-get install -qq mariadb-server libmariadbclient-dev libmariadbd-dev
   - sudo apt-get install -qq gcc-4.9 g++-4.9 make cmake build-essential openssl libtool patch
   - sudo apt-get install -qq libssl-dev  libreadline-dev zlib1g-dev libbz2-dev libbz2-1.0
-  - sudo apt-get install -qq libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev
+  - sudo apt-get install -qq libboost1.55-dev libboost-thread1.55-dev libboost-system1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-regex1.55-dev libboost-iostreams1.55-dev
   - git config user.email "travis@build.bot" && git config user.name "Travis CI"
   - git tag -a -m "Travis build" init
 
