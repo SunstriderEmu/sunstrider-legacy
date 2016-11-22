@@ -5,9 +5,11 @@
 
 1. Get the right mariadb repository [here][mariadbrepository] (version 10.x). Mysql should also work but is not supported, and you may encounter problems when importing the database.
 
-2. Get the right LLVM repository [here][llvmrepository]. (+ Also add [this][llvm-gpg-key]?)
+2. Get the right LLVM repository [here][llvmrepository].
 
-3. sudo apt-get install clang-3.9 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
+3. Add LLVM key `wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -`
+
+4. sudo apt-get install clang-3.9 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev
 
 Clang is now the supported compiler, but gcc should work too.
 
@@ -15,8 +17,6 @@ Clang is now the supported compiler, but gcc should work too.
 https://downloads.mariadb.org/mariadb/repositories/
 [llvmrepository]:
 http://apt.llvm.org/
-[llvm-gpg-key]:
-http://llvm.org/apt/llvm-snapshot.gpg.key
 
 <!----------------------------------------------------------------------------->
 ## Compiling The Server
