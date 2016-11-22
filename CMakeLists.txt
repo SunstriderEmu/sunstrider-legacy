@@ -1,5 +1,5 @@
 project(Sunstrider)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.1)
 
 # Don't escape preprocessor definitions automatically.
 cmake_policy(SET CMP0005 OLD)
@@ -46,8 +46,6 @@ include(PlatformRelatedSettings)
 include(FindThreads)
 find_package(MySQL)
 include(FindPCHSupport)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 if(UNIX)
     find_package(ZLIB)

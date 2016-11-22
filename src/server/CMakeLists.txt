@@ -1,7 +1,8 @@
-add_subdirectory(authserver)
+#order is important here!
 add_subdirectory(database)
-add_subdirectory(game)
-add_subdirectory(irc)
-add_subdirectory(scripts)
 add_subdirectory(shared)
+add_subdirectory(irc)
+add_subdirectory(game)
+add_subdirectory(scripts)
 add_subdirectory(worldserver)
+add_subdirectory(authserver)

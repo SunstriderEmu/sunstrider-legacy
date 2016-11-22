@@ -18,15 +18,17 @@ FUNCTION(GET_COMMON_PCH_PARAMS TARGET_NAME_LIST PCH_HEADER PCH_FE INCLUDE_PREFIX
     FOREACH(target_link ${links})
       IF(TARGET ${target_link})
         CollectIncludes(${target_link} "${inherited_includes}" "${inherited_definitions}")
+      #sunstrider alert
+      ELSE()
+          if(${target_link} STREQUAL "shared")
+            MESSAGE(FATAL_ERROR "CollectIncludes tried to collect for 'shared' library but target does not exists. Did you changed the include order in src/server/game/CMakeList.txt ?")
+          endif()
       ENDIF()
     ENDFOREACH()
   ENDMACRO()
 
   FOREACH(TARGET_NAME ${TARGET_NAME_LIST})
-	#message(STATUS "TARGET NAME: " ${TARGET_NAME})
     CollectIncludes(${TARGET_NAME} TARGET_INCLUDES TARGET_DEFINITIONS)
-	#message(STATUS "TARGET_INCLUDES: " ${TARGET_INCLUDES})
-	#message(STATUS "TARGET_DEFINITIONS: " ${TARGET_DEFINITIONS})
   ENDFOREACH()
 
   LIST(REMOVE_DUPLICATES TARGET_INCLUDES)

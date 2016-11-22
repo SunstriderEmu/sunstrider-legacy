@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <climits>
 
-
 #define TRINITY_LITTLEENDIAN 0
 #define TRINITY_BIGENDIAN    1
 

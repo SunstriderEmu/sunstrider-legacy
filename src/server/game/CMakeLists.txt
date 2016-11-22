@@ -35,7 +35,6 @@ target_link_libraries(game-interface
   INTERFACE
     shared
     Detour
-	common
 	)
 
 add_library(game
@@ -51,17 +50,15 @@ target_link_libraries(game
     game-interface
   PRIVATE
     efsw
-	irc
-	segvcatch
-	catch
+    irc
+    segvcatch
+    catch
 )
 
 set_target_properties(game
     PROPERTIES
       FOLDER
         "server")
-		
-add_dependencies(game revision_data.h)
 
 if( BUILD_SHARED_LIBS )
   if( UNIX )
