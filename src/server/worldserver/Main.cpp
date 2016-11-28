@@ -46,9 +46,9 @@ namespace fs = boost::filesystem;
 
 #define WORLD_SLEEP_CONST 50
 
-#ifndef _WORLD_SERVER_CONFIG
-# define _WORLD_SERVER_CONFIG  "worldserver.conf"
-#endif //_WORLD_SERVER_CONFIG
+#ifndef _TRINITY_CORE_CONFIG
+# define _TRINITY_CORE_CONFIG  "worldserver.conf"
+#endif //_TRINITY_CORE_CONFIG
 
 // Format is YYYYMMDDRR where RR is the change in the conf file
 // for that day.
@@ -131,7 +131,7 @@ extern int main(int argc, char **argv)
 #endif
 
     ///- Command line parsing to get the configuration file name
-	auto configFile = fs::absolute(_WORLD_SERVER_CONFIG);
+	auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
     std::string configService;
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
@@ -487,7 +487,7 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
 	all.add_options()
 		("help,h", "print usage message")
 		("version,v", "print version build info")
-		("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_WORLD_SERVER_CONFIG)),
+		("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
 			"use <arg> as configuration file");
 #ifdef _WIN32
     options_description win("Windows platform specific options");
