@@ -19,6 +19,7 @@
 #include "mpq_libmpq04.h"
 #include <deque>
 #include <cstdio>
+#include <algorithm>
 
 ArchiveSet gOpenArchives;
 
