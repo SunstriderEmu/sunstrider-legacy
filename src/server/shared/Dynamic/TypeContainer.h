@@ -86,6 +86,7 @@ private:
 	ContainerMapList<OBJECT_TYPES> i_elements;
 };
 
+/*TC
 template<class OBJECT_TYPES, class KEY_TYPE>
 class TypeUnorderedMapContainer
 {
@@ -114,5 +115,6 @@ public:
 private:
 	ContainerUnorderedMap<OBJECT_TYPES, KEY_TYPE> _elements;
 };
+*/
 
 #endif

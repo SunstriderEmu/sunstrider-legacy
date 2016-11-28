@@ -36,7 +36,7 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 
 if (UNIX)
     #this should be changed, see comments is CMakeLists from irc project
-    set(UNIX_LIBS gomp malloc ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
+    set(UNIX_LIBS gomp ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
 endif()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)

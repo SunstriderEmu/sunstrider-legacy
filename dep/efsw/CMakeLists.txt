@@ -1,5 +1,6 @@
 if (BUILD_SHARED_LIBS)
   set(SRCS
+    src/efsw/Debug.cpp
     src/efsw/DirectorySnapshot.cpp
     src/efsw/DirectorySnapshotDiff.cpp
     src/efsw/DirWatcherGeneric.cpp
@@ -15,7 +16,8 @@ if (BUILD_SHARED_LIBS)
     src/efsw/System.cpp
     src/efsw/Thread.cpp
     src/efsw/Watcher.cpp
-    src/efsw/WatcherGeneric.cpp)
+    src/efsw/WatcherGeneric.cpp
+    )
 
   if(WIN32)
     list(APPEND SRCS
