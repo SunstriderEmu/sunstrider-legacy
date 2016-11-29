@@ -1054,13 +1054,13 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        if(dataPath!=m_dataPath)
-            TC_LOG_ERROR("server.loading","DataDir option can't be changed at worldserver.conf reload, using current value (%s).",m_dataPath.c_str());
+        if(dataPath != m_dataPath)
+            TC_LOG_ERROR("server.loading", "DataDir option can't be changed at worldserver.conf reload, using current value (%s).", m_dataPath.c_str());
     }
     else
     {
         m_dataPath = dataPath;
-        TC_LOG_INFO("server.loading","Using DataDir %s",m_dataPath.c_str());
+        TC_LOG_INFO("server.loading", "Using DataDir %s", m_dataPath.c_str());
     }
 
     bool enableLOS = sConfigMgr->GetBoolDefault("vmap.enableLOS", true);
