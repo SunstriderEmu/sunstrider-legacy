@@ -1236,6 +1236,7 @@ void World::SetInitialWorldSettings()
     ///- Init highest guids before any table loading to prevent using not initialized guids in some code.
     sObjectMgr->SetHighestGuids();
 
+    std::cout << "DATADIR$ " << sWorld->GetDataPath() << std::endl;
     ///- Check the existence of the map files for all races' startup areas.
     if(    !MapManager::ExistMapAndVMap(0,-6240.32f, 331.033f)
         || !MapManager::ExistMapAndVMap(0,-8949.95f,-132.493f)

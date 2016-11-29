@@ -625,7 +625,7 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidType
 
 bool GridMap::ExistMap(uint32 mapid, int gx, int gy)
 {
-	std::string fileName = Trinity::StringFormat("%smaps/%03u_%02u_%02u.map", sWorld->GetDataPath().c_str(), mapid, gx, gy);
+	std::string fileName = Trinity::StringFormat("%smaps/%03u%02u%02u.map", sWorld->GetDataPath().c_str(), mapid, gx, gy);
 
     bool ret = false;
     FILE* pf = fopen(fileName.c_str(), "rb");
