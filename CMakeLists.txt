@@ -16,12 +16,11 @@ set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON) 
 
 #install sunstrider compiled libraries to this directory
-set(SUNLIBDIR ${CMAKE_INSTALL_PREFIX}/lib)
 
 # Set RPATH-handing (CMake parameters)
 set(CMAKE_SKIP_BUILD_RPATH 0)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH 0)
-set(CMAKE_INSTALL_RPATH "${LIBSDIR}")
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH 1)
 
 # set macro-directory

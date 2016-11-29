@@ -19,14 +19,14 @@ CollectIncludeDirectories(
 IF ( UNIX )
 ExternalProject_Add(libircclient
     SOURCE_DIR ${CMAKE_BINARY_DIR}
-    INSTALL_DIR ${SUNLIBDIR}
+    INSTALL_DIR ${LIBSDIR}
     CONFIGURE_COMMAND 
     #This lib is only linked by worldserver.
     #problem is: before the install step, the library isn't there (it's in build/libircclient/src) and worldserver can't link it. 
     #so actually the worldserver links it in its build folder. FIXME.
     cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR}
       && chmod 700 ${CMAKE_BINARY_DIR}/libircclient/configure
-      && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} --libdir=${SUNLIBDIR} --enable-openssl --enable-shared
+      && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} --libdir=${LIBSDIR} --enable-openssl --enable-shared
     BINARY_DIR ${CMAKE_BINARY_DIR}/libircclient
     BUILD_COMMAND ${MAKE}) 
     #todo custom clean

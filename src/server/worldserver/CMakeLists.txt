@@ -72,6 +72,8 @@ target_include_directories(worldserver
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
 
+link_directories(${LIBSDIR}) 
+
 set_target_properties(worldserver
     PROPERTIES
       FOLDER
