@@ -162,10 +162,10 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
     target_link_libraries(${SCRIPT_MODULE_PROJECT_NAME}
       PUBLIC
         game
-	  PRIVATE
-		#sunstrider: this one is only used for tests but let's keep this simple
-		catch
-	)
+      PRIVATE
+        #sunstrider: this one is only used for tests but let's keep this simple
+        catch
+    )
     set_target_properties(${SCRIPT_MODULE_PROJECT_NAME}
       PROPERTIES
         FOLDER
@@ -209,6 +209,8 @@ target_link_libraries(scripts
   PUBLIC
     game-interface
     database
+  PRIVATE
+    catch
 )
 
 target_include_directories(scripts
