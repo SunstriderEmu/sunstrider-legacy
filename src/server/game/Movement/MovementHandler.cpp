@@ -32,6 +32,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "IRCMgr.h"
+#include "Pet.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 
@@ -80,7 +81,7 @@ void WorldSession::HandleMoveWorldportAck()
 
      if(!GetPlayer()->GetMap())
     {
-        TC_LOG_ERROR("FIXME","WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
+        TC_LOG_ERROR("network","WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
         KickPlayer();
         return;
     }

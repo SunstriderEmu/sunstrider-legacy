@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "MapInstanced.h"
 #include "ObjectMgr.h"
@@ -26,8 +7,9 @@
 #include "Management/MMapFactory.h"
 #include "InstanceSaveMgr.h"
 #include "World.h"
+#include "DBCStores.h"
 
-MapInstanced::MapInstanced(uint32 id) : Map(id, 0, DUNGEON_DIFFICULTY_NORMAL)
+MapInstanced::MapInstanced(uint32 id) : Map(MAP_TYPE_MAP_INSTANCED, id, 0, DUNGEON_DIFFICULTY_NORMAL)
 {
     // fill with zero
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
@@ -51,7 +33,6 @@ void MapInstanced::Update(const uint32& t)
 
     // update the instanced maps
     auto i = m_InstancedMaps.begin();
-
     while (i != m_InstancedMaps.end())
     {
         if(i->second->CanUnload(t))
@@ -64,9 +45,21 @@ void MapInstanced::Update(const uint32& t)
         else
         {
             // update only here, because it may schedule some bad things before delete
+			if((Map*)this == i->second) //The base map is already updated from MapManager
+			{ //not needed anymore ?
+				TC_LOG_DEBUG("maps.update", "Not scheduling because we're base map");
+				i++;
+				continue;
+			}
+
             if (sMapMgr->GetMapUpdater()->activated())
+			{
+                /*
+				if(i->second->GetId() == 564)
+					TC_LOG_DEBUG("maps.update", "MapInstanced, scheduling map 564");
+                    */
                 sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
-            else
+			} else
             {
                 try
                 {
@@ -168,7 +161,8 @@ void MapInstanced::UnloadAll()
 }
 
 /*
-- return the right instance for the object, based on its InstanceId
+- return the right instance for the object, based on its InstanceId.
+- If InstanceId == 0, get it from save or generate a new one
 - create the instance if it's not created already
 - the player is not actually added to the instance (only in InstanceMap::Add)
 */

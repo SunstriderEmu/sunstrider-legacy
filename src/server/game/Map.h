@@ -96,14 +96,27 @@ typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
 
+enum MapType
+{
+    //not specialized
+	MAP_TYPE_MAP, 
+    //MapInstanced class
+	MAP_TYPE_MAP_INSTANCED,
+    //InstanceMap class
+	MAP_TYPE_INSTANCE_MAP,
+    //BattlegroundMap class
+	MAP_TYPE_BATTLEGROUND_MAP,
+};
+
 class TC_GAME_API Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-        Map(uint32 id, uint32 InstanceId, uint8 SpawnMode);
+        Map(MapType type, uint32 id, uint32 InstanceId, uint8 SpawnMode);
         ~Map() override;
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
+        MapType GetMapType() const { return i_mapType; }
 
         // currently unused for normal maps
         bool CanUnload(uint32 diff)
@@ -120,6 +133,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         template<class T> void Remove(T *, bool);
 
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
+		//this wrap map udpates and call it with diff since last updates. If minimumTimeSinceLastUpdate, the thread will sleep until minimumTimeSinceLastUpdate is reached
+		void DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate = 0);
         virtual void Update(const uint32&);
 
         void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
@@ -403,6 +418,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
+        MapType i_mapType;
         bool i_lock;
         std::vector<uint64> i_unitsToNotifyBacklog;
         std::vector<Unit*> i_unitsToNotify;
@@ -450,6 +466,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         ZoneDynamicInfoMap _zoneDynamicInfo;
         uint32 _defaultLight;
+
+		uint32 _lastMapUpdate;
 };
 
 enum InstanceResetMethod

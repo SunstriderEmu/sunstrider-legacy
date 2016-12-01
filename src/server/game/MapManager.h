@@ -40,13 +40,11 @@ class TC_GAME_API MapManager
             return &instance;
         }
 
-
+		//Find base map, create it if needed
         Map* CreateBaseMap(uint32 id);
-        Map* FindBaseMap(uint32 id) const
-        {
-            auto iter = i_maps.find(id);
-            return (iter == i_maps.end() ? nullptr : iter->second);
-        }
+		//Return base map if it exists, null otherwise
+        Map* FindBaseMap(uint32 id) const;
+		//Same as FindBaseMap, but exclude all instanceable maps
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 id, const WorldObject* obj);
         Map* FindMap(uint32 mapid, uint32 instanceId);

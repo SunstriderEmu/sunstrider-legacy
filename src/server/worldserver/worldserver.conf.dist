@@ -232,7 +232,7 @@ Locale = 0
 #        Default: 1 (permit addon channel)
 #                 0 (do not permit addon channel)
 #
-#    MapUpdate.Threads
+#    MapUpdate.InstanceThreads
 #        Number of threads to update maps.
 #        Default: 4
 #

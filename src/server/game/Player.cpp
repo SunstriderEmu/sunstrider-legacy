@@ -1748,17 +1748,17 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         return false;
     }
 
-    // preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)
-    Pet* pet = GetPet();
-
     MapEntry const* mEntry = sMapStore.LookupEntry(mapid);
 
     // don't let enter battlegrounds without assigned battleground id (for example through areatrigger)...
-    // don't let gm level > 1 either
     if (!InBattleground() && mEntry->IsBattlegroundOrArena())
         return false;
 
+	// preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)
+	Pet* pet = GetPet();
+
     // client without expansion support
+	/*
     if (GetSession()->Expansion() < mEntry->Expansion())
     {
         TC_LOG_DEBUG("maps", "Player %s using client without required expansion tried teleport to non accessible map %u", GetName().c_str(), mapid);
@@ -1773,8 +1773,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         return false;                                       // normal client can't teleport to this map...
     }
-    else
-        TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
+	*/
+    TC_LOG_DEBUG("maps", "Player %s is being teleported to map %u", GetName().c_str(), mapid);
 
     // reset movement flags at teleport, because player will continue move with these flags after teleport
     SetUnitMovementFlags(GetUnitMovementFlags() & MOVEMENTFLAG_MASK_HAS_PLAYER_STATUS_OPCODE);
@@ -1799,6 +1799,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     if (duel && GetMapId() != mapid && GetMap()->GetGameObject(GetUInt64Value(PLAYER_DUEL_ARBITER)))
         DuelComplete(DUEL_FLED);
 
+	//same map teleport
     if (GetMapId() == mapid)
     {
         //lets reset far teleport flag if it wasn't reset during chained teleports
@@ -1828,6 +1829,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
+		//reset fall info
         SetFallInformation(0, z);
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
@@ -1858,8 +1860,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //I think this always returns true. Correct me if I am wrong.
         // If the map is not created, assume it is possible to enter it.
         // It will be created in the WorldPortAck.
-        //Map* map = sMapMgr->FindBaseNonInstanceMap(mapid);
-        //if (!map || map->CanEnter(this))
+        Map* map = sMapMgr->FindBaseMap(mapid); //kelno: uncommented this, don't see any reason not to, CanEnter may change at some point so the "always true" thing about the comment is not relevant
+        if (!map || map->CanEnter(this))
         {
             //lets reset near teleport flag if it wasn't reset during chained teleports
             SetSemaphoreTeleportNear(false);
@@ -22380,8 +22382,8 @@ bool Player::ShouldGoToSecondaryArenaZone()
         uint32 mainMapId, secMapId;
         GetArenaZoneCoord(false, mainMapId, x, y, z, o);
         GetArenaZoneCoord(true, secMapId, x, y, z, o);
-        Map* mainMap = sMapMgr->FindBaseNonInstanceMap(mainMapId);
-        Map* secMap = sMapMgr->FindBaseNonInstanceMap(secMapId);
+        Map* mainMap = sMapMgr->FindBaseMap(mainMapId);
+        Map* secMap = sMapMgr->FindBaseMap(secMapId);
         if(mainMap && secMap && mainMap->GetPlayers().getSize() > secMap->GetPlayers().getSize())
                 return true;
     }

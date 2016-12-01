@@ -24,6 +24,10 @@
 #include "Map.h"
 #include "InstanceSaveMgr.h"
 
+/* 
+MapInstanced handles all instances for one particular instanceable map. It has fake cells and shouldn't ever have any players on it.
+Actual instances are InstanceMap's.
+*/
 class TC_GAME_API MapInstanced : public Map
 {
     friend class MapManager;

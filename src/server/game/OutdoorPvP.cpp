@@ -250,7 +250,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     auto  go = new GameObject;
     if(!go->Create(guid,entry, pMap, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
-        TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
+        TC_LOG_ERROR("sql.sql","Gameobject template %u not found in database.", entry);
         delete go;
     }
     else

@@ -138,14 +138,15 @@ void Map::LoadMapAndVMap(uint32 mapid, uint32 instanceid, int x,int y)
     }
 }
 
-Map::Map(uint32 id, uint32 InstanceId, uint8 SpawnMode)
+Map::Map(MapType type, uint32 id, uint32 InstanceId, uint8 SpawnMode)
    : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
-   i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), 
+   i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), _lastMapUpdate(0),
    m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE),
    m_activeForcedNonPlayersIter(m_activeForcedNonPlayers.end()), 
    _transportsUpdateIter(_transports.end()),
    _defaultLight(GetDefaultMapLight(id)),
-   i_lock(true)
+   i_lock(true),
+   i_mapType(type)
 {
     for(uint32 idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
     {
@@ -718,6 +719,22 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
     }
 }
 
+void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate)
+{
+	uint32 now = GetMSTime();
+	uint32 diff = GetMSTimeDiff(_lastMapUpdate, now);
+	//freeze thread if last update was less than 10ms ago
+	if(diff < minimumTimeSinceLastUpdate) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(minimumTimeSinceLastUpdate - diff));
+		diff = minimumTimeSinceLastUpdate;
+	}
+	if (diff > maxDiff)
+		diff = maxDiff;
+	_lastMapUpdate = now;
+	Update(diff);
+}
+
+
 void Map::Update(const uint32 &t_diff)
 {
     i_lock = false;
@@ -834,12 +851,7 @@ void Map::Update(const uint32 &t_diff)
     MoveAllGameObjectsInMoveList();
 
     RelocationNotify();
-    RemoveAllObjectsInRemoveList();
-
-    // Don't unload grids if it's battleground, since we may have manually added GOs,creatures, those doesn't load from DB at grid re-load !
-    // This isn't really bother us, since as soon as we have instanced BG-s, the whole map unloads as the BG gets ended
-    if (IsBattlegroundOrArena())
-        return;
+    //Moved to delayed update RemoveAllObjectsInRemoveList();
 
     sScriptMgr->OnMapUpdate(this, t_diff);
 }
@@ -968,7 +980,8 @@ void Map::Remove(MotionTransport *obj, bool remove)
     {
         auto itr = _transports.find(obj);
         if (itr == _transports.end())
-            return;
+            //did not find transport in list ? Should not happen, logic error somewhere
+            ASSERT(false);
         if (itr == _transportsUpdateIter)
             ++_transportsUpdateIter;
 
@@ -1414,6 +1427,7 @@ void Map::UnloadAll()
     if (!AllTransportsEmpty())
         AllTransportsRemovePassengers();
 
+    _transportsUpdateIter = _transports.end();
     for (auto itr = _transports.begin(); itr != _transports.end();)
     {
         MotionTransport* transport = *itr;
@@ -2041,9 +2055,9 @@ void Map::RemoveAllObjectsInRemoveList()
                 Remove(obj->ToGameObject(), true);
             break;
         case TYPEID_UNIT:
-            // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
+            // HACK in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
             // make sure that like sources auras/etc removed before destructor start
-            (obj->ToCreature())->CleanupsBeforeDelete ();
+            (obj->ToCreature())->CleanupsBeforeDelete();
             Remove(obj->ToCreature(),true);
             break;
         default:
@@ -2279,7 +2293,7 @@ template TC_GAME_API void Map::Remove(DynamicObject *, bool);
 /* ******* Dungeon Instance Maps ******* */
 
 InstanceMap::InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode)
-  : Map(id, InstanceId, SpawnMode), i_data(nullptr),
+  : Map(MAP_TYPE_INSTANCE_MAP, id, InstanceId, SpawnMode), i_data(nullptr),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false)
 {
     //lets initialize visibility distance for dungeons
@@ -2719,7 +2733,7 @@ bool Map::IsHeroic() const
 /* ******* Battleground Instance Maps ******* */
 
 BattlegroundMap::BattlegroundMap(uint32 id, uint32 InstanceId)
-  : Map(id, InstanceId, REGULAR_DIFFICULTY)
+  : Map(MAP_TYPE_BATTLEGROUND_MAP, id, InstanceId, REGULAR_DIFFICULTY)
 {
     //lets initialize visibility distance for BG/Arenas
     BattlegroundMap::InitVisibilityDistance();

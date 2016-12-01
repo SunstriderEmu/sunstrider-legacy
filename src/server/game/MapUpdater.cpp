@@ -1,20 +1,3 @@
-/*
-* Copyright (C) 2008-2015 TrinityCore <http://www.trinitycore.org/>
-* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #include <mutex>
 #include <condition_variable>
@@ -23,6 +6,9 @@
 #include "Map.h"
 #include "LagWatcher.h"
 #include "World.h"
+#include "MapManager.h"
+
+#define MINIMAP_MAP_UPDATE_INTERVAL 10
 
 class MapUpdateRequest
 {
@@ -31,17 +17,21 @@ class MapUpdateRequest
         Map& m_map;
         MapUpdater& m_updater;
         uint32 m_diff;
+		uint32 m_loopCount;
 		bool const crash_recovery_enabled = false;
 
     public:
 
-        MapUpdateRequest(Map& m, MapUpdater& u, uint32 d)
-            : m_map(m), 
+        MapUpdateRequest(Map& m, MapUpdater& u, uint32 d) :
+            m_map(m), 
 			m_updater(u), 
 			m_diff(d), 
+			m_loopCount(0),
 			crash_recovery_enabled(sWorld->getBoolConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
         {
         }
+
+		Map const* getMap() { return &m_map; }
 
         void call()
         {
@@ -50,19 +40,19 @@ class MapUpdateRequest
             {
                 try
                 {
-                    m_map.Update(m_diff);
+                    m_map.DoUpdate(m_diff, MINIMAP_MAP_UPDATE_INTERVAL);
                 }
-                catch (std::runtime_error& /*e*/)
+                catch (std::runtime_error&)
                 {
                     sMapMgr->MapCrashed(m_map);
                 }
             }
             else 
             {
-                m_map.Update(m_diff);
+                m_map.DoUpdate(m_diff, MINIMAP_MAP_UPDATE_INTERVAL);
             }
             sLagWatcher->MapUpdateEnd(m_map);
-            m_updater.update_finished();
+			m_loopCount++;
         }
 };
 
@@ -70,7 +60,7 @@ void MapUpdater::activate(size_t num_threads)
 {
     for (size_t i = 0; i < num_threads; ++i)
     {
-        _workerThreads.push_back(std::thread(&MapUpdater::WorkerThread, this));
+        _loop_maps_workerThreads.push_back(std::thread(&MapUpdater::LoopWorkerThread, this, &_enable_updates_loop));
     }
 }
 
@@ -78,64 +68,133 @@ void MapUpdater::deactivate()
 {
     _cancelationToken = true;
 
-    wait();
+	_loop_queue.Cancel();
 
-    _queue.Cancel();
+    waitUpdateOnces();
+	waitUpdateLoops();
 
-    for (auto& thread : _workerThreads)
+	for (auto& thread : _once_maps_workerThreads)
+	{
+		thread.join();
+	}
+
+    for (auto& thread : _loop_maps_workerThreads)
     {
         thread.join();
     }
 }
 
-void MapUpdater::wait()
+void MapUpdater::waitUpdateOnces()
 {
     std::unique_lock<std::mutex> lock(_lock);
 
-    while (pending_requests > 0)
-        _condition.wait(lock);
+    while (pending_once_maps > 0)
+        _onces_finished_condition.wait(lock);
 
+	//delete continents threads
+	for (auto& thread : _once_maps_workerThreads)
+	{
+		thread.join();
+	}
+	_once_maps_workerThreads.clear();
     lock.unlock();
+}
+
+void MapUpdater::enableUpdateLoop(bool enable)
+{
+    _enable_updates_loop = enable;
+}
+
+void MapUpdater::waitUpdateLoops()
+{
+	std::unique_lock<std::mutex> lock(_lock);
+
+	while (pending_loop_maps > 0)
+		_loops_finished_condition.wait(lock);
+
+	lock.unlock();
 }
 
 void MapUpdater::schedule_update(Map& map, uint32 diff)
 {
     std::lock_guard<std::mutex> lock(_lock);
 
-    ++pending_requests;
+    std::thread::id this_id = std::this_thread::get_id();
+    if(map.GetId() == 564) std::cout << "scheduled update for map 564 / id" << this_id << " mapType: " << map.GetMapType() << std::endl << std::flush;
 
-    _queue.Push(new MapUpdateRequest(map, *this, diff));
+	MapUpdateRequest* request = new MapUpdateRequest(map, *this, diff);
+	if(map.Instanceable() && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { //MapInstanced re schedule the instances it contains by itself, so we want to call it only once
+        pending_loop_maps++;
+		_loop_queue.Push(request);
+	} else {
+		pending_once_maps++;
+        //to improve: use thread pool instead
+		_once_maps_workerThreads.push_back(std::thread(&MapUpdater::OnceWorkerThread, this, request));
+	}
 }
 
 bool MapUpdater::activated()
 {
-    return _workerThreads.size() > 0;
+    return _loop_maps_workerThreads.size() > 0;
 }
 
-void MapUpdater::update_finished()
-{
-    std::lock_guard<std::mutex> lock(_lock);
-
-    --pending_requests;
-
-    _condition.notify_all();
-}
-
-void MapUpdater::WorkerThread()
+void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loop)
 {
     while (1)
     {
         MapUpdateRequest* request = nullptr;
 
-        _queue.WaitAndPop(request);
+        _loop_queue.WaitAndPop(request);
 
-        if (_cancelationToken)
+        if (_cancelationToken) {
+            loopMapsFinished();
             return;
+        }
 
         ASSERT(request);
-
+        std::thread::id this_id = std::this_thread::get_id();
+        if(request->getMap()->GetId() == 564) std::cout << "start update for map 564 / id" << this_id << " mapType: " << request->getMap()->GetMapType() << std::endl << std::flush;
         request->call();
+        if(request->getMap()->GetId() == 564) std::cout << "finished update for map 564 / id" << this_id << " mapType: " << request->getMap()->GetMapType() << std::endl << std::flush;
 
-        delete request;
+		//repush at end of queue with new diff, or delete if continents have finished
+		if(!(*enable_instance_updates_loop))
+		{
+			delete request;
+			loopMapsFinished();
+		} else {
+			_loop_queue.Push(request);
+		}
     }
+}
+
+void MapUpdater::OnceWorkerThread(MapUpdateRequest* request)
+{
+	if (_cancelationToken) {
+		onceMapsFinished();
+		return;
+	}
+
+	ASSERT(request);
+
+	request->call();
+
+	delete request;
+	onceMapsFinished();
+}
+
+void MapUpdater::onceMapsFinished()
+{
+	std::lock_guard<std::mutex> lock(_lock);
+	--pending_once_maps;
+    if(pending_once_maps == 0)
+	    _onces_finished_condition.notify_all();
+}
+
+void MapUpdater::loopMapsFinished()
+{
+	std::lock_guard<std::mutex> lock(_lock);
+    --pending_loop_maps;
+    if(pending_loop_maps == 0)
+	    _loops_finished_condition.notify_all();
 }

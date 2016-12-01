@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "MapManager.h"
 #include "InstanceSaveMgr.h"
@@ -70,7 +51,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
         }
         else
         {
-            m = new Map(id, 0, REGULAR_DIFFICULTY);
+            m = new Map(MAP_TYPE_MAP, id, 0, REGULAR_DIFFICULTY);
         }
         i_maps[id] = m;
     }
@@ -85,6 +66,12 @@ Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
     if (map && map->Instanceable())
         return nullptr;
     return map;
+}
+
+Map* MapManager::FindBaseMap(uint32 id) const
+{
+	auto iter = i_maps.find(id);
+	return (iter == i_maps.end() ? nullptr : iter->second);
 }
 
 Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
@@ -206,13 +193,22 @@ void MapManager::Update(time_t diff)
         if (m_updater.activated())
             m_updater.schedule_update(*i_map.second, uint32(i_timer.GetCurrent()));
         else
-            i_map.second->Update(uint32(i_timer.GetCurrent()));
+            i_map.second->DoUpdate(uint32(i_timer.GetCurrent()));
     }
 
     if (m_updater.activated())
-        m_updater.wait();
+	{
+		//TC_LOG_DEBUG("maps.update", "Wait for continents & instances");
+		m_updater.enableUpdateLoop(true);
+        m_updater.waitUpdateOnces();
+		//now that continents are done, stop instances too
+		m_updater.enableUpdateLoop(false);
+		m_updater.waitUpdateLoops();
+		//TC_LOG_DEBUG("maps.update", "Okay all waiting done");
+        std::cout << "Finished one world loop" << std::endl << std::flush;
+	}
 
-    //delayed map update (from sunwell core)
+    //delayed map updates
     for (auto & i_map : i_maps)
         i_map.second->DelayedUpdate(uint32(i_timer.GetCurrent()));
 
@@ -377,36 +373,28 @@ uint32 MapManager::GenerateInstanceId()
 
 void MapManager::MapCrashed(Map& map)
 {
-    if (!map.Instanceable())  //can't recover
-    {
-        std::cerr << "MapManager::MapCrashed not instanceable map given, cannot recover from crash" << std::endl;
-        return;
-    }
+	InstanceMap* instanceMap = dynamic_cast<InstanceMap*>(&map);
+	if (!instanceMap)
+	{
+		std::cerr << "MapManager::MapCrashed could not convert crashed map to InstanceMap" << std::endl;
+		return;
+	}
 
     //find right MapInstanced to pass crashed map to it and let it handle it
-    for (auto iter : i_maps)
+	Map* baseMap = FindBaseMap(map.GetId());
+	if(!baseMap) {
+		std::cerr << "MapManager::MapCrashed could not find basemap for id " << map.GetId() << std::endl;
+		return;
+	}
+
+    MapInstanced* mapInstanced = dynamic_cast<MapInstanced*>(baseMap);
+    if (!mapInstanced)
     {
-        if (iter.first == map.GetId())
-        {
-            MapInstanced* mapInstanced = dynamic_cast<MapInstanced*>(iter.second);
-            if (!mapInstanced)
-            {
-                std::cerr << "MapManager::MapCrashed could not convert map iterator to MapInstanced" << std::endl;
-                break;
-            }
-            InstanceMap* instanceMap = dynamic_cast<InstanceMap*>(&map);
-            if (!instanceMap)
-            {
-                std::cerr << "MapManager::MapCrashed could not convert crashed map to InstanceMap" << std::endl;
-                break;
-            }
-            mapInstanced->MapCrashed(instanceMap);
-            return;
-        }
+        std::cerr << "MapManager::MapCrashed could not convert map iterator to MapInstanced" << std::endl;
+		return;
     }
 
-    //shouldn't reach this point is all went well
-    std::cerr << "MapManager::MapCrashed recover failed" << std::endl;
+    mapInstanced->MapCrashed(instanceMap);
 }
 
 void MapManager::FreeInstanceId(uint32 instanceId)
