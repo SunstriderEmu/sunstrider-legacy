@@ -372,30 +372,30 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     if (uint64 lguid = GetPlayer()->GetLootGUID())
         DoLootRelease(lguid);
 
-	bool canLogoutInCombat = GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
+    bool canLogoutInCombat = GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
 
-	bool instantLogout = canLogoutInCombat ||
-		GetPlayer()->IsInFlight() || GetSecurity() >= sWorld->getConfig(CONFIG_INSTANT_LOGOUT);
+    bool instantLogout = canLogoutInCombat ||
+        GetPlayer()->IsInFlight() || GetSecurity() >= sWorld->getConfig(CONFIG_INSTANT_LOGOUT);
 
-	uint8 reason = 0;
-	if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
-		reason = 1;
-	else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
-		reason = 3;                                           
-	else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
-		reason = 0xC;  //not right id, need to get the correct value    
+    uint8 reason = 0;
+    if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
+        reason = 1;
+    else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
+        reason = 3;                                           
+    else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
+        reason = 0xC;  //not right id, need to get the correct value    
 
 
-	WorldPacket data(SMSG_LOGOUT_RESPONSE, 4+1);
-	data << uint32(reason);
-	data << uint8(instantLogout);
-	SendPacket(&data);
+    WorldPacket data(SMSG_LOGOUT_RESPONSE, 4+1);
+    data << uint32(reason);
+    data << uint8(instantLogout);
+    SendPacket(&data);
 
-	if (reason)
-	{
-		LogoutRequest(0);
-		return;
-	}
+    if (reason)
+    {
+        LogoutRequest(0);
+        return;
+    }
 
     //instant logout in taverns/cities or on taxi or for admins, gm's, mod's if its enabled in mangosd.conf
     if (instantLogout)
@@ -417,7 +417,7 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
         GetPlayer()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED);
     }
 
-	LogoutRequest(time(nullptr));
+    LogoutRequest(time(nullptr));
 }
 
 void WorldSession::HandlePlayerLogoutOpcode( WorldPacket & /*recvData*/ )
@@ -1314,7 +1314,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
     WorldPacket data(MSG_INSPECT_HONOR_STATS, 8+1+4*4);
     data << uint64(player->GetGUID());
-	data << uint8(player->GetHonorPoints()); //mangos has GetHighestPvPRankIndex here
+    data << uint8(player->GetHonorPoints()); //mangos has GetHighestPvPRankIndex here
     data << uint32(player->GetUInt32Value(PLAYER_FIELD_KILLS));
     data << uint32(player->GetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION));
     data << uint32(player->GetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION));

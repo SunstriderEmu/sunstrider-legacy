@@ -101,11 +101,11 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
     { "Health Pct",           true, true, false  },
     { "Realm Achievement",    true, false, false },
     { "In Water",            false, false, false },
-	{ "Terrain Swap",        false, false, false },
-	{ "Sit/stand state",      true,  true, false },
-	{ "Daily Quest Completed",true, false, false },
-	{ "Charmed",             false, false, false },
-	{ "Pet type",             true, false, false },
+    { "Terrain Swap",        false, false, false },
+    { "Sit/stand state",      true,  true, false },
+    { "Daily Quest Completed",true, false, false },
+    { "Charmed",             false, false, false },
+    { "Pet type",             true, false, false },
 };
 
 // Checks if object meets the condition
@@ -451,38 +451,38 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo)
                 condMeets = unit->IsInWater();
             break;
         }
-		case CONDITION_STAND_STATE:
-		{
-			if (Unit const* unit = object->ToUnit())
-			{
-				if (ConditionValue1 == 0)
-					condMeets = (unit->GetStandState() == ConditionValue2);
-				else if (ConditionValue2 == 0)
-					condMeets = unit->IsStandState();
-				else if (ConditionValue2 == 1)
-					condMeets = unit->IsSitState();
-			}
-			break;
-		}
-		case CONDITION_DAILY_QUEST_DONE:
-		{
-			if (Player const* player = object->ToPlayer())
-				condMeets = player->IsDailyQuestDone(ConditionValue1);
-			break;
-		}
-		case CONDITION_CHARMED:
-		{
-			if (Unit const* unit = object->ToUnit())
-				condMeets = unit->IsCharmed();
-			break;
-		}
-		case CONDITION_PET_TYPE:
-		{
-			if (Player const* player = object->ToPlayer())
-				if (Pet const* pet = player->GetPet())
-					condMeets = (((1 << pet->getPetType()) & ConditionValue1) != 0);
-			break;
-		}
+        case CONDITION_STAND_STATE:
+        {
+            if (Unit const* unit = object->ToUnit())
+            {
+                if (ConditionValue1 == 0)
+                    condMeets = (unit->GetStandState() == ConditionValue2);
+                else if (ConditionValue2 == 0)
+                    condMeets = unit->IsStandState();
+                else if (ConditionValue2 == 1)
+                    condMeets = unit->IsSitState();
+            }
+            break;
+        }
+        case CONDITION_DAILY_QUEST_DONE:
+        {
+            if (Player const* player = object->ToPlayer())
+                condMeets = player->IsDailyQuestDone(ConditionValue1);
+            break;
+        }
+        case CONDITION_CHARMED:
+        {
+            if (Unit const* unit = object->ToUnit())
+                condMeets = unit->IsCharmed();
+            break;
+        }
+        case CONDITION_PET_TYPE:
+        {
+            if (Player const* player = object->ToPlayer())
+                if (Pet const* pet = player->GetPet())
+                    condMeets = (((1 << pet->getPetType()) & ConditionValue1) != 0);
+            break;
+        }
         default:
             condMeets = false;
             break;
@@ -654,18 +654,18 @@ uint32 Condition::GetSearcherTypeMaskForCondition()
         case CONDITION_IN_WATER:
             mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
             break;
-		case CONDITION_STAND_STATE:
-			mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
-			break;
-		case CONDITION_DAILY_QUEST_DONE:
-			mask |= GRID_MAP_TYPE_MASK_PLAYER;
-			break;
-		case CONDITION_CHARMED:
-			mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
-			break;
-		case CONDITION_PET_TYPE:
-			mask |= GRID_MAP_TYPE_MASK_PLAYER;
-			break;
+        case CONDITION_STAND_STATE:
+            mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_DAILY_QUEST_DONE:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_CHARMED:
+            mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+        case CONDITION_PET_TYPE:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
         default:
             ASSERT(false && "Condition::GetSearcherTypeMaskForCondition - missing condition handling!");
             break;
@@ -958,7 +958,7 @@ ConditionList ConditionMgr::GetConditionsForNpcVendorEvent(uint32 creatureId, ui
 
 void ConditionMgr::AddCondition(Condition* cond)
 {
-	ConditionStore[cond->SourceType][cond->SourceEntry].push_back(cond);
+    ConditionStore[cond->SourceType][cond->SourceEntry].push_back(cond);
 }
 
 void ConditionMgr::LoadConditions(bool isReload)
@@ -2176,41 +2176,41 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond)
 #endif
             break;
         }
-		case CONDITION_TERRAIN_SWAP:
-			TC_LOG_ERROR("sql.sql", "%s is not valid for this branch, skipped.", cond->ToString(true).c_str());
-			return false;
-		case CONDITION_STAND_STATE:
-		{
-			bool valid = false;
-			switch (cond->ConditionValue1)
-			{
-			case 0:
-				valid = cond->ConditionValue2 <= UNIT_STAND_STATE_SUBMERGED;
-				break;
-			case 1:
-				valid = cond->ConditionValue2 <= 1;
-				break;
-			default:
-				valid = false;
-				break;
-			}
-			if (!valid)
-			{
-				TC_LOG_ERROR("sql.sql", "%s has non-existing stand state (%u,%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1, cond->ConditionValue2);
-				return false;
-			}
-			break;
-		}
-		case CONDITION_PET_TYPE:
-			if (cond->ConditionValue1 >= (1 << MAX_PET_TYPE))
-			{
-				TC_LOG_ERROR("sql.sql", "%s has non-existing pet type %u, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
-				return false;
-			}
-			break;
-		case CONDITION_IN_WATER:
-		case CONDITION_CHARMED:
-		default:
+        case CONDITION_TERRAIN_SWAP:
+            TC_LOG_ERROR("sql.sql", "%s is not valid for this branch, skipped.", cond->ToString(true).c_str());
+            return false;
+        case CONDITION_STAND_STATE:
+        {
+            bool valid = false;
+            switch (cond->ConditionValue1)
+            {
+            case 0:
+                valid = cond->ConditionValue2 <= UNIT_STAND_STATE_SUBMERGED;
+                break;
+            case 1:
+                valid = cond->ConditionValue2 <= 1;
+                break;
+            default:
+                valid = false;
+                break;
+            }
+            if (!valid)
+            {
+                TC_LOG_ERROR("sql.sql", "%s has non-existing stand state (%u,%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1, cond->ConditionValue2);
+                return false;
+            }
+            break;
+        }
+        case CONDITION_PET_TYPE:
+            if (cond->ConditionValue1 >= (1 << MAX_PET_TYPE))
+            {
+                TC_LOG_ERROR("sql.sql", "%s has non-existing pet type %u, skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
+                return false;
+            }
+            break;
+        case CONDITION_IN_WATER:
+        case CONDITION_CHARMED:
+        default:
             break;
     }
 

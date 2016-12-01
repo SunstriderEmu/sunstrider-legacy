@@ -51,15 +51,15 @@ class TC_GAME_API WorldPacket : public ByteBuffer
 
             return *this;
         }
-		
-		WorldPacket& operator=(WorldPacket&& right)
+        
+        WorldPacket& operator=(WorldPacket&& right)
         {
             if (this != &right)
             {
                 m_opcode = right.m_opcode;
                 ByteBuffer::operator=(std::move(right));
             }
-			
+            
             return *this;
         }
 

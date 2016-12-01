@@ -66,7 +66,7 @@ bool CheckMountStateAction::Mount()
     map<int32, vector<uint32> >& spells = allSpells[masterMountType];
     for (map<int32,vector<uint32> >::iterator i = spells.begin(); i != spells.end(); ++i)
     {
-		vector<uint32>& ids = i->second;
+        vector<uint32>& ids = i->second;
         int index = urand(0, ids.size() - 1);
         if (index >= ids.size())
             continue;

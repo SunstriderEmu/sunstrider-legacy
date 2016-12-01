@@ -358,36 +358,36 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
     switch (opcode)
     {
     case CMSG_PING:
-		LogOpcodeText(opcode, sessionGuard);
-		try
-		{
-			return HandlePing(packet) ? ReadDataHandlerResult::Ok : ReadDataHandlerResult::Error;
-		}
-		catch (ByteBufferPositionException const&)
-		{
-		}
-		TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
-		return ReadDataHandlerResult::Error;
+        LogOpcodeText(opcode, sessionGuard);
+        try
+        {
+            return HandlePing(packet) ? ReadDataHandlerResult::Ok : ReadDataHandlerResult::Error;
+        }
+        catch (ByteBufferPositionException const&)
+        {
+        }
+        TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
+        return ReadDataHandlerResult::Error;
     case CMSG_AUTH_SESSION:
-		LogOpcodeText(opcode, sessionGuard);
-		if (_authed)
-		{
-			// locking just to safely log offending user is probably overkill but we are disconnecting him anyway
-			if (sessionGuard.try_lock())
-				TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
-			return ReadDataHandlerResult::Error;
-		}
+        LogOpcodeText(opcode, sessionGuard);
+        if (_authed)
+        {
+            // locking just to safely log offending user is probably overkill but we are disconnecting him anyway
+            if (sessionGuard.try_lock())
+                TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
+            return ReadDataHandlerResult::Error;
+        }
 
-		try
-		{
-			HandleAuthSession(packet);
-			return ReadDataHandlerResult::WaitingForQuery;
-		}
-		catch (ByteBufferPositionException const&)
-		{
-		}
-		TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_SESSION", GetRemoteIpAddress().to_string().c_str());
-		return ReadDataHandlerResult::Error;
+        try
+        {
+            HandleAuthSession(packet);
+            return ReadDataHandlerResult::WaitingForQuery;
+        }
+        catch (ByteBufferPositionException const&)
+        {
+        }
+        TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_SESSION", GetRemoteIpAddress().to_string().c_str());
+        return ReadDataHandlerResult::Error;
     case CMSG_KEEP_ALIVE:
         LogOpcodeText(opcode, sessionGuard);
         break;

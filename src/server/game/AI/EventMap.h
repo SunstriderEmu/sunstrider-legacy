@@ -109,7 +109,7 @@ public:
     */
     void ScheduleEvent(uint32 eventId, uint32 time, uint32 group = 0, uint32 phase = 0)
     {
-		DEBUG_ASSERT(eventId != 0); //Never use eventId 0, as this is a value returned as "no event" by ExecuteEvent.
+        DEBUG_ASSERT(eventId != 0); //Never use eventId 0, as this is a value returned as "no event" by ExecuteEvent.
 
         if (group && group <= 8)
             eventId |= (1 << (group + 15));

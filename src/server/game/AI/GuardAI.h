@@ -55,18 +55,18 @@ class TC_GAME_API GuardAI : public CreatureAI
 //old guardAI ? Both are still in use
 struct TC_GAME_API guardAI : public ScriptedAI
 {
-	guardAI(Creature *c) : ScriptedAI(c) {}
+    guardAI(Creature *c) : ScriptedAI(c) {}
 
-	uint32 GlobalCooldown;                                  //This variable acts like the global cooldown that players have (1.5 seconds)
-	uint32 BuffTimer;                                       //This variable keeps track of buffs
+    uint32 GlobalCooldown;                                  //This variable acts like the global cooldown that players have (1.5 seconds)
+    uint32 BuffTimer;                                       //This variable keeps track of buffs
 
-	void Reset();
+    void Reset();
 
-	void EnterCombat(Unit *who);
+    void EnterCombat(Unit *who);
 
-	void JustDied(Unit *Killer);
+    void JustDied(Unit *Killer);
 
-	void UpdateAI(const uint32 diff);
+    void UpdateAI(const uint32 diff);
 };
 
 #endif

@@ -9,15 +9,15 @@ using namespace ai;
 bool ReadyCheckAction::Execute(Event event)
 {
     WorldPacket &p = event.getPacket();
-	ObjectGuid player;
-	p.rpos(0);
+    ObjectGuid player;
+    p.rpos(0);
     if (!p.empty())
         p >> player;
 
-	if (player.GetRawValue() == bot->GetGUID())
+    if (player.GetRawValue() == bot->GetGUID())
         return false;
 
-	return ReadyCheck();
+    return ReadyCheck();
 }
 
 bool ReadyCheckAction::ReadyCheck()

@@ -944,7 +944,7 @@ class TC_GAME_API SpellMgr
         //in reload case, does not delete spell and try to update already existing ones only. This allows to keep pointers valids. /!\ Note that pointers in SpellInfo object themselves may change.
         void LoadSpellInfoStore(bool reload = false);
         void UnloadSpellInfoStore();
-		void UnloadSpellInfoImplicitTargetConditionLists();
+        void UnloadSpellInfoImplicitTargetConditionLists();
         void LoadSpellAreas();
 
         // SpellInfo object management

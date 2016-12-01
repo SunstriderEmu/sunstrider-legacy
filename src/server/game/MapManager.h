@@ -40,11 +40,11 @@ class TC_GAME_API MapManager
             return &instance;
         }
 
-		//Find base map, create it if needed
+        //Find base map, create it if needed
         Map* CreateBaseMap(uint32 id);
-		//Return base map if it exists, null otherwise
+        //Return base map if it exists, null otherwise
         Map* FindBaseMap(uint32 id) const;
-		//Same as FindBaseMap, but exclude all instanceable maps
+        //Same as FindBaseMap, but exclude all instanceable maps
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
         Map* CreateMap(uint32 id, const WorldObject* obj);
         Map* FindMap(uint32 mapid, uint32 instanceId);
@@ -113,11 +113,11 @@ class TC_GAME_API MapManager
 
         void MapCrashed(Map& map);
 
-		template<typename Worker>
-		void DoForAllMaps(Worker&& worker);
+        template<typename Worker>
+        void DoForAllMaps(Worker&& worker);
 
-		template<typename Worker>
-		void DoForAllMapsWithMapId(uint32 mapId, Worker&& worker);
+        template<typename Worker>
+        void DoForAllMapsWithMapId(uint32 mapId, Worker&& worker);
 
     private:
         typedef std::vector<bool> InstanceIds;
@@ -140,40 +140,40 @@ class TC_GAME_API MapManager
 template<typename Worker>
 void MapManager::DoForAllMaps(Worker&& worker)
 {
-	std::lock_guard<std::mutex> lock(_mapsLock);
+    std::lock_guard<std::mutex> lock(_mapsLock);
 
-	for (auto& mapPair : i_maps)
-	{
-		Map* map = mapPair.second;
-		if (MapInstanced* mapInstanced = map->ToMapInstanced())
-		{
-			MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
-			for (auto& instancePair : instances)
-				worker(instancePair.second);
-		}
-		else
-			worker(map);
-	}
+    for (auto& mapPair : i_maps)
+    {
+        Map* map = mapPair.second;
+        if (MapInstanced* mapInstanced = map->ToMapInstanced())
+        {
+            MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+            for (auto& instancePair : instances)
+                worker(instancePair.second);
+        }
+        else
+            worker(map);
+    }
 }
 
 template<typename Worker>
 inline void MapManager::DoForAllMapsWithMapId(uint32 mapId, Worker&& worker)
 {
-	std::lock_guard<std::mutex> lock(_mapsLock);
+    std::lock_guard<std::mutex> lock(_mapsLock);
 
-	auto itr = i_maps.find(mapId);
-	if (itr != i_maps.end())
-	{
-		Map* map = itr->second;
-		if (MapInstanced* mapInstanced = map->ToMapInstanced())
-		{
-			MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
-			for (auto& p : instances)
-				worker(p.second);
-		}
-		else
-			worker(map);
-	}
+    auto itr = i_maps.find(mapId);
+    if (itr != i_maps.end())
+    {
+        Map* map = itr->second;
+        if (MapInstanced* mapInstanced = map->ToMapInstanced())
+        {
+            MapInstanced::InstancedMaps& instances = mapInstanced->GetInstancedMaps();
+            for (auto& p : instances)
+                worker(p.second);
+        }
+        else
+            worker(map);
+    }
 }
 
 #define sMapMgr MapManager::instance()

@@ -855,7 +855,7 @@ void Spell::EffectDummy(uint32 i)
                 // Goblin Bomb
                 case 23134:
                 {
-					//(should be spell 13258)
+                    //(should be spell 13258)
                     if (Creature* bomb = m_caster->SummonCreature(8937, m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), m_caster->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 60000))
                         bomb->SetFaction(m_caster->GetFaction());
                     
@@ -937,36 +937,36 @@ void Spell::EffectDummy(uint32 i)
                     if(m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
                         
-					// These rates are hella random; someone feel free to correct them
-					uint32 roll = urand(0, 99);
-					if (roll < 3)                                         // Whole party will grow
-						m_caster->CastSpell(m_caster, 13004, true);
-					else if (roll < 6)                                    // Whole party will shrink
-						m_caster->CastSpell(m_caster, 13010, true);
-					else if (roll < 9)                                    // Whole enemy 'team' will grow
-						m_caster->CastSpell(unitTarget, 13004, true);
-					else if (roll < 12)                                    // Whole enemy 'team' will shrink
-						m_caster->CastSpell(unitTarget, 13010, true);
-					else if (roll < 24)                                   // Caster will shrink
-						m_caster->CastSpell(m_caster, 13003, true);
-					else                                                  // Enemy target will shrink
-						m_caster->CastSpell(unitTarget, 13003, true);
+                    // These rates are hella random; someone feel free to correct them
+                    uint32 roll = urand(0, 99);
+                    if (roll < 3)                                         // Whole party will grow
+                        m_caster->CastSpell(m_caster, 13004, true);
+                    else if (roll < 6)                                    // Whole party will shrink
+                        m_caster->CastSpell(m_caster, 13010, true);
+                    else if (roll < 9)                                    // Whole enemy 'team' will grow
+                        m_caster->CastSpell(unitTarget, 13004, true);
+                    else if (roll < 12)                                    // Whole enemy 'team' will shrink
+                        m_caster->CastSpell(unitTarget, 13010, true);
+                    else if (roll < 24)                                   // Caster will shrink
+                        m_caster->CastSpell(m_caster, 13003, true);
+                    else                                                  // Enemy target will shrink
+                        m_caster->CastSpell(unitTarget, 13003, true);
 
                     return;
                 }
-				case 13180:                                 // Gnomish Mind Control Cap (ItemID: 10726)
-				{
-					if (unitTarget && m_CastItem)
-					{
-						uint32 roll = urand(0, 9);
-						if (roll == 1 && unitTarget->GetTypeId() == TYPEID_PLAYER)
-							unitTarget->CastSpell(m_caster, 13181, true, m_CastItem);
-						else if (roll)
-							m_caster->CastSpell(unitTarget, 13181, true, m_CastItem);
-					}
-						
-					return;
-				}
+                case 13180:                                 // Gnomish Mind Control Cap (ItemID: 10726)
+                {
+                    if (unitTarget && m_CastItem)
+                    {
+                        uint32 roll = urand(0, 9);
+                        if (roll == 1 && unitTarget->GetTypeId() == TYPEID_PLAYER)
+                            unitTarget->CastSpell(m_caster, 13181, true, m_CastItem);
+                        else if (roll)
+                            m_caster->CastSpell(unitTarget, 13181, true, m_CastItem);
+                    }
+                        
+                    return;
+                }
                 // Gnomish Universal Remote
                 case 8344:
                 {

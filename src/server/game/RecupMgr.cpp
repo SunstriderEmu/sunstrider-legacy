@@ -4,7 +4,7 @@
 
 bool RecupMgr::HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip, ChatHandler* chatHandler)
 {
-	std::string tempstr = command;
+    std::string tempstr = command;
     std::vector<std::string> v, vline;
     std::vector<std::string>::iterator i;
 

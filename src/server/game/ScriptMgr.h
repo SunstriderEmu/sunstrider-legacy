@@ -55,18 +55,18 @@ class TC_GAME_API ScriptObject
 {
     friend class ScriptMgr;
 
-	public:
+    public:
 
-		const std::string& GetName() const { return _name; }
+        const std::string& GetName() const { return _name; }
 
-	protected:
+    protected:
 
-		ScriptObject(const char* name);
-		virtual ~ScriptObject();
+        ScriptObject(const char* name);
+        virtual ~ScriptObject();
 
-	private:
+    private:
 
-		const std::string _name;
+        const std::string _name;
 };
 
 template<class TObject> class UpdatableScript
@@ -75,7 +75,7 @@ protected:
 
     UpdatableScript()
     = default;
-	virtual ~UpdatableScript() { }
+    virtual ~UpdatableScript() { }
 
 public:
 
@@ -217,7 +217,7 @@ protected:
     CreatureScript(const char* name);
 
 public:
-	~CreatureScript() override;
+    ~CreatureScript() override;
 
     // Called when a player opens a gossip dialog with the creature.
     virtual bool OnGossipHello(Player* player, Creature* creature) // { return false; }

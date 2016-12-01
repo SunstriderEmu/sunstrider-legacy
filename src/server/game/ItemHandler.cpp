@@ -300,9 +300,9 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         }
                                                             // guess size
         WorldPacket data( SMSG_ITEM_QUERY_SINGLE_RESPONSE, 600);
-		data << uint32(pProto->ItemId);
-		data << uint32(pProto->Class);
-		data << uint32(pProto->SubClass);
+        data << uint32(pProto->ItemId);
+        data << uint32(pProto->Class);
+        data << uint32(pProto->SubClass);
         data << uint32(pProto->SoundOverrideSubclass);
         data << Name;
         data << uint8(0x00);                                //pProto->Name2; // blizz not send name there, just uint8(0x00); <-- \0 = empty string = empty name...
@@ -312,14 +312,14 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->Quality;
         data << pProto->Flags;
 #ifdef BUILD_335_SUPPORT
-		if (GetClientBuild() == BUILD_335)
-		{
+        if (GetClientBuild() == BUILD_335)
+        {
 #ifdef LICH_KING
-			data << pProto->Flags2;
+            data << pProto->Flags2;
 #else
-			data << uint32(0);
+            data << uint32(0);
 #endif
-		}
+        }
 #endif
         data << pProto->BuyPrice;
         data << pProto->SellPrice;
@@ -339,13 +339,13 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << int32(pProto->Stackable);
         data << pProto->ContainerSlots;
 #ifdef LICH_KING
-		uint32 statCount = pProto->StatsCount;
+        uint32 statCount = pProto->StatsCount;
 #else
-		uint32 statCount = MAX_ITEM_PROTO_STATS;
+        uint32 statCount = MAX_ITEM_PROTO_STATS;
 #endif
 #ifdef BUILD_335_SUPPORT
-		if (GetClientBuild() == BUILD_335)
-			data << statCount;                         // item stats count
+        if (GetClientBuild() == BUILD_335)
+            data << statCount;                         // item stats count
 #endif
 
         for(int i = 0; i < statCount; i++)
@@ -354,17 +354,17 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
             data << pProto->ItemStat[i].ItemStatValue;
         }
 #ifdef LICH_KING
-		uint32 scalingStatDistribution = pProto->ScalingStatDistribution;
-		uint32 scalingStatValue = pProto->ScalingStatValue;
+        uint32 scalingStatDistribution = pProto->ScalingStatDistribution;
+        uint32 scalingStatValue = pProto->ScalingStatValue;
 #else
-		uint32 scalingStatDistribution = 0;
-		uint32 scalingStatValue = 0;
+        uint32 scalingStatDistribution = 0;
+        uint32 scalingStatValue = 0;
 #endif
-		if (GetClientBuild() == BUILD_335)
-		{
-			data << scalingStatDistribution;            // scaling stats distribution
-			data << scalingStatValue;                   // some kind of flags used to determine stat values column
-		}
+        if (GetClientBuild() == BUILD_335)
+        {
+            data << scalingStatDistribution;            // scaling stats distribution
+            data << scalingStatValue;                   // some kind of flags used to determine stat values column
+        }
 
         for(auto i : pProto->Damage)
         {
@@ -449,22 +449,22 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->GemProperties;
         data << pProto->RequiredDisenchantSkill;
         data << pProto->ArmorDamageModifier;
-		data << pProto->Duration;                                 // added in 2.4.2.8209, duration (seconds)
+        data << pProto->Duration;                                 // added in 2.4.2.8209, duration (seconds)
 
 #ifdef LICH_KING
-		uint32 itemLimitCategory = pProto->ItemLimitCategory;
-		uint32 holidayId = pProto->HolidayId;
+        uint32 itemLimitCategory = pProto->ItemLimitCategory;
+        uint32 holidayId = pProto->HolidayId;
 #else
-		uint32 itemLimitCategory = 0;
-		uint32 holidayId = 0;
+        uint32 itemLimitCategory = 0;
+        uint32 holidayId = 0;
 #endif
 
 #ifdef BUILD_335_SUPPORT
-		if (GetClientBuild() == BUILD_335)
-		{
-			data << itemLimitCategory;                  // WotLK, ItemLimitCategory
-			data << holidayId;                          // Holiday.dbc?
-		}
+        if (GetClientBuild() == BUILD_335)
+        {
+            data << itemLimitCategory;                  // WotLK, ItemLimitCategory
+            data << holidayId;                          // Holiday.dbc?
+        }
 #endif
         SendPacket( &data );
     }
@@ -1003,18 +1003,18 @@ void WorldSession::HandleSetAmmoOpcode(WorldPacket & recvData)
 
 void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
 {
-	WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
+    WorldPacket data(SMSG_ENCHANTMENTLOG, (8 + 8 + 4 + 4 + 1));     // last check 2.0.10
 #ifdef BUILD_335_SUPPORT
-	if (GetClientBuild() == BUILD_335)
-	{
-		data << PackedGuid(Target);
-		data << PackedGuid(Caster);
-	} else 
+    if (GetClientBuild() == BUILD_335)
+    {
+        data << PackedGuid(Target);
+        data << PackedGuid(Caster);
+    } else 
 #endif
     {
-		data << Target;
-		data << Caster;
-	}
+        data << Target;
+        data << Caster;
+    }
     data << ItemID;
     data << SpellID;
     data << uint8(0);

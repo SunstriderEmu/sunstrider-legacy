@@ -232,13 +232,13 @@ class TC_GAME_API Aura
         int32 GetAmount() const { return m_modifier.m_amount; }
         int32 GetModifierValuePerStack() const { return m_modifier.m_amount;}
         int32 GetModifierValue() const { return m_modifier.m_amount * m_stackAmount;}
-		int32 GetMiscValue() const;
-		int32 GetMiscBValue() const;
+        int32 GetMiscValue() const;
+        int32 GetMiscBValue() const;
         void SetModifierValuePerStack(int32 newAmount);
         void SetModifierValue(int32 newAmount) { m_modifier.m_amount = newAmount; }
 
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
-		uint32 GetId() const;
+        uint32 GetId() const;
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
         uint32 GetEffIndex() const{ return m_effIndex; }
         uint8 GetEffectMask() const { return 1 << m_effIndex; }

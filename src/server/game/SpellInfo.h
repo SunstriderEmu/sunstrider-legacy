@@ -329,7 +329,7 @@ private:
 
 class TC_GAME_API SpellInfo
 {
-	friend class SpellMgr;
+    friend class SpellMgr;
 
 public:
     uint32 Id;

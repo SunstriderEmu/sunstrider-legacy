@@ -48,23 +48,23 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
     float x, y, z;
     bool transportImplied = owner->GetTransport() || i_target->GetTransport();
 
-	lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
-	lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
+    lastOwnerXYZ.Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ());
+    lastTargetXYZ.Relocate(i_target->GetPositionX(), i_target->GetPositionY(), i_target->GetPositionZ());
 
     if (!i_offset)
     {
-		// to nearest contact position
-		i_target->GetContactPoint(owner, x, y, z);
-		if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
-		{
-			//kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
-			if (!i_target->IsWithinLOS(x, y, z))
-				i_target->GetPosition(x, y, z);
-		}
+        // to nearest contact position
+        i_target->GetContactPoint(owner, x, y, z);
+        if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
+        {
+            //kelno: for chase movement, check if target point is in LoS with target. If not, force moving on target instead so that we can still melee it.
+            if (!i_target->IsWithinLOS(x, y, z))
+                i_target->GetPosition(x, y, z);
+        }
     }
     else
         // to at i_offset distance from target and i_angle from target facing
-		i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
+        i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
 
     if (!i_path)
         i_path = new PathGenerator(owner);
@@ -87,14 +87,14 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
     if (!result || (i_path->GetPathType() & (PATHFIND_NOPATH | PATHFIND_INCOMPLETE)))
     {
         // Cant reach target, try again at next update
-		i_recalculatePath = true;
+        i_recalculatePath = true;
         return;
     }
 
     D::_addUnitStateMove(owner);
     i_targetReached = false;
-	i_recalculatePath = false;
-	i_speedChanged = false;
+    i_recalculatePath = false;
+    i_speedChanged = false;
     owner->AddUnitState(UNIT_STATE_CHASE);
 
     Movement::MoveSplineInit init(owner);
@@ -108,8 +108,8 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
     // use player orientation if player pet
     if (owner->HasUnitState(UNIT_STATE_FOLLOW) && isPlayerPet)
         if (Player* p = owner->GetMap()->GetPlayer(owner->GetOwnerGUID()))
-			if(!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
-				init.SetFacing(p->GetOrientation());
+            if(!p->HasUnitMovementFlag(MOVEMENTFLAG_BACKWARD)) //don't do it if player is currently going backwards, as this is visually ugly
+                init.SetFacing(p->GetOrientation());
 
     init.Launch();
 }
@@ -128,12 +128,12 @@ bool TargetedMovementGeneratorMedium<T, D>::IsWithinAllowedDist(T* owner, float 
 template<class T, typename D>
 float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
 {
-	//More distance let have better performance, less distance let have more sensitive reaction at target move.
-	float combatReach = owner->GetCombatReach();
-	if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
-		combatReach /= 2; //Divide CombatReach by 2.0f, chasing creature relocation should be triggered long before being at max range
+    //More distance let have better performance, less distance let have more sensitive reaction at target move.
+    float combatReach = owner->GetCombatReach();
+    if (this->GetMovementGeneratorType() == CHASE_MOTION_TYPE)
+        combatReach /= 2; //Divide CombatReach by 2.0f, chasing creature relocation should be triggered long before being at max range
 
-	return combatReach + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
+    return combatReach + sWorld->GetRate(RATE_TARGET_POS_RECALCULATION_RANGE) + i_offset;
 }
 
 template<class T, typename D>
@@ -187,14 +187,14 @@ bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
             if (TransportBase* transport = owner->GetTransport())
                 transport->CalculatePassengerPosition(dest.x, dest.y, dest.z);
         
-		i_recalculatePath = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
+        i_recalculatePath = !IsWithinAllowedDist(owner, dest.x, dest.y, dest.z);
         // then, if the target is in range, check also Line of Sight. Consider target has moved if out of sight.
         if (!i_recalculatePath)
-			i_recalculatePath = !i_target->IsWithinLOSInMap(owner);
+            i_recalculatePath = !i_target->IsWithinLOSInMap(owner);
     }
 
-	bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (i_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
-	if (i_speedChanged || (i_recalculatePath && someoneMoved))
+    bool someoneMoved = (owner->GetExactDistSq(&lastOwnerXYZ) >= 0.1f*0.1f) || (i_target->GetExactDistSq(&lastTargetXYZ) >= 0.1f*0.1f);
+    if (i_speedChanged || (i_recalculatePath && someoneMoved))
         _setTargetLocation(owner);
 
     if (owner->movespline->Finalized())

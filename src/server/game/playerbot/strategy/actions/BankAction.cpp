@@ -103,7 +103,7 @@ bool BankAction::Deposit(Item* pItem)
 
     out << "put " << chat->formatItem(pItem->GetTemplate(), pItem->GetCount()) << " to bank";
     ai->TellMaster(out.str());
-	return true;
+    return true;
 }
 
 void BankAction::ListItems()

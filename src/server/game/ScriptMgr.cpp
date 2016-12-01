@@ -30,67 +30,67 @@ struct StringTextData
 // must be assigned in the database.
 template<typename>
 struct is_script_database_bound
-	: std::false_type { };
+    : std::false_type { };
 
 template<>
 struct is_script_database_bound<SpellScriptLoader>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<InstanceMapScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<ItemScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<CreatureScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<GameObjectScript>
-	: std::true_type { };
+    : std::true_type { };
 
 #ifdef LICH_KING
 template<>
 struct is_script_database_bound<VehicleScript>
-	: std::true_type { };
+    : std::true_type { };
 #endif
 
 template<>
 struct is_script_database_bound<AreaTriggerScript>
-	: std::true_type { };
+    : std::true_type { };
 
 /*
 template<>
 struct is_script_database_bound<BattlegroundScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<OutdoorPvPScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<WeatherScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<ConditionScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<TransportScript>
-	: std::true_type { };
+    : std::true_type { };
 
 template<>
 struct is_script_database_bound<AchievementCriteriaScript>
-	: std::true_type { };
-	*/
+    : std::true_type { };
+    */
 
 enum Spells
 {
-	SPELL_HOTSWAP_VISUAL_SPELL_EFFECT = 40162 // 59084
+    SPELL_HOTSWAP_VISUAL_SPELL_EFFECT = 40162 // 59084
 };
 
 class ScriptRegistryInterface
@@ -463,29 +463,29 @@ class CreatureGameObjectScriptRegistrySwapHooks
             }
         };
 
-		AIFunctionMapWorker<typename std::decay<decltype(evaluator)>::type> worker(std::move(evaluator));
-		/*TC
-		TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
+        AIFunctionMapWorker<typename std::decay<decltype(evaluator)>::type> worker(std::move(evaluator));
+        /*TC
+        TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
         containerVisitor.Visit(map->GetObjectsStore());
-		*/
-		// -- Sunstrider workaround since we don't use the same structure
-		TypeContainerVisitor<decltype(worker), HashMapHolder<Player>::MapType&>     containerVisitor1(worker);
-		boost::shared_lock<boost::shared_mutex> lock1(*HashMapHolder<Player>::GetLock());
-		HashMapHolder<Player>::MapType& players = const_cast<HashMapHolder<Player>::MapType&>(ObjectAccessor::GetPlayers());
-		containerVisitor1.Visit(players);
+        */
+        // -- Sunstrider workaround since we don't use the same structure
+        TypeContainerVisitor<decltype(worker), HashMapHolder<Player>::MapType&>     containerVisitor1(worker);
+        boost::shared_lock<boost::shared_mutex> lock1(*HashMapHolder<Player>::GetLock());
+        HashMapHolder<Player>::MapType& players = const_cast<HashMapHolder<Player>::MapType&>(ObjectAccessor::GetPlayers());
+        containerVisitor1.Visit(players);
 
-		TypeContainerVisitor<decltype(worker), HashMapHolder<Creature>::MapType&>   containerVisitor2(worker);
-		boost::shared_lock<boost::shared_mutex> lock2(*HashMapHolder<Creature>::GetLock());
-		HashMapHolder<Creature>::MapType& creatures = const_cast<HashMapHolder<Creature>::MapType&>(ObjectAccessor::GetCreatures());
-		containerVisitor2.Visit(creatures);
+        TypeContainerVisitor<decltype(worker), HashMapHolder<Creature>::MapType&>   containerVisitor2(worker);
+        boost::shared_lock<boost::shared_mutex> lock2(*HashMapHolder<Creature>::GetLock());
+        HashMapHolder<Creature>::MapType& creatures = const_cast<HashMapHolder<Creature>::MapType&>(ObjectAccessor::GetCreatures());
+        containerVisitor2.Visit(creatures);
 
-		TypeContainerVisitor<decltype(worker), HashMapHolder<GameObject>::MapType&> containerVisitor3(worker);
-		boost::shared_lock<boost::shared_mutex> lock3(*HashMapHolder<GameObject>::GetLock());
-		HashMapHolder<GameObject>::MapType& gameobjects = const_cast<HashMapHolder<GameObject>::MapType&>(ObjectAccessor::GetGameObjects());
-		containerVisitor3.Visit(gameobjects);
-		//containerVisitor.Visit(ObjectAccessor::GetDynamicObjects());
-		//containerVisitor.Visit(ObjectAccessor::GetCorpses());
-		// --
+        TypeContainerVisitor<decltype(worker), HashMapHolder<GameObject>::MapType&> containerVisitor3(worker);
+        boost::shared_lock<boost::shared_mutex> lock3(*HashMapHolder<GameObject>::GetLock());
+        HashMapHolder<GameObject>::MapType& gameobjects = const_cast<HashMapHolder<GameObject>::MapType&>(ObjectAccessor::GetGameObjects());
+        containerVisitor3.Visit(gameobjects);
+        //containerVisitor.Visit(ObjectAccessor::GetDynamicObjects());
+        //containerVisitor.Visit(ObjectAccessor::GetCorpses());
+        // --
     }
 
     static void DestroyScriptIdsFromSet(std::unordered_set<uint32> const& idsToRemove)
@@ -1041,14 +1041,14 @@ void ScriptMgr::LoadDatabase()
 #define FOR_SCRIPTS(T, C, E) \
     if (SCR_REG_LST(T).empty()) \
         return; \
-	\
+    \
     for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
         C != SCR_REG_LST(T).end(); ++C)
-	\
+    \
 #define FOR_SCRIPTS_RET(T, C, E, R) \
     if (SCR_REG_LST(T).empty()) \
         return R; \
-	\
+    \
     for (SCR_REG_ITR(T) C = SCR_REG_LST(T).begin(); \
         C != SCR_REG_LST(T).end(); ++C)
 
@@ -1110,7 +1110,7 @@ void ScriptMgr::Initialize(char const* cfg_file)
     // Load core scripts
     SetScriptContext(GetNameOfStaticContext());
 
-	AddSC_SmartScripts();
+    AddSC_SmartScripts();
 
     // Load all static linked scripts through the script loader function.
     ASSERT(_script_loader_callback,

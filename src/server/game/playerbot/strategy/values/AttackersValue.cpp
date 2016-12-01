@@ -19,13 +19,13 @@ list<ObjectGuid> AttackersValue::Calculate()
     RemoveNonThreating(targets);
 
     list<ObjectGuid> result;
-	for (set<Unit*>::iterator i = targets.begin(); i != targets.end(); i++)
-		result.push_back(ObjectGuid(ObjectGuid((*i)->GetGUID())));
+    for (set<Unit*>::iterator i = targets.begin(); i != targets.end(); i++)
+        result.push_back(ObjectGuid(ObjectGuid((*i)->GetGUID())));
 
     if (bot->duel && bot->duel->opponent)
         result.push_back(ObjectGuid(bot->duel->opponent->GetGUID()));
 
-	return result;
+    return result;
 }
 
 void AttackersValue::AddAttackersOf(Group* group, set<Unit*>& targets)

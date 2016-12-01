@@ -90,7 +90,7 @@ class TC_GAME_API HostileReference : public Reference<Unit, ThreatManager>
                 
             ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, this, threat);
             fireStatusChanged(event);
-        }		         
+        }                 
 
         void resetTempThreat()
         {

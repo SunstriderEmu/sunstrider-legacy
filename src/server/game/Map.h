@@ -99,13 +99,13 @@ typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMa
 enum MapType
 {
     //not specialized
-	MAP_TYPE_MAP, 
+    MAP_TYPE_MAP, 
     //MapInstanced class
-	MAP_TYPE_MAP_INSTANCED,
+    MAP_TYPE_MAP_INSTANCED,
     //InstanceMap class
-	MAP_TYPE_INSTANCE_MAP,
+    MAP_TYPE_INSTANCE_MAP,
     //BattlegroundMap class
-	MAP_TYPE_BATTLEGROUND_MAP,
+    MAP_TYPE_BATTLEGROUND_MAP,
 };
 
 class TC_GAME_API Map : public GridRefManager<NGridType>
@@ -133,8 +133,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         template<class T> void Remove(T *, bool);
 
         void VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::ObjectUpdater, GridTypeMapContainer> &gridVisitor, TypeContainerVisitor<Trinity::ObjectUpdater, WorldTypeMapContainer> &worldVisitor);
-		//this wrap map udpates and call it with diff since last updates. If minimumTimeSinceLastUpdate, the thread will sleep until minimumTimeSinceLastUpdate is reached
-		void DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate = 0);
+        //this wrap map udpates and call it with diff since last updates. If minimumTimeSinceLastUpdate, the thread will sleep until minimumTimeSinceLastUpdate is reached
+        void DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate = 0);
         virtual void Update(const uint32&);
 
         void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
@@ -467,7 +467,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         ZoneDynamicInfoMap _zoneDynamicInfo;
         uint32 _defaultLight;
 
-		uint32 _lastMapUpdate;
+        uint32 _lastMapUpdate;
 };
 
 enum InstanceResetMethod

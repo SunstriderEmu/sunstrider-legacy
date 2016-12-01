@@ -38,25 +38,25 @@ public:
 
 namespace ai
 {
-	class MinValueCalculator {
-	public:
-		MinValueCalculator(float def = 0.0f) {
-			param = nullptr;
-			minValue = def;
-		}
+    class MinValueCalculator {
+    public:
+        MinValueCalculator(float def = 0.0f) {
+            param = nullptr;
+            minValue = def;
+        }
 
-	public:
-		void probe(float value, void* p) {
-			if (!param || minValue >= value) {
-				minValue = value;
-				param = p;
-			}
-		}
+    public:
+        void probe(float value, void* p) {
+            if (!param || minValue >= value) {
+                minValue = value;
+                param = p;
+            }
+        }
 
-	public:
-		void* param;
-		float minValue;
-	};
+    public:
+        void* param;
+        float minValue;
+    };
 };
 
 enum BotState
@@ -105,19 +105,19 @@ private:
 class TC_GAME_API PlayerbotAI : public PlayerbotAIBase
 {
 public:
-	PlayerbotAI();
-	PlayerbotAI(Player* bot);
-	virtual ~PlayerbotAI();
+    PlayerbotAI();
+    PlayerbotAI(Player* bot);
+    virtual ~PlayerbotAI();
 
 public:
-	void UpdateAI(uint32 elapsed) override;
-	void UpdateAIInternal(uint32 elapsed) override;
-	string HandleRemoteCommand(std::string command);
+    void UpdateAI(uint32 elapsed) override;
+    void UpdateAIInternal(uint32 elapsed) override;
+    string HandleRemoteCommand(std::string command);
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer);
-	void HandleBotOutgoingPacket(const WorldPacket& packet);
+    void HandleBotOutgoingPacket(const WorldPacket& packet);
     void HandleMasterIncomingPacket(const WorldPacket& packet);
     void HandleMasterOutgoingPacket(const WorldPacket& packet);
-	void HandleTeleportAck();
+    void HandleTeleportAck();
     void ChangeEngine(BotState type);
     void DoNextAction();
     void DoSpecificAction(std::string name);
@@ -162,7 +162,7 @@ private:
     void _fillGearScoreData(Player *player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore);
 
 public:
-	Player* GetBot() { return bot; }
+    Player* GetBot() { return bot; }
     Player* GetMaster() { return master; }
     void SetMaster(Player* master) { this->master = master; }
     AiObjectContext* GetAiObjectContext() { return aiObjectContext; }
@@ -172,9 +172,9 @@ public:
     PlayerbotSecurity* GetSecurity() { return &security; }
 
 protected:
-	Player* bot;
-	Player* master;
-	uint32 accountId;
+    Player* bot;
+    Player* master;
+    uint32 accountId;
     AiObjectContext* aiObjectContext;
     Engine* currentEngine;
     Engine* engines[BOT_STATE_MAX];

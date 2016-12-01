@@ -1097,10 +1097,10 @@ enum GameobjectTypes
     GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING  = 33,
     GAMEOBJECT_TYPE_GUILD_BANK             = 34,
 #ifdef LICH_KING
-	GAMEOBJECT_TYPE_TRAPDOOR               = 35,
+    GAMEOBJECT_TYPE_TRAPDOOR               = 35,
 #endif
 
-	MAX_GAMEOBJECT_TYPE,                         // sending to client this or greater value can crash client.
+    MAX_GAMEOBJECT_TYPE,                         // sending to client this or greater value can crash client.
 };
 
 #define MAX_GAMEOBJECT_DATA                  24             // Max number of uint32 vars in gameobject_template data field
@@ -1117,9 +1117,9 @@ enum GameObjectFlags
     GO_FLAG_NODESPAWN        = 0x00000020,                   //never despawn, typically for doors, they just change state
     GO_FLAG_AI_OBSTACLE      = 0x00000040,                    //makes the client register the object in something called AIObstacleMgr, unknown what it does
 #ifdef LICH_KING
-	GO_FLAG_FREEZE_ANIMATION = 0x00000080,
-	GO_FLAG_DAMAGED          = 0x00000200,
-	GO_FLAG_DESTROYED        = 0x00000400,
+    GO_FLAG_FREEZE_ANIMATION = 0x00000080,
+    GO_FLAG_DAMAGED          = 0x00000200,
+    GO_FLAG_DESTROYED        = 0x00000400,
 #endif
 };
 

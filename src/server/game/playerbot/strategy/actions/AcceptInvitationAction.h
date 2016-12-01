@@ -21,7 +21,7 @@ namespace ai
             if (!inviter)
                 return false;
 
-			if (!ai->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, inviter))
+            if (!ai->GetSecurity()->CheckLevelFor(PLAYERBOT_SECURITY_INVITE, false, inviter))
             {
                 //BC + LK OK
                 WorldPacket data(SMSG_GROUP_DECLINE, 10);

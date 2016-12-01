@@ -155,7 +155,7 @@ string RandomPlayerbotFactory::CreateRandomBotName()
         return "";
     }
 
-	fields = result->Fetch();
+    fields = result->Fetch();
     return fields[0].GetString();
 }
 

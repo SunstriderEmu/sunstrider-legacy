@@ -50,7 +50,7 @@ void PacketHandlingHelper::Handle(ExternalEventHelper &helper)
 
 void PacketHandlingHelper::AddPacket(const WorldPacket& packet)
 {
-	if (handlers.find(packet.GetOpcode()) != handlers.end())
+    if (handlers.find(packet.GetOpcode()) != handlers.end())
         queue.push(WorldPacket(packet));
 }
 
@@ -65,9 +65,9 @@ PlayerbotAI::PlayerbotAI() : PlayerbotAIBase(), bot(NULL), aiObjectContext(NULL)
 PlayerbotAI::PlayerbotAI(Player* bot) :
     PlayerbotAIBase(), chatHelper(this), chatFilter(this), security(bot), master(NULL)
 {
-	this->bot = bot;
+    this->bot = bot;
 
-	accountId = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID());
+    accountId = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID());
 
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 
@@ -179,29 +179,29 @@ void PlayerbotAI::UpdateAIInternal(uint32 elapsed)
     masterIncomingPacketHandlers.Handle(helper);
     masterOutgoingPacketHandlers.Handle(helper);
 
-	DoNextAction();
+    DoNextAction();
 }
 
 void PlayerbotAI::HandleTeleportAck()
 {
-	bot->GetMotionMaster()->Clear(true);
-	if (bot->IsBeingTeleportedNear())
-	{
-		WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 8 + 4 + 4);
+    bot->GetMotionMaster()->Clear(true);
+    if (bot->IsBeingTeleportedNear())
+    {
+        WorldPacket p = WorldPacket(MSG_MOVE_TELEPORT_ACK, 8 + 4 + 4);
 #ifdef LICH_KING
-		p.appendPackGUID(bot->GetGUID());
+        p.appendPackGUID(bot->GetGUID());
 #else
         p << uint64(bot->GetGUID());
 #endif
-		p << (uint32) 0; // flags, not used currently
-		p << (uint32) time(0); // time - not currently used
-		bot->GetSession()->HandleMoveTeleportAck(p);
-	}
-	else if (bot->IsBeingTeleportedFar())
-	{
-		bot->GetSession()->HandleMoveWorldportAck();
-		SetNextCheckDelay(1000);
-	}
+        p << (uint32) 0; // flags, not used currently
+        p << (uint32) time(0); // time - not currently used
+        bot->GetSession()->HandleMoveTeleportAck(p);
+    }
+    else if (bot->IsBeingTeleportedFar())
+    {
+        bot->GetSession()->HandleMoveWorldportAck();
+        SetNextCheckDelay(1000);
+    }
 }
 
 void PlayerbotAI::Reset()
@@ -862,8 +862,8 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell)
     spell->m_targets.SetItemTarget(spell->m_CastItem);
     SpellCastResult result = spell->CheckCast(false);
     delete spell;
-	if (oldSel)
-		bot->SetSelection(oldSel->GetGUID());
+    if (oldSel)
+        bot->SetSelection(oldSel->GetGUID());
 
     switch (result)
     {
@@ -998,8 +998,8 @@ bool PlayerbotAI::CastSpell(uint32 spellId, Unit* target)
         return false;
     }
 
-	spell->prepare(&targets);
-	WaitForSpellCast(spell);
+    spell->prepare(&targets);
+    WaitForSpellCast(spell);
 
     if (oldSel)
         bot->SetSelection(oldSel->GetGUID());
@@ -1094,7 +1094,7 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         for (Unit::AuraList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         {
             const Aura *const aura = *itr;
-			const SpellInfo* entry = aura->GetSpellInfo();
+            const SpellInfo* entry = aura->GetSpellInfo();
             uint32 spellId = entry->Id;
 
             bool isPositiveSpell = entry->IsPositive();

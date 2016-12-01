@@ -228,15 +228,15 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
         fInfo = new FormationInfo;
         if (m_leader != member) //next infos not needed if we're leader
         {
-			if (pos)
-			{
-				fInfo->follow_angle = pos->follow_angle;
-				fInfo->follow_dist = pos->follow_dist;
-			}
-			else {
-				fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
-				fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
-			}
+            if (pos)
+            {
+                fInfo->follow_angle = pos->follow_angle;
+                fInfo->follow_dist = pos->follow_dist;
+            }
+            else {
+                fInfo->follow_angle = m_leader->GetAngle(member) - m_leader->GetOrientation();
+                fInfo->follow_dist = sqrtf(pow(m_leader->GetPositionX() - member->GetPositionX(), int(2)) + pow(m_leader->GetPositionY() - member->GetPositionY(), int(2)));
+            }
         }
         fInfo->leaderGUID = m_leader->GetGUIDLow();
         sCreatureGroupMgr->AddGroupMember(memberGUID, fInfo);

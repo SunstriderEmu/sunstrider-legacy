@@ -859,8 +859,8 @@ void Guild::Query(WorldSession *session)
     data << uint32(BorderStyle);
     data << uint32(BorderColor);
     data << uint32(BackgroundColor);
-	if(session->GetClientBuild() == BUILD_335)
-		data << uint32(m_ranks.size());                                // Number of ranks used
+    if(session->GetClientBuild() == BUILD_335)
+        data << uint32(m_ranks.size());                                // Number of ranks used
 
     session->SendPacket( &data );
 }

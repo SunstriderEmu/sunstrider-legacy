@@ -7,7 +7,7 @@ Adapt server behavior depending on current "lag" or world update time
 class LagWatcher
 {
 public:
-		static LagWatcher* instance()
+        static LagWatcher* instance()
         {
             static LagWatcher instance;
             return &instance;

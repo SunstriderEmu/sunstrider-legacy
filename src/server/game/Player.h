@@ -159,10 +159,10 @@ typedef std::map<uint8,ActionButton> ActionButtonList;
 
 enum RemovePetReason
 {
-	REMOVE_PET_REASON_OTHER,
-	REMOVE_PET_REASON_SCRIPT,
-	REMOVE_PET_REASON_PLAYER_DIED,
-	REMOVE_PET_REASON_DISMISSED,
+    REMOVE_PET_REASON_OTHER,
+    REMOVE_PET_REASON_SCRIPT,
+    REMOVE_PET_REASON_PLAYER_DIED,
+    REMOVE_PET_REASON_DISMISSED,
 };
 
 typedef std::pair<uint16, uint8> CreateSpellPair;
@@ -241,7 +241,7 @@ struct DuelInfo
     time_t startTimer;
     time_t startTime;
     time_t outOfBound;
-	bool isCompleted;
+    bool isCompleted;
 };
 
 enum Pack58
@@ -884,7 +884,7 @@ enum TradeSlots
 
 enum TransferAbortReason
 {
-	TRANSFER_ABORT_NONE                     = 0x00,
+    TRANSFER_ABORT_NONE                     = 0x00,
 #ifdef LICH_KING
     TRANSFER_ABORT_ERROR                    = 0x01,
     TRANSFER_ABORT_MAX_PLAYERS              = 0x02,         // Transfer Aborted: instance is full
@@ -1465,7 +1465,7 @@ class TC_GAME_API Player : public Unit
 
         void SetDailyQuestStatus( uint32 quest_id );
         void ResetDailyQuestStatus();
-		bool IsDailyQuestDone(uint32 quest_id) const;
+        bool IsDailyQuestDone(uint32 quest_id) const;
 
         uint16 FindQuestSlot( uint32 quest_id ) const;
         uint32 GetQuestSlotQuestId(uint16 slot) const { return GetUInt32Value(PLAYER_QUEST_LOG_1_1 + slot*MAX_QUEST_OFFSET + QUEST_ID_OFFSET); }

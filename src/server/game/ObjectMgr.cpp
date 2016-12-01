@@ -1403,37 +1403,37 @@ void ObjectMgr::LoadGameobjects()
         Field *fields = result->Fetch();
 
         uint32 guid         = fields[0].GetUInt32();
-		uint32 entry        = fields[ 1].GetUInt32();
+        uint32 entry        = fields[ 1].GetUInt32();
 
-		GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
-		if (!gInfo)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.", guid, entry);
-			continue;
-		}
+        GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
+        if (!gInfo)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` have gameobject (GUID: %u) with not existed gameobject entry %u, skipped.", guid, entry);
+            continue;
+        }
 
-		if (!gInfo->displayId)
-		{
-			switch (gInfo->type)
-			{
-			case GAMEOBJECT_TYPE_TRAP:
-			case GAMEOBJECT_TYPE_SPELL_FOCUS:
-				break;
-			default:
-				TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
-				break;
-			}
-		}
+        if (!gInfo->displayId)
+        {
+            switch (gInfo->type)
+            {
+            case GAMEOBJECT_TYPE_TRAP:
+            case GAMEOBJECT_TYPE_SPELL_FOCUS:
+                break;
+            default:
+                TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) doesn't have a displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+                break;
+            }
+        }
 
-		if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
-		{
-			TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
-			continue;
-		}
+        if (gInfo->displayId && !sGameObjectDisplayInfoStore.LookupEntry(gInfo->displayId))
+        {
+            TC_LOG_ERROR("sql.sql", "Gameobject (GUID: %u Entry %u GoType: %u) has an invalid displayId (%u), not loaded.", guid, entry, gInfo->type, gInfo->displayId);
+            continue;
+        }
 
-		GameObjectData& data = mGameObjectDataMap[guid];
+        GameObjectData& data = mGameObjectDataMap[guid];
 
-		data.id             = entry;
+        data.id             = entry;
         data.mapid          = fields[ 2].GetUInt16();
         data.posX           = fields[ 3].GetFloat();
         data.posY           = fields[ 4].GetFloat();
@@ -1447,60 +1447,60 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
 
-		MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
-		if (!mapEntry)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.mapid);
-			continue;
-		}
+        MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
+        if (!mapEntry)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) spawned on a non-existed map (Id: %u), skip", guid, data.id, data.mapid);
+            continue;
+        }
 
-		if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
-		}
+        if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
+        }
 
-		if (data.go_state >= MAX_GO_STATE)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, data.go_state);
-			continue;
-		}
+        if (data.go_state >= MAX_GO_STATE)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, data.go_state);
+            continue;
+        }
 
-		if (std::abs(data.orientation) > 2 * float(M_PI))
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
-			data.orientation = Position::NormalizeOrientation(data.orientation);
-		}
+        if (std::abs(data.orientation) > 2 * float(M_PI))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with abs(`orientation`) > 2*PI (orientation is expressed in radians), normalized.", guid, data.id);
+            data.orientation = Position::NormalizeOrientation(data.orientation);
+        }
 
-		if (data.rotation.x < -1.0f || data.rotation.x > 1.0f)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationX (%f) value, skip", guid, data.id, data.rotation.x);
-			continue;
-		}
+        if (data.rotation.x < -1.0f || data.rotation.x > 1.0f)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationX (%f) value, skip", guid, data.id, data.rotation.x);
+            continue;
+        }
 
-		if (data.rotation.y < -1.0f || data.rotation.y > 1.0f)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationY (%f) value, skip", guid, data.id, data.rotation.y);
-			continue;
-		}
+        if (data.rotation.y < -1.0f || data.rotation.y > 1.0f)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationY (%f) value, skip", guid, data.id, data.rotation.y);
+            continue;
+        }
 
-		if (data.rotation.z < -1.0f || data.rotation.z > 1.0f)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationZ (%f) value, skip", guid, data.id, data.rotation.z);
-			continue;
-		}
+        if (data.rotation.z < -1.0f || data.rotation.z > 1.0f)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationZ (%f) value, skip", guid, data.id, data.rotation.z);
+            continue;
+        }
 
-		if (data.rotation.w < -1.0f || data.rotation.w > 1.0f)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationW (%f) value, skip", guid, data.id, data.rotation.w);
-			continue;
-		}
+        if (data.rotation.w < -1.0f || data.rotation.w > 1.0f)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid rotationW (%f) value, skip", guid, data.id, data.rotation.w);
+            continue;
+        }
 
 #ifdef LICH_KING
-		if (data.phaseMask == 0)
-		{
-			TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
-			data.phaseMask = 1;
-		}
+        if (data.phaseMask == 0)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `phaseMask`=0 (not visible for anyone), set to 1.", guid, data.id);
+            data.phaseMask = 1;
+        }
 #endif
 
 
@@ -3716,38 +3716,38 @@ void ObjectMgr::LoadQuests()
                 mQuestTemplates[qinfo->NextQuestInChain]->prevChainQuests.push_back(qinfo->GetQuestId());
         }
 
-		if (qinfo->CompleteEmote && !sEmotesStore.LookupEntry(qinfo->CompleteEmote))
-		{
-			TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
-			qinfo->CompleteEmote = 0;
-		}
+        if (qinfo->CompleteEmote && !sEmotesStore.LookupEntry(qinfo->CompleteEmote))
+        {
+            TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->CompleteEmote, qinfo->QuestId);
+            qinfo->CompleteEmote = 0;
+        }
 
-		for (uint8 i = 0; i < QUEST_EMOTE_COUNT; i++)
-		{
-			if (qinfo->DetailsEmote[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmote[i]))
-			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmote[i], qinfo->QuestId);
-				qinfo->DetailsEmote[i] = 0;
-			}
+        for (uint8 i = 0; i < QUEST_EMOTE_COUNT; i++)
+        {
+            if (qinfo->DetailsEmote[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmote[i]))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmote[i], qinfo->QuestId);
+                qinfo->DetailsEmote[i] = 0;
+            }
 
-			if (qinfo->DetailsEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmoteDelay[i]))
-			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmoteDelay[i], qinfo->QuestId);
-				qinfo->DetailsEmoteDelay[i] = 0;
-			}
+            if (qinfo->DetailsEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->DetailsEmoteDelay[i]))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->DetailsEmoteDelay[i], qinfo->QuestId);
+                qinfo->DetailsEmoteDelay[i] = 0;
+            }
 
-			if (qinfo->OfferRewardEmote[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmote[i]))
-			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmote[i], qinfo->QuestId);
-				qinfo->OfferRewardEmote[i] = 0;
-			}
+            if (qinfo->OfferRewardEmote[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmote[i]))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmote[i], qinfo->QuestId);
+                qinfo->OfferRewardEmote[i] = 0;
+            }
 
-			if (qinfo->OfferRewardEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmoteDelay[i]))
-			{
-				TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmoteDelay[i], qinfo->QuestId);
-				qinfo->OfferRewardEmoteDelay[i] = 0;
-			}
-		}
+            if (qinfo->OfferRewardEmoteDelay[i] && !sEmotesStore.LookupEntry(qinfo->OfferRewardEmoteDelay[i]))
+            {
+                TC_LOG_ERROR("sql.sql", "Table `quest_template` has non-existing Emote (%u) set for quest %u. Skipped.", qinfo->OfferRewardEmoteDelay[i], qinfo->QuestId);
+                qinfo->OfferRewardEmoteDelay[i] = 0;
+            }
+        }
 
         // fill additional data stores
         if(qinfo->PrevQuestId)
@@ -7930,14 +7930,14 @@ uint32 ObjectMgr::GetScriptId(std::string const& name)
 {
     // use binary search to find the script name in the sorted vector
     // assume "" is the first element
-	if (name.empty())
+    if (name.empty())
         return 0;
 
     ScriptNameContainer::const_iterator itr = std::lower_bound(_scriptNamesStore.begin(), _scriptNamesStore.end(), name);
     if (itr == _scriptNamesStore.end() || *itr != name) 
         return 0;
 
-	return uint32(itr - _scriptNamesStore.begin());
+    return uint32(itr - _scriptNamesStore.begin());
 }
 
 void ObjectMgr::CheckScripts(ScriptMapMap const& scripts,std::set<int32>& ids)

@@ -210,11 +210,11 @@ void LogsDatabaseAccessor::CharacterChat(ChatMsg type, Language lang, Player con
     if (!ShouldLog(CONFIG_LOG_CHAR_CHAT, CONFIG_GM_LOG_CHAR_CHAT, gmInvolved))
         return;
 
-	// PrepareStatement(LOGS_INS_CHAR_CHAT, "INSERT INTO char_chat (time,type,guid,account,target_guid,channelId,channelName,message,IP,gm_involved) VALUES (UNIX_TIMESTAMP(),?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
+    // PrepareStatement(LOGS_INS_CHAR_CHAT, "INSERT INTO char_chat (time,type,guid,account,target_guid,channelId,channelName,message,IP,gm_involved) VALUES (UNIX_TIMESTAMP(),?,?,?,?,?,?,?,?,?)", CONNECTION_ASYNC);
     PreparedStatement* stmt = LogsDatabase.GetPreparedStatement(LOGS_INS_CHAR_CHAT);
 
     stmt->setUInt8( 0, uint8(type));
-	stmt->setUInt32(1, player->GetGUIDLow());
+    stmt->setUInt32(1, player->GetGUIDLow());
     stmt->setUInt32(2, session->GetAccountId());
     stmt->setUInt32(3, toPlayer ? toPlayer->GetGUIDLow() : 0);
     stmt->setUInt32(4, logChannelId);

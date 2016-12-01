@@ -161,8 +161,8 @@ struct ChrClassesEntry
     uint32      spellfamily;                                // 56
                                                             // 57, unused
 #ifdef LICH_KING
-	uint32  CinematicSequence;                              // 58 id from CinematicSequences.dbc
-	uint32  expansion;                                      // 59 (0 - original race, 1 - tbc addon, ...)
+    uint32  CinematicSequence;                              // 58 id from CinematicSequences.dbc
+    uint32  expansion;                                      // 59 (0 - original race, 1 - tbc addon, ...)
 #endif
 };
 
@@ -300,16 +300,16 @@ struct DurabilityQualityEntry
 
 struct EmotesEntry
 {
-	uint32      ID;                                         // 0
-	//char*     EmoteSlashCommand;                          // 1
-	//uint32    AnimID;                                     // 2 ref to animationData
-	uint32      EmoteFlags;                                 // 3 bitmask, may be unit_flags
-	uint32      EmoteSpecProc;                              // 4 Can be 0, 1 or 2 (determine how emote are shown)
-	uint32      EmoteSpecProcParam;                         // 5 uncomfirmed, may be enum UnitStandStateType
-	//uint32    EmoteSoundID;                               // 6 ref to soundEntries
+    uint32      ID;                                         // 0
+    //char*     EmoteSlashCommand;                          // 1
+    //uint32    AnimID;                                     // 2 ref to animationData
+    uint32      EmoteFlags;                                 // 3 bitmask, may be unit_flags
+    uint32      EmoteSpecProc;                              // 4 Can be 0, 1 or 2 (determine how emote are shown)
+    uint32      EmoteSpecProcParam;                         // 5 uncomfirmed, may be enum UnitStandStateType
+    //uint32    EmoteSoundID;                               // 6 ref to soundEntries
 #ifdef LICH_KING
-	//bc has one column less, not sure this is this one
-	//uint32    SpellVisualKitID                            // 7
+    //bc has one column less, not sure this is this one
+    //uint32    SpellVisualKitID                            // 7
 #endif
 };
 
@@ -889,17 +889,17 @@ struct SpellRangeEntry
 {
     uint32    ID;
 #ifdef LICH_KING
-	float MinRangeHostile;
-	float MinRangeFriend;
-	float MaxRangeHostile;
-	float MaxRangeFriend;
-	LocalizedString* DisplayName;
-	LocalizedString* DisplayNameShort;
-	uint8 Flags;
+    float MinRangeHostile;
+    float MinRangeFriend;
+    float MaxRangeHostile;
+    float MaxRangeFriend;
+    LocalizedString* DisplayName;
+    LocalizedString* DisplayNameShort;
+    uint8 Flags;
 #else
     float     minRange;
     float     maxRange;
-	uint32    type;
+    uint32    type;
 #endif
 };
 

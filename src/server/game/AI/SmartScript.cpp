@@ -978,21 +978,21 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 break;
             }
 
-			switch (e.action.setInstanceData.type)
-			{
-				case 0:
-					instance->SetData(e.action.setInstanceData.field, e.action.setInstanceData.data);
-					TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_INST_DATA: SetData Field: %u, data: %u",
-						e.action.setInstanceData.field, e.action.setInstanceData.data);
-					break;
-				case 1:
-					instance->SetBossState(e.action.setInstanceData.field, static_cast<EncounterState>(e.action.setInstanceData.data));
-					TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_INST_DATA: SetBossState BossId: %u, State: %u (%s)",
-						e.action.setInstanceData.field, e.action.setInstanceData.data, /* InstanceScript::GetBossStateName(e.action.setInstanceData.data).c_str()*/ "(boss name NYI)");
-					break;
-				default: // Static analysis
-					break;
-			}
+            switch (e.action.setInstanceData.type)
+            {
+                case 0:
+                    instance->SetData(e.action.setInstanceData.field, e.action.setInstanceData.data);
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_INST_DATA: SetData Field: %u, data: %u",
+                        e.action.setInstanceData.field, e.action.setInstanceData.data);
+                    break;
+                case 1:
+                    instance->SetBossState(e.action.setInstanceData.field, static_cast<EncounterState>(e.action.setInstanceData.data));
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction: SMART_ACTION_SET_INST_DATA: SetBossState BossId: %u, State: %u (%s)",
+                        e.action.setInstanceData.field, e.action.setInstanceData.data, /* InstanceScript::GetBossStateName(e.action.setInstanceData.data).c_str()*/ "(boss name NYI)");
+                    break;
+                default: // Static analysis
+                    break;
+            }
             break;
         }
         case SMART_ACTION_SET_INST_DATA64:
@@ -1321,8 +1321,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (!IsUnit(*itr))
                         continue;
 
-					Position pos = (*itr)->GetPositionWithOffset(Position(e.target.x, e.target.y, e.target.z, e.target.o));
-					GetBaseObject()->SummonGameObject(e.action.summonGO.entry, pos, G3D::Quat(), e.action.summonGO.despawnTime);
+                    Position pos = (*itr)->GetPositionWithOffset(Position(e.target.x, e.target.y, e.target.z, e.target.o));
+                    GetBaseObject()->SummonGameObject(e.action.summonGO.entry, pos, G3D::Quat(), e.action.summonGO.despawnTime);
                 }
 
                 delete targets;
@@ -2610,68 +2610,68 @@ void SmartScript::InstallTemplate(SmartScriptHolder const& e)
     {
         case SMARTAI_TEMPLATE_CASTER:
             {
-				uint32 spellID = e.action.installTtemplate.param1;
-				uint32 repeatMin = e.action.installTtemplate.param2;
-				uint32 repeatMax = e.action.installTtemplate.param3;
-				if (repeatMin > repeatMax)
-					repeatMax = repeatMin;
+                uint32 spellID = e.action.installTtemplate.param1;
+                uint32 repeatMin = e.action.installTtemplate.param2;
+                uint32 repeatMax = e.action.installTtemplate.param3;
+                if (repeatMin > repeatMax)
+                    repeatMax = repeatMin;
 
-				uint32 range = e.action.installTtemplate.param4;
-				uint32 manaPercent = e.action.installTtemplate.param5;
-				// (valid values: 10-99)
-				manaPercent = std::max(std::min(manaPercent, uint32(99)), uint32(10));
+                uint32 range = e.action.installTtemplate.param4;
+                uint32 manaPercent = e.action.installTtemplate.param5;
+                // (valid values: 10-99)
+                manaPercent = std::max(std::min(manaPercent, uint32(99)), uint32(10));
 
-				//only cast spell in phase 1
+                //only cast spell in phase 1
                 AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, e.target.raw.param1, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, PhaseMask(1));
-				if (range)
-				{
-					//enable movement (switch to phase 1) when out of given range
-					AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
-					//disable movement when in given range
-					AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
-				}
-				// start casting (go to phase 1) when at least at manaPercent
+                if (range)
+                {
+                    //enable movement (switch to phase 1) when out of given range
+                    AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
+                    //disable movement when in given range
+                    AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
+                }
+                // start casting (go to phase 1) when at least at manaPercent
                 AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
-				// stop casting (go back to phase 0) when under manaPercent
+                // stop casting (go back to phase 0) when under manaPercent
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
-				// enable movement when under given mana
+                // enable movement when under given mana
                 AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
                 break;
             }
-		case SMARTAI_TEMPLATE_CASTER_SUN:
-			{
-				uint32 spellID = e.action.installTtemplate.param1;
-				uint32 repeatMin = e.action.installTtemplate.param2;
-				uint32 repeatMax = e.action.installTtemplate.param3;
-				if (repeatMin > repeatMax)
-					repeatMax = repeatMin;
+        case SMARTAI_TEMPLATE_CASTER_SUN:
+            {
+                uint32 spellID = e.action.installTtemplate.param1;
+                uint32 repeatMin = e.action.installTtemplate.param2;
+                uint32 repeatMax = e.action.installTtemplate.param3;
+                if (repeatMin > repeatMax)
+                    repeatMax = repeatMin;
 
-				uint32 castFlags = e.action.installTtemplate.param4;
+                uint32 castFlags = e.action.installTtemplate.param4;
 
-				auto spellInfo = sSpellMgr->GetSpellInfo(spellID);
-				if (spellInfo == nullptr)
-				{
-					SMARTAI_DB_ERROR(e.entryOrGuid, "SmartScript: Entry %d SourceType %u Event %u Action %u is using invalid spell %u", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType(), spellID);
-					break;
-				}
+                auto spellInfo = sSpellMgr->GetSpellInfo(spellID);
+                if (spellInfo == nullptr)
+                {
+                    SMARTAI_DB_ERROR(e.entryOrGuid, "SmartScript: Entry %d SourceType %u Event %u Action %u is using invalid spell %u", e.entryOrGuid, e.GetScriptType(), e.GetEventType(), e.GetActionType(), spellID);
+                    break;
+                }
 
-				uint32 range = spellInfo->GetMaxRange();
-				uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
+                uint32 range = spellInfo->GetMaxRange();
+                uint32 manaPercent = uint32((float(spellInfo->ManaCost) / float(me->GetMaxPower(POWER_MANA))) * 100.0f) + 1;
 
-				//only cast spell in phase 1
-				AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, PhaseMask(1));
-				//enable movement (switch to phase 1) when out of given range
-				AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
-				//disable movement when in given range
-				AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
-				// start casting (go to phase 1) when at least at manaPercent
-				AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
-				// stop casting (go back to phase 0) when under manaPercent
-				AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
-				// enable movement when under given mana
-				AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
-				break;
-			}
+                //only cast spell in phase 1
+                AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, repeatMin, repeatMax, SMART_ACTION_CAST, spellID, castFlags, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, PhaseMask(1));
+                //enable movement (switch to phase 1) when out of given range
+                AddEvent(SMART_EVENT_RANGE, 0, range, 300, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
+                //disable movement when in given range
+                AddEvent(SMART_EVENT_RANGE, 0, 0, range, 0, 0, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(1));
+                // start casting (go to phase 1) when at least at manaPercent
+                AddEvent(SMART_EVENT_MANA_PCT, 0, manaPercent, 100, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
+                // stop casting (go back to phase 0) when under manaPercent
+                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_SET_EVENT_PHASE, 0, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
+                // enable movement when under given mana
+                AddEvent(SMART_EVENT_MANA_PCT, 0, 0, manaPercent, 1000, 1000, SMART_ACTION_ALLOW_COMBAT_MOVEMENT, 1, 0, 0, 0, 0, 0, SMART_TARGET_SELF, 0, 0, 0, PhaseMask(0));
+                break;
+            }
         case SMARTAI_TEMPLATE_TURRET:
             {
                 AddEvent(SMART_EVENT_UPDATE_IC, 0, 0, 0, e.action.installTtemplate.param2, e.action.installTtemplate.param3, SMART_ACTION_CAST, e.action.installTtemplate.param1, e.target.raw.param1, 0, 0, 0, 0, SMART_TARGET_VICTIM, 0, 0, 0, PhaseMask(0));

@@ -30,34 +30,34 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     Player* player = ObjectAccessor::FindPlayer(guid);
     GlobalPlayerData const* nameData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid));
 
-	WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
+    WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
 #ifdef BUILD_335_SUPPORT
-	if (GetClientBuild() == BUILD_335)
-	{
-		data.appendPackGUID(guid);
-		if (!nameData)
-		{
-			data << uint8(1);                           // name unknown
-			SendPacket(&data);
-			return;
-		}
+    if (GetClientBuild() == BUILD_335)
+    {
+        data.appendPackGUID(guid);
+        if (!nameData)
+        {
+            data << uint8(1);                           // name unknown
+            SendPacket(&data);
+            return;
+        }
 
-		data << uint8(0);                               // name known
-	} else
+        data << uint8(0);                               // name known
+    } else
 #endif
-	{
-		if (!nameData)
-			return; //simply ignore request
-					// guess size
+    {
+        if (!nameData)
+            return; //simply ignore request
+                    // guess size
 
-		data << guid;
-	}
+        data << guid;
+    }
 
-	data << nameData->name;
-	data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
-	data << uint32(nameData->race);
-	data << uint32(nameData->gender);
-	data << uint32(nameData->playerClass);
+    data << nameData->name;
+    data << uint8(0);                               // realm name - only set for cross realm interaction (such as Battlegrounds)
+    data << uint32(nameData->race);
+    data << uint32(nameData->gender);
+    data << uint32(nameData->playerClass);
 
     if (DeclinedName const* names = (player ? player->GetDeclinedNames() : nullptr))
     {
@@ -392,7 +392,7 @@ void WorldSession::HandlePageTextQueryOpcode( WorldPacket & recvData )
     uint32 pageID;
 
     recvData >> pageID;
-	//LK, dunno if BC. Don't need it anyway //recvData.read_skip<uint64>();                          // guid
+    //LK, dunno if BC. Don't need it anyway //recvData.read_skip<uint64>();                          // guid
 
     //TC_LOG_DEBUG("network","WORLD: Received CMSG_PAGE_TEXT_QUERY for pageID '%u'", pageID);
 

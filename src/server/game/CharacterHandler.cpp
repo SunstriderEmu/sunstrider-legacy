@@ -86,9 +86,9 @@ public:
 Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 {
     // has bot already been added?x
-	Player* bot = sObjectMgr->GetPlayer(playerGuid);
+    Player* bot = sObjectMgr->GetPlayer(playerGuid);
 
-	if (bot && bot->IsInWorld())
+    if (bot && bot->IsInWorld())
         return nullptr;
 
     uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(playerGuid);
@@ -111,14 +111,14 @@ Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
 
     botSession->HandlePlayerLogin(holder); // will delete lqh
 
-	bot = botSession->GetPlayer();
-	if (!bot)
-		return nullptr;
+    bot = botSession->GetPlayer();
+    if (!bot)
+        return nullptr;
 
-	PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
-	bot->SetPlayerbotMgr(nullptr);
-	delete mgr;
-	sRandomPlayerbotMgr.OnPlayerLogout(bot);
+    PlayerbotMgr *mgr = bot->GetPlayerbotMgr();
+    bot->SetPlayerbotMgr(nullptr);
+    delete mgr;
+    sRandomPlayerbotMgr.OnPlayerLogout(bot);
 
     bool allowed = false;
     if (botAccountId == masterAccount)
@@ -724,184 +724,184 @@ void WorldSession::HandlePlayerLoginOpcode( WorldPacket & recvData )
 
 void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 {
-	uint64 playerGuid = holder->GetGuid();
+    uint64 playerGuid = holder->GetGuid();
 
-	auto  pCurrChar = new Player(this);
-	// for send server info and strings (config)
-	ChatHandler chH = ChatHandler(pCurrChar);
+    auto  pCurrChar = new Player(this);
+    // for send server info and strings (config)
+    ChatHandler chH = ChatHandler(pCurrChar);
 
-	// "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
-	if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
-	{
-		KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
-		delete pCurrChar;                                   // delete it manually
-		delete holder;                                      // delete all unprocessed queries
-		m_playerLoading = false;
-		return;
-	}
+    // "GetAccountId()==db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
+    if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
+    {
+        KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
+        delete pCurrChar;                                   // delete it manually
+        delete holder;                                      // delete all unprocessed queries
+        m_playerLoading = false;
+        return;
+    }
 
-	pCurrChar->GetMotionMaster()->Initialize();
+    pCurrChar->GetMotionMaster()->Initialize();
 
-	SetPlayer(pCurrChar);
+    SetPlayer(pCurrChar);
 
-	pCurrChar->SendDungeonDifficulty(false);
+    pCurrChar->SendDungeonDifficulty(false);
 
-	WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20);
-	data << pCurrChar->GetMapId();
-	data << pCurrChar->GetPositionX();
-	data << pCurrChar->GetPositionY();
-	data << pCurrChar->GetPositionZ();
-	data << pCurrChar->GetOrientation();
-	SendPacket(&data);
+    WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20);
+    data << pCurrChar->GetMapId();
+    data << pCurrChar->GetPositionX();
+    data << pCurrChar->GetPositionY();
+    data << pCurrChar->GetPositionZ();
+    data << pCurrChar->GetOrientation();
+    SendPacket(&data);
 
 #ifdef LICH_KING //need db support
-	LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACCOUNT_DATA), PER_CHARACTER_CACHE_MASK);
+    LoadAccountData(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_ACCOUNT_DATA), PER_CHARACTER_CACHE_MASK);
 #endif
-	SendAccountDataTimes(GLOBAL_CACHE_MASK);
+    SendAccountDataTimes(GLOBAL_CACHE_MASK);
 
-	data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);         // added in 2.2.0
-	data << uint8(2);                                       // unknown value
-	data << uint8(0);                                       // enable(1)/disable(0) voice chat interface in client
-	SendPacket(&data);
+    data.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 2);         // added in 2.2.0
+    data << uint8(2);                                       // unknown value
+    data << uint8(0);                                       // enable(1)/disable(0) voice chat interface in client
+    SendPacket(&data);
 
-	{
-		SendMotd();
+    {
+        SendMotd();
 
-		// send server info
-		if (sWorld->getConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)
-			chH.PSendSysMessage(GitRevision::GetFullVersion());
+        // send server info
+        if (sWorld->getConfig(CONFIG_ENABLE_SINFO_LOGIN) == 1)
+            chH.PSendSysMessage(GitRevision::GetFullVersion());
 
-		//TC_LOG_DEBUG( "network", "WORLD: Sent server info" );
-	}
+        //TC_LOG_DEBUG( "network", "WORLD: Sent server info" );
+    }
 
 
 
-	//warn player if no mail associated to account
-	/*disabled QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
-	if(resultMail)
-	{
-		Field *fields = resultMail->Fetch();
-		const char* mail = fields[0].GetCString();
-		const char* mail_temp = fields[1].GetCString();
+    //warn player if no mail associated to account
+    /*disabled QueryResult resultMail = LoginDatabase.PQuery("SELECT email, newMail FROM account WHERE id = '%u'", pCurrChar->GetSession()->GetAccountId());
+    if(resultMail)
+    {
+        Field *fields = resultMail->Fetch();
+        const char* mail = fields[0].GetCString();
+        const char* mail_temp = fields[1].GetCString();
 
-		if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
-			chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
-	}
-	*/
+        if(!(mail && strcmp(mail, "") != 0) && !(mail_temp && strcmp(mail_temp, "") != 0))
+            chH.PSendSysMessage("|cffff0000Aucune adresse email n'est actuellement associée a ce compte. Un compte sans mail associé ne peux etre recupéré en cas de perte. Vous pouvez utiliser le manager pour corriger ce problème.|r");
+    }
+    */
 
-	//QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
-	QueryResult resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
+    //QueryResult result = CharacterDatabase.PQuery("SELECT guildid,rank FROM guild_member WHERE guid = '%u'",pCurrChar->GetGUIDLow());
+    QueryResult resultGuild = holder->GetResult(PLAYER_LOGIN_QUERY_LOADGUILD);
 
-	uint32 guildId = 0;
-	if (resultGuild)
-	{
-		Field *fields = resultGuild->Fetch();
-		guildId = fields[0].GetUInt32();
-		pCurrChar->SetInGuild(guildId);
-		pCurrChar->SetRank(fields[1].GetUInt8());
-	}
-	else if (pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
-	{
-		pCurrChar->SetInGuild(0);
-		pCurrChar->SetRank(0);
-	}
+    uint32 guildId = 0;
+    if (resultGuild)
+    {
+        Field *fields = resultGuild->Fetch();
+        guildId = fields[0].GetUInt32();
+        pCurrChar->SetInGuild(guildId);
+        pCurrChar->SetRank(fields[1].GetUInt8());
+    }
+    else if (pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
+    {
+        pCurrChar->SetInGuild(0);
+        pCurrChar->SetRank(0);
+    }
 
-	// Default guild for GMs
-	if (GetSecurity() > SEC_PLAYER)
-	{
-		if (guildId == 0)
-		{
-			if (uint32 defaultGuildId = sWorld->getConfig(CONFIG_GM_DEFAULT_GUILD))
-			{
-				Guild* gmGuild = sObjectMgr->GetGuildById(defaultGuildId);
-				if (gmGuild)
-				{
-					SQLTransaction trans = CharacterDatabase.BeginTransaction();
-					if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank(), trans))
-					{
-						guildId = defaultGuildId;
-						pCurrChar->SetInGuild(defaultGuildId);
-						pCurrChar->SetRank(gmGuild->GetLowestRank());
-					}
-					else
-					{
-						TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
-					}
-					CharacterDatabase.CommitTransaction(trans);
-				}
-				else {
-					TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
-				}
-			}
-		}
+    // Default guild for GMs
+    if (GetSecurity() > SEC_PLAYER)
+    {
+        if (guildId == 0)
+        {
+            if (uint32 defaultGuildId = sWorld->getConfig(CONFIG_GM_DEFAULT_GUILD))
+            {
+                Guild* gmGuild = sObjectMgr->GetGuildById(defaultGuildId);
+                if (gmGuild)
+                {
+                    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank(), trans))
+                    {
+                        guildId = defaultGuildId;
+                        pCurrChar->SetInGuild(defaultGuildId);
+                        pCurrChar->SetRank(gmGuild->GetLowestRank());
+                    }
+                    else
+                    {
+                        TC_LOG_ERROR("entities.player", "Could not add player to default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                    }
+                    CharacterDatabase.CommitTransaction(trans);
+                }
+                else {
+                    TC_LOG_ERROR("entities.player", "Could not find default guild Id %u for GM player %s (%u)", defaultGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                }
+            }
+        }
 
-		//force gm player in guild if needed
+        //force gm player in guild if needed
 
-		if (uint32 GMForcedGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD))
-		{
-			if (GMForcedGuildId != guildId)
-			{
-				//remove from current guild if any
-				if (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
-					currentGuild->DelMember(pCurrChar->GetGUID());
+        if (uint32 GMForcedGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD))
+        {
+            if (GMForcedGuildId != guildId)
+            {
+                //remove from current guild if any
+                if (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
+                    currentGuild->DelMember(pCurrChar->GetGUID());
 
-				if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
-				{
-					if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank()))
-					{
-						pCurrChar->SetInGuild(GMForcedGuildId);
-						pCurrChar->SetRank(gmGuild->GetLowestRank());
-					}
-					else {
-						TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
-					}
-				}
-			}
-		}
-	}
+                if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
+                {
+                    if (gmGuild->AddMember(pCurrChar->GetGUID(), gmGuild->GetLowestRank()))
+                    {
+                        pCurrChar->SetInGuild(GMForcedGuildId);
+                        pCurrChar->SetRank(gmGuild->GetLowestRank());
+                    }
+                    else {
+                        TC_LOG_ERROR("entities.player", "Could not add player to forced guild Id %u for GM player %s (%u)", GMForcedGuildId, pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow());
+                    }
+                }
+            }
+        }
+    }
 
-	if (pCurrChar->GetGuildId() != 0)
-	{
-		Guild* guild = sObjectMgr->GetGuildById(pCurrChar->GetGuildId());
-		if (guild)
-		{
-			data.Initialize(SMSG_GUILD_EVENT, (2 + guild->GetMOTD().size() + 1));
-			data << (uint8)GE_MOTD;
-			data << (uint8)1;
-			data << guild->GetMOTD();
-			SendPacket(&data);
-			TC_LOG_DEBUG("network", "WORLD: Sent guild-motd (SMSG_GUILD_EVENT)");
+    if (pCurrChar->GetGuildId() != 0)
+    {
+        Guild* guild = sObjectMgr->GetGuildById(pCurrChar->GetGuildId());
+        if (guild)
+        {
+            data.Initialize(SMSG_GUILD_EVENT, (2 + guild->GetMOTD().size() + 1));
+            data << (uint8)GE_MOTD;
+            data << (uint8)1;
+            data << guild->GetMOTD();
+            SendPacket(&data);
+            TC_LOG_DEBUG("network", "WORLD: Sent guild-motd (SMSG_GUILD_EVENT)");
 
-			data.Initialize(SMSG_GUILD_EVENT, (5 + 10));      // we guess size
-			data << (uint8)GE_SIGNED_ON;
-			data << (uint8)1;
-			data << pCurrChar->GetName();
-			data << pCurrChar->GetGUID();
-			guild->BroadcastPacket(&data);
+            data.Initialize(SMSG_GUILD_EVENT, (5 + 10));      // we guess size
+            data << (uint8)GE_SIGNED_ON;
+            data << (uint8)1;
+            data << pCurrChar->GetName();
+            data << pCurrChar->GetGUID();
+            guild->BroadcastPacket(&data);
 
-			if (sWorld->getConfig(CONFIG_IRC_ENABLED))
-				sIRCMgr->onIngameGuildJoin(guild->GetId(), guild->GetName(), pCurrChar->GetName());
+            if (sWorld->getConfig(CONFIG_IRC_ENABLED))
+                sIRCMgr->onIngameGuildJoin(guild->GetId(), guild->GetName(), pCurrChar->GetName());
 
-			TC_LOG_DEBUG("network", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)");
+            TC_LOG_DEBUG("network", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)");
 
-			// Increment online members of the guild
-			guild->IncOnlineMemberCount();
-		}
-		else
-		{
-			// remove wrong guild data
-			TC_LOG_ERROR("network", "Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.", pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow(), pCurrChar->GetGuildId());
-			pCurrChar->SetInGuild(0);
-		}
-	}
+            // Increment online members of the guild
+            guild->IncOnlineMemberCount();
+        }
+        else
+        {
+            // remove wrong guild data
+            TC_LOG_ERROR("network", "Player %s (GUID: %u) marked as member not existed guild (id: %u), removing guild membership for player.", pCurrChar->GetName().c_str(), pCurrChar->GetGUIDLow(), pCurrChar->GetGuildId());
+            pCurrChar->SetInGuild(0);
+        }
+    }
 
-	if (GetClientBuild() == BUILD_335)
-	{
-		data.Initialize(/*SMSG_LEARNED_DANCE_MOVES*/ 0x455, 4 + 4);
-		data << uint32(0);
-		data << uint32(0);
-		SendPacket(&data);
-	}
+    if (GetClientBuild() == BUILD_335)
+    {
+        data.Initialize(/*SMSG_LEARNED_DANCE_MOVES*/ 0x455, 4 + 4);
+        data << uint32(0);
+        data << uint32(0);
+        SendPacket(&data);
+    }
 
     if(!pCurrChar->IsAlive())
         pCurrChar->SendCorpseReclaimDelay(true);
@@ -914,21 +914,21 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->setCinematic(1);
 
 #ifdef LICH_KING
-		//LK has death knights intro handled here
-		if (ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(pCurrChar->GetClass()))
-		{
-			if (cEntry->cinematicSequence)
-				pCurrChar->SendCinematicStart(cEntry->cinematicSequence);
-			else 
+        //LK has death knights intro handled here
+        if (ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(pCurrChar->GetClass()))
+        {
+            if (cEntry->cinematicSequence)
+                pCurrChar->SendCinematicStart(cEntry->cinematicSequence);
+            else 
 #endif
-				if (ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->GetRace()))
-					pCurrChar->SendCinematicStart(rEntry->cinematicSequence);
+                if (ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->GetRace()))
+                    pCurrChar->SendCinematicStart(rEntry->cinematicSequence);
 
-			// send new char string if not empty
-			if (!sWorld->GetNewCharString().empty())
-				chH.PSendSysMessage("%s", sWorld->GetNewCharString().c_str());
+            // send new char string if not empty
+            if (!sWorld->GetNewCharString().empty())
+                chH.PSendSysMessage("%s", sWorld->GetNewCharString().c_str());
 #ifdef LICH_KING
-		}
+        }
 #endif
     }
 

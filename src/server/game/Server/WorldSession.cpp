@@ -336,7 +336,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     
     while (m_Socket && _recvQueue.next(packet, updater))
     {
-		ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
+        ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
 
         try
         {

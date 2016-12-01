@@ -1594,14 +1594,14 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D
 
 GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime)
 {
-	if (!x && !y && !z)
-	{
-		GetClosePoint(x, y, z, GetObjectSize());
-		ang = GetOrientation();
-	}
+    if (!x && !y && !z)
+    {
+        GetClosePoint(x, y, z, GetObjectSize());
+        ang = GetOrientation();
+    }
 
-	Position pos(x, y, z, ang);
-	return SummonGameObject(entry, pos, rot, respawnTime);
+    Position pos(x, y, z, ang);
+    return SummonGameObject(entry, pos, rot, respawnTime);
 }
 
 Creature* WorldObject::SummonTrigger(float x, float y, float z, float ang, uint32 duration, CreatureAI* (*GetAI)(Creature*))
@@ -1687,23 +1687,23 @@ void WorldObject::GetGroundPoint(float &x, float &y, float &z, float dist, float
 
 void WorldObject::GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d, float angle) const
 {
-	// angle calculated from current orientation
-	GetNearPoint(nullptr, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
+    // angle calculated from current orientation
+    GetNearPoint(nullptr, x, y, z, searcherSize, distance2d, GetOrientation() + angle);
 }
 
 void WorldObject::GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d) const
 {
-	//on retail, creature follow approximatively at half the max melee distance
-	float offset = (GetObjectSize() + obj->GetObjectSize()) / 2.0f + distance2d;
-	float angle = GetAngle(obj);
-	x = GetPositionX() + offset * cos(angle);
-	y = GetPositionY() + offset * sin(angle);
+    //on retail, creature follow approximatively at half the max melee distance
+    float offset = (GetObjectSize() + obj->GetObjectSize()) / 2.0f + distance2d;
+    float angle = GetAngle(obj);
+    x = GetPositionX() + offset * cos(angle);
+    y = GetPositionY() + offset * sin(angle);
 
-	Trinity::NormalizeMapCoord(x);
-	Trinity::NormalizeMapCoord(y);
+    Trinity::NormalizeMapCoord(x);
+    Trinity::NormalizeMapCoord(y);
 
-	z = GetPositionZ();
-	UpdateAllowedPositionZ(x, y, z, GetObjectSize());
+    z = GetPositionZ();
+    UpdateAllowedPositionZ(x, y, z, GetObjectSize());
 }
 
 bool WorldObject::GetCollisionPosition(Position from, float x, float y, float z, Position& resultPos, float modifyDist)
@@ -1977,9 +1977,9 @@ void Position::GetPositionOffsetTo(const Position & endPos, Position & retOffset
 
 Position Position::GetPositionWithOffset(Position const& offset) const
 {
-	Position ret(*this);
-	ret.RelocateOffset(offset);
-	return ret;
+    Position ret(*this);
+    ret.RelocateOffset(offset);
+    return ret;
 }
 
 float Position::GetAngle(const Position *obj) const

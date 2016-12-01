@@ -32,7 +32,7 @@ bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
 
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
 {
-	owner->ClearUnitState(UNIT_STATE_EVADE);
+    owner->ClearUnitState(UNIT_STATE_EVADE);
     if (arrived)
     {
         owner->SetWalk(true);

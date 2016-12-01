@@ -164,8 +164,8 @@ class WorldSessionFilter : public PacketFilter
 {
 public:
     explicit WorldSessionFilter(WorldSession* pSession) : PacketFilter(pSession) {}
-	~WorldSessionFilter() override
-	= default;
+    ~WorldSessionFilter() override
+    = default;
 
     bool Process(WorldPacket* packet) override;
 };

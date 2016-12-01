@@ -745,7 +745,7 @@ struct SmartAction
         {
             uint32 field;
             uint32 data;
-			uint32 type;
+            uint32 type;
         } setInstanceData;
 
         struct
@@ -1000,7 +1000,7 @@ struct SmartAction
         {
             uint32 pointId;
             uint32 transport;
-			uint32 disablePathfinding;
+            uint32 disablePathfinding;
         } MoveToPos;
 
         struct
@@ -1117,7 +1117,7 @@ enum SMARTAI_TEMPLATE
     SMARTAI_TEMPLATE_PASSIVE        = 3,
     SMARTAI_TEMPLATE_CAGED_GO_PART  = 4, //creatureID, give credit at point end?,
     SMARTAI_TEMPLATE_CAGED_NPC_PART = 5, //gameObjectID, despawntime, run?, dist, TextGroupID
-	SMARTAI_TEMPLATE_CASTER_SUN     = 6, //spellid, repeatMin, repeatMax, castFlags
+    SMARTAI_TEMPLATE_CASTER_SUN     = 6, //spellid, repeatMin, repeatMax, castFlags
     SMARTAI_TEMPLATE_END            = 7
 };
 

@@ -16,7 +16,7 @@ namespace Testing
 {
     // Run Catch main. Can Throw
     int RunCatch(int argc, char const* const* const argv);
-	void ClearAllTests();
+    void ClearAllTests();
 };
 
 #endif

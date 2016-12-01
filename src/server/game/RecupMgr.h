@@ -40,7 +40,7 @@ enum RecupStuffLevel
 class TC_GAME_API RecupMgr
 {
     public:
-		static bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip = false, ChatHandler* handler = nullptr);
+        static bool HandleRecupParseCommand(Player *player, std::string command, uint32 metier_level, bool equip = false, ChatHandler* handler = nullptr);
         static bool Recup(Player* player, RecupEquipmentType type, RecupStuffLevel level);
         static bool RecupProfession(Player* player, RecupProfessionType profession);
 };

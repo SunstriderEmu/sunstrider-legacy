@@ -3,8 +3,8 @@
 namespace ai
 {
     class Event
-	{
-	public:
+    {
+    public:
         Event(Event const& other)
         {
             source = other.source;
@@ -18,7 +18,7 @@ namespace ai
         Event(std::string source, WorldPacket &packet, Player* owner = nullptr) : source(std::move(source)), packet(packet), owner(owner) {}
         virtual ~Event() = default;
 
-	public:
+    public:
         std::string getSource() { return source; }
         std::string getParam() { return param; }
         WorldPacket& getPacket() { return packet; }
@@ -32,5 +32,5 @@ namespace ai
         WorldPacket packet;
         ObjectGuid object;
         Player* owner;
-	};
+    };
 }

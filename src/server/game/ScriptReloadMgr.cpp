@@ -1488,10 +1488,10 @@ void LibraryUpdateListener::handleFileAction(efsw::WatchID watchid, std::string 
         if (!HasValidScriptModuleName(filename))
             return;
 
-		//sunstrider, clear tests before reloading them
-		if(filename == "scripts_tests.dll")
-			Testing::ClearAllTests();
-		
+        //sunstrider, clear tests before reloading them
+        if(filename == "scripts_tests.dll")
+            Testing::ClearAllTests();
+        
         switch (action)
         {
             case efsw::Actions::Add:

@@ -1207,7 +1207,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_HOTSWAP_INSTALL_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnableInstall", true);
     m_configs[CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnablePrefixCorrection", true);
 
-	m_configs[CONFIG_MAP_CRASH_RECOVERY_ENABLED] = sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false);
+    m_configs[CONFIG_MAP_CRASH_RECOVERY_ENABLED] = sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false);
 }
 
 /// Initialize the World
@@ -1620,7 +1620,7 @@ void World::SetInitialWorldSettings()
         local.tm_year+1900, local.tm_mon+1, local.tm_mday, local.tm_hour, local.tm_min, local.tm_sec);
 
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision, maxplayers) VALUES('%u', " UI64FMTD ", 0, '%s', 0)",
-		realm.Id.Realm, uint64(m_startTime), isoDate, GitRevision::GetFullVersion());
+        realm.Id.Realm, uint64(m_startTime), isoDate, GitRevision::GetFullVersion());
 
     m_timers[WUPDATE_OBJECTS].SetInterval(1);
     m_timers[WUPDATE_SESSIONS].SetInterval(1);

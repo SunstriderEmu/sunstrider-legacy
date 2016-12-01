@@ -721,17 +721,17 @@ void Map::VisitNearbyCellsOf(WorldObject* obj, TypeContainerVisitor<Trinity::Obj
 
 void Map::DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate)
 {
-	uint32 now = GetMSTime();
-	uint32 diff = GetMSTimeDiff(_lastMapUpdate, now);
-	//freeze thread if last update was less than 10ms ago
-	if(diff < minimumTimeSinceLastUpdate) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(minimumTimeSinceLastUpdate - diff));
-		diff = minimumTimeSinceLastUpdate;
-	}
-	if (diff > maxDiff)
-		diff = maxDiff;
-	_lastMapUpdate = now;
-	Update(diff);
+    uint32 now = GetMSTime();
+    uint32 diff = GetMSTimeDiff(_lastMapUpdate, now);
+    //freeze thread if last update was less than 10ms ago
+    if(diff < minimumTimeSinceLastUpdate) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(minimumTimeSinceLastUpdate - diff));
+        diff = minimumTimeSinceLastUpdate;
+    }
+    if (diff > maxDiff)
+        diff = maxDiff;
+    _lastMapUpdate = now;
+    Update(diff);
 }
 
 
@@ -2398,7 +2398,7 @@ bool InstanceMap::Add(Player *player)
                 {
                   //  TC_LOG_ERROR("maps","InstanceMap::Add: player %s(%d) is being put in instance %d,%d,%d,%d,%d,%d but he is in group %d and is bound to instance %d,%d,%d,%d,%d,%d!", player->GetName(), player->GetGUIDLow(), mapSave->GetMapId(), mapSave->GetInstanceId(), mapSave->GetDifficulty(), mapSave->GetPlayerCount(), mapSave->GetGroupCount(), mapSave->CanReset(), GUID_LOPART(pGroup->GetLeaderGUID()), playerBind->save->GetMapId(), playerBind->save->GetInstanceId(), playerBind->save->GetDifficulty(), playerBind->save->GetPlayerCount(), playerBind->save->GetGroupCount(), playerBind->save->CanReset());
                     if(groupBind) 
-						TC_LOG_ERROR("maps","InstanceMap::Add: the group is bound to instance %d,%d,%d,%d,%d,%d", groupBind->save->GetMapId(), groupBind->save->GetInstanceId(), groupBind->save->GetDifficulty(), groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount(), groupBind->save->CanReset());
+                        TC_LOG_ERROR("maps","InstanceMap::Add: the group is bound to instance %d,%d,%d,%d,%d,%d", groupBind->save->GetMapId(), groupBind->save->GetInstanceId(), groupBind->save->GetDifficulty(), groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount(), groupBind->save->CanReset());
 
                     TC_LOG_ERROR("maps","InstanceMap::Add: do not let player %s enter instance otherwise crash will happen", player->GetName().c_str());
                     return false;

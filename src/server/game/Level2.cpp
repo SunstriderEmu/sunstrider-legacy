@@ -3222,7 +3222,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
         data.posY = chr->GetTransOffsetY();
         data.posZ = chr->GetTransOffsetZ();
         data.orientation = chr->GetTransOffsetO();
-		data.rotation = G3D::Quat(0, 0, rot2, rot3);
+        data.rotation = G3D::Quat(0, 0, rot2, rot3);
         data.spawntimesecs = 30;
         data.animprogress = 0;
         data.go_state = 1;

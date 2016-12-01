@@ -6,13 +6,13 @@ using namespace ai;
 
 Event Trigger::Check()
 {
-	if (IsActive())
-	{
-		Event event(getName());
-		return event;
-	}
-	Event event;
-	return event;
+    if (IsActive())
+    {
+        Event event(getName());
+        return event;
+    }
+    Event event;
+    return event;
 }
 
 Value<Unit*>* Trigger::GetTargetValue()

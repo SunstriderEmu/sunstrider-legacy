@@ -15,8 +15,8 @@ enum RandomItemType
 class RandomItemPredicate
 {
 public:
-	virtual ~RandomItemPredicate() {}
-	virtual bool Apply(ItemTemplate const* proto) = 0;
+    virtual ~RandomItemPredicate() {}
+    virtual bool Apply(ItemTemplate const* proto) = 0;
 };
 
 typedef vector<uint32> RandomItemList;
@@ -33,7 +33,7 @@ class RandomItemMgr
             return instance;
         }
 
-	public:
+    public:
         static bool HandleConsoleCommand(ChatHandler* handler, char const* args);
         RandomItemList Query(RandomItemType type, RandomItemPredicate* predicate);
         uint32 GetRandomItem(RandomItemType type, RandomItemPredicate* predicate = NULL);

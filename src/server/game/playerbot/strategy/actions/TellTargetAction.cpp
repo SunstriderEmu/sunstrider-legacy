@@ -11,7 +11,7 @@ bool TellTargetAction::Execute(Event event)
     if (target)
     {
         std::ostringstream out;
-		out << "Attacking " << target->GetName();
+        out << "Attacking " << target->GetName();
         ai->TellMaster(out);
 
         context->GetValue<Unit*>("old target")->Set(target);

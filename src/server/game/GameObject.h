@@ -243,9 +243,9 @@ struct GameObjectTemplate
             uint32 spellId;                                 //0
             uint32 charges;                                 //1
             uint32 partyOnly;                               //2
-			uint32 allowMounted;                            //3 Is usable while on mount/vehicle. (0/1)
-			uint32 large;                                   //4 NYI
-			uint32 conditionID1;                            //5 NYI
+            uint32 allowMounted;                            //3 Is usable while on mount/vehicle. (0/1)
+            uint32 large;                                   //4 NYI
+            uint32 conditionID1;                            //5 NYI
         } spellcaster;
         //23 GAMEOBJECT_TYPE_MEETINGSTONE
         struct
@@ -265,7 +265,7 @@ struct GameObjectTemplate
             uint32 noDamageImmune;                          //5
             uint32 openTextID;                              //6
             uint32 losOK;                                   //7
-			uint32 conditionID1;                            //8 NYI
+            uint32 conditionID1;                            //8 NYI
         } flagstand;
         //25 GAMEOBJECT_TYPE_FISHINGHOLE                    // not implemented yet
         struct
@@ -345,19 +345,19 @@ struct GameObjectTemplate
             uint32 state1Name;                              //2
             uint32 state2Name;                              //3
         } destructibleBuilding;
-		//34 GAMEOBJECT_TYPE_GUILDBANK
-		struct
-		{
-			uint32 conditionID1;                            //0
-		} guildbank;
+        //34 GAMEOBJECT_TYPE_GUILDBANK
+        struct
+        {
+            uint32 conditionID1;                            //0
+        } guildbank;
 #ifdef LICH_KING
-		//35 GAMEOBJECT_TYPE_TRAPDOOR
-		struct
-		{
-			uint32 whenToPause;                             // 0
-			uint32 startOpen;                               // 1
-			uint32 autoClose;                               // 2
-		} trapDoor;
+        //35 GAMEOBJECT_TYPE_TRAPDOOR
+        struct
+        {
+            uint32 whenToPause;                             // 0
+            uint32 startOpen;                               // 1
+            uint32 autoClose;                               // 2
+        } trapDoor;
 #endif
 
         // not use for specific field access (only for output with loop by all filed), also this determinate max union size
@@ -385,17 +385,17 @@ struct GameObjectTemplate
         return autoCloseTime /* xinef: changed to milliseconds/ IN_MILLISECONDS*/;              // prior to 3.0.3, conversion was / 0x10000;
     }
 
-	bool IsDespawnAtAction() const
-	{
-		switch (type)
-		{
-		case GAMEOBJECT_TYPE_CHEST:  return chest.consumable != 0;
-		case GAMEOBJECT_TYPE_GOOBER: return goober.consumable != 0;
-		default: return false;
-		}
-	}
+    bool IsDespawnAtAction() const
+    {
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_CHEST:  return chest.consumable != 0;
+        case GAMEOBJECT_TYPE_GOOBER: return goober.consumable != 0;
+        default: return false;
+        }
+    }
 
-	bool IsUsableMounted() const
+    bool IsUsableMounted() const
     {
         switch (type)
         {
@@ -449,30 +449,30 @@ struct GameObjectTemplate
         }
     }
 
-	bool GetDespawnPossibility() const                      // despawn at targeting of cast?
-	{
-		switch (type)
-		{
-		case GAMEOBJECT_TYPE_DOOR:       return door.noDamageImmune != 0;
-		case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune != 0;
-		case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune != 0;
-		case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune != 0;
-		case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune != 0;
-		case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune != 0;
-		default: return true;
-		}
-	}
+    bool GetDespawnPossibility() const                      // despawn at targeting of cast?
+    {
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_DOOR:       return door.noDamageImmune != 0;
+        case GAMEOBJECT_TYPE_BUTTON:     return button.noDamageImmune != 0;
+        case GAMEOBJECT_TYPE_QUESTGIVER: return questgiver.noDamageImmune != 0;
+        case GAMEOBJECT_TYPE_GOOBER:     return goober.noDamageImmune != 0;
+        case GAMEOBJECT_TYPE_FLAGSTAND:  return flagstand.noDamageImmune != 0;
+        case GAMEOBJECT_TYPE_FLAGDROP:   return flagdrop.noDamageImmune != 0;
+        default: return true;
+        }
+    }
 
-	uint32 GetLinkedGameObjectEntry() const
-	{
-		switch (type)
-		{
-		case GAMEOBJECT_TYPE_CHEST:       return chest.linkedTrapId;
-		case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.linkedTrapId;
-		case GAMEOBJECT_TYPE_GOOBER:      return goober.linkedTrapId;
-		default: return 0;
-		}
-	}
+    uint32 GetLinkedGameObjectEntry() const
+    {
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_CHEST:       return chest.linkedTrapId;
+        case GAMEOBJECT_TYPE_SPELL_FOCUS: return spellFocus.linkedTrapId;
+        case GAMEOBJECT_TYPE_GOOBER:      return goober.linkedTrapId;
+        default: return 0;
+        }
+    }
 
     uint32 GetLockId() const
     {
@@ -493,16 +493,16 @@ struct GameObjectTemplate
         }
     }
 
-	uint32 GetEventScriptId() const
-	{
-		switch (type)
-		{
-		case GAMEOBJECT_TYPE_GOOBER:        return goober.eventId;
-		case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
-		case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
-		default: return 0;
-		}
-	}
+    uint32 GetEventScriptId() const
+    {
+        switch (type)
+        {
+        case GAMEOBJECT_TYPE_GOOBER:        return goober.eventId;
+        case GAMEOBJECT_TYPE_CHEST:         return chest.eventId;
+        case GAMEOBJECT_TYPE_CAMERA:        return camera.eventID;
+        default: return 0;
+        }
+    }
 
     std::string AIName;
     uint32 ScriptId;
@@ -537,7 +537,7 @@ enum GOState: uint32
     GO_STATE_READY              = 1,                        // show in world as ready (closed door close)
     GO_STATE_ACTIVE_ALTERNATIVE = 2,                        // show in world as used in alt way and not reset (closed door open by cannon fire)
 
-	MAX_GO_STATE,
+    MAX_GO_STATE,
 };
 
 // from `gameobject`
@@ -549,7 +549,7 @@ struct GameObjectData
     float posY;
     float posZ;
     float orientation;
-	G3D::Quat rotation;
+    G3D::Quat rotation;
     int32  spawntimesecs;
     uint32 animprogress;
     uint32 go_state;
@@ -801,8 +801,8 @@ class TC_GAME_API GameObject : public WorldObject
         float GetStationaryZ() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetPositionZ(); return GetPositionZ(); }
         float GetStationaryO() const override { if (GetGOInfo()->type != GAMEOBJECT_TYPE_MO_TRANSPORT) return m_stationaryPosition.GetOrientation(); return GetOrientation(); }
 
-		bool AIM_Initialize();
-		void AIM_Destroy();
+        bool AIM_Initialize();
+        void AIM_Destroy();
     protected:
         uint32      m_charges;                              // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
         uint32      m_spellId;

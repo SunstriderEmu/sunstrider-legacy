@@ -4,8 +4,8 @@
 namespace ai
 {
     class RtiValue : public ManualSetValue<std::string>
-	{
-	public:
+    {
+    public:
         RtiValue(PlayerbotAI* ai);
     };
 }

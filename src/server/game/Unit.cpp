@@ -418,22 +418,22 @@ bool Unit::IsWithinCombatRange(Unit *obj, float dist2compare) const
 bool Unit::IsWithinMeleeRange(Unit *obj, float dist) const
 {
     if (!obj || !IsInMap(obj) || !InSamePhase(obj))
-		return false;
+        return false;
 
     float dx = GetPositionX() - obj->GetPositionX();
     float dy = GetPositionY() - obj->GetPositionY();
     float dz = GetPositionZ() - obj->GetPositionZ();
     float distsq = dx*dx + dy*dy + dz*dz;
 
-	float maxdist = GetMeleeRange(obj);
+    float maxdist = GetMeleeRange(obj);
 
     return distsq < maxdist * maxdist;
 }
 
 float Unit::GetMeleeRange(Unit const* target) const
 {
-	float range = GetCombatReach() + target->GetCombatReach() + 4.0f / 3.0f;
-	return std::max(range, NOMINAL_MELEE_RANGE);
+    float range = GetCombatReach() + target->GetCombatReach() + 4.0f / 3.0f;
+    return std::max(range, NOMINAL_MELEE_RANGE);
 }
 
 void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const
@@ -448,9 +448,9 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
     }
     uint32 attacker_number = GetAttackers().size();
     if(attacker_number > 0) 
-		--attacker_number;
+        --attacker_number;
 
-	float angle = GetAngle(obj) + (attacker_number ? (M_PI / 2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0);
+    float angle = GetAngle(obj) + (attacker_number ? (M_PI / 2 - M_PI * GetMap()->rand_norm()) * (float)attacker_number / combat_reach / 3 : 0);
     GetNearPoint(obj,x,y,z,obj->GetCombatReach(), distance2dMin+(distance2dMax-distance2dMin)*GetMap()->rand_norm(), angle);
 }
 
@@ -863,7 +863,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             if(attacker != (pVictim->ToPlayer()))
                 bg->UpdatePlayerScore(attacker, SCORE_DAMAGE_DONE, damage);
             
-	        bg->UpdatePlayerScore(pVictim->ToPlayer(), SCORE_DAMAGE_TAKEN, damage);
+            bg->UpdatePlayerScore(pVictim->ToPlayer(), SCORE_DAMAGE_TAKEN, damage);
         }
     }
 
@@ -2532,7 +2532,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
 
     bool canParry = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
     //bool canDodge = !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
-	bool canDodge = canParry; //same condition for now, uncomment above line if it changes
+    bool canDodge = canParry; //same condition for now, uncomment above line if it changes
     bool canBlock = spell->HasAttribute(SPELL_ATTR3_BLOCKABLE_SPELL) && !isCasting && !lostControl && !(spell->Attributes & SPELL_ATTR0_IMPOSSIBLE_DODGE_PARRY_BLOCK);
     bool canMiss = true;
 
@@ -3095,7 +3095,7 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
             {
             case UNIT_FIELD_HEALTH:
             {
-				//for creatures, send 0 health. This prevents health from showing in the bottom right tooltip when mouse hovering over the creature
+                //for creatures, send 0 health. This prevents health from showing in the bottom right tooltip when mouse hovering over the creature
                 if (GetTypeId() == TYPEID_UNIT && m_uint32Values[UNIT_DYNAMIC_FLAGS] & UNIT_DYNFLAG_DEAD)
                     fieldBuffer << uint32(0);
                 else
@@ -4841,14 +4841,14 @@ void Unit::RemoveAllAuras()
 
 void Unit::RemoveAllActiveAuras()
 {
-	auto iter = m_Auras.begin();
-	while (iter != m_Auras.end())
-	{
-		if (iter->second->IsActive())
-			RemoveAura(iter);
-		else
-			iter++;
-	}
+    auto iter = m_Auras.begin();
+    while (iter != m_Auras.end())
+    {
+        if (iter->second->IsActive())
+            RemoveAura(iter);
+        else
+            iter++;
+    }
 }
 
 void Unit::RemoveAllAurasExcept(uint32 spellId)
@@ -6695,7 +6695,7 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
              // Rain of Fire have 4 tick
              else if (procSpell->SpellFamilyFlags&0x0000000000000020LL)
                  tick = 4;  // was 4
-			 //soulfire : 0x8000000000
+             //soulfire : 0x8000000000
              else
                  return false;
 
@@ -6964,9 +6964,9 @@ bool Unit::HandleProcTriggerSpell(Unit *pVictim, uint32 damage, Aura* triggeredB
         // Blackout
         case 15326:
         {
-			// Can't seems to have a good spell family mask that would exclude all the right spells so we also exclude Silence here
-			if (procSpell->Id == 15487) //Silence
-				return false;
+            // Can't seems to have a good spell family mask that would exclude all the right spells so we also exclude Silence here
+            if (procSpell->Id == 15487) //Silence
+                return false;
             break;
         }
         // Persistent Shield (Scarab Brooch trinket)
@@ -7870,10 +7870,10 @@ Unit* Unit::GetGuardianPet() const
                 return (Unit*)pet;
 
        /*
-	    //kelno: Commented from TC. Why would we want to reset pet if the pet is not a guardian ? This just seems wrongly copy pasted code from GetCharm
-		TC_LOG_FATAL("entities.unit", "Unit::GetGuardianPet: Guardian " UI64FMTD " not exist.", pet_guid);
+        //kelno: Commented from TC. Why would we want to reset pet if the pet is not a guardian ? This just seems wrongly copy pasted code from GetCharm
+        TC_LOG_FATAL("entities.unit", "Unit::GetGuardianPet: Guardian " UI64FMTD " not exist.", pet_guid);
         const_cast<Unit*>(this)->SetPetGUID(0);
-		*/
+        */
     }
 
     return nullptr;
@@ -10004,11 +10004,11 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if (this == target)
         return false;
 
-	// check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
-	bool isWorldTrigger = (GetEntry() == WORLD_TRIGGER);
-	Unit const* attacker = isWorldTrigger ? GetAffectingPlayer() : this;
-	if (!attacker)
-		attacker = this;
+    // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
+    bool isWorldTrigger = (GetEntry() == WORLD_TRIGGER);
+    Unit const* attacker = isWorldTrigger ? GetAffectingPlayer() : this;
+    if (!attacker)
+        attacker = this;
 
     // can't attack unattackable units or GMs
     if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
@@ -10056,17 +10056,17 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
             return false;
     }
 
-	if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16))
-		return false;
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16))
+        return false;
 
-	if (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
-		return false;
+    if (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
+        return false;
 
-	if (attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
-		return false;
+    if (attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+        return false;
 
-	if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
-		return false;
+    if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+        return false;
 
     // CvC case - can attack each other only when one of them is hostile
     if (!attacker->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
@@ -10658,7 +10658,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
 #endif
     };
 
-	if (Player* playerMover = GetPlayerMover()) // unit controlled by a player.
+    if (Player* playerMover = GetPlayerMover()) // unit controlled by a player.
     {
         // Send notification to self. this packet is only sent to one client (the client of the player concerned by the change).
         WorldPacket self;
@@ -10668,7 +10668,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         if (mtype == MOVE_RUN)
             self << uint8(1);                               // unknown byte added in 2.1.0
         self << float(GetSpeed(mtype));
-		playerMover->GetSession()->SendPacket(&self);
+        playerMover->GetSession()->SendPacket(&self);
 
         // Send notification to other players. sent to every clients (if in range) except one: the client of the player concerned by the change.
         WorldPacket data;
@@ -10676,7 +10676,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
         data << GetPackGUID();
         BuildMovementPacket(&data);
         data << float(GetSpeed(mtype));
-		playerMover->SendMessageToSet(&data, false);
+        playerMover->SendMessageToSet(&data, false);
     }
     else // unit controlled by AI.
     {
@@ -11261,31 +11261,31 @@ void Unit::ApplyDiminishingAura( DiminishingGroup group, bool apply )
 
 float Unit::GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const
 {
-	if (!spellInfo->RangeEntry)
-		return 0;
+    if (!spellInfo->RangeEntry)
+        return 0;
 #ifdef LICH_KING
-	if (spellInfo->RangeEntry->maxRangeFriend == spellInfo->RangeEntry->maxRangeHostile)
-		return spellInfo->GetMaxRange();
-	if (target == NULL)
-		return spellInfo->GetMaxRange(true);
+    if (spellInfo->RangeEntry->maxRangeFriend == spellInfo->RangeEntry->maxRangeHostile)
+        return spellInfo->GetMaxRange();
+    if (target == NULL)
+        return spellInfo->GetMaxRange(true);
 
-	return spellInfo->GetMaxRange(!IsHostileTo(target));
+    return spellInfo->GetMaxRange(!IsHostileTo(target));
 #else
-	return spellInfo->GetMaxRange();
+    return spellInfo->GetMaxRange();
 #endif
 }
 
 float Unit::GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const
 {
-	if (!spellInfo->RangeEntry)
-		return 0;
+    if (!spellInfo->RangeEntry)
+        return 0;
 #ifdef LICH_KING
-	if (spellInfo->RangeEntry->minRangeFriend == spellInfo->RangeEntry->minRangeHostile)
-		return spellInfo->GetMinRange();
+    if (spellInfo->RangeEntry->minRangeFriend == spellInfo->RangeEntry->minRangeHostile)
+        return spellInfo->GetMinRange();
 
-	return spellInfo->GetMinRange(!IsHostileTo(target));
+    return spellInfo->GetMinRange(!IsHostileTo(target));
 #else
-	return spellInfo->GetMinRange();
+    return spellInfo->GetMinRange();
 #endif
 }
 
@@ -12187,16 +12187,16 @@ void CharmInfo::SetPetNumber(uint32 petnumber, bool statwindow)
 
 Unit* Unit::GetMover() const
 {
-	if (Player const* player = ToPlayer())
-		return player->m_mover;
-	return nullptr;
+    if (Player const* player = ToPlayer())
+        return player->m_mover;
+    return nullptr;
 }
 
 Player* Unit::GetPlayerMover() const
 {
-	if (Unit* mover = GetMover())
-		return mover->ToPlayer();
-	return nullptr;
+    if (Unit* mover = GetMover())
+        return mover->ToPlayer();
+    return nullptr;
 }
 
 //TODO : replace by AURA_STATE_FROZEN
@@ -13640,7 +13640,7 @@ void Unit::SetStunned(bool apply)
 {
     if (apply)
     {
-        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
+        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on        
         if (HasUnitState(UNIT_STATE_FLEEING))
             SetFeared(false);
 
@@ -13692,7 +13692,7 @@ void Unit::SetRooted(bool apply)
 {
     if (apply)
     {
-        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on		
+        // We need to stop fear on stun and root or we will get teleport to destination issue as MVMGEN for fear keeps going on        
         if (HasUnitState(UNIT_STATE_FLEEING))
             SetFeared(false);
 
@@ -14371,7 +14371,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 {
     //set different model the first april
     time_t t = time(nullptr);
-	tm* timePtr = localtime(&t);
+    tm* timePtr = localtime(&t);
     bool firstApril = timePtr->tm_mon == 3 && timePtr->tm_mday == 1;
 
     uint32 modelid = 0;

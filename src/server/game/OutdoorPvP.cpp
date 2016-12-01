@@ -73,7 +73,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     data.posY           = y;
     data.posZ           = z;
     data.orientation    = o;
-	data.rotation       = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
+    data.rotation       = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
     data.spawntimesecs  = 0;
     data.animprogress   = 100;
     data.spawnMask      = 1;

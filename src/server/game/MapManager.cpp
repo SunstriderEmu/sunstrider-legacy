@@ -70,8 +70,8 @@ Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
 
 Map* MapManager::FindBaseMap(uint32 id) const
 {
-	auto iter = i_maps.find(id);
-	return (iter == i_maps.end() ? nullptr : iter->second);
+    auto iter = i_maps.find(id);
+    return (iter == i_maps.end() ? nullptr : iter->second);
 }
 
 Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
@@ -197,13 +197,13 @@ void MapManager::Update(time_t diff)
     }
 
     if (m_updater.activated())
-	{
-		m_updater.enableUpdateLoop(true);
+    {
+        m_updater.enableUpdateLoop(true);
         m_updater.waitUpdateOnces();
-		//now that continents are done, stop instances too
-		m_updater.enableUpdateLoop(false);
-		m_updater.waitUpdateLoops();
-	}
+        //now that continents are done, stop instances too
+        m_updater.enableUpdateLoop(false);
+        m_updater.waitUpdateLoops();
+    }
 
     //delayed map updates
     for (auto & i_map : i_maps)
@@ -370,25 +370,25 @@ uint32 MapManager::GenerateInstanceId()
 
 void MapManager::MapCrashed(Map& map)
 {
-	InstanceMap* instanceMap = dynamic_cast<InstanceMap*>(&map);
-	if (!instanceMap)
-	{
-		std::cerr << "MapManager::MapCrashed could not convert crashed map to InstanceMap" << std::endl;
-		return;
-	}
+    InstanceMap* instanceMap = dynamic_cast<InstanceMap*>(&map);
+    if (!instanceMap)
+    {
+        std::cerr << "MapManager::MapCrashed could not convert crashed map to InstanceMap" << std::endl;
+        return;
+    }
 
     //find right MapInstanced to pass crashed map to it and let it handle it
-	Map* baseMap = FindBaseMap(map.GetId());
-	if(!baseMap) {
-		std::cerr << "MapManager::MapCrashed could not find basemap for id " << map.GetId() << std::endl;
-		return;
-	}
+    Map* baseMap = FindBaseMap(map.GetId());
+    if(!baseMap) {
+        std::cerr << "MapManager::MapCrashed could not find basemap for id " << map.GetId() << std::endl;
+        return;
+    }
 
     MapInstanced* mapInstanced = dynamic_cast<MapInstanced*>(baseMap);
     if (!mapInstanced)
     {
         std::cerr << "MapManager::MapCrashed could not convert map iterator to MapInstanced" << std::endl;
-		return;
+        return;
     }
 
     mapInstanced->MapCrashed(instanceMap);

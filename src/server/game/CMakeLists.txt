@@ -1,5 +1,5 @@
 IF(NOT PLAYERBOT)
-	SET(EXCLUDE_PLAYERBOT ${CMAKE_CURRENT_SOURCE_DIR}/playerbot)
+    SET(EXCLUDE_PLAYERBOT ${CMAKE_CURRENT_SOURCE_DIR}/playerbot)
 ENDIF(NOT PLAYERBOT)
 
 CollectSourceFiles(
@@ -30,12 +30,12 @@ target_include_directories(game-interface
   INTERFACE
     ${PUBLIC_INCLUDES})
 
-	
+    
 target_link_libraries(game-interface
   INTERFACE
     shared
     Detour
-	)
+    )
 
 add_library(game
   ${PRIVATE_PCH_SOURCE}
@@ -44,7 +44,7 @@ add_library(game
 target_include_directories(game
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
-	
+    
 target_link_libraries(game
   PUBLIC
     game-interface
@@ -76,30 +76,30 @@ endif()
 add_cxx_pch(game ${PRIVATE_PCH_HEADER} ${PRIVATE_PCH_SOURCE})
 
 if(PLAYERBOT)
-	if ( UNIX )
-		add_definitions(
-			-D_PLAYERBOT_CONFIG='"${CONF_DIR}/aiplayerbot.conf"'
-				)
-	 endif()
+    if ( UNIX )
+        add_definitions(
+            -D_PLAYERBOT_CONFIG='"${CONF_DIR}/aiplayerbot.conf"'
+                )
+     endif()
 
-	if( WIN32 )
-	  if ( MSVC )
-		add_custom_command(TARGET game
-		  POST_BUILD
-		  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/
-		) 
-	  elseif ( MINGW )
-		
-		 add_custom_command(TARGET game
-		  POST_BUILD
-		  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/
-		)
-	  endif()
-	endif()
+    if( WIN32 )
+      if ( MSVC )
+        add_custom_command(TARGET game
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/
+        ) 
+      elseif ( MINGW )
+        
+         add_custom_command(TARGET game
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/playerbot/aiplayerbot.conf.dist.in ${CMAKE_BINARY_DIR}/bin/
+        )
+      endif()
+    endif()
 
-	if( UNIX )
-	  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
-	elseif( WIN32 )
-	  install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
-	endif()
+    if( UNIX )
+      install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION ${CONF_DIR})
+    elseif( WIN32 )
+      install(FILES playerbot/aiplayerbot.conf.dist.in DESTINATION "${CMAKE_INSTALL_PREFIX}")
+    endif()
 endif(PLAYERBOT)

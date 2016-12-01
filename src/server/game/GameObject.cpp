@@ -720,11 +720,11 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     data.posY = GetFloatValue(GAMEOBJECT_POS_Y);
     data.posZ = GetFloatValue(GAMEOBJECT_POS_Z);
     data.orientation = GetFloatValue(GAMEOBJECT_FACING);
-	data.rotation = G3D::Quat(
-		GetFloatValue(GAMEOBJECT_PARENTROTATION + 0), 
-		GetFloatValue(GAMEOBJECT_PARENTROTATION + 1), 
-		GetFloatValue(GAMEOBJECT_PARENTROTATION + 2), 
-		GetFloatValue(GAMEOBJECT_PARENTROTATION + 3));
+    data.rotation = G3D::Quat(
+        GetFloatValue(GAMEOBJECT_PARENTROTATION + 0), 
+        GetFloatValue(GAMEOBJECT_PARENTROTATION + 1), 
+        GetFloatValue(GAMEOBJECT_PARENTROTATION + 2), 
+        GetFloatValue(GAMEOBJECT_PARENTROTATION + 3));
     data.spawntimesecs = m_spawnedByDefault ? m_respawnDelayTime : -(int32)m_respawnDelayTime;
     data.animprogress = GetGoAnimProgress();
     data.go_state = GetGoState();
@@ -1165,7 +1165,7 @@ void GameObject::ResetDoorOrButton()
     SetGoState(m_prevGoState);
 
     SetLootState(GO_JUST_DEACTIVATED);
-	SetGoState(GO_STATE_READY);
+    SetGoState(GO_STATE_READY);
     m_cooldownTime = 0;
 }
 
@@ -1640,7 +1640,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
     if(Unit *owner = GetOwner())
     {
         trigger->SetFaction(owner->GetFaction());
-		trigger->SetOwnerGUID(owner->GetGUID());
+        trigger->SetOwnerGUID(owner->GetGUID());
         return trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else

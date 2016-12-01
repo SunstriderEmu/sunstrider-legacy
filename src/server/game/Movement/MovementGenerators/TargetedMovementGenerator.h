@@ -45,9 +45,9 @@ class TC_GAME_API TargetedMovementGeneratorMedium : public MovementGeneratorMedi
             TargetedMovementGeneratorBase(target), i_path(nullptr),
             i_recheckDistance(0), i_offset(offset), i_angle(angle),
             i_recalculatePath(false), i_targetReached(false), i_speedChanged(false),
-			lastTargetXYZ(0.0f, 0.0f, 0.0f), lastOwnerXYZ(0.0f, 0.0f, 0.0f)
+            lastTargetXYZ(0.0f, 0.0f, 0.0f), lastOwnerXYZ(0.0f, 0.0f, 0.0f)
         { 
-		}
+        }
         ~TargetedMovementGeneratorMedium()
         { 
             delete i_path; 
@@ -73,12 +73,12 @@ class TC_GAME_API TargetedMovementGeneratorMedium : public MovementGeneratorMedi
         float i_offset;
         float i_angle;
         bool i_recalculatePath : 1;
-		bool i_speedChanged : 1;
+        bool i_speedChanged : 1;
         bool i_targetReached : 1;
 
-		Position lastOwnerXYZ;
-		Position lastTargetXYZ;
-		float lastOwnerSpeed;
+        Position lastOwnerXYZ;
+        Position lastTargetXYZ;
+        float lastOwnerSpeed;
 };
 
 template<class T>

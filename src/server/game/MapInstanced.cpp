@@ -46,9 +46,9 @@ void MapInstanced::Update(const uint32& t)
         {
             // update only here, because it may schedule some bad things before delete
             if (sMapMgr->GetMapUpdater()->activated())
-			{
+            {
                 sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
-			} else
+            } else
             {
                 try
                 {

@@ -36,8 +36,8 @@ namespace ai
     };
 
     class FormationValue : public ManualSetValue<Formation*>
-	{
-	public:
+    {
+    public:
         FormationValue(PlayerbotAI* ai);
         ~FormationValue() { if (value) { delete value; value = NULL; } }
     };

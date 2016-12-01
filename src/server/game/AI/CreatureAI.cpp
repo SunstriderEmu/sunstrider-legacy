@@ -100,7 +100,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
             me->GetMotionMaster()->Clear();
         }
 
-		me->ClearUnitState(UNIT_STATE_EVADE);
+        me->ClearUnitState(UNIT_STATE_EVADE);
 
         AttackStart(who);
     } else {

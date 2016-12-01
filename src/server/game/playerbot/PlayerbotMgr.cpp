@@ -74,9 +74,9 @@ Player* PlayerbotHolder::GetPlayerBot(uint64 playerGuid) const
 
 void PlayerbotHolder::OnBotLogin(Player * const bot)
 {
-	PlayerbotAI* ai = new PlayerbotAI(bot);
-	bot->SetPlayerbotAI(ai);
-	OnBotLoginInternal(bot);
+    PlayerbotAI* ai = new PlayerbotAI(bot);
+    bot->SetPlayerbotAI(ai);
+    OnBotLoginInternal(bot);
 
     playerBots[bot->GetGUID()] = bot;
 
@@ -211,12 +211,12 @@ string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool
 
 bool PlayerbotMgr::HandlePlayerbotMgrCommand(ChatHandler* handler, char const* args)
 {
-	if (!sPlayerbotAIConfig.enabled)
-	{
-		handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
-		handler->SetSentErrorMessage(true);
+    if (!sPlayerbotAIConfig.enabled)
+    {
+        handler->PSendSysMessage("|cffff0000Playerbot system is currently disabled!");
+        handler->SetSentErrorMessage(true);
         return false;
-	}
+    }
 
     WorldSession *m_session = handler->GetSession();
 
@@ -283,14 +283,14 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
         Group::MemberSlotList slots = group->GetMemberSlots();
         for (Group::member_citerator i = slots.begin(); i != slots.end(); i++)
         {
-			ObjectGuid member = ObjectGuid(i->guid);
+            ObjectGuid member = ObjectGuid(i->guid);
 
-			if (member == ObjectGuid(master->GetGUID()))
-				continue;
+            if (member == ObjectGuid(master->GetGUID()))
+                continue;
 
-			std::string bot;
-			if (sObjectMgr->GetPlayerNameByGUID(member, bot))
-			    bots.insert(bot);
+            std::string bot;
+            if (sObjectMgr->GetPlayerNameByGUID(member, bot))
+                bots.insert(bot);
         }
     }
 
@@ -328,7 +328,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
                 bots.insert(charName);
             } while (results->NextRow());
         }
-	}
+    }
 
     for (set<std::string>::iterator i = bots.begin(); i != bots.end(); ++i)
     {

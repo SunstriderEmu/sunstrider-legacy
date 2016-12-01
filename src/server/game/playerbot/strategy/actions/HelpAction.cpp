@@ -44,11 +44,11 @@ string HelpAction::CombineSupported(set<std::string> commands)
     std::ostringstream out;
 
     for (set<std::string>::iterator i = commands.begin(); i != commands.end(); )
-	{
+    {
         out << *i;
-		if (++i != commands.end())
-			out << ", ";
-	}
+        if (++i != commands.end())
+            out << ", ";
+    }
 
     return out.str();
 }

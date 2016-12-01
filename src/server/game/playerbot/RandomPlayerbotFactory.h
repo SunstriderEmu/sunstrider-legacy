@@ -16,14 +16,14 @@ class RandomPlayerbotFactory
 {
     public:
         RandomPlayerbotFactory(uint32 accountId);
-		virtual ~RandomPlayerbotFactory() {}
+        virtual ~RandomPlayerbotFactory() {}
 
-	public:
+    public:
         bool CreateRandomBot(uint8 cls);
         static void CreateRandomBots();
         static void CreateRandomGuilds();
 
-	private:
+    private:
         std::string CreateRandomBotName();
         static std::string CreateRandomGuildName();
 

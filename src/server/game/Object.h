@@ -159,7 +159,7 @@ struct TC_GAME_API Position
         { return sqrt(GetExactDistSq(pos)); }
 
     void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
-	Position GetPositionWithOffset(Position const& offset) const;
+    Position GetPositionWithOffset(Position const& offset) const;
 
     float GetAngle(const Position *pos) const;
     float GetAngle(float x, float y) const;
@@ -514,7 +514,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint( WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
-		void GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float angle = 0) const;
+        void GetClosePoint(float &x, float &y, float &z, float searcherSize, float distance2d = 0, float angle = 0) const;
         void MovePosition(Position &pos, float dist, float angle);
         void GetGroundPoint(float &x, float &y, float &z, float dist, float angle);
         void GetGroundPointAroundUnit(float &x, float &y, float &z, float dist, float angle)
@@ -522,7 +522,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
             GetPosition(x, y, z);
             GetGroundPoint(x, y, z, dist, angle);
         }
-		void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
+        void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const;
         
         /* Get first collision. Checks static & dynamic positions.
         ignoreContactDistance = false : move back CONTACT_DISTANCE at collision
@@ -640,7 +640,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         }
         Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
         GameObject* SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const;
-		GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime /* s */);
+        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime /* s */);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = nullptr);
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;

@@ -111,12 +111,12 @@ bool RandomPlayerbotMgr::ProcessBot(uint32 bot)
     uint32 isValid = GetEventValue(bot, "add");
     if (!isValid)
     {
-		Player* player = GetPlayerBot(bot);
-		if (!player || !player->GetGroup())
-		{
-			sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d expired", bot);
-			SetEventValue(bot, "add", 0, 0);
-		}
+        Player* player = GetPlayerBot(bot);
+        if (!player || !player->GetGroup())
+        {
+            sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Bot %d expired", bot);
+            SetEventValue(bot, "add", 0, 0);
+        }
         return true;
     }
 
@@ -404,7 +404,7 @@ uint32 RandomPlayerbotMgr::GetZoneLevel(uint16 mapId, float teleX, float teleY, 
 {
     uint32 maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
 
-	uint32 level;
+    uint32 level;
     QueryResult results = WorldDatabase.PQuery("select avg(t.minlevel) minlevel, avg(t.maxlevel) maxlevel from creature c "
             "inner join creature_template t on c.id = t.entry "
             "where map = '%u' and minlevel > 1 and abs(position_x - '%f') < '%u' and abs(position_y - '%f') < '%u'",
@@ -631,7 +631,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
     }
     else if (cmd == "init" || cmd == "refresh" || cmd == "teleport")
     {
-		sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Randomizing bots for %d accounts", sPlayerbotAIConfig.randomBotAccounts.size());
+        sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Randomizing bots for %d accounts", sPlayerbotAIConfig.randomBotAccounts.size());
         for (list<uint32>::iterator i = sPlayerbotAIConfig.randomBotAccounts.begin(); i != sPlayerbotAIConfig.randomBotAccounts.end(); ++i)
         {
             uint32 account = *i;

@@ -27,7 +27,7 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
 
         void UpdateAIInternal(uint32 elapsed) override;
 
-	public:
+    public:
         static bool HandlePlayerbotConsoleCommand(ChatHandler* handler, char const* args);
         bool IsRandomBot(Player* bot);
         bool IsRandomBot(uint32 bot);
@@ -51,8 +51,8 @@ class TC_GAME_API RandomPlayerbotMgr : public PlayerbotHolder
 
         //made public for testing
         uint32 AddRandomBot(bool alliance);
-	protected:
-	    void OnBotLoginInternal(Player * const bot) override {}
+    protected:
+        void OnBotLoginInternal(Player * const bot) override {}
 
     private:
         uint32 GetEventValue(uint32 bot, std::string event);

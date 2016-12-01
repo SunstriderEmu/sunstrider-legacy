@@ -697,7 +697,7 @@ enum MovementFlags
         MOVEMENTFLAG_SPLINE_ELEVATION,
 
     MOVEMENTFLAG_MASK_TURNING =
-		MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT | MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN,
+        MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT | MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN,
 
     MOVEMENTFLAG_MASK_MOVING_FLY =
         MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING,
@@ -1071,9 +1071,9 @@ class TC_GAME_API Unit : public WorldObject
         void ApplyDiminishingAura(DiminishingGroup  group, bool apply);
         void ClearDiminishings() { m_Diminishing.clear(); }
 
-		// target dependent range checks
-		float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
-		float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
+        // target dependent range checks
+        float GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
+        float GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spellInfo) const;
 
         void Update( uint32 time ) override;
 
@@ -1088,7 +1088,7 @@ class TC_GAME_API Unit : public WorldObject
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
         bool IsWithinCombatRange(Unit *obj, float dist2compare) const;
         bool IsWithinMeleeRange(Unit *obj, float dist = MELEE_RANGE) const;
-		float GetMeleeRange(Unit const* target) const;
+        float GetMeleeRange(Unit const* target) const;
         void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
@@ -1178,7 +1178,7 @@ class TC_GAME_API Unit : public WorldObject
         bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
         bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
-		//get X% heath from max value
+        //get X% heath from max value
         uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePct(GetMaxHealth(), pct); }
         uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
 
@@ -1517,8 +1517,8 @@ class TC_GAME_API Unit : public WorldObject
         void       DeleteCharmInfo();
         void UpdateCharmAI();
         //Renamed from TC: m_movedPlayer;
-		Unit* GetMover() const;
-		Player* GetPlayerMover() const;
+        Unit* GetMover() const;
+        Player* GetPlayerMover() const;
         Player* m_movedByPlayer;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
@@ -1562,7 +1562,7 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
-		void RemoveAllActiveAuras();
+        void RemoveAllActiveAuras();
         void RemoveAllAurasExcept(uint32 spellId);
         void RemoveAllAurasExceptType(AuraType type);
         void RemoveArenaAuras(bool onleave = false);
