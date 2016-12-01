@@ -119,9 +119,6 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
 {
     std::lock_guard<std::mutex> lock(_lock);
 
-    std::thread::id this_id = std::this_thread::get_id();
-    if(map.GetId() == 564) std::cout << "scheduled update for map 564 / id" << this_id << " mapType: " << map.GetMapType() << std::endl << std::flush;
-
 	MapUpdateRequest* request = new MapUpdateRequest(map, *this, diff);
 	if(map.Instanceable() && map.GetMapType() != MAP_TYPE_MAP_INSTANCED) { //MapInstanced re schedule the instances it contains by itself, so we want to call it only once
         pending_loop_maps++;
@@ -153,9 +150,7 @@ void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loo
 
         ASSERT(request);
         std::thread::id this_id = std::this_thread::get_id();
-        if(request->getMap()->GetId() == 564) std::cout << "start update for map 564 / id" << this_id << " mapType: " << request->getMap()->GetMapType() << std::endl << std::flush;
         request->call();
-        if(request->getMap()->GetId() == 564) std::cout << "finished update for map 564 / id" << this_id << " mapType: " << request->getMap()->GetMapType() << std::endl << std::flush;
 
 		//repush at end of queue with new diff, or delete if continents have finished
 		if(!(*enable_instance_updates_loop))

@@ -45,19 +45,8 @@ void MapInstanced::Update(const uint32& t)
         else
         {
             // update only here, because it may schedule some bad things before delete
-			if((Map*)this == i->second) //The base map is already updated from MapManager
-			{ //not needed anymore ?
-				TC_LOG_DEBUG("maps.update", "Not scheduling because we're base map");
-				i++;
-				continue;
-			}
-
             if (sMapMgr->GetMapUpdater()->activated())
 			{
-                /*
-				if(i->second->GetId() == 564)
-					TC_LOG_DEBUG("maps.update", "MapInstanced, scheduling map 564");
-                    */
                 sMapMgr->GetMapUpdater()->schedule_update(*i->second, t);
 			} else
             {
