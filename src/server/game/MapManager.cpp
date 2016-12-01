@@ -198,14 +198,11 @@ void MapManager::Update(time_t diff)
 
     if (m_updater.activated())
 	{
-		//TC_LOG_DEBUG("maps.update", "Wait for continents & instances");
 		m_updater.enableUpdateLoop(true);
         m_updater.waitUpdateOnces();
 		//now that continents are done, stop instances too
 		m_updater.enableUpdateLoop(false);
 		m_updater.waitUpdateLoops();
-		//TC_LOG_DEBUG("maps.update", "Okay all waiting done");
-        std::cout << "Finished one world loop" << std::endl << std::flush;
 	}
 
     //delayed map updates
