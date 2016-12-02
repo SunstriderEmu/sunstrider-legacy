@@ -2715,7 +2715,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             (m_caster->ToPlayer())->CastedCreatureOrGO(unit->GetEntry(),unit->GetGUID(),m_spellInfo->Id);
     }
 
-    if( !m_caster->IsFriendlyTo(unit) && !m_spellInfo->IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
+    if( missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && !m_spellInfo->IsPositive(hostileTarget) && m_caster->GetEntry() != WORLD_TRIGGER)
     {
         if(m_spellInfo->HasInitialAggro())
         {
