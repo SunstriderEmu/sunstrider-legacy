@@ -163,6 +163,8 @@ foreach(SCRIPT_MODULE ${SCRIPT_MODULE_LIST})
       PUBLIC
         game
       PRIVATE
+		#sunstrider: Added dependency to scripts library, so that we include pch directory. Dunno why it is needed for intellisense to work properly
+		scripts
         #sunstrider: this one is only used for tests but let's keep this simple
         catch
     )

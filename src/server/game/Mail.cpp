@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "Mail.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -47,10 +27,6 @@ void MailItem::deleteItem( bool inDB )
 
 void WorldSession::HandleSendMail(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox, unk3;
     std::string receiver, subject, body;
     uint32 StationeryID, PackageID, money, COD;
@@ -261,10 +237,6 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 //called when mail is read
 void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     uint32 mailId;
     recvData >> mailbox;
@@ -285,10 +257,6 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData )
 //called when client deletes mail
 void WorldSession::HandleMailDelete(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     uint32 mailId;
     recvData >> mailbox;
@@ -303,10 +271,6 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData )
 
 void WorldSession::HandleMailReturnToSender(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     uint32 mailId;
     recvData >> mailbox;
@@ -407,10 +371,6 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
 //called when player takes item attached in mail
 void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     uint32 mailId;
     uint32 itemId;
@@ -478,10 +438,6 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 
 void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     uint32 mailId;
     recvData >> mailbox;
@@ -512,10 +468,6 @@ void WorldSession::HandleMailTakeMoney(WorldPacket & recvData )
 //called when player lists his received mails
 void WorldSession::HandleGetMailList(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 mailbox;
     recvData >> mailbox;
 
@@ -633,10 +585,6 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
 ///this function is called when client needs mail message body, or when player clicks on item which has ITEM_FIELD_ITEM_TEXT_ID > 0
 void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 itemTextId;
     uint32 mailId;                                          //this value can be item id in bag, but it is also mail id
     uint32 unk;                                             //maybe something like state - 0x70000000
@@ -654,8 +602,6 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 //used when player copies mail body to his inventory
 void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 {
-    
-
     /* Is this supposed to be BC ?
     uint64 mailbox;
     uint32 mailId;
@@ -707,8 +653,6 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
 //TODO Fix me! ... this void has probably bad condition, but good data are sent
 void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
 {
-    
-    
     WorldPacket data(MSG_QUERY_NEXT_MAIL_TIME, 8);
 
     if(!_player->m_mailsLoaded)
