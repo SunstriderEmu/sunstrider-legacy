@@ -8,7 +8,7 @@
 #include "World.h"
 #include "MapManager.h"
 
-#define MINIMAP_MAP_UPDATE_INTERVAL 10
+#define MINIMUM_MAP_UPDATE_INTERVAL 10
 
 class MapUpdateRequest
 {
@@ -40,7 +40,7 @@ class MapUpdateRequest
             {
                 try
                 {
-                    m_map.DoUpdate(m_diff, MINIMAP_MAP_UPDATE_INTERVAL);
+                    m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
                 }
                 catch (std::runtime_error&)
                 {
@@ -49,7 +49,7 @@ class MapUpdateRequest
             }
             else 
             {
-                m_map.DoUpdate(m_diff, MINIMAP_MAP_UPDATE_INTERVAL);
+                m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
             }
             sLagWatcher->MapUpdateEnd(m_map);
             m_loopCount++;
