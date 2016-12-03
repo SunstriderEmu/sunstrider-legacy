@@ -4,7 +4,7 @@
 
 #include "MapUpdater.h"
 #include "Map.h"
-#include "LagWatcher.h"
+#include "Monitor.h"
 #include "World.h"
 #include "MapManager.h"
 
@@ -35,7 +35,7 @@ class MapUpdateRequest
 
         void call()
         {
-            sLagWatcher->MapUpdateStart(m_map);
+			sMonitor->MapUpdateStart(m_map);
             if (crash_recovery_enabled)
             {
                 try
@@ -51,7 +51,7 @@ class MapUpdateRequest
             {
                 m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
             }
-            sLagWatcher->MapUpdateEnd(m_map);
+			sMonitor->MapUpdateEnd(m_map);
             m_loopCount++;
         }
 };

@@ -21,6 +21,7 @@
 #include "InstanceSaveMgr.h"
 #include "ItemEnchantmentMgr.h"
 #include "Language.h"
+#include "Monitor.h"
 #include "Log.h"
 #include "LogsDatabaseAccessor.h"
 #include "LootMgr.h"
@@ -106,10 +107,6 @@ World::World()
     m_defaultDbcLocale = LOCALE_enUS;
     m_availableDbcLocaleMask = 0;
 
-    m_updateTimeSum = 0;
-    m_updateTimeCount = 0;
-    m_updateTimeMon = 0;
-    
     fastTdCount = 0;
     fastTdSum = 0;
     fastTd = 0;
@@ -1097,10 +1094,14 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfigMgr->GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
-    m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.enabled", false);
-    m_configs[CONFIG_MONITORING_UPDATE] = sConfigMgr->GetIntDefault("Monitor.update", 20000);
-    m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDuration", 0);
-
+    m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.Enabled", false);
+    m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20000);
+    m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDays", 0);
+	m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_DIFF] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Diff", 500);
+	m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Count", 10);
+	m_configs[CONFIG_MONITORING_DYNAMIC_LOS] = sConfigMgr->GetBoolDefault("Monitor.DynamicLoS.Enable", 0);
+	m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicLoS.MinDistance", 60);
+	
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
     auto  forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;
@@ -1829,18 +1830,7 @@ void World::Update(time_t diff)
 {
     m_updateTime = uint32(diff);
 
-    if(m_configs[CONFIG_MONITORING_ENABLED])
-    {
-        if (m_configs[CONFIG_MONITORING_UPDATE])
-        {
-            if (m_updateTimeMon > m_configs[CONFIG_MONITORING_UPDATE])
-            {
-                UpdateMonitoring(diff);
-                m_updateTimeMon = 0;
-            }
-            m_updateTimeMon += diff;
-        }
-    }
+	sMonitor->StartedWorldLoop();
 
     if(m_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
@@ -1990,7 +1980,6 @@ void World::Update(time_t diff)
 
         sOutdoorPvPMgr->Update(diff);
         RecordTimeDiff("UpdateOutdoorPvPMgr");
-
     }
 
     ///- Erase corpses once every 20 minutes
@@ -2043,6 +2032,9 @@ void World::Update(time_t diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+
+	sMonitor->FinishedWorldLoop();
+	sMonitor->Update(diff);
 
    // sScriptMgr->OnWorldUpdate(diff);
 }
@@ -3719,173 +3711,6 @@ void World::LogPhishing(uint32 src, uint32 dst, std::string msg)
 void World::LoadMotdAndTwitter()
 {
     SetMotd(sConfigMgr->GetStringDefault("Motd", "Welcome to Sunstrider!"));
-    m_lastTwitter = ""; //tofix
-}
-
-void World::UpdateMonitoring(uint32 diff)
-{
-    FILE *fp;
-    std::string monpath;
-    std::string filename;
-    char data[64];
-    time_t now = time(nullptr);
-
-    monpath = sConfigMgr->GetStringDefault("Monitor.path", "");
-    monpath += "/";
-    
-    SQLTransaction trans = LogsDatabase.BeginTransaction();
-
-    /* players */
-
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.players", "players");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    sprintf(data, "%u %u", GetActiveSessionCount(), GetQueuedSessionCount());
-    trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", (uint32)now, GetActiveSessionCount(), GetQueuedSessionCount());
-    fputs(data, fp);
-    fclose(fp);
-
-    /* time diff */
-
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.timediff", "timediff");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    sprintf(data, "%u", fastTd);
-    trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", (uint32)now, fastTd);
-    fputs(data, fp);
-    fclose(fp);
-
-    /* maps */
-
-    std::string maps = "eastern kalimdor outland karazhan hyjal ssc blacktemple tempestkeep zulaman warsong arathi eye alterac arenas sunwell";
-    std::stringstream cnts;
-    int arena_cnt = 0;
-    arena_cnt += sMapMgr->GetNumPlayersInMap(562); /* nagrand */
-    arena_cnt += sMapMgr->GetNumPlayersInMap(559); /* blade's edge */
-    arena_cnt += sMapMgr->GetNumPlayersInMap(572); /* lordaeron */
-
-    cnts << sMapMgr->GetNumPlayersInMap(0) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(1) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(530) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(532) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(534) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(548) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(564) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(550) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(568) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(489) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(529) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(566) << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(30) << " ";
-    cnts << arena_cnt << " ";
-    cnts << sMapMgr->GetNumPlayersInMap(580);
-    
-    int mapIds[14] = { 0, 1, 530, 532, 534, 548, 564, 550, 568, 489, 529, 566, 30, 580 };
-    for (int & mapId : mapIds)
-        trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, %u, %u)", (uint32)now, mapId, sMapMgr->GetNumPlayersInMap(mapId));
-    // arenas
-    trans->PAppend("INSERT INTO mon_maps (time, map, players) VALUES (%u, 559, %u)", (uint32)now, arena_cnt); // Nagrand!
-
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.maps", "maps");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    fputs(maps.c_str(), fp);
-    fputs("\n", fp);
-    fputs(cnts.str().c_str(), fp);
-    fclose(fp);
-
-    /* battleground queue time */
-
-    std::string bgs = "alterac warsong arathi eye 2v2 3v3 5v5";
-    std::stringstream bgs_wait;
-
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AV].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_WS].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_AB].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_EY].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_2v2].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_3v3].GetAvgTime() << " ";
-    bgs_wait << sBattlegroundMgr->m_BattlegroundQueues[BATTLEGROUND_QUEUE_5v5].GetAvgTime();
-
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.bgwait", "bgwait");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    fputs(bgs.c_str(), fp);
-    fputs("\n", fp);
-    fputs(bgs_wait.str().c_str(), fp);
-    fclose(fp);
-
-    /* max creature guid */
-
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.creatureguid", "creatureguid");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    sprintf(data, "%u", sObjectMgr->GetMaxCreatureGUID());
-    fputs(data, fp);
-    fclose(fp);
-    
-    /* races && classes */
-
-    std::string races = "human orc dwarf nightelf undead tauren gnome troll bloodelf draenei";
-    std::stringstream ssraces;
-    
-    std::string classes = "warrior paladin hunter rogue priest shaman mage warlock druid";
-    std::stringstream ssclasses;
-    
-    uint32 racesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    uint32 classesCount[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    auto lock = HashMapHolder<Player>::GetLock();
-    lock->lock();
-    HashMapHolder<Player>::MapType const & m = ObjectAccessor::GetPlayers();
-    for (auto & itr : m) {
-        racesCount[itr.second->GetRace()]++;
-        classesCount[itr.second->GetClass()]++;
-    }
-    lock->unlock();
-    
-    ssraces << racesCount[1] << " " << racesCount[2] << " " << racesCount[3] << " ";
-    ssraces << racesCount[4] << " " << racesCount[5] << " " << racesCount[6] << " ";
-    ssraces << racesCount[7] << " " << racesCount[8] << " " << racesCount[10] << " ";
-    ssraces << racesCount[11];
-    
-    ssclasses << classesCount[1] << " " << classesCount[2] << " " << classesCount[3] << " ";
-    ssclasses << classesCount[4] << " " << classesCount[5] << " " << classesCount[7] << " ";
-    ssclasses << classesCount[8] << " " << classesCount[9] << " " << classesCount[11] << " ";
-    
-    for (int i = 1; i < 12; i++) {
-        if (i != 9) 
-            trans->PAppend("INSERT INTO mon_races (time, race, players) VALUES (%u, %u, %u)", (uint32)now, i, racesCount[i]);
-    }
-    
-    for (int i = 1; i < 12; i++) {
-        if (i != 6 && i != 10)
-            trans->PAppend("INSERT INTO mon_classes (time, `class`, players) VALUES (%u, %u, %u)", (uint32)now, i, classesCount[i]);
-    }
-    
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.races", "races");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    fputs(races.c_str(), fp);
-    fputs("\n", fp);
-    fputs(ssraces.str().c_str(), fp);
-    fclose(fp);
-    
-    filename = monpath;
-    filename += sConfigMgr->GetStringDefault("Monitor.classes", "classes");
-    if ((fp = fopen(filename.c_str(), "w")) == nullptr)
-        return;
-    fputs(classes.c_str(), fp);
-    fputs("\n", fp);
-    fputs(ssclasses.str().c_str(), fp);
-    fclose(fp);
-    
-    LogsDatabase.CommitTransaction(trans); // TODO: drop records from more than 8 days ago in a method like daily quests reinit
 }
 
 void World::LoadAutoAnnounce()

@@ -1834,40 +1834,6 @@ Warden.ClientCheckHoldOff = 15
 Warden.DBLogs = true
 Warden.BanTime = "180d"
 
-###############################################################################
-# MONITORING SETTINGS
-#
-#    Monitor.enabled
-#       Enable monitoring system
-#        Default: 1 (Enabled)
-#                 0 (Disabled)
-#
-#    Monitor.update
-#       Monitoring system update intervall
-#       Default: 20000 (milliseconds)
-#
-#    Monitor.KeepDuration
-#		 Keep monitoring data for this much days. 0 to keep forever.
-#
-#    Monitor.path = "/home/trinitycore/monitor"
-#    Monitor.players = "players"
-#    Monitor.timediff = "timediff"
-#    Monitor.maps = "maps"
-#    Monitor.bgwait = "bgwait"
-#    Monitor.creatureguid = "creatureguid"
-#    Monitor.races = "races"
-#    Monitor.classes = "classes"
-#    Monitor.bgwait = "bgwait"
-#    Monitor.creatureguid = "creatureguid"
-#    Monitor.races = "races"
-#    Monitor.classes = "classes"
-#
-###############################################################################
-
-Monitor.enabled = 0
-Monitor.update = 20000
-Monitor.KeepDuration = 0
-
 ###################################################################################################
 # PACKET SPOOF PROTECTION SETTINGS
 #

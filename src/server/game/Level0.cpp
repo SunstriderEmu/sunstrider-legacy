@@ -109,16 +109,22 @@ bool ChatHandler::HandleStartCommand(const char* /*args*/)
 bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
 {
     uint32 activeClientsNum = sWorld->GetActiveSessionCount();
-//    uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
+    uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
     uint32 maxActiveClientsNum = sWorld->GetMaxActiveSessionCount();
-//    uint32 maxQueuedClientsNum = sWorld->GetMaxQueuedSessionCount();
     std::string str = secsToTimeString(sWorld->GetUptime());
+	uint32 now = GetMSTime();
+	uint32 currentMapTimeDiff = 0;
+	if (GetSession())
+		if(Player const* p = GetSession()->GetPlayer())
+			if(Map const* m = p->FindMap())
+				currentMapTimeDiff = GetMSTimeDiff(m->GetLastMapUpdateTime(), now);
 
     PSendSysMessage(GitRevision::GetFullVersion());
-    PSendSysMessage("Players online: %u (Max: %u)", activeClientsNum, maxActiveClientsNum);
+    PSendSysMessage("Players online: %u (Max: %u, Queued: %u)", activeClientsNum, maxActiveClientsNum, queuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
     PSendSysMessage("Smoothed update time diff: %u.", sWorld->GetFastTimeDiff());
     PSendSysMessage("Instant update time diff: %u.", sWorld->GetUpdateTime());
+	PSendSysMessage("Current map update time diff: %u.", currentMapTimeDiff);
     if (sWorld->IsShuttingDown())
         PSendSysMessage("Server restart in %s", secsToTimeString(sWorld->GetShutDownTimeLeft()).c_str());
 

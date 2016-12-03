@@ -58,7 +58,7 @@ target_link_libraries(worldserver
   PRIVATE
 	irc
 	segvcatch
-	)
+)
 
 CollectIncludeDirectories(
   ${CMAKE_CURRENT_SOURCE_DIR}

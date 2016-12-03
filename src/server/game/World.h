@@ -277,10 +277,6 @@ enum WorldConfigs
     
     CONFIG_PLAYER_GENDER_CHANGE_DELAY,
 
-    CONFIG_MONITORING_ENABLED,
-    CONFIG_MONITORING_UPDATE,
-    CONFIG_MONITORING_KEEP_DURATION,
-    
     CONFIG_MYSQL_BUNDLE_LOGINDB,
     CONFIG_MYSQL_BUNDLE_CHARDB,
     CONFIG_MYSQL_BUNDLE_WORLDDB,
@@ -347,12 +343,15 @@ enum WorldConfigs
 
     CONFIG_CLIENTCACHE_VERSION,
 
-    CONFIG_LAGWATCHER_ENABLE,
-    CONFIG_LAGWATCHER_PROFILING_ENABLE,
-    CONFIG_LAGWATCHER_PROFILING_RATE,
+	CONFIG_MONITORING_ENABLED,
+	CONFIG_MONITORING_GENERALINFOS_UPDATE,
+	CONFIG_MONITORING_KEEP_DURATION,
+
     //trigger alert on at least moy <diff> on the last <count> update
-    CONFIG_LAGWATCHER_PROFILING_THRESHOLD_DIFF,
-    CONFIG_LAGWATCHER_PROFILING_THRESHOLD_COUNT,
+    CONFIG_MONITORING_ALERT_THRESHOLD_DIFF,
+    CONFIG_MONITORING_ALERT_THRESHOLD_COUNT,
+	CONFIG_MONITORING_DYNAMIC_LOS,
+	CONFIG_MONITORING_DYNAMIC_LOS_MINDIST,
 
     CONFIG_HOTSWAP_ENABLED,
     CONFIG_HOTSWAP_RECOMPILER_ENABLED,
@@ -577,10 +576,7 @@ class TC_GAME_API World
         void SetMotd(std::string motd) { m_motd = motd; }
         /// Get the current Message of the Day
         const char* GetMotd() const { return m_motd.c_str(); }
-        /// Set a new last Twitter
-        void SetTwitter(std::string twitt) { m_lastTwitter = twitt; }
         /// Get the last Twitter
-        const char* GetLastTwitter() const { return m_lastTwitter.c_str(); }
 
         /// Set the string for new characters (first login)
         void SetNewCharString(std::string str) { m_newCharString = str; }
@@ -600,6 +596,7 @@ class TC_GAME_API World
         uint32 GetUptime() const { return uint32(m_gameTime - m_startTime); }
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
+		// Timediff flattened over the last 150 loops
         uint32 GetFastTimeDiff() const { return fastTd; }
         void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
@@ -805,7 +802,6 @@ class TC_GAME_API World
         uint32 m_updateTime, m_updateTimeSum;
         uint32 m_updateTimeCount;
         uint32 m_currentTime;
-        uint32 m_updateTimeMon;
 
         typedef std::unordered_map<uint32, Weather* > WeatherMap;
         WeatherMap m_weathers;
@@ -827,7 +823,6 @@ class TC_GAME_API World
         uint32 m_availableDbcLocaleMask;                       // by loaded DBC
         void DetectDBCLang();
         std::string m_motd;
-        std::string m_lastTwitter;
         std::string m_dataPath;
         std::set<uint32> m_forbiddenMapIds;
 

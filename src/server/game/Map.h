@@ -340,6 +340,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void SetZoneMusic(uint32 zoneId, uint32 musicId);
         void SetZoneWeather(uint32 zoneId, WeatherState weatherId, float weatherGrade);
         void SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime);
+
+		uint32 GetLastMapUpdateTime() const { return _lastMapUpdate; }
     private:
 
         void LoadVMap(int pX, int pY);

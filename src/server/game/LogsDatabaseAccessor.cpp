@@ -458,7 +458,7 @@ void LogsDatabaseAccessor::CleanupOldMonitorLogs()
     //0 means keep forever
     if (uint32 keepDays = sWorld->getIntConfig(CONFIG_MONITORING_KEEP_DURATION))
     {
-        TC_LOG_DEBUG("sql.sql", "Cleaning old logs from monitoring system. ( > 1 month old)");
+        TC_LOG_DEBUG("sql.sql", "Cleaning old logs from monitoring system.");
 
         time_t now = time(nullptr);
         time_t limit = now - (keepDays * DAY);
