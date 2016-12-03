@@ -1974,7 +1974,7 @@ void World::Update(time_t diff)
         if (!m_scriptSchedule.empty())
             ScriptsProcess();
         RecordTimeDiff("UpdateScriptsProcess");
-
+		 
         sBattlegroundMgr->Update(diff);
         RecordTimeDiff("UpdateBattlegroundMgr");
 

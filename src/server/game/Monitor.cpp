@@ -30,6 +30,9 @@ void Monitor::MapUpdateStart(Map const& map)
 	if (map.GetMapType() == MAP_TYPE_MAP_INSTANCED)
 		return; //ignore these, not true maps
 
+	//this function can be called from several maps at the same time
+	std::lock_guard<std::mutex> lock(_currentWorldTickLock);
+
 	InstanceTicksInfo& updateInfoListForMap = _currentWorldTickInfo.updateInfos[map.GetId()];
 	MapTicksInfo& mapsTicksInfo = updateInfoListForMap[map.GetInstanceId()];
 	mapsTicksInfo.currentTick++;
@@ -49,6 +52,9 @@ void Monitor::MapUpdateEnd(Map const& map)
 
 	if (map.GetMapType() == MAP_TYPE_MAP_INSTANCED)
 		return; //ignore these, not true maps
+
+	//this function can be called from several maps at the same time
+	std::lock_guard<std::mutex> lock(_currentWorldTickLock);
 
 	InstanceTicksInfo& updateInfoListForMap = _currentWorldTickInfo.updateInfos[map.GetId()];
 	MapTicksInfo& mapsTicksInfo = updateInfoListForMap[map.GetInstanceId()];

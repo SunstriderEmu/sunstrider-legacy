@@ -62,6 +62,7 @@ private:
 
 	WorldTick _worldTickCount;
 
+	std::mutex _currentWorldTickLock;
 	WorldTickInfo _currentWorldTickInfo;
 	std::vector<WorldTickInfo> _worldTicksInfo;
 
