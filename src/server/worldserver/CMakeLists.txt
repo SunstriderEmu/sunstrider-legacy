@@ -41,6 +41,11 @@ endif()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 
+set(gperftools_libs
+        profiler
+        tcmalloc
+)
+
 target_link_libraries(worldserver
   PUBLIC
     scripts

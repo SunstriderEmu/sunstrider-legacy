@@ -110,7 +110,7 @@ void Monitor::StartedWorldLoop()
 	{
 		_startProfilerAtNextWorldLoop = false;
 		_profilerRunning = true;
-		//ProfilerStart("filename");
+		ProfilerStart(std::to_string(std::time(NULL)).c_str());
 	}
 #endif //USE_GPERFTOOLS
 }
@@ -138,7 +138,7 @@ void Monitor::FinishedWorldLoop()
 #ifdef USE_GPERFTOOLS
 	if (_profilerRunning)
 	{
-		//ProfilerStop();
+		ProfilerStop();
 		_profilerRunning = false;
 	}
 	//+ some auto profiling trigger logic?
