@@ -4,6 +4,8 @@
 /*
 Ideas:
 - Allow to trigger profiling at next udpate, by command or automatically every X according to config
+- Some form of packet monitoring?
+- A command basically checking "WHY DO I LAG?" enabling various checks for one loop
 */
 
 typedef uint64 WorldTick;

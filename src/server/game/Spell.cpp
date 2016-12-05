@@ -1532,11 +1532,10 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
 #ifdef LICH_KING
                 || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_JUMP_DEST
 #endif
-                || (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON))
-                /*sunwell m_caster->GetFirstCollisionPosition(pos, dist, angle); */
+                || (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON)
+				)
                 pos = m_caster->GetLeapPosition(dist);
             else
-                /*sunwell m_caster->GetNearPosition(pos, dist, angle); */
                 pos = m_caster->GetNearPosition(dist, angle);
         }
         dest.Relocate(pos);

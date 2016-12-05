@@ -2908,8 +2908,6 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
 
 bool ChatHandler::HandleBlinkCommand(const char* args)
 {
-    
-
     uint32 distance = 0;
 
     if(args)
