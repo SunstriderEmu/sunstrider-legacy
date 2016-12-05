@@ -696,6 +696,9 @@ namespace MMAP
 
                         // convert liquid type to NavTerrain
                         switch (liquid->GetType())
+						/*TC LK:   switch (liquid->GetType() & 3) //see https://github.com/TrinityCore/TrinityCore/commit/0df0cb30ca9de2015ec774e50bb69337382576d3#diff-b88fe5175081c03d6a63f61527e39f42L713
+						We shouldn't need this for BC
+						*/
                         {
                         case 0:
                         case 1:

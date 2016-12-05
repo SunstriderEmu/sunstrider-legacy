@@ -82,6 +82,10 @@ if(DO_DEBUG)
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)
 
+if(USE_GPERFTOOLS)
+    add_definitions(-DUSE_GPERFTOOLS)
+endif(USE_GPERFTOOLS)
+
 if(PLAYERBOT)
     add_definitions(-DPLAYERBOT)
 endif()

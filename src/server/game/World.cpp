@@ -107,13 +107,6 @@ World::World()
     m_defaultDbcLocale = LOCALE_enUS;
     m_availableDbcLocaleMask = 0;
 
-    fastTdCount = 0;
-    fastTdSum = 0;
-    fastTd = 0;
-    avgTdCount = 0;
-    avgTdSum = 0;
-    avgTd = 0;
-
     m_isClosed = false;
 }
 
@@ -1092,16 +1085,22 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_WORLDCHANNEL_MINLEVEL] = sConfigMgr->GetIntDefault("WorldChannel.MinLevel", 10);
     
-    m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] = sConfigMgr->GetIntDefault("World.MaxAverage.TimeDiff", 420);
 
     m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.Enabled", false);
-    m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20000);
+    m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20);
     m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDays", 0);
-	m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_DIFF] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Diff", 500);
+	m_configs[CONFIG_MONITORING_ABNORMAL_WORLD_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.World", 500);
+	m_configs[CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.Map", 400);
 	m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Count", 10);
+	m_configs[CONFIG_MONITORING_LAG_AUTO_REBOOT_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAutoReboot.Count", 8000);
 	m_configs[CONFIG_MONITORING_DYNAMIC_LOS] = sConfigMgr->GetBoolDefault("Monitor.DynamicLoS.Enable", 0);
 	m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicLoS.MinDistance", 60);
-	
+	if (m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] < 60)
+	{
+		TC_LOG_ERROR("server.loading", "DynamicLoS.MinDistance must be at least 60 yards, setting it to 60");
+		m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = 60;
+	}
+
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
     auto  forbiddenMaps = new char[forbiddenmaps.length() + 1];
     forbiddenMaps[forbiddenmaps.length()] = 0;
@@ -1847,30 +1846,6 @@ void World::Update(time_t diff)
         }
     }
     
-    ///- Record average timediff for last 150 loops
-    fastTdCount++;
-    fastTdSum += diff;
-
-    if (fastTdCount >= 150) {        // Record avg time diff
-        avgTdCount++;
-        avgTdSum += fastTdSum;
-        
-        fastTd = (uint32)fastTdSum/fastTdCount;
-        fastTdCount = 0;
-        fastTdSum = 0;
-    }
-        
-    if (avgTdCount >= 10) {        // Check every ~15 mins if restart is needed
-        avgTd = (uint32)avgTdSum/(avgTdCount*150);
-        if (avgTd > m_configs[CONFIG_MAX_AVERAGE_TIMEDIFF] && !sWorld->IsShuttingDown()) {
-            // Trigger restart
-            sWorld->ShutdownServ(900, SHUTDOWN_MASK_RESTART, "Auto-restart triggered due to abnormal server load.");
-        }
-
-        avgTdCount = 0;
-        avgTdSum = 0;
-    }
-
     ///- Update the different timers
     for(auto & m_timer : m_timers)
         if(m_timer.GetCurrent()>=0)

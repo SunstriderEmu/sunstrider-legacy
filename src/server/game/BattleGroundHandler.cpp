@@ -18,10 +18,8 @@
 #include "Language.h"
 #include "World.h"
 
-void WorldSession::HandleBattlemasterHelloOpcode( WorldPacket & recvData )
+void WorldSession::HandleBattleMasterHelloOpcode( WorldPacket & recvData )
 {
-    
-
     uint64 guid;
     recvData >> guid;
 

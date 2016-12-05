@@ -338,8 +338,8 @@ class TC_GAME_API WorldSession
         void SendMountResult(MountResult res);
 
         // Account Data
-        void SetAccountData(AccountDataType type, time_t tm, std::string const& data); //NYI
-        void LoadGlobalAccountData(); //NYI
+        //void SetAccountData(AccountDataType type, time_t tm, std::string const& data); //NYI
+        //void LoadGlobalAccountData(); //NYI
         void LoadAccountData(PreparedQueryResult result, uint32 mask); //NYI
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
         void SendAccountDataTimes(uint32 mask = 0);
@@ -364,8 +364,6 @@ class TC_GAME_API WorldSession
         void SendTitleEarned(uint32 titleIndex, bool earned);
 
         //mail
-                                                            //used with item_page table
-        bool SendItemInfo( uint32 itemid, WorldPacket data );
         static void SendReturnToSender(uint8 messageType, uint32 sender_acc, uint32 sender_guid, uint32 receiver_guid, const std::string& subject, uint32 itemTextId, MailItemsInfo *mi, uint32 money, uint16 mailTemplateId = 0);
         static void SendMailTo(SQLTransaction& trans, Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
         static void SendMailTo(Player* receiver, MailMessageType messageType, uint8 stationery, uint32 sender_guidlow_or_entry, uint32 received_guidlow, std::string subject, uint32 itemTextId, MailItemsInfo* mi, uint32 money, uint32 COD, uint32 checked, uint32 deliver_delay = 0, uint16 mailTemplateId = 0);
@@ -576,7 +574,7 @@ class TC_GAME_API WorldSession
         void HandleMoveWorldportAck();                // for server-side calls
 
         void HandleMovementOpcodes(WorldPacket& recvPacket);
-        void HandlePossessedMovement(WorldPacket& recvData, MovementInfo& movementInfo, uint32& MovementFlags);
+        //void HandlePossessedMovement(WorldPacket& recvData, MovementInfo& movementInfo, uint32& MovementFlags);
         void HandleSetActiveMoverOpcode(WorldPacket &recvData);
         void HandleMoveNotActiveMover(WorldPacket &recvData);
         void HandleMoveTimeSkippedOpcode(WorldPacket &recvData);
@@ -584,7 +582,6 @@ class TC_GAME_API WorldSession
         void HandleRequestRaidInfoOpcode( WorldPacket & recvData );
 
         void HandleBattlefieldStatusOpcode(WorldPacket &recvData);
-        void HandleBattleMasterHelloOpcode(WorldPacket &recvData);
 
         void HandleGroupInviteOpcode(WorldPacket& recvPacket);
         //void HandleGroupCancelOpcode(WorldPacket& recvPacket);
@@ -817,7 +814,7 @@ class TC_GAME_API WorldSession
         void HandleTotemDestroyed(WorldPacket& recvData);
 
         //Battleground
-        void HandleBattlemasterHelloOpcode(WorldPacket &recvData);
+        void HandleBattleMasterHelloOpcode(WorldPacket &recvData);
         void _HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup);
         void HandleBattlemasterJoinOpcode(WorldPacket &recvData);
         void HandleBattlegroundPlayerPositionsOpcode(WorldPacket& recvData);

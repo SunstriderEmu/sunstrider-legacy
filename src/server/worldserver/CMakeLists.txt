@@ -41,13 +41,6 @@ endif()
 
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
 
-IF(USE_GPERFTOOLS)
-	set(gperftools_libs
-		profiler
-		tcmalloc
-	)
-ENDIF()
-
 target_link_libraries(worldserver
   PUBLIC
     scripts
@@ -58,6 +51,7 @@ target_link_libraries(worldserver
   PRIVATE
 	irc
 	segvcatch
+	${gperftools_libs}
 )
 
 CollectIncludeDirectories(

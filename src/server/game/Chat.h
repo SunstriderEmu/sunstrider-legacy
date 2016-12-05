@@ -92,8 +92,8 @@ class TC_GAME_API ChatHandler
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val;};
 
-        void SendGlobalSysMessage(const char *str);
-        void SendGlobalGMSysMessage(const char *str);
+        static void SendGlobalSysMessage(const char *str);
+        static void SendGlobalGMSysMessage(const char *str);
     protected:
         explicit ChatHandler() : m_session(nullptr) {}      // for CLI subclass
         static bool SetDataForCommandInTable(std::vector<ChatCommand>& table, const char* text, uint32 securityLevel, std::string const& help, std::string const& fullcommand, bool allowIRC);
@@ -365,6 +365,8 @@ class TC_GAME_API ChatHandler
         bool HandleDebugZoneWeatherCommand(const char* args);
         bool HandleDebugSetArmorCommand(const char* args);
         bool HandleDebugGetArmorCommand(const char* args);
+		bool HandleDebugProfileNextUpdateCommand(const char* args);
+
         bool HandlePlayerbotConsoleCommand(const char* args);
         bool HandlePlayerbotMgrCommand(const char* args);
 

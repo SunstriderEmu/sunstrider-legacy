@@ -273,8 +273,6 @@ enum WorldConfigs
     CONFIG_LOG_CONNECTION_IP,
     CONFIG_GM_LOG_CONNECTION_IP,
 
-    CONFIG_MAX_AVERAGE_TIMEDIFF,
-    
     CONFIG_PLAYER_GENDER_CHANGE_DELAY,
 
     CONFIG_MYSQL_BUNDLE_LOGINDB,
@@ -346,12 +344,12 @@ enum WorldConfigs
 	CONFIG_MONITORING_ENABLED,
 	CONFIG_MONITORING_GENERALINFOS_UPDATE,
 	CONFIG_MONITORING_KEEP_DURATION,
-
-    //trigger alert on at least moy <diff> on the last <count> update
-    CONFIG_MONITORING_ALERT_THRESHOLD_DIFF,
-    CONFIG_MONITORING_ALERT_THRESHOLD_COUNT,
+	CONFIG_MONITORING_ABNORMAL_WORLD_UPDATE_DIFF,
+	CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF,
+    CONFIG_MONITORING_ALERT_THRESHOLD_COUNT,  //trigger alert on at least avg <diff> on the last <count> update
 	CONFIG_MONITORING_DYNAMIC_LOS,
 	CONFIG_MONITORING_DYNAMIC_LOS_MINDIST,
+	CONFIG_MONITORING_LAG_AUTO_REBOOT_COUNT,
 
     CONFIG_HOTSWAP_ENABLED,
     CONFIG_HOTSWAP_RECOMPILER_ENABLED,
@@ -596,8 +594,6 @@ class TC_GAME_API World
         uint32 GetUptime() const { return uint32(m_gameTime - m_startTime); }
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
-		// Timediff flattened over the last 150 loops
-        uint32 GetFastTimeDiff() const { return fastTd; }
         void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
 
         /// Next daily quests and random bg reset time
@@ -878,14 +874,6 @@ class TC_GAME_API World
         
         std::vector<uint32> m_questInPools;
         std::map<uint32, uint32> m_currentQuestInPools;
-        
-        // Average timediff
-        uint32 fastTdCount;
-        uint32 fastTdSum;
-        uint32 fastTd;        // Average td on 150 last loops (~30 sec)
-        uint32 avgTdCount;
-        uint32 avgTdSum;
-        uint32 avgTd;        // Average td on 4500 last loops (~15 min). If that variable exceeds Config.World.MaxAverageTimediff, trigger an automatic restart
         
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 

@@ -434,7 +434,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
             }
         }
         /*
-        //This is needed only for lich king, LiquidTypes.dbc structure and order has changed and instead of modifying wmo's they just hack the displacement here
+        //kelno: This is needed only for lich king, LiquidTypes.dbc structure and order has changed and instead of modifying wmo's, Blizzard just hacked a displacement 
         if (liquidEntry && liquidEntry < 21)
         {
             switch ((liquidEntry - 1) & 3)

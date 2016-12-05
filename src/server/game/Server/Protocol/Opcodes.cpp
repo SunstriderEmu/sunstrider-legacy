@@ -837,7 +837,7 @@ void OpcodeTable::Initialize()
     /*0x2D4*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_BATTLEFIELD_STATUS,         STATUS_NEVER);
     /*0x2D5*/ DEFINE_HANDLER(CMSG_BATTLEFIELD_PORT,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattleFieldPortOpcode     );
     /*0x2D6*/ DEFINE_HANDLER(MSG_INSPECT_HONOR_STATS,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleInspectHonorStatsOpcode   );
-    /*0x2D7*/ DEFINE_HANDLER(CMSG_BATTLEMASTER_HELLO,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattlemasterHelloOpcode   );
+    /*0x2D7*/ DEFINE_HANDLER(CMSG_BATTLEMASTER_HELLO,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattleMasterHelloOpcode   );
     /*0x2D8*/ DEFINE_HANDLER(CMSG_MOVE_START_SWIM_CHEAT,                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x2D9*/ DEFINE_HANDLER(CMSG_MOVE_STOP_SWIM_CHEAT,                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     /*0x2DA*/ DEFINE_SERVER_OPCODE_HANDLER(SMSG_FORCE_WALK_SPEED_CHANGE,    STATUS_NEVER);
@@ -1903,7 +1903,7 @@ void OpcodeTable::Initialize()
     /*0x2D4*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_BATTLEFIELD_STATUS,         STATUS_NEVER);
     /*0x2D5*/ DEFINE_HANDLER_LK(LK_CMSG_BATTLEFIELD_PORT,                         STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattleFieldPortOpcode );
     /*0x2D6*/ DEFINE_HANDLER_LK(LK_MSG_INSPECT_HONOR_STATS,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleInspectHonorStatsOpcode );
-    /*0x2D7*/ DEFINE_HANDLER_LK(LK_CMSG_BATTLEMASTER_HELLO,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattlemasterHelloOpcode );
+    /*0x2D7*/ DEFINE_HANDLER_LK(LK_CMSG_BATTLEMASTER_HELLO,                       STATUS_LOGGEDIN, PROCESS_THREADUNSAFE, &WorldSession::HandleBattleMasterHelloOpcode);
     /*0x2D8*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_START_SWIM_CHEAT,                    STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );
     /*0x2D9*/ DEFINE_HANDLER_LK(LK_CMSG_MOVE_STOP_SWIM_CHEAT,                     STATUS_NEVER,    PROCESS_INPLACE,      &WorldSession::Handle_NULL );
     /*0x2DA*/ DEFINE_SERVER_OPCODE_HANDLER_LK(LK_SMSG_FORCE_WALK_SPEED_CHANGE,    STATUS_NEVER);

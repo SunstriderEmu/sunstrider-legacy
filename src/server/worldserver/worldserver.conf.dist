@@ -2290,3 +2290,63 @@ HotSwap.ReCompilerBuildType = ""
 #
 ###################################################################################################
 
+###################################################################################################
+# MONITORING SETTINGS
+#
+#    Monitor.Enabled
+#       Enable monitoring system
+#        Default: 1 (Enabled)
+#                 0 (Disabled)
+Monitor.Enabled = 1
+
+#
+#   Monitor.GeneralInfo.Update
+#       Description: Monitoring system update intervall, 0 to disable
+#       Default: 20 (seconds)
+Monitor.GeneralInfo.Update = 20
+
+#
+#	Monitor.AbnormalDiff.World
+#       Description:
+#       Default: 500 (ms)
+Monitor.AbnormalDiff.World = 500
+
+#
+#	Monitor.AbnormalDiff.Map
+#       Description:
+#       Default: 400 (ms)
+Monitor.AbnormalDiff.Map = 400
+
+#
+#    Monitor.KeepDays
+#	    Description: Keep monitoring information for given days. 0 to keep indefinitely.
+#       Default: 0
+Monitor.KeepDays = 90
+
+#
+#    Monitor.LagAlertThreshold.Count
+#        Description: Alert whenever world timediff is higher than Monitor.AbnormalDiff.World for LagAlertThreshold.Count consecutive times.
+#                     Setting any of these two values to 0 disable the alert.
+#		 Default: diff 400, count 10
+Monitor.LagAlertThreshold.Count = 10
+
+#
+#    Monitor.DynamicLoS.Enable
+#        Description: Automatically adapt view distance for each map to reduce lag if update time for this map is higher than LagAlertThreshold.Diff for some time
+#        Default: 1 (enabled)
+Monitor.DynamicLoS.Enable = 1
+
+#
+#    Monitor.DynamicLoS.MinDistance
+#        Description: Visibility reduction can go as low as this value
+#        Default: 60 (yards)
+Monitor.DynamicLoS.MinDistance = 60
+
+#
+#    Monitor.LagAutoReboot.Count
+#        Description: Analyse for <Count> updates, trigger reboot if avg diff is > Monitor.AbnormalDiff.World
+#        Default: 8000
+#
+Monitor.LagAutoReboot.Count = 8000
+
+###################################################################################################

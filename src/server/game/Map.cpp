@@ -163,10 +163,21 @@ Map::Map(MapType type, uint32 id, uint32 InstanceId, uint8 SpawnMode)
     sScriptMgr->OnCreateMap(this);
 }
 
+float Map::GetDefaultVisibilityDistance() const
+{
+	return sWorld->GetMaxVisibleDistanceOnContinents();
+}
+
 void Map::InitVisibilityDistance()
 {
     //init visibility for continents
-    m_VisibleDistance = sWorld->GetMaxVisibleDistanceOnContinents();
+	m_VisibleDistance = GetDefaultVisibilityDistance();
+}
+
+void Map::SetVisibilityDistance(float dist)
+{
+	ASSERT(dist != 0);
+	m_VisibleDistance = dist;
 }
 
 // Template specialization of utility methods
@@ -2316,10 +2327,9 @@ InstanceMap::~InstanceMap()
     MMAP::MMapFactory::createOrGetMMapManager()->unloadMapInstance(GetId(), GetInstanceId());
 }
 
-void InstanceMap::InitVisibilityDistance()
+float InstanceMap::GetDefaultVisibilityDistance() const
 {
-    //init visibility distance for instances
-    m_VisibleDistance = sWorld->GetMaxVisibleDistanceInInstances();
+	return sWorld->GetMaxVisibleDistanceInInstances();
 }
 
 /*
@@ -2743,10 +2753,9 @@ BattlegroundMap::~BattlegroundMap()
 {
 }
 
-void BattlegroundMap::InitVisibilityDistance()
+float BattlegroundMap::GetDefaultVisibilityDistance() const
 {
-    //init visibility distance for BG/Arenas
-    m_VisibleDistance = sWorld->GetMaxVisibleDistanceInBGArenas();
+	return sWorld->GetMaxVisibleDistanceInBGArenas();
 }
 
 bool BattlegroundMap::CanEnter(Player * player)

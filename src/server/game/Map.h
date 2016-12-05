@@ -142,14 +142,16 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void MessageDistBroadcast(Player *, WorldPacket *, float dist, bool to_self, bool to_possessor, bool own_team_only = false);
         void MessageDistBroadcast(WorldObject *, WorldPacket *, float dist, bool to_possessor);
 
+		virtual float GetDefaultVisibilityDistance() const;
         float GetVisibilityRange() const { return m_VisibleDistance; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
+		void SetVisibilityDistance(float dist);
 
         void PlayerRelocation(Player* player, float x, float y, float z, float angle);
         void CreatureRelocation(Creature* creature, float x, float y, float z, float angle);
         void GameObjectRelocation(GameObject* gob, float x, float y, float z, float angle);
-        void DynamicObjectRelocation(DynamicObject* dob, float x, float y, float z, float angle);
+        //void DynamicObjectRelocation(DynamicObject* dob, float x, float y, float z, float angle);
 
         template<class T, class CONTAINER> void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
 
@@ -501,7 +503,7 @@ class TC_GAME_API InstanceMap : public Map
         void SendResetWarnings(uint32 timeLeft) const;
         void SetResetSchedule(bool on);
 
-        void InitVisibilityDistance() override;
+        float GetDefaultVisibilityDistance() const override;
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -524,7 +526,7 @@ class TC_GAME_API BattlegroundMap : public Map
 
         void HandleCrash() override;
 
-        void InitVisibilityDistance() override;
+		float GetDefaultVisibilityDistance() const override;
         Battleground* GetBG() { return m_bg; }
         void SetBG(Battleground* bg) { m_bg = bg; }
     private:

@@ -287,6 +287,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "setzoneweather", SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneWeatherCommand,    "" },
         { "setarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSetArmorCommand,       "" },
         { "getarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetArmorCommand,       "" },
+		{ "profilenext",    SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleDebugProfileNextUpdateCommand, "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =

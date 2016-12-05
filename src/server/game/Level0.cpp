@@ -20,6 +20,7 @@
 #include "AuctionHouseMgr.h"
 #include "RecupMgr.h"
 #include "GitRevision.h"
+#include "Monitor.h"
 
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -112,17 +113,16 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
     uint32 maxActiveClientsNum = sWorld->GetMaxActiveSessionCount();
     std::string str = secsToTimeString(sWorld->GetUptime());
-	uint32 now = GetMSTime();
 	uint32 currentMapTimeDiff = 0;
 	if (GetSession())
-		if(Player const* p = GetSession()->GetPlayer())
-			if(Map const* m = p->FindMap())
-				currentMapTimeDiff = GetMSTimeDiff(m->GetLastMapUpdateTime(), now);
+		if (Player const* p = GetSession()->GetPlayer())
+			if (Map const* m = p->FindMap())
+				currentMapTimeDiff = sMonitor->GetLastDiffForMap(*m);
 
     PSendSysMessage(GitRevision::GetFullVersion());
     PSendSysMessage("Players online: %u (Max: %u, Queued: %u)", activeClientsNum, maxActiveClientsNum, queuedClientsNum);
     PSendSysMessage(LANG_UPTIME, str.c_str());
-    PSendSysMessage("Smoothed update time diff: %u.", sWorld->GetFastTimeDiff());
+    PSendSysMessage("Smoothed update time diff: %u.", sMonitor->GetSmoothTimeDiff());
     PSendSysMessage("Instant update time diff: %u.", sWorld->GetUpdateTime());
 	PSendSysMessage("Current map update time diff: %u.", currentMapTimeDiff);
     if (sWorld->IsShuttingDown())
