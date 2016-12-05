@@ -58,10 +58,11 @@ class MapUpdateRequest
 
 void MapUpdater::activate(size_t num_threads)
 {
+	//spawn instances & battlegrounds threads
     for (size_t i = 0; i < num_threads; ++i)
-    {
         _loop_maps_workerThreads.push_back(std::thread(&MapUpdater::LoopWorkerThread, this, &_enable_updates_loop));
-    }
+
+	//continents threads are spawned later when request are received
 }
 
 void MapUpdater::deactivate()
@@ -91,12 +92,6 @@ void MapUpdater::waitUpdateOnces()
     while (pending_once_maps > 0)
         _onces_finished_condition.wait(lock);
 
-    //delete continents threads
-    for (auto& thread : _once_maps_workerThreads)
-    {
-        thread.join();
-    }
-    _once_maps_workerThreads.clear();
     lock.unlock();
 }
 
@@ -115,6 +110,12 @@ void MapUpdater::waitUpdateLoops()
     lock.unlock();
 }
 
+void MapUpdater::spawnMissingOnceUpdateThreads()
+{
+	for (uint32 i = _once_maps_workerThreads.size(); i < pending_once_maps; i++)
+		_once_maps_workerThreads.push_back(std::thread(&MapUpdater::OnceWorkerThread, this));
+}
+
 void MapUpdater::schedule_update(Map& map, uint32 diff)
 {
     std::lock_guard<std::mutex> lock(_lock);
@@ -125,9 +126,10 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
         _loop_queue.Push(request);
     } else {
         pending_once_maps++;
-        //to improve: use thread pool instead
-        _once_maps_workerThreads.push_back(std::thread(&MapUpdater::OnceWorkerThread, this, request));
+		_once_queue.Push(request);
     }
+
+	spawnMissingOnceUpdateThreads();
 }
 
 bool MapUpdater::activated()
@@ -144,41 +146,46 @@ void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loo
         _loop_queue.WaitAndPop(request);
 
         if (_cancelationToken) {
-            loopMapsFinished();
+            loopMapFinished();
             return;
         }
 
         ASSERT(request);
-        std::thread::id this_id = std::this_thread::get_id();
         request->call();
 
         //repush at end of queue with new diff, or delete if continents have finished
         if(!(*enable_instance_updates_loop))
         {
             delete request;
-            loopMapsFinished();
+            loopMapFinished();
         } else {
             _loop_queue.Push(request);
         }
     }
 }
 
-void MapUpdater::OnceWorkerThread(MapUpdateRequest* request)
+void MapUpdater::OnceWorkerThread()
 {
-    if (_cancelationToken) {
-        onceMapsFinished();
-        return;
-    }
+	while (1)
+	{
+		MapUpdateRequest* request = nullptr;
 
-    ASSERT(request);
+		_once_queue.WaitAndPop(request);
 
-    request->call();
+		if (_cancelationToken) {
+			onceMapFinished();
+			return;
+		}
 
-    delete request;
-    onceMapsFinished();
+		ASSERT(request);
+		request->call();
+
+		delete request;
+		onceMapFinished();
+	}
 }
 
-void MapUpdater::onceMapsFinished()
+void MapUpdater::onceMapFinished()
 {
     std::lock_guard<std::mutex> lock(_lock);
     --pending_once_maps;
@@ -186,7 +193,7 @@ void MapUpdater::onceMapsFinished()
         _onces_finished_condition.notify_all();
 }
 
-void MapUpdater::loopMapsFinished()
+void MapUpdater::loopMapFinished()
 {
     std::lock_guard<std::mutex> lock(_lock);
     --pending_loop_maps;

@@ -56,10 +56,14 @@ public:
     bool activated();
 private:
 
-    void onceMapsFinished();
-    void loopMapsFinished();
+    void onceMapFinished();
+    void loopMapFinished();
+
+	//this will ensure once_map_workerThreads match the pending_once_maps count
+	void spawnMissingOnceUpdateThreads();
 
     ProducerConsumerQueue<MapUpdateRequest*> _loop_queue;
+	ProducerConsumerQueue<MapUpdateRequest*> _once_queue;
 
     std::vector<std::thread> _loop_maps_workerThreads; 
     std::vector<std::thread> _once_maps_workerThreads; //created/deleted at each loop, one for each continent
@@ -79,7 +83,7 @@ private:
     */
     void LoopWorkerThread(std::atomic<bool>* onceMapsFinished);
     //Single update, descrease pending_once_maps when done
-    void OnceWorkerThread(MapUpdateRequest* request);
+	void OnceWorkerThread();
 };
 
 #endif //_MAP_UPDATER_H_INCLUDED

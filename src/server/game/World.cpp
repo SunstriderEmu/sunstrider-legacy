@@ -594,7 +594,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ALLOW_TWO_SIDE_INTERACTION_MAIL]    = sConfigMgr->GetBoolDefault("AllowTwoSide.Interaction.Mail",false);
     m_configs[CONFIG_ALLOW_TWO_SIDE_WHO_LIST] = sConfigMgr->GetBoolDefault("AllowTwoSide.WhoList", false);
     m_configs[CONFIG_ALLOW_TWO_SIDE_ADD_FRIEND] = sConfigMgr->GetBoolDefault("AllowTwoSide.AddFriend", false);
-    m_configs[CONFIG_ALLOW_TWO_SIDE_TRADE] = sConfigMgr->GetBoolDefault("AllowTwoSide.trade", false);
+    m_configs[CONFIG_ALLOW_TWO_SIDE_TRADE] = sConfigMgr->GetBoolDefault("AllowTwoSide.Trade", false);
     m_configs[CONFIG_STRICT_PLAYER_NAMES]  = sConfigMgr->GetIntDefault("StrictPlayerNames",  1);
     m_configs[CONFIG_STRICT_CHARTER_NAMES] = sConfigMgr->GetIntDefault("StrictCharterNames", 1);
     m_configs[CONFIG_STRICT_PET_NAMES]     = sConfigMgr->GetIntDefault("StrictPetNames",     1);
