@@ -2776,9 +2776,8 @@ void Spell::EffectTeleportUnits(uint32 i)
     {
         sMapMgr->CreateMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
         WorldPacket data;
-        unitTarget->SendMessageToSet(&data, false);
-        unitTarget->BuildHeartBeatMsg(&data);
-        unitTarget->SendMessageToSet(&data,true);
+		unitTarget->BuildHeartBeatMsg(&data);
+        unitTarget->SendMessageToSet(&data, true);
     }
 
     // post effects for TARGET_DEST_DB
