@@ -19,7 +19,15 @@ if(DO_DEBUG)
     message(STATUS "/!\\ Clang: AddressSanitizer enabled. Except SLOWDOWNS on runtime.")
   endif() 
   if(CLANG_THREAD_SANITIZER)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread")	
+    #Q: When I run the program under gdb, it says: FATAL: ThreadSanitizer can not mmap the shadow memory (something is mapped at 0x555555554000 < 0x7cf000000000). What to do? Run as:
+    # gdb -ex 'set disable-randomization off'
+
+    if(USE_GPERFTOOLS)
+        MESSAGE(SEND_ERROR CLANG_THREAD_SANITIZER cannot be enabled with gperftools, it would conflict with tcmalloc)
+    endif()     
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -fPIE")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
     message(STATUS "/!\\ Clang: ThreadSanitizer enabled. Expect LARGE SLOWDOWNS on runtime.")
   endif()
   if(CLANG_MEMORY_SANITIZER)
