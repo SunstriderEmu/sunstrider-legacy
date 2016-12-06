@@ -104,13 +104,13 @@ void Monitor::StartedWorldLoop()
 	_currentWorldTickInfo.worldTick = _worldTickCount;
 	_currentWorldTickInfo.startTime = GetMSTime();
 
-
 #ifdef USE_GPERFTOOLS
 	if (_startProfilerAtNextWorldLoop)
 	{
 		_startProfilerAtNextWorldLoop = false;
 		_profilerRunning = true;
-		ProfilerStart(std::to_string(std::time(NULL)).c_str());
+		std::string filename = std::string(std::to_string(std::time(NULL)) + "prof");
+		ProfilerStart(filename.c_str());
 	}
 #endif //USE_GPERFTOOLS
 }
@@ -140,6 +140,7 @@ void Monitor::FinishedWorldLoop()
 	{
 		ProfilerStop();
 		_profilerRunning = false;
+		ChatHandler::SendGlobalGMSysMessage("Profiling has been stopped");
 	}
 	//+ some auto profiling trigger logic?
 #endif //USE_GPERFTOOLS
