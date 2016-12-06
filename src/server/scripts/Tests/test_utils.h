@@ -8,4 +8,4 @@ namespace Testing {
     void PrepareCasterAndTarget_cleanup(Player*& caster, Creature*& target);
 }
 	
-#endif TEST_UTILS_H
+#endif // TEST_UTILS_H

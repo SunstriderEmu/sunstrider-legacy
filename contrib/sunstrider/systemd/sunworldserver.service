@@ -7,7 +7,7 @@ Wants=network.target
 User=suncore
 Group=suncore
 Environment="PATH=/usr/lib/llvm-3.5/bin/:/usr/local/bin:/usr/bin:/bin"
-Environment="CPUPROFILE=/tmp/prof.out"
+#Environment="CPUPROFILE=/tmp/prof.out"
 
 WorkingDirectory=/srv/suncore/dumps
 ExecStartPre=-/srv/suncore/sources/contrib/sunstrider/systemd/logrotate.sh /srv/suncore/logs/logrotate_status /srv/suncore/sources/contrib/sunstrider/systemd/logrotate.conf

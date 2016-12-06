@@ -136,13 +136,13 @@ void Monitor::FinishedWorldLoop()
 	_currentWorldTickInfo = {};
 
 #ifdef USE_GPERFTOOLS
-	if (_profilerRunning)
-	{
-		ProfilerStop();
-		_profilerRunning = false;
-		ChatHandler::SendGlobalGMSysMessage("Profiling has been stopped");
-	}
-	//+ some auto profiling trigger logic?
+    if (_profilerRunning)
+    {
+        ProfilerStop();
+        _profilerRunning = false;
+        ChatHandler::SendGlobalGMSysMessage("Profiling has been stopped");
+    }
+    //+ some auto profiling trigger logic?
 #endif //USE_GPERFTOOLS
 }
 
