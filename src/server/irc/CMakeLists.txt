@@ -10,25 +10,6 @@ CollectIncludeDirectories(
   PUBLIC_INCLUDES
   )
 
-#custom libircclient project, still a bit dirty but now seems to work seamlessly (if you can make it cleaner, do it)
-IF ( UNIX )
-    ExternalProject_Add(libircclient
-        SOURCE_DIR ${CMAKE_BINARY_DIR}
-        INSTALL_DIR ${LIBSDIR}
-        CONFIGURE_COMMAND 
-        #A problem with linking this is: before the install step, the library isn't there (it's in build/libircclient/src) so worldserver can't link it. 
-        #Instead, worldserver links it from the output in the build folder (see cmake for project worldserver)
-        cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR}
-          && chmod 700 ${CMAKE_BINARY_DIR}/libircclient/configure
-          && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} --libdir=${LIBSDIR} --enable-openssl --enable-shared
-        BINARY_DIR ${CMAKE_BINARY_DIR}/libircclient
-        BUILD_COMMAND ${MAKE} 
-        #todo custom clean
-    )
-        
-    add_dependencies(irc libircclient)
-endif ( UNIX )
-
 add_library(irc STATIC
     ${PRIVATE_SOURCES}
 )
@@ -65,3 +46,23 @@ set_target_properties(irc
     PROPERTIES
       FOLDER
         "server")
+
+
+#custom libircclient project, still a bit dirty but now seems to work seamlessly (if you can make it cleaner, do it)
+IF ( UNIX )
+    ExternalProject_Add(libircclient
+        SOURCE_DIR ${CMAKE_BINARY_DIR}
+        INSTALL_DIR ${LIBSDIR}
+        CONFIGURE_COMMAND 
+        #A problem with linking this is: before the install step, the library isn't there (it's in build/libircclient/src) so worldserver can't link it. 
+        #Instead, worldserver links it from the output in the build folder (see cmake for project worldserver)
+        cp -R ${CMAKE_SOURCE_DIR}/dep/libircclient ${CMAKE_BINARY_DIR}
+          && chmod 700 ${CMAKE_BINARY_DIR}/libircclient/configure
+          && ${CMAKE_BINARY_DIR}/libircclient/configure --prefix=${CMAKE_BINARY_DIR} --libdir=${LIBSDIR} --enable-openssl --enable-shared
+        BINARY_DIR ${CMAKE_BINARY_DIR}/libircclient
+        BUILD_COMMAND ${MAKE} 
+        #todo custom clean
+    )
+        
+    add_dependencies(irc libircclient)
+endif ( UNIX )
