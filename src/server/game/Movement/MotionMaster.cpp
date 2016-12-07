@@ -91,37 +91,63 @@ void MotionMaster::UpdateMotion(uint32 diff)
     ASSERT(!empty());
 
     _cleanFlag |= MMCF_UPDATE;
-    if (!top()->Update(_owner, diff))
-    {
-        _cleanFlag &= ~MMCF_UPDATE;
-        MovementExpired();
-    }
-    else
-        _cleanFlag &= ~MMCF_UPDATE;
+	bool isMoveGenUpdateSuccess = top()->Update(_owner, diff);
+	_cleanFlag &= ~MMCF_UPDATE;
 
-    if (_expList)
-    {
-        for (size_t i = 0; i < _expList->size(); ++i)
-        {
-            MovementGenerator* mg = (*_expList)[i];
-            DirectDelete(mg, false);
-        }
+	if (!isMoveGenUpdateSuccess)
+		MovementExpired();
 
-        delete _expList;
-        _expList = NULL;
+	if (_expList)
+		ClearExpireList();
+}
 
-        if (empty())
-            Initialize();
-        else if (needInitTop())
-            InitTop();
-        else if (_cleanFlag & MMCF_RESET)
-            top()->Reset(_owner);
+void MotionMaster::Clear(bool reset /* = true*/)
+{
+	if (_cleanFlag & MMCF_UPDATE)
+	{
+		if (reset)
+			_cleanFlag |= MMCF_RESET;
+		else
+			_cleanFlag &= ~MMCF_RESET;
+		DelayedClean();
+	}
+	else
+		DirectClean(reset);
+}
 
-        _cleanFlag &= ~MMCF_RESET;
-    }
+void MotionMaster::MovementExpired(bool reset /* = true*/)
+{
+	if (_cleanFlag & MMCF_UPDATE)
+	{
+		if (reset)
+			_cleanFlag |= MMCF_RESET;
+		else
+			_cleanFlag &= ~MMCF_RESET;
+		DelayedExpire(false);
+	}
+	else
+		DirectExpire(reset, false);
+}
 
-    // probably not the best place to pu this but im not really sure where else to put it.
-    _owner->UpdateUnderwaterState(_owner->GetMap(), _owner->GetPositionX(), _owner->GetPositionY(), _owner->GetPositionZ());
+void MotionMaster::ClearExpireList()
+{
+	for (size_t i = 0; i < _expList->size(); ++i)
+	{
+		MovementGenerator* mg = (*_expList)[i];
+		DirectDelete(mg, false);
+	}
+
+	delete _expList;
+	_expList = NULL;
+
+	if (empty())
+		Initialize();
+	else if (needInitTop())
+		InitTop();
+	else if (_cleanFlag & MMCF_RESET)
+		top()->Reset(_owner);
+
+	_cleanFlag &= ~MMCF_RESET;
 }
 
 void MotionMaster::DirectClean(bool reset)

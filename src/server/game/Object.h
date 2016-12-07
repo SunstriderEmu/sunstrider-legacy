@@ -113,16 +113,16 @@ struct TC_GAME_API Position
     virtual void SetOrientation(float orientation)
         { m_orientation = orientation; }
 
-    float GetPositionX() const { return m_positionX; }
-    float GetPositionY() const { return m_positionY; }
-    float GetPositionZ() const { return m_positionZ; }
-    float GetOrientation() const { return m_orientation; }
+	inline float GetPositionX() const { return m_positionX; }
+	inline float GetPositionY() const { return m_positionY; }
+	inline float GetPositionZ() const { return m_positionZ; }
+	inline float GetOrientation() const { return m_orientation; }
 
-    void GetPosition(float &x, float &y) const
+    inline void GetPosition(float &x, float &y) const
         { x = m_positionX; y = m_positionY; }
-    void GetPosition(float &x, float &y, float &z) const
+	inline void GetPosition(float &x, float &y, float &z) const
         { x = m_positionX; y = m_positionY; z = m_positionZ; }
-    void GetPosition(float &x, float &y, float &z, float &o) const
+	inline void GetPosition(float &x, float &y, float &z, float &o) const
         { x = m_positionX; y = m_positionY; z = m_positionZ; o = m_orientation; }
 
     Position GetPosition() const
@@ -307,7 +307,7 @@ class TC_GAME_API Object
     public:
         virtual ~Object ( );
         
-        const bool& IsInWorld() const { return m_inWorld; }
+        inline const bool& IsInWorld() const { return m_inWorld; }
         virtual void AddToWorld()
         {
             if(m_inWorld)
@@ -584,7 +584,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         float GetExactDistance2d(const WorldObject* obj) const;
         float GetExactDistance2d(const float x, const float y) const;
         float GetDistanceZ(const WorldObject* obj) const;
-        bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }
+        inline bool IsInMap(const WorldObject* obj) const { return GetMapId()==obj->GetMapId() && GetInstanceId()==obj->GetInstanceId(); }
         bool IsWithinDist3d(float x, float y, float z, float dist) const;
         bool IsWithinDist3d(Position const* pos, float dist) const;
         bool IsWithinDist2d(float x, float y, float dist) const;
