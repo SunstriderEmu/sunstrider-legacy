@@ -21,6 +21,7 @@
 #include "SmartScriptMgr.h"
 #include "SmartAI.h"
 #include "UpdateFieldsDebug.h"
+#include "Profiler.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -1273,17 +1274,40 @@ bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
 #endif
 }
 
-bool HandleProfilingStartCommand(const char* args)
+/* .profiling start [filename] */
+bool ChatHandler::HandleProfilingStartCommand(const char* args)
 {
+	//default filename
+	std::string filename = std::to_string(time(nullptr)) + ".prof";
+	char* cFileName = strtok((char*)args, " ");
+	if (cFileName)
+		filename = cFileName;
+
+	std::string failureReason;
+	if(sProfiler->Start(filename, failureReason))
+		SendSysMessage("Profiling started");
+	else
+		PSendSysMessage("Profiling start failed with reason %s", failureReason.c_str());
 	return true;
 }
 
-bool HandleProfilingStopCommand(const char* args)
+/* .profiling stop */
+bool ChatHandler::HandleProfilingStopCommand(const char* args)
 {
+	std::string failureReason;
+	if (sProfiler->Stop(failureReason))
+		SendSysMessage("Profiling stopped");
+	else
+		PSendSysMessage("Profiling stop failed with reason %s", failureReason.c_str());
+
 	return true;
 }
-bool HandleProfilingStatusCommand(const char* args)
+
+/* .profiling status */
+bool ChatHandler::HandleProfilingStatusCommand(const char* args)
 {
+	std::string infos = sProfiler->GetInfos();
+	PSendSysMessage("Profiling infos:\n%s", infos.c_str());
 	return true;
 }
 

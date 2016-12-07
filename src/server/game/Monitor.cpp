@@ -1,7 +1,4 @@
 #include "Monitor.h"
-#ifdef USE_GPERFTOOLS
-  #include <gperftools/profiler.h>
-#endif
 #include "World.h"
 #include "BattleGroundMgr.h"
 #include "Language.h"
