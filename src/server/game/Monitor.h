@@ -62,6 +62,7 @@ public:
 	void UpdateForMap(Map& map, uint32 diff);
 
 private:
+	std::mutex _mapCheckTimersLock;
 	std::unordered_map<uint64 /*map pointer as id*/, CheckTimer> _mapCheckTimers;
 };
 
@@ -72,7 +73,8 @@ public:
 
 	void UpdateForWorld(uint32 diff);
 private:
-	std::unordered_map<uint64 /*map pointer as id*/, CheckTimer> _mapCheckTimers;
+	//std::mutex _mapCheckTimersLock;
+	//std::unordered_map<uint64 /*map pointer as id*/, CheckTimer> _mapCheckTimers;
 	CheckTimer _worldCheckTimer;
 };
 
@@ -162,4 +164,3 @@ private:
 #define sMonitor Monitor::instance()
 
 #endif // __MONITOR_H
-

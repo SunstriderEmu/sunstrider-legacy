@@ -45,7 +45,7 @@ void Monitor::MapUpdateStart(Map const& map)
 {
     if (!sWorld->getConfig(CONFIG_MONITORING_ENABLED))
         return;
-    
+
 	if (map.GetMapType() == MAP_TYPE_MAP_INSTANCED)
 		return; //ignore these, not true maps
 
@@ -128,8 +128,8 @@ void Monitor::FinishedWorldLoop()
 	_currentWorldTickInfo.worldTick = _worldTickCount;
 
 	_monitAutoReboot.Update(_currentWorldTickInfo.diff);
-	_monitAlert.UpdateForWorld(_currentWorldTickInfo.diff); 
-	
+	_monitAlert.UpdateForWorld(_currentWorldTickInfo.diff);
+
 
 	//Store current world tick and reset it
 	_worldTicksInfo.push_back(std::move(_currentWorldTickInfo));
@@ -256,7 +256,7 @@ uint32 Monitor::GetAverageWorldDiff(uint32 searchCount)
 		sum += _worldTicksInfo[i].diff;
 
 	uint32 avgTD = uint32(sum / float(searchCount));
-	
+
 	return avgTD;
 }
 
@@ -329,14 +329,18 @@ void MonitorAutoReboot::Update(uint32 diff)
 
 void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
 {
-	//is it time to check?
+  //is it time to check?
+  _mapCheckTimersLock.lock();
 	auto& timer = _mapCheckTimers[uint64(&map)].timer;
 	timer += diff;
 
-	if (timer < CHECK_INTERVAL)
-		return;
+  if (_timer < CHECK_INTERVAL) {
+    _mapCheckTimersLock.unlock();
+    return;
+  }
 
 	timer = 0;
+  _mapCheckTimersLock.unlock();
 
 	uint32 abnormalDiff = sWorld->getConfig(CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF);
 	if (!abnormalDiff)
