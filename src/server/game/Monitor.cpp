@@ -334,7 +334,7 @@ void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
 	auto& timer = _mapCheckTimers[uint64(&map)].timer;
 	timer += diff;
 
-  if (_timer < CHECK_INTERVAL) {
+  if (timer < CHECK_INTERVAL) {
     _mapCheckTimersLock.unlock();
     return;
   }
