@@ -47,12 +47,18 @@ target_include_directories(game
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
     
+
+if(USE_GPERFTOOLS)
+    set(gperftools_lib gperftools)
+endif(USE_GPERFTOOLS)
+
 target_link_libraries(game
   PUBLIC
     game-interface
   PRIVATE
+	${gperftools_lib}
+	irc
     efsw
-    irc
     segvcatch
     catch
 )

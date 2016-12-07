@@ -66,18 +66,6 @@ endif()
 
 find_package(Git) 
 
-#For Windows, use prebuilt libircclient library instead of building it
-#todo: check this to maybe do it cleaner: https://cmake.org/cmake/help/v3.3/manual/cmake-buildsystem.7.html#imported-targets 
-if (WIN32)
-    if(PLATFORM EQUAL 64)
-        set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/lib/x64_release/libircclient.lib)
-    elseif(PLATFORM EQUAL 32)
-        set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/lib/win32_release/libircclient.lib)
-    else()
-        message(SEND_ERROR "Could not find platform when trying to set LIBIRCCLIENT_LIB_WIN")
-    endif()
-endif()
-
 if(DO_DEBUG)
     add_definitions(-DTRINITY_DEBUG)
 endif(DO_DEBUG)

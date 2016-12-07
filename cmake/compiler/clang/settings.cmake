@@ -58,3 +58,17 @@ if (BUILD_SHARED_LIBS)
 
   message(STATUS "Clang: Disallow undefined symbols")
 endif()
+
+if(USE_GPERFTOOLS)
+#NOTE: When compiling with programs with gcc, that you plan to link
+#with libtcmalloc, it's safest to pass in the flags
+# -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free
+#when compiling.  gcc makes some optimizations assuming it is using its
+#own, built-in malloc; that assumption obviously isn't true with
+#tcmalloc.  In practice, we haven't seen any problems with this, but
+#the expected risk is highest for users who register their own malloc
+##hooks with tcmalloc (using gperftools/malloc_hook.h).  The risk is
+#lowest for folks who use tcmalloc_minimal (or, of course, who pass in
+#the above flags :-) ).
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free")
+endif()

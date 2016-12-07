@@ -36,17 +36,13 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 
 if (UNIX)
     #this should be changed, see comments is CMakeLists from irc project
+	#todo: is gomp still used ?
+	#todo2: Add .so add a target_link_library in irc project ? Not sure this will work since this file only exists after irc project is built
     set(UNIX_LIBS gomp ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
 endif()
 
+#todo3: This fixes some linking problem, but is it still necessary ?
 set_target_properties(game scripts PROPERTIES LINK_INTERFACE_MULTIPLICITY 5)
-
-if(USE_GPERFTOOLS)
-    set(gperftools_libs
-          profiler
-          tcmalloc
-    )
-endif(USE_GPERFTOOLS)
 
 target_link_libraries(worldserver
   PUBLIC
@@ -58,7 +54,6 @@ target_link_libraries(worldserver
   PRIVATE
 	irc
 	segvcatch
-	${gperftools_libs}
 )
 
 CollectIncludeDirectories(
@@ -90,11 +85,6 @@ if( WIN32 )
     add_custom_command(TARGET worldserver
       POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/worldserver.conf.dist ${CMAKE_BINARY_DIR}/bin/$(ConfigurationName)/
-    )
-  elseif ( MINGW )
-    add_custom_command(TARGET worldserver
-      POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/worldserver.conf.dist ${CMAKE_BINARY_DIR}/bin/
     )
   endif()
 endif()
