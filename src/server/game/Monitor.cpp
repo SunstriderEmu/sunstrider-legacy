@@ -9,9 +9,7 @@
 
 Monitor::Monitor()
 	: _worldTickCount(0),
-	_generalInfoTimer(0),
-	_startProfilerAtNextWorldLoop(false),
-	_profilerRunning(false)
+	_generalInfoTimer(0)
 {
 	_worldTicksInfo.reserve(DAY * 20); //already prepare 1 day worth of 20 updates per seconds
 }
@@ -99,16 +97,6 @@ void Monitor::MapUpdateEnd(Map& map)
 	_lastMapDiffsLock.unlock();
 }
 
-bool Monitor::ProfileNextUpdate()
-{
-#ifdef USE_GPERFTOOLS
-	_startProfilerAtNextWorldLoop = true;
-	return true;
-#else
-	return false;
-#endif
-}
-
 void Monitor::StartedWorldLoop()
 {
 	if (!sWorld->getConfig(CONFIG_MONITORING_ENABLED))
@@ -117,16 +105,6 @@ void Monitor::StartedWorldLoop()
 	_worldTickCount++;
 	_currentWorldTickInfo.worldTick = _worldTickCount;
 	_currentWorldTickInfo.startTime = GetMSTime();
-
-#ifdef USE_GPERFTOOLS
-	if (_startProfilerAtNextWorldLoop)
-	{
-		_startProfilerAtNextWorldLoop = false;
-		_profilerRunning = true;
-		std::string filename = std::string(std::to_string(std::time(NULL)) + "prof");
-		ProfilerStart(filename.c_str());
-	}
-#endif //USE_GPERFTOOLS
 }
 
 void Monitor::FinishedWorldLoop()
@@ -148,16 +126,6 @@ void Monitor::FinishedWorldLoop()
 	//Store current world tick and reset it
 	_worldTicksInfo.push_back(std::move(_currentWorldTickInfo));
 	_currentWorldTickInfo = {};
-
-#ifdef USE_GPERFTOOLS
-    if (_profilerRunning)
-    {
-        ProfilerStop();
-        _profilerRunning = false;
-        ChatHandler::SendGlobalGMSysMessage("Profiling has been stopped");
-    }
-    //+ some auto profiling trigger logic?
-#endif //USE_GPERFTOOLS
 }
 
 void Monitor::UpdateGeneralInfosIfExpired(uint32 diff)

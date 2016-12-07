@@ -1,5 +1,5 @@
-#ifndef __Monitor_H
-#define __Monitor_H
+#ifndef __MONITOR_H
+#define __MONITOR_H
 
 /*
 Ideas:
@@ -114,9 +114,6 @@ public:
 
 	// Flattened timediff upated every minute. This is a cached value.
 	uint32 GetSmoothTimeDiff() const { return smoothTD.Get(); }
-
-	//tell the monitor to enable gperftools profiling for next update. Return false if the function is not available.
-	bool ProfileNextUpdate();
 private:
 	// -- MapUpdater & World functions
 	void MapUpdateStart(Map const& map);
@@ -154,9 +151,6 @@ private:
 	MonitorAutoReboot _monitAutoReboot;
 	MonitorDynamicLoS _monitDynamicLoS;
 	MonitorAlert      _monitAlert;
-
-	bool _startProfilerAtNextWorldLoop;
-	bool _profilerRunning;
 
 	SmoothedTimeDiff smoothTD;
 };

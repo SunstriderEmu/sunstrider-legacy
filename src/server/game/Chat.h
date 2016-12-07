@@ -365,7 +365,9 @@ class TC_GAME_API ChatHandler
         bool HandleDebugZoneWeatherCommand(const char* args);
         bool HandleDebugSetArmorCommand(const char* args);
         bool HandleDebugGetArmorCommand(const char* args);
-		bool HandleDebugProfileNextUpdateCommand(const char* args);
+		bool HandleProfilingStartCommand(const char* args);
+		bool HandleProfilingStopCommand(const char* args);
+		bool HandleProfilingStatusCommand(const char* args);
 
         bool HandlePlayerbotConsoleCommand(const char* args);
         bool HandlePlayerbotMgrCommand(const char* args);

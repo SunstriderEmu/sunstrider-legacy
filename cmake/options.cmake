@@ -19,7 +19,10 @@ else()
   set(BUILD_SHARED_LIBS OFF)
 endif()
 
-option(USE_GPERFTOOLS "Include profiling capabilities from gperftools" 0)
+if(UNIX)
+	#not working on windows atm
+	option(USE_GPERFTOOLS "Include profiling capabilities from gperftools" 0)
+endif()
 option(LICH_KING "NYI Lich King realm" 0)
 option(BUILD_335_SUPPORT "NYI Realm supports 3.3.5 client" 0)
 #more clang options 

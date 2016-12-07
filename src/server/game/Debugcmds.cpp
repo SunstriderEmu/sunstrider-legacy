@@ -1273,20 +1273,17 @@ bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
 #endif
 }
 
-/* Synac .debug profilenext*/
-bool ChatHandler::HandleDebugProfileNextUpdateCommand(const char* args)
+bool HandleProfilingStartCommand(const char* args)
 {
-	if (!sWorld->getConfig(CONFIG_MONITORING_ENABLED))
-	{
-		SendSysMessage("Profiling is not available when monitoring is not enabled.");
-		return true;
-	}
+	return true;
+}
 
-	if(sMonitor->ProfileNextUpdate())
-		SendSysMessage("Monitor will profile next world loop and dump the result in the working directory.");
-	else
-		SendSysMessage("Profiling is not available.");
-
+bool HandleProfilingStopCommand(const char* args)
+{
+	return true;
+}
+bool HandleProfilingStatusCommand(const char* args)
+{
 	return true;
 }
 

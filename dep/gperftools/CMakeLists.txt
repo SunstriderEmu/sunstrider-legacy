@@ -1,8 +1,10 @@
 #To improve: Unix implementation needs to check for includes and libs existence
-
 add_library(gperftools INTERFACE)
 
 if(WIN32)
+	MESSAGE(SEND_ERROR "gperftools is not supported on windows at the moment")
+	#Build system is almost done, but can't seem to get my built lib with the server, no sure why...
+	
 	set(GPERFTOOLS_WIN_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/win/includes")
 endif(WIN32)
 
