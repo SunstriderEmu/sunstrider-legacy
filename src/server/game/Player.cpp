@@ -4065,6 +4065,16 @@ void Player::SetMovement(PlayerMovementType pType)
     }
     data << GetPackGUID();
     data << uint32(0);
+    
+    /* Should we also send it to mover? Or does the target session broadcast the change itself later?
+    if (GetMover() && GetMover()->GetTypeId() == TYPEID_PLAYER)
+    {
+         Player* pMover = (Player*)GetMover();
+         if (pMover != this)
+             pMover->GetSession()->SendPacket(data);
+    }
+    */
+    
     SendDirectMessage( &data );
 }
 
