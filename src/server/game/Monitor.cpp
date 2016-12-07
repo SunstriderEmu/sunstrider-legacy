@@ -41,6 +41,11 @@ void SmoothedTimeDiff::Update(uint32 diff)
 	}
 }
 
+
+#idfef TRINITY_DEBUG
+    std::map<std::pair<uint32 /*mapId*/, uint32 /*instanceId*/>, bool> _currentlyUpdating;
+#endif
+
 void Monitor::MapUpdateStart(Map const& map)
 {
     if (!sWorld->getConfig(CONFIG_MONITORING_ENABLED))
@@ -51,7 +56,11 @@ void Monitor::MapUpdateStart(Map const& map)
 
 	//this function can be called from several maps at the same time
 	std::lock_guard<std::mutex> lock(_currentWorldTickLock);
-
+    #idfef TRINITY_DEBUG
+        auto itr = _currentlyUpdating.find(std::pair<map.GetId(), map.GetInstanceId()>);
+        ASSERT(itr == _currentlyUpdating.end());
+        _currentlyUpdating[std::pair<map.GetId(), map.GetInstanceId()>)] = true;
+    #endif
 	InstanceTicksInfo& updateInfoListForMap = _currentWorldTickInfo.updateInfos[map.GetId()];
 	MapTicksInfo& mapsTicksInfo = updateInfoListForMap[map.GetInstanceId()];
 	mapsTicksInfo.currentTick++;
@@ -70,6 +79,11 @@ void Monitor::MapUpdateEnd(Map& map)
 
 	//this function can be called from several maps at the same time
 	_currentWorldTickLock.lock();
+    #idfef TRINITY_DEBUG
+        auto itr = _currentlyUpdating.find(std::pair<map.GetId(), map.GetInstanceId()>);
+        if(itr != _currentlyUpdating.end())
+            _currentlyUpdating.erase(itr);
+    #endif
 	MapTicksInfo& mapsTicksInfo = _currentWorldTickInfo.updateInfos[map.GetId()][map.GetInstanceId()];
 	auto& mapTick = mapsTicksInfo.ticks[mapsTicksInfo.currentTick];
 	if (mapTick.startTime == 0)
