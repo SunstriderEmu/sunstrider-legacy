@@ -10,7 +10,7 @@ endif()
 
 if(DO_DEBUG)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g3")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3 -O0")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
   message(STATUS "Clang: Debug-flags set (-g3)")
 
   #http://clang.llvm.org/docs/AddressSanitizer.html
@@ -23,7 +23,7 @@ if(DO_DEBUG)
     # gdb -ex 'set disable-randomization off'
 
     if(USE_GPERFTOOLS)
-        MESSAGE(SEND_ERROR CLANG_THREAD_SANITIZER cannot be enabled with gperftools, it would conflict with tcmalloc)
+        MESSAGE(SEND_ERROR "CLANG_THREAD_SANITIZER cannot be enabled with gperftools, it would conflict with tcmalloc")
     endif()     
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=thread -fPIE")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")

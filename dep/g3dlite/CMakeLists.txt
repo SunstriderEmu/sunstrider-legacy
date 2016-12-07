@@ -64,8 +64,7 @@ target_include_directories(g3dlib
 target_link_libraries(g3dlib
   PUBLIC
     zlib
-    threads
-	mpq)
+    threads)
 
 set_target_properties(g3dlib
     PROPERTIES
