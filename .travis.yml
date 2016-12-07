@@ -34,7 +34,7 @@ install:
   - cd ..
   - mkdir bin
   - cd bin
-  - cmake -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS="dynamic" -DTESTS=1 -DUSE_GPERFTOOLS=1 ../sunstrider 
+  - cmake -DPLAYERBOT=1 -DTOOLS=1 -DSCRIPTS="dynamic" -DTESTS=1 -DUSE_GPERFTOOLS=0 ../sunstrider 
   - cd ../sunstrider
 
 script:

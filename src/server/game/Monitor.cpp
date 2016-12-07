@@ -41,17 +41,26 @@ void SmoothedTimeDiff::Update(uint32 diff)
 	}
 }
 
+
+#idfef TRINITY_DEBUG
+    std::map<std::pair<uint32 /*mapId*/, uint32 /*instanceId*/>, bool> _currentlyUpdating;
+#endif
+
 void Monitor::MapUpdateStart(Map const& map)
 {
     if (!sWorld->getConfig(CONFIG_MONITORING_ENABLED))
         return;
-    
+
 	if (map.GetMapType() == MAP_TYPE_MAP_INSTANCED)
 		return; //ignore these, not true maps
 
 	//this function can be called from several maps at the same time
 	std::lock_guard<std::mutex> lock(_currentWorldTickLock);
-
+    #idfef TRINITY_DEBUG
+        auto itr = _currentlyUpdating.find(std::pair<map.GetId(), map.GetInstanceId()>);
+        ASSERT(itr == _currentlyUpdating.end());
+        _currentlyUpdating[std::pair<map.GetId(), map.GetInstanceId()>)] = true;
+    #endif
 	InstanceTicksInfo& updateInfoListForMap = _currentWorldTickInfo.updateInfos[map.GetId()];
 	MapTicksInfo& mapsTicksInfo = updateInfoListForMap[map.GetInstanceId()];
 	mapsTicksInfo.currentTick++;
@@ -70,6 +79,11 @@ void Monitor::MapUpdateEnd(Map& map)
 
 	//this function can be called from several maps at the same time
 	_currentWorldTickLock.lock();
+    #idfef TRINITY_DEBUG
+        auto itr = _currentlyUpdating.find(std::pair<map.GetId(), map.GetInstanceId()>);
+        if(itr != _currentlyUpdating.end())
+            _currentlyUpdating.erase(itr);
+    #endif
 	MapTicksInfo& mapsTicksInfo = _currentWorldTickInfo.updateInfos[map.GetId()][map.GetInstanceId()];
 	auto& mapTick = mapsTicksInfo.ticks[mapsTicksInfo.currentTick];
 	if (mapTick.startTime == 0)
@@ -128,8 +142,8 @@ void Monitor::FinishedWorldLoop()
 	_currentWorldTickInfo.worldTick = _worldTickCount;
 
 	_monitAutoReboot.Update(_currentWorldTickInfo.diff);
-	_monitAlert.UpdateForWorld(_currentWorldTickInfo.diff); 
-	
+	_monitAlert.UpdateForWorld(_currentWorldTickInfo.diff);
+
 
 	//Store current world tick and reset it
 	_worldTicksInfo.push_back(std::move(_currentWorldTickInfo));
@@ -256,7 +270,7 @@ uint32 Monitor::GetAverageWorldDiff(uint32 searchCount)
 		sum += _worldTicksInfo[i].diff;
 
 	uint32 avgTD = uint32(sum / float(searchCount));
-	
+
 	return avgTD;
 }
 
@@ -329,14 +343,18 @@ void MonitorAutoReboot::Update(uint32 diff)
 
 void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
 {
-	//is it time to check?
+  //is it time to check?
+  _mapCheckTimersLock.lock();
 	auto& timer = _mapCheckTimers[uint64(&map)].timer;
 	timer += diff;
 
-	if (timer < CHECK_INTERVAL)
-		return;
+  if (timer < CHECK_INTERVAL) {
+    _mapCheckTimersLock.unlock();
+    return;
+  }
 
 	timer = 0;
+  _mapCheckTimersLock.unlock();
 
 	uint32 abnormalDiff = sWorld->getConfig(CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF);
 	if (!abnormalDiff)
