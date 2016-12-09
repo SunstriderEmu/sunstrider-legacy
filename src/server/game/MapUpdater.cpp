@@ -70,6 +70,7 @@ void MapUpdater::deactivate()
     _cancelationToken = true;
 
     _loop_queue.Cancel();
+	_once_queue.Cancel();
 
     waitUpdateOnces();
     waitUpdateLoops();
