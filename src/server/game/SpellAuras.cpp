@@ -6075,9 +6075,9 @@ void Aura::PeriodicTick()
             pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
             if (pdamage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
-            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
 
-            pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
+			pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
+            pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
             break;
         }
         case SPELL_AURA_PERIODIC_LEECH:
@@ -6196,8 +6196,8 @@ void Aura::PeriodicTick()
             pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
             if (pdamage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
+			int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
-            int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
 
             if (!target->IsAlive() && pCaster->IsNonMeleeSpellCast(false))
             {
@@ -6386,6 +6386,8 @@ void Aura::PeriodicTick()
                 m_target->AddThreat(pCaster, float(gain) * 0.5f, GetSpellInfo()->GetSchoolMask(), GetSpellInfo());
             }
 
+			//no procs?
+
             // Mark of Kaz'rogal
             if(GetId() == 31447 && m_target->GetPower(power) == 0)
             {
@@ -6520,9 +6522,8 @@ void Aura::PeriodicTick()
             if (damageInfo.damage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
 
+			pCaster->DealSpellDamage(&damageInfo, true);
             pCaster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
-
-            pCaster->DealSpellDamage(&damageInfo, true);
             break;
         }
         // Here tick dummy auras
