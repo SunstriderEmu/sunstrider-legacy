@@ -1155,8 +1155,8 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     {
 
                         //the damage bonus used for pets is either fire or shadow damage, whatever is higher
-                        uint32 fire  = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
-                        uint32 shadow = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
+                        uint32 fire  = owner->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
+                        uint32 shadow = owner->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
                         uint32 val  = (fire > shadow) ? fire : shadow;
 
                         SetBonusDamage(int32 (val * 0.15f));
@@ -1166,7 +1166,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
                     case CLASS_MAGE:
                     {
                         //40% damage bonus of mage's frost damage
-                        float val = owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
+                        float val = owner->GetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST) * 0.4;
                         if(val < 0)
                             val = 0;
                         SetBonusDamage( int32(val));

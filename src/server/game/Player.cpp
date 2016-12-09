@@ -2681,17 +2681,16 @@ void Player::InitStatsForLevel(bool reapplyMods)
         SetUInt32Value(index, 0);
 
     SetUInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS,0);
-    for (int i = 0; i < 7; i++)
+    for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
     {
-        SetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i, 0);
-        SetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, 0);
+        SetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i, 0);
+        SetInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, 0);
         SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i, 1.00f);
     }
 
     //reset attack power, damage and attack speed fields
-    SetFloatValue(UNIT_FIELD_BASEATTACKTIME, 2000.0f );
-    SetFloatValue(UNIT_FIELD_BASEATTACKTIME + 1, 2000.0f ); // offhand attack time
-    SetFloatValue(UNIT_FIELD_RANGEDATTACKTIME, 2000.0f );
+	for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
+		SetFloatValue(UNIT_FIELD_BASEATTACKTIME + i, float(BASE_ATTACK_TIME));
 
     SetFloatValue(UNIT_FIELD_MINDAMAGE, 0.0f );
     SetFloatValue(UNIT_FIELD_MAXDAMAGE, 0.0f );
@@ -2725,10 +2724,10 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // set armor (resistance 0) to original value (create_agility*2)
     SetArmor(int32(m_createStats[STAT_AGILITY]*2));
-    SetResistanceBuffMods(SpellSchools(0), true, 0.0f);
-    SetResistanceBuffMods(SpellSchools(0), false, 0.0f);
+    SetResistanceBuffMods(SPELL_SCHOOL_NORMAL, true, 0.0f);
+    SetResistanceBuffMods(SPELL_SCHOOL_NORMAL, false, 0.0f);
     // set other resistance to original value (0)
-    for (int i = 1; i < MAX_SPELL_SCHOOL; i++)
+    for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
     {
         SetResistance(SpellSchools(i), 0);
         SetResistanceBuffMods(SpellSchools(i), true, 0.0f);
@@ -2737,7 +2736,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     SetUInt32Value(PLAYER_FIELD_MOD_TARGET_RESISTANCE,0);
     SetUInt32Value(PLAYER_FIELD_MOD_TARGET_PHYSICAL_RESISTANCE,0);
-    for(int i = 0; i < MAX_SPELL_SCHOOL; ++i)
+    for(int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
     {
         SetFloatValue(UNIT_FIELD_POWER_COST_MODIFIER+i,0.0f);
         SetFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER+i,0.0f);

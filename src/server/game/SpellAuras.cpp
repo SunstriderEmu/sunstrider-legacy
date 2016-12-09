@@ -5219,9 +5219,9 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
         if(m_target->GetTypeId() == TYPEID_PLAYER)
         {
             if(m_positive)
-                m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS,GetModifierValue(),apply);
+                m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS,GetModifierValue(),apply);
             else
-                m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG,GetModifierValue(),apply);
+                m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG,GetModifierValue(),apply);
 
             //apply damage to already equipped weapon
             for(UnitMods mod = UNIT_MOD_DAMAGE_MAINHAND; mod <= UNIT_MOD_DAMAGE_RANGED; mod = (UnitMods)(mod +1))
@@ -5238,7 +5238,7 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
             for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
             {
                 if((m_modifier.m_miscvalue & (1<<i)) != 0)
-                    m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i,GetModifierValue(),apply);
+                    m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i,GetModifierValue(),apply);
             }
         }
         else
@@ -5246,7 +5246,7 @@ void Aura::HandleModDamageDone(bool apply, bool Real)
             for(int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
             {
                 if((m_modifier.m_miscvalue & (1<<i)) != 0)
-                    m_target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i,GetModifierValue(),apply);
+                    m_target->ApplyModInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i,GetModifierValue(),apply);
             }
         }
         if(Pet* pet = m_target->GetPet())
