@@ -10,7 +10,7 @@ public:
         return &instance;
     }
 
-	bool Start(std::string filename, ::string& failureReason);
+	bool Start(std::string filename, std::string& failureReason);
 	bool Stop(std::string& failureReason);
 	/* Flush any currently buffered profiling state to the profile file.
 	* Has no effect if the profiler has not been started.
