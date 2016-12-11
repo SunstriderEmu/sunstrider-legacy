@@ -2142,6 +2142,10 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
     if (IsPassive() && GetTalentSpellCost(Id))
         return true;
 
+	if (HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
+		|| HasAttribute(SPELL_ATTR0_NEGATIVE_1))
+		return false;
+
     switch(Id)
     {
         case 23333:                                         // BG spell
@@ -2213,6 +2217,29 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
         case 30423: //netherspite spell
             return false;
     }
+
+	switch (Mechanic)
+	{
+	case MECHANIC_IMMUNE_SHIELD:
+		return true;
+	default:
+		break;
+	}
+
+	// Special case: effects which determine positivity of whole spell
+	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+	{
+		if (Effects[i].IsAura())
+		{
+			switch (Effects[i].ApplyAuraName)
+			{
+			case SPELL_AURA_MOD_STEALTH:
+				return true;
+			case SPELL_AURA_CHANNEL_DEATH_ITEM:
+				return false;
+			}
+		}
+	}
 
     switch(Effects[effIndex].Effect)
     {
@@ -2418,10 +2445,6 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
 
     // non-positive targets
     if(!_IsPositiveTarget(Effects[effIndex].TargetA.GetTarget(),Effects[effIndex].TargetB.GetTarget()))
-        return false;
-
-    if(HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
-       || HasAttribute(SPELL_ATTR0_NEGATIVE_1))
         return false;
 
     // negative spell if triggered spell is negative
