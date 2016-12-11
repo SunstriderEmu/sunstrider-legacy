@@ -17,8 +17,11 @@ struct AuthHandler;
 
 enum AuthStatus
 {
-    STATUS_CONNECTED = 0,
-    STATUS_AUTHED
+	STATUS_CHALLENGE = 0,
+	STATUS_LOGON_PROOF,
+	STATUS_RECONNECT_PROOF,
+	STATUS_AUTHED,
+	STATUS_CLOSED
 };
 
 struct AccountInfo
@@ -72,9 +75,6 @@ private:
     BigNumber b, B;
     BigNumber K;
     BigNumber _reconnectProof;
-
-    bool _sentChallenge;
-    bool _sentProof;
 
     AuthStatus _status;
     AccountInfo _accountInfo;
