@@ -4112,7 +4112,188 @@ void Spell::finish(bool ok, bool cancelChannel)
     //    m_caster->CastSpell(m_caster, 43137, true);
 }
 
-void Spell::SendCastResult(SpellCastResult result)
+
+void Spell::WriteCastResultInfo(WorldPacket& data, Player* caster, SpellInfo const* spellInfo, uint8 castCount, SpellCastResult result, /*SpellCustomErrors customError, */ uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/)
+{
+	data << uint32(spellInfo->Id);
+	data << uint8(result);                              // problem
+	data << uint8(castCount);                        // single cast or multi 2.3 (0/1)
+	switch (result)
+	{
+	case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
+		if (param1)
+			data << uint32(*param1);
+		else
+			data << uint32(spellInfo->RequiresSpellFocus);
+		break;
+	case SPELL_FAILED_REQUIRES_AREA:
+		// hardcode areas limitation case
+		if (param1)
+			data << uint32(*param1);
+		else
+		{
+			switch (spellInfo->Id)
+			{
+			case 41617:                             // Cenarion Mana Salve
+			case 41619:                             // Cenarion Healing Salve
+				data << uint32(3905);
+				break;
+			case 41618:                             // Bottled Nethergon Energy
+			case 41620:                             // Bottled Nethergon Vapor
+				data << uint32(3842);
+				break;
+			case 45373:                             // Bloodberry Elixir
+				data << uint32(4075);
+				break;
+			default:                                // default case
+				data << uint32(spellInfo->AreaId);
+				break;
+			}
+		}
+		break;
+	case SPELL_FAILED_TOTEMS:
+		if (param1)
+		{
+			data << uint32(*param1);
+			if (param2)
+				data << uint32(*param2);
+		}
+		else {
+			if (spellInfo->Totem[0])
+				data << uint32(spellInfo->Totem[0]);
+			if (spellInfo->Totem[1])
+				data << uint32(spellInfo->Totem[1]);
+		}
+		break;
+	case SPELL_FAILED_TOTEM_CATEGORY:
+		if (param1)
+		{
+			data << uint32(*param1);
+			if (param2)
+				data << uint32(*param2);
+		}
+		else {
+			if (spellInfo->TotemCategory[0])
+				data << uint32(spellInfo->TotemCategory[0]);
+			if (spellInfo->TotemCategory[1])
+				data << uint32(spellInfo->TotemCategory[1]);
+		}
+		break;
+	case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
+		if (param1)
+			data << uint32(*param1);
+		else {
+			data << uint32(spellInfo->EquippedItemClass);
+			data << uint32(spellInfo->EquippedItemSubClassMask);
+			data << uint32(spellInfo->EquippedItemInventoryTypeMask);
+		}
+		break;
+#ifdef LICH_KING
+	case SPELL_FAILED_TOO_MANY_OF_ITEM:
+		if (param1)
+			data << uint32(*param1);
+		else
+		{
+			uint32 item = 0;
+			for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS && !item; ++effIndex)
+				if (uint32 itemType = spellInfo->Effects[effIndex].ItemType)
+					item = itemType;
+
+			ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
+			if (proto && proto->ItemLimitCategory)
+				data << uint32(proto->ItemLimitCategory);
+		}
+		break;
+	case SPELL_FAILED_CUSTOM_ERROR:
+		data << uint32(customError);
+		break;
+
+	case SPELL_FAILED_NEED_MORE_ITEMS:
+		if (param1 && param2)
+		{
+			data << uint32(*param1);
+			data << uint32(*param2);
+		}
+		else
+		{
+			data << uint32(0); // Item entry
+			data << uint32(0); // Count
+		}
+		break;
+	case SPELL_FAILED_FISHING_TOO_LOW:
+		if (param1)
+			data << uint32(*param1);
+		else
+			data << uint32(0); // Skill level
+		break;
+	case SPELL_FAILED_NEED_EXOTIC_AMMO:
+		if (param1)
+			data << uint32(*param1);
+		else
+			data << uint32(spellInfo->EquippedItemSubClassMask);
+		break;
+#endif
+	case SPELL_FAILED_PREVENTED_BY_MECHANIC: //BC OK?
+		if (param1)
+			data << uint32(*param1);
+		else
+			data << uint32(spellInfo->Mechanic);
+		break;
+	case SPELL_FAILED_MIN_SKILL: //BC OK?
+		if (param1 && param2)
+		{
+			data << uint32(*param1);
+			data << uint32(*param2);
+		}
+		else
+		{
+			data << uint32(0); // SkillLine.dbc Id
+			data << uint32(0); // Amount
+		}
+		break;
+	case SPELL_FAILED_REAGENTS: //BC OK?
+	{
+		if (param1)
+			data << uint32(*param1);
+		else
+		{
+			uint32 missingItem = 0;
+			for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
+			{
+				if (spellInfo->Reagent[i] <= 0)
+					continue;
+
+				uint32 itemid = spellInfo->Reagent[i];
+				uint32 itemcount = spellInfo->ReagentCount[i];
+
+				if (!caster->HasItemCount(itemid, itemcount))
+				{
+					missingItem = itemid;
+					break;
+				}
+			}
+
+			data << uint32(missingItem);  // first missing item
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 castCount, SpellCastResult result, /*SpellCustomErrors customError,*/ uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/)
+{
+	if (result == SPELL_CAST_OK)
+		return;
+
+	WorldPacket data(SMSG_CAST_FAILED, 1 + 4 + 1);
+	WriteCastResultInfo(data, caster, spellInfo, castCount, result, /* customError, */param1, param2);
+
+	caster->SendDirectMessage(&data);
+}
+
+void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/) const
 {
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
@@ -4129,53 +4310,7 @@ void Spell::SendCastResult(SpellCastResult result)
     if(result != SPELL_CAST_OK)
     {
         WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
-        data << uint32(m_spellInfo->Id);
-        data << uint8(result);                              // problem
-        data << uint8(m_cast_count);                        // single cast or multi 2.3 (0/1)
-        switch (result)
-        {
-            case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
-                data << uint32(m_spellInfo->RequiresSpellFocus);
-                break;
-            case SPELL_FAILED_REQUIRES_AREA:
-                // hardcode areas limitation case
-                switch(m_spellInfo->Id)
-                {
-                    case 41617:                             // Cenarion Mana Salve
-                    case 41619:                             // Cenarion Healing Salve
-                        data << uint32(3905);
-                        break;
-                    case 41618:                             // Bottled Nethergon Energy
-                    case 41620:                             // Bottled Nethergon Vapor
-                        data << uint32(3842);
-                        break;
-                    case 45373:                             // Bloodberry Elixir
-                        data << uint32(4075);
-                        break;
-                    default:                                // default case
-                        data << uint32(m_spellInfo->AreaId);
-                        break;
-                }
-                break;
-            case SPELL_FAILED_TOTEMS:
-                if(m_spellInfo->Totem[0])
-                    data << uint32(m_spellInfo->Totem[0]);
-                if(m_spellInfo->Totem[1])
-                    data << uint32(m_spellInfo->Totem[1]);
-                break;
-            case SPELL_FAILED_TOTEM_CATEGORY:
-                if(m_spellInfo->TotemCategory[0])
-                    data << uint32(m_spellInfo->TotemCategory[0]);
-                if(m_spellInfo->TotemCategory[1])
-                    data << uint32(m_spellInfo->TotemCategory[1]);
-                break;
-            case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
-                data << uint32(m_spellInfo->EquippedItemClass);
-                data << uint32(m_spellInfo->EquippedItemSubClassMask);
-                data << uint32(m_spellInfo->EquippedItemInventoryTypeMask);
-                break;
-        }
-        (m_caster->ToPlayer())->SendDirectMessage(&data);
+		SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, /*m_customError, */ param1, param2);
     }
     else
     {
@@ -7881,7 +8016,7 @@ void Spell::LoadScripts()
     if (_scriptsLoaded)
         return;
     _scriptsLoaded = true;
-    sScriptMgr->CreateSpellScripts(m_spellInfo->Id, m_loadedScripts);
+    sScriptMgr->CreateSpellScripts(m_spellInfo->Id, m_loadedScripts, this);
     for (auto itr = m_loadedScripts.begin(); itr != m_loadedScripts.end();)
     {
         if (!(*itr)->_Load(this))
@@ -7953,7 +8088,7 @@ bool Spell::CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMo
 
     for (auto & m_loadedScript : m_loadedScripts)
     {
-        std::list<SpellScript::EffectHandler>::iterator effItr, effEndItr;
+		HookList<SpellScript::EffectHandler>::iterator effItr, effEndItr;
         SpellScriptHookType hookType;
         switch (mode)
         {

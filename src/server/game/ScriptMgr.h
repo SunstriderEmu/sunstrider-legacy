@@ -434,7 +434,7 @@ public: /* Script contexts */
 
     public: /* SpellScriptLoader */
 
-        void CreateSpellScripts(uint32 spellId, std::vector<SpellScript*>& scriptVector, Spell* invoker);
+		void CreateSpellScripts(uint32 spellId, std::vector<SpellScript*>& scriptVector, Spell* invoker) const;
         //NYIvoid CreateAuraScripts(uint32 spellId, std::vector<AuraScript*>& scriptVector, Aura* invoker);
         SpellScriptLoader* GetSpellScriptLoader(uint32 scriptId);
 
