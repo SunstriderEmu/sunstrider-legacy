@@ -14091,8 +14091,11 @@ bool Unit::IsInPartyWith(Unit const *unit) const
 
     if(u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return (u1->ToPlayer())->IsInSameGroupWith(u2->ToPlayer());
-    else
-        return false;
+	
+	if(u1->GetTypeId() == u2->GetTypeId() == TYPEID_UNIT)
+		return u1->GetFaction() == u2->GetFaction();
+
+	return false;
 }
 
 bool Unit::IsInRaidWith(Unit const *unit) const
