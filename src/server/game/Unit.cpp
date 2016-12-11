@@ -13823,6 +13823,7 @@ void Unit::SetCharmedBy(Unit* charmer, bool possess)
         RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
     CastStop();
+	AttackStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();
     SetEmoteState(0);
@@ -13940,6 +13941,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         type = CHARM_TYPE_CHARM;
 
     CastStop();
+	AttackStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     GetHostileRefManager().deleteReferences();
     DeleteThreatList();

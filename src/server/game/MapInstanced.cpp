@@ -88,7 +88,7 @@ void MapInstanced::DelayedUpdate(const uint32 diff)
     for (auto & m_InstancedMap : m_InstancedMaps)
         m_InstancedMap.second->DelayedUpdate(diff);
 
-    Map::DelayedUpdate(diff); // this may be removed
+	Map::DelayedUpdate(diff);
 }
 
 void MapInstanced::MapCrashed(Map* map)
