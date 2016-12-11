@@ -703,6 +703,12 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const *spellProto, bool durabilityLoss)
 {
+	if (pVictim->IsImmunedToDamage(spellProto->GetSchoolMask(), true))
+	{
+		SendSpellDamageImmune(pVictim, spellProto->Id);
+		return 0;
+	}
+
     if(pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
     {
         pVictim->ToCreature()->AI()->DamageTaken(this, damage);
@@ -9376,12 +9382,8 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 
     SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
     for(auto itr : mechanicList)
-    {
         if(itr.type == spellInfo->Mechanic)
-        {
             return true;
-        }
-    }
 
     if(ToCreature() && ToCreature()->IsTotem())
         if(spellInfo->IsChanneled())

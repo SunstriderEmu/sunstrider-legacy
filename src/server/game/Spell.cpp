@@ -2842,9 +2842,8 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
     if(    m_spellInfo->Speed
         && !(m_spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         && !(m_spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE))
-        && (   unit->IsImmunedToDamage(m_spellInfo->GetSchoolMask(),true)
-            || unit->IsImmunedToSpell(m_spellInfo,true) )
-      )
+        && unit->IsImmunedToSpell(m_spellInfo,true) 
+	  )
     {
         caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
