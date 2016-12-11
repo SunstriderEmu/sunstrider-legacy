@@ -1628,25 +1628,52 @@ void GameObject::Use(Unit* user)
     spell->prepare(&targets);
 }
 
-uint32 GameObject::CastSpell(Unit* target, uint32 spell, uint64 originalCaster)
+uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster)
 {
+	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+	if (!spellInfo)
+		return;
+
+	bool self = false;
+	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+	{
+		if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+		{
+			self = true;
+			break;
+		}
+	}
+
+	if (self)
+	{
+		if (target)
+			target->CastSpell(target, spellInfo, true);
+		return;
+	}
+
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
     if(!trigger) 
         return SPELL_FAILED_UNKNOWN;
 
+	// remove immunity flags, to allow spell to target anything
+	trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+
     //trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
     trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if(Unit *owner = GetOwner())
     {
+		if (owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+			trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
         trigger->SetFaction(owner->GetFaction());
+		// needed for GO casts for proper target validation checks
         trigger->SetOwnerGUID(owner->GetGUID());
-        return trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
+        return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
-        trigger->SetFaction(14);
-        return trigger->CastSpell(target, spell, true, nullptr, nullptr, originalCaster);
+		trigger->SetFaction(spellInfo->IsPositive() ? 35 : 14);
+        return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster);
     }
 }
 
