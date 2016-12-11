@@ -3965,6 +3965,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
             m_CastItem = nullptr;
 
             player->StoreItem( dest, pNewItem, true);
+			player->SendNewItem(pNewItem, 1, true, false);
+			player->ItemAddedQuestCheck(newitemid, 1);
             return;
         }
     }
@@ -4002,6 +4004,8 @@ void Spell::EffectSummonChangeItem(uint32 i)
 
             player->EquipItem( dest, pNewItem, true);
             player->AutoUnequipOffhandIfNeed();
+			player->SendNewItem(pNewItem, 1, true, false);
+			player->ItemAddedQuestCheck(newitemid, 1);
             return;
         }
     }
