@@ -7600,6 +7600,8 @@ void Spell::HandleLaunchPhase()
     }
 #endif
 
+	PrepareTargetProcessing();
+
     bool firstTarget = true;
     for (auto & target : m_UniqueTargetInfo)
     {
@@ -7635,6 +7637,8 @@ void Spell::HandleLaunchPhase()
         DoAllEffectOnLaunchTarget(target, multiplier, firstTarget);
         firstTarget = false;
     }
+
+	FinishTargetProcessing();
 }
 
 void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier, bool firstTarget)
