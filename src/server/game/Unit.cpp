@@ -10748,6 +10748,7 @@ void Unit::SetDeathState(DeathState s)
         //dont know why since in IncreaseMaxHealth currenthealth is checked
         SetHealth(0);
         SetPower(GetPowerType(), 0);
+		SetEmoteState(0);
     }
     else if(s == JUST_RESPAWNED)
     {
