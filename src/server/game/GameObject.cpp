@@ -495,8 +495,12 @@ void GameObject::Update(uint32 diff)
                         this->VisitNearbyWorldObject(radius, checker);
                     }
                 }
-                else                                        // environmental trap
-                {
+				else if (GetOwnerGUID())
+				{ // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
+					m_despawnTime = 1; //trigger despawn
+				}
+                else // environmental trap
+                {   
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
 
                     // affect only players
