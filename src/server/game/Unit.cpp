@@ -2001,7 +2001,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             RemainingDamage -= currentAbsorb;
 
             // check if caster is immune to damage
-            if (caster->IsImmunedToDamage(schoolMask))
+            if (caster->IsImmunedToDamage(spellProto))
             {
                 pVictim->SendSpellMiss(caster, (*i)->GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
                 continue;
@@ -2033,7 +2033,7 @@ void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffe
             RemainingDamage -= splitted;
 
             // check if caster is immune to damage
-            if (caster->IsImmunedToDamage(schoolMask))
+            if (caster->IsImmunedToDamage(spellProto))
             {
                 pVictim->SendSpellMiss(caster, (*i)->GetSpellInfo()->Id, SPELL_MISS_IMMUNE);
                 continue;
@@ -2801,7 +2801,7 @@ SpellMissInfo Unit::SpellHitResult(Unit *pVictim, SpellInfo const *spell, bool C
         return SPELL_MISS_IMMUNE;
 
     // Check for immune (use charges)
-    if (!spell->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  && pVictim->IsImmunedToDamage(spell->GetSchoolMask(),true))
+    if (!spell->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  && pVictim->IsImmunedToDamage(spell))
         return SPELL_MISS_IMMUNE;
 
     // All positive spells can`t miss
@@ -9316,7 +9316,22 @@ int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
     return AdvertisedBenefit;
 }
 
-bool Unit::IsImmunedToDamage(SpellSchoolMask shoolMask, bool useCharges)
+bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo) const
+{
+	if (!spellInfo)
+		return false;
+
+	// for example 40175
+	if (spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY) && spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+		return false;
+
+	if (spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) || spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+		return false;
+
+	return IsImmunedToDamage(spellInfo->GetSchoolMask());
+}
+
+bool Unit::IsImmunedToDamage(SpellSchoolMask schoolMask) const
 {
     //If m_immuneToSchool type contain this school type, IMMUNE damage.
     SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
@@ -9365,8 +9380,9 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
             return true;
 
     if( !(spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)) &&         // unaffected by school immunity
-        !(spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))               // can remove immune (by dispell or immune it)
-        && (spellInfo->Id != 42292))
+        !(spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)) &&             // can remove immune (by dispell or immune it)
+		!(spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE)) &&
+         (spellInfo->Id != 42292))
     {
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
         for(auto itr : schoolList)
@@ -9433,14 +9449,15 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
                         return true;
 
 #ifdef LICH_KING
-        // Check for immune to application of harmful magical effects
-        AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
-        for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-            if (/*(spellInfo->Dispel == DISPEL_MAGIC || spellInfo->Dispel == DISPEL_CURSE || spellInfo->Dispel == DISPEL_DISEASE) &&*/ // Magic debuff, xinef: all kinds?
-                ((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&  // Check school
-                !spellInfo->IsPositiveEffect(index) &&                                  // Harmful
-                spellInfo->Effects[index].Effect != SPELL_EFFECT_PERSISTENT_AREA_AURA)  // Not Persistent area auras
-                return true;
+		if (!spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+		{
+			// Check for immune to application of harmful magical effects
+			AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
+			for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
+				if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
+					(!IsFriendlyTo(caster) || !spellInfo->IsPositiveEffect(index)))  // Harmful
+					return true;
+		}
 #endif
     }
 

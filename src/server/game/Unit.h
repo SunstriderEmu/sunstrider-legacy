@@ -1874,7 +1874,9 @@ class TC_GAME_API Unit : public WorldObject
         void ApplySpellDispelImmunity(const SpellInfo * spellProto, DispelType type, bool apply);
         virtual bool IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges = false);
                                                             // redefined in Creature
-        bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask, bool useCharges = false);
+
+		bool IsImmunedToDamage(SpellInfo const* spellInfo) const;
+		bool IsImmunedToDamage(SpellSchoolMask meleeSchoolMask) const;
         virtual bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const;
                                                             // redefined in Creature
 
