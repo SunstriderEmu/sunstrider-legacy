@@ -1636,7 +1636,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
 {
 	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
 	if (!spellInfo)
-		return;
+		return SPELL_FAILED_UNKNOWN;
 
 	bool self = false;
 	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -1651,8 +1651,8 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
 	if (self)
 	{
 		if (target)
-			target->CastSpell(target, spellInfo, true);
-		return;
+			return target->CastSpell(target, spellInfo, true);
+		return SPELL_FAILED_UNKNOWN;
 	}
 
     //summon world trigger

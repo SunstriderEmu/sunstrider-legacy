@@ -703,7 +703,7 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const *spellProto, bool durabilityLoss)
 {
-	if (pVictim->IsImmunedToDamage(spellProto->GetSchoolMask(), true))
+	if (pVictim->IsImmunedToDamage(spellProto))
 	{
 		SendSpellDamageImmune(pVictim, spellProto->Id);
 		return 0;
@@ -1413,7 +1413,7 @@ void Unit::CalculateMeleeDamage(Unit *pVictim, uint32 damage, CalcDamageInfo *da
     }
 
     // Physical Immune check
-    if(damageInfo->target->IsImmunedToDamage(SpellSchoolMask(damageInfo->damageSchoolMask),true))
+    if(damageInfo->target->IsImmunedToDamage(SpellSchoolMask(damageInfo->damageSchoolMask)))
     {
        damageInfo->HitInfo       |= HITINFO_NORMALSWING;
        damageInfo->TargetState    = VICTIMSTATE_IS_IMMUNE;
@@ -9336,13 +9336,13 @@ bool Unit::IsImmunedToDamage(SpellSchoolMask schoolMask) const
     //If m_immuneToSchool type contain this school type, IMMUNE damage.
     SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
     for (auto itr : schoolList)
-        if(itr.type & shoolMask)
+        if(itr.type & schoolMask)
             return true;
 
     //If m_immuneToDamage type contain magic, IMMUNE damage.
     SpellImmuneList const& damageList = m_spellImmune[IMMUNITY_DAMAGE];
     for (auto itr : damageList)
-        if(itr.type & shoolMask)
+        if(itr.type & schoolMask)
             return true;
 
     return false;

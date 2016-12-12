@@ -352,7 +352,7 @@ HostileReference* ThreatContainer::selectNextVictim(Creature* pAttacker, Hostile
             fallback = currentRef;
 
         // some units are preferred in comparison to others
-        if(iter != lastRef && (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask(), false) ||
+        if(iter != lastRef && (target->IsImmunedToDamage(pAttacker->GetMeleeDamageSchoolMask()) ||
                 target->HasUnitState(UNIT_STATE_CONFUSED) || (pAttacker->IsWorldBoss() && target->HasAuraEffect(30300))
                 ) )
         {
