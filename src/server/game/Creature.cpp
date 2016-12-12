@@ -1573,6 +1573,7 @@ void Creature::SetDeathState(DeathState s)
         SetLootRecipient(nullptr);
         ResetPlayerDamageReq();
 
+		SetCannotReachTarget(false);
         UpdateMovementFlags();
 
         RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
