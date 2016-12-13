@@ -1033,7 +1033,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
 #endif
             data << uint16(pet->GetMaxHealth());
 
-    Powers petpowertype = pet->GetPowerType();
+    Powers petpowertype = pet ? pet->GetPowerType() : POWER_MANA; //not used if no pet
     if (updateFlags & GROUP_UPDATE_FLAG_PET_POWER_TYPE)
         data << (uint8)petpowertype;
 
@@ -1046,20 +1046,23 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket &recvData)
     uint64 petauramask = 0;
     size_t petMaskPos = data.wpos();
     data << (uint64)petauramask;                       // placeholder
-    for (uint8 i = 0; i < MAX_AURAS; ++i)
-    {
-        if (uint32 petaura = pet->GetUInt32Value(UNIT_FIELD_AURA + i))
-        {
-            petauramask |= (uint64(1) << i);
+	if (pet)
+	{
+		for (uint8 i = 0; i < MAX_AURAS; ++i)
+		{
+			if (uint32 petaura = pet->GetUInt32Value(UNIT_FIELD_AURA + i))
+			{
+				petauramask |= (uint64(1) << i);
 #ifdef BUILD_335_SUPPORT
-            if (GetClientBuild() == BUILD_335)
-                data << (uint32)petaura;
-            else
+				if (GetClientBuild() == BUILD_335)
+					data << (uint32)petaura;
+				else
 #endif
-                data << (uint16)petaura;
-            data << (uint8)1; //aura flags
-        }
-    }
+				data << (uint16)petaura;
+				data << (uint8)1; //aura flags
+			}
+		}
+	}
     data.put<uint64>(petMaskPos, petauramask);           // GROUP_UPDATE_FLAG_PET_AURAS
 
 #ifdef LICH_KING
