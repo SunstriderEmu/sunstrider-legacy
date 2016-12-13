@@ -980,7 +980,7 @@ bool ChatHandler::HandleAccountSetPasswordCommand(const char* args)
     uint32 targetSecurity = sAccountMgr->GetSecurity(targetAccountId);
 
     /// m_session==NULL only for console
-    uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_ADMINISTRATOR;
+    uint32 plSecurity = m_session ? m_session->GetSecurity() : SEC_CONSOLE;
 
     /// can set password only for target with less security
     /// This is also reject self apply in fact

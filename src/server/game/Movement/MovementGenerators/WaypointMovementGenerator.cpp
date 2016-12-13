@@ -106,7 +106,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
         direction = WaypointPathDirection(i_path->pathDirection);
     }
     
-    //some data validation
+    //some data validation, should be moved elsewhere
     {
         if (path_type >= WP_PATH_TYPE_TOTAL)
         {
