@@ -297,7 +297,7 @@ class HookList final
 	typedef std::vector<T> ContainerType;
 
 private:
-	typename ContainerType _container;
+	ContainerType _container;
 
 public:
 	typedef typename ContainerType::iterator iterator;
