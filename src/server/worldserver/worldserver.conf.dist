@@ -80,7 +80,7 @@ LoginDatabase.SynchThreads     = 1
 WorldDatabase.SynchThreads     = 1
 CharacterDatabase.SynchThreads = 2
 LogsDatabase.SynchThreads      = 1
-MaxPingTime = 30
+MaxPingTime = 5
 WorldServerPort = 8085
 BindIP = "0.0.0.0"
 

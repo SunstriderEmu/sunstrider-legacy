@@ -172,7 +172,7 @@ int main(int argc, char** argv)
     SetProcessPriority("server.authserver");
 
     // Enabled a timed callback for handling the database keep alive ping
-    _dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 30);
+    _dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 5);
     _dbPingTimer = new boost::asio::deadline_timer(*_ioService);
     _dbPingTimer->expires_from_now(boost::posix_time::minutes(_dbPingInterval));
     _dbPingTimer->async_wait(KeepDatabaseAliveHandler);
