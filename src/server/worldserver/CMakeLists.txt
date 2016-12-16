@@ -20,6 +20,7 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(worldserver
   ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
+  ${CMAKE_CURRENT_SOURCE_DIR}/worldserver.conf.dist
 )
 
 if( NOT WIN32 )

@@ -22,6 +22,7 @@ GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 add_executable(authserver
   ${PRIVATE_PCH_SOURCE}
   ${PRIVATE_SOURCES}
+  ${CMAKE_CURRENT_SOURCE_DIR}/authserver.conf.dist
 )
 
 if( NOT WIN32 )
