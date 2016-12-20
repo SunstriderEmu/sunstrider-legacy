@@ -2760,14 +2760,14 @@ void Aura::HandleAuraWaterWalk(bool apply, bool Real)
     if(!Real)
         return;
 
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_WATER_WALK, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_LAND_WALK, 8+4);
-    data << m_target->GetPackGUID();
-    data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    m_target->SetWaterWalking(apply);
 }
 
 void Aura::HandleAuraFeatherFall(bool apply, bool Real)
@@ -2776,17 +2776,17 @@ void Aura::HandleAuraFeatherFall(bool apply, bool Real)
     if(!Real)
         return;
         
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    m_target->SetFeatherFall(apply);
+
     if (!apply && m_target->GetTypeId() == TYPEID_PLAYER)
         m_target->ToPlayer()->SetFallInformation(0, m_target->GetPositionZ());
-
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_FEATHER_FALL, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_NORMAL_FALL, 8+4);
-    data << m_target->GetPackGUID();
-    data << (uint32)0;
-    m_target->SendMessageToSet(&data,true);
 }
 
 void Aura::HandleAuraHover(bool apply, bool Real)
@@ -2795,17 +2795,17 @@ void Aura::HandleAuraHover(bool apply, bool Real)
     if(!Real)
         return;
         
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    m_target->SetHover(apply);
+
     if (!apply && m_target->GetTypeId() == TYPEID_PLAYER)
         m_target->ToPlayer()->SetFallInformation(0, m_target->GetPositionZ());
-
-    WorldPacket data;
-    if(apply)
-        data.Initialize(SMSG_MOVE_SET_HOVER, 8+4);
-    else
-        data.Initialize(SMSG_MOVE_UNSET_HOVER, 8+4);
-    data << m_target->GetPackGUID();
-    data << uint32(0);
-    m_target->SendMessageToSet(&data,true);
 }
 
 void Aura::HandleWaterBreathing(bool apply, bool Real)
@@ -3203,8 +3203,9 @@ void Aura::HandleAuraModSkill(bool apply, bool Real)
 {
     if(m_target->GetTypeId() != TYPEID_PLAYER)
         return;
-
-    uint32 prot=GetSpellInfo()->Effects[m_effIndex].MiscValue;
+    
+    
+    uint32 prot = GetMiscValue(); 
     int32 points = GetModifierValue();
 
     (m_target->ToPlayer())->ModifySkillBonus(prot,(apply ? points: -points),m_modifier.m_auraname==SPELL_AURA_MOD_SKILL_TALENT);
@@ -3288,17 +3289,25 @@ void Aura::HandleAuraTrackCreatures(bool apply, bool Real)
 
     if(apply)
         m_target->RemoveNoStackAurasDueToAura(this);
-    m_target->SetUInt32Value(PLAYER_TRACK_CREATURES, apply ? ((uint32)1)<<(m_modifier.m_miscvalue-1) : 0 );
+
+    if (apply)
+        m_target->SetFlag(PLAYER_TRACK_CREATURES, uint32(1) << (m_modifier.m_miscvalue - 1));
+    else
+        m_target->RemoveFlag(PLAYER_TRACK_CREATURES, uint32(1) << (m_modifier.m_miscvalue - 1));
 }
 
 void Aura::HandleAuraTrackResources(bool apply, bool Real)
 {
-    if(m_target->GetTypeId()!=TYPEID_PLAYER)
+    if(m_target->GetTypeId() != TYPEID_PLAYER)
         return;
 
     if(apply)
         m_target->RemoveNoStackAurasDueToAura(this);
-    m_target->SetUInt32Value(PLAYER_TRACK_RESOURCES, apply ? ((uint32)1)<<(m_modifier.m_miscvalue-1): 0 );
+
+    if (apply)
+        m_target->SetFlag(PLAYER_TRACK_RESOURCES, uint32(1) << (m_modifier.m_miscvalue - 1));
+    else
+        m_target->RemoveFlag(PLAYER_TRACK_RESOURCES, uint32(1) << (m_modifier.m_miscvalue - 1));
 }
 
 void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
@@ -3313,12 +3322,20 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
     if(apply)
         m_target->RemoveNoStackAurasDueToAura(this);
 
-    m_target->ApplyModFlag(PLAYER_FIELD_BYTES,PLAYER_FIELD_BYTE_TRACK_STEALTHED,apply);
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    m_target->ApplyModFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTE_TRACK_STEALTHED, apply);
 }
 
 void Aura::HandleModStealthLevel(bool Apply, bool Real)
 {
-    if(Real) m_target->SetToNotify(); //update visibility for nearby units
+    if(Real) 
+        m_target->SetToNotify(); //update visibility for nearby units
 }
 
 void Aura::HandleAuraModScale(bool apply, bool Real)
@@ -3507,7 +3524,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         m_target->AddUnitState(UNIT_STATE_DIED);
         m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
 
         // prevent interrupt message
         if(m_caster_guid==m_target->GetGUID() && m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
@@ -3523,15 +3540,17 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         data<<uint8(1);
         m_target->SendMessageToSet(&data,true);
         */
-                                                            // blizz like 2.0.x
-        m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29);
-                                                            // blizz like 2.0.x
-        m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
-                                                            // blizz like 2.0.x
-        m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
-
+                                                            
+        m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_29); // blizz like 2.0.x
+        m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);  // blizz like 2.0.x
+        m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);  // blizz like 2.0.x
         m_target->ClearUnitState(UNIT_STATE_DIED);
         
+        /* TC
+        if (Creature* creature = m_target->ToCreature())
+            creature->InitializeReactState();
+            */
+
         if (Map* map = m_target->GetMap()) {
             if (m_target->ToPlayer()) {
                 float x, y, z;
@@ -3553,17 +3572,32 @@ void Aura::HandleAuraModDisarm(bool apply, bool Real)
     // not sure for it's correctness
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
-    else
+    else {
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISARMED);
+    }
 
     if (m_target->GetTypeId() == TYPEID_PLAYER)
     {
+        Player* player = m_target->ToPlayer();
         // main-hand attack speed already set to special value for feral form already and don't must change and reset at remove.
-        if ((m_target->ToPlayer())->IsInFeralForm())
+        if (player->IsInFeralForm())
             return;
 
+        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+        {
+            uint8 attacktype = Player::GetAttackBySlot(EQUIPMENT_SLOT_MAINHAND);
+
+            /* TODO: update weapon damage & auras
+            player->ApplyItemDependentAuras(item, !apply);
+            if (attacktype < MAX_ATTACK)
+                player->_ApplyWeaponDamage(slot, item->GetTemplate(), NULL, !apply);
+            */
+        }
+
         if (apply)
-            m_target->SetAttackTime(BASE_ATTACK,BASE_ATTACK_TIME);
+            m_target->SetAttackTime(BASE_ATTACK, BASE_ATTACK_TIME);
         else
             (m_target->ToPlayer())->SetRegularAttackTime();
     }
@@ -3588,6 +3622,8 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
             caster->CastSpell(m_target, 32747, true);
     }
 
+    if (!apply && m_target->HasAuraType(GetAuraType()))
+        return;
     m_target->SetControlled(apply, UNIT_STATE_STUNNED);
 }
 
@@ -3597,8 +3633,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
     {
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
         {
-            // drop flag at stealth in bg
-            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);  // drop flag at stealth in bg
 
             // remove player from the objective's active player count at stealth
             if(OutdoorPvP * pvp = (m_target->ToPlayer())->GetOutdoorPvP())
@@ -3672,7 +3707,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
     {
         m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
 
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); // also drop flag at invisibiliy in bg
 
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
         {
@@ -3685,9 +3720,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
 
         // apply only if not in GM invisibility and not stealth
         if(m_target->GetVisibility()==VISIBILITY_ON)
-        {
             m_target->SetVisibility(VISIBILITY_ON);
-        }
     }
     else
     {
@@ -3698,11 +3731,11 @@ void Aura::HandleInvisibility(bool apply, bool Real)
             m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
 
         // only at real aura remove and if not have different invisibility auras.
-        if(Real && m_target->m_invisibilityMask==0)
+        if(Real && m_target->m_invisibilityMask == 0)
         {
             // remove glow vision
             if(m_target->GetTypeId() == TYPEID_PLAYER)
-                m_target->RemoveFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+                m_target->RemoveFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
             // apply only if not in GM invisibility & not stealthed while invisible
             if(m_target->GetVisibility()!=VISIBILITY_OFF)
@@ -3742,6 +3775,9 @@ void Aura::HandleAuraModRoot(bool apply, bool Real)
 {
     // only at real add/remove aura
     if(!Real)
+        return;
+
+    if (!apply && m_target->HasAuraType(GetAuraType()))
         return;
 
     m_target->SetControlled(apply, UNIT_STATE_ROOT);
@@ -3931,12 +3967,12 @@ void Aura::HandleAuraModIncreaseFlightSpeed(bool apply, bool Real)
         m_target->SendMessageToSet(&data, true);
 
         //Players on flying mounts must be immune to polymorph
-        if (m_target->GetTypeId()==TYPEID_PLAYER)
-            m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,MECHANIC_POLYMORPH,apply);
+        if (m_target->GetTypeId() == TYPEID_PLAYER)
+            m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_POLYMORPH, apply);
 
         // Dragonmaw Illusion (overwrite mount model, mounted aura already applied)
         if( apply && m_target->HasAuraEffect(42016,0) && m_target->GetMountID())
-            m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID,16314);
+            m_target->SetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID, 16314);
     }
 
     m_target->UpdateSpeed(MOVE_FLIGHT);
@@ -4059,47 +4095,19 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 
 void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
 {
-    if(!apply)
-    {
-        if(m_target->GetTypeId() == TYPEID_PLAYER)
-        {
-            if((m_target->ToPlayer())->InBattleground())
-            {
-                Battleground *bg = (m_target->ToPlayer())->GetBattleground();
-                if(bg)
-                {
-                    switch(bg->GetTypeID())
-                    {
-                        case BATTLEGROUND_AV:
-                        {
-                            break;
-                        }
-                        case BATTLEGROUND_WS:
-                        {
-                            // Warsong Flag, horde               // Silverwing Flag, alliance
-                            if(GetId() == 23333 || GetId() == 23335)
-                                    bg->EventPlayerDroppedFlag((m_target->ToPlayer()));
-                            break;
-                        }
-                        case BATTLEGROUND_AB:
-                        {
-                            break;
-                        }
-                        case BATTLEGROUND_EY:
-                        {
-                           if(GetId() == 34976)
-                                bg->EventPlayerDroppedFlag((m_target->ToPlayer()));
-                            break;
-                        }
-                    }
-                }
-            }
-            else
-                sOutdoorPvPMgr->HandleDropFlag(m_target->ToPlayer(),GetSpellInfo()->Id);
-        }
-    }
+    m_target->ApplySpellImmune(GetId(), IMMUNITY_EFFECT, m_modifier.m_miscvalue, apply);
 
-    m_target->ApplySpellImmune(GetId(),IMMUNITY_EFFECT,m_modifier.m_miscvalue,apply);
+    Player* player = m_target->ToPlayer();
+    if (!apply && player && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_UNATTACKABLE))
+    {
+        if (player->InBattleground())
+        {
+            if (Battleground* bg = player->GetBattleground())
+                bg->EventPlayerDroppedFlag(player);
+        }
+        else
+            sOutdoorPvPMgr->HandleDropFlag(player, GetSpellInfo()->Id);
+    }
 }
 
 void Aura::HandleAuraModStateImmunity(bool apply, bool Real)
@@ -4125,7 +4133,7 @@ void Aura::HandleAuraModStateImmunity(bool apply, bool Real)
 void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 {
     if(apply && m_modifier.m_miscvalue == SPELL_SCHOOL_MASK_NORMAL)
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
 
     m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,m_modifier.m_miscvalue,apply);
 
@@ -4177,7 +4185,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 
 void Aura::HandleAuraModDmgImmunity(bool apply, bool Real)
 {
-    m_target->ApplySpellImmune(GetId(),IMMUNITY_DAMAGE,m_modifier.m_miscvalue,apply);
+    m_target->ApplySpellImmune(GetId(), IMMUNITY_DAMAGE, m_modifier.m_miscvalue, apply);
 }
 
 void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
@@ -4186,6 +4194,7 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
     if(!Real)
         return;
 
+    //todo, check if other auras gives the same immunities before removing?
     m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
 
     // Stoneform - need bleed and disease immunity
@@ -4218,7 +4227,7 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
             }
         }
 
-        m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,MECHANIC_BLEED,apply);
+        m_target->ApplySpellImmune(GetId(), IMMUNITY_MECHANIC, MECHANIC_BLEED, apply);
     }
 }
 
@@ -4246,8 +4255,11 @@ void Aura::HandleAuraModStalked(bool apply, bool Real)
     // used by spells: Hunter's Mark, Mind Vision, Syndicate Tracker (MURP) DND
     if(apply)
         m_target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT);
-    else
-        m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT);
+    else {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (!m_target->HasAuraType(GetAuraType()))
+            m_target->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_TRACK_UNIT);
+    }
 }
 
 /*********************************************************/
@@ -4885,8 +4897,12 @@ void Aura::HandleComprehendLanguage(bool apply, bool Real)
 {
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_COMPREHEND_LANG);
-    else
+    else {
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_COMPREHEND_LANG);
+    }
 }
 
 void Aura::HandleAuraModIncreaseHealth(bool apply, bool Real)
@@ -5011,7 +5027,7 @@ void Aura::HandleAuraModRegenInterrupt(bool /*apply*/, bool Real)
     if(!Real)
         return;
 
-    if(m_target->GetTypeId()!=TYPEID_PLAYER)
+    if(m_target->GetTypeId() != TYPEID_PLAYER)
         return;
 
     (m_target->ToPlayer())->UpdateManaRegen();
@@ -5462,8 +5478,14 @@ void Aura::HandleAuraEmpathy(bool apply, bool Real)
     if(m_target->GetTypeId() != TYPEID_UNIT)
         return;
 
-    CreatureTemplate const * ci = sObjectMgr->GetCreatureTemplate(m_target->GetEntry());
-    if(ci && ci->type == CREATURE_TYPE_BEAST)
+    if (!apply)
+    {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+    }
+
+    if(m_target->GetCreatureType() == CREATURE_TYPE_BEAST)
         m_target->ApplyModUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_SPECIALINFO, apply);
 }
 
@@ -5475,6 +5497,7 @@ void Aura::HandleAuraUntrackable(bool apply, bool Real)
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (m_target->HasAuraType(GetAuraType()))
             return;
+
         m_target->RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_STAND_FLAGS_UNTRACKABLE);
     }
 }
@@ -5487,6 +5510,7 @@ void Aura::HandleAuraModPacify(bool apply, bool Real)
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (m_target->HasAuraType(GetAuraType()))
             return;
+
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
     }
 }
@@ -5510,6 +5534,7 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
     {
         if (m_target->HasAuraType(GetAuraType()))
             return;
+
         m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
     }
 }
@@ -5520,22 +5545,14 @@ void Aura::HandleAuraAllowFlight(bool apply, bool Real)
     if(!Real)
         return;
 
-    // allow fly
-    WorldPacket data;
-    if(apply)
+    if (!apply)
     {
-        ((Player*)m_target)->SetFlying(true);
-        data.Initialize(SMSG_MOVE_SET_CAN_FLY, 12);
-    }
-    else
-    {
-        data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 12);
-        ((Player*)m_target)->SetFlying(false);
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()) || m_target->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED))
+            return;
     }
 
-    data << m_target->GetPackGUID();
-    data << uint32(0);                                      // unk
-    m_target->SendMessageToSet(&data, true);
+    m_target->SetFlying(apply);
 }
 
 void Aura::HandleModRating(bool apply, bool Real)
@@ -5558,8 +5575,13 @@ void Aura::HandleForceMoveForward(bool apply, bool Real)
         return;
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVE);
-    else
+    else {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+
         m_target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVE);
+    }
 }
 
 void Aura::HandleAuraModExpertise(bool /*apply*/, bool Real)
@@ -5615,15 +5637,19 @@ void Aura::HandleAuraRetainComboPoints(bool apply, bool Real)
             target->AddComboPoints(unit, -GetModifierValue());
 }
 
-void Aura::HandleModUnattackable( bool Apply, bool Real )
+void Aura::HandleModUnattackable( bool apply, bool real )
 {
-    if(Real && Apply)
+    // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+    if (!apply && m_target->HasAuraType(SPELL_AURA_MOD_UNATTACKABLE))
+        return;
+
+    if(real && apply)
     {
         m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
     }
 
-    m_target->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE,Apply);
+    m_target->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE, apply);
 }
 
 void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
@@ -6879,15 +6905,14 @@ void Aura::HandlePreventFleeing(bool apply, bool Real)
 
     m_target->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_FEAR, apply);
 
-    Unit::AuraList const& fearAuras = m_target->GetAurasByType(SPELL_AURA_MOD_FEAR);
-    if( !fearAuras.empty() )
-    {
-        m_target->SetControlled(!apply, UNIT_STATE_FLEEING);
-        /*if (apply)
-            m_target->SetFeared(false, fearAuras.front()->GetCasterGUID());
-        else
-            m_target->SetFeared(true);*/
-    }
+    /*
+    // Since patch 3.0.2 this mechanic no longer affects fear effects. It will ONLY prevent humanoids from fleeing due to low health.
+    if (!apply || target->HasAuraType(SPELL_AURA_MOD_FEAR))
+        return;
+    */
+
+    if(apply && m_target->HasAuraType(SPELL_AURA_MOD_FEAR))
+        m_target->SetControlled(false, UNIT_STATE_FLEEING);
 }
 
 void Aura::HandleManaShield(bool apply, bool Real)
@@ -6930,8 +6955,13 @@ void Aura::HandleArenaPreparation(bool apply, bool Real)
 
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
-    else
+    else {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PREPARATION);
+    }
 }
 
 void Aura::HandleAttackerPowerBonus(bool apply, bool Real)
