@@ -145,8 +145,8 @@ enum SpellFacingFlags
 
 #define DEFAULT_HOVER_HEIGHT 1.0f
 
-// byte value (UNIT_FIELD_BYTES_1,0)
-enum UnitStandStateType
+// byte value (UNIT_FIELD_BYTES_1,0) // UNIT_BYTES_1_OFFSET_STAND_STATE
+enum UnitStandStateType 
 {
     UNIT_STAND_STATE_STAND             = 0,
     UNIT_STAND_STATE_SIT               = 1,
@@ -160,7 +160,7 @@ enum UnitStandStateType
     UNIT_STAND_STATE_SUBMERGED         = 9
 };
 
-// byte flag value (UNIT_FIELD_BYTES_1, 2)
+// byte flag value (UNIT_FIELD_BYTES_1, 2) // UNIT_BYTES_1_OFFSET_VIS_FLAG
 enum UnitStandFlags
 {
     UNIT_STAND_FLAGS_UNK1         = 0x01,
@@ -177,6 +177,23 @@ enum UnitBytes0Offsets
     UNIT_BYTES_0_OFFSET_CLASS       = 1,
     UNIT_BYTES_0_OFFSET_GENDER      = 2,
     UNIT_BYTES_0_OFFSET_POWER_TYPE  = 3,
+};
+
+
+enum UnitBytes1Offsets
+{
+    UNIT_BYTES_1_OFFSET_STAND_STATE = 0,
+    UNIT_BYTES_1_OFFSET_PET_LOYALTY = 1,
+    UNIT_BYTES_1_OFFSET_VIS_FLAG = 2,
+    UNIT_BYTES_1_OFFSET_ANIM_TIER = 3,
+};
+
+enum UnitBytes2Offsets
+{
+    UNIT_BYTES_2_OFFSET_SHEATH_STATE = 0,
+    UNIT_BYTES_2_OFFSET_1_UNK = 1, //Not sure what this index is for. TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1,
+    UNIT_BYTES_2_OFFSET_PET_FLAGS = 2,
+    UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3,
 };
 
 // byte flags value (UNIT_FIELD_BYTES_1, 3)
@@ -216,7 +233,7 @@ enum ShapeshiftForm
     FORM_SPIRITOFREDEMPTION = 0x20
 };
 
-// low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2
+// low byte ( 0 from 0..3 ) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_SHEATH_STATE
 enum SheathState
 {
     SHEATH_STATE_UNARMED  = 0,                              // non prepared weapon
@@ -226,24 +243,22 @@ enum SheathState
 
 #define MAX_SHEATH_STATE    3
 
-// byte (1 from 0..3) of UNIT_FIELD_BYTES_2
+// byte (1 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_1_UNK
+// All these seem to have changed with LK
 enum UnitBytes2_Flags
 {
-    UNIT_BYTE2_FLAG_UNK0  = 0x01,
-    UNIT_BYTE2_FLAG_UNK1  = 0x02,
-    UNIT_BYTE2_FLAG_UNK2  = 0x04,
-#ifdef LICH_KING
-    UNIT_BYTE2_FLAG_SANCTUARY = 0x08,
-#else
-    UNIT_BYTE2_FLAG_UNK3  = 0x08, //old UNIT_BYTE2_FLAG_UNK3 but this does not seemed ok
-#endif
-    UNIT_BYTE2_FLAG_AURAS = 0x10,                           // show possitive auras as positive, and allow its dispel
-    UNIT_BYTE2_FLAG_UNK5  = 0x20,
-    UNIT_BYTE2_FLAG_UNK6  = 0x40,
-    UNIT_BYTE2_FLAG_UNK7  = 0x80
+    UNIT_BYTE2_FLAG_UNK0  = 0x01, //TC has UNIT_BYTE2_FLAG_PVP, but this is probably new with Lich King, since we use UNIT_FLAG_PVP instead
+    UNIT_BYTE2_FLAG_UNK1  = 0x02, //seems related to PvP mode in LK, not sure this is valid in BC
+    UNIT_BYTE2_FLAG_UNK2  = 0x04, //TC has UNIT_BYTE2_FLAG_FFA_PVP, but this is probably new with Lich King, since we use PLAYER_FLAGS_FFA_PVP instead
+    UNIT_BYTE2_FLAG_UNK3  = 0x08, //in current logic, always set on player and pet. What is this for? Mangos has UNIT_BYTE2_FLAG_SUPPORTABLE  =  allows for being targeted for healing/bandaging by friendlies
+    UNIT_BYTE2_FLAG_AURAS = 0x10, // show positive auras as positive, and allow its dispel (?? Not sure this is okay)
+    UNIT_BYTE2_FLAG_UNK5  = 0x20, //Currently always set on player, not sure what this does // mangos has: show negative auras as positive, *not* allowing dispel (at least for pets)
+    UNIT_BYTE2_FLAG_UNK6  = 0x40, //currently unused
+    UNIT_BYTE2_FLAG_UNK7  = 0x80, //currently unused
 };
 
-// byte (2 from 0..3) of UNIT_FIELD_BYTES_2
+// byte (2 from 0..3) of UNIT_FIELD_BYTES_2 // UNIT_BYTES_2_OFFSET_PET_FLAGS
+// Those has changed with LK
 enum UnitRename
 {
     UNIT_RENAME_NOT_ALLOWED = 0x02,
@@ -1204,8 +1219,8 @@ class TC_GAME_API Unit : public WorldObject
         void ApplyCastTimePercentMod(float val, bool apply);
         void HandleParryRush();
         
-        SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_BYTES_2, 0)); }
-        virtual void SetSheath( SheathState sheathed ) { SetByteValue(UNIT_FIELD_BYTES_2, 0, sheathed); }
+        SheathState GetSheath() const { return SheathState(GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHEATH_STATE)); }
+        virtual void SetSheath( SheathState sheathed ) { SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHEATH_STATE, sheathed); }
 
         // faction template id
         uint32 GetFaction() const { return GetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE); }
@@ -1248,10 +1263,13 @@ class TC_GAME_API Unit : public WorldObject
             return (creatureType >= 1) ? (1 << (creatureType - 1)) : 0;
         }
 
-        uint8 GetStandState() const { return GetByteValue(UNIT_FIELD_BYTES_1, 0); }
+        uint8 GetStandState() const { return GetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE); }
         bool IsSitState() const;
         bool IsStandState() const;
         void SetStandState(uint8 state);
+
+        void  SetStandFlags(uint8 flags) { SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
+        void  RemoveStandFlags(uint8 flags) { RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, flags); }
 
         bool IsMounted() const { return HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT ); }
         uint32 GetMountID() const { return GetUInt32Value(UNIT_FIELD_MOUNTDISPLAYID); }

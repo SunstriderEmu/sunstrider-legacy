@@ -721,13 +721,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
-    // Kidney Shot
+    // Kidney Shot hackz
     if (pVictim->HasAuraEffect(408) || pVictim->HasAuraEffect(8643)) {
         Aura *aur = nullptr;
         if (pVictim->HasAuraEffect(408))
             aur = pVictim->GetAura(408, 0);
         else if (pVictim->HasAuraEffect(8643))
             aur = pVictim->GetAura(8643, 0);
+
         if (aur) {
             Unit *ksCaster = aur->GetCaster();
             if (ksCaster && ksCaster->GetTypeId() == TYPEID_PLAYER) {
@@ -754,7 +755,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     }
 
     // Handler for god command
-
     if(pVictim->GetTypeId() == TYPEID_PLAYER)
         if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
             return 0;
@@ -3247,7 +3247,7 @@ void Unit::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* target)
                     {
                         if (index == UNIT_FIELD_BYTES_2)
                             // Allow targetting opposite faction in party when enabled in config
-                            fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_UNK3 /*| UNIT_BYTE2_FLAG_AURAS | UNIT_BYTE2_FLAG_UNK5*/) << 8)); // this flag is at uint8 offset 1 !!
+                            fieldBuffer << (m_uint32Values[UNIT_FIELD_BYTES_2] & ((UNIT_BYTE2_FLAG_UNK3) << 8)); // this flag is at uint8 offset 1 !!
                         else
                             // pretend that all other HOSTILE players have own faction, to allow follow, heal, rezz (trade wont work)
                             fieldBuffer << uint32(target->GetFaction());
@@ -10156,7 +10156,8 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (attacker->IsFFAPvP() && target->IsFFAPvP())
             return true;
 
-        return attacker->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK1);
+        //This check is probably only true on LK //return attacker->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK1) || target->HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK1);
+        return true;
     }
     return true;
 }
@@ -11341,7 +11342,7 @@ bool Unit::IsInSanctuary() const
 bool Unit::IsFFAPvP() const 
 { 
 #ifdef LICH_KING
-    return HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP)
+    return HasByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_FFA_PVP)
 #else
     Unit const* checkUnit = GetOwner();
     if (!checkUnit)
@@ -12756,7 +12757,7 @@ bool Unit::IsStandState() const
 
 void Unit::SetStandState(uint8 state)
 {
-    SetByteValue(UNIT_FIELD_BYTES_1, 0, state);
+    SetByteValue(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_STAND_STATE, state);
 
     if (IsStandState())
        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_SEATED);
@@ -13280,7 +13281,7 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 
     // Reward player, his pets, and group/raid members
     // call kill spell proc event (before real die and combat stop to triggering auras removed at death/combat stop)
-    if(bRewardIsAllowed && player && player!=pVictim)
+    if(bRewardIsAllowed && player && player != pVictim)
     {
         WorldPacket data(SMSG_PARTYKILLLOG, (8+8)); // send event PARTY_KILL
         data << uint64(player->GetGUID()); // player with killing blow
@@ -14112,7 +14113,8 @@ bool Unit::IsInPartyWith(Unit const *unit) const
     if(u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return (u1->ToPlayer())->IsInSameGroupWith(u2->ToPlayer());
 	
-	if(u1->GetTypeId() == u2->GetTypeId() == TYPEID_UNIT)
+    //consider creature in same party when they have the same faction
+	if(u1->GetTypeId() == TYPEID_UNIT && u2->GetTypeId() == TYPEID_UNIT)
 		return u1->GetFaction() == u2->GetFaction();
 
 	return false;
@@ -14130,8 +14132,12 @@ bool Unit::IsInRaidWith(Unit const *unit) const
 
     if(u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return (u1->ToPlayer())->IsInSameRaidWith(u2->ToPlayer());
-    else
-        return false;
+
+    //consider creature in same raid when they have the same faction
+    if (u1->GetTypeId() == TYPEID_UNIT && u2->GetTypeId() == TYPEID_UNIT)
+        return u1->GetFaction() == u2->GetFaction();
+
+    return false;
 }
 
 void Unit::GetRaidMember(std::list<Unit*> &nearMembers, float radius)

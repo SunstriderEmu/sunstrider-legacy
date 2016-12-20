@@ -393,11 +393,11 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     m_regenHealth = GetCreatureTemplate()->RegenHealth;
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_CIVILIAN)
-        SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_UNARMED );
+        SetSheath(SHEATH_STATE_UNARMED);
     else
-        SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE );
+        SetSheath(SHEATH_STATE_MELEE);
 
-    SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_AURAS );
+    SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_AURAS );
 
     SelectLevel();
     SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, cInfo->faction);
@@ -2692,9 +2692,9 @@ bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
 
     //! Unconfirmed for players:
     if (enable)
-        SetByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
+        SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, UNIT_BYTE1_FLAG_HOVER);
     else
-        RemoveByteFlag(UNIT_FIELD_BYTES_1, 3, UNIT_BYTE1_FLAG_HOVER);
+        RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_ANIM_TIER, UNIT_BYTE1_FLAG_HOVER);
 
     if (!movespline->Initialized())
         return true;

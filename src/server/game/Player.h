@@ -485,8 +485,6 @@ enum PlayerStateType
 
     PLAYER_STATE_FORM_ALL          = 0x00FF0000,
 
-    PLAYER_STATE_FLAG_ALWAYS_STAND = 0x01,                  // byte 4
-    PLAYER_STATE_FLAG_CREEP        = 0x02000000,
     PLAYER_STATE_FLAG_UNTRACKABLE  = 0x04000000,
     PLAYER_STATE_FLAG_ALL          = 0xFF000000,
 };

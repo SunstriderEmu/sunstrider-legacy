@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -2899,7 +2880,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
         if(m_target->m_ShapeShiftFormSpellId)
             m_target->RemoveAurasDueToSpell(m_target->m_ShapeShiftFormSpellId,this);
 
-        m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, form);
+        m_target->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, form);
 
         if(modelid > 0)
             m_target->SetDisplayId(modelid);
@@ -2974,7 +2955,7 @@ void Aura::HandleAuraModShapeshift(bool apply, bool Real)
     }
     else
     {
-        m_target->SetByteValue(UNIT_FIELD_BYTES_2, 3, FORM_NONE);
+        m_target->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, FORM_NONE);
         if(m_target->GetClass() == CLASS_DRUID)
             m_target->SetPowerType(POWER_MANA);
         m_target->m_ShapeShiftFormSpellId = 0;
@@ -3627,9 +3608,9 @@ void Aura::HandleModStealth(bool apply, bool Real)
         // only at real aura add
         if(Real)
         {
-            m_target->SetByteValue(UNIT_FIELD_BYTES_1, 2, 0x02);
+            m_target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
             if(m_target->GetTypeId()==TYPEID_PLAYER)
-                m_target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000);
+                m_target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000); // m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
 
             // apply only if not in GM invisibility (and overwrite invisibility state)
             if(m_target->GetVisibility()!=VISIBILITY_OFF)
@@ -3644,9 +3625,9 @@ void Aura::HandleModStealth(bool apply, bool Real)
             // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
             if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH) && m_target->GetVisibility()!=VISIBILITY_OFF)
             {
-                m_target->SetByteValue(UNIT_FIELD_BYTES_1, 2, 0x00);
+                m_target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
-                    m_target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000);
+                    m_target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000); // m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
 
                 // restore invisibility if any
                 if(m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
@@ -5489,17 +5470,25 @@ void Aura::HandleAuraEmpathy(bool apply, bool Real)
 void Aura::HandleAuraUntrackable(bool apply, bool Real)
 {
     if(apply)
-        m_target->SetFlag(UNIT_FIELD_BYTES_1, PLAYER_STATE_FLAG_UNTRACKABLE);
-    else
-        m_target->RemoveFlag(UNIT_FIELD_BYTES_1, PLAYER_STATE_FLAG_UNTRACKABLE);
+        m_target->SetByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_STAND_FLAGS_UNTRACKABLE);
+    else {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
+        m_target->RemoveByteFlag(UNIT_FIELD_BYTES_1, UNIT_BYTES_1_OFFSET_VIS_FLAG, UNIT_STAND_FLAGS_UNTRACKABLE);
+    }
 }
 
 void Aura::HandleAuraModPacify(bool apply, bool Real)
 {
     if(apply)
         m_target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
-    else
+    else {
+        // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
         m_target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PACIFIED);
+    }
 }
 
 void Aura::HandleAuraModPacifyAndSilence(bool apply, bool Real)
@@ -5519,6 +5508,8 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
     }
     else
     {
+        if (m_target->HasAuraType(GetAuraType()))
+            return;
         m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
     }
 }

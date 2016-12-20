@@ -58,5 +58,9 @@ if (BUILD_SHARED_LIBS)
   endif()
   add_definitions(-DTRINITY_API_USE_DYNAMIC_LINKING)
 
+  if( UNIX )
+    message(WARNING "Dynamic Linking may not work properly on unix yet, prefer using static linking at this time")
+  endif()
+  
   WarnAboutSpacesInBuildPath()
 endif()

@@ -3507,7 +3507,7 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
     {
         case INVTYPE_SHIELD:
             slot = WEAPON_SLOT_OFFHAND;
-            pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
+            pCreature->SetSheath(SHEATH_STATE_MELEE);
             break;
         case INVTYPE_2HWEAPON:
         case INVTYPE_WEAPONMAINHAND:
@@ -3518,13 +3518,14 @@ bool ChatHandler::HandleAddWeaponCommand(const char* args)
                 PSendSysMessage("Given slot %u invalid.",slot);
                 return true;
             }
-            pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
+
+            pCreature->SetSheath(SHEATH_STATE_MELEE);
             break;
         case INVTYPE_THROWN:
         case INVTYPE_RANGED:
         case INVTYPE_RANGEDRIGHT:
             slot = WEAPON_SLOT_RANGED;
-            pCreature->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_RANGED);
+            pCreature->SetSheath(SHEATH_STATE_RANGED);
             break;
         default:
             PSendSysMessage("Invalid object %u.",itemID);
@@ -4829,8 +4830,8 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
 
     // set UNIT_FIELD_BYTES_1 to init state but preserve m_form value
     player->SetUInt32Value(UNIT_FIELD_BYTES_1, unitfield);
-    player->SetByteValue(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
-    player->SetByteValue(UNIT_FIELD_BYTES_2, 3, player->m_form);
+    player->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_1_UNK, UNIT_BYTE2_FLAG_UNK3 | UNIT_BYTE2_FLAG_UNK5 );
+    player->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM, player->m_form);
 
     player->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 
