@@ -6757,6 +6757,7 @@ SpellCastResult Spell::CheckItems()
     if(TotemCategory != 0)
         return SPELL_FAILED_TOTEM_CATEGORY;          //0x7B
 
+    // special checks for spell effects
     for(const auto & Effect : m_spellInfo->Effects)
     {
         switch (Effect.Effect)
@@ -6931,6 +6932,39 @@ SpellCastResult Spell::CheckItems()
                 break;
             }
             default:break;
+        }
+    }
+    
+    // check weapon presence in slots for main/offhand weapons
+    if (/*!(_triggeredCastFlags & TRIGGERED_IGNORE_EQUIPPED_ITEM_REQUIREMENT) && */m_spellInfo->EquippedItemClass >= 0)
+    {
+        auto weaponCheck = [this](WeaponAttackType attackType) -> SpellCastResult
+        {
+            Item const* item = m_caster->ToPlayer()->GetWeaponForAttack(attackType);
+
+            // skip spell if no weapon in slot or broken
+            if (!item || item->IsBroken())
+                return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+
+            // skip spell if weapon not fit to triggered spell
+            if (!item->IsFitToSpellRequirements(m_spellInfo))
+                return SPELL_FAILED_EQUIPPED_ITEM_CLASS;
+
+            return SPELL_CAST_OK;
+        };
+
+        if (m_spellInfo->HasAttribute(SPELL_ATTR3_MAIN_HAND))
+        {
+            SpellCastResult mainHandResult = weaponCheck(BASE_ATTACK);
+            if (mainHandResult != SPELL_CAST_OK)
+                return mainHandResult;
+        }
+
+        if (m_spellInfo->HasAttribute(SPELL_ATTR3_REQ_OFFHAND))
+        {
+            SpellCastResult offHandResult = weaponCheck(OFF_ATTACK);
+            if (offHandResult != SPELL_CAST_OK)
+                return offHandResult;
         }
     }
 
