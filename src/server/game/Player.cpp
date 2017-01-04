@@ -12924,7 +12924,8 @@ void Player::PrepareQuestMenu( uint64 guid )
     {
         uint32 quest_id = i->second;
         Quest const* pQuest = sObjectMgr->GetQuestTemplate(quest_id);
-        if(!pQuest) continue;
+        if(!pQuest) 
+            continue;
 
         QuestStatus status = GetQuestStatus( quest_id );
 

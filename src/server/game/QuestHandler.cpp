@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "Log.h"
@@ -42,10 +23,6 @@
 
 void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 {
-    
-
-    
-
     uint64 guid;
     recvData >> guid;
     uint8 questStatus = DIALOG_STATUS_NONE;
@@ -88,10 +65,6 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
     recvData >> guid;
 
@@ -120,10 +93,6 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
     uint32 quest;
     recvData >> guid >> quest;
@@ -249,10 +218,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverQueryQuestOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
     uint32 quest;
     recvData >> guid >> quest;
@@ -285,10 +250,6 @@ void WorldSession::HandleQuestQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 quest, reward;
     uint64 guid;
     recvData >> guid >> quest >> reward;
@@ -348,10 +309,6 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint32 quest;
     uint64 guid;
     recvData >> guid >> quest;
@@ -372,17 +329,11 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleQuestgiverCancel(WorldPacket& /*recvData*/ )
 {
-    
-    
     _player->PlayerTalkClass->SendCloseGossip();
 }
 
 void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
 {
-    
-    
-    
-
     uint8 slot1, slot2;
     recvData >> slot1 >> slot2;
 
@@ -394,10 +345,6 @@ void WorldSession::HandleQuestLogSwapQuest(WorldPacket& recvData )
 
 void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint8 slot;
     recvData >> slot;
 
@@ -419,9 +366,6 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
 {
     /*
     
-    
-    
-
     uint32 quest;
     recvData >> quest;
     
@@ -472,10 +416,6 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
 
 void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
 {
-    
-    
-    
-
     uint32 questID;
     uint64 guid;
     recvData >> guid >> questID;
@@ -516,10 +456,6 @@ void WorldSession::HandleQuestgiverQuestAutoLaunch(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint32 quest;
     recvPacket >> quest;
 
@@ -592,10 +528,6 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 
 void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     uint64 guid;
     uint8 msg;
     recvPacket >> guid >> msg;
@@ -616,8 +548,6 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
 
 uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
 {
-    
-    
     uint32 result = defstatus;
 
     QuestRelations const* qir;
@@ -716,8 +646,6 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
 
 void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket*/)
 {
-    
-    
     uint32 count = 0;
 
     WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 4);
