@@ -1136,7 +1136,7 @@ bool Pet::InitStatsForLevel(uint32 petlevel)
 
     int32 creatureResistance[MAX_SPELL_SCHOOL] = {0,0,0,0,0,0,0};
 
-    if(cinfo && getPetType() != HUNTER_PET)
+    if(cinfo && getPetType() != HUNTER_PET) // Hunters pet should not inherit resistances from creature_template, they have separate auras for that
     {
         creatureResistance[SPELL_SCHOOL_HOLY]   = cinfo->resistance[SPELL_SCHOOL_HOLY - 1];
         creatureResistance[SPELL_SCHOOL_FIRE]   = cinfo->resistance[SPELL_SCHOOL_FIRE - 1];

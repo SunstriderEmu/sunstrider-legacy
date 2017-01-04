@@ -1706,23 +1706,48 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
     armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
 
-    if (armor<0.0f) armor=0.0f;
+#ifdef LICH_KING
+    if (spellInfo)
+        if (Player* modOwner = GetSpellModOwner())
+            modOwner->ApplySpellMod<SPELLMOD_IGNORE_ARMOR>(spellInfo->Id, armor);
 
-    float tmpvalue = 0.0f;
-    if(GetLevel() <= 59)                                    //Level 1-59
-        tmpvalue = armor / (armor + 400.0f + 85.0f * GetLevel());
-    else if(GetLevel() < 70)                                //Level 60-69
-        tmpvalue = armor / (armor - 22167.5f + 467.5f * GetLevel());
+    AuraEffectList const& resIgnoreAurasAb = GetAuraEffectsByType(SPELL_AURA_MOD_ABILITY_IGNORE_TARGET_RESIST);
+    for (AuraEffectList::const_iterator j = resIgnoreAurasAb.begin(); j != resIgnoreAurasAb.end(); ++j)
+    {
+        if ((*j)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL && (*j)->IsAffectedOnSpell(spellInfo))
+            armor = std::floor(AddPct(armor, -(*j)->GetAmount()));
+    }
+
+    AuraEffectList const& resIgnoreAuras = GetAuraEffectsByType(SPELL_AURA_MOD_IGNORE_TARGET_RESIST);
+    for (AuraEffectList::const_iterator j = resIgnoreAuras.begin(); j != resIgnoreAuras.end(); ++j)
+    {
+        if ((*j)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
+            armor = std::floor(AddPct(armor, -(*j)->GetAmount()));
+    }
+
+    // Apply Player CR_ARMOR_PENETRATION rating and buffs from stances\specializations etc.
+    // TODO ...
+#endif
+
+    if ( armor < 0.0f ) 
+        armor = 0.0f;
+
+    float levelModifier = GetLevel();
+    float damageReduction = 0.0f;
+    if(levelModifier <= 59)                                    //Level 1-59
+        damageReduction = armor / (armor + 400.0f + 85.0f * levelModifier);
+    else if(levelModifier < 70)                                //Level 60-69
+        damageReduction = armor / (armor - 22167.5f + 467.5f * levelModifier);
     else                                                    //Level 70+
-        tmpvalue = armor / (armor + 10557.5f);
+        damageReduction = armor / (armor + 10557.5f); //same as previous calculation, may be a speedup
 
-    if(tmpvalue < 0.0f)
-        tmpvalue = 0.0f;
-    if(tmpvalue > 0.75f)
-        tmpvalue = 0.75f;
-    newdamage = uint32(damage - (damage * tmpvalue));
+    //caps
+    if(damageReduction < 0.0f)
+        damageReduction = 0.0f;
+    if(damageReduction > 0.75f)
+        damageReduction = 0.75f;
 
-    return (newdamage > 1) ? newdamage : 1;
+    return std::max<uint32>(damage * (1.0f - damageReduction), 1);
 }
 
 void Unit::CalcAbsorbResist(Unit *pVictim,SpellSchoolMask schoolMask, DamageEffectType damagetype, const uint32 damage, uint32 *absorb, uint32 *resist, uint32 spellId)

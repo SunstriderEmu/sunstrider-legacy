@@ -587,25 +587,7 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_auraScaleMask = 0;
 
     // Get data for type of attack
-    switch (m_spellInfo->DmgClass)
-    {
-        case SPELL_DAMAGE_CLASS_MELEE:
-            if (m_spellInfo->HasAttribute(SPELL_ATTR3_REQ_OFFHAND))
-                m_attackType = OFF_ATTACK;
-            else
-                m_attackType = BASE_ATTACK;
-            break;
-        case SPELL_DAMAGE_CLASS_RANGED:
-            m_attackType = RANGED_ATTACK;
-            break;
-        default:
-                                                            // Wands
-            if (m_spellInfo->HasAttribute(SPELL_ATTR3_REQ_WAND))
-                m_attackType = RANGED_ATTACK;
-            else
-                m_attackType = BASE_ATTACK;
-            break;
-    }
+    m_attackType = info->GetAttackType();
 
     m_spellSchoolMask = info->GetSchoolMask();           // Can be override for some spell (wand shoot for example)
 
@@ -6674,7 +6656,7 @@ SpellCastResult Spell::CheckItems()
 
         if(!m_targets.GetItemTarget()->IsFitToSpellRequirements(m_spellInfo)) {
             if (m_spellInfo->Effects[0].Effect == SPELL_EFFECT_ENCHANT_ITEM || m_spellInfo->Effects[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY) {
-                m_caster->ToPlayer()->GetSession()->SendNotification("Cet objet n'est pas une cible autorisée.");
+                m_caster->ToPlayer()->GetSession()->SendNotification("This object is not an authorized target");
                 return SPELL_FAILED_DONT_REPORT;
             }
             else

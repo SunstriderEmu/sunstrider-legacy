@@ -29,6 +29,7 @@ class Unit;
 class WorldObject;
 class Item;
 struct SpellChainNode;
+enum WeaponAttackType : int;
 
 enum SpellCustomAttributes
 {
@@ -497,6 +498,8 @@ public:
     bool IsRangedWeaponSpell() const;
     bool IsAutoRepeatRangedSpell() const;
     bool HasInitialAggro() const;
+
+    WeaponAttackType GetAttackType() const;
 
     //familyFlags = override spell familty flags
     bool IsAffectedBySpell(uint32 spellId, uint8 effectId, uint64 familyFlags) const;

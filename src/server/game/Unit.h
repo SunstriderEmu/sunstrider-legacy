@@ -506,7 +506,7 @@ extern float baseMoveSpeed[MAX_MOVE_TYPE];
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
 
-enum WeaponAttackType
+enum WeaponAttackType : int
 {
     BASE_ATTACK   = 0,
     OFF_ATTACK    = 1,
@@ -514,7 +514,7 @@ enum WeaponAttackType
     MAX_ATTACK    = 3
 };
 
-enum CombatRating
+enum CombatRating : int
 {
     CR_WEAPON_SKILL             = 0,
     CR_DEFENSE_SKILL            = 1,
@@ -543,7 +543,7 @@ enum CombatRating
     MAX_COMBAT_RATING           = 24
 };
 
-enum DamageEffectType
+enum DamageEffectType : int
 {
     DIRECT_DAMAGE           = 0,                            // used for normal weapon damage (not for class abilities or spells)
     SPELL_DIRECT_DAMAGE     = 1,                            // spell/class abilities damage
@@ -553,7 +553,7 @@ enum DamageEffectType
     SELF_DAMAGE             = 5
 };
 
-enum UnitVisibility
+enum UnitVisibility : int
 {
     VISIBILITY_OFF                = 0,                      // absolute, not detectable, GM-like, can see all other
     VISIBILITY_ON                 = 1,
@@ -564,7 +564,7 @@ enum UnitVisibility
 };
 
 // Value masks for UNIT_FIELD_FLAGS
-enum UnitFlags
+enum UnitFlags : int
 {
     UNIT_FLAG_SERVER_CONTROLLED     = 0x00000001,                // set only when unit movement is controlled by server - by SPLINE/MONSTER_MOVE packets, together with UNIT_FLAG_STUNNED; only set to units controlled by client; client function CGUnit_C::IsClientControlled returns false when set for owner        
     UNIT_FLAG_NON_ATTACKABLE        = 0x00000002,                // not attackable
@@ -602,7 +602,7 @@ enum UnitFlags
 };
 
 // Value masks for UNIT_FIELD_FLAGS_2
-enum UnitFlags2
+enum UnitFlags2 : int
 {
     UNIT_FLAG2_FEIGN_DEATH       = 0x00000001,
     UNIT_FLAG2_UNK1              = 0x00000002,   // Hide unit model (show only player equip)
@@ -627,7 +627,7 @@ enum UnitFlags2
 };
 
 /// Non Player Character flags
-enum NPCFlags
+enum NPCFlags : int
 {
     UNIT_NPC_FLAG_NONE                  = 0x00000000,
     UNIT_NPC_FLAG_GOSSIP                = 0x00000001,       // 100%
@@ -657,7 +657,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_SPELLCLICK            = 0x01000000,       // cause client to send 1015 opcode (spell click)
 };
 
-enum MoveFlags
+enum MoveFlags : int
 {
     MOVEFLAG_NONE               = 0x00000000,
     MOVEFLAG_SLIDE              = 0x00000002,
@@ -668,7 +668,7 @@ enum MoveFlags
     MOVEFLAG_ORIENTATION        = 0x00000400,   //Fix orientation
 };
 
-enum MovementFlags
+enum MovementFlags : int
 {
     MOVEMENTFLAG_NONE           = 0x00000000,
     MOVEMENTFLAG_FORWARD        = 0x00000001,
@@ -728,7 +728,7 @@ enum MovementFlags
 
 #define UNIT_DEFAULT_HOVERHEIGHT 2.5f
 
-enum UnitTypeMask
+enum UnitTypeMask : int
 {
     UNIT_MASK_NONE                  = 0x00000000,
     UNIT_MASK_SUMMON                = 0x00000001,
@@ -747,7 +747,7 @@ namespace Movement{
     class MoveSpline;
 }
 
-enum DiminishingLevels
+enum DiminishingLevels : int
 {
     DIMINISHING_LEVEL_1             = 0,
     DIMINISHING_LEVEL_2             = 1,
@@ -765,7 +765,7 @@ struct DiminishingReturn
     uint32                  hitCount;
 };
 
-enum MeleeHitOutcome
+enum MeleeHitOutcome : int
 {
     MELEE_HIT_EVADE,
     MELEE_HIT_MISS,
