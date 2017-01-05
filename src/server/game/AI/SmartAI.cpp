@@ -49,6 +49,7 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     // spawn in run mode
     // me->SetWalk(false); //disabled this, movement generator may have altered this already
     mRun = false;
+    mEvadeDisabled = false;
 
     mLastOOCPos = me->GetPosition();
 
@@ -472,6 +473,12 @@ void SmartAI::RemoveAuras()
 
 void SmartAI::EnterEvadeMode(EvadeReason why)
 {
+    if (mEvadeDisabled)
+    {
+        GetScript()->ProcessEventsFor(SMART_EVENT_EVADE);
+        return;
+    }
+
     if (!_EnterEvadeMode())
         return;
 
@@ -754,6 +761,11 @@ void SmartAI::SetSwim(bool swim)
         me->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
     else
         me->RemoveUnitMovementFlag(MOVEMENTFLAG_SWIMMING);
+}
+
+void SmartAI::SetEvadeDisabled(bool disable)
+{
+    mEvadeDisabled = disable;
 }
 
 void SmartAI::sGossipHello(Player* player)

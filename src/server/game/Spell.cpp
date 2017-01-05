@@ -3308,7 +3308,6 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
         TriggerGlobalCooldown();
 
         if(    !m_casttime 
-         /* && !m_spellInfo->StartRecoveryTime */ //what is this used for? This is from TC code.
             && !m_castItemGUID     //item: first cast may destroy item and second cast causes crash
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
