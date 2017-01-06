@@ -506,7 +506,7 @@ extern float baseMoveSpeed[MAX_MOVE_TYPE];
 // assume it is 25 yard per 0.6 second
 #define SPEED_CHARGE    42.0f
 
-enum WeaponAttackType : int
+enum WeaponAttackType : unsigned int
 {
     BASE_ATTACK   = 0,
     OFF_ATTACK    = 1,
@@ -514,7 +514,7 @@ enum WeaponAttackType : int
     MAX_ATTACK    = 3
 };
 
-enum CombatRating : int
+enum CombatRating : unsigned int
 {
     CR_WEAPON_SKILL             = 0,
     CR_DEFENSE_SKILL            = 1,
@@ -543,7 +543,7 @@ enum CombatRating : int
     MAX_COMBAT_RATING           = 24
 };
 
-enum DamageEffectType : int
+enum DamageEffectType : unsigned int
 {
     DIRECT_DAMAGE           = 0,                            // used for normal weapon damage (not for class abilities or spells)
     SPELL_DIRECT_DAMAGE     = 1,                            // spell/class abilities damage
@@ -553,7 +553,7 @@ enum DamageEffectType : int
     SELF_DAMAGE             = 5
 };
 
-enum UnitVisibility : int
+enum UnitVisibility : unsigned int
 {
     VISIBILITY_OFF                = 0,                      // absolute, not detectable, GM-like, can see all other
     VISIBILITY_ON                 = 1,
@@ -564,7 +564,7 @@ enum UnitVisibility : int
 };
 
 // Value masks for UNIT_FIELD_FLAGS
-enum UnitFlags : int
+enum UnitFlags : unsigned int
 {
     UNIT_FLAG_SERVER_CONTROLLED     = 0x00000001,                // set only when unit movement is controlled by server - by SPLINE/MONSTER_MOVE packets, together with UNIT_FLAG_STUNNED; only set to units controlled by client; client function CGUnit_C::IsClientControlled returns false when set for owner        
     UNIT_FLAG_NON_ATTACKABLE        = 0x00000002,                // not attackable
@@ -602,7 +602,7 @@ enum UnitFlags : int
 };
 
 // Value masks for UNIT_FIELD_FLAGS_2
-enum UnitFlags2 : int
+enum UnitFlags2 : unsigned int
 {
     UNIT_FLAG2_FEIGN_DEATH       = 0x00000001,
     UNIT_FLAG2_UNK1              = 0x00000002,   // Hide unit model (show only player equip)

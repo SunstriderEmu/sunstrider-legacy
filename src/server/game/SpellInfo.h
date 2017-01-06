@@ -20,7 +20,7 @@
 
 #include "SharedDefines.h"
 
-enum AuraType : int;
+enum AuraType : unsigned int;
 enum SpellCastResult : int;
 class SpellInfo;
 class Spell;
@@ -29,7 +29,7 @@ class Unit;
 class WorldObject;
 class Item;
 struct SpellChainNode;
-enum WeaponAttackType : int;
+enum WeaponAttackType : unsigned int;
 
 enum SpellCustomAttributes
 {

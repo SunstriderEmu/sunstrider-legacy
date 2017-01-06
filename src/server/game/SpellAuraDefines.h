@@ -38,7 +38,7 @@ enum DAMAGE_ABSORB_TYPE
     ONLY_MAGIC_ABSORB       = -1,
 };
 
-enum AuraType : int
+enum AuraType : unsigned int
 {
     SPELL_AURA_NONE = 0,
     SPELL_AURA_BIND_SIGHT = 1,
@@ -305,7 +305,7 @@ enum AuraType : int
     TOTAL_AURAS=262
 };
 
-enum AreaAuraType
+enum AreaAuraType : unsigned int
 {
     AREA_AURA_PARTY,
     AREA_AURA_FRIEND,
