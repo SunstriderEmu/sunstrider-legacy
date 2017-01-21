@@ -3824,8 +3824,12 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     if(trainer_spell->reqskill && GetBaseSkillValue(trainer_spell->reqskill) < trainer_spell->reqskillvalue)
         return TRAINER_SPELL_RED;
 
-    // exist, already checked at loading
     SpellInfo const* spell = sSpellMgr->GetSpellInfo(trainer_spell->spell);
+    if (!spell)
+    {
+        TC_LOG_ERROR("entities.player", "GetTrainerSpellState could not find spell %u", trainer_spell->spell);
+        return TRAINER_SPELL_RED;
+    }
 
     // secondary prof. or not prof. spell
     uint32 skill = spell->Effects[1].MiscValue;
@@ -18064,7 +18068,9 @@ void Player::CharmSpellInitialize()
 int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo) return 0;
+    if (!spellInfo) 
+        return 0;
+
     int32 total = 0;
     for (auto mod : m_spellMods[op])
     {
@@ -18080,7 +18086,9 @@ int32 Player::GetTotalFlatMods(uint32 spellId, SpellModOp op)
 int32 Player::GetTotalPctMods(uint32 spellId, SpellModOp op)
 {
     SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellInfo) return 0;
+    if (!spellInfo) 
+        return 0;
+
     int32 total = 0;
     for (auto mod : m_spellMods[op])
     {

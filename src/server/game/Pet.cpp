@@ -326,7 +326,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             // patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
             // so overwrite old state
             SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(m_charmInfo->GetActionBarEntry(index)->SpellOrAction);
-            if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET)) m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
+            if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET)) 
+                m_charmInfo->GetActionBarEntry(index)->Type = ACT_CAST;
         }
 
         //init teach spells
@@ -1800,6 +1801,11 @@ void Pet::InitPetCreateSpells()
                 if(owner && owner->GetTypeId() == TYPEID_PLAYER && !(owner->ToPlayer())->HasSpell(learn_spellproto->Id))
                 {
                     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(petspellid);
+                    if (!spellInfo) 
+                    {
+                        TC_LOG_ERROR("entities.pet", "InitPetCreateSpells() could not find triggered spell %u, learned from spell %u", petspellid, i);
+                        continue;
+                    }
                     if(spellInfo->IsPassive())          //learn passive skills when tamed, not sure if thats right
                         (owner->ToPlayer())->LearnSpell(learn_spellproto->Id, false);
                     else

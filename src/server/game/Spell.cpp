@@ -40,7 +40,8 @@ extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 bool IsQuestTameSpell(uint32 spellId)
 {
     SpellInfo const *spellproto = sSpellMgr->GetSpellInfo(spellId);
-    if (!spellproto) return false;
+    if (!spellproto) 
+        return false;
 
     return spellproto->Effects[0].Effect == SPELL_EFFECT_THREAT
         && spellproto->Effects[1].Effect == SPELL_EFFECT_APPLY_AURA && spellproto->Effects[1].ApplyAuraName == SPELL_AURA_DUMMY;

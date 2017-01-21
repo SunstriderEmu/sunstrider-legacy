@@ -193,6 +193,9 @@ inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
     
     //return if target is friendly. Start combat if not.
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(i_dynobject.GetSpellId());
+    if (!spellInfo)
+        return;
+
     uint32 eff_index = i_dynobject.GetEffIndex();
     if(spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_DEST_DYNOBJ_ALLY
         || spellInfo->Effects[eff_index].TargetB.GetTarget() == TARGET_UNIT_DEST_AREA_ALLY)

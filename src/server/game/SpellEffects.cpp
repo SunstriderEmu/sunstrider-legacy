@@ -1855,6 +1855,8 @@ void Spell::EffectDummy(uint32 i)
 
                         uint32 classspell = itr.first;
                         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
+                        if (!spellInfo)
+                            continue;
 
                         if( spellInfo->SpellFamilyName == SPELLFAMILY_MAGE &&
                             (spellInfo->GetSchoolMask() & SPELL_SCHOOL_MASK_FROST) &&
@@ -2099,6 +2101,8 @@ void Spell::EffectDummy(uint32 i)
                     {
                         uint32 classspell = itr.first;
                         SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(classspell);
+                        if (!spellInfo)
+                            return;
 
                         if (spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER && spellInfo->Id != 23989 && spellInfo->GetRecoveryTime() > 0 )
                         {
@@ -7390,7 +7394,7 @@ void Spell::EffectDispelMechanic(uint32 i)
     {
         next = iter;
         ++next;
-        SpellInfo const *spell = sSpellMgr->GetSpellInfo(iter->second->GetSpellInfo()->Id);
+        SpellInfo const *spell = iter->second->GetSpellInfo();
         if(spell->Mechanic == mechanic || spell->Effects[iter->second->GetEffIndex()].Mechanic == mechanic)
         {
             unitTarget->RemoveAurasDueToSpell(spell->Id);

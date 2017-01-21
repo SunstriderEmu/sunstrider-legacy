@@ -4338,6 +4338,11 @@ void ObjectMgr::ValidateSpellScripts()
     for (auto spell : _spellScriptsStore)
     {
         SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(spell.first);
+        if (!spellEntry)
+        {
+            TC_LOG_ERROR("scripts", "ValidateSpellScripts:: Could not find spell id %u", spell.first);
+            continue;
+        }
 
         auto const bounds = sObjectMgr->GetSpellScriptsBounds(spell.first);
 
