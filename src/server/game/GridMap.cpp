@@ -649,18 +649,25 @@ bool GridMap::ExistMap(uint32 mapid, int gx, int gy)
     return ret;
 }
 
-bool GridMap::ExistVMap(uint32 mapid,int x,int y)
+bool GridMap::ExistVMap(uint32 mapid, int gx, int gy)
 {
     if(VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager())
     {
         if(vmgr->isMapLoadingEnabled())
         {
-            bool exists = vmgr->existsMap((sWorld->GetDataPath()+ "vmaps").c_str(),  mapid, x,y);
-            if(!exists)
+            VMAP::LoadResult result = vmgr->existsMap((sWorld->GetDataPath() + "vmaps").c_str(), mapid, gx, gy);
+            std::string name = vmgr->getDirFileName(mapid, gx, gy);
+            switch (result)
             {
-                std::string name = vmgr->getDirFileName(mapid,x,y);
+            case VMAP::LoadResult::Success:
+                break;
+            case VMAP::LoadResult::FileNotFound:
                 TC_LOG_ERROR("maps", "VMap file '%s' does not exist", (sWorld->GetDataPath() + "vmaps/" + name).c_str());
-                TC_LOG_ERROR("maps", "Please place VMAP-files (*.vmtree and *.vmtile) in the vmap-directory (%s), or correct the DataDir setting in your worldserver.conf file.", (sWorld->GetDataPath() + "vmaps/").c_str());
+                TC_LOG_ERROR("maps", "Please place VMAP files (*.vmtree and *.vmtile) in the vmap directory (%s), or correct the DataDir setting in your worldserver.conf file.", (sWorld->GetDataPath() + "vmaps/").c_str());
+                return false;
+            case VMAP::LoadResult::VersionMismatch:
+                TC_LOG_ERROR("maps", "VMap file '%s' couldn't be loaded", (sWorld->GetDataPath() + "vmaps/" + name).c_str());
+                TC_LOG_ERROR("maps", "This is because the version of the VMap file and the version of this module are different, please re-extract the maps with the tools compiled with this module.");
                 return false;
             }
         }
