@@ -49,6 +49,7 @@ class TC_GAME_API HostileRefManager : public RefManager<Unit, ThreatManager>
         // The references are not needed anymore
         // tell the source to remove them from the list and free the mem
         void deleteReferences();
+        void deleteReferencesOutOfRange(float range);
 
         HostileReference* getFirst() { return ((HostileReference* ) RefManager<Unit, ThreatManager>::getFirst()); }
 

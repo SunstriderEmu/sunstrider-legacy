@@ -60,6 +60,11 @@ bool PetAI::_needToStop() const
     if (i_pet.IsNonMeleeSpellCast(false))
         return true;
 
+    // dont allow pets to follow targets far away from owner
+    if (Unit* owner = me->GetCharmerOrOwner())
+        if (owner->GetExactDist(me) >= (owner->GetVisibilityRange() - 10.0f))
+            return true;
+
     return i_pet.CanAttack(i_pet.GetVictim()) != CAN_ATTACK_RESULT_OK;
 }
 

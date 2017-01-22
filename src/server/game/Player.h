@@ -2665,6 +2665,7 @@ class TC_GAME_API Player : public Unit
         time_t m_lastDailyQuestTime;
 
         uint32 m_regenTimer;
+        uint32 m_hostileReferenceCheckTimer;
         uint32 m_drunkTimer;
         uint16 m_drunk;
         uint32 m_weaponChangeTimer;

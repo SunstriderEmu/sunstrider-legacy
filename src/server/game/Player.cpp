@@ -383,6 +383,7 @@ Player::Player (WorldSession *session) :
     m_MirrorTimerFlags = UNDERWATER_NONE;
     m_MirrorTimerFlagsLast = UNDERWATER_NONE;
     m_isInWater = false;
+    m_hostileReferenceCheckTimer = 0;
     m_drunkTimer = 0;
     m_drunk = 0;
     m_restTime = 0;
@@ -1460,7 +1461,19 @@ void Player::Update( uint32 p_time )
     Pet* pet = GetPet();
     if(pet && !IsWithinDistInMap(pet, OWNER_MAX_DISTANCE) && !pet->IsPossessed())
         RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
-    
+
+    if (IsAlive())
+    {
+        if (m_hostileReferenceCheckTimer <= p_time)
+        {
+            m_hostileReferenceCheckTimer = 1 * SECOND;
+            if (!GetMap()->IsDungeon())
+                GetHostileRefManager().deleteReferencesOutOfRange(GetVisibilityRange());
+        }
+        else
+            m_hostileReferenceCheckTimer -= p_time;
+    }
+
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
     // xinef: so we store it to the end of the world and teleport out of the ass after resurrection?
