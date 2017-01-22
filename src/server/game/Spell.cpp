@@ -2142,7 +2142,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
                     if (deficit == 0)
                         continue;
 
-                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(itrTarget, jumpRadius) && target->IsWithinLOSInMap(itrTarget))
+                    if ((deficit > maxHPDeficit || foundItr == tempTargets.end()) && target->IsWithinDist(itrTarget, jumpRadius) && target->IsWithinLOSInMap(itrTarget, VMAP::ModelIgnoreFlags::M2))
                     {
                         foundItr = itr;
                         maxHPDeficit = deficit;
@@ -2157,10 +2157,10 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             {
                 if (foundItr == tempTargets.end())
                 {
-                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr))
+                    if ((!isBouncingFar || target->IsWithinDist(*itr, jumpRadius)) && target->IsWithinLOSInMap(*itr, VMAP::ModelIgnoreFlags::M2))
                         foundItr = itr;
                 }
-                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr))
+                else if (target->GetDistanceOrder(*itr, *foundItr) && target->IsWithinLOSInMap(*itr, VMAP::ModelIgnoreFlags::M2))
                     foundItr = itr;
             }
         }
@@ -5214,7 +5214,7 @@ SpellCastResult Spell::CheckCast(bool strict)
 
         if( !(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS))
             && !(m_spellInfo->HasAttribute(SPELL_ATTR3_UNK25)) //not sure about these
-            && !m_caster->IsWithinLOSInMap(target) )
+            && !m_caster->IsWithinLOSInMap(target, VMAP::ModelIgnoreFlags::M2) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 
         // auto selection spell rank implemented in WorldSession::HandleCastSpellOpcode
@@ -7206,7 +7206,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
     {
     case SPELL_EFFECT_RESURRECT_NEW:
         // player far away, maybe his corpse near?
-        if (target != m_caster && !target->IsWithinLOSInMap(m_caster))
+        if (target != m_caster && !target->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
         {
             if (!m_targets.GetCorpseTargetGUID())
                 return false;
@@ -7218,7 +7218,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             if (target->GetGUID() != corpse->GetOwnerGUID())
                 return false;
 
-            if (!corpse->IsWithinLOSInMap(m_caster))
+            if (!corpse->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
                 return false;
         }
         break;
@@ -7226,7 +7226,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
     {
         if (!m_targets.GetCorpseTargetGUID())
         {
-            if (target->IsWithinLOSInMap(m_caster) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
+            if (target->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
                 return true;
 
             return false;
@@ -7242,7 +7242,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
         if (!corpse->HasFlag(CORPSE_FIELD_FLAGS, CORPSE_FLAG_LOOTABLE))
             return false;
 
-        if (!corpse->IsWithinLOSInMap(m_caster))
+        if (!corpse->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
             return false;
     }
     break;
@@ -7339,7 +7339,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
             //fall through
         case SPELL_EFFECT_RESURRECT_NEW:
             // player far away, maybe his corpse near?
-            if(target!=m_caster && !target->IsWithinLOSInMap(m_caster))
+            if(target!=m_caster && !target->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
             {
                 if(!m_targets.GetCorpseTargetGUID())
                     return false;
@@ -7351,14 +7351,14 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
                 if(target->GetGUID()!=corpse->GetOwnerGUID())
                     return false;
 
-                if(!corpse->IsWithinLOSInMap(m_caster))
+                if(!corpse->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
                     return false;
             }
 
             // all ok by some way or another, skip normal check
             break;
         default:                                            // normal case
-            if(target!=m_caster && !target->IsWithinLOSInMap(m_caster))
+            if(target!=m_caster && !target->IsWithinLOSInMap(m_caster, VMAP::ModelIgnoreFlags::M2))
                 return false;
             break;
     }

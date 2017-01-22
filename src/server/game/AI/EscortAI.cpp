@@ -386,7 +386,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* who)
         return false;
 
     //too far away and no free sight?
-    if (me->IsWithinDistInMap(who, 25.0f) && me->IsWithinLOSInMap(who))
+    if (me->IsWithinDistInMap(who, 25.0f) && me->IsWithinLOSInMap(who, VMAP::ModelIgnoreFlags::M2))
     {
         //already fighting someone?
         if (!me->GetVictim())

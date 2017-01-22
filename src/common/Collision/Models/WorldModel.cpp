@@ -1,25 +1,9 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "WorldModel.h"
 #include "ModelInstance.h"
 #include "VMapDefinitions.h"
 #include "MapTree.h"
+#include "ModelIgnoreFlags.h"
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -455,8 +439,16 @@ namespace VMAP
         bool hit;
     };
 
-    bool WorldModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const
+    bool WorldModel::IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit, ModelIgnoreFlags ignoreFlags) const
     {
+        // If the caller asked us to ignore certain objects we should check flags
+        if ((ignoreFlags & ModelIgnoreFlags::M2) != ModelIgnoreFlags::Nothing)
+        {
+            // M2 models are not taken into account for LoS calculation if caller requested their ignoring.
+            if (Flags & MOD_M2)
+                return false;
+        }
+
         // small M2 workaround, maybe better make separate class with virtual intersection funcs
         // in any case, there's no need to use a bound tree if we only have one submodel
         if (groupModels.size() == 1)

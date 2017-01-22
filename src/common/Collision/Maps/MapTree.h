@@ -29,6 +29,7 @@ namespace VMAP
     class GroupModel;
     class VMapManager2;
     enum class LoadResult : uint8;
+    enum class ModelIgnoreFlags : uint32;
 
     struct LocationInfo
     {
@@ -62,7 +63,7 @@ namespace VMAP
             If intersection is found within pMaxDist, sets pMaxDist to intersection distance and returns true.
             Else, pMaxDist is not modified and returns false;
             */
-            bool getIntersectionTime(const G3D::Ray& pRay, float &pMaxDist, bool pStopAtFirstHit) const;
+            bool getIntersectionTime(const G3D::Ray& pRay, float &pMaxDist, bool pStopAtFirstHit, ModelIgnoreFlags ignoreFlags) const;
             //bool containsLoadedMapTile(unsigned int pTileIdent) const { return(iLoadedMapTiles.containsKey(pTileIdent)); }
         public:
             static std::string getTileFileName(uint32 mapID, uint32 tileX, uint32 tileY);
@@ -73,7 +74,7 @@ namespace VMAP
             StaticMapTree(uint32 mapID, std::string basePath);
             ~StaticMapTree();
 
-            bool isInLineOfSight(const G3D::Vector3& pos1, const G3D::Vector3& pos2) const;
+            bool isInLineOfSight(const G3D::Vector3& pos1, const G3D::Vector3& pos2, ModelIgnoreFlags ignoreFlags) const;
             /**
             When moving from pos1 to pos2 check if we hit an object. Return true and the position if we hit one
             Return the hit pos or the original dest pos

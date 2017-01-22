@@ -390,7 +390,7 @@ void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
         return;
 
     // only if see assisted creature's enemy
-    if (!u->IsWithinLOSInMap(i_enemy))
+    if (!u->IsWithinLOSInMap(i_enemy, VMAP::ModelIgnoreFlags::M2))
         return;
 
     if (u->AI())
@@ -556,7 +556,7 @@ bool AnyAssistCreatureInRangeCheck::operator()(Creature* u)
         return false;
 
     // only if see assisted creature
-    if (!i_funit->IsWithinLOSInMap(u))
+    if (!i_funit->IsWithinLOSInMap(u, VMAP::ModelIgnoreFlags::M2))
         return false;
 
     return true;
@@ -564,7 +564,7 @@ bool AnyAssistCreatureInRangeCheck::operator()(Creature* u)
 
 bool NearestAssistCreatureInCreatureRangeCheck::operator()(Creature* u)
 {
-    if (u->GetFaction() == i_obj->GetFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
+    if (u->GetFaction() == i_obj->GetFaction() && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsHostileTo(i_enemy) && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u, VMAP::ModelIgnoreFlags::M2))
     {
         i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
         return true;
@@ -574,7 +574,7 @@ bool NearestAssistCreatureInCreatureRangeCheck::operator()(Creature* u)
 
 bool NearestGeneralizedAssistCreatureInCreatureRangeCheck::operator()(Creature* u)
 {
-    if (u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u))
+    if (u->GetEntry() == i_entry && u->GetFaction() == i_faction && !u->IsInCombat() && !u->GetCharmerOrOwnerGUID() && u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_obj->IsWithinLOSInMap(u, VMAP::ModelIgnoreFlags::M2))
     {
         i_range = i_obj->GetDistance(u);         // use found unit range as new range limit for next check
         return true;

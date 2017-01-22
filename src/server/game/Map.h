@@ -25,6 +25,7 @@ class GridMap;
 class Transport;
 class MotionTransport;
 namespace Trinity { struct ObjectUpdater; }
+namespace VMAP { enum class ModelIgnoreFlags : uint32; }
 struct MapDifficulty;
 struct MapEntry;
 enum Difficulty : int;
@@ -185,7 +186,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
         Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = nullptr);
 
-        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask = (PhaseMask)0) const;
+        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask = (PhaseMask)0, VMAP::ModelIgnoreFlags ignoreFlags = /*VMAP::ModelIgnoreFlags::Nothing*/ VMAP::ModelIgnoreFlags(0)) const;
         void Balance() { _dynamicTree.balance(); }
         //get dynamic collision (gameobjects only ?)
         bool getObjectHitPos(PhaseMask phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);

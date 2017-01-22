@@ -57,7 +57,7 @@ bool AttackAction::Attack(Unit* target)
         if (verbose) ai->TellMaster(msg.str());
         return false;
     }
-    if (!bot->IsWithinLOSInMap(target))
+    if (!bot->IsWithinLOSInMap(target, VMAP::ModelIgnoreFlags::M2))
     {
         msg << " is not on my sight";
         if (verbose) ai->TellMaster(msg.str());

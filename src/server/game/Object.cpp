@@ -1022,7 +1022,7 @@ bool WorldObject::IsWithinDist2d(const Position* pos, float dist) const
     return IsInDist2d(pos, dist + GetObjectSize());
 }
 
-bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
+bool WorldObject::IsWithinLOSInMap(const WorldObject* obj, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
     if (!IsInMap(obj)) 
         return false;
@@ -1033,10 +1033,10 @@ bool WorldObject::IsWithinLOSInMap(const WorldObject* obj) const
     else
         obj->GetHitSpherePointFor(GetPosition(), x, y, z);
     
-    return IsWithinLOS(x, y, z);
+    return IsWithinLOS(x, y, z, ignoreFlags);
 }
 
-bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz ) const
+bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
     if(IsInWorld())
     {
@@ -1046,7 +1046,7 @@ bool WorldObject::IsWithinLOS(const float ox, const float oy, const float oz ) c
         else
             GetHitSpherePointFor({ ox, oy, oz }, x, y, z);
         
-        return GetMap()->isInLineOfSight(x, y, z + 2.0f, ox, oy, oz + 2.0f, GetPhaseMask());
+        return GetMap()->isInLineOfSight(x, y, z + 2.0f, ox, oy, oz + 2.0f, GetPhaseMask(), ignoreFlags);
    }
     
     return true;

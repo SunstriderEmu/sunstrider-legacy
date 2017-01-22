@@ -2089,7 +2089,7 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
         return;
 
     // disable this check for performance boost ?
-    if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !IsWithinLOSInMap(pVictim))
+    if ((attType == BASE_ATTACK || attType == OFF_ATTACK) && !IsWithinLOSInMap(pVictim, VMAP::ModelIgnoreFlags::M2))
         return;
         
     CombatStart(pVictim);
@@ -8055,7 +8055,7 @@ Unit* Unit::GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
     for (auto hitTriggerAura : hitTriggerAuras)
     {
         if (Unit* magnet = hitTriggerAura->GetCaster())
-            if (_IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this)
+            if (_IsValidAttackTarget(magnet, spellInfo) && magnet->IsWithinLOSInMap(this, VMAP::ModelIgnoreFlags::M2)
                 && (!spellInfo || (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                     && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK)))
                 if (roll_chance_i(hitTriggerAura->GetAmount()))
@@ -12922,7 +12922,7 @@ Unit* Unit::SelectNearbyTarget(float dist) const
     // remove not LoS targets
     for(auto tIter = targets.begin(); tIter != targets.end();)
     {
-        if(!IsWithinLOSInMap(*tIter))
+        if(!IsWithinLOSInMap(*tIter, VMAP::ModelIgnoreFlags::M2))
         {
             auto tIter2 = tIter;
             ++tIter;

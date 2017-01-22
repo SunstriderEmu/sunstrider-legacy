@@ -20,7 +20,7 @@ namespace ai
             for(list<Unit *>::iterator i = targets.begin(); i!= targets.end(); ++i)
             {
                 Unit* unit = *i;
-                if(bot->IsWithinLOSInMap(unit) && AcceptUnit(unit))
+                if(bot->IsWithinLOSInMap(unit, VMAP::ModelIgnoreFlags::M2) && AcceptUnit(unit))
                     results.push_back(ObjectGuid(unit->GetGUID()));
             }
             return results;

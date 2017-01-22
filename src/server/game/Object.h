@@ -6,6 +6,7 @@
 #include "ByteBuffer.h"
 #include "UpdateData.h"
 #include "Map.h"
+#include "ModelIgnoreFlags.h"
 #include "ObjectGuid.h"
 #include "UpdateMask.h"
 #include "SharedDefines.h"
@@ -592,8 +593,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         // No check if same map. Use only if you will sure about placing both object at same map
         bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const;
         bool IsWithinDistInMap(const WorldObject* obj, const float dist2compare, const bool is3D = true) const;
-        bool IsWithinLOS(const float x, const float y, const float z ) const;
-        bool IsWithinLOSInMap(const WorldObject* obj) const;
+        bool IsWithinLOS(float x, float y, float z, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
+        bool IsWithinLOSInMap(WorldObject const* obj, VMAP::ModelIgnoreFlags ignoreFlags = VMAP::ModelIgnoreFlags::Nothing) const;
         Position GetHitSpherePointFor(Position const& dest) const;
         void GetHitSpherePointFor(Position const& dest, float& x, float& y, float& z) const;
         bool isInFront(WorldObject const* target, float arc = M_PI) const;

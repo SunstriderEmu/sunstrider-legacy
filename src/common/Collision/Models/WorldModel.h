@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2010 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 #ifndef _WORLDMODEL_H
 #define _WORLDMODEL_H
 
@@ -33,6 +15,7 @@ namespace VMAP
     class TreeNode;
     struct AreaInfo;
     struct LocationInfo;
+    enum class ModelIgnoreFlags : uint32;
 
     class TC_COMMON_API MeshTriangle
     {
@@ -112,12 +95,13 @@ namespace VMAP
             //! pass group models to WorldModel and create BIH. Passed vector is swapped with old geometry!
             void setGroupModels(std::vector<GroupModel> &models);
             void setRootWmoID(uint32 id) { RootWMOID = id; }
-            bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
+            bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit, ModelIgnoreFlags ignoreFlags) const;
             bool IntersectPoint(const G3D::Vector3 &p, const G3D::Vector3 &down, float &dist, AreaInfo &info) const;
             bool GetLocationInfo(const G3D::Vector3 &p, const G3D::Vector3 &down, float &dist, LocationInfo &info) const;
             bool writeFile(const std::string &filename);
             bool readFile(const std::string &filename);
             void getGroupModels(std::vector<GroupModel> &groupModels);
+            uint32 Flags;
         protected:
             uint32 RootWMOID;
             std::vector<GroupModel> groupModels;

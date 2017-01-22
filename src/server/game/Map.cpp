@@ -1501,7 +1501,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
         if (_transport->IsInWorld() && _transport->GetExactDistSq(x, y, z) < 75.0f*75.0f && _transport->m_model)
         {
             float dist = 30.0f;
-            bool hit = _transport->m_model->intersectRay(r, dist, true, phase);
+            bool hit = _transport->m_model->intersectRay(r, dist, true, phase, VMAP::ModelIgnoreFlags::Nothing);
             if (hit)
                 return _transport;
         }
@@ -1511,7 +1511,7 @@ Transport* Map::GetTransportForPos(uint32 phase, float x, float y, float z, Worl
             if (staticTrans->m_model)
             {
                 float dist = 10.0f;
-                bool hit = staticTrans->m_model->intersectRay(r, dist, true, phase);
+                bool hit = staticTrans->m_model->intersectRay(r, dist, true, phase, VMAP::ModelIgnoreFlags::Nothing);
                 if (hit)
                     if (GetHeight(/*phase,*/ x, y, z, true, 30.0f) < (v.z - dist + 1.0f))
                         return staticTrans->ToTransport();
@@ -1816,9 +1816,9 @@ void Map::GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, flo
 }
 
 
-bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask) const
+bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask, VMAP::ModelIgnoreFlags ignoreFlags) const
 {
-    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2)
+    return VMAP::VMapFactory::createOrGetVMapManager()->isInLineOfSight(GetId(), x1, y1, z1, x2, y2, z2, ignoreFlags)
             && _dynamicTree.isInLineOfSight(x1, y1, z1, x2, y2, z2, phasemask);
 }
 
