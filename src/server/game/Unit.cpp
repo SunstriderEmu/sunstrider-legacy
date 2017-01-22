@@ -2793,7 +2793,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
     }
 
     // Always have a minimal 1% chance
-    if (HitChance <  100) HitChance =  100;
+    if (HitChance <  100) 
+        HitChance =  100;
 
     // Final Result //
     bool resist = rand > HitChance;

@@ -1715,8 +1715,13 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                 //MovePoint will ignore e.target.o if it is 0.0f
                 me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, dest.x, dest.y, dest.z, e.target.o, e.action.MoveToPos.disablePathfinding == 0);
             }
-            else
-                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, e.action.MoveToPos.disablePathfinding == 0);
+            else {
+                float x, y, z;
+                target->GetPosition(x, y, z);
+                if (e.action.MoveToPos.ContactDistance > 0)
+                    target->GetContactPoint(me, x, y, z, e.action.MoveToPos.ContactDistance);
+                me->GetMotionMaster()->MovePoint(e.action.MoveToPos.pointId, x, y, z, e.action.MoveToPos.disablePathfinding == 0);
+            }
             break;
         }
         case SMART_ACTION_RESPAWN_TARGET:
