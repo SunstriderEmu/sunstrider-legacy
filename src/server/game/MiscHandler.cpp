@@ -1633,10 +1633,10 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)
 {
-    /*
-        TC_LOG_DEBUG("network","WORLD: CMSG_REQUEST_PET_INFO");
-        recvData.hexlike();
-    */
+    if (_player->GetPet())
+        _player->PetSpellInitialize();
+    else if (_player->GetCharm())
+        _player->CharmSpellInitialize();
 }
 
 void WorldSession::HandleSetTaxiBenchmarkOpcode( WorldPacket & recvData )
