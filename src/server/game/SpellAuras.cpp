@@ -4018,39 +4018,9 @@ void Aura::HandleAuraModUseNormalSpeed(bool /*apply*/, bool Real)
 
 void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 {
-    uint32 mechanic = 1 << m_modifier.m_miscvalue;
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 
-    //immune movement impairment and loss of control
-    if(GetId()==42292)
-        mechanic=IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
-
-    if(apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
-    {
-        Unit::AuraMap& Auras = m_target->GetAuras();
-        for(Unit::AuraMap::iterator iter = Auras.begin(), next; iter != Auras.end(); iter = next)
-        {
-            next = iter;
-            ++next;
-            SpellInfo const *spell = iter->second->GetSpellInfo();
-            if (!( spell->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)  // spells unaffected by invulnerability
-                && !iter->second->IsPositive()                                    // only remove negative spells
-                && spell->Id != GetId())
-            {
-                //check for mechanic mask
-                if(GetSpellMechanicMask(spell, iter->second->GetEffIndex()) & mechanic)
-                {
-                    m_target->RemoveAurasDueToSpell(spell->Id);
-                    if(Auras.empty())
-                        break;
-                    else
-                        next = Auras.begin();
-                }
-            }
-        }
-    }
-
-    m_target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,m_modifier.m_miscvalue,apply);
-
+    //HACKS TIME
     // Bestial Wrath
     if ( GetSpellInfo()->SpellFamilyName == SPELLFAMILY_HUNTER && GetSpellInfo()->Id == 19574)
     {
@@ -4095,8 +4065,9 @@ void Aura::HandleModMechanicImmunity(bool apply, bool Real)
 
 void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
 {
-    m_target->ApplySpellImmune(GetId(), IMMUNITY_EFFECT, m_modifier.m_miscvalue, apply);
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 
+    // when removing flag aura, handle flag drop
     Player* player = m_target->ToPlayer();
     if (!apply && player && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_UNATTACKABLE))
     {
@@ -4112,30 +4083,44 @@ void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
 
 void Aura::HandleAuraModStateImmunity(bool apply, bool Real)
 {
-    if(apply && Real && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
-    {
-        Unit::AuraList const& auraList = m_target->GetAurasByType(AuraType(m_modifier.m_miscvalue));
-        for(auto itr = auraList.begin(); itr != auraList.end();)
-        {
-            if (auraList.front() != this)                   // skip itself aura (it already added)
-            {
-                m_target->RemoveAurasDueToSpell(auraList.front()->GetId());
-                itr = auraList.begin();
-            }
-            else
-                ++itr;
-        }
-    }
-
-    m_target->ApplySpellImmune(GetId(),IMMUNITY_STATE,m_modifier.m_miscvalue,apply);
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 }
 
 void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
 {
-    if(apply && m_modifier.m_miscvalue == SPELL_SCHOOL_MASK_NORMAL)
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
+
+    if (apply && m_modifier.m_miscvalue == SPELL_SCHOOL_MASK_NORMAL)
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
 
-    m_target->ApplySpellImmune(GetId(),IMMUNITY_SCHOOL,m_modifier.m_miscvalue,apply);
+    if (Real && GetSpellInfo()->Mechanic == MECHANIC_BANISH)
+    {
+        if (apply)
+            m_target->AddUnitState(UNIT_STATE_ISOLATED);
+        else
+        {   //remove the state if there isn't any other banish aura left
+            bool banishFound = false;
+            auto auras = m_target->GetAuraEffectsByType(GetAuraType());
+            for (auto aura : auras)
+            {
+                if (aura->GetSpellInfo()->Mechanic == MECHANIC_BANISH)
+                {
+                    banishFound = true;
+                    break;
+                }
+            }
+
+            if (!banishFound)
+                m_target->ClearUnitState(UNIT_STATE_ISOLATED);
+        }
+    }
+
+    /*TC Code
+    // remove all flag auras (they are positive, but they must be removed when you are immune)
+    if (apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
+        && GetSpellInfo()->HasAttribute(SPELL_ATTR2_DAMAGE_REDUCED_SHIELD))
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        */
 
     if(Real && apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
     {
@@ -4174,18 +4159,11 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
             }
         }
     }
-    if( Real && GetSpellInfo()->Mechanic == MECHANIC_BANISH )
-    {
-        if( apply )
-            m_target->AddUnitState(UNIT_STATE_ISOLATED);
-        else
-            m_target->ClearUnitState(UNIT_STATE_ISOLATED);
-    }
 }
 
 void Aura::HandleAuraModDmgImmunity(bool apply, bool Real)
 {
-    m_target->ApplySpellImmune(GetId(), IMMUNITY_DAMAGE, m_modifier.m_miscvalue, apply);
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 }
 
 void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
@@ -4194,8 +4172,7 @@ void Aura::HandleAuraModDispelImmunity(bool apply, bool Real)
     if(!Real)
         return;
 
-    //todo, check if other auras gives the same immunities before removing?
-    m_target->ApplySpellDispelImmunity(m_spellProto, DispelType(m_modifier.m_miscvalue), apply);
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 
     // Stoneform - need bleed and disease immunity
     if(GetId() == 20594)
@@ -7057,36 +7034,7 @@ void Aura::HandleModStateImmunityMask(bool apply, bool Real)
     if (!Real)
         return;
 
-    std::list <AuraType> immunity_list;
-    if (m_modifier.m_miscvalue & (1<<10))
-        immunity_list.push_back(SPELL_AURA_MOD_STUN);
-    if (m_modifier.m_miscvalue & (1<<1))
-        immunity_list.push_back(SPELL_AURA_TRANSFORM);
-
-    // These flag can be recognized wrong:
-    if (m_modifier.m_miscvalue & (1<<6))
-        immunity_list.push_back(SPELL_AURA_MOD_DECREASE_SPEED);
-    if (m_modifier.m_miscvalue & (1<<0))
-        immunity_list.push_back(SPELL_AURA_MOD_ROOT);
-    if (m_modifier.m_miscvalue & (1<<2))
-        immunity_list.push_back(SPELL_AURA_MOD_CONFUSE);
-    if (m_modifier.m_miscvalue & (1<<9))
-        immunity_list.push_back(SPELL_AURA_MOD_FEAR);
-    if (m_modifier.m_miscvalue & (1<<7))
-        immunity_list.push_back(SPELL_AURA_MOD_DISARM);
-
-    // apply immunities
-    for (auto & iter : immunity_list)
-        m_target->ApplySpellImmune(GetId(), IMMUNITY_STATE, iter, apply);
-
-    if (apply) {
-        m_target->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
-        m_target->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
-    }
-
-    if (apply && m_spellProto->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
-        for (auto & iter : immunity_list)
-            m_target->RemoveAurasByType(iter);
+    GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 }
 
 bool Aura::DoesAuraApplyAuraName(uint32 name)

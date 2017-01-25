@@ -1,20 +1,3 @@
-/*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-
 #include "SpellInfo.h"
 #include "DBCStores.h"
 #include "SpellAuraDefines.h"
@@ -706,6 +689,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ChainEntry = nullptr;
 
     ExplicitTargetMask = _GetExplicitTargetMask();
+
+    _allowedMechanicMask = 0;
 
     LoadCustomAttributes();
 }
@@ -2533,4 +2518,413 @@ void SpellInfo::_UnloadImplicitTargetConditionLists()
     }
 }
 
+void SpellInfo::_LoadImmunityInfo()
+{
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        uint32 schoolImmunityMask = 0;
+#ifdef LICH_KING
+        uint32 applyHarmfulAuraImmunityMask = 0;
+#endif
+        uint32 mechanicImmunityMask = 0;
+        uint32 dispelImmunity = 0;
+        uint32 damageImmunityMask = 0;
 
+        int32 miscVal = Effects[i].MiscValue;
+//        int32 amount = Effects[i].CalcValue();
+
+        ImmunityInfo& immuneInfo = _immunityInfo[i];
+
+        switch (Effects[i].ApplyAuraName)
+        {
+        case SPELL_AURA_MECHANIC_IMMUNITY_MASK:
+        {
+            switch (miscVal)
+            {
+            case 96:   // Free Friend, Uncontrollable Frenzy, Warlord's Presence
+            {
+                mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                break;
+            }
+            case 1615: // Incite Rage, Wolf Spirit, Overload, Lightning Tendrils
+            {
+                switch (Id)
+                {
+                case 43292: // Incite Rage
+                case 49172: // Wolf Spirit
+                    mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                    // no break intended
+                case 61869: // Overload
+                case 63481:
+                case 61887: // Lightning Tendrils
+                case 63486:
+                    mechanicImmunityMask |= (1 << MECHANIC_INTERRUPT) | (1 << MECHANIC_SILENCE);
+
+                    immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_KNOCK_BACK);
+                    immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_KNOCK_BACK_DEST);
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
+            case 679:  // Mind Control, Avenging Fury
+            {
+                if (Id == 57742) // Avenging Fury
+                {
+                    mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                }
+                break;
+            }
+            case 1557: // Startling Roar, Warlord Roar, Break Bonds, Stormshield
+            {
+                if (Id == 64187) // Stormshield
+                {
+                    mechanicImmunityMask |= (1 << MECHANIC_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                }
+                else
+                {
+                    mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                }
+                break;
+            }
+            case 1614: // Fixate
+            case 1694: // Fixated, Lightning Tendrils
+            {
+                immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_ATTACK_ME);
+                immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_TAUNT);
+                break;
+            }
+            case 1630: // Fervor, Berserk
+            {
+                if (Id == 64112) // Berserk
+                {
+                    immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_ATTACK_ME);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_TAUNT);
+                }
+                else
+                {
+                    mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                }
+                break;
+            }
+#ifdef LICH_KING
+            case 477:  // Bladestorm
+            case 1733: // Bladestorm, Killing Spree
+            {
+                if (!amount)
+                {
+                    mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+
+                    immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_KNOCK_BACK);
+                    immuneInfo.SpellEffectImmune.insert(SPELL_EFFECT_KNOCK_BACK_DEST);
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                }
+                break;
+            }
+#endif
+            case 878: // Whirlwind, Fog of Corruption, Determination
+            {
+                if (Id == 66092) // Determination
+                {
+                    mechanicImmunityMask |= (1 << MECHANIC_SNARE) | (1 << MECHANIC_STUN)
+                        | (1 << MECHANIC_DISORIENTED) | (1 << MECHANIC_FREEZE);
+
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                }
+                break;
+            }
+            default:
+                break;
+            }
+
+            if (immuneInfo.AuraTypeImmune.empty())
+            {
+                if (miscVal & (1 << 10))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_STUN);
+                if (miscVal & (1 << 1))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_TRANSFORM);
+
+                // These flag can be recognized wrong:
+                if (miscVal & (1 << 6))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DECREASE_SPEED);
+                if (miscVal & (1 << 0))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_ROOT);
+                if (miscVal & (1 << 2))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_CONFUSE);
+                if (miscVal & (1 << 9))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_FEAR);
+                if (miscVal & (1 << 7))
+                    immuneInfo.AuraTypeImmune.insert(SPELL_AURA_MOD_DISARM);
+            }
+            break;
+        }
+        case SPELL_AURA_MECHANIC_IMMUNITY:
+        {
+            switch (Id)
+            {
+            case 34471: // The Beast Within
+            case 19574: // Bestial Wrath
+            case 42292: // PvP trinket
+            case 59752: // Every Man for Himself
+            case 53490: // Bullheaded
+                mechanicImmunityMask |= IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
+                break;
+            case 54508: // Demonic Empowerment
+                mechanicImmunityMask |= (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_STUN);
+                break;
+            default:
+                if (miscVal < 1)
+                    continue;
+
+                mechanicImmunityMask |= 1 << miscVal;
+                break;
+            }
+            break;
+        }
+        case SPELL_AURA_EFFECT_IMMUNITY:
+        {
+            immuneInfo.SpellEffectImmune.insert(static_cast<SpellEffects>(miscVal));
+            break;
+        }
+        case SPELL_AURA_STATE_IMMUNITY:
+        {
+            immuneInfo.AuraTypeImmune.insert(static_cast<AuraType>(miscVal));
+            break;
+        }
+        case SPELL_AURA_SCHOOL_IMMUNITY:
+        {
+            schoolImmunityMask |= uint32(miscVal);
+            break;
+        }
+#ifdef LICH_KING
+        case SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL:
+        {
+            applyHarmfulAuraImmunityMask |= uint32(miscVal);
+            break;
+        }
+#endif
+        case SPELL_AURA_DAMAGE_IMMUNITY:
+        {
+            damageImmunityMask |= uint32(miscVal);
+            break;
+        }
+        case SPELL_AURA_DISPEL_IMMUNITY:
+        {
+            dispelImmunity = uint32(miscVal);
+            break;
+        }
+        default:
+            break;
+        }
+
+        immuneInfo.SchoolImmuneMask = schoolImmunityMask;
+#ifdef LICH_KING
+        immuneInfo.ApplyHarmfulAuraImmuneMask = applyHarmfulAuraImmunityMask;
+#endif
+        immuneInfo.MechanicImmuneMask = mechanicImmunityMask;
+        immuneInfo.DispelImmune = dispelImmunity;
+        immuneInfo.DamageSchoolMask = damageImmunityMask;
+
+        immuneInfo.AuraTypeImmune.shrink_to_fit();
+        immuneInfo.SpellEffectImmune.shrink_to_fit();
+
+        _allowedMechanicMask |= immuneInfo.MechanicImmuneMask;
+    }
+
+    if (HasAttribute(SPELL_ATTR5_USABLE_WHILE_STUNNED))
+    {
+        switch (Id)
+        {
+        case 22812: // Barkskin
+            _allowedMechanicMask |=
+                (1 << MECHANIC_STUN) |
+                (1 << MECHANIC_FREEZE) |
+                (1 << MECHANIC_KNOCKOUT) |
+                (1 << MECHANIC_SLEEP);
+            break;
+        case 49039: // Lichborne, don't allow normal stuns
+            break;
+        default:
+            _allowedMechanicMask |= (1 << MECHANIC_STUN);
+            break;
+        }
+    }
+
+    if (HasAttribute(SPELL_ATTR5_USABLE_WHILE_CONFUSED))
+        _allowedMechanicMask |= (1 << MECHANIC_DISORIENTED);
+
+    if (HasAttribute(SPELL_ATTR5_USABLE_WHILE_FEARED))
+        _allowedMechanicMask |= (1 << MECHANIC_FEAR);
+}
+
+bool SpellInfo::CanDispelAura(SpellInfo const* auraSpellInfo) const
+{
+    // These auras (like Divine Shield) can't be dispelled
+    if (auraSpellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY))
+        return false;
+
+    // These spells (like Mass Dispel) can dispel all auras
+    if (HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY))
+        return true;
+
+    // These auras (Cyclone for example) are not dispelable
+    if (auraSpellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) || auraSpellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+        return false;
+
+    return true;
+}
+
+void SpellInfo::ApplyAllSpellImmunitiesTo(Unit* target, uint8 effIndex, bool apply) const
+{
+    ImmunityInfo const* immuneInfo = _immunityInfo + effIndex;
+
+    if (uint32 schoolImmunity = immuneInfo->SchoolImmuneMask)
+    {
+        target->ApplySpellImmune(Id, IMMUNITY_SCHOOL, schoolImmunity, apply);
+
+        if (apply && HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
+        {
+            target->RemoveAppliedAuras([this, schoolImmunity](Aura const* aurApp) -> bool
+            {
+                SpellInfo const* auraSpellInfo = aurApp->GetSpellInfo();
+                return ((auraSpellInfo->GetSchoolMask() & schoolImmunity) != 0 && // Check for school mask
+                    CanDispelAura(auraSpellInfo) &&
+                    (IsPositive() != aurApp->IsPositive()) &&                     // Check spell vs aura possitivity
+                    !auraSpellInfo->IsPassive() &&                                // Don't remove passive auras
+                    auraSpellInfo->Id != Id);                                     // Don't remove self
+            });
+        }
+    }
+
+    if (uint32 mechanicImmunity = immuneInfo->MechanicImmuneMask)
+    {
+        for (uint32 i = 0; i < MECHANIC_TOTAL; ++i)
+            if (mechanicImmunity & (1 << i))
+                target->ApplySpellImmune(Id, IMMUNITY_MECHANIC, i, apply);
+
+        if (apply && HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
+            target->RemoveAurasWithMechanic(mechanicImmunity, AURA_REMOVE_BY_DEFAULT, Id);
+    }
+
+    if (uint32 dispelImmunity = immuneInfo->DispelImmune)
+    {
+        target->ApplySpellImmune(Id, IMMUNITY_DISPEL, dispelImmunity, apply);
+
+        if (apply && HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
+        {
+            target->RemoveAppliedAuras([dispelImmunity](Aura const* aurApp) -> bool
+            {
+                SpellInfo const* spellInfo = aurApp->GetSpellInfo();
+                if (spellInfo->Dispel == dispelImmunity)
+                    return true;
+
+                return false;
+            });
+        }
+    }
+
+    if (uint32 damageImmunity = immuneInfo->DamageSchoolMask)
+        target->ApplySpellImmune(Id, IMMUNITY_DAMAGE, damageImmunity, apply);
+
+    for (AuraType auraType : immuneInfo->AuraTypeImmune)
+    {
+        target->ApplySpellImmune(Id, IMMUNITY_STATE, auraType, apply);
+        if (apply && HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
+            target->RemoveAurasByType(auraType);
+    }
+
+    for (SpellEffects effectType : immuneInfo->SpellEffectImmune)
+        target->ApplySpellImmune(Id, IMMUNITY_EFFECT, effectType, apply);
+}
+
+uint32 SpellInfo::GetAllowedMechanicMask() const
+{
+    return _allowedMechanicMask;
+}
+
+// based on client Spell_C::CancelsAuraEffect
+bool SpellInfo::SpellCancelsAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const
+{
+    if (!HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
+        return false;
+
+    if (auraSpellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY))
+        return false;
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].Effect != SPELL_EFFECT_APPLY_AURA)
+            continue;
+
+        uint32 const miscValue = static_cast<uint32>(Effects[i].MiscValue);
+        switch (Effects[i].ApplyAuraName)
+        {
+        case SPELL_AURA_STATE_IMMUNITY:
+            if (miscValue != auraSpellInfo->Effects[auraEffIndex].ApplyAuraName)
+                continue;
+            break;
+        case SPELL_AURA_SCHOOL_IMMUNITY:
+#ifdef LICH_KING
+        case SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL:
+#endif
+            if (auraSpellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE) || !(auraSpellInfo->SchoolMask & miscValue))
+                continue;
+            break;
+        case SPELL_AURA_DISPEL_IMMUNITY:
+            if (miscValue != auraSpellInfo->Dispel)
+                continue;
+            break;
+        case SPELL_AURA_MECHANIC_IMMUNITY:
+            if (miscValue != auraSpellInfo->Mechanic)
+            {
+                if (miscValue != auraSpellInfo->Effects[auraEffIndex].Mechanic)
+                    continue;
+            }
+            break;
+        default:
+            continue;
+        }
+
+        return true;
+    }
+
+    return false;
+}

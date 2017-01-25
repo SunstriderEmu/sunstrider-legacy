@@ -3423,3 +3423,18 @@ uint8 SpellMgr::IsHighRankOfSpell(uint32 spell1, uint32 spell2) const
 
     return false;
 }
+
+void SpellMgr::LoadSpellInfoImmunities()
+{
+    uint32 oldMSTime = GetMSTime();
+
+    for (SpellInfo* spellInfo : mSpellInfoMap)
+    {
+        if (!spellInfo)
+            continue;
+
+        spellInfo->_LoadImmunityInfo();
+    }
+
+    TC_LOG_INFO("server.loading", ">> Loaded SpellInfo immunity infos in %u ms", GetMSTimeDiffToNow(oldMSTime));
+}

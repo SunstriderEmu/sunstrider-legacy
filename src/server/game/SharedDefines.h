@@ -351,7 +351,7 @@ enum SpellAttr2
     SPELL_ATTR2_REQ_DEAD_PET               = 0x00040000,           // 18 Only Revive pet
     SPELL_ATTR2_NOT_NEED_SHAPESHIFT        = 0x00080000,           // 19 does not necessarly need shapeshift
     SPELL_ATTR2_BEHIND_TARGET              = 0x00100000,           // 20 must be behind target
-    SPELL_ATTR2_UNK21                      = 0x00200000,           // 21 for ice blocks, pala immunity buffs, priest absorb shields, but used also for other spells -> not sure! //TC SPELL_ATTR2_DAMAGE_REDUCED_SHIELD
+    SPELL_ATTR2_DAMAGE_REDUCED_SHIELD      = 0x00200000,           // 21 for ice blocks, pala immunity buffs, priest absorb shields, but used also for other spells -> not sure! //TC SPELL_ATTR2_DAMAGE_REDUCED_SHIELD
     SPELL_ATTR2_UNK22                      = 0x00400000,           // 22
     SPELL_ATTR2_UNK23                      = 0x00800000,           // 23 Only mage Arcane Concentration have this flag //TC SPELL_ATTR2_IS_ARCANE_CONCENTRATION
     SPELL_ATTR2_UNK24                      = 0x01000000,           // 24
@@ -827,7 +827,7 @@ enum Mechanics
 {
     MECHANIC_NONE             = 0,
     MECHANIC_CHARM            = 1,
-    MECHANIC_CONFUSED         = 2,
+    MECHANIC_DISORIENTED      = 2,
     MECHANIC_DISARM           = 3,
     MECHANIC_DISTRACT         = 4,
     MECHANIC_FEAR             = 5,
@@ -862,7 +862,7 @@ enum Mechanics
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967da6)
 #define IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK ( \
-    (1<<MECHANIC_CHARM   )|(1<<MECHANIC_CONFUSED )|(1<<MECHANIC_FEAR  )| \
+    (1<<MECHANIC_CHARM   )|(1<<MECHANIC_DISORIENTED )|(1<<MECHANIC_FEAR  )| \
     (1<<MECHANIC_ROOT    )|(1<<MECHANIC_PACIFY   )|(1<<MECHANIC_SLEEP )| \
     (1<<MECHANIC_SNARE   )|(1<<MECHANIC_STUN     )|(1<<MECHANIC_FREEZE)| \
     (1<<MECHANIC_KNOCKOUT)|(1<<MECHANIC_POLYMORPH)|(1<<MECHANIC_BANISH)| \

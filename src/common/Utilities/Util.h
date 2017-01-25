@@ -301,10 +301,10 @@ private:
 
 public:
 	typedef typename ContainerType::iterator iterator;
-
-    HookList<T> & operator+=(T t)
+    
+    HookList<T>& operator+=(T&& t)
     {
-		_container.push_back(t);
+        _container.push_back(std::move(t));
         return *this;
     }
     HookList<T> & operator-=(T t)
@@ -312,7 +312,7 @@ public:
 		_container.remove(t);
         return *this;
     }
-    size_t size()
+    size_t size() const
     {
         return _container.size();
     }

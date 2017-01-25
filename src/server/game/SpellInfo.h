@@ -19,6 +19,7 @@
 #define _SPELLINFO_H
 
 #include "SharedDefines.h"
+#include <boost/container/flat_set.hpp>
 
 enum AuraType : unsigned int;
 enum SpellCastResult : int;
@@ -328,6 +329,18 @@ private:
     static StaticData _data[TOTAL_SPELL_EFFECTS];
 };
 
+struct TC_GAME_API ImmunityInfo
+{
+    uint32 SchoolImmuneMask = 0;
+    uint32 ApplyHarmfulAuraImmuneMask = 0;
+    uint32 MechanicImmuneMask = 0;
+    uint32 DispelImmune = 0;
+    uint32 DamageSchoolMask = 0;
+
+    boost::container::flat_set<AuraType> AuraTypeImmune;
+    boost::container::flat_set<SpellEffects> SpellEffectImmune;
+};
+
 class TC_GAME_API SpellInfo
 {
     friend class SpellMgr;
@@ -489,6 +502,7 @@ public:
     bool IsDifferentRankOf(SpellInfo const* spellInfo) const;
     bool IsHighRankOf(SpellInfo const* spellInfo) const;
 
+    bool CanDispelAura(SpellInfo const* auraSpellInfo) const;
 
     int32 GetDuration() const;
     int32 GetMaxDuration() const;
@@ -529,9 +543,19 @@ public:
     SpellCastResult CheckTarget(Unit const* caster, WorldObject const* target, bool implicit = true) const;
     SpellCastResult CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget = nullptr) const;
     bool CheckTargetCreatureType(Unit const* target) const;
+
+    // spell immunities
+    void ApplyAllSpellImmunitiesTo(Unit* target, uint8 effIndex, bool apply) const;
+    //bool CanSpellProvideImmunityAgainstAura(SpellInfo const* auraSpellInfo) const;
+    bool SpellCancelsAuraEffect(SpellInfo const* auraSpellInfo, uint8 auraEffIndex) const;
+
+    uint32 GetAllowedMechanicMask() const;
+
 private:
     //apply SpellCustomAttributes. Some custom attributes are also added in SpellMgr::LoadSpellLinked()
     void LoadCustomAttributes();
+    void _LoadImmunityInfo();
+
     static bool _IsPositiveTarget(uint32 targetA, uint32 targetB);
     uint32 _GetExplicitTargetMask() const;
 
@@ -543,6 +567,10 @@ private:
 
     // unloading helpers
     void _UnloadImplicitTargetConditionLists();
+
+    uint32 _allowedMechanicMask;
+
+    ImmunityInfo _immunityInfo[MAX_SPELL_EFFECTS];
 };
 
 #endif // _SPELLINFO_

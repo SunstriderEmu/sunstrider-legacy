@@ -503,17 +503,6 @@ void Unit::AutoRotate(uint32 time)
     }else RotateTimer -= time;
 }
 
-void Unit::RemoveMovementImpairingAuras()
-{
-    for(auto iter = m_Auras.begin(); iter != m_Auras.end();)
-    {
-        if(iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_MOVEMENT_IMPAIR))
-            RemoveAura(iter);
-        else
-            ++iter;
-    }
-}
-
 void Unit::RemoveAurasByType(AuraType auraType)
 {
     if (auraType >= TOTAL_AURAS) return;
@@ -9734,9 +9723,9 @@ void Unit::Mount(uint32 mount, bool flying)
 
     SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_MOUNT );
 
-    // unsummon pet
-    if(GetTypeId() == TYPEID_PLAYER)
+    if(Player* player = ToPlayer())
     {
+        // unsummon pet
         Pet* pet = GetPet();
         if(pet)
         {
@@ -9748,14 +9737,14 @@ void Unit::Mount(uint32 mount, bool flying)
             {
                 if(pet->isControlled())
                 {
-                    (this->ToPlayer())->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
-                    (this->ToPlayer())->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+                    player->SetTemporaryUnsummonedPetNumber(pet->GetCharmInfo()->GetPetNumber());
+                    player->SetOldPetSpell(pet->GetUInt32Value(UNIT_CREATED_BY_SPELL));
                 }
-                (this->ToPlayer())->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
+                player->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT);
                 return;
             }
         }
-        (this->ToPlayer())->SetTemporaryUnsummonedPetNumber(0);
+        player->SetTemporaryUnsummonedPetNumber(0);
     }
 }
 
@@ -15570,4 +15559,47 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
         || HasBreakableByDamageAuraType(SPELL_AURA_MOD_STUN, excludeAura)
         || HasBreakableByDamageAuraType(SPELL_AURA_MOD_ROOT, excludeAura)
         || HasBreakableByDamageAuraType(SPELL_AURA_TRANSFORM, excludeAura));
+}
+
+void Unit::RemoveAppliedAuras(std::function<bool(Aura const*)> const& check)
+{
+    auto iter = m_Auras.begin();
+    while (iter != m_Auras.end())
+    {
+        if (check(iter->second))
+            RemoveAura(iter);
+        else
+            iter++;
+    }
+}
+
+void Unit::RemoveMovementImpairingAuras()
+{
+    for (auto iter = m_Auras.begin(); iter != m_Auras.end();)
+    {
+        if (iter->second->GetSpellInfo()->HasAttribute(SPELL_ATTR_CU_MOVEMENT_IMPAIR))
+            RemoveAura(iter);
+        else
+            ++iter;
+    }
+}
+
+/*
+void Unit::RemoveMovementImpairingAuras()
+{
+    RemoveAurasWithMechanic((1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT));
+}
+*/
+
+void Unit::RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemode, uint32 except)
+{
+    auto iter = m_Auras.begin();
+    while (iter != m_Auras.end())
+    {
+        if (iter->second->GetSpellInfo()->GetAllEffectsMechanicMask() & mechanic_mask
+            && (!except || iter->second->GetId() != except))
+            RemoveAura(iter);
+        else
+            iter++;
+    }
 }

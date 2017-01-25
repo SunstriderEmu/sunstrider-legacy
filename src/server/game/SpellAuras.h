@@ -294,7 +294,7 @@ class TC_GAME_API Aura
                 SetAuraApplication(slot, m_procCharges - 1);
         }
 
-        bool IsPositive() { return m_positive; }
+        bool IsPositive() const { return m_positive; }
         void SetNegative() { m_positive = false; }
         void SetPositive() { m_positive = true; }
         void SetDeathPersistent(bool set) { m_isDeathPersist = set; }

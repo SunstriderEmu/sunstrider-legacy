@@ -1431,6 +1431,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList(sWorld->GetDataPath());
 
+    TC_LOG_INFO("server.loading", "Loading SpellInfo immunity infos...");
+    sSpellMgr->LoadSpellInfoImmunities();
+
     TC_LOG_INFO("server.loading", "Loading Quests..." );
     sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
 

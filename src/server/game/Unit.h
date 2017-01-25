@@ -1565,6 +1565,8 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveAurasDueToSpellByCancel(uint32 spellId);
         void RemoveAurasAtChanneledTarget(SpellInfo const* spellInfo, Unit * caster);
         void RemoveNotOwnSingleTargetAuras();
+        void RemoveAurasWithMechanic(uint32 mechanic_mask, AuraRemoveMode removemode = AURA_REMOVE_BY_DEFAULT, uint32 except = 0);
+        void RemoveMovementImpairingAuras();
 
         void RemoveAurasByType(AuraType auraType);
         void RemoveAuraTypeByCaster(AuraType auraType, uint64 casterGUID);
@@ -1577,7 +1579,6 @@ class TC_GAME_API Unit : public WorldObject
 
         void RemoveAurasWithDispelType( DispelType type );
         bool RemoveAurasWithSpellFamily(uint32 spellFamilyName, uint8 count, bool withPassive);
-        void RemoveMovementImpairingAuras();
 
         void RemoveAllAuras();
         void RemoveAllActiveAuras();
@@ -1587,6 +1588,9 @@ class TC_GAME_API Unit : public WorldObject
         void RemoveAllAurasOnDeath();
         void RemoveAurasOnEvade();
         void DelayAura(uint32 spellId, uint32 effindex, int32 delaytime);
+
+        // Convenience methods removing auras by predicate
+        void RemoveAppliedAuras(std::function<bool(Aura const*)> const& check);
 
         float GetResistanceBuffMods(SpellSchools school, bool positive) const { return GetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school ); }
         void SetResistanceBuffMods(SpellSchools school, bool positive, float val) { SetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school,val); }
