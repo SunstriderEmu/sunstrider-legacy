@@ -177,7 +177,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectSummonObject,                             //106 SPELL_EFFECT_SUMMON_OBJECT_SLOT3
     &Spell::EffectSummonObject,                             //107 SPELL_EFFECT_SUMMON_OBJECT_SLOT4
     &Spell::EffectDispelMechanic,                           //108 SPELL_EFFECT_DISPEL_MECHANIC
-    &Spell::EffectSummonDeadPet,                            //109 SPELL_EFFECT_SUMMON_DEAD_PET
+    &Spell::EffectResurrectPet,                             //109 SPELL_EFFECT_RESURRECT_PET
     &Spell::EffectDestroyAllTotems,                         //110 SPELL_EFFECT_DESTROY_ALL_TOTEMS
     &Spell::EffectDurabilityDamage,                         //111 SPELL_EFFECT_DURABILITY_DAMAGE
     &Spell::EffectSummonDemon,                              //112 SPELL_EFFECT_SUMMON_DEMON
@@ -7407,31 +7407,49 @@ void Spell::EffectDispelMechanic(uint32 i)
     return;
 }
 
-void Spell::EffectSummonDeadPet(uint32 /*i*/)
+void Spell::EffectResurrectPet(uint32 /*i*/)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    if(m_caster->GetTypeId() != TYPEID_PLAYER)
-        return;
-    Player *_player = m_caster->ToPlayer();
-    Pet *pet = _player->GetPet();
-    if(!pet)
-        return;
-    if(pet->IsAlive())
-        return;
-    if(damage < 0)
+    if (damage < 0)
         return;
 
-    float x,y,z;
-    _player->GetPosition(x, y, z);
-    _player->GetMap()->CreatureRelocation(pet, x, y, z, _player->GetOrientation());
+    Player *_player = m_caster->ToPlayer();
+    if(!_player)
+        return;
+
+    // Maybe player dismissed dead pet or pet despawned?
+    bool hadPet = true;
+
+    if (!_player->GetPet())
+    {
+        // Position passed to SummonPet is irrelevant with current implementation,
+        // pet will be relocated without using these coords in Pet::LoadPetFromDB
+        _player->SummonPet(0, 0.0f, 0.0f, 0.0f, 0.0f, SUMMON_PET, 0);
+        hadPet = false;
+    }
+
+    Pet* pet = _player->GetPet(); // Attempt to get current pet
+    if(!pet || pet->IsAlive())
+        return;
+
+    // If player did have a pet before reviving, teleport it
+    if (hadPet)
+    {
+        // Reposition the pet's corpse before reviving so as not to grab aggro
+        // We can use a different, more accurate version of GetClosePoint() since we have a pet
+        float x, y, z; // Will be used later to reposition the pet if we have one
+        _player->GetClosePoint(x, y, z, pet->GetObjectSize(), PET_FOLLOW_DIST, pet->GetFollowAngle());
+        pet->NearTeleportTo(x, y, z, _player->GetOrientation());
+        pet->Relocate(x, y, z, _player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
+    }
 
     pet->SetUInt32Value(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_NONE);
     pet->RemoveFlag (UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
-    pet->SetDeathState( ALIVE );
+    pet->SetDeathState(ALIVE);
     pet->ClearUnitState(UNIT_STATE_ALL_STATE);
-    pet->SetHealth( uint32(pet->GetMaxHealth()*(float(damage)/100)));
+    pet->SetHealth(pet->CountPctFromMaxHealth(damage));
 
     pet->AIM_Initialize();
 

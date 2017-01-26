@@ -350,7 +350,7 @@ class TC_GAME_API Spell
         void EffectKnockBack(uint32 i);
         void EffectPlayerPull(uint32 i);
         void EffectDispelMechanic(uint32 i);
-        void EffectSummonDeadPet(uint32 i);
+        void EffectResurrectPet(uint32 i);
         void EffectDestroyAllTotems(uint32 i);
         void EffectDurabilityDamage(uint32 i);
         void EffectSkill(uint32 i);
