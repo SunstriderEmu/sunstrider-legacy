@@ -131,6 +131,8 @@ class TC_GAME_API _SpellScript
         // Function called when script is destroyed
         // use for: deallocating memory allocated by script
         virtual void Unload() {}
+        // Helpers
+        static bool ValidateSpellInfo(std::vector<uint32> const& spellIds);
 };
 
 // SpellScript interface - enum used for runtime checks of script function calls
