@@ -46,9 +46,6 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     if(items_count > 12)                                    // client limit
         return;
 
-    // recheck
-    
-
     if(items_count)
     {
         for(uint8 i = 0; i < items_count; ++i)

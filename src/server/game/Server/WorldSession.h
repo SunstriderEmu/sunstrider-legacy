@@ -1,26 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-
-/// \addtogroup u2w
-/// @{
-/// \file
 
 #ifndef __WORLDSESSION_H
 #define __WORLDSESSION_H
@@ -253,11 +230,13 @@ class TC_GAME_API WorldSession
         void InitializeSessionCallback(SQLQueryHolder* realmHolder);
 
         //RBAC system from TC, not yet implemented
-//        rbac::RBACData* GetRBACData();
         bool HasPermission(uint32 permissionId) { return true; }
+        /*
+        rbac::RBACData* GetRBACData();
         void LoadPermissions();
-        PreparedQueryResultFuture LoadPermissionsAsync();
+        QueryCallback LoadPermissionsAsync();
         void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
+        */
 
         uint32 GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
@@ -330,7 +309,7 @@ class TC_GAME_API WorldSession
         //pet
         void SendPetNameQuery(uint64 guid, uint32 petnumber);
         void SendStablePet(uint64 guid );
-        void SendStablePetCallback(PreparedQueryResult result, uint64 guid);
+        void SendStablePetCallback(uint64 guid, PreparedQueryResult result);
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
@@ -462,14 +441,13 @@ class TC_GAME_API WorldSession
         void HandleCharEnumOpcode(WorldPacket& recvPacket);
         void HandleCharDeleteOpcode(WorldPacket& recvPacket);
         void HandleCharCreateOpcode(WorldPacket& recvPacket);
-        void HandleCharCreateCallback(PreparedQueryResult result, CharacterCreateInfo* createInfo);
         void HandlePlayerLoginOpcode(WorldPacket& recvPacket);
         void HandleCharEnum(PreparedQueryResult result);
         void HandlePlayerLogin(LoginQueryHolder * holder);
 
         void SendCharCreate(ResponseCodes result);
         void SendCharDelete(ResponseCodes result);
-        void SendCharRename(ResponseCodes result, CharacterRenameInfo const& renameInfo);
+        void SendCharRename(ResponseCodes result, CharacterRenameInfo const* renameInfo);
 
         // played time
         void HandlePlayedTime(WorldPacket& recvPacket);
@@ -656,13 +634,13 @@ class TC_GAME_API WorldSession
         void HandleStablePetCallback(PreparedQueryResult result);
         void HandleUnstablePet(WorldPacket& recvPacket);
         //check if there is any pet in current slot
-        void HandleUnstablePetCallback(PreparedQueryResult result, uint32 petId);
+        void HandleUnstablePetCallback(uint32 petId, PreparedQueryResult result);
         //actually unstable pet
-        void HandleUnstablePetCallback2(PreparedQueryResult result, uint32 petId, uint32 petEntry);
+        void HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, PreparedQueryResult result);
         void HandleBuyStableSlot(WorldPacket& recvPacket);
         void HandleStableRevivePet(WorldPacket& recvPacket);
         void HandleStableSwapPet(WorldPacket& recvPacket);
-        void HandleStableSwapPetCallback(PreparedQueryResult result, uint32 petId);
+        void HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult result);
 
         void HandleDuelAcceptedOpcode(WorldPacket& recvPacket);
         void HandleDuelCancelledOpcode(WorldPacket& recvPacket);
@@ -806,7 +784,7 @@ class TC_GAME_API WorldSession
         void HandleSetActionBarToggles(WorldPacket& recvData);
 
         void HandleCharRenameOpcode(WorldPacket& recvData);
-        void HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult result, CharacterRenameInfo const* renameInfo);
+        void HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo> renameInfo, PreparedQueryResult result);
         void HandleSetPlayerDeclinedNames(WorldPacket& recvData);
 
         void HandleTotemDestroyed(WorldPacket& recvData);
@@ -904,22 +882,17 @@ class TC_GAME_API WorldSession
         //for HandleDebugValuesSnapshot command
         std::vector<uint32> snapshot_values;
 #endif
+
+    public:
+        QueryCallbackProcessor& GetQueryProcessor() { return _queryProcessor; }
+
     private:
-        void InitializeQueryCallbackParameters();
         void ProcessQueryCallbacks();
 
         QueryResultHolderFuture _realmAccountLoginCallback;
-        PreparedQueryResultFuture _charEnumCallback;
-        PreparedQueryResultFuture _addIgnoreCallback;
-        PreparedQueryResultFuture _stablePetCallback;
-        QueryCallback<PreparedQueryResult, CharacterRenameInfo*> _charRenameCallback;
-        QueryCallback<PreparedQueryResult, std::string> _addFriendCallback;
-        QueryCallback<PreparedQueryResult, uint32> _unstablePetCallback;
-        QueryCallback<PreparedQueryResult, std::pair<uint32,uint32>> _unstablePetCallback2;
-        QueryCallback<PreparedQueryResult, uint32> _stableSwapCallback;
-        QueryCallback<PreparedQueryResult, uint64> _sendStabledPetCallback;
-        QueryCallback<PreparedQueryResult, CharacterCreateInfo*, true> _charCreateCallback;
         QueryResultHolderFuture _charLoginCallback;
+
+        QueryCallbackProcessor _queryProcessor;
 
     friend class World;
     protected:

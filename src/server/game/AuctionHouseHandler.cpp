@@ -609,10 +609,6 @@ void WorldSession::HandleAuctionListItems( WorldPacket & recvData )
     recvData >> guid;
     recvData >> listfrom;                                  // start, used for page control listing by 50 elements
     recvData >> searchedname;
-
-    // recheck with known string size
-    
-
     recvData >> levelmin >> levelmax;
     recvData >> auctionSlotID >> auctionMainCategory >> auctionSubCategory;
     recvData >> quality >> usable;

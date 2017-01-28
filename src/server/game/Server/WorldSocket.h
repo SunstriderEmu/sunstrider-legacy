@@ -115,8 +115,7 @@ private:
     MessageBuffer _packetBuffer;
     MPSCQueue<EncryptablePacket> _bufferQueue;
 
-    PreparedQueryResultFuture _queryFuture;
-    std::function<void(PreparedQueryResult&&)> _queryCallback;
+    QueryCallbackProcessor _queryProcessor;
     std::string _ipCountry;
 
     /* This can be used for debug purpose when clients are experiencing crashes, this contains the last packets sent to it

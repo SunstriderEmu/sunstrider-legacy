@@ -34,6 +34,8 @@
 #include <memory>
 #include <array>
 
+class QueryCallback;
+
 class PingOperation : public SQLOperation
 {
     //! Operation for idle delaythreads
@@ -192,12 +194,12 @@ public:
 
     //! Enqueues a query in string format that will set the value of the QueryResultFuture return object as soon as the query is executed.
     //! The return value is then processed in ProcessQueryCallback methods.
-    QueryResultFuture AsyncQuery(const char* sql);
+    QueryCallback AsyncQuery(const char* sql);
 
     //! Enqueues a query in string format -with variable args- that will set the value of the QueryResultFuture return object as soon as the query is executed.
     //! The return value is then processed in ProcessQueryCallback methods.
     template<typename Format, typename... Args>
-    QueryResultFuture AsyncPQuery(Format&& sql, Args&&... args)
+    QueryCallback AsyncPQuery(Format&& sql, Args&&... args)
     {
         return AsyncQuery(Trinity::StringFormat(std::forward<Format>(sql), std::forward<Args>(args)...).c_str());
     }
@@ -205,7 +207,7 @@ public:
     //! Enqueues a query in prepared format that will set the value of the PreparedQueryResultFuture return object as soon as the query is executed.
     //! The return value is then processed in ProcessQueryCallback methods.
     //! Statement must be prepared with CONNECTION_ASYNC flag.
-    PreparedQueryResultFuture AsyncQuery(PreparedStatement* stmt);
+    QueryCallback AsyncQuery(PreparedStatement* stmt);
 
     //! Enqueues a vector of SQL operations (can be both adhoc and prepared) that will set the value of the QueryResultHolderFuture
     //! return object as soon as the query is executed.

@@ -66,10 +66,6 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     recvData >> unk1;                                      // 0
     recvData >> unk2;                                      // 0
     recvData >> name;                                      // name
-
-    // recheck
-    
-
     recvData >> unk3;                                      // 0
     recvData >> unk4;                                      // 0
     recvData >> unk5;                                      // 0

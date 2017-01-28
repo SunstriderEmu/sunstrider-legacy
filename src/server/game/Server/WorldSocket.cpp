@@ -1,24 +1,8 @@
-/*
-* Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
-* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #include "WorldSocket.h"
 #include "BigNumber.h"
 #include "Opcodes.h"
+#include "QueryCallback.h"
 #include "ScriptMgr.h"
 #include "SHA1.h"
 #include "PacketLog.h"
@@ -60,8 +44,7 @@ void WorldSocket::Start()
     stmt->setString(0, ip_address);
     stmt->setUInt32(1, inet_addr(ip_address.c_str()));
 
-    _queryCallback = std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1);
-    _queryFuture = LoginDatabase.AsyncQuery(stmt);
+    _queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
 
 void WorldSocket::CheckIpCallback(PreparedQueryResult result)
@@ -141,12 +124,7 @@ bool WorldSocket::Update()
     if (!BaseSocket::Update())
         return false;
 
-    if (_queryFuture.valid() && _queryFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-        auto callback = _queryCallback;
-        _queryCallback = nullptr;
-        callback(_queryFuture.get());
-    }
+    _queryProcessor.ProcessReadyQueries();
 
     return true;
 }
@@ -495,8 +473,7 @@ void WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     stmt->setInt32(0, int32(realm.Id.Realm));
     stmt->setString(1, authSession->Account);
 
-    _queryCallback = std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1);
-    _queryFuture = LoginDatabase.AsyncQuery(stmt);
+    _queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::HandleAuthSessionCallback, this, authSession, std::placeholders::_1)));
 }
 
 
@@ -660,8 +637,7 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
         _worldSession->InitWarden(&account.SessionKey, account.OS);
 
 #ifdef TRINITYCORE
-    _queryCallback = std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1);
-    _queryFuture = _worldSession->LoadPermissionsAsync();
+    _queryProcessor.AddQuery(_worldSession->LoadPermissionsAsync().WithPreparedCallback(std::bind(&WorldSocket::LoadSessionPermissionsCallback, this, std::placeholders::_1)));
 #else
     sWorld->AddSession(_worldSession); //this is in LoadSessionPermissionsCallback in TC, but no use having it there if there is not data to get before
 #endif

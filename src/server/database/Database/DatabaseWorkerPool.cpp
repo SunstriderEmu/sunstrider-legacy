@@ -146,23 +146,23 @@ PreparedQueryResult DatabaseWorkerPool<T>::Query(PreparedStatement* stmt)
 }
 
 template <class T>
-QueryResultFuture DatabaseWorkerPool<T>::AsyncQuery(const char* sql)
+QueryCallback DatabaseWorkerPool<T>::AsyncQuery(const char* sql)
 {
     BasicStatementTask* task = new BasicStatementTask(sql, true);
     // Store future result before enqueueing - task might get already processed and deleted before returning from this method
     QueryResultFuture result = task->GetFuture();
     Enqueue(task);
-    return result;
+    return QueryCallback(std::move(result));
 }
 
 template <class T>
-PreparedQueryResultFuture DatabaseWorkerPool<T>::AsyncQuery(PreparedStatement* stmt)
+QueryCallback DatabaseWorkerPool<T>::AsyncQuery(PreparedStatement* stmt)
 {
     PreparedStatementTask* task = new PreparedStatementTask(stmt, true);
     // Store future result before enqueueing - task might get already processed and deleted before returning from this method
     PreparedQueryResultFuture result = task->GetFuture();
     Enqueue(task);
-    return result;
+    return QueryCallback(std::move(result));
 }
 
 template <class T>

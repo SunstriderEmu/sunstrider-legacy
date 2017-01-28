@@ -10,6 +10,7 @@
 #include "Timer.h"
 #include "SharedDefines.h"
 #include "QueryResult.h"
+#include "QueryCallbackProcessor.h"
 #include "Realm/Realm.h"
 
 #include <map>
@@ -881,7 +882,7 @@ class TC_GAME_API World
         std::vector<ArenaTeam*> firstArenaTeams;
 
         void ProcessQueryCallbacks();
-        std::deque<std::future<PreparedQueryResult>> m_realmCharCallbacks;
+        QueryCallbackProcessor _queryProcessor;
 };
 
 TC_GAME_API extern Realm realm;

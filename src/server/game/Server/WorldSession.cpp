@@ -145,8 +145,6 @@ expireTime(60000) // 1 min after socket loss, session is deleted /!\ DISABLED. S
         ResetTimeOutTime();
         LoginDatabase.PExecute("UPDATE account SET online = 1 WHERE id = %u;", GetAccountId());
     }
-
-    InitializeQueryCallbackParameters();
 }
 
 /// WorldSession destructor
@@ -499,90 +497,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
 void WorldSession::ProcessQueryCallbacks()
 {
-    PreparedQueryResult result;
+    _queryProcessor.ProcessReadyQueries();
 
     if (_realmAccountLoginCallback.valid() && _realmAccountLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         InitializeSessionCallback(_realmAccountLoginCallback.get());
 
-    //! HandleCharEnumOpcode
-    if (_charEnumCallback.valid() && _charEnumCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-        //Hacky hacky : if char create or char rename is pending, restart our enum request. A char delete may still pose problem.
-        if (_charCreateCallback.GetParam() || _charRenameCallback.GetParam())
-        {
-            WorldPacket dummy;
-            HandleCharEnumOpcode(dummy);
-        } else {
-            result = _charEnumCallback.get();
-            HandleCharEnum(result);
-        }
-    }
-
-    if (_charCreateCallback.IsReady())
-    {
-        _charCreateCallback.GetResult(result);
-        HandleCharCreateCallback(result, _charCreateCallback.GetParam());
-    }
-
     //! HandlePlayerLoginOpcode
     if (_charLoginCallback.valid() && _charLoginCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-        SQLQueryHolder* param = _charLoginCallback.get();
-        HandlePlayerLogin((LoginQueryHolder*)param);
-    }
-
-    //- HandleCharRenameOpcode
-    if (_charRenameCallback.IsReady())
-    {
-        _charRenameCallback.GetResult(result);
-        CharacterRenameInfo* renameInfo = _charRenameCallback.GetParam();
-        HandleChangePlayerNameOpcodeCallBack(result, renameInfo);
-        delete renameInfo;
-        _charRenameCallback.Reset();
-    }
-
-    //- SendStabledPet
-    if (_sendStabledPetCallback.IsReady())
-    {
-        uint64 param = _sendStabledPetCallback.GetParam();
-        _sendStabledPetCallback.GetResult(result);
-        SendStablePetCallback(result, param);
-        _sendStabledPetCallback.FreeResult();
-    }
-
-    //- HandleStablePet
-    if (_stablePetCallback.valid() && _stablePetCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-        result = _stablePetCallback.get();
-        HandleStablePetCallback(result);
-    }
-
-    //- HandleUnstablePet
-    if (_unstablePetCallback.IsReady())
-    {
-        uint32 param = _unstablePetCallback.GetParam();
-        _unstablePetCallback.GetResult(result);
-        HandleUnstablePetCallback(result, param);
-        _unstablePetCallback.FreeResult();
-    }
-
-    //- HandleUnstablePet2
-    if (_unstablePetCallback2.IsReady())
-    {
-        std::pair<uint32,uint32> param = _unstablePetCallback2.GetParam();
-        _unstablePetCallback2.GetResult(result);
-        HandleUnstablePetCallback2(result, param.first, param.second);
-        _unstablePetCallback2.FreeResult();
-    }
-
-    //- HandleStableSwapPet
-    if (_stableSwapCallback.IsReady())
-    {
-        uint32 param = _stableSwapCallback.GetParam();
-        _stableSwapCallback.GetResult(result);
-        HandleStableSwapPetCallback(result, param);
-        _stableSwapCallback.FreeResult();
-    }
+        HandlePlayerLogin(reinterpret_cast<LoginQueryHolder*>(_charLoginCallback.get()));
 }
 
 void WorldSession::InitWarden(BigNumber *K, std::string os)
@@ -954,13 +876,6 @@ std::string WorldSession::GetLocalizedItemName(uint32 itemId)
         return std::string();
 }
 
-void WorldSession::InitializeQueryCallbackParameters()
-{
-    // Callback parameters that have pointers in them should be properly
-    // initialized to NULL here.
-    _charCreateCallback.SetParam(NULL);
-}
-
 std::string WorldSession::GetPlayerInfo() const
 {
     std::ostringstream ss;
@@ -1174,19 +1089,17 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
     m_TutorialsChanged = false;
 }
 
+/* TC
 void WorldSession::LoadPermissions()
 {
-#ifdef LICH_KING
     uint32 id = GetAccountId();
     uint8 secLevel = GetSecurity();
 
     _RBACData = new rbac::RBACData(id, _accountName, realmID, secLevel);
     _RBACData->LoadFromDB();
-#endif
 }
 
-#ifdef LICH_KING
-PreparedQueryResultFuture WorldSession::LoadPermissionsAsync()
+QueryCallback WorldSession::LoadPermissionsAsync()
 {
     uint32 id = GetAccountId();
     uint8 secLevel = GetSecurity();
@@ -1198,7 +1111,7 @@ PreparedQueryResultFuture WorldSession::LoadPermissionsAsync()
     return _RBACData->LoadFromDBAsync();
 
 }
-#endif
+*/
 
 class AccountInfoQueryHolderPerRealm : public SQLQueryHolder
 {
@@ -1429,13 +1342,14 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
         case CMSG_TIME_SYNC_RESP:                       // not profiled
         case CMSG_TRAINER_BUY_SPELL:                    // not profiled
         case CMSG_FORCE_RUN_SPEED_CHANGE_ACK:           // not profiled
+        case CMSG_REQUEST_PET_INFO:                     // not profiled
         {
             // "0" is a magic number meaning there's no limit for the opcode.
             // All the opcodes above must cause little CPU usage and no sync/async database queries at all
             maxPacketCounterAllowed = 0;
             break;
         }
-
+        
         case CMSG_QUESTGIVER_ACCEPT_QUEST:              //   0               4
         case CMSG_QUESTLOG_REMOVE_QUEST:                //   0               4
         case CMSG_QUESTGIVER_CHOOSE_REWARD:             //   0               4

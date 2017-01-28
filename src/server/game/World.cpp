@@ -36,6 +36,7 @@
 #include "OutdoorPvPMgr.h"
 #include "Player.h"
 #include "Pet.h"
+#include "QueryCallback.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "ScriptReloadMgr.h"
@@ -3416,7 +3417,7 @@ void World::UpdateRealmCharCount(uint32 accountId)
 {
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_COUNT);
     stmt->setUInt32(0, accountId);
-    m_realmCharCallbacks.push_back(CharacterDatabase.AsyncQuery(stmt));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&World::_UpdateRealmCharCount, this, std::placeholders::_1)));
 }
 
 void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
@@ -3784,20 +3785,7 @@ void World::UpdateArenaSeasonLogs()
 
 void World::ProcessQueryCallbacks()
 {
-    PreparedQueryResult result;
-
-    for (auto itr = m_realmCharCallbacks.begin(); itr != m_realmCharCallbacks.end(); )
-    {
-        if ((*itr).wait_for(std::chrono::seconds(0)) != std::future_status::ready)
-        {
-            ++itr;
-            continue;
-        }
-
-        result = (*itr).get();
-        _UpdateRealmCharCount(result);
-        itr = m_realmCharCallbacks.erase(itr);
-    }
+    _queryProcessor.ProcessReadyQueries();
 }
 
 void World::InvalidatePlayerDataToAllClient(uint64 guid)

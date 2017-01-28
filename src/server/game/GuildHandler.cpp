@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "WorldPacket.h"
@@ -55,9 +36,6 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
     //not used in game, charts are used
 
  /*   
-    
-    
-
     std::string gname;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_CREATE");
@@ -79,8 +57,6 @@ void WorldSession::HandleGuildCreateOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string Invitedname, plname;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INVITE");
@@ -150,8 +126,6 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string plName;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_REMOVE");
@@ -282,8 +256,6 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string plName;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_PROMOTE");
@@ -340,8 +312,6 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string plName;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_DEMOTE");
@@ -464,8 +434,6 @@ void WorldSession::HandleGuildDisbandOpcode(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandleGuildLeaderOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string name;
     Player *oldLeader = GetPlayer();
     Guild *guild;
@@ -550,8 +518,6 @@ void WorldSession::HandleGuildMOTDOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string name,PNOTE;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_SET_PUBLIC_NOTE");
@@ -591,8 +557,6 @@ void WorldSession::HandleGuildSetPublicNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 {
-    
-
     std::string plName, OFFNOTE;
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_SET_OFFICER_NOTE");
@@ -631,7 +595,6 @@ void WorldSession::HandleGuildSetOfficerNoteOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 {
-    
     //recvPacket.hexlike();
 
     Guild *guild;
@@ -682,8 +645,6 @@ void WorldSession::HandleGuildRankOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildAddRankOpcode(WorldPacket& recvPacket)
 {
-    
-
     Guild *guild;
     std::string rankname;
 
@@ -754,8 +715,6 @@ void WorldSession::SendGuildCommandResult(uint32 typecmd, const std::string& str
 
 void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_GUILD_INFO_TEXT");
 
     std::string GINFO;
@@ -780,8 +739,6 @@ void WorldSession::HandleGuildChangeInfoTextOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 {
-    
-
     //TC_LOG_DEBUG("network.opcode","WORLD: Received MSG_SAVE_GUILD_EMBLEM");
 
     uint64 vendorGuid;
@@ -846,8 +803,6 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildEventLogOpcode(WorldPacket& /* recvPacket */)
 {
-    
-    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -863,8 +818,6 @@ void WorldSession::HandleGuildEventLogOpcode(WorldPacket& /* recvPacket */)
 
 void WorldSession::HandleGuildBankMoneyWithdrawn( WorldPacket & /* recvData */ )
 {
-    
-    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -878,8 +831,6 @@ void WorldSession::HandleGuildBankMoneyWithdrawn( WorldPacket & /* recvData */ )
 
 void WorldSession::HandleGuildPermissions( WorldPacket& /* recvData */ )
 {
-    
-    
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
         return;
@@ -907,9 +858,6 @@ void WorldSession::HandleGuildPermissions( WorldPacket& /* recvData */ )
 /* Called when clicking on Guild bank gameobject */
 void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
 {
-    
-    
-    
     uint64 GoGuid;
     uint8  unk;
     recvData >> GoGuid >> unk;
@@ -932,9 +880,6 @@ void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
 /* Called when opening guild bank tab only (first one) */
 void WorldSession::HandleGuildBankerActivateTab( WorldPacket & recvData )
 {
-    
-    
-    
     uint64 GoGuid;
     uint8 TabId,unk1;
     recvData >> GoGuid >> TabId >> unk1;
@@ -959,9 +904,6 @@ void WorldSession::HandleGuildBankerActivateTab( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
 {
-    
-    
-    
     uint64 GoGuid;
     uint32 money;
     recvData >> GoGuid >> money;
@@ -1003,9 +945,6 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 {
-    
-    
-    
     uint64 GoGuid;
     uint32 money;
     recvData >> GoGuid >> money;
@@ -1056,8 +995,6 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 {
-    
-    
     uint64 GoGuid;
     uint8 BankToBank;
 
@@ -1069,8 +1006,6 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     recvData >> GoGuid >> BankToBank;
     if (BankToBank)
     {
-        // recheck
-        
         recvData >> BankTabDst;
         recvData >> BankTabSlotDst;
         recvData >> unk1;                                  // always 0
@@ -1087,26 +1022,18 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     }
     else
     {
-        // recheck
-        
         recvData >> BankTab;
         recvData >> BankTabSlot;
         recvData >> ItemEntry;
         recvData >> AutoStore;
         if (AutoStore)
         {
-            // recheck
-            
             recvData >> AutoStoreCount;
         }
-        // recheck
-        
         recvData >> PlayerBag;
         recvData >> PlayerSlot;
         if (!AutoStore)
         {
-            // recheck
-            
             recvData >> ToChar;
             recvData >> SplitedAmount;
         }

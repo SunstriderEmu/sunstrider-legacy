@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "Language.h"
@@ -42,6 +23,7 @@
 #include "Guild.h"
 #include "ScriptMgr.h"
 #include "CreatureAI.h"
+#include "QueryCallback.h"
 
 enum StableResultCode
 {
@@ -456,16 +438,15 @@ void WorldSession::SendStablePet(uint64 guid )
 
     stmt->setUInt32(0, _player->GetGUIDLow());
 
-    _sendStabledPetCallback.SetParam(guid);
-    _sendStabledPetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::SendStablePetCallback, this, guid, std::placeholders::_1)));
 }
 
-void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid)
+void WorldSession::SendStablePetCallback(uint64 guid, PreparedQueryResult result)
 {
     if (!GetPlayer())
         return;
 
-    TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS Send.");
+    //TC_LOG_DEBUG("network", "WORLD: Recv MSG_LIST_STABLED_PETS Send.");
 
     WorldPacket data(MSG_LIST_STABLED_PETS, 200);           // guess size
 
@@ -507,11 +488,7 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
 
 void WorldSession::HandleStablePet( WorldPacket & recvData )
 {
-    
-    
-    
-
-    TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_PET");
+    //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_PET");
     uint64 npcGUID;
 
     recvData >> npcGUID;
@@ -547,7 +524,7 @@ void WorldSession::HandleStablePet( WorldPacket & recvData )
     stmt->setUInt8(1, PET_SAVE_FIRST_STABLE_SLOT);
     stmt->setUInt8(2, PET_SAVE_LAST_STABLE_SLOT);
 
-    _stablePetCallback = CharacterDatabase.AsyncQuery(stmt);
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStablePetCallback, this, std::placeholders::_1)));
 }
 
 void WorldSession::HandleStablePetCallback(PreparedQueryResult result)
@@ -587,11 +564,7 @@ void WorldSession::HandleStablePetCallback(PreparedQueryResult result)
 //receive pet number from client, do the first basic checks then start querying the database for the pet entry. HandleUnstablePetCallback is called uppon received response.
 void WorldSession::HandleUnstablePet( WorldPacket & recvData )
 {
-    
-    
-    
-
-    TC_LOG_DEBUG("network", "WORLD: Recv CMSG_UNSTABLE_PET.");
+    //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_UNSTABLE_PET.");
     uint64 npcGUID;
     uint32 petId;
 
@@ -614,11 +587,10 @@ void WorldSession::HandleUnstablePet( WorldPacket & recvData )
     stmt->setUInt8(2, PET_SAVE_FIRST_STABLE_SLOT);
     stmt->setUInt8(3, PET_SAVE_LAST_STABLE_SLOT);
 
-    _unstablePetCallback.SetParam(petId);
-    _unstablePetCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleUnstablePetCallback, this, petId, std::placeholders::_1)));
 }
 
-void WorldSession::HandleUnstablePetCallback(PreparedQueryResult result, uint32 petId)
+void WorldSession::HandleUnstablePetCallback(uint32 petId, PreparedQueryResult result)
 {
     if (!GetPlayer())
         return;
@@ -640,11 +612,10 @@ void WorldSession::HandleUnstablePetCallback(PreparedQueryResult result, uint32 
 
     stmt->setUInt32(0, _player->GetGUIDLow());
 
-    _unstablePetCallback2.SetParam(std::make_pair(petId, petEntry));
-    _unstablePetCallback2.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleUnstablePetCallback2, this, petId, petEntry, std::placeholders::_1)));
 }
 
-void WorldSession::HandleUnstablePetCallback2(PreparedQueryResult result, uint32 petId, uint32 petEntry)
+void WorldSession::HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, PreparedQueryResult result)
 {
     if (!GetPlayer())
         return;
@@ -677,10 +648,6 @@ void WorldSession::HandleUnstablePetCallback2(PreparedQueryResult result, uint32
 
 void WorldSession::HandleBuyStableSlot( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 npcGUID;
 
     recvData >> npcGUID;
@@ -724,7 +691,7 @@ void WorldSession::HandleStableRevivePet(WorldPacket &/* recvData */)
 
 void WorldSession::HandleStableSwapPet(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_SWAP_PET.");
+    //TC_LOG_DEBUG("network", "WORLD: Recv CMSG_STABLE_SWAP_PET.");
     uint64 npcGUID;
     uint32 petId;
 
@@ -755,11 +722,10 @@ void WorldSession::HandleStableSwapPet(WorldPacket& recvData)
     stmt->setUInt32(0, _player->GetGUIDLow());
     stmt->setUInt32(1, petId);
 
-    _stableSwapCallback.SetParam(petId);
-    _stableSwapCallback.SetFutureResult(CharacterDatabase.AsyncQuery(stmt));
+    _queryProcessor.AddQuery(CharacterDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSession::HandleStableSwapPetCallback, this, petId, std::placeholders::_1)));
 }
 
-void WorldSession::HandleStableSwapPetCallback(PreparedQueryResult result, uint32 petId)
+void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult result)
 {
     if (!GetPlayer())
         return;
