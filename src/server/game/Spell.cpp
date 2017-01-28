@@ -34,6 +34,7 @@
 #include "SpellScript.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
+#define MAX_SPELL_RANGE_TOLERANCE 3.0f
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -2751,10 +2752,10 @@ bool Spell::UpdateChanneledTargetList()
                 }
 
         if (Player* modOwner = m_caster->GetSpellModOwner())
-            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this);
+            modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_RANGE, range, this); 
 
-        // xinef: add little tolerance level
-        range += std::min(3.0f, range*0.1f); // 10% but no more than 3yd
+        // add little tolerance level
+        range += std::min(MAX_SPELL_RANGE_TOLERANCE, range*0.1f); // 10% but no more than MAX_SPELL_RANGE_TOLERANCE
     }
 
     for (auto & ihit : m_UniqueTargetInfo)
@@ -6384,6 +6385,10 @@ SpellCastResult Spell::CheckRange(bool strict)
 
     float minRange, maxRange;
     std::tie(minRange, maxRange) = GetMinMaxRange(strict);
+
+    // dont check max_range too strictly after cast
+    if (m_spellInfo->RangeEntry && m_spellInfo->RangeEntry->type != SPELL_RANGE_MELEE && !strict)
+        maxRange += std::min(MAX_SPELL_RANGE_TOLERANCE, maxRange*0.1f); // 10% but no more than MAX_SPELL_RANGE_TOLERANCE
 
     // get square values for sqr distance checks
     minRange *= minRange;
