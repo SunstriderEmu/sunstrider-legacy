@@ -336,7 +336,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
         std::ostringstream out;
         out << cmdStr << ": " << bot << " - ";
 
-        ObjectGuid member = ObjectGuid(sWorld->GetCharacterGuidByName(bot));
+        ObjectGuid member = ObjectGuid(HIGHGUID_PLAYER, sWorld->GetCharacterGuidByName(bot));
         if (!member)
         {
             out << "character not found";

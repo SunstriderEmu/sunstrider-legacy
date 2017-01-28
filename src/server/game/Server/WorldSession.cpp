@@ -531,15 +531,6 @@ void WorldSession::ProcessQueryCallbacks()
         HandlePlayerLogin((LoginQueryHolder*)param);
     }
 
-    //! HandleAddFriendOpcode
-    if (_addFriendCallback.IsReady())
-    {
-        std::string param = _addFriendCallback.GetParam();
-        _addFriendCallback.GetResult(result);
-        HandleAddFriendOpcodeCallBack(result, param);
-        _addFriendCallback.FreeResult();
-    }
-
     //- HandleCharRenameOpcode
     if (_charRenameCallback.IsReady())
     {
@@ -548,13 +539,6 @@ void WorldSession::ProcessQueryCallbacks()
         HandleChangePlayerNameOpcodeCallBack(result, renameInfo);
         delete renameInfo;
         _charRenameCallback.Reset();
-    }
-
-    //- HandleCharAddIgnoreOpcode
-    if (_addIgnoreCallback.valid() && _addIgnoreCallback.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-    {
-        result = _addIgnoreCallback.get();
-        HandleAddIgnoreOpcodeCallBack(result);
     }
 
     //- SendStabledPet

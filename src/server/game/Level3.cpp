@@ -4260,7 +4260,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
     }
 
-    sWorld->UpdateCharacterInfoLevel((GUID_LOPART(chr_guid), newLevel);
+    sWorld->UpdateCharacterInfoLevel(GUID_LOPART(chr_guid), newlevel);
 
     if(m_session && m_session->GetPlayer() != chr)                       // including chr==NULL
         PSendSysMessage(LANG_YOU_CHANGE_LVL,name.c_str(),newlevel);

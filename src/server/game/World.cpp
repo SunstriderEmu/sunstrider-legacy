@@ -3913,11 +3913,11 @@ void World::UpdateCharacterInfo(uint32 guid, uint8 mask, std::string const& name
 
 void World::UpdateCharacterInfoLevel(uint32 const& guid, uint8 level)
 {
-    CharacterInfoContainer::iterator itr = _characterInfoStore.find(guid);
+    auto itr = _characterInfoStore.find(guid);
     if (itr == _characterInfoStore.end())
         return;
 
-    itr->second.Level = level;
+    itr->second.level = level;
 }
 
 /*

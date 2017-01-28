@@ -133,7 +133,7 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
     newmember.personal_rating   = 1500;
     members.push_back(newmember);
 
-    sWorld->UpdateCharacterArenaTeamIdId(playerGuid, GetSlot(), GetId());
+    sWorld->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
 
     trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
     
@@ -251,7 +251,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         
         // Put the player in the team
         members.push_back(std::move(newmember));
-        sWorld->UpdateCharacterArenaTeamIdId(newMember.Guid, GetSlot(), GetId());
+        sWorld->UpdateCharacterArenaTeamId(newmember.guid, GetSlot(), GetId());
 
     }while( result->NextRow() );
 }
@@ -280,7 +280,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     }
 }
 
-void ArenaTeam::DeleteMember(uint64 guid)
+void ArenaTeam::DeleteMember(uint64 guid, bool cleanDb)
 {
     Player *player = sObjectMgr->GetPlayer(guid);
     if (player && player->InArena())
@@ -311,7 +311,8 @@ void ArenaTeam::DeleteMember(uint64 guid)
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
             GetId(), uint32(AT_EV_LEAVE), GetType(), GUID_LOPART(guid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
     }
-    CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
+    if(cleanDb)
+        CharacterDatabase.PExecute("DELETE FROM arena_team_member WHERE arenateamid = '%u' AND guid = '%u'", GetId(), GUID_LOPART(guid));
 }
 
 void ArenaTeam::Disband(WorldSession *session)
