@@ -1519,6 +1519,7 @@ void Group::ChangeMembersGroup(const uint64 &guid, const uint8 &group)
 {
     if(!isRaidGroup())
         return;
+
     Player *player = sObjectMgr->GetPlayer(guid);
 
     if (!player)
@@ -1551,6 +1552,7 @@ void Group::ChangeMembersGroup(Player *player, const uint8 &group)
 {
     if(!player || !isRaidGroup())
         return;
+
     if(_setMembersGroup(player->GetGUID(), group))
     {
         uint8 prevSubGroup;

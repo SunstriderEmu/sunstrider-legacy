@@ -93,7 +93,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sObjectMgr->GetPlayerGUIDByName(cname.c_str());
+    uint64 guid = sWorld->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -163,7 +163,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sObjectMgr->GetPlayerGUIDByName(cname.c_str());
+    uint64 guid = sWorld->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1904,7 +1904,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             py = strtok(nullptr, " ");
         else
         {
-            targetGUID = sObjectMgr->GetPlayerGUIDByName(name);
+            targetGUID = sWorld->GetCharacterGuidByName(name);
             if(targetGUID)
                 py = strtok(nullptr, " ");
             else
@@ -3098,7 +3098,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
         target = sObjectAccessor->FindConnectedPlayerByName(oldname.c_str());
 
         if (!target)
-            targetGUID = sObjectMgr->GetPlayerGUIDByName(oldname);
+            targetGUID = sWorld->GetCharacterGuidByName(oldname);
     }
 
     if(!target && !targetGUID)
@@ -3146,7 +3146,7 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
     uint64 targetGUID = 0;
     std::string stringName = playerName;
 
-    targetGUID = sObjectMgr->GetPlayerGUIDByName(stringName);
+    targetGUID = sWorld->GetCharacterGuidByName(stringName);
     if(!targetGUID)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);

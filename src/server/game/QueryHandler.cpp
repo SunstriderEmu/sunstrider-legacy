@@ -28,7 +28,7 @@
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
     Player* player = ObjectAccessor::FindPlayer(guid);
-    GlobalPlayerData const* nameData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid));
+    CharacterInfo const* nameData = sWorld->GetCharacterInfo(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE, (8 + 1 + 4 + 4 + 4 + 1));
 #ifdef BUILD_335_SUPPORT

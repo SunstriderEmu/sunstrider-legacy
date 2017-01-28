@@ -221,7 +221,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
         return;
     }
 
-    at->DelMember(_player->GetGUID());
+    at->DeleteMember(_player->GetGUID());
     if (_player->InArena())
         return;
 
@@ -299,7 +299,7 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
         return;
     }
 
-    at->DelMember(member->guid);
+    at->DeleteMember(member->guid);
 
     // event
     WorldPacket data;

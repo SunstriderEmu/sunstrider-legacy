@@ -3864,21 +3864,21 @@ void Player::LeaveAllArenaTeams(uint64 playerguid)
     {
         ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
         if (at)
-            at->DelMember(playerguid);
+            at->DeleteMember(playerguid);
     }
     at_id = GetArenaTeamIdFromDB(playerguid, ARENA_TEAM_3v3);
     if (at_id != 0)
     {
         ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
         if (at)
-            at->DelMember(playerguid);
+            at->DeleteMember(playerguid);
     }
     at_id = GetArenaTeamIdFromDB(playerguid, ARENA_TEAM_5v5);
     if (at_id != 0)
     {
         ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
         if (at)
-            at->DelMember(playerguid);
+            at->DeleteMember(playerguid);
     }
 }
 
@@ -3921,7 +3921,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     {
         Guild* guild = sObjectMgr->GetGuildById(guildId);
         if(guild)
-            guild->DelMember(guid);
+            guild->DeleteMember(guid);
     }
 
     // remove from arena teams
@@ -6839,7 +6839,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
 uint32 Player::GetLevelFromStorage(uint64 guid)
 {
     // xinef: Get data from global storage
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
         return playerData->level;
 
     return 0;
@@ -23135,21 +23135,54 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
 
 uint32 Player::GetGuildIdFromStorage(uint32 guid)
 {
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guid))
         return playerData->guildId;
     return 0;
 }
 
 uint32 Player::GetGroupIdFromStorage(uint32 guid)
 {
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guid))
         return playerData->groupId;
     return 0;
 }
 
-uint32 Player::GetArenaTeamIdFromStorage(uint32 guid, uint8 slot)
+void Player::SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
 {
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guid))
-        return playerData->arenaTeamId[slot];
-    return 0;
+    SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6), ArenaTeamId);
+}
+
+uint32 Player::GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 type)
+{
+    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    if (!characterInfo)
+        return 0;
+
+    return characterInfo->arenaTeamId[type];
+}
+
+void Player::SetInGuild(uint32 guildId)
+{ 
+    SetUInt32Value(PLAYER_GUILDID, guildId);
+    sWorld->UpdateCharacterGuildId(GetGUID(), guildId);
+}
+
+void Player::SetRank(uint32 rankId) 
+{ 
+    SetUInt32Value(PLAYER_GUILDRANK, rankId); 
+}
+
+void Player::SetGuildIdInvited(uint32 GuildId) 
+{
+    m_GuildIdInvited = GuildId; 
+}
+
+uint32 Player::GetGuildId() const 
+{ 
+    return GetUInt32Value(PLAYER_GUILDID); 
+}
+
+uint32 Player::GetRank() const 
+{ 
+    return GetUInt32Value(PLAYER_GUILDRANK); 
 }

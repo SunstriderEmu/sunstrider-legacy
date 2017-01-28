@@ -1329,7 +1329,7 @@ void World::SetInitialWorldSettings()
 
     // sunwell: Global Storage, should be loaded asap
     TC_LOG_INFO("server.loading", "Load Global Player Data...");
-    sWorld->LoadGlobalPlayerDataStore();
+    sWorld->LoadCharacterInfoStore();
 
     ///- Clean up and pack instances
     // Must be called before `creature_respawn`/`gameobject_respawn` tables
@@ -3815,11 +3815,11 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
 }
 
 
-void World::LoadGlobalPlayerDataStore()
+void World::LoadCharacterInfoStore()
 {
     uint32 oldMSTime = GetMSTime();
 
-    _globalPlayerDataStore.clear();
+    _characterInfoStore.clear();
     QueryResult result = CharacterDatabase.Query("SELECT guid, account, name, gender, race, class, level FROM characters WHERE deleteDate IS NULL");
     if (!result)
     {
@@ -3852,7 +3852,7 @@ void World::LoadGlobalPlayerDataStore()
         if (itr != _mailCountMap.end())
             mailCount = itr->second;
 
-        AddGlobalPlayerData(
+        AddCharacterInfo(
             guidLow,               /*guid*/
             fields[1].GetUInt32(), /*accountId*/
             fields[2].GetString(), /*name*/
@@ -3869,9 +3869,9 @@ void World::LoadGlobalPlayerDataStore()
     TC_LOG_INFO("server.loading", ">> Loaded %d Players data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void World::AddGlobalPlayerData(uint32 guid, uint32 accountId, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint16 mailCount, uint32 guildId)
+void World::AddCharacterInfo(uint32 guid, uint32 accountId, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint16 mailCount, uint32 guildId)
 {
-    GlobalPlayerData data;
+    CharacterInfo data;
 
     data.guidLow = guid;
     data.accountId = accountId;
@@ -3887,18 +3887,16 @@ void World::AddGlobalPlayerData(uint32 guid, uint32 accountId, std::string const
     data.arenaTeamId[1] = 0;
     data.arenaTeamId[2] = 0;
 
-    _globalPlayerDataStore[guid] = data;
-    _globalPlayerNameStore[name] = guid;
+    _characterInfoStore[guid] = data;
+    _characterGuidByNameStore[name] = guid;
 }
 
-void World::UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& name, uint8 level, uint8 gender, uint8 race, uint8 playerClass)
+void World::UpdateCharacterInfo(uint32 guid, uint8 mask, std::string const& name, uint8 gender, uint8 race, uint8 playerClass)
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr == _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
         return;
 
-    if (mask & PLAYER_UPDATE_DATA_LEVEL)
-        itr->second.level = level;
     if (mask & PLAYER_UPDATE_DATA_RACE)
         itr->second.race = race;
     if (mask & PLAYER_UPDATE_DATA_CLASS)
@@ -3913,10 +3911,20 @@ void World::UpdateGlobalPlayerData(uint32 guid, uint8 mask, std::string const& n
     SendGlobalMessage(&data);
 }
 
-void World::UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add)
+void World::UpdateCharacterInfoLevel(uint32 const& guid, uint8 level)
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr == _globalPlayerDataStore.end())
+    CharacterInfoContainer::iterator itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
+        return;
+
+    itr->second.Level = level;
+}
+
+/*
+void World::UpdateCharacterMails(uint32 guid, int16 count, bool add)
+{
+    auto itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
         return;
 
     if (!add)
@@ -3930,68 +3938,73 @@ void World::UpdateGlobalPlayerMails(uint32 guid, int16 count, bool add)
         count = -icount;
     itr->second.mailCount = uint16(icount + count); // addition or subtraction
 }
+*/
 
-void World::UpdateGlobalPlayerGuild(uint32 guid, uint32 guildId)
+void World::UpdateCharacterGuildId(uint32 guid, uint32 guildId)
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr == _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
         return;
 
     itr->second.guildId = guildId;
 }
-void World::UpdateGlobalPlayerGroup(uint32 guid, uint32 groupId)
+
+/*
+void World::UpdateCharacterGroup(uint32 guid, uint32 groupId)
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr == _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
         return;
 
     itr->second.groupId = groupId;
 }
+*/
 
-void World::UpdateGlobalPlayerArenaTeam(uint32 guid, uint8 slot, uint32 arenaTeamId)
+void World::UpdateCharacterArenaTeamId(uint32 guid, uint8 slot, uint32 arenaTeamId)
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr == _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr == _characterInfoStore.end())
         return;
 
     itr->second.arenaTeamId[slot] = arenaTeamId;
 }
 
-void World::UpdateGlobalNameData(uint32 guidLow, std::string const& oldName, std::string const& newName)
+void World::UpdateCharacterGuidByName(uint32 guidLow, std::string const& oldName, std::string const& newName)
 {
-    _globalPlayerNameStore.erase(oldName);
-    _globalPlayerNameStore[newName] = guidLow;
+    _characterGuidByNameStore.erase(oldName);
+    _characterGuidByNameStore[newName] = guidLow;
 }
 
-void World::DeleteGlobalPlayerData(uint32 guid, std::string const& name)
+void World::DeleteCharacterInfo(uint32 guid, std::string const& name)
 {
     if (guid)
-        _globalPlayerDataStore.erase(guid);
+        _characterInfoStore.erase(guid);
+
     if (!name.empty())
-        _globalPlayerNameStore.erase(name);
+        _characterGuidByNameStore.erase(name);
 }
 
-bool World::HasGlobalPlayerData(uint32 guid) const
+bool World::HasCharacterInfo(uint32 guid) const
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr != _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr != _characterInfoStore.end())
         return true;
     else
         return false;
 }
 
-GlobalPlayerData const* World::GetGlobalPlayerData(uint32 guid) const
+CharacterInfo const* World::GetCharacterInfo(uint32 guid) const
 {
-    auto itr = _globalPlayerDataStore.find(guid);
-    if (itr != _globalPlayerDataStore.end())
+    auto itr = _characterInfoStore.find(guid);
+    if (itr != _characterInfoStore.end())
         return &itr->second;
     return nullptr;
 }
 
-uint32 World::GetGlobalPlayerGUID(std::string const& name) const
+uint32 World::GetCharacterGuidByName(std::string const& name) const
 {
-    auto itr = _globalPlayerNameStore.find(name);
-    if (itr != _globalPlayerNameStore.end())
+    auto itr = _characterGuidByNameStore.find(name);
+    if (itr != _characterGuidByNameStore.end())
         return itr->second;
     return 0;
 }

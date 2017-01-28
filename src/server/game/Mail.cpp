@@ -33,20 +33,8 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     uint8 unk4;
     recvData >> mailbox;
     recvData >> receiver;
-
-    // recheck
-    
-
     recvData >> subject;
-
-    // recheck
-    
-
     recvData >> body;
-
-    // recheck
-    
-
     recvData >> StationeryID;
     recvData >> PackageID;
 
@@ -86,7 +74,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     uint64 rc = 0;
     if(normalizePlayerName(receiver))
-        rc = sObjectMgr->GetPlayerGUIDByName(receiver);
+        rc = sWorld->GetCharacterGuidByName(receiver);
 
     if (!rc)
     {

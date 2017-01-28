@@ -1608,35 +1608,19 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject respawn times", mGORespawnTimes.size());
 }
 
-// name must be checked to correctness (if received) before call this function
-uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
-{
-    uint64 guid = 0;
-
-    CharacterDatabase.EscapeString(name);
-
-    // Player name safe to sending to DB (checked at login) and this function using
-    QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM characters WHERE name = '%s'", name.c_str());
-    if(result)
-    {
-        guid = MAKE_NEW_GUID((*result)[0].GetUInt32(), 0, HIGHGUID_PLAYER);
-    }
-
-    return guid;
-}
-
 uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
 {
     // Get data from global storage
-    if (uint32 guidLow = sWorld->GetGlobalPlayerGUID(name))
-        return MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+    if (uint32 guidLow = sWorld->GetCharacterGuidByName(name))
+        return guidLow;
+
     return 0;
 }
 
 bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 {
     // Get data from global storage
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
     {
         name = playerData->name;
         return true;
@@ -1648,7 +1632,7 @@ bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 {
     // xinef: Get data from global storage
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
         return Player::TeamForRace(playerData->race);
 
     // could not find team, default to alliance
@@ -1657,7 +1641,7 @@ uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 
 uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 {
-    if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(GUID_LOPART(guid)))
+    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
         return playerData->accountId;
 
     return 0;
@@ -1665,8 +1649,8 @@ uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
 
 uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
 {
-    if (uint32 guidLow = sWorld->GetGlobalPlayerGUID(name))
-        if (GlobalPlayerData const* playerData = sWorld->GetGlobalPlayerData(guidLow))
+    if (uint32 guidLow = sWorld->GetCharacterGuidByName(name))
+        if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guidLow))
             return playerData->accountId;
 
     return 0;

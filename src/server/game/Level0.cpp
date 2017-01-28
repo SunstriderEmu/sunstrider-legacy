@@ -1317,7 +1317,7 @@ bool ChatHandler::HandleReskinCommand(const char* args)
 //    m_session->KickPlayer();
     m_session->GetPlayer()->m_kickatnextupdate = true;
     
-    sWorld->UpdateGlobalPlayerData(m_session->GetPlayer()->GetGUID(), PLAYER_UPDATE_DATA_GENDER, "", 0, m_session->GetPlayer()->GetGender());
+    sWorld->UpdateCharacterInfo(m_session->GetPlayer()->GetGUID(), PLAYER_UPDATE_DATA_GENDER, "", 0, m_session->GetPlayer()->GetGender());
 
     return true;
 }
@@ -1883,7 +1883,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     plr->SaveToDB();
     plr->m_kickatnextupdate = true;
     
-    sWorld->UpdateGlobalPlayerData(plr->GetGUID(), PLAYER_UPDATE_DATA_RACE | PLAYER_UPDATE_DATA_GENDER, plr->GetName(), 0, plr->GetGender(), plr->GetRace());
+    sWorld->UpdateCharacterInfo(plr->GetGUID(), PLAYER_UPDATE_DATA_RACE | PLAYER_UPDATE_DATA_GENDER, plr->GetName(), 0, plr->GetGender(), plr->GetRace());
 
     //***********************************************************************//
     //* BEYOND THIS LINE, ONLY STUFF THAT WILL NOT BE SAVED WITH SaveToDB() *//

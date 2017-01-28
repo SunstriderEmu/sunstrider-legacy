@@ -88,37 +88,44 @@ bool ArenaTeam::Create(uint64 captainGuid, uint32 type, std::string ArenaTeamNam
     return true;
 }
 
-bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
+bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
 {
     // arena team is full (can't have more than type * 2 players!)
     if(GetMembersSize() >= GetType() * 2)
         return false;
 
-    Player *pl = sObjectMgr->GetPlayer(PlayerGuid);
-    if(pl)
+    std::string playerName;
+    uint8 playerClass;
+
+    Player* player = sObjectMgr->GetPlayer(playerGuid);
+    if(player)
     {
-        if(pl->GetArenaTeamId(GetSlot()))
-        {
-            TC_LOG_ERROR("bg.arena","Arena::AddMember() : player already in this sized team");
-            return false;
-        }
+        playerClass = player->GetClass();
+        playerName = player->GetName();
     }
     else
     {
-        // check if player already in arenateam of that size
-        if(Player::GetArenaTeamIdFromDB(PlayerGuid, GetType()) != 0)
-        {
-            TC_LOG_ERROR("bg.arena","Arena::AddMember() : player already in this sized team");
+        CharacterInfo const* cInfo = sWorld->GetCharacterInfo(playerGuid);
+        if (!cInfo)
             return false;
-        }
+
+        playerName = cInfo->name;
+        playerClass = cInfo->playerClass;
+    }
+
+    // Check if player is already in a similar arena team
+    if ((player && player->GetArenaTeamId(GetSlot())) || Player::GetArenaTeamIdFromCharacterInfo(playerGuid, GetType()) != 0)
+    {
+        TC_LOG_DEBUG("bg.arena", "Arena: %u %s already has an arena team of type %u", GUID_LOPART(playerGuid), playerName.c_str(), GetType());
+        return false;
     }
 
     // remove all player signs from another petitions
     // this will be prevent attempt joining player to many arenateams and corrupt arena team data integrity
-    Player::RemovePetitionsAndSigns(PlayerGuid, GetType(), trans);
+    Player::RemovePetitionsAndSigns(playerGuid, GetType(), trans);
 
     ArenaTeamMember newmember;
-    newmember.guid              = PlayerGuid;
+    newmember.guid              = playerGuid;
     newmember.games_season      = 0;
     newmember.games_week        = 0;
     newmember.wins_season       = 0;
@@ -126,20 +133,24 @@ bool ArenaTeam::AddMember(const uint64& PlayerGuid, SQLTransaction trans)
     newmember.personal_rating   = 1500;
     members.push_back(newmember);
 
-    trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
+    sWorld->UpdateCharacterArenaTeamIdId(playerGuid, GetSlot(), GetId());
 
-    if(pl)
+    trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
+    
+    // Inform player if online
+    if(player)
     {
-        pl->SetInArenaTeam(Id, GetSlot());
-        pl->SetArenaTeamIdInvited(0);
-        pl->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot()*6) + 5, newmember.personal_rating );
+        player->SetInArenaTeam(Id, GetSlot());
+        player->SetArenaTeamIdInvited(0);
+        player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot()*6) + 5, newmember.personal_rating );
 
         // hide promote/remove buttons
-        if(CaptainGuid != PlayerGuid)
-            pl->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
-        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", pl->GetName().c_str(), pl->GetGUIDLow(), GetType(), GetId());
+        if(CaptainGuid != playerGuid)
+            player->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (GetSlot() * 6) + 1, 1);
+
+        TC_LOG_DEBUG("arena","Player: %s [GUID: %u] joined arena team type: %u [Id: %u].", player->GetName().c_str(), player->GetGUIDLow(), GetType(), GetId());
         LogsDatabase.PExecute("INSERT INTO arena_team_event (id, event, type, player, ip, time) VALUES (%u, %u, %u, %u, '%s', %u)",
-            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(PlayerGuid), (pl ? pl->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
+            GetId(), uint32(AT_EV_JOIN), GetType(), GUID_LOPART(playerGuid), (player ? player->GetSession()->GetRemoteAddress().c_str() : ""), time(nullptr));
 
     }
     return true;
@@ -240,6 +251,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         
         // Put the player in the team
         members.push_back(std::move(newmember));
+        sWorld->UpdateCharacterArenaTeamIdId(newMember.Guid, GetSlot(), GetId());
 
     }while( result->NextRow() );
 }
@@ -268,7 +280,7 @@ void ArenaTeam::SetCaptain(const uint64& guid)
     }
 }
 
-void ArenaTeam::DelMember(uint64 guid)
+void ArenaTeam::DeleteMember(uint64 guid)
 {
     Player *player = sObjectMgr->GetPlayer(guid);
     if (player && player->InArena())
@@ -279,6 +291,7 @@ void ArenaTeam::DelMember(uint64 guid)
         if (itr->guid == guid)
         {
             members.erase(itr);
+            sWorld->UpdateCharacterArenaTeamId(guid, GetSlot(), 0);
             break;
         }
     }
@@ -318,8 +331,8 @@ void ArenaTeam::Disband(WorldSession *session)
 
     while (!members.empty())
     {
-        // Removing from members is done in DelMember.
-        DelMember(members.front().guid);
+        // Removing from members is done in DeleteMember.
+        DeleteMember(members.front().guid);
     }
 
     Player *player = session->GetPlayer();
@@ -331,7 +344,7 @@ void ArenaTeam::Disband(WorldSession *session)
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     trans->PAppend("DELETE FROM arena_team WHERE arenateamid = '%u'", Id);
-    trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DelMember(memberGuids[j]); for each member
+    trans->PAppend("DELETE FROM arena_team_member WHERE arenateamid = '%u'", Id); //< this should be alredy done by calling DeleteMember(memberGuids[j]); for each member
     trans->PAppend("DELETE FROM arena_team_stats WHERE arenateamid = '%u'", Id);
     CharacterDatabase.CommitTransaction(trans);
     sObjectMgr->RemoveArenaTeam(Id);
@@ -349,7 +362,7 @@ void ArenaTeam::Roster(WorldSession *session)
     
     for (auto itr : members)
     {
-        GlobalPlayerData const* pData = sWorld->GetGlobalPlayerData(itr.guid);
+        CharacterInfo const* pData = sWorld->GetCharacterInfo(itr.guid);
         
         pl = ObjectAccessor::FindConnectedPlayer(itr.guid);
 

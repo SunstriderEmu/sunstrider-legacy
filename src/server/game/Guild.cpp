@@ -282,7 +282,7 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     // If the leader does not exist attempt to promote another member
     if(!sObjectMgr->GetPlayerAccountIdByGUID(leaderGuid ))
     {
-        DelMember(leaderGuid);
+        DeleteMember(leaderGuid);
 
         // check no members case (disbanded)
         if(members.empty())
@@ -386,6 +386,7 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
             newmember.BankRemSlotsTab[i]  = fields[7+(2*i)].GetUInt32();
         }
         newmember.logout_time           = fields[18].GetUInt64();
+        sWorld->UpdateCharacterGuildId(GUID_LOPART(guid), GetId());
         members[GUID_LOPART(guid)]      = newmember;
 
     }while( result->NextRow() );
@@ -478,7 +479,7 @@ void Guild::SetLeader(uint64 guid)
     CharacterDatabase.PExecute("UPDATE guild SET leaderguid='%u' WHERE guildid='%u'", GUID_LOPART(guid), Id);
 }
 
-void Guild::DelMember(uint64 guid, bool isDisbanding)
+void Guild::DeleteMember(uint64 guid, bool isDisbanding)
 {
     //enforce CONFIG_GM_FORCE_GUILD
     uint32 GMForceGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
@@ -547,7 +548,8 @@ void Guild::DelMember(uint64 guid, bool isDisbanding)
     {
         player->SetInGuild(0);
         player->SetRank(0);
-    }
+    } else
+        sWorld->UpdateCharacterGuildId(guid, 0);
 
     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", GUID_LOPART(guid));
 }
@@ -766,7 +768,7 @@ void Guild::Disband()
     while (!members.empty())
     {
         auto itr = members.begin();
-        DelMember(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER), true);
+        DeleteMember(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER), true);
     }
 
     if (Id == 0)

@@ -279,7 +279,7 @@ class TC_GAME_API Guild
         bool AddMember(uint64 plGuid, uint32 plRank);
         bool AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans);
         void ChangeRank(uint64 guid, uint32 newRank);
-        void DelMember(uint64 guid, bool isDisbanding=false);
+        void DeleteMember(uint64 guid, bool isDisbanding = false);
         uint32 GetLowestRank() const { return GetNrRanks()-1; }
 
         void SetMOTD(std::string motd);

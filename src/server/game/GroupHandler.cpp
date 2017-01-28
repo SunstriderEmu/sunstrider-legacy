@@ -542,7 +542,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
     if (Player* player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()))
         group->ChangeMembersGroup(player, groupNr);
     else
-        group->ChangeMembersGroup(sObjectMgr->GetPlayerGUIDByName(name.c_str()), groupNr);
+        group->ChangeMembersGroup(sWorld->GetCharacterGuidByName(name.c_str()), groupNr);
 }
 
 void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )

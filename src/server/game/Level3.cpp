@@ -3281,7 +3281,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
-        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
+        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
 
     if (!plGuid)
     {
@@ -3328,7 +3328,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     }
     else
     {
-        plGuid = sObjectMgr->GetPlayerGUIDByName(plName.c_str ());
+        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
         glId = Player::GetGuildIdFromDB(plGuid);
     }
 
@@ -3350,7 +3350,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
         return true;
     }
 
-    targetGuild->DelMember (plGuid);
+    targetGuild->DeleteMember (plGuid);
 
     return true;
 }
@@ -3380,7 +3380,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     }
     else
     {
-        plGuid = sObjectMgr->GetPlayerGUIDByName (plName.c_str ());
+        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
         glId = Player::GetGuildIdFromDB (plGuid);
     }
 
@@ -4207,7 +4207,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!chr)                                            // not in game
         {
-            chr_guid = sObjectMgr->GetPlayerGUIDByName(name);
+            chr_guid = sWorld->GetCharacterGuidByName(name);
             if (chr_guid == 0)
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -4260,7 +4260,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
     }
 
-    sWorld->UpdateGlobalPlayerData(GUID_LOPART(chr_guid), PLAYER_UPDATE_DATA_LEVEL, "", newlevel);
+    sWorld->UpdateCharacterInfoLevel((GUID_LOPART(chr_guid), newLevel);
 
     if(m_session && m_session->GetPlayer() != chr)                       // including chr==NULL
         PSendSysMessage(LANG_YOU_CHANGE_LVL,name.c_str(),newlevel);
@@ -4751,7 +4751,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
             return false;
         }
 
-        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4856,7 +4856,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4900,7 +4900,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4943,7 +4943,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
 
         player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
-            playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+            playerGUID = sWorld->GetCharacterGuidByName(name.c_str());
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -4992,7 +4992,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
 
         player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
-            playerGUID = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+            playerGUID = sWorld->GetCharacterGuidByName(name.c_str());
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -5485,7 +5485,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
         }
         else //player is not online, get GUID with another function
         {
-            targetGUID = sObjectMgr->GetPlayerGUIDByName(name);
+            targetGUID = sWorld->GetCharacterGuidByName(name);
             if (!targetGUID) //player doesn't exist
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -6297,7 +6297,7 @@ bool ChatHandler::HandleWritePDumpCommand(const char *args)
             return false;
         }
 
-        guid = sObjectMgr->GetPlayerGUIDByName(name);
+        guid = sWorld->GetCharacterGuidByName(name);
     }
 
     if(!sObjectMgr->GetPlayerAccountIdByGUID(guid))
@@ -7099,7 +7099,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sObjectMgr->GetPlayerGUIDByName(name);
+    uint64 receiver_guid = sWorld->GetCharacterGuidByName(name);
     if(!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -7200,7 +7200,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sObjectMgr->GetPlayerGUIDByName(name);
+    uint64 receiver_guid = sWorld->GetCharacterGuidByName(name);
     if (!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);

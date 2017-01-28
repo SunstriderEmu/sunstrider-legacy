@@ -289,7 +289,7 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
     std::string gmname;
     std::stringstream ss;
     ss << PGetParseString(LANG_COMMAND_TICKETLISTGUID, ticket->guid);
-    GlobalPlayerData const* data = sWorld->GetGlobalPlayerData(ticket->playerGuid);
+    CharacterInfo const* data = sWorld->GetCharacterInfo(ticket->playerGuid);
 
     ss << PGetParseString(LANG_COMMAND_TICKETLISTNAME, data ? data->name.c_str() : "<name not found>", data ? data->name.c_str() : "<name not found>");
     if (showAge)
@@ -299,7 +299,7 @@ void ChatHandler::SendTicket(GM_Ticket const* ticket, time_t currentTime, bool s
     }
     if (showAssign)
     {
-        data = sWorld->GetGlobalPlayerData(ticket->assignedToGM);
+        data = sWorld->GetCharacterInfo(ticket->assignedToGM);
         ss << PGetParseString(LANG_COMMAND_TICKETLISTASSIGNEDTO, data ? data->name.c_str() : "<name not found>");
     }
     if (showMessage)
@@ -454,7 +454,7 @@ bool ChatHandler::HandleGMTicketAssignToCommand(const char* args)
     SendSysMessage(LANG_COMMAND_TICKETNOTEXIST);
     return true;
   }
-  uint64 tarGUID = sObjectMgr->GetPlayerGUIDByName(targm.c_str());
+  uint64 tarGUID = sWorld->GetCharacterGuidByName(targm.c_str());
   uint64 accid = sObjectMgr->GetPlayerAccountIdByGUID(tarGUID);
   QueryResult result = LoginDatabase.PQuery("SELECT `gmlevel` FROM `account` WHERE `id` = '%u'", accid);
   if(!tarGUID|| !result || result->Fetch()->GetUInt32() < SEC_GAMEMASTER1)
@@ -835,7 +835,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             PSendSysMessage("Teleportation failed");
         }
     }
-    else if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+    else if (uint64 guid = sWorld->GetCharacterGuidByName(name))
     {
         PSendSysMessage(LANG_SUMMONING, name.c_str(),GetTrinityString(LANG_OFFLINE));
 
@@ -972,7 +972,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         return true;
     }
 
-    if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
+    if (uint64 guid = sWorld->GetCharacterGuidByName(name))
     {
         PSendSysMessage(LANG_APPEARING_AT, name.c_str());
 
@@ -2352,7 +2352,7 @@ bool ChatHandler::HandleSendMailCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sObjectMgr->GetPlayerGUIDByName(name);
+    uint64 receiver_guid = sWorld->GetCharacterGuidByName(name);
     if(!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -2442,7 +2442,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
 
         chr->TeleportTo(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation);
     }
-    else if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name.c_str()))
+    else if (uint64 guid = sWorld->GetCharacterGuidByName(name.c_str()))
     {
         PSendSysMessage(LANG_TELEPORTING_TO, name.c_str(), GetTrinityString(LANG_OFFLINE), tele->name.c_str());
         Player::SavePositionInDB(tele->mapId,tele->position_x,tele->position_y,tele->position_z,tele->orientation,sMapMgr->GetZoneId(tele->mapId,tele->position_x,tele->position_y,tele->position_z),guid);

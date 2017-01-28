@@ -1666,7 +1666,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
 
             plr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
             if(offline)
-                guid = sObjectMgr->GetPlayerGUIDByName(name.c_str());
+                guid = sWorld->GetCharacterGuidByName(name.c_str());
         }
     }
 
@@ -1724,7 +1724,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             *player = pl;
 
         // if need guid value from DB (in name case for check player existence)
-        uint64 guid = !pl && (player_guid || player_name) ? sObjectMgr->GetPlayerGUIDByName(name) : 0;
+        uint64 guid = !pl && (player_guid || player_name) ? sWorld->GetCharacterGuidByName(name) : 0;
 
         // if allowed player guid (if no then only online players allowed)
         if (player_guid)
@@ -1790,7 +1790,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     }
     else
     {
-        character_guid = sObjectMgr->GetPlayerGUIDByName(character_name);
+        character_guid = sWorld->GetCharacterGuidByName(character_name);
         if(!character_guid)
         {
             PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());

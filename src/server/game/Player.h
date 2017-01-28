@@ -1799,23 +1799,21 @@ class TC_GAME_API Player : public Unit
         void RemoveFromGroup() { RemoveFromGroup(GetGroup(),GetGUID()); }
         void SendUpdateToOutOfRangeGroupMembers();
 
-        void SetInGuild(uint32 GuildId) { SetUInt32Value(PLAYER_GUILDID, GuildId); }
-        void SetRank(uint32 rankId){ SetUInt32Value(PLAYER_GUILDRANK, rankId); }
-        void SetGuildIdInvited(uint32 GuildId) { m_GuildIdInvited = GuildId; }
-        uint32 GetGuildId() const { return GetUInt32Value(PLAYER_GUILDID);  }
+        void SetInGuild(uint32 guildId);
+        void SetRank(uint32 rankId);
+        void SetGuildIdInvited(uint32 guildId);
+        uint32 GetGuildId() const;
         Guild* GetGuild() const;
         static uint32 GetGuildIdFromDB(uint64 guid);
-        uint32 GetRank() const { return GetUInt32Value(PLAYER_GUILDRANK); }
+        uint32 GetRank() const;
         static uint32 GetRankFromDB(uint64 guid);
         int GetGuildIdInvited() const { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
         static uint32 GetGuildIdFromStorage(uint32 guid);
 
         // Arena Team
-        void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
-        {
-            SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6), ArenaTeamId);
-        }
+        void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot);
+        static uint32 GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 slot);
         uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
         static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
@@ -1824,7 +1822,6 @@ class TC_GAME_API Player : public Unit
         void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();
         void UpdateArenaTitleForRank(uint8 rank, bool add);
-        static uint32 GetArenaTeamIdFromStorage(uint32 guid, uint8 slot);
 
         void SetDifficulty(Difficulty dungeon_difficulty, bool sendToPlayer = true, bool asGroup = false);
         //arg has no effect for now

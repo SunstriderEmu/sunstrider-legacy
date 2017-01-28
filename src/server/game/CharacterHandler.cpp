@@ -201,14 +201,14 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
                 SELECT c.guid, c.name, c.race, c.class, c.gender, c.playerBytes, c.playerBytes2, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, "
                 "gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid "
                 */
-                if (!sWorld->HasGlobalPlayerData(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
+                if (!sWorld->HasCharacterInfo(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
                 {
                     std::string name = (*result)[1].GetString();
                     uint8 gender = (*result)[4].GetUInt8();
                     uint8 race = (*result)[2].GetUInt8();
                     uint8 playerclass = (*result)[3].GetUInt8();
                     uint8 level = (*result)[7].GetUInt8();
-                    sWorld->AddGlobalPlayerData(guidlow, GetAccountId(), name, gender, race, playerclass, level, 0, 0);
+                    sWorld->AddCharacterInfo(guidlow, GetAccountId(), name, gender, race, playerclass, level, 0, 0);
                 }
                 ++num;
             }
@@ -329,7 +329,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
         return;
     }
 
-    if(sObjectMgr->GetPlayerGUIDByName(createInfo.Name))
+    if(sWorld->GetCharacterGuidByName(createInfo.Name))
     {
         SendCharCreate(CHAR_CREATE_NAME_IN_USE);
         return;
@@ -615,7 +615,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
             //            sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddGlobalPlayerData(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0, 0);
+            sWorld->AddCharacterInfo(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0, 0);
 
             newChar.CleanupsBeforeDelete();
             delete createInfo;
@@ -843,7 +843,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             {
                 //remove from current guild if any
                 if (Guild* currentGuild = sObjectMgr->GetGuildById(guildId))
-                    currentGuild->DelMember(pCurrChar->GetGUID());
+                    currentGuild->DeleteMember(pCurrChar->GetGUID());
 
                 if (Guild* gmGuild = sObjectMgr->GetGuildById(GMForcedGuildId))
                 {
@@ -1298,8 +1298,8 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     SendCharRename(RESPONSE_SUCCESS, *renameInfo);
 
-    sWorld->UpdateGlobalNameData(guidLow, oldname, renameInfo->Name);
-    sWorld->UpdateGlobalPlayerData(guidLow, PLAYER_UPDATE_DATA_NAME, renameInfo->Name);
+    sWorld->UpdateCharacterGuidByName(guidLow, oldname, renameInfo->Name);
+    sWorld->UpdateCharacterInfo(guidLow, PLAYER_UPDATE_DATA_NAME, renameInfo->Name);
 
     LogsDatabaseAccessor::CharacterRename(this, guidLow, oldname, renameInfo->Name, GetRemoteAddress());
 }

@@ -497,7 +497,7 @@ list<uint32> RandomPlayerbotMgr::GetBots()
     //add data to player global data if not existing yet
     for (auto itr : bots)
     {
-        auto data = sWorld->GetGlobalPlayerData(itr);
+        auto data = sWorld->GetCharacterInfo(itr);
         if (!data)
         {
             QueryResult results = CharacterDatabase.PQuery("select account, name, gender, race, class, level FROM characters where guid = %u", itr);
@@ -510,7 +510,7 @@ list<uint32> RandomPlayerbotMgr::GetBots()
                 uint8 race = fields[3].GetUInt8();
                 uint8 _class = fields[4].GetUInt8();
                 uint8 level = fields[5].GetUInt8();
-                sWorld->AddGlobalPlayerData(itr, account, name, gender, race, _class, level, 0, 0);
+                sWorld->AddCharacterInfo(itr, account, name, gender, race, _class, level, 0, 0);
             }
         }
     }
