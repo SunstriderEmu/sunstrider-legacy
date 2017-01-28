@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -184,8 +165,6 @@ void WorldSession::HandleGroupInviteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     Group *group = GetPlayer()->GetGroupInvite();
     if (!group) return;
 
@@ -230,8 +209,6 @@ void WorldSession::HandleGroupAcceptOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     Group  *group  = GetPlayer()->GetGroupInvite();
     if (!group) return;
 
@@ -262,10 +239,6 @@ void WorldSession::HandleGroupDeclineOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     uint64 guid;
     recvData >> guid;
 
@@ -304,10 +277,6 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 {
-    
-    
-    
-
     std::string membername;
     recvData >> membername;
 
@@ -361,8 +330,6 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 {
-    
-
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;
@@ -383,8 +350,6 @@ void WorldSession::HandleGroupSetLeaderOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupDisbandOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     if(!GetPlayer()->GetGroup())
         return;
 
@@ -428,10 +393,6 @@ void WorldSession::HandleLootMethodOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleLootRoll( WorldPacket &recvData )
 {
-    
-    
-    
-
     if(!GetPlayer()->GetGroup())
         return;
 
@@ -454,8 +415,6 @@ void WorldSession::HandleLootRoll( WorldPacket &recvData )
 
 void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 {
-    
-
     if(!GetPlayer()->GetGroup())
         return;
 
@@ -478,8 +437,6 @@ void WorldSession::HandleMinimapPingOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 {
-    
-
     uint32 minimum, maximum, roll;
     recvData >> minimum;
     recvData >> maximum;
@@ -507,10 +464,6 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;
@@ -542,8 +495,6 @@ void WorldSession::HandleRaidTargetUpdateOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleGroupRaidConvertOpcode( WorldPacket & /*recvData*/ )
 {
-    
-    
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;
@@ -563,10 +514,6 @@ void WorldSession::HandleGroupRaidConvertOpcode( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     // we will get correct pointer for group here, so we don't have to check if group is BG raid
     Group *group = GetPlayer()->GetGroup();
     if(!group)
@@ -575,11 +522,13 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
     std::string name;
     uint8 groupNr;
     recvData >> name;
-
-    // recheck
-    
-
     recvData >> groupNr;
+
+    if (!normalizePlayerName(name))
+        return;
+
+    if (groupNr >= MAX_RAID_SUBGROUPS)
+        return;
 
     /** error handling **/
     if(!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
