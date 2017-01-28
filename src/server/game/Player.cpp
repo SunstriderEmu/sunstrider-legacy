@@ -17454,7 +17454,7 @@ void Player::SendAutoRepeatCancel()
 #ifdef LICH_KING
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, target->GetPackGUID().size());
     data << target->GetPackGUID(); // may be it's target guid
-    SendMessageToSet(&data, false);
+    SendMessageToSet(&data, true);
 #else
     WorldPacket data(SMSG_CANCEL_AUTO_REPEAT, 0);
     SendDirectMessage( &data );

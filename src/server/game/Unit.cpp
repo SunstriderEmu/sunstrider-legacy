@@ -3355,11 +3355,13 @@ void Unit::_UpdateSpells( uint32 time )
 
 void Unit::_UpdateAutoRepeatSpell()
 {
+    const SpellInfo* autoRepeatSpellInfo = m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo;
+
     //check "realtime" interrupts
     if ( (GetTypeId() == TYPEID_PLAYER && (this->ToPlayer())->isMoving()) || IsNonMeleeSpellCast(false,false,true) )
     {
         // cancel wand shoot
-        if(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo->GetCategory() == 351)
+        if(autoRepeatSpellInfo->GetCategory() == 351)
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
         m_AutoRepeatFirstCast = true;
         return;
@@ -3368,6 +3370,7 @@ void Unit::_UpdateAutoRepeatSpell()
     //apply delay
     if ( m_AutoRepeatFirstCast && GetAttackTimer(RANGED_ATTACK) < 500 )
         SetAttackTimer(RANGED_ATTACK,500);
+
     m_AutoRepeatFirstCast = false;
 
     //castroutine
@@ -3381,7 +3384,7 @@ void Unit::_UpdateAutoRepeatSpell()
         }
 
         // we want to shoot
-        auto  spell = new Spell(this, GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_spellInfo, true, 0);
+        auto spell = new Spell(this, autoRepeatSpellInfo, true, 0);
         spell->prepare(&(GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL)->m_targets));
 
         // all went good, reset attack
@@ -3472,7 +3475,7 @@ void Unit::InterruptSpell(uint32 spellType, bool withDelayed, bool withInstant)
     Spell *spell = m_currentSpells[spellType];
     if(spell
         && (withDelayed || spell->getState() != SPELL_STATE_DELAYED)
-        && (withInstant || spell->GetCastTime() > 0))
+        && (withInstant || spell->GetCastTime() > 0 || spell->getState() == SPELL_STATE_CASTING))
     {
         // for example, do not let self-stun aura interrupt itself
         if(!spell->IsInterruptable())

@@ -161,7 +161,7 @@ enum SMART_EVENT
     SMART_EVENT_ATTACKED_UNIT_DIED       = 102,      // none
     SMART_EVENT_ENTER_PHASE              = 103,      // phase
     SMART_EVENT_GO_LOOT_STATE_CHANGED    = 104,      // stateMask (LootState)
-    SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanic
+    SMART_EVENT_AFFECTED_BY_MECHANIC     = 105,      // checkTimer, mechanicMask
     
     
     SMART_EVENT_END                      ,
@@ -1169,7 +1169,7 @@ enum SMARTAI_TARGETS
     SMART_TARGET_HOSTILE_RANDOM_NOT_TOP         = 6,    // Any random target except top threat
     SMART_TARGET_ACTION_INVOKER                 = 7,    // Unit who caused this Event to occur
     SMART_TARGET_POSITION                       = 8,    // use xyz from event params
-    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist
+    SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist, livingState (1 alive, 2 dead, 0 both)
     SMART_TARGET_CREATURE_GUID                  = 10,   // guid, entry
     SMART_TARGET_CREATURE_DISTANCE              = 11,   // CreatureEntry(0any), maxDist
     SMART_TARGET_STORED                         = 12,   // id, uses pre-stored target(list)
