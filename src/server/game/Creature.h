@@ -815,6 +815,10 @@ class TC_GAME_API Creature : public Unit
         Same as SetKeepActive but with a timer, disable it after given time in MS
         */
         void SetKeepActiveTimer(uint32 timerMS);
+
+        void SetHomeless(bool set = true) { m_ignoreHomeDistanceForAttacking = ignore; }
+        bool IsHomeless() { return m_ignoreHomeDistanceForAttacking; }
+
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
@@ -877,6 +881,7 @@ class TC_GAME_API Creature : public Unit
         uint32 m_unreachableTargetTime;
         // Creature evade all attacks. This is different from evade mode, when target is unreachable creature will stay some tile on place before evading.
         bool m_evadingAttacks;
+        bool m_homeless;
 
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 

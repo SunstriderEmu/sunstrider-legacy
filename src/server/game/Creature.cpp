@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -161,15 +142,41 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
 Creature::Creature() :
     Unit(),
-    lootForPickPocketed(false), lootForBody(false), m_lootMoney(0), m_lootRecipient(0), m_lootRecipientGroup(0),
-    m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25), m_corpseDelay(60), m_respawnradius(0.0f),
-    m_reactState(REACT_AGGRESSIVE), m_transportCheckTimer(1000),
-    m_regenTimer(2000), m_defaultMovementType(IDLE_MOTION_TYPE), m_equipmentId(0), m_areaCombatTimer(0), m_relocateTimer(60000),
-    m_AlreadyCallAssistance(false), m_regenHealth(true), m_AI_locked(false),
-    m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL), m_creatureInfo(nullptr), m_creatureInfoAddon(nullptr), m_DBTableGuid(0), m_formation(nullptr),
-    m_PlayerDamageReq(0), m_timeSinceSpawn(0), m_creaturePoolId(0), _focusSpell(nullptr),
-    m_isBeingEscorted(false), m_path_id(0), m_unreachableTargetTime(0), m_evadingAttacks(false), m_canFly(false),
-    m_stealthWarningCooldown(0), m_keepActiveTimer(0)
+    lootForPickPocketed(false), 
+    lootForBody(false), 
+    m_lootMoney(0), 
+    m_lootRecipient(0), 
+    m_lootRecipientGroup(0),
+    m_corpseRemoveTime(0), m_respawnTime(0), m_respawnDelay(25),
+    m_corpseDelay(60), 
+    m_respawnradius(0.0f),
+    m_reactState(REACT_AGGRESSIVE), 
+    m_transportCheckTimer(1000),
+    m_regenTimer(2000),
+    m_defaultMovementType(IDLE_MOTION_TYPE), 
+    m_equipmentId(0), 
+    m_areaCombatTimer(0), 
+    m_relocateTimer(60000),
+    m_AlreadyCallAssistance(false), 
+    m_regenHealth(true), 
+    m_AI_locked(false),
+    m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
+    m_creatureInfo(nullptr), 
+    m_creatureInfoAddon(nullptr), 
+    m_DBTableGuid(0), 
+    m_formation(nullptr),
+    m_PlayerDamageReq(0),
+    m_timeSinceSpawn(0), 
+    m_creaturePoolId(0), 
+    _focusSpell(nullptr),
+    m_isBeingEscorted(false), 
+    m_path_id(0), 
+    m_unreachableTargetTime(0), 
+    m_evadingAttacks(false), 
+    m_canFly(false),
+    m_stealthWarningCooldown(0), 
+    m_keepActiveTimer(0), 
+    m_homeless(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS)
 {
     m_valuesCount = UNIT_END;
 
@@ -2086,7 +2093,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
         return false;
 
     float length;
-    if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS || ((Creature*)this)->IsBeingEscorted())
+    if (IsHomeless() || ((Creature*)this)->IsBeingEscorted())
         length = pVictim->GetDistance(GetPositionX(), GetPositionY(), GetPositionZ());
     else {
         float x,y,z,o;

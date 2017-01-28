@@ -1,21 +1,3 @@
-/*
-* Copyright (C) 2008-2010 TrinityCore <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify it
-* under the terms of the GNU General Public License as published by the
-* Free Software Foundation; either version 2 of the License, or (at your
-* option) any later version.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
-* more details.
-*
-* You should have received a copy of the GNU General Public License along
-* with this program. If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 #include "DatabaseEnv.h"
 #include "ObjectMgr.h"
 #include "ObjectDefines.h"
@@ -38,7 +20,7 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mIsCharmed = false;
     mWayPoints = nullptr;
     mEscortState = SMART_ESCORT_NONE;
-    mCurrentWPID = 0;//first wp id is 1 !!
+    mCurrentWPID = 0; //first wp id is 1 !!
     mWPReached = false;
     mOOCReached = false;
     mWPPauseTimer = 0;
@@ -75,8 +57,6 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mInvincibilityHpLevel = 0;
 
     mJustReset = false;
-
-    m_preventMoveHome = false;
 }
 
 bool SmartAI::IsAIControlled() const
@@ -486,9 +466,6 @@ void SmartAI::EnterEvadeMode(EvadeReason why)
 
     SetRun(mRun);
     
-    if(m_preventMoveHome)
-        return;
-    
     if (HasEscortState(SMART_ESCORT_ESCORTING))
     {
         AddEscortState(SMART_ESCORT_RETURNING);
@@ -499,7 +476,7 @@ void SmartAI::EnterEvadeMode(EvadeReason why)
         if (Unit* target = ObjectAccessor::GetUnit(*me, mFollowGuid))
             me->GetMotionMaster()->MoveFollow(target, mFollowDist, mFollowAngle);
     }
-    else {
+    else if (!me->IsHomeless()) {
         me->GetMotionMaster()->MoveTargetedHome();
     }
 

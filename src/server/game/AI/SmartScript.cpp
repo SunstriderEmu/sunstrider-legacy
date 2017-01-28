@@ -2591,9 +2591,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if(!targets)
                 break;
 
-             for (auto itr : *targets)
+            for (auto itr : *targets)
                 if (Creature* target = itr->ToCreature())
-                    CAST_AI(SmartAI, target->AI())->SetPreventMoveHome(e.action.preventMoveHome.prevent);
+                    target->SetHomeless(e.action.preventMoveHome.prevent);
+                    //CAST_AI(SmartAI, target->AI())->SetPreventMoveHome(e.action.preventMoveHome.prevent);
 
              delete targets;
             break;
