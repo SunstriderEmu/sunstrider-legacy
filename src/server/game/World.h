@@ -856,8 +856,8 @@ class TC_GAME_API World
         LockedQueue<CliCommandHolder*> cliCmdQueue;
 
         // our speed ups
-        CharacterInfoMap _CharacterInfoStore; // xinef
-        GlobalPlayerNameMap _globalPlayerNameStore; // xinef
+        CharacterInfoMap _characterInfoStore; // xinef
+        GlobalPlayerNameMap _characterGuidByNameStore; // xinef
 
         // next daily quests reset time
         time_t m_NextDailyQuestReset;

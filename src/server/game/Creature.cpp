@@ -270,7 +270,8 @@ void Creature::RemoveCorpse(bool setSpawnTime)
 
     m_corpseRemoveTime = time(nullptr);
     SetDeathState(DEAD);
-    ObjectAccessor::UpdateObjectVisibility(this);
+    RemoveAllAuras();
+    DestroyForNearbyPlayers(); // old UpdateObjectVisibility()
     loot.clear();
 
     if (IsAIEnabled)

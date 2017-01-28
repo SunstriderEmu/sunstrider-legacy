@@ -3329,7 +3329,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     else
     {
         plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
-        glId = Player::GetGuildIdFromDB(plGuid);
+        glId = Player::GetGuildIdFromCharacterInfo(plGuid);
     }
 
     if (!plGuid)
@@ -3381,7 +3381,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     else
     {
         plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
-        glId = Player::GetGuildIdFromDB (plGuid);
+        glId = Player::GetGuildIdFromCharacterInfo(plGuid);
     }
 
     if (!plGuid || !glId)

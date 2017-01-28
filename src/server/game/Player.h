@@ -1804,18 +1804,15 @@ class TC_GAME_API Player : public Unit
         void SetGuildIdInvited(uint32 guildId);
         uint32 GetGuildId() const;
         Guild* GetGuild() const;
-        static uint32 GetGuildIdFromDB(uint64 guid);
         uint32 GetRank() const;
-        static uint32 GetRankFromDB(uint64 guid);
         int GetGuildIdInvited() const { return m_GuildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
-        static uint32 GetGuildIdFromStorage(uint32 guid);
+        static uint32 GetGuildIdFromCharacterInfo(uint32 guid);
 
         // Arena Team
         void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot);
         static uint32 GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 slot);
         uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
-        static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() const { return m_ArenaTeamIdInvited; }
         uint8 GetGladiatorRank() const;

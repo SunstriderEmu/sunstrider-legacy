@@ -3137,10 +3137,16 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
         return false;
 
     uint8 type = atoi(cType);
-    if(type != 2 && type != 3 && type != 5)
+
+    uint8 dataIndex = 0;
+    switch (type)
     {
-        PSendSysMessage("Invalid team type (must be 2, 3 or 5).");
-        return true;
+        case 2: dataIndex = 0; break;
+        case 3: dataIndex = 1; break;
+        case 5: dataIndex = 2; break;
+        default:
+            SendSysMessage("Invalid team type (must be 2, 3 or 5).");
+            return true;
     }
 
     uint64 targetGUID = 0;
@@ -3153,7 +3159,14 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
         return true;
     }
 
-    uint32 arenateamid = Player::GetArenaTeamIdFromDB(targetGUID,type);
+    CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(targetGUID));
+    if (!playerData)
+    {
+        SendSysMessage(LANG_PLAYER_NOT_FOUND);
+        return true;
+    }
+
+    uint32 arenateamid = playerData->arenaTeamId[dataIndex];
     if(!arenateamid)
     {
         PSendSysMessage("Team not found. Also double check your team type.");

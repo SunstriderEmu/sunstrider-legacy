@@ -1631,7 +1631,7 @@ bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
 
 uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
 {
-    // xinef: Get data from global storage
+    // Get data from global storage
     if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
         return Player::TeamForRace(playerData->race);
 

@@ -149,7 +149,7 @@ bool Guild::AddMember(uint64 plGuid, uint32 plRank, SQLTransaction trans)
     }
     else
     {
-        if(Player::GetGuildIdFromDB(plGuid) != 0)           // player already in guild
+        if(Player::GetGuildIdFromCharacterInfo(plGuid) != 0)           // player already in guild
             return false;
     }
 

@@ -3760,7 +3760,7 @@ void Player::DestroyForPlayer(Player *target, bool onDeath) const
 {
     Unit::DestroyForPlayer(target, onDeath);
 
-    for(uint8 i = 0; i < INVENTORY_SLOT_BAG_END; i++)
+    for(uint8 i = 0; i < EQUIPMENT_SLOT_END; i++)
     {
         if(m_items[i] == nullptr)
             continue;
@@ -3857,28 +3857,21 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
     return TRAINER_SPELL_GREEN;
 }
 
-void Player::LeaveAllArenaTeams(uint64 playerguid)
+void Player::LeaveAllArenaTeams(uint64 guid)
 {
-    uint32 at_id = GetArenaTeamIdFromDB(playerguid, ARENA_TEAM_2v2);
-    if (at_id != 0)
+    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    if (!characterInfo)
+        return;
+
+    for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
     {
-        ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
-        if (at)
-            at->DeleteMember(playerguid);
-    }
-    at_id = GetArenaTeamIdFromDB(playerguid, ARENA_TEAM_3v3);
-    if (at_id != 0)
-    {
-        ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
-        if (at)
-            at->DeleteMember(playerguid);
-    }
-    at_id = GetArenaTeamIdFromDB(playerguid, ARENA_TEAM_5v5);
-    if (at_id != 0)
-    {
-        ArenaTeam * at = sObjectMgr->GetArenaTeamById(at_id);
-        if (at)
-            at->DeleteMember(playerguid);
+        uint32 arenaTeamId = characterInfo->arenaTeamId[i];
+        if (arenaTeamId != 0)
+        {
+            ArenaTeam* arenaTeam = sObjectMgr->GetArenaTeamById(arenaTeamId);
+            if (arenaTeam)
+                arenaTeam->DeleteMember(guid, true);
+        }
     }
 }
 
@@ -3916,7 +3909,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     sObjectAccessor->ConvertCorpseForPlayer(playerguid);
 
     // remove from guild
-    uint32 guildId = GetGuildIdFromDB(playerguid);
+    uint32 guildId = Player::GetGuildIdFromCharacterInfo(playerguid);
     if(guildId != 0)
     {
         Guild* guild = sObjectMgr->GetGuildById(guildId);
@@ -6762,45 +6755,6 @@ Guild* Player::GetGuild() const
     return guildId ? sObjectMgr->GetGuildById(guildId) : nullptr;
 }
 
-uint32 Player::GetGuildIdFromDB(uint64 guid)
-{
-    std::ostringstream ss;
-    ss<<"SELECT guildid FROM guild_member WHERE guid='"<<guid<<"'";
-    QueryResult result = CharacterDatabase.Query( ss.str().c_str() );
-    if( result )
-    {
-        uint32 v = result->Fetch()[0].GetUInt32();
-        return v;
-    }
-    else
-        return 0;
-}
-
-uint32 Player::GetRankFromDB(uint64 guid)
-{
-    std::ostringstream ss;
-    ss<<"SELECT rank FROM guild_member WHERE guid='"<<guid<<"'";
-    QueryResult result = CharacterDatabase.Query( ss.str().c_str() );
-    if( result )
-    {
-        uint32 v = result->Fetch()[0].GetUInt32();
-        return v;
-    }
-    else
-        return 0;
-}
-
-uint32 Player::GetArenaTeamIdFromDB(uint64 guid, uint8 type)
-{
-    QueryResult result = CharacterDatabase.PQuery("SELECT arena_team_member.arenateamid FROM arena_team_member JOIN arena_team ON arena_team_member.arenateamid = arena_team.arenateamid WHERE guid='%u' AND type='%u' LIMIT 1", GUID_LOPART(guid), type);
-    if(!result)
-        return 0;
-
-    uint32 id = (*result)[0].GetUInt32();
-
-    return id;
-}
-
 uint32 Player::GetZoneIdFromDB(uint64 guid)
 {
     std::ostringstream ss;
@@ -6838,7 +6792,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
 
 uint32 Player::GetLevelFromStorage(uint64 guid)
 {
-    // xinef: Get data from global storage
+    // Get data from global storage
     if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
         return playerData->level;
 
@@ -22495,11 +22449,17 @@ void Player::UpdateArenaTitles()
     }
 
     //else, normal case :
-    uint32 teamid = Player::GetArenaTeamIdFromDB(GetGUID(),ARENA_TEAM_2v2);
+    CharacterInfo const* playerData = sWorld->GetCharacterInfo(GetGUIDLow());
+    if (!playerData)
+        return;
+
+    uint32 teamid = playerData->arenaTeamId[0];
     std::vector<ArenaTeam*> firstTeams = sWorld->getArenaLeaderTeams();
     
     bool hasRank[3];
-    for(bool & i : hasRank) i = false;
+    for(bool & i : hasRank) 
+        i = false;
+
     for(auto itr : firstTeams)
     {
         if(itr == nullptr)
@@ -23133,7 +23093,7 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
     return 0;
 }
 
-uint32 Player::GetGuildIdFromStorage(uint32 guid)
+uint32 Player::GetGuildIdFromCharacterInfo(uint32 guid)
 {
     if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guid))
         return playerData->guildId;
