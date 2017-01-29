@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "SocialMgr.h"
 #include "Language.h"
+#include "AccountMgr.h"
 
 void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 {
