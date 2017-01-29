@@ -176,7 +176,7 @@ Creature::Creature() :
     m_canFly(false),
     m_stealthWarningCooldown(0), 
     m_keepActiveTimer(0), 
-    m_homeless(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS)
+    m_homeless(false)
 {
     m_valuesCount = UNIT_END;
 
@@ -354,6 +354,8 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
 
     LastUsedScriptID = GetCreatureTemplate()->ScriptID;
+
+    m_homeless = m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS;
 
     // Load creature equipment
     if(!data || data->equipmentId == 0)

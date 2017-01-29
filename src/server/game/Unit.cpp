@@ -4985,11 +4985,10 @@ Aura* Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, uint64 itemCas
 {
     for (uint32 effindex = 0; effindex < MAX_SPELL_EFFECTS; effindex++)
     {
-        auto iter = m_Auras.find(spellEffectPair(spellId, effindex));
-        if (iter != m_Auras.end())
+        auto range = m_Auras.equal_range(spellEffectPair(spellId, effindex));
+        for (; range.first != range.second; ++range.first)
         {
-            Aura* aura = iter->second;
-
+            Aura* aura = range.first->second;
             if (((aura->GetEffectMask() & reqEffMask) == reqEffMask)
                 && (!casterGUID || aura->GetCasterGUID() == casterGUID)
                 && (!itemCasterGUID || aura->GetCastItemGUID() == itemCasterGUID)

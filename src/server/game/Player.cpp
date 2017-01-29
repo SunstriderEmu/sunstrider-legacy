@@ -20585,7 +20585,7 @@ void Player::SendAuraDurationsForTarget(Unit* target)
     for(Unit::AuraMap::const_iterator itr = target->GetAuras().begin(); itr != target->GetAuras().end(); ++itr)
     {
         Aura* aura = itr->second;
-        if(aura->GetAuraSlot() >= MAX_AURAS || aura->IsPassive() || aura->GetCasterGUID()!=GetGUID())
+        if(aura->GetAuraSlot() >= MAX_AURAS || aura->IsPassive() || aura->GetCasterGUID( )!= GetGUID())
             continue;
 
         aura->SendAuraDurationForCaster(this);

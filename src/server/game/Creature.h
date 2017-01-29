@@ -816,8 +816,8 @@ class TC_GAME_API Creature : public Unit
         */
         void SetKeepActiveTimer(uint32 timerMS);
 
-        void SetHomeless(bool set = true) { m_ignoreHomeDistanceForAttacking = ignore; }
-        bool IsHomeless() { return m_ignoreHomeDistanceForAttacking; }
+        void SetHomeless(bool set = true) { m_homeless = set; }
+        bool IsHomeless() const { return m_homeless; }
 
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
