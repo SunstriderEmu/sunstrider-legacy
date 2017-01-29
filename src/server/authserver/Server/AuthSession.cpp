@@ -2,12 +2,14 @@
 #include "Log.h"
 #include "AuthCodes.h"
 #include "Database/DatabaseEnv.h"
+#include "QueryCallback.h"
 #include "SHA1.h"
 #include "TOTP.h"
 #include "openssl/crypto.h"
 #include "Configuration/Config.h"
 #include "RealmList.h"
 #include <boost/lexical_cast.hpp>
+
 
 using boost::asio::ip::tcp;
 
