@@ -3118,6 +3118,18 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
             delete units;
             break;
         }
+        case SMART_TARGET_FRIENDLY_HEALTH_PCT:
+        {
+            ObjectList* units = GetWorldObjectsInDist((float)e.target.playerDistance.dist);
+            for (ObjectList::const_iterator itr = units->begin(); itr != units->end(); ++itr)
+                if ((*itr)->isType(TYPEMASK_UNIT)
+                    && baseObject->IsWithinDist(*itr, (float)e.target.friendlyHealthPct.maxDist)
+                    && ((*itr)->ToUnit()->GetHealthPct() < e.target.friendlyHealthPct.percentBelow)
+                    && (!e.target.friendlyHealthPct.entry || ((*itr)->ToCreature() && (*itr)->ToCreature()->GetEntry() == e.target.friendlyHealthPct.entry))
+                   )
+                    l->push_back(*itr);
+            break;
+        }
         case SMART_TARGET_STORED:
         {
             auto itr = mTargetStorage->find(e.target.stored.id);
@@ -3669,27 +3681,11 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, ui
         }
         case SMART_EVENT_FRIENDLY_HEALTH_PCT:
         {
+            //This event is shitty, do not use, targets will get overriden in action anyway. It's only kept for compat with Trinity.
             if (!me || !me->IsInCombat())
                 return;
 
-            ObjectList* _targets = nullptr;
-
-            switch (e.GetTargetType())
-            {
-                case SMART_TARGET_CREATURE_RANGE:
-                case SMART_TARGET_CREATURE_GUID:
-                case SMART_TARGET_CREATURE_DISTANCE:
-                case SMART_TARGET_CLOSEST_CREATURE:
-                case SMART_TARGET_CLOSEST_PLAYER:
-                case SMART_TARGET_PLAYER_RANGE:
-                case SMART_TARGET_PLAYER_DISTANCE:
-                case SMART_TARGET_PLAYER_CASTING_DISTANCE:
-                    _targets = GetTargets(e);
-                    break;
-                default:
-                    return;
-            }
-
+            ObjectList* _targets = GetTargets(e);
             if (!_targets)
                 return;
 

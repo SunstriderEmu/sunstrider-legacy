@@ -311,6 +311,21 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder const& e)
             }
             break;
         }
+        case SMART_TARGET_FRIENDLY_HEALTH_PCT:
+        {
+            if (e.target.friendlyHealthPct.maxDist == 0)
+            {
+                SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has maxDist 0 as target_param1, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                return false;
+            }
+
+            if (e.target.friendlyHealthPct.percentBelow == 0)
+            {
+                SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has percentBelow 0 as target_param1, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                return false;
+            }
+            break;
+        }
         case SMART_TARGET_PLAYER_RANGE:
         case SMART_TARGET_SELF:
         case SMART_TARGET_VICTIM:
@@ -595,6 +610,23 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                     SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has pct value above 100, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
                     return false;
                 }
+
+                switch (e.GetTargetType())
+                {
+                case SMART_TARGET_CREATURE_RANGE:
+                case SMART_TARGET_CREATURE_GUID:
+                case SMART_TARGET_CREATURE_DISTANCE:
+                case SMART_TARGET_CLOSEST_CREATURE:
+                case SMART_TARGET_CLOSEST_PLAYER:
+                case SMART_TARGET_PLAYER_RANGE:
+                case SMART_TARGET_PLAYER_DISTANCE:
+                case SMART_TARGET_PLAYER_CASTING_DISTANCE:
+                    break;
+                default:
+                    SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u has invalid target type for event, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                    return false;
+                }
+
                 break;
             case SMART_EVENT_DISTANCE_CREATURE:
                 if (e.event.distance.guid == 0 && e.event.distance.entry == 0)

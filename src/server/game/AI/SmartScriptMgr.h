@@ -150,7 +150,7 @@ enum SMART_EVENT
     SMART_EVENT_GO_EVENT_INFORM          = 71,      // eventId
     SMART_EVENT_ACTION_DONE              = 72,      // eventId (SharedDefines.EventId)
     SMART_EVENT_ON_SPELLCLICK            = 73,      // clicker (unit)
-    SMART_EVENT_FRIENDLY_HEALTH_PCT      = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax
+    SMART_EVENT_FRIENDLY_HEALTH_PCT      = 74,      // minHpPct, maxHpPct, repeatMin, repeatMax //!!! This event is shitty, do not use, targets will get overriden in action anyway. It's only kept for compat with Trinity.
     SMART_EVENT_DISTANCE_CREATURE        = 75,      // guid, entry, distance, repeat
     SMART_EVENT_DISTANCE_GAMEOBJECT      = 76,      // guid, entry, distance, repeat
     SMART_EVENT_COUNTER_SET              = 77,      // id, value, cooldownMin, cooldownMax
@@ -1188,7 +1188,9 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_ENEMY                  = 25,   // maxDist, playerOnly
     SMART_TARGET_CLOSEST_FRIENDLY               = 26,   // maxDist, playerOnly
 
+    //custom sunstrider
     SMART_TARGET_PLAYER_CASTING_DISTANCE        = 101,  // maxDist, any player currently casting
+    SMART_TARGET_FRIENDLY_HEALTH_PCT            = 102,  // maxDist, percentBelow, entry (0any)
 };
 
 //custom sunstrider, column target_flags
@@ -1302,6 +1304,13 @@ struct SmartTarget
             uint32 playerOnly;
             uint32 farthest;
         } closestFriendly;
+
+        struct
+        {
+            uint32 maxDist;
+            uint32 percentBelow;
+            uint32 entry; // 0 = any
+        } friendlyHealthPct;
 
         struct
         {
