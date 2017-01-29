@@ -196,6 +196,8 @@ namespace Movement
     }
 
     // will build packet if needed
+    /*
+    FIXME: Packets send by this function have no effect. No idea what's wrong.
     void SendStopPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport, Location& loc, uint32 splineId)
     {
         if(packet == nullptr)
@@ -207,6 +209,7 @@ namespace Movement
     }
 
     // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
+   FIXME: Packets send by this function have no effect. No idea what's wrong.
     void SendStopToSet(Unit* unit, bool transport, Location& loc, uint32 splineId)
     {
         WorldPacket* packetBC = nullptr;
@@ -234,6 +237,7 @@ namespace Movement
         delete packetLK;
 #endif
     }
+    */
 
     void MoveSplineInit::Stop()
     {
@@ -266,10 +270,23 @@ namespace Movement
         move_spline.onTransport = transport;
         move_spline.Initialize(args);
 
+        WorldPacket data(SMSG_MONSTER_MOVE, 64);
+        data << unit->GetPackGUID();
+        if (transport)
+        {
+            data.SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
+            data.appendPackGUID(unit->GetTransGUID());
+#ifdef LICH_KING
+            data << int8(unit->GetTransSeat());
+#endif
+        }
+
         // Xinef: increase z position in packet
         loc.z += unit->GetHoverHeight();
 
-        SendStopToSet(unit, transport, loc, args.splineId);
+        PacketBuilder::WriteStopMovement(loc, args.splineId, data, BUILD_243);
+        unit->SendMessageToSet(&data, true);
+        //SendStopToSet(unit, transport, loc, args.splineId);
     }
 
     MoveSplineInit::MoveSplineInit(Unit* m) : unit(m)
