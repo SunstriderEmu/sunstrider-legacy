@@ -2885,3 +2885,36 @@ void Creature::SetKeepActiveTimer(uint32 timerMS)
     SetKeepActive(true);
     m_keepActiveTimer = timerMS;
 }
+
+void Creature::SetObjectScale(float scale)
+{
+    Unit::SetObjectScale(scale);
+
+    if (CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelInfo(GetDisplayId()))
+    {
+        SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, (IsPet() ? 1.0f : minfo->bounding_radius) * scale);
+        SetFloatValue(UNIT_FIELD_COMBATREACH, (IsPet() ? DEFAULT_COMBAT_REACH : minfo->combat_reach) * scale);
+    }
+}
+
+void Creature::SetDisplayId(uint32 modelId)
+{
+    Unit::SetDisplayId(modelId);
+
+    if (CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelInfo(modelId))
+    {
+        SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, (IsPet() ? 1.0f : minfo->bounding_radius) * GetObjectScale());
+        SetFloatValue(UNIT_FIELD_COMBATREACH, (IsPet() ? DEFAULT_COMBAT_REACH : minfo->combat_reach) * GetObjectScale());
+    }
+
+    if (Pet *pet = this->ToPet())
+    {
+        if (pet->isControlled())
+        {
+            Unit *owner = GetOwner();
+            if (owner && (owner->GetTypeId() == TYPEID_PLAYER) && (owner->ToPlayer())->GetGroup())
+                (owner->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_PET_MODEL_ID);
+        }
+    }
+
+}

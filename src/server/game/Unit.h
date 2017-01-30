@@ -1822,7 +1822,7 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateInterruptMask();
 
         uint32 GetDisplayId() const { return GetUInt32Value(UNIT_FIELD_DISPLAYID); }
-        void SetDisplayId(uint32 modelId);
+        virtual void SetDisplayId(uint32 modelId);
         uint32 GetNativeDisplayId() const { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
@@ -2007,7 +2007,7 @@ class TC_GAME_API Unit : public WorldObject
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         
-        Pet* ToPet(){ if(IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; } 
+        Pet* ToPet() { if(IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; } 
         Pet const* ToPet() const { if (IsPet()) return reinterpret_cast<Pet const*>(this); else return nullptr; }
 
         Totem* ToTotem(){ if(IsTotem()) return reinterpret_cast<Totem*>(this); else return nullptr; } 

@@ -487,6 +487,9 @@ class TC_GAME_API Creature : public Unit
         void AddToWorld() override;
         void RemoveFromWorld() override;
         
+        virtual void SetObjectScale(float scale) override;
+        virtual void SetDisplayId(uint32 modelId) override;
+
         void DisappearAndDie();
 
         bool Create (uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data = nullptr);
@@ -495,7 +498,7 @@ class TC_GAME_API Creature : public Unit
         //reapply creature addon data to creature
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
-        void LoadEquipment(uint32 equip_entry, bool force=false);
+        void LoadEquipment(uint32 equip_entry, bool force = false);
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
         void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
         //Get ItemSubclassWeapon based on UNIT_VIRTUAL_ITEM_INFO
