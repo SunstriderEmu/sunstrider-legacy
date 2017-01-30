@@ -202,7 +202,7 @@ void npc_escortAI::MovementInform(uint32 type, uint32 id)
             WaitTimer = 1;
             RemoveEscortState(STATE_ESCORT_RETURNING);
         }
-        else
+        else if (CurrentWP != WaypointList.end())
         {
             //Make sure that we are still on the right waypoint
             if (CurrentWP->id != id)
