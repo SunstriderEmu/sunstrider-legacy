@@ -2847,7 +2847,30 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
     return script;
 }
 
-void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type , SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
+bool SmartScript::IsTargetAllowedByTargetFlags(WorldObject const* target, SMARTAI_TARGETS_FLAGS flags, WorldObject const* caster, SMARTAI_TARGETS type)
+{
+    if (Creature const* c = target->ToCreature())
+    {
+        if (((flags & SMART_TARGET_FLAG_IN_COMBAT_ONLY)
+            && (!c->IsInCombat()))
+            || ((flags & SMART_TARGET_FLAG_OUT_OF_COMBAT_ONLY)
+                && (c->IsInCombat()))
+            || ((flags & SMART_TARGET_FLAG_CAN_TARGET_DEAD) == 0
+                && (c->IsDead())
+                && type != SMART_TARGET_SELF //still allow self cast
+                )
+            //this next one should be moved outside of this condition if/when WorldObject get a GetFaction function
+            || ((flags & SMART_TARGET_FLAG_SAME_FACTION)
+                && (c->GetFaction() != me->GetFaction()))
+            )
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster)
 {
     if (flags & SMART_TARGET_FLAG_UNIQUE_TARGET)
         if (!list.empty())
@@ -2856,29 +2879,12 @@ void SmartScript::FilterByTargetFlags(SMARTAI_TARGETS type , SMARTAI_TARGETS_FLA
             return;
         }
 
-    if (!caster)
-        return;
-
     for (auto itr = list.begin(); itr != list.end(); )
     {
-        if (Creature const* c = (*itr)->ToCreature())
+        if (!IsTargetAllowedByTargetFlags(*itr, flags, caster, type))
         {
-            if(    ( (flags & SMART_TARGET_FLAG_IN_COMBAT_ONLY)
-                     && (!c->IsInCombat()) ) 
-               ||  ( (flags & SMART_TARGET_FLAG_OUT_OF_COMBAT_ONLY)
-                     && (c->IsInCombat()) )
-               ||  ( (flags & SMART_TARGET_FLAG_CAN_TARGET_DEAD) == 0
-                     && (c->IsDead()) 
-                     && type != SMART_TARGET_SELF //still allow self cast
-                   )
-               //this next one should be moved outside of this if if/when WorldObject get a GetFaction function
-               ||  ( (flags & SMART_TARGET_FLAG_SAME_FACTION)
-                     && (c->GetFaction() != me->GetFaction()) )
-              )
-            {
-                itr = list.erase(itr);
-                continue;
-            }
+            itr = list.erase(itr);
+            continue;
         }
         itr++;
     }

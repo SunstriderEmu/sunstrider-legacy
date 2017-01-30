@@ -33,8 +33,13 @@ class TC_GAME_API SmartScript
         void ProcessAction(SmartScriptHolder& e, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
         void ProcessTimedAction(SmartScriptHolder& e, uint32 const& min, uint32 const& max, Unit* unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObject* gob = nullptr);
         /* Strips the list depending on the given target flags and the target type
+        To improve: 
+            Make it so that target flags are directly filtering target during search instead of altering the resulting list. 
+            In the current form, target as "get the closest creature" do not interact well with target flags because they return only one target
+            which can then be filtered out by target flags. Instead, we'd prefer returning the closest creature that match target flags.
         */
         void FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster);
+        bool IsTargetAllowedByTargetFlags(WorldObject const* target, SMARTAI_TARGETS_FLAGS flags, WorldObject const* caster, SMARTAI_TARGETS type);
         //May return null, must be deleted after usage
         ObjectList* GetTargets(SmartScriptHolder const& e, Unit* invoker = nullptr);
         //returns a NEW object list, the called must delete if after usage
