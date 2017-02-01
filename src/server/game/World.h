@@ -90,8 +90,8 @@ enum WorldTimers
     WUPDATE_ANNOUNCES      = 7,
     WUPDATE_ARENASEASONLOG = 8,
     WUPDATE_CHECK_FILECHANGES = 9,
-
-    WUPDATE_COUNT          = 10,
+    WUPDATE_WHO_LIST      = 10,
+    WUPDATE_COUNT         = 11,
 };
 
 /// Configuration elements

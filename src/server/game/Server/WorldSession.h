@@ -238,13 +238,13 @@ class TC_GAME_API WorldSession
         void InvalidateRBACData(); // Used to force LoadPermissions at next HasPermission check
         */
 
-        uint32 GetSecurity() const { return _security; }
+        AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
         Player* GetPlayer() const { return _player; }
         std::string const& GetPlayerName() const;
         std::string GetPlayerInfo() const;
 
-        void SetSecurity(uint32 security) { _security = security; }
+        void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() const { return m_Address; }
         void SetPlayer(Player *plr) { _player = plr; }
         uint8 Expansion() const { return m_expansion; }
@@ -947,7 +947,7 @@ class TC_GAME_API WorldSession
         std::shared_ptr<WorldSocket> m_Socket;
         std::string m_Address;
 
-        uint32 _security;
+        AccountTypes _security;
         uint32 _accountId;
         std::string _accountName;
         uint8 m_expansion;

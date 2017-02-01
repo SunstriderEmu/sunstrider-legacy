@@ -52,6 +52,7 @@
 #include "WaypointManager.h"
 #include "WaypointMovementGenerator.h"
 #include "Weather.h"
+#include "WhoListStorage.h"
 #include "World.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
@@ -1639,6 +1640,8 @@ void World::SetInitialWorldSettings()
 
     m_timers[WUPDATE_CHECK_FILECHANGES].SetInterval(500);
 
+    m_timers[WUPDATE_WHO_LIST].SetInterval(5 * IN_MILLISECONDS); // update who list cache every 5 seconds
+
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
@@ -1855,6 +1858,13 @@ void World::Update(time_t diff)
         if(m_timer.GetCurrent()>=0)
             m_timer.Update(diff);
     else m_timer.SetCurrent(0);
+
+    ///- Update Who List Storage
+    if (m_timers[WUPDATE_WHO_LIST].Passed())
+    {
+        m_timers[WUPDATE_WHO_LIST].Reset();
+        sWhoListStorageMgr->Update();
+    }
 
     ///- Update the game time and check for shutdown time
     _UpdateGameTime();
