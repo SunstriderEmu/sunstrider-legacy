@@ -60,7 +60,7 @@ void SmartWaypointMgr::LoadFromDB()
         }
 
         if (last_id != id)
-            TC_LOG_ERROR("FIXME","SmartWaypointMgr::LoadFromDB: Path entry %u, unexpected point id %u, expected %u.", entry, id, last_id);
+            TC_LOG_ERROR("sql.sql","SmartWaypointMgr::LoadFromDB: Path entry %u, unexpected point id %u, expected %u.", entry, id, last_id);
 
         last_id++;
         (*waypoint_map[entry])[id] = new WayPoint(id, x, y, z);

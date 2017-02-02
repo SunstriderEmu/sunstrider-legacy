@@ -165,6 +165,7 @@ void MotionMaster::DelayedClean()
 //delete top movement generator if any, and re init top
 void MotionMaster::DirectExpire(bool reset, bool premature)
 {
+    int oldTop = _top;
     if (size() > 1)
     {
         MovementGenerator *curr = top();
@@ -181,7 +182,7 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
         Initialize();
     else if (needInitTop())
         InitTop();
-    else if (reset)
+    else if (reset && _top < oldTop) //kelno: There is one case when whe shouln't reset: if a new movement generator was created (in scripts) during the delete, it was just initialized and we don't want to reset it. We can detect that's the case if _top has not descreased. Any case this may be wrong?
         top()->Reset(_owner);
 }
 
