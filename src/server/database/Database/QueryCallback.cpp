@@ -4,7 +4,7 @@
 template<typename T, typename... Args>
 inline void Construct(T& t, Args&&... args)
 {
-    new (&t) T();
+    new (&t) T(std::forward<Args>(args)...);
 }
 
 template<typename T>
