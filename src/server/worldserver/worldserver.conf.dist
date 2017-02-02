@@ -2107,12 +2107,16 @@ PacketLogFile = ""
 #        Disable all armor reductions
 #        Default: 0
 #
+#    Debug.DisableTransports
+#        Disable continents transports
+#        Default: 0
 
 Debug.DisableCreaturesLoading = 0
 Debug.LogLastPackets = 0
 Debug.LogAllPackets = 0
 Debug.DisableMainHand = 0
 Debug.DisableArmor = 0
+Debug.DisableTransports = 0
 
 ###################################################################################################
 # PACKET SPOOF PROTECTION SETTINGS

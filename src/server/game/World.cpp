@@ -1182,7 +1182,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEBUG_LOG_LAST_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogLastPackets", 0);
     m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
-    
+    m_configs[CONFIG_DEBUG_DISABLE_TRANSPORTS] = sConfigMgr->GetBoolDefault(" Debug.DisableTransports", 0);
+   
+
     if (int32 clientCacheId = sConfigMgr->GetIntDefault("ClientCacheVersion", 0))
     {
         // overwrite DB/old value
@@ -1670,7 +1672,8 @@ void World::SetInitialWorldSettings()
     sOutdoorPvPMgr->InitOutdoorPvP();
 
     TC_LOG_INFO("server.loading", "Loading Transports..." );
-    sTransportMgr->SpawnContinentTransports();
+    if (!getConfig(CONFIG_DEBUG_DISABLE_TRANSPORTS))
+        sTransportMgr->SpawnContinentTransports();
 
     TC_LOG_INFO("server.loading","Deleting expired bans..." );
     LoginDatabase.Execute("DELETE FROM ip_banned WHERE unbandate<=UNIX_TIMESTAMP() AND unbandate<>bandate");
