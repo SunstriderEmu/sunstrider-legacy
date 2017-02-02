@@ -86,7 +86,7 @@ void SmartAI::UpdateDespawn(const uint32 diff)
     } else mDespawnTime -= diff;
 }
 
-WayPoint* SmartAI::GetNextWayPoint()
+std::shared_ptr<WayPoint> SmartAI::GetNextWayPoint()
 {
     if (!mWayPoints || mWayPoints->empty())
         return nullptr;
@@ -126,7 +126,7 @@ void SmartAI::StartPath(bool run, uint32 path, bool repeat, Unit* /*invoker*/)
 
     SetRun(run);
 
-    if (WayPoint* wp = GetNextWayPoint())
+    if (auto wp = GetNextWayPoint())
     {
         mLastOOCPos = me->GetPosition();
         MovePointInPath(run, wp->id, wp->x, wp->y, wp->z);
@@ -329,7 +329,7 @@ void SmartAI::UpdatePath(const uint32 diff)
         {
             EndPath();
         }
-        else if (WayPoint* wp = GetNextWayPoint())
+        else if (auto wp = GetNextWayPoint())
         {
             SetRun(mRun);
             MovePointInPath(mRun, wp->id, wp->x, wp->y, wp->z);

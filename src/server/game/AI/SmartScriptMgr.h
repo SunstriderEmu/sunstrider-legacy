@@ -1508,7 +1508,7 @@ struct SmartScriptHolder
     bool enableTimed;
 };
 
-typedef std::unordered_map<uint32, WayPoint*> WPPath;
+typedef std::unordered_map<uint32, std::shared_ptr<WayPoint>> WPPath;
 
 typedef std::list<WorldObject*> ObjectList;
 class ObjectGuidList
@@ -1577,7 +1577,7 @@ class TC_GAME_API SmartWaypointMgr
 
         void LoadFromDB();
 
-        WPPath* GetPath(uint32 id)
+        std::shared_ptr<WPPath> GetPath(uint32 id)
         {
             if (waypoint_map.find(id) != waypoint_map.end())
                 return waypoint_map[id];
@@ -1585,7 +1585,7 @@ class TC_GAME_API SmartWaypointMgr
         }
 
     private:
-        std::unordered_map<uint32, WPPath*> waypoint_map;
+        std::unordered_map<uint32, std::shared_ptr<WPPath>> waypoint_map;
 };
 
 // all events for a single entry

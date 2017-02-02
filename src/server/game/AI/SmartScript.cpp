@@ -2499,7 +2499,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             waypoints[4] = e.action.closestWaypointFromList.wp5;
             waypoints[5] = e.action.closestWaypointFromList.wp6;
             float distanceToClosest = std::numeric_limits<float>::max();
-            WayPoint* closestWp = nullptr;
+            std::shared_ptr<WayPoint> closestWp = nullptr;
 
             ObjectList* targets = GetTargets(e, unit);
             if(!targets)
@@ -2516,7 +2516,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                             if (!waypoint)
                                 continue;
 
-                            WPPath* path = sSmartWaypointMgr->GetPath(waypoint);
+                            auto path = sSmartWaypointMgr->GetPath(waypoint);
 
                             if (!path || path->empty())
                                 continue;
@@ -2525,7 +2525,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
                             if (itrWp != path->end())
                             {
-                                if (WayPoint* wp = itrWp->second)
+                                if (auto wp = itrWp->second)
                                 {
                                     float distToThisPath = target->GetDistance(wp->x, wp->y, wp->z);
 

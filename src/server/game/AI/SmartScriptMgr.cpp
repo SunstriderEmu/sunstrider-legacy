@@ -18,14 +18,6 @@ void SmartWaypointMgr::LoadFromDB()
 {
     uint32 oldMSTime = GetMSTime();
 
-    for (auto & itr : waypoint_map)
-    {
-        for (auto pathItr = itr.second->begin(); pathItr != itr.second->end(); ++pathItr)
-            delete pathItr->second;
-
-        delete itr.second;
-    }
-
     waypoint_map.clear();
 
     QueryResult result = WorldDatabase.Query("SELECT entry, pointid, position_x, position_y, position_z FROM waypoints ORDER BY entry, pointid");
@@ -54,7 +46,7 @@ void SmartWaypointMgr::LoadFromDB()
 
         if (last_entry != entry)
         {
-            waypoint_map[entry] = new WPPath();
+            waypoint_map[entry] = std::make_shared<WPPath>();
             last_id = 1;
             count++;
         }
@@ -63,7 +55,7 @@ void SmartWaypointMgr::LoadFromDB()
             TC_LOG_ERROR("sql.sql","SmartWaypointMgr::LoadFromDB: Path entry %u, unexpected point id %u, expected %u.", entry, id, last_id);
 
         last_id++;
-        (*waypoint_map[entry])[id] = new WayPoint(id, x, y, z);
+        (*waypoint_map[entry])[id] = std::make_shared<WayPoint>(id, x, y, z);
 
         last_entry = entry;
         total++;
@@ -77,13 +69,6 @@ void SmartWaypointMgr::LoadFromDB()
 
 SmartWaypointMgr::~SmartWaypointMgr()
 {
-    for (auto & itr : waypoint_map)
-    {
-        for (auto pathItr = itr.second->begin(); pathItr != itr.second->end(); ++pathItr)
-            delete pathItr->second;
-
-        delete itr.second;
-    }
 }
 
 int32 debugentryOrGuid = 0;
@@ -965,7 +950,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             break;
         case SMART_ACTION_WP_START:
             {
-				WPPath const* path = sSmartWaypointMgr->GetPath(e.action.wpStart.pathID);
+				auto const path = sSmartWaypointMgr->GetPath(e.action.wpStart.pathID);
 				if (!path || path->empty())
                 {
                     SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Creature %d Event %u Action %u uses non-existent or empty WaypointPath id %u, skipped.", e.entryOrGuid, e.event_id, e.GetActionType(), e.action.wpStart.pathID);

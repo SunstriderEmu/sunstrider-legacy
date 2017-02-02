@@ -41,7 +41,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void EndPath(bool fail = false, bool died = false);
         void ResumePath();
         void MovePointInPath(bool run, uint32 id, float x, float y, float z, float o = 0.0f);
-        WayPoint* GetNextWayPoint();
+        std::shared_ptr<WayPoint> GetNextWayPoint();
         bool HasEscortState(uint32 uiEscortState) const { return (mEscortState & uiEscortState) != 0; }
         void AddEscortState(uint32 uiEscortState) { mEscortState |= uiEscortState; }
         void RemoveEscortState(uint32 uiEscortState) { mEscortState &= ~uiEscortState; }
@@ -197,14 +197,14 @@ class TC_GAME_API SmartAI : public CreatureAI
         void ReturnToLastOOCPos();
         void UpdatePath(const uint32 diff);
         SmartScript mScript;
-        WPPath* mWayPoints;
+        std::shared_ptr<WPPath> mWayPoints;
         uint32 mEscortState;
         uint32 mCurrentWPID;
         uint32 mLastWPIDReached;
         bool mOOCReached; //just reached last SMART_ESCORT_LAST_OOC_POINT
         bool mWPReached; //just reached any point
         uint32 mWPPauseTimer;
-        WayPoint* mLastWP;
+        std::shared_ptr<WayPoint> mLastWP;
         Position mLastOOCPos;//set on enter combat
         uint32 GetWPCount() const { return mWayPoints ? mWayPoints->size() : 0; }
         bool mCanRepeatPath;

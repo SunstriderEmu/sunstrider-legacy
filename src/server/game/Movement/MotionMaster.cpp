@@ -182,7 +182,7 @@ void MotionMaster::DirectExpire(bool reset, bool premature)
         Initialize();
     else if (needInitTop())
         InitTop();
-    else if (reset && _top < oldTop) //kelno: There is one case when whe shouln't reset: if a new movement generator was created (in scripts) during the delete, it was just initialized and we don't want to reset it. We can detect that's the case if _top has not descreased. Any case this may be wrong?
+    else if (reset && _top < oldTop) //kelno: There is one case when whe shouln't reset: if a new movement generator was created (in scripts) during the delete, it was just initialized and we don't want to reset it. We can detect that's the case if _top has not decreased. Any case this may be wrong?
         top()->Reset(_owner);
 }
 
