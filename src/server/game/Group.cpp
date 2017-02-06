@@ -704,20 +704,17 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
                 Player *member = itr->GetSource();
                 if(!member || !member->GetSession())
                     continue;
-                if ( i->AllowedForPlayer(member) )
+                if (member->IsAtGroupRewardDistance(object) && i->AllowedForPlayer(member) )
                 {
-                    if (member->IsAtGroupRewardDistance(object))
-                    {
-                        ++r->totalPlayersRolling;
+                    ++r->totalPlayersRolling;
                         
-                        if (member->GetPassOnGroupLoot()) {
-                            r->playerVote[member->GetGUID()] = PASS;
-                            r->totalPass++;
-                            // can't broadcast the pass now. need to wait until all rolling players are known.
-                        }
-                        else
-                            r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
+                    if (member->GetPassOnGroupLoot()) {
+                        r->playerVote[member->GetGUID()] = PASS;
+                        r->totalPass++;
+                        // can't broadcast the pass now. need to wait until all rolling players are known.
                     }
+                    else
+                        r->playerVote[member->GetGUID()] = NOT_EMITED_YET;
                 }
             }
 
@@ -773,20 +770,17 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
                 if(!playerToRoll || !playerToRoll->GetSession())
                     continue;
 
-                if (playerToRoll->CanUseItem(item) && i->AllowedForPlayer(playerToRoll) )
+                if (playerToRoll->CanUseItem(item) && i->AllowedForPlayer(playerToRoll) && playerToRoll->IsAtGroupRewardDistance(object))
                 {
-                    if (playerToRoll->IsAtGroupRewardDistance(object))
-                    {
-                        ++r->totalPlayersRolling;
+                    ++r->totalPlayersRolling;
                         
-                        if (playerToRoll->GetPassOnGroupLoot()) {
-                            r->playerVote[playerToRoll->GetGUID()] = PASS;
-                            r->totalPass++;
-                            // can't broadcast the pass now. need to wait until all rolling players are known.
-                        }
-                        else
-                            r->playerVote[playerToRoll->GetGUID()] = NOT_EMITED_YET;
+                    if (playerToRoll->GetPassOnGroupLoot()) {
+                        r->playerVote[playerToRoll->GetGUID()] = PASS;
+                        r->totalPass++;
+                        // can't broadcast the pass now. need to wait until all rolling players are known.
                     }
+                    else
+                        r->playerVote[playerToRoll->GetGUID()] = NOT_EMITED_YET;
                 }
             }
 

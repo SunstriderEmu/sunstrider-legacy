@@ -2006,6 +2006,12 @@ void Player::RemoveFromWorld()
         UnsummonAllTotems();
         RemoveMiniPet();
         RemoveGuardians();
+        ClearComboPoints();
+        ClearComboPointHolders();
+        uint64 lootGuid = GetLootGUID();
+        if (lootGuid != 0)
+            m_session->DoLootRelease(lootGuid);
+        sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
     }
 
     for(int i = PLAYER_SLOT_START; i < PLAYER_SLOT_END; i++)

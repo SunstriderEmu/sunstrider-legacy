@@ -247,7 +247,7 @@ class TC_GAME_API SmartScript
 
         //TIMED_ACTIONLIST (script type 9 aka script9)
         void SetScript9(SmartScriptHolder& e, uint32 entry);
-        Unit* GetLastInvoker();
+        Unit* GetLastInvoker(Unit* invoker = nullptr);
         uint64 mLastInvoker;
         uint32 mLastProcessedActionId;
         typedef std::unordered_map<uint32, uint32> CounterMap;

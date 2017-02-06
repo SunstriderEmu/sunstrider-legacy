@@ -501,10 +501,6 @@ void WorldSession::DoLootRelease( uint64 lguid )
 
 void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint8 slotid;
     uint64 lootguid, target_playerguid;
 
@@ -516,7 +512,8 @@ void WorldSession::HandleLootMasterGiveOpcode( WorldPacket & recvData )
         return;
     }
 
-    Player *target = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(target_playerguid, 0, HIGHGUID_PLAYER));
+    // player may be on other map
+    Player* target = ObjectAccessor::GetPlayer(*_player, target_playerguid);
     if(!target)
     {
         _player->SendLootError(lootguid, LOOT_ERROR_PLAYER_NOT_FOUND);

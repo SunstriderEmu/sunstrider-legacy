@@ -11013,14 +11013,11 @@ Unit* Creature::SelectVictim(bool evade)
         }
     }
 
-    if(target)
+    if(target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
     {
-        if(CanAttack(target) == CAN_ATTACK_RESULT_OK)
-        {
-            //TC_LOG_INFO("%s SelectVictim3", GetName());
-            SetInFront(target); 
-            return target;
-        }
+        //TC_LOG_INFO("%s SelectVictim3", GetName());
+        SetInFront(target); 
+        return target;
     }
     
     // Case where mob is being kited.

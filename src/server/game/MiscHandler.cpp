@@ -1010,7 +1010,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     _player->SetSelection(guid);
 
-    Player *plr = sObjectMgr->GetPlayer(guid);
+    Player *plr = ObjectAccessor::GetPlayer(*_player, guid);
     if(!plr)                                                // wrong player
         return;
     
@@ -1094,11 +1094,11 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     uint64 guid;
     recvData >> guid;
 
-    Player *player = sObjectMgr->GetPlayer(guid);
+    Player *player = ObjectAccessor::GetPlayer(*_player, guid);
 
     if(!player)
     {
-        TC_LOG_ERROR("network","InspectHonorStats: WTF, player not found...");
+        TC_LOG_ERROR("network","InspectHonorStats: player not found...");
         return;
     }
 
@@ -1118,7 +1118,7 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     // Received opcode CMSG_WORLD_TELEPORT
     // Time is ***, map=469, x=452.000000, y=6454.000000, z=2536.000000, orient=3.141593
 
-    TC_LOG_DEBUG("network","Received opcode CMSG_WORLD_TELEPORT");
+    //TC_LOG_DEBUG("network","Received opcode CMSG_WORLD_TELEPORT");
 
     if (GetPlayer()->IsInFlight())
     {

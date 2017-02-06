@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 #include "Log.h"
@@ -32,6 +12,7 @@
 #include "CreatureAI.h"
 #include "Unit.h"
 #include "Util.h"
+#include "Creature.h"
 
 #define SPELL_WATER_ELEMENTAL_WATERBOLT 31707
 #define SPELL_PET_RECENTLY_DISMISSED 47531
@@ -608,8 +589,8 @@ void Pet::Update(uint32 diff)
             //regenerate Focus
             if(m_regenTimer <= diff)
             {
-                RegenerateFocus();
-                m_regenTimer = 4000;
+                Regenerate(POWER_FOCUS);
+                m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
             }
             else
                 m_regenTimer -= diff;
@@ -640,24 +621,6 @@ void Pet::Update(uint32 diff)
             break;
     }
     Creature::Update(diff);
-}
-
-void Pet::RegenerateFocus()
-{
-    uint32 curValue = GetPower(POWER_FOCUS);
-    uint32 maxValue = GetMaxPower(POWER_FOCUS);
-
-    if (curValue >= maxValue)
-        return;
-
-    float addvalue = 24 * sWorld->GetRate(RATE_POWER_FOCUS);
-
-    AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
-    for(auto ModPowerRegenPCTAura : ModPowerRegenPCTAuras)
-        if (ModPowerRegenPCTAura->GetModifier()->m_miscvalue == POWER_FOCUS)
-            addvalue *= (ModPowerRegenPCTAura->GetModifierValue() + 100) / 100.0f;
-
-    ModifyPower(POWER_FOCUS, (int32)addvalue);
 }
 
 void Pet::LooseHappiness()

@@ -143,6 +143,7 @@ enum CreatureFlagsExtra
 };
 
 static const uint32 CREATURE_REGEN_INTERVAL = 2 * SECOND * IN_MILLISECONDS;
+static const uint32 PET_FOCUS_REGEN_INTERVAL = 4 * SECOND * IN_MILLISECONDS;
 
 enum WeaponSlot
 {
@@ -510,6 +511,8 @@ class TC_GAME_API Creature : public Unit
 
         void Update( uint32 time ) override;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
+        bool IsSpawnedOnTransport() const;
+
         uint32 GetEquipmentId() const { return m_equipmentId; }
 
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
@@ -680,7 +683,7 @@ class TC_GAME_API Creature : public Unit
 
         bool IsVisibleInGridForPlayer(Player const* pl) const override;
 
-        void RemoveCorpse(bool setSpawnTime = true);
+        void RemoveCorpse(bool setSpawnTime = true, bool destroyForNearbyPlayers = true);
         
         void DespawnOrUnsummon(uint32 msTimeToDespawn = 0);
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
@@ -846,8 +849,8 @@ class TC_GAME_API Creature : public Unit
         uint16 m_transportCheckTimer;
 
         ReactStates m_reactState;                           // for AI, not charmInfo
-        void RegenerateMana();
         void RegenerateHealth();
+        void Regenerate(Powers power);
         uint32 m_regenTimer;
         uint32 m_areaCombatTimer;
         uint32 m_relocateTimer;

@@ -387,7 +387,7 @@ bool SmartAI::IsEscortInvokerInRange()
                 {
                     Player* groupGuy = groupRef->GetSource();
 
-                    if (me->GetDistance(groupGuy) <= SMART_ESCORT_MAX_PLAYER_DIST)
+                    if (groupGuy->IsInMap(player) && me->GetDistance(groupGuy) <= SMART_ESCORT_MAX_PLAYER_DIST)
                         return true;
                 }
             }

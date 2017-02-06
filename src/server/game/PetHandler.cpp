@@ -374,9 +374,7 @@ bool WorldSession::CheckStableMaster(uint64 guid)
 
 void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 {
-    
-
-    TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
+ //   TC_LOG_DEBUG("network", "HandlePetSetAction. CMSG_PET_SET_ACTION\n" );
 
     uint64 petguid;
     uint32 position;
@@ -443,11 +441,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
 
 void WorldSession::HandlePetRename( WorldPacket & recvData )
 {
-    
-    
-    
-
-    TC_LOG_DEBUG("network", "HandlePetRename. CMSG_PET_RENAME\n" );
+   // TC_LOG_DEBUG("network", "HandlePetRename. CMSG_PET_RENAME\n" );
 
     uint64 petguid;
     uint8 isdeclined;
@@ -529,10 +523,6 @@ void WorldSession::HandlePetRename( WorldPacket & recvData )
 
 void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
     recvData >> guid;                                      //pet guid
     TC_LOG_DEBUG("network", "HandlePetAbandon. CMSG_PET_ABANDON pet guid is %u", GUID_LOPART(guid) );
@@ -559,10 +549,6 @@ void WorldSession::HandlePetAbandon( WorldPacket & recvData )
 
 void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     TC_LOG_DEBUG("network","CMSG_PET_UNLEARN");
     uint64 guid;
     recvPacket >> guid;
@@ -620,11 +606,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 {
-    
-    
-    
-
-    TC_LOG_DEBUG("network","CMSG_PET_SPELL_AUTOCAST");
+    //TC_LOG_DEBUG("network","CMSG_PET_SPELL_AUTOCAST");
     uint64 guid;
     uint16 spellid;
     uint16 spellid2;                                        //maybe second spell, automatically toggled off when first toggled on?
@@ -634,10 +616,10 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
     if(!_player->GetPet() && !_player->GetCharm())
         return;
 
-    if(ObjectAccessor::FindPlayer(guid))
+    if(IS_PLAYER_GUID(guid))
         return;
 
-    Creature* pet=ObjectAccessor::GetCreatureOrPetOrVehicle(*_player,guid);
+    Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*_player, guid);
 
     if(!pet || (pet != _player->GetPet() && pet != _player->GetCharm()))
     {
@@ -678,9 +660,7 @@ void WorldSession::HandlePetSpellAutocastOpcode( WorldPacket& recvPacket )
 
 void WorldSession::HandlePetCastSpellOpcode( WorldPacket& recvPacket )
 {
-    TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
-
-    
+    //TC_LOG_DEBUG("network","WORLD: CMSG_PET_CAST_SPELL");
     uint64 guid;
     uint32 spellid;
 

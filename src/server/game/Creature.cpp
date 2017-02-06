@@ -248,10 +248,7 @@ void Creature::RemoveFromWorld()
 
 void Creature::DisappearAndDie()
 {
-    DestroyForNearbyPlayers();
-    if(IsAlive())
-        SetDeathState(JUST_DIED);
-    RemoveCorpse(false);
+    ForcedDespawn(0);
 }
 
 void Creature::SearchFormation()
@@ -270,19 +267,21 @@ void Creature::SearchFormation()
 
 }
 
-void Creature::RemoveCorpse(bool setSpawnTime)
+void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 {
-    if( GetDeathState()!=CORPSE )
+    if( GetDeathState() != CORPSE )
         return;
 
     m_corpseRemoveTime = time(nullptr);
     SetDeathState(DEAD);
     RemoveAllAuras();
-    DestroyForNearbyPlayers(); // old UpdateObjectVisibility()
     loot.clear();
 
     if (IsAIEnabled)
         AI()->CorpseRemoved(m_respawnDelay);
+
+    if (destroyForNearbyPlayers)
+        DestroyForNearbyPlayers();
 
     // Should get removed later, just keep "compatibility" with scripts
     if(setSpawnTime)
@@ -294,6 +293,20 @@ void Creature::RemoveCorpse(bool setSpawnTime)
 
     float x,y,z,o;
     GetRespawnPosition(x, y, z, &o);
+
+    // We were spawned on transport, calculate real position
+    if (IsSpawnedOnTransport())
+    {
+        Position& pos = m_movementInfo.transport.pos;
+        pos.m_positionX = x;
+        pos.m_positionY = y;
+        pos.m_positionZ = z;
+        pos.SetOrientation(o);
+
+        if (Transport* transport = GetTransport())
+            transport->CalculatePassengerPosition(x, y, z, &o);
+    }
+
     SetHomePosition(x,y,z,o);
     GetMap()->CreatureRelocation(this,x,y,z,o);
 }
@@ -421,14 +434,19 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     else
         SetUInt32Value(UNIT_NPC_FLAGS,GetCreatureTemplate()->npcflag);
 
+
     SetAttackTime(BASE_ATTACK,  cInfo->baseattacktime);
     SetAttackTime(OFF_ATTACK,   cInfo->baseattacktime);
     SetAttackTime(RANGED_ATTACK,cInfo->rangeattacktime);
 
-    SetUInt32Value(UNIT_FIELD_FLAGS,cInfo->unit_flags);
-    SetUInt32Value(UNIT_DYNAMIC_FLAGS,cInfo->dynamicflags);
+    uint32 unit_flags = cInfo->unit_flags;
+    // if unit is in combat, keep this flag
+    unit_flags &= ~UNIT_FLAG_IN_COMBAT;
+    if (IsInCombat())
+        unit_flags |= UNIT_FLAG_IN_COMBAT;
 
-    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IN_COMBAT);
+    SetUInt32Value(UNIT_FIELD_FLAGS, unit_flags);
+    SetUInt32Value(UNIT_DYNAMIC_FLAGS,cInfo->dynamicflags);
 
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
@@ -676,7 +694,7 @@ void Creature::Update(uint32 diff)
                 else if(IsPolymorphed() || IsEvadingAttacks())
                     RegenerateHealth();
 
-                RegenerateMana();
+                Regenerate(POWER_MANA);
 
                 m_regenTimer = CREATURE_REGEN_INTERVAL;
             }
@@ -726,31 +744,67 @@ void Creature::Update(uint32 diff)
     }
 }
 
-void Creature::RegenerateMana()
+void Creature::Regenerate(Powers power)
 {
-    uint32 curValue = GetPower(POWER_MANA);
-    uint32 maxValue = GetMaxPower(POWER_MANA);
+    uint32 curValue = GetPower(power);
+    uint32 maxValue = GetMaxPower(power);
+
+#ifdef LICH_KING
+    if (!HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER))
+        return;
+#endif
 
     if (curValue >= maxValue)
         return;
 
-    uint32 addvalue = 0;
+    float addvalue = 0.0f;
 
-    // Combat and any controlled creature
-    if (IsInCombat() || GetCharmerOrOwnerGUID())
+    switch (power)
     {
-        if(!IsUnderLastManaUseEffect())
+        case POWER_FOCUS:
         {
-            float ManaIncreaseRate = sWorld->GetRate(RATE_POWER_MANA);
-            float Spirit = GetStat(STAT_SPIRIT);
+            addvalue = 24 * sWorld->GetRate(RATE_POWER_FOCUS);
 
-            addvalue = uint32((Spirit/5.0f + 17.0f) * ManaIncreaseRate);
+            AuraList const& ModPowerRegenPCTAuras = GetAurasByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
+            for (auto ModPowerRegenPCTAura : ModPowerRegenPCTAuras)
+                if (ModPowerRegenPCTAura->GetModifier()->m_miscvalue == POWER_FOCUS)
+                    addvalue *= (ModPowerRegenPCTAura->GetModifierValue() + 100) / 100.0f;
+            break;
         }
-    }
-    else
-        addvalue = maxValue/3;
+        case POWER_ENERGY:
+        {
+            // For deathknight's ghoul.
+            addvalue = 20;
+            break;
+        }
+        case POWER_MANA:
+        {
+            // Combat and any controlled creature
+            if (IsInCombat() || GetCharmerOrOwnerGUID())
+            {
+                if (!IsUnderLastManaUseEffect())
+                {
+                    float ManaIncreaseRate = sWorld->GetRate(RATE_POWER_MANA);
+                    float Spirit = GetStat(STAT_SPIRIT);
 
-    ModifyPower(POWER_MANA, addvalue);
+                    addvalue = uint32((Spirit / 5.0f + 17.0f) * ManaIncreaseRate);
+                }
+            }
+            else
+                addvalue = maxValue / 3;
+
+            break;
+        }
+        default:
+            return;
+    }
+
+    // Apply modifiers (if any).
+    addvalue *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, power);
+
+    addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (IsHunterPet() ? PET_FOCUS_REGEN_INTERVAL : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
+
+    ModifyPower(power, addvalue);
 }
 
 void Creature::RegenerateHealth()
@@ -766,8 +820,8 @@ void Creature::RegenerateHealth()
 
     uint32 addvalue = 0;
 
-    // Not only pet, but any controlled creature
-    if(GetCharmerOrOwnerGUID())
+    // Not only pet, but any controlled creature (and not polymorphed)
+    if(GetCharmerOrOwnerGUID() && !IsPolymorphed())
     {
         float HealthIncreaseRate = sWorld->GetRate(RATE_HEALTH);
         float Spirit = GetStat(STAT_SPIRIT);
@@ -1045,7 +1099,7 @@ void Creature::SaveToDB()
     CreatureData const *data = sObjectMgr->GetCreatureData(m_DBTableGuid);
     if(!data)
     {
-        TC_LOG_ERROR("FIXME","Creature::SaveToDB failed, cannot get creature data!");
+        TC_LOG_ERROR("entities.unit","Creature::SaveToDB failed, cannot get creature data!");
         return;
     }
 
@@ -1461,6 +1515,9 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
 //Trinity CanAttackStart // Sunwell CanCreatureAttack
 CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false */) const
 {
+    if (!who->IsInMap(this))
+        return CAN_ATTACK_RESULT_OTHER_MAP;
+
     if(IsInEvadeMode())
         return CAN_ATTACK_RESULT_SELF_EVADE;
 
@@ -1611,7 +1668,7 @@ void Creature::Respawn(bool force /* = false */)
             SetDeathState(CORPSE);
     }
 
-    RemoveCorpse(false);
+    RemoveCorpse(false, false);
 
     if(!IsInWorld())
         AddToWorld();
@@ -1681,10 +1738,13 @@ void Creature::ForcedDespawn(uint32 timeMSToDespawn)
         return;
     }
 
+    // do it before killing creature
+    DestroyForNearbyPlayers();
+
     if (IsAlive())
         SetDeathState(JUST_DIED);
 
-    RemoveCorpse(false);
+    RemoveCorpse(false, false);
 }
 
 bool Creature::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
@@ -2047,6 +2107,14 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /
     if( !IsAlive() )
         return false;
 
+    // we cannot assist in evade mode
+    if (IsInEvadeMode())
+        return false;
+
+    // or if enemy is in evade mode
+    if (enemy->GetTypeId() == TYPEID_UNIT && enemy->ToCreature()->IsInEvadeMode())
+        return false;
+
     // skip fighting creature
     if( IsInCombat() )
         return false;
@@ -2063,7 +2131,7 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /
     if( !IsHostileTo(enemy) )
         return false;
 
-    // don't slay innocent critters
+    // don't assist to slay innocent critters
     if( enemy->GetTypeId() == CREATURE_TYPE_CRITTER )
         return false;
 
@@ -2247,10 +2315,17 @@ time_t Creature::GetRespawnTimeEx() const
         return now;
 }
 
+bool Creature::IsSpawnedOnTransport() const 
+{
+    CreatureData const *data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    return data && data->mapid != GetMapId();
+}
+
 void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, float* dist ) const
 {
     if (m_DBTableGuid)
     {
+        // for npcs on transport, this will return transport offset
         if (CreatureData const* data = sObjectMgr->GetCreatureData(GetDBTableGUIDLow()))
         {
             x = data->posX;
@@ -2265,11 +2340,12 @@ void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, flo
         }
     }
 
-    x = GetPositionX();
-    y = GetPositionY();
-    z = GetPositionZ();
+    Position homePos = GetHomePosition();
+    x = homePos.GetPositionX();
+    y = homePos.GetPositionY();
+    z = homePos.GetPositionZ();
     if(ori)
-        *ori = GetOrientation();
+        *ori = homePos.GetOrientation();
     if(dist)
         *dist = 0;
 }

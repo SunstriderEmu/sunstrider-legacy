@@ -524,7 +524,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
         }
         case SMART_ACTION_INVOKER_CAST:
         {
-            Unit* tempLastInvoker = GetLastInvoker();
+            Unit* tempLastInvoker = GetLastInvoker(unit);
             if (!tempLastInvoker)
                 break;
 
@@ -797,7 +797,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             // Special handling for vehicles
             if (Vehicle* vehicle = unit->GetVehicleKit())
                 for (SeatMap::iterator it = vehicle->Seats.begin(); it != vehicle->Seats.end(); ++it)
-                    if (Player* player = ObjectAccessor::FindPlayer(it->second.Passenger.Guid))
+                    if (Player* player = ObjectAccessor::GetPlayer(*(*itr), it->second.Passenger.Guid))
                         player->GroupEventHappens(e.action.quest.quest, GetBaseObject());
             */
             break;
@@ -2935,7 +2935,8 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                     {
                         for (GroupReference* groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                             if (Player* member = groupRef->GetSource())
-                                l->push_back(member);
+                                if (member->IsInMap(player))
+                                    l->push_back(member);
                     }
                     // We still add the player to the list if there is no group. If we do
                     // this even if there is a group (thus the else-check), it will add the
@@ -4204,7 +4205,14 @@ void SmartScript::SetScript9(SmartScriptHolder& e, uint32 entry)
     }
 }
 
-Unit* SmartScript::GetLastInvoker()
+Unit* SmartScript::GetLastInvoker(Unit* invoker)
 {
-    return ObjectAccessor::FindUnit(mLastInvoker);
+    // Look for invoker only on map of base object... Prevents multithreaded crashes
+    if (WorldObject* baseObject = GetBaseObject())
+        return ObjectAccessor::GetUnit(*baseObject, mLastInvoker);
+    // used for area triggers invoker cast
+    else if (invoker)
+        return ObjectAccessor::GetUnit(*invoker, mLastInvoker);
+
+    return nullptr;
 }
