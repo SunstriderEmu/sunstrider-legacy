@@ -5,6 +5,7 @@
 #include "AuctionHouseMgr.h"
 #include "BattleGroundMgr.h"
 #include "CellImpl.h"
+#include "CharacterCache.h"
 #include "Chat.h"
 #include "Common.h"
 #include "ConditionMgr.h"
@@ -1333,7 +1334,7 @@ void World::SetInitialWorldSettings()
 
     // sunwell: Global Storage, should be loaded asap
     TC_LOG_INFO("server.loading", "Load Global Player Data...");
-    sWorld->LoadCharacterInfoStore();
+    sCharacterCache->LoadCharacterCacheStorage();
 
     ///- Clean up and pack instances
     // Must be called before `creature_respawn`/`gameobject_respawn` tables
@@ -3101,7 +3102,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
 
     QueryResult resultAccounts = nullptr;                     //used for kicking
     
-    uint32 authorGUID = sObjectMgr->GetPlayerLowGUIDByName(safe_author);
+    uint32 authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
 
     ///- Update the database with ban information
     switch(mode)
@@ -3184,7 +3185,7 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
         if (mode == SANCTION_BAN_ACCOUNT)
             account = sAccountMgr->GetId (nameOrIP);
         else if (mode == SANCTION_BAN_CHARACTER)
-            account = sObjectMgr->GetPlayerAccountIdByPlayerName (nameOrIP);
+            account = sCharacterCache->GetCharacterAccountIdByName (nameOrIP);
 
         if (!account)
             return false;
@@ -3816,198 +3817,5 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
 }
 
 
-void World::LoadCharacterInfoStore()
-{
-    uint32 oldMSTime = GetMSTime();
-
-    _characterInfoStore.clear();
-    QueryResult result = CharacterDatabase.Query("SELECT guid, account, name, gender, race, class, level FROM characters WHERE deleteDate IS NULL");
-    if (!result)
-    {
-        TC_LOG_ERROR("server.loading",">>  Loaded 0 Players data!");
-        return;
-    }
-
-    uint32 count = 0;
-
-    // query to load number of mails by receiver
-    std::map<uint32, uint16> _mailCountMap;
-    QueryResult mailCountResult = CharacterDatabase.Query("SELECT receiver, COUNT(receiver) FROM mail GROUP BY receiver");
-    if (mailCountResult)
-    {
-        do
-        {
-            Field* fields = mailCountResult->Fetch();
-            _mailCountMap[fields[0].GetUInt32()] = uint16(fields[1].GetUInt64());
-        } while (mailCountResult->NextRow());
-    }
-
-    do
-    {
-        Field* fields = result->Fetch();
-        uint32 guidLow = fields[0].GetUInt32();
-
-        // count mails
-        uint16 mailCount = 0;
-        std::map<uint32, uint16>::const_iterator itr = _mailCountMap.find(guidLow);
-        if (itr != _mailCountMap.end())
-            mailCount = itr->second;
-
-        AddCharacterInfo(
-            guidLow,               /*guid*/
-            fields[1].GetUInt32(), /*accountId*/
-            fields[2].GetString(), /*name*/
-            fields[3].GetUInt8(),  /*gender*/
-            fields[4].GetUInt8(),  /*race*/
-            fields[5].GetUInt8(),  /*class*/
-            fields[6].GetUInt8(),  /*level*/
-            mailCount,             /*mail count*/
-            0                      /*guild id*/);
-
-        ++count;
-    } while (result->NextRow());
-
-    TC_LOG_INFO("server.loading", ">> Loaded %d Players data in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-}
-
-void World::AddCharacterInfo(uint32 guid, uint32 accountId, std::string const& name, uint8 gender, uint8 race, uint8 playerClass, uint8 level, uint16 mailCount, uint32 guildId)
-{
-    CharacterInfo data;
-
-    data.guidLow = guid;
-    data.accountId = accountId;
-    data.name = name;
-    data.level = level;
-    data.race = race;
-    data.playerClass = playerClass;
-    data.gender = gender;
-    data.mailCount = mailCount;
-    data.guildId = guildId;
-    data.groupId = 0;
-    data.arenaTeamId[0] = 0;
-    data.arenaTeamId[1] = 0;
-    data.arenaTeamId[2] = 0;
-
-    _characterInfoStore[guid] = data;
-    _characterGuidByNameStore[name] = guid;
-}
-
-void World::UpdateCharacterInfo(uint32 guid, uint8 mask, std::string const& name, uint8 gender, uint8 race, uint8 playerClass)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    if (mask & PLAYER_UPDATE_DATA_RACE)
-        itr->second.race = race;
-    if (mask & PLAYER_UPDATE_DATA_CLASS)
-        itr->second.playerClass = playerClass;
-    if (mask & PLAYER_UPDATE_DATA_GENDER)
-        itr->second.gender = gender;
-    if (mask & PLAYER_UPDATE_DATA_NAME)
-        itr->second.name = name;
-
-    WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
-    data << MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
-    SendGlobalMessage(&data);
-}
-
-void World::UpdateCharacterInfoLevel(uint32 const& guid, uint8 level)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    itr->second.level = level;
-}
-
-/*
-void World::UpdateCharacterMails(uint32 guid, int16 count, bool add)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    if (!add)
-    {
-        itr->second.mailCount = count;
-        return;
-    }
-
-    int16 icount = (int16)itr->second.mailCount;
-    if (count < 0 && abs(count) > icount)
-        count = -icount;
-    itr->second.mailCount = uint16(icount + count); // addition or subtraction
-}
-*/
-
-void World::UpdateCharacterGuildId(uint32 guid, uint32 guildId)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    itr->second.guildId = guildId;
-}
-
-/*
-void World::UpdateCharacterGroup(uint32 guid, uint32 groupId)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    itr->second.groupId = groupId;
-}
-*/
-
-void World::UpdateCharacterArenaTeamId(uint32 guid, uint8 slot, uint32 arenaTeamId)
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr == _characterInfoStore.end())
-        return;
-
-    itr->second.arenaTeamId[slot] = arenaTeamId;
-}
-
-void World::UpdateCharacterGuidByName(uint32 guidLow, std::string const& oldName, std::string const& newName)
-{
-    _characterGuidByNameStore.erase(oldName);
-    _characterGuidByNameStore[newName] = guidLow;
-}
-
-void World::DeleteCharacterInfo(uint32 guid, std::string const& name)
-{
-    if (guid)
-        _characterInfoStore.erase(guid);
-
-    if (!name.empty())
-        _characterGuidByNameStore.erase(name);
-}
-
-bool World::HasCharacterInfo(uint32 guid) const
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr != _characterInfoStore.end())
-        return true;
-    else
-        return false;
-}
-
-CharacterInfo const* World::GetCharacterInfo(uint32 guid) const
-{
-    auto itr = _characterInfoStore.find(guid);
-    if (itr != _characterInfoStore.end())
-        return &itr->second;
-    return nullptr;
-}
-
-uint32 World::GetCharacterGuidByName(std::string const& name) const
-{
-    auto itr = _characterGuidByNameStore.find(name);
-    if (itr != _characterGuidByNameStore.end())
-        return itr->second;
-    return 0;
-}
 
 Realm realm;

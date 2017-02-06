@@ -32,6 +32,7 @@
 #include "Pet.h"
 #include "SpellAuras.h"
 #include "Util.h"
+#include "CharacterCache.h"
 #include "Transport.h"
 #include "Weather.h"
 #include "BattleGround.h"
@@ -53,6 +54,7 @@
 #include "LogsDatabaseAccessor.h"
 #include "Mail.h"
 #include "Bag.h"
+#include "CharacterCache.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -3865,7 +3867,7 @@ TrainerSpellState Player::GetTrainerSpellState(TrainerSpell const* trainer_spell
 
 void Player::LeaveAllArenaTeams(uint64 guid)
 {
-    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(guid);
     if (!characterInfo)
         return;
 
@@ -3909,6 +3911,11 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
     uint32 charDelete_method = deleteFinally ? CHAR_DELETE_REMOVE : CHAR_DELETE_UNLINK;
 
     uint32 guid = GUID_LOPART(playerguid);
+
+    CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(playerguid);
+    std::string name;
+    if (characterInfo)
+        name = characterInfo->name;
 
     // convert corpse to bones if exist (to prevent exiting Corpse in World without DB entry)
     // bones will be deleted by corpse/bones deleting thread shortly
@@ -4000,7 +4007,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
                     trans->PAppend("DELETE FROM mail_items WHERE mail_id = '%u'", mail_id);
 
-                    uint32 pl_account = sObjectMgr->GetPlayerAccountIdByGUID(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
+                    uint32 pl_account = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 
                     WorldSession::SendReturnToSender(MAIL_NORMAL, pl_account, guid, sender, subject, itemTextId, &mi, money, mailTemplateId);
                 } while (resultMail->NextRow());
@@ -4064,6 +4071,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
 
     if(updateRealmChars) 
         sWorld->UpdateRealmCharCount(accountId);
+
+    sCharacterCache->DeleteCharacterCacheEntry(playerguid, name);
 }
 
 void Player::SetMovement(PlayerMovementType pType)
@@ -6799,7 +6808,7 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
 uint32 Player::GetLevelFromStorage(uint64 guid)
 {
     // Get data from global storage
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
+    if (CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(GUID_LOPART(guid)))
         return playerData->level;
 
     return 0;
@@ -22455,7 +22464,7 @@ void Player::UpdateArenaTitles()
     }
 
     //else, normal case :
-    CharacterInfo const* playerData = sWorld->GetCharacterInfo(GetGUIDLow());
+    CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(GetGUIDLow());
     if (!playerData)
         return;
 
@@ -23101,15 +23110,8 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
 
 uint32 Player::GetGuildIdFromCharacterInfo(uint32 guid)
 {
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guid))
+    if (CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(guid))
         return playerData->guildId;
-    return 0;
-}
-
-uint32 Player::GetGroupIdFromStorage(uint32 guid)
-{
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guid))
-        return playerData->groupId;
     return 0;
 }
 
@@ -23120,7 +23122,7 @@ void Player::SetInArenaTeam(uint32 ArenaTeamId, uint8 slot)
 
 uint32 Player::GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 type)
 {
-    CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(guid);
+    CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(guid);
     if (!characterInfo)
         return 0;
 
@@ -23130,7 +23132,7 @@ uint32 Player::GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 type)
 void Player::SetInGuild(uint32 guildId)
 { 
     SetUInt32Value(PLAYER_GUILDID, guildId);
-    sWorld->UpdateCharacterGuildId(GetGUID(), guildId);
+    sCharacterCache->UpdateCharacterGuildId(GetGUID(), guildId);
 }
 
 void Player::SetRank(uint32 rankId) 

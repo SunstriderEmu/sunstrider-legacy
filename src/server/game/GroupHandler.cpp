@@ -13,6 +13,7 @@
 #include "MapManager.h"
 #include "SocialMgr.h"
 #include "Util.h"
+#include "CharacterCache.h"
 
 /* differeces from off:
     -you can uninvite yourself - is is useful
@@ -539,15 +540,11 @@ void WorldSession::HandleGroupChangeSubGroupOpcode( WorldPacket & recvData )
     if (Player* player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()))
         group->ChangeMembersGroup(player, groupNr);
     else
-        group->ChangeMembersGroup(sWorld->GetCharacterGuidByName(name.c_str()), groupNr);
+        group->ChangeMembersGroup(sCharacterCache->GetCharacterGuidByName(name.c_str()), groupNr);
 }
 
 void WorldSession::HandleGroupAssistantLeaderOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     Group *group = GetPlayer()->GetGroup();
     if(!group)
         return;

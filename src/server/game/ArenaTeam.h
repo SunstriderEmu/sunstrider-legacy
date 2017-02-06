@@ -154,30 +154,8 @@ class ArenaTeam
         MemberList::iterator membersEnd()   { return members.end(); }
         bool HaveMember(const uint64& guid) const;
 
-        ArenaTeamMember* GetMember(const uint64& guid)
-        {
-            for (auto & member : members)
-                if(member.guid == guid)
-                    return &member;
-
-            return nullptr;
-        }
-
-        ArenaTeamMember* GetMember(const std::string& name)
-        {
-            for (auto & member : members)
-            {
-                std::string fetchedName;
-                bool result = sObjectMgr->GetPlayerNameByGUID(member.guid, fetchedName);
-                if(!result)
-                    return nullptr;
-
-                if(fetchedName == name)
-                    return &member;
-            }
-
-            return nullptr;
-        }
+        ArenaTeamMember* GetMember(const uint64& guid);
+        ArenaTeamMember* GetMember(const std::string& name);
 
         void GetMembers(std::list<ArenaTeamMember*>& memberList);
 

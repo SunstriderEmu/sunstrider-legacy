@@ -8,6 +8,7 @@
 #include "DatabaseEnv.h"
 #include "Mail.h"
 #include "PlayerbotAI.h"
+#include "CharacterCache.h"
 
 //#include "../../plugins/ahbot/AhBotConfig.h"
 #include "RandomItemMgr.h"
@@ -483,7 +484,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
     if (cmd.find("stats ") != std::string::npos)
     {
         std::string charName = cmd.substr(cmd.find("stats ") + 6);
-        uint64 guid = sWorld->GetCharacterGuidByName(charName);
+        uint64 guid = sCharacterCache->GetCharacterGuidByName(charName);
         if (!guid)
         {
             sLog->outMessage("gtask", LOG_LEVEL_ERROR, "Player %s not found", charName.c_str());
@@ -534,7 +535,7 @@ bool GuildTaskMgr::HandleConsoleCommand(ChatHandler* handler, char const* args)
     if (cmd.find("reward ") != std::string::npos)
     {
         std::string charName = cmd.substr(cmd.find("reward ") + 7);
-        uint64 guid = sWorld->GetCharacterGuidByName(charName);
+        uint64 guid = sCharacterCache->GetCharacterGuidByName(charName);
         if (!guid)
         {
             sLog->outMessage("gtask", LOG_LEVEL_ERROR, "Player %s not found", charName.c_str());

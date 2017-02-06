@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -48,6 +29,7 @@
 #include "LoginDatabase.h"
 #include "ArenaTeam.h"
 #include "LogsDatabaseAccessor.h"
+#include "CharacterCache.h"
 
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "Management/MMapManager.h"                         // for mmap manager
@@ -93,7 +75,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sWorld->GetCharacterGuidByName(cname.c_str());
+    uint64 guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -114,7 +96,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     }
     else
     {
-        account_id = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+        account_id = sCharacterCache->GetCharacterAccountIdByGuid(guid);
         security = sAccountMgr->GetSecurity(account_id);
     }
 
@@ -163,7 +145,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
         return false;
     }
 
-    uint64 guid = sWorld->GetCharacterGuidByName(cname.c_str());
+    uint64 guid = sCharacterCache->GetCharacterGuidByName(cname.c_str());
     if(!guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -184,7 +166,7 @@ bool ChatHandler::HandleUnmuteCommand(const char* args)
     }
     else
     {
-        account_id = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+        account_id = sCharacterCache->GetCharacterAccountIdByGuid(guid);
         security = sAccountMgr->GetSecurity(account_id);
     }
 
@@ -1904,7 +1886,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             py = strtok(nullptr, " ");
         else
         {
-            targetGUID = sWorld->GetCharacterGuidByName(name);
+            targetGUID = sCharacterCache->GetCharacterGuidByName(name);
             if(targetGUID)
                 py = strtok(nullptr, " ");
             else
@@ -3098,7 +3080,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
         target = sObjectAccessor->FindConnectedPlayerByName(oldname.c_str());
 
         if (!target)
-            targetGUID = sWorld->GetCharacterGuidByName(oldname);
+            targetGUID = sCharacterCache->GetCharacterGuidByName(oldname);
     }
 
     if(!target && !targetGUID)
@@ -3152,14 +3134,14 @@ bool ChatHandler::HandleRenameArenaTeamCommand(const char* args)
     uint64 targetGUID = 0;
     std::string stringName = playerName;
 
-    targetGUID = sWorld->GetCharacterGuidByName(stringName);
+    targetGUID = sCharacterCache->GetCharacterGuidByName(stringName);
     if(!targetGUID)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         return true;
     }
 
-    CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(targetGUID));
+    CharacterCacheEntry const* playerData = sCharacterCache->GetCharacterCacheByGuid(GUID_LOPART(targetGUID));
     if (!playerData)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -4302,7 +4284,7 @@ bool ChatHandler::HandleChanBan(const char* args)
         return false;
     }
     
-    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    uint32 accountid = sCharacterCache->GetCharacterAccountIdByName(charNamestr.c_str());
     if (!accountid)
     {
         PSendSysMessage("No account found for player name: %s.", charNamestr.c_str());
@@ -4367,7 +4349,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
         return false;
     }
     
-    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    uint32 accountid = sCharacterCache->GetCharacterAccountIdByName(charNamestr.c_str());
     if (!accountid)
     {
         PSendSysMessage("No account found for player %s.", charNamestr.c_str());
@@ -4416,7 +4398,7 @@ bool ChatHandler::HandleChanInfoBan(const char* args)
         return false;
     }
     
-    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(charNamestr.c_str());
+    uint32 accountid = sCharacterCache->GetCharacterAccountIdByName(charNamestr.c_str());
     if (!accountid)
     {
         PSendSysMessage("No account found for player %s", charNamestr.c_str());

@@ -523,12 +523,6 @@ class TC_GAME_API ObjectMgr
         }
         void GetPlayerLevelInfo(uint32 race, uint32 class_,uint32 level, PlayerLevelInfo* info) const;
 
-        uint32 GetPlayerLowGUIDByName(std::string name) const;
-        bool GetPlayerNameByGUID(const uint64 &guid, std::string &name) const;
-        uint32 GetPlayerTeamByGUID(const uint64 &guid) const;
-        uint32 GetPlayerAccountIdByGUID(const uint64 &guid) const;
-        uint32 GetPlayerAccountIdByPlayerName(const std::string& name) const;
-
         uint32 GetNearestTaxiNode( float x, float y, float z, uint32 mapid, uint32 team);
         void GetTaxiPath( uint32 source, uint32 destination, uint32 &path, uint32 &cost);
         uint32 GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt_team = false);

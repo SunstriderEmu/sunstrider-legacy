@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include <vector>
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -47,6 +27,7 @@
 #include "IRCMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "GitRevision.h"
+#include "CharacterCache.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -91,7 +72,7 @@ Player* PlayerbotHolder::AddPlayerBot(uint64 playerGuid, uint32 masterAccount)
     if (bot && bot->IsInWorld())
         return nullptr;
 
-    uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(playerGuid);
+    uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(playerGuid);
     if (accountId == 0)
         return nullptr;
 
@@ -201,14 +182,14 @@ void WorldSession::HandleCharEnum(PreparedQueryResult result)
                 SELECT c.guid, c.name, c.race, c.class, c.gender, c.playerBytes, c.playerBytes2, c.level, c.zone, c.map, c.position_x, c.position_y, c.position_z, "
                 "gm.guildid, c.playerFlags, c.at_login, cp.entry, cp.modelid, cp.level, c.equipmentCache, cb.guid "
                 */
-                if (!sWorld->HasCharacterInfo(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
+                if (!sCharacterCache->HasCharacterCacheEntry(guidlow)) // This can happen if characters are inserted into the database manually. Core hasn't loaded name data yet.
                 {
                     std::string name = (*result)[1].GetString();
                     uint8 gender = (*result)[4].GetUInt8();
                     uint8 race = (*result)[2].GetUInt8();
                     uint8 playerclass = (*result)[3].GetUInt8();
                     uint8 level = (*result)[7].GetUInt8();
-                    sWorld->AddCharacterInfo(guidlow, GetAccountId(), name, gender, race, playerclass, level, 0, 0);
+                    sCharacterCache->AddCharacterCacheEntry(guidlow, GetAccountId(), name, gender, race, playerclass, level, 0);
                 }
                 ++num;
             }
@@ -465,7 +446,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
             std::string IP_str = GetRemoteAddress();
             TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
             //sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddCharacterInfo(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0, 0);
+            sCharacterCache->AddCharacterCacheEntry(newChar.GetGUIDLow(), GetAccountId(), newChar.GetName(), newChar.GetGender(), newChar.GetRace(), newChar.GetClass(), newChar.GetLevel(), 0);
 
             newChar.CleanupsBeforeDelete();
         };
@@ -1160,8 +1141,7 @@ void WorldSession::HandleCharRenameCallback(std::shared_ptr<CharacterRenameInfo>
 
     SendCharRename(RESPONSE_SUCCESS, renameInfo.get());
 
-    sWorld->UpdateCharacterGuidByName(guidLow, oldname, renameInfo->Name);
-    sWorld->UpdateCharacterInfo(guidLow, PLAYER_UPDATE_DATA_NAME, renameInfo->Name);
+    sCharacterCache->UpdateCharacterData(guidLow, PLAYER_UPDATE_DATA_NAME, renameInfo->Name);
 
     LogsDatabaseAccessor::CharacterRename(this, guidLow, oldname, renameInfo->Name, GetRemoteAddress());
 }
@@ -1175,7 +1155,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     // not accept declined names for unsupported languages
     std::string name;
-    if(!sObjectMgr->GetPlayerNameByGUID(guid, name))
+    if(!sCharacterCache->GetCharacterNameByGuid(guid, name))
     {
         WorldPacket data(SMSG_SET_PLAYER_DECLINED_NAMES_RESULT, 4+8);
         data << uint32(1);

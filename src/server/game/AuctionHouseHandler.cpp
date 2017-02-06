@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "Opcodes.h"
@@ -31,6 +11,7 @@
 #include "Chat.h"
 #include "LogsDatabaseAccessor.h"
 #include "Mail.h"
+#include "CharacterCache.h"
 
 //please DO NOT use iterator++, because it is slower than ++iterator!!!
 //post-incrementation is always slower than pre-incrementation !
@@ -119,7 +100,7 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
 
     uint32 oldBidder_accId = 0;
     if(!oldBidder)
-        oldBidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(oldBidder_guid);
+        oldBidder_accId = sCharacterCache->GetCharacterAccountIdByGuid(oldBidder_guid);
 
     // old bidder exist
     if(oldBidder || oldBidder_accId)
@@ -145,7 +126,7 @@ void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 
     uint32 bidder_accId = 0;
     if(!bidder)
-        bidder_accId = sObjectMgr->GetPlayerAccountIdByGUID(bidder_guid);
+        bidder_accId = sCharacterCache->GetCharacterAccountIdByGuid(bidder_guid);
 
     // bidder exist
     if(bidder || bidder_accId)
@@ -160,10 +141,6 @@ void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 //this void creates new auction and adds auction to some auctionhouse
 void WorldSession::HandleAuctionSellItem( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 auctioneerGUID, itemGUID;
     uint32 etime, bid, buyout;
     recvData >> auctioneerGUID >> itemGUID;
@@ -323,7 +300,7 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
 
     // impossible have online own another character (use this for speedup check in case online owner)
     Player* auction_owner = sObjectMgr->GetPlayer(MAKE_NEW_GUID(auction->owner, 0, HIGHGUID_PLAYER));
-    if( !auction_owner && sObjectMgr->GetPlayerAccountIdByGUID(MAKE_NEW_GUID(auction->owner, 0, HIGHGUID_PLAYER)) == pl->GetSession()->GetAccountId())
+    if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(auction->owner, 0, HIGHGUID_PLAYER)) == pl->GetSession()->GetAccountId())
     {
         //you cannot bid your another character auction:
         SendAuctionCommandResult( 0, AUCTION_PLACE_BID, CANNOT_BID_YOUR_AUCTION_ERROR );

@@ -2417,7 +2417,6 @@ class TC_GAME_API Player : public Unit
         PartyResult CanUninviteFromGroup() const;
         // Teleporter NPC: Check level requirements (in Config)
         bool HasLevelInRangeForTeleport() const;
-        static uint32 GetGroupIdFromStorage(uint32 guid);
         
         // Battleground Group System
         void SetBattlegroundRaid(Group* group, int8 subgroup = -1);

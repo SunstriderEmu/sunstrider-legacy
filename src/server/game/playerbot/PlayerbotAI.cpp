@@ -18,6 +18,7 @@
 #include "Group.h"
 #include "Pet.h"
 #include "SpellAuras.h"
+#include "CharacterCache.h"
 
 using namespace ai;
 using namespace std;
@@ -67,7 +68,7 @@ PlayerbotAI::PlayerbotAI(Player* bot) :
 {
     this->bot = bot;
 
-    accountId = sObjectMgr->GetPlayerAccountIdByGUID(bot->GetGUID());
+    accountId = sCharacterCache->GetCharacterAccountIdByGuid(bot->GetGUID());
 
     aiObjectContext = AiFactory::createAiObjectContext(bot, this);
 

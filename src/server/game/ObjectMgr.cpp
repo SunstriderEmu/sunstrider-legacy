@@ -1608,54 +1608,6 @@ void ObjectMgr::LoadGameobjectRespawnTimes()
     TC_LOG_INFO("server.loading", ">> Loaded " UI64FMTD " gameobject respawn times", mGORespawnTimes.size());
 }
 
-uint32 ObjectMgr::GetPlayerLowGUIDByName(std::string name) const
-{
-    // Get data from global storage
-    if (uint32 guidLow = sWorld->GetCharacterGuidByName(name))
-        return guidLow;
-
-    return 0;
-}
-
-bool ObjectMgr::GetPlayerNameByGUID(const uint64 &guid, std::string &name) const
-{
-    // Get data from global storage
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
-    {
-        name = playerData->name;
-        return true;
-    }
-
-    return false;
-}
-
-uint32 ObjectMgr::GetPlayerTeamByGUID(const uint64 &guid) const
-{
-    // Get data from global storage
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
-        return Player::TeamForRace(playerData->race);
-
-    // could not find team, default to alliance
-    return TEAM_ALLIANCE;
-}
-
-uint32 ObjectMgr::GetPlayerAccountIdByGUID(const uint64 &guid) const
-{
-    if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(GUID_LOPART(guid)))
-        return playerData->accountId;
-
-    return 0;
-}
-
-uint32 ObjectMgr::GetPlayerAccountIdByPlayerName(const std::string& name) const
-{
-    if (uint32 guidLow = sWorld->GetCharacterGuidByName(name))
-        if (CharacterInfo const* playerData = sWorld->GetCharacterInfo(guidLow))
-            return playerData->accountId;
-
-    return 0;
-}
-
 void ObjectMgr::LoadItemLocales()
 {
     mItemLocaleMap.clear();                                 // need for reload case

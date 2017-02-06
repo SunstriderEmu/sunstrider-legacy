@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "WorldPacket.h"
 #include "ObjectMgr.h"
@@ -22,6 +5,7 @@
 #include "Chat.h"
 #include "World.h"
 #include "LogsDatabaseAccessor.h"
+#include "CharacterCache.h"
 
 ArenaTeam::ArenaTeam()
 {
@@ -105,7 +89,7 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
     }
     else
     {
-        CharacterInfo const* cInfo = sWorld->GetCharacterInfo(playerGuid);
+        CharacterCacheEntry const* cInfo = sCharacterCache->GetCharacterCacheByGuid(playerGuid);
         if (!cInfo)
             return false;
 
@@ -133,7 +117,7 @@ bool ArenaTeam::AddMember(const uint64& playerGuid, SQLTransaction trans)
     newmember.personal_rating   = 1500;
     members.push_back(newmember);
 
-    sWorld->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
+    sCharacterCache->UpdateCharacterArenaTeamId(playerGuid, GetSlot(), GetId());
 
     trans->PAppend("INSERT INTO arena_team_member (arenateamid, guid, personal_rating) VALUES ('%u', '%u', '%u')", Id, GUID_LOPART(newmember.guid), newmember.personal_rating );
     
@@ -251,7 +235,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
         
         // Put the player in the team
         members.push_back(std::move(newmember));
-        sWorld->UpdateCharacterArenaTeamId(newmember.guid, GetSlot(), GetId());
+        sCharacterCache->UpdateCharacterArenaTeamId(newmember.guid, GetSlot(), GetId());
 
     }while( result->NextRow() );
 }
@@ -291,7 +275,7 @@ void ArenaTeam::DeleteMember(uint64 guid, bool cleanDb)
         if (itr->guid == guid)
         {
             members.erase(itr);
-            sWorld->UpdateCharacterArenaTeamId(guid, GetSlot(), 0);
+            sCharacterCache->UpdateCharacterArenaTeamId(guid, GetSlot(), 0);
             break;
         }
     }
@@ -363,7 +347,7 @@ void ArenaTeam::Roster(WorldSession *session)
     
     for (auto itr : members)
     {
-        CharacterInfo const* pData = sWorld->GetCharacterInfo(itr.guid);
+        CharacterCacheEntry const* pData = sCharacterCache->GetCharacterCacheByGuid(itr.guid);
         
         pl = ObjectAccessor::FindConnectedPlayer(itr.guid);
 
@@ -534,6 +518,31 @@ bool ArenaTeam::HaveMember( const uint64& guid ) const
             return true;
 
     return false;
+}
+
+ArenaTeamMember* ArenaTeam::GetMember(const uint64& guid)
+{
+    for (auto & member : members)
+        if (member.guid == guid)
+            return &member;
+
+    return nullptr;
+}
+
+ArenaTeamMember* ArenaTeam::GetMember(const std::string& name)
+{
+    for (auto & member : members)
+    {
+        std::string fetchedName;
+        bool result = sCharacterCache->GetCharacterNameByGuid(member.guid, fetchedName);
+        if (!result)
+            return nullptr;
+
+        if (fetchedName == name)
+            return &member;
+    }
+
+    return nullptr;
 }
 
 uint32 ArenaTeam::GetPoints(uint32 MemberRating)

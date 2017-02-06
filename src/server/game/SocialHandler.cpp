@@ -3,6 +3,7 @@
 #include "SocialMgr.h"
 #include "Language.h"
 #include "AccountMgr.h"
+#include "CharacterCache.h"
 
 void WorldSession::HandleContactListOpcode( WorldPacket & recvData )
 {
@@ -30,10 +31,10 @@ void WorldSession::HandleAddFriendOpcode(WorldPacket& recvData)
 
     FriendsResult friendResult = FRIEND_NOT_FOUND;
 
-    uint32 friendGuid = sWorld->GetCharacterGuidByName(friendName);
+    uint32 friendGuid = sCharacterCache->GetCharacterGuidByName(friendName);
     if (friendGuid)
     {
-        if (CharacterInfo const* characterInfo = sWorld->GetCharacterInfo(friendGuid))
+        if (CharacterCacheEntry const* characterInfo = sCharacterCache->GetCharacterCacheByGuid(friendGuid))
         {
             uint32 team = Player::TeamForRace(characterInfo->race);
             uint32 friendAccountId = characterInfo->accountId;
@@ -95,7 +96,7 @@ void WorldSession::HandleAddIgnoreOpcode( WorldPacket & recvData )
 
     ignoreResult = FRIEND_IGNORE_NOT_FOUND;
 
-    uint32 ignoreGuid = sWorld->GetCharacterGuidByName(ignoreName);
+    uint32 ignoreGuid = sCharacterCache->GetCharacterGuidByName(ignoreName);
     if (ignoreGuid)
     {
         if (ignoreGuid == GetPlayer()->GetGUID())              //not add yourself

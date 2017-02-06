@@ -35,6 +35,7 @@
 #include "ScriptMgr.h"
 #include "TemporarySummon.h"
 #include "PlayerAI.h"
+#include "CharacterCache.h"
 
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
@@ -11661,7 +11662,7 @@ void Unit::SetLevel(uint32 lvl)
         (this->ToPlayer())->SetGroupUpdateFlag(GROUP_UPDATE_FLAG_LEVEL);
 
     if (GetTypeId() == TYPEID_PLAYER)
-        sWorld->UpdateCharacterInfoLevel(ToPlayer()->GetGUIDLow(), lvl);
+        sCharacterCache->UpdateCharacterLevel(ToPlayer()->GetGUIDLow(), lvl);
 }
 
 void Unit::SetHealth(uint32 val)

@@ -12,6 +12,7 @@
 #include "DBCStores.h"
 #include "Chat.h"
 #include "LogsDatabaseAccessor.h"
+#include "CharacterCache.h"
 
 void MailItem::deleteItem( bool inDB )
 {
@@ -71,7 +72,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
 
     uint64 rc = 0;
     if(normalizePlayerName(receiver))
-        rc = sWorld->GetCharacterGuidByName(receiver);
+        rc = sCharacterCache->GetCharacterGuidByName(receiver);
 
     if (!rc)
     {
@@ -111,7 +112,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
     }
     else
     {
-        rc_team = sObjectMgr->GetPlayerTeamByGUID(rc);
+        rc_team = sCharacterCache->GetCharacterTeamByGuid(rc);
         QueryResult result = CharacterDatabase.PQuery("SELECT COUNT(*) FROM mail WHERE receiver = '%u'", GUID_LOPART(rc));
         if(result)
         {
@@ -184,7 +185,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
         if(receive)
             rc_account = receive->GetSession()->GetAccountId();
         else
-            rc_account = sObjectMgr->GetPlayerAccountIdByGUID(rc);
+            rc_account = sCharacterCache->GetCharacterAccountIdByGuid(rc);
 
         if (items_count > 0)
         {
@@ -318,7 +319,7 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
 
     uint32 rc_account = 0;
     if(!receiver)
-        rc_account = sObjectMgr->GetPlayerAccountIdByGUID(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
+        rc_account = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
 
     if(!receiver && !rc_account)                            // sender not exist
     {
@@ -392,7 +393,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
             uint64 sender_guid = MAKE_NEW_GUID(m->sender, 0, HIGHGUID_PLAYER);
             Player *receive = sObjectMgr->GetPlayer(sender_guid);
 
-            uint32 sender_accId = sObjectMgr->GetPlayerAccountIdByGUID(sender_guid);
+            uint32 sender_accId = sCharacterCache->GetCharacterAccountIdByGuid(sender_guid);
 
             // check player existence
             if(receive || sender_accId)

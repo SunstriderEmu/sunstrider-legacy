@@ -1,22 +1,3 @@
-/*
-* Copyright (C) 2005-2009 Trinity <http://getmangos.com/>
-*
-* Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
@@ -61,6 +42,7 @@
 #include "GameEventMgr.h"
 #include "IRCMgr.h"
 #include "TestMgr.h"
+#include "CharacterCache.h"
 
 #include "Management/MMapManager.h"                         // for mmap manager
 #include "PathGenerator.h"                                  // for mmap commands      
@@ -3281,7 +3263,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
-        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
+        plGuid = sCharacterCache->GetCharacterGuidByName(plName.c_str ());
 
     if (!plGuid)
     {
@@ -3328,7 +3310,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
     }
     else
     {
-        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
+        plGuid = sCharacterCache->GetCharacterGuidByName(plName.c_str ());
         glId = Player::GetGuildIdFromCharacterInfo(plGuid);
     }
 
@@ -3380,7 +3362,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
     }
     else
     {
-        plGuid = sWorld->GetCharacterGuidByName(plName.c_str ());
+        plGuid = sCharacterCache->GetCharacterGuidByName(plName.c_str ());
         glId = Player::GetGuildIdFromCharacterInfo(plGuid);
     }
 
@@ -4207,7 +4189,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!chr)                                            // not in game
         {
-            chr_guid = sWorld->GetCharacterGuidByName(name);
+            chr_guid = sCharacterCache->GetCharacterGuidByName(name);
             if (chr_guid == 0)
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -4260,7 +4242,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
         CharacterDatabase.PExecute("UPDATE characters SET level = '%u', xp = 0 WHERE guid = '%u'", newlevel, GUID_LOPART(chr_guid));
     }
 
-    sWorld->UpdateCharacterInfoLevel(GUID_LOPART(chr_guid), newlevel);
+    sCharacterCache->UpdateCharacterLevel(GUID_LOPART(chr_guid), newlevel);
 
     if(m_session && m_session->GetPlayer() != chr)                       // including chr==NULL
         PSendSysMessage(LANG_YOU_CHANGE_LVL,name.c_str(),newlevel);
@@ -4751,7 +4733,7 @@ bool ChatHandler::HandleResetHonorCommand (const char * args)
             return false;
         }
 
-        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
+        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4856,7 +4838,7 @@ bool ChatHandler::HandleResetLevelCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
+        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4900,7 +4882,7 @@ bool ChatHandler::HandleResetStatsCommand(const char * args)
             return false;
         }
 
-        uint64 guid = sWorld->GetCharacterGuidByName(name.c_str());
+        uint64 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         player = sObjectMgr->GetPlayer(guid);
     }
     else
@@ -4943,7 +4925,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
 
         player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
-            playerGUID = sWorld->GetCharacterGuidByName(name.c_str());
+            playerGUID = sCharacterCache->GetCharacterGuidByName(name.c_str());
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -4992,7 +4974,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
 
         player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
         if(!player)
-            playerGUID = sWorld->GetCharacterGuidByName(name.c_str());
+            playerGUID = sCharacterCache->GetCharacterGuidByName(name.c_str());
     }
     else
         player = GetSelectedPlayerOrSelf();
@@ -5485,7 +5467,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
         }
         else //player is not online, get GUID with another function
         {
-            targetGUID = sWorld->GetCharacterGuidByName(name);
+            targetGUID = sCharacterCache->GetCharacterGuidByName(name);
             if (!targetGUID) //player doesn't exist
             {
                 SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5508,7 +5490,7 @@ bool ChatHandler::HandleCountCompleteQuest(const char* args)
     }
 
     std::string displayName;
-    bool nameResult = sObjectMgr->GetPlayerNameByGUID(targetGUID, displayName);
+    bool nameResult = sCharacterCache->GetCharacterNameByGuid(targetGUID, displayName);
     if (!nameResult)
         displayName = "<Unknown>";
 
@@ -5711,7 +5693,7 @@ bool ChatHandler::HandleBanInfoCharacterCommand(const char* args)
         return false;
     }
 
-    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(name);
+    uint32 accountid = sCharacterCache->GetCharacterAccountIdByName(name);
     if(!accountid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -5823,7 +5805,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
         uint64 unbantimestamp = muteTime + (duration * MINUTE);
         std::string authorname;
         std::string displayName;
-        bool nameResult = sObjectMgr->GetPlayerNameByGUID(authorGUID, displayName);
+        bool nameResult = sCharacterCache->GetCharacterNameByGuid(authorGUID, displayName);
         if (!nameResult)
             authorname = "<Unknown>";
 
@@ -5873,7 +5855,7 @@ bool ChatHandler::HandleMuteInfoCharacterCommand(char const* args)
         return false;
     }
 
-    uint32 accountid = sObjectMgr->GetPlayerAccountIdByPlayerName(name);
+    uint32 accountid = sCharacterCache->GetCharacterAccountIdByName(name);
     if(!accountid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -6219,7 +6201,7 @@ bool ChatHandler::HandleLoadPDumpCommand(const char *args)
             return false;
         }
 
-        if(sObjectMgr->GetPlayerAccountIdByGUID(guid))
+        if(sCharacterCache->GetCharacterAccountIdByGuid(guid))
         {
             PSendSysMessage(LANG_CHARACTER_GUID_IN_USE,guid);
             SetSentErrorMessage(true);
@@ -6297,10 +6279,10 @@ bool ChatHandler::HandleWritePDumpCommand(const char *args)
             return false;
         }
 
-        guid = sWorld->GetCharacterGuidByName(name);
+        guid = sCharacterCache->GetCharacterGuidByName(name);
     }
 
-    if(!sObjectMgr->GetPlayerAccountIdByGUID(guid))
+    if(!sCharacterCache->GetCharacterAccountIdByGuid(guid))
     {
         PSendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
@@ -7099,7 +7081,7 @@ bool ChatHandler::HandleSendItemsCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sWorld->GetCharacterGuidByName(name);
+    uint64 receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
     if(!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -7200,7 +7182,7 @@ bool ChatHandler::HandleSendMoneyCommand(const char* args)
         return false;
     }
 
-    uint64 receiver_guid = sWorld->GetCharacterGuidByName(name);
+    uint64 receiver_guid = sCharacterCache->GetCharacterGuidByName(name);
     if (!receiver_guid)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);

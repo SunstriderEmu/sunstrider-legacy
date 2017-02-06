@@ -3,7 +3,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotFactory.h"
 #include "RandomPlayerbotMgr.h"
-
+#include "CharacterCache.h"
 
 class LoginQueryHolder;
 class CharacterHandler;
@@ -97,7 +97,7 @@ void PlayerbotHolder::OnBotLogin(Player * const bot)
         for (Group::MemberSlotList::const_iterator i = slots.begin(); i != slots.end(); ++i)
         {
             ObjectGuid member = ObjectGuid(i->guid);
-            uint32 account = sObjectMgr->GetPlayerAccountIdByGUID(member);
+            uint32 account = sCharacterCache->GetCharacterAccountIdByGuid(member);
             if (!sPlayerbotAIConfig.IsInRandomAccountList(account))
             {
                 groupValid = true;
@@ -123,7 +123,7 @@ string PlayerbotHolder::ProcessBotCommand(std::string cmd, ObjectGuid guid, bool
     if (!sPlayerbotAIConfig.enabled || guid.IsEmpty())
         return "bot system is disabled";
 
-    uint32 botAccount = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+    uint32 botAccount = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(guid);
     bool isRandomAccount = sPlayerbotAIConfig.IsInRandomAccountList(botAccount);
     bool isMasterAccount = (masterAccountId == botAccount);
@@ -289,7 +289,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
                 continue;
 
             std::string bot;
-            if (sObjectMgr->GetPlayerNameByGUID(member, bot))
+            if (sCharacterCache->GetCharacterNameByGuid(member, bot))
                 bots.insert(bot);
         }
     }
@@ -336,7 +336,7 @@ list<std::string> PlayerbotHolder::HandlePlayerbotCommand(char const* args, Play
         std::ostringstream out;
         out << cmdStr << ": " << bot << " - ";
 
-        ObjectGuid member = ObjectGuid(HIGHGUID_PLAYER, sWorld->GetCharacterGuidByName(bot));
+        ObjectGuid member = ObjectGuid(HIGHGUID_PLAYER, sCharacterCache->GetCharacterGuidByName(bot));
         if (!member)
         {
             out << "character not found";

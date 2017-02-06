@@ -11,6 +11,7 @@
 #include "GossipDef.h"
 #include "SocialMgr.h"
 #include "LogsDatabaseAccessor.h"
+#include "CharacterCache.h"
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 {
@@ -193,7 +194,7 @@ void WorldSession::HandleGuildAcceptOpcode(WorldPacket& /*recvPacket*/)
         return;
 
     // not let enemies sign guild charter
-    if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != sObjectMgr->GetPlayerTeamByGUID(guild->GetLeaderGUID()))
+    if (!sWorld->getConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_GUILD) && player->GetTeam() != sCharacterCache->GetCharacterTeamByGuid(guild->GetLeaderGUID()))
         return;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();

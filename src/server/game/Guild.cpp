@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "DatabaseEnv.h"
 #include "WorldPacket.h"
@@ -31,6 +12,7 @@
 #include "Util.h"
 #include "Config.h"
 #include "AccountMgr.h"
+#include "CharacterCache.h"
 
 Guild::Guild()
 {
@@ -60,7 +42,7 @@ bool Guild::create(uint64 lGuid, std::string gname)
     std::string rname;
     std::string lName;
 
-    if(!sObjectMgr->GetPlayerNameByGUID(lGuid, lName))
+    if(!sCharacterCache->GetCharacterNameByGuid(lGuid, lName))
         return false;
     if(sObjectMgr->GetGuildByName(gname))
         return false;
@@ -280,7 +262,7 @@ bool Guild::LoadGuildFromDB(uint32 GuildId)
     CreatedDay = atoi(time.substr(8, 2).c_str());
 
     // If the leader does not exist attempt to promote another member
-    if(!sObjectMgr->GetPlayerAccountIdByGUID(leaderGuid ))
+    if(!sCharacterCache->GetCharacterAccountIdByGuid(leaderGuid ))
     {
         DeleteMember(leaderGuid);
 
@@ -386,7 +368,7 @@ bool Guild::LoadMembersFromDB(uint32 GuildId)
             newmember.BankRemSlotsTab[i]  = fields[7+(2*i)].GetUInt32();
         }
         newmember.logout_time           = fields[18].GetUInt64();
-        sWorld->UpdateCharacterGuildId(GUID_LOPART(guid), GetId());
+        sCharacterCache->UpdateCharacterGuildId(GUID_LOPART(guid), GetId());
         members[GUID_LOPART(guid)]      = newmember;
 
     }while( result->NextRow() );
@@ -485,7 +467,7 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding)
     uint32 GMForceGuildId = sWorld->getIntConfig(CONFIG_GM_FORCE_GUILD);
     if(GetId() == GMForceGuildId)
     {
-        uint32 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+        uint32 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid);
         uint32 memberSecurity = sAccountMgr->GetSecurity(accountId);
         if (memberSecurity > SEC_PLAYER)
             return;
@@ -549,7 +531,7 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding)
         player->SetInGuild(0);
         player->SetRank(0);
     } else
-        sWorld->UpdateCharacterGuildId(guid, 0);
+        sCharacterCache->UpdateCharacterGuildId(guid, 0);
 
     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'", GUID_LOPART(guid));
 }

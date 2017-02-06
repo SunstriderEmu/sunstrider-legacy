@@ -1,23 +1,3 @@
-/*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "Common.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -34,6 +14,7 @@
 #include "MapInstanced.h"
 #include "Util.h"
 #include "Containers.h"
+#include "CharacterCache.h"
 
 Group::Group() :
     m_masterLooterGuid(0),
@@ -141,7 +122,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
     m_leaderLogoutTime = time(nullptr); // Give the leader a chance to keep his position after a server crash
 
     // group leader not exist
-    if(!sObjectMgr->GetPlayerNameByGUID(m_leaderGuid, m_leaderName))
+    if(!sCharacterCache->GetCharacterNameByGuid(m_leaderGuid, m_leaderName))
     {
         return false;
     }
@@ -192,7 +173,7 @@ bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
     member.guid      = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
 
     // skip non-existed member
-    if(!sObjectMgr->GetPlayerNameByGUID(member.guid, member.name))
+    if(!sCharacterCache->GetCharacterNameByGuid(member.guid, member.name))
         return false;
 
     member.group     = subgroup;

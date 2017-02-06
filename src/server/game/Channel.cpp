@@ -1,29 +1,10 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
 #include "Channel.h"
 #include "ChannelMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
 #include "SocialMgr.h"
 #include "Chat.h"
+#include "CharacterCache.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id)
 : m_name(name), m_announce(true), m_moderate(false), m_channelId(channel_id), m_ownerGUID(0), m_password(""), m_flags(0)
@@ -71,7 +52,7 @@ Channel::Channel(const std::string& name, uint32 channel_id)
 
 bool Channel::IsBannedByGM(uint64 const guid)
 {
-    uint64 accountId = sObjectMgr->GetPlayerAccountIdByGUID(guid);
+    uint64 accountId = sCharacterCache->GetCharacterAccountIdByGuid(guid);
     if (!accountId) {
         TC_LOG_ERROR("FIXME","Channel::IsBanned: Unknown account for player " UI64FMTD , guid);
         return false;
@@ -858,7 +839,7 @@ void Channel::MakeChannelOwner(WorldPacket *data)
 {
     std::string name = "";
 
-    if(!sObjectMgr->GetPlayerNameByGUID(m_ownerGUID, name) || name.empty())
+    if(!sCharacterCache->GetCharacterNameByGuid(m_ownerGUID, name) || name.empty())
         name = "PLAYER_NOT_FOUND";
 
     MakeNotifyPacket(data, CHAT_CHANNEL_OWNER_NOTICE);
