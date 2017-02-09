@@ -2231,7 +2231,7 @@ SOAP.Port = 7878
 #        Default:     1 - (Enabled)
 #                     0 - (Disabled)
 
-HotSwap.Enabled = 1
+HotSwap.Enabled = 0
 
 #
 #    HotSwap.ScriptDir

@@ -1590,6 +1590,7 @@ void SpellMgr::LoadSpellCustomAttr()
         if(!spellInfo)
             continue;
 
+        uint32 effectIndex = 0;
         for(uint32 j : spellInfo->Effect)
         {
             switch(j)
@@ -1597,8 +1598,21 @@ void SpellMgr::LoadSpellCustomAttr()
                 case SPELL_EFFECT_CHARGE:
                     if(!spellInfo->speed && !spellInfo->SpellFamilyName)
                         spellInfo->speed = SPEED_CHARGE;
+                    break; 
+                case SPELL_EFFECT_APPLY_AURA:
+                    switch (spellInfo->EffectApplyAuraName[effectIndex])
+                    {
+                        case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                            /* Sunstrider: I failed to find the right generic logic for SPELL_AURA_PERIODIC_TRIGGER_SPELL with TARGET_UNIT_TARGET_ENEMY, so here is a hack instead
+                             This fixes around 20 spells */
+                            if((spellInfo->EffectImplicitTargetA[effectIndex] == TARGET_UNIT_TARGET_ENEMY)
+                                && (spellInfo->SpellIconID == 225)) //arcane missiles
+                                spellInfo->EffectImplicitTargetA[effectIndex] = TARGET_UNIT_CASTER;
+                            break;
+                    }
                     break;
             }
+            effectIndex++;
         }
 
         if (spellInfo->Dispel == DISPEL_POISON)
@@ -1621,6 +1635,10 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+        case 37540: // Fireball Barrage
+        case 37632: // Toxic Barrage
+            spellInfo->EffectImplicitTargetA[effectIndex] = TARGET_UNIT_CASTER;
+            break;
 #ifdef LICH_KING
         // Arcane Overload
         case 56430:
