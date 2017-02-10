@@ -1606,6 +1606,9 @@ void GameObject::Use(Unit* user)
             }
             break;
         }
+        case GAMEOBJECT_TYPE_SPELL_FOCUS:
+            sWorld->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
+            break;
         default:
             TC_LOG_ERROR("network.opcode","GameObject::Use - Unknown Object Type %u", GetGoType());
             break;
