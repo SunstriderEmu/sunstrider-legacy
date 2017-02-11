@@ -6,6 +6,7 @@
 class Unit;
 
 #define SMARTAI_AI_NAME "SmartAI"
+#define SMARTAI_GOBJECT_AI_NAME "SmartGameObjectAI"
 
 struct WayPoint
 {

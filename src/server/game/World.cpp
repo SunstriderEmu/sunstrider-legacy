@@ -2734,9 +2734,9 @@ void World::ScriptsProcess()
                     break;
                 }
                 //our target
-                Creature* target = nullptr;
+                Creature* creatureTarget = nullptr;
 
-                if(source) //using grid searcher
+                if (source) //using grid searcher
                 {
                     CellCoord p(Trinity::ComputeCellCoord(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
                     Cell cell(p);
@@ -2744,59 +2744,56 @@ void World::ScriptsProcess()
 
                     //TC_LOG_DEBUG("FIXME","Attempting to find Creature: Db GUID: %i", step.script->datalong);
                     Trinity::CreatureWithDbGUIDCheck target_check(((Unit*)source), step.script->datalong);
-                    Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(target,target_check);
+                    Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(creatureTarget, target_check);
 
                     TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
                     cell.Visit(p, unit_checker, *((Unit *)source)->GetMap());
                 }
-                else //check hashmap holders
-                {
-                    if(CreatureData const* data = sObjectMgr->GetCreatureData(step.script->datalong))
-                        target = ObjectAccessor::GetObjectInWorld<Creature>(data->mapid, data->posX, data->posY, MAKE_NEW_GUID(step.script->datalong, data->id, HIGHGUID_UNIT), target);
-                }
+                
                 //TC_LOG_DEBUG("scripts","attempting to pass target...");
-                if(!target)
+                if (!creatureTarget)
                     break;
+
                 //TC_LOG_DEBUG("scripts","target passed");
                 //Lets choose our ScriptMap map
                 ScriptMapMap *datamap = nullptr;
-                switch(step.script->dataint)
+                switch (step.script->dataint)
                 {
-                    case 1://QUEST END SCRIPTMAP
-                        datamap = &sQuestEndScripts;
-                        break;
-                    case 2://QUEST START SCRIPTMAP
-                        datamap = &sQuestStartScripts;
-                        break;
-                    case 3://SPELLS SCRIPTMAP
-                        datamap = &sSpellScripts;
-                        break;
-                    case 4://GAMEOBJECTS SCRIPTMAP
-                        datamap = &sGameObjectScripts;
-                        break;
-                    case 5://EVENTS SCRIPTMAP
-                        datamap = &sEventScripts;
-                        break;
-                    case 6://WAYPOINTS SCRIPTMAP
-                        datamap = &sWaypointScripts;
-                        break;
-                    default:
-                        TC_LOG_ERROR("scripts","SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
-                        break;
+                case 1://QUEST END SCRIPTMAP
+                    datamap = &sQuestEndScripts;
+                    break;
+                case 2://QUEST START SCRIPTMAP
+                    datamap = &sQuestStartScripts;
+                    break;
+                case 3://SPELLS SCRIPTMAP
+                    datamap = &sSpellScripts;
+                    break;
+                case 4://GAMEOBJECTS SCRIPTMAP
+                    datamap = &sGameObjectScripts;
+                    break;
+                case 5://EVENTS SCRIPTMAP
+                    datamap = &sEventScripts;
+                    break;
+                case 6://WAYPOINTS SCRIPTMAP
+                    datamap = &sWaypointScripts;
+                    break;
+                default:
+                    TC_LOG_ERROR("scripts", "SCRIPT_COMMAND_CALLSCRIPT ERROR: no scriptmap present... ignoring");
+                    break;
                 }
                 //if no scriptmap present...
-                if(!datamap)
+                if (!datamap)
                     break;
 
                 uint32 script_id = step.script->datalong2;
                 //insert script into schedule but do not start it
-                ScriptsStart(*datamap, script_id, target, nullptr, false);
+                ScriptsStart(*datamap, script_id, creatureTarget, nullptr, false);
                 break;
             }
 
             case SCRIPT_COMMAND_PLAYSOUND:
             {
-                if(!source)
+                if (!source)
                     break;
                 //datalong sound_id, datalong2 onlyself
                 Player* target = step.script->datalong2 ? source->ToPlayer() : nullptr;
@@ -2806,19 +2803,19 @@ void World::ScriptsProcess()
 
             case SCRIPT_COMMAND_KILL:
             {
-                if(!source || (source->ToCreature())->IsDead())
+                if (!source || (source->ToCreature())->IsDead())
                     break;
 
                 (source->ToCreature())->DealDamage((source->ToCreature()), (source->ToCreature())->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
-                switch(step.script->dataint)
+                switch (step.script->dataint)
                 {
                 case 0: break; //return false not remove corpse
                 case 1: (source->ToCreature())->RemoveCorpse(); break;
                 }
                 break;
             }
-            
+
             case SCRIPT_COMMAND_KILL_CREDIT:
             {
                 if (!source || ((Unit*)source)->GetTypeId() != TYPEID_PLAYER)
@@ -2832,19 +2829,36 @@ void World::ScriptsProcess()
 
             case SCRIPT_COMMAND_SMART_SET_DATA:
             {
-                if (!source || ((Unit*)source)->GetTypeId() != TYPEID_UNIT)
+                if (!target && !source)
                     break;
 
-                Creature* c = source->ToCreature();
-                if (!c->AI() || c->GetAIName() != SMARTAI_AI_NAME)
-                    break;
+                //use target, or source if no target
+                Object* setObject = target ? target : source;
 
-                SmartAI* smartAI = dynamic_cast<SmartAI*>(c->AI()); //dynamic cast to be extra safe
-                if (!smartAI)
-                    break;
+                if (Creature* c = setObject->ToCreature())
+                {
+                    if (!c->AI() || c->GetAIName() != SMARTAI_AI_NAME)
+                        break;
 
-                smartAI->SetData(step.script->datalong, step.script->datalong2);
+                    SmartAI* smartAI = dynamic_cast<SmartAI*>(c->AI()); //dynamic cast to be extra safe
+                    if (!smartAI)
+                        break;
+
+                    smartAI->SetData(step.script->datalong, step.script->datalong2);
+                }
+                else if (GameObject* gob = setObject->ToGameObject())
+                {
+                    if (!gob->AI() || gob->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
+                        break;
+
+                    SmartGameObjectAI* smartAI = dynamic_cast<SmartGameObjectAI*>(gob->AI()); //dynamic cast to be extra safe
+                    if (!smartAI)
+                        break;
+
+                    smartAI->SetData(step.script->datalong, step.script->datalong2);
+                }
             }
+            break;
 
             default:
                 TC_LOG_ERROR("scripts","Unknown script command %u called.",step.script->command);

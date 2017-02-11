@@ -133,10 +133,10 @@ class TC_GAME_API SmartScript
         bool IsSmartGO(GameObject* g = nullptr)
         {
             bool smart = true;
-            if (g && g->GetAIName() != "SmartGameObjectAI")
+            if (g && g->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
                 smart = false;
 
-            if (!go || go->GetAIName() != "SmartGameObjectAI")
+            if (!go || go->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
                 smart = false;
             if (!smart)
                 TC_LOG_ERROR("sql.sql","SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action skipped to prevent crash.", g ? g->GetDBTableGUIDLow() : (go ? go->GetDBTableGUIDLow() : 0), g ? g->GetEntry() : (go ? go->GetEntry() : 0));

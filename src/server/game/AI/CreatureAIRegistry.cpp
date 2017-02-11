@@ -34,7 +34,7 @@ namespace AIRegistry
         (new CreatureAIFactory<SmartAI>(SMARTAI_AI_NAME))->RegisterSelf();
         
         (new GameObjectAIFactory<GameObjectAI>("GameObjectAI"))->RegisterSelf();
-        (new GameObjectAIFactory<SmartGameObjectAI>("SmartGameObjectAI"))->RegisterSelf();
+        (new GameObjectAIFactory<SmartGameObjectAI>(SMARTAI_GOBJECT_AI_NAME))->RegisterSelf();
 
         (new MovementGeneratorFactory<RandomMovementGenerator<Creature> >(RANDOM_MOTION_TYPE))->RegisterSelf();
         (new MovementGeneratorFactory<WaypointMovementGenerator<Creature> >(WAYPOINT_MOTION_TYPE))->RegisterSelf();
