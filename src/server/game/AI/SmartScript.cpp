@@ -3146,23 +3146,34 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
         }
         case SMART_TARGET_CLOSEST_PLAYER:
         {
-            if (me)
-                if (Player* target = me->FindNearestPlayer(float(e.target.playerDistance.dist)))
+            WorldObject* checker = me;
+            if (!checker)
+                checker = go;
+
+            if (checker)
+            {
+                if (Player* target = checker->FindNearestPlayer(float(e.target.playerDistance.dist)))
                     l->push_back(target);
+            }
             break;
         }
         case SMART_TARGET_OWNER_OR_SUMMONER:
         {
+            uint64 charmerOrOwnerGuid = 0;
             if (me)
             {
                 uint64 charmerOrOwnerGuid = me->GetCharmerOrOwnerGUID();
 
                 if (!charmerOrOwnerGuid)
                     charmerOrOwnerGuid = me->GetCreatorGUID();
-
-                if (Unit* owner = ObjectAccessor::GetUnit(*me, charmerOrOwnerGuid))
-                    l->push_back(owner);
             }
+            else if (go)
+                uint64 ownerGuid = go->GetOwnerGUID();
+            else
+                break;
+
+            if (Unit* owner = ObjectAccessor::GetUnit(*me, charmerOrOwnerGuid))
+                l->push_back(owner);
             break;
         }
         case SMART_TARGET_THREAT_LIST:
