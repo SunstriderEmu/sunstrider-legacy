@@ -285,7 +285,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 
     // Should get removed later, just keep "compatibility" with scripts
     if(setSpawnTime)
-        m_respawnTime = time(nullptr) + m_respawnDelay;
+        m_respawnTime = std::max<time_t>(time(NULL) + m_respawnDelay, m_respawnTime);
 
     // if corpse was removed during falling, the falling will continue and override relocation to respawn position
     if (IsFalling())
@@ -888,32 +888,36 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData
     //m_DBTableGuid = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
-    const bool bResult = CreateFromProto(guidlow, Entry, data);
+    if (!CreateFromProto(guidlow, Entry, data))
+        return false;
 
-    if (bResult)
+    /* TC, would be nice to have
+    if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS && map->IsDungeon())
+        m_respawnDelay = 0; // special value, prevents respawn for dungeon bosses unless overridden
+        */
+
+    switch (GetCreatureTemplate()->rank)
     {
-        switch (GetCreatureTemplate()->rank)
-        {
-            case CREATURE_ELITE_RARE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RARE);
-                break;
-            case CREATURE_ELITE_ELITE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_ELITE);
-                break;
-            case CREATURE_ELITE_RAREELITE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RAREELITE);
-                break;
-            case CREATURE_ELITE_WORLDBOSS:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_WORLDBOSS);
-                break;
-            default:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_NORMAL);
-                break;
-        }
-        LoadCreatureAddon();
-        InitCreatureAddon();
+        case CREATURE_ELITE_RARE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RARE);
+            break;
+        case CREATURE_ELITE_ELITE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_ELITE);
+            break;
+        case CREATURE_ELITE_RAREELITE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RAREELITE);
+            break;
+        case CREATURE_ELITE_WORLDBOSS:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_WORLDBOSS);
+            break;
+        default:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_NORMAL);
+            break;
     }
-    return bResult;
+    LoadCreatureAddon();
+    InitCreatureAddon();
+
+    return true;
 }
 
 bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
@@ -1287,7 +1291,11 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
+    if (map->GetInstanceId() != 0) 
+        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
+
+    m_respawnradius = data->spawndist;
+    m_respawnDelay = data->spawntimesecs;
 
     if(!Create(guid,map,data->id,data))
         return false;
@@ -1302,9 +1310,6 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     //We should set first home position, because then AI calls home movement
     SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
 
-    m_respawnradius = data->spawndist;
-
-    m_respawnDelay = data->spawntimesecs;
     m_deathState = ALIVE;
 
     m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_DBTableGuid,GetInstanceId());
@@ -1608,7 +1613,12 @@ void Creature::SetDeathState(DeathState s)
     {
         m_corpseRemoveTime = time(nullptr) + m_corpseDelay;
         m_respawnTime = time(nullptr) + m_respawnDelay + m_corpseDelay;
-
+        /* TC
+        if (IsDungeonBoss() && !m_respawnDelay)
+            m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+        else
+            m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
+        */
         // always save boss respawn time at death to prevent crash cheating
         if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || IsWorldBoss())
             SaveRespawnTime();
@@ -2368,7 +2378,7 @@ void Creature::AllLootRemovedFromCorpse()
         else
             m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
 
-        m_respawnTime = m_corpseRemoveTime + m_respawnDelay;
+        m_respawnTime = std::max<time_t>(m_corpseRemoveTime + m_respawnDelay, m_respawnTime);
     }
 }
 
