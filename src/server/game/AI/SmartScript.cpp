@@ -1069,22 +1069,26 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             if (!targets)
                 break;
 
-            for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
+            // there should be at least a world update tick before despawn, to avoid breaking linked actions
+            int32 const respawnDelay = std::max<int32>(e.action.forceDespawn.delay, 1);
+
+
+            for (WorldObject* target : *targets)
             {
-                if (IsCreature(*itr))
+                if (Creature* creatureTarget = target->ToCreature())
                 {
-                    if ((*itr)->ToUnit()->IsAlive() && IsSmart((*itr)->ToCreature()))
+                    if (SmartAI* smartAI = CAST_AI(SmartAI, creatureTarget->AI()))
                     {
-                        CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->SetDespawnTime(e.action.forceDespawn.delay + 1); // Next tick
-                        CAST_AI(SmartAI, (*itr)->ToCreature()->AI())->StartDespawn();
+                        smartAI->SetDespawnTime(respawnDelay);
+                        smartAI->StartDespawn();
                     }
                     else
-                        me->ForcedDespawn(e.action.forceDespawn.delay);
-                } else if(IsGameObject(*itr)) {
-                    (*itr)->ToGameObject()->SetDespawnTimer(e.action.forceDespawn.delay + 1);
+                        creatureTarget->DespawnOrUnsummon(respawnDelay);
                 }
+                else if (GameObject* goTarget = target->ToGameObject())
+                    goTarget->SetRespawnTime(respawnDelay);
             }
-            
+
             delete targets;
             break;
         }
