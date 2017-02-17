@@ -79,11 +79,11 @@ void WorldSession::HandleCreatureQueryOpcode( WorldPacket & recvData )
 {
     uint32 entry;
     recvData >> entry;
-    /* //Not used, but 335 client send guid too:
+#ifdef LICH_KING
     uint64 guid;
     if(GetClientBuild() == BUILD_335)
         recvData >> guid;
-    */
+#endif
 
     CreatureTemplate const *ci = sObjectMgr->GetCreatureTemplate(entry);
     if (ci)
@@ -181,11 +181,11 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 {
     uint32 entryID;
     recvData >> entryID;
-    /* //Not used, but 335 client send guid too:
+#ifdef LICH_KING
     uint64 guid;
     if(GetClientBuild() == BUILD_335)
         recvData >> guid;
-    */
+#endif
 
     const GameObjectTemplate *info = sObjectMgr->GetGameObjectTemplate(entryID);
     if(info)
@@ -220,7 +220,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << IconName;                                   // 2.0.3, string
         data << CastBarCaption;                             // 2.0.3, string. Text will appear in Cast Bar when using GO (ex: "Collecting")
         data << uint8(0);                                   // 2.0.3, probably string
-        data.append(info->raw.data,MAX_GAMEOBJECT_DATA);
+        data.append(info->raw.data, MAX_GAMEOBJECT_DATA);
 
 #ifdef BUILD_335_SUPPORT
         if (GetClientBuild() == BUILD_335)
@@ -276,16 +276,13 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 
 void WorldSession::HandleNpcTextQueryOpcode( WorldPacket & recvData )
 {
-    
-
     uint32 textID;
     uint64 guid;
 
     recvData >> textID;
-    TC_LOG_DEBUG("network", "WORLD: CMSG_NPC_TEXT_QUERY TextId: %u", textID);
+    //TC_LOG_DEBUG("network", "WORLD: CMSG_NPC_TEXT_QUERY TextId: %u", textID);
 
     recvData >> guid;
-    //needed? GetPlayer()->SetTarget(guid);
 
     GossipText const* gossip = sObjectMgr->GetGossipText(textID);
 
