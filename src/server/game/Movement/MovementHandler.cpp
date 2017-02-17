@@ -71,6 +71,7 @@ void WorldSession::HandleMoveWorldportAck()
     // relocate the player to the teleport destination
     GetPlayer()->SetMapId(loc.m_mapId);
     GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
+    GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
 
     // since the MapId is set before the GetInstance call, the InstanceId must be set to 0
     // to let GetInstance() determine the proper InstanceId based on the player's binds
@@ -214,8 +215,9 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     Position oldPos(*plMover);
 
     plMover->UpdatePosition(dest, true);
+    plMover->SetFallInformation(0, GetPlayer()->GetPositionZ());
 
-    // xinef: teleport pets if they are not unsummoned
+    // teleport pets if they are not unsummoned
     if (Pet* pet = plMover->GetPet())
     {
         if (!pet->IsWithinDist3d(plMover, plMover->GetMap()->GetVisibilityRange() - 5.0f))
@@ -276,6 +278,13 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     /* handle special cases */
     if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
+        // We were teleported, skip packets that were broadcast before teleport
+        if (movementInfo.pos.GetExactDist2d(mover) > SIZE_OF_GRIDS)
+        {
+            recvData.rfinish();                 // prevent warnings spam
+            return;
+        }
+
 #ifdef LICH_KING
         // T_POS ON VEHICLES!
         if (mover->GetVehicle())
@@ -284,8 +293,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
-        if (movementInfo.transport.pos.GetPositionX() > 75.0f || movementInfo.transport.pos.GetPositionY() > 75.0f || movementInfo.transport.pos.GetPositionZ() > 75.0f ||
-            movementInfo.transport.pos.GetPositionX() < -75.0f || movementInfo.transport.pos.GetPositionY() < -75.0f || movementInfo.transport.pos.GetPositionZ() < -75.0f)
+        if (fabs(movementInfo.transport.pos.GetPositionX()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionY()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionZ()) > 75.0f ) 
         {
             recvData.rfinish();                   // prevent warnings spam
             return;

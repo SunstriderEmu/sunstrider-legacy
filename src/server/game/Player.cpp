@@ -1845,7 +1845,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         // this will be used instead of the current location in SaveToDB
         m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
         //reset fall info
-        SetFallInformation(0, z);
+        SetFallInformation(0, GetPositionZ());
 
         // code for finish transfer called in WorldSession::HandleMovementOpcodes()
         // at client packet MSG_MOVE_TELEPORT_ACK
@@ -1952,7 +1952,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 oldmap->Remove(this, false);
 
             m_teleport_dest = WorldLocation(mapid, x, y, z, orientation);
-            SetFallInformation(0, z);
+            SetFallInformation(0, GetPositionZ());
             // if the player is saved before worldportack (at logout for example)
             // this will be used instead of the current location in SaveToDB
 
@@ -8146,8 +8146,16 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         }
         else
         {
+            // exploit fix
+            if (!creature->HasFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE))
+            {
+                SendLootError(guid, LOOT_ERROR_DIDNT_KILL);
+                return;
+            }
+
             // the player whose group may loot the corpse
             Player *recipient = creature->GetLootRecipient();
+            // Group* recipientGroup = creature->GetLootRecipientGroup();
             if (!recipient)
             {
                 creature->SetLootRecipient(this);
@@ -8197,6 +8205,11 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
             {
                 loot->clear();
                 loot->FillLoot(creature->GetCreatureTemplate()->SkinLootId, LootTemplates_Skinning, this);
+
+                //permission = OWNER_PERMISSION;
+
+                // Set new loot recipient
+                creature->SetLootRecipient(this /*, false*/);
             }
             // set group rights only for loot_type != LOOT_SKINNING
             else
@@ -13846,8 +13859,7 @@ bool Player::SatisfyQuestStatus(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestConditions(Quest const* qInfo, bool msg)
 {
-    ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, qInfo->GetQuestId());
-    if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
+    if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, qInfo->GetQuestId(), this))
     {
         if (msg)
         {
@@ -15593,7 +15605,7 @@ bool Player::IsAllowedToLoot(Creature const* creature) const
         */
 
     /*if (loot->loot_type == LOOT_SKINNING)
-        return creature->GetSkinner() == GetGUID(); */
+        return creature->GetLootRecipientGUID() == GetGUID(); */
 
     Group const* thisGroup = GetGroup();
     if (!thisGroup)
@@ -18649,8 +18661,7 @@ bool Player::BuyItemFromVendor(uint64 vendorguid, uint32 item, uint8 count, uint
         return false;
     }
 
-    ConditionList conditions = sConditionMgr->GetConditionsForNpcVendorEvent(pCreature->GetEntry(), item);
-    if (!sConditionMgr->IsObjectMeetToConditions(this, pCreature, conditions))
+    if (!sConditionMgr->IsObjectMeetingVendorItemConditions(pCreature->GetEntry(), item, this, pCreature))
     {
         TC_LOG_DEBUG("condition", "BuyItemFromVendor: conditions not met for creature entry %u item %u", pCreature->GetEntry(), item);
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
@@ -23081,7 +23092,7 @@ uint32 Player::GetGossipTextId(uint32 menuId, WorldObject* source) const
 
     for (auto itr = menuBounds.first; itr != menuBounds.second; ++itr)
     {
-        if (sConditionMgr->IsObjectMeetToConditions(this, source, itr->second.conditions))
+        if (sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(this), source, itr->second.conditions))
             textId = itr->second.text_id;
     }
 

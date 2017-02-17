@@ -49,7 +49,7 @@ struct LootStoreItem
     uint8   maxcount    :8;                                 // max drop count for the item (mincountOrRef positive) or Ref multiplicator (mincountOrRef negative)
     uint16  conditionId :16;                                // OLD CONDITION SYSTEM: additional loot condition Id
     bool    needs_quest :1;                                 // quest drop (negative ChanceOrQuestChance in DB)
-    ConditionList conditions;                               // additional loot condition
+    ConditionContainer conditions;                               // additional loot condition
 
     // Constructor, converting ChanceOrQuestChance -> (chance, needs_quest)
     // displayid is filled in IsValid() which must be called after
@@ -68,7 +68,7 @@ struct LootItem
     uint32  itemid;
     uint32  randomSuffix;
     int32   randomPropertyId;
-    ConditionList conditions;                               // additional loot condition
+    ConditionContainer conditions;                               // additional loot condition
     uint16  conditionId       :16;                          // old conditions, allow compiler pack structure
     uint8   count             : 8;
     bool    is_looted         : 1;
@@ -153,7 +153,7 @@ class TC_GAME_API LootTemplate
         void AddEntry(LootStoreItem* item);
         // Rolls for every item in the template and adds the rolled items the the loot
         void Process(Loot& loot, LootStore const& store, uint8 GroupId = 0) const;
-        void CopyConditions(const ConditionList& conditions);
+        void CopyConditions(const ConditionContainer& conditions);
         void CopyConditions(LootItem* li) const;
 
         // True if template includes at least 1 quest drop entry

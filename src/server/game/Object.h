@@ -143,21 +143,45 @@ struct TC_GAME_API Position
     bool IsPositionValid() const;
 
     float GetExactDist2dSq(float x, float y) const
-        { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
+    { 
+        float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; 
+    }
     float GetExactDist2d(const float x, const float y) const
-        { return sqrt(GetExactDist2dSq(x, y)); }
+    { 
+        return sqrt(GetExactDist2dSq(x, y)); 
+    }
     float GetExactDist2dSq(const Position *pos) const
-        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; }
+    { 
+        float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; 
+    }
     float GetExactDist2d(const Position *pos) const
-        { return sqrt(GetExactDist2dSq(pos)); }
+    { 
+        return sqrt(GetExactDist2dSq(pos)); 
+    }
     float GetExactDistSq(float x, float y, float z) const
-        { float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; }
+    { 
+        float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; 
+    }
     float GetExactDist(float x, float y, float z) const
-        { return sqrt(GetExactDistSq(x, y, z)); }
+    { 
+        return sqrt(GetExactDistSq(x, y, z)); 
+    }
     float GetExactDistSq(const Position *pos) const
-        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; }
+    { 
+        float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; 
+    }
     float GetExactDist(const Position *pos) const
-        { return sqrt(GetExactDistSq(pos)); }
+     { 
+        return sqrt(GetExactDistSq(pos)); 
+    }
+    float GetExactDistSq(Position const& pos) const
+    {
+        float dx = m_positionX - pos.m_positionX; float dy = m_positionY - pos.m_positionY; float dz = m_positionZ - pos.m_positionZ; return dx*dx + dy*dy + dz*dz;
+    }
+    float GetExactDist(Position const& pos) const
+    {
+        return std::sqrt(GetExactDistSq(pos));
+    }
 
     void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
     Position GetPositionWithOffset(Position const& offset) const;
@@ -178,7 +202,7 @@ struct TC_GAME_API Position
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
     bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
-    bool HasInLine(const WorldObject* target, float width) const;
+    bool HasInLine(const WorldObject* target, float objSize, float width) const;
     std::string ToString() const;
 
     // modulos a radian orientation to the range of 0..2PI

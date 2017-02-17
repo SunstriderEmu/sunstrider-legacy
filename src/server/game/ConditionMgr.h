@@ -81,7 +81,7 @@ enum ConditionTypes
 
     Step 6: Determine how you are going to store your conditions. You need to add a new storage container
             for it in ConditionMgr class, along with a function like:
-            ConditionList GetConditionsForXXXYourNewSourceTypeXXX(parameters...)
+            ConditionContainer GetConditionsForXXXYourNewSourceTypeXXX(parameters...)
 
             The above function should be placed in upper level (practical) code that actually
             checks the conditions.
@@ -203,14 +203,12 @@ struct Condition
     std::string ToString(bool ext = false) const; /// For logging purpose
 };
 
-typedef std::list<Condition*> ConditionList;
-typedef std::map<uint32, ConditionList> ConditionTypeContainer;
-typedef std::map<ConditionSourceType, ConditionTypeContainer> ConditionContainer;
-typedef std::map<uint32, ConditionTypeContainer> CreatureSpellConditionContainer;
-typedef std::map<uint32, ConditionTypeContainer> NpcVendorConditionContainer;
-typedef std::map<std::pair<int32, uint32 /*SAI source_type*/>, ConditionTypeContainer> SmartEventConditionContainer;
-
-typedef std::map<uint32, ConditionList> ConditionReferenceContainer;//only used for references
+typedef std::vector<Condition*> ConditionContainer;
+typedef std::map<uint32 /*SourceEntry*/, ConditionContainer> ConditionsByEntryMap;
+typedef std::array<ConditionsByEntryMap, CONDITION_SOURCE_TYPE_MAX> ConditionEntriesByTypeArray;
+typedef std::map<uint32, ConditionsByEntryMap> ConditionEntriesByCreatureIdMap;
+typedef std::map<std::pair<int32, uint32 /*SAI source_type*/>, ConditionsByEntryMap> SmartEventConditionContainer;
+typedef std::map<uint32, ConditionContainer> ConditionReferenceContainer;//only used for references
 
 class TC_GAME_API ConditionMgr
 {
@@ -226,21 +224,23 @@ class TC_GAME_API ConditionMgr
         }
 
         void LoadConditions(bool isReload = false);
-        void AddCondition(Condition* cond);
-        bool isConditionTypeValid(Condition* cond);
-        ConditionList GetConditionReferences(uint32 refId);
+        bool isConditionTypeValid(Condition* cond) const;
+        ConditionContainer GetConditionReferences(uint32 refId);
 
-        uint32 GetSearcherTypeMaskForConditionList(ConditionList const& conditions);
-        bool IsObjectMeetToConditions(WorldObject const* object, ConditionList const& conditions);
-        bool IsObjectMeetToConditions(WorldObject const* object1, WorldObject const * object2, ConditionList const& conditions);
-        bool IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, ConditionList const& conditions);
+        uint32 GetSearcherTypeMaskForConditionList(ConditionContainer const& conditions) const;
+        bool IsObjectMeetToConditions(WorldObject* object, ConditionContainer const& conditions) const;
+        bool IsObjectMeetToConditions(WorldObject* object1, WorldObject* object2, ConditionContainer const& conditions) const;
+        bool IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, ConditionContainer const& conditions) const;
         static bool CanHaveSourceGroupSet(ConditionSourceType sourceType);
         static bool CanHaveSourceIdSet(ConditionSourceType sourceType);
-        ConditionList GetConditionsForNotGroupedEntry(ConditionSourceType sourceType, uint32 entry);
-        ConditionList GetConditionsForSpellClickEvent(uint32 creatureId, uint32 spellId);
-        ConditionList GetConditionsForSmartEvent(int32 entryOrGuid, uint32 eventId, uint32 sourceType);
-        ConditionList GetConditionsForVehicleSpell(uint32 creatureId, uint32 spellId);
-        ConditionList GetConditionsForNpcVendorEvent(uint32 creatureId, uint32 itemId);
+        bool IsObjectMeetingNotGroupedConditions(ConditionSourceType sourceType, uint32 entry, ConditionSourceInfo& sourceInfo) const;
+        bool IsObjectMeetingNotGroupedConditions(ConditionSourceType sourceType, uint32 entry, WorldObject* target0, WorldObject* target1 = nullptr, WorldObject* target2 = nullptr) const;
+        bool HasConditionsForNotGroupedEntry(ConditionSourceType sourceType, uint32 entry) const;
+        bool IsObjectMeetingSpellClickConditions(uint32 creatureId, uint32 spellId, WorldObject* clicker, WorldObject* target) const;
+        ConditionContainer const* GetConditionsForSpellClickEvent(uint32 creatureId, uint32 spellId) const;
+        bool IsObjectMeetingVehicleSpellConditions(uint32 creatureId, uint32 spellId, Player* player, Unit* vehicle) const;
+        bool IsObjectMeetingSmartEventConditions(int32 entryOrGuid, uint32 eventId, uint32 sourceType, Unit* unit, WorldObject* baseObject) const;
+        bool IsObjectMeetingVendorItemConditions(uint32 creatureId, uint32 itemId, Player* player, Creature* vendor) const;
 
         struct ConditionTypeInfo
         {
@@ -258,18 +258,18 @@ class TC_GAME_API ConditionMgr
         bool addToGossipMenus(Condition* cond);
         bool addToGossipMenuItems(Condition* cond);
         bool addToSpellImplicitTargetConditions(Condition* cond);
-        bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionList const& conditions);
+        bool IsObjectMeetToConditionList(ConditionSourceInfo& sourceInfo, ConditionContainer const& conditions) const;
 
         static void LogUselessConditionValue(Condition* cond, uint8 index, uint32 value);
 
         void Clean(); // free up resources
-        std::list<Condition*> AllocatedMemoryStore; // some garbage collection :)
+        std::vector<Condition*> AllocatedMemoryStore; // some garbage collection :)
 
-        ConditionContainer                ConditionStore;
+        ConditionEntriesByTypeArray       ConditionStore;
         ConditionReferenceContainer       ConditionReferenceStore;
-        CreatureSpellConditionContainer   VehicleSpellConditionStore;
-        CreatureSpellConditionContainer   SpellClickEventConditionStore;
-        NpcVendorConditionContainer       NpcVendorConditionContainerStore;
+        ConditionEntriesByCreatureIdMap   VehicleSpellConditionStore;
+        ConditionEntriesByCreatureIdMap   SpellClickEventConditionStore;
+        ConditionEntriesByCreatureIdMap   NpcVendorConditionContainerStore;
         SmartEventConditionContainer      SmartEventConditionStore;
 };
 

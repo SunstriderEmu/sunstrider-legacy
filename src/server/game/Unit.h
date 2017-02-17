@@ -1850,6 +1850,7 @@ class TC_GAME_API Unit : public WorldObject
         /* Check if unit has at least one aura of given state; This just checks UNIT_FIELD_AURASTATE if no caster is given, or check in m_auraStateAuras if so (some state being caster dependant) */
         bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
+        //This triggers a KillMagnetEvent
         Unit* GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo);
         Unit* GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo = nullptr);
 

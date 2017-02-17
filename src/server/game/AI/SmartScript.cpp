@@ -92,7 +92,7 @@ void SmartScript::OnReset()
 
 void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellInfo* spell, GameObject* gob)
 {
-    for (auto & mEvent : mEvents)
+    for (auto& mEvent : mEvents)
     {
         SMART_EVENT eventType = SMART_EVENT(mEvent.GetEventType());
         if (eventType == SMART_EVENT_LINK)//special handling
@@ -100,10 +100,7 @@ void SmartScript::ProcessEventsFor(SMART_EVENT e, Unit* unit, uint32 var0, uint3
 
         if (eventType == e/* && (!i->event.event_phase_mask || IsInPhase(i->event.event_phase_mask)) && !(i->event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE && i->runOnce)*/)
         {
-            ConditionList conds = sConditionMgr->GetConditionsForSmartEvent(mEvent.entryOrGuid, mEvent.event_id, mEvent.source_type);
-            ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject());
-
-            if (sConditionMgr->IsObjectMeetToConditions(info, conds))
+            if (sConditionMgr->IsObjectMeetingSmartEventConditions(mEvent.entryOrGuid, mEvent.event_id, mEvent.source_type, unit, GetBaseObject()))
                 ProcessEvent(mEvent, unit, var0, var1, bvar, spell, gob);
         }
     }
@@ -2660,16 +2657,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
 void SmartScript::ProcessTimedAction(SmartScriptHolder& e, uint32 const& min, uint32 const& max, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellInfo* spell, GameObject* gob)
 {
-    ConditionList const conds = sConditionMgr->GetConditionsForSmartEvent(e.entryOrGuid, e.event_id, e.source_type);
-    ConditionSourceInfo info = ConditionSourceInfo(unit, GetBaseObject(), me ? me->GetVictim() : nullptr);
-
-    if (sConditionMgr->IsObjectMeetToConditions(info, conds))
-    {
+    if (sConditionMgr->IsObjectMeetingSmartEventConditions(e.entryOrGuid, e.event_id, e.source_type, unit, GetBaseObject()))
         ProcessAction(e, unit, var0, var1, bvar, spell, gob);
-        RecalcTimer(e, min, max);
-    }
-    else
-        RecalcTimer(e, 5000, 5000);
+
+    RecalcTimer(e, min, max);
 }
 
 void SmartScript::InstallTemplate(SmartScriptHolder const& e)

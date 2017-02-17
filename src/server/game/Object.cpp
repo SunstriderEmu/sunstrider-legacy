@@ -1892,11 +1892,12 @@ bool Position::operator==(Position const &a)
         G3D::fuzzyEq(a.m_orientation, m_orientation));
 }
 
-bool Position::HasInLine(const WorldObject* const target, float width) const
+bool Position::HasInLine(const WorldObject* const target, float objSize, float width) const
 {
     if (!HasInArc(float(M_PI), target))
         return false;
-    width += target->GetObjectSize();
+
+    width += objSize;
     float angle = GetRelativeAngle(target);
     return fabs(sin(angle)) * GetExactDist2d(target->GetPositionX(), target->GetPositionY()) < width;
 }

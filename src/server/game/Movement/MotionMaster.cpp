@@ -514,10 +514,13 @@ void MotionMaster::MoveFall(uint32 id /*=0*/)
     if (fabs(_owner->GetPositionZ() - tz) < 0.1f)
         return;
 
+    _owner->AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
+    _owner->m_movementInfo.SetFallTime(0);
+
     if (_owner->GetTypeId() == TYPEID_PLAYER)
     {
-        _owner->AddUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING);
-        _owner->m_movementInfo.SetFallTime(0);
+        _owner->ToPlayer()->SetFallInformation(0, _owner->GetPositionZ());
+        return;
     }
 
     Movement::MoveSplineInit init(_owner);
