@@ -1859,6 +1859,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             Relocate(x, y, z, orientation);
             SendTeleportAckPacket();
             SendTeleportPacket(oldPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
+
+            if (!IsWithinDist3d(x, y, z, GetMap()->GetVisibilityRange()))
+                RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED);
         }
     }
     else
@@ -1967,6 +1970,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
                 SendDirectMessage(&data);
                 SendSavedInstances();
+
+                RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED);
             }
 
             // move packet sent by client always after far teleport
