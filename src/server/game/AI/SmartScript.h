@@ -261,7 +261,7 @@ class TC_GAME_API SmartScript
             uint32 previous = mEventPhase;
 
             if (p >= 0)
-                mEventPhase += (uint32)p;
+                mEventPhase += std::min<uint32>(SMART_EVENT_PHASE_COUNT, mEventPhase + p); // protect phase from overflowing
             else
                 DecPhase(abs(p));
 
