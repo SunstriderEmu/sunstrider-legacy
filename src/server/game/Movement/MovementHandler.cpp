@@ -523,9 +523,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         plrMover->HandleFall(movementInfo);
 
 #ifdef LICH_KING
-    // Xinef: interrupt parachutes upon falling or landing in water
-        if (opcode == MSG_MOVE_FALL_LAND || opcode == MSG_MOVE_START_SWIM)
-            mover->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LANDING); // Parachutes
+    //  interrupt parachutes upon falling or landing in water
+    if (opcode == MSG_MOVE_FALL_LAND || opcode == MSG_MOVE_START_SWIM)
+        mover->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_LANDING); // Parachutes
 #endif
 
     if (plrMover)                                            // nothing is charmed, or player charmed

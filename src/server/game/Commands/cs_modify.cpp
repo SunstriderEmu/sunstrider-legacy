@@ -1,5 +1,6 @@
 #include "Chat.h"
 #include "Language.h"
+#include "ReplayPlayer.h"
 
 bool ChatHandler::HandleDrunkCommand(const char* args)
 {
@@ -462,10 +463,10 @@ bool ChatHandler::HandleModifySpeedCommand(const char* args)
         return false;
     }
 
-    if (m_session->IsReplaying())
+    if (auto replayPlayer = m_session->GetReplayPlayer())
     {
         WorldPacket dataForMe(SMSG_FORCE_RUN_SPEED_CHANGE, 18);
-        dataForMe << PackedGuid(MAKE_PAIR64(m_session->GetRecorderGuid(), HIGHGUID_PLAYER));
+        dataForMe << PackedGuid(MAKE_PAIR64(replayPlayer->GetRecorderGuid(), HIGHGUID_PLAYER));
         dataForMe << uint32(0);
         dataForMe << float(baseMoveSpeed[MOVE_RUN] * Speed);
         m_session->SendPacket(&dataForMe);
@@ -510,10 +511,10 @@ bool ChatHandler::HandleModifySwimCommand(const char* args)
         return false;
     }
 
-    if (m_session->IsReplaying())
+    if (auto replayPlayer = m_session->GetReplayPlayer())
     {
         WorldPacket dataForMe(SMSG_FORCE_SWIM_SPEED_CHANGE, 18);
-        dataForMe << PackedGuid(MAKE_PAIR64(m_session->GetRecorderGuid(), HIGHGUID_PLAYER));
+        dataForMe << PackedGuid(MAKE_PAIR64(replayPlayer->GetRecorderGuid(), HIGHGUID_PLAYER));
         dataForMe << uint32(0);
         dataForMe << float(baseMoveSpeed[MOVE_SWIM] * Swim);
         m_session->SendPacket(&dataForMe);

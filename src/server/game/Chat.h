@@ -447,7 +447,6 @@ class TC_GAME_API ChatHandler
         bool HandleReplayForwardCommand(const char* args);
         bool HandleReplayStopCommand(const char* args);
         bool HandleReplaySpeedCommand(const char* args);
-        bool HandleDebugRecvPacketDumpWrite(const char* args);
 
         // MMap
         bool HandleMmapPathCommand(const char* args);

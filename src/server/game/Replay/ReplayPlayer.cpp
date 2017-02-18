@@ -1,0 +1,97 @@
+#include "ReplayPlayer.h"
+
+ReplayPlayer::~ReplayPlayer()
+{
+    ReadFromFile("");
+}
+
+bool ReplayPlayer::UpdateReplay()
+{
+    if (!_pcktReading)
+        return false;
+
+    while (true)
+    {
+        long int pos = ftell(_pcktReading);
+        uint32 nextTime = 0;
+        fscanf(_pcktReading, "%u", &nextTime);
+        if (!nextTime)
+        {
+            ReadFromFile("");
+            break;
+        }
+        fseek(_pcktReading, pos, SEEK_SET);
+        uint32 now = GetMSTime();
+        uint32 diff = GetMSTimeDiff(_pcktReadLastUpdate, now);
+        _pcktReadLastUpdate = now;
+        _pcktReadTimer += diff * _pcktReadSpeedRate;
+        if (nextTime > _pcktReadTimer) // Stop
+            break;
+        // else, send another packet
+        uint32 size = 0;
+        uint32 opcode = 0;
+        int32 readValue = 0;
+        if (fscanf(_pcktReading, "%u:%u:%u|%u", &nextTime, &opcode, &size, &readValue) != 4)
+            return false;
+        else
+        {
+            WorldPacket data(opcode, size);
+            while (true)
+            {
+                if (data.size() >= size && readValue != 256)
+                {
+                    if (_player)
+                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet size [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                    return false;
+                }
+                if (readValue == 256)
+                    break;
+                data << uint8(readValue);
+                int readCount = fscanf(_pcktReading, " %u", &readValue);
+                if (!readCount)
+                {
+                    if (_player)
+                        ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet (truncated) [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                    return false;
+                }
+            }
+            _player->GetSession()->SendPacket(&data);
+            fscanf(_pcktReading, "\n");
+        }
+    }
+    return true;
+}
+
+bool ReplayPlayer::ReadFromFile(std::string const& file)
+{
+    if (file == "")
+    {
+        if (_pcktReading)
+            fclose(_pcktReading);
+        _pcktReading = nullptr;
+        return false;
+    }
+    ReadFromFile(""); // Clean
+    _pcktReading = fopen(file.c_str(), "r");
+    if (_pcktReading)
+    {
+        uint32 fileTime = 0;
+        uint32 recorderGuidLow = 0;
+        if (!fscanf(_pcktReading, "BEGIN_TIME=%u\n", &fileTime))
+        {
+            fclose(_pcktReading);
+            _pcktReading = nullptr;
+            return false;
+        }
+        _pcktReadTimer = fileTime;
+        _pcktReadLastUpdate = GetMSTime();
+        if (fscanf(_pcktReading, "RECORDER_LOWGUID=%u\n", &recorderGuidLow))
+            _recorderGuid = recorderGuidLow;
+        else
+            _recorderGuid = 0;
+    }
+    else
+        return false;
+
+    return true;
+}

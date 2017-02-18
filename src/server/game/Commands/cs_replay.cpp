@@ -1,72 +1,78 @@
 #include "Chat.h"
 #include "WorldSession.h"
+#include "ReplayPlayer.h"
+#include "ReplayRecorder.h"
 
 bool ChatHandler::HandleReplayPlayCommand(const char* c)
 {
     if (!c || !*c || strchr(c, '/') != NULL || strchr(c, '.') != NULL)
         return false;
+
     WorldSession* sess = m_session;
     if (Player* player = GetSelectedPlayer())
         sess = player->GetSession();
+
     std::string filename = "replays/";
     filename += c;
-    sess->SetReadPacket(filename.c_str());
-    if (m_session->IsReplaying())
+    bool result = sess->StartReplaying(filename);
+    if (result)
         PSendSysMessage("Starting replay %s for %s", c, playerLink(sess->GetPlayerName()).c_str());
     else
         PSendSysMessage("Could not start replay %s", c);
     return true;
 }
 
-bool ChatHandler::HandleDebugRecvPacketDumpWrite(const char* args)
-{
-    WorldSession* sess = m_session;
-    if (Player* player = GetSelectedPlayer())
-        sess = player->GetSession();
-    PSendSysMessage("Starting replay recording for %s", playerLink(sess->GetPlayerName()).c_str());
-    sess->SetDumpRecvPackets(args);
-    return true;
-}
-
 bool ChatHandler::HandleReplayForwardCommand(const char* args)
 {
-    if (!m_session->IsReplaying())
+    int32 secsToSkip = (int32)atoi((char*)args);
+
+    auto player = m_session->GetReplayPlayer();
+    if (player == nullptr)
     {
         SendSysMessage("Not replaying currently");
         SetSentErrorMessage(true);
         return false;
     }
-    int32 secsToSkip = (int32)atoi((char*)args);
-    m_session->ReplaySkipTime(secsToSkip);
+
+    player->SkipTime(secsToSkip);
     PSendSysMessage("Skipping %i ms", secsToSkip);
     return true;
 }
 
 bool ChatHandler::HandleReplaySpeedCommand(const char* args)
 {
-    if (!m_session->IsReplaying())
-    {
-        SendSysMessage("Not currently replaying");
-        SetSentErrorMessage(true);
-        return false;
-    }
     float newRate = (float)atof((char*)args);
-    m_session->SetReplaySpeedRate(newRate);
-    PSendSysMessage("Read speed rate changed to %f", newRate);
-    return true;
-}
 
-
-bool ChatHandler::HandleReplayStopCommand(const char* args)
-{
-    if (!m_session->IsReplaying())
+    auto player = m_session->GetReplayPlayer();
+    if (player == nullptr)
     {
         SendSysMessage("Not replaying currently");
         SetSentErrorMessage(true);
         return false;
     }
-    m_session->SetReadPacket(NULL);
-    SendSysMessage("Replay stopped");
+
+    player->SetSpeedRate(newRate);
+    PSendSysMessage("Read speed rate changed to %f", newRate);
+    return true;
+}
+
+
+bool ChatHandler::HandleReplayStopCommand(const char* /* args */)
+{
+    bool result1 = m_session->StopRecording();
+    if (result1)
+        SendSysMessage("Stopped recording");
+
+    bool result2 = m_session->StopReplaying();
+    //if stopped, output handled in StopReplaying
+
+    if(!result1 && !result2)
+    {
+        SendSysMessage("No recording to stop");
+        SetSentErrorMessage(true);
+        return false;
+    }
+
     return true;
 }
 
@@ -75,7 +81,14 @@ bool ChatHandler::HandleReplayRecordCommand(const char* args)
     WorldSession* sess = m_session;
     if (Player* player = GetSelectedPlayer())
         sess = player->GetSession();
-    PSendSysMessage("Starting replay recording for %s", playerLink(sess->GetPlayerName()).c_str());
-    sess->SetDumpPacket(args);
+
+    std::string recordName(args);
+    if (args == "")
+        return false;
+
+    if (sess->StartRecording(recordName))
+        PSendSysMessage("Starting replay recording for %s with name %s", playerLink(sess->GetPlayerName()).c_str(), args);
+    else
+        PSendSysMessage("Could not start recording. (Maybe you're already recording?)");
     return true;
 }
