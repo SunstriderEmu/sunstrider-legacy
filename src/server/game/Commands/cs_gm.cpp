@@ -111,6 +111,9 @@ bool ChatHandler::HandleGMFlyModeCommand(const char* args)
         SendSysMessage(LANG_USE_BOL);
         return false;
     }
+
+    //+replay handling?
+
     PSendSysMessage(LANG_COMMAND_FLYMODE_STATUS, unit->GetName().c_str(), args);
     return true;
 }

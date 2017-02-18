@@ -412,6 +412,22 @@ class TC_GAME_API WorldSession
         void SetLatency(uint32 latency) { m_latency = latency; }
         void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
 
+        bool IsReplaying() const { return _pcktReading != nullptr; }
+        uint32 GetRecorderGuid() const { return _recorderGuid; }
+        void ReplaySkipTime(int32 delay) { _pcktReadTimer += delay; }
+        void SetReplaySpeedRate(float r) { _pcktReadSpeedRate = r; }
+        void SetDumpPacket(const char* file);
+        void SetReadPacket(const char* file);
+        void SetDumpRecvPackets(const char* file);
+
+        FILE* _pcktReading;
+        FILE* _pcktWriting;
+        FILE* _pcktRecvDump;
+        float  _pcktReadSpeedRate;
+        uint32 _pcktReadTimer;
+        uint32 _pcktReadLastUpdate;
+        uint32 _recorderGuid;
+
         uint32 GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
         std::atomic<int32> m_timeOutTime;

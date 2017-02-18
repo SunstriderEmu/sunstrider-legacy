@@ -135,7 +135,8 @@ m_TutorialsChanged(false),
 _warden(NULL), 
 lastCheatWarn(time(NULL)),
 forceExit(false),
-expireTime(60000) // 1 min after socket loss, session is deleted /!\ DISABLED. See comment at expireTime usage.
+_pcktReading(nullptr), _pcktWriting(nullptr), _pcktRecvDump(nullptr), _pcktReadSpeedRate(1.0f), _pcktReadTimer(0), _pcktReadLastUpdate(0),
+expireTime(60000) 
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -157,7 +158,7 @@ WorldSession::~WorldSession()
     /// - If have unclosed socket, close it
     if (m_Socket)
     {
-        m_Socket->CloseSocket ();
+        m_Socket->CloseSocket();
         m_Socket = nullptr;
     }
     
@@ -168,6 +169,10 @@ WorldSession::~WorldSession()
     WorldPacket* packet = NULL;
     while (_recvQueue.next(packet))
         delete packet;
+
+    SetDumpPacket(nullptr);
+    SetReadPacket(nullptr);
+    SetDumpRecvPackets(nullptr);
 
     LoginDatabase.AsyncPQuery("UPDATE account SET online = 0 WHERE id = %u;", GetAccountId());
     CharacterDatabase.AsyncPQuery("UPDATE characters SET online = 0 WHERE account = %u;", GetAccountId());
@@ -257,6 +262,17 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetPlayerInfo().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet->GetOpcode())).c_str());
     m_Socket->SendPacket(*packet);
+
+    // Log packet for replay
+    if (_pcktWriting)
+    {
+        std::stringstream oss;
+        oss << GetMSTime() << ":" << packet->GetOpcode() << ":" << packet->size() << "|";
+        for (size_t i = 0; i < packet->size(); ++i)
+            oss << uint32(packet->read<uint8>(i)) << " ";
+        oss << "256\n";
+        fprintf(_pcktWriting, oss.str().c_str());
+    }
 }
 
 /// Add an incoming packet to the queue
@@ -334,6 +350,14 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     
     while (m_Socket && _recvQueue.next(packet, updater))
     {
+        if (_pcktRecvDump)
+        {
+            fprintf(_pcktRecvDump, "%u:%s:%u|", GetMSTime(), GetOpcodeNameForLogging(packet->GetOpcode()).c_str(), uint32(packet->size()));
+            for (size_t i = 0; i < packet->size(); ++i)
+                fprintf(_pcktRecvDump, "%u ", uint32(packet->read<uint8>(i)));
+            fprintf(_pcktRecvDump, "256\n");
+        }
+
         ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
 
         try
@@ -489,6 +513,71 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
         if (!m_Socket)
             return false;                                       //Will remove this session from the world session map
+    }
+
+    if (_pcktReading)
+    {
+        while (true)
+        {
+            long int pos = ftell(_pcktReading);
+            uint32 nextTime = 0;
+            fscanf(_pcktReading, "%u", &nextTime);
+            if (!nextTime)
+            {
+                SetReadPacket(nullptr);
+                break;
+            }
+            fseek(_pcktReading, pos, SEEK_SET);
+            uint32 now = GetMSTime();
+            uint32 diff = GetMSTimeDiff(_pcktReadLastUpdate, now);
+            _pcktReadLastUpdate = now;
+            _pcktReadTimer += diff * _pcktReadSpeedRate;
+            if (nextTime > _pcktReadTimer) // Stop
+                break;
+            // Sinon on envoie encore un paquet.
+            uint32 size = 0;
+            uint32 opcode = 0;
+            int32 readValue = 0;
+            bool errorWhileReading = false;
+            if (fscanf(_pcktReading, "%u:%u:%u|%u", &nextTime, &opcode, &size, &readValue) != 4)
+                errorWhileReading = true;
+            else
+            {
+                WorldPacket data(opcode, size);
+                while (true)
+                {
+                    if (data.size() >= size && readValue != 256)
+                    {
+                        if (_player)
+                            ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet size [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                        errorWhileReading = true;
+                        break;
+                    }
+                    if (readValue == 256)
+                        break;
+                    data << uint8(readValue);
+                    int readCount = fscanf(_pcktReading, " %u", &readValue);
+                    if (!readCount)
+                    {
+                        if (_player)
+                            ChatHandler(_player).PSendSysMessage("[Replay] Invalid packet (truncated) [opcode %s|size %u|time %u]", GetOpcodeNameForLogging(opcode).c_str(), size, nextTime);
+                        errorWhileReading = true;
+                        break;
+                    }
+                }
+                if (!errorWhileReading)
+                {
+                    SendPacket(&data);
+                    fscanf(_pcktReading, "\n");
+                }
+            }
+            // Got an error
+            if (errorWhileReading)
+            {
+                SetReadPacket(nullptr);
+                break;
+            }
+        }
     }
 
     return true;
@@ -1087,6 +1176,70 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
     trans->Append(stmt);
 
     m_TutorialsChanged = false;
+}
+
+
+void WorldSession::SetDumpPacket(const char* file)
+{
+    if (!file)
+    {
+        if (_pcktWriting)
+            fclose(_pcktWriting);
+        _pcktWriting = nullptr;
+        return;
+    }
+    SetDumpPacket(nullptr); // Clean
+    _pcktWriting = fopen(file, "w+");
+    if (_pcktWriting)
+    {
+        fprintf(_pcktWriting, "BEGIN_TIME=%u\n", GetMSTime());
+        fprintf(_pcktWriting, "RECORDER_LOWGUID=%u\n", _player ? _player->GetGUIDLow() : 0);
+    }
+}
+
+void WorldSession::SetReadPacket(const char* file)
+{
+    if (!file)
+    {
+        if (_pcktReading)
+            fclose(_pcktReading);
+        _pcktReading = nullptr;
+        return;
+    }
+    SetReadPacket(nullptr); // Clean
+    _pcktReading = fopen(file, "r");
+    if (_pcktReading)
+    {
+        uint32 fileTime = 0;
+        uint32 recorderGuidLow = 0;
+        if (!fscanf(_pcktReading, "BEGIN_TIME=%u\n", &fileTime))
+        {
+            fclose(_pcktReading);
+            _pcktReading = nullptr;
+            return;
+        }
+        _pcktReadTimer = fileTime;
+        _pcktReadLastUpdate = GetMSTime();
+        if (fscanf(_pcktReading, "RECORDER_LOWGUID=%u\n", &recorderGuidLow))
+            _recorderGuid = recorderGuidLow;
+        else
+            _recorderGuid = 0;
+    }
+}
+
+void WorldSession::SetDumpRecvPackets(const char* file)
+{
+    if (!file)
+    {
+        if (_pcktRecvDump)
+            fclose(_pcktRecvDump);
+        _pcktRecvDump = nullptr;
+        return;
+    }
+    SetDumpRecvPackets(nullptr); // Clean
+    _pcktRecvDump = fopen(file, "w+");
+    if (_pcktRecvDump)
+        fprintf(_pcktRecvDump, "#Begin packet dump on %s [id %u]\n", GetPlayerName().c_str(), GetAccountId());
 }
 
 /* TC

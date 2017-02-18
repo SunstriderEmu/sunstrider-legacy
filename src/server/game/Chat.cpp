@@ -631,7 +631,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "stop",           SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayStopCommand,           "" },
         { "record",         SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayRecordCommand,         "" },
         { "speed",          SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplaySpeedCommand,          "" },
-        { "",               SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayPlayCommand,           "" },
     };
 
     static std::vector<ChatCommand> ticketCommandTable =
@@ -777,6 +776,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "removetitle"    ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveTitleCommand,         "" },
         { "rename",         SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleRenameCommand,              "" },
         { "repairitems",    SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleRepairitemsCommand,         "" },
+        { "replay",         SEC_ADMINISTRATOR,false, false, nullptr,                                        "", replayCommandTable },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "" },
         { "reset",          SEC_GAMEMASTER3,  false, false, nullptr,                                        "", resetCommandTable },
         { "reskin",         SEC_PLAYER,       false, false, &ChatHandler::HandleReskinCommand,              "" },

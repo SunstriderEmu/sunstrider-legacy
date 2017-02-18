@@ -69,7 +69,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         return;
     }
 
-    if(langDesc->skill_id != 0 && !_player->HasSkill(langDesc->skill_id))
+    if(!IsReplaying() && langDesc->skill_id != 0 && !_player->HasSkill(langDesc->skill_id))
     {
         // also check SPELL_AURA_COMPREHEND_LANGUAGE (client offers option to speak in that language)
         Unit::AuraList const& langAuras = _player->GetAurasByType(SPELL_AURA_COMPREHEND_LANGUAGE);

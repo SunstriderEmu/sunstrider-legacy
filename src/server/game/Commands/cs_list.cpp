@@ -107,7 +107,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
 
     // inventory case
     uint32 inv_count = 0;
-    result=CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM character_inventory WHERE item_template='%u'",item_id);
+    result = CharacterDatabase.PQuery("SELECT COUNT(item_template) FROM character_inventory WHERE item_template='%u'", item_id);
     if(result)
     {
         inv_count = (*result)[0].GetUInt64();
@@ -118,7 +118,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
         "SELECT ci.item, cibag.slot AS bag, ci.slot, ci.guid, characters.account,characters.name "
         "FROM character_inventory AS ci LEFT JOIN character_inventory AS cibag ON (cibag.item=ci.bag),characters "
         "WHERE ci.item_template='%u' AND ci.guid = characters.guid LIMIT %u ",
-        item_id,uint32(count));
+        item_id, uint32(count));
 
     if(result)
     {

@@ -330,7 +330,7 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
 
     if (sWorld->getConfig(CONFIG_DEBUG_LOG_LAST_PACKETS))
         ClearLastPacketsSent();
-
+    
     std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
 
     switch (opcode)
