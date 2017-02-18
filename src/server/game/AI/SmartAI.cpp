@@ -350,7 +350,7 @@ void SmartAI::UpdateAI(const uint32 diff)
         {
             if (me->FindNearestCreature(mFollowArrivedEntry, INTERACTION_DISTANCE, true))
             {
-                StopFollow();
+                StopFollow(true);
                 return;
             }
 
@@ -727,7 +727,12 @@ void SmartAI::SetRun(bool run)
     mRun = run;
 }
 
-void SmartAI::SetFly(bool fly)
+void SmartAI::SetDisableGravity(bool fly)
+{
+    me->SetDisableGravity(fly);
+}
+
+void SmartAI::SetCanFly(bool fly)
 {
     me->SetCanFly(fly);
 }
@@ -809,7 +814,7 @@ void SmartAI::SetFollow(Unit* target, float dist, float angle, uint32 credit, ui
 {
     if (!target)
     {
-        StopFollow();
+        StopFollow(false);
         return;
     }
 
@@ -824,16 +829,8 @@ void SmartAI::SetFollow(Unit* target, float dist, float angle, uint32 credit, ui
     me->GetMotionMaster()->MoveFollow(target, mFollowDist, mFollowAngle);
 }
 
-void SmartAI::StopFollow()
+void SmartAI::StopFollow(bool complete)
 {
-    if (Player* player = ObjectAccessor::GetPlayer(*me, mFollowGuid))
-    {
-        if (!mFollowCreditType)
-            player->RewardPlayerAndGroupAtEvent(mFollowCredit, me);
-        else
-            player->GroupEventHappens(mFollowCredit, me);
-    }
-
     mFollowGuid = 0;
     mFollowDist = 0;
     mFollowAngle = 0;
@@ -844,6 +841,18 @@ void SmartAI::StopFollow()
     SetDespawnTime(5000);
     me->StopMoving();
     me->GetMotionMaster()->MoveIdle();
+
+    if (!complete)
+        return;
+
+    if (Player* player = ObjectAccessor::GetPlayer(*me, mFollowGuid))
+    {
+        if (!mFollowCreditType)
+            player->RewardPlayerAndGroupAtEvent(mFollowCredit, me);
+        else
+            player->GroupEventHappens(mFollowCredit, me);
+    }
+
     StartDespawn();
     GetScript()->ProcessEventsFor(SMART_EVENT_FOLLOW_COMPLETED);
 }
@@ -899,10 +908,10 @@ void SmartGameObjectAI::Reset()
 }
 
 // Called when a player opens a gossip dialog with the gameobject.
-bool SmartGameObjectAI::OnGossipHello(Player* player)
+bool SmartGameObjectAI::GossipHello(Player* player, bool reportUse)
 {
     TC_LOG_DEBUG("scripts.ai","SmartGameObjectAI::GossipHello");
-    GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, 0, 0, false, nullptr, go);
+    GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, uint32(reportUse), 0, false, nullptr, go);
     return false;
 }
 
@@ -969,6 +978,11 @@ void SmartGameObjectAI::OnLootStateChanged(LootState state, Unit* unit)
 void SmartGameObjectAI::EventInform(uint32 eventId)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_GO_EVENT_INFORM, nullptr, eventId);
+}
+
+void SmartGameObjectAI::SpellHit(Unit* unit, const SpellInfo* spellInfo)
+{
+    GetScript()->ProcessEventsFor(SMART_EVENT_SPELLHIT, unit, 0, 0, false, spellInfo);
 }
 
 class SmartTrigger : public AreaTriggerScript

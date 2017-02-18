@@ -43,8 +43,12 @@ enum SMART_EVENT_PHASE
     SMART_EVENT_PHASE_4       = 4,
     SMART_EVENT_PHASE_5       = 5,
     SMART_EVENT_PHASE_6       = 6,
+    SMART_EVENT_PHASE_7       = 7,
     SMART_EVENT_PHASE_8       = 8,
     SMART_EVENT_PHASE_9       = 9,
+    SMART_EVENT_PHASE_10      = 10,
+    SMART_EVENT_PHASE_11      = 11,
+    SMART_EVENT_PHASE_12      = 12,
     SMART_EVENT_PHASE_MAX,
 
     SMART_EVENT_PHASE_COUNT   = SMART_EVENT_PHASE_MAX - 1
@@ -62,7 +66,12 @@ enum SMART_EVENT_PHASE_BITS
     SMART_EVENT_PHASE_7_BIT        = 64,
     SMART_EVENT_PHASE_8_BIT        = 128,
     SMART_EVENT_PHASE_9_BIT        = 256,
-    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + SMART_EVENT_PHASE_6_BIT + SMART_EVENT_PHASE_7_BIT + SMART_EVENT_PHASE_8_BIT + SMART_EVENT_PHASE_9_BIT
+    SMART_EVENT_PHASE_10_BIT       = 512,
+    SMART_EVENT_PHASE_11_BIT       = 1024,
+    SMART_EVENT_PHASE_12_BIT       = 2048,
+    SMART_EVENT_PHASE_ALL          = SMART_EVENT_PHASE_1_BIT + SMART_EVENT_PHASE_2_BIT + SMART_EVENT_PHASE_3_BIT + SMART_EVENT_PHASE_4_BIT + SMART_EVENT_PHASE_5_BIT + 
+                                     SMART_EVENT_PHASE_6_BIT + SMART_EVENT_PHASE_7_BIT + SMART_EVENT_PHASE_8_BIT + SMART_EVENT_PHASE_9_BIT + SMART_EVENT_PHASE_10_BIT + 
+                                     SMART_EVENT_PHASE_11_BIT + SMART_EVENT_PHASE_12_BIT
 };
 
 const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
@@ -73,6 +82,12 @@ const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
     {SMART_EVENT_PHASE_4, SMART_EVENT_PHASE_4_BIT },
     {SMART_EVENT_PHASE_5, SMART_EVENT_PHASE_5_BIT },
     {SMART_EVENT_PHASE_6, SMART_EVENT_PHASE_6_BIT },
+    {SMART_EVENT_PHASE_7, SMART_EVENT_PHASE_7_BIT },
+    {SMART_EVENT_PHASE_8, SMART_EVENT_PHASE_8_BIT },
+    {SMART_EVENT_PHASE_9, SMART_EVENT_PHASE_9_BIT },
+    {SMART_EVENT_PHASE_10, SMART_EVENT_PHASE_10_BIT },
+    {SMART_EVENT_PHASE_11, SMART_EVENT_PHASE_11_BIT },
+    {SMART_EVENT_PHASE_12, SMART_EVENT_PHASE_12_BIT }
 };
 
 enum SMART_EVENT
@@ -141,7 +156,7 @@ enum SMART_EVENT
     SMART_EVENT_LINK                     = 61,      // INTERNAL USAGE, no params, used to link together multiple events, does not use any extra resources to iterate event lists needlessly
     SMART_EVENT_GOSSIP_SELECT            = 62,      // menuID, actionID, any (0|1)
     SMART_EVENT_JUST_CREATED             = 63,      // none
-    SMART_EVENT_GOSSIP_HELLO             = 64,      // none
+    SMART_EVENT_GOSSIP_HELLO             = 64,      // noReportUse (for GOs)
     SMART_EVENT_FOLLOW_COMPLETED         = 65,      // none
     SMART_EVENT_DUMMY_EFFECT             = 66,      // spellId, effectIndex
     SMART_EVENT_IS_BEHIND_TARGET         = 67,      // cooldownMin, CooldownMax
@@ -346,6 +361,11 @@ struct SmartEvent
 
         struct
         {
+            uint32 noReportUse;
+        } gossipHello;
+
+        struct
+        {
             uint32 sender;
             uint32 action;
             uint32 any; //ignore two first parameters
@@ -516,7 +536,7 @@ enum SMART_ACTION
     SMART_ACTION_REMOVE_ITEM                        = 57,     // itemID, count
     SMART_ACTION_INSTALL_AI_TEMPLATE                = 58,     // AITemplateID
     SMART_ACTION_SET_RUN                            = 59,     // 0/1
-    SMART_ACTION_SET_FLY                            = 60,     // 0/1
+    SMART_ACTION_SET_DISABLE_GRAVITY                = 60,     // 0/1
     SMART_ACTION_SET_SWIM                           = 61,     // 0/1
     SMART_ACTION_TELEPORT                           = 62,     // mapID, ignoreMap, useVisual (spell 41232)
     SMART_ACTION_SET_COUNTER                        = 63,     // id, value, reset (0/1)
@@ -575,6 +595,15 @@ enum SMART_ACTION
     SMART_ACTION_SET_CORPSE_DELAY                   = 116,    // timer
     SMART_ACTION_DISABLE_EVADE                      = 117,    // 0/1 (1 = disabled, 0 = enabled)
     SMART_ACTION_GO_SET_GO_STATE                    = 118,    // state
+    SMART_ACTION_SET_CAN_FLY                        = 119,    // 0/1
+    SMART_ACTION_REMOVE_AURAS_BY_TYPE               = 120,    // type
+    SMART_ACTION_SET_SIGHT_DIST                     = 121,    // sightDistance
+    SMART_ACTION_FLEE                               = 122,    // fleeTime
+    SMART_ACTION_ADD_THREAT                         = 123,    // +threat, -threat
+    SMART_ACTION_LOAD_EQUIPMENT                     = 124,    // id
+    SMART_ACTION_TRIGGER_RANDOM_TIMED_EVENT         = 125,    // id min range, id max range
+    SMART_ACTION_REMOVE_ALL_GAMEOBJECTS             = 126,
+    SMART_ACTION_STOP_MOTION                        = 127,	  // stopMoving, movementExpired
 
     /*
     range reserved for TC updates
@@ -656,12 +685,20 @@ struct SmartAction
         struct
         {
             uint32 spell;
-            uint32 flags;
+            uint32 castFlags;
+            uint32 triggerFlags;
+            uint32 targetsLimit;
+        } cast;
+
+        struct
+        {
+            uint32 spell;
+            uint32 castFlags;
             uint32 targetType;
             uint32 targetParam1;
             uint32 targetParam2;
             uint32 targetParam3;
-        } cast;
+        } crossCast;
 
         struct
         {
@@ -724,6 +761,11 @@ struct SmartAction
             uint32 spell;
             uint32 charges;
         } removeAura;
+
+        struct
+        {
+            uint32 disable;
+        } setDisableGravity;
 
         struct
         {
@@ -1005,6 +1047,11 @@ struct SmartAction
         struct
         {
             uint32 withEmote;
+        } fleeAssist;
+
+        struct
+        {
+            uint32 fleeTime;
         } flee;
 
         struct
@@ -1132,6 +1179,34 @@ struct SmartAction
             uint32 apply;
         } spellImmunity;
 
+        struct
+        {
+            uint32 type;
+        } auraType;
+
+        struct
+        {
+            uint32 dist;
+        } sightDistance;
+
+        struct
+        {
+            uint32 id;
+            uint32 force;
+        } loadEquipment;
+
+        struct
+        {
+            uint32 minId;
+            uint32 maxId;
+        } randomTimedEvent;
+
+        struct
+        {
+            uint32 stopMovement;
+            uint32 movementExpired;
+        } stopMotion;
+
         //! Note for any new future actions
         //! All parameters must have type uint32
 
@@ -1164,10 +1239,10 @@ enum SMARTAI_TARGETS
     SMART_TARGET_NONE                           = 0,    // NONE, defaulting to invoket
     SMART_TARGET_SELF                           = 1,    // Self cast
     SMART_TARGET_VICTIM                         = 2,    // Our current target (ie: highest aggro)
-    SMART_TARGET_HOSTILE_SECOND_AGGRO           = 3,    // Second highest aggro
-    SMART_TARGET_HOSTILE_LAST_AGGRO             = 4,    // Dead last on aggro
-    SMART_TARGET_HOSTILE_RANDOM                 = 5,    // Just any random target on our threat list
-    SMART_TARGET_HOSTILE_RANDOM_NOT_TOP         = 6,    // Any random target except top threat
+    SMART_TARGET_HOSTILE_SECOND_AGGRO           = 3,    // Second highest aggro, maxdist, playerOnly, powerType + 1
+    SMART_TARGET_HOSTILE_LAST_AGGRO             = 4,    // Dead last on aggro, maxdist, playerOnly, powerType + 1
+    SMART_TARGET_HOSTILE_RANDOM                 = 5,    // Just any random target on our threat list, maxdist, playerOnly, powerType + 1
+    SMART_TARGET_HOSTILE_RANDOM_NOT_TOP         = 6,    // Any random target except top threat, maxdist, playerOnly, powerType + 1
     SMART_TARGET_ACTION_INVOKER                 = 7,    // Unit who caused this Event to occur
     SMART_TARGET_POSITION                       = 8,    // use xyz from event params
     SMART_TARGET_CREATURE_RANGE                 = 9,    // CreatureEntry(0any), minDist, maxDist, livingState (1 alive, 2 dead, 0 both)
@@ -1183,15 +1258,21 @@ enum SMARTAI_TARGETS
     SMART_TARGET_CLOSEST_CREATURE               = 19,   // CreatureEntry(0any), maxDist, dead?
     SMART_TARGET_CLOSEST_GAMEOBJECT             = 20,   // entry(0any), maxDist
     SMART_TARGET_CLOSEST_PLAYER                 = 21,   // maxDist
-    //SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
-    SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner
-    SMART_TARGET_THREAT_LIST                    = 24,   // All units on creature's threat list
+#ifdef LICH_KING
+    SMART_TARGET_ACTION_INVOKER_VEHICLE         = 22,   // Unit's vehicle who caused this Event to occur
+#endif
+    SMART_TARGET_OWNER_OR_SUMMONER              = 23,   // Unit's owner or summoner, Use Owner/Charmer of this unit
+    SMART_TARGET_THREAT_LIST                    = 24,   // All units on creature's threat list, maxdist
     SMART_TARGET_CLOSEST_ENEMY                  = 25,   // maxDist, playerOnly
     SMART_TARGET_CLOSEST_FRIENDLY               = 26,   // maxDist, playerOnly
+    SMART_TARGET_LOOT_RECIPIENTS                = 27,   // all players that have tagged this creature (for kill credit)
+    SMART_TARGET_FARTHEST                       = 28,   // maxDist, playerOnly, isInLos
 
     //custom sunstrider
     SMART_TARGET_PLAYER_CASTING_DISTANCE        = 101,  // maxDist, any player currently casting
     SMART_TARGET_FRIENDLY_HEALTH_PCT            = 102,  // maxDist, percentBelow, entry (0any)
+
+    SMART_TARGET_END                            = 103
 };
 
 //custom sunstrider, column target_flags
@@ -1224,6 +1305,20 @@ struct SmartTarget
     float x, y, z, o;
     union
     {
+        struct
+        {
+            uint32 maxDist;
+            uint32 playerOnly;
+            uint32 powerType;
+        } hostilRandom;
+
+        struct
+        {
+            uint32 maxDist;
+            uint32 playerOnly;
+            uint32 isInLos;
+        } farthest;
+
         struct
         {
             uint32 creature;
@@ -1312,6 +1407,11 @@ struct SmartTarget
             uint32 percentBelow;
             uint32 entry; // 0 = any
         } friendlyHealthPct;
+
+        struct
+        {
+            uint32 useCharmerOrOwner;
+        } owner;
 
         struct
         {
@@ -1591,6 +1691,7 @@ class TC_GAME_API SmartWaypointMgr
 
 // all events for a single entry
 typedef std::vector<SmartScriptHolder> SmartAIEventList;
+typedef std::vector<SmartScriptHolder> SmartAIEventStoredList;
 
 // all events for all entries / guids
 typedef std::unordered_map<int32, SmartAIEventList> SmartAIEventMap;

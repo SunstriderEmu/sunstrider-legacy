@@ -28,7 +28,7 @@ class TC_GAME_API GameObjectAI
         
         static int Permissible(const GameObject* go);
         
-        virtual bool OnGossipHello(Player* player) {return false;}
+        virtual bool GossipHello(Player* /*player*/, bool /*reportUse*/) { return false; }
         virtual bool OnGossipSelect(Player* player, uint32 sender, uint32 action) {return false;}
         virtual bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) {return false;}
         virtual bool OnQuestAccept(Player* player, Quest const* quest) {return false;}
@@ -38,6 +38,7 @@ class TC_GAME_API GameObjectAI
         virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) {}
         virtual void GetData(uint32 id) const {}
         virtual void EventInform(uint32 /*eventId*/) {}
+        virtual void SpellHit(Unit* /*unit*/, const SpellInfo* /*spellInfo*/) { }
 
         virtual void OnStateChanged(GOState /*state*/, Unit* /*unit*/) { }
         virtual void OnLootStateChanged(LootState /*state*/, Unit* /*unit*/) { }

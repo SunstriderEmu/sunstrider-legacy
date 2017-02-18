@@ -32,6 +32,7 @@
 #include "ScriptMgr.h"
 #include "Containers.h"
 #include "SpellScript.h"
+#include "GameObjectAI.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -2981,6 +2982,9 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
     for(uint32 effectNumber = 0; effectNumber < MAX_SPELL_EFFECTS; effectNumber++)
         if (effectMask & (1 << effectNumber))
             HandleEffects(nullptr,nullptr,go,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
+
+    if (go->AI())
+        go->AI()->SpellHit(m_caster, m_spellInfo);
 
     // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
     // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )

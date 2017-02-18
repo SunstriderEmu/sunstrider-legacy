@@ -144,7 +144,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
                 {
                     if (!sObjectMgr->GetGameObjectTemplate((uint32)temp.entryOrGuid))
                     {
-                        TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: GameObject entry (%u) does not exist, skipped loading.", uint32(temp.entryOrGuid));
+                        SMARTAI_DB_ERROR(temp.entryOrGuid,"SmartAIMgr::LoadSmartAIFromDB: GameObject entry (%u) does not exist, skipped loading.", uint32(temp.entryOrGuid));
                         continue;
                     }
                     break;
@@ -153,7 +153,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
                 {
                     if (!sAreaTriggerStore.LookupEntry((uint32)temp.entryOrGuid))
                     {
-                        TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: AreaTrigger entry (%u) does not exist, skipped loading.", uint32(temp.entryOrGuid));
+                        SMARTAI_DB_ERROR(temp.entryOrGuid,"SmartAIMgr::LoadSmartAIFromDB: AreaTrigger entry (%u) does not exist, skipped loading.", uint32(temp.entryOrGuid));
                         continue;
                     }
                     break;
@@ -161,7 +161,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
                 case SMART_SCRIPT_TYPE_TIMED_ACTIONLIST:
                     break;//nothing to check, really
                 default:
-                    TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: not yet implemented source_type %u", (uint32)source_type);
+                    SMARTAI_DB_ERROR(temp.entryOrGuid,"SmartAIMgr::LoadSmartAIFromDB: not yet implemented source_type %u", (uint32)source_type);
                     continue;
             }
         }
@@ -169,7 +169,7 @@ void SmartAIMgr::LoadSmartAIFromDB()
         {
             if (!sObjectMgr->GetCreatureData(uint32(abs(temp.entryOrGuid))))
             {
-                TC_LOG_ERROR("sql.sql","SmartAIMgr::LoadSmartAIFromDB: Creature guid (%u) does not exist, skipped loading.", uint32(abs(temp.entryOrGuid)));
+                SMARTAI_DB_ERROR(uint32(abs(temp.entryOrGuid)),"SmartAIMgr::LoadSmartAIFromDB: Creature guid (%u) does not exist, skipped loading.", uint32(abs(temp.entryOrGuid)));
                 continue;
             }
         }
@@ -212,6 +212,50 @@ void SmartAIMgr::LoadSmartAIFromDB()
         // check all event and action params
         if (!IsEventValid(temp))
             continue;
+
+        // specific check for timed events
+        switch (temp.event.type)
+        {
+        case SMART_EVENT_UPDATE:
+        case SMART_EVENT_UPDATE_OOC:
+        case SMART_EVENT_UPDATE_IC:
+        case SMART_EVENT_HEALT_PCT:
+        case SMART_EVENT_TARGET_HEALTH_PCT:
+        case SMART_EVENT_MANA_PCT:
+        case SMART_EVENT_TARGET_MANA_PCT:
+        case SMART_EVENT_RANGE:
+        case SMART_EVENT_FRIENDLY_HEALTH:
+        case SMART_EVENT_FRIENDLY_HEALTH_PCT:
+        case SMART_EVENT_FRIENDLY_MISSING_BUFF:
+        case SMART_EVENT_HAS_AURA:
+        case SMART_EVENT_TARGET_BUFFED:
+            if (temp.event.minMaxRepeat.repeatMin == 0 && temp.event.minMaxRepeat.repeatMax == 0 && !(temp.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && temp.source_type != SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
+            {
+                temp.event.event_flags |= SMART_EVENT_FLAG_NOT_REPEATABLE;
+                SMARTAI_DB_ERROR(temp.entryOrGuid, "SmartAIMgr::LoadSmartAIFromDB: Entry %d SourceType %u, Event %u, Missing Repeat flag.",
+                    temp.entryOrGuid, temp.GetScriptType(), temp.event_id);
+            }
+            break;
+        case SMART_EVENT_VICTIM_CASTING:
+        case SMART_EVENT_IS_BEHIND_TARGET:
+            if (temp.event.minMaxRepeat.min == 0 && temp.event.minMaxRepeat.max == 0 && !(temp.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && temp.source_type != SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
+            {
+                temp.event.event_flags |= SMART_EVENT_FLAG_NOT_REPEATABLE;
+                SMARTAI_DB_ERROR(temp.entryOrGuid, "SmartAIMgr::LoadSmartAIFromDB: Entry %d SourceType %u, Event %u, Missing Repeat flag.",
+                    temp.entryOrGuid, temp.GetScriptType(), temp.event_id);
+            }
+            break;
+        case SMART_EVENT_FRIENDLY_IS_CC:
+            if (temp.event.friendlyCC.repeatMin == 0 && temp.event.friendlyCC.repeatMax == 0 && !(temp.event.event_flags & SMART_EVENT_FLAG_NOT_REPEATABLE) && temp.source_type != SMART_SCRIPT_TYPE_TIMED_ACTIONLIST)
+            {
+                temp.event.event_flags |= SMART_EVENT_FLAG_NOT_REPEATABLE;
+                SMARTAI_DB_ERROR(temp.entryOrGuid, "SmartAIMgr::LoadSmartAIFromDB: Entry %d SourceType %u, Event %u, Missing Repeat flag.",
+                    temp.entryOrGuid, temp.GetScriptType(), temp.event_id);
+            }
+            break;
+        default:
+            break;
+        }
 
         // creature entry / guid not found in storage, create empty event list for it and increase counters
         if (mEventMap[source_type].find(temp.entryOrGuid) == mEventMap[source_type].end())
@@ -316,6 +360,8 @@ bool SmartAIMgr::IsTargetValid(SmartScriptHolder const& e)
         case SMART_TARGET_CLOSEST_ENEMY:
         case SMART_TARGET_CLOSEST_FRIENDLY:
         case SMART_TARGET_STORED:
+        case SMART_TARGET_LOOT_RECIPIENTS:
+        case SMART_TARGET_FARTHEST:
             break;
         default:
             SMARTAI_DB_ERROR(e.entryOrGuid, "SmartAIMgr: Not handled target_type(%u), Entry %d SourceType %u Event %u Action %u, skipped.", e.GetTargetType(), e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
@@ -779,6 +825,12 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             if (e.action.randomEmote.emote6 && !IsEmoteValid(e, e.action.randomEmote.emote6))
                 return false;
             break;
+        case SMART_ACTION_CROSS_CAST:
+        {
+            if (!IsSpellValid(e, e.action.crossCast.spell))
+                return false;
+            break;
+        }
         case SMART_ACTION_ADD_AURA:
         case SMART_ACTION_CAST:
         case SMART_ACTION_INVOKER_CAST:
@@ -1041,6 +1093,15 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
                     TC_LOG_ERROR("sql.sql", "Entry %u SourceType %u Event %u Action %u uses invalid boss state %u (value range 0-5), skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.setInstanceData.data);
                     return false;
                 }
+            }
+            break;
+        }
+        case SMART_ACTION_REMOVE_AURAS_BY_TYPE:
+        {
+            if (e.action.auraType.type >= TOTAL_AURAS)
+            {
+                TC_LOG_ERROR("sql.sql", "Entry %u SourceType %u Event %u Action %u uses invalid data type %u (value range 0-TOTAL_AURAS), skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.auraType.type);
+                return false;
             }
             break;
         }

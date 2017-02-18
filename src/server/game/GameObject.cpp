@@ -432,6 +432,11 @@ void GameObject::Update(uint32 diff)
                             sMapMgr->CreateMap(GetMapId(), this)->Add(this);
                             break;
                     }
+
+
+                    // Call AI Reset (required for example in SmartAI to clear one time events)
+                    if (AI())
+                        AI()->Reset();
                 }
             }
 
@@ -535,6 +540,7 @@ void GameObject::Update(uint32 diff)
 
             if ((m_charges && m_usetimes >= m_charges) || (m_despawnTime && m_despawnTime <= time(nullptr)))
                 SetLootState(GO_JUST_DEACTIVATED);          // can be despawned or destroyed
+
 
             break;
         }
@@ -1200,6 +1206,15 @@ void GameObject::Use(Unit* user)
     // by default spell caster is user
     Unit* spellCaster = user;
     uint32 spellId = 0;
+
+    if (Player* playerUser = user->ToPlayer())
+    {
+        if (sScriptMgr->OnGossipHello(playerUser, this))
+            return;
+
+        if (AI()->GossipHello(playerUser, false))
+            return;
+    }
 
     switch(GetGoType())
     {

@@ -671,8 +671,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
         GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
+        Player* SelectNearestPlayer(float distance, bool alive = true) const;
 
-        Player* FindNearestPlayer(float range) const;
         bool isActiveObject() const { return m_isActive; }
         /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.

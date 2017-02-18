@@ -3681,10 +3681,19 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
+        // Players shouldn't be able to loot gameobjects that are currently despawned
+        if (!gameObjTarget->isSpawned() && !player->IsGameMaster())
+        {
+            TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn timer without being in GM mode!",
+                player->GetName().c_str(), player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+            return;
+        }
+
         if (sScriptMgr->OnGossipHello(player, gameObjTarget))
             return;
             
-        gameObjTarget->AI()->OnGossipHello(player);
+        if (gameObjTarget->AI()->GossipHello(player, false))
+            return;
 
         switch (gameObjTarget->GetGoType())
         {

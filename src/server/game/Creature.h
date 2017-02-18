@@ -664,7 +664,6 @@ class TC_GAME_API Creature : public Unit
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         //select nearest alive player
-        Player* SelectNearestPlayer(float distance = 0) const;
         Unit* SelectNearestTargetInAttackDistance(float dist) const;
 
 

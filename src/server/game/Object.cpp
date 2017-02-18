@@ -1650,13 +1650,15 @@ GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float
     return go;
 }
 
-Player* WorldObject::FindNearestPlayer(float range) const
+Player* WorldObject::SelectNearestPlayer(float distance, bool alive) const
 {
-       Player* pl = nullptr;
-       Trinity::AnyPlayerInObjectRangeCheck checker(this, range);
-       Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, pl, checker);
-       VisitNearbyObject(range, searcher);
-       return pl;
+    Player* target = nullptr;
+
+    Trinity::NearestPlayerInObjectRangeCheck checker(*this, alive, distance);
+    Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
+    VisitNearbyObject(distance, searcher);
+
+    return target;
 }
 
 void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float absAngle ) const
