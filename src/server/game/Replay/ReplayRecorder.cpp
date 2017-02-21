@@ -2,27 +2,31 @@
 
 ReplayRecorder::~ReplayRecorder()
 {
-    StartPacketDump("");
+    StopPacketDump();
 }
 
-bool ReplayRecorder::StartPacketDump(std::string const& file)
+bool ReplayRecorder::StartPacketDump(std::string const& file, WorldLocation startPosition)
 {
-    if (file == "")
-    {
-        if (_pcktWriting)
-            fclose(_pcktWriting);
-        _pcktWriting = nullptr;
-        return false;
-    }
-    StartPacketDump(""); // Clean
+    StopPacketDump(); // Clean
     _pcktWriting = fopen(file.c_str(), "w+");
     if (!_pcktWriting)
         return false;
 
     fprintf(_pcktWriting, "BEGIN_TIME=%u\n", GetMSTime());
     fprintf(_pcktWriting, "RECORDER_LOWGUID=%u\n", recorderGUID);
+    fprintf(_pcktWriting, "START_LOC_MAP=%u\n", startPosition.GetMapId());
+    fprintf(_pcktWriting, "START_LOC_X=%f\n", startPosition.GetPositionX());
+    fprintf(_pcktWriting, "START_LOC_Y=%f\n", startPosition.GetPositionY());
+    fprintf(_pcktWriting, "START_LOC_Z=%f\n", startPosition.GetPositionZ());
 
     return true;
+}
+
+void ReplayRecorder::StopPacketDump()
+{
+    if (_pcktWriting)
+        fclose(_pcktWriting);
+    _pcktWriting = nullptr;
 }
 
 void ReplayRecorder::AddPacket(WorldPacket const* packet)

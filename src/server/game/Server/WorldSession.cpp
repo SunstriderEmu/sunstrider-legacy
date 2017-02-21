@@ -1865,9 +1865,11 @@ bool WorldSession::StartRecording(std::string const& recordName)
     if (!_player)
         return false;
 
+    _player->GetPosition();
+
     _player->m_clientGUIDs.clear(); //clear objects for this client to force re sending them for record
-    m_replayRecorder = std::make_shared<ReplayRecorder>(_player ? _player->GetGUIDLow() : 0);
-    return m_replayRecorder->StartPacketDump(recordName.c_str());
+    m_replayRecorder = std::make_shared<ReplayRecorder>(_player->GetGUIDLow());
+    return m_replayRecorder->StartPacketDump(recordName.c_str(), WorldLocation(*_player));
 }
 
 bool WorldSession::StopRecording()
@@ -1895,7 +1897,13 @@ bool WorldSession::StartReplaying(std::string const& recordName)
         return false;
 
     m_replayPlayer = std::make_shared<ReplayPlayer>(_player);
-    return m_replayPlayer->ReadFromFile(recordName);
+    WorldLocation teleportTo;
+    bool result = m_replayPlayer->ReadFromFile(recordName, teleportTo);
+    if (!result)
+        return false;
+
+    _player->TeleportTo(teleportTo);
+    return true;
 }
 
 bool WorldSession::StopReplaying()

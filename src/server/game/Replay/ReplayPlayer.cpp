@@ -2,7 +2,14 @@
 
 ReplayPlayer::~ReplayPlayer()
 {
-    ReadFromFile("");
+    StopRead();
+}
+
+void ReplayPlayer::StopRead()
+{
+    if (_pcktReading)
+        fclose(_pcktReading);
+    _pcktReading = nullptr;
 }
 
 bool ReplayPlayer::UpdateReplay()
@@ -17,7 +24,7 @@ bool ReplayPlayer::UpdateReplay()
         fscanf(_pcktReading, "%u", &nextTime);
         if (!nextTime)
         {
-            ReadFromFile("");
+            StopRead();
             break;
         }
         fseek(_pcktReading, pos, SEEK_SET);
@@ -62,16 +69,9 @@ bool ReplayPlayer::UpdateReplay()
     return true;
 }
 
-bool ReplayPlayer::ReadFromFile(std::string const& file)
+bool ReplayPlayer::ReadFromFile(std::string const& file, WorldLocation& startLoc)
 {
-    if (file == "")
-    {
-        if (_pcktReading)
-            fclose(_pcktReading);
-        _pcktReading = nullptr;
-        return false;
-    }
-    ReadFromFile(""); // Clean
+    StopRead(); // Clean
     _pcktReading = fopen(file.c_str(), "r");
     if (_pcktReading)
     {
@@ -79,8 +79,7 @@ bool ReplayPlayer::ReadFromFile(std::string const& file)
         uint32 recorderGuidLow = 0;
         if (!fscanf(_pcktReading, "BEGIN_TIME=%u\n", &fileTime))
         {
-            fclose(_pcktReading);
-            _pcktReading = nullptr;
+            StopRead();
             return false;
         }
         _pcktReadTimer = fileTime;
@@ -89,6 +88,17 @@ bool ReplayPlayer::ReadFromFile(std::string const& file)
             _recorderGuid = recorderGuidLow;
         else
             _recorderGuid = 0;
+
+        uint32 mapId = 0;
+        float x, y, z;
+        if (fscanf(_pcktReading, "START_LOC_MAP=%u\n", &mapId))
+            startLoc.m_mapId = mapId;
+        if (fscanf(_pcktReading, "START_LOC_X=%f\n", &x))
+            startLoc.m_positionX = x;
+        if (fscanf(_pcktReading, "START_LOC_Y=%f\n", &y))
+            startLoc.m_positionY = y;
+        if (fscanf(_pcktReading, "START_LOC_Z=%f\n", &z))
+            startLoc.m_positionZ = z;
     }
     else
         return false;

@@ -79,8 +79,8 @@ bool ChatHandler::HandleReplayStopCommand(const char* /* args */)
 bool ChatHandler::HandleReplayRecordCommand(const char* args)
 {
     WorldSession* sess = m_session;
-    if (Player* player = GetSelectedPlayer())
-        sess = player->GetSession();
+    /*if (Player* player = GetSelectedPlayer())
+        sess = player->GetSession();*/
 
     std::string recordName(args);
     if (args == "")

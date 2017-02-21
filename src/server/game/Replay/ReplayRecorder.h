@@ -1,6 +1,8 @@
 #ifndef REPLAY_RECORDER_H
 #define REPLAY_RECORDER_H
 
+#include "SharedDefines.h"
+
 class ReplayRecorder
 {
 public:
@@ -10,7 +12,8 @@ public:
     {}
     ~ReplayRecorder();
 
-    bool StartPacketDump(std::string const& file);
+    bool StartPacketDump(std::string const& file, WorldLocation startPosition);
+    void StopPacketDump();
     void AddPacket(WorldPacket const* packet);
 
 private:

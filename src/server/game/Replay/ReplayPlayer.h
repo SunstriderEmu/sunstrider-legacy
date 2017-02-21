@@ -1,6 +1,8 @@
 #ifndef REPLAY_PLAYER_H
 #define REPLAY_PLAYER_H
 
+#include "SharedDefines.h"
+
 class ReplayPlayer
 {
 public:
@@ -19,7 +21,8 @@ public:
 	uint32 GetRecorderGuid() const { return _recorderGuid; }
 	void SkipTime(int32 delay) { _pcktReadTimer += delay; }
 	void SetSpeedRate(float r) { _pcktReadSpeedRate = r; }
-	bool ReadFromFile(std::string const& file);
+	bool ReadFromFile(std::string const& file, WorldLocation& startLoc);
+    void StopRead();
 
 private:
     FILE* _pcktReading;
