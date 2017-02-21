@@ -1215,7 +1215,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
         if (!unitTarget->ToPlayer()->IsVisible())
             return SPELL_FAILED_BM_OR_INVISGOD;
 
-        if (unitTarget->ToPlayer()->IsGameMaster())
+        if (!IsPositive() && unitTarget->ToPlayer()->IsGameMaster())
             return SPELL_FAILED_BM_OR_INVISGOD;
     }
 
