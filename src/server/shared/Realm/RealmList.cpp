@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include <boost/asio/ip/tcp.hpp>
 #include "Common.h"
@@ -38,7 +21,7 @@ void RealmList::Initialize(boost::asio::io_service& ioService, uint32 updateInte
     _resolver = new boost::asio::ip::tcp::resolver(ioService);
     
     // Get the content of the realmlist table in the database
-    UpdateRealms(true, boost::system::error_code());
+    UpdateRealms(boost::system::error_code());
 }
 
 void RealmList::Close()
@@ -67,7 +50,7 @@ void RealmList::UpdateRealm(RealmHandle const& id, uint32 build, const std::stri
     realm.Port = port;
 }
 
-void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
+void RealmList::UpdateRealms(boost::system::error_code const& error)
 {
     if (error)
         return;
@@ -129,6 +112,10 @@ void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
 
                 uint16 port = fields[5].GetUInt16();
                 uint8 icon = fields[6].GetUInt8();
+                if (icon == REALM_TYPE_FFA_PVP)
+                    icon = REALM_TYPE_PVP;
+                if (icon >= MAX_CLIENT_REALM_TYPE)
+                    icon = REALM_TYPE_NORMAL;
                 RealmFlags flag = RealmFlags(fields[7].GetUInt8());
                 uint8 timezone = fields[8].GetUInt8();
                 uint8 allowedSecurityLevel = fields[9].GetUInt8();
@@ -140,8 +127,12 @@ void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
                 UpdateRealm(id, build, name, externalAddress, localAddress, localSubmask, port, icon, flag,
                     timezone, (allowedSecurityLevel <= SEC_ADMINISTRATOR ? AccountTypes(allowedSecurityLevel) : SEC_ADMINISTRATOR), pop);
 
-                if (init)
+                if (!existingRealms.count(id))
                     TC_LOG_INFO("server.authserver", "Added realm \"%s\" at %s:%u.", name.c_str(), externalAddress.to_string().c_str(), port);
+                else
+                    TC_LOG_DEBUG("server.authserver", "Updating realm \"%s\" at %s:%u.", name.c_str(), externalAddress.to_string().c_str(), port);
+
+                existingRealms.erase(id);
             }
             catch (std::exception& ex)
             {
@@ -158,7 +149,7 @@ void RealmList::UpdateRealms(bool init, boost::system::error_code const& error)
     if (_updateInterval)
     {
         _updateTimer->expires_from_now(boost::posix_time::seconds(_updateInterval));
-        _updateTimer->async_wait(std::bind(&RealmList::UpdateRealms, this, false, std::placeholders::_1));
+        _updateTimer->async_wait(std::bind(&RealmList::UpdateRealms, this, std::placeholders::_1));
     }
 }
 
