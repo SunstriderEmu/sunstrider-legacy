@@ -73,7 +73,8 @@ enum WorldTimers
     WUPDATE_ARENASEASONLOG = 8,
     WUPDATE_CHECK_FILECHANGES = 9,
     WUPDATE_WHO_LIST      = 10,
-    WUPDATE_COUNT         = 11,
+    WUPDATE_PINGDB        = 11,
+    WUPDATE_COUNT         = 12,
 };
 
 /// Configuration elements
@@ -343,6 +344,8 @@ enum WorldConfigs
     CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED,
 
     CONFIG_MAP_CRASH_RECOVERY_ENABLED,
+
+    CONFIG_DB_PING_INTERVAL,
 
     CONFIG_VALUE_COUNT,
 };

@@ -1213,6 +1213,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_HOTSWAP_PREFIX_CORRECTION_ENABLED] = sConfigMgr->GetBoolDefault("HotSwap.EnablePrefixCorrection", true);
 
     m_configs[CONFIG_MAP_CRASH_RECOVERY_ENABLED] = sConfigMgr->GetBoolDefault("InstanceCrashRecovery.Enable", false);
+
+    m_configs[CONFIG_DB_PING_INTERVAL] = sConfigMgr->GetIntDefault("MaxPingTime", 5);
 }
 
 /// Initialize the World
@@ -1639,6 +1641,8 @@ void World::SetInitialWorldSettings()
     m_timers[WUPDATE_CORPSES].SetInterval(20*MINUTE*1000);  //erase corpses every 20 minutes
     m_timers[WUPDATE_ANNOUNCES].SetInterval(MINUTE*1000); // Check announces every minute
 
+    m_timers[WUPDATE_PINGDB].SetInterval(getIntConfig(CONFIG_DB_PING_INTERVAL)*MINUTE*IN_MILLISECONDS);    // Mysql ping time in minutes
+
     m_timers[WUPDATE_ARENASEASONLOG].SetInterval(MINUTE*1000);
 
     m_timers[WUPDATE_CHECK_FILECHANGES].SetInterval(500);
@@ -2018,6 +2022,17 @@ void World::Update(time_t diff)
         uint32 nextGameEvent = sGameEventMgr->Update();
         m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);
         m_timers[WUPDATE_EVENTS].Reset();
+    }
+
+    ///- Ping to keep MySQL connections alive
+    if (m_timers[WUPDATE_PINGDB].Passed())
+    {
+        m_timers[WUPDATE_PINGDB].Reset();
+        TC_LOG_DEBUG("misc", "Ping MySQL to keep connection alive");
+        CharacterDatabase.KeepAlive();
+        LoginDatabase.KeepAlive();
+        WorldDatabase.KeepAlive();
+        LogsDatabase.KeepAlive();
     }
 
     // update the instance reset times
