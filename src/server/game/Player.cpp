@@ -3301,7 +3301,12 @@ bool Player::AddSpell(uint32 spell_id, bool active, bool learning, bool dependen
 #endif
 
     // return true (for send learn packet) only if spell active (in case ranked spells) and not replace old spell
-    return active && !disabled && !superceded_old;
+    return active && !disabled 
+#ifdef LICH_KING
+        //not sure about LK, but this breaks icon profession icon when learning a new rank on BC
+        && !superceded_old
+#endif
+        ;
 }
 
 void Player::LearnSpell(uint32 spell_id, bool dependent, uint32 fromSkill /*= 0*/)
@@ -20293,7 +20298,7 @@ void Player::LearnSkillRewardedSpells()
 
         uint32 pskill = GetUInt32Value(PLAYER_SKILL_INDEX(i)) & 0x0000FFFF;
 
-        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(i));
+        LearnSkillRewardedSpells(pskill, GetPureMaxSkillValue(pskill));
     }
 }
 
