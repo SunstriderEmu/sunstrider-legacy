@@ -167,10 +167,57 @@ void SmartAIMgr::LoadSmartAIFromDB()
         }
         else
         {
-            if (!sObjectMgr->GetCreatureData(uint32(abs(temp.entryOrGuid))))
+            switch (source_type)
             {
-                SMARTAI_DB_ERROR(uint32(abs(temp.entryOrGuid)),"SmartAIMgr::LoadSmartAIFromDB: Creature guid (%u) does not exist, skipped loading.", uint32(abs(temp.entryOrGuid)));
-                continue;
+                case SMART_SCRIPT_TYPE_CREATURE:
+                {
+                    CreatureData const* creature = sObjectMgr->GetCreatureData(uint32(std::abs(temp.entryOrGuid)));
+                    if (!creature)
+                    {
+                        SMARTAI_DB_ERROR(uint32(abs(temp.entryOrGuid)), "SmartAIMgr::LoadSmartAIFromDB: Creature guid (%u) does not exist, skipped loading.", uint32(abs(temp.entryOrGuid)));
+                        continue;
+                    }
+
+                    CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creature->id);
+                    if (!creatureInfo)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: Creature entry (%u) guid (%u) does not exist, skipped loading.", creature->id, uint32(std::abs(temp.entryOrGuid)));
+                        continue;
+                    }
+
+                    if (creatureInfo->AIName != SMARTAI_AI_NAME)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: Creature entry (%u) guid (%u) is not using " SMARTAI_AI_NAME ", skipped loading.", creature->id, uint32(std::abs(temp.entryOrGuid)));
+                        continue;
+                    }
+                    break;
+                }
+                case SMART_SCRIPT_TYPE_GAMEOBJECT:
+                {
+                    GameObjectData const* gameObject = sObjectMgr->GetGOData(uint32(std::abs(temp.entryOrGuid)));
+                    if (!gameObject)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: GameObject guid (%u) does not exist, skipped loading.", uint32(std::abs(temp.entryOrGuid)));
+                        continue;
+                    }
+
+                    GameObjectTemplate const* gameObjectInfo = sObjectMgr->GetGameObjectTemplate(gameObject->id);
+                    if (!gameObjectInfo)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: GameObject entry (%u) guid (%u) does not exist, skipped loading.", gameObject->id, uint32(std::abs(temp.entryOrGuid)));
+                        continue;
+                    }
+
+                    if (gameObjectInfo->AIName != SMARTAI_GOBJECT_AI_NAME)
+                    {
+                        TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: GameObject entry (%u) guid (%u) is not using " SMARTAI_GOBJECT_AI_NAME ", skipped loading.", gameObject->id, uint32(std::abs(temp.entryOrGuid)));
+                        continue;
+                    }
+                    break;
+                } 
+                default:
+                    TC_LOG_ERROR("sql.sql", "SmartAIMgr::LoadSmartAIFromDB: GUID-specific scripting not yet implemented for source_type %u", (uint32)source_type);
+                    continue;
             }
         }
 
