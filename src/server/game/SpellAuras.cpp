@@ -3131,7 +3131,7 @@ void Aura::HandleAuraTransform(bool apply, bool Real)
             else
             {
                 // Will use the default model here
-                if (uint32 modelid = ci->GetRandomValidModelId())
+                if (uint32 modelid = sObjectMgr->ChooseDisplayId(ci))
                     m_target->SetDisplayId(modelid);
 
                 // Dragonmaw Illusion (set mount model also)

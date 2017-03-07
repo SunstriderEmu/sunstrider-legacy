@@ -215,6 +215,7 @@ struct CreatureTemplate
     uint32  QuestPoolId;
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
+    uint32  GetFirstInvisibleModel() const;
 
     // helpers
     SkillType GetRequiredLootSkill() const
@@ -360,6 +361,7 @@ struct CreatureModelInfo
     float combat_reach;
     uint8 gender;
     uint32 modelid_other_gender;
+    bool is_trigger; //not implemented
 };
 
 typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;

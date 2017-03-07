@@ -1032,14 +1032,14 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
 uint32 ObjectMgr::ChooseDisplayId(const CreatureTemplate *cinfo, const CreatureData *data)
 {
     // Load creature model (display id)
-    uint32 display_id = 0;
+    if (data && data->displayid)
+        return data->displayid;
 
-    if (!data || data->displayid == 0) // use defaults from the template
-    {
-        display_id = cinfo->GetRandomValidModelId();
-    } else display_id = data->displayid; // overwritten from creature data
+    if (!(cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER))
+        return cinfo->GetRandomValidModelId();
 
-    return display_id;
+    // Triggers by default receive the invisible model
+    return cinfo->GetFirstInvisibleModel();
 }
 
 CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32& displayID)
@@ -1114,41 +1114,68 @@ void ObjectMgr::LoadCreatureModelInfo()
     _creatureModelStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
+    // List of model FileDataIDs that the client treats as invisible stalker
+    uint32 trigggerCreatureModelFileID[5] = { 124640, 124641, 124642, 343863, 439302 };
+
     do
     {
         Field* fields = result->Fetch();
 
-        uint32 modelId = fields[0].GetUInt32();
+        uint32 displayId = fields[0].GetUInt32();
 
-        CreatureModelInfo& modelInfo = _creatureModelStore[modelId];
+        CreatureDisplayInfoEntry const* creatureDisplay = sCreatureDisplayInfoStore.LookupEntry(displayId);
+        if (!creatureDisplay)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has a non-existent DisplayID (ID: %u). Skipped.", displayId);
+            continue;
+        }
 
-        modelInfo.bounding_radius      = fields[1].GetFloat();
-        modelInfo.combat_reach         = fields[2].GetFloat();
-        modelInfo.gender               = fields[3].GetUInt8();
-        modelInfo.modelid_other_gender = fields[4].GetUInt32();
+        CreatureModelInfo& modelInfo = _creatureModelStore[displayId];
+
+        modelInfo.bounding_radius        = fields[1].GetFloat();
+        modelInfo.combat_reach           = fields[2].GetFloat();
+        modelInfo.gender                 = fields[3].GetUInt8();
+        modelInfo.modelid_other_gender   = fields[4].GetUInt32();
+        modelInfo.is_trigger             = false;
 
         // Checks
 
-        if (!sCreatureDisplayInfoStore.LookupEntry(modelId))
+        // to remove when the purpose of GENDER_UNKNOWN is known
+        if (modelInfo.gender == GENDER_UNKNOWN)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has model for not existed display id (%u).", modelId);
-            continue;
+            // We don't need more errors
+            //TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has an unimplemented Gender (ID: %i) being used by DisplayID (ID: %u). Gender set to GENDER_MALE.", modelInfo.gender, modelId);
+            modelInfo.gender = GENDER_MALE;
         }
 
         if (modelInfo.gender > GENDER_NONE)
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has wrong gender (%u) for display id (%u).", uint32(modelInfo.gender), modelId);
+            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has wrong gender (%u) for display id (%u).", uint32(modelInfo.gender), displayId);
             modelInfo.gender = GENDER_MALE;
         }
 
         if (modelInfo.modelid_other_gender && !sCreatureDisplayInfoStore.LookupEntry(modelInfo.modelid_other_gender))
         {
-            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has not existed alt.gender model (%u) for existed display id (%u).", modelInfo.modelid_other_gender, modelId);
+            TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has not existed alt.gender model (%u) for existed display id (%u).", modelInfo.modelid_other_gender, displayId);
             modelInfo.modelid_other_gender = 0;
         }
 
         if (modelInfo.combat_reach < 0.1f)
             modelInfo.combat_reach = DEFAULT_COMBAT_REACH;
+
+        /*
+        if (CreatureModelDataEntry const* modelData = sCreatureModelDataStore.LookupEntry(creatureDisplay->ModelId))
+        {
+            for (uint32 i = 0; i < 5; ++i)
+            {
+                if (modelData->FileDataID == trigggerCreatureModelFileID[i])
+                {
+                    modelInfo.is_trigger = true;
+                    break;
+                }
+            }
+        }
+        */
 
         ++count;
     }
