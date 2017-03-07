@@ -13,7 +13,7 @@
 #include "RandomMovementGenerator.h"
 #include "RotateMovementGenerator.h"
 #include "DistractMovementGenerator.h"
-#include "SuspiciousLookMovementGenerator.h"
+#include "StealthAlertMovementGenerator.h"
 #include "MoveSpline.h"
 #include "MoveSplineInit.h"
 #include <cassert>
@@ -651,7 +651,7 @@ void MotionMaster::MoveTaxiFlight(uint32 path, uint32 pathnode)
     }
 }
 
-void MotionMaster::MoveSuspiciousLook(Unit const* target, uint32 timer)
+void MotionMaster::MoveStealthAlert(Unit const* target, uint32 timer)
 {
     if (_owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL))
         return;
@@ -659,7 +659,7 @@ void MotionMaster::MoveSuspiciousLook(Unit const* target, uint32 timer)
     /*TC_LOG_TRACE("misc", "Creature (Entry: %u GUID: " UI64FMTD ") almost detected target " UI64FMTD " (timer: %u)",
         _owner->GetEntry(), _owner->GetGUID(), target->GetGUID(), timer); */
 
-    Mutate(new SuspiciousLookMovementGenerator(_owner, target, timer), MOTION_SLOT_ACTIVE);
+    Mutate(new StealthAlertMovementGenerator(_owner, target, timer), MOTION_SLOT_ACTIVE);
 }
 
 void MotionMaster::MoveDistract(float x, float y, uint32 timer)

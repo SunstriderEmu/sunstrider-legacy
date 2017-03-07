@@ -1019,9 +1019,9 @@ Only on units hostile to players and able to attack him.
 #define STEALTH_DETECT_WARNING_RANGE 3.0f   
 //if in warning range, we can do the suspicious look.
 //time in ms between two warning, counting from warning start (= ignoring duration)
-#define SUSPICIOUS_LOOK_COOLDOWN 16000
-#define SUSPICIOUS_LOOK_DURATION 5000
-// SUSPICIOUS_LOOK_COOLDOWN must always be greater than SUSPICIOUS_LOOK_DURATION
+#define STEALTH_ALERT_COOLDOWN 16000
+#define STEALTH_ALERT_DURATINON 5000
+// STEALTH_ALERT_COOLDOWN must always be greater than STEALTH_ALERT_DURATINON
 
 enum StealthDetectedStatus
 {
@@ -1044,7 +1044,7 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_TARGET_FLAGS, //could not attack because of target flags
     CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
     CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
-    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
+    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
     CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
     CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
     CAN_ATTACK_RESULT_SELF_UNIT_FLAGS, //create cannot attack because of own unit flags

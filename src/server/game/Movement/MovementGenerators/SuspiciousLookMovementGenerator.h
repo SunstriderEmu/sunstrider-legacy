@@ -1,14 +1,14 @@
-#ifndef TRINITY_SUSPICIOUSLOOKMOVEMENTGENERATOR_H
-#define TRINITY_SUSPICIOUSLOOKMOVEMENTGENERATOR_H
+#ifndef TRINITY_StealthAlertMOVEMENTGENERATOR_H
+#define TRINITY_StealthAlertMOVEMENTGENERATOR_H
 
 #include "MovementGenerator.h"
 
 /** Look towards the target for given time, and restore orientation afterwards. 
     Does not restore orientation on premature ending. */
-class SuspiciousLookMovementGenerator : public MovementGenerator
+class StealthAlertMovementGenerator : public MovementGenerator
 {
     public:
-        explicit SuspiciousLookMovementGenerator(Unit const* owner, Unit const* target, uint32 timer);
+        explicit StealthAlertMovementGenerator(Unit const* owner, Unit const* target, uint32 timer);
 
         bool Initialize(Unit*) override;
         void Finalize(Unit*, bool) override;
@@ -22,4 +22,4 @@ class SuspiciousLookMovementGenerator : public MovementGenerator
         float targetOrientation;
 };
 
-#endif //TRINITY_SUSPICIOUSLOOKMOVEMENTGENERATOR_H
+#endif //TRINITY_StealthAlertMOVEMENTGENERATOR_H

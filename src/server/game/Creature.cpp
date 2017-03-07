@@ -197,7 +197,7 @@ Creature::Creature() :
     m_unreachableTargetTime(0), 
     m_evadingAttacks(false), 
     m_canFly(false),
-    m_stealthWarningCooldown(0), 
+    m_stealthAlertCooldown(0), 
     m_keepActiveTimer(0), 
     m_homeless(false)
 {
@@ -624,7 +624,7 @@ void Creature::Update(uint32 diff)
             m_timeSinceSpawn += diff;
 
             UpdateProhibitedSchools(diff);
-            DecreaseTimer(m_stealthWarningCooldown, diff);
+            DecreaseTimer(m_stealthAlertCooldown, diff);
 
             //From TC. Removed as this is VERY costly in cpu time for little to no gain
             //UpdateMovementFlags();
@@ -1496,15 +1496,15 @@ bool Creature::IsWithinSightDist(Unit const* u) const
 /**
 Hostile target is in stealth and in warn range
 */
-void Creature::StartSuspiciousLook(Unit const* target)
+void Creature::StartStealthAlert(Unit const* target)
 {
-    m_stealthWarningCooldown = SUSPICIOUS_LOOK_COOLDOWN;
+    m_stealthAlertCooldown = STEALTH_ALERT_COOLDOWN;
 
-    GetMotionMaster()->MoveSuspiciousLook(target, SUSPICIOUS_LOOK_DURATION);
+    GetMotionMaster()->MoveStealthAlert(target, STEALTH_ALERT_DURATINON);
     SendAIReaction(AI_REACTION_ALERT);
 }
 
-bool Creature::CanDoSuspiciousLook(Unit const* target) const
+bool Creature::CanDoStealthAlert(Unit const* target) const
 {
     if(   IsInCombat()
        || IsWorldBoss()
@@ -1513,7 +1513,7 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
         return false;
 
     // cooldown not ready
-    if(m_stealthWarningCooldown > 0)
+    if(m_stealthAlertCooldown > 0)
         return false;
 
     // If this unit isn't an NPC, is already distracted, is in combat, is confused, stunned or fleeing, do nothing

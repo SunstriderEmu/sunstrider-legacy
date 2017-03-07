@@ -9991,7 +9991,7 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         if(stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
             return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
         else if(stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
     }
 
     return CAN_ATTACK_RESULT_OK;
@@ -10075,7 +10075,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
             return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
         else if (stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
     }
     /* ###### */
 
