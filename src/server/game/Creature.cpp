@@ -1738,11 +1738,14 @@ void Creature::Respawn(bool force /* = false */)
 
         uint32 displayID = GetNativeDisplayId();
         CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(displayID);
-        if (minfo)                                             // Cancel load if no model defined
+        if (minfo && !IsTotem())                               // Cancel load if no model defined or if totem
         {
-            SetDisplayId(displayID);
             SetNativeDisplayId(displayID);
-            SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+
+            Unit::AuraEffectList const& transformAuras = GetAuraEffectsByType(SPELL_AURA_TRANSFORM);
+            Unit::AuraEffectList const& shapeshiftAuras = GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
+            if (transformAuras.empty() && shapeshiftAuras.empty())
+                SetDisplayId(displayID);
         }
     }
 
