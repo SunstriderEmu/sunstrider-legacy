@@ -24,7 +24,7 @@ CollectIncludeDirectories(
   # Exclude
   #sunstrider: TC has this but this currently breaks intellisense, which apparently needs to include the folder containing the pch. # ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   )
-
+   
   
 add_library(game-interface INTERFACE)
 
