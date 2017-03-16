@@ -32,9 +32,7 @@
 #include "ScriptMgr.h"
 #include "Containers.h"
 #include "SpellScript.h"
-
-#define SPELL_CHANNEL_UPDATE_INTERVAL 1000
-#define MAX_SPELL_RANGE_TOLERANCE 3.0f
+#include "GameObjectAI.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -574,7 +572,8 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
     m_caster(Caster),
     m_castItemGUID(0),
     m_preGeneratedPath(nullptr),
-    _scriptsLoaded(false)
+    _scriptsLoaded(false),
+    _spellEvent(nullptr)
 {
     m_skipHitCheck = skipCheck;
     m_selfContainer = nullptr;
@@ -672,6 +671,36 @@ Spell::Spell(Unit* Caster, SpellInfo const *info, bool triggered, uint64 origina
 
     // xinef:
     _spellTargetsSelected = false;
+
+    if (uint64 dstDelay = CalculateDelayMomentForDst())
+        m_delayMoment = dstDelay;
+}
+
+uint64 Spell::CalculateDelayMomentForDst() const
+{
+    if (m_targets.HasDst())
+    {
+        if (m_targets.HasTraj())
+        {
+            float speed = m_targets.GetSpeedXY();
+            if (speed > 0.0f)
+                return (uint64)floor(m_targets.GetDist2d() / speed * 1000.0f);
+        }
+        else if (m_spellInfo->Speed > 0.0f)
+        {
+            // We should not subtract caster size from dist calculation (fixes execution time desync with animation on client, eg. Malleable Goo cast by PP)
+            float dist = m_caster->GetExactDist(*m_targets.GetDstPos());
+            return (uint64)std::floor(dist / m_spellInfo->Speed * 1000.0f);
+        }
+    }
+
+    return 0;
+}
+
+void Spell::RecalculateDelayMomentForDst()
+{
+    m_delayMoment = CalculateDelayMomentForDst();
+    m_caster->m_Events.ModifyEventTime(_spellEvent, GetDelayStart() + m_delayMoment);
 }
 
 Spell::~Spell()
@@ -1049,9 +1078,8 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
         SelectImplicitAreaTargets(effIndex, targetType, effectMask);
         break;
     case TARGET_SELECT_CATEGORY_TRAJ:
-        // xinef: just in case there is no dest, explanation in SelectImplicitDestDestTargets
-        if (!m_targets.HasDst())
-            m_targets.SetDst(*m_caster);
+        // just in case there is no dest, explanation in SelectImplicitDestDestTargets
+        CheckDst();
 
         SelectImplicitTrajTargets(effIndex, targetType);
         break;
@@ -1190,7 +1218,7 @@ void Spell::SelectImplicitNearbyTargets(SpellEffIndex effIndex, SpellImplicitTar
         break;
     }
 
-    ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
+    ConditionContainer* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
 
     // handle emergency case - try to use other provided targets if no conditions provided
     if (targetType.GetCheckType() == TARGET_CHECK_ENTRY && (!condList || condList->empty()))
@@ -1283,7 +1311,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     std::list<WorldObject*> targets;
     SpellTargetObjectTypes objectType = targetType.GetObjectType();
     SpellTargetCheckTypes selectionType = targetType.GetCheckType();
-    ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
+    ConditionContainer* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI / 2;
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
@@ -1730,15 +1758,15 @@ void Spell::SelectImplicitTrajTargets(SpellEffIndex effIndex, SpellImplicitTarge
     if (!dist2d)
         return;
 
-    float srcToDestDelta = m_targets.GetDstPos()->m_positionZ - m_targets.GetSrcPos()->m_positionZ;
+    Position srcPos = *m_targets.GetSrcPos();
+    srcPos.SetOrientation(m_caster->GetOrientation());
+    float srcToDestDelta = m_targets.GetDstPos()->m_positionZ - srcPos.m_positionZ;
 
 
-    // xinef: supply correct target type, DEST_DEST and similar are ALWAYS undefined
-    // xinef: correct target is stored in TRIGGERED SPELL, however as far as i noticed, all checks are ENTRY, ENEMY
     std::list<WorldObject*> targets;
-    Trinity::WorldObjectSpellTrajTargetCheck check(dist2d, m_targets.GetSrcPos(), m_caster, m_spellInfo, TARGET_CHECK_ENEMY /*targetCheckType*/, m_spellInfo->Effects[effIndex].ImplicitTargetConditions);
+    Trinity::WorldObjectSpellTrajTargetCheck check(dist2d, &srcPos, m_caster, m_spellInfo, targetType.GetCheckType(), m_spellInfo->Effects[effIndex].ImplicitTargetConditions);
     Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellTrajTargetCheck> searcher(m_caster, targets, check, GRID_MAP_TYPE_MASK_ALL);
-    SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellTrajTargetCheck> >(searcher, GRID_MAP_TYPE_MASK_ALL, m_caster, m_targets.GetSrcPos(), dist2d);
+    SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellTrajTargetCheck> >(searcher, GRID_MAP_TYPE_MASK_ALL, m_caster, &srcPos, dist2d);
     if (targets.empty())
         return;
 
@@ -1748,135 +1776,64 @@ void Spell::SelectImplicitTrajTargets(SpellEffIndex effIndex, SpellImplicitTarge
     float a = (srcToDestDelta - dist2d * b) / (dist2d * dist2d);
     if (a > -0.0001f)
         a = 0;
-    //DEBUG_TRAJ(sLog->outError("Spell::SelectTrajTargets: a %f b %f", a, b);)
 
-    // Xinef: hack for distance, many trajectory spells have RangeEntry 1 (self)
-    float bestDist = m_spellInfo->GetMaxRange(false) * 2;
-    if (bestDist < 1.0f)
-        bestDist = 300.0f;
+    // We should check if triggered spell has greater range (which is true in many cases, and initial spell has too short max range)
+    // limit max range to 300 yards, sometimes triggered spells can have 50000yds
+    float bestDist = m_spellInfo->GetMaxRange(false);
+    if (SpellInfo const* triggerSpellInfo = sSpellMgr->GetSpellInfo(m_spellInfo->Effects[effIndex].TriggerSpell))
+        bestDist = std::min(std::max(bestDist, triggerSpellInfo->GetMaxRange(false)), std::min(dist2d, 300.0f));
 
     std::list<WorldObject*>::const_iterator itr = targets.begin();
     for (; itr != targets.end(); ++itr)
     {
-        if (Unit* unitTarget = (*itr)->ToUnit())
+        if (m_spellInfo->CheckTarget(m_caster, *itr, true) != SPELL_CAST_OK)
+            continue;
+
+        if (Unit* unit = (*itr)->ToUnit())
+        {
             if (m_caster == *itr 
 #ifdef LICH_KING
-                || m_caster->IsOnVehicle(unitTarget) || (unitTarget)->GetVehicle())//(*itr)->IsOnVehicle(m_caster)
+                || m_caster->IsOnVehicle(unit) || unit->GetVehicle()
 #endif
                 )
                 continue;
 
-        const float size = std::max((*itr)->GetObjectSize() * 0.7f, 1.0f); // 1/sqrt(3)
-                                                                           // TODO: all calculation should be based on src instead of m_caster
-        const float objDist2d = fabs(m_targets.GetSrcPos()->GetExactDist2d(*itr) * cos(m_targets.GetSrcPos()->GetRelativeAngle(*itr)));
-        const float dz = fabs((*itr)->GetPositionZ() - m_targets.GetSrcPos()->m_positionZ);
+            /*TC
+            if (Creature* creatureTarget = unit->ToCreature())
+            {
+                if (!(creatureTarget->GetCreatureTemplate()->type_flags & CREATURE_TYPE_FLAG_CAN_COLLIDE_WITH_MISSILES))
+                    continue;
+            }
+            */
+        }
 
-        //DEBUG_TRAJ(sLog->outError("Spell::SelectTrajTargets: check %u, dist between %f %f, height between %f %f.", (*itr)->GetEntry(), objDist2d - size, objDist2d + size, dz - size, dz + size);)
+        const float size = std::max((*itr)->GetObjectSize(), 1.0f);
+        const float objDist2d = srcPos.GetExactDist2d(*itr);
+        const float dz = (*itr)->GetPositionZ() - srcPos.m_positionZ;
 
-            float dist = objDist2d - size;
-        float height = dist * (a * dist + b);
-        //DEBUG_TRAJ(sLog->outError("Spell::SelectTrajTargets: dist %f, height %f.", dist, height);)
-        if (dist < bestDist && height < dz + size && height > dz - size)
+        float dist = objDist2d - size;
+        const float horizontalDistToTraj = std::fabs(objDist2d * std::sin(srcPos.GetRelativeAngle(*itr)));
+        const float sizeFactor = std::cos((horizontalDistToTraj / size) * (M_PI / 2.0f));
+        const float distToHitPoint = std::max(objDist2d * std::cos(srcPos.GetRelativeAngle(*itr)) - size * sizeFactor, 0.0f);
+        const float height = distToHitPoint * (a * distToHitPoint + b);
+
+        if (fabs(dz - height) > size + b / 2.0f + TRAJECTORY_MISSILE_SIZE)
+            continue;
+
+        if (distToHitPoint < bestDist)
         {
-            bestDist = dist > 0 ? dist : 0;
+            bestDist = distToHitPoint;
             break;
-        }
-
-#define CHECK_DIST {\
-            /*DEBUG_TRAJ(TC_LOG_ERROR("spells", "Spell::SelectTrajTargets: dist %f, height %f.", dist, height);) */\
-            if (dist > bestDist)\
-                continue;\
-            if (dist < objDist2d + size && dist > objDist2d - size)\
-            {\
-                bestDist = dist;\
-                break;\
-            }\
-        }
-
-        // RP-GG only, search in straight line, as item have no trajectory
-        if (m_CastItem)
-        {
-            if (dist < bestDist && fabs(dz) < 6.0f) // closes target, also check Z difference)
-            {
-                bestDist = dist;
-                break;
-            }
-
-            continue;
-        }
-
-        if (!a)
-        {
-            // Xinef: everything remade
-            dist = m_targets.GetSrcPos()->GetExactDist(*itr);
-            height = m_targets.GetSrcPos()->GetExactDist2d(*itr)*b;
-
-            if (height < dz + size*(b + 1) && height > dz - size*(b + 1) && dist < bestDist)
-            {
-                bestDist = dist;
-                break;
-            }
-
-            continue;
-        }
-
-        height = dz - size;
-        float sqrt1 = b * b + 4 * a * height;
-        if (sqrt1 > 0)
-        {
-            sqrt1 = sqrt(sqrt1);
-            dist = (sqrt1 - b) / (2 * a);
-            CHECK_DIST;
-        }
-
-        height = dz + size;
-        float sqrt2 = b * b + 4 * a * height;
-        if (sqrt2 > 0)
-        {
-            sqrt2 = sqrt(sqrt2);
-            dist = (sqrt2 - b) / (2 * a);
-            CHECK_DIST;
-
-            dist = (-sqrt2 - b) / (2 * a);
-            CHECK_DIST;
-        }
-
-        if (sqrt1 > 0)
-        {
-            dist = (-sqrt1 - b) / (2 * a);
-            CHECK_DIST;
         }
     }
 
-    if (m_targets.GetSrcPos()->GetExactDist2d(m_targets.GetDstPos()) > bestDist)
+    if (dist2d > bestDist)
     {
-        float x = m_targets.GetSrcPos()->m_positionX + cos(m_caster->GetOrientation()) * bestDist;
-        float y = m_targets.GetSrcPos()->m_positionY + sin(m_caster->GetOrientation()) * bestDist;
+        float x = m_targets.GetSrcPos()->m_positionX + std::cos(m_caster->GetOrientation()) * bestDist;
+        float y = m_targets.GetSrcPos()->m_positionY + std::sin(m_caster->GetOrientation()) * bestDist;
         float z = m_targets.GetSrcPos()->m_positionZ + bestDist * (a * bestDist + b);
 
-        if (itr != targets.end())
-        {
-            float distSq = (*itr)->GetExactDistSq(x, y, z);
-            float sizeSq = (*itr)->GetObjectSize();
-            sizeSq *= sizeSq;
-            //DEBUG_TRAJ(sLog->outError("Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
-            if (distSq > sizeSq)
-            {
-                float factor = 1 - sqrt(sizeSq / distSq);
-                x += factor * ((*itr)->GetPositionX() - x);
-                y += factor * ((*itr)->GetPositionY() - y);
-                z += factor * ((*itr)->GetPositionZ() - z);
-
-                distSq = (*itr)->GetExactDistSq(x, y, z);
-                //DEBUG_TRAJ(sLog->outError("Initial %f %f %f %f %f", x, y, z, distSq, sizeSq);)
-            }
-        }
-
-        Position trajDst;
-        trajDst.Relocate(x, y, z, m_caster->GetOrientation());
-        SpellDestination dest(*m_targets.GetDst());
-        dest.Relocate(trajDst);
-
+        SpellDestination dest(x, y, z, m_caster->GetOrientation());
         CallScriptDestinationTargetSelectHandlers(dest, effIndex, targetType);
         m_targets.ModDst(dest);
     }
@@ -1967,7 +1924,7 @@ void Spell::SelectEffectTypeImplicitTargets(uint8 effIndex)
     }
 }
 
-uint32 Spell::GetSearcherTypeMask(SpellTargetObjectTypes objType, ConditionList* condList)
+uint32 Spell::GetSearcherTypeMask(SpellTargetObjectTypes objType, ConditionContainer* condList)
 {
     // this function selects which containers need to be searched for spell target
     uint32 retMask = GRID_MAP_TYPE_MASK_ALL;
@@ -2036,7 +1993,7 @@ void Spell::SearchTargets(SEARCHER& searcher, uint32 containerMask, Unit* refere
     }
 }
 
-WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList)
+WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionContainer* condList)
 {
     WorldObject* target = nullptr;
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
@@ -2048,7 +2005,7 @@ WorldObject* Spell::SearchNearbyTarget(float range, SpellTargetObjectTypes objec
     return target;
 }
 
-void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList)
+void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Position const* position, Unit* referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionContainer* condList)
 {
     uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList);
     if (!containerTypeMask)
@@ -2058,7 +2015,7 @@ void Spell::SearchAreaTargets(std::list<WorldObject*>& targets, float range, Pos
     SearchTargets<Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> >(searcher, containerTypeMask, m_caster, position, range);
 }
 
-void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionList* condList, bool isChainHeal)
+void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTargets, WorldObject* target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, SpellTargetSelectionCategories selectCategory, ConditionContainer* condList, bool isChainHeal)
 {
     // max dist for jump target selection
     float jumpRadius = 0.0f;
@@ -3026,6 +2983,9 @@ void Spell::DoAllEffectOnTarget(GOTargetInfo* target)
         if (effectMask & (1 << effectNumber))
             HandleEffects(nullptr,nullptr,go,effectNumber, SPELL_EFFECT_HANDLE_HIT_TARGET);
 
+    if (go->AI())
+        go->AI()->SpellHit(m_caster, m_spellInfo);
+
     // cast at creature (or GO) quest objectives update at successful cast finished (+channel finished)
     // ignore autorepeat/melee casts for speed (not exist quest for spells (hm... )
     if( m_caster->GetTypeId() == TYPEID_PLAYER && !IsAutoRepeat() && !IsNextMeleeSwingSpell() && !IsChannelActive() )
@@ -3175,8 +3135,8 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
         m_triggeredByAuraSpell  = triggeredByAura->GetSpellInfo();
 
     // create and add update event for this spell
-    auto  Event = new SpellEvent(this);
-    m_caster->m_Events.AddEvent(Event, m_caster->m_Events.CalculateTime(1));
+    _spellEvent = new SpellEvent(this);
+    m_caster->m_Events.AddEvent(_spellEvent, m_caster->m_Events.CalculateTime(1));
 
     //Another spell in progress ?
     if(m_caster->IsNonMeleeSpellCast(false, true) && m_cast_count && !m_spellInfo->HasAttribute(SPELL_ATTR4_CAN_CAST_WHILE_CASTING))
@@ -5329,10 +5289,8 @@ SpellCastResult Spell::CheckCast(bool strict)
 
     // check spell cast conditions from database
     {
-        ConditionSourceInfo condInfo = ConditionSourceInfo(m_caster);
-        condInfo.mConditionTargets[1] = m_targets.GetObjectTarget();
-        ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_SPELL, m_spellInfo->Id);
-        if (!conditions.empty() && !sConditionMgr->IsObjectMeetToConditions(condInfo, conditions))
+        ConditionSourceInfo condInfo = ConditionSourceInfo(m_caster, m_targets.GetObjectTarget());
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_SPELL, m_spellInfo->Id, condInfo))
         {
             // mLastFailedCondition can be NULL if there was an error processing the condition in Condition::Meets (i.e. wrong data for ConditionTarget or others)
             if (condInfo.mLastFailedCondition && condInfo.mLastFailedCondition->ErrorType)
@@ -7875,7 +7833,7 @@ namespace Trinity
 {
 
     WorldObjectSpellTargetCheck::WorldObjectSpellTargetCheck(Unit* caster, Unit* referer, SpellInfo const* spellInfo,
-        SpellTargetCheckTypes selectionType, ConditionList* condList) : _caster(caster), _referer(referer), _spellInfo(spellInfo),
+        SpellTargetCheckTypes selectionType, ConditionContainer* condList) : _caster(caster), _referer(referer), _spellInfo(spellInfo),
         _targetSelectionType(selectionType), _condList(condList)
     {
         if (condList)
@@ -7955,7 +7913,7 @@ namespace Trinity
     }
 
     WorldObjectSpellNearbyTargetCheck::WorldObjectSpellNearbyTargetCheck(float range, Unit* caster, SpellInfo const* spellInfo,
-        SpellTargetCheckTypes selectionType, ConditionList* condList)
+        SpellTargetCheckTypes selectionType, ConditionContainer* condList)
         : WorldObjectSpellTargetCheck(caster, caster, spellInfo, selectionType, condList), _range(range), _position(caster)
     {
     }
@@ -7972,7 +7930,7 @@ namespace Trinity
     }
 
     WorldObjectSpellAreaTargetCheck::WorldObjectSpellAreaTargetCheck(float range, Position const* position, Unit* caster,
-        Unit* referer, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
+        Unit* referer, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer* condList)
         : WorldObjectSpellTargetCheck(caster, referer, spellInfo, selectionType, condList), _range(range), _position(position)
     {
     }
@@ -7992,7 +7950,7 @@ namespace Trinity
     }
 
     WorldObjectSpellConeTargetCheck::WorldObjectSpellConeTargetCheck(float coneAngle, float range, Unit* caster,
-        SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
+        SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer* condList)
         : WorldObjectSpellAreaTargetCheck(range, caster, caster, caster, spellInfo, selectionType, condList), _coneAngle(coneAngle)
     {
     }
@@ -8006,7 +7964,7 @@ namespace Trinity
         }
         else if (_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_LINE))
         {
-            if (!_caster->HasInLine(target, _caster->GetObjectSize()))
+            if (!_caster->HasInLine(target, target->GetObjectSize(), _caster->GetObjectSize()))
                 return false;
         }
         else if (_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_180))
@@ -8022,18 +7980,19 @@ namespace Trinity
         return WorldObjectSpellAreaTargetCheck::operator ()(target);
     }
 
-    WorldObjectSpellTrajTargetCheck::WorldObjectSpellTrajTargetCheck(float range, Position const* position, Unit* caster,
-        SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionList* condList)
-        : WorldObjectSpellAreaTargetCheck(range, position, caster, caster, spellInfo, selectionType, condList)
-    {
-    }
+    WorldObjectSpellTrajTargetCheck::WorldObjectSpellTrajTargetCheck(float range, Position const* position, Unit* caster, SpellInfo const* spellInfo, SpellTargetCheckTypes selectionType, ConditionContainer* condList)
+        : WorldObjectSpellTargetCheck(caster, caster, spellInfo, selectionType, condList), _range(range), _position(position) { }
 
     bool WorldObjectSpellTrajTargetCheck::operator()(WorldObject* target)
     {
-        // return all targets on missile trajectory (0 - size of a missile)
-        if (!_caster->HasInLine(target, 0))
+        // return all targets on missile trajectory
+        if (!_caster->HasInLine(target, target->GetObjectSize(), TRAJECTORY_MISSILE_SIZE))
             return false;
-        return WorldObjectSpellAreaTargetCheck::operator ()(target);
+
+        if (target->GetExactDist2d(_position) > _range)
+            return false;
+
+        return WorldObjectSpellTargetCheck::operator ()(target);
     }
 
 } //namespace Trinity

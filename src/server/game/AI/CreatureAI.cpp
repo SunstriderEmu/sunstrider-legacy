@@ -80,10 +80,10 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         return;
 
     CanAttackResult result = me->CanAggro(who, false);
-    if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE
-       && me->CanDoSuspiciousLook(who))
+    if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE
+       && me->CanDoStealthAlert(who))
     {
-        me->StartSuspiciousLook(who);
+        me->StartStealthAlert(who);
     }
 
     if(result != CAN_ATTACK_RESULT_OK) 

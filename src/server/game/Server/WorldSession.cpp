@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * Copyright (C) 2008-2009 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 /** \file
     \ingroup u2w
@@ -54,6 +35,8 @@
 #include "BattleGround.h"
 #include "WardenBase.h"
 #include "PacketUtilities.h"
+#include "ReplayRecorder.h"
+#include "ReplayPlayer.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -135,7 +118,7 @@ m_TutorialsChanged(false),
 _warden(NULL), 
 lastCheatWarn(time(NULL)),
 forceExit(false),
-expireTime(60000) // 1 min after socket loss, session is deleted /!\ DISABLED. See comment at expireTime usage.
+expireTime(60000) 
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -157,7 +140,7 @@ WorldSession::~WorldSession()
     /// - If have unclosed socket, close it
     if (m_Socket)
     {
-        m_Socket->CloseSocket ();
+        m_Socket->CloseSocket();
         m_Socket = nullptr;
     }
     
@@ -257,6 +240,10 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     TC_LOG_TRACE("network.opcode", "S->C: %s %s", GetPlayerInfo().c_str(), GetOpcodeNameForLogging(static_cast<OpcodeServer>(packet->GetOpcode())).c_str());
     m_Socket->SendPacket(*packet);
+
+    // Log packet for replay
+    if (m_replayRecorder)
+        m_replayRecorder->AddPacket(packet);
 }
 
 /// Add an incoming packet to the queue
@@ -489,6 +476,13 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
         if (!m_Socket)
             return false;                                       //Will remove this session from the world session map
+    }
+
+    if (m_replayPlayer)
+    {
+        bool result = m_replayPlayer->UpdateReplay();
+        if (!result) //ended or error
+            StopReplaying();
     }
 
     return true;
@@ -1088,6 +1082,7 @@ void WorldSession::SaveTutorialsData(SQLTransaction &trans)
 
     m_TutorialsChanged = false;
 }
+
 
 /* TC
 void WorldSession::LoadPermissions()
@@ -1858,3 +1853,67 @@ void WorldSession::HandleBotPackets()
     }
 }
 #endif
+
+bool WorldSession::StartRecording(std::string const& recordName)
+{
+    if (recordName == "")
+        return false;
+
+    if (m_replayRecorder) 
+        return false; //recorder already running
+
+    if (!_player)
+        return false;
+
+    _player->GetPosition();
+
+    _player->m_clientGUIDs.clear(); //clear objects for this client to force re sending them for record
+    m_replayRecorder = std::make_shared<ReplayRecorder>(_player->GetGUIDLow());
+    return m_replayRecorder->StartPacketDump(recordName.c_str(), WorldLocation(*_player));
+}
+
+bool WorldSession::StopRecording()
+{
+    if (m_replayRecorder)
+    {
+        m_replayRecorder = nullptr;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool WorldSession::StartReplaying(std::string const& recordName)
+{
+    if (m_replayPlayer)
+        //player already running
+        return false;
+
+    //no player to play for
+    if (!_player)
+        return false;
+
+    if (recordName == "")
+        return false;
+
+    m_replayPlayer = std::make_shared<ReplayPlayer>(_player);
+    WorldLocation teleportTo;
+    bool result = m_replayPlayer->ReadFromFile(recordName, teleportTo);
+    if (!result)
+        return false;
+
+    _player->TeleportTo(teleportTo);
+    return true;
+}
+
+bool WorldSession::StopReplaying()
+{
+    if (m_replayPlayer == nullptr)
+        return false;
+
+    m_replayPlayer = nullptr;
+    if (_player)
+        ChatHandler(_player).SendSysMessage("Replaying stopped");
+
+    return true;
+}

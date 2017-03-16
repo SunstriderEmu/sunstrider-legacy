@@ -1,36 +1,65 @@
-
-#include "Common.h"
-#include "Database/DatabaseEnv.h"
-#include "WorldPacket.h"
-#include "WorldSession.h"
-#include "World.h"
-#include "Player.h"
-#include "Opcodes.h"
 #include "Chat.h"
-#include "Monitor.h"
-#include "Log.h"
-#include "Unit.h"
-#include "ObjectAccessor.h"
-#include "GossipDef.h"
 #include "Language.h"
-#include "MapManager.h"
-#include "BattleGroundMgr.h"
 #include <fstream>
-#include "ObjectMgr.h"
-#include "SpellMgr.h"
-#include "SmartScriptMgr.h"
-#include "SmartAI.h"
 #include "UpdateFieldsDebug.h"
-#include "Profiler.h"
+#include "BattleGroundMgr.h"
+#include "ChannelMgr.h"
 
-#ifdef PLAYERBOT
-#include "playerbot.h"
-#include "GuildTaskMgr.h"
-#endif
-
-bool ChatHandler::HandleYoloCommand(const char* /* args */)
+void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
 {
-    SendSysMessage(LANG_SWAG);
+    uint32 valuesCount = target->GetValuesCount();
+    values.clear();
+    values.resize(valuesCount);
+    for (uint32 i = 0; i < valuesCount; i++)
+        values[i] = target->GetUInt32Value(i);
+}
+
+bool ChatHandler::HandleDebugUpdateCommand(const char* args)
+{
+    ARGS_CHECK
+
+    uint32 updateIndex;
+    uint32 value;
+
+    char* pUpdateIndex = strtok((char*)args, " ");
+
+    Unit* chr = GetSelectedUnit();
+    if (chr == nullptr)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    if(!pUpdateIndex)
+    {
+        return true;
+    }
+    updateIndex = atoi(pUpdateIndex);
+    //check updateIndex
+    if(chr->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (updateIndex>=PLAYER_END) return true;
+    }
+    else
+    {
+        if (updateIndex>=UNIT_END) return true;
+    }
+
+    char*  pvalue = strtok(nullptr, " ");
+    if (!pvalue)
+    {
+        value=chr->GetUInt32Value(updateIndex);
+
+        PSendSysMessage(LANG_UPDATE, chr->GetGUIDLow(),updateIndex,value);
+        return true;
+    }
+
+    value=atoi(pvalue);
+
+    PSendSysMessage(LANG_UPDATE_CHANGE, chr->GetGUIDLow(),updateIndex,value);
+
+    chr->SetUInt32Value(updateIndex,value);
 
     return true;
 }
@@ -114,7 +143,7 @@ bool ChatHandler::HandleDebugSpellFailCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleSetPoiCommand(const char* args)
+bool ChatHandler::HandleDebugSetPoiCommand(const char* args)
 {
     Player *pPlayer = m_session->GetPlayer();
     Unit* target = GetSelectedUnit();
@@ -137,28 +166,42 @@ bool ChatHandler::HandleSetPoiCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleEquipErrorCommand(const char* args)
+bool ChatHandler::HandleDebugSendQuestPartyMsgCommand(const char* args)
+{
+    uint32 msg = atol((char*)args);
+    m_session->GetPlayer()->SendPushToPartyResponse(m_session->GetPlayer(), msg);
+    return true;
+}
+
+bool ChatHandler::HandleDebugSendQuestInvalidMsgCommand(const char* args)
+{
+    uint32 msg = atol((char*)args);
+    m_session->GetPlayer()->SendCanTakeQuestResponse(msg);
+    return true;
+}
+
+bool ChatHandler::HandleDebugEquipErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendEquipError(msg, nullptr, nullptr);
     return true;
 }
 
-bool ChatHandler::HandleSellErrorCommand(const char* args)
+bool ChatHandler::HandleDebugSellErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendSellError(msg, nullptr, 0, 0);
     return true;
 }
 
-bool ChatHandler::HandleBuyErrorCommand(const char* args)
+bool ChatHandler::HandleDebugBuyErrorCommand(const char* args)
 {
     uint8 msg = atoi(args);
     m_session->GetPlayer()->SendBuyError(msg, nullptr, 0, 0);
     return true;
 }
 
-bool ChatHandler::HandleSendOpcodeCommand(const char* /*args*/)
+bool ChatHandler::HandleDebugSendOpcodeCommand(const char* /*args*/)
 {
     Unit *unit = GetSelectedUnit();
     Player *player = nullptr;
@@ -268,7 +311,7 @@ bool ChatHandler::HandleUpdateWorldStateCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandlePlaySound2Command(const char* args)
+bool ChatHandler::HandleDebugPlaySound2Command(const char* args)
 {
     uint32 soundid = atoi(args);
     m_session->GetPlayer()->PlaySound(soundid, false);
@@ -276,7 +319,7 @@ bool ChatHandler::HandlePlaySound2Command(const char* args)
 }
 
 //Send notification in channel
-bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
+bool ChatHandler::HandleDebugSendChannelNotifyCommand(const char* args)
 {
     const char *name = "test";
     uint8 code = atoi(args);
@@ -291,7 +334,7 @@ bool ChatHandler::HandleSendChannelNotifyCommand(const char* args)
 }
 
 //Send notification in chat
-bool ChatHandler::HandleSendChatMsgCommand(const char* args)
+bool ChatHandler::HandleDebugSendChatMsgCommand(const char* args)
 {
     const char *msg = "testtest";
     ChatMsg type = ChatMsg(atoi(args));
@@ -301,31 +344,7 @@ bool ChatHandler::HandleSendChatMsgCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleSendQuestPartyMsgCommand(const char* args)
-{
-    uint32 msg = atol((char*)args);
-    m_session->GetPlayer()->SendPushToPartyResponse(m_session->GetPlayer(), msg);
-    return true;
-}
-
-bool ChatHandler::HandleGetLootRecipient(const char* /*args*/)
-{
-    Creature* target = GetSelectedCreature();
-    if(!target)
-        return false;
-
-    PSendSysMessage("Loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName().c_str() :"offline"):"no loot recipient");
-    return true;
-}
-
-bool ChatHandler::HandleSendQuestInvalidMsgCommand(const char* args)
-{
-    uint32 msg = atol((char*)args);
-    m_session->GetPlayer()->SendCanTakeQuestResponse(msg);
-    return true;
-}
-
-bool ChatHandler::HandleGetItemState(const char* args)
+bool ChatHandler::HandleDebugGetItemState(const char* args)
 {
     std::string state_str = args;
 
@@ -665,7 +684,288 @@ bool ChatHandler::HandleDebugItemLevelSum(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleRemoveLootItem(const char* args)
+//Play sound
+bool ChatHandler::HandleDebugPlaySoundCommand(const char* args)
+{
+    // USAGE: .debug playsound #soundid
+    // #soundid - ID decimal number from SoundEntries.dbc (1st column)
+    // this file have about 5000 sounds.
+    // In this realization only caller can hear this sound.
+    if( *args )
+    {
+        uint32 dwSoundId = atoi((char*)args);
+
+        if( !sSoundEntriesStore.LookupEntry(dwSoundId) )
+        {
+            PSendSysMessage(LANG_SOUND_NOT_EXIST, dwSoundId);
+            SetSentErrorMessage(true);
+            return false;
+        }
+
+        m_session->SendSoundFromObject(m_session->GetPlayer()->GetGUID(), dwSoundId);
+
+        PSendSysMessage(LANG_YOU_HEAR_SOUND, dwSoundId);
+        return true;
+    }
+
+    return false;
+}
+
+/* Syntax : .debug setvalue #index #value [uint32/uint64/float]*/
+bool ChatHandler::HandleDebugSetValueCommand(const char* args)
+{
+    ARGS_CHECK
+
+    char* cIndex = strtok((char*)args, " ");
+    char* cValue = strtok(nullptr, " ");
+    char* cType = strtok(nullptr, " ");
+
+    if (!cIndex || !cValue)
+        return false;
+
+    Unit* target = GetSelectedUnit();
+    if(!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 index = (uint32)atoi(cIndex);
+    if(index >= target->GetValuesCount())
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+    uint64 uValue;
+    float fValue;
+    uint8 type = 0;
+    if(cType)
+    {
+        if( strcmp(cType, "float") == 0 )
+            type = 2;
+        else if ( strcmp(cType, "uint64") == 0 )
+            type = 1;
+        else if ( strcmp(cType, "uint32") == 0 )
+            type = 0;
+    }
+
+    switch(type)
+    {
+    case 0: //uint32
+        {
+        std::stringstream ss(cValue);
+        ss >> uValue;
+        target->SetUInt32Value(index,uValue);
+        PSendSysMessage(LANG_SET_UINT_FIELD, GUID_LOPART(guid), index, uValue);
+        }
+        break;
+    case 1: //uint64
+        {
+        std::stringstream ss(cValue);
+        ss >> uValue;
+        target->SetUInt64Value(index,uValue);
+        PSendSysMessage("You set the uint64 value of %u in %u to " UI64FMTD, GUID_LOPART(guid), index, uValue);
+        }
+        break;
+    case 2: //float
+        fValue = (float)atof(cValue);
+        target->SetFloatValue(index,fValue);
+        PSendSysMessage(LANG_SET_FLOAT_FIELD, GUID_LOPART(guid), index, fValue);
+        break;
+    }
+
+    return true;
+}
+
+/* Syntax : .debug getvalue #index */
+bool ChatHandler::HandleDebugGetValueCommand(const char* args)
+{
+    ARGS_CHECK
+
+    char* cIndex = strtok((char*)args, " ");
+
+    if (!cIndex)
+        return false;
+
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        SetSentErrorMessage(true);
+        return false;
+    }
+
+    uint64 guid = target->GetGUID();
+
+    uint32 index = (uint32)atoi(cIndex);
+    if (index >= target->GetValuesCount())
+    {
+        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
+        return false;
+    }
+
+    std::vector<uint32> values;
+    FillSnapshotValues(target, values);
+
+    TypeID type = TypeID(target->GetTypeId());
+    std::string fieldName = "[UNKNOWN]";
+    UpdateFieldsDebug::GetFieldNameString(type, index, fieldName);
+    std::stringstream ss;
+    UpdateFieldsDebug::InsertFieldInStream(type, index, values, ss);
+    PSendSysMessage("Field %s (%u): %s", fieldName.c_str(), index, ss.str().c_str());
+
+    return true;
+}
+
+/* Syntax: .debug crash <SIGSEGV|SEGABRT> */
+bool ChatHandler::HandleDebugCrashCommand(const char* args)
+{
+    char* cSignal = strtok((char*)args, " ");
+    if (!cSignal)
+        return false;
+
+    std::string signal(cSignal);
+
+    if (signal == "SIGSEGV")
+        raise(SIGSEGV);
+    else if (signal == "SIGABRT")
+        raise(SIGABRT);
+    else
+        return false;
+
+    return true;
+}
+
+/* Syntax: .debug zonemusic #musicId */
+bool ChatHandler::HandleDebugZoneMusicCommand(const char* args)
+{
+    char* cMusicId = strtok((char*)args, " ");
+
+    if (!cMusicId)
+        return false;
+
+    uint32 musicId = (uint32)atoi(cMusicId);
+    if (musicId == 0)
+        return false;
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneMusic(p->GetZoneId(), musicId);
+    PSendSysMessage("Changed zone music to %u", musicId);
+    return true;
+}
+
+/* Syntax: .debug zonelight #newLightId */
+bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
+{
+    char* cLightId = strtok((char*)args, " ");
+
+    if (!cLightId)
+        return false;
+
+    uint32 lightId = (uint32)atoi(cLightId);
+    if (lightId == 0)
+        return false;
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS); //fade over 10 seconds
+    PSendSysMessage("Changed zone light to %u", lightId);
+    return true;
+}
+
+/* Syntax: .debug zoneweather #weatherId [#intensity] */
+bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
+{
+    char* sWeatherId = strtok((char*)args, " ");
+    char* sIntensity = strtok(nullptr, " ");
+
+    uint32 weatherId = 0;
+    float intensity = 0.999f;
+
+    if (!sWeatherId)
+        return false;
+
+    weatherId = atoi(sWeatherId);
+    if (weatherId == 0)
+        return false;
+
+    if (sIntensity)
+        intensity = atof(sIntensity);
+
+    Player* p = GetSession()->GetPlayer();
+    if (!p)
+        return false;
+
+    Map* map = p->GetMap();
+    if (!map)
+        return false;
+
+    map->SetZoneWeather(p->GetZoneId(), WeatherState(weatherId), intensity);
+    PSendSysMessage("Changed zone weather to %u", weatherId);
+    return true;
+}
+
+/* Syntax: .debug setarmor #armorValue */
+bool ChatHandler::HandleDebugSetArmorCommand(const char* args)
+{
+    Unit* target = GetSelectedUnit();
+    if (!target)
+    {
+        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+        return true;
+    }
+
+    uint32 armor = atoi(args);
+    target->SetUInt32Value(UNIT_FIELD_RESISTANCES, armor);
+
+    PSendSysMessage("Set target armor to %u", armor);
+
+    return true;
+}
+
+/* Syntax: .debug getarmor */
+bool ChatHandler::HandleDebugGetArmorCommand(const char* args)
+{
+    return HandleDebugGetValueCommand("186"); //186 == UNIT_FIELD_RESISTANCES
+}
+
+//show animation
+bool ChatHandler::HandleDebugAnimCommand(const char* args)
+{
+    ARGS_CHECK
+
+    uint32 anim_id = atoi((char*)args);
+    m_session->GetPlayer()->HandleEmoteCommand(anim_id);
+    return true;
+}
+
+bool ChatHandler::HandleDebugGetLootRecipient(const char* /*args*/)
+{
+    Creature* target = GetSelectedCreature();
+    if(!target)
+        return false;
+
+    PSendSysMessage("Loot recipient: %s", target->hasLootRecipient()?(target->GetLootRecipient()?target->GetLootRecipient()->GetName().c_str() :"offline"):"no loot recipient");
+    return true;
+}
+
+bool ChatHandler::HandleDebugRemoveLootItem(const char* args)
 {
     ARGS_CHECK
     Creature* target = GetSelectedCreature();
@@ -703,24 +1003,50 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleSpellInfoCommand(const char* args)
+bool ChatHandler::HandleDebugPvPAnnounce(const char* args)
 {
     ARGS_CHECK
+        
+    char *msg = strtok((char *)args, " ");
+    if (!msg)
+        return false;
+        
+    char const* channel = "pvp";
     
-    uint32 spellId = uint32(atoi(args));
-    if (!spellId)
-        return false;
-        
-    const SpellInfo* spell = sSpellMgr->GetSpellInfo(spellId);
-    if (!spell)
-        return false;
-        
-    PSendSysMessage("## Spell %u (%s) ##", spell->Id, spell->SpellName[(uint32)sWorld->GetDefaultDbcLocale()]);
-    PSendSysMessage("Icon: %u - Visual: %u", spell->SpellIconID, spell->SpellVisual);
-    PSendSysMessage("Attributes: %x %x %x %x %x %x", spell->Attributes, spell->AttributesEx, spell->AttributesEx2, spell->AttributesEx3, spell->AttributesEx4, spell->AttributesEx5);
-    PSendSysMessage("Stack amount: %u", spell->StackAmount);
-    PSendSysMessage("SpellFamilyName: %u (%x)", spell->SpellFamilyName, spell->SpellFamilyName);
-    PSendSysMessage("SpellFamilyFlags: " UI64FMTD " (" UI64FMTD ")", spell->SpellFamilyFlags, spell->SpellFamilyFlags);
+    boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+    HashMapHolder<Player>::MapType const& m = ObjectAccessor::GetPlayers();
+    for(auto & itr : m)
+    {
+        if (itr.second && itr.second->GetSession()->GetPlayer() && itr.second->GetSession()->GetPlayer()->IsInWorld())
+        {
+            if(ChannelMgr* cMgr = channelMgr(itr.second->GetSession()->GetPlayer()->GetTeam()))
+            {
+                if(Channel *chn = cMgr->GetChannel(channel, itr.second->GetSession()->GetPlayer()))
+                {
+                    WorldPacket data;
+                    ChatHandler::BuildChatPacket(data, CHAT_MSG_CHANNEL, LANG_UNIVERSAL, itr.second->GetSession()->GetPlayer(),itr.second->GetSession()->GetPlayer(), msg, 0, channel);
+                    itr.second->SendDirectMessage(&data);
+                }
+            }
+        }
+    }
+    
+    return false;
+}
+
+bool ChatHandler::HandleDebugAurasList(const char* args)
+{
+    Unit* unit = GetSelectedUnit();
+    if (!unit)
+        unit = m_session->GetPlayer();
+    
+    PSendSysMessage("Aura list:");
+    Unit::AuraMap& tAuras = unit->GetAuras();
+    for (auto & tAura : tAuras)
+    {
+        SpellInfo const* spellProto = tAura.second->GetSpellInfo();
+        PSendSysMessage("%u - %s (stack: %u) - Effect %u - Value %u %s", spellProto->Id, spellProto->SpellName[sWorld->GetDefaultDbcLocale()], tAura.second->GetStackAmount(), tAura.second->GetEffIndex(), tAura.second->GetModifierValue(), tAura.second->IsActive() ? "" : "[inactive]");
+    }
     
     return true;
 }
@@ -798,100 +1124,6 @@ bool ChatHandler::HandleDebugPlayerFlags(const char* args)
     else
         m_session->GetPlayer()->SetFlag(PLAYER_FLAGS, flags);
         
-    return true;
-}
-
-/** Syntax: .smartai errors [entryOrGuid] */
-bool ChatHandler::HandleSmartAIShowErrorsCommand(const char* args)
-{
-    uint32 entry = 0;
-    uint32 guid = 0;
-    Creature* target = nullptr;
-
-    if (!*args)
-    {
-        //if no arguments given, try getting selected creature
-        target = GetSelectedCreature();
-
-        if (!target)
-        {
-            SendSysMessage("Select a creature or give an entry or a guid (as a negative value).");
-            return true;
-        }
-
-        guid = target->GetGUIDLow();
-        entry = target->GetEntry();
-    } else {
-        //arguments given, check if guid or entry
-        int entryOrGuid = atoi(args);
-        if(entryOrGuid > 0)
-            entry = entryOrGuid;
-        else
-            guid = -entryOrGuid;
-    }
-
-    SendSysMessage("SmartAI errors :");
-    auto errorList = sSmartScriptMgr->GetErrorList(-int32(guid)); //negative guid in argument
-    for(auto itr : errorList)
-        PSendSysMessage("%s", itr.c_str());
-
-    errorList = sSmartScriptMgr->GetErrorList(entry);
-    for(auto itr : errorList)
-        PSendSysMessage("%s", itr.c_str());
-
-    return true;
-}
-
-/** Syntax: .smartai debug [entryOrGuid] */
-bool ChatHandler::HandleSmartAIDebugCommand(const char* args)
-{
-    uint32 entry = 0;
-    uint32 guid = 0;
-    Creature* target = nullptr;
-
-    if (!*args)
-    {
-        //if no arguments given, try getting selected creature
-        target = GetSelectedCreature();
-
-        if (!target)
-        {
-            SendSysMessage("Select a creature or give an entry or a guid (as a negative value).");
-            return true;
-        }
-
-        guid = target->GetGUIDLow();
-        entry = target->GetEntry();
-    } else {
-        //arguments given, check if guid or entry
-        int entryOrGuid = atoi(args);
-        if(entryOrGuid > 0)
-            entry = entryOrGuid;
-        else
-            guid = -entryOrGuid;
-    }
-
-    SendSysMessage("SmartAI infos :");
-    if(target)
-    {
-        if(target->GetAIName() == SMARTAI_AI_NAME)
-        {
-            if(SmartScript* smartScript = dynamic_cast<SmartAI*>(target->AI())->GetScript())
-            {
-                uint32 phase = smartScript->GetPhase();
-                PSendSysMessage("Current phase: %u", phase);
-
-                uint32 lastProcessedActionId = smartScript->GetLastProcessedActionId();
-                PSendSysMessage("Last processed action: %u", lastProcessedActionId);
-            }
-        } else {
-            SendSysMessage("Not SmartAI creature.");
-        }
-    } else {
-        SendSysMessage("No target selected.");
-        //TODO: try getting AI with args
-    }
-
     return true;
 }
 
@@ -1020,15 +1252,6 @@ bool ChatHandler::HandleDebugOpcodeTestCommand(const char* /* args */)
     return true;
 }
 
-void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
-{
-    uint32 valuesCount = target->GetValuesCount();
-    values.clear();
-    values.resize(valuesCount);
-    for (uint32 i = 0; i < valuesCount; i++)
-        values[i] = target->GetUInt32Value(i);
-}
-
 /* Syntax: .debug valuessnapshots <start|stop> */
 bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
 {
@@ -1073,13 +1296,13 @@ bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
             {
                 std::stringstream stream;
                 std::string fieldName = "[UNKNOWN]";
-                GetFieldNameString(typeId, i, fieldName);
+                UpdateFieldsDebug::GetFieldNameString(typeId, i, fieldName);
                 stream << "Index: " << i << " | " << fieldName << std::endl;
                 stream << "  New value:  ";
-                uint32 fieldSize = InsertFieldInStream(typeId, i, newValues, stream);
+                uint32 fieldSize = UpdateFieldsDebug::InsertFieldInStream(typeId, i, newValues, stream);
                 stream << std::endl;
                 stream << "  Old value:   ";
-                InsertFieldInStream(typeId, i, snapshot_values, stream);
+                UpdateFieldsDebug::InsertFieldInStream(typeId, i, snapshot_values, stream);
                 stream << std::endl;
                 diffCount++;
                 if (fieldSize > 1)
@@ -1099,224 +1322,46 @@ bool ChatHandler::HandleDebugValuesSnapshot(const char* args)
     return true;
 }
 
-/* Syntax : .debug getvalue #index */
-bool ChatHandler::HandleGetValueCommand(const char* args)
+bool ChatHandler::HandleDebugUnloadGrid(const char* args)
 {
+    /*
     ARGS_CHECK
 
-    char* cIndex = strtok((char*)args, " ");
-
-    if (!cIndex)
+    char* mapidstr = strtok((char*)args, " ");
+    if (!mapidstr || !*mapidstr)
         return false;
 
-    Unit* target = GetSelectedUnit();
-    if (!target)
+    char* gxstr = strtok(NULL, " ");
+    if (!gxstr || !*gxstr)
+        return false;
+
+    char* gystr = strtok(NULL, " ");
+    if (!gystr || !*gystr)
+        return false;
+
+    char* unloadallstr = strtok(NULL, " ");
+    if (!unloadallstr || !*unloadallstr)
+        return false;
+
+    int mapid, gx, gy;
+    bool unloadall;
+
+    mapid = atoi(mapidstr);
+    gx = atoi(gxstr);
+    gy = atoi(gystr);
+    unloadall = atoi(unloadallstr);
+
+    Map* map = sMapMgr->FindBaseNonInstanceMap(mapid);
+    if (!map)
     {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-        SetSentErrorMessage(true);
+        PSendSysMessage("Cannot find map id %u.", mapid);
         return false;
     }
 
-    uint64 guid = target->GetGUID();
+    bool ret;
+    ret = map->UnloadGrid(gx, gy, unloadall);
 
-    uint32 index = (uint32)atoi(cIndex);
-    if (index >= target->GetValuesCount())
-    {
-        PSendSysMessage(LANG_TOO_BIG_INDEX, index, GUID_LOPART(guid), target->GetValuesCount());
-        return false;
-    }
-
-    std::vector<uint32> values;
-    FillSnapshotValues(target, values);
-
-    TypeID type = TypeID(target->GetTypeId());
-    std::string fieldName = "[UNKNOWN]";
-    GetFieldNameString(type, index, fieldName);
-    std::stringstream ss;
-    InsertFieldInStream(type, index, values, ss);
-    PSendSysMessage("Field %s (%u): %s", fieldName.c_str(), index, ss.str().c_str());
-
+    PSendSysMessage("Unload grid returned %u", ret);
+    */
     return true;
-}
-
-/* Syntax: .debug crash <SIGSEGV|SEGABRT> */
-bool ChatHandler::HandleDebugCrashCommand(const char* args)
-{
-    char* cSignal = strtok((char*)args, " ");
-    if (!cSignal)
-        return false;
-
-    std::string signal(cSignal);
-
-    if (signal == "SIGSEGV")
-        raise(SIGSEGV);
-    else if (signal == "SIGABRT")
-        raise(SIGABRT);
-    else
-        return false;
-
-    return true;
-}
-
-/* Syntax: .debug zonemusic #musicId */
-bool ChatHandler::HandleDebugZoneMusicCommand(const char* args)
-{
-    char* cMusicId = strtok((char*)args, " ");
-
-    if (!cMusicId)
-        return false;
-
-    uint32 musicId = (uint32)atoi(cMusicId);
-    if (musicId == 0)
-        return false;
-
-    Player* p = GetSession()->GetPlayer();
-    if (!p)
-        return false;
-
-    Map* map = p->GetMap();
-    if (!map)
-        return false;
-
-    map->SetZoneMusic(p->GetZoneId(), musicId);
-    PSendSysMessage("Changed zone music to %u", musicId);
-    return true;
-}
-
-/* Syntax: .debug zonelight #newLightId */
-bool ChatHandler::HandleDebugZoneLightCommand(const char* args)
-{
-    char* cLightId = strtok((char*)args, " ");
-
-    if (!cLightId)
-        return false;
-
-    uint32 lightId = (uint32)atoi(cLightId);
-    if (lightId == 0)
-        return false;
-
-    Player* p = GetSession()->GetPlayer();
-    if (!p)
-        return false;
-
-    Map* map = p->GetMap();
-    if (!map)
-        return false;
-
-    map->SetZoneOverrideLight(p->GetZoneId(), lightId, 10 * SECOND * IN_MILLISECONDS); //fade over 10 seconds
-    PSendSysMessage("Changed zone light to %u", lightId);
-    return true;
-}
-
-/* Syntax: .debug zoneweather #weatherId [#intensity] */
-bool ChatHandler::HandleDebugZoneWeatherCommand(const char* args)
-{
-    char* sWeatherId = strtok((char*)args, " ");
-    char* sIntensity = strtok(nullptr, " ");
-
-    uint32 weatherId = 0;
-    float intensity = 0.999f;
-
-    if (!sWeatherId)
-        return false;
-
-    weatherId = atoi(sWeatherId);
-    if (weatherId == 0)
-        return false;
-
-    if (sIntensity)
-        intensity = atof(sIntensity);
-
-    Player* p = GetSession()->GetPlayer();
-    if (!p)
-        return false;
-
-    Map* map = p->GetMap();
-    if (!map)
-        return false;
-
-    map->SetZoneWeather(p->GetZoneId(), WeatherState(weatherId), intensity);
-    PSendSysMessage("Changed zone weather to %u", weatherId);
-    return true;
-}
-
-/* Syntax: .debug setarmor #armorValue */
-bool ChatHandler::HandleDebugSetArmorCommand(const char* args)
-{
-    Unit* target = GetSelectedUnit();
-    if (!target)
-    {
-        SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
-        return true;
-    }
-
-    uint32 armor = atoi(args);
-    target->SetUInt32Value(UNIT_FIELD_RESISTANCES, armor);
-
-    PSendSysMessage("Set target armor to %u", armor);
-
-    return true;
-}
-
-/* Syntax: .debug getarmor */
-bool ChatHandler::HandleDebugGetArmorCommand(const char* args)
-{
-    return HandleGetValueCommand("186"); //186 == UNIT_FIELD_RESISTANCES
-}
-
-bool ChatHandler::HandlePlayerbotConsoleCommand(const char* args)
-{
-#ifdef PLAYERBOT
-    return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(this, args);
-#else
-    SendSysMessage("Core not build with playerbot");
-    return true;
-#endif
-}
-
-/* .profiling start [filename] */
-bool ChatHandler::HandleProfilingStartCommand(const char* args)
-{
-	//default filename
-	std::string filename = std::to_string(time(nullptr)) + ".prof";
-	char* cFileName = strtok((char*)args, " ");
-	if (cFileName)
-		filename = cFileName;
-
-	std::string failureReason;
-	if(sProfiler->Start(filename, failureReason))
-		SendSysMessage("Profiling started");
-	else
-		PSendSysMessage("Profiling start failed with reason %s", failureReason.c_str());
-	return true;
-}
-
-/* .profiling stop */
-bool ChatHandler::HandleProfilingStopCommand(const char* args)
-{
-	std::string failureReason;
-	if (sProfiler->Stop(failureReason))
-		SendSysMessage("Profiling stopped");
-	else
-		PSendSysMessage("Profiling stop failed with reason %s", failureReason.c_str());
-
-	return true;
-}
-
-/* .profiling status */
-bool ChatHandler::HandleProfilingStatusCommand(const char* args)
-{
-	std::string infos = sProfiler->GetInfos();
-	PSendSysMessage("Profiling infos:\n%s", infos.c_str());
-	return true;
-}
-
-bool ChatHandler::HandlePlayerbotMgrCommand(const char* args)
-{
-#ifdef PLAYERBOT
-    return PlayerbotMgr::HandlePlayerbotMgrCommand(this, args);
-#else
-    SendSysMessage("Core not build with playerbot");
-    return true;
-#endif
 }

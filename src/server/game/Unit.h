@@ -1019,9 +1019,9 @@ Only on units hostile to players and able to attack him.
 #define STEALTH_DETECT_WARNING_RANGE 3.0f   
 //if in warning range, we can do the suspicious look.
 //time in ms between two warning, counting from warning start (= ignoring duration)
-#define SUSPICIOUS_LOOK_COOLDOWN 16000
-#define SUSPICIOUS_LOOK_DURATION 5000
-// SUSPICIOUS_LOOK_COOLDOWN must always be greater than SUSPICIOUS_LOOK_DURATION
+#define STEALTH_ALERT_COOLDOWN 16000
+#define STEALTH_ALERT_DURATINON 5000
+// STEALTH_ALERT_COOLDOWN must always be greater than STEALTH_ALERT_DURATINON
 
 enum StealthDetectedStatus
 {
@@ -1044,7 +1044,7 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_TARGET_FLAGS, //could not attack because of target flags
     CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
     CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
-    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
+    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
     CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
     CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
     CAN_ATTACK_RESULT_SELF_UNIT_FLAGS, //create cannot attack because of own unit flags
@@ -1102,8 +1102,8 @@ class TC_GAME_API Unit : public WorldObject
         void SetCanDualWield(bool value) { m_canDualWield = value; }
         float GetCombatReach() const { return m_floatValues[UNIT_FIELD_COMBATREACH]; }
         float GetMeleeReach() const { float reach = m_floatValues[UNIT_FIELD_COMBATREACH]; return reach > MIN_MELEE_REACH ? reach : MIN_MELEE_REACH; }
-        bool IsWithinCombatRange(Unit *obj, float dist2compare) const;
-        bool IsWithinMeleeRange(Unit *obj, float dist = MELEE_RANGE) const;
+        bool IsWithinCombatRange(Unit const* obj, float dist2compare) const;
+        bool IsWithinMeleeRange(Unit const* obj, float dist = MELEE_RANGE) const;
         float GetMeleeRange(Unit const* target) const;
         void GetRandomContactPoint( const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax ) const;
         uint32 m_extraAttacks;
@@ -1850,6 +1850,7 @@ class TC_GAME_API Unit : public WorldObject
         /* Check if unit has at least one aura of given state; This just checks UNIT_FIELD_AURASTATE if no caster is given, or check in m_auraStateAuras if so (some state being caster dependant) */
         bool HasAuraState(AuraStateType flag, SpellInfo const* spellProto = nullptr, Unit const* Caster = nullptr) const;
         void UnsummonAllTotems();
+        //This triggers a KillMagnetEvent
         Unit* GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo);
         Unit* GetMeleeHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo = nullptr);
 

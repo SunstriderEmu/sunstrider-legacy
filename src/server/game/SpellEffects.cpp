@@ -3681,10 +3681,19 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
 
     if (gameObjTarget)
     {
+        // Players shouldn't be able to loot gameobjects that are currently despawned
+        if (!gameObjTarget->isSpawned() && !player->IsGameMaster())
+        {
+            TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn timer without being in GM mode!",
+                player->GetName().c_str(), player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+            return;
+        }
+
         if (sScriptMgr->OnGossipHello(player, gameObjTarget))
             return;
             
-        gameObjTarget->AI()->OnGossipHello(player);
+        if (gameObjTarget->AI()->GossipHello(player, false))
+            return;
 
         switch (gameObjTarget->GetGoType())
         {
@@ -7115,10 +7124,11 @@ void Spell::EffectSkinning(uint32 /*i*/)
 
     uint32 skill = creature->GetCreatureTemplate()->GetRequiredLootSkill();
 
-    (m_caster->ToPlayer())->SendLoot(creature->GetGUID(),LOOT_SKINNING);
-    creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
     creature->SetDisableGravity(false);
     creature->SetFlying(false);
+    creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE);
+    creature->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
+    (m_caster->ToPlayer())->SendLoot(creature->GetGUID(), LOOT_SKINNING);
 
     int32 reqValue = targetLevel < 10 ? 0 : targetLevel < 20 ? (targetLevel-10)*10 : targetLevel*5;
 
@@ -7146,6 +7156,10 @@ void Spell::EffectCharge(uint32 i)
 
     if (effectHandleMode == SPELL_EFFECT_HANDLE_LAUNCH_TARGET )
     {
+        // charge changes fall time
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            m_caster->ToPlayer()->SetFallInformation(0, m_caster->GetPositionZ());
+
         float speed = G3D::fuzzyGt(m_spellInfo->Speed, 0.0f) ? m_spellInfo->Speed : SPEED_CHARGE;
         // Spell is not using explicit target - no generated path
         if (m_preGeneratedPath->GetPathType() == PATHFIND_BLANK)

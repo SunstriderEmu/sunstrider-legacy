@@ -670,8 +670,11 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
         }
         break;
         case TYPEID_PLAYER:
-            if (passenger->IsInWorld())
+            if (passenger->IsInWorld() && !passenger->ToPlayer()->IsBeingTeleported()) 
+            {
                 GetMap()->PlayerRelocation(passenger->ToPlayer(), x, y, z, o);
+                passenger->ToPlayer()->SetFallInformation(0, passenger->GetPositionZ());
+            }
             break;
         case TYPEID_GAMEOBJECT:
             GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o);

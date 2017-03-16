@@ -1,26 +1,26 @@
-#include "SuspiciousLookMovementGenerator.h"
+#include "StealthAlertMovementGenerator.h"
 #include "Creature.h"
 #include "MotionMaster.h"
 
-SuspiciousLookMovementGenerator::SuspiciousLookMovementGenerator(Unit const* owner, Unit const* target, uint32 timer) : 
+StealthAlertMovementGenerator::StealthAlertMovementGenerator(Unit const* owner, Unit const* target, uint32 timer) : 
     m_timer(timer), 
     originalOrientation(owner->GetOrientation()), 
     targetOrientation(owner->GetAngle(target)) 
 { }
 
-bool SuspiciousLookMovementGenerator::Initialize(Unit* owner)
+bool StealthAlertMovementGenerator::Initialize(Unit* owner)
 {
     owner->SetFacingTo(targetOrientation);
     return true;
 }
 
-void SuspiciousLookMovementGenerator::Finalize(Unit* owner, bool premature) 
+void StealthAlertMovementGenerator::Finalize(Unit* owner, bool premature) 
 {
     if(!premature)
         owner->SetFacingTo(originalOrientation); // "Hmm, must have been the wind"
 }
 
-bool SuspiciousLookMovementGenerator::Update(Unit* owner, uint32 time_diff)
+bool StealthAlertMovementGenerator::Update(Unit* owner, uint32 time_diff)
 {
     //stop being suspicious if a control was applied, we've got other things to worry about
     if(owner->GetMotionMaster()->GetMotionSlotType(MOTION_SLOT_CONTROLLED) != NULL_MOTION_TYPE)

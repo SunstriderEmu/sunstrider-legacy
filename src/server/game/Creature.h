@@ -215,6 +215,7 @@ struct CreatureTemplate
     uint32  QuestPoolId;
     uint32 GetRandomValidModelId() const;
     uint32 GetFirstValidModelId() const;
+    uint32  GetFirstInvisibleModel() const;
 
     // helpers
     SkillType GetRequiredLootSkill() const
@@ -360,6 +361,7 @@ struct CreatureModelInfo
     float combat_reach;
     uint8 gender;
     uint32 modelid_other_gender;
+    bool is_trigger; //not implemented
 };
 
 typedef std::unordered_map<uint16, CreatureModelInfo> CreatureModelContainer;
@@ -658,13 +660,12 @@ class TC_GAME_API Creature : public Unit
         
         /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/
         /* return true if the creature can do a suspicious look on target. This does NOT check for detection range, use CanAggro, CanAttack or CanDetectStealthOf results to ensure this distance is correct. */
-        bool CanDoSuspiciousLook(Unit const* target) const;
+        bool CanDoStealthAlert(Unit const* target) const;
         //start lookup suspicously at target
-        void StartSuspiciousLook(Unit const* target);
+        void StartStealthAlert(Unit const* target);
 
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         //select nearest alive player
-        Player* SelectNearestPlayer(float distance = 0) const;
         Unit* SelectNearestTargetInAttackDistance(float dist) const;
 
 
@@ -891,7 +892,7 @@ class TC_GAME_API Creature : public Unit
 
         bool m_canFly; //create is able to fly. Not directly related to the CAN_FLY moveflags. Yes this is all confusing.
 
-        uint32 m_stealthWarningCooldown;
+        uint32 m_stealthAlertCooldown;
         uint32 m_keepActiveTimer;
 
     private:

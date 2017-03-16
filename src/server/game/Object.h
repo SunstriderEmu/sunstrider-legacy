@@ -143,21 +143,45 @@ struct TC_GAME_API Position
     bool IsPositionValid() const;
 
     float GetExactDist2dSq(float x, float y) const
-        { float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; }
+    { 
+        float dx = m_positionX - x; float dy = m_positionY - y; return dx*dx + dy*dy; 
+    }
     float GetExactDist2d(const float x, const float y) const
-        { return sqrt(GetExactDist2dSq(x, y)); }
+    { 
+        return sqrt(GetExactDist2dSq(x, y)); 
+    }
     float GetExactDist2dSq(const Position *pos) const
-        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; }
+    { 
+        float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; return dx*dx + dy*dy; 
+    }
     float GetExactDist2d(const Position *pos) const
-        { return sqrt(GetExactDist2dSq(pos)); }
+    { 
+        return sqrt(GetExactDist2dSq(pos)); 
+    }
     float GetExactDistSq(float x, float y, float z) const
-        { float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; }
+    { 
+        float dz = m_positionZ - z; return GetExactDist2dSq(x, y) + dz*dz; 
+    }
     float GetExactDist(float x, float y, float z) const
-        { return sqrt(GetExactDistSq(x, y, z)); }
+    { 
+        return sqrt(GetExactDistSq(x, y, z)); 
+    }
     float GetExactDistSq(const Position *pos) const
-        { float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; }
+    { 
+        float dx = m_positionX - pos->m_positionX; float dy = m_positionY - pos->m_positionY; float dz = m_positionZ - pos->m_positionZ; return dx*dx + dy*dy + dz*dz; 
+    }
     float GetExactDist(const Position *pos) const
-        { return sqrt(GetExactDistSq(pos)); }
+     { 
+        return sqrt(GetExactDistSq(pos)); 
+    }
+    float GetExactDistSq(Position const& pos) const
+    {
+        float dx = m_positionX - pos.m_positionX; float dy = m_positionY - pos.m_positionY; float dz = m_positionZ - pos.m_positionZ; return dx*dx + dy*dy + dz*dz;
+    }
+    float GetExactDist(Position const& pos) const
+    {
+        return std::sqrt(GetExactDistSq(pos));
+    }
 
     void GetPositionOffsetTo(const Position & endPos, Position & retOffset) const;
     Position GetPositionWithOffset(Position const& offset) const;
@@ -178,7 +202,7 @@ struct TC_GAME_API Position
     bool IsInDist(const Position *pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
     bool HasInArc(float arcangle, const Position *pos, float border = 2.0f) const;
-    bool HasInLine(const WorldObject* target, float width) const;
+    bool HasInLine(const WorldObject* target, float objSize, float width) const;
     std::string ToString() const;
 
     // modulos a radian orientation to the range of 0..2PI
@@ -647,8 +671,8 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObject* FindNearestGameObject(uint32 entry, float range) const;
         GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
+        Player* SelectNearestPlayer(float distance, bool alive = true) const;
 
-        Player* FindNearestPlayer(float range) const;
         bool isActiveObject() const { return m_isActive; }
         /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.

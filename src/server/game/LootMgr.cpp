@@ -64,7 +64,7 @@ class LootTemplate::LootGroup                               // A set of loot def
 
         LootStoreItemList* GetExplicitlyChancedItemList() { return &ExplicitlyChanced; }
         LootStoreItemList* GetEqualChancedItemList() { return &EqualChanced; }
-        void CopyConditions(ConditionList conditions);
+        void CopyConditions(ConditionContainer conditions);
     private:
         LootStoreItemList ExplicitlyChanced;                // Entries with chances defined in DB
         LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
@@ -202,7 +202,7 @@ void LootStore::ResetConditions()
 {
     for (auto & m_LootTemplate : m_LootTemplates)
     {
-        ConditionList empty;
+        ConditionContainer empty;
         m_LootTemplate.second->CopyConditions(empty);
     }
 }
@@ -920,7 +920,7 @@ bool LootTemplate::LootGroup::HasQuestDropForPlayer(Player const * player) const
     return false;
 }
 
-void LootTemplate::LootGroup::CopyConditions(ConditionList /*conditions*/)
+void LootTemplate::LootGroup::CopyConditions(ConditionContainer /*conditions*/)
 {
     for (auto & i : ExplicitlyChanced)
         i->conditions.clear();
@@ -1066,7 +1066,7 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, uint8 groupId) co
             group->Process(loot);
 }
 
-void LootTemplate::CopyConditions(const ConditionList& conditions)
+void LootTemplate::CopyConditions(const ConditionContainer& conditions)
 {
     for (auto & Entrie : Entries)
         Entrie->conditions.clear();

@@ -228,29 +228,34 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 guid;
 
     recvData >> guid;
 
-    GameObject *obj = _player->GetGameObjectIfCanInteractWith(guid);
+    GameObject* gameObjTarget = _player->GetGameObjectIfCanInteractWith(guid);
 
-    if(!obj)
+    if(!gameObjTarget)
         return;
+
+    // Players shouldn't be able to loot gameobjects that are currently despawned
+    if (!gameObjTarget->isSpawned() && !_player->IsGameMaster())
+    {
+        TC_LOG_ERROR("entities.player.cheat", "Possible hacking attempt: Player %s [guid: %u] tried to loot a gameobject [entry: %u id: %u] which is on respawn timer without being in GM mode!",
+            _player->GetName().c_str(), _player->GetGUIDLow(), gameObjTarget->GetEntry(), gameObjTarget->GetGUIDLow());
+        return;
+    }
 
     // ignore for remote control state
     if (GetPlayer()->m_mover != GetPlayer())
         return;
 
-    if (sScriptMgr->OnGossipHello(_player, obj))
+    if (sScriptMgr->OnGossipHello(_player, gameObjTarget))
         return;
         
-    obj->AI()->OnGossipHello(_player);
+    if (gameObjTarget->AI()->GossipHello(_player, false))
+        return;
 
-    obj->Use(_player);
+    gameObjTarget->Use(_player);
 
     //TC LK _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
 }

@@ -22,7 +22,8 @@ class Transaction;
 typedef std::shared_ptr<Transaction> SQLTransaction;
 enum WeatherState : int;
 class UpdateData;
-
+class ReplayPlayer;
+class ReplayRecorder;
 class Creature;
 class Item;
 class Object;
@@ -411,6 +412,17 @@ class TC_GAME_API WorldSession
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
         void ResetClientTimeDelay() { m_clientTimeDelay = 0; }
+
+        bool IsReplaying() const { return m_replayPlayer != nullptr; }
+        bool IsRecording() const { return m_replayRecorder != nullptr; }
+
+        //Replay functions
+        bool StartRecording(std::string const& recordName);
+        bool StopRecording();
+        bool StartReplaying(std::string const& recordName);
+        bool StopReplaying();
+        std::shared_ptr<ReplayPlayer> GetReplayPlayer() { return m_replayPlayer; }
+        std::shared_ptr<ReplayRecorder> GetReplayRecorder() { return m_replayRecorder; }
 
         uint32 GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
 
@@ -981,6 +993,8 @@ class TC_GAME_API WorldSession
 
         LockedQueue<WorldPacket*> _recvQueue;
 
+        std::shared_ptr<ReplayRecorder> m_replayRecorder;
+        std::shared_ptr<ReplayPlayer> m_replayPlayer;
 };
 #endif
 /// @}

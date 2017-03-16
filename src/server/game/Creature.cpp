@@ -102,6 +102,29 @@ uint32 CreatureTemplate::GetFirstValidModelId() const
     return 0;
 }
 
+uint32 CreatureTemplate::GetFirstInvisibleModel() const
+{
+    /* TC, not implemented 
+    CreatureModelInfo const* modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid1);
+    if (modelInfo && modelInfo->is_trigger)
+        return Modelid1;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid2);
+    if (modelInfo && modelInfo->is_trigger)
+        return Modelid2;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid3);
+    if (modelInfo && modelInfo->is_trigger)
+        return Modelid3;
+
+    modelInfo = sObjectMgr->GetCreatureModelInfo(Modelid4);
+    if (modelInfo && modelInfo->is_trigger)
+        return Modelid4;
+    */
+
+    return 11686;
+}
+
 CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unitClass)
 {
     return sObjectMgr->GetCreatureBaseStats(level, unitClass);
@@ -174,7 +197,7 @@ Creature::Creature() :
     m_unreachableTargetTime(0), 
     m_evadingAttacks(false), 
     m_canFly(false),
-    m_stealthWarningCooldown(0), 
+    m_stealthAlertCooldown(0), 
     m_keepActiveTimer(0), 
     m_homeless(false)
 {
@@ -285,7 +308,7 @@ void Creature::RemoveCorpse(bool setSpawnTime, bool destroyForNearbyPlayers)
 
     // Should get removed later, just keep "compatibility" with scripts
     if(setSpawnTime)
-        m_respawnTime = time(nullptr) + m_respawnDelay;
+        m_respawnTime = std::max<time_t>(time(NULL) + m_respawnDelay, m_respawnTime);
 
     // if corpse was removed during falling, the falling will continue and override relocation to respawn position
     if (IsFalling())
@@ -601,7 +624,7 @@ void Creature::Update(uint32 diff)
             m_timeSinceSpawn += diff;
 
             UpdateProhibitedSchools(diff);
-            DecreaseTimer(m_stealthWarningCooldown, diff);
+            DecreaseTimer(m_stealthAlertCooldown, diff);
 
             //From TC. Removed as this is VERY costly in cpu time for little to no gain
             //UpdateMovementFlags();
@@ -888,32 +911,36 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData
     //m_DBTableGuid = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
-    const bool bResult = CreateFromProto(guidlow, Entry, data);
+    if (!CreateFromProto(guidlow, Entry, data))
+        return false;
 
-    if (bResult)
+    /* TC, would be nice to have
+    if (GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUNGEON_BOSS && map->IsDungeon())
+        m_respawnDelay = 0; // special value, prevents respawn for dungeon bosses unless overridden
+        */
+
+    switch (GetCreatureTemplate()->rank)
     {
-        switch (GetCreatureTemplate()->rank)
-        {
-            case CREATURE_ELITE_RARE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RARE);
-                break;
-            case CREATURE_ELITE_ELITE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_ELITE);
-                break;
-            case CREATURE_ELITE_RAREELITE:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RAREELITE);
-                break;
-            case CREATURE_ELITE_WORLDBOSS:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_WORLDBOSS);
-                break;
-            default:
-                m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_NORMAL);
-                break;
-        }
-        LoadCreatureAddon();
-        InitCreatureAddon();
+        case CREATURE_ELITE_RARE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RARE);
+            break;
+        case CREATURE_ELITE_ELITE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_ELITE);
+            break;
+        case CREATURE_ELITE_RAREELITE:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_RAREELITE);
+            break;
+        case CREATURE_ELITE_WORLDBOSS:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_WORLDBOSS);
+            break;
+        default:
+            m_corpseDelay = sWorld->getConfig(CONFIG_CORPSE_DECAY_NORMAL);
+            break;
     }
-    return bResult;
+    LoadCreatureAddon();
+    InitCreatureAddon();
+
+    return true;
 }
 
 bool Creature::isTrainerFor(Player* pPlayer, bool msg) const
@@ -1287,7 +1314,11 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     }
 
     m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
+    if (map->GetInstanceId() != 0) 
+        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
+
+    m_respawnradius = data->spawndist;
+    m_respawnDelay = data->spawntimesecs;
 
     if(!Create(guid,map,data->id,data))
         return false;
@@ -1302,9 +1333,6 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
     //We should set first home position, because then AI calls home movement
     SetHomePosition(data->posX,data->posY,data->posZ,data->orientation);
 
-    m_respawnradius = data->spawndist;
-
-    m_respawnDelay = data->spawntimesecs;
     m_deathState = ALIVE;
 
     m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_DBTableGuid,GetInstanceId());
@@ -1468,15 +1496,15 @@ bool Creature::IsWithinSightDist(Unit const* u) const
 /**
 Hostile target is in stealth and in warn range
 */
-void Creature::StartSuspiciousLook(Unit const* target)
+void Creature::StartStealthAlert(Unit const* target)
 {
-    m_stealthWarningCooldown = SUSPICIOUS_LOOK_COOLDOWN;
+    m_stealthAlertCooldown = STEALTH_ALERT_COOLDOWN;
 
-    GetMotionMaster()->MoveSuspiciousLook(target, SUSPICIOUS_LOOK_DURATION);
+    GetMotionMaster()->MoveStealthAlert(target, STEALTH_ALERT_DURATINON);
     SendAIReaction(AI_REACTION_ALERT);
 }
 
-bool Creature::CanDoSuspiciousLook(Unit const* target) const
+bool Creature::CanDoStealthAlert(Unit const* target) const
 {
     if(   IsInCombat()
        || IsWorldBoss()
@@ -1485,7 +1513,7 @@ bool Creature::CanDoSuspiciousLook(Unit const* target) const
         return false;
 
     // cooldown not ready
-    if(m_stealthWarningCooldown > 0)
+    if(m_stealthAlertCooldown > 0)
         return false;
 
     // If this unit isn't an NPC, is already distracted, is in combat, is confused, stunned or fleeing, do nothing
@@ -1608,7 +1636,12 @@ void Creature::SetDeathState(DeathState s)
     {
         m_corpseRemoveTime = time(nullptr) + m_corpseDelay;
         m_respawnTime = time(nullptr) + m_respawnDelay + m_corpseDelay;
-
+        /* TC
+        if (IsDungeonBoss() && !m_respawnDelay)
+            m_respawnTime = std::numeric_limits<time_t>::max(); // never respawn in this instance
+        else
+            m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
+        */
         // always save boss respawn time at death to prevent crash cheating
         if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || IsWorldBoss())
             SaveRespawnTime();
@@ -1705,11 +1738,14 @@ void Creature::Respawn(bool force /* = false */)
 
         uint32 displayID = GetNativeDisplayId();
         CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelRandomGender(displayID);
-        if (minfo)                                             // Cancel load if no model defined
+        if (minfo && !IsTotem())                               // Cancel load if no model defined or if totem
         {
-            SetDisplayId(displayID);
             SetNativeDisplayId(displayID);
-            SetByteValue(UNIT_FIELD_BYTES_0, 2, minfo->gender);
+
+            Unit::AuraEffectList const& transformAuras = GetAuraEffectsByType(SPELL_AURA_TRANSFORM);
+            Unit::AuraEffectList const& shapeshiftAuras = GetAuraEffectsByType(SPELL_AURA_MOD_SHAPESHIFT);
+            if (transformAuras.empty() && shapeshiftAuras.empty())
+                SetDisplayId(displayID);
         }
     }
 
@@ -2368,7 +2404,7 @@ void Creature::AllLootRemovedFromCorpse()
         else
             m_corpseRemoveTime = now + uint32(m_corpseDelay * decayRate);
 
-        m_respawnTime = m_corpseRemoveTime + m_respawnDelay;
+        m_respawnTime = std::max<time_t>(m_corpseRemoveTime + m_respawnDelay, m_respawnTime);
     }
 }
 

@@ -352,14 +352,14 @@ struct GossipMenuItems
     uint32          BoxMoney;
     std::string     BoxText;
     uint32          BoxBroadcastTextId;
-    ConditionList   Conditions;
+    ConditionContainer   Conditions;
 };
 
 struct GossipMenus
 {
     uint32          entry;
     uint32          text_id;
-    ConditionList   conditions;
+    ConditionContainer   conditions;
 };
 
 typedef std::multimap<uint32, GossipMenuItems> GossipMenuItemsContainer;
@@ -1193,8 +1193,8 @@ class TC_GAME_API ObjectMgr
         GuildBankTabPriceMap mGuildBankTabPrice;
 
         // Storage for Conditions. First element (index 0) is reserved for zero-condition (nothing required)
-        typedef std::vector<PlayerCondition> ConditionStore;
-        ConditionStore mConditions;
+        typedef std::vector<PlayerCondition> PlayerConditionStore;
+        PlayerConditionStore mConditions;
         
         GossipMenusContainer _gossipMenusStore;
         GossipMenuItemsContainer _gossipMenuItemsStore;

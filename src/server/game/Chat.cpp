@@ -246,56 +246,56 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 
     static std::vector<ChatCommand> debugCommandTable =
     {
-        { "batchattack",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBatchAttack,           "" },
-        { "inarc",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugInArcCommand,          "" },
-        { "spellfail",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSpellFailCommand,      "" },
-        { "setpoi",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSetPoiCommand,              "" },
-        { "qpartymsg",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendQuestPartyMsgCommand,   "" },
-        { "qinvalidmsg",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendQuestInvalidMsgCommand, "" },
-        { "equiperr",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleEquipErrorCommand,          "" },
-        { "sellerr",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSellErrorCommand,           "" },
-        { "buyerr",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleBuyErrorCommand,            "" },
-        { "sendopcode",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendOpcodeCommand,          "" },
-        { "uws",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUpdateWorldStateCommand,    "" },
-        { "ps",             SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePlaySound2Command,          "" },
-        { "scn",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendChannelNotifyCommand,   "" },
-        { "scm",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleSendChatMsgCommand,         "" },
-        { "getitemstate",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetItemState,               "" },
-        { "playsound",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandlePlaySoundCommand,           "" },
-        { "update",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUpdateCommand,              "" },
-        { "setvalue",       SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleSetValueCommand,            "" },
-        { "getvalue",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGetValueCommand,            "" },
-        { "anim",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleAnimCommand,                "" },
-        { "lootrecipient",  SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGetLootRecipient,           "" },
-        { "arena",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugArenaCommand,          "" },
-        { "bg",             SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBattleGroundCommand,   "" },
-        { "threatlist",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugThreatList,            "" },
-        { "threatunitlist", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugHostilRefList,         "" },
-        { "cin",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugCinematic,             "" },
-        { "getitembypos",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugItemByPos,             "" },
-        { "getitemlevelsum",SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugItemLevelSum,          "" },
-        { "removelootitem" ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveLootItem,             "" },
-        { "pvpannounce",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPvPAnnounce,           "" },
-        { "auralist",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugAurasList,             "" },
-        { "stealth",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugStealthLevel,          "" },
-        { "detect",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugAttackDistance,        "" },
-        { "unloadgrid",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugUnloadGrid,            "" },
-        { "loadedscripts",  SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleDebugLoadedScripts,         "" },
-        { "resetdaily",     SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleDebugResetDailyQuests,      "" },
-        { "attackers",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugShowAttackers,         "" },
-        { "zoneattack",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendZoneUnderAttack,   "" },
-        { "los",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleDebugLoSCommand,            "" },
-        { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,           "" },
-        { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,     "" },
-        { "playemote",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugPlayEmoteCommand,      "" },
-        { "mapheight",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugMapHeight,             "" },
-        { "valuessnapshot", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugValuesSnapshot,        "" },
-        { "crash",          SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugCrashCommand,          "" },
-        { "setzonemusic",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneMusicCommand,      "" },
-        { "setzonelight",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneLightCommand,      "" },
-        { "setzoneweather", SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneWeatherCommand,    "" },
-        { "setarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSetArmorCommand,       "" },
-        { "getarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetArmorCommand,       "" },
+        { "batchattack",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBatchAttack,             "" },
+        { "inarc",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugInArcCommand,            "" },
+        { "spellfail",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSpellFailCommand,        "" },
+        { "setpoi",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSetPoiCommand,           "" },
+        { "qpartymsg",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendQuestPartyMsgCommand,"" },
+        { "qinvalidmsg",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendQuestInvalidMsgCommand,"" },
+        { "equiperr",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugEquipErrorCommand,       "" },
+        { "sellerr",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSellErrorCommand,        "" },
+        { "buyerr",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBuyErrorCommand,         "" },
+        { "sendopcode",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendOpcodeCommand,       "" },
+        { "uws",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleUpdateWorldStateCommand,      "" },
+        { "ps",             SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlaySound2Command,       "" },
+        { "scn",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendChannelNotifyCommand,"" },
+        { "scm",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendChatMsgCommand,      "" },
+        { "getitemstate",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetItemState,            "" },
+        { "playsound",      SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleDebugPlaySoundCommand,        "" },
+        { "update",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugUpdateCommand,           "" },
+        { "setvalue",       SEC_ADMINISTRATOR,false, false, &ChatHandler::HandleDebugSetValueCommand,         "" },
+        { "getvalue",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetValueCommand,         "" },
+        { "anim",           SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugAnimCommand,             "" },
+        { "lootrecipient",  SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugGetLootRecipient,        "" },
+        { "arena",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugArenaCommand,            "" },
+        { "bg",             SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugBattleGroundCommand,     "" },
+        { "threatlist",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugThreatList,              "" },
+        { "threatunitlist", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugHostilRefList,           "" },
+        { "cin",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugCinematic,               "" },
+        { "getitembypos",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugItemByPos,               "" },
+        { "getitemlevelsum",SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugItemLevelSum,            "" },
+        { "removelootitem" ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugRemoveLootItem,          "" },
+        { "pvpannounce",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPvPAnnounce,             "" },
+        { "auralist",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugAurasList,               "" },
+        { "stealth",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugStealthLevel,            "" },
+        { "detect",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugAttackDistance,          "" },
+        { "unloadgrid",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugUnloadGrid,              "" },
+        { "loadedscripts",  SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleDebugLoadedScripts,           "" },
+        { "resetdaily",     SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleDebugResetDailyQuests,        "" },
+        { "attackers",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugShowAttackers,           "" },
+        { "zoneattack",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSendZoneUnderAttack,     "" },
+        { "los",            SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleDebugLoSCommand,              "" },
+        { "playerflags",    SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugPlayerFlags,             "" },
+        { "opcodetest",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugOpcodeTestCommand,       "" },
+        { "playemote",      SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleDebugPlayEmoteCommand,        "" },
+        { "mapheight",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugMapHeight,               "" },
+        { "valuessnapshot", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugValuesSnapshot,          "" },
+        { "crash",          SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugCrashCommand,            "" },
+        { "setzonemusic",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneMusicCommand,        "" },
+        { "setzonelight",   SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneLightCommand,        "" },
+        { "setzoneweather", SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneWeatherCommand,      "" },
+        { "setarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSetArmorCommand,         "" },
+        { "getarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetArmorCommand,         "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =
@@ -357,7 +357,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "gameobject_loot_template",    SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesGameobjectCommand, "" },
         { "gameobject_queststarter",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGameobjectQuestStartersCommand, "" },
         { "gameobject_scripts",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGameObjectScriptsCommand,       "" },
-        { "gm_tickets",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleGMTicketReloadCommand,                "" },
+        { "gm_tickets",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGMTicketCommand,                "" },
         { "item_enchantment_template",   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadItemEnchantementsCommand,       "" },
         { "item_extended_cost",          SEC_ADMINISTRATOR, true,  true,  &ChatHandler::HandleReloadItemExtendedCostCommand,        "" },
         { "item_loot_template",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesItemCommand,       "" },
@@ -524,10 +524,10 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "factionid",      SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcFactionIdCommand,        "" },
         { "setmovetype",    SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcSetMoveTypeCommand,      "" },
         { "move",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcMoveCommand,             "" },
-        { "changelevel",    SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleChangeLevelCommand,         "" },
+        { "changelevel",    SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcChangeLevelCommand,         "" },
         { "setmodel",       SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcSetModelCommand,         "" },
-        { "additem",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleAddVendorItemCommand,       "" },
-        { "delitem",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleDelVendorItemCommand,       "" },
+        { "additem",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcAddVendorItemCommand,       "" },
+        { "delitem",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcDelVendorItemCommand,       "" },
         { "flag",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcFlagCommand,             "" },
         { "changeentry",    SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcChangeEntryCommand,      "" },
         { "info",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcInfoCommand,             "" },
@@ -536,14 +536,14 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "unfollow",       SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcUnFollowCommand,         "" },
         { "whisper",        SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcWhisperCommand,          "" },
         { "yell",           SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcYellCommand,             "" },
-        { "addtemp",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleTempAddSpwCommand,          "" },
+        { "addtemp",        SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcTempAddCommand,          "" },
         { "addformation",   SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcAddFormationCommand,     "" },
         { "removeformation",SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcRemoveFormationCommand,  "" },
         { "setlink",        SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcSetLinkCommand,          "" },
         { "gobackhome",     SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGoBackHomeCommand,       "" },
         { "setpool",        SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetPoolCommand,          "" },
         { "guid",           SEC_GAMEMASTER1,     false, false, &ChatHandler::HandleNpcGuidCommand,             "" },
-        { "addweapon",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleAddWeaponCommand,           "" },
+        { "addweapon",      SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcAddWeaponCommand,           "" },
         { "massfactionid",  SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcMassFactionIdCommand,    "" },
         { "combatdistance", SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcSetCombatDistanceCommand,"" },
         { "combatmovallow", SEC_ADMINISTRATOR,   false, false, &ChatHandler::HandleNpcAllowCombatMovementCommand,""},
@@ -552,7 +552,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "goto",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcGotoCommand,             "" },
         { "fly",            SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcFlyCommand,              "" },
         { "near",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcNearCommand,             "" },
-        { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNameCommand,                "" },
+        { "name",           SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleNpcNameCommand,                "" },
 
         //{ TODO: fix or remove this commands
         { "seteventid",     SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleNpcSetInstanceEventCommand, "" },
@@ -595,12 +595,12 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 
     static std::vector<ChatCommand> questCommandTable =
     {
-        { "add",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleAddQuest,                   "" },
-        { "complete",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCompleteQuest,              "" },
-        { "countcomplete",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleCountCompleteQuest,         "" },
-        { "totalcount",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleTotalCount,                 "" },
-        { "remove",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveQuest,                "" },
-        { "report",         SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleReportQuest,                "" },
+        { "add",            SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleQuestAddCommand,                   "" },
+        { "complete",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleQuestCompleteCommand,              "" },
+        { "countcomplete",  SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleQuestCountCompleteCommand,         "" },
+        { "totalcount",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleQuestTotalCountCommand,            "" },
+        { "remove",         SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleQuestRemoveCommand,                "" },
+        { "report",         SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleQuestReportCommand,                "" },
     };
 
     static std::vector<ChatCommand> gmCommandTable =
@@ -608,11 +608,10 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "chat",           SEC_GAMEMASTER1,    false, false, &ChatHandler::HandleGMChatCommand,              "" },
         { "ingame",         SEC_PLAYER,         true,  false, &ChatHandler::HandleGMListIngameCommand,        "" },
         { "list",           SEC_GAMEMASTER3,    true,  false, &ChatHandler::HandleGMListFullCommand,          "" },
-        { "visible",        SEC_GAMEMASTER1,    false, false, &ChatHandler::HandleVisibleCommand,             "" },
-        { "fly",            SEC_GAMEMASTER3,    false, false, &ChatHandler::HandleFlyModeCommand,             "" },
+        { "visible",        SEC_GAMEMASTER1,    false, false, &ChatHandler::HandleGMVisibleCommand,             "" },
+        { "fly",            SEC_GAMEMASTER3,    false, false, &ChatHandler::HandleGMFlyModeCommand,             "" },
         { "stats",          SEC_GAMEMASTER1,    false, false, &ChatHandler::HandleGMStats,                    "" },
         { "",               SEC_GAMEMASTER1,    false, false, &ChatHandler::HandleGMmodeCommand,              "" },
-        { nullptr,             0,                  false, false, nullptr,                                           "" }
     };
 
     static std::vector<ChatCommand> instanceCommandTable =
@@ -623,6 +622,15 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "savedata",       SEC_GAMEMASTER1,      false, false, &ChatHandler::HandleInstanceSaveDataCommand,    "" },
         { "setdata",        SEC_GAMEMASTER1,      false, false, &ChatHandler::HandleInstanceSetDataCommand,     "" },
         { "getdata",        SEC_GAMEMASTER1,      false, false, &ChatHandler::HandleInstanceGetDataCommand,     "" },
+    };
+
+    static std::vector<ChatCommand> replayCommandTable =
+    {
+        { "play",           SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayPlayCommand,           "" },
+        { "forward",        SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayForwardCommand,        "" },
+        { "stop",           SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayStopCommand,           "" },
+        { "record",         SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplayRecordCommand,         "" },
+        { "speed",          SEC_ADMINISTRATOR,  false, false, &ChatHandler::HandleReplaySpeedCommand,          "" },
     };
 
     static std::vector<ChatCommand> ticketCommandTable =
@@ -714,7 +722,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "getmoveflags",   SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleGetMoveFlagsCommand,        "" },
         { "gm",             SEC_GAMEMASTER1,  true,  false, nullptr,                                        "", gmCommandTable },
         { "gmannounce",     SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleGMAnnounceCommand,          "" },
-        { "gmnameannounce", SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleGMNameAnnounceCommand,      "" },
         { "gmnotify",       SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleGMNotifyCommand,            "" },
         { "go",             SEC_GAMEMASTER1,  false, false,  nullptr,                                       "", goCommandTable },
         { "gobject",        SEC_GAMEMASTER2,  false, true,  nullptr,                                        "", gobjectCommandTable },
@@ -749,7 +756,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "movegens",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleMovegensCommand,            "" },
         { "mute",           SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleMuteCommand,                "" },
         { "muteinfo",       SEC_GAMEMASTER3,  false, false, nullptr,                                        "", muteinfoCommandTable },
-        { "nameannounce",   SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleNameAnnounceCommand,        "" },
         { "namego",         SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleNamegoCommand,              "" },
         { "neargrave",      SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleNearGraveCommand,           "" },
         { "notify",         SEC_GAMEMASTER1,  true,  false, &ChatHandler::HandleNotifyCommand,              "" },
@@ -770,6 +776,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "removetitle"    ,SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRemoveTitleCommand,         "" },
         { "rename",         SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleRenameCommand,              "" },
         { "repairitems",    SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleRepairitemsCommand,         "" },
+        { "replay",         SEC_ADMINISTRATOR,false, false, nullptr,                                        "", replayCommandTable },
         { "reportlag",      SEC_PLAYER,       false, false, &ChatHandler::HandleReportLagCommand,           "" },
         { "reset",          SEC_GAMEMASTER3,  false, false, nullptr,                                        "", resetCommandTable },
         { "reskin",         SEC_PLAYER,       false, false, &ChatHandler::HandleReskinCommand,              "" },
@@ -1754,173 +1761,6 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
         SetSentErrorMessage(true);
         return false;
-    }
-
-    return true;
-}
-
-/// Exit the realm
-bool ChatHandler::HandleServerExitCommand(const char* args)
-{
-    SendSysMessage(LANG_COMMAND_EXIT);
-    World::StopNow(SHUTDOWN_EXIT_CODE);
-    return true;
-}
-
-bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
-{
-    ARGS_CHECK
-
-    char *character_name_str = strtok((char*)args," ");
-    if(!character_name_str)
-        return false;
-
-    std::string character_name = character_name_str;
-    if(!normalizePlayerName(character_name))
-        return false;
-
-    uint64 character_guid;
-    uint32 account_id;
-
-    Player *player = sObjectAccessor->FindConnectedPlayerByName(character_name.c_str());
-    if(player)
-    {
-        character_guid = player->GetGUID();
-        account_id = player->GetSession()->GetAccountId();
-        player->GetSession()->KickPlayer();
-    }
-    else
-    {
-        character_guid = sCharacterCache->GetCharacterGuidByName(character_name);
-        if(!character_guid)
-        {
-            PSendSysMessage(LANG_NO_PLAYER,character_name.c_str());
-            SetSentErrorMessage(true);
-            return false;
-        }
-
-        account_id = sCharacterCache->GetCharacterAccountIdByGuid(character_guid);
-    }
-
-    std::string account_name;
-    sAccountMgr->GetName (account_id,account_name);
-
-    Player::DeleteFromDB(character_guid, account_id, true);
-    PSendSysMessage(LANG_CHARACTER_DELETED,character_name.c_str(),GUID_LOPART(character_guid),account_name.c_str(), account_id);
-    return true;
-}
-
-/// Delete a user account and all associated characters in this realm
-/// \todo This function has to be enhanced to respect the login/realm split (delete char, delete account chars in realm, delete account chars in realm then delete account
-bool ChatHandler::HandleAccountDeleteCommand(const char* args)
-{
-    ARGS_CHECK
-
-    ///- Get the account name from the command line
-    char *account_name_str=strtok ((char*)args," ");
-    if (!account_name_str)
-        return false;
-
-    std::string account_name = account_name_str;
-    if(!AccountMgr::normalizeString(account_name))
-    {
-        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    uint32 account_id = sAccountMgr->GetId(account_name);
-    if(!account_id)
-    {
-        PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
-        SetSentErrorMessage(true);
-        return false;
-    }
-
-    /// Commands not recommended call from chat, but support anyway
-    if(m_session)
-    {
-        uint32 targetSecurity = sAccountMgr->GetSecurity(account_id);
-
-        /// can delete only for account with less security
-        /// This is also reject self apply in fact
-        if (targetSecurity >= m_session->GetSecurity())
-        {
-            SendSysMessage (LANG_YOURS_SECURITY_IS_LOW);
-            SetSentErrorMessage (true);
-            return false;
-        }
-    }
-
-    AccountOpResult result = sAccountMgr->DeleteAccount(account_id);
-    switch(result)
-    {
-        case AOR_OK:
-            PSendSysMessage(LANG_ACCOUNT_DELETED,account_name.c_str());
-            break;
-        case AOR_NAME_NOT_EXIST:
-            PSendSysMessage(LANG_ACCOUNT_NOT_EXIST,account_name.c_str());
-            SetSentErrorMessage(true);
-            return false;
-        case AOR_DB_INTERNAL_ERROR:
-            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED_SQL_ERROR,account_name.c_str());
-            SetSentErrorMessage(true);
-            return false;
-        default:
-            PSendSysMessage(LANG_ACCOUNT_NOT_DELETED,account_name.c_str());
-            SetSentErrorMessage(true);
-            return false;
-    }
-
-    return true;
-}
-
-/// Create an account
-bool ChatHandler::HandleAccountCreateCommand(char const* args)
-{
-    ARGS_CHECK
-
-    std::string email;
-
-    ///- %Parse the command line arguments
-    char* accountName = strtok((char*)args, " ");
-    char* password = strtok(nullptr, " ");
-    char* possibleEmail = strtok(nullptr, " ' ");
-    if (possibleEmail)
-        email = possibleEmail;
-
-    if (!accountName || !password)
-        return false;
-
-    AccountOpResult result = sAccountMgr->CreateAccount(std::string(accountName), std::string(password), email);
-    switch (result)
-    {
-        case AOR_OK:
-            PSendSysMessage(LANG_ACCOUNT_CREATED, accountName);
-            if (GetSession())
-            {
-                TC_LOG_INFO("entities.player.character", "Account: %d (IP: %s) Character:[%s] (GUID: %u) created Account %s (Email: '%s')",
-                    GetSession()->GetAccountId(), GetSession()->GetRemoteAddress().c_str(),
-                    GetSession()->GetPlayer()->GetName().c_str(), GetSession()->GetPlayer()->GetGUIDLow(),
-                    accountName, email.c_str());
-            }
-            break;
-        case AOR_NAME_TOO_LONG:
-            SendSysMessage(LANG_ACCOUNT_TOO_LONG);
-            SetSentErrorMessage(true);
-            return false;
-        case AOR_NAME_ALREADY_EXIST:
-            SendSysMessage(LANG_ACCOUNT_ALREADY_EXIST);
-            SetSentErrorMessage(true);
-            return false;
-        case AOR_DB_INTERNAL_ERROR:
-            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED_SQL_ERROR, accountName);
-            SetSentErrorMessage(true);
-            return false;
-        default:
-            PSendSysMessage(LANG_ACCOUNT_NOT_CREATED, accountName);
-            SetSentErrorMessage(true);
-            return false;
     }
 
     return true;

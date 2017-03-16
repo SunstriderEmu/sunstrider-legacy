@@ -20,7 +20,7 @@ enum SmartEscortState
 
 enum SmartEscortVars
 {
-    SMART_ESCORT_MAX_PLAYER_DIST        = 50,
+    SMART_ESCORT_MAX_PLAYER_DIST        = 60,
     SMART_MAX_AID_DIST    = SMART_ESCORT_MAX_PLAYER_DIST / 2
 };
 
@@ -49,7 +49,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void SetCombatMove(bool on);
         bool CanCombatMove() { return mCanCombatMove; }
         void SetFollow(Unit* target, float dist = 0.0f, float angle = 0.0f, uint32 credit = 0, uint32 end = 0, uint32 creditType = 0);
-        void StopFollow();
+        void StopFollow(bool complete);
 
         void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker);
         SmartScript* GetScript() { return &mScript; }
@@ -151,7 +151,8 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Makes the creature run/walk
         void SetRun(bool run = true);
 
-        void SetFly(bool fly = true);
+        void SetCanFly(bool fly = true);
+        void SetDisableGravity(bool disable = true);
 
         void SetSwim(bool swim = true);
 
@@ -182,6 +183,8 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void OnSpellClick(Unit* clicker, bool& result) override;
 
+        void SetWPPauseTimer(uint32 time) { mWPPauseTimer = time; }
+
         void FriendlyKilled(Creature const* c, float range) override;
 
     private:
@@ -204,6 +207,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool mOOCReached; //just reached last SMART_ESCORT_LAST_OOC_POINT
         bool mWPReached; //just reached any point
         uint32 mWPPauseTimer;
+        uint32 mEscortNPCFlags;
         std::shared_ptr<WayPoint> mLastWP;
         Position mLastOOCPos;//set on enter combat
         uint32 GetWPCount() const { return mWayPoints ? mWayPoints->size() : 0; }
@@ -223,9 +227,16 @@ class TC_GAME_API SmartAI : public CreatureAI
             3 -- despawn when mDespawnTime reached 0
         */
         uint32 mDespawnState;
-        void UpdateDespawn(const uint32 diff);
+        void UpdateDespawn(uint32 diff);
         uint32 mEscortInvokerCheckTimer;
         bool mJustReset;
+
+#ifdef LICH_KING
+        // Vehicle conditions
+        void CheckConditions(uint32 diff);
+        bool mHasConditions;
+        uint32 mConditionsTimer;
+#endif
 };
 
 class SmartGameObjectAI : public GameObjectAI
@@ -240,7 +251,7 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
-        bool OnGossipHello(Player* player) override;
+        bool GossipHello(Player* player, bool reportUse) override;
         bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override;
         bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
         bool OnQuestAccept(Player* player, Quest const* quest) override;
@@ -252,6 +263,7 @@ class SmartGameObjectAI : public GameObjectAI
         void OnStateChanged(GOState state, Unit* unit) override;
         void OnLootStateChanged(LootState state, Unit* unit) override;
         void EventInform(uint32 eventId) override; //FIXME
+        void SpellHit(Unit* unit, const SpellInfo* spellInfo) override;
 
     private:
         SmartScript mScript;

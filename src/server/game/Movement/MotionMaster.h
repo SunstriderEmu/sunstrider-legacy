@@ -162,7 +162,7 @@ class TC_GAME_API MotionMaster //: private std::stack<MovementGenerator *>
         void MovePath(uint32 path_id);
         void MoveRotate(uint32 time, RotateDirection direction);
         /** Look towards the target for given time */
-        void MoveSuspiciousLook(Unit const* target, uint32 time);
+        void MoveStealthAlert(Unit const* target, uint32 time);
 
         MovementGeneratorType GetCurrentMovementGeneratorType() const;
         MovementGeneratorType GetMotionSlotType(int slot) const;

@@ -139,11 +139,11 @@ void GossipMenu::AddMenuItemTextID(uint8 icon, uint32 textID, uint32 sender, uin
 
     std::string sItemText;
     ntl = sObjectMgr->GetNpcTextLocale(textID);
-    if(ntl && ntl->Text_0[0].size() > loc_idx && !ntl->Text_0[0][loc_idx].empty())
+    if (ntl && ntl->Text_0[0].size() > loc_idx && !ntl->Text_0[0][loc_idx].empty())
         sItemText = ntl->Text_0[0][loc_idx];
     else {
         pGossip = sObjectMgr->GetGossipText(textID);
-        if(pGossip)
+        if (pGossip)
             sItemText = pGossip->Options[0].Text_0;
     }
 

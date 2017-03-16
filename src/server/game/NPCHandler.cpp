@@ -193,8 +193,6 @@ void WorldSession::SendTrainerList( uint64 guid, const std::string& strTitle )
 
 void WorldSession::HandleTrainerBuySpellOpcode( WorldPacket & recvData )
 {
-    
-
     uint64 guid;
     uint32 spellId = 0;
 

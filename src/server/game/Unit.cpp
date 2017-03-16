@@ -402,7 +402,7 @@ void Unit::ResetAttackTimer(WeaponAttackType type)
     m_attackTimer[type] = uint32(GetAttackTime(type) * m_modAttackSpeedPct[type]);
 }
 
-bool Unit::IsWithinCombatRange(Unit *obj, float dist2compare) const
+bool Unit::IsWithinCombatRange(Unit const* obj, float dist2compare) const
 {
     if (!obj || !IsInMap(obj)) return false;
 
@@ -417,7 +417,7 @@ bool Unit::IsWithinCombatRange(Unit *obj, float dist2compare) const
     return distsq < maxdist * maxdist;
 }
 
-bool Unit::IsWithinMeleeRange(Unit *obj, float dist) const
+bool Unit::IsWithinMeleeRange(Unit const* obj, float dist) const
 {
     if (!obj || !IsInMap(obj) || !InSamePhase(obj))
         return false;
@@ -9991,7 +9991,7 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
         if(stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
             return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
         else if(stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
     }
 
     return CAN_ATTACK_RESULT_OK;
@@ -10075,7 +10075,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
             return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
         else if (stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_WARN_RANGE;
+            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
     }
     /* ###### */
 
@@ -10196,7 +10196,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
 
     // can't assist unattackable units or GMs
     if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
-        || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()))
+       /* || (target->GetTypeId() == TYPEID_PLAYER && target->ToPlayer()->IsGameMaster()) */)
         return false;
 
 #ifdef LICH_KING
@@ -12801,6 +12801,9 @@ bool Unit::IsPolymorphed() const
 void Unit::SetDisplayId(uint32 modelId)
 {
     SetUInt32Value(UNIT_FIELD_DISPLAYID, modelId);
+    // Set Gender by modelId
+    if (CreatureModelInfo const* minfo = sObjectMgr->GetCreatureModelInfo(modelId))
+        SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
 }
 
 void Unit::ClearComboPointHolders()
@@ -13342,7 +13345,8 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             if (uint32 lootid = creature->GetCreatureTemplate()->lootid)
                 loot->FillLoot(lootid, LootTemplates_Creature, looter /*, false, false, creature->GetLootMode() */);
 
-            loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
+            //if (creature->GetLootMode() > 0)
+                loot->generateMoneyLoot(creature->GetCreatureTemplate()->mingold, creature->GetCreatureTemplate()->maxgold);
 
             if (group)
             {

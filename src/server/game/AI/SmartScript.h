@@ -133,10 +133,10 @@ class TC_GAME_API SmartScript
         bool IsSmartGO(GameObject* g = nullptr)
         {
             bool smart = true;
-            if (g && g->GetAIName() != "SmartGameObjectAI")
+            if (g && g->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
                 smart = false;
 
-            if (!go || go->GetAIName() != "SmartGameObjectAI")
+            if (!go || go->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
                 smart = false;
             if (!smart)
                 TC_LOG_ERROR("sql.sql","SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action skipped to prevent crash.", g ? g->GetDBTableGUIDLow() : (go ? go->GetDBTableGUIDLow() : 0), g ? g->GetEntry() : (go ? go->GetEntry() : 0));
@@ -155,29 +155,23 @@ class TC_GAME_API SmartScript
 
         void StoreCounter(uint32 id, uint32 value, uint32 reset)
         {
-            CounterMap::const_iterator itr = mCounterList.find(id);
+            CounterMap::iterator itr = mCounterList.find(id);
             if (itr != mCounterList.end())
             {
                 if (reset == 0)
-                    value += GetCounterValue(id);
-                mCounterList.erase(id);
+                    itr->second += value;
+                else
+                    itr->second = value;
             }
+            else
+                mCounterList.insert(std::make_pair(id, value));
 
-            mCounterList.insert(std::make_pair(id, value));
-            ProcessEventsFor(SMART_EVENT_COUNTER_SET);
+            ProcessEventsFor(SMART_EVENT_COUNTER_SET, nullptr, id);
         }
 
-        uint32 GetCounterId(uint32 id)
+        uint32 GetCounterValue(uint32 id) const
         {
-            auto itr = mCounterList.find(id);
-            if (itr != mCounterList.end())
-                return itr->first;
-            return 0;
-        }
-
-        uint32 GetCounterValue(uint32 id)
-        {
-            auto itr = mCounterList.find(id);
+            CounterMap::const_iterator itr = mCounterList.find(id);
             if (itr != mCounterList.end())
                 return itr->second;
             return 0;
@@ -185,6 +179,14 @@ class TC_GAME_API SmartScript
 
         GameObject* FindGameObjectNear(WorldObject* searchObject, uint32 guid) const
         {
+            /*
+            auto bounds = searchObject->GetMap()->GetGameObjectBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
+
+            return bounds.first->second;
+            */
+
             GameObject *pGameObject = nullptr;
 
             CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
@@ -254,12 +256,12 @@ class TC_GAME_API SmartScript
         CounterMap mCounterList;
 
     private:
-        void IncPhase(int32 p = 1)
+        void IncPhase(int32 p)
         {
             uint32 previous = mEventPhase;
 
             if (p >= 0)
-                mEventPhase += (uint32)p;
+                mEventPhase += std::min<uint32>(SMART_EVENT_PHASE_COUNT, mEventPhase + p); // protect phase from overflowing
             else
                 DecPhase(abs(p));
 
@@ -267,7 +269,7 @@ class TC_GAME_API SmartScript
                 ProcessEventsFor(SMART_EVENT_ENTER_PHASE, nullptr, mEventPhase);
         }
 
-        void DecPhase(int32 p = 1) 
+        void DecPhase(int32 p) 
         { 
             if(mEventPhase > (uint32)p)
                 mEventPhase -= (uint32)p; 
@@ -305,8 +307,8 @@ class TC_GAME_API SmartScript
 
         std::unordered_map<int32, int32> mStoredDecimals;
         uint32 mPathId;
-        SmartAIEventList mStoredEvents;
-        std::list<uint32>mRemIDs;
+        SmartAIEventStoredList  mStoredEvents;
+        std::vector<uint32>mRemIDs;
 
         uint32 mTextTimer;
         uint32 mLastTextID;
