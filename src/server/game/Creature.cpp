@@ -3017,6 +3017,9 @@ void Creature::SetDisplayId(uint32 modelId)
     {
         SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, (IsPet() ? 1.0f : minfo->bounding_radius) * GetObjectScale());
         SetFloatValue(UNIT_FIELD_COMBATREACH, (IsPet() ? DEFAULT_COMBAT_REACH : minfo->combat_reach) * GetObjectScale());
+
+        // Set Gender by modelId. Note: TC has this in Unit::SetDisplayId but this seems wrong for BC
+         SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
     }
 
     if (Pet *pet = this->ToPet())
