@@ -1,4 +1,5 @@
 #include "ReplayPlayer.h"
+#include "Chat.h"
 
 ReplayPlayer::~ReplayPlayer()
 {

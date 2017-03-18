@@ -83,7 +83,7 @@ bool ChatHandler::HandleReplayRecordCommand(const char* args)
         sess = player->GetSession();*/
 
     std::string recordName(args);
-    if (args == "")
+    if (strcmp(args, "") == 0)
         return false;
 
     if (sess->StartRecording(recordName))

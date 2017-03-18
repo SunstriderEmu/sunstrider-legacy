@@ -4,6 +4,7 @@
 #include "UpdateFieldsDebug.h"
 #include "BattleGroundMgr.h"
 #include "ChannelMgr.h"
+#include "GossipDef.h"
 
 void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
 {

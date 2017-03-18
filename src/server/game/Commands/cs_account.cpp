@@ -1,5 +1,6 @@
 #include "Chat.h"
 #include "Language.h"
+#include "AccountMgr.h"
 
 /// Set/Unset the expansion level for an account
 bool ChatHandler::HandleAccountSetAddonCommand(const char* args)

@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Management/MMapManager.h"
 #include "Management/MMapFactory.h"
+#include "PathGenerator.h"
 
 bool ChatHandler::HandleMmapTestArea(const char* args)
 {

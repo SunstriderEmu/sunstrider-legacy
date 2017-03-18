@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "Guild.h"
 
 /** \brief GM command level 3 - Create a guild.
  *

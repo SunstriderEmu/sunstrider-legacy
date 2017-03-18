@@ -1,6 +1,6 @@
 #include "Chat.h"
 #include "Language.h"
-
+#include "AccountMgr.h"
 
 bool ChatHandler::HandleUnBanAccountCommand(const char* args)
 {

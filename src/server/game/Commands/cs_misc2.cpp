@@ -6,6 +6,8 @@
 #include "LogsDatabaseAccessor.h"
 #include "GridMap.h"
 #include "BattleGround.h"
+#include "AccountMgr.h"
+#include "CellImpl.h"
 
 bool ChatHandler::HandleHelpCommand(const char* args)
 {
@@ -1294,8 +1296,8 @@ bool ChatHandler::HandleChanBan(const char* args)
             chn->Kick(m_session ? m_session->GetPlayer()->GetGUID() : 0, player->GetName());
             chn->AddNewGMBan(accountid, time(nullptr) + durationSecs);
             //TODO translate
-            //ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
-            ChatHandler(player).PSendSysMessage("Vous avez été banni du channel world avec la raison suivante : %s", reasonstr.c_str());
+            ChatHandler(player).PSendSysMessage("You have been banned from World channel with this reason: %s", reasonstr.c_str());
+            //ChatHandler(player).PSendSysMessage("Vous avez été banni du channel world avec la raison suivante : %s", reasonstr.c_str());
         }
     }
 
@@ -1344,8 +1346,8 @@ bool ChatHandler::HandleChanUnban(const char* args)
     if (Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str()))
     {
         //TODO translate
-        //ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");
-        ChatHandler(player).PSendSysMessage("Vous êtes maintenant débanni du channel world.");
+        ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");
+        //ChatHandler(player).PSendSysMessage("Vous êtes maintenant débanni du channel world.");
     }
 
     return true;

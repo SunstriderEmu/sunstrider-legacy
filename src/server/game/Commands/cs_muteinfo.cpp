@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "CharacterCache.h"
+#include "AccountMgr.h"
 
 bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
 {

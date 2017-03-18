@@ -9,6 +9,7 @@
 #include "ScriptCalls.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
+#include "AccountMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"

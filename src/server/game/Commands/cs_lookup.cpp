@@ -1,6 +1,7 @@
 #include "Chat.h"
 #include "Language.h"
 #include "GameEventMgr.h"
+#include "AccountMgr.h"
 
 uint32 ChatHandler::ReputationRankStrIndex[MAX_REPUTATION_RANK] =
 {

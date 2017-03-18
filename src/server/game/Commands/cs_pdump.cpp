@@ -2,6 +2,7 @@
 #include "Language.h"
 #include "CharacterCache.h"
 #include "PlayerDump.h"
+#include "AccountMgr.h"
 
 bool ChatHandler::HandleLoadPDumpCommand(const char *args)
 {
