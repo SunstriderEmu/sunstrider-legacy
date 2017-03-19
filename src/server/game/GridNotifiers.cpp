@@ -519,7 +519,7 @@ bool NearestCreatureEntryWithLiveStateInObjectRangeCheck::operator()(Creature* u
 
 bool CreatureWithDbGUIDCheck::operator()(Creature* u)
 {
-    return u->GetDBTableGUIDLow() == i_lowguid;
+    return u->GetSpawnId() == i_lowguid;
 }
 
 bool AllCreaturesOfEntryInRange::operator() (Creature* u)
@@ -641,5 +641,5 @@ bool NearestGameObjectEntryInObjectRangeCheck::operator()(GameObject* go)
 
 bool GameObjectWithDbGUIDCheck::operator()(GameObject const* go) const
 {
-    return go->GetDBTableGUIDLow() == i_db_guid;
+    return go->GetSpawnId() == i_db_guid;
 }

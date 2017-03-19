@@ -853,7 +853,7 @@ void GameEventMgr::LoadFromDB()
 uint32 GameEventMgr::GetNPCFlag(Creature * cr)
 {
     uint32 mask = 0;
-    uint32 guid = cr->GetDBTableGUIDLow();
+    uint32 guid = cr->GetSpawnId();
 
     for(auto e_itr : m_ActiveEvents)
     {
@@ -951,7 +951,7 @@ void GameEventMgr::UnApplyEvent(uint16 event_id)
     // un-spawn positive event tagged objects
     GameEventUnspawn(event_id);
     // spawn negative event tagget objects
-    int16 event_nid = (-1) * event_id;
+    int32 event_nid = (-1) * event_id;
     GameEventSpawn(event_nid);
     // restore equipment or model
     ChangeEquipOrModel(event_id, false);
@@ -1001,24 +1001,34 @@ void GameEventMgr::ApplyNewEvent(uint16 event_id)
 
 void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)
 {
-    // go through the creatures whose npcflags are changed in the event
-    for(auto itr : mGameEventNPCFlags[event_id])
-    {
-        // get the creature data from the low guid to get the entry, to be able to find out the whole guid
-        if( CreatureData const* data = sObjectMgr->GetCreatureData(itr.first) )
-        {
-            Creature * cr = HashMapHolder<Creature>::Find(MAKE_NEW_GUID(itr.first,data->id,HIGHGUID_UNIT));
-            // if we found the creature, modify its npcflag
-            if(cr)
-            {
-                uint32 npcflag = GetNPCFlag(cr);
-                if(const CreatureTemplate * ci = cr->GetCreatureTemplate())
-                    npcflag |= ci->npcflag;
+    std::unordered_map<uint32, std::unordered_set<uint32>> creaturesByMap;
 
-                cr->SetUInt32Value(UNIT_NPC_FLAGS,npcflag);
+    // go through the creatures whose npcflags are changed in the event
+    for (NPCFlagList::iterator itr = mGameEventNPCFlags[event_id].begin(); itr != mGameEventNPCFlags[event_id].end(); ++itr)
+        // get the creature data from the low guid to get the entry, to be able to find out the whole guid
+        if (CreatureData const* data = sObjectMgr->GetCreatureData(itr->first))
+            creaturesByMap[data->mapid].insert(itr->first);
+
+    for (auto const& p : creaturesByMap)
+    {
+        sMapMgr->DoForAllMapsWithMapId(p.first, [this, &p](Map* map)
+        {
+            for (auto& spawnId : p.second)
+            {
+                auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
+                for (auto itr = creatureBounds.first; itr != creatureBounds.second; ++itr)
+                {
+                    Creature* creature = itr->second;
+                    uint32 npcflag = GetNPCFlag(creature);
+                    if (CreatureTemplate const* creatureTemplate = creature->GetCreatureTemplate())
+                        npcflag |= creatureTemplate->npcflag;
+
+                    creature->SetUInt32Value(UNIT_NPC_FLAGS, npcflag);
+                    // reset gossip options, since the flag change might have added / removed some
+                    //cr->ResetGossipOptions();
+                }
             }
-            // if we didn't find it, then the npcflag will be updated when the creature is loaded
-        }
+        });
     }
 }
 
@@ -1078,6 +1088,7 @@ void GameEventMgr::SpawnCreature(uint32 guid)
             //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
             if (!pCreature->LoadFromDB(guid, map))
             {
+                sObjectMgr->RemoveCreatureFromGrid(guid, data);
                 delete pCreature;
             }
             else
@@ -1146,23 +1157,37 @@ void GameEventMgr::UnspawnCreature(uint32 guid,uint16 event_id)
     {
         sObjectMgr->RemoveCreatureFromGrid(guid, data);
 
-        if( Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr) )
+        sMapMgr->DoForAllMapsWithMapId(data->mapid, [&](Map* map)
         {
-            pCreature->AI()->DespawnDueToGameEventEnd(event_id);
-            pCreature->AddObjectToRemoveList();
-        }
+            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(guid);
+            for (auto itr2 = creatureBounds.first; itr2 != creatureBounds.second;)
+            {
+                Creature* creature = itr2->second;
+                ++itr2;
+                creature->AI()->DespawnDueToGameEventEnd(event_id);
+                creature->AddObjectToRemoveList();
+            }
+        });
     }
 }
 
 void GameEventMgr::UnspawnGameObject(uint32 guid)
 {
     // Remove the gameobject from grid
-    if(GameObjectData const* data = sObjectMgr->GetGOData(guid))
+    if (GameObjectData const* data = sObjectMgr->GetGOData(guid))
     {
         sObjectMgr->RemoveGameobjectFromGrid(guid, data);
 
-        if( GameObject* pGameobject = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr) )
-            pGameobject->AddObjectToRemoveList();
+        sMapMgr->DoForAllMapsWithMapId(data->mapid, [&guid](Map* map)
+        {
+            auto gameobjectBounds = map->GetGameObjectBySpawnIdStore().equal_range(guid);
+            for (auto itr2 = gameobjectBounds.first; itr2 != gameobjectBounds.second;)
+            {
+                GameObject* go = itr2->second;
+                ++itr2;
+                go->AddObjectToRemoveList();
+            }
+        });
     }
 }
 
@@ -1209,63 +1234,55 @@ void GameEventMgr::ChangeEquipOrModel(int16 event_id, bool activate)
             continue;
 
         // Update if spawned
-        Creature* pCreature = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(itr.first, data->id,HIGHGUID_UNIT), (Creature*)nullptr);
-        if (pCreature)
+        sMapMgr->DoForAllMapsWithMapId(data->mapid, [&itr, activate](Map* map)
         {
-            if (activate)
+            auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(itr.first);
+            for (auto itr2 = creatureBounds.first; itr2 != creatureBounds.second; ++itr2)
             {
-                itr.second.equipement_id_prev = pCreature->GetCurrentEquipmentId();
-                itr.second.modelid_prev = pCreature->GetDisplayId();
-                pCreature->LoadEquipment(itr.second.equipment_id, true);
-                if (itr.second.modelid >0 && itr.second.modelid_prev != itr.second.modelid)
+                Creature* creature = itr2->second;
+                if (activate)
                 {
-                    uint32 newModelId = itr.second.modelid; //may be changed at next line
-                    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelSameGenderAndRaceAs(newModelId, itr.second.modelid_prev);
-                    if (minfo)
+                    itr.second.equipement_id_prev = creature->GetCurrentEquipmentId();
+                    itr.second.modelid_prev = creature->GetDisplayId();
+                    creature->LoadEquipment(itr.second.equipment_id, true);
+                    if (itr.second.modelid >0 && itr.second.modelid_prev != itr.second.modelid)
                     {
-                        pCreature->SetDisplayId(itr.second.modelid);
-                        pCreature->SetNativeDisplayId(itr.second.modelid);
-                        pCreature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS,minfo->bounding_radius);
-                        pCreature->SetFloatValue(UNIT_FIELD_COMBATREACH,minfo->combat_reach );
+                        uint32 newModelId = itr.second.modelid; //may be changed at next line
+                        CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelSameGenderAndRaceAs(newModelId, itr.second.modelid_prev);
+                        if (minfo)
+                        {
+                            creature->SetDisplayId(itr.second.modelid);
+                            creature->SetNativeDisplayId(itr.second.modelid);
+                            creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, minfo->bounding_radius);
+                            creature->SetFloatValue(UNIT_FIELD_COMBATREACH, minfo->combat_reach);
+                        }
+                    }
+                }
+                else
+                {
+                    creature->LoadEquipment(itr.second.equipement_id_prev, true);
+                    if (itr.second.modelid_prev >0 && itr.second.modelid_prev != itr.second.modelid)
+                    {
+                        CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelInfo(itr.second.modelid_prev);
+                        if (minfo)
+                        {
+                            creature->SetDisplayId(itr.second.modelid_prev);
+                            creature->SetNativeDisplayId(itr.second.modelid_prev);
+                            creature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, minfo->bounding_radius);
+                            creature->SetFloatValue(UNIT_FIELD_COMBATREACH, minfo->combat_reach);
+                        }
                     }
                 }
             }
-            else
-            {
-                pCreature->LoadEquipment(itr.second.equipement_id_prev, true);
-                if (itr.second.modelid_prev >0 && itr.second.modelid_prev != itr.second.modelid)
-                {
-                    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelInfo(itr.second.modelid_prev);
-                    if (minfo)
-                    {
-                        pCreature->SetDisplayId(itr.second.modelid_prev);
-                        pCreature->SetNativeDisplayId(itr.second.modelid_prev);
-                        pCreature->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS,minfo->bounding_radius);
-                        pCreature->SetFloatValue(UNIT_FIELD_COMBATREACH,minfo->combat_reach );
-                    }
-                }
-            }
-        }
-        else                                                // If not spawned
-        {
-            data = sObjectMgr->GetCreatureData(itr.first);
-            if (data && activate)
-            {
-                CreatureTemplate const *cinfo = sObjectMgr->GetCreatureTemplate(data->id);
-                uint32 display_id = sObjectMgr->ChooseDisplayId(cinfo,data);
-                sObjectMgr->GetCreatureModelRandomGender(display_id);
-                if (data->equipmentId == 0)
-                    itr.second.equipement_id_prev = cinfo->equipmentId;
-                else if (data->equipmentId != -1)
-                    itr.second.equipement_id_prev = data->equipmentId;
-                itr.second.modelid_prev = display_id;
-            }
-        }
+        });
+
         // now last step: put in data
                                                             // just to have write access to it
         CreatureData& data2 = sObjectMgr->NewOrExistCreatureData(itr.first);
         if (activate)
         {
+            itr.second.modelid_prev = data2.displayid;
+            itr.second.equipement_id_prev = data2.equipmentId;
             data2.displayid = itr.second.modelid;
             data2.equipmentId = itr.second.equipment_id;
         }

@@ -3700,7 +3700,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_DOOR:
             case GAMEOBJECT_TYPE_BUTTON:
                 gameObjTarget->UseDoorOrButton();
-                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
+                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
                 return;
 
             case GAMEOBJECT_TYPE_QUESTGIVER:
@@ -3726,7 +3726,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                         return;
 
                 sScriptMgr->OnGossipHello(player, gameObjTarget);
-                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetDBTableGUIDLow(), player, gameObjTarget);
+                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
                 gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);

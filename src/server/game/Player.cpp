@@ -22800,7 +22800,7 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     VendorItemData const* vendorItems = creature->GetVendorItems();
                     if (!vendorItems || vendorItems->Empty())
                     {
-                        TC_LOG_ERROR("sql.sql", "Creature %s (Entry: %u GUID: %u DB GUID: %u) has UNIT_NPC_FLAG_VENDOR set but has an empty trading item list.", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetDBTableGUIDLow());
+                        TC_LOG_ERROR("sql.sql", "Creature %s (Entry: %u GUID: %u DB GUID: %u) has UNIT_NPC_FLAG_VENDOR set but has an empty trading item list.", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetSpawnId());
                         canTalk = false;
                     }
                     break;
@@ -23115,7 +23115,7 @@ uint32 Player::GetDefaultGossipMenuForSource(WorldObject* source)
     {
     case TYPEID_UNIT:
         // return menu for this particular guid if any
-        if (uint32 menuId = sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetDBTableGUIDLow()))
+        if (uint32 menuId = sObjectMgr->GetNpcGossipMenu(source->ToCreature()->GetSpawnId()))
             return menuId;
 
         // else return menu from creature template

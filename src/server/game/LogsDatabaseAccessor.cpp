@@ -145,9 +145,9 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     {
         //be sure to have table guid
         if (target->GetTypeId() == TYPEID_UNIT)
-            targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetDBTableGUIDLow(), target->ToCreature()->GetEntry(), HIGHGUID_UNIT);
+            targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HIGHGUID_UNIT);
         else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
-            targetGUID = MAKE_PAIR64(target->ToGameObject()->GetDBTableGUIDLow(), HIGHGUID_GAMEOBJECT);
+            targetGUID = MAKE_PAIR64(target->ToGameObject()->GetSpawnId(), HIGHGUID_GAMEOBJECT);
         else
             targetGUID = target->GetGUID();
     }

@@ -55,18 +55,22 @@ struct ScriptInfo
     float y;
     float z;
     float o;
+
+    std::string GetDebugInfo() const;
+    //TC static std::string GetScriptsTableNameByType(ScriptsType type);
+    static std::string GetScriptCommandName(ScriptCommands command);
 };
 
 typedef std::multimap<uint32, ScriptInfo> ScriptMap;
 typedef std::map<uint32, ScriptMap > ScriptMapMap;
 typedef std::multimap<uint32 /*spell id*/, std::pair<uint32 /*script id*/, bool /*disabled*/>> SpellScriptsContainer;
 typedef std::pair<SpellScriptsContainer::iterator, SpellScriptsContainer::iterator> SpellScriptsBounds;
-extern ScriptMapMap sQuestEndScripts;
-extern ScriptMapMap sQuestStartScripts;
-extern ScriptMapMap sSpellScripts;
-extern ScriptMapMap sGameObjectScripts;
-extern ScriptMapMap sEventScripts;
-extern ScriptMapMap sWaypointScripts;
+TC_GAME_API extern ScriptMapMap sQuestEndScripts;
+TC_GAME_API extern ScriptMapMap sQuestStartScripts;
+TC_GAME_API extern ScriptMapMap sSpellScripts;
+TC_GAME_API extern ScriptMapMap sGameObjectScripts;
+TC_GAME_API extern ScriptMapMap sEventScripts;
+TC_GAME_API extern ScriptMapMap sWaypointScripts;
 
 struct AreaTrigger
 {
@@ -886,7 +890,7 @@ class TC_GAME_API ObjectMgr
         void SaveGORespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
         void DeleteRespawnTimeForInstance(uint32 instance);
 
-        // grid objects
+        // grid objects. Grids object are only used to load new cells
         void AddCreatureToGrid(uint32 guid, CreatureData const* data);
         void RemoveCreatureFromGrid(uint32 guid, CreatureData const* data);
         void AddGameobjectToGrid(uint32 guid, GameObjectData const* data);

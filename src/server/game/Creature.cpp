@@ -186,7 +186,7 @@ Creature::Creature() :
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
     m_creatureInfo(nullptr), 
     m_creatureInfoAddon(nullptr), 
-    m_DBTableGuid(0), 
+    m_spawnId(0), 
     m_formation(nullptr),
     m_PlayerDamageReq(0),
     m_timeSinceSpawn(0), 
@@ -232,17 +232,27 @@ void Creature::AddToWorld()
     ///- Register the creature for guid lookup
     if(!IsInWorld())
     {
+        if (Map *map = FindMap())
+            if (map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+                ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this, GetEntry());
+
         sObjectAccessor->AddObject(this);
+        if (m_spawnId)
+            GetMap()->GetCreatureBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
+
         Unit::AddToWorld();
         SearchFormation();
-        if(uint32 guid = GetDBTableGUIDLow())
+
+        if(uint32 guid = GetSpawnId())
         {
             if (CreatureData const* data = sObjectMgr->GetCreatureData(guid))
                 m_creaturePoolId = data->poolId;
             if (m_creaturePoolId)
                 FindMap()->AddCreatureToPool(this, m_creaturePoolId);
         }
+
         AIM_Initialize();
+
 #ifdef LICH_KING
         if (IsVehicle())
             GetVehicleKit()->Install();
@@ -258,13 +268,21 @@ void Creature::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRemove(this);
+
         if(m_formation)
             sCreatureGroupMgr->RemoveCreatureFromGroup(m_formation, this);
+
         if (Transport* transport = GetTransport())
             transport->RemovePassenger(this, true);
+
         if (m_creaturePoolId)
             FindMap()->RemoveCreatureFromPool(this, m_creaturePoolId);
+
         Unit::RemoveFromWorld();
+
+        if (m_spawnId)
+            Trinity::Containers::MultimapErasePair(GetMap()->GetCreatureBySpawnIdStore(), m_spawnId, this);
+
         sObjectAccessor->RemoveObject(this);
     }
 }
@@ -279,7 +297,7 @@ void Creature::SearchFormation()
     if(IsPet())
         return;
 
-    uint32 lowguid = GetDBTableGUIDLow();
+    uint32 lowguid = GetSpawnId();
     if(!lowguid)
         return;
 
@@ -564,8 +582,8 @@ void Creature::Update(uint32 diff)
                 else if (!GetLinkedCreatureRespawnTime()) // Can respawn
                     Respawn();
                 else { // the master is dead
-                    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_DBTableGuid)) {
-                        if(targetGuid == m_DBTableGuid) // if linking self, never respawn (check delayed to next day)
+                    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId)) {
+                        if(targetGuid == m_spawnId) // if linking self, never respawn (check delayed to next day)
                             SetRespawnTime(DAY);
                         else
                             m_respawnTime = (time(nullptr)>GetLinkedCreatureRespawnTime()? time(nullptr):GetLinkedCreatureRespawnTime())+urand(5,MINUTE); // else copy time from master and add a little
@@ -883,7 +901,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
     // make sure nothing can change the AI during AI update
     if(m_AI_locked)
     {
-        TC_LOG_ERROR("scripts","AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetDBTableGUIDLow());
+        TC_LOG_ERROR("scripts","AIM_Initialize: failed to init for creature entry %u (DB GUID: %u), locked.", GetEntry(), GetSpawnId());
         return false;
     }
 
@@ -908,7 +926,7 @@ bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData
 {
     SetMapId(map->GetId());
     SetInstanceId(map->GetInstanceId());
-    //m_DBTableGuid = guidlow;
+    //m_spawnId = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
     if (!CreateFromProto(guidlow, Entry, data))
@@ -1123,7 +1141,7 @@ void Creature::SaveToDB()
 {
     // this should only be used when the creature has already been loaded
     // preferably after adding to map, because mapid may not be valid otherwise
-    CreatureData const *data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    CreatureData const *data = sObjectMgr->GetCreatureData(m_spawnId);
     if(!data)
     {
         TC_LOG_ERROR("entities.unit","Creature::SaveToDB failed, cannot get creature data!");
@@ -1136,10 +1154,10 @@ void Creature::SaveToDB()
 void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 {
     // update in loaded data
-    if (!m_DBTableGuid)
-        m_DBTableGuid = GetGUIDLow();
+    if (!m_spawnId)
+        m_spawnId = GetGUIDLow();
 
-    CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_DBTableGuid);
+    CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_spawnId);
 
     uint32 displayId = GetNativeDisplayId();
 
@@ -1150,8 +1168,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         if(displayId == cinfo->Modelid1 || displayId == cinfo->Modelid2 ||
             displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4) displayId = 0;
 
-        if(sObjectMgr->isUsingAlternateGuidGeneration() && m_DBTableGuid > sObjectMgr->getAltCreatureGuidStartIndex())
-            TC_LOG_ERROR("creature","Creature with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,cinfo->Entry); 
+        if(sObjectMgr->isUsingAlternateGuidGeneration() && m_spawnId > sObjectMgr->getAltCreatureGuidStartIndex())
+            TC_LOG_ERROR("creature","Creature with guid %u (entry %u) in temporary range was saved to database.",m_spawnId,cinfo->Entry); 
     }
 
     // data->guid = guid must not be update at save
@@ -1182,11 +1200,11 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     // updated in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
 
-    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
 
     std::ostringstream ss;
     ss << "INSERT INTO creature (guid,id,map,spawnMask,modelid,equipment_id,position_x,position_y,position_z,orientation,spawntimesecs,spawndist,currentwaypoint,curhealth,curmana,MovementType, pool_id) VALUES ("
-        << m_DBTableGuid << ","
+        << m_spawnId << ","
         << GetEntry() << ","
         << mapid <<","
         << (uint32)spawnMask << ","
@@ -1208,8 +1226,8 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     WorldDatabase.CommitTransaction(trans);
 
-    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_UNIT,m_DBTableGuid))
-        TC_LOG_ERROR("server","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
+    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_UNIT,m_spawnId))
+        TC_LOG_ERROR("server","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
 void Creature::SelectLevel()
@@ -1296,13 +1314,41 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData 
     return true;
 }
 
-bool Creature::LoadFromDB(uint32 guid, Map *map)
+bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool allowDuplicate)
 {
-    CreatureData const* data = sObjectMgr->GetCreatureData(guid);
+    if (!allowDuplicate)
+    {
+        // If an alive instance of this spawnId is already found, skip creation
+        // If only dead instance(s) exist, despawn them and spawn a new (maybe also dead) version
+        const auto creatureBounds = map->GetCreatureBySpawnIdStore().equal_range(spawnId);
+        std::vector <Creature*> despawnList;
+
+        if (creatureBounds.first != creatureBounds.second)
+        {
+            for (auto itr = creatureBounds.first; itr != creatureBounds.second; ++itr)
+            {
+                if (itr->second->IsAlive())
+                {
+                    TC_LOG_DEBUG("maps", "Would have spawned %u but it already exists", spawnId);
+                    return false;
+                }
+                else
+                {
+                    despawnList.push_back(itr->second);
+                    TC_LOG_DEBUG("maps", "Despawned dead instance of spawn %u", spawnId);
+                }
+            }
+
+            for (Creature* despawnCreature : despawnList)
+                despawnCreature->AddObjectToRemoveList();
+        }
+    }
+
+    CreatureData const* data = sObjectMgr->GetCreatureData(spawnId);
 
     if(!data)
     {
-        TC_LOG_ERROR("FIXME","Creature (GUID: %u) not found in table `creature`, can't load. ",guid);
+        TC_LOG_ERROR("FIXME","Creature (GUID: %u) not found in table `creature`, can't load. ", spawnId);
         return false;
     }
     
@@ -1313,14 +1359,11 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
             return false;
     }
 
-    m_DBTableGuid = guid;
-    if (map->GetInstanceId() != 0) 
-        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true);
+    m_spawnId = spawnId;
 
     m_respawnradius = data->spawndist;
     m_respawnDelay = data->spawntimesecs;
-
-    if(!Create(guid,map,data->id,data))
+    if(!Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, map->GetInstanceId() != 0),map,data->id,data))
         return false;
 
     Relocate(data->posX,data->posY,data->posZ,data->orientation);
@@ -1335,7 +1378,7 @@ bool Creature::LoadFromDB(uint32 guid, Map *map)
 
     m_deathState = ALIVE;
 
-    m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_DBTableGuid,GetInstanceId());
+    m_respawnTime  = sObjectMgr->GetCreatureRespawnTime(m_spawnId,GetInstanceId());
     if(m_respawnTime)                          // respawn on Update
     {
         m_deathState = DEAD;
@@ -1400,7 +1443,7 @@ ItemSubclassWeapon Creature::GetWeaponSubclass(WeaponSlot slot)
     uint32 itemInfo = GetUInt32Value(UNIT_VIRTUAL_ITEM_INFO + slot * 2);
     ItemSubclassWeapon subclass = ItemSubclassWeapon((itemInfo & 0xFF00) >> 8);
     if (subclass > ITEM_SUBCLASS_WEAPON_FISHING_POLE)
-        TC_LOG_ERROR("entities.creature", "Creature (table guid %u) appears to have broken weapon info for slot %u", GetDBTableGUIDLow(), uint32(slot));
+        TC_LOG_ERROR("entities.creature", "Creature (table guid %u) appears to have broken weapon info for slot %u", GetSpawnId(), uint32(slot));
 
     return subclass;
 }
@@ -1438,17 +1481,17 @@ bool Creature::HasInvolvedQuest(uint32 quest_id) const
 
 void Creature::DeleteFromDB()
 {
-    if (!m_DBTableGuid)
+    if (!m_spawnId)
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid, GetMapId(), GetInstanceId(),0);
-    sObjectMgr->DeleteCreatureData(m_DBTableGuid);
+    sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(),0);
+    sObjectMgr->DeleteCreatureData(m_spawnId);
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_DBTableGuid);
-    trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_DBTableGuid);
-    trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_DBTableGuid);
-    trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM creature WHERE guid = '%u'", m_spawnId);
+    trans->PAppend("DELETE FROM creature_addon WHERE guid = '%u'", m_spawnId);
+    trans->PAppend("DELETE FROM game_event_creature WHERE guid = '%u'", m_spawnId);
+    trans->PAppend("DELETE FROM game_event_model_equip WHERE guid = '%u'", m_spawnId);
     WorldDatabase.CommitTransaction(trans);
 }
 
@@ -1716,8 +1759,8 @@ void Creature::Respawn(bool force /* = false */)
 
     if(GetDeathState()==DEAD)
     {
-        if (m_DBTableGuid)
-            sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
+        if (m_spawnId)
+            sObjectMgr->SaveCreatureRespawnTime(m_spawnId,GetMapId(), GetInstanceId(),0);
 
         TC_LOG_DEBUG("entities.creature","Respawning...");
         m_respawnTime = 0;
@@ -2176,10 +2219,10 @@ bool Creature::CanAssistTo(const Unit* u, const Unit* enemy, bool checkFaction /
 
 void Creature::SaveRespawnTime()
 {
-    if(IsPet() || !m_DBTableGuid)
+    if(IsPet() || !m_spawnId)
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),m_respawnTime);
+    sObjectMgr->SaveCreatureRespawnTime(m_spawnId,GetMapId(), GetInstanceId(),m_respawnTime);
 }
 
 bool Creature::IsOutOfThreatArea(Unit* pVictim) const
@@ -2219,9 +2262,9 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
 
 void Creature::LoadCreatureAddon()
 {
-    if (m_DBTableGuid)
+    if (m_spawnId)
     {
-        if((m_creatureInfoAddon = sObjectMgr->GetCreatureAddon(m_DBTableGuid)))
+        if((m_creatureInfoAddon = sObjectMgr->GetCreatureAddon(m_spawnId)))
             return;
     }
 
@@ -2261,7 +2304,7 @@ bool Creature::InitCreatureAddon(bool reload)
         SpellInfo const *AdditionalSpellInfo = sSpellMgr->GetSpellInfo(id);
         if (!AdditionalSpellInfo)
         {
-            TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.", GetDBTableGUIDLow(),GetEntry(),id);
+            TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has wrong spell %u defined in `auras` field.", GetSpawnId(),GetEntry(),id);
             continue;
         }
 
@@ -2269,13 +2312,13 @@ bool Creature::InitCreatureAddon(bool reload)
         if(HasAuraEffect(id))
         {
             if(!reload)
-                TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetDBTableGUIDLow(),GetEntry(),id);
+                TC_LOG_ERROR("sql.sql","Creature (GUIDLow: %u Entry: %u ) has duplicate aura (spell %u) in `auras` field.",GetSpawnId(),GetEntry(),id);
 
             continue;
         }
 
         AddAura(id,this);
-        TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetDBTableGUIDLow(), GetEntry());
+        TC_LOG_DEBUG("entities.unit", "Spell: %u added to creature (GUID: %u Entry: %u)", id, GetSpawnId(), GetEntry());
     }
     return true;
 }
@@ -2353,16 +2396,16 @@ time_t Creature::GetRespawnTimeEx() const
 
 bool Creature::IsSpawnedOnTransport() const 
 {
-    CreatureData const *data = sObjectMgr->GetCreatureData(m_DBTableGuid);
+    CreatureData const *data = sObjectMgr->GetCreatureData(m_spawnId);
     return data && data->mapid != GetMapId();
 }
 
 void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, float* dist ) const
 {
-    if (m_DBTableGuid)
+    if (m_spawnId)
     {
         // for npcs on transport, this will return transport offset
-        if (CreatureData const* data = sObjectMgr->GetCreatureData(GetDBTableGUIDLow()))
+        if (CreatureData const* data = sObjectMgr->GetCreatureData(GetSpawnId()))
         {
             x = data->posX;
             y = data->posY;
@@ -2429,7 +2472,7 @@ std::string Creature::GetScriptName()
 
 uint32 Creature::getInstanceEventId()
 {
-    if (CreatureData const* myData = sObjectMgr->GetCreatureData(m_DBTableGuid))
+    if (CreatureData const* myData = sObjectMgr->GetCreatureData(m_spawnId))
         return myData->instanceEventId;
         
     return 0;
@@ -2543,10 +2586,10 @@ std::string const& Creature::GetNameForLocaleIdx(LocaleConstant loc_idx) const
 
 const CreatureData* Creature::GetLinkedRespawnCreatureData() const
 {
-    if(!m_DBTableGuid) // only hard-spawned creatures from DB can have a linked master
+    if(!m_spawnId) // only hard-spawned creatures from DB can have a linked master
         return nullptr;
 
-    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_DBTableGuid))
+    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId))
         return sObjectMgr->GetCreatureData(targetGuid);
 
     return nullptr;
@@ -2555,10 +2598,10 @@ const CreatureData* Creature::GetLinkedRespawnCreatureData() const
 // returns master's remaining respawn time if any
 time_t Creature::GetLinkedCreatureRespawnTime() const
 {
-    if(!m_DBTableGuid) // only hard-spawned creatures from DB can have a linked master
+    if(!m_spawnId) // only hard-spawned creatures from DB can have a linked master
         return 0;
 
-    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_DBTableGuid))
+    if(uint32 targetGuid = sObjectMgr->GetLinkedRespawnGuid(m_spawnId))
     {
         Map* targetMap = nullptr;
         if(const CreatureData* data = sObjectMgr->GetCreatureData(targetGuid))

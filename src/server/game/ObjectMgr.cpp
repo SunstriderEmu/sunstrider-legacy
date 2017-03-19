@@ -8756,3 +8756,48 @@ bool ObjectMgr::IsGameObjectStaticTransport(uint32 entry)
     GameObjectTemplate const* goinfo = GetGameObjectTemplate(entry);
     return goinfo && goinfo->type == GAMEOBJECT_TYPE_TRANSPORT;
 }
+
+std::string ScriptInfo::GetDebugInfo() const
+{
+    char sz[256];
+    sprintf(sz, "%s (script id: %u)", GetScriptCommandName(ScriptCommands(command)).c_str(), /* GetScriptsTableNameByType(type).c_str(), */ id);
+    return std::string(sz);
+}
+
+std::string ScriptInfo::GetScriptCommandName(ScriptCommands command)
+{
+    std::string res = "";
+    switch (command)
+    {
+        case SCRIPT_COMMAND_TALK: res = "SCRIPT_COMMAND_TALK"; break;
+        case SCRIPT_COMMAND_EMOTE: res = "SCRIPT_COMMAND_EMOTE"; break;
+        case SCRIPT_COMMAND_FIELD_SET: res = "SCRIPT_COMMAND_FIELD_SET"; break;
+        case SCRIPT_COMMAND_MOVE_TO: res = "SCRIPT_COMMAND_MOVE_TO"; break;
+        case SCRIPT_COMMAND_FLAG_SET: res = "SCRIPT_COMMAND_FLAG_SET"; break;
+        case SCRIPT_COMMAND_FLAG_REMOVE: res = "SCRIPT_COMMAND_FLAG_REMOVE"; break;
+        case SCRIPT_COMMAND_TELEPORT_TO: res = "SCRIPT_COMMAND_TELEPORT_TO"; break;
+        case SCRIPT_COMMAND_QUEST_EXPLORED: res = "SCRIPT_COMMAND_QUEST_EXPLORED"; break;
+        case SCRIPT_COMMAND_KILL_CREDIT: res = "SCRIPT_COMMAND_KILL_CREDIT"; break;
+        case SCRIPT_COMMAND_RESPAWN_GAMEOBJECT: res = "SCRIPT_COMMAND_RESPAWN_GAMEOBJECT"; break;
+        case SCRIPT_COMMAND_TEMP_SUMMON_CREATURE: res = "SCRIPT_COMMAND_TEMP_SUMMON_CREATURE"; break;
+        case SCRIPT_COMMAND_OPEN_DOOR: res = "SCRIPT_COMMAND_OPEN_DOOR"; break;
+        case SCRIPT_COMMAND_CLOSE_DOOR: res = "SCRIPT_COMMAND_CLOSE_DOOR"; break;
+        case SCRIPT_COMMAND_ACTIVATE_OBJECT: res = "SCRIPT_COMMAND_ACTIVATE_OBJECT"; break;
+        case SCRIPT_COMMAND_REMOVE_AURA: res = "SCRIPT_COMMAND_REMOVE_AURA"; break;
+        case SCRIPT_COMMAND_CAST_SPELL: res = "SCRIPT_COMMAND_CAST_SPELL"; break;
+        case SCRIPT_COMMAND_PLAY_SOUND: res = "SCRIPT_COMMAND_PLAY_SOUND"; break;
+
+        case SCRIPT_COMMAND_LOAD_PATH: res = "SCRIPT_COMMAND_LOAD_PATH"; break;
+        case SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT: res = "SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT"; break;
+        case SCRIPT_COMMAND_KILL: res = "SCRIPT_COMMAND_KILL"; break;
+        case SCRIPT_COMMAND_SMART_SET_DATA: res = "SCRIPT_COMMAND_SMART_SET_DATA"; break;
+        default:
+        {
+            char sz[32];
+            sprintf(sz, "Unknown command: %d", command);
+            res = sz;
+            break;
+        }
+    }
+    return res;
+}

@@ -611,7 +611,7 @@ class TC_GAME_API GameObject : public WorldObject
         uint64 GetOwnerGUID() const { return GetUInt64Value(OBJECT_FIELD_CREATED_BY); }
         Unit* GetOwner() const;
 
-        uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
+        uint32 GetSpawnId() const { return m_spawnId; }
 
         void SetTransportPathRotation(G3D::Quat const& rot);
 
@@ -820,7 +820,7 @@ class TC_GAME_API GameObject : public WorldObject
         std::set<uint32> m_unique_users;
         uint32 m_usetimes;
 
-        uint32 m_DBTableGuid;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
+        uint32 m_spawnId;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
         GameObjectTemplate const* m_goInfo;
         GameObjectValue m_goValue;
         bool manual_unlock;

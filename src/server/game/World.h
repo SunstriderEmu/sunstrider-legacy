@@ -475,7 +475,7 @@ enum ScriptCommands
     SCRIPT_COMMAND_ACTIVATE_OBJECT =      13,              // source = unit, target=GO
     SCRIPT_COMMAND_REMOVE_AURA =          14,              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
     SCRIPT_COMMAND_CAST_SPELL =           15,              // source (datalong2!=0) or target (datalong==0) unit, datalong = spell_id
-    SCRIPT_COMMAND_PLAYSOUND =            16,              // datalong soundid, datalong2 play only self
+    SCRIPT_COMMAND_PLAY_SOUND =            16,              // datalong soundid, datalong2 play only self
 
     SCRIPT_COMMAND_LOAD_PATH =            20,              // source = unit, path = datalong
     SCRIPT_COMMAND_CALLSCRIPT_TO_UNIT =   21,              // datalong scriptid, lowguid datalong2, dataint table

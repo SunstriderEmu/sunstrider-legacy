@@ -64,7 +64,7 @@ GameObject::GameObject() : WorldObject(),
     m_cooldownTime(0),
     m_inactive(false),
     m_goInfo(nullptr),
-    m_DBTableGuid(0),
+    m_spawnId(0),
     manual_unlock(false),
     m_prevGoState(GO_STATE_ACTIVE)
 {
@@ -212,7 +212,14 @@ void GameObject::AddToWorld()
     ///- Register the gameobject for guid lookup
     if(!IsInWorld())
     {
+        if (Map *map = FindMap())
+            if (map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
+                ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectCreate(this);
+
         sObjectAccessor->AddObject(this);
+
+        if (m_spawnId)
+            GetMap()->GetGameObjectBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
 
         // The state can be changed after GameObject::Create but before GameObject::AddToWorld
         bool toggledState = GetGoType() == GAMEOBJECT_TYPE_CHEST ? getLootState() == GO_READY : (GetGoState() == GO_STATE_READY || IsTransport());
@@ -235,12 +242,19 @@ void GameObject::RemoveFromWorld()
         if(Map *map = FindMap())
             if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectRemove(this);
+
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
+
         if (Transport* transport = GetTransport())
             transport->RemovePassenger(this, true);
+
         sObjectAccessor->RemoveObject(this);
+
+        if (m_spawnId)
+            Trinity::Containers::MultimapErasePair(GetMap()->GetGameObjectBySpawnIdStore(), m_spawnId, this);
+
         WorldObject::RemoveFromWorld();
     }
 }
@@ -697,7 +711,7 @@ void GameObject::SaveToDB()
 {
     // this should only be used when the gameobject has already been loaded
     // preferably after adding to map, because mapid may not be valid otherwise
-    GameObjectData const *data = sObjectMgr->GetGOData(m_DBTableGuid);
+    GameObjectData const *data = sObjectMgr->GetGOData(m_spawnId);
     if(!data)
     {
         TC_LOG_ERROR("FIXME","GameObject::SaveToDB failed, cannot get gameobject data!");
@@ -714,14 +728,14 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     if (!goI)
         return;
 
-    if (!m_DBTableGuid)
-        m_DBTableGuid = GetGUIDLow();
+    if (!m_spawnId)
+        m_spawnId = GetGUIDLow();
 
-    if(sObjectMgr->isUsingAlternateGuidGeneration() && m_DBTableGuid > sObjectMgr->getAltGoGuidStartIndex())
-        TC_LOG_ERROR("FIXME","Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_DBTableGuid,m_goInfo->entry); 
+    if(sObjectMgr->isUsingAlternateGuidGeneration() && m_spawnId > sObjectMgr->getAltGoGuidStartIndex())
+        TC_LOG_ERROR("FIXME","Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_spawnId,m_goInfo->entry); 
 
     // update in loaded data (changing data only in this place)
-    GameObjectData& data = sObjectMgr->NewGOData(m_DBTableGuid);
+    GameObjectData& data = sObjectMgr->NewGOData(m_spawnId);
 
     // data->guid = guid don't must be update at save
     data.id = GetEntry();
@@ -744,7 +758,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     // updated in DB
     std::ostringstream ss;
     ss << "INSERT INTO gameobject VALUES ( "
-        << m_DBTableGuid << ", "
+        << m_spawnId << ", "
         << GetUInt32Value (OBJECT_FIELD_ENTRY) << ", "
         << mapid << ", "
         << (uint32)spawnMask << ", "
@@ -761,12 +775,12 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         << GetGoState() << ")";
 
     SQLTransaction trans = WorldDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
+    trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_spawnId);
     trans->PAppend( ss.str( ).c_str( ) );
     WorldDatabase.CommitTransaction(trans);
 
-    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_GAMEOBJECT,m_DBTableGuid))
-        TC_LOG_ERROR("FIXME","Gameobject %u has been saved but was in temporary guid range ! fixmefixmefixme", m_DBTableGuid);
+    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_GAMEOBJECT,m_spawnId))
+        TC_LOG_ERROR("FIXME","Gameobject %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
 bool GameObject::LoadFromDB(uint32 guid, Map *map)
@@ -789,7 +803,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     uint32 go_state = data->go_state;
     uint32 ArtKit = data->ArtKit;
 
-    m_DBTableGuid = guid;
+    m_spawnId = guid;
     if (map->GetInstanceId() != 0) 
         guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
 
@@ -811,13 +825,13 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
             {
                 m_spawnedByDefault = true;
                 m_respawnDelayTime = data->spawntimesecs;
-                m_respawnTime = sObjectMgr->GetGORespawnTime(m_DBTableGuid, map->GetInstanceId());
+                m_respawnTime = sObjectMgr->GetGORespawnTime(m_spawnId, map->GetInstanceId());
 
                                                             // ready to respawn
                 if(m_respawnTime && m_respawnTime <= time(nullptr))
                 {
                     m_respawnTime = 0;
-                    sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(),GetInstanceId(),0);
+                    sObjectMgr->SaveGORespawnTime(m_spawnId,GetMapId(),GetInstanceId(),0);
                 }
             }
             else
@@ -834,10 +848,10 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
 
 void GameObject::DeleteFromDB()
 {
-    sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
-    sObjectMgr->DeleteGOData(m_DBTableGuid);
-    WorldDatabase.PExecute("DELETE FROM gameobject WHERE guid = '%u'", m_DBTableGuid);
-    WorldDatabase.PExecute("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_DBTableGuid);
+    sObjectMgr->SaveGORespawnTime(m_spawnId,GetMapId(), GetInstanceId(),0);
+    sObjectMgr->DeleteGOData(m_spawnId);
+    WorldDatabase.PExecute("DELETE FROM gameobject WHERE guid = '%u'", m_spawnId);
+    WorldDatabase.PExecute("DELETE FROM game_event_gameobject WHERE guid = '%u'", m_spawnId);
 }
 
 void GameObject::SetLootState(LootState state, Unit* unit)
@@ -998,7 +1012,7 @@ Unit* GameObject::GetOwner() const
 void GameObject::SaveRespawnTime()
 {
     if(m_respawnTime > time(nullptr) && m_spawnedByDefault)
-        sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),m_respawnTime);
+        sObjectMgr->SaveGORespawnTime(m_spawnId,GetMapId(), GetInstanceId(),m_respawnTime);
 }
 
 bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
@@ -1071,7 +1085,7 @@ void GameObject::Respawn()
     if(m_spawnedByDefault && m_respawnTime > 0)
     {
         m_respawnTime = time(nullptr);
-        sObjectMgr->SaveGORespawnTime(m_DBTableGuid,GetMapId(), GetInstanceId(),0);
+        sObjectMgr->SaveGORespawnTime(m_spawnId,GetMapId(), GetInstanceId(),0);
     }
     this->loot.ClearRemovedItemsList();
 }
@@ -1183,7 +1197,7 @@ void GameObject::ResetDoorOrButton()
 void GameObject::SetGoArtKit(uint32 kit)
 {
     SetUInt32Value(GAMEOBJECT_ARTKIT, kit);
-    GameObjectData *data = const_cast<GameObjectData*>(sObjectMgr->GetGOData(m_DBTableGuid));
+    GameObjectData *data = const_cast<GameObjectData*>(sObjectMgr->GetGOData(m_spawnId));
     if(data)
         data->ArtKit = kit;
 }
@@ -1224,7 +1238,7 @@ void GameObject::Use(Unit* user)
             UseDoorOrButton();
 
             // activate script
-            sWorld->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
+            sWorld->ScriptsStart(sGameObjectScripts, GetSpawnId(), spellCaster, this);
             return;
 
         case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
@@ -1315,7 +1329,7 @@ void GameObject::Use(Unit* user)
 
                 if (info->goober.eventId)
                 {
-                    TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetDBTableGUIDLow());
+                    TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetSpawnId());
                     //GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
                     sWorld->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
                    // EventInform(info->goober.eventId, user);
@@ -1864,9 +1878,9 @@ bool GameObject::AIM_Initialize()
 
 void GameObject::GetRespawnPosition(float &x, float &y, float &z, float* ori /* = NULL*/) const
 {
-    if (m_DBTableGuid)
+    if (m_spawnId)
     {
-        if (GameObjectData const* data = sObjectMgr->GetGOData(GetDBTableGUIDLow()))
+        if (GameObjectData const* data = sObjectMgr->GetGOData(GetSpawnId()))
         {
             x = data->posX;
             y = data->posY;

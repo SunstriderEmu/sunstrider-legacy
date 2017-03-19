@@ -98,7 +98,7 @@ bool WaypointMovementGenerator<Creature>::LoadPath(Creature* creature)
         if (!i_path)
         {
             // No path id found for entry
-            TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u DB GUID: %u) could not find path id: %u", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetDBTableGUIDLow(), path_id);
+            TC_LOG_ERROR("sql.sql", "WaypointMovementGenerator::LoadPath: creature %s (Entry: %u GUID: %u DB GUID: %u) could not find path id: %u", creature->GetName().c_str(), creature->GetEntry(), creature->GetGUIDLow(), creature->GetSpawnId(), path_id);
             return false;
         }
 
@@ -145,7 +145,7 @@ bool WaypointMovementGenerator<Creature>::DoInitialize(Creature* creature)
     bool result = LoadPath(creature);
     if (result == false)
     {
-        TC_LOG_ERROR("misc","WaypointMovementGenerator failed to init for creature %u (entry %u)", creature->GetDBTableGUIDLow(), creature->GetEntry());
+        TC_LOG_ERROR("misc","WaypointMovementGenerator failed to init for creature %u (entry %u)", creature->GetSpawnId(), creature->GetEntry());
         return false;
     }
 

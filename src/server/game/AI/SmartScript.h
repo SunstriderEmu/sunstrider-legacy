@@ -125,7 +125,7 @@ class TC_GAME_API SmartScript
                 smart = false;
 
             if (!smart)
-                TC_LOG_ERROR("sql.sql","SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action skipped to prevent crash.", c ? c->GetDBTableGUIDLow() : (me ? me->GetDBTableGUIDLow() : 0), c ? c->GetEntry() : (me ? me->GetEntry() : 0));
+                TC_LOG_ERROR("sql.sql","SmartScript: Action target Creature (GUID: %u Entry: %u) is not using SmartAI, action skipped to prevent crash.", c ? c->GetSpawnId() : (me ? me->GetSpawnId() : 0), c ? c->GetEntry() : (me ? me->GetEntry() : 0));
 
             return smart;
         }
@@ -139,7 +139,7 @@ class TC_GAME_API SmartScript
             if (!go || go->GetAIName() != SMARTAI_GOBJECT_AI_NAME)
                 smart = false;
             if (!smart)
-                TC_LOG_ERROR("sql.sql","SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action skipped to prevent crash.", g ? g->GetDBTableGUIDLow() : (go ? go->GetDBTableGUIDLow() : 0), g ? g->GetEntry() : (go ? go->GetEntry() : 0));
+                TC_LOG_ERROR("sql.sql","SmartScript: Action target GameObject (GUID: %u Entry: %u) is not using SmartGameObjectAI, action skipped to prevent crash.", g ? g->GetSpawnId() : (go ? go->GetSpawnId() : 0), g ? g->GetEntry() : (go ? go->GetEntry() : 0));
 
             return smart;
         }

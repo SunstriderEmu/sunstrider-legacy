@@ -2750,24 +2750,23 @@ void World::ScriptsProcess()
                 }
                 //our target
                 Creature* creatureTarget = nullptr;
-
-                if (source) //using grid searcher
+                auto creatureBounds = dynamic_cast<Unit*>(source)->GetMap()->GetCreatureBySpawnIdStore().equal_range(step.script->datalong);
+                if (creatureBounds.first != creatureBounds.second)
                 {
-                    CellCoord p(Trinity::ComputeCellCoord(((Unit*)source)->GetPositionX(), ((Unit*)source)->GetPositionY()));
-                    Cell cell(p);
-                    cell.data.Part.reserved = ALL_DISTRICT;
-
-                    //TC_LOG_DEBUG("FIXME","Attempting to find Creature: Db GUID: %i", step.script->datalong);
-                    Trinity::CreatureWithDbGUIDCheck target_check(((Unit*)source), step.script->datalong);
-                    Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(creatureTarget, target_check);
-
-                    TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-                    cell.Visit(p, unit_checker, *((Unit *)source)->GetMap());
+                    // Prefer alive (last respawned) creature
+                    auto creatureItr = std::find_if(creatureBounds.first, creatureBounds.second, [](Map::CreatureBySpawnIdContainer::value_type const& pair)
+                    {
+                        return pair.second->IsAlive();
+                    });
+                    creatureTarget = creatureItr != creatureBounds.second ? creatureItr->second : creatureBounds.first->second;
                 }
-                
+
                 //TC_LOG_DEBUG("scripts","attempting to pass target...");
                 if (!creatureTarget)
+                {
+                    TC_LOG_ERROR("scripts", "%s target was not found (entry: %u)", step.script->GetDebugInfo().c_str(), step.script->datalong);
                     break;
+                }   
 
                 //TC_LOG_DEBUG("scripts","target passed");
                 //Lets choose our ScriptMap map
@@ -2806,7 +2805,7 @@ void World::ScriptsProcess()
                 break;
             }
 
-            case SCRIPT_COMMAND_PLAYSOUND:
+            case SCRIPT_COMMAND_PLAY_SOUND:
             {
                 if (!source)
                     break;
@@ -3844,7 +3843,5 @@ void World::SendZoneUnderAttack(uint32 zoneId, Team team)
     data << uint32(zoneId);
     SendGlobalMessage(&data,nullptr,team);
 }
-
-
 
 Realm realm;

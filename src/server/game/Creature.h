@@ -508,7 +508,7 @@ class TC_GAME_API Creature : public Unit
         ItemSubclassWeapon GetWeaponSubclass(WeaponSlot slot);
         bool HasMainWeapon() const override;
 
-        uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
+        uint32 GetSpawnId() const { return m_spawnId; }
         std::string const& GetSubName() const { return GetCreatureTemplate()->SubName; }
 
         void Update( uint32 time ) override;
@@ -625,7 +625,8 @@ class TC_GAME_API Creature : public Unit
 
         void SetDeathState(DeathState s) override;                   // overwrite virtual Unit::setDeathState
 
-        bool LoadFromDB(uint32 guid, Map *map);
+        bool LoadFromDB(uint32 spawnId, Map* map) { return LoadCreatureFromDB(spawnId, map, false); }
+        bool LoadCreatureFromDB(uint32 spawnId, Map* map, bool addToMap = true, bool allowDuplicate = false);
         void SaveToDB();
                                                             // overwrited in Pet
         virtual void SaveToDB(uint32 mapid, uint8 spawnMask);
@@ -857,7 +858,7 @@ class TC_GAME_API Creature : public Unit
         uint32 m_relocateTimer;
         void AreaCombat();
         MovementGeneratorType m_defaultMovementType;
-        uint32 m_DBTableGuid;                               ///< For new or temporary creatures is 0 for saved it is lowguid
+        uint32 m_spawnId;                               ///< For new or temporary creatures is 0 for saved it is lowguid
         uint32 m_equipmentId;
 
         bool m_AlreadyCallAssistance;

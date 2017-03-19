@@ -301,6 +301,13 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier);
         template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier);
         CreatureGroupHolderType CreatureGroupHolder;
+
+        typedef std::unordered_multimap<uint32, Creature*> CreatureBySpawnIdContainer;
+        CreatureBySpawnIdContainer& GetCreatureBySpawnIdStore() { return _creatureBySpawnIdStore; }
+
+        typedef std::unordered_multimap<uint32, GameObject*> GameObjectBySpawnIdContainer;
+        GameObjectBySpawnIdContainer& GetGameObjectBySpawnIdStore() { return _gameobjectBySpawnIdStore; }
+
         MTRand mtRand;
 
         int32 irand(int32 min, int32 max)
@@ -418,6 +425,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         ActiveForcedNonPlayers m_activeForcedNonPlayers;
         ActiveForcedNonPlayers::iterator m_activeForcedNonPlayersIter;
 
+
     private:
         NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
@@ -471,6 +479,9 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         ZoneDynamicInfoMap _zoneDynamicInfo;
         uint32 _defaultLight;
+        
+        CreatureBySpawnIdContainer _creatureBySpawnIdStore;
+        GameObjectBySpawnIdContainer _gameobjectBySpawnIdStore;
 
         uint32 _lastMapUpdate;
 };

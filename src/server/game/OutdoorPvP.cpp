@@ -97,7 +97,7 @@ bool OutdoorPvPObjective::AddObject(uint32 type, uint32 entry, uint32 map, float
     }
 
     go->SetRespawnTime(0);
-    sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(),0,0,0);
+    sObjectMgr->SaveGORespawnTime(go->GetSpawnId(),0,0,0);
     pMap->Add(go);
 
     return true;
@@ -256,7 +256,7 @@ bool OutdoorPvPObjective::AddCapturePoint(uint32 entry, uint32 map, float x, flo
     else
     {
         go->SetRespawnTime(0);
-        sObjectMgr->SaveGORespawnTime(go->GetDBTableGUIDLow(), 0, 0, 0);
+        sObjectMgr->SaveGORespawnTime(go->GetSpawnId(), 0, 0, 0);
         pMap->Add(go);
     }
     // add creature...
@@ -300,7 +300,7 @@ bool OutdoorPvPObjective::DelCreature(uint32 type)
         return false;
     }
 
-    uint32 guid = cr->GetDBTableGUIDLow();
+    uint32 guid = cr->GetSpawnId();
     // Don't save respawn time
     cr->SetRespawnTime(0);
     cr->RemoveCorpse();
@@ -329,7 +329,7 @@ bool OutdoorPvPObjective::DelObject(uint32 type)
         m_Objects[type] = 0;
         return false;
     }
-    uint32 guid = obj->GetDBTableGUIDLow();
+    uint32 guid = obj->GetSpawnId();
     obj->SetRespawnTime(0);                                 // not save respawn time
     obj->Delete();
     sObjectMgr->DeleteGOData(guid);
@@ -345,7 +345,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
         GameObject *obj = HashMapHolder<GameObject>::Find(m_CapturePoint);
         if(obj)
         {
-            uint32 guid = obj->GetDBTableGUIDLow();
+            uint32 guid = obj->GetSpawnId();
             obj->SetRespawnTime(0);                                 // not save respawn time
             obj->Delete();
             sObjectMgr->DeleteGOData(guid);
@@ -357,7 +357,7 @@ bool OutdoorPvPObjective::DelCapturePoint()
         Creature *cr = HashMapHolder<Creature>::Find(m_CapturePointCreature);
         if(cr)
         {
-            uint32 guid = cr->GetDBTableGUIDLow();
+            uint32 guid = cr->GetSpawnId();
             // Don't save respawn time
             cr->SetRespawnTime(0);
             cr->RemoveCorpse();

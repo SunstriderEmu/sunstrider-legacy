@@ -2139,7 +2139,7 @@ void Map::AddToForceActive( Creature* c)
     AddToForceActiveHelper(c);
 
     // also not allow unloading spawn grid to prevent creating creature clone at load
-    if(!c->IsPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetSpawnId())
     {
         float x,y,z;
         c->GetRespawnPosition(x,y,z);
@@ -2158,7 +2158,7 @@ void Map::RemoveFromForceActive( Creature* c)
     RemoveFromForceActiveHelper(c);
 
     // also allow unloading spawn grid
-    if(!c->IsPet() && c->GetDBTableGUIDLow())
+    if(!c->IsPet() && c->GetSpawnId())
     {
         float x,y,z;
         c->GetRespawnPosition(x,y,z);
@@ -2204,7 +2204,7 @@ Creature* Map::GetCreatureWithTableGUID(uint32 tableGUID) const
         if (c->GetInstanceId() != GetInstanceId())
             continue;
 
-        if (c->GetDBTableGUIDLow() != tableGUID)
+        if (c->GetSpawnId() != tableGUID)
             continue;
 
         return c;
@@ -2249,9 +2249,9 @@ void Map::RemoveCreatureFromPool(Creature *cre, uint32 poolId)
             membersSet.erase(itr);
             return;
         }
-        TC_LOG_ERROR("maps","Creature %u could not be removed from pool %u", cre->GetDBTableGUIDLow(), poolId);
+        TC_LOG_ERROR("maps","Creature %u could not be removed from pool %u", cre->GetSpawnId(), poolId);
     } else {
-        TC_LOG_ERROR("maps","Pool %u not found for creature %u", poolId, cre->GetDBTableGUIDLow());
+        TC_LOG_ERROR("maps","Pool %u not found for creature %u", poolId, cre->GetSpawnId());
     }
 }
 

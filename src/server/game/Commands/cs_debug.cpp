@@ -1081,7 +1081,7 @@ bool ChatHandler::HandleDebugShowAttackers(const char* args)
         if (itr->GetTypeId() == TYPEID_PLAYER)
             snprintf(msg, 256, "%s (Entry: 0 (Player), GUID: %u, Full GUID:" UI64FMTD ")", itr->GetName().c_str(), itr->GetGUIDLow(), itr->GetGUID());
         else
-            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", itr->GetName().c_str(), itr->GetEntry(), itr->ToCreature()->GetDBTableGUIDLow(), itr->GetGUID());
+            snprintf(msg, 256, "%s (Entry: %u, GUID: %u, Full GUID:" UI64FMTD ")", itr->GetName().c_str(), itr->GetEntry(), itr->ToCreature()->GetSpawnId(), itr->GetGUID());
             
         SendSysMessage(msg);
     }

@@ -13,7 +13,7 @@ bool ChatHandler::HandleNpcGuidCommand(const char* args)
     if (!target)
         return false;
         
-    PSendSysMessage("GUID: %u", target->GetDBTableGUIDLow());
+    PSendSysMessage("GUID: %u", target->GetSpawnId());
     
     return true;
 }
@@ -179,7 +179,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
 
     pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
 
-    uint32 db_guid = pCreature->GetDBTableGUIDLow();
+    uint32 db_guid = pCreature->GetSpawnId();
 
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map);
@@ -269,12 +269,12 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
         }
         else
         {
-            lowguid = pCreature->GetDBTableGUIDLow();
+            lowguid = pCreature->GetSpawnId();
         }
     }
     else
     {
-        lowguid = pCreature->GetDBTableGUIDLow();
+        lowguid = pCreature->GetSpawnId();
     }
     float x,y,z,o;
 
@@ -293,7 +293,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
     if (pCreature)
     {
-        if(CreatureData const* data = sObjectMgr->GetCreatureData(pCreature->GetDBTableGUIDLow()))
+        if(CreatureData const* data = sObjectMgr->GetCreatureData(pCreature->GetSpawnId()))
         {
             const_cast<CreatureData*>(data)->posX = x;
             const_cast<CreatureData*>(data)->posY = y;
@@ -554,7 +554,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         pCreature = GetSelectedCreature();
         if(!pCreature || pCreature->IsPet())
             return false;
-        lowguid = pCreature->GetDBTableGUIDLow();
+        lowguid = pCreature->GetSpawnId();
     }
     else                                                    // case .setmovetype #creature_guid $move_type (with selected creature)
     {
@@ -578,7 +578,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
         }
         else
         {
-            lowguid = pCreature->GetDBTableGUIDLow();
+            lowguid = pCreature->GetSpawnId();
         }
     }
 
@@ -670,7 +670,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     std::string curRespawnDelayStr = secsToTimeString(curRespawnDelay,true);
     std::string defRespawnDelayStr = secsToTimeString(target->GetRespawnDelay(),true);
 
-    PSendSysMessage(LANG_NPCINFO_CHAR,  target->GetDBTableGUIDLow(), faction, npcflags, Entry, displayid, nativeid);
+    PSendSysMessage(LANG_NPCINFO_CHAR,  target->GetSpawnId(), faction, npcflags, Entry, displayid, nativeid);
     if(cInfo->difficulty_entry_1)
         PSendSysMessage("Heroic Entry: %u", cInfo->difficulty_entry_1);
     else if (target->GetMap()->IsHeroic() && Entry != cInfo->Entry)
@@ -689,7 +689,7 @@ bool ChatHandler::HandleNpcInfoCommand(const char* /*args*/)
     PSendSysMessage("Creature linked instance event: %d", int(target->getInstanceEventId()));
     if(const CreatureData* const linked = target->GetLinkedRespawnCreatureData())
         if(CreatureTemplate const *master = sObjectMgr->GetCreatureTemplate(linked->id))
-            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetDBTableGUIDLow()), linked->id, master->Name.c_str());
+            PSendSysMessage(LANG_NPCINFO_LINKGUID, sObjectMgr->GetLinkedRespawnGuid(target->GetSpawnId()), linked->id, master->Name.c_str());
 
     PSendSysMessage("Movement flag: %u", target->GetUnitMovementFlags());
     if ((npcflags & UNIT_NPC_FLAG_VENDOR) )
@@ -738,9 +738,9 @@ bool ChatHandler::HandleNpcSetEmoteStateCommand(const char* args)
     {
         PSendSysMessage("Emote state set as permanent (will stay after a reboot)");
         if(state)
-            WorldDatabase.PExecute("INSERT INTO creature_addon(`guid`,`emote`) VALUES (%u,%u) ON DUPLICATE KEY UPDATE emote = %u;", target->GetDBTableGUIDLow(), state, state);
+            WorldDatabase.PExecute("INSERT INTO creature_addon(`guid`,`emote`) VALUES (%u,%u) ON DUPLICATE KEY UPDATE emote = %u;", target->GetSpawnId(), state, state);
         else
-            WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetDBTableGUIDLow());
+            WorldDatabase.PExecute("UPDATE creature_addon SET `emote` = 0 WHERE `guid` = %u", target->GetSpawnId());
     }
     return true;
 }
@@ -831,7 +831,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
     Creature *pCreature = GetSelectedCreature();
 
-    if(!pCreature || !pCreature->GetDBTableGUIDLow())
+    if(!pCreature || !pCreature->GetSpawnId())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -844,7 +844,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
         return true;
     }
 
-    uint32 lowguid = pCreature->GetDBTableGUIDLow();
+    uint32 lowguid = pCreature->GetSpawnId();
     if (!lowguid)
     {
         PSendSysMessage("Creature may not be a summon", leaderGUID);
@@ -910,7 +910,7 @@ bool ChatHandler::HandleNpcRemoveFormationCommand(const char* args)
 
     Creature *pCreature = GetSelectedCreature();
 
-    if(!pCreature || !pCreature->GetDBTableGUIDLow())
+    if(!pCreature || !pCreature->GetSpawnId())
     {
         SendSysMessage(LANG_SELECT_CREATURE);
         SetSentErrorMessage(true);
@@ -948,21 +948,21 @@ bool ChatHandler::HandleNpcSetLinkCommand(const char* args)
         return false;
     }
 
-    if(!pCreature->GetDBTableGUIDLow())
+    if(!pCreature->GetSpawnId())
     {
         PSendSysMessage("Selected creature [guidlow:%u] isn't in `creature` table", pCreature->GetGUIDLow());
         SetSentErrorMessage(true);
         return false;
     }
 
-    if(!sObjectMgr->SetCreatureLinkedRespawn(pCreature->GetDBTableGUIDLow(), linkguid))
+    if(!sObjectMgr->SetCreatureLinkedRespawn(pCreature->GetSpawnId(), linkguid))
     {
         PSendSysMessage("Selected creature can't link with guid '%u'.", linkguid);
         SetSentErrorMessage(true);
         return false;
     }
 
-    PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'.", linkguid, pCreature->GetDBTableGUIDLow());
+    PSendSysMessage("LinkGUID '%u' added to creature with DBTableGUID: '%u'.", linkguid, pCreature->GetSpawnId());
     return true;
 }
 
@@ -1024,10 +1024,10 @@ bool ChatHandler::HandleNpcSetPoolCommand(const char* args)
         return true;
     }
         
-    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetDBTableGUIDLow());
+    WorldDatabase.PExecute("UPDATE creature SET pool_id = %u WHERE guid = %u", poolId, creature->GetSpawnId());
     creature->SetCreaturePoolId(poolId);
     creature->FindMap()->AddCreatureToPool(creature, poolId);
-    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetDBTableGUIDLow(),poolId);
+    PSendSysMessage("Creature (guid: %u) added to pool %u",creature->GetSpawnId(),poolId);
     return true;
 }
 
@@ -1218,7 +1218,7 @@ bool ChatHandler::HandleNpcLinkGameEventCommand(const char* args)
     {
         Creature* creature = GetSelectedCreature();
         if(creature)
-            creatureGUID = creature->GetDBTableGUIDLow();
+            creatureGUID = creature->GetSpawnId();
     }
 
     data = sObjectMgr->GetCreatureData(creatureGUID);
@@ -1388,12 +1388,12 @@ bool ChatHandler::HandleNpcSetInstanceEventCommand(const char* args)
     int eventId = atoi(eventIdStr);
     
     if (eventId == -1) {
-        WorldDatabase.PExecute("DELETE FROM creature_encounter_respawn WHERE guid = %u", target->GetDBTableGUIDLow());
+        WorldDatabase.PExecute("DELETE FROM creature_encounter_respawn WHERE guid = %u", target->GetSpawnId());
         return true;
     }
     
-    WorldDatabase.PExecute("REPLACE INTO creature_encounter_respawn VALUES (%u, %u)", target->GetDBTableGUIDLow(), eventId);
-    PSendSysMessage("Creature (%u) respawn linked to event %u.",target->GetDBTableGUIDLow(),eventId);
+    WorldDatabase.PExecute("REPLACE INTO creature_encounter_respawn VALUES (%u, %u)", target->GetSpawnId(), eventId);
+    PSendSysMessage("Creature (%u) respawn linked to event %u.",target->GetSpawnId(),eventId);
     
     return true;
 }
@@ -1533,7 +1533,7 @@ bool ChatHandler::HandleNpcSpawnDistCommand(const char* args)
     uint32 u_guidlow = 0;
 
     if (pCreature)
-        u_guidlow = pCreature->GetDBTableGUIDLow();
+        u_guidlow = pCreature->GetSpawnId();
     else
         return false;
 
@@ -1573,7 +1573,7 @@ bool ChatHandler::HandleNpcSpawnTimeCommand(const char* args)
     uint32 u_guidlow = 0;
 
     if (pCreature)
-        u_guidlow = pCreature->GetDBTableGUIDLow();
+        u_guidlow = pCreature->GetSpawnId();
     else
         return false;
 

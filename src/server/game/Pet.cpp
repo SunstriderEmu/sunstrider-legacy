@@ -1882,7 +1882,7 @@ bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
 
     Object::_Create(guidlow, pet_number, HIGHGUID_PET);
 
-    m_DBTableGuid = guidlow;
+    m_spawnId = guidlow;
     m_originalEntry = Entry;
 
     if(!InitEntry(Entry))

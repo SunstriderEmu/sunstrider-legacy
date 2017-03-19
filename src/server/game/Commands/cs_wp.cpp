@@ -172,7 +172,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
             WorldDatabase.PExecute("UPDATE waypoint_data SET wpguid = '%u' WHERE id = '%u' and point = '%u'", wpCreature->GetGUIDLow(), pathid, point);
 
             wpCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
-            wpCreature->LoadFromDB(wpCreature->GetDBTableGUIDLow(),map);
+            wpCreature->LoadFromDB(wpCreature->GetSpawnId(),map);
             map->Add(wpCreature);
             */
             chr->SummonCreature(id,x,y,z,0,TEMPSUMMON_CORPSE_TIMED_DESPAWN,60000);
@@ -224,7 +224,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         }
 
         pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
-        pCreature->LoadFromDB(pCreature->GetDBTableGUIDLow(), map);
+        pCreature->LoadFromDB(pCreature->GetSpawnId(), map);
         map->Add(pCreature);
 
         if(target)
@@ -284,7 +284,7 @@ bool ChatHandler::HandleWpShowCommand(const char* args)
         }
 
         pCreature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
-        pCreature->LoadFromDB(pCreature->GetDBTableGUIDLow(), map);
+        pCreature->LoadFromDB(pCreature->GetSpawnId(), map);
         map->Add(pCreature);
 
         if(target)
@@ -357,7 +357,7 @@ bool ChatHandler::HandleWpUnLoadPathCommand(const char *args)
         return true;
     }
 
-    uint32 guidlow = target->GetDBTableGUIDLow();
+    uint32 guidlow = target->GetSpawnId();
     if(!guidlow)
     {
         PSendSysMessage("%s%s|r", "|cff33ffff", "Creature is not permanent.");
@@ -771,7 +771,7 @@ bool ChatHandler::HandleWpModifyCommand(const char* args)
 
                 wpCreature2->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()));
                 // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
-                wpCreature2->LoadFromDB(wpCreature2->GetDBTableGUIDLow(), map);
+                wpCreature2->LoadFromDB(wpCreature2->GetSpawnId(), map);
                 map->Add(wpCreature2);
                 //sMapMgr->CreateMap(npcCreature->GetMapId())->Add(wpCreature2);
             }
@@ -1099,7 +1099,7 @@ bool ChatHandler::HandleWpLoadPathCommand(const char *args)
         return true;
     }
 
-    guidlow = target->GetDBTableGUIDLow();
+    guidlow = target->GetSpawnId();
     QueryResult result = WorldDatabase.PQuery( "SELECT guid FROM creature_addon WHERE guid = '%u'",guidlow);
 
     if( result )
