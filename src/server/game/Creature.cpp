@@ -234,7 +234,7 @@ void Creature::AddToWorld()
     {
         if (Map *map = FindMap())
             if (map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-                ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this, GetEntry());
+                ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this);
 
         sObjectAccessor->AddObject(this);
         if (m_spawnId)
@@ -552,7 +552,7 @@ void Creature::Update(uint32 diff)
             
         Map *map = FindMap();
         if (map && map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-            ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this, GetEntry());
+            ((InstanceMap*)map)->GetInstanceScript()->OnCreatureRespawn(this);
     }
 
     switch(m_deathState)
@@ -1308,7 +1308,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData 
         // Workaround, I need position_x in OnCreatureCreate for Felmyst. I'll rewrite the hook with data as third parameter later
         if (data)
             m_positionX = data->posX;
-        ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this, Entry);
+        ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this);
     }
 
     return true;

@@ -43,10 +43,10 @@ class TC_GAME_API ZoneScript
         virtual void OnGameObjectCreate(GameObject *) {}
 
         //called on creature creation
-        virtual void OnCreatureCreate(Creature * /*creature*/, uint32 /*creature_entry*/) {}
+        virtual void OnCreatureCreate(Creature * /*creature*/) {}
         
         // Called on creature respawn
-        virtual void OnCreatureRespawn(Creature* /*creature*/, uint32 /*creature_entry*/) {}
+        virtual void OnCreatureRespawn(Creature* /*creature*/) {}
         
         virtual void OnCreatureDeath(Creature* /*creature*/) {}
 
