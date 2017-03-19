@@ -1534,25 +1534,10 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
     if(!m_session)
         return nullptr;
 
-    Player* pl = m_session->GetPlayer();
-
-    GameObject* obj = ObjectAccessor::GetGameObject(*pl, MAKE_NEW_GUID(lowguid, entry, HIGHGUID_GAMEOBJECT));
-
-    if(!obj && sObjectMgr->GetGOData(lowguid))                   // guid is DB guid of object
-    {
-        // search near player then
-        CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
-        Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
-
-        Trinity::GameObjectWithDbGUIDCheck go_check(*pl,lowguid);
-        Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(obj,go_check);
-
-        TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *pl->GetMap());
-    }
-
-    return obj;
+    auto bounds = m_session->GetPlayer()->GetMap()->GetGameObjectBySpawnIdStore().equal_range(lowguid);
+    if (bounds.first != bounds.second)
+        return bounds.first->second;
+    return nullptr;
 }
 
 static char const* const spellTalentKeys[] = {

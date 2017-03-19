@@ -179,43 +179,25 @@ class TC_GAME_API SmartScript
 
         GameObject* FindGameObjectNear(WorldObject* searchObject, uint32 guid) const
         {
-            /*
             auto bounds = searchObject->GetMap()->GetGameObjectBySpawnIdStore().equal_range(guid);
             if (bounds.first == bounds.second)
                 return nullptr;
 
             return bounds.first->second;
-            */
-
-            GameObject *pGameObject = nullptr;
-
-            CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
-            Cell cell(p);
-            cell.data.Part.reserved = ALL_DISTRICT;
-
-            Trinity::GameObjectWithDbGUIDCheck goCheck(*searchObject, guid);
-            Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(pGameObject, goCheck);
-            
-            TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > objectChecker(checker);
-            cell.Visit(p, objectChecker, *searchObject->GetMap());
-
-            return pGameObject;
         }
 
-        Creature* FindCreatureNear(WorldObject* pSearchObject, uint32 guid) const
+        Creature* FindCreatureNear(WorldObject* searchObject, uint32 guid) const
         {
-            Creature *crea = nullptr;
-            CellCoord p(Trinity::ComputeCellCoord(pSearchObject->GetPositionX(), pSearchObject->GetPositionY()));
-            Cell cell(p);
-            cell.data.Part.reserved = ALL_DISTRICT;
+            auto bounds = searchObject->GetMap()->GetCreatureBySpawnIdStore().equal_range(guid);
+            if (bounds.first == bounds.second)
+                return nullptr;
 
-            Trinity::CreatureWithDbGUIDCheck target_check(pSearchObject, guid);
-            Trinity::CreatureSearcher<Trinity::CreatureWithDbGUIDCheck> checker(crea, target_check);
+            auto creatureItr = std::find_if(bounds.first, bounds.second, [](Map::CreatureBySpawnIdContainer::value_type const& pair)
+            {
+                return pair.second->IsAlive();
+            });
 
-            TypeContainerVisitor<Trinity::CreatureSearcher <Trinity::CreatureWithDbGUIDCheck>, GridTypeMapContainer > unit_checker(checker);
-            cell.Visit(p, unit_checker, *pSearchObject->GetMap(), *pSearchObject, pSearchObject->GetVisibilityRange());
-
-            return crea;
+            return creatureItr != bounds.second ? creatureItr->second : bounds.first->second;
         }
 
         ObjectListMap* mTargetStorage;

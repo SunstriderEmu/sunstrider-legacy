@@ -517,11 +517,6 @@ bool NearestCreatureEntryWithLiveStateInObjectRangeCheck::operator()(Creature* u
     return false;
 }
 
-bool CreatureWithDbGUIDCheck::operator()(Creature* u)
-{
-    return u->GetSpawnId() == i_lowguid;
-}
-
 bool AllCreaturesOfEntryInRange::operator() (Creature* u)
 {
     if (u->GetEntry() == entry && pUnit->IsWithinDistInMap(u, range))

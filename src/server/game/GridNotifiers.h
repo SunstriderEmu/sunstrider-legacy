@@ -856,16 +856,6 @@ template<class Check>
             NearestCreatureEntryWithLiveStateInObjectRangeCheck(NearestCreatureEntryWithLiveStateInObjectRangeCheck const&);
     };
 
-    class TC_GAME_API CreatureWithDbGUIDCheck
-    {
-        public:
-            CreatureWithDbGUIDCheck(WorldObject const* obj, uint32 lowguid) : i_obj(obj), i_lowguid(lowguid) {}
-            bool operator()(Creature* u);
-        private:
-            WorldObject const* i_obj;
-            uint32 i_lowguid;
-    };
-
     class TC_GAME_API AllCreaturesOfEntryInRange
     {
     public:
