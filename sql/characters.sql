@@ -1,8 +1,8 @@
--- MySQL dump 10.15  Distrib 10.0.23-MariaDB, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.28-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: sunstrider.tk    Database: sun_characters
+-- Host: localhost    Database: localhost
 -- ------------------------------------------------------
--- Server version	10.0.16-MariaDB-1-log
+-- Server version	10.0.28-MariaDB-0+deb8u1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -45,9 +45,125 @@ DROP TABLE IF EXISTS `addons`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `addons` (
   `name` varchar(120) NOT NULL DEFAULT '',
+  `gamebuild` int(10) unsigned NOT NULL DEFAULT '0',
   `crc` int(10) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`name`,`gamebuild`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Addons';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_guild_names`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_guild_names`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_guild_names` (
+  `name_id` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `name` varchar(24) NOT NULL,
+  PRIMARY KEY (`name_id`),
+  UNIQUE KEY `name_id` (`name_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM AUTO_INCREMENT=642 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='PlayerbotAI guild names';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_guild_tasks`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_guild_tasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_guild_tasks` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `owner` bigint(20) NOT NULL,
+  `guildid` bigint(20) NOT NULL,
+  `time` bigint(20) NOT NULL,
+  `validIn` bigint(20) DEFAULT NULL,
+  `type` varchar(45) DEFAULT NULL,
+  `value` bigint(20) DEFAULT NULL,
+  `data` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `owner` (`owner`),
+  KEY `guildid` (`guildid`),
+  KEY `type` (`type`)
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_names`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_names`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_names` (
+  `name_id` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `name` varchar(13) NOT NULL,
+  `gender` tinyint(3) unsigned NOT NULL,
+  `race` smallint(5) unsigned NOT NULL,
+  `class` smallint(5) unsigned NOT NULL,
+  `purpose` int(11) unsigned NOT NULL,
+  `priority` bit(1) NOT NULL,
+  `in_use` bit(1) NOT NULL,
+  PRIMARY KEY (`name_id`),
+  UNIQUE KEY `name_id` (`name_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=MyISAM AUTO_INCREMENT=100001 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='PlayerbotAI AutoBot names';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_random_bots`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_random_bots`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_random_bots` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `owner` bigint(20) NOT NULL,
+  `bot` bigint(20) NOT NULL,
+  `time` bigint(20) NOT NULL,
+  `validIn` bigint(20) DEFAULT NULL,
+  `event` varchar(45) DEFAULT NULL,
+  `value` bigint(20) DEFAULT NULL,
+  `data` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `owner` (`owner`),
+  KEY `bot` (`bot`),
+  KEY `event` (`event`)
+) ENGINE=InnoDB AUTO_INCREMENT=6087 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_speech`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_speech`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_speech` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `text` varchar(1024) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=204 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ai_playerbot_speech_probability`
+--
+
+DROP TABLE IF EXISTS `ai_playerbot_speech_probability`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ai_playerbot_speech_probability` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `probability` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -228,10 +344,12 @@ DROP TABLE IF EXISTS `channel_ban`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channel_ban` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `accountid` int(11) unsigned NOT NULL DEFAULT '0',
   `expire` int(11) unsigned NOT NULL DEFAULT '0',
   `channel` varchar(20) NOT NULL DEFAULT '',
-  `reason` varchar(50) NOT NULL DEFAULT ''
+  `reason` varchar(50) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -621,7 +739,6 @@ DROP TABLE IF EXISTS `characters`;
 CREATE TABLE `characters` (
   `guid` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
   `account` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'Account Identifier',
-  `data` longtext,
   `name` varchar(12) NOT NULL DEFAULT '',
   `race` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `class` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -1173,7 +1290,7 @@ CREATE TABLE `item_instance` (
   `creator` int(11) unsigned NOT NULL DEFAULT '0',
   `gift_creator` int(11) unsigned NOT NULL DEFAULT '0',
   `stacks` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `duration` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `duration` int(11) unsigned NOT NULL DEFAULT '0',
   `spell1_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
   `spell2_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
   `spell3_charges` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -1389,9 +1506,11 @@ DROP TABLE IF EXISTS `pvprewards`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pvprewards` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `guid` bigint(20) NOT NULL,
   `arena_type` int(11) NOT NULL,
-  `rank` int(11) NOT NULL
+  `rank` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -1435,10 +1554,12 @@ DROP TABLE IF EXISTS `saved_variables`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `saved_variables` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `NextArenaPointDistributionTime` bigint(40) unsigned NOT NULL DEFAULT '0',
   `GmWeekBeginTime` bigint(40) unsigned NOT NULL DEFAULT '0',
-  `allowed_pvp_rewards` tinyint(4) NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
+  `allowed_pvp_rewards` tinyint(4) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1501,4 +1622,4 @@ CREATE TABLE `wrchat_servers` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-04-29 14:00:00
+-- Dump completed on 2017-03-22 17:10:40
