@@ -2428,10 +2428,10 @@ void World::ScriptsProcess()
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
-                Trinity::GameObjectWithDbGUIDCheck go_check(*summoner,step.script->datalong);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(go,go_check);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*summoner,step.script->datalong);
+                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(go,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
+                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
                 cell.Visit(p, object_checker, *summoner->GetMap());
 
                 if ( !go )
@@ -2488,10 +2488,10 @@ void World::ScriptsProcess()
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
-                Trinity::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->datalong);
+                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
+                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
                 cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )
@@ -2543,10 +2543,10 @@ void World::ScriptsProcess()
                 Cell cell(p);
                 cell.data.Part.reserved = ALL_DISTRICT;
 
-                Trinity::GameObjectWithDbGUIDCheck go_check(*caster,step.script->datalong);
-                Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(door,go_check);
+                Trinity::GameObjectWithSpawnIdCheck go_check(*caster,step.script->datalong);
+                Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
-                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
+                TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
                 cell.Visit(p, object_checker, *caster->GetMap());
 
                 if ( !door )

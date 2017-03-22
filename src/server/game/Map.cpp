@@ -2190,7 +2190,7 @@ Creature* Map::GetCreature(uint64 guid)
     return ret;
 }
 
-Creature* Map::GetCreatureWithTableGUID(uint32 tableGUID) const
+Creature* Map::GetCreatureWithSpawnId(uint32 spawnId) const
 {
     boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
     auto creatures = sObjectAccessor->GetCreatures();
@@ -2204,7 +2204,7 @@ Creature* Map::GetCreatureWithTableGUID(uint32 tableGUID) const
         if (c->GetInstanceId() != GetInstanceId())
             continue;
 
-        if (c->GetSpawnId() != tableGUID)
+        if (c->GetSpawnId() != spawnId)
             continue;
 
         return c;

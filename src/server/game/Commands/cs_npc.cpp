@@ -861,7 +861,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
 
     Creature* leader;
     if (pCreature->GetMap()->Instanceable())
-        leader = pCreature->GetMap()->GetCreatureWithTableGUID(leaderGUID);
+        leader = pCreature->GetMap()->GetCreatureWithSpawnId(leaderGUID);
     else
         leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HIGHGUID_UNIT));
 

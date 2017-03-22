@@ -634,7 +634,7 @@ bool NearestGameObjectEntryInObjectRangeCheck::operator()(GameObject* go)
     return false;
 }
 
-bool GameObjectWithDbGUIDCheck::operator()(GameObject const* go) const
+bool GameObjectWithSpawnIdCheck::operator()(GameObject const* go) const
 {
     return go->GetSpawnId() == i_db_guid;
 }

@@ -1330,7 +1330,7 @@ struct SmartTarget
 
         struct
         {
-            uint32 dbGuid;
+            uint32 spawnId;
             uint32 entry;
         } unitGUID;
 
@@ -1366,7 +1366,7 @@ struct SmartTarget
 
         struct
         {
-            uint32 dbGuid;
+            uint32 spawnId;
             uint32 entry;
         } goGUID;
 

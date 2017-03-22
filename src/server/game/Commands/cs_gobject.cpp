@@ -220,7 +220,7 @@ bool ChatHandler::HandleDelObjectCommand(const char* args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
     {
@@ -269,7 +269,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
     {
@@ -329,7 +329,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
     {
@@ -453,7 +453,7 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
-        obj = GetObjectGlobalyWithGuidOrNearWithDbGuid(lowguid,go_data->id);
+        obj = GetObjectGlobalyWithGuidOrNearWithSpawnId(lowguid,go_data->id);
 
     if(!obj)
     {
@@ -612,7 +612,7 @@ bool ChatHandler::HandleGobGetValueCommand(const char * args)
      GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
-        target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
+        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid,go_data->id);
 
     if(!target)
     {
@@ -678,7 +678,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
      GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
-        target = GetObjectGlobalyWithGuidOrNearWithDbGuid(guid,go_data->id);
+        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid,go_data->id);
 
     if(!target)
     {

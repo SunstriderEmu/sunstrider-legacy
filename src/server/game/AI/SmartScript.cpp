@@ -3266,7 +3266,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 break;
             }
 
-            target = FindCreatureNear(scriptTrigger ? scriptTrigger : baseObject, e.target.unitGUID.dbGuid);
+            target = FindCreatureNear(scriptTrigger ? scriptTrigger : baseObject, e.target.unitGUID.spawnId);
 
             if (target && (!e.target.unitGUID.entry || target->GetEntry() == e.target.unitGUID.entry))
                 l->push_back(target);
@@ -3281,7 +3281,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, Unit* invoker /*
                 break;
             }
 
-            target = FindGameObjectNear(scriptTrigger ? scriptTrigger : baseObject, e.target.goGUID.dbGuid);
+            target = FindGameObjectNear(scriptTrigger ? scriptTrigger : baseObject, e.target.goGUID.spawnId);
 
             if (target && (!e.target.goGUID.entry || target->GetEntry() == e.target.goGUID.entry))
                 l->push_back(target);

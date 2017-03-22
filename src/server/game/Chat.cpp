@@ -1529,7 +1529,7 @@ char const *fmtstring( char const *format, ... )
     return buf;
 }
 
-GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid,uint32 entry)
+GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithSpawnId(uint32 lowguid,uint32 entry)
 {
     if(!m_session)
         return nullptr;

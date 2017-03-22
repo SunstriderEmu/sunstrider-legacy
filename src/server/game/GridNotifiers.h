@@ -1038,10 +1038,10 @@ template<class Check>
         NearestGameObjectTypeInObjectRangeCheck(NearestGameObjectTypeInObjectRangeCheck const&);
     };
 
-    class TC_GAME_API GameObjectWithDbGUIDCheck
+    class TC_GAME_API GameObjectWithSpawnIdCheck
     {
         public:
-            GameObjectWithDbGUIDCheck(WorldObject const& obj,uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
+            GameObjectWithSpawnIdCheck(WorldObject const& obj,uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
             bool operator()(GameObject const* go) const;
         private:
             WorldObject const& i_obj;

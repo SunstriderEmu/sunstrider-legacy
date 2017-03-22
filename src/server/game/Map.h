@@ -260,7 +260,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         DynamicObject* GetDynamicObject(uint64 guid);  
 
         //avoid using as much as possible, this locks HashMapHolder
-        Creature* GetCreatureWithTableGUID(uint32 tableGUID) const;
+        Creature* GetCreatureWithSpawnId(uint32 tableGUID) const;
 
         MapInstanced* ToMapInstanced() { if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return nullptr; }
         const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return nullptr; }
