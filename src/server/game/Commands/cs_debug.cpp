@@ -1366,3 +1366,177 @@ bool ChatHandler::HandleDebugUnloadGrid(const char* args)
     */
     return true;
 }
+
+/* Spawn a bunch of gameobjects objects from given file. This command will check wheter a close object is found on this server and ignore the new one if one is found.
+A preview gobject is spawned.
+Syntax: .debug spawnbatchobjects <filename> [permanent(0|1)]
+    filename: source file
+        First line must be map id
+        Each line in file must have format :
+        <entry> <x> <y> <z> <rot0> <rot1> <rot2> <rot3> <spawntime> <spawnmode>
+    permanent: Spawn them as permanent (write to db)
+*/
+bool ChatHandler::HandleSpawnBatchObjects(const char* args)
+{
+    struct FileGameObject
+    {
+        FileGameObject(std::string const& line)
+        {
+            Tokenizer tokens(line, ' ');
+            if (tokens.size() != 10)
+                return;
+
+            entry = std::atoi(tokens[0]);
+            position = Position(std::atof(tokens[1]), std::atof(tokens[2]), std::atof(tokens[3]));
+            rot = G3D::Quat(std::atof(tokens[4]), std::atof(tokens[5]), std::atof(tokens[6]), std::atof(tokens[7]));
+            spawnTimeSecs = std::atoi(tokens[8]);
+            spawnMask = std::atoi(tokens[9]);
+
+            if (!position.IsPositionValid())
+                return;
+
+            _init = true;
+        };
+
+        std::string ToString()
+        {
+            std::stringstream str;
+            str << entry << " (" << position.GetPositionX() << "," << position.GetPositionY() << "," << position.GetPositionZ() << ")";
+            return str.str();
+        }
+        
+        uint32 entry;
+        Position position;
+        G3D::Quat rot;
+        uint32 spawnTimeSecs;
+        uint32 spawnMask;
+        bool _init = false; //true if successfully initialized
+    };
+
+    Tokenizer tokens(args, ' ');
+    if (tokens.size() < 1)
+        return false;
+
+    const char* filename = tokens[0];
+    bool permanent = false;
+    if (tokens.size() >= 2)
+        permanent = bool(atoi(tokens[1]));
+
+    //open file
+    std::ifstream objects_file(filename);
+    if (objects_file.fail())
+    {
+        PSendSysMessage("Failed to open file %s", filename);
+        return true;
+    }
+
+    //read map id
+    std::string map_id_str;
+    std::getline(objects_file, map_id_str);
+    if (map_id_str == "")
+    {
+        SendSysMessage("Invalid input file (could not get mapid)");
+        return true;
+    }
+
+    uint32 mapId = std::stoi(map_id_str);
+    if (mapId == 0)
+    {
+        SendSysMessage("Invalid input file (mapId == 0)");
+        return true;
+    }
+
+    Player* player = m_session->GetPlayer();
+    if(player->GetMapId() != mapId)
+    {
+        PSendSysMessage("You must be in the map indicated in the input file (%u)", mapId);
+        return true;
+    }
+
+    //read gameobjects
+    std::string line;
+    std::vector<FileGameObject> fileObjects;
+    while (std::getline(objects_file, line))
+    {
+        FileGameObject object(line);
+        if (object._init == true)
+            fileObjects.push_back(std::move(object));
+        else
+            PSendSysMessage("Failed to read line: %s", line.c_str());
+    }
+
+    if (fileObjects.empty())
+    {
+        SendSysMessage("No objects extracted from file");
+        return true;
+    }
+
+    //Check validity for each. Also remove from the object list the one we already have on our server
+    auto goDataMap = sObjectMgr->GetGODataMap();
+    for (std::vector<FileGameObject>::iterator itr2 = fileObjects.begin(); itr2 != fileObjects.end(); )
+    {
+        FileGameObject& fileObject = *itr2;
+        uint32 objectEntry = fileObject.entry;
+        const GameObjectTemplate* goI = sObjectMgr->GetGameObjectTemplate(objectEntry);
+        if (!goI)
+        {
+            PSendSysMessage("Ignoring non existing object %s", fileObject.ToString().c_str());
+            itr2 = fileObjects.erase(itr2);
+            continue;
+        }
+
+        bool erase = false;
+        for (auto itr : goDataMap)
+        {
+            auto const& sunstriderObject = itr.second;
+            uint32 sunstriderGUID = itr.first;
+            if (sunstriderObject.mapid != mapId)
+                continue;
+
+            Position sunPosition(sunstriderObject.posX, sunstriderObject.posY, sunstriderObject.posZ);
+            //same id and very close position, consider it the same object
+            bool sameObject = sunstriderObject.id == objectEntry && sunstriderObject.spawnMask & fileObject.spawnMask && fileObject.position.GetExactDist(sunPosition) < 1.0f;
+            if (sameObject)
+            {
+                if (sunstriderObject.spawnMask & fileObject.spawnMask && sunstriderObject.spawnMask != fileObject.spawnMask)
+                    PSendSysMessage("Warning: Object %s looks like it's corresponding to %u but has different spawn mode. Object will be ignored.", sunstriderGUID, fileObject.ToString().c_str());
+
+                PSendSysMessage("Ignoring object %s we already have", fileObject.ToString().c_str());
+                erase = true;
+                break; // No need to check others
+            }
+        }
+        if(erase)
+            itr2 = fileObjects.erase(itr2);
+        else
+            itr2++;
+    }
+
+    if (fileObjects.empty())
+    {
+        SendSysMessage("All gameobjects from file were already present, stopping here");
+        return true;
+    }
+
+    //spawn them
+    for (auto itr : fileObjects)
+    {
+        PSendSysMessage("Summoning %s", itr.ToString().c_str());
+        player->SummonGameObject(itr.entry, itr.position, itr.rot, 0);
+        if (permanent)
+        {
+            auto pGameObj = new GameObject;
+            if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), itr.entry, player->GetMap(), itr.position, itr.rot, 0, GO_STATE_READY))
+            {
+                delete pGameObj;
+                PSendSysMessage("Failed to create object %u", itr.entry);
+                continue;
+            }
+            pGameObj->SetRespawnTime(itr.spawnTimeSecs);
+            pGameObj->SaveToDB(player->GetMap()->GetId(), itr.spawnMask);
+            SendSysMessage("Saved all to DB");
+        }
+    }
+
+    return true;
+}

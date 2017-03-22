@@ -8,7 +8,7 @@ CollectSourceFiles(
   # Exclude
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${EXCLUDE_PLAYERBOT}
-  )
+)
 
   
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
@@ -23,7 +23,7 @@ CollectIncludeDirectories(
   PUBLIC_INCLUDES
   # Exclude
   #sunstrider: TC has this but this currently breaks intellisense, which apparently needs to include the folder containing the pch. # ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
-  )
+)
    
   
 add_library(game-interface INTERFACE)
@@ -37,15 +37,17 @@ target_link_libraries(game-interface
   INTERFACE
     shared
     Detour
-    )
+)
 
 add_library(game
   ${PRIVATE_PCH_SOURCE}
-  ${PRIVATE_SOURCES})
+  ${PRIVATE_SOURCES}
+)
 
 target_include_directories(game
   PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR})
+    ${CMAKE_CURRENT_BINARY_DIR}
+)
     
 
 if(USE_GPERFTOOLS)

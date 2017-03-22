@@ -856,9 +856,16 @@ class TC_GAME_API ObjectMgr
         GameObjectData const* GetGOData(uint32 guid) const
         {
             auto itr = mGameObjectDataMap.find(guid);
-            if(itr==mGameObjectDataMap.end()) return nullptr;
+            if(itr == mGameObjectDataMap.end()) 
+                return nullptr;
             return &itr->second;
         }
+
+        GameObjectDataMap const& GetGODataMap() const
+        {
+            return mGameObjectDataMap;
+        }
+
         GameObjectData& NewGOData(uint32 guid) { return mGameObjectDataMap[guid]; }
         void DeleteGOData(uint32 guid);
 

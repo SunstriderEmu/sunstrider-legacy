@@ -94,7 +94,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
 }
 
 //spawn go
-bool ChatHandler::HandleGameObjectCommand(const char* args)
+bool ChatHandler::HandleGameObjectAddCommand(const char* args)
 {
     ARGS_CHECK
 
@@ -127,7 +127,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
     float rot2 = sin(o/2);
     float rot3 = cos(o/2);
     
-    /* Gobjects on transports have been added on LK (or did not found correct packet structure */
+    /* Gobjects on transports have been added on LK (or did not found correct packet structure) */
     if (Transport* trans = chr->GetTransport())
     {
 #ifdef LICH_KING
@@ -165,7 +165,7 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 #endif
     }
 
-    auto  pGameObj = new GameObject;
+    auto pGameObj = new GameObject;
     uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
     if(!pGameObj->Create(db_lowGUID, goI->entry, map, Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
@@ -196,10 +196,9 @@ bool ChatHandler::HandleGameObjectCommand(const char* args)
 
     map->Add(pGameObj);
 
-    // TODO: is it really necessary to add both the real and DB table guid here ?
     sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
 
-    PSendSysMessage(LANG_GAMEOBJECT_ADD,id,goI->name.c_str(),db_lowGUID,x,y,z);
+    PSendSysMessage(LANG_GAMEOBJECT_ADD, id, goI->name.c_str(), db_lowGUID, x, y, z);
     return true;
 }
 

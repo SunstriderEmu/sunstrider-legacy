@@ -426,7 +426,7 @@ class TC_GAME_API ChatHandler
         bool HandleCooldownCommand(const char* args);
         bool HandleUnLearnCommand(const char* args);
         bool HandleGetDistanceCommand(const char* args);
-        bool HandleGameObjectCommand(const char* args);
+        bool HandleGameObjectAddCommand(const char* args);
         bool HandleDebugAnimCommand(const char* args);
         bool HandleDebugPlaySoundCommand(const char* args);
         bool HandleDieCommand(const char* args);
@@ -616,6 +616,7 @@ class TC_GAME_API ChatHandler
         bool HandleUnbindSightCommand(const char* args);
         bool HandleDebugRemoveLootItem(const char* args);
         bool HandleDebugPvPAnnounce(const char* args);
+        bool HandleSpawnBatchObjects(const char* args);
 
         //IRC
         bool HandleIRCReconnectCommand(const char* args);

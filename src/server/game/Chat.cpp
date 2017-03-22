@@ -296,6 +296,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "setzoneweather", SEC_SUPERADMIN,   false, false, &ChatHandler::HandleDebugZoneWeatherCommand,      "" },
         { "setarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugSetArmorCommand,         "" },
         { "getarmor",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleDebugGetArmorCommand,         "" },
+        { "spawnbatchobjects",SEC_SUPERADMIN, false, false, &ChatHandler::HandleSpawnBatchObjects,            "" },
     };
 
     static std::vector<ChatCommand> eventCommandTable =
@@ -579,7 +580,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 
     static std::vector<ChatCommand> gobjectCommandTable =
     {
-        { "add",            SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleGameObjectCommand,          "" },
+        { "add",            SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleGameObjectAddCommand,       "" },
         { "delete",         SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleDelObjectCommand,           "" },
         { "target",         SEC_GAMEMASTER2,     false, false, &ChatHandler::HandleTargetObjectCommand,        "" },
         { "turn",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleTurnObjectCommand,          "" },
