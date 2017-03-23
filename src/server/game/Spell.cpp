@@ -1402,7 +1402,17 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
 
     // Xinef: the distance should be increased by caster size, it is neglected in latter calculations
     std::list<WorldObject*> targets;
-    float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
+    float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
+    // Workaround for some spells that don't have RadiusEntry set in dbc (but SpellRange instead)
+    if (G3D::fuzzyEq(radius, 0.f))
+        radius = m_spellInfo->GetMaxRange(m_spellInfo->IsPositiveEffect(effIndex), m_caster, this);
+
+    radius *= m_spellValue->RadiusMod;
+
+    // if this is a proximity based aoe (Frost Nova, Psychic Scream, ...), include the caster's own combat reach
+    if (targetType.IsProximityBasedAoe())
+        radius += GetCaster()->GetCombatReach();
+
     SearchAreaTargets(targets, radius, center, referer, targetType.GetObjectType(), targetType.GetCheckType(), m_spellInfo->Effects[effIndex].ImplicitTargetConditions);
 
     CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType);
@@ -1467,7 +1477,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         float dis = (float)rand_norm() * (max_dis - min_dis) + min_dis;
         float x, y, z, angle;
         angle = (float)rand_norm() * static_cast<float>(M_PI * 35.0f / 180.0f) - static_cast<float>(M_PI * 17.5f / 180.0f);
-        m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE, dis, angle);
+        m_caster->GetClosePoint(x, y, z, DEFAULT_PLAYER_BOUNDING_RADIUS, dis, angle);
 
         float ground = m_caster->GetMap()->GetHeight(m_caster->GetPhaseMask(), x, y, z, true, 120.0f);
         float liquidLevel = VMAP_INVALID_HEIGHT_VALUE;
@@ -1498,7 +1508,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
     {
         float dist;
         float angle = targetType.CalcDirectionAngle();
-        float objSize = m_caster->GetObjectSize();
+        float objSize = m_caster->GetCombatReach();
         if (targetType.GetTarget() == TARGET_DEST_CASTER_SUMMON)
             dist = PET_FOLLOW_DIST;
         else
@@ -1573,7 +1583,7 @@ void Spell::SelectImplicitTargetDestTargets(SpellEffIndex effIndex, SpellImplici
     default:
     {
         float angle = targetType.CalcDirectionAngle();
-        float objSize = target->GetObjectSize();
+        float objSize = target->GetCombatReach();
         float dist = m_spellInfo->Effects[effIndex].CalcRadius(m_caster);
         if (dist < objSize)
             dist = objSize;
@@ -1807,7 +1817,7 @@ void Spell::SelectImplicitTrajTargets(SpellEffIndex effIndex, SpellImplicitTarge
             */
         }
 
-        const float size = std::max((*itr)->GetObjectSize(), 1.0f);
+        const float size = std::max((*itr)->GetCombatReach(), 1.0f);
         const float objDist2d = srcPos.GetExactDist2d(*itr);
         const float dz = (*itr)->GetPositionZ() - srcPos.m_positionZ;
 
@@ -2078,7 +2088,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
             auto checkItr = itr++;
             if (!m_caster->HasInArc(static_cast<float>(M_PI), *checkItr))
                 tempTargets.erase(checkItr);
-            else if (allowedArc > 0.0f && !m_caster->HasInArc(allowedArc, *checkItr, (*checkItr)->GetObjectSize()))
+            else if (allowedArc > 0.0f && !m_caster->HasInArc(allowedArc, *checkItr, (*checkItr)->GetCombatReach()))
                 tempTargets.erase(checkItr);
         }
     }
@@ -5596,11 +5606,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!target)
                     return SPELL_FAILED_DONT_REPORT;
 
-                Position pos = target->GetFirstWalkableCollisionPosition(target->GetObjectSize(), target->GetRelativeAngle(m_caster));
+                Position pos = target->GetFirstWalkableCollisionPosition(target->GetCombatReach(), target->GetRelativeAngle(m_caster));
                 delete m_preGeneratedPath; //just in case, if logic changes elsewhere
                 m_preGeneratedPath = new PathGenerator(m_caster);
                 m_preGeneratedPath->SetPathLengthLimit(m_spellInfo->GetMaxRange(false, m_caster) *1.4f);
-                bool result = m_preGeneratedPath->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetObjectSize(), false, false);
+                bool result = m_preGeneratedPath->CalculatePath(pos.m_positionX, pos.m_positionY, pos.m_positionZ + target->GetCombatReach(), false, false);
 
                 if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT) //path found is longer than limit
                     return SPELL_FAILED_OUT_OF_RANGE;
@@ -5616,7 +5626,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                     const Position beforeLastPointP { beforeLastPointV.x, beforeLastPointV.y, beforeLastPointV.z, 0.0f };
                     const Position newLastPoint = target->GetFirstWalkableCollisionPosition(CONTACT_DISTANCE*3, target->GetRelativeAngle(&beforeLastPointP));
                     //Recreate a path to this point
-                    result = m_preGeneratedPath->CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetObjectSize(), false, false);
+                    result = m_preGeneratedPath->CalculatePath(newLastPoint.m_positionX, newLastPoint.m_positionY, newLastPoint.m_positionZ + target->GetCombatReach(), false, false);
                 }
 
                 if (m_preGeneratedPath->GetPathType() & PATHFIND_SHORT)
@@ -7937,15 +7947,20 @@ namespace Trinity
 
     bool WorldObjectSpellAreaTargetCheck::operator()(WorldObject* target)
     {
-        if (target->GetTypeId() == TYPEID_GAMEOBJECT)
+        if (target->ToGameObject())
         {
-            if (!target->ToGameObject()->IsInRange(_position->GetPositionX(), _position->GetPositionY(), _position->GetPositionZ(), _range))
+            // isInRange including the dimension of the GO
+            bool isInRange = target->ToGameObject()->IsInRange(_position->GetPositionX(), _position->GetPositionY(), _position->GetPositionZ(), _range);
+            if (!isInRange)
                 return false;
         }
-        else if (!target->IsWithinDist3d(_position, _range))
-            return false;
-        /* sunwell else if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->IsAvoidingAOE()) // pussywizard
-            return false; */
+        else
+        {
+            bool isInsideCylinder = target->IsWithinDist2d(_position, _range) && std::abs(target->GetPositionZ() - _position->GetPositionZ()) <= _range;
+            if (!isInsideCylinder)
+                return false;
+        }
+
         return WorldObjectSpellTargetCheck::operator ()(target);
     }
 
@@ -7964,7 +7979,7 @@ namespace Trinity
         }
         else if (_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_LINE))
         {
-            if (!_caster->HasInLine(target, target->GetObjectSize(), _caster->GetObjectSize()))
+            if (!_caster->HasInLine(target, target->GetCombatReach(), _caster->GetCombatReach()))
                 return false;
         }
         else if (_spellInfo->HasAttribute(SPELL_ATTR_CU_CONE_180))
@@ -7986,7 +8001,7 @@ namespace Trinity
     bool WorldObjectSpellTrajTargetCheck::operator()(WorldObject* target)
     {
         // return all targets on missile trajectory
-        if (!_caster->HasInLine(target, target->GetObjectSize(), TRAJECTORY_MISSILE_SIZE))
+        if (!_caster->HasInLine(target, target->GetCombatReach(), TRAJECTORY_MISSILE_SIZE))
             return false;
 
         if (target->GetExactDist2d(_position) > _range)

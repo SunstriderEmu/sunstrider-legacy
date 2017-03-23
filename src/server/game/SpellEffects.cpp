@@ -1538,7 +1538,7 @@ void Spell::EffectDummy(uint32 i)
                         return;
 
                     float fDestX, fDestY, fDestZ;
-                    m_caster->GetNearPoint(m_caster, fDestX, fDestY, fDestZ, m_caster->GetObjectSize(), 30.0f, 0.0f);
+                    m_caster->GetNearPoint(m_caster, fDestX, fDestY, fDestZ, m_caster->GetCombatReach(), 30.0f, 0.0f);
                     if (Creature* pWolf = m_caster->SummonCreature(25324, fDestX, fDestY, fDestZ, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000))
                         pWolf->GetMotionMaster()->MoveFollow(m_caster, PET_FOLLOW_DIST, pWolf->GetAngle(m_caster)); 
                     return;
@@ -4144,7 +4144,7 @@ void Spell::EffectSummon(uint32 i)
         destTarget->GetPosition(x, y, z);
     }
     else
-        m_caster->GetClosePoint(x,y,z,owner->GetObjectSize());
+        m_caster->GetClosePoint(x,y,z,owner->GetCombatReach());
 
     Pet *spawnCreature = owner->SummonPet(pet_entry, x, y, z, m_caster->GetOrientation(), SUMMON_PET, m_spellInfo->GetDuration());
     if(!spawnCreature)
@@ -4657,7 +4657,7 @@ void Spell::EffectSummonGuardian(uint32 i)
         }
         // Summon if dest location not present near caster
         else
-            m_caster->GetClosePoint(px,py,pz,m_caster->GetObjectSize());
+            m_caster->GetClosePoint(px,py,pz,m_caster->GetCombatReach());
 
         Pet* spawnCreature = caster->SummonPet(m_spellInfo->Effects[i].MiscValue, px, py, pz, m_caster->GetOrientation(), GUARDIAN_PET, duration);
         if(!spawnCreature)
@@ -4687,7 +4687,7 @@ void Spell::EffectSummonPossessed(uint32 i)
         return;
 
     float x, y, z;
-    m_caster->GetClosePoint(x, y, z, DEFAULT_WORLD_OBJECT_SIZE);
+    m_caster->GetClosePoint(x, y, z, DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     int32 duration = m_spellInfo->GetDuration();
 
@@ -4714,7 +4714,7 @@ void Spell::EffectTeleUnitsFaceCaster(uint32 i)
     float dis = m_spellInfo->Effects[i].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
 
     float fx,fy,fz;
-    m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetObjectSize(),dis);
+    m_caster->GetClosePoint(fx,fy,fz,unitTarget->GetCombatReach(),dis);
 
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
         (unitTarget->ToPlayer())->TeleportTo(mapid, fx, fy, fz, -m_caster->GetOrientation(), TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
@@ -5047,7 +5047,7 @@ void Spell::EffectSummonPet(uint32 i)
             OldSummon->SetMapId(owner->GetMapId());
 
             float px, py, pz;
-            owner->GetClosePoint(px, py, pz, OldSummon->GetObjectSize());
+            owner->GetClosePoint(px, py, pz, OldSummon->GetCombatReach());
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
             owner->GetMap()->Add(OldSummon->ToCreature(), true);
@@ -5068,7 +5068,7 @@ void Spell::EffectSummonPet(uint32 i)
     }
 
     float x, y, z;
-    owner->GetClosePoint(x, y, z, owner->GetObjectSize());
+    owner->GetClosePoint(x, y, z, owner->GetCombatReach());
     Pet* pet = nullptr;
     if (owner->GetTypeId() == TYPEID_PLAYER)
         pet = owner->ToPlayer()->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
@@ -5493,7 +5493,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         destTarget->GetPosition(x, y, z);
     }
     else
-        m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
+        m_caster->GetClosePoint(x,y,z,DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Map *map = target->GetMap();
 
@@ -6591,7 +6591,7 @@ void Spell::EffectSummonPlayer(uint32 /*i*/)
         return;
 
     float x,y,z;
-    //m_caster->GetClosePoint(x,y,z,unitTarget->GetObjectSize());
+    //m_caster->GetClosePoint(x,y,z,unitTarget->GetCombatReach());
     m_caster->GetPosition(x, y, z);
 
     (unitTarget->ToPlayer())->SetSummonPoint(m_caster->GetMapId(),x,y,z);
@@ -6896,7 +6896,7 @@ void Spell::EffectSummonObject(uint32 i)
         destTarget->GetPosition(x, y, z);
     // Summon in random point all other units if location present
     else
-        m_caster->GetClosePoint(x,y,z,DEFAULT_WORLD_OBJECT_SIZE);
+        m_caster->GetClosePoint(x,y,z,DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Map *map = m_caster->GetMap();
     if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), go_id, map, Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
@@ -7164,7 +7164,7 @@ void Spell::EffectCharge(uint32 i)
         // Spell is not using explicit target - no generated path
         if (m_preGeneratedPath->GetPathType() == PATHFIND_BLANK)
         {
-            Position pos = unitTarget->GetFirstWalkableCollisionPosition(unitTarget->GetObjectSize(), unitTarget->GetRelativeAngle(m_caster));
+            Position pos = unitTarget->GetFirstWalkableCollisionPosition(unitTarget->GetCombatReach(), unitTarget->GetRelativeAngle(m_caster));
             m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, speed);
         }
         else
@@ -7252,7 +7252,7 @@ void Spell::EffectSummonCritter(uint32 i)
      }
      // Summon if dest location not present near caster
      else
-         m_caster->GetClosePoint(x,y,z,critter->GetObjectSize());
+         m_caster->GetClosePoint(x,y,z,critter->GetCombatReach());
 
     critter->Relocate(x,y,z,m_caster->GetOrientation());
 
@@ -7454,7 +7454,7 @@ void Spell::EffectResurrectPet(uint32 /*i*/)
         // Reposition the pet's corpse before reviving so as not to grab aggro
         // We can use a different, more accurate version of GetClosePoint() since we have a pet
         float x, y, z; // Will be used later to reposition the pet if we have one
-        _player->GetClosePoint(x, y, z, pet->GetObjectSize(), PET_FOLLOW_DIST, pet->GetFollowAngle());
+        _player->GetClosePoint(x, y, z, pet->GetCombatReach(), PET_FOLLOW_DIST, pet->GetFollowAngle());
         pet->NearTeleportTo(x, y, z, _player->GetOrientation());
         pet->Relocate(x, y, z, _player->GetOrientation()); // This is needed so SaveStayPosition() will get the proper coords.
     }
@@ -7588,7 +7588,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     else if(m_spellInfo->Effects[effIndex].RadiusEntry->ID && m_spellInfo->Speed==0)
     {
         float dis = m_spellInfo->Effects[effIndex].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
-        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
+        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_PLAYER_BOUNDING_RADIUS, dis);
     }
     else
     {
@@ -7596,7 +7596,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
         float max_dis = m_spellInfo->GetMaxRange(false, m_caster->GetSpellModOwner(), this);
         float dis = m_caster->GetMap()->rand_norm() * (max_dis - min_dis) + min_dis;
 
-        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_WORLD_OBJECT_SIZE, dis);
+        m_caster->GetClosePoint(fx,fy,fz,DEFAULT_PLAYER_BOUNDING_RADIUS, dis);
     }
 
     Map *cMap = m_caster->GetMap();
@@ -7778,7 +7778,7 @@ void Spell::EffectSummonDemon(uint32 i)
         destTarget->GetPosition(px, py, pz);
     }
     else
-        m_caster->GetClosePoint(px, py, pz, DEFAULT_WORLD_OBJECT_SIZE);
+        m_caster->GetClosePoint(px, py, pz, DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Creature* Charmed = m_caster->SummonCreature(m_spellInfo->Effects[i].MiscValue, px, py, pz, m_caster->GetOrientation(),TEMPSUMMON_TIMED_OR_DEAD_DESPAWN,3600000);
     if (!Charmed)

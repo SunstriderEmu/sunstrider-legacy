@@ -301,10 +301,22 @@ bool AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck::operator()(Unit* u)
 
 bool AnyFriendlyUnitInObjectRangeCheck::operator()(Unit* u)
 {
-    if (u->IsAlive() && i_obj->IsWithinDistInMap(u, i_range) && i_funit->IsFriendlyTo(u) && (!i_playerOnly || u->GetTypeId() == TYPEID_PLAYER))
-        return true;
-    else
+    if (!u->IsAlive())
         return false;
+
+    float searchRadius = i_range;
+    if (i_incOwnRadius)
+        searchRadius += i_obj->GetCombatReach();
+    if (i_incTargetRadius)
+        searchRadius += u->GetCombatReach();
+
+    if (!u->IsInMap(i_obj) || !u->InSamePhase(i_obj) || !u->IsWithinDoubleVerticalCylinder(i_obj, searchRadius, searchRadius))
+        return false;
+
+    if (!i_funit->IsFriendlyTo(u))
+        return false;
+
+    return !i_playerOnly || u->GetTypeId() == TYPEID_PLAYER;
 }
 
 bool AnyFriendlyUnitInObjectRangeCheckWithRangeReturned::operator()(Unit* u, float& range)
@@ -350,28 +362,33 @@ bool NearestAttackableUnitInObjectRangeCheck::operator()(Unit* u)
     return false;
 }
 
-AnyAoETargetUnitInObjectRangeCheck::AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range)
-    : i_obj(obj), i_funit(funit), i_range(range)
+AnyAoETargetUnitInObjectRangeCheck::AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, SpellInfo const* spellInfo /*= nullptr*/, bool incOwnRadius /*= true*/, bool incTargetRadius /*= true*/)
+    : i_obj(obj), i_funit(funit), _spellInfo(spellInfo), i_range(range), i_incOwnRadius(incOwnRadius), i_incTargetRadius(incTargetRadius)
 {
-    Unit const* check = i_funit;
-    Unit const* owner = i_funit->GetOwner();
-    if (owner)
-        check = owner;
-    i_targetForPlayer = (check->GetTypeId() == TYPEID_PLAYER);
+    if (!_spellInfo)
+        if (DynamicObject const* dynObj = i_obj->ToDynObject())
+            _spellInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
 }
 
 bool AnyAoETargetUnitInObjectRangeCheck::operator()(Unit* u)
 {
     // Check contains checks for: live, non-selectable, non-attackable flags, flight check and GM check, ignore totems
-    if (i_funit->CanAttack(u) != CAN_ATTACK_RESULT_OK)
-        return false;
-    if (u->GetTypeId() == TYPEID_UNIT && (u->ToCreature())->IsTotem())
+    if (u->GetTypeId() == TYPEID_UNIT && u->IsTotem())
         return false;
 
-    if ((i_targetForPlayer ? !i_funit->IsFriendlyTo(u) : i_funit->IsHostileTo(u)) && i_obj->IsWithinDistInMap(u, i_range))
-        return true;
+    if (_spellInfo && _spellInfo->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS) && u->GetTypeId() != TYPEID_PLAYER)
+        return false;
 
-    return false;
+    if (!i_funit->_IsValidAttackTarget(u, _spellInfo, i_obj->GetTypeId() == TYPEID_DYNAMICOBJECT ? i_obj : nullptr))
+        return false;
+
+    float searchRadius = i_range;
+    if (i_incOwnRadius)
+        searchRadius += i_obj->GetCombatReach();
+    if (i_incTargetRadius)
+        searchRadius += u->GetCombatReach();
+
+    return u->IsInMap(i_obj) && u->InSamePhase(i_obj) && u->IsWithinDoubleVerticalCylinder(i_obj, searchRadius, searchRadius);
 }
 
 CallOfHelpCreatureInRangeDo::CallOfHelpCreatureInRangeDo(Unit* funit, Unit* enemy, float range)

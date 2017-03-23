@@ -722,14 +722,14 @@ void AreaAura::Update(uint32 diff)
                     break;
                 case AREA_AURA_FRIEND:
                 {
-                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, m_radius);
+                    Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, m_radius, GetSpellInfo()->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS), false, true);
                     Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, targets, u_check);
                     caster->VisitNearbyObject(m_radius, searcher);
                     break;
                 }
                 case AREA_AURA_ENEMY:
                 {
-                    Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(caster, caster, m_radius); // No GetCharmer in searcher
+                    Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(caster, caster, m_radius, GetSpellInfo(), false, true); // No GetCharmer in searcher
                     Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(caster, targets, u_check);
                     caster->VisitNearbyObject(m_radius, searcher);
                     break;

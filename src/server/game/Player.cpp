@@ -654,8 +654,8 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
             return false;
     }
 
-    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE );
-    SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_COMBAT_REACH );
+    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_PLAYER_BOUNDING_RADIUS );
+    SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_PLAYER_COMBAT_REACH );
 
     switch(gender)
     {
@@ -15062,7 +15062,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
     _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER_FIELD_KNOWN_TITLES, 2);
     
-    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
+    SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_PLAYER_BOUNDING_RADIUS);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
     //SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
     

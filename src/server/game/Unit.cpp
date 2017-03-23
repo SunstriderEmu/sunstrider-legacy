@@ -446,7 +446,7 @@ void Unit::GetRandomContactPoint( const Unit* obj, float &x, float &y, float &z,
         //TC_LOG_ERROR("Unit %u (Type: %u) has invalid combat_reach %f",GetGUIDLow(),GetTypeId(),combat_reach);
        // if(GetTypeId() ==  TYPEID_UNIT)
           //  TC_LOG_ERROR("FIXME","Creature entry %u has invalid combat_reach", (this->ToCreature())->GetEntry());
-        combat_reach = DEFAULT_COMBAT_REACH;
+        combat_reach = DEFAULT_PLAYER_COMBAT_REACH;
     }
     uint32 attacker_number = GetAttackers().size();
     if(attacker_number > 0) 
@@ -15470,7 +15470,7 @@ Position Unit::GetLeapPosition(float dist)
     //replace this by dichotomic search ?
     for (uint8 i = 0; i < maxSteps; i++)
     {
-        float maxSearchDist = (dist - i * stepLength) / 1.8f + GetObjectSize()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
+        float maxSearchDist = (dist - i * stepLength) / 1.8f + GetCombatReach()*2; //allow smaller z diff at close range, greater z diff at long range (linear reduction)
         //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPosition Searching for valid target, step %i. maxSearchDist = %f.", i, maxSearchDist);
 
         //start with higher check then lower
@@ -15481,7 +15481,7 @@ Position Unit::GetLeapPosition(float dist)
             if (mapHeight != INVALID_HEIGHT)
             {
                 //if no collision
-                if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetObjectSize()))
+                if (!GetCollisionPosition(currentPos, destx, desty, mapHeight, targetPos, GetCombatReach()))
                 {
                     //TC_LOG_TRACE("vmap", "WorldObject::GetLeapPositionFound valid target point, %f %f %f was in LoS", targetPos.GetPositionX(), targetPos.GetPositionY(), targetPos.GetPositionZ());
                     //GetCollisionPosition already set targetPos to destx, desty, destz

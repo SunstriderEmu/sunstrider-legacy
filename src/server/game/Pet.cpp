@@ -189,17 +189,17 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         target = sObjectAccessor->GetObjectInWorld(owner->ToPlayer()->GetTarget(), (Unit*)nullptr);
         if (target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
         {
-            target->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, this->GetFollowAngle());
+            target->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
             UpdateAllowedPositionZ(px, py, pz); //prevent it spawning on flying targets
         }
         else {
             //spawn at owner instead
-            owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, this->GetFollowAngle());
+            owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
             target = nullptr;
         }
     }
     else
-        owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, this->GetFollowAngle());
+        owner->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
 
     Relocate(px, py, pz, owner->GetOrientation());
 

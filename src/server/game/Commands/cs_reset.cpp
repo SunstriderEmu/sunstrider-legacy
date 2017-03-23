@@ -33,8 +33,8 @@ static bool HandleResetStatsOrLevelHelper(Player* player)
     if (!player->HasAuraType(SPELL_AURA_MOD_SHAPESHIFT))
         player->m_form = FORM_NONE;
 
-    player->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
-    player->SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_COMBAT_REACH);
+    player->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_PLAYER_BOUNDING_RADIUS);
+    player->SetFloatValue(UNIT_FIELD_COMBATREACH, DEFAULT_PLAYER_COMBAT_REACH);
 
     player->SetFactionForRace(player->GetRace());
 

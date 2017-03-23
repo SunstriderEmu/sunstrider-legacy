@@ -818,7 +818,7 @@ namespace Trinity
                     case PUSH_IN_LINE:
                         if(i_caster->IsWithinDistInMap( itr->GetSource(), i_radius))
                         {
-                            if(i_caster->HasInLine(itr->GetSource(), itr->GetSource()->GetObjectSize(), i_caster->GetObjectSize()))
+                            if(i_caster->HasInLine(itr->GetSource(), itr->GetSource()->GetCombatReach(), i_caster->GetCombatReach()))
                                 i_data->push_back(itr->GetSource());
                         }
                         break;

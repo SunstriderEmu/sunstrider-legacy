@@ -212,7 +212,8 @@ public:
     SpellImplicitTargetInfo(uint32 target);
 
     bool IsArea() const;
-    
+    bool IsProximityBasedAoe() const;
+
     SpellTargetSelectionCategories GetSelectionCategory() const;
     SpellTargetReferenceTypes GetReferenceType() const;
     SpellTargetObjectTypes GetObjectType() const;

@@ -565,13 +565,17 @@ template<class Check>
     class TC_GAME_API AnyFriendlyUnitInObjectRangeCheck
     {
         public:
-            AnyFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false) : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly) {}
+            AnyFriendlyUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, bool playerOnly = false, bool incOwnRadius = true, bool incTargetRadius = true)
+                : i_obj(obj), i_funit(funit), i_range(range), i_playerOnly(playerOnly), i_incOwnRadius(incOwnRadius), i_incTargetRadius(incTargetRadius) { }
+            
             bool operator()(Unit* u);
         private:
             WorldObject const* i_obj;
             Unit const* i_funit;
             float i_range;
             bool i_playerOnly;
+            bool i_incOwnRadius;
+            bool i_incTargetRadius;
     };
 
     class TC_GAME_API AnyFriendlyUnitInObjectRangeCheckWithRangeReturned
@@ -626,13 +630,15 @@ template<class Check>
     class TC_GAME_API AnyAoETargetUnitInObjectRangeCheck
     {
         public:
-            AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range);
+            AnyAoETargetUnitInObjectRangeCheck(WorldObject const* obj, Unit const* funit, float range, SpellInfo const* spellInfo = nullptr, bool incOwnRadius = true, bool incTargetRadius = true);
             bool operator()(Unit* u);
         private:
-            bool i_targetForPlayer;
             WorldObject const* i_obj;
             Unit const* i_funit;
+            SpellInfo const* _spellInfo;
             float i_range;
+            bool i_incOwnRadius;
+            bool i_incTargetRadius;
     };
 
     // do attack at call of help to friendly creature

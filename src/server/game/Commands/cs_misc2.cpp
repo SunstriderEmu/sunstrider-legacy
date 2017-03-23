@@ -362,7 +362,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 
         // before GM
         float x, y, z;
-        m_session->GetPlayer()->GetClosePoint(x, y, z, target->GetObjectSize());
+        m_session->GetPlayer()->GetClosePoint(x, y, z, target->GetCombatReach());
         if (target->TeleportTo(m_session->GetPlayer()->GetMapId(), x, y, z, target->GetOrientation()))
         {
             PSendSysMessage(LANG_SUMMONING, target->GetName().c_str(), "");
