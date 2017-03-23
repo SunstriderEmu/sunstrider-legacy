@@ -1,16 +1,43 @@
+-- MySQL dump 10.15  Distrib 10.0.28-MariaDB, for debian-linux-gnu (x86_64)
+--
+-- Host: localhost    Database: localhost
+-- ------------------------------------------------------
+-- Server version	10.0.28-MariaDB-0+deb8u1
 
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
-
-/*!40101 SET SQL_MODE=''*/;
-
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-/*Table structure for table `arena_match` */
+
+--
+-- Table structure for table `account_ip`
+--
+
+DROP TABLE IF EXISTS `account_ip`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `account_ip` (
+  `id` int(10) unsigned NOT NULL,
+  `time` int(11) unsigned NOT NULL,
+  `ip` varchar(15) NOT NULL,
+  `gm_involved` tinyint(1) unsigned NOT NULL,
+  PRIMARY KEY (`id`,`time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `arena_match`
+--
 
 DROP TABLE IF EXISTS `arena_match`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `arena_match` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `type` tinyint(3) unsigned NOT NULL DEFAULT '0',
@@ -76,11 +103,15 @@ CREATE TABLE `arena_match` (
   `loser_rating` mediumint(8) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `arena_season_stats` */
+--
+-- Table structure for table `arena_season_stats`
+--
 
 DROP TABLE IF EXISTS `arena_season_stats`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `arena_season_stats` (
   `teamid` int(10) unsigned NOT NULL DEFAULT '0',
   `time1` int(10) unsigned DEFAULT '0' COMMENT 'Time spent first in minutes',
@@ -88,25 +119,35 @@ CREATE TABLE `arena_season_stats` (
   `time3` int(10) unsigned DEFAULT '0' COMMENT 'Time spent third in minutes',
   PRIMARY KEY (`teamid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `arena_team_event` */
+--
+-- Table structure for table `arena_team_event`
+--
 
 DROP TABLE IF EXISTS `arena_team_event`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `arena_team_event` (
+  `entry` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `id` int(10) unsigned NOT NULL,
   `event` tinyint(3) unsigned NOT NULL,
   `type` tinyint(3) unsigned NOT NULL,
   `player` int(10) unsigned NOT NULL,
   `ip` varchar(16) NOT NULL DEFAULT '0.0.0.0',
   `time` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`entry`),
   KEY `idx_arena_team_event_id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `bg_stats` */
+--
+-- Table structure for table `bg_stats`
+--
 
 DROP TABLE IF EXISTS `bg_stats`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bg_stats` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `mapid` mediumint(8) unsigned NOT NULL,
@@ -117,11 +158,15 @@ CREATE TABLE `bg_stats` (
   `score_horde` mediumint(9) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `boss_down` */
+--
+-- Table structure for table `boss_down`
+--
 
 DROP TABLE IF EXISTS `boss_down`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `boss_down` (
   `id` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `boss_entry` mediumint(8) unsigned NOT NULL,
@@ -134,12 +179,16 @@ CREATE TABLE `boss_down` (
   `leaderGuid` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_boss` (`boss_entry`)
-) ENGINE=MyISAM AUTO_INCREMENT=134698 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=134708 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_auction_create` */
+--
+-- Table structure for table `char_auction_create`
+--
 
 DROP TABLE IF EXISTS `char_auction_create`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_auction_create` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `seller_account` int(11) unsigned NOT NULL,
@@ -151,12 +200,16 @@ CREATE TABLE `char_auction_create` (
   `IP` varchar(15) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_auction_won` */
+--
+-- Table structure for table `char_auction_won`
+--
 
 DROP TABLE IF EXISTS `char_auction_won`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_auction_won` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `bidder_account` int(11) NOT NULL,
@@ -169,31 +222,39 @@ CREATE TABLE `char_auction_won` (
   `time` int(11) unsigned NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_chat` */
+--
+-- Table structure for table `char_chat`
+--
 
 DROP TABLE IF EXISTS `char_chat`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_chat` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(11) unsigned NOT NULL,
   `type` tinyint(3) NOT NULL,
-  `account` int(11) unsigned NOT NULL,
   `guid` int(11) unsigned NOT NULL,
-  `target_guid` int(11) unsigned NOT NULL DEFAULT '0',
-  `channelId` int(11) unsigned NOT NULL DEFAULT '0' COMMENT 'for type Guild/Officer/Group/Raid/BG',
+  `account` int(11) unsigned NOT NULL,
+  `target_guid` int(11) unsigned DEFAULT NULL,
+  `channelId` int(11) unsigned DEFAULT NULL COMMENT 'for type Guild/Officer/Group/Raid/BG',
   `channelName` varchar(30) NOT NULL COMMENT 'for type Channel',
   `message` varchar(255) NOT NULL,
   `IP` varchar(15) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13397 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_delete` */
+--
+-- Table structure for table `char_delete`
+--
 
 DROP TABLE IF EXISTS `char_delete`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_delete` (
   `account` int(10) unsigned NOT NULL DEFAULT '0',
   `guid` int(10) unsigned NOT NULL DEFAULT '0',
@@ -204,11 +265,15 @@ CREATE TABLE `char_delete` (
   PRIMARY KEY (`guid`),
   KEY `idx_acct` (`account`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_enchant` */
+--
+-- Table structure for table `char_enchant`
+--
 
 DROP TABLE IF EXISTS `char_enchant`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_enchant` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `player_guid` int(11) unsigned NOT NULL,
@@ -222,12 +287,16 @@ CREATE TABLE `char_enchant` (
   `time` int(11) unsigned NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_guild_money_deposit` */
+--
+-- Table structure for table `char_guild_money_deposit`
+--
 
 DROP TABLE IF EXISTS `char_guild_money_deposit`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_guild_money_deposit` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account` int(11) unsigned NOT NULL,
@@ -238,12 +307,16 @@ CREATE TABLE `char_guild_money_deposit` (
   `IP` varchar(15) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_item_delete` */
+--
+-- Table structure for table `char_item_delete`
+--
 
 DROP TABLE IF EXISTS `char_item_delete`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_item_delete` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account` int(11) unsigned NOT NULL,
@@ -254,12 +327,16 @@ CREATE TABLE `char_item_delete` (
   `IP` varchar(15) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=448 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_item_guild_bank` */
+--
+-- Table structure for table `char_item_guild_bank`
+--
 
 DROP TABLE IF EXISTS `char_item_guild_bank`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_item_guild_bank` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account` int(11) unsigned NOT NULL,
@@ -273,12 +350,16 @@ CREATE TABLE `char_item_guild_bank` (
   `IP` varchar(15) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_item_vendor` */
+--
+-- Table structure for table `char_item_vendor`
+--
 
 DROP TABLE IF EXISTS `char_item_vendor`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_item_vendor` (
   `id` bigint(20) unsigned NOT NULL,
   `transaction_type` enum('buy','sell','buyback') NOT NULL,
@@ -292,12 +373,17 @@ CREATE TABLE `char_item_vendor` (
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_rename` */
+--
+-- Table structure for table `char_rename`
+--
 
 DROP TABLE IF EXISTS `char_rename`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_rename` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `account` int(10) unsigned NOT NULL,
   `guid` int(10) unsigned NOT NULL,
   `old_name` varchar(12) NOT NULL,
@@ -305,13 +391,18 @@ CREATE TABLE `char_rename` (
   `time` int(11) unsigned NOT NULL,
   `IP` varchar(16) NOT NULL,
   `gm_involved` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
   KEY `idx_char_rename_guid` (`guid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_trade` */
+--
+-- Table structure for table `char_trade`
+--
 
 DROP TABLE IF EXISTS `char_trade`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_trade` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `player1_account` int(11) unsigned NOT NULL,
@@ -326,11 +417,15 @@ CREATE TABLE `char_trade` (
   `gm_involved` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `char_trade_items` */
+--
+-- Table structure for table `char_trade_items`
+--
 
 DROP TABLE IF EXISTS `char_trade_items`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `char_trade_items` (
   `trade_id` bigint(20) unsigned NOT NULL,
   `id` smallint(5) unsigned NOT NULL AUTO_INCREMENT,
@@ -341,12 +436,16 @@ CREATE TABLE `char_trade_items` (
   PRIMARY KEY (`trade_id`,`id`),
   KEY `id` (`id`),
   CONSTRAINT `char_trade_items_ibfk_1` FOREIGN KEY (`trade_id`) REFERENCES `char_trade` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `gm_command` */
+--
+-- Table structure for table `gm_command`
+--
 
 DROP TABLE IF EXISTS `gm_command`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `gm_command` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `account` int(11) unsigned NOT NULL DEFAULT '0',
@@ -369,13 +468,18 @@ CREATE TABLE `gm_command` (
   `command` text NOT NULL COMMENT 'base command',
   `IP` varchar(15) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=53505 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `gm_sanction` */
+--
+-- Table structure for table `gm_sanction`
+--
 
 DROP TABLE IF EXISTS `gm_sanction`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `gm_sanction` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
   `author_account` int(11) unsigned NOT NULL,
   `author_guid` int(11) unsigned NOT NULL,
   `target_account` int(11) unsigned NOT NULL,
@@ -385,14 +489,20 @@ CREATE TABLE `gm_sanction` (
   `duration` mediumint(8) unsigned NOT NULL COMMENT 'in secs',
   `time` int(11) NOT NULL COMMENT 'Current time',
   `reason` varchar(255) NOT NULL,
-  `IP` varchar(15) NOT NULL COMMENT 'Author IP'
+  `IP` varchar(15) NOT NULL COMMENT 'Author IP',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `gm_sanction_remove` */
+--
+-- Table structure for table `gm_sanction_remove`
+--
 
 DROP TABLE IF EXISTS `gm_sanction_remove`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `gm_sanction_remove` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `author_account` int(11) unsigned NOT NULL,
   `author_guid` int(11) unsigned NOT NULL,
   `target_account` int(11) unsigned NOT NULL,
@@ -400,13 +510,18 @@ CREATE TABLE `gm_sanction_remove` (
   `target_IP` varchar(15) NOT NULL,
   `type` tinyint(3) unsigned NOT NULL COMMENT 'see enum SanctionType',
   `time` int(11) NOT NULL COMMENT 'Current time',
-  `IP` varchar(15) NOT NULL
+  `IP` varchar(15) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mail` */
+--
+-- Table structure for table `mail`
+--
 
 DROP TABLE IF EXISTS `mail`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mail` (
   `id` int(11) unsigned NOT NULL,
   `type` tinyint(3) unsigned NOT NULL,
@@ -422,11 +537,15 @@ CREATE TABLE `mail` (
   PRIMARY KEY (`id`),
   KEY `id` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mail_items` */
+--
+-- Table structure for table `mail_items`
+--
 
 DROP TABLE IF EXISTS `mail_items`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mail_items` (
   `mail_id` int(11) unsigned NOT NULL,
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
@@ -435,61 +554,95 @@ CREATE TABLE `mail_items` (
   `item_count` smallint(5) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`mail_id`,`id`),
   KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=644 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_classes` */
+--
+-- Table structure for table `mon_classes`
+--
 
 DROP TABLE IF EXISTS `mon_classes`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_classes` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
   `class` tinyint(3) unsigned NOT NULL,
-  `players` int(10) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `players` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=3645712 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_maps` */
+--
+-- Table structure for table `mon_maps`
+--
 
 DROP TABLE IF EXISTS `mon_maps`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_maps` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
   `map` mediumint(8) unsigned NOT NULL,
-  `players` int(10) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `players` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=6076186 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_players` */
+--
+-- Table structure for table `mon_players`
+--
 
 DROP TABLE IF EXISTS `mon_players`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_players` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
   `active` int(10) unsigned NOT NULL,
-  `queued` int(10) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `queued` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=405080 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_races` */
+--
+-- Table structure for table `mon_races`
+--
 
 DROP TABLE IF EXISTS `mon_races`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_races` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
   `race` tinyint(3) unsigned NOT NULL,
-  `players` int(10) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `players` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=4050791 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `mon_timediff` */
+--
+-- Table structure for table `mon_timediff`
+--
 
 DROP TABLE IF EXISTS `mon_timediff`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mon_timediff` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
-  `diff` mediumint(8) unsigned NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+  `diff` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=404596 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `phishing` */
+--
+-- Table structure for table `phishing`
+--
 
 DROP TABLE IF EXISTS `phishing`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `phishing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `srcguid` int(11) NOT NULL,
@@ -498,20 +651,33 @@ CREATE TABLE `phishing` (
   `data` text,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-/*Table structure for table `warden_fails` */
+--
+-- Table structure for table `warden_fails`
+--
 
 DROP TABLE IF EXISTS `warden_fails`;
-
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `warden_fails` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `guid` int(11) unsigned NOT NULL,
   `account` int(11) unsigned NOT NULL,
   `check_id` int(4) unsigned NOT NULL,
   `comment` text NOT NULL,
-  `time` bigint(11) NOT NULL
+  `time` bigint(11) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2017-03-22 17:10:46
