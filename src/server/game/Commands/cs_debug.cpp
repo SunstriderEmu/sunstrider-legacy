@@ -1401,7 +1401,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
         std::string ToString()
         {
             std::stringstream str;
-            str << entry << " (" << position.GetPositionX() << "," << position.GetPositionY() << "," << position.GetPositionZ() << ")";
+            str << entry << " (" << position.GetPositionX() << " " << position.GetPositionY() << " " << position.GetPositionZ() << ")";
             return str.str();
         }
         
@@ -1495,7 +1495,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
 
             Position sunPosition(sunstriderObject.posX, sunstriderObject.posY, sunstriderObject.posZ);
             //same id and very close position, consider it the same object
-            bool sameObject = sunstriderObject.id == objectEntry && sunstriderObject.spawnMask & fileObject.spawnMask && fileObject.position.GetExactDist(sunPosition) < 1.0f;
+            bool sameObject = sunstriderObject.id == objectEntry && sunstriderObject.spawnMask & fileObject.spawnMask && fileObject.position.GetExactDist(sunPosition) < 5.0f;
             if (sameObject)
             {
                 if (sunstriderObject.spawnMask & fileObject.spawnMask && sunstriderObject.spawnMask != fileObject.spawnMask)
