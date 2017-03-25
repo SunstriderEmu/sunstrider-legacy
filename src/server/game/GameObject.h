@@ -713,7 +713,9 @@ class TC_GAME_API GameObject : public WorldObject
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id) const override;
         bool ActivateToQuest(Player *pTarget) const;
+        //Open or activate gameobject (GO_STATE_ACTIVE). No effect if gameobject is already opened
         void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = nullptr);
+        //Close or reset gameobject (GO_STATE_READY). No effect if gameobject is already closed
         void ResetDoorOrButton();
 
         uint32 GetLinkedGameObjectEntry() const

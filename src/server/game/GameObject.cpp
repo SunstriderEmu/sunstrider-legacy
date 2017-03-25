@@ -1508,7 +1508,7 @@ void GameObject::Use(Unit* user)
         }
         case GAMEOBJECT_TYPE_SPELLCASTER:                   //22
         {
-            SetUInt32Value(GAMEOBJECT_FLAGS,2);
+            SetUInt32Value(GAMEOBJECT_FLAGS, GO_FLAG_LOCKED);
 
             GameObjectTemplate const* info = GetGOInfo();
             if(!info)
