@@ -1534,9 +1534,10 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
             }
             pGameObj->SetRespawnTime(itr.spawnTimeSecs);
             pGameObj->SaveToDB(player->GetMap()->GetId(), itr.spawnMask);
-            SendSysMessage("Saved all to DB");
         }
     }
+    if(permanent)
+        SendSysMessage("Saved all to DB");
 
     return true;
 }
