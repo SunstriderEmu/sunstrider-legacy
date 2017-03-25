@@ -68,7 +68,8 @@ namespace G3D
 typedef std::unordered_map<Player*, UpdateData> UpdateDataMapType;
 typedef std::unordered_set<uint32> UpdatePlayerSet;
 
-#define POSITION_GET_X_Y_Z(a) (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ()
+#define POSITION_GET_X_Y_Z(a)   (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ()
+#define POSITION_GET_X_Y_Z_O(a) (a)->GetPositionX(), (a)->GetPositionY(), (a)->GetPositionZ(), (a)->GetOrientation()
 
 struct TC_GAME_API Position
 {
