@@ -214,7 +214,8 @@ bool ChatHandler::HandleHerodayCommand(const char* args)
         QuestLocale const* pQuest = sObjectMgr->GetQuestLocale(sWorld->GetCurrentQuestForPool(1));
         if (pQuest) {
             if (pQuest->Title.size() > loc_idx && !pQuest->Title[loc_idx].empty())
-                PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
+                //PSendSysMessage("La quête héroïque du jour est : \"%s\".", pQuest->Title[loc_idx].c_str());
+                PSendSysMessage("Daily heroic quest: \"%s\".", pQuest->Title[loc_idx].c_str());
             else {
                 if (Quest const* qtemplate = sObjectMgr->GetQuestTemplate(sWorld->GetCurrentQuestForPool(1)))
                     PSendSysMessage("Daily heroic quest: \"%s\".", qtemplate->GetTitle().c_str());
