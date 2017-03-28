@@ -555,6 +555,7 @@ struct GameObjectData
     uint32 go_state;
     uint8 spawnMask;
     uint32 ArtKit;
+    uint32 ScriptId;
 };
 
 // GCC have alternative #pragma pack() syntax and old gcc version not support pack(pop), also any gcc version not support it at some platform
@@ -599,6 +600,7 @@ class TC_GAME_API GameObject : public WorldObject
         void Update(uint32 diff) override;
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
+        GameObjectData const* GetGOData() const { return m_goData; }
         GameObjectValue const* GetGOValue() const { return &m_goValue; }
 
         bool IsTransport() const;
@@ -784,7 +786,7 @@ class TC_GAME_API GameObject : public WorldObject
 
         void EventInform(uint32 eventId);
 
-        virtual uint32 GetScriptId() const { return GetGOInfo()->ScriptId; }
+        uint32 GetScriptId() const;
         GameObjectAI* AI() const { return m_AI; }
 
         std::string GetAIName() const;
@@ -824,6 +826,7 @@ class TC_GAME_API GameObject : public WorldObject
 
         uint32 m_spawnId;                               ///< For new or temporary gameobjects is 0 for saved it is lowguid
         GameObjectTemplate const* m_goInfo;
+        GameObjectData const* m_goData;
         GameObjectValue m_goValue;
         bool manual_unlock;
         

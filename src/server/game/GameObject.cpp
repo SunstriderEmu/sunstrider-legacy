@@ -64,6 +64,7 @@ GameObject::GameObject() : WorldObject(),
     m_cooldownTime(0),
     m_inactive(false),
     m_goInfo(nullptr),
+    m_goData(nullptr),
     m_spawnId(0),
     manual_unlock(false),
     m_prevGoState(GO_STATE_ACTIVE)
@@ -339,7 +340,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
         ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectCreate(this);
     }
     
-    LastUsedScriptID = GetGOInfo()->ScriptId;
+    LastUsedScriptID = GetScriptId();
 
     return true;
 }
@@ -842,6 +843,8 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
             }
             break;
     }
+
+    m_goData = data;
 
     return true;
 }
@@ -1725,6 +1728,14 @@ void GameObject::EventInform(uint32 eventId)
     if (m_zoneScript)
         m_zoneScript->ProcessEvent(this, eventId);*
         */
+}
+
+uint32 GameObject::GetScriptId() const
+{
+    if (GameObjectData const* gameObjectData = GetGOData())
+        return gameObjectData->ScriptId;
+
+    return GetGOInfo()->ScriptId;
 }
 
 // overwrite WorldObject function for proper name localization

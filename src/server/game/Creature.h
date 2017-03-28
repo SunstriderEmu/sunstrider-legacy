@@ -611,6 +611,7 @@ class TC_GAME_API Creature : public Unit
         TrainerSpellData const* GetTrainerSpells() const;
 
         CreatureTemplate const *GetCreatureTemplate() const { return m_creatureInfo; }
+        CreatureData const* GetCreatureData() const { return m_creatureData; }
         CreatureAddon const* GetCreatureAddon() const { return m_creatureInfoAddon; }
 
         std::string GetScriptName();
@@ -907,6 +908,7 @@ class TC_GAME_API Creature : public Unit
 
         GridReference<Creature> m_gridRef;
         CreatureTemplate const* m_creatureInfo;                 // in heroic mode can different from ObjectMgr::GetCreatureTemplate(GetEntry())
+        CreatureData const* m_creatureData;
         CreatureAddon const* m_creatureInfoAddon;
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing

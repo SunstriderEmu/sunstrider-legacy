@@ -1268,8 +1268,8 @@ void ObjectMgr::LoadCreatures()
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid,"
     //   4             5           6           7           8            9              10         11
         "equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, currentwaypoint,"
-    //   12         13           14            15       16      17                   18                                                
-        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1) "
+    //   12         13           14            15       16      17                   18                                        19           
+        "curhealth, curmana, MovementType, spawnMask, event, pool_id, COALESCE(creature_encounter_respawn.eventid, -1), creature.ScriptName "
         "FROM creature LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN creature_encounter_respawn ON creature.guid = creature_encounter_respawn.guid "
         );
@@ -1297,6 +1297,14 @@ void ObjectMgr::LoadCreatures()
         CreatureData& data = mCreatureDataMap[guid];
 
         data.id             = fields[ 1].GetUInt32();
+
+        CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
+        if (!cInfo)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u) with not existed creature entry %u, skipped.", guid, data.id);
+            continue;
+        }
+
         data.mapid          = fields[ 2].GetUInt16();
         data.displayid      = fields[ 3].GetUInt32();
         data.equipmentId    = fields[ 4].GetUInt32();
@@ -1319,13 +1327,9 @@ void ObjectMgr::LoadCreatures()
 #else
         data.instanceEventId = fields[18].GetDouble();
 #endif
-
-        CreatureTemplate const* cInfo = GetCreatureTemplate(data.id);
-        if(!cInfo)
-        {
-            TC_LOG_ERROR("sql.sql","Table `creature` has creature (GUID: %u) with not existed creature entry %u, skipped.",guid,data.id );
-            continue;
-        }
+        data.scriptId = GetScriptId(fields[19].GetString());
+        if (!data.scriptId)
+            data.scriptId = cInfo->ScriptID;
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
@@ -1415,8 +1419,8 @@ void ObjectMgr::LoadGameobjects()
 
     //                                                0                1   2    3           4           5           6
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation,"
-    //   7          8          9          10         11             12            13     14         15
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event "
+    //   7          8          9          10         11             12            13     14         15         16
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, event, ScriptName "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid");
 
     if(!result)
@@ -1430,7 +1434,7 @@ void ObjectMgr::LoadGameobjects()
         Field *fields = result->Fetch();
 
         uint32 guid         = fields[0].GetUInt32();
-        uint32 entry        = fields[ 1].GetUInt32();
+        uint32 entry        = fields[1].GetUInt32();
 
         GameObjectTemplate const* gInfo = GetGameObjectTemplate(entry);
         if (!gInfo)
@@ -1473,6 +1477,9 @@ void ObjectMgr::LoadGameobjects()
         data.ArtKit         = 0;
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
+        data.ScriptId = GetScriptId(fields[16].GetString());
+        if (!data.ScriptId)
+            data.ScriptId = gInfo->ScriptId;
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
@@ -7857,7 +7864,11 @@ void ObjectMgr::LoadScriptNames()
     QueryResult result = WorldDatabase.Query(
       "SELECT DISTINCT(ScriptName) FROM creature_template WHERE ScriptName <> '' "
       "UNION "
+      "SELECT DISTINCT(ScriptName) FROM creature WHERE ScriptName <> '' "
+      "UNION "
       "SELECT DISTINCT(ScriptName) FROM gameobject_template WHERE ScriptName <> '' "
+      "UNION "
+      "SELECT DISTINCT(ScriptName) FROM gameobject WHERE ScriptName <> '' "
       "UNION "
       "SELECT DISTINCT(ScriptName) FROM item_template WHERE ScriptName <> '' "
       "UNION "

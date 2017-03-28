@@ -819,7 +819,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
     }
     */
 
-    LastUsedScriptID = GetGOInfo()->ScriptId;
+    LastUsedScriptID = GetScriptId();
 
     //this->SetKeepActive(true);
     return true;

@@ -185,6 +185,7 @@ Creature::Creature() :
     m_AI_locked(false),
     m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
     m_creatureInfo(nullptr), 
+    m_creatureData(nullptr),
     m_creatureInfoAddon(nullptr), 
     m_spawnId(0), 
     m_formation(nullptr),
@@ -411,7 +412,7 @@ bool Creature::InitEntry(uint32 Entry, const CreatureData *data )
     // equal to player Race field, but creature does not have race
     SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, minfo->gender);
 
-    LastUsedScriptID = GetCreatureTemplate()->ScriptID;
+    LastUsedScriptID = GetScriptId();
 
     m_homeless = m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_HOMELESS;
 
@@ -1360,6 +1361,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
     }
 
     m_spawnId = spawnId;
+    m_creatureData = data;
 
     m_respawnradius = data->spawndist;
     m_respawnDelay = data->spawntimesecs;
@@ -1391,8 +1393,10 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
     }
 
     uint32 curhealth = data->curhealth;
+    if(m_regenHealth)
+        curhealth = GetMaxHealth();
 
-    SetHealth(m_deathState == ALIVE ? curhealth : 0);
+    SetHealth((m_deathState == ALIVE || m_deathState == JUST_RESPAWNED) ? curhealth : 0);
     SetPower(POWER_MANA,data->curmana);
 
     // checked at creature_template loading
@@ -1400,6 +1404,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
 
     return true;
 }
+
 
 void Creature::LoadEquipment(uint32 equip_entry, bool force)
 {
@@ -2222,7 +2227,7 @@ void Creature::SaveRespawnTime()
     if(IsPet() || !m_spawnId)
         return;
 
-    sObjectMgr->SaveCreatureRespawnTime(m_spawnId,GetMapId(), GetInstanceId(),m_respawnTime);
+    sObjectMgr->SaveCreatureRespawnTime(m_spawnId, GetMapId(), GetInstanceId(), m_respawnTime);
 }
 
 bool Creature::IsOutOfThreatArea(Unit* pVictim) const
@@ -2396,8 +2401,7 @@ time_t Creature::GetRespawnTimeEx() const
 
 bool Creature::IsSpawnedOnTransport() const 
 {
-    CreatureData const *data = sObjectMgr->GetCreatureData(m_spawnId);
-    return data && data->mapid != GetMapId();
+    return m_creatureData && m_creatureData->mapid != GetMapId();
 }
 
 void Creature::GetRespawnPosition( float &x, float &y, float &z, float* ori, float* dist ) const
@@ -2480,6 +2484,9 @@ uint32 Creature::getInstanceEventId()
 
 uint32 Creature::GetScriptId()
 {
+    if (CreatureData const* creatureData = GetCreatureData())
+        return creatureData->scriptId;
+
     return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
 }
 
