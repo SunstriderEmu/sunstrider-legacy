@@ -2485,7 +2485,8 @@ uint32 Creature::getInstanceEventId()
 uint32 Creature::GetScriptId()
 {
     if (CreatureData const* creatureData = GetCreatureData())
-        return creatureData->scriptId;
+        if (uint32 scriptId = creatureData->ScriptId)
+            return scriptId;
 
     return sObjectMgr->GetCreatureTemplate(GetEntry())->ScriptID;
 }

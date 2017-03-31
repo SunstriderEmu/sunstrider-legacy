@@ -1328,8 +1328,6 @@ void ObjectMgr::LoadCreatures()
         data.instanceEventId = fields[18].GetDouble();
 #endif
         data.scriptId = GetScriptId(fields[19].GetString());
-        if (!data.scriptId)
-            data.scriptId = cInfo->ScriptID;
 
         if(heroicCreatures.find(data.id)!=heroicCreatures.end())
         {
@@ -1478,8 +1476,6 @@ void ObjectMgr::LoadGameobjects()
         data.spawnMask      = fields[14].GetUInt8();
         int16 gameEvent     = fields[15].GetInt16();
         data.ScriptId = GetScriptId(fields[16].GetString());
-        if (!data.ScriptId)
-            data.ScriptId = gInfo->ScriptId;
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
