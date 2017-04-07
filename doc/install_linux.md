@@ -9,7 +9,7 @@
 
 3. Add LLVM key `wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -`
 
-4. sudo apt-get install clang-3.9 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev 
+4. sudo apt-get install clang-4.0 make cmake libmysql++-dev openssl libssl-dev zlib1g-dev libtool libmariadbclient-dev patch build-essential mariadb-server mariadb-client git libreadline-dev libbz2-1.0 libbz2-dev libboost-dev libboost-thread-dev libboost-system-dev libboost-filesystem-dev libboost-program-options-dev libboost-regex-dev libboost-iostreams-dev 
 
 Clang is now the supported compiler, but gcc should work too.
 
