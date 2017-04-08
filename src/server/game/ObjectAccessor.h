@@ -46,42 +46,30 @@ class Map;
 template <class T>
 class TC_GAME_API HashMapHolder
 {
-    public:
+    //Non instanceable only static
+    HashMapHolder() { }
 
-        typedef std::unordered_map<uint64, T*> MapType;
+public:
+    static_assert(std::is_same<Player, T>::value
+        || std::is_same<Transport, T>::value
+        || std::is_same<Creature, T>::value
+        || std::is_same<GameObject, T>::value
+        || std::is_same<Corpse, T>::value
+        || std::is_same<Pet, T>::value
+        || std::is_same<DynamicObject, T>::value,
+        "Only Player, Transport, DynamicObject, Creature, GameObject, Pet and Corpse can be registered in global HashMapHolder");
 
-        static void Insert(T* o)
-        {
-            boost::unique_lock<boost::shared_mutex> lock(_lock);
+    typedef std::unordered_map<uint64, T*> MapType;
 
-            m_objectMap[o->GetGUID()] = o;
-        }
+    static void Insert(T* o);
 
-        static void Remove(T* o)
-        {
-            boost::unique_lock<boost::shared_mutex> lock(_lock);
+    static void Remove(T* o);
 
-            m_objectMap.erase(o->GetGUID());
-        }
+    static T* Find(uint64 guid);
 
-        static T* Find(uint64 guid)
-        {
-            boost::shared_lock<boost::shared_mutex> lock(_lock);
+    static MapType& GetContainer();
 
-            auto itr = m_objectMap.find(guid);
-            return (itr != m_objectMap.end()) ? itr->second : nullptr;
-        }
-
-        static MapType& GetContainer() { return m_objectMap; }
-
-        static boost::shared_mutex* GetLock() { return &_lock; }
-    private:
-
-        //Non instanceable only static
-        HashMapHolder() = default;
-
-        static boost::shared_mutex _lock;
-        static MapType  m_objectMap;
+    static boost::shared_mutex* GetLock();
 };
 
 class TC_GAME_API ObjectAccessor

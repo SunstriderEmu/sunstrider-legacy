@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
@@ -363,11 +344,6 @@ void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
     obj->GetMap()->UpdateObjectVisibility(obj,cell,p);
 }
 
-/// Define the static member of HashMapHolder
-
-template <class T> std::unordered_map< uint64, T* > HashMapHolder<T>::m_objectMap;
-template <class T> boost::shared_mutex HashMapHolder<T>::_lock;
-
 /// Global definitions for the hashmap storage
 
 template class HashMapHolder<Player>;
@@ -470,4 +446,43 @@ Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
     //TODO :use some kind of cache
     
     return nullptr;
+}
+
+template<class T>
+void HashMapHolder<T>::Insert(T* o)
+{
+    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+    GetContainer()[o->GetGUID()] = o;
+}
+
+template<class T>
+void  HashMapHolder<T>::Remove(T* o)
+{
+    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+    GetContainer().erase(o->GetGUID());
+}
+
+template<class T>
+T* HashMapHolder<T>::Find(uint64 guid)
+{
+    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+    auto itr = GetContainer().find(guid);
+    return (itr != GetContainer().end()) ? itr->second : nullptr;
+}
+
+template<class T>
+auto HashMapHolder<T>::GetContainer() -> MapType&
+{
+    static MapType _objectMap;
+    return _objectMap;
+}
+
+template<class T>
+boost::shared_mutex* HashMapHolder<T>::GetLock()
+{
+    static boost::shared_mutex _lock;
+    return &_lock;
 }
