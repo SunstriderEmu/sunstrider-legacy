@@ -99,3 +99,4 @@ add_subdirectory(src)
 if(DO_DEBUG)
 	message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 endif(DO_DEBUG)
+

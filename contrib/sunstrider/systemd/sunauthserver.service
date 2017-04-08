@@ -1,0 +1,19 @@
+[Unit]
+Description=Suntrider Auth Server
+
+Wants=network.target
+
+[Service]
+User=suncore
+Group=suncore
+
+WorkingDirectory=/srv/suncore/dumps
+ExecStart=/srv/suncore/bin/authserver
+
+Restart=always
+RestartSec=3
+
+LimitCORE=infinity
+
+[Install]
+WantedBy=multi-user.target
