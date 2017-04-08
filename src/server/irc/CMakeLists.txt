@@ -37,7 +37,6 @@ target_link_libraries(irc
   PUBLIC
     ${LIBIRCCLIENT_LIB_WIN}
   PRIVATE
-    boost
     common
     game-interface
 )

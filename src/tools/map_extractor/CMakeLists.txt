@@ -17,7 +17,7 @@ target_link_libraries(mapextractor
     common
     mpq
 	g3dlib
-	cppformat
+	fmt
 	)
 
 CollectIncludeDirectories(
