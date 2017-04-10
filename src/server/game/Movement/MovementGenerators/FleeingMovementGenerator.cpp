@@ -31,18 +31,28 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
-void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
+FleeingMovementGenerator<T>::~FleeingMovementGenerator()
+{
+    delete _path;
+}
+
+template<class T>
+void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 {
     if (!owner)
         return;
 
-    if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
+    {
+        _interrupt = true;
+        owner->StopMoving();
         return;
+    }
 
     owner->AddUnitState(UNIT_STATE_FLEEING_MOVE);
 
     float x, y, z;
-    _getPoint(owner, x, y, z);
+    GetPoint(owner, x, y, z);
 
     // Add LOS check for target point
     Position mypos = owner->GetPosition();
@@ -58,58 +68,60 @@ void FleeingMovementGenerator<T>::_setTargetLocation(T* owner)
         return;
     }
 
-    PathGenerator path(owner);
-    path.SetPathLengthLimit(30.0f);
-    bool result = path.CalculatePath(x, y, z);
-    if (!result || (path.GetPathType() & PATHFIND_NOPATH))
+    if (!_path)
+        _path = new PathGenerator(owner);
+
+    _path->SetPathLengthLimit(30.0f);
+    bool result = _path->CalculatePath(x, y, z);
+    if (!result || (_path->GetPathType() & PATHFIND_NOPATH))
     {
         i_nextCheckTime.Reset(100);
         return;
     }
 
     Movement::MoveSplineInit init(owner);
-    init.MovebyPath(path.GetPath());
+    init.MovebyPath(_path->GetPath());
     init.SetWalk(false);
     int32 traveltime = init.Launch();
     i_nextCheckTime.Reset(traveltime + urand(800, 1500));
 }
 
 template<class T>
-void FleeingMovementGenerator<T>::_getPoint(T* owner, float &x, float &y, float &z)
+void FleeingMovementGenerator<T>::GetPoint(T* owner, float &x, float &y, float &z)
 {
-    float dist_from_caster, angle_to_caster;
-    if (Unit* fright = ObjectAccessor::GetUnit(*owner, i_frightGUID))
+    float casterDistance, casterAngle;
+    if (Unit* fleeTarget = ObjectAccessor::GetUnit(*owner, _fleeTargetGUID))
     {
-        dist_from_caster = fright->GetDistance(owner);
-        if (dist_from_caster > 0.2f)
-            angle_to_caster = fright->GetAngle(owner);
+        casterDistance = fleeTarget->GetDistance(owner);
+        if (casterDistance > 0.2f)
+            casterAngle = fleeTarget->GetAngle(owner);
         else
-            angle_to_caster = frand(0, 2 * static_cast<float>(M_PI));
+            casterAngle = frand(0.0f, 2.0f * static_cast<float>(M_PI));
     }
     else
     {
-        dist_from_caster = 0.0f;
-        angle_to_caster = frand(0, 2 * static_cast<float>(M_PI));
+        casterDistance = 0.0f;
+        casterAngle = frand(0.0f, 2.0f * static_cast<float>(M_PI));
     }
 
-    float dist, angle;
-    if (dist_from_caster < MIN_QUIET_DISTANCE)
+    float distance, angle;
+    if (casterDistance < MIN_QUIET_DISTANCE)
     {
-        dist = frand(0.4f, 1.3f)*(MIN_QUIET_DISTANCE - dist_from_caster);
-        angle = angle_to_caster + frand(-static_cast<float>(M_PI)/8, static_cast<float>(M_PI)/8);
+        distance = frand(0.4f, 1.3f)*(MIN_QUIET_DISTANCE - casterDistance);
+        angle = casterAngle + frand(-static_cast<float>(M_PI) / 8.0f, static_cast<float>(M_PI) / 8.0f);
     }
-    else if (dist_from_caster > MAX_QUIET_DISTANCE)
+    else if (casterDistance > MAX_QUIET_DISTANCE)
     {
-        dist = frand(0.4f, 1.0f)*(MAX_QUIET_DISTANCE - MIN_QUIET_DISTANCE);
-        angle = -angle_to_caster + frand(-static_cast<float>(M_PI)/4, static_cast<float>(M_PI)/4);
+        distance = frand(0.4f, 1.0f)*(MAX_QUIET_DISTANCE - MIN_QUIET_DISTANCE);
+        angle = -casterAngle + frand(-static_cast<float>(M_PI) / 4.0f, static_cast<float>(M_PI) / 4.0f);
     }
     else    // we are inside quiet range
     {
-        dist = frand(0.6f, 1.2f)*(MAX_QUIET_DISTANCE - MIN_QUIET_DISTANCE);
-        angle = frand(0, 2*static_cast<float>(M_PI));
+        distance = frand(0.6f, 1.2f)*(MAX_QUIET_DISTANCE - MIN_QUIET_DISTANCE);
+        angle = frand(0.0f, 2.0f * static_cast<float>(M_PI));
     }
 
-    Position pos = owner->GetFirstWalkableCollisionPosition(dist, angle);
+    Position pos = owner->GetFirstWalkableCollisionPosition(distance, angle);
     x = pos.m_positionX;
     y = pos.m_positionY;
     z = pos.m_positionZ;
@@ -123,9 +135,15 @@ bool FleeingMovementGenerator<T>::DoInitialize(T* owner)
 
     owner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner->AddUnitState(UNIT_STATE_FLEEING | UNIT_STATE_FLEEING_MOVE);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
+
+template<class T>
+void FleeingMovementGenerator<T>::DoFinalize(T *)
+{
+}
+
 
 template<>
 void FleeingMovementGenerator<Player>::DoFinalize(Player* owner)
@@ -156,34 +174,53 @@ bool FleeingMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     if (!owner || !owner->IsAlive())
         return false;
 
-    if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
     {
-        owner->ClearUnitState(UNIT_STATE_FLEEING_MOVE);
+        _interrupt = true;
+        owner->StopMoving();
         return true;
     }
+    else
+        _interrupt = false;
 
     i_nextCheckTime.Update(time_diff);
-    if (i_nextCheckTime.Passed() && owner->movespline->Finalized())
-        _setTargetLocation(owner);
+    if (!_interrupt && i_nextCheckTime.Passed() && owner->movespline->Finalized())
+        SetTargetLocation(owner);
 
     return true;
 }
 
 template bool FleeingMovementGenerator<Player>::DoInitialize(Player*);
 template bool FleeingMovementGenerator<Creature>::DoInitialize(Creature*);
-template void FleeingMovementGenerator<Player>::_getPoint(Player*, float&, float&, float&);
-template void FleeingMovementGenerator<Creature>::_getPoint(Creature*, float&, float&, float&);
-template void FleeingMovementGenerator<Player>::_setTargetLocation(Player*);
-template void FleeingMovementGenerator<Creature>::_setTargetLocation(Creature*);
+template void FleeingMovementGenerator<Player>::GetPoint(Player*, float&, float&, float&);
+template void FleeingMovementGenerator<Creature>::GetPoint(Creature*, float&, float&, float&);
+template void FleeingMovementGenerator<Player>::SetTargetLocation(Player*);
+template void FleeingMovementGenerator<Creature>::SetTargetLocation(Creature*);
 template void FleeingMovementGenerator<Player>::DoReset(Player*);
 template void FleeingMovementGenerator<Creature>::DoReset(Creature*);
 template bool FleeingMovementGenerator<Player>::DoUpdate(Player*, uint32);
 template bool FleeingMovementGenerator<Creature>::DoUpdate(Creature*, uint32);
 
+bool TimedFleeingMovementGenerator::Update(Unit* owner, uint32 time_diff)
+{
+    if (!owner->IsAlive())
+        return false;
+
+    _totalFleeTime.Update(time_diff);
+    if (_totalFleeTime.Passed())
+        return false;
+
+    // This calls grant-parent Update method hiden by FleeingMovementGenerator::Update(Creature &, uint32) version
+    // This is done instead of casting Unit& to Creature& and call parent method, then we can use Unit directly
+    return MovementGeneratorMedium< Creature, FleeingMovementGenerator<Creature> >::Update(owner, time_diff);
+}
+
 void TimedFleeingMovementGenerator::Finalize(Unit* owner, bool /* premature */)
 {
     owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
-    owner->ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
+    owner->ClearUnitState(UNIT_STATE_FLEEING | UNIT_STATE_FLEEING_MOVE);
+    owner->StopMoving();
+
     if (Unit* victim = owner->GetVictim())
     {
         if (owner->IsAlive())
@@ -194,22 +231,3 @@ void TimedFleeingMovementGenerator::Finalize(Unit* owner, bool /* premature */)
     }
 }
 
-bool TimedFleeingMovementGenerator::Update(Unit* owner, uint32 time_diff)
-{
-    if (!owner->IsAlive())
-        return false;
-
-    if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
-    {
-        owner->ClearUnitState(UNIT_STATE_FLEEING_MOVE);
-        return true;
-    }
-
-    i_totalFleeTime.Update(time_diff);
-    if (i_totalFleeTime.Passed())
-        return false;
-
-    // This calls grant-parent Update method hiden by FleeingMovementGenerator::Update(Creature &, uint32) version
-    // This is done instead of casting Unit& to Creature& and call parent method, then we can use Unit directly
-    return MovementGeneratorMedium< Creature, FleeingMovementGenerator<Creature> >::Update(owner, time_diff);
-}

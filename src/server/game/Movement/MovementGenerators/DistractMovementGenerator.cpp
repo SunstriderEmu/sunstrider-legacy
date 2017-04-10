@@ -11,6 +11,10 @@ DistractMovementGenerator::DistractMovementGenerator(Unit const* owner, float ta
 
 bool DistractMovementGenerator::Initialize(Unit* owner)
 {
+    // Distracted creatures stand up if not standing
+    if (!owner->IsStandState())
+        owner->SetStandState(UNIT_STAND_STATE_STAND);
+
     owner->AddUnitState(UNIT_STATE_DISTRACTED);
     owner->SetFacingTo(targetOrientation);
     return true;
@@ -18,7 +22,7 @@ bool DistractMovementGenerator::Initialize(Unit* owner)
 
 void DistractMovementGenerator::Finalize(Unit* owner, bool premature)
 {
-    if(!premature)
+    if (owner->GetTypeId() == TYPEID_UNIT && owner->ToCreature() && !premature)
         owner->SetFacingTo(originalOrientation);
 
     owner->ClearUnitState(UNIT_STATE_DISTRACTED);

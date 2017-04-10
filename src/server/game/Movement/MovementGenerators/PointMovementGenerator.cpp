@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "PointMovementGenerator.h"
 #include "Errors.h"
@@ -26,55 +9,64 @@
 #include "Player.h"
 #include "CreatureGroups.h"
 
+template<class T>
+void PointMovementGenerator<T>::LaunchMove(T* owner)
+{
+    Movement::MoveSplineInit init(owner);
+    init.MoveTo(G3D::Vector3(_destination.GetPositionX(), _destination.GetPositionY(), _destination.GetPositionZ()), _generatePath, _forceDestination);
+    if (_speed > 0.0f)
+        init.SetVelocity(_speed);
+
+    if (_destination.GetOrientation() != 0.0f)
+        init.SetFacing(_destination.GetOrientation());
+
+    init.Launch();
+}
+
 //----- Point Movement Generator
 template<class T>
-bool PointMovementGenerator<T>::DoInitialize(T* unit)
+bool PointMovementGenerator<T>::DoInitialize(T* owner)
 {
-    if (!unit->IsStopped())
-        unit->StopMoving();
+    if (!owner->IsStopped())
+        owner->StopMoving();
 
-    unit->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
+    owner->AddUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
 
-    if (id == EVENT_CHARGE_PREPATH)
+    if (_movementId == EVENT_CHARGE_PREPATH)
         return true;
 
-    Movement::MoveSplineInit init(unit);
-    init.MoveTo(i_x, i_y, i_z, _generatePath, _forceDestination);
-    if (speed > 0.0f)
-        init.SetVelocity(speed);
+    //if cannot move : init generator but don't move for now
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
+        return true;
 
-    if(i_o != 0.0f)
-        init.SetFacing(i_o);
-        
-    init.Launch();
+    LaunchMove(owner);
     return true;
 }
 
 template<class T>
-bool PointMovementGenerator<T>::DoUpdate(T* unit, uint32 /*diff*/)
+bool PointMovementGenerator<T>::DoUpdate(T* owner, uint32 /*diff*/)
 {
-    if (!unit)
+    if (!owner)
         return false;
 
-    if (unit->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED))
+    if (_movementId == EVENT_CHARGE_PREPATH)
+        return !owner->movespline->Finalized();
+
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || owner->IsMovementPreventedByCasting())
     {
-        unit->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
+        owner->ClearUnitState(UNIT_STATE_ROAMING_MOVE);
         return true;
     }
 
-    unit->AddUnitState(UNIT_STATE_ROAMING_MOVE);
+    owner->AddUnitState(UNIT_STATE_ROAMING_MOVE);
 
-    if (id != EVENT_CHARGE_PREPATH && i_recalculateSpeed && !unit->movespline->Finalized())
+    if (_recalculateSpeed && !owner->movespline->Finalized())
     {
-        i_recalculateSpeed = false;
-        Movement::MoveSplineInit init(unit);
-        init.MoveTo(i_x, i_y, i_z, _generatePath, _forceDestination);
-        if (speed > 0.0f) // Default value for point motion type is 0.0, if 0.0 spline will use GetSpeed on unit
-            init.SetVelocity(speed);
-        init.Launch();
+        _recalculateSpeed = false;
+        LaunchMove(owner);
     }
 
-    return !unit->movespline->Finalized();
+    return !owner->movespline->Finalized();
 }
 
 template<class T>
@@ -102,7 +94,7 @@ void PointMovementGenerator<T>::MovementInform(T* /*unit*/) { }
 template <> void PointMovementGenerator<Creature>::MovementInform(Creature* unit)
 {
     if (unit->AI())
-        unit->AI()->MovementInform(POINT_MOTION_TYPE, id);
+        unit->AI()->MovementInform(POINT_MOTION_TYPE, _movementId);
 }
 
 template bool PointMovementGenerator<Player>::DoInitialize(Player*);

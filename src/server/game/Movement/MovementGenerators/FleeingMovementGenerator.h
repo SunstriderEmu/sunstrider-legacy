@@ -25,7 +25,8 @@ template<class T>
 class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovementGenerator<T> >
 {
     public:
-        FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) { }
+        FleeingMovementGenerator(uint64 fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) { }
+        ~FleeingMovementGenerator();
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
@@ -35,11 +36,13 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
         MovementGeneratorType GetMovementGeneratorType() override { return FLEEING_MOTION_TYPE; }
 
     private:
-        void _setTargetLocation(T*);
-        void _getPoint(T*, float &x, float &y, float &z);
+        void SetTargetLocation(T*);
+        void GetPoint(T*, float &x, float &y, float &z);
 
-        uint64 i_frightGUID;
+        uint64 _fleeTargetGUID;
         TimeTracker i_nextCheckTime;
+        PathGenerator* _path;
+        bool _interrupt;
 };
 
 class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
@@ -47,14 +50,14 @@ class TC_GAME_API TimedFleeingMovementGenerator : public FleeingMovementGenerato
     public:
         TimedFleeingMovementGenerator(uint64 fright, uint32 time) :
             FleeingMovementGenerator<Creature>(fright),
-            i_totalFleeTime(time) { }
+            _totalFleeTime(time) { }
 
         MovementGeneratorType GetMovementGeneratorType() override { return TIMED_FLEEING_MOTION_TYPE; }
         bool Update(Unit*, uint32) override;
         void Finalize(Unit*, bool) override;
 
     private:
-        TimeTracker i_totalFleeTime;
+        TimeTracker _totalFleeTime;
 };
 
 #endif

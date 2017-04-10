@@ -62,13 +62,13 @@ class MovementGeneratorMedium : public MovementGenerator
 
 struct SelectableMovement : public FactoryHolder<MovementGenerator, MovementGeneratorType>
 {
-    SelectableMovement(MovementGeneratorType mgt) : FactoryHolder<MovementGenerator, MovementGeneratorType>(mgt) { }
+    SelectableMovement(MovementGeneratorType movementGeneratorType) : FactoryHolder<MovementGenerator, MovementGeneratorType>(movementGeneratorType) { }
 };
 
 template<class REAL_MOVEMENT>
 struct MovementGeneratorFactory : public SelectableMovement
 {
-    MovementGeneratorFactory(MovementGeneratorType mgt) : SelectableMovement(mgt) { }
+    MovementGeneratorFactory(MovementGeneratorType movementGeneratorType) : SelectableMovement(movementGeneratorType) { }
 
     MovementGenerator* Create(void *) const override;
 };

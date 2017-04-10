@@ -35,25 +35,22 @@ class TC_GAME_API TargetedMovementGeneratorBase
 };
 
 template<class T, typename D>
-class TC_GAME_API TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
+class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
-    protected:
+    public:
         /**
         offset: Base distance between unit and target
         */
-        TargetedMovementGeneratorMedium(Unit* target, float offset, float angle) :
+        explicit TargetedMovementGenerator(Unit* target, float offset, float angle) :
             TargetedMovementGeneratorBase(target), i_path(nullptr),
             i_recheckDistance(0), i_offset(offset), i_angle(angle),
             i_recalculatePath(false), i_targetReached(false), i_speedChanged(false),
             lastTargetXYZ(0.0f, 0.0f, 0.0f), lastOwnerXYZ(0.0f, 0.0f, 0.0f)
-        { 
-        }
-        ~TargetedMovementGeneratorMedium()
-        { 
-            delete i_path; 
+        {
         }
 
-    public:
+        ~TargetedMovementGenerator();
+
         bool DoUpdate(T*, uint32);
         Unit* GetTarget() const { return i_target.getTarget(); }
 
@@ -82,13 +79,13 @@ class TC_GAME_API TargetedMovementGeneratorMedium : public MovementGeneratorMedi
 };
 
 template<class T>
-class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >
+class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGenerator<T, ChaseMovementGenerator<T> >
 {
     public:
         ChaseMovementGenerator(Unit* target)
-            : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target) { }
+            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target) { }
         ChaseMovementGenerator(Unit* target, float offset, float angle)
-            : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target, offset, angle) { }
+            : TargetedMovementGenerator<T, ChaseMovementGenerator<T> >(target, offset, angle) { }
         ~ChaseMovementGenerator() { }
 
         MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
@@ -106,13 +103,13 @@ class TC_GAME_API ChaseMovementGenerator : public TargetedMovementGeneratorMediu
 };
 
 template<class T>
-class TC_GAME_API FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
+class TC_GAME_API FollowMovementGenerator : public TargetedMovementGenerator<T, FollowMovementGenerator<T> >
 {
     public:
         FollowMovementGenerator(Unit* target)
-            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target){ }
+            : TargetedMovementGenerator<T, FollowMovementGenerator<T> >(target){ }
         FollowMovementGenerator(Unit* target, float offset, float angle)
-            : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) { }
+            : TargetedMovementGenerator<T, FollowMovementGenerator<T> >(target, offset, angle) { }
         ~FollowMovementGenerator() { }
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }

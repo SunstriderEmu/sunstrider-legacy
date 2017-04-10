@@ -485,6 +485,8 @@ enum UnitState
     UNIT_STATE_CANNOT_TURN     = (UNIT_STATE_LOST_CONTROL | UNIT_STATE_ROTATING),
     // stay by different reasons
     UNIT_STATE_NOT_MOVE        = UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DIED | UNIT_STATE_DISTRACTED,
+
+    UNIT_STATE_ALL_ERASABLE    = UNIT_STATE_ALL_STATE_SUPPORTED & ~(UNIT_STATE_IGNORE_PATHFINDING),
     UNIT_STATE_ALL_STATE       = 0xffffffff                      //(UNIT_STATE_STOPPED | UNIT_STATE_MOVING | UNIT_STATE_IN_COMBAT | UNIT_STATE_IN_FLIGHT)
 };
 
@@ -1641,6 +1643,9 @@ class TC_GAME_API Unit : public WorldObject
 
         inline Spell* GetCurrentSpell(CurrentSpellTypes spellType) const { return m_currentSpells[spellType]; }
         inline Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
+
+        // Check if our current channel spell has attribute SPELL_ATTR5_CAN_CHANNEL_WHEN_MOVING
+        bool IsMovementPreventedByCasting() const;
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 

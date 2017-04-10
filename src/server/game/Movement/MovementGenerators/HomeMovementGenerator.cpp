@@ -23,30 +23,44 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
+template<class T>
+HomeMovementGenerator<T>::~HomeMovementGenerator() { }
+
+template<>
+HomeMovementGenerator<Creature>::~HomeMovementGenerator()
+{
+}
+
 bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->AddUnitState(UNIT_STATE_EVADE);
-    _setTargetLocation(owner);
+    SetTargetLocation(owner);
     return true;
 }
 
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
 {
-    owner->ClearUnitState(UNIT_STATE_EVADE);
-    if (arrived)
+    if (_arrived)
     {
+        owner->ClearUnitState(UNIT_STATE_EVADE);
         owner->SetWalk(true);
         owner->InitCreatureAddon(true);
         owner->AI()->JustReachedHome();
+        owner->SetSpawnHealth();
     }
 }
 
 void HomeMovementGenerator<Creature>::DoReset(Creature*) { }
 
-void HomeMovementGenerator<Creature>::_setTargetLocation(Creature* owner)
+template<>
+void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
 {
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
+    {
+        // if we are ROOT/STUNNED/DISTRACTED even after aura clear, finalize on next update - otherwise we would get stuck in evade
+        _skipToHome = true;
         return;
+    }
 
     Movement::MoveSplineInit init(owner);
     float x, y, z, o;
@@ -60,13 +74,23 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(Creature* owner)
     init.SetWalk(false);
     init.Launch();
 
-    arrived = false;
+    _skipToHome = false;
+    _arrived = false;
 
-    owner->ClearUnitState(uint32(UNIT_STATE_ALL_STATE & ~(UNIT_STATE_EVADE | UNIT_STATE_IGNORE_PATHFINDING)));
+    owner->ClearUnitState(UNIT_STATE_ALL_ERASABLE & ~UNIT_STATE_EVADE);
+}
+
+template<class T>
+void HomeMovementGenerator<T>::SetTargetLocation(T*) { }
+
+template<class T>
+bool HomeMovementGenerator<T>::DoUpdate(T*, uint32)
+{
+    return false;
 }
 
 bool HomeMovementGenerator<Creature>::DoUpdate(Creature* owner, const uint32 /*time_diff*/)
 {
-    arrived = owner->movespline->Finalized();
-    return !arrived;
+    _arrived = _skipToHome || owner->movespline->Finalized();
+    return !_arrived;
 }

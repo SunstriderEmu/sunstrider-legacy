@@ -27,8 +27,8 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 {
     public:
         //_o = 0 means no orientation used. Use values like 0.00001 for orientation 0.
-        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _o, bool _generatePath, float _speed = 0.0f, bool forceDestination = false) : id(_id),
-            i_x(_x), i_y(_y), i_z(_z), i_o(_o), speed(_speed), _generatePath(_generatePath), _forceDestination(forceDestination), i_recalculateSpeed(false) { }
+        PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _o, bool _generatePath, float _speed = 0.0f, bool forceDestination = false) : _movementId(_id),
+            _destination(_x, _y, _z, _o), _speed(_speed), _generatePath(_generatePath), _forceDestination(forceDestination), _recalculateSpeed(false) { }
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
@@ -37,19 +37,22 @@ class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementG
 
         void MovementInform(T*);
 
-        void UnitSpeedChanged() override { i_recalculateSpeed = true; }
+        void UnitSpeedChanged() override { _recalculateSpeed = true; }
 
         MovementGeneratorType GetMovementGeneratorType() override { return POINT_MOTION_TYPE; }
 
-        void GetDestination(float& x, float& y, float& z) const { x = i_x; y = i_y; z = i_z; }
+        void GetDestination(float& x, float& y, float& z) const { x = _destination.GetPositionX(); y = _destination.GetPositionY(); z = _destination.GetPositionZ(); }
+
     private:
-        uint32 id;
-        float i_x, i_y, i_z, i_o;
-        float speed;
-        bool i_recalculateSpeed;
+        uint32 _movementId;
+        Position _destination;
+        float _speed;
+        bool _recalculateSpeed;
 
         bool _generatePath;
         bool _forceDestination;
+
+        void LaunchMove(T*);
 };
 
 class AssistanceMovementGenerator : public PointMovementGenerator<Creature>

@@ -27,14 +27,21 @@
 #include "Player.h"
 #include "Transport.h"
 
+
 template<class T, typename D>
-void TargetedMovementGeneratorMedium<T, D>::SetOffset(float offset)
+TargetedMovementGenerator<T, D>::~TargetedMovementGenerator()
+{
+    delete i_path;
+}
+
+template<class T, typename D>
+void TargetedMovementGenerator<T, D>::SetOffset(float offset)
 {
     this->i_offset = offset;
 }
 
 template<class T, typename D>
-void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
+void TargetedMovementGenerator<T, D>::_setTargetLocation(T* owner)
 {
     if (!i_target.isValid() || !i_target->IsInWorld())
         return;
@@ -115,7 +122,7 @@ void TargetedMovementGeneratorMedium<T, D>::_setTargetLocation(T* owner)
 }
 
 template<class T, typename D>
-bool TargetedMovementGeneratorMedium<T, D>::IsWithinAllowedDist(T* owner, float x, float y, float z)
+bool TargetedMovementGenerator<T, D>::IsWithinAllowedDist(T* owner, float x, float y, float z)
 {
     float allowedDist = GetAllowedDist(owner);
 
@@ -126,7 +133,7 @@ bool TargetedMovementGeneratorMedium<T, D>::IsWithinAllowedDist(T* owner, float 
 }
 
 template<class T, typename D>
-float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
+float TargetedMovementGenerator<T, D>::GetAllowedDist(T* owner)
 {
     //More distance let have better performance, less distance let have more sensitive reaction at target move.
     float combatReach = owner->GetCombatReach();
@@ -137,7 +144,7 @@ float TargetedMovementGeneratorMedium<T, D>::GetAllowedDist(T* owner)
 }
 
 template<class T, typename D>
-bool TargetedMovementGeneratorMedium<T, D>::DoUpdate(T* owner, uint32 time_diff)
+bool TargetedMovementGenerator<T, D>::DoUpdate(T* owner, uint32 time_diff)
 {
     if (!i_target.isValid() || !i_target->IsInWorld() || i_target->GetMap() != owner->GetMap())
         return false;
@@ -340,14 +347,14 @@ void FollowMovementGenerator<Creature>::MovementInform(Creature* unit)
 }
 
 //-----------------------------------------------//
-template void TargetedMovementGeneratorMedium<Player, ChaseMovementGenerator<Player> >::_setTargetLocation(Player*);
-template void TargetedMovementGeneratorMedium<Player, FollowMovementGenerator<Player> >::_setTargetLocation(Player*);
-template void TargetedMovementGeneratorMedium<Creature, ChaseMovementGenerator<Creature> >::_setTargetLocation(Creature*);
-template void TargetedMovementGeneratorMedium<Creature, FollowMovementGenerator<Creature> >::_setTargetLocation(Creature*);
-template bool TargetedMovementGeneratorMedium<Player, ChaseMovementGenerator<Player> >::DoUpdate(Player*, uint32);
-template bool TargetedMovementGeneratorMedium<Player, FollowMovementGenerator<Player> >::DoUpdate(Player*, uint32);
-template bool TargetedMovementGeneratorMedium<Creature, ChaseMovementGenerator<Creature> >::DoUpdate(Creature*, uint32);
-template bool TargetedMovementGeneratorMedium<Creature, FollowMovementGenerator<Creature> >::DoUpdate(Creature*, uint32);
+template void TargetedMovementGenerator<Player, ChaseMovementGenerator<Player> >::_setTargetLocation(Player*);
+template void TargetedMovementGenerator<Player, FollowMovementGenerator<Player> >::_setTargetLocation(Player*);
+template void TargetedMovementGenerator<Creature, ChaseMovementGenerator<Creature> >::_setTargetLocation(Creature*);
+template void TargetedMovementGenerator<Creature, FollowMovementGenerator<Creature> >::_setTargetLocation(Creature*);
+template bool TargetedMovementGenerator<Player, ChaseMovementGenerator<Player> >::DoUpdate(Player*, uint32);
+template bool TargetedMovementGenerator<Player, FollowMovementGenerator<Player> >::DoUpdate(Player*, uint32);
+template bool TargetedMovementGenerator<Creature, ChaseMovementGenerator<Creature> >::DoUpdate(Creature*, uint32);
+template bool TargetedMovementGenerator<Creature, FollowMovementGenerator<Creature> >::DoUpdate(Creature*, uint32);
 
 template void ChaseMovementGenerator<Player>::_reachTarget(Player*);
 template void ChaseMovementGenerator<Creature>::_reachTarget(Creature*);

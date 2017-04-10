@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008-2014 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 
 #include "RotateMovementGenerator.h"
 #include "CreatureAI.h"
@@ -39,13 +22,15 @@ bool RotateMovementGenerator::Update(Unit* owner, uint32 diff)
     float angle = owner->GetOrientation();
     if (m_direction == ROTATE_DIRECTION_LEFT)
     {
-        angle += (float)diff * static_cast<float>(M_PI * 2) / m_maxDuration;
-        while (angle >= static_cast<float>(M_PI * 2)) angle -= static_cast<float>(M_PI * 2);
+        angle += (float)diff * static_cast<float>(M_PI * 2.0f) / m_maxDuration;
+        while (angle >= static_cast<float>(M_PI * 2.0f)) 
+            angle -= static_cast<float>(M_PI * 2);
     }
     else
     {
-        angle -= (float)diff * static_cast<float>(M_PI * 2) / m_maxDuration;
-        while (angle < 0) angle += static_cast<float>(M_PI * 2);
+        angle -= (float)diff * static_cast<float>(M_PI * 2.0f) / m_maxDuration;
+        while (angle < 0) 
+            angle += static_cast<float>(M_PI * 2.0f);
     }
 
     owner->SetFacingTo(angle);
@@ -58,9 +43,9 @@ bool RotateMovementGenerator::Update(Unit* owner, uint32 diff)
     return true;
 }
 
-void RotateMovementGenerator::Finalize(Unit* unit, bool /* premature */)
+void RotateMovementGenerator::Finalize(Unit* owner, bool /* premature */)
 {
-    unit->ClearUnitState(UNIT_STATE_ROTATING);
-    if (unit->GetTypeId() == TYPEID_UNIT)
-      unit->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
+    owner->ClearUnitState(UNIT_STATE_ROTATING);
+    if (owner->GetTypeId() == TYPEID_UNIT)
+        owner->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
 }
