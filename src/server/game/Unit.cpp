@@ -1732,10 +1732,7 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
         damageReduction = armor / (armor + 10557.5f); //same as previous calculation, may be a speedup
 
     //caps
-    if(damageReduction < 0.0f)
-        damageReduction = 0.0f;
-    if(damageReduction > 0.75f)
-        damageReduction = 0.75f;
+    RoundToInterval(damageReduction, 0.f, 0.75f);
 
     return std::max<uint32>(damage * (1.0f - damageReduction), 1);
 }
@@ -2474,7 +2471,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
     else
         HitChance += pVictim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_MELEE_HIT_CHANCE);
 
-    // Spellmod from SPELLMOD_RESIST_MISS_CHANCE
+    // Spellmod from SPELLMOD_RESIST_MISS_CHANCE - Example spell 28842
     if(spellId)
     {
         if(Player *modOwner = GetSpellModOwner())
@@ -2499,10 +2496,7 @@ float Unit::MeleeSpellMissChance(const Unit *pVictim, WeaponAttackType attType, 
         miss_chance += diff > 10 ? 2 + (diff - 10) * 0.4 : diff * 0.1;
 
     // Limit miss chance from 0 to 60%
-    if (miss_chance < 0.0f)
-        return 0.0f;
-    if (miss_chance > 60.0f)
-        return 60.0f;
+    RoundToInterval(miss_chance, 0.f, 60.f);
     return miss_chance;
 }
 
