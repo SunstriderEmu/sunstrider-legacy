@@ -10,7 +10,10 @@ class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMov
 {
     public:
         explicit ConfusedMovementGenerator() : _path(nullptr), _nextMoveTime(0), _interrupt(false){ }
-        ~ConfusedMovementGenerator();
+        ~ConfusedMovementGenerator()
+        {
+            delete _path;
+        }
 
         bool DoInitialize(T*);
         void DoFinalize(T*);
