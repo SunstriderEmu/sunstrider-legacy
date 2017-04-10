@@ -1601,7 +1601,7 @@ void Unit::DealMeleeDamage(CalcDamageInfo *damageInfo, bool durabilityLoss)
             Probability = 0.65f*pVictim->GetLevel()+0.5;
 
         uint32 VictimDefense=pVictim->GetDefenseSkillValue();
-        uint32 AttackerMeleeSkill=GetUnitMeleeSkill();
+        uint32 AttackerMeleeSkill = GetMaxSkillValueForLevel(pVictim);
 
         Probability *= AttackerMeleeSkill/(float)VictimDefense;
 
@@ -2714,8 +2714,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
     if (!pVictim->IsAlive() || spell->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
         return SPELL_MISS_NONE;
         
-    // Always 1% resist chance. Send this as SPELL_MISS_MISS (this is not BC blizzlike, this was changed in WotLK).
-    uint32 rand = GetMap()->urand(0,10000);
+    // Always 1% resist chance. Send this as SPELL_MISS_MISS (note that this is not BC blizzlike, this was changed in WotLK).
+    uint32 rand = GetMap()->urand(0, 9999);
     if (rand > 9900)
         return SPELL_MISS_MISS;
 
@@ -2764,8 +2764,29 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
     int32 resist_chance = pVictim->GetMechanicResistChance(spell);
     modHitChance -= resist_chance;
 
-    // Chance resist debuff
-    modHitChance -= pVictim->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, int32(spell->Dispel));
+    // Chance resist debuff - SPELL_AURA_MOD_DEBUFF_RESISTANCE handling. Only affects spells that debuffs.
+    /* Only two spells involved for BC: 
+    - Master Poisoner -increase resist to poison (dispel type 4)
+    - Pure of Heart - increase resist to curse and disease (2 and 3)
+    */
+    if (!spell->IsPositive() && !spell->HasAttribute(SPELL_ATTR4_IGNORE_RESISTANCES)) {
+        bool hasAura = false;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (spell->Effects[i].IsAura())
+            {
+                hasAura = true;
+                break;
+            }
+        }
+
+        if (hasAura)
+        {
+            //TODO LK: LK spells seems to have different values in the spells (I believe: * -100)
+            modHitChance -= pVictim->GetMaxPositiveAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, static_cast<int32>(spell->Dispel)); 
+            modHitChance -= pVictim->GetMaxNegativeAuraModifierByMiscValue(SPELL_AURA_MOD_DEBUFF_RESISTANCE, static_cast<int32>(spell->Dispel)); 
+        }
+    }
 
     int32 HitChance = modHitChance * 100;
     // Increase hit chance from attacker SPELL_AURA_MOD_SPELL_HIT_CHANCE and attacker ratings
@@ -2783,8 +2804,8 @@ SpellMissInfo Unit::MagicSpellHitResult(Unit *pVictim, SpellInfo const *spell, I
     }
 
     // Always have a minimal 1% chance
-    if (HitChance <  100) 
-        HitChance =  100;
+    if (HitChance < 100) 
+        HitChance = 100;
 
     // Final Result //
     bool resist = rand > HitChance;
@@ -2893,7 +2914,7 @@ uint32 Unit::GetDefenseSkillValue(Unit const* target) const
         return value;
     }
     else
-        return GetUnitMeleeSkill(target);
+        return GetMaxSkillValueForLevel(target);
 }
 
 float Unit::GetUnitDodgeChance() const
@@ -3072,7 +3093,7 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
         }
     }
     else
-        value = GetUnitMeleeSkill(target);
+        value = GetMaxSkillValueForLevel(target);
    return value;
 }
 

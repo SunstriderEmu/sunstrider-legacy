@@ -1311,8 +1311,7 @@ class TC_GAME_API Unit : public WorldObject
         int32 GetMechanicResistChance(const SpellInfo *spell);
         bool CanUseAttackType(uint8 attacktype) const;
 
-        virtual uint32 GetShieldBlockValue() const =0;
-        uint32 GetUnitMeleeSkill(Unit const* target = nullptr) const { return (target ? GetLevelForTarget(target) : GetLevel()) * 5; }
+        virtual uint32 GetShieldBlockValue() const = 0;
         uint32 GetDefenseSkillValue(Unit const* target = nullptr) const;
         uint32 GetWeaponSkillValue(WeaponAttackType attType, Unit const* target = nullptr) const;
         float GetWeaponProcChance() const;
