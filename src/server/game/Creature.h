@@ -502,6 +502,7 @@ class TC_GAME_API Creature : public Unit
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
         void LoadEquipment(uint32 equip_entry, bool force = false);
+        void SetSpawnHealth();
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
         void SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType);
         //Get ItemSubclassWeapon based on UNIT_VIRTUAL_ITEM_INFO

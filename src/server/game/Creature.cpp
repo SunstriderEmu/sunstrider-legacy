@@ -1392,12 +1392,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
         }
     }
 
-    uint32 curhealth = data->curhealth;
-    if(m_regenHealth)
-        curhealth = GetMaxHealth();
-
-    SetHealth((m_deathState == ALIVE || m_deathState == JUST_RESPAWNED) ? curhealth : 0);
-    SetPower(POWER_MANA,data->curmana);
+    SetSpawnHealth();
 
     // checked at creature_template loading
     m_defaultMovementType = MovementGeneratorType(data->movementType);
@@ -1434,6 +1429,29 @@ void Creature::LoadEquipment(uint32 equip_entry, bool force)
         SetUInt32Value( UNIT_VIRTUAL_ITEM_INFO + (i * 2), einfo->equipinfo[i]);
         SetUInt32Value( UNIT_VIRTUAL_ITEM_INFO + (i * 2) + 1, einfo->equipslot[i]);
     }
+}
+
+void Creature::SetSpawnHealth()
+{
+    uint32 curhealth;
+    if (m_creatureData && !m_regenHealth)
+    {
+        curhealth = m_creatureData->curhealth;
+        if (curhealth)
+        {
+            curhealth = uint32(curhealth /* * _GetHealthMod(GetCreatureTemplate()->rank)*/);
+            if (curhealth < 1)
+                curhealth = 1;
+        }
+        SetPower(POWER_MANA, m_creatureData->curmana);
+    }
+    else
+    {
+        curhealth = GetMaxHealth();
+        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+    }
+
+    SetHealth((m_deathState == ALIVE || m_deathState == JUST_RESPAWNED) ? curhealth : 0);
 }
 
 void Creature::SetWeapon(WeaponSlot slot, uint32 displayid, ItemSubclassWeapon subclass, InventoryType inventoryType)
@@ -1721,7 +1739,11 @@ void Creature::SetDeathState(DeathState s)
     }
     if(s == JUST_RESPAWNED)
     {
-        SetHealth(GetMaxHealth());
+        if (IsPet())
+            SetFullHealth();
+        else
+            SetSpawnHealth();
+
         SetLootRecipient(nullptr);
         ResetPlayerDamageReq();
 
