@@ -27,13 +27,6 @@
 #include "Player.h"
 #include "Transport.h"
 
-
-template<class T, typename D>
-TargetedMovementGenerator<T, D>::~TargetedMovementGenerator()
-{
-    delete i_path;
-}
-
 template<class T, typename D>
 void TargetedMovementGenerator<T, D>::SetOffset(float offset)
 {

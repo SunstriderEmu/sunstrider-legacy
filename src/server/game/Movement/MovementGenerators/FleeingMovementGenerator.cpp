@@ -31,12 +31,6 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
-FleeingMovementGenerator<T>::~FleeingMovementGenerator()
-{
-    delete _path;
-}
-
-template<class T>
 void FleeingMovementGenerator<T>::SetTargetLocation(T* owner)
 {
     if (!owner)

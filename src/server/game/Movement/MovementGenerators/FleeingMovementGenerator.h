@@ -26,7 +26,10 @@ class TC_GAME_API FleeingMovementGenerator : public MovementGeneratorMedium< T, 
 {
     public:
         FleeingMovementGenerator(uint64 fleeTargetGUID) : _path(nullptr), _fleeTargetGUID(fleeTargetGUID), i_nextCheckTime(0) { }
-        ~FleeingMovementGenerator();
+		~FleeingMovementGenerator()
+		{
+			delete _path;
+		}
 
         bool DoInitialize(T*);
         void DoFinalize(T*);

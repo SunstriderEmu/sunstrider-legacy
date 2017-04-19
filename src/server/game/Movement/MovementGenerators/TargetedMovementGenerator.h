@@ -49,7 +49,10 @@ class TC_GAME_API TargetedMovementGenerator : public MovementGeneratorMedium< T,
         {
         }
 
-        ~TargetedMovementGenerator();
+        ~TargetedMovementGenerator()
+		{
+			delete i_path;
+		}
 
         bool DoUpdate(T*, uint32);
         Unit* GetTarget() const { return i_target.getTarget(); }
