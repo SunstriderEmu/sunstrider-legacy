@@ -19,8 +19,6 @@
 //void called when player click on auctioneer npc
 void WorldSession::HandleAuctionHelloOpcode( WorldPacket & recvData )
 {
-    
-
     uint64 guid;                                            //NPC guid
     recvData >> guid;
 
