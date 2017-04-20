@@ -1140,14 +1140,6 @@ void ObjectMgr::LoadCreatureModelInfo()
 
         // Checks
 
-        // to remove when the purpose of GENDER_UNKNOWN is known
-        if (modelInfo.gender == GENDER_UNKNOWN)
-        {
-            // We don't need more errors
-            //TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has an unimplemented Gender (ID: %i) being used by DisplayID (ID: %u). Gender set to GENDER_MALE.", modelInfo.gender, modelId);
-            modelInfo.gender = GENDER_MALE;
-        }
-
         if (modelInfo.gender > GENDER_NONE)
         {
             TC_LOG_ERROR("sql.sql", "Table `creature_model_info` has wrong gender (%u) for display id (%u).", uint32(modelInfo.gender), displayId);

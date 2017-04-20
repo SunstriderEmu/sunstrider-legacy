@@ -5194,7 +5194,6 @@ SpellCastResult Spell::CheckCast(bool strict)
             return SPELL_FAILED_TARGET_AURASTATE;
 
         if( !(m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS))
-            && !(m_spellInfo->HasAttribute(SPELL_ATTR3_UNK25)) //not sure about these
             && !m_caster->IsWithinLOSInMap(target, VMAP::ModelIgnoreFlags::M2) )
             return SPELL_FAILED_LINE_OF_SIGHT;
 
@@ -7307,7 +7306,6 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
 
     //Do not check LOS for triggered spells
     if( (m_IsTriggeredSpell)
-      || (m_spellInfo->HasAttribute(SPELL_ATTR3_UNK25)) //not sure about these
       || (m_spellInfo->HasAttribute(SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)) )
         return true;
 
