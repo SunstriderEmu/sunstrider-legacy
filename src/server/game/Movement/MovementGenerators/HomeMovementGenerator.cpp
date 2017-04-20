@@ -32,30 +32,6 @@ HomeMovementGenerator<Creature>::~HomeMovementGenerator()
 }
 
 template<>
-bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
-{
-    owner->AddUnitState(UNIT_STATE_EVADE);
-    SetTargetLocation(owner);
-    return true;
-}
-
-template<>
-void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
-{
-    if (_arrived)
-    {
-        owner->ClearUnitState(UNIT_STATE_EVADE);
-        owner->SetWalk(true);
-        owner->InitCreatureAddon(true);
-        owner->AI()->JustReachedHome();
-        owner->SetSpawnHealth();
-    }
-}
-
-template<>
-void HomeMovementGenerator<Creature>::DoReset(Creature*) { }
-
-template<>
 void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
 {
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
@@ -86,12 +62,38 @@ void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
 template<class T>
 void HomeMovementGenerator<T>::SetTargetLocation(T*) { }
 
+template<>
+bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
+{
+    owner->AddUnitState(UNIT_STATE_EVADE);
+    SetTargetLocation(owner);
+    return true;
+}
+
+template<>
+void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
+{
+    if (_arrived)
+    {
+        owner->ClearUnitState(UNIT_STATE_EVADE);
+        owner->SetWalk(true);
+        owner->InitCreatureAddon(true);
+        owner->AI()->JustReachedHome();
+        owner->SetSpawnHealth();
+    }
+}
+
+template<>
+void HomeMovementGenerator<Creature>::DoReset(Creature*) { }
+
+
 template<class T>
 bool HomeMovementGenerator<T>::DoUpdate(T*, uint32)
 {
     return false;
 }
 
+template<>
 bool HomeMovementGenerator<Creature>::DoUpdate(Creature* owner, const uint32 /*time_diff*/)
 {
     _arrived = _skipToHome || owner->movespline->Finalized();
