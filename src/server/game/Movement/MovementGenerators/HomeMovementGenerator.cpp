@@ -31,6 +31,7 @@ HomeMovementGenerator<Creature>::~HomeMovementGenerator()
 {
 }
 
+template<>
 bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
 {
     owner->AddUnitState(UNIT_STATE_EVADE);
@@ -38,6 +39,7 @@ bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
     return true;
 }
 
+template<>
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
 {
     if (_arrived)
@@ -50,6 +52,7 @@ void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
     }
 }
 
+template<>
 void HomeMovementGenerator<Creature>::DoReset(Creature*) { }
 
 template<>
