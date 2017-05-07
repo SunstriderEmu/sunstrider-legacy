@@ -480,7 +480,7 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
-class TC_GAME_API Creature : public Unit, public GridObject<Creature>
+class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
 {
     public:
 

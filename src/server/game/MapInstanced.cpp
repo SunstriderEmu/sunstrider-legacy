@@ -101,26 +101,6 @@ void MapInstanced::MapCrashed(Map* map)
     crashedMaps.push_back(map);
 }
 
-void MapInstanced::MoveAllCreaturesInMoveList()
-{
-    for (auto & m_InstancedMap : m_InstancedMaps)
-    {
-        m_InstancedMap.second->MoveAllCreaturesInMoveList();
-    }
-
-    Map::MoveAllCreaturesInMoveList();
-}
-
-void MapInstanced::RemoveAllObjectsInRemoveList()
-{
-    for (auto & m_InstancedMap : m_InstancedMaps)
-    {
-        m_InstancedMap.second->RemoveAllObjectsInRemoveList();
-    }
-
-    Map::RemoveAllObjectsInRemoveList();
-}
-
 /*
 bool MapInstanced::RemoveBones(uint64 guid, float x, float y)
 {

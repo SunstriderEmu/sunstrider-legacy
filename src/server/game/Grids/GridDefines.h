@@ -181,7 +181,7 @@ struct CoordPair
     uint32 y_coord;
 };
 
-typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridPair;
+typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridCoord;
 typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellCoord;
 
 namespace Trinity
@@ -198,9 +198,9 @@ namespace Trinity
         return RET_TYPE(x_val, y_val);
     }
 
-    inline GridPair ComputeGridPair(float x, float y)
+    inline GridCoord ComputeGridPair(float x, float y)
     {
-        return Compute<GridPair, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
+        return Compute<GridCoord, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
     }
 
     inline CellCoord ComputeCellCoord(float x, float y)

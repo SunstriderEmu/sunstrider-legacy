@@ -53,8 +53,8 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         CorpseType GetType() const { return m_type; }
 
 		/*
-        GridPair const& GetGrid() const { return m_grid; }
-        void SetGrid(GridPair const& grid) { m_grid = grid; }
+        GridCoord const& GetGrid() const { return m_grid; }
+        void SetGrid(GridCoord const& grid) { m_grid = grid; }
 		*/
         bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
 

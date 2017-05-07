@@ -6,7 +6,7 @@
 
 class Unit;
 
-class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicObject>
+class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicObject>, public MapObject
 {
     public:
         typedef std::set<Unit*> AffectedSet;

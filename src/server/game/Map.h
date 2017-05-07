@@ -45,14 +45,6 @@ struct ScriptAction
 	ScriptInfo const* script;                               // pointer to static script data
 };
 
-struct ObjectMover
-{
-    ObjectMover() : x(0), y(0), z(0), ang(0) {}
-    ObjectMover(float _x, float _y, float _z, float _ang) : x(_x), y(_y), z(_z), ang(_ang) {}
-
-    float x, y, z, ang;
-};
-
 // GCC have alternative #pragma pack(N) syntax and old gcc version not support pack(push,N), also any gcc version not support it at some platform
 #if defined( __GNUC__ )
 #pragma pack(1)
@@ -101,9 +93,6 @@ struct ZoneDynamicInfo
 #else
 #pragma pack(pop)
 #endif
-
-typedef std::unordered_map<Creature*, ObjectMover> CreatureMoveList;
-typedef std::unordered_map<GameObject*, ObjectMover> GameObjectMoveList;
 
 typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHolderType;
 typedef std::unordered_map<uint32 /*zoneId*/, ZoneDynamicInfo> ZoneDynamicInfoMap;
@@ -161,12 +150,12 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void PlayerRelocation(Player* player, float x, float y, float z, float angle);
         void CreatureRelocation(Creature* creature, float x, float y, float z, float angle);
         void GameObjectRelocation(GameObject* gob, float x, float y, float z, float angle);
-        //void DynamicObjectRelocation(DynamicObject* dob, float x, float y, float z, float angle);
+        void DynamicObjectRelocation(DynamicObject* dob, float x, float y, float z, float angle);
 
         template<class T, class CONTAINER> void Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor);
 
         void LoadGrid(float x, float y);
-        bool UnloadGrid(const uint32 &x, const uint32 &y, bool pForce);
+		bool UnloadGrid(NGridType& ngrid, bool pForce);
         virtual void UnloadAll();
 
         bool IsGridLoaded(float x, float y) const;
@@ -229,9 +218,10 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         uint32 GetZoneId(float x, float y, float z) const;
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid, float x, float y, float z) const;
 
-        virtual void MoveAllCreaturesInMoveList();
-        virtual void MoveAllGameObjectsInMoveList();
-        virtual void RemoveAllObjectsInRemoveList();
+        void MoveAllCreaturesInMoveList();
+        void MoveAllGameObjectsInMoveList();
+		void MoveAllDynamicObjectsInMoveList();
+        void RemoveAllObjectsInRemoveList();
         virtual void RemoveAllPlayers();
 
         bool CreatureRespawnRelocation(Creature *c, bool diffGridOnly);        // used only in MoveAllCreaturesInMoveList and ObjectGridUnloader
@@ -425,21 +415,37 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         bool CreatureCellRelocation(Creature* creature, Cell new_cell);
         bool GameObjectCellRelocation(GameObject* gob, Cell new_cell);
+		bool DynamicObjectCellRelocation(DynamicObject* go, Cell new_cell);
 
+		template<class T> void InitializeObject(T* obj);
         void AddCreatureToMoveList(Creature* c, float x, float y, float z, float ang);
+		void RemoveCreatureFromMoveList(Creature* c);
         void AddGameObjectToMoveList(GameObject* go, float x, float y, float z, float ang);
-        CreatureMoveList _creaturesToMove;
-        GameObjectMoveList _gameObjectsToMove;
+		void RemoveGameObjectFromMoveList(GameObject* go);
+		void AddDynamicObjectToMoveList(DynamicObject* go, float x, float y, float z, float ang);
+		void RemoveDynamicObjectFromMoveList(DynamicObject* go);
+		
+		bool _creatureToMoveLock;
+        std::vector<Creature*> _creaturesToMove;
 
-        bool loaded(const GridPair &) const;
+		bool _gameObjectsToMoveLock;
+		std::vector<GameObject*> _gameObjectsToMove;
+
+		bool _dynamicObjectsToMoveLock;
+		std::vector<DynamicObject*> _dynamicObjectsToMove;
+
+        bool IsGridLoaded(const GridCoord &) const;
         void EnsureGridLoaded(const Cell&);
-        void EnsureGridCreated(const GridPair &);
-        void EnsureGridCreated_i(const GridPair &);
+		void EnsureGridLoadedForActiveObject(Cell const&, WorldObject* object);
+        void EnsureGridCreated(const GridCoord &);
+        void EnsureGridCreated_i(const GridCoord &);
 
         void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(this); }
 
+		/*
         template<class T> void AddType(T *obj);
         template<class T> void RemoveType(T *obj, bool);
+		*/
 
         NGridType* getNGrid(uint32 x, uint32 y) const
         {
@@ -502,7 +508,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         // Type specific code for add/remove to/from grid
         template<class T>
-            void AddToGrid(T*, NGridType *, Cell const&);
+            void AddToGrid(T*, Cell const&);
 
         template<class T>
             void AddNotifier(T*);
@@ -637,11 +643,11 @@ Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
     const uint32 cell_x = cell.CellX();
     const uint32 cell_y = cell.CellY();
 
-    if( !cell.NoCreate() || loaded(GridPair(x,y)) )
+    if( !cell.NoCreate() || IsGridLoaded(x,y) )
     {
         EnsureGridLoaded(cell);
         //LOCK_TYPE guard(i_info[x][y]->i_lock);
-        getNGrid(x, y)->Visit(cell_x, cell_y, visitor);
+        getNGrid(x, y)->VisitGrid(cell_x, cell_y, visitor);
     }
 }
 

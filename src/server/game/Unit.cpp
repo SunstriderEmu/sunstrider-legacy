@@ -2557,7 +2557,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     }
 
     uint32 roll = GetMap()->urand (0, 10000);
-    uint32 tmp;
+	uint32 tmp = 0;
     if (canMiss)
     {
         uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
@@ -9007,7 +9007,6 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const *spellProto, u
     {
         float heal = float(int32(healamount)) * TakenTotalMod;
         return uint32(std::max(heal, 0.0f));
-        return uint32(heal);
     }
 
 #ifdef LICH_KING

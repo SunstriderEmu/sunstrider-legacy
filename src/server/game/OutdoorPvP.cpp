@@ -558,7 +558,6 @@ bool OPvPCapturePoint::Update(uint32 diff)
             m_value = - m_maxValue;
         m_State = OBJECTIVESTATE_HORDE;
 		m_team = TEAM_HORDE;
-        return true;
     }
     else if(m_value >= m_minValue) //blue
     {
@@ -566,7 +565,6 @@ bool OPvPCapturePoint::Update(uint32 diff)
             m_value = m_maxValue;
         m_State = OBJECTIVESTATE_ALLIANCE;
 		m_team = TEAM_ALLIANCE;
-        return true;
     } else if (oldValue * m_value <=0) // grey, go through mid point
     {
         // if challenger is ally, then n->a challenge
@@ -599,7 +597,7 @@ bool OPvPCapturePoint::Update(uint32 diff)
 		return true;
 	}
 
-    return true;
+    return false;
 }
 
 void OutdoorPvP::SendUpdateWorldState(uint32 field, uint32 value)

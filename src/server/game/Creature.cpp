@@ -163,8 +163,7 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
-Creature::Creature(bool isWorldObject) :
-    Unit(isWorldObject),
+Creature::Creature(bool isWorldObject) : Unit(isWorldObject), MapObject(),
     lootForPickPocketed(false), 
     lootForBody(false), 
     m_lootMoney(0), 

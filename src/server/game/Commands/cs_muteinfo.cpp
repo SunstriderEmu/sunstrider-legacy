@@ -34,7 +34,7 @@ bool MuteInfoForAccount(ChatHandler& chatHandler, uint32 accountid)
 
         uint32 authorAccount = fields[0].GetUInt32();
         uint32 authorGUID = fields[1].GetUInt32();
-        uint32 targetAccount = fields[2].GetUInt32();
+//        uint32 targetAccount = fields[2].GetUInt32();
         uint32 duration = fields[3].GetUInt32();
         uint64 muteTime = fields[4].GetUInt32();
         std::string reason = fields[5].GetString();

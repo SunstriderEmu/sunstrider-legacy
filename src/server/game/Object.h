@@ -514,9 +514,6 @@ class TC_GAME_API Object
         inline DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return nullptr; }
         inline DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return nullptr; }
 
-        //dont use, used by map only
-        Cell const& GetCurrentCell() const { return _currentCell; }
-        void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
     protected:
 
         Object();
@@ -560,9 +557,6 @@ class TC_GAME_API Object
         bool m_objectUpdated;
 
     private:
-        //only used for creatures & gobject for now
-        Cell _currentCell;
-
         bool m_inWorld;
 
         PackedGuid m_PackGUID;
@@ -571,6 +565,38 @@ class TC_GAME_API Object
         bool PrintIndexError(uint32 index, bool set) const;
         Object(const Object&);                              // prevent generation copy constructor
         Object& operator=(Object const&);                   // prevent generation assigment operator
+};
+
+enum MapObjectCellMoveState
+{
+	MAP_OBJECT_CELL_MOVE_NONE, //not in move list
+	MAP_OBJECT_CELL_MOVE_ACTIVE, //in move list
+	MAP_OBJECT_CELL_MOVE_INACTIVE, //in move list but should not move
+};
+
+class TC_GAME_API MapObject
+{
+	friend class Map; //map for moving creatures
+	friend class ObjectGridLoader; //grid loader for loading creatures
+
+protected:
+	MapObject() : _moveState(MAP_OBJECT_CELL_MOVE_NONE)
+	{
+		_newPosition.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+private:
+	Cell _currentCell;
+	Cell const& GetCurrentCell() const { return _currentCell; }
+	void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
+
+	MapObjectCellMoveState _moveState;
+	Position _newPosition;
+	void SetNewCellPosition(float x, float y, float z, float o)
+	{
+		_moveState = MAP_OBJECT_CELL_MOVE_ACTIVE;
+		_newPosition.Relocate(x, y, z, o);
+	}
 };
 
 class TC_GAME_API WorldObject : public Object, public WorldLocation

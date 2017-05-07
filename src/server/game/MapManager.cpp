@@ -215,7 +215,7 @@ void MapManager::Update(time_t diff)
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 {
-    GridPair p = Trinity::ComputeGridPair(x,y);
+    GridCoord p = Trinity::ComputeGridPair(x,y);
 
     int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
     int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;

@@ -441,13 +441,14 @@ void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
 
 void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ)
 {
-    //this function may make players fall below map
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-        return;
-#ifndef LICH_KING
+	//this function may make players fall below map
+	if (_owner->GetTypeId() == TYPEID_PLAYER)
+		return;
+
+	//BC creatures can't be knocked back
+#ifdef LICH_KING
     else
         return; //BC creatures can't be knocked back
-#endif
 
     if (speedXY <= 0.1f)
         return;
@@ -466,6 +467,7 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
     init.SetVelocity(speedXY);
     init.Launch();
     Mutate(new EffectMovementGenerator(0), MOTION_SLOT_CONTROLLED);
+#endif
 }
 
 void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)

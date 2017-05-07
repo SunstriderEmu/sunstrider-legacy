@@ -150,8 +150,8 @@ void Monitor::UpdateGeneralInfos(uint32 diff)
 	trans->PAppend("INSERT INTO mon_players (time, active, queued) VALUES (%u, %u, %u)", (uint32)now, sWorld->GetActiveSessionCount(), sWorld->GetQueuedSessionCount());
 
 	/* time diff */
-	uint32 smoothTD = GetSmoothTimeDiff();
-	if(smoothTD) //it may be not available yet
+	uint32 _smoothTD = GetSmoothTimeDiff();
+	if(_smoothTD) //it may be not available yet
 		trans->PAppend("INSERT INTO mon_timediff (time, diff) VALUES (%u, %u)", (uint32)now, GetSmoothTimeDiff());
 
 	/* maps */

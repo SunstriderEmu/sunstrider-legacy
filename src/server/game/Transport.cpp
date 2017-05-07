@@ -680,7 +680,7 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
             GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o);
             break;
         case TYPEID_DYNAMICOBJECT:
-           // TODO GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
+            GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
             break;
         default:
             break;
@@ -992,7 +992,7 @@ void StaticTransport::UpdatePassengerPositions()
             GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o);
             break;
         case TYPEID_DYNAMICOBJECT:
-            // TODO GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
+            GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
             break;
         default:
             break;

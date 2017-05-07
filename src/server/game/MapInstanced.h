@@ -21,8 +21,6 @@ class TC_GAME_API MapInstanced : public Map
         // functions overwrite Map versions
         void Update(const uint32&) override;
         void DelayedUpdate(const uint32 diff) override;
-        void MoveAllCreaturesInMoveList() override;
-        void RemoveAllObjectsInRemoveList() override;
         //bool RemoveBones(uint64 guid, float x, float y) override;
         void UnloadAll() override;
         bool CanEnter(Player* player) override;
@@ -33,12 +31,12 @@ class TC_GAME_API MapInstanced : public Map
         bool DestroyInstance(uint32 InstanceId);
         bool DestroyInstance(InstancedMaps::iterator &itr);
 
-        void AddGridMapReference(const GridPair &p)
+        void AddGridMapReference(const GridCoord &p)
         {
             ++GridMapReference[p.x_coord][p.y_coord];
         }
 
-        void RemoveGridMapReference(const GridPair &p)
+        void RemoveGridMapReference(const GridCoord &p)
         {
             --GridMapReference[p.x_coord][p.y_coord];
         }

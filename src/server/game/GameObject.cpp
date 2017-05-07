@@ -32,7 +32,7 @@
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
 
-GameObject::GameObject() : WorldObject(false),
+GameObject::GameObject() : WorldObject(false), MapObject(),
     m_AI(nullptr), 
     m_model(nullptr), 
     m_goValue(),
@@ -1361,10 +1361,12 @@ void GameObject::Use(Unit* user)
                 data << info->camera.cinematicId;
                 player->SendDirectMessage(&data);
             }
+
+			if (GetEntry() == 187578)
+				SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+
             return;
             
-            if (GetEntry() == 187578)
-                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
         }
         //fishing bobber
         case GAMEOBJECT_TYPE_FISHINGNODE:                   //17

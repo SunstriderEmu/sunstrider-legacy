@@ -190,6 +190,7 @@ class TC_GAME_API ThreatManager
         float getThreat(Unit *pVictim, bool pAlsoSearchOfflineList = false) const;
 
         bool isThreatListEmpty() const { return iThreatContainer.empty();}
+		bool areThreatListsEmpty() const { return iThreatContainer.empty() && iThreatOfflineContainer.empty(); }
 
         bool processThreatEvent(const UnitBaseEvent* pUnitBaseEvent);
 

@@ -517,7 +517,7 @@ void GetMap()->AddCorpse(Corpse* corpse)
     sObjectMgr->AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
-void GetMap()->AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
+void GetMap()->AddCorpsesToGrid(GridCoord const& gridpair,GridType& grid,Map* map)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
     for(auto & iter : i_player2corpse)
