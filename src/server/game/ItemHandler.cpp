@@ -759,7 +759,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 #ifdef LICH_KING
             // Only display items in vendor lists for the team the
             // player is on. If GM on, display all items.
-            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == TEAM_ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == TEAM_HORDE)))
+            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == HORDE)))
                 continue;
 #endif
 

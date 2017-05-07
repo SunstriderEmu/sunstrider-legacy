@@ -226,9 +226,10 @@ struct PlayerInfo
 
 struct PvPInfo
 {
-    PvPInfo() : inHostileArea(false), endTimer(0) {}
+    PvPInfo() : IsInHostileArea(false), IsHostile(false), endTimer(0) {}
 
-    bool inHostileArea;
+	bool IsHostile;
+    bool IsInHostileArea;
     time_t endTimer;
 };
 
@@ -515,6 +516,21 @@ enum PlayerFlags
     PLAYER_FLAGS_COMMENTATOR_UBER   = 0x00400000
 };
 
+enum PlayerBytesOffsets
+{
+    PLAYER_BYTES_OFFSET_SKIN_ID         = 0,
+    PLAYER_BYTES_OFFSET_FACE_ID         = 1,
+    PLAYER_BYTES_OFFSET_HAIR_STYLE_ID   = 2,
+    PLAYER_BYTES_OFFSET_HAIR_COLOR_ID   = 3
+};
+
+enum PlayerBytes2Offsets
+{
+    PLAYER_BYTES_2_OFFSET_FACIAL_STYLE      = 0,
+	//BC OK ?   PLAYER_BYTES_2_OFFSET_PARTY_TYPE        = 1,
+	//BC OK ?   PLAYER_BYTES_2_OFFSET_BANK_BAG_SLOTS    = 2,
+	//BC OK ?   PLAYER_BYTES_2_OFFSET_REST_STATE        = 3
+};
 enum PlayerBytes3Offsets
 {
     PLAYER_BYTES_3_OFFSET_GENDER = 0,
@@ -522,6 +538,36 @@ enum PlayerBytes3Offsets
     //BC OK ? PLAYER_BYTES_3_OFFSET_PVP_TITLE = 2,
     //BC OK ? PLAYER_BYTES_3_OFFSET_ARENA_FACTION = 3
 };
+
+enum PlayerFieldBytes2Offsets
+{
+#ifdef LICH_KING
+    PLAYER_FIELD_BYTES_2_OFFSET_OVERRIDE_SPELLS_ID                  = 0,    // uint16!
+    PLAYER_FIELD_BYTES_2_OFFSET_IGNORE_POWER_REGEN_PREDICTION_MASK  = 2,
+    PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION                         = 3
+#else
+	//BC OK ? PLAYER_FIELD_BYTES_2_OFFSET_OVERRIDE_SPELLS_ID = 0,    // uint16!
+	PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION = 1,
+	//BC OK ? PLAYER_FIELD_BYTES_2_OFFSET_IGNORE_POWER_REGEN_PREDICTION_MASK = 2,
+#endif
+};
+
+// used in PLAYER_FIELD_BYTES values
+enum PlayerFieldByteFlags
+{
+	PLAYER_FIELD_BYTE_TRACK_STEALTHED	= 0x00000002,
+	PLAYER_FIELD_BYTE_RELEASE_TIMER		= 0x00000008,       // Display time till auto release spirit
+	PLAYER_FIELD_BYTE_NO_RELEASE_WINDOW = 0x00000010        // Display no "release spirit" window at all
+};
+
+// used in PLAYER_FIELD_BYTES2 values (with offsets in PlayerFieldBytes2Offsets)
+enum PlayerFieldByte2Flags
+{
+    PLAYER_FIELD_BYTE2_NONE                 = 0x00,
+    PLAYER_FIELD_BYTE2_STEALTH              = 0x20,
+    PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW    = 0x40
+};
+
 
 #define PLAYER_TITLE_MASK_ALLIANCE_PVP  \
     (PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
@@ -591,21 +637,6 @@ enum PlayerBytes3Offsets
 
 #define KNOWN_TITLES_SIZE   3
 #define MAX_TITLE_INDEX     (KNOWN_TITLES_SIZE*64)          // 3 uint64 fields
-
-// used in PLAYER_FIELD_BYTES values
-enum PlayerFieldByteFlags
-{
-    PLAYER_FIELD_BYTE_TRACK_STEALTHED   = 0x00000002,
-    PLAYER_FIELD_BYTE_RELEASE_TIMER     = 0x00000008,       // Display time till auto release spirit
-    PLAYER_FIELD_BYTE_NO_RELEASE_WINDOW = 0x00000010        // Display no "release spirit" window at all
-};
-
-// used in PLAYER_FIELD_BYTES2 values
-enum PlayerFieldByte2Flags
-{
-    PLAYER_FIELD_BYTE2_NONE              = 0x0000,
-    PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW = 0x4000
-};
 
 #ifndef LICH_KING
 enum LootType
@@ -693,6 +724,8 @@ enum AtLoginFlags
     AT_LOGIN_RESET_FLYS    = 0x10,
     AT_LOGIN_ALL_REP       = 0x20,
     AT_LOGIN_FIRST         = 0x40,
+	//0x80
+	//AT_LOGIN_RESURRECT     = 0x100, //NYI
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -1089,7 +1122,7 @@ class TC_GAME_API PlayerTaxi
         void AppendTaximaskTo(ByteBuffer& data,bool all);
 
         // Destinations
-        bool LoadTaxiDestinationsFromString(const std::string& values);
+        bool LoadTaxiDestinationsFromString(const std::string& values, uint32 team);
         std::string SaveTaxiDestinationsToString();
 
         void ClearTaxiDestinations() { m_TaxiDestinations.clear(); }
@@ -1126,7 +1159,7 @@ struct Gladiator {
 
 #define MAX_GLADIATORS_RANK 3
 
-class TC_GAME_API Player : public Unit
+class TC_GAME_API Player : public Unit, public GridObject<Player>
 {
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(Player *player);
@@ -1422,7 +1455,7 @@ class TC_GAME_API Player : public Unit
         void AddItemDurations(Item *item);
         void RemoveItemDurations(Item *item);
         void SendItemDurations();
-        void LoadCorpse();
+		void LoadCorpse(PreparedQueryResult result);
         void LoadPet();
 
         uint32 m_stableSlots;
@@ -1541,7 +1574,6 @@ class TC_GAME_API Player : public Unit
         /*********************************************************/
 
         bool LoadFromDB(uint32 guid, SQLQueryHolder *holder);
-        bool MinimalLoadFromDB(QueryResult result, uint32 guid);
         static bool   LoadValuesArrayFromDB(Tokens& data,uint64 guid);
         static uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
         static float  GetFloatValueFromArray(Tokens const& data, uint16 index);
@@ -1766,8 +1798,9 @@ class TC_GAME_API Player : public Unit
 
         PvPInfo pvpInfo;
         void UpdatePvP(bool state, bool ovrride=false);
-        void UpdateZone(uint32 newZone);
+        void UpdateZone(uint32 newZone, uint32 newArea);
         void UpdateArea(uint32 newArea);
+		void SetNeedsZoneUpdate(bool needsUpdate) { m_needsZoneUpdate = needsUpdate; }
         bool IsInSanctuary() const override { return HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY); }
 
         void UpdateZoneDependentAuras( uint32 zone_id );    // zones
@@ -1916,12 +1949,13 @@ class TC_GAME_API Player : public Unit
         void SendResetInstanceFailed(uint32 reason, uint32 MapId);
         void SendResetFailedNotify(uint32 mapid);
 
-        bool SetPosition(float x, float y, float z, float orientation, bool teleport = false);
+        bool UpdatePosition(float x, float y, float z, float orientation, bool teleport = false) override;
+		bool UpdatePosition(const Position &pos, bool teleport = false) override { return UpdatePosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), teleport); }
         void UpdateUnderwaterState( Map * m, float x, float y, float z ) override;
 
-        void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true) override;
-        void SendMessageToSetInRange(WorldPacket *data, float fist, bool self, bool to_possessor = true) override;
-        void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor, bool own_team_only);
+        void SendMessageToSet(WorldPacket *data, bool self) override;
+        void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr) override;
+		void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin, bool own_team_only, Player const* skipped_rcvr = nullptr);
         void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr) override;
 
         void SendTeleportAckPacket();
@@ -1943,9 +1977,12 @@ class TC_GAME_API Player : public Unit
         static void DeleteOldCharacters();
 
         Corpse *GetCorpse() const;
-        void SpawnCorpseBones();
-        void CreateCorpse();
+        void SpawnCorpseBones(bool triggerSave = true);
+		Corpse* CreateCorpse();
         void KillPlayer();
+		static void OfflineResurrect(ObjectGuid const& guid, SQLTransaction& trans);
+		bool HasCorpse() const { return _corpseLocation.GetMapId() != MAPID_INVALID; }
+		WorldLocation GetCorpseLocation() const { return _corpseLocation; }
         uint32 GetResurrectionSpellId();
         void ResurrectPlayer(float restore_percent, bool applySickness = false);
         void BuildPlayerRepop();
@@ -1999,6 +2036,7 @@ class TC_GAME_API Player : public Unit
 
         static uint32 TeamForRace(uint8 race);
         uint32 GetTeam() const { return m_team; }
+		TeamId GetTeamId() const { return m_team == ALLIANCE ? TEAM_ALLIANCE : TEAM_HORDE; }
         static uint32 getFactionForRace(uint8 race);
         void SetFactionForRace(uint8 race);
         
@@ -2070,7 +2108,8 @@ class TC_GAME_API Player : public Unit
         uint32 GetDeathTime() const { return m_deathTime; }
         uint32 GetCorpseReclaimDelay(bool pvp) const;
         void UpdateCorpseReclaimDelay();
-        void SendCorpseReclaimDelay(bool load = false);
+		int32 CalculateCorpseReclaimDelay(bool load = false) const;
+		void SendCorpseReclaimDelay(uint32 delay);
 
         uint32 GetShieldBlockValue() const override;                 // overwrite Unit version (virtual)
         bool CanParry() const { return m_canParry; }
@@ -2214,6 +2253,7 @@ class TC_GAME_API Player : public Unit
         float GetBattlegroundEntryPointZ() const { return m_bgEntryPointZ; }
         float GetBattlegroundEntryPointO() const { return m_bgEntryPointO; }
         void SetBattlegroundEntryPoint(uint32 Map, float PosX, float PosY, float PosZ, float PosO);
+		bool TeleportToBGEntryPoint();
 
         void SetBGTeam(uint32 team) { m_bgTeam = team; }
         uint32 GetBGTeam() const { return m_bgTeam ? m_bgTeam : GetTeam(); }
@@ -2313,7 +2353,6 @@ class TC_GAME_API Player : public Unit
         PlayerbotMgr* GetPlayerbotMgr() { return m_playerbotMgr; }
         void SetBotDeathTimer() { m_deathTimer = 0; }
         //PlayerTalentMap& GetTalentMap(uint8 spec) { return *m_talents[spec]; }
-        //bool MinimalLoadFromDB( QueryResult result, uint32 guid );
         #endif
 
         // Recall position
@@ -2333,7 +2372,6 @@ class TC_GAME_API Player : public Unit
         float m_homebindY;
         float m_homebindZ;
         void SetHomebind(WorldLocation const& loc, uint32 area_id);
-        void RelocateToHomebind() { SetMapId(m_homebindMapId); Relocate(m_homebindX,m_homebindY,m_homebindZ); }
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;
@@ -2429,8 +2467,11 @@ class TC_GAME_API Player : public Unit
         void SetPassOnGroupLoot(bool bPassOnGroupLoot) { m_bPassOnGroupLoot = bPassOnGroupLoot; }
         bool GetPassOnGroupLoot() const { return m_bPassOnGroupLoot; }
 
-        GridReference<Player> &GetGridRef() { return m_gridRef; }
         MapReference &GetMapRef() { return m_mapRef; }
+
+		// Set map to player and add reference
+		void SetMap(Map* map) override;
+		void ResetMap() override;
 
         bool IsAllowedToLoot(Creature const* creature) const;
 
@@ -2727,6 +2768,8 @@ class TC_GAME_API Player : public Unit
 
         uint32 _activeCheats; //mask from PlayerCommandStates
 
+		bool m_needsZoneUpdate;
+
 #ifdef PLAYERBOT
         PlayerbotAI* m_playerbotAI;
         PlayerbotMgr* m_playerbotMgr;
@@ -2791,6 +2834,8 @@ class TC_GAME_API Player : public Unit
         
         SpamReports _spamReports;
         time_t _lastSpamAlert; // When was the last time we reported this ugly spammer to the staff?
+
+		WorldLocation _corpseLocation;
 
     public:
         bool m_kickatnextupdate;

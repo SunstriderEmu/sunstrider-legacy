@@ -185,7 +185,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
     switch(GUID_HIPART(guid))
     {
-        case HIGHGUID_GAMEOBJECT:
+        case HighGuid::GameObject:
         {
             GameObject *pGameObject = ObjectAccessor::GetGameObject(*GetPlayer(), guid);
 
@@ -195,7 +195,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
             break;
         }
-        case HIGHGUID_CORPSE:                               // remove insignia ONLY in BG
+        case HighGuid::Corpse:                               // remove insignia ONLY in BG
         {
             Corpse *bones = ObjectAccessor::GetCorpse(*GetPlayer(), guid);
 
@@ -204,13 +204,13 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
             break;
         }
-        case HIGHGUID_ITEM:
+        case HighGuid::Item:
         {
             if(Item *item = GetPlayer()->GetItemByGuid(guid))
                 pLoot = &item->loot;
             break;
         }
-        case HIGHGUID_UNIT:
+        case HighGuid::Unit:
         {
             Creature* pCreature = ObjectAccessor::GetCreature(*GetPlayer(), guid);
 

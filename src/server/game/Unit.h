@@ -1366,11 +1366,11 @@ class TC_GAME_API Unit : public WorldObject
         bool HasAuraType(AuraType auraType) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
-        bool HasAuraEffect(uint32 spellId, uint32 effIndex = 0) const
+        bool HasAuraEffect(uint32 spellId, uint8 effIndex = 0) const
             { return m_Auras.find(spellEffectPair(spellId, effIndex)) != m_Auras.end(); }
         bool HasAuraWithMechanic(Mechanics mechanic) const;
-        bool HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 owner) const;
-        bool HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 owner) const;
+        bool HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 owner) const;
+        bool HasAuraWithCasterNot(uint32 spellId, uint8 effIndex, uint64 owner) const;
 
         bool virtual HasSpell(uint32 /*spellID*/) const { return false; }
         bool HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura = 0) const;
@@ -1446,11 +1446,12 @@ class TC_GAME_API Unit : public WorldObject
 
         /* (used mainly for blink spell) */
         Position GetLeapPosition(float dist);
-        void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false);
-        void SendTeleportPacket(Position& pos);
+		void NearTeleportTo(Position const& pos, bool casting = false);
+		void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false) { NearTeleportTo(Position(x, y, z, orientation), casting); }
+        void SendTeleportPacket(Position const& pos);
         virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
         // returns true if unit's position really changed
-        bool UpdatePosition(const Position &pos, bool teleport = false);
+        virtual bool UpdatePosition(const Position &pos, bool teleport = false);
         void UpdateOrientation(float orientation);
         void UpdateHeight(float newZ);
 
@@ -1464,7 +1465,6 @@ class TC_GAME_API Unit : public WorldObject
 
         void MonsterMoveWithSpeed(float x, float y, float z, float speed, bool generatePath = false, bool forceDestination = false);
         void SendMovementFlagUpdate();
-        void SendMovementFlagUpdate(float dist);
 
         bool IsAlive() const { return (m_deathState == ALIVE); };
         bool IsDying() const { return (m_deathState == JUST_DIED); };
@@ -1733,6 +1733,7 @@ class TC_GAME_API Unit : public WorldObject
 #endif
 
         void BuildMovementPacket(ByteBuffer *data) const;
+		static void BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data);
 
         bool isMoving() const   { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_MOVING); }
         bool isTurning() const  { return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_MASK_TURNING); }
@@ -1758,7 +1759,6 @@ class TC_GAME_API Unit : public WorldObject
         // Visibility system
         UnitVisibility GetVisibility() const { return m_Visibility; }
         void SetVisibility(UnitVisibility x);
-        void DestroyForNearbyPlayers();
 
         // common function for visibility checks for player/creatures with detection code
         virtual bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
@@ -2012,6 +2012,8 @@ class TC_GAME_API Unit : public WorldObject
         Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
         GameObject* FindGOInGrid(uint32 entry, float range);
         
+		bool IsDuringRemoveFromWorld() const { return m_duringRemoveFromWorld; }
+
         Pet* ToPet() { if(IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; } 
         Pet const* ToPet() const { if (IsPet()) return reinterpret_cast<Pet const*>(this); else return nullptr; }
 
@@ -2064,7 +2066,7 @@ class TC_GAME_API Unit : public WorldObject
         bool m_last_isunderwater_status;
         bool m_is_updating_environment;
     protected:
-        explicit Unit ();
+        explicit Unit (bool isWorldObject);
 
         void BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, Player* target) const override;
 
@@ -2171,6 +2173,8 @@ class TC_GAME_API Unit : public WorldObject
         bool m_attackVictimOnEnd;
 
         uint32 m_procDeep;
+
+		bool m_duringRemoveFromWorld; // lock made to not add stuff after begining removing from world
         
         bool _targetLocked; // locks the target during spell cast for proper facing
         time_t _lastDamagedTime; // Part of Evade mechanic

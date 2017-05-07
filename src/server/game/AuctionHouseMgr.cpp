@@ -9,6 +9,7 @@
 #include "Language.h"
 #include "Log.h"
 #include "ObjectMgr.h"
+#include "GameTime.h"
 #include "Player.h"
 #include "World.h"
 #include "WorldPacket.h"
@@ -143,10 +144,12 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
 
 void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionEntry * auction )
 {
-    Player *owner = sObjectMgr->GetPlayer(auction->owner);
+	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+    Player *owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
+	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist (online or offline)
-    if(owner || sCharacterCache->GetCharacterAccountIdByGuid(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER)))
+    if(owner || owner_accId)
     {
         std::ostringstream msgAuctionSalePendingSubject;
         msgAuctionSalePendingSubject << auction->item_template << ":0:" << AUCTION_SALE_PENDING;
@@ -171,11 +174,9 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionE
 //call this method to send mail to auction owner, when auction is successful, it does not clear ram
 void AuctionHouseMgr::SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEntry * auction )
 {
-    Player *owner = sObjectMgr->GetPlayer(auction->owner);
-
-    uint32 owner_accId = 0;
-    if(!owner)
-        owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER));
+	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+	Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
+	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist
     if(owner || owner_accId)
@@ -217,11 +218,9 @@ void AuctionHouseMgr::SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry
         return;
     }
 
-    Player *owner = sObjectMgr->GetPlayer(auction->owner);
-
-    uint32 owner_accId = 0;
-    if(!owner)
-        owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_PAIR64(auction->owner, HIGHGUID_PLAYER));
+	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+	Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
+	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist
     if(owner || owner_accId)
@@ -465,7 +464,7 @@ AuctionHouseEntry const* AuctionHouseMgr::GetAuctionHouseEntry(uint32 factionTem
 
 void AuctionHouseObject::Update()
 {
-    time_t curTime = sWorld->GetGameTime();
+    time_t curTime = GameTime::GetGameTime();
     ///- Handle expired auctions
     AuctionEntryMap::iterator next;
     SQLTransaction trans = CharacterDatabase.BeginTransaction();

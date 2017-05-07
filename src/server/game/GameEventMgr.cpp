@@ -1080,9 +1080,9 @@ void GameEventMgr::SpawnCreature(uint32 guid)
         sObjectMgr->AddCreatureToGrid(guid, data);
 
         // Spawn if necessary (loaded grids only)
-        Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->mapid));
         // We use spawn coords to spawn
-        if(!map->Instanceable())
+        if(!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
         {
             auto  pCreature = new Creature;
             //TC_LOG_DEBUG("gameevent","Spawning creature %u",*itr);
@@ -1093,7 +1093,7 @@ void GameEventMgr::SpawnCreature(uint32 guid)
             }
             else
             {
-                map->Add(pCreature);
+                map->AddToMap(pCreature);
             }
         }
     }
@@ -1108,9 +1108,9 @@ void GameEventMgr::SpawnGameObject(uint32 guid)
         sObjectMgr->AddGameobjectToGrid(guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
-        Map* map = const_cast<Map*>(sMapMgr->GetBaseMap(data->mapid));
+        Map* map = const_cast<Map*>(sMapMgr->CreateBaseMap(data->mapid));
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
-        if(!map->Instanceable())
+        if(!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
         {
             GameObject* pGameobject = sObjectMgr->IsGameObjectStaticTransport(data->id) ? new StaticTransport() : new GameObject();
             //TC_LOG_DEBUG("gameevent","Spawning gameobject %u", *itr);
@@ -1121,7 +1121,7 @@ void GameEventMgr::SpawnGameObject(uint32 guid)
             else
             {
                 if(pGameobject->isSpawnedByDefault())
-                    map->Add(pGameobject);
+                    map->AddToMap(pGameobject);
             }
         }
     }
@@ -1523,7 +1523,7 @@ void GameEventMgr::SendWorldStateUpdate(Player * plr, uint16 event_id)
     }
 }
 
-bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
+bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id, Map* map /* = nullptr */)
 { 
     if(!guid || !event_id)
         return false;
@@ -1546,9 +1546,9 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
 
     //Spawn/Despawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
-    if(data)
+    if(map && data)
     {
-        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr);
+        Creature* c = map->GetCreature(ObjectGuid(HighGuid::Unit, data->id, guid));
         if(ShouldHaveObjectsSpawned(event_id))
         {
             if(!c || !c->IsInWorld())
@@ -1561,7 +1561,7 @@ bool GameEventMgr::AddCreatureToEvent(uint32 guid, int16 event_id)
 
     return true; 
 }
-bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
+bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id, Map* map /* = nullptr */)
 {
     if(!guid || !event_id)
         return false;
@@ -1584,9 +1584,9 @@ bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
 
     //Spawn/Despawn IG if needed
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
-    if(data)
+    if(map && data)
     {
-        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr);
+        GameObject* go = map->GetGameObject(ObjectGuid(HighGuid::GameObject, data->id, guid));
         if (ShouldHaveObjectsSpawned(event_id))
         {
             if(!go || !go->IsInWorld())
@@ -1600,7 +1600,7 @@ bool GameEventMgr::AddGameObjectToEvent(uint32 guid, int16 event_id)
     return true; 
 }
 
-bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
+bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid, Map* map /* = nullptr */)
 { 
     if(!guid)
         return false;
@@ -1625,9 +1625,9 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
 
     //Respawn IG if needed
     CreatureData const* data = sObjectMgr->GetCreatureData(guid);
-    if(data)
+    if(map && data)
     {
-        Creature* c = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr);
+        Creature* c = map->GetCreature(ObjectGuid(HighGuid::Unit, data->id, guid));
         if(ShouldHaveObjectsSpawned(event_id) && (!c || !c->IsInWorld()))
         {
             SpawnCreature(guid);
@@ -1636,7 +1636,7 @@ bool GameEventMgr::RemoveCreatureFromEvent(uint32 guid)
 
     return true;
 }
-bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
+bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid, Map* map /* = nullptr */)
 { 
     if(!guid)
         return false;
@@ -1661,9 +1661,9 @@ bool GameEventMgr::RemoveGameObjectFromEvent(uint32 guid)
 
     //Respawn IG if needed
     GameObjectData const* data = sObjectMgr->GetGOData(guid);
-    if(data)
+    if(map && data)
     {
-        GameObject* go = sObjectAccessor->GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr);
+        GameObject* go = map->GetGameObject(ObjectGuid(HighGuid::GameObject, data->id, guid)); 
         if(ShouldHaveObjectsSpawned(event_id) && (!go || !go->IsInWorld()))
         {
             SpawnGameObject(guid);

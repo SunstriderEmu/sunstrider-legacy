@@ -294,7 +294,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
         return false;
     }
 
-    Player *target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+    Player *target = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     if (target)
     {
         if (target->IsBeingTeleported() == true)
@@ -412,7 +412,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
         return false;
     }
 
-    Player *target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+    Player *target = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     if (target)
     {
         Map* cMap = target->GetMap();
@@ -565,7 +565,7 @@ bool ChatHandler::HandleRecallCommand(const char* args)
             return false;
         }
 
-        chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        chr = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
 
         if (!chr)
         {
@@ -649,7 +649,7 @@ bool ChatHandler::HandleGPSCommand(const char* args)
     {
         std::string name = args;
         if (normalizePlayerName(name))
-            obj = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+            obj = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
 
         if (!obj)
         {
@@ -738,7 +738,7 @@ bool ChatHandler::HandleGPSSCommand(const char* args)
     {
         std::string name = args;
         if (normalizePlayerName(name))
-            obj = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+            obj = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
 
         if (!obj)
         {
@@ -874,7 +874,7 @@ bool ChatHandler::HandleBlinkCommand(const char* args)
 //Save all players in the world
 bool ChatHandler::HandleSaveAllCommand(const char* /*args*/)
 {
-    sObjectAccessor->SaveAllPlayers();
+    ObjectAccessor::SaveAllPlayers();
     SendSysMessage(LANG_PLAYERS_SAVED);
     return true;
 }
@@ -906,7 +906,7 @@ bool ChatHandler::HandlePInfoCommand(const char* args)
             return false;
         }
 
-        target = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        target = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if (target)
             py = strtok(nullptr, " ");
         else
@@ -1091,7 +1091,7 @@ bool ChatHandler::HandleRenameCommand(const char* args)
             return false;
         }
 
-        target = sObjectAccessor->FindConnectedPlayerByName(oldname.c_str());
+        target = ObjectAccessor::FindConnectedPlayerByName(oldname.c_str());
 
         if (!target)
             targetGUID = sCharacterCache->GetCharacterGuidByName(oldname);
@@ -1201,7 +1201,7 @@ bool ChatHandler::HandleCombatStopCommand(const char* args)
             return false;
         }
 
-        player = sObjectAccessor->FindConnectedPlayerByName(playername.c_str());
+        player = ObjectAccessor::FindConnectedPlayerByName(playername.c_str());
 
         if (!player)
         {
@@ -1288,7 +1288,7 @@ bool ChatHandler::HandleChanBan(const char* args)
 
     PSendSysMessage("You banned %s from World channed with the reason: %s.", charNamestr.c_str(), reasonstr.c_str());
 
-    Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str());
+    Player *player = ObjectAccessor::FindConnectedPlayerByName(charNamestr.c_str());
     if (!player)
         return true;
 
@@ -1344,7 +1344,7 @@ bool ChatHandler::HandleChanUnban(const char* args)
     LogsDatabaseAccessor::RemoveSanction(m_session, accountid, 0, "", SANCTION_CHAN_BAN);
 
     PSendSysMessage("Player %s is unbanned.", charNamestr.c_str());
-    if (Player *player = sObjectAccessor->FindConnectedPlayerByName(charNamestr.c_str()))
+    if (Player *player = ObjectAccessor::FindConnectedPlayerByName(charNamestr.c_str()))
     {
         //TODO translate
         ChatHandler(player).PSendSysMessage("You are now unbanned from the World channel.");
@@ -1424,7 +1424,7 @@ bool ChatHandler::HandleCharacterDeleteCommand(const char* args)
     uint64 character_guid;
     uint32 account_id;
 
-    Player *player = sObjectAccessor->FindConnectedPlayerByName(character_name.c_str());
+    Player *player = ObjectAccessor::FindConnectedPlayerByName(character_name.c_str());
     if (player)
     {
         character_guid = player->GetGUID();
@@ -1463,7 +1463,7 @@ bool ChatHandler::HandleCopyStuffCommand(char const * args)
     Player* toPlayer = GetSelectedPlayerOrSelf();
 
     if (normalizePlayerName(fromPlayerName))
-        fromPlayer = sObjectAccessor->FindConnectedPlayerByName(fromPlayerName.c_str());
+        fromPlayer = ObjectAccessor::FindConnectedPlayerByName(fromPlayerName.c_str());
 
     if (!fromPlayer || !toPlayer)
     {

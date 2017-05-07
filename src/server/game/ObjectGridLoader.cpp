@@ -113,6 +113,7 @@ template<class T> void AddUnitState(T* /*obj*/, CellCoord const& /*cell_pair*/)
 {
 }
 
+//TODO, SetDeathState should probably be moved out of here
 template<> void AddUnitState(Creature *obj, CellCoord const& cell_pair)
 {
     Cell cell(cell_pair);
@@ -147,8 +148,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
             continue;
         }
 
-        obj->GetGridRef().link(&m, obj);
-
+		obj->AddToGrid(m);
         AddUnitState(obj,cell);
         obj->AddToWorld();
         if(obj->isActiveObject())
@@ -159,6 +159,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> 
     }
 }
 
+/*
 void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapType &m, uint32 &count, Map* map)
 {
     if(cell_corpses.empty())
@@ -171,7 +172,7 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapTyp
 
         uint32 player_guid = cell_corpse.first;
 
-        Corpse *obj = sObjectAccessor->GetCorpseForPlayerGUID(player_guid);
+        Corpse *obj = GetMap()->GetCorpseByPlayer(player_guid);
         if(!obj)
             continue;
 
@@ -185,45 +186,45 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapTyp
         ++count;
     }
 }
+*/
 
 void
 ObjectGridLoader::Visit(GameObjectMapType &m)
 {
-    uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
-    uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
-    CellCoord cell_pair(x,y);
-    uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
-
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cell_id);
-
-    LoadHelper(cell_guids.gameobjects, cell_pair, m, i_gameObjects, i_map);
+	CellCoord cellCoord = i_cell.GetCellCoord();
+	CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cellCoord.GetId());
+	LoadHelper(cell_guids.gameobjects, cellCoord, m, i_gameObjects, i_map);
 }
 
 void
 ObjectGridLoader::Visit(CreatureMapType &m)
 {
-    uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
-    uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
-    CellCoord cell_pair(x,y);
-    uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
+	CellCoord cellCoord = i_cell.GetCellCoord();
+    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cellCoord.GetId());
 
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cell_id);
-
-    LoadHelper(cell_guids.creatures, cell_pair, m, i_creatures, i_map);
+    LoadHelper(cell_guids.creatures, cellCoord, m, i_creatures, i_map);
 }
 
 void
 ObjectWorldLoader::Visit(CorpseMapType &m)
 {
-    uint32 x = (i_cell.GridX()*MAX_NUMBER_OF_CELLS) + i_cell.CellX();
-    uint32 y = (i_cell.GridY()*MAX_NUMBER_OF_CELLS) + i_cell.CellY();
-    CellCoord cell_pair(x,y);
-    uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
+	CellCoord cellCoord = i_cell.GetCellCoord();
+	if (std::unordered_set<Corpse*> const* corpses = i_map->GetCorpsesInCell(cellCoord.GetId()))
+	{
+		for (Corpse* corpse : *corpses)
+		{
+			corpse->AddToWorld();
+			GridType& cell = i_grid(i_cell.CellX(), i_cell.CellY());
+			if (corpse->IsWorldObject())
+				cell.AddWorldObject(corpse);
+			else
+				cell.AddGridObject(corpse);
 
-    // corpses are always added to spawn mode 0 and they are spawned by their instance id
-    CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), 0, cell_id);
-    LoadHelper(cell_guids.corpses, cell_pair, m, i_corpses, i_map);
+			++i_corpses;
+		}
+	}
 }
+
 
 void
 ObjectGridLoader::Load(GridType &grid)
@@ -345,7 +346,8 @@ ObjectGridCleaner::Visit(GridRefManager<T> &m)
 template void ObjectGridUnloader::Visit(CreatureMapType &);
 template void ObjectGridUnloader::Visit(GameObjectMapType &);
 template void ObjectGridUnloader::Visit(DynamicObjectMapType &);
-template void ObjectGridUnloader::Visit(CorpseMapType &);
+
+template void ObjectGridCleaner::Visit(CreatureMapType &);
 template void ObjectGridCleaner::Visit<GameObject>(GameObjectMapType &);
 template void ObjectGridCleaner::Visit<DynamicObject>(DynamicObjectMapType &);
 template void ObjectGridCleaner::Visit<Corpse>(CorpseMapType &);

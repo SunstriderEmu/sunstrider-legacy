@@ -1100,7 +1100,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
         return false;
     
     uint32 team = m_session->GetPlayer()->GetTeam();
-    sWorld->SendZoneUnderAttack(zoneId, (team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
+    sWorld->SendZoneUnderAttack(zoneId, (team==ALLIANCE ? HORDE : ALLIANCE));
     return true;
 }
 
@@ -1526,7 +1526,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
         if (permanent)
         {
             auto pGameObj = new GameObject;
-            if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), itr.entry, player->GetMap(), itr.position, itr.rot, 0, GO_STATE_READY))
+            if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject), itr.entry, player->GetMap(), itr.position, itr.rot, 0, GO_STATE_READY))
             {
                 delete pGameObj;
                 PSendSysMessage("Failed to create object %u", itr.entry);

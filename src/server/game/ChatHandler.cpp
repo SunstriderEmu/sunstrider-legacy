@@ -244,7 +244,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
             }
 
-            toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
+            toPlayer = ObjectAccessor::FindConnectedPlayerByName(to.c_str());
             uint32 playerSecurity = GetSecurity();
             uint32 targetSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
             //stop here if target player not found
@@ -468,7 +468,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {
-                        ChannelFaction faction = _player->GetTeam() == TEAM_ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
+                        ChannelFaction faction = _player->GetTeam() == ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
                         sIRCMgr->onIngameChannelMessage(faction,to.c_str(),_player->GetName(), msg.c_str());
                     }
                 }

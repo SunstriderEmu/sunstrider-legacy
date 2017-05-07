@@ -39,8 +39,8 @@ Group::~Group()
 {
     if(m_bgGroup)
     {
-        if(m_bgGroup->GetBgRaid(TEAM_ALLIANCE) == this) m_bgGroup->SetBgRaid(TEAM_ALLIANCE, nullptr);
-        else if(m_bgGroup->GetBgRaid(TEAM_HORDE) == this) m_bgGroup->SetBgRaid(TEAM_HORDE, nullptr);
+        if(m_bgGroup->GetBgRaid(ALLIANCE) == this) m_bgGroup->SetBgRaid(ALLIANCE, nullptr);
+        else if(m_bgGroup->GetBgRaid(HORDE) == this) m_bgGroup->SetBgRaid(HORDE, nullptr);
         else TC_LOG_ERROR("FIXME","Group::~Group: battleground group is not linked to the correct battleground.");
     }
     Rolls::iterator itr;
@@ -142,7 +142,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
     m_mainTank = (*result)[0].GetUInt32();
     m_mainAssistant = (*result)[1].GetUInt64();
     m_lootMethod = (LootMethod)(*result)[2].GetUInt8();
-    m_looterGuid = MAKE_NEW_GUID((*result)[3].GetUInt32(), 0, HIGHGUID_PLAYER);
+    m_looterGuid = MAKE_NEW_GUID((*result)[3].GetUInt32(), 0, HighGuid::Player);
     m_lootThreshold = (ItemQualities)(*result)[4].GetUInt8();
 
     for(int i=0; i<TARGETICONCOUNT; i++)
@@ -170,7 +170,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
 bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
 {
     MemberSlot member;
-    member.guid      = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+    member.guid      = MAKE_NEW_GUID(guidLow, 0, HighGuid::Player);
 
     // skip non-existed member
     if(!sCharacterCache->GetCharacterNameByGuid(member.guid, member.name))
@@ -676,7 +676,7 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
         //roll for over-threshold item if it's one-player loot
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM),0,HIGHGUID_ITEM);
+            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HighGuid::Item),0,HighGuid::Item);
             auto  r=new Roll(newitemGUID,*i);
 
             //a vector is filled with only near party members
@@ -742,7 +742,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
         //only roll for one-player items, not for ones everyone can get
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM),0,HIGHGUID_ITEM);
+            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HighGuid::Item),0,HighGuid::Item);
             auto  r=new Roll(newitemGUID,*i);
 
             for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())

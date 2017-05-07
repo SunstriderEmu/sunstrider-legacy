@@ -389,7 +389,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     float o = tInfo->keyFrames.begin()->InitialOrientation;
 
     // initialize the gameobject base
-    uint32 guidLow = guid ? guid : sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT,false);
+    uint32 guidLow = guid ? guid : sObjectMgr->GenerateLowGuid(HighGuid::Mo_Transport,false);
     if (!trans->CreateMoTrans(guidLow, entry, mapId, x, y, z, o, 100))
     {
         delete trans;
@@ -405,6 +405,11 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
             return nullptr;
         }
     }
+
+	// use preset map for instances (need to know which instance)
+	trans->SetMap(map ? map : sMapMgr->CreateMap(mapId, NULL));
+	if (map && map->IsDungeon())
+		trans->m_zoneScript = map->ToInstanceMap()->GetInstanceScript();
 
     // Passengers will be loaded once a player is near
 
@@ -431,7 +436,9 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
 
     // xinef: transports are active so passengers can be relocated (grids must be loaded)
     ///trans->SetKeepActive(true);
-    trans->GetMap()->Add<MotionTransport>(trans);
+	// Passengers will be loaded once a player is near
+	HashMapHolder<Transport>::Insert(trans);
+    trans->GetMap()->AddToMap<MotionTransport>(trans);
     return trans;
 }
 
@@ -462,7 +469,7 @@ void TransportMgr::SpawnContinentTransports()
 
     TC_LOG_INFO("server.loading", ">> Spawned %u continent transports in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 
-    // pussywizard: preload grids for continent static transports
+    // sunwell: preload grids for continent static transports
   /*  
     oldMSTime = GetMSTime();
     result = WorldDatabase.Query("SELECT map, position_x, position_y FROM gameobject g JOIN gameobject_template t ON g.id = t.entry WHERE t.type = 11");

@@ -6,11 +6,11 @@
 
 class Unit;
 
-class TC_GAME_API DynamicObject : public WorldObject
+class TC_GAME_API DynamicObject : public WorldObject, public GridObject<DynamicObject>
 {
     public:
         typedef std::set<Unit*> AffectedSet;
-        explicit DynamicObject();
+        explicit DynamicObject(bool isWorldObject);
 
         void AddToWorld() override;
         void RemoveFromWorld() override;
@@ -30,7 +30,6 @@ class TC_GAME_API DynamicObject : public WorldObject
         void Delay(int32 delaytime);
         bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
 
-        GridReference<DynamicObject> &GetGridRef() { return m_gridRef; }
     protected:
         uint64 m_casterGuid;
         uint32 m_spellId;

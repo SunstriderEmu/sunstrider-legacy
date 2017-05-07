@@ -692,7 +692,7 @@ void SmartAI::OnCharmed(Unit* charmer, bool apply)
         else
             me->SetWalk(!mRun);
 
-        if (Unit* charmer = me->GetCharmer())
+        if (charmer)
             AttackStart(charmer);
     }
 

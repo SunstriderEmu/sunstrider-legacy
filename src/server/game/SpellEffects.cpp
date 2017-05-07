@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "SharedDefines.h"
@@ -1002,7 +983,7 @@ void Spell::EffectDummy(uint32 i)
 
                     if (!creatureTarget || !pGameObj) return;
 
-                    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), 181574, creatureTarget->GetMap(),
+                    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), 181574, creatureTarget->GetMap(),
                         creatureTarget->GetPosition(), G3D::Quat(), 255, GO_STATE_READY))
                     {
                         delete pGameObj;
@@ -1014,8 +995,7 @@ void Spell::EffectDummy(uint32 i)
                     //pGameObj->SetUInt32Value(GAMEOBJECT_LEVEL, m_caster->GetLevel());
                     pGameObj->SetSpellId(m_spellInfo->Id);
 
-                    Map* m = sMapMgr->CreateMap(creatureTarget->GetMapId(), pGameObj);
-                    m->Add(pGameObj);
+					creatureTarget->GetMap()->AddToMap(pGameObj);
 
                     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
                     data << uint64(pGameObj->GetGUID());
@@ -1706,7 +1686,7 @@ void Spell::EffectDummy(uint32 i)
                     // spell has a 1/3 chance to trigger one of the below
                     if(roll_chance_i(66))
                         return;
-                    if((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE)
+                    if((m_caster->ToPlayer())->GetTeam() == ALLIANCE)
                     {
                         // 1000001 - gnomish binary
                         m_caster->CastSpell(m_caster, 50242, true);
@@ -2776,13 +2756,13 @@ void Spell::EffectTeleportUnits(uint32 i)
     // Teleport
     if(unitTarget->GetTypeId() == TYPEID_PLAYER)
         (unitTarget->ToPlayer())->TeleportTo(mapid, x, y, z, orientation, TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (unitTarget==m_caster ? TELE_TO_SPELL : 0));
-    else
-    {
-        sMapMgr->CreateMap(mapid, m_caster)->CreatureRelocation(unitTarget->ToCreature(), x, y, z, orientation);
-        WorldPacket data;
-		unitTarget->BuildHeartBeatMsg(&data);
-        unitTarget->SendMessageToSet(&data, true);
-    }
+	else if (mapid == unitTarget->GetMapId())
+		unitTarget->NearTeleportTo(x, y, z, orientation, unitTarget == m_caster);
+	else
+	{
+		TC_LOG_ERROR("spells", "Spell::EffectTeleportUnits - spellId %u attempted to teleport creature to a different map.", m_spellInfo->Id);
+		return;
+	}
 
     // post effects for TARGET_DEST_DB
     switch ( m_spellInfo->Id )
@@ -2827,7 +2807,7 @@ void Spell::EffectTeleportUnits(uint32 i)
                     case 5:
                     // Transform
                     {
-                        if ((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE )
+                        if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
                             m_caster->CastSpell(m_caster,36897,true);
                         else
                             m_caster->CastSpell(m_caster,36899,true);
@@ -2868,7 +2848,7 @@ void Spell::EffectTeleportUnits(uint32 i)
                     case 4:
                     // Transform
                     {
-                        if ((m_caster->ToPlayer())->GetTeam() == TEAM_ALLIANCE )
+                        if ((m_caster->ToPlayer())->GetTeam() == ALLIANCE )
                             m_caster->CastSpell(m_caster,36897,true);
                         else
                             m_caster->CastSpell(m_caster,36899,true);
@@ -3096,14 +3076,14 @@ void Spell::EffectPowerDrain(uint32 i)
     }
 }
 
-void Spell::EffectSendEvent(uint32 EffectIndex)
+void Spell::EffectSendEvent(uint32 effIndex)
 {
     // we do not handle a flag dropping or clicking on flag in battleground by sendevent system
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET
         && effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    //special cases TODO: switch + improve event_scripts system
+    //special cases TODO: Move them to instanceScript->ProcessEvent
     if (m_spellInfo->Id == 31949 && m_caster->GetTypeId() == TYPEID_PLAYER)
         (m_caster->ToPlayer())->CompleteQuest(9816);
     else if (m_spellInfo->Id == 34140 && m_caster->GetTypeId() == TYPEID_PLAYER && (m_caster->ToPlayer())->GetQuestStatus(10305) == QUEST_STATUS_INCOMPLETE)
@@ -3122,7 +3102,6 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
         if (soulgrinder) {      // Fear all ghosts
             /*CellCoord pair(Trinity::ComputeCellCoord(m_caster->GetPositionX(), m_caster->GetPositionY()));
             Cell cell(pair);
-            cell.data.Part.reserved = ALL_DISTRICT;
             cell.SetNoCreate();
             std::list<Creature*> ogres;
 
@@ -3148,7 +3127,12 @@ void Spell::EffectSendEvent(uint32 EffectIndex)
     else if (m_spellInfo->Id == 42338 && m_caster->GetTypeId() == TYPEID_PLAYER)
         m_caster->ToPlayer()->KilledMonsterCredit(23727, 0);
     
-    sWorld->ScriptsStart(sEventScripts, m_spellInfo->Effects[EffectIndex].MiscValue, m_caster, focusObject);
+	if (ZoneScript* zoneScript = m_caster->GetZoneScript())
+		zoneScript->ProcessEvent(focusObject, m_spellInfo->Effects[effIndex].MiscValue);
+	else if (InstanceScript* instanceScript = m_caster->GetInstanceScript())    // needed in case Player is the caster
+		instanceScript->ProcessEvent(focusObject, m_spellInfo->Effects[effIndex].MiscValue);
+
+	m_caster->GetMap()->ScriptsStart(sEventScripts, m_spellInfo->Effects[effIndex].MiscValue, m_caster, focusObject);
 }
 
 void Spell::EffectPowerBurn(uint32 i)
@@ -3530,9 +3514,9 @@ void Spell::EffectPersistentAA(uint32 i)
 
     Unit *caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
     int32 duration = m_spellInfo->GetDuration();
-    auto  dynObj = new DynamicObject;
+    auto  dynObj = new DynamicObject(false);
 
-    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, i, destTarget->GetPositionX(), destTarget->GetPositionY(), destTarget->GetPositionZ(), duration, radius))
+    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), caster, m_spellInfo->Id, i, destTarget->GetPositionX(), destTarget->GetPositionY(), destTarget->GetPositionZ(), duration, radius))
     {
         delete dynObj;
         return;
@@ -3540,7 +3524,7 @@ void Spell::EffectPersistentAA(uint32 i)
     dynObj->SetUInt32Value(OBJECT_FIELD_TYPE, 65);
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x01eeeeee);
     caster->AddDynObject(dynObj);
-    dynObj->GetMap()->Add(dynObj, true);
+    dynObj->GetMap()->AddToMap(dynObj, true);
 }
 
 void Spell::EffectEnergize(uint32 i)
@@ -3700,7 +3684,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_DOOR:
             case GAMEOBJECT_TYPE_BUTTON:
                 gameObjTarget->UseDoorOrButton();
-                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
+				gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
                 return;
 
             case GAMEOBJECT_TYPE_QUESTGIVER:
@@ -3717,7 +3701,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_GOOBER:
                 // goober_scripts can be triggered if the player don't have the quest
                 if (gameObjTarget->GetGOInfo()->goober.eventId)
-                    sWorld->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
+					gameObjTarget->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->goober.eventId, player, gameObjTarget);
 
                 // cast goober spell
                 if (gameObjTarget->GetGOInfo()->goober.questId)
@@ -3726,7 +3710,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                         return;
 
                 sScriptMgr->OnGossipHello(player, gameObjTarget);
-                sWorld->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
+				gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
                 gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
@@ -3746,7 +3730,7 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             case GAMEOBJECT_TYPE_CHEST:
                 // TODO: possible must be moved to loot release (in different from linked triggering)
                 if (gameObjTarget->GetGOInfo()->chest.eventId)
-                    sWorld->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
+					gameObjTarget->GetMap()->ScriptsStart(sEventScripts, gameObjTarget->GetGOInfo()->chest.eventId, player, gameObjTarget);
 
                 // triggering linked GO
                 if(uint32 trapEntry = gameObjTarget->GetGOInfo()->chest.linkedTrapId)
@@ -4406,8 +4390,8 @@ void Spell::EffectAddFarsight(uint32 i)
 
     float radius = m_spellInfo->Effects[i].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
     int32 duration = m_spellInfo->GetDuration();
-    auto  dynObj = new DynamicObject;
-    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), m_caster, m_spellInfo->Id, 4, POSITION_GET_X_Y_Z(destTarget), duration, radius))
+    auto  dynObj = new DynamicObject(false);
+    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), m_caster, m_spellInfo->Id, 4, POSITION_GET_X_Y_Z(destTarget), duration, radius))
     {
         delete dynObj;
         return;
@@ -4417,7 +4401,7 @@ void Spell::EffectAddFarsight(uint32 i)
     m_caster->AddDynObject(dynObj);
 
     dynObj->SetKeepActive(true);    //must before add to map to be put in world container
-    dynObj->GetMap()->Add(dynObj, true); //grid will also be loaded
+    dynObj->GetMap()->AddToMap(dynObj, true); //grid will also be loaded
 
     (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
 }
@@ -4993,7 +4977,7 @@ void Spell::EffectTameCreature(uint32 /*i*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel()-1);
 
     // add to world
-    pet->GetMap()->Add(pet->ToCreature(), true);
+    pet->GetMap()->AddToMap(pet->ToCreature(), true);
 
     // visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());
@@ -5043,14 +5027,14 @@ void Spell::EffectSummonPet(uint32 i)
             if( OldSummon->IsDead() )
                 return;
 
-            OldSummon->GetMap()->Remove(OldSummon->ToCreature(),false);
-            OldSummon->SetMapId(owner->GetMapId());
+            OldSummon->GetMap()->RemoveFromMap(OldSummon->ToCreature(),false);
+            OldSummon->SetMap(owner->GetMap());
 
             float px, py, pz;
             owner->GetClosePoint(px, py, pz, OldSummon->GetCombatReach());
 
             OldSummon->Relocate(px, py, pz, OldSummon->GetOrientation());
-            owner->GetMap()->Add(OldSummon->ToCreature(), true);
+            owner->GetMap()->AddToMap(OldSummon->ToCreature(), true);
             if(m_spellInfo->Id == 688 /*imp*/ || m_spellInfo->Id == 697 /*void walker*/ || m_spellInfo->Id == 691 /*felhunter*/ || m_spellInfo->Id == 712 /*succubus*/)
                 OldSummon->SetHealth(OldSummon->GetMaxHealth());
 
@@ -5497,7 +5481,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
 
     Map *map = target->GetMap();
 
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), gameobject_id, map,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map,
         Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
     {
         delete pGameObj;
@@ -5515,7 +5499,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
         else
             m_caster->AddGameObject(pGameObj);
     }
-    map->Add(pGameObj, true);
+    map->AddToMap(pGameObj, true);
 
     if(pGameObj->GetMapId() == 489 && pGameObj->GetGoType() == GAMEOBJECT_TYPE_FLAGDROP)  //WS
     {
@@ -5525,10 +5509,10 @@ void Spell::EffectSummonObjectWild(uint32 i)
             Battleground* bg = (m_caster->ToPlayer())->GetBattleground();
             if(bg && bg->GetTypeID()==BATTLEGROUND_WS && bg->GetStatus() == STATUS_IN_PROGRESS)
             {
-                 uint32 team = TEAM_ALLIANCE;
+                 uint32 team = ALLIANCE;
 
                  if(pl->GetTeam() == team)
-                     team = TEAM_HORDE;
+                     team = HORDE;
 
                 ((BattlegroundWS*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID(),team);
             }
@@ -5550,14 +5534,14 @@ void Spell::EffectSummonObjectWild(uint32 i)
     if(uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         auto  linkedGO = new GameObject;
-        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), linkedEntry, map,
+        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, map,
             Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
             linkedGO->SetSpellId(m_spellInfo->Id);
 
             m_caster->AddGameObject(linkedGO);
-            map->Add(linkedGO, true);
+            map->AddToMap(linkedGO, true);
         }
         else
         {
@@ -6387,7 +6371,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
     }
 
     // normal DB scripted effect
-    sWorld->ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
+	m_caster->GetMap()->ScriptsStart(sSpellScripts, m_spellInfo->Id, m_caster, unitTarget);
 }
 
 void Spell::EffectSanctuary(uint32 /*i*/)
@@ -6503,7 +6487,7 @@ void Spell::EffectDuel(uint32 i)
     uint32 gameobject_id = m_spellInfo->Effects[i].MiscValue;
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), gameobject_id, map,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map,
         Position( m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2 ,
         m_caster->GetPositionZ(),
@@ -6520,7 +6504,7 @@ void Spell::EffectDuel(uint32 i)
     pGameObj->SetSpellId(m_spellInfo->Id);
 
     m_caster->AddGameObject(pGameObj);
-    map->Add(pGameObj, true);
+    map->AddToMap(pGameObj, true);
     //END
 
     // Send request
@@ -6661,7 +6645,7 @@ void Spell::EffectSummonTotem(uint32 i)
 
     auto  pTotem = new Totem;
 
-    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT,true), m_caster->GetMap(), m_spellInfo->Effects[i].MiscValue ))
+    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), m_caster->GetMap(), m_spellInfo->Effects[i].MiscValue ))
     {
         delete pTotem;
         return;
@@ -6899,7 +6883,7 @@ void Spell::EffectSummonObject(uint32 i)
         m_caster->GetClosePoint(x,y,z,DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), go_id, map, Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), go_id, map, Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -6911,7 +6895,7 @@ void Spell::EffectSummonObject(uint32 i)
     pGameObj->SetSpellId(m_spellInfo->Id);
     m_caster->AddGameObject(pGameObj);
 
-    map->Add(pGameObj, true);
+    map->AddToMap(pGameObj, true);
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << pGameObj->GetGUID();
     m_caster->SendMessageToSet(&data,true);
@@ -7236,7 +7220,7 @@ void Spell::EffectSummonCritter(uint32 i)
 
     Map *map = m_caster->GetMap();
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!critter->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET),
+    if(!critter->Create(sObjectMgr->GenerateLowGuid(HighGuid::Pet),
         map, pet_entry, pet_number))
     {
         TC_LOG_ERROR("network.opcode","Spell::EffectSummonCritter, spellid %u: no such creature entry %u", m_spellInfo->Id, pet_entry);
@@ -7294,7 +7278,7 @@ void Spell::EffectSummonCritter(uint32 i)
     if (m_caster->GetTypeId() == TYPEID_UNIT && m_caster->ToCreature()->IsAIEnabled)
         m_caster->ToCreature()->AI()->JustSummoned(critter);
 
-    map->Add(critter->ToCreature(), true);
+    map->AddToMap(critter->ToCreature(), true);
 }
 
 void Spell::EffectKnockBack(uint32 i)
@@ -7644,7 +7628,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     Position pos = { fx, fy, fz, m_caster->GetOrientation() };
     G3D::Quat rot = G3D::Matrix3::fromEulerAnglesZYX(m_caster->GetOrientation(), 0.f, 0.f);
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), name_id, cMap,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), name_id, cMap,
         pos, rot, 255, GO_STATE_READY))
     {
         delete pGameObj;
@@ -7706,7 +7690,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     //m_caster->AddGameObject(pGameObj);
     //m_ObjToDel.push_back(pGameObj);
 
-    cMap->Add(pGameObj, true);
+    cMap->AddToMap(pGameObj, true);
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << uint64(pGameObj->GetGUID());
@@ -7715,7 +7699,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         auto  linkedGO = new GameObject;
-        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true), linkedEntry, cMap,
+        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, cMap,
             pos, rot, 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
@@ -7723,7 +7707,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
             linkedGO->SetSpellId(m_spellInfo->Id);
             linkedGO->SetOwnerGUID(m_caster->GetGUID() );
 
-            linkedGO->GetMap()->Add(linkedGO, true);
+            linkedGO->GetMap()->AddToMap(linkedGO, true);
         }
         else
         {

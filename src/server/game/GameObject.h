@@ -585,7 +585,7 @@ class GameObjectModel;
 //time before chest are automatically despawned after first loot
 #define CHEST_DESPAWN_TIME 300
 
-class TC_GAME_API GameObject : public WorldObject
+class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 {
     public:
         explicit GameObject();
@@ -686,7 +686,8 @@ class TC_GAME_API GameObject : public WorldObject
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
         
         //not implemented yet
-        void SetPhaseMask(uint32 newPhaseMask, bool update);
+		void SetPhaseMask(PhaseMask newPhaseMask, bool update) override;
+
         void EnableCollision(bool enable);
 
         void Use(Unit* user);
@@ -753,8 +754,6 @@ class TC_GAME_API GameObject : public WorldObject
         bool canDetectTrap(Player const* u, float distance) const;
 
         GameObject* LookupFishingHoleAround(float range);
-
-        GridReference<GameObject> &GetGridRef() { return m_gridRef; }
 
         //returns SpellCastResult
         uint32 CastSpell(Unit *target, uint32 spell, uint64 originalCaster = 0);

@@ -121,7 +121,7 @@ struct Cell
     bool NoCreate() const { return data.Part.nocreate; }
     void SetNoCreate() { data.Part.nocreate = 1; }
 
-    CellCoord cellPair() const
+    CellCoord GetCellCoord() const
     {
         return CellCoord(
             data.Part.grid_x*MAX_NUMBER_OF_CELLS+data.Part.cell_x,

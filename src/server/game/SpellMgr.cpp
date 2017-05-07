@@ -3328,9 +3328,9 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         // team that controls the workshop in the specified area
         uint32 team = bf->GetData(newArea);
 
-        if (team == TEAM_HORDE)
+        if (team == HORDE)
             return spellId == 56618;
-        else if (team == TEAM_ALLIANCE)
+        else if (team == ALLIANCE)
             return spellId == 56617;
         break;
     }

@@ -67,8 +67,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
      pet->InitPetCreateSpells();
      pet->SetHealth(pet->GetMaxHealth());
 
-     Map* m = sMapMgr->CreateMap(pet->GetMapId(), pet);
-     m->Add(pet->ToCreature());
+     player->GetMap()->AddToMap(pet->ToCreature(), true);
 
      // visual effect for levelup
      pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());

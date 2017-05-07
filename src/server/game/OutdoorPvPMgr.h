@@ -32,6 +32,9 @@ public:
     void HandlePlayerEnterZone(Player * plr, uint32 areaflag);
     // called when player leaves an outdoor pvp area
     void HandlePlayerLeaveZone(Player * plr, uint32 areaflag);
+	// called when player resurrects
+	void HandlePlayerResurrects(Player* player, uint32 areaflag);
+
     // return assigned outdoor pvp
     OutdoorPvP * GetOutdoorPvPToZoneId(uint32 zoneid);
     // handle custom (non-exist in dbc) spell if registered
@@ -39,11 +42,11 @@ public:
     // handle custom go if registered
     bool HandleOpenGo(Player * plr, uint64 guid);
 
+	ZoneScript* GetZoneScript(uint32 zoneId);
+
     void AddZone(uint32 zoneid, OutdoorPvP * handle);
 
     void Update(uint32 diff);
-
-    bool HandleCaptureCreaturePlayerMoveInLos(Player * plr, Creature * c);
 
     void HandleGossipOption(Player * player, uint64 guid, uint32 gossipid);
 

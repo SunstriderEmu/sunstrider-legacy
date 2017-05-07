@@ -67,7 +67,7 @@ void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
     recvPacket >> Invitedname;
 
     if(normalizePlayerName(Invitedname))
-        player = sObjectAccessor->FindPlayerByName(Invitedname.c_str());
+        player = ObjectAccessor::FindPlayerByName(Invitedname.c_str());
 
     if(!player)
     {
@@ -863,8 +863,8 @@ void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
     uint8  unk;
     recvData >> GoGuid >> unk;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     if (uint32 GuildId = GetPlayer()->GetGuildId())
     {
@@ -882,11 +882,11 @@ void WorldSession::HandleGuildBankerActivate( WorldPacket & recvData )
 void WorldSession::HandleGuildBankerActivateTab( WorldPacket & recvData )
 {
     uint64 GoGuid;
-    uint8 TabId,unk1;
+    uint8 TabId, unk1;
     recvData >> GoGuid >> TabId >> unk1;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
@@ -912,8 +912,8 @@ void WorldSession::HandleGuildBankDepositMoney( WorldPacket & recvData )
     if (!money)
         return;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
@@ -953,8 +953,8 @@ void WorldSession::HandleGuildBankWithdrawMoney( WorldPacket & recvData )
     if (!money)
         return;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
@@ -1005,6 +1005,10 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
     
     recvData >> GoGuid >> BankToBank;
+
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
+
     if (BankToBank)
     {
         recvData >> BankTabDst;
@@ -1042,9 +1046,6 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
         if (BankTabSlot >= GUILD_BANK_MAX_SLOTS && BankTabSlot != 0xFF)
             return;
     }
-
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId == 0)
@@ -1478,18 +1479,14 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
 
 void WorldSession::HandleGuildBankBuyTab( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 GoGuid;
     uint8 TabId;
 
     recvData >> GoGuid;
     recvData >> TabId;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId==0)
@@ -1545,8 +1542,8 @@ void WorldSession::HandleGuildBankUpdateTab( WorldPacket & recvData )
     if(IconIndex.empty())
         return;
 
-    if (!sObjectMgr->IsGuildVaultGameObject(_player, GoGuid))
-        return;
+	if (!GetPlayer()->GetGameObjectIfCanInteractWith(GoGuid, GAMEOBJECT_TYPE_GUILD_BANK))
+		return;
 
     uint32 GuildId = GetPlayer()->GetGuildId();
     if (GuildId==0)

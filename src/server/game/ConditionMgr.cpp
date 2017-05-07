@@ -1829,7 +1829,7 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
         }
         case CONDITION_TEAM:
         {
-            if (cond->ConditionValue1 != TEAM_ALLIANCE && cond->ConditionValue1 != TEAM_HORDE)
+            if (cond->ConditionValue1 != ALLIANCE && cond->ConditionValue1 != HORDE)
             {
                 TC_LOG_ERROR("sql.sql", "%s specifies unknown team (%u), skipped.", cond->ToString(true).c_str(), cond->ConditionValue1);
                 return false;

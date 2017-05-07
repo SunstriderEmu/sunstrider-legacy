@@ -14,8 +14,9 @@
 #include "CellImpl.h"
 #include "GridNotifiersImpl.h"
 #include "Transport.h"
+#include "GameTime.h"
 
-DynamicObject::DynamicObject() : WorldObject()
+DynamicObject::DynamicObject(bool isWorldObject) : WorldObject(isWorldObject)
 {
     m_aliveDuration = 0;
     m_casterGuid = 0;
@@ -39,7 +40,7 @@ void DynamicObject::AddToWorld()
     ///- Register the dynamicObject for guid lookup
     if(!IsInWorld())
     {
-        sObjectAccessor->AddObject(this);
+		GetMap()->GetObjectsStore().Insert<DynamicObject>(GetGUID(), this);
         WorldObject::AddToWorld();
     }
 }
@@ -49,7 +50,7 @@ void DynamicObject::RemoveFromWorld()
     ///- Remove the dynamicObject from the accessor
     if(IsInWorld())
     {
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<DynamicObject>(GetGUID());
         WorldObject::RemoveFromWorld();
         if(GetTransport())
             GetTransport()->RemovePassenger(this);
@@ -58,10 +59,8 @@ void DynamicObject::RemoveFromWorld()
 
 bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32 effIndex, float x, float y, float z, int32 duration, float radius )
 {
-    Position pos { x,y,z,0.0f };
-    SetInstanceId(caster->GetInstanceId());
-
-    WorldObject::_Create(guidlow, HIGHGUID_DYNAMICOBJECT, caster->GetMapId());
+	SetMap(caster->GetMap());
+	Position pos{ x,y,z,0.0f };
     Relocate(pos);
 
     if(!IsPositionValid())
@@ -69,6 +68,8 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
         TC_LOG_ERROR("FIXME","ERROR: DynamicObject (spell %u eff %u) not created. Suggested coordinates isn't valid (X: %f Y: %f)",spellId,effIndex,GetPositionX(),GetPositionY());
         return false;
     }
+
+	WorldObject::_Create(guidlow, HighGuid::DynamicObject, caster->GetMapId());
 
     float visualRadius = radius;
     // For some reason visual size in client seems incorrect for some spells. Can't seem to find the proper rule.
@@ -90,7 +91,10 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     SetFloatValue( DYNAMICOBJECT_POS_X, x );
     SetFloatValue( DYNAMICOBJECT_POS_Y, y );
     SetFloatValue( DYNAMICOBJECT_POS_Z, z );
-    SetUInt32Value( DYNAMICOBJECT_CASTTIME, GetMSTime() );  // new 2.4.0
+    SetUInt32Value( DYNAMICOBJECT_CASTTIME, GameTime::GetGameTimeMS()); 
+
+	if (IsWorldObject())
+		SetKeepActive(true);    //must before add to map to be put in world container
 
     m_aliveDuration = duration;
     m_radius = radius;
@@ -98,6 +102,17 @@ bool DynamicObject::Create( uint32 guidlow, Unit *caster, uint32 spellId, uint32
     m_spellId = spellId;
     m_casterGuid = caster->GetGUID();
     m_updateTimer = 0;
+
+	if (!GetMap()->AddToMap(this))
+	{
+		// Returning false will cause the object to be deleted - remove from transport
+#ifdef LICH_KING
+		if (transport)
+			transport->RemovePassenger(this);
+#endif
+		return false;
+	}
+
     return true;
 }
 

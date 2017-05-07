@@ -196,19 +196,83 @@ Deliverer::SendPacket(Player* plr)
             session->SendPacket(i_message);
 }
 
+
+void MessageDistDeliverer::Visit(PlayerMapType &m)
+{
+	for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Player* target = iter->GetSource();
+		if (!target->InSamePhase(i_phaseMask))
+			continue;
+
+		if (target->GetExactDist2dSq(i_source) > i_distSq)
+			continue;
+
+		// Send packet to all who are sharing the player's vision
+		for (auto itr : target->GetSharedVisionList())
+			if (Player* p = ObjectAccessor::GetPlayer(*target, itr))
+				if (p->m_seer == target)
+					SendPacket(p);
+
+		//send only if player viewpoint is on himself (?except for vehicles where the viewpoint is on the vehicle?)
+		if (target->m_seer != target
+#ifdef LICH_KING
+			&& !target->GetVehicle()
+#endif
+			)
+			continue;
+
+		SendPacket(target);
+	}
+}
+
+void MessageDistDeliverer::Visit(CreatureMapType &m)
+{
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Creature* target = iter->GetSource();
+		if (!target->HasSharedVision() || !target->InSamePhase(i_phaseMask))
+			continue;
+
+		if (target->GetExactDist2dSq(i_source) > i_distSq)
+			continue;
+
+		// Send packet to all who are sharing the creature's vision
+		for (auto itr : target->GetSharedVisionList())
+			if (Player* p = ObjectAccessor::GetPlayer(*target, itr))
+				if (p->m_seer == target)
+					SendPacket(p);
+	}
+}
+
+void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
+{
+	for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		DynamicObject* target = iter->GetSource();
+		if (!IS_PLAYER_GUID(target->GetCasterGUID()) || !target->InSamePhase(i_phaseMask))
+			continue;
+
+		// Sunwell optimization: Check whether the dynobject allows to see through it
+		/*
+		if (!target->IsViewpoint())
+			continue;
+			*/
+
+		if (target->GetExactDist2dSq(i_source) > i_distSq)
+			continue;
+
+		// Send packet back to the caster if the caster has vision of dynamic object
+		Player* caster = (Player*)target->GetCaster();
+		if (caster && caster->m_seer == target)
+			SendPacket(caster);
+	}
+}
+
 void
 MessageDeliverer::VisitObject(Player* plr)
 {
     SendPacket(plr);
-}
-
-void
-MessageDistDeliverer::VisitObject(Player* plr)
-{
-    if( !i_ownTeamOnly || (i_source.GetTypeId() == TYPEID_PLAYER && plr->GetTeam() == ((Player&)i_source).GetTeam()) )
-    {
-        SendPacket(plr);
-    }
 }
 
 template<class T> void
@@ -227,7 +291,7 @@ template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);
 bool CannibalizeObjectCheck::operator()(Corpse* u)
 {
     // ignore bones
-    if(u->GetType()==CORPSE_BONES)
+    if(u->GetType() == CORPSE_BONES)
         return false;
 
     Player* owner = ObjectAccessor::FindPlayer(u->GetOwnerGUID());
@@ -255,10 +319,10 @@ bool CannibalizeObjectCheck::operator()(Player* u)
     if (i_funit->IsFriendlyTo(u) || u->IsAlive() || u->HasAuraType(SPELL_AURA_GHOST))
         return false;
 
-    if (i_funit->IsWithinDistInMap(u, i_range))
-        return true;
+	if (!i_funit->IsWithinDistInMap(u, i_range))
+		return false;
 
-    return false;
+	return true;
 }
 
 bool CannibalizeObjectCheck::operator()(Creature* u)
@@ -267,10 +331,10 @@ bool CannibalizeObjectCheck::operator()(Creature* u)
         (u->GetCreatureTypeMask() & CREATURE_TYPEMASK_HUMANOID_OR_UNDEAD) == 0)
         return false;
 
-    if (i_funit->IsWithinDistInMap(u, i_range))
-        return true;
+	if (!i_funit->IsWithinDistInMap(u, i_range))
+		return false;
 
-    return false;
+	return true;
 }
 
 bool AnyUnfriendlyUnitInObjectRangeCheck::operator()(Unit* u)

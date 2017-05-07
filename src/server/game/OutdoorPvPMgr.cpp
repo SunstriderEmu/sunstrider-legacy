@@ -1,20 +1,3 @@
-/*
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "OutdoorPvPMgr.h"
 #include "OutdoorPvPHP.h"
@@ -130,6 +113,14 @@ void OutdoorPvPMgr::AddZone(uint32 zoneid, OutdoorPvP *handle)
     m_OutdoorPvPMap[zoneid] = handle;
 }
 
+ZoneScript* OutdoorPvPMgr::GetZoneScript(uint32 zoneId)
+{
+	OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneId);
+	if (itr != m_OutdoorPvPMap.end())
+		return itr->second;
+	else
+		return nullptr;
+}
 
 void OutdoorPvPMgr::HandlePlayerEnterZone(Player *plr, uint32 zoneid)
 {
@@ -154,6 +145,16 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player *plr, uint32 zoneid)
     }
     // inform the OutdoorPvP class of the leaving, it should remove the player from all objectives
     itr->second->HandlePlayerLeaveZone(plr, zoneid);
+}
+
+void OutdoorPvPMgr::HandlePlayerResurrects(Player* player, uint32 zoneid)
+{
+	auto itr = m_OutdoorPvPMap.find(zoneid);
+	if (itr == m_OutdoorPvPMap.end())
+		return;
+
+	if (itr->second->HasPlayer(player))
+		itr->second->HandlePlayerResurrects(player, zoneid);
 }
 
 OutdoorPvP * OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
@@ -194,16 +195,6 @@ bool OutdoorPvPMgr::HandleOpenGo(Player *plr, uint64 guid)
     for(auto & itr : m_OutdoorPvPSet)
     {
         if(itr->HandleOpenGo(plr,guid))
-            return true;
-    }
-    return false;
-}
-
-bool OutdoorPvPMgr::HandleCaptureCreaturePlayerMoveInLos(Player * plr, Creature * c)
-{
-    for(auto & itr : m_OutdoorPvPSet)
-    {
-        if(itr->HandleCaptureCreaturePlayerMoveInLos(plr,c))
             return true;
     }
     return false;

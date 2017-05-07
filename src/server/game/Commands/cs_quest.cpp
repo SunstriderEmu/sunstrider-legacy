@@ -317,7 +317,7 @@ bool ChatHandler::HandleQuestCountCompleteCommand(const char* args)
             return false;
         }
 
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if (player)
         {
             targetGUID = player->GetGUID();

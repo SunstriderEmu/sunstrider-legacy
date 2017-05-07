@@ -21,6 +21,7 @@
 #include "WaypointMovementGenerator.h"
 #include "TotemAI.h"
 #include "Totem.h"
+#include "GameTime.h"
 #include "BattleGround.h"
 #include "OutdoorPvP.h"
 #include "InstanceSaveMgr.h"
@@ -144,15 +145,15 @@ bool IsPassiveStackableSpell( uint32 spellId )
     return true;
 }
 
-Unit::Unit()
-: WorldObject(), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
+Unit::Unit(bool isWorldObject)
+: WorldObject(isWorldObject), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
 m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_CreatedByPlayer(false),
 m_last_isinwater_status(false),
 m_last_isunderwater_status(false),
-m_is_updating_environment(false)
-
+m_is_updating_environment(false),
+m_duringRemoveFromWorld(false)
 {
     m_objectType |= TYPEMASK_UNIT;
     m_objectTypeId = TYPEID_UNIT;
@@ -303,23 +304,11 @@ Unit::~Unit()
     if(m_charmInfo) 
         delete m_charmInfo;
 
+	assert(!m_duringRemoveFromWorld);
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
 
-#ifdef WITH_UNIT_CRASHFIX
-    for (uint32 i = 0; i < TOTAL_AURAS; i++) {
-        if (m_modAuras[i]._M_impl._M_node._M_prev == NULL) {
-            TC_LOG_ERROR("AURA:Corrupted m_modAuras _M_prev (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
-            m_modAuras[i]._M_impl._M_node._M_prev = m_modAuras[i]._M_impl._M_node._M_next;
-        }
-
-        if (m_modAuras[i]._M_impl._M_node._M_next == NULL) {
-            TC_LOG_ERROR("AURA:Corrupted m_modAuras _M_next (%p) at index %d (higuid %d loguid %d)", m_modAuras, i, GetGUIDHigh(), GetGUIDLow());
-            m_modAuras[i]._M_impl._M_node._M_next = m_modAuras[i]._M_impl._M_node._M_prev;
-        }
-    }
-#endif
 }
 
 void Unit::Update( uint32 p_time )
@@ -639,7 +628,7 @@ bool Unit::HasAuraTypeWithCaster(AuraType auraType, uint64 casterGUID) const
     return false;
 }
 
-bool Unit::HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 casterGUID) const
+bool Unit::HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 casterGUID) const
 {
     for(auto itr : m_Auras)
     {
@@ -651,7 +640,7 @@ bool Unit::HasAuraWithCaster(uint32 spellId, uint32 effIndex, uint64 casterGUID)
     return false;
 }
 
-bool Unit::HasAuraWithCasterNot(uint32 spellId, uint32 effIndex, uint64 casterGUID) const
+bool Unit::HasAuraWithCasterNot(uint32 spellId, uint8 effIndex, uint64 casterGUID) const
 {
     for(auto itr : m_Auras)
     {
@@ -10088,7 +10077,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     // can't attack own vehicle or passenger
     if (m_vehicle)
         if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
-            if (!attacker->IsHostileTo(target)) // pussywizard: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
+            if (!attacker->IsHostileTo(target)) // sunwell: actually can attack own vehicle or passenger if it's hostile to us - needed for snobold in Gormok encounter
                 return false;
 #endif
 
@@ -10534,24 +10523,6 @@ StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetD
         return DETECTED_STATUS_WARNING;
     else // diff > STEALTH_DETECT_WARNING_RANGE
         return DETECTED_STATUS_NOT_DETECTED;
-}
-
-void Unit::DestroyForNearbyPlayers()
-{
-    if(!IsInWorld())
-        return;
-
-    std::list<Unit*> targets;
-    Trinity::AnyUnitInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, targets, check);
-    VisitNearbyWorldObject(GetMap()->GetVisibilityRange(), searcher);
-    for(auto & target : targets)
-        if(target != this && target->GetTypeId() == TYPEID_PLAYER
-            && (target->ToPlayer())->HaveAtClient(this))
-        {
-            DestroyForPlayer(target->ToPlayer()/*TODO LK  ,ToUnit()->IsDuringRemoveFromWorld() && ToCreature()->isDead() */);
-            (target->ToPlayer())->m_clientGUIDs.erase(GetGUID());
-        }
 }
 
 void Unit::SetVisibility(UnitVisibility x)
@@ -11263,7 +11234,7 @@ void Unit::IncrDiminishing(DiminishingGroup group)
     }
 
     if(!IsExist)
-        m_Diminishing.push_back(DiminishingReturn(group,GetMSTime(),DIMINISHING_LEVEL_2));
+        m_Diminishing.push_back(DiminishingReturn(group, GameTime::GetGameTimeMS(), DIMINISHING_LEVEL_2));
 }
 
 void Unit::ApplyDiminishingToDuration(DiminishingGroup group, int32 &duration,Unit* caster,DiminishingLevels Level)
@@ -11316,7 +11287,7 @@ void Unit::ApplyDiminishingAura( DiminishingGroup group, bool apply )
         if(i.DRGroup != group)
             continue;
 
-        i.hitTime = GetMSTime();
+        i.hitTime = GameTime::GetGameTimeMS();
 
         if(apply)
             i.stack += 1;
@@ -11933,10 +11904,32 @@ void Unit::RemoveFromWorld()
     // cleanup
     if(IsInWorld())
     {
+		m_duringRemoveFromWorld = true;
+#ifdef LICH_KING
+		if (IsVehicle())
+			RemoveVehicleKit();
+#endif
         RemoveCharmAuras();
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
+
+		RemoveAllGameObjects();
+		RemoveAllDynObjects();
+
+#ifdef LICH_KING
+		ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
+#endif
+		if (IsCharmed())
+			RemoveCharmedBy(nullptr);
+
+		if (GetCharmerGUID())
+		{
+			TC_LOG_FATAL("entities.unit", "Unit %u has charmer guid when removed from world", GetEntry());
+			ABORT();
+		}
+
         WorldObject::RemoveFromWorld();
+		m_duringRemoveFromWorld = false;
     }
 }
 
@@ -12758,7 +12751,7 @@ void Unit::StopMoving()
     init.Stop();
 }
 
-void Unit::StopMovingOnCurrentPos() // pussywizard
+void Unit::StopMovingOnCurrentPos() // sunwell
 {
     ClearUnitState(UNIT_STATE_MOVING);
 
@@ -12766,7 +12759,7 @@ void Unit::StopMovingOnCurrentPos() // pussywizard
     if (!IsInWorld())
         return;
 
-    DisableSpline(); // pussywizard: required so Launch() won't recalculate position from previous spline
+    DisableSpline(); // sunwell: required so Launch() won't recalculate position from previous spline
     Movement::MoveSplineInit init(this);
     init.MoveTo(GetPositionX(), GetPositionY(), GetPositionZ());
     init.SetFacing(GetOrientation());
@@ -12778,13 +12771,6 @@ void Unit::SendMovementFlagUpdate()
     WorldPacket data;
     BuildHeartBeatMsg(&data);
     SendMessageToSet(&data, false);
-}
-
-void Unit::SendMovementFlagUpdate(float dist)
-{
-    WorldPacket data;
-    BuildHeartBeatMsg(&data);
-    SendMessageToSetInRange(&data, dist, false);
 }
 
 bool Unit::IsSitState() const
@@ -12841,7 +12827,7 @@ void Unit::ClearComboPointHolders()
     {
         uint32 lowguid = *m_ComboPointHolders.begin();
 
-        Player* plr = sObjectMgr->GetPlayer(MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER));
+        Player* plr = sObjectMgr->GetPlayer(MAKE_NEW_GUID(lowguid, 0, HighGuid::Player));
         if(plr && plr->GetComboTarget()==GetGUID())         // recheck for safe
             plr->ClearComboPoints();                        // remove also guid from m_ComboPointHolders;
         else
@@ -13047,7 +13033,7 @@ Aura* Unit::GetDummyAura( uint32 spell_id ) const
 
 bool Unit::IsUnderLastManaUseEffect() const
 {
-    return  GetMSTimeDiff(m_lastManaUse,GetMSTime()) < 5000;
+    return  GetMSTimeDiff(m_lastManaUse, GameTime::GetGameTimeMS()) < 5000;
 }
 
 void Unit::SetContestedPvP(Player *attackedPlayer)
@@ -13591,10 +13577,6 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
     if(player && this != pVictim)
         if(OutdoorPvP * pvp = player->GetOutdoorPvP())
             pvp->HandleKill(player, pVictim);
-
-    if(pVictim->GetTypeId() == TYPEID_PLAYER)
-        if(OutdoorPvP * pvp = (pVictim->ToPlayer())->GetOutdoorPvP())
-            pvp->HandlePlayerActivityChanged(pVictim->ToPlayer());
 
     // battleground things (do this at the end, so the death state flag will be properly set to handle in the bg->handlekill)
     if(player && player->InBattleground() && !SpiritOfRedemption)
@@ -14293,7 +14275,6 @@ Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
 
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*this, entry, isAlive, range);
@@ -14312,7 +14293,6 @@ GameObject* Unit::FindGOInGrid(uint32 entry, float range)
 
     CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
     Cell cell(pair);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
@@ -14452,7 +14432,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
     switch(form)
     {
         case FORM_CAT:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = firstApril ? 729 : 892;
             else
                 modelid = firstApril ? 657 : 8571;
@@ -14467,12 +14447,12 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             modelid = firstApril ? 4591 : 2428;
             break;
         case FORM_GHOUL:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = 10045;
             break;
         case FORM_BEAR:
         case FORM_DIREBEAR:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = firstApril ? 865 : 2281;
             else
                 modelid = firstApril ? 706 : 2289;
@@ -14484,19 +14464,19 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             modelid = firstApril ? 1531 : 4613;
             break;
         case FORM_FLIGHT:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = firstApril ? 9345 : 20857;
             else
                 modelid = firstApril ? 9345 : 20872;
             break;
         case FORM_MOONKIN:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = firstApril ? 17034 : 15374;
             else
                 modelid = firstApril ? 17034 : 15375;
             break;
         case FORM_FLIGHT_EPIC:
-            if(Player::TeamForRace(GetRace()) == TEAM_ALLIANCE)
+            if(Player::TeamForRace(GetRace()) == ALLIANCE)
                 modelid = firstApril ? 6212 : 21243;
             else
                 modelid = firstApril ? 19259 : 21244;
@@ -14717,47 +14697,59 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
-    *data << uint32(GetUnitMovementFlags());            // movement flags
+	Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
+}
+
+void Unit::BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data)
+{
+    *data << uint32(movementInfo.GetMovementFlags());            // movement flags
 #ifdef LICH_KING
-    *data << uint16(GetExtraUnitMovementFlags());
+    *data << uint16(movementInfo.GetExtraMovementFlags());
 #else
     *data << uint8(0);                                  // 2.3.0, always set to 0
 #endif
     *data << uint32(GetMSTime());                       // time / counter
-    *data << GetPositionX();
-    *data << GetPositionY();
-    *data << GetPositionZMinusOffset();
-    *data << GetOrientation();
+    *data << float(pos.GetPositionX());
+	*data << float(pos.GetPositionY());
+	*data << float(pos.GetPositionZ());
+	*data << float(pos.GetOrientation());
 
     // 0x00000200
-    if (GetUnitMovementFlags() & MOVEMENTFLAG_ONTRANSPORT)
+    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
-        *data << (uint64)GetTransport()->GetGUID();
-        *data << float (GetTransOffsetX());
-        *data << float (GetTransOffsetY());
-        *data << float (GetTransOffsetZ());
-        *data << float (GetTransOffsetO());
-        *data << uint32(GetTransTime());
+#ifdef LICH_KING
+		*data << movementInfo.transport.guid.WriteAsPacked();
+#else
+		*data << uint64(movementInfo.transport.guid);
+#endif
+		*data << float(transportPos.GetPositionX());
+		*data << float(transportPos.GetPositionY());
+		*data << float(transportPos.GetPositionZ());
+		*data << float(transportPos.GetOrientation());
+		*data << uint32(movementInfo.transport.time);
+#ifdef LICH_KING
+		*data << int8(movementInfo.transport.seat);
+#endif
     }
 
     // 0x02200000
-    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)))
-        *data << (float)m_movementInfo.pitch;
+	if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
+		*data << float(movementInfo.pitch);
 
-    *data << (uint32)m_movementInfo.fallTime;
+	*data << uint32(movementInfo.fallTime);
 
     // 0x00001000
-    if (GetUnitMovementFlags() & MOVEMENTFLAG_JUMPING_OR_FALLING)
+    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
     {
-        *data << (float)m_movementInfo.jump.zspeed;
-        *data << (float)m_movementInfo.jump.sinAngle;
-        *data << (float)m_movementInfo.jump.cosAngle;
-        *data << (float)m_movementInfo.jump.xyspeed;
+		*data << float(movementInfo.jump.zspeed);
+		*data << float(movementInfo.jump.sinAngle);
+		*data << float(movementInfo.jump.cosAngle);
+		*data << float(movementInfo.jump.xyspeed);
     }
 
     // 0x04000000
-    if (GetUnitMovementFlags() & MOVEMENTFLAG_SPLINE_ELEVATION)
-        *data << (float)m_movementInfo.splineElevation;
+	if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+		*data << float(movementInfo.splineElevation);
 }
 
 void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
@@ -14833,34 +14825,38 @@ bool Unit::IsFalling() const
     return m_movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR) || movespline->isFalling();
 }
 
-void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool casting /*= false*/)
+void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
 {
     DisableSpline();
-    if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->TeleportTo(GetMapId(), x, y, z, orientation, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
+	if (GetTypeId() == TYPEID_PLAYER)
+	{
+		WorldLocation target(GetMapId(), pos);
+		ToPlayer()->TeleportTo(target, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
+	}
     else
     {
-        Position pos = {x, y, z, orientation};
-        SendTeleportPacket(pos);
-        UpdatePosition(x, y, z, orientation, true);
+		SendTeleportPacket(pos);
+		UpdatePosition(pos, true);
         ObjectAccessor::UpdateObjectVisibility(this);
     }
 }
 
-void Unit::SendTeleportPacket(Position& pos)
+void Unit::SendTeleportPacket(Position const& pos)
 {
-    Position oldPos = { GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation() };
-    if (GetTypeId() == TYPEID_UNIT)
-        Relocate(&pos);
+	Position oldPos = { GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation() };
+	//for units, temporary relocate to given position for BuildMovementPacket to send the correct position
+	if (GetTypeId() == TYPEID_UNIT)
+		Relocate(&pos);
 
-    WorldPacket data2(MSG_MOVE_TELEPORT, 38);
-    data2 << GetPackGUID();
-    BuildMovementPacket(&data2);
-    if (GetTypeId() == TYPEID_UNIT)
-        Relocate(&oldPos);
-    if (GetTypeId() == TYPEID_PLAYER)
-        Relocate(&pos);
-    SendMessageToSet(&data2, false);
+	WorldPacket data(MSG_MOVE_TELEPORT, 38);
+	data << GetPackGUID();
+	BuildMovementPacket(&data);
+	if (GetTypeId() == TYPEID_UNIT)
+		Relocate(&oldPos);
+	if (GetTypeId() == TYPEID_PLAYER)
+		Relocate(&pos);
+
+	SendMessageToSet(&data, false);
 }
 
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
@@ -14900,9 +14896,6 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     // code block for underwater state update
     UpdateUnderwaterState(GetMap(), x, y, z);
 
-    if(GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->CheckAreaExploreAndOutdoor();
-
     return (relocated || turn);
 }
 
@@ -14915,12 +14908,20 @@ bool Unit::UpdatePosition(const Position &pos, bool teleport)
 void Unit::UpdateOrientation(float orientation)
 {
     SetOrientation(orientation);
+#ifdef LICH_KING
+	if (IsVehicle())
+		GetVehicleKit()->RelocatePassengers();
+#endif
 }
 
 //! Only server-side height update, does not broadcast to client
 void Unit::UpdateHeight(float newZ)
 {
     Relocate(GetPositionX(), GetPositionY(), newZ);
+#ifdef LICH_KING
+	if (IsVehicle())
+		GetVehicleKit()->RelocatePassengers();
+#endif
 }
 
 class SplineHandler
@@ -15010,10 +15011,7 @@ void Unit::UpdateSplinePosition()
     //if (HasUnitState(UNIT_STATE_CANNOT_TURN))
     //    loc.orientation = GetOrientation();
 
- //   if (GetTypeId() == TYPEID_PLAYER)
-        UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
-   // else
-     //   ToCreature()->SetPosition(loc.x, loc.y, loc.z, loc.orientation);
+    UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
 }
 
 void Unit::DisableSpline()

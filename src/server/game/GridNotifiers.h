@@ -88,11 +88,11 @@ namespace Trinity
         bool i_toSelf;
         float i_dist;
         Deliverer(WorldObject &src, WorldPacket *msg, bool to_possessor, bool to_self, float dist = 0.0f) : i_source(src), i_message(msg), i_toPossessor(to_possessor), i_toSelf(to_self), i_dist(dist) {}
-        void Visit(PlayerMapType &m);
-        void Visit(CreatureMapType &m);
-        void Visit(DynamicObjectMapType &m);
+        virtual void Visit(PlayerMapType &m);
+        virtual void Visit(CreatureMapType &m);
+        virtual void Visit(DynamicObjectMapType &m);
         virtual void VisitObject(Player* plr) = 0;
-        void SendPacket(Player* plr);
+        virtual void SendPacket(Player* plr);
         template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
     };
 
@@ -108,12 +108,40 @@ namespace Trinity
         void VisitObject(Player* plr) override { SendPacket(plr); }
     };
 
-    struct TC_GAME_API MessageDistDeliverer : public Deliverer
-    {
-        bool i_ownTeamOnly;
-        MessageDistDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, float dist, bool to_self, bool ownTeamOnly) : Deliverer(pl, msg, to_possessor, to_self, dist), i_ownTeamOnly(ownTeamOnly) {}
-        void VisitObject(Player* plr) override;
-    };
+	struct TC_GAME_API MessageDistDeliverer
+	{
+		WorldObject* i_source;
+		WorldPacket* i_message;
+		PhaseMask i_phaseMask;
+		float i_distSq;
+		Team team;
+		Player const* skipped_receiver;
+		MessageDistDeliverer(WorldObject* src, WorldPacket* msg, float dist, bool own_team_only = false, Player const* skipped = NULL)
+			: i_source(src), i_message(msg), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist)
+			, team(Team(0))
+			, skipped_receiver(skipped)
+		{
+			if (own_team_only)
+				if (Player* player = src->ToPlayer())
+					team = Team(player->GetTeam());
+		}
+		void Visit(PlayerMapType &m);
+		void Visit(CreatureMapType &m);
+		void Visit(DynamicObjectMapType &m);
+		template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
+
+		void SendPacket(Player* player)
+		{
+			// never send packet to self
+			if (player == i_source || (team != Team(0) && Team(player->GetTeam()) != team) || skipped_receiver == player)
+				return;
+
+			if (!player->HaveAtClient(i_source))
+				return;
+
+			player->GetSession()->SendPacket(i_message);
+		}
+	};
 
     struct TC_GAME_API ObjectMessageDistDeliverer : public Deliverer
     {

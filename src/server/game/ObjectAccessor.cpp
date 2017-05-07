@@ -10,6 +10,7 @@
 #include "WorldPacket.h"
 #include "Item.h"
 #include "Corpse.h"
+#include "ObjectGuid.h"
 #include "GridNotifiers.h"
 #include "MapManager.h"
 #include "Map.h"
@@ -19,8 +20,302 @@
 #include "ObjectDefines.h"
 #include "MapInstanced.h"
 #include "World.h"
-
+#include "Transport.h"
 #include <cmath>
+#include <boost/thread/shared_mutex.hpp>
+#include <boost/thread/locks.hpp>
+
+
+template<class T>
+void HashMapHolder<T>::Insert(T* o)
+{
+	boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+	GetContainer()[o->GetGUID()] = o;
+}
+
+template<class T>
+void HashMapHolder<T>::Remove(T* o)
+{
+	boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+	GetContainer().erase(o->GetGUID());
+}
+
+template<class T>
+T* HashMapHolder<T>::Find(ObjectGuid guid)
+{
+	boost::shared_lock<boost::shared_mutex> lock(*GetLock());
+
+	typename MapType::iterator itr = GetContainer().find(guid);
+	return (itr != GetContainer().end()) ? itr->second : NULL;
+}
+
+template<class T>
+auto HashMapHolder<T>::GetContainer() -> MapType&
+{
+	static MapType _objectMap;
+	return _objectMap;
+}
+
+template<class T>
+boost::shared_mutex* HashMapHolder<T>::GetLock()
+{
+	static boost::shared_mutex _lock;
+	return &_lock;
+}
+
+HashMapHolder<Player>::MapType const& ObjectAccessor::GetPlayers()
+{
+	return HashMapHolder<Player>::GetContainer();
+}
+
+template class TC_GAME_API HashMapHolder<Player>;
+template class TC_GAME_API HashMapHolder<Transport>;
+
+namespace PlayerNameMapHolder
+{
+	typedef std::unordered_map<std::string, Player*> MapType;
+	static MapType PlayerNameMap;
+
+	void Insert(Player* p)
+	{
+		PlayerNameMap[p->GetName()] = p;
+	}
+
+	void Remove(Player* p)
+	{
+		PlayerNameMap.erase(p->GetName());
+	}
+
+	Player* Find(std::string const& name)
+	{
+		std::string charName(name);
+		if (!normalizePlayerName(charName))
+			return nullptr;
+
+		auto itr = PlayerNameMap.find(charName);
+		return (itr != PlayerNameMap.end()) ? itr->second : nullptr;
+	}
+} // namespace PlayerNameMapHolder
+
+WorldObject* ObjectAccessor::GetWorldObject(WorldObject const& p, ObjectGuid const& guid)
+{
+	switch (guid.GetHigh())
+	{
+	case HighGuid::Player:        return GetPlayer(p, guid);
+	case HighGuid::Transport:
+	case HighGuid::Mo_Transport:
+	case HighGuid::GameObject:    return GetGameObject(p, guid);
+	case HighGuid::Vehicle:
+	case HighGuid::Unit:          return GetCreature(p, guid);
+	case HighGuid::Pet:           return GetPet(p, guid);
+	case HighGuid::DynamicObject: return GetDynamicObject(p, guid);
+	case HighGuid::Corpse:        return GetCorpse(p, guid);
+	default:                      return nullptr;
+	}
+}
+
+Object* ObjectAccessor::GetObjectByTypeMask(WorldObject const& p, ObjectGuid const& guid, uint32 typemask)
+{
+	switch (guid.GetHigh())
+	{
+	case HighGuid::Item:
+		if (typemask & TYPEMASK_ITEM && p.GetTypeId() == TYPEID_PLAYER)
+			return ((Player const&)p).GetItemByGuid(guid);
+		break;
+	case HighGuid::Player:
+		if (typemask & TYPEMASK_PLAYER)
+			return GetPlayer(p, guid);
+		break;
+	case HighGuid::Transport:
+	case HighGuid::Mo_Transport:
+	case HighGuid::GameObject:
+		if (typemask & TYPEMASK_GAMEOBJECT)
+			return GetGameObject(p, guid);
+		break;
+	case HighGuid::Unit:
+	case HighGuid::Vehicle:
+		if (typemask & TYPEMASK_UNIT)
+			return GetCreature(p, guid);
+		break;
+	case HighGuid::Pet:
+		if (typemask & TYPEMASK_UNIT)
+			return GetPet(p, guid);
+		break;
+	case HighGuid::DynamicObject:
+		if (typemask & TYPEMASK_DYNAMICOBJECT)
+			return GetDynamicObject(p, guid);
+		break;
+	case HighGuid::Corpse:
+		break;
+	default:
+		break;
+	}
+
+	return NULL;
+}
+
+Corpse* ObjectAccessor::GetCorpse(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetCorpse(guid);
+}
+
+GameObject* ObjectAccessor::GetGameObject(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetGameObject(guid);
+}
+
+Transport* ObjectAccessor::GetTransport(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetTransport(guid);
+}
+
+DynamicObject* ObjectAccessor::GetDynamicObject(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetDynamicObject(guid);
+}
+
+Unit* ObjectAccessor::GetUnit(WorldObject const& u, ObjectGuid const& guid)
+{
+	if (guid.IsPlayer())
+		return GetPlayer(u, guid);
+
+	if (guid.IsPet())
+		return GetPet(u, guid);
+
+	return GetCreature(u, guid);
+}
+
+Creature* ObjectAccessor::GetCreature(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetCreature(guid);
+}
+
+Pet* ObjectAccessor::GetPet(WorldObject const& u, ObjectGuid const& guid)
+{
+	return u.GetMap()->GetPet(guid);
+}
+
+Player* ObjectAccessor::GetPlayer(Map const* m, ObjectGuid const& guid)
+{
+	if (Player* player = HashMapHolder<Player>::Find(guid))
+		if (player->IsInWorld() && player->GetMap() == m)
+			return player;
+
+	return nullptr;
+}
+
+Player* ObjectAccessor::GetPlayer(WorldObject const& u, ObjectGuid const& guid)
+{
+	return GetPlayer(u.GetMap(), guid);
+}
+
+Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const& u, ObjectGuid const& guid)
+{
+	if (guid.IsPet())
+		return GetPet(u, guid);
+
+	if (guid.IsCreatureOrVehicle())
+		return GetCreature(u, guid);
+
+	return NULL;
+}
+
+Player* ObjectAccessor::FindPlayer(ObjectGuid const& guid)
+{
+	Player* player = HashMapHolder<Player>::Find(guid);
+	return player && player->IsInWorld() ? player : nullptr;
+}
+
+Player* ObjectAccessor::FindPlayerByName(std::string const& name)
+{
+	Player* player = PlayerNameMapHolder::Find(name);
+	if (!player || !player->IsInWorld())
+		return nullptr;
+
+	return player;
+}
+
+Player* ObjectAccessor::FindPlayerByLowGUID(ObjectGuid::LowType lowguid)
+{
+	ObjectGuid guid(HighGuid::Player, lowguid);
+	return ObjectAccessor::FindPlayer(guid);
+}
+
+Player* ObjectAccessor::FindConnectedPlayer(ObjectGuid const& guid)
+{
+	return HashMapHolder<Player>::Find(guid);
+}
+
+Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
+{
+	return PlayerNameMapHolder::Find(name);
+}
+
+void ObjectAccessor::SaveAllPlayers()
+{
+	boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Player>::GetLock());
+
+	HashMapHolder<Player>::MapType const& m = GetPlayers();
+	for (HashMapHolder<Player>::MapType::const_iterator itr = m.begin(); itr != m.end(); ++itr)
+		itr->second->SaveToDB();
+}
+
+template<>
+void ObjectAccessor::AddObject(Player* player)
+{
+	HashMapHolder<Player>::Insert(player);
+	PlayerNameMapHolder::Insert(player);
+}
+
+template<>
+void ObjectAccessor::RemoveObject(Player* player)
+{
+	HashMapHolder<Player>::Remove(player);
+	PlayerNameMapHolder::Remove(player);
+}
+
+
+/*
+template<class T>
+void HashMapHolder<T>::Insert(T* o)
+{
+	boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+	GetContainer()[o->GetGUID()] = o;
+}
+
+template<class T>
+void HashMapHolder<T>::Remove(T* o)
+{
+	boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+	GetContainer().erase(o->GetGUID());
+}
+
+template<class T>
+T* HashMapHolder<T>::Find(uint64 guid)
+{
+	boost::unique_lock<boost::shared_mutex> lock(*GetLock());
+
+	auto itr = GetContainer().find(guid);
+	return (itr != GetContainer().end()) ? itr->second : nullptr;
+}
+
+template<class T>
+auto HashMapHolder<T>::GetContainer() -> MapType&
+{
+	static MapType _objectMap;
+	return _objectMap;
+}
+
+template<class T>
+boost::shared_mutex* HashMapHolder<T>::GetLock()
+{
+	static boost::shared_mutex _lock;
+	return &_lock;
+}
 
 ObjectAccessor::ObjectAccessor() {}
 ObjectAccessor::~ObjectAccessor() 
@@ -136,7 +431,7 @@ Player* ObjectAccessor::FindPlayer(uint64 guid)
 
 Player* ObjectAccessor::FindPlayer(uint32 guidLow)
 {
-    return FindPlayer(MAKE_PAIR64(guidLow, HIGHGUID_PLAYER));
+    return FindPlayer(MAKE_PAIR64(guidLow, HighGuid::Player));
 }
 
 Player* ObjectAccessor::FindConnectedPlayer(uint64 guid)
@@ -175,7 +470,7 @@ Pet* ObjectAccessor::GetPet(uint64 guid)
     return GetObjectInWorld(guid, (Pet*)nullptr);
 }
 
-Corpse* ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
+Corpse* GetMap()->GetCorpseByPlayer(uint64 guid)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
 
@@ -207,7 +502,7 @@ void ObjectAccessor::RemoveCorpse(Corpse *corpse)
     i_player2corpse.erase(iter);
 }
 
-void ObjectAccessor::AddCorpse(Corpse* corpse)
+void GetMap()->AddCorpse(Corpse* corpse)
 {
     assert(corpse && corpse->GetType() != CORPSE_BONES);
 
@@ -222,7 +517,7 @@ void ObjectAccessor::AddCorpse(Corpse* corpse)
     sObjectMgr->AddCorpseCellData(corpse->GetMapId(),cell_id,corpse->GetOwnerGUID(),corpse->GetInstanceId());
 }
 
-void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
+void GetMap()->AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Map* map)
 {
     boost::shared_lock<boost::shared_mutex> lock(_corpseLock);
     for(auto & iter : i_player2corpse)
@@ -243,7 +538,7 @@ void ObjectAccessor::AddCorpsesToGrid(GridPair const& gridpair,GridType& grid,Ma
     }
 }
 
-Corpse* ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insignia)
+Corpse* GetMap()->ConvertCorpseToBones(uint64 player_guid, bool insignia)
 {
     Corpse *corpse = GetCorpseForPlayerGUID(player_guid);
     if(!corpse)
@@ -335,6 +630,7 @@ void ObjectAccessor::Update(uint32 diff)
         packet.clear();                                     // clean the string
     }
 }
+*/
 
 void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 {
@@ -343,6 +639,8 @@ void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 
     obj->GetMap()->UpdateObjectVisibility(obj,cell,p);
 }
+
+/*
 
 /// Global definitions for the hashmap storage
 
@@ -353,37 +651,37 @@ template class HashMapHolder<DynamicObject>;
 template class HashMapHolder<Creature>;
 template class HashMapHolder<Corpse>;
 
-template Player* ObjectAccessor::GetObjectInWorld<Player>(uint32 mapid, float x, float y, uint64 guid, Player* /*fake*/);
-template Pet* ObjectAccessor::GetObjectInWorld<Pet>(uint32 mapid, float x, float y, uint64 guid, Pet* /*fake*/);
-template Creature* ObjectAccessor::GetObjectInWorld<Creature>(uint32 mapid, float x, float y, uint64 guid, Creature* /*fake*/);
-template Corpse* ObjectAccessor::GetObjectInWorld<Corpse>(uint32 mapid, float x, float y, uint64 guid, Corpse* /*fake*/);
-template GameObject* ObjectAccessor::GetObjectInWorld<GameObject>(uint32 mapid, float x, float y, uint64 guid, GameObject* /*fake*/);
-template DynamicObject* ObjectAccessor::GetObjectInWorld<DynamicObject>(uint32 mapid, float x, float y, uint64 guid, DynamicObject* /*fake*/);
+template Player* ObjectAccessor::GetObjectInWorld<Player>(uint32 mapid, float x, float y, uint64 guid, Player*fake);
+template Pet* ObjectAccessor::GetObjectInWorld<Pet>(uint32 mapid, float x, float y, uint64 guid, Pet*fake);
+template Creature* ObjectAccessor::GetObjectInWorld<Creature>(uint32 mapid, float x, float y, uint64 guid, Creature*fake);
+template Corpse* ObjectAccessor::GetObjectInWorld<Corpse>(uint32 mapid, float x, float y, uint64 guid, Corpse*fake);
+template GameObject* ObjectAccessor::GetObjectInWorld<GameObject>(uint32 mapid, float x, float y, uint64 guid, GameObject*fake);
+template DynamicObject* ObjectAccessor::GetObjectInWorld<DynamicObject>(uint32 mapid, float x, float y, uint64 guid, DynamicObject*fake);
 
 WorldObject* ObjectAccessor::GetObjectInWorld(uint64 guid, WorldObject* p)
 {
     switch (GUID_HIPART(guid))
     {
-        case HIGHGUID_UNIT:
-        case HIGHGUID_PET:
-        case HIGHGUID_PLAYER:        return GetObjectInWorld(guid, (Unit*)nullptr);
-        case HIGHGUID_TRANSPORT:
-        case HIGHGUID_MO_TRANSPORT:
-        case HIGHGUID_GAMEOBJECT:    return GetObjectInWorld(guid, (GameObject*)nullptr);
-        case HIGHGUID_DYNAMICOBJECT: return GetObjectInWorld(guid, (DynamicObject*)nullptr);
-        case HIGHGUID_CORPSE:        return GetObjectInWorld(guid, (Corpse*)nullptr);
+        case HighGuid::Unit:
+        case HighGuid::Pet:
+        case HighGuid::Player:        return GetObjectInWorld(guid, (Unit*)nullptr);
+        case HighGuid::Transport:
+        case HighGuid::Mo_Transport:
+        case HighGuid::GameObject:    return GetObjectInWorld(guid, (GameObject*)nullptr);
+        case HighGuid::DynamicObject: return GetObjectInWorld(guid, (DynamicObject*)nullptr);
+        case HighGuid::Corpse:        return GetObjectInWorld(guid, (Corpse*)nullptr);
         default:                     return nullptr;
     }
 }
 
 
-Player* ObjectAccessor::GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/)
+Player* ObjectAccessor::GetObjectInWorld(uint64 guid, Player* typeSpecifier)
 {
     Player* player = HashMapHolder<Player>::Find(guid);
     return player && player->IsInWorld() ? player : nullptr;
 }
 
-Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit* /*fake*/)
+Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit*fake)
 {
     if (!guid)
         return nullptr;
@@ -399,12 +697,6 @@ Unit* ObjectAccessor::GetObjectInWorld(uint64 guid, Unit* /*fake*/)
 
 void ObjectAccessor::UnloadAll()
 {
-    /* LK
-    for (Player2CorpsesMapType::const_iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); ++itr)
-    {
-        itr->second->RemoveFromWorld();
-        delete itr->second;
-    }*/
 }
 
 
@@ -443,46 +735,8 @@ Player* ObjectAccessor::FindConnectedPlayerByName(std::string const& name)
             return iter.second;
     }
 
-    //TODO :use some kind of cache
+    //TODO :use some kind of cache. See PlayerNameMapHolder at TrinityCore
     
     return nullptr;
 }
-
-template<class T>
-void HashMapHolder<T>::Insert(T* o)
-{
-    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
-
-    GetContainer()[o->GetGUID()] = o;
-}
-
-template<class T>
-void  HashMapHolder<T>::Remove(T* o)
-{
-    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
-
-    GetContainer().erase(o->GetGUID());
-}
-
-template<class T>
-T* HashMapHolder<T>::Find(uint64 guid)
-{
-    boost::unique_lock<boost::shared_mutex> lock(*GetLock());
-
-    auto itr = GetContainer().find(guid);
-    return (itr != GetContainer().end()) ? itr->second : nullptr;
-}
-
-template<class T>
-auto HashMapHolder<T>::GetContainer() -> MapType&
-{
-    static MapType _objectMap;
-    return _objectMap;
-}
-
-template<class T>
-boost::shared_mutex* HashMapHolder<T>::GetLock()
-{
-    static boost::shared_mutex _lock;
-    return &_lock;
-}
+*/

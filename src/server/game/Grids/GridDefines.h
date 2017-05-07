@@ -80,7 +80,7 @@ typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTyp
 
 typedef TypeMapContainer<AllGridObjectTypes> GridTypeMapContainer;
 typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
-//TC typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, uint64> MapStoredObjectTypesContainer;
+typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, uint64> MapStoredObjectTypesContainer;
 
 template<const uint32 LIMIT>
 struct CoordPair
@@ -128,10 +128,54 @@ struct CoordPair
             y_coord = LIMIT - 1;
     }
 
+	void dec_x(uint32 val)
+	{
+		if (x_coord > val)
+			x_coord -= val;
+		else
+			x_coord = 0;
+	}
+
+	void inc_x(uint32 val)
+	{
+		if (x_coord + val < LIMIT)
+			x_coord += val;
+		else
+			x_coord = LIMIT - 1;
+	}
+
+	void dec_y(uint32 val)
+	{
+		if (y_coord > val)
+			y_coord -= val;
+		else
+			y_coord = 0;
+	}
+
+	void inc_y(uint32 val)
+	{
+		if (y_coord + val < LIMIT)
+			y_coord += val;
+		else
+			y_coord = LIMIT - 1;
+	}
+
     bool IsCoordValid() const
     {
         return x_coord < LIMIT && y_coord < LIMIT;
     }
+
+	CoordPair& normalize()
+	{
+		x_coord = std::min(x_coord, LIMIT - 1);
+		y_coord = std::min(y_coord, LIMIT - 1);
+		return *this;
+	}
+
+	uint32 GetId() const
+	{
+		return y_coord * LIMIT + x_coord;
+	}
 
     uint32 x_coord;
     uint32 y_coord;

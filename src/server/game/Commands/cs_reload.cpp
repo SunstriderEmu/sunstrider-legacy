@@ -94,7 +94,7 @@ bool ChatHandler::HandleReloadAllQuestCommand(const char* /*args*/)
 
 bool ChatHandler::HandleReloadAllScriptsCommand(const char*)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         PSendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -539,7 +539,7 @@ bool ChatHandler::HandleReloadItemEnchantementsCommand(const char*)
 
 bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -559,7 +559,7 @@ bool ChatHandler::HandleReloadGameObjectScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -579,7 +579,7 @@ bool ChatHandler::HandleReloadEventScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadWpScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -612,7 +612,7 @@ bool ChatHandler::HandleReloadAutoAnnounceCommand(const char* args)
 
 bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -632,7 +632,7 @@ bool ChatHandler::HandleReloadQuestEndScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadQuestStartScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -652,7 +652,7 @@ bool ChatHandler::HandleReloadQuestStartScriptsCommand(const char* arg)
 
 bool ChatHandler::HandleReloadSpellScriptsCommand(const char* arg)
 {
-    if(sWorld->IsScriptScheduled())
+    if(sMapMgr->IsScriptScheduled())
     {
         SendSysMessage("DB scripts used currently, please attempt reload later.");
         SetSentErrorMessage(true);
@@ -809,9 +809,9 @@ bool ChatHandler::HandleReloadSmartAICommand(const char* args)
             if (target->GetAIName() == SMARTAI_AI_NAME)
                 target->AIM_Initialize();
             PSendSysMessage("Reloaded SmartAI scripts for targeted creature (%s)", target->GetName().c_str());
-        } else {
-            sSmartScriptMgr->ReloadCreaturesScripts();
-            SendGlobalGMSysMessage("Reloaded SmartAI scripts for all existing creatures.");
+        } else if (Player* player = GetSession()->GetPlayer()) {
+			sSmartScriptMgr->ReloadCreaturesScripts(player->GetMap());
+            SendGlobalGMSysMessage("Reloaded SmartAI scripts for all existing creatures in current map. (NYI)");
         }
     }
     return true;

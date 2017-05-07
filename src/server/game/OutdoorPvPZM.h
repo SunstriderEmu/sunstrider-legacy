@@ -131,19 +131,14 @@ enum ZM_TowerStateMask{
 };
 
 class OutdoorPvPZM;
-class OutdoorPvPObjectiveZM_Beacon : public OutdoorPvPObjective
+class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
 {
 friend class OutdoorPvPZM;
 public:
-    OutdoorPvPObjectiveZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
-    bool Update(uint32 diff) override;
+    OPvPCapturePointZM_Beacon(OutdoorPvP * pvp, ZM_BeaconType type);
+	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr) override;
-    void HandlePlayerLeave(Player * plr) override;
     void UpdateTowerState();
-protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
 protected:
     ZM_BeaconType m_TowerType;
     uint32 m_TowerState;
@@ -155,12 +150,13 @@ enum ZM_GraveYardState{
     ZM_GRAVEYARD_H = 4
 };
 
-class OutdoorPvPObjectiveZM_GraveYard : public OutdoorPvPObjective
+class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 {
 friend class OutdoorPvPZM;
 public:
-    OutdoorPvPObjectiveZM_GraveYard(OutdoorPvP * pvp);
+    OPvPCapturePointZM_GraveYard(OutdoorPvP * pvp);
     bool Update(uint32 diff) override;
+	void ChangeState() override { }
     void FillInitialWorldStates(WorldPacket & data) override;
     void UpdateTowerState();
     int32 HandleOpenGo(Player *plr, uint64 guid) override;
@@ -177,7 +173,7 @@ protected:
 
 class OutdoorPvPZM : public OutdoorPvP
 {
-friend class OutdoorPvPObjectiveZM_Beacon;
+friend class OPvPCapturePointZM_Beacon;
 public:
     OutdoorPvPZM();
     bool SetupOutdoorPvP() override;
@@ -189,7 +185,7 @@ public:
     void HandleKillImpl(Player * plr, Unit * killed) override;
     void BuffTeam(uint32 team);
 private:
-    OutdoorPvPObjectiveZM_GraveYard * m_GraveYard;
+    OPvPCapturePointZM_GraveYard * m_GraveYard;
     uint32 m_AllianceTowersControlled;
     uint32 m_HordeTowersControlled;
 };

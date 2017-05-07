@@ -64,7 +64,7 @@ class TC_GAME_API CreatureAI : public UnitAI
             EVADE_REASON_OTHER,
         };
 
-        CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
+        explicit CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
 
         ~CreatureAI() override = default;
 

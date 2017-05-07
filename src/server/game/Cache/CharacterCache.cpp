@@ -137,7 +137,7 @@ void CharacterCache::UpdateCharacterData(uint32 guid, uint8 mask, std::string co
     }
 
     WorldPacket data(SMSG_INVALIDATE_PLAYER, 8);
-    data << MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER);
+    data << MAKE_NEW_GUID(guid, 0, HighGuid::Player);
     sWorld->SendGlobalMessage(&data);
 }
 

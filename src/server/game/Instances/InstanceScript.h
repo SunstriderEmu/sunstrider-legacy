@@ -101,6 +101,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         InstanceScript(Map *map);
         ~InstanceScript() override = default;
 
+		Map* instance;
+			
         // Default accessor functions
         Creature* GetSingleCreatureFromStorage(uint32 uiEntry, bool bSkipDebugLog = false);
 
@@ -112,8 +114,8 @@ class TC_GAME_API InstanceScript : public ZoneScript
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
 
-        // Called every instance update
-        void Update(uint32) override {}
+		//Called every map update
+		virtual void Update(uint32 /*diff*/) {}
 
         // Save and Load instance data to the database
         virtual std::string GetSaveData() { return ""; } //TC has a more advanced system here but this would need a lot more work to transform actual scripts
@@ -138,6 +140,22 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual bool CheckRequiredBosses(uint32 /*bossId*/, Player const* /*player*/ = nullptr) const { return true; }
 
         Player* GetPlayer() const;
+
+		//Handle open / close objects
+		//use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
+		//use HandleGameObject(GUID,boolen,NULL); in any other script
+		void HandleGameObject(uint64 GUID, bool open, GameObject *go = nullptr);
+
+		//Respawns a GO having negative spawntimesecs in gameobject-table
+		void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);
+
+		//change active state of doors or buttons
+		void DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime = 0, bool bUseAlternativeState = false);
+
+		void SaveToDB();
+		//When save is needed, this function generates the data
+		virtual const char* Save() { return ""; }
+
 
     protected:
         void SetBossNumber(uint32 number) { bosses.resize(number); }

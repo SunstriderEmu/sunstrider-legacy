@@ -256,7 +256,7 @@ bool Item::Create( uint32 guidlow, uint32 itemid, Player const* owner, ItemTempl
     if(!itemProto)
         return false;
 
-    Object::_Create( guidlow, 0, HIGHGUID_ITEM );
+    Object::_Create( guidlow, 0, HighGuid::Item );
 
     SetEntry(itemid);
     m_itemProto = itemProto;
@@ -376,7 +376,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
 {
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
-    Object::_Create(guid, 0, HIGHGUID_ITEM);
+    Object::_Create(guid, 0, HighGuid::Item);
 
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_ITEM_INSTANCE);
     stmt->setUInt32(0, guid);
@@ -391,7 +391,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     Field* fields = result->Fetch();
 
     uint8 index = 0;
-    SetOwnerGUID(MAKE_PAIR64(fields[index++].GetUInt32(), HIGHGUID_PLAYER));
+    SetOwnerGUID(ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
     SetEntry(fields[index++].GetUInt32());
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(GetEntry());
     if (!proto)
@@ -401,8 +401,8 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     }
 
     SetUInt64Value(ITEM_FIELD_CONTAINED, fields[index++].GetUInt64());
-    SetUInt64Value(ITEM_FIELD_CREATOR, MAKE_PAIR64(fields[index++].GetUInt32(),HIGHGUID_PLAYER));
-    SetUInt64Value(ITEM_FIELD_GIFTCREATOR, MAKE_PAIR64(fields[index++].GetUInt32(), HIGHGUID_PLAYER));
+    SetUInt64Value(ITEM_FIELD_CREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
+    SetUInt64Value(ITEM_FIELD_GIFTCREATOR, ObjectGuid(HighGuid::Player, fields[index++].GetUInt32()).GetRawValue());
     SetUInt32Value(ITEM_FIELD_STACK_COUNT, fields[index++].GetUInt16());
     SetUInt32Value(ITEM_FIELD_DURATION, fields[index++].GetUInt32());
     for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -425,10 +425,10 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid)
     bool need_save = false;                                 // need explicit save data at load fixes
 
     // overwrite possible wrong/corrupted guid
-    uint64 new_item_guid = MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM);
+    uint64 new_item_guid = MAKE_NEW_GUID(guid,0, HighGuid::Item);
     if(GetUInt64Value(OBJECT_FIELD_GUID) != new_item_guid)
     {
-        SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HIGHGUID_ITEM));
+        SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid,0, HighGuid::Item));
         need_save = true;
     }
 
@@ -949,7 +949,7 @@ Item* Item::CreateItem( uint32 item, uint32 count, Player const* player, ItemTem
         assert(count !=0 && "pProto->Stackable==0 but checked at loading already");
 
         Item *pItem = NewItemOrBag( pProto );
-        if( pItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), item, player,pProto) )
+        if( pItem->Create(sObjectMgr->GenerateLowGuid(HighGuid::Item), item, player,pProto) )
         {
             pItem->SetCount( count );
             return pItem;
@@ -982,8 +982,20 @@ void Item::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
     ClearUpdateMask(false);
 }
 
+void Item::AddToObjectUpdate()
+{
+	if (Player* owner = GetOwner())
+		owner->GetMap()->AddUpdateObject(this);
+}
+
+void Item::RemoveFromObjectUpdate()
+{
+	if (Player* owner = GetOwner())
+		owner->GetMap()->RemoveUpdateObject(this);
+}
+
 uint64 Item::GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }
-void Item::SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
+void Item::SetOwnerGUID(ObjectGuid const& guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
 void Item::SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); }
 bool Item::IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
 bool Item::IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }

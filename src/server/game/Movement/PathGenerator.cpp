@@ -13,7 +13,7 @@
 
 ////////////////// PathGenerator //////////////////
 PathGenerator::PathGenerator(const Unit* owner) : 
-    PathGenerator(Position(), owner->GetMapId(), owner->GetInstanceId(), PATHFIND_OPTION_NONE) //dummy position and options
+    PathGenerator(owner->GetPosition(), owner->GetMapId(), owner->GetInstanceId(), PATHFIND_OPTION_NONE) //dummy position and options
 {
     //erase position and options
     _sourceUnit = owner;
@@ -21,8 +21,6 @@ PathGenerator::PathGenerator(const Unit* owner) :
     
     UpdateOptions();
     //TC_LOG_DEBUG("maps", "++ PathGenerator::PathGenerator for %u \n", _sourceUnit->GetGUIDLow());
-
-    CreateFilter();
 }
 
 PathGenerator::PathGenerator(const Position& startPos, uint32 mapId, uint32 instanceId, uint32 options) :
@@ -206,7 +204,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
             // Check both start and end points, if they're both in water, then we can *safely* let the creature move
             for (uint32 i = 0; i < _pathPoints.size(); ++i)
             {
-                ZLiquidStatus status = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, BASE_LIQUID_TYPE_MASK_ALL);
+                ZLiquidStatus status = _sourceUnit->GetBaseMap()->getLiquidStatus(_pathPoints[i].x, _pathPoints[i].y, _pathPoints[i].z, BASE_LIQUID_TYPE_MASK_ALL);
                 // One of the points is not in the water, cancel movement.
                 if (status == LIQUID_MAP_NO_WATER)
                 {
@@ -227,7 +225,7 @@ void PathGenerator::BuildPolyPath(G3D::Vector3 const& startPos, G3D::Vector3 con
 
         bool buildShortcut = false;
         G3D::Vector3 const& p = (distToStartPoly > 7.0f) ? startPos : endPos;
-        if ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId)->IsUnderWater(p.x, p.y, p.z))
+        if (_sourceUnit->GetBaseMap()->IsUnderWater(p.x, p.y, p.z))
         {
             TC_LOG_DEBUG("maps", "++ BuildPolyPath :: underWater case\n");
             if (SourceCanSwim())
@@ -645,15 +643,14 @@ void PathGenerator::UpdateFilter()
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
     bool sourceInWater = false;
-    //here I assume if there is a _sourceUnit, _sourcePos is always on it. This is currently true but may change at some point...
-    //but this function is used a lot and _sourceUnit->IsInWater should be often more performant
-    if (_sourceUnit)
+	//we could always check sourcepos but this function is used a lot and _sourceUnit->IsInWater should be a lot more performant
+    if (_sourceUnit && _sourceUnit->GetExactDist(_sourcePos) < 2.0f) 
     {
         sourceInWater = _sourceUnit->IsInWater() || _sourceUnit->IsUnderWater();
     }
     else {
-        Map const* baseMap = (MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId);
-        sourceInWater = baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
+		Map const* baseMap = sMapMgr->CreateBaseMap(_sourceMapId);
+		sourceInWater = baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
     }
 
     if(sourceInWater)
@@ -669,8 +666,10 @@ void PathGenerator::UpdateFilter()
 
 NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
+	Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
     LiquidData data;
-    ZLiquidStatus liquidStatus = ((MapInstanced*)sMapMgr->GetBaseMap(_sourceMapId))->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &data);
+	ZLiquidStatus liquidStatus = map->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &data);
+
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;
 

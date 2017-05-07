@@ -14,7 +14,7 @@
 #include "GridMap.h"
 
 MapManager::MapManager() : 
-    _nextInstanceId(0)
+    _nextInstanceId(0), _scheduledScripts(0)
 {
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
@@ -52,6 +52,8 @@ Map* MapManager::CreateBaseMap(uint32 id)
         else
         {
             m = new Map(MAP_TYPE_MAP, id, 0, REGULAR_DIFFICULTY);
+			//TC map->LoadRespawnTimes();
+			m->LoadCorpseData();
         }
         i_maps[id] = m;
     }
@@ -74,12 +76,12 @@ Map* MapManager::FindBaseMap(uint32 id) const
     return (iter == i_maps.end() ? nullptr : iter->second);
 }
 
-Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
+Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
 {
     Map *m = CreateBaseMap(id);
 
-    if (m && obj && m->Instanceable()) 
-        m = ((MapInstanced*)m)->GetInstance(obj);
+    if (m && m->Instanceable()) 
+		m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
 
     return m;
 }
@@ -137,32 +139,34 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
 
         if (!player->IsAlive())
         {
-            if(Corpse *corpse = player->GetCorpse())
+			if (player->HasCorpse())
             {
                 // let enter in ghost mode in instance that connected to inner instance with corpse
-                uint32 instance_map = corpse->GetMapId();
+				uint32 corpseMap = player->GetCorpseLocation().GetMapId();
                 do
                 {
-                    if(instance_map==mapid)
+                    if(corpseMap == mapid)
                         break;
 
-                    InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(instance_map);
-                    instance_map = instance ? instance->parent : 0;
+                    InstanceTemplate const* corpseInstance = sObjectMgr->GetInstanceTemplate(corpseMap);
+					corpseMap = corpseInstance ? corpseInstance->parent : 0;
                 }
-                while (instance_map);
+                while (corpseMap);
 
-                if (!instance_map)
+                if (!corpseMap)
                 {
                     player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
                     return false;
                 }
+
                 //TC_LOG_DEBUG("network.opcode","MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
+				//TC has the resurrect in trigger handling somewhere instead of here
                 player->ResurrectPlayer(0.5f, false);
                 player->SpawnCorpseBones();
             }
             else
             {
-                //TC_LOG_ERROR("network.opcode","Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
+                TC_LOG_ERROR("network.opcode","Map::CanPlayerEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
             }
         }
 
@@ -175,11 +179,6 @@ bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
     }
     else
         return true;
-}
-
-void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
-{
-    CreateBaseMap(mapid)->RemoveBones(guid, x, y);
 }
 
 void MapManager::Update(time_t diff)
@@ -198,9 +197,11 @@ void MapManager::Update(time_t diff)
 
     if (m_updater.activated())
     {
+		/* We keep instances updates looping while continents are updated.
+		Once all continents are done, we wait for the current instances updates to finish and stop.
+		*/
         m_updater.enableUpdateLoop(true);
         m_updater.waitUpdateOnces();
-        //now that continents are done, stop instances too
         m_updater.enableUpdateLoop(false);
         m_updater.waitUpdateLoops();
     }
@@ -208,9 +209,6 @@ void MapManager::Update(time_t diff)
     //delayed map updates
     for (auto & i_map : i_maps)
         i_map.second->DelayedUpdate(uint32(i_timer.GetCurrent()));
-
-    sObjectAccessor->Update(i_timer.GetCurrent());
-    sWorld->RecordTimeDiff("UpdateObjectAccessor");
 
     i_timer.SetCurrent(0);
 }

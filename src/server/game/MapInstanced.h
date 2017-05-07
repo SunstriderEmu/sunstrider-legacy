@@ -23,11 +23,11 @@ class TC_GAME_API MapInstanced : public Map
         void DelayedUpdate(const uint32 diff) override;
         void MoveAllCreaturesInMoveList() override;
         void RemoveAllObjectsInRemoveList() override;
-        bool RemoveBones(uint64 guid, float x, float y) override;
+        //bool RemoveBones(uint64 guid, float x, float y) override;
         void UnloadAll() override;
         bool CanEnter(Player* player) override;
 
-        Map* GetInstance(const WorldObject* obj);
+		Map* CreateInstanceForPlayer(const uint32 mapId, Player* player, uint32 loginInstanceId = 0);
         Map* FindInstanceMap(uint32 InstanceId);
         //return true of instance was destroyed
         bool DestroyInstance(uint32 InstanceId);

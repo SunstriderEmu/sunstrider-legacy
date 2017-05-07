@@ -168,8 +168,8 @@ enum BattlegroundWinner
 
 enum BattlegroundTeamId
 {
-    BG_TEAM_ALLIANCE        = 0,
-    BG_TEAM_HORDE           = 1
+    BG_ALLIANCE        = 0,
+    BG_HORDE           = 1
 };
 
 enum BattlegroundJoinError
@@ -295,12 +295,12 @@ class TC_GAME_API Battleground
         void AddToBGFreeSlotQueue();                        //this queue will be useful when more battlegrounds instances will be available
         void RemoveFromBGFreeSlotQueue();                   //this method could delete whole BG instance, if another free is available
 
-        void DecreaseInvitedCount(uint32 team)      { (team == TEAM_ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
-        void IncreaseInvitedCount(uint32 team)      { (team == TEAM_ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
+        void DecreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
+        void IncreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? ++m_InvitedAlliance : ++m_InvitedHorde; }
         void PlayerInvitedInRatedArena(Player* player, uint32 team);
         uint32 GetInvitedCount(uint32 team) const
         {
-            if( team == TEAM_ALLIANCE )
+            if( team == ALLIANCE )
                 return m_InvitedAlliance;
             else
                 return m_InvitedHorde;
@@ -329,11 +329,16 @@ class TC_GAME_API Battleground
 
         void StartBattleground();
 
-        GameObject* GetBGObject(uint32 type);
-        Creature* GetBGCreature(uint32 type);
+        GameObject* GetBGObject(uint32 type, bool logError = true);
+        Creature* GetBGCreature(uint32 type, bool logError = true);
         /* Location */
         void SetMapId(uint32 MapID) { m_MapId = MapID; }
         uint32 GetMapId() const { return m_MapId; }
+
+		// Map pointers
+		void SetBgMap(BattlegroundMap* map) { m_Map = map; }
+		BattlegroundMap* GetBgMap() const { ASSERT(m_Map); return m_Map; }
+		BattlegroundMap* FindBgMap() const { return m_Map; }
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
@@ -378,18 +383,12 @@ class TC_GAME_API Battleground
         void SendMessageToAll(int32 entry);
 
         /* Raid Group */
-        Group *GetBgRaid(uint32 TeamID) const { return TeamID == TEAM_ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
-        void SetBgRaid(uint32 TeamID, Group *bg_raid)
-        {
-            Group* &old_raid = TeamID == TEAM_ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE];
-            if(old_raid) old_raid->SetBattlegroundGroup(nullptr);
-            if(bg_raid) bg_raid->SetBattlegroundGroup(this);
-            old_raid = bg_raid;
-        }
+		Group *GetBgRaid(uint32 TeamID) const;
+		void SetBgRaid(uint32 TeamID, Group *bg_raid);
 
         virtual void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
 
-        uint8 GetTeamIndexByTeamId(uint32 Team) const { return Team == TEAM_ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
+        uint8 GetTeamIndexByTeamId(uint32 Team) const { return Team == ALLIANCE ? BG_ALLIANCE : BG_HORDE; }
         uint32 GetPlayersCountByTeam(uint32 Team) const { return m_PlayersCount[GetTeamIndexByTeamId(Team)]; }
         uint32 GetAlivePlayersCountByTeam(uint32 Team) const;   // used in arenas to correctly handle death in spirit of redemption / last stand etc. (killer = killed) cases
         void UpdatePlayersCountByTeam(uint32 Team, bool remove)
@@ -430,12 +429,12 @@ class TC_GAME_API Battleground
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
 
-        void HandleTriggerBuff(uint64 const& go_guid);
+        void HandleTriggerBuff(ObjectGuid const& go_guid);
         void SetHoliday(bool is_holiday);
 
         // TODO: make this protected:
-        typedef std::vector<uint64> BGObjects;
-        typedef std::vector<uint64> BGCreatures;
+        typedef std::vector<ObjectGuid> BGObjects;
+        typedef std::vector<ObjectGuid> BGCreatures;
         BGObjects m_BgObjects;
         BGCreatures m_BgCreatures;
         void SpawnBGObject(uint32 type, uint32 respawntime);
@@ -445,7 +444,7 @@ class TC_GAME_API Battleground
         bool DelCreature(uint32 type);
         bool DelObject(uint32 type);
         bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, uint32 team);
-        int32 GetObjectType(uint64 guid);
+        int32 GetObjectType(ObjectGuid const& guid);
 
         void DoorOpen(uint32 type);
         void DoorClose(uint32 type);
@@ -554,6 +553,7 @@ class TC_GAME_API Battleground
 
         /* Location */
         uint32 m_MapId;
+		BattlegroundMap* m_Map;
         float m_TeamStartLocX[2];
         float m_TeamStartLocY[2];
         float m_TeamStartLocZ[2];

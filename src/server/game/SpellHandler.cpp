@@ -486,7 +486,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     recvData >> guid;
 
     // Get unit for which data is needed by client
-    Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)nullptr);
+    Unit* unit = _player->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 

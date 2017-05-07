@@ -298,7 +298,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNULL                                       //261 SPELL_AURA_261 some phased state (44856 spell)
 };
 
-Aura::Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
+Aura::Aura(SpellInfo const* spellproto, uint8 eff, int32 *currentBasePoints, Unit *target, Unit *caster, Item* castItem) :
 m_procCharges(0), m_stackAmount(1), m_isRemoved(false), m_spellmod(nullptr), m_effIndex(eff), m_caster_guid(0), m_target(target),
 m_timeCla(1000), m_castItemGuid(castItem?castItem->GetGUID():0), m_auraSlot(MAX_AURAS),
 m_positive(false), m_permanent(false), m_isPeriodic(false), m_IsTrigger(false), m_isAreaAura(false),
@@ -497,8 +497,8 @@ PersistentAreaAura::PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, 
 
 PersistentAreaAura::~PersistentAreaAura()
 {
-   for(auto itr : sourceDynObjects)
-        if(DynamicObject* dynObj = ObjectAccessor::GetObjectInWorld(itr, (DynamicObject*)nullptr))
+	for (auto itr : sourceDynObjects)
+		if (DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*m_target, itr))
             dynObj->RemoveAffected(m_target);
 }
 
@@ -569,7 +569,7 @@ Unit* Aura::GetCaster() const
 
     //return ObjectAccessor::GetUnit(*m_target,m_caster_guid);
     //must return caster even if it's in another grid/map
-    Unit *unit = ObjectAccessor::GetObjectInWorld(m_caster_guid, (Unit*)nullptr);
+    Unit *unit = ObjectAccessor::GetUnit(*m_target, m_caster_guid);
     return unit && unit->IsInWorld() ? unit : nullptr;
 }
 
@@ -3314,7 +3314,8 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
 {
     if(m_target->GetTypeId()==TYPEID_PLAYER)
     {
-        if(Real) m_target->SetToNotify(); //update current vision
+        if(Real)
+			m_target->SetToNotify(); //update current vision
     } else {
         return;
     }
@@ -3634,10 +3635,6 @@ void Aura::HandleModStealth(bool apply, bool Real)
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
         {
             m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);  // drop flag at stealth in bg
-
-            // remove player from the objective's active player count at stealth
-            if(OutdoorPvP * pvp = (m_target->ToPlayer())->GetOutdoorPvP())
-                pvp->HandlePlayerActivityChanged(m_target->ToPlayer());
         }
 
         // only at real aura add
@@ -3645,11 +3642,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
         {
             m_target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
             if(m_target->GetTypeId()==TYPEID_PLAYER)
-                m_target->SetFlag(PLAYER_FIELD_BYTES2, 0x2000); // m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
-
-            // apply only if not in GM invisibility (and overwrite invisibility state)
-            if(m_target->GetVisibility()!=VISIBILITY_OFF)
-                m_target->SetVisibility(VISIBILITY_GROUP_STEALTH);
+                m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
         }
     }
     else
@@ -3658,24 +3651,11 @@ void Aura::HandleModStealth(bool apply, bool Real)
         if(Real)
         {
             // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
-            if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH) && m_target->GetVisibility()!=VISIBILITY_OFF)
+            if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH) && m_target->GetVisibility() != VISIBILITY_OFF)
             {
                 m_target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
                 if(m_target->GetTypeId()==TYPEID_PLAYER)
-                    m_target->RemoveFlag(PLAYER_FIELD_BYTES2, 0x2000); // m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
-
-                // restore invisibility if any
-                if(m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
-                {
-                    m_target->SetVisibility(VISIBILITY_ON);
-                }
-                else
-                {
-                    m_target->SetVisibility(VISIBILITY_ON);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        if(OutdoorPvP * pvp = (m_target->ToPlayer())->GetOutdoorPvP())
-                            pvp->HandlePlayerActivityChanged(m_target->ToPlayer());
-                }
+                    m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
             }
         }
     }
@@ -3710,13 +3690,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); // also drop flag at invisibiliy in bg
 
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
-        {
-            // apply glow vision
-            m_target->SetFlag(PLAYER_FIELD_BYTES2,PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
-            // remove player from the objective's active player count at invisibility
-            if(OutdoorPvP * pvp = (m_target->ToPlayer())->GetOutdoorPvP())
-                pvp->HandlePlayerActivityChanged(m_target->ToPlayer());
-        }
+			m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
         // apply only if not in GM invisibility and not stealth
         if(m_target->GetVisibility()==VISIBILITY_ON)
@@ -3735,7 +3709,7 @@ void Aura::HandleInvisibility(bool apply, bool Real)
         {
             // remove glow vision
             if(m_target->GetTypeId() == TYPEID_PLAYER)
-                m_target->RemoveFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+				m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
             // apply only if not in GM invisibility & not stealthed while invisible
             if(m_target->GetVisibility()!=VISIBILITY_OFF)
@@ -3744,9 +3718,6 @@ void Aura::HandleInvisibility(bool apply, bool Real)
                 if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
                 {
                     m_target->SetVisibility(VISIBILITY_ON);
-                    if(m_target->GetTypeId() == TYPEID_PLAYER)
-                        if(OutdoorPvP * pvp = (m_target->ToPlayer())->GetOutdoorPvP())
-                            pvp->HandlePlayerActivityChanged(m_target->ToPlayer());
                 }
             }
         }
@@ -7084,7 +7055,7 @@ void Aura::HandleAuraApplyExtraFlag(bool apply, bool Real)
     {
     case PLAYER_EXTRA_DUEL_AREA:
         m_target->ToPlayer()->SetDuelArea(apply);
-        m_target->ToPlayer()->UpdateZone(m_target->GetZoneId());
+        m_target->ToPlayer()->UpdateZone(m_target->GetZoneId(), m_target->GetAreaId());
         break;
     default:
         TC_LOG_ERROR("FIXME","HandleAuraApplyExtraFlag, flag %u not handled",m_modifier.m_miscvalue);

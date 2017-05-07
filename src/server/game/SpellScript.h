@@ -422,7 +422,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         // finishes spellcast prematurely with selected error message
 		void FinishCast(SpellCastResult result, uint32* param1 = nullptr, uint32* param2 = nullptr);
 
-        void Cancel(); // pussywizard
+        void Cancel(); // sunwell
 
 #ifdef LICH_KING
        //no SPELL_FAILED_CUSTOM_ERROR before LK

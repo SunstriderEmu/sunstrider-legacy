@@ -243,10 +243,10 @@ uint64 SpellCastTargets::GetUnitTargetGUID() const
 {
     switch (GUID_HIPART(m_objectTargetGUID))
     {
-    case HIGHGUID_PLAYER:
-    case HIGHGUID_VEHICLE:
-    case HIGHGUID_UNIT:
-    case HIGHGUID_PET:
+    case HighGuid::Player:
+    case HighGuid::Vehicle:
+    case HighGuid::Unit:
+    case HighGuid::Pet:
         return m_objectTargetGUID;
     default:
         return 0LL;
@@ -272,11 +272,11 @@ void SpellCastTargets::SetUnitTarget(Unit* target)
 
 uint64 SpellCastTargets::GetGOTargetGUID() const
 {
-    switch (GUID_HIPART(m_objectTargetGUID))
+    switch (ObjectGuid((m_objectTargetGUID)).GetHigh())
     {
-    case HIGHGUID_TRANSPORT:
-    case HIGHGUID_MO_TRANSPORT:
-    case HIGHGUID_GAMEOBJECT:
+    case HighGuid::Transport:
+    case HighGuid::Mo_Transport:
+    case HighGuid::GameObject:
         return m_objectTargetGUID;
     default:
         return 0LL;
@@ -305,7 +305,7 @@ uint64 SpellCastTargets::GetCorpseTargetGUID() const
 {
     switch (GUID_HIPART(m_objectTargetGUID))
     {
-    case HIGHGUID_CORPSE:
+    case HighGuid::Corpse:
         return m_objectTargetGUID;
     default:
         return 0LL;
@@ -474,7 +474,7 @@ void SpellCastTargets::SetDstChannel(SpellDestination const& spellDest)
 
 WorldObject* SpellCastTargets::GetObjectTargetChannel(Unit* caster) const
 {
-    return m_objectTargetGUIDChannel ? ((m_objectTargetGUIDChannel == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUIDChannel, caster)) : nullptr;
+    return m_objectTargetGUIDChannel ? ((m_objectTargetGUIDChannel == caster->GetGUID()) ? caster : ObjectAccessor::GetWorldObject(*caster, m_objectTargetGUIDChannel)) : nullptr;
 }
 
 bool SpellCastTargets::HasDstChannel() const
@@ -489,7 +489,7 @@ SpellDestination const* SpellCastTargets::GetDstChannel() const
 
 void SpellCastTargets::Update(Unit* caster)
 {
-    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetObjectInWorld(m_objectTargetGUID, (WorldObject*)caster)) : nullptr;
+    m_objectTarget = m_objectTargetGUID ? ((m_objectTargetGUID == caster->GetGUID()) ? caster : ObjectAccessor::GetWorldObject(*caster, m_objectTargetGUID)) : nullptr;
 
     m_itemTarget = nullptr;
     if (caster->GetTypeId() == TYPEID_PLAYER)
@@ -878,7 +878,6 @@ void Spell::SelectSpellTargets()
 
                 CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell(pair);
-                cell.data.Part.reserved = ALL_DISTRICT;
                 cell.SetNoCreate();
 
                 Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 185861, 100.0f);
@@ -901,7 +900,6 @@ void Spell::SelectSpellTargets()
 
                 CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell(pair);
-                cell.data.Part.reserved = ALL_DISTRICT;
                 cell.SetNoCreate();
 
                 Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 183350, 100.0f);
@@ -921,7 +919,6 @@ void Spell::SelectSpellTargets()
 
                 CellCoord pair2(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
                 Cell cell2(pair2);
-                cell2.data.Part.reserved = ALL_DISTRICT;
                 cell2.SetNoCreate();
 
                 Trinity::NearestGameObjectEntryInObjectRangeCheck go_check2(*m_caster, 183351, 100.0f);
@@ -2337,7 +2334,7 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
             targetInfo.reflectResult = SPELL_MISS_PARRY;
 
         // Increase time interval for reflected spells by 1.5
-        m_caster->m_Events.AddEvent(new ReflectEvent(m_caster->GetGUID(), targetInfo.targetGUID, m_spellInfo), m_caster->m_Events.CalculateTime(targetInfo.timeDelay));
+        m_caster->m_Events.AddEvent(new ReflectEvent(m_caster, targetInfo.targetGUID, m_spellInfo), m_caster->m_Events.CalculateTime(targetInfo.timeDelay));
         targetInfo.timeDelay += targetInfo.timeDelay >> 1;
     }
     else
@@ -2459,7 +2456,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
     if (mask == 0)                                          // No effects
         return;
 
-    Unit* unit = m_caster->GetGUID()==target->targetGUID ? m_caster : ObjectAccessor::GetObjectInWorld(target->targetGUID,(Unit*)nullptr);
+    Unit* unit = m_caster->GetGUID() == target->targetGUID ? m_caster : ObjectAccessor::GetUnit(*m_caster, target->targetGUID);
     if (!unit)
     {
         uint8 farMask = 0;
@@ -2473,7 +2470,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
             return;
         // find unit in world
         // Xinef: FindUnit Access without Map check!!! Intended
-        unit = ObjectAccessor::FindUnit(target->targetGUID);
+        unit = ObjectAccessor::FindPlayer(target->targetGUID);
         if (!unit)
             return;
 
@@ -6656,7 +6653,6 @@ SpellCastResult Spell::CheckItems()
     {
         CellCoord p(Trinity::ComputeCellCoord(m_caster->GetPositionX(), m_caster->GetPositionY()));
         Cell cell(p);
-        cell.data.Part.reserved = ALL_DISTRICT;
 
         GameObject* ok = nullptr;
         Trinity::GameObjectFocusCheck go_check(m_caster,m_spellInfo->RequiresSpellFocus);
@@ -7163,7 +7159,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
 
     if (IsTriggered())
     {
-        if (!m_caster->IsInMap(target)) // pussywizard: crashfix, avoid IsWithinLOS on another map! >_>
+        if (!m_caster->IsInMap(target)) // sunwell: crashfix, avoid IsWithinLOS on another map! >_>
             return true;
 
         float x = m_caster->GetPositionX(), y = m_caster->GetPositionY(), z = m_caster->GetPositionZ();
@@ -7549,18 +7545,22 @@ bool SpellEvent::IsDeletable() const
 
 bool ReflectEvent::Execute(uint64 e_time, uint32 p_time)
 {
-    Unit* caster = ObjectAccessor::FindUnit(_casterGUID);
-    Unit* target = ObjectAccessor::FindUnit(_targetGUID);
-    if (caster && target && caster->IsInMap(target))
-    {
-        // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-        caster->ProcDamageAndSpell(target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, _spellInfo);
-        // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
-        if (Spell* sp = caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
-            sp->setRemoveReflect();
-        else if (Spell* sp = caster->m_currentSpells[CURRENT_GENERIC_SPELL])
-            sp->setRemoveReflect();
-    }
+    WorldObject* target = ObjectAccessor::GetWorldObject(*_caster, _targetGUID);
+	if (!target)
+		return true;
+
+	Unit* unit_target = target->ToUnit();
+	if (!unit_target)
+		return true;
+
+    // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
+	_caster->ProcDamageAndSpell(unit_target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, _spellInfo);
+    // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
+    if (Spell* sp = _caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
+        sp->setRemoveReflect();
+    else if (Spell* sp = _caster->m_currentSpells[CURRENT_GENERIC_SPELL])
+        sp->setRemoveReflect();
+
     return true;
 }
 

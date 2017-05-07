@@ -221,7 +221,7 @@ class TC_GAME_API Aura
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
         uint32 GetId() const;
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
-        uint32 GetEffIndex() const{ return m_effIndex; }
+		uint8 GetEffIndex() const{ return m_effIndex; }
         uint8 GetEffectMask() const { return 1 << m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
         void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
@@ -339,11 +339,11 @@ class TC_GAME_API Aura
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
-        Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
+        Aura(SpellInfo const* spellproto, uint8 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
 
         Modifier m_modifier;
         SpellModifier *m_spellmod;
-        uint32 m_effIndex;
+        uint8 m_effIndex;
         SpellInfo const *m_spellProto;
         int32 m_currentBasePoints;                          // cache SpellInfo::EffectBasePoints and use for set custom base points
         uint64 m_caster_guid;

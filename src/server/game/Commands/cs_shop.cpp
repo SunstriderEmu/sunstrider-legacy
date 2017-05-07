@@ -535,7 +535,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         return false;
     }
     
-    uint32 dest_team = BG_TEAM_ALLIANCE;
+    uint32 dest_team = BG_ALLIANCE;
     // Search each faction is targeted
     switch (t_race)
     {
@@ -544,7 +544,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
         case RACE_UNDEAD_PLAYER:
         case RACE_TROLL:
         case RACE_BLOODELF:
-            dest_team = BG_TEAM_HORDE;
+            dest_team = BG_HORDE;
             break;
         default:
             break;
@@ -564,7 +564,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     bool factionChange = (Player::TeamForRace(m_race) != Player::TeamForRace(t_race));
     uint32 cost = sWorld->getConfig(CONFIG_RACE_CHANGE_COST);
     if (factionChange) {
-        if(dest_team == BG_TEAM_HORDE)
+        if(dest_team == BG_HORDE)
         {
             if(!sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H)) 
             {
@@ -575,7 +575,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
                 return false;
             }
             cost = sWorld->getConfig(CONFIG_FACTION_CHANGE_A2H_COST);
-        } else if (dest_team == BG_TEAM_ALLIANCE) 
+        } else if (dest_team == BG_ALLIANCE) 
         {
             if (!sWorld->getConfig(CONFIG_FACTION_CHANGE_H2A)) 
             {
@@ -647,7 +647,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
     WorldLocation loc;
     uint32 area_id = 0;
     if (factionChange) {
-        if (Player::TeamForRace(t_race) == TEAM_ALLIANCE) {
+        if (Player::TeamForRace(t_race) == ALLIANCE) {
             loc = WorldLocation(0, -8866.468750, 671.831238, 97.903374, 2.154216);
             area_id = 1519; // Stormwind
         }
@@ -711,7 +711,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             if (!title_alliance || !title_horde)
                 continue;
 
-            if (dest_team == BG_TEAM_ALLIANCE) {
+            if (dest_team == BG_ALLIANCE) {
                 if (plr->HasTitle(title_horde)) {
                     plr->RemoveTitle(title_horde);
                     plr->SetTitle(title_alliance);
@@ -752,7 +752,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 faction_alliance = it->first;
             uint32 faction_horde = it->second;
 
-            if (dest_team == BG_TEAM_ALLIANCE) {
+            if (dest_team == BG_ALLIANCE) {
                 if (faction_alliance == 0)
                     plr->DropFactionReputation(faction_horde);
                 else if (faction_horde == 0)
@@ -777,7 +777,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 spell_alliance = it->first;
             uint32 spell_horde = it->second;
 
-            if (dest_team == BG_TEAM_ALLIANCE) {
+            if (dest_team == BG_ALLIANCE) {
                 if (spell_alliance == 0) {
                     if (plr->HasSpell(spell_horde))
                         plr->RemoveSpell(spell_horde);
@@ -830,7 +830,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 item_alliance = it->first;
             uint32 item_horde = it->second;
 
-            if (dest_team == BG_TEAM_ALLIANCE) {
+            if (dest_team == BG_ALLIANCE) {
                 if (item_alliance == 0) {
                     uint32 count = plr->GetItemCount(item_horde, true);
                     if (count != 0)
@@ -995,7 +995,7 @@ bool ChatHandler::HandleRaceOrFactionChange(const char* args)
             uint32 quest_alliance = it->first;
             uint32 quest_horde = it->second;
 
-            if (dest_team == BG_TEAM_ALLIANCE) {
+            if (dest_team == BG_ALLIANCE) {
                 if (quest_alliance == 0)
                     CharacterDatabase.PExecute("DELETE FROM character_queststatus WHERE guid = %u AND quest = %u", plr->GetGUIDLow(), quest_horde);
                 else

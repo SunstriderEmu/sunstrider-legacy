@@ -385,7 +385,7 @@ void WorldSession::HandlePetSetAction( WorldPacket & recvData )
     recvData >> petguid;
 
     // FIXME: charmed case
-    //Pet* pet = sObjectAccessor->GetPet(petguid);
+    //Pet* pet = ObjectAccessor::GetPet(petguid);
     if(ObjectAccessor::FindPlayer(petguid))
         return;
 
@@ -597,7 +597,7 @@ void WorldSession::HandlePetUnlearnOpcode(WorldPacket& recvPacket)
     // relearn pet passives
     pet->LearnPetPassives();
 
-    pet->m_resetTalentsTime = time(nullptr);
+	pet->m_resetTalentsTime = time(nullptr);
     pet->m_resetTalentsCost = cost;
     GetPlayer()->ModifyMoney(-(int32)cost);
 

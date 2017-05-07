@@ -65,7 +65,7 @@ void Totem::Summon(Unit* owner)
     if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
     {
         uint32 modelid = 0;
-        if((owner->ToPlayer())->GetTeam() == TEAM_HORDE)
+        if((owner->ToPlayer())->GetTeam() == HORDE)
         {
             if(cinfo->Modelid3)
                 modelid = cinfo->Modelid3;
@@ -86,8 +86,8 @@ void Totem::Summon(Unit* owner)
     }
 
     // Only add if a display exists.
-    SetInstanceId(owner->GetInstanceId());
-    owner->GetMap()->Add(this->ToCreature(), true);
+	SetMap(owner->GetMap());
+    owner->GetMap()->AddToMap(this->ToCreature(), true);
 
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
     data << GetGUID();

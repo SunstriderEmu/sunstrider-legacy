@@ -113,7 +113,7 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
     cci.FacialHair = facialHair;
     cci.OutfitId = outfitId;
 
-    if (!player->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PLAYER), &cci))
+    if (!player->Create(sObjectMgr->GenerateLowGuid(HighGuid::Player), &cci))
     {
         player->DeleteFromDB(player->GetGUID(), accountId, true/*, true */);
         delete session;
@@ -267,7 +267,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
         sLog->outMessage("playerbot", LOG_LEVEL_INFO, "Deleting random bot guilds...");
         for (vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
         {
-            ObjectGuid leader(HIGHGUID_PLAYER, *i);
+            ObjectGuid leader(HighGuid::Player, *i);
             Guild* guild = sObjectMgr->GetGuildByLeader(leader);
             if (guild) 
                 guild->Disband();
@@ -279,7 +279,7 @@ void RandomPlayerbotFactory::CreateRandomGuilds()
     vector<ObjectGuid> availableLeaders;
     for (vector<uint32>::iterator i = randomBots.begin(); i != randomBots.end(); ++i)
     {
-        ObjectGuid leader(HIGHGUID_PLAYER, *i);
+        ObjectGuid leader(HighGuid::Player, *i);
         Guild* guild = sObjectMgr->GetGuildByLeader(leader);
         if (guild)
         {

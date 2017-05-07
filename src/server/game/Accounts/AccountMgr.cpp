@@ -65,7 +65,7 @@ AccountOpResult AccountMgr::DeleteAccount(uint32 accountId)
         do
         {
             uint32 guidLow = (*result)[0].GetUInt32();
-            uint64 guid = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+            uint64 guid = MAKE_NEW_GUID(guidLow, 0, HighGuid::Player);
 
             // Kick if player is online
             if (Player* p = ObjectAccessor::FindConnectedPlayer(guid))

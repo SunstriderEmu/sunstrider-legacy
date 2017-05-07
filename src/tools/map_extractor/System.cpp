@@ -830,7 +830,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     }
 
     // map hole info
-    uint16 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
+    uint32 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 
     if (map.liquidMapOffset)
         map.holesOffset = map.liquidMapOffset + map.liquidMapSize;

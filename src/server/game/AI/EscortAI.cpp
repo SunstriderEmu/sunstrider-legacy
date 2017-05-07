@@ -12,7 +12,7 @@ EndScriptData */
 
 #include "EscortAI.h"
 
-#define WP_LAST_POINT   -1
+#define WP_LAST_POINT   0xFFFFFF
 
 void npc_escortAI::AttackStart(Unit *who) 
 {
@@ -223,7 +223,7 @@ void npc_escortAI::MovementInform(uint32 type, uint32 id)
         if (WaitTimer <= 1 && /* !HasEscortState(STATE_ESCORT_PAUSED) && */ CurrentWP != WaypointList.end())
         {
             //Call WP function
-            me->SetPosition(CurrentWP->x, CurrentWP->y, CurrentWP->z, me->GetOrientation());
+            me->UpdatePosition(CurrentWP->x, CurrentWP->y, CurrentWP->z, me->GetOrientation());
             me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             WaypointReached(CurrentWP->id);
 

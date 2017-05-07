@@ -10,7 +10,7 @@ class TC_GAME_API TemporarySummon : public Creature
         explicit TemporarySummon(uint64 summoner = 0);
         ~TemporarySummon() override{};
         void Update(uint32 time) override;
-        void Summon(TempSummonType type, uint32 lifetime);
+        void Summon(TempSummonType type, uint32 lifetime, Map* map);
         void UnSummon();
         void SaveToDB(uint32 mapid, uint8 spawnMask) override { }
         TempSummonType GetSummonType() { return m_type; }

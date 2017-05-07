@@ -163,8 +163,8 @@ bool ForcedDespawnDelayEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
     return true;
 }
 
-Creature::Creature() :
-    Unit(),
+Creature::Creature(bool isWorldObject) :
+    Unit(isWorldObject),
     lootForPickPocketed(false), 
     lootForBody(false), 
     m_lootMoney(0), 
@@ -237,7 +237,7 @@ void Creature::AddToWorld()
             if (map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
                 ((InstanceMap*)map)->GetInstanceScript()->OnCreatureCreate(this);
 
-        sObjectAccessor->AddObject(this);
+		GetMap()->GetObjectsStore().Insert<Creature>(GetGUID(), this);
         if (m_spawnId)
             GetMap()->GetCreatureBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
 
@@ -284,7 +284,7 @@ void Creature::RemoveFromWorld()
         if (m_spawnId)
             Trinity::Containers::MultimapErasePair(GetMap()->GetCreatureBySpawnIdStore(), m_spawnId, this);
 
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<Creature>(GetGUID());
     }
 }
 
@@ -513,7 +513,7 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction);
         if (factionEntry)
             if( !IsCivilian() &&
-                (factionEntry->team == TEAM_ALLIANCE || factionEntry->team == TEAM_HORDE) )
+                (factionEntry->team == ALLIANCE || factionEntry->team == HORDE) )
                 SetPvP(true);
     }
 
@@ -925,8 +925,10 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
 bool Creature::Create(uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data)
 {
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
+	ASSERT(map);
+	SetMap(map);
+	//SetPhaseMask(phaseMask, false);
+
     //m_spawnId = guidlow;
 
     //oX = x;     oY = y;    dX = x;    dY = y;    m_moveTime = 0;    m_startMove = 0;
@@ -1227,7 +1229,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 
     WorldDatabase.CommitTransaction(trans);
 
-    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_UNIT,m_spawnId))
+    if(sObjectMgr->IsInTemporaryGuidRange(uint32(HighGuid::Unit), m_spawnId))
         TC_LOG_ERROR("server","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
@@ -1295,7 +1297,7 @@ bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData 
     }
     m_originalEntry = Entry;
 
-    Object::_Create(guidlow, Entry, HIGHGUID_UNIT);
+    Object::_Create(guidlow, Entry, HighGuid::Unit);
 
     if(!UpdateEntry(Entry, data))
         return false;
@@ -1365,7 +1367,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
 
     m_respawnradius = data->spawndist;
     m_respawnDelay = data->spawntimesecs;
-    if(!Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT, map->GetInstanceId() != 0),map,data->id,data))
+    if(!Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit, map->GetInstanceId() != 0),map,data->id,data))
         return false;
 
     Relocate(data->posX,data->posY,data->posZ,data->orientation);
@@ -2099,7 +2101,6 @@ Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
-    cell.data.Part.reserved = ALL_DISTRICT;
 
     Unit* target = nullptr;
 
@@ -2193,7 +2194,6 @@ void Creature::CallForHelp(float radius)
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
-    cell.data.Part.reserved = ALL_DISTRICT;
 
     Trinity::CallOfHelpCreatureInRangeDo u_do(this, GetVictim(), radius);
     Trinity::CreatureWorker<Trinity::CallOfHelpCreatureInRangeDo> worker(u_do);
@@ -2354,7 +2354,7 @@ bool Creature::InitCreatureAddon(bool reload)
 void Creature::SendZoneUnderAttackMessage(Player* attacker)
 {
     uint32 enemy_team = attacker->GetTeam();
-    sWorld->SendZoneUnderAttack(GetZoneId(), (enemy_team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
+    sWorld->SendZoneUnderAttack(GetZoneId(), (enemy_team==ALLIANCE ? HORDE : ALLIANCE));
 }
 
 void Creature::_AddCreatureSpellCooldown(uint32 spell_id, time_t end_time)
@@ -2905,18 +2905,6 @@ bool Creature::SetHover(bool enable, bool packetOnly /*= false*/)
     return true;
 }
 
-void Creature::SetPosition(float x, float y, float z, float o)
-{
-    // prevent crash when a bad coord is sent by the client
-    if (!Trinity::IsValidMapCoord(x, y, z, o))
-    {
-        TC_LOG_DEBUG("entities.unit", "Creature::SetPosition(%f, %f, %f) .. bad coordinates!", x, y, z);
-        return;
-    }
-
-    GetMap()->CreatureRelocation(this, x, y, z, o);
-}
-
 void Creature::UpdateMovementFlags()
 {
     // Do not update movement flags if creature is controlled by a player (charm/vehicle)
@@ -3017,7 +3005,6 @@ void Creature::WarnDeathToFriendly()
     // Check near creatures for assistance
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
-    cell.data.Part.reserved = ALL_DISTRICT;
     cell.SetNoCreate();
 
     Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned u_check(this, this, CREATURE_MAX_DEATH_WARN_RANGE);

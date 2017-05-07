@@ -27,11 +27,8 @@ class TC_GAME_API MapManager
         Map* FindBaseMap(uint32 id) const;
         //Same as FindBaseMap, but exclude all instanceable maps
         Map* FindBaseNonInstanceMap(uint32 mapId) const;
-        Map* CreateMap(uint32 id, const WorldObject* obj);
+        Map* CreateMap(uint32 id, Player* player, uint32 loginInstanceId = 0);
         Map* FindMap(uint32 mapid, uint32 instanceId);
-
-        // only const version for outer users
-        Map const* GetBaseMap(uint32 id) const { return const_cast<MapManager*>(this)->CreateBaseMap(id); }
         
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const;
         uint32 GetZoneId(uint32 mapid, float x, float y, float z) const;
@@ -73,7 +70,6 @@ class TC_GAME_API MapManager
         static bool IsValidMapCoord(WorldLocation const& loc);
 
         bool CanPlayerEnter(uint32 mapid, Player* player);
-        void RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y);
         void InitializeVisibilityDistanceInfo();
 
         /* statistics */
@@ -100,6 +96,11 @@ class TC_GAME_API MapManager
         template<typename Worker>
         void DoForAllMapsWithMapId(uint32 mapId, Worker&& worker);
 
+		void IncreaseScheduledScriptsCount() { ++_scheduledScripts; }
+		void DecreaseScheduledScriptCount() { --_scheduledScripts; }
+		void DecreaseScheduledScriptCount(std::size_t count) { _scheduledScripts -= count; }
+		bool IsScriptScheduled() const { return _scheduledScripts > 0; }
+
     private:
         typedef std::vector<bool> InstanceIds;
 
@@ -116,6 +117,9 @@ class TC_GAME_API MapManager
         InstanceIds _instanceIds;
         uint32 _nextInstanceId;
         MapUpdater m_updater;
+
+		// atomic op counter for active scripts amount
+		std::atomic<std::size_t> _scheduledScripts;
 };
 
 template<typename Worker>

@@ -254,22 +254,47 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
 {
-    Corpse *corpse = GetPlayer()->GetCorpse();
-
-    uint8 found = 1;
-    if(!corpse)
-        found = 0;
+	uint8 found = uint8(_player->HasCorpse());
 
     WorldPacket data(MSG_CORPSE_QUERY, (1+found*(5*4)));
     data << uint8(found);
     if(found)
     {
-        data << corpse->GetMapId();
-        data << corpse->GetPositionX();
-        data << corpse->GetPositionY();
-        data << corpse->GetPositionZ();
-        data << _player->GetMapId();
-        //data << uint32(0);                                      // added on LK
+		WorldLocation corpseLocation = _player->GetCorpseLocation();
+		uint32 corpseMapID = corpseLocation.GetMapId();
+		uint32 mapID = corpseLocation.GetMapId();
+		float x = corpseLocation.GetPositionX();
+		float y = corpseLocation.GetPositionY();
+		float z = corpseLocation.GetPositionZ();
+
+		// if corpse at different map
+		if (mapID != _player->GetMapId())
+		{
+			// search entrance map for proper show entrance
+			if (MapEntry const* corpseMapEntry = sMapStore.LookupEntry(mapID))
+			{
+				if (corpseMapEntry->IsDungeon() && corpseMapEntry->entrance_map >= 0)
+				{
+					// if corpse map have entrance
+					if (Map const* entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->entrance_map))
+					{
+						mapID = corpseMapEntry->entrance_map;
+						x = corpseMapEntry->entrance_x;
+						y = corpseMapEntry->entrance_y;
+						z = entranceMap->GetHeight(GetPlayer()->GetPhaseMask(), x, y, MAX_HEIGHT);
+					}
+				}
+			}
+		}
+
+		data << int32(mapID);
+		data << float(x);
+		data << float(y);
+		data << float(z);
+		data << int32(corpseMapID);
+#ifdef LICH_KING
+        data << uint32(0);  //unk
+#endif
     }
     SendPacket(&data);
 }

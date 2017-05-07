@@ -1000,7 +1000,7 @@ bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uin
     if (NeedsExplicitUnitTarget())
         return true;
 
-    // pussywizard:
+    // sunwell:
     if (effIndex < MAX_SPELL_EFFECTS && (triggeringSpell->Effects[effIndex].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || triggeringSpell->Effects[effIndex].TargetB.GetCheckType() == TARGET_CHECK_ENTRY))
     {
 #ifdef LICH_KING

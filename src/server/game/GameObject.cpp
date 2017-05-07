@@ -1,22 +1,4 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
+
 
 #include "Common.h"
 #include "QuestDef.h"
@@ -24,6 +6,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "Spell.h"
+#include "GameTime.h"
 #include "UpdateMask.h"
 #include "Opcodes.h"
 #include "WorldPacket.h"
@@ -49,7 +32,7 @@
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"
 
-GameObject::GameObject() : WorldObject(), 
+GameObject::GameObject() : WorldObject(false),
     m_AI(nullptr), 
     m_model(nullptr), 
     m_goValue(),
@@ -210,14 +193,13 @@ void GameObject::BuildValuesUpdate(uint8 updateType, ByteBuffer* data, Player* t
 
 void GameObject::AddToWorld()
 {
-    ///- Register the gameobject for guid lookup
     if(!IsInWorld())
+    ///- Register the gameobject for guid lookup
     {
-        if (Map *map = FindMap())
-            if (map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-                ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectCreate(this);
+		if (m_zoneScript)
+			m_zoneScript->OnGameObjectCreate(this);
 
-        sObjectAccessor->AddObject(this);
+		GetMap()->GetObjectsStore().Insert<GameObject>(GetGUID(), this);
 
         if (m_spawnId)
             GetMap()->GetGameObjectBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
@@ -240,10 +222,10 @@ void GameObject::RemoveFromWorld()
     ///- Remove the gameobject from the accessor
     if(IsInWorld())
     {
-        if(Map *map = FindMap())
-            if(map->IsDungeon() && ((InstanceMap*)map)->GetInstanceScript())
-                ((InstanceMap*)map)->GetInstanceScript()->OnGameObjectRemove(this);
+		if (m_zoneScript)
+			m_zoneScript->OnGameObjectRemove(this);
 
+		//RemoveFromOwner();
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
@@ -251,7 +233,7 @@ void GameObject::RemoveFromWorld()
         if (Transport* transport = GetTransport())
             transport->RemovePassenger(this, true);
 
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<GameObject>(GetGUID());
 
         if (m_spawnId)
             Trinity::Containers::MultimapErasePair(GetMap()->GetGameObjectBySpawnIdStore(), m_spawnId, this);
@@ -263,18 +245,26 @@ void GameObject::RemoveFromWorld()
 bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
+	SetMap(map);
 
     Relocate(pos);
     m_stationaryPosition.Relocate(pos);
-
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
 
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("entities.gameobject","ERROR: Gameobject (GUID: %u Entry: %u ) not created. Suggested coordinates isn't valid (X: %f Y: %f)", guidlow, name_id, pos.GetPositionX(), pos.GetPositionY());
         return false;
     }
+
+	//SetPhaseMask(phaseMask, false);
+
+	SetZoneScript();
+	if (m_zoneScript)
+	{
+		name_id = m_zoneScript->GetGameObjectEntry(guidlow, name_id);
+		if (!name_id)
+			return false;
+	}
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
@@ -289,7 +279,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
         m_updateFlagLK = (m_updateFlagLK | LK_UPDATEFLAG_TRANSPORT) & ~LK_UPDATEFLAG_POSITION;
     }
 
-    Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT);
+    Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject);
 
     m_goInfo = goinfo;
 
@@ -362,9 +352,9 @@ void GameObject::Update(uint32 diff)
                     // Arming Time for GAMEOBJECT_TYPE_TRAP (6)
                     Unit* owner = GetOwner();
                     if (owner && owner->IsInCombat())
-                        m_cooldownTime = time(nullptr) + GetGOInfo()->GetCooldown();
+                        m_cooldownTime = GameTime::GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
                     else if (GetEntry() == 180647)
-                        m_cooldownTime = time(nullptr) + GetGOInfo()->GetCooldown();
+                        m_cooldownTime = GameTime::GetGameTimeMS() + GetGOInfo()->GetCooldown() * SECOND * IN_MILLISECONDS;
                     m_lootState = GO_READY;
                     break;
                 }
@@ -439,12 +429,12 @@ void GameObject::Update(uint32 diff)
                         default:
                             if(!m_spawnedByDefault)         // despawn timer
                             {
-                                                            // can be despawned or destroyed
+                                // can be despawned or destroyed
                                 SetLootState(GO_JUST_DEACTIVATED);
                                 return;
                             }
                                                             // respawn timer
-                            sMapMgr->CreateMap(GetMapId(), this)->Add(this);
+                            GetMap()->AddToMap(this);
                             break;
                     }
 
@@ -469,7 +459,7 @@ void GameObject::Update(uint32 diff)
                 Unit* owner = GetOwner();
                 Unit* trapTarget =  nullptr;                            // pointer to appropriate target if found any
 
-                if(m_cooldownTime > time(nullptr))
+                if(m_cooldownTime > GameTime::GetGameTimeMS())
                     return;
 
                 bool IsBattlegroundTrap = false;
@@ -538,7 +528,7 @@ void GameObject::Update(uint32 diff)
                         if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(goInfo->trap.spellId))
                             owner->ProcDamageAndSpell(trapTarget,PROC_FLAG_ON_TRAP_ACTIVATION,PROC_FLAG_NONE,0,0,BASE_ATTACK,spellInfo);
                     
-                    m_cooldownTime = time(nullptr) + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() : 4);
+                    m_cooldownTime = GameTime::GetGameTimeMS() + (m_goInfo->GetCooldown() ? m_goInfo->GetCooldown() * SECOND * IN_MILLISECONDS : 4 * SECOND * IN_MILLISECONDS);
 
                     if(NeedDespawn)
                         SetLootState(GO_JUST_DEACTIVATED);  // can be despawned or destroyed
@@ -566,7 +556,7 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if(GetAutoCloseTime() && (m_cooldownTime < time(nullptr)))
+                    if(GetAutoCloseTime() && (m_cooldownTime < GameTime::GetGameTimeMS()))
                     {
                         SwitchDoorOrButton(false);
                         SetLootState(GO_JUST_DEACTIVATED);
@@ -673,7 +663,7 @@ void GameObject::Refresh()
         return;
 
     if(isSpawned())
-        sMapMgr->CreateMap(GetMapId(), this)->Add(this);
+       GetMap()->AddToMap(this);
 }
 
 void GameObject::AddUniqueUse(Player* player)
@@ -780,7 +770,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend( ss.str( ).c_str( ) );
     WorldDatabase.CommitTransaction(trans);
 
-    if(sObjectMgr->IsInTemporaryGuidRange(HIGHGUID_GAMEOBJECT,m_spawnId))
+    if(sObjectMgr->IsInTemporaryGuidRange(uint32(HighGuid::GameObject),m_spawnId))
         TC_LOG_ERROR("FIXME","Gameobject %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
@@ -806,7 +796,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
 
     m_spawnId = guid;
     if (map->GetInstanceId() != 0) 
-        guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT,true);
+        guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true);
 
     if (!Create(guid,entry, map, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
         return false;
@@ -929,7 +919,7 @@ void GameObject::SetDisplayId(uint32 displayid)
     UpdateModel();
 }
 
-void GameObject::SetPhaseMask(uint32 newPhaseMask, bool update)
+void GameObject::SetPhaseMask(PhaseMask newPhaseMask, bool update)
 {
 #ifdef LICH_KING
     WorldObject::SetPhaseMask(newPhaseMask, update);
@@ -1180,7 +1170,7 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore /* = 0 */, bool alternat
     SwitchDoorOrButton(true,alternative);
     SetLootState(GO_ACTIVATED,user);
 
-    m_cooldownTime = time_to_restore ? (time(nullptr) + time_to_restore) : 0;
+    m_cooldownTime = time_to_restore ? (GameTime::GetGameTimeMS() + time_to_restore * SECOND * IN_MILLISECONDS) : 0;
 }
 
 void GameObject::ResetDoorOrButton()
@@ -1241,7 +1231,7 @@ void GameObject::Use(Unit* user)
             UseDoorOrButton();
 
             // activate script
-            sWorld->ScriptsStart(sGameObjectScripts, GetSpawnId(), spellCaster, this);
+            GetMap()->ScriptsStart(sGameObjectScripts, GetSpawnId(), spellCaster, this);
             return;
 
         case GAMEOBJECT_TYPE_QUESTGIVER:                    //2
@@ -1333,8 +1323,7 @@ void GameObject::Use(Unit* user)
                 if (info->goober.eventId)
                 {
                     TC_LOG_DEBUG("maps.script", "Goober ScriptStart id %u for GO entry %u (GUID %u).", info->goober.eventId, GetEntry(), GetSpawnId());
-                    //GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
-                    sWorld->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
+                    GetMap()->ScriptsStart(sEventScripts, info->goober.eventId, player, this);
                    // EventInform(info->goober.eventId, user);
                 }
 
@@ -1639,7 +1628,7 @@ void GameObject::Use(Unit* user)
             break;
         }
         case GAMEOBJECT_TYPE_SPELL_FOCUS:
-            sWorld->ScriptsStart(sGameObjectScripts, GetEntry(), spellCaster, this);
+            GetMap()->ScriptsStart(sGameObjectScripts, GetEntry(), spellCaster, this);
             break;
         default:
             TC_LOG_ERROR("network.opcode","GameObject::Use - Unknown Object Type %u", GetGoType());
@@ -1724,10 +1713,8 @@ void GameObject::EventInform(uint32 eventId)
     if (AI())
         AI()->EventInform(eventId);
 
-    /* TODO zonescript
     if (m_zoneScript)
-        m_zoneScript->ProcessEvent(this, eventId);*
-        */
+        m_zoneScript->ProcessEvent(this, eventId);
 }
 
 uint32 GameObject::GetScriptId() const

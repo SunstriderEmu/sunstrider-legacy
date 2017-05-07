@@ -318,7 +318,6 @@ extern int main(int argc, char **argv)
 
     //sInstanceSaveMgr->Unload();
     sMapMgr->UnloadAll();                     // unload all grids (including locked in memory)
-    sObjectAccessor->UnloadAll();
     sOutdoorPvPMgr->Die();
     sScriptMgr->Unload();
     sScriptReloadMgr->Unload();

@@ -663,9 +663,11 @@ void WorldSession::LogoutPlayer(bool Save)
         // the player may not be in the world when logging out
         // e.g if he got disconnected during a transfer to another map
         // calls to GetMap in this case may cause crashes
-        if(_player->IsInWorld()) _player->GetMap()->Remove(_player, false);
+        if(_player->IsInWorld()) 
+			_player->GetMap()->RemovePlayerFromMap(_player, false);
+
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
-        sObjectAccessor->RemoveObject(_player);
+        ObjectAccessor::RemoveObject(_player);
 
         ///- Inform the group about leaving and send update to other members
         if(_player->GetGroup())
@@ -1702,7 +1704,7 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
         MOVEMENTFLAG_ROOT);
 
     //! Cannot hover without SPELL_AURA_HOVER
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_HOVER), // pussywizard: added m_mover
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_HOVER) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_HOVER), // sunwell: added m_mover
         MOVEMENTFLAG_HOVER);
 
     //! Cannot ascend and descend at the same time
@@ -1726,11 +1728,11 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
         MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD);
 
     //! Cannot walk on water without SPELL_AURA_WATER_WALK
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_WATER_WALK) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_GHOST), // pussywizard: added m_mover
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_WATERWALKING) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_WATER_WALK) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_GHOST), // sunwell: added m_mover
         MOVEMENTFLAG_WATERWALKING);
 
     //! Cannot feather fall without SPELL_AURA_FEATHER_FALL
-    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING_SLOW) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_FEATHER_FALL), // pussywizard: added m_mover
+    REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_FALLING_SLOW) && !GetPlayer()->m_mover->HasAuraType(SPELL_AURA_FEATHER_FALL), // sunwell: added m_mover
         MOVEMENTFLAG_FALLING_SLOW);
 
     /*! Cannot fly if no fly auras present. Exception is being a GM.
@@ -1739,13 +1741,13 @@ void WorldSession::ReadMovementInfo(WorldPacket &data, MovementInfo* mi)
     e.g. aerial combat.
     */
 
-    // pussywizard: remade this condition
+    // sunwell: remade this condition
     bool canFly = GetPlayer()->m_mover->HasAuraType(SPELL_AURA_FLY) || GetPlayer()->m_mover->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) ||
         (GetPlayer()->m_mover->GetTypeId() == TYPEID_UNIT && GetPlayer()->m_mover->ToCreature()->CanFly()) || GetSecurity() > SEC_PLAYER;
     REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_CAN_FLY) && !canFly,
         MOVEMENTFLAG_PLAYER_FLYING | MOVEMENTFLAG_CAN_FLY);
 
-    // pussywizard: added condition for disable gravity
+    // sunwell: added condition for disable gravity
     REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_DISABLE_GRAVITY) && (GetPlayer()->m_mover->GetTypeId() == TYPEID_PLAYER || !canFly),
         MOVEMENTFLAG_DISABLE_GRAVITY);
 

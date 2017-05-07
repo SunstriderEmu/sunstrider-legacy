@@ -480,11 +480,11 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
-class TC_GAME_API Creature : public Unit
+class TC_GAME_API Creature : public Unit, public GridObject<Creature>
 {
     public:
 
-        explicit Creature();
+        explicit Creature(bool isWorldObject = false);
         ~Creature() override;
 
         void AddToWorld() override;
@@ -713,7 +713,6 @@ class TC_GAME_API Creature : public Unit
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id)  const override;
 
-        GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
@@ -724,9 +723,6 @@ class TC_GAME_API Creature : public Unit
             else
                 return m_charmInfo->GetCharmSpell(pos)->spellId;
         }
-
-        void SetPosition(float x, float y, float z, float o);
-        void SetPosition(const Position &pos) { SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()); }
 
         void SetHomePosition(float x, float y, float z, float o) { m_homePosition.Relocate(x, y, z, o); }
         void SetHomePosition(const Position &pos) { m_homePosition.Relocate(pos); }

@@ -68,29 +68,52 @@ void WorldSession::HandleMoveWorldportAck()
     if(GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
 
-    // relocate the player to the teleport destination
-    GetPlayer()->SetMapId(loc.m_mapId);
-    GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, loc.m_positionZ, loc.m_orientation);
+	Map* oldMap = GetPlayer()->GetMap();
+	Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
+
+	if (GetPlayer()->IsInWorld())
+	{
+		TC_LOG_ERROR("network", "%s %s is still in world when teleported from map %s (%u) to new map %s (%u)", ObjectGuid(GetPlayer()->GetGUID()).ToString().c_str(), GetPlayer()->GetName().c_str(), oldMap->GetMapName(), oldMap->GetId(), newMap ? newMap->GetMapName() : "Unknown", loc.GetMapId());
+		oldMap->RemovePlayerFromMap(GetPlayer(), false);
+	}
+
+	// relocate the player to the teleport destination
+	// the CannotEnter checks are done in TeleporTo but conditions may change
+	// while the player is in transit, for example the map may get full
+	if (!newMap || !newMap->CanEnter(GetPlayer()))
+	{
+		TC_LOG_ERROR("network", "Map %d (%s) could not be created for player %d (%s), porting player to homebind", loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown", ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), GetPlayer()->GetName().c_str());
+		GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
+		return;
+	}
+
+
+	float z = loc.GetPositionZ();
+	if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+#ifdef LICH_KING
+		z += GetPlayer()->GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
+#else
+		z += DEFAULT_HOVER_HEIGHT;
+#endif
+    GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, z, loc.m_orientation);
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
 
-    // since the MapId is set before the GetInstance call, the InstanceId must be set to 0
-    // to let GetInstance() determine the proper InstanceId based on the player's binds
-    GetPlayer()->SetInstanceId(0);
+	GetPlayer()->ResetMap();
+	GetPlayer()->SetMap(newMap);
 
     // check this before Map::Add(player), because that will create the instance save!
     bool reset_notify = (GetPlayer()->GetBoundInstance(GetPlayer()->GetMapId(), GetPlayer()->GetDifficulty()) == NULL);
 
-     if(!GetPlayer()->GetMap())
-    {
-        TC_LOG_ERROR("network","WorldSession::HandleMoveWorldportAckOpcode : couldn't get map, kicking player");
-        KickPlayer();
-        return;
-    }
     GetPlayer()->SendInitialPacketsBeforeAddToMap();
     // the CanEnter checks are done in TeleportTo but conditions may change
     // while the player is in transit, for example the map may get full
-    if(!GetPlayer()->GetMap()->Add(GetPlayer()))
+    if(!GetPlayer()->GetMap()->AddPlayerToMap(GetPlayer()))
     {
+		TC_LOG_ERROR("network", "WORLD: failed to teleport player %s (%d) to map %d (%s) because of unknown reason!",
+			GetPlayer()->GetName().c_str(), ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
+		GetPlayer()->ResetMap();
+		GetPlayer()->SetMap(oldMap);
+
         // teleport the player home
         GetPlayer()->SetDontMove(false);
         if(!GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation()))
@@ -129,7 +152,7 @@ void WorldSession::HandleMoveWorldportAck()
     GetPlayer()->SendInitialPacketsAfterAddToMap();
 
     // flight fast teleport case
-    if(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType()==FLIGHT_MOTION_TYPE)
+    if(GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
     {
         if(!_player->InBattleground())
         {
@@ -145,8 +168,8 @@ void WorldSession::HandleMoveWorldportAck()
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
-    Corpse *corpse = GetPlayer()->GetCorpse();
-    if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
+	if (mEntry->IsDungeon() && !GetPlayer()->IsAlive())
+		if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
     {
         if( mEntry->IsDungeon() )
         {
@@ -174,7 +197,7 @@ void WorldSession::HandleMoveWorldportAck()
         _player->RemoveAurasByType(SPELL_AURA_MOUNTED);
 
     // honorless target
-    if(GetPlayer()->pvpInfo.inHostileArea)
+    if(GetPlayer()->pvpInfo.IsHostile)
         GetPlayer()->CastSpell(GetPlayer(), 2479, true);
 
     // resummon pet
@@ -195,8 +218,8 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     else
         recvData >> guid;
 
-    uint32 flags, time;
-    recvData >> flags >> time;
+    uint32 sequenceIndex, time;
+    recvData >> sequenceIndex >> time;
     //TC_LOG_DEBUG("network", "Guid " UI64FMTD, guid);
     //TC_LOG_DEBUG("network", "Flags %u, time %u", flags, time/IN_MILLISECONDS);
 
@@ -216,6 +239,22 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 
     plMover->UpdatePosition(dest, true);
     plMover->SetFallInformation(0, GetPlayer()->GetPositionZ());
+
+	uint32 newzone, newarea;
+	plMover->GetZoneAndAreaId(newzone, newarea);
+	plMover->UpdateZone(newzone, newarea);
+
+	// new zone
+	if (old_zone != newzone)
+	{
+		// honorless target
+		if (plMover->pvpInfo.IsHostile)
+			plMover->CastSpell(plMover, 2479, true);
+
+		// in friendly area
+		else if (plMover->IsPvP() && !plMover->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
+			plMover->UpdatePvP(false, false);
+	}
 
     // teleport pets if they are not unsummoned
     if (Pet* pet = plMover->GetPet())
@@ -495,7 +534,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     mover->m_movementInfo = movementInfo;
     
 #ifdef LICH_KING
-    // this is almost never true (pussywizard: only one packet when entering vehicle), normally use mover->IsVehicle()
+    // this is almost never true (sunwell: only one packet when entering vehicle), normally use mover->IsVehicle()
     if (mover->GetVehicle())
     {
         mover->SetOrientation(movementInfo.pos.GetOrientation());
@@ -504,7 +543,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     }
 #endif
 
-    // pussywizard: previously always mover->UpdatePosition(movementInfo.pos);
+    // sunwell: previously always mover->UpdatePosition(movementInfo.pos);
     if (movementInfo.flags & MOVEMENTFLAG_ONTRANSPORT && mover->GetTransport())
     {
         float x, y, z, o;

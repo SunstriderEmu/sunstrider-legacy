@@ -179,7 +179,7 @@ void PlayerbotFactory::InitPet()
                 continue;
             }
 
-            pet->SetPosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
+            pet->UpdatePosition(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetOrientation());
             pet->SetFaction(bot->GetFaction());
             pet->SetLevel(bot->GetLevel());
             bot->SetPetGUID(pet->GetGUID());
@@ -1174,7 +1174,7 @@ ObjectGuid PlayerbotFactory::GetRandomBot()
         do
         {
             Field* fields = result->Fetch();
-            ObjectGuid guid = ObjectGuid(HIGHGUID_PLAYER, fields[0].GetUInt32());
+            ObjectGuid guid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
             if (!sObjectMgr->GetPlayer(guid))
                 guids.push_back(guid);
         } while (result->NextRow());

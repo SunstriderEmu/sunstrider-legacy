@@ -205,22 +205,29 @@ class TC_GAME_API SmartScript
         void OnReset();
         void ResetBaseObject()
         {
-            if (meOrigGUID)
-            {
-                if (Creature* m = HashMapHolder<Creature>::Find(meOrigGUID))
-                {
-                    me = m;
-                    go = nullptr;
-                }
-            }
-            if (goOrigGUID)
-            {
-                if (GameObject* o = HashMapHolder<GameObject>::Find(goOrigGUID))
-                {
-                    me = nullptr;
-                    go = o;
-                }
-            }
+			WorldObject* lookupRoot = me;
+			if (!lookupRoot)
+				lookupRoot = go;
+
+			if (lookupRoot)
+			{
+				if (meOrigGUID)
+				{
+					if (Creature* m = ObjectAccessor::GetCreature(*lookupRoot, meOrigGUID))
+					{
+						me = m;
+						go = nullptr;
+					}
+				}
+				if (goOrigGUID)
+				{
+					if (GameObject* o = ObjectAccessor::GetGameObject(*lookupRoot, goOrigGUID))
+					{
+						me = nullptr;
+						go = o;
+					}
+				}
+			}
             goOrigGUID = 0;
             meOrigGUID = 0;
         }

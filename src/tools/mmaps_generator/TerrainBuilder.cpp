@@ -700,14 +700,14 @@ namespace MMAP
 						We shouldn't need this for BC
 						*/
                         {
-                        case 0:
-                        case 1:
+                        case WMO_LIQUID_TYPE_WATER:
+                        case WMO_LIQUID_TYPE_OCEAN:
                             type = NAV_WATER;
                             break;
-                        case 2:
+                        case WMO_LIQUID_TYPE_LAVA:
                             type = NAV_MAGMA;
                             break;
-                        case 3:
+                        case WMO_LIQUID_TYPE_SLIME:
                             type = NAV_SLIME;
                             break;
                         }

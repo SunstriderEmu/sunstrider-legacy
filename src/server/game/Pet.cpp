@@ -46,7 +46,7 @@ uint32 const LevelStartLoyalty[6] =
     17500,
 };
 
-Pet::Pet(PetType type) : Creature()
+Pet::Pet(PetType type) : Creature(true)
 {
     m_unitTypeMask |= UNIT_MASK_PET;
     if (type == HUNTER_PET)
@@ -96,7 +96,7 @@ Pet::~Pet()
     {
         for (auto & m_spell : m_spells)
             delete m_spell.second;
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
     }
 
     delete m_declinedname;
@@ -107,7 +107,7 @@ void Pet::AddToWorld()
     ///- Register the pet for guid lookup
     if(!IsInWorld())
     {   
-        sObjectAccessor->AddObject(this);
+		GetMap()->GetObjectsStore().Insert<Pet>(GetGUID(), this);
         Unit::AddToWorld();
     }
 }
@@ -117,7 +117,7 @@ void Pet::RemoveFromWorld()
     ///- Remove the pet from the accessor
     if(IsInWorld())
     {
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
     }
@@ -169,7 +169,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     }
 
     Map *map = owner->GetMap();
-    uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::Pet);
     uint32 pet_number = fields[0].GetUInt32();
     if(!Create(guid, map, petentry, pet_number))
     {
@@ -186,7 +186,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     float px, py, pz;
     if (petentry == 19668 && owner->ToPlayer() && owner->ToPlayer()->GetTarget()) 
     {
-        target = sObjectAccessor->GetObjectInWorld(owner->ToPlayer()->GetTarget(), (Unit*)nullptr);
+		target = owner->ToPlayer()->GetVictim();
         if (target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
         {
             target->GetClosePoint(px, py, pz, GetCombatReach(), PET_FOLLOW_DIST, this->GetFollowAngle());
@@ -218,7 +218,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if(cinfo->type == CREATURE_TYPE_CRITTER)
     {
         AIM_Initialize();
-        map->Add(this->ToCreature(), true);
+        map->AddToMap(this->ToCreature(), true);
         return true;
     }
     if(getPetType()==HUNTER_PET || (getPetType()==SUMMON_PET && cinfo->type == CREATURE_TYPE_DEMON && owner->GetClass() == CLASS_WARLOCK))
@@ -366,7 +366,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
     }
 
-    map->Add(this->ToCreature(), true);
+    map->AddToMap(this->ToCreature(), true);
 
     // Spells should be loaded after pet is added to map, because in CanCast is check on it
     _LoadSpells();
@@ -919,9 +919,9 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
         TC_LOG_ERROR("entities.pet","CRITICAL ERROR: NULL pointer parsed into CreateBaseAtCreature()");
         return false;
     }
-    uint32 guid=sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid=sObjectMgr->GenerateLowGuid(HighGuid::Pet);
 
-    SetInstanceId(creature->GetInstanceId());
+	SetMap(creature->GetMap());
 
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if(!Create(guid, creature->GetMap(), creature->GetEntry(), pet_number))
@@ -994,9 +994,9 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
         return false;
     }
 
-    uint32 guid=sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
+    uint32 guid=sObjectMgr->GenerateLowGuid(HighGuid::Pet);
 
-    SetInstanceId(spawnOn->GetInstanceId());
+	SetMap(spawnOn->GetMap());
 
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if(!Create(guid, spawnOn->GetMap(), entry, pet_number))
@@ -1823,7 +1823,7 @@ void Pet::CheckLearning(uint32 spellid)
 
 uint32 Pet::ResetTalentsCost() const
 {
-    uint32 days = (sWorld->GetGameTime() - m_resetTalentsTime)/DAY;
+    uint32 days = (time(nullptr) - m_resetTalentsTime)/DAY;
 
     // The first time reset costs 10 silver; after 1 day cost is reset to 10 silver
     if(m_resetTalentsCost < 10*SILVER || days > 0)
@@ -1877,10 +1877,10 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
 
 bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
 {
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
+	ASSERT(map);
+	SetMap(map);
 
-    Object::_Create(guidlow, pet_number, HIGHGUID_PET);
+    Object::_Create(guidlow, pet_number, HighGuid::Pet);
 
     m_spawnId = guidlow;
     m_originalEntry = Entry;

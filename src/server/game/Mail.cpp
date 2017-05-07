@@ -145,7 +145,7 @@ void WorldSession::HandleSendMail(WorldPacket & recvData )
                 return;
             }
 
-            mailItem.item = pl->GetItemByGuid(MAKE_NEW_GUID(mailItem.item_guidlow, 0, HIGHGUID_ITEM));
+            mailItem.item = pl->GetItemByGuid(MAKE_NEW_GUID(mailItem.item_guidlow, 0, HighGuid::Item));
             // prevent sending bag with items (cheat: can be placed in bag after adding equipped empty bag to mail)
             if(!mailItem.item || !mailItem.item->CanBeTraded())
             {
@@ -315,11 +315,11 @@ void WorldSession::SendReturnToSender(uint8 messageType, uint32 sender_acc, uint
         return;
     }
 
-    Player *receiver = sObjectMgr->GetPlayer(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
+    Player *receiver = sObjectMgr->GetPlayer(MAKE_NEW_GUID(receiver_guid, 0, HighGuid::Player));
 
     uint32 rc_account = 0;
     if(!receiver)
-        rc_account = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(receiver_guid, 0, HIGHGUID_PLAYER));
+        rc_account = sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(receiver_guid, 0, HighGuid::Player));
 
     if(!receiver && !rc_account)                            // sender not exist
     {
@@ -390,7 +390,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket & recvData )
 
         if (m->COD > 0)                                     //if there is COD, take COD money from player and send them to sender by mail
         {
-            uint64 sender_guid = MAKE_NEW_GUID(m->sender, 0, HIGHGUID_PLAYER);
+            uint64 sender_guid = MAKE_NEW_GUID(m->sender, 0, HighGuid::Player);
             Player *receive = sObjectMgr->GetPlayer(sender_guid);
 
             uint32 sender_accId = sCharacterCache->GetCharacterAccountIdByGuid(sender_guid);
@@ -498,7 +498,7 @@ void WorldSession::HandleGetMailList(WorldPacket & recvData )
         switch((*itr)->messageType)
         {
             case MAIL_NORMAL:                               // sender guid
-                data << uint64(MAKE_NEW_GUID((*itr)->sender, 0, HIGHGUID_PLAYER));
+                data << uint64(MAKE_NEW_GUID((*itr)->sender, 0, HighGuid::Player));
                 break;
             case MAIL_CREATURE:
             case MAIL_GAMEOBJECT:
@@ -604,7 +604,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recvData )
     }
 
     Item *bodyItem = new Item;                              // This is not bag and then can be used new Item.
-    if(!bodyItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), MAIL_BODY_ITEM_TEMPLATE, pl,sObjectMgr->GetItemTemplate(MAIL_BODY_ITEM_TEMPLATE)))
+    if(!bodyItem->Create(sObjectMgr->GenerateLowGuid(HighGuid::Item), MAIL_BODY_ITEM_TEMPLATE, pl,sObjectMgr->GetItemTemplate(MAIL_BODY_ITEM_TEMPLATE)))
     {
         TC_LOG_ERROR("FIXME","HandleMailCreateTextItem could not create bodyItem");
         delete bodyItem;
@@ -667,7 +667,7 @@ void WorldSession::HandleQueryNextMailTime(WorldPacket & /*recvData*/ )
             if (now < m->deliver_time)
                 continue;
 
-            data << uint64(m->messageType == MAIL_NORMAL ? MAKE_PAIR64(m->sender, HIGHGUID_PLAYER) :0);  // player guid
+            data << uint64(m->messageType == MAIL_NORMAL ? ObjectGuid(HighGuid::Player, m->sender).GetRawValue() : 0);  // player guid
             data << uint32(m->messageType != MAIL_NORMAL ? m->sender : 0);  // non-player entries
             data << uint32(m->messageType);
             data << uint32(m->stationery);

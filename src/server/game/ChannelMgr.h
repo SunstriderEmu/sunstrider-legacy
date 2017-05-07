@@ -83,9 +83,9 @@ inline ChannelMgr* channelMgr(uint32 team)
                                                             //For Test,No Seprate Faction
         return &allianceChannelMgr;
 
-    if(team == TEAM_ALLIANCE)
+    if(team == ALLIANCE)
         return &allianceChannelMgr;
-    if(team == TEAM_HORDE)
+    if(team == HORDE)
         return &hordeChannelMgr;
     return nullptr;
 }

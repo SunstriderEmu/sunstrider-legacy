@@ -465,28 +465,9 @@ class CreatureGameObjectScriptRegistrySwapHooks
         };
 
         AIFunctionMapWorker<typename std::decay<decltype(evaluator)>::type> worker(std::move(evaluator));
-        /*TC
-        TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
-        containerVisitor.Visit(map->GetObjectsStore());
-        */
-        // -- Sunstrider workaround since we don't use the same structure
-        TypeContainerVisitor<decltype(worker), HashMapHolder<Player>::MapType&>     containerVisitor1(worker);
-        boost::shared_lock<boost::shared_mutex> lock1(*HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType& players = const_cast<HashMapHolder<Player>::MapType&>(ObjectAccessor::GetPlayers());
-        containerVisitor1.Visit(players);
+		TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
 
-        TypeContainerVisitor<decltype(worker), HashMapHolder<Creature>::MapType&>   containerVisitor2(worker);
-        boost::shared_lock<boost::shared_mutex> lock2(*HashMapHolder<Creature>::GetLock());
-        HashMapHolder<Creature>::MapType& creatures = const_cast<HashMapHolder<Creature>::MapType&>(ObjectAccessor::GetCreatures());
-        containerVisitor2.Visit(creatures);
-
-        TypeContainerVisitor<decltype(worker), HashMapHolder<GameObject>::MapType&> containerVisitor3(worker);
-        boost::shared_lock<boost::shared_mutex> lock3(*HashMapHolder<GameObject>::GetLock());
-        HashMapHolder<GameObject>::MapType& gameobjects = const_cast<HashMapHolder<GameObject>::MapType&>(ObjectAccessor::GetGameObjects());
-        containerVisitor3.Visit(gameobjects);
-        //containerVisitor.Visit(ObjectAccessor::GetDynamicObjects());
-        //containerVisitor.Visit(ObjectAccessor::GetCorpses());
-        // --
+		containerVisitor.Visit(map->GetObjectsStore());
     }
 
     static void DestroyScriptIdsFromSet(std::unordered_set<uint32> const& idsToRemove)

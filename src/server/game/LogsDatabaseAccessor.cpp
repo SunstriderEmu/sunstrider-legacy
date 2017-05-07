@@ -63,9 +63,9 @@ void LogsDatabaseAccessor::BattlegroundStats(uint32 mapId, time_t start, time_t 
     std::string winnerDB = "none";
     switch (winner)
     {
-    case TEAM_HORDE:     winnerDB = "horde";    break;
-    case TEAM_ALLIANCE:  winnerDB = "alliance"; break;
-    case TEAM_NONE:      winnerDB = "none";     break;
+    case HORDE:     winnerDB = "horde";    break;
+    case ALLIANCE:  winnerDB = "alliance"; break;
+    case 0:         winnerDB = "none";     break;
     default:
         TC_LOG_ERROR("misc", "LogsDatabaseAccessor::LogBattlegroundStats Invalid team %u given. Setting winner to 'none'", winner);
         break;
@@ -144,10 +144,10 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     if (target)
     {
         //be sure to have table guid
-        if (target->GetTypeId() == TYPEID_UNIT)
-            targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HIGHGUID_UNIT);
-        else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
-            targetGUID = MAKE_PAIR64(target->ToGameObject()->GetSpawnId(), HIGHGUID_GAMEOBJECT);
+		if (target->GetTypeId() == TYPEID_UNIT)
+			targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HighGuid::Unit);
+		else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
+			targetGUID = ObjectGuid(HighGuid::GameObject, target->ToGameObject()->GetEntry(), target->ToGameObject()->GetSpawnId()).GetRawValue();
         else
             targetGUID = target->GetGUID();
     }
@@ -347,7 +347,7 @@ void LogsDatabaseAccessor::Mail(uint32 mailId, MailMessageType type, uint32 send
     Player const* sender = nullptr;
     if (type == MAIL_NORMAL)
     {
-        if ((sender = sObjectAccessor->FindPlayer(sender_guidlow_or_entry)))
+        if ((sender = ObjectAccessor::FindPlayer(sender_guidlow_or_entry)))
         {
             IP = sender->GetSession()->GetRemoteAddress();
             if(sender->GetSession()->GetSecurity() > SEC_PLAYER)

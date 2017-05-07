@@ -75,7 +75,7 @@ bool ChatHandler::HandleKickPlayerCommand(const char *args)
             return false;
         }
 
-        Player* player = sObjectAccessor->FindConnectedPlayerByName(kickName);
+        Player* player = ObjectAccessor::FindConnectedPlayerByName(kickName);
         if(!player)
         {
             SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -761,7 +761,7 @@ bool ChatHandler::HandleReviveCommand(const char* args)
             return false;
         }
 
-        SelectedPlayer = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        SelectedPlayer = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     }
     else
         SelectedPlayer = GetSelectedPlayerOrSelf();
@@ -859,9 +859,9 @@ bool ChatHandler::HandleLinkGraveCommand(const char* args)
     if (!px2)
         g_team = 0;
     else if (strncmp(px2,"horde",6)==0)
-        g_team = TEAM_HORDE;
+        g_team = HORDE;
     else if (strncmp(px2,"alliance",9)==0)
-        g_team = TEAM_ALLIANCE;
+        g_team = ALLIANCE;
     else
         return false;
 
@@ -903,9 +903,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
     if(!*args)
         g_team = 0;
     else if (strncmp((char*)args,"horde",argslen)==0)
-        g_team = TEAM_HORDE;
+        g_team = HORDE;
     else if (strncmp((char*)args,"alliance",argslen)==0)
-        g_team = TEAM_ALLIANCE;
+        g_team = ALLIANCE;
     else
         return false;
 
@@ -932,9 +932,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
         if(g_team == 0)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
-        else if(g_team == TEAM_HORDE)
+        else if(g_team == HORDE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
-        else if(g_team == TEAM_ALLIANCE)
+        else if(g_team == ALLIANCE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         PSendSysMessage(LANG_COMMAND_GRAVEYARDNEAREST, g_id,team_name.c_str(),player->GetZoneId());
@@ -945,9 +945,9 @@ bool ChatHandler::HandleNearGraveCommand(const char* args)
 
         if(g_team == 0)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ANY);
-        else if(g_team == TEAM_HORDE)
+        else if(g_team == HORDE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_HORDE);
-        else if(g_team == TEAM_ALLIANCE)
+        else if(g_team == ALLIANCE)
             team_name = GetTrinityString(LANG_COMMAND_GRAVEYARD_ALLIANCE);
 
         if(g_team == ~uint32(0))
@@ -1017,7 +1017,7 @@ bool ChatHandler::HandleLevelUpCommand(const char* args)
             return false;
         }
 
-        chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        chr = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if(!chr)                                            // not in game
         {
             chr_guid = sCharacterCache->GetCharacterGuidByName(name);
@@ -1660,7 +1660,7 @@ bool ChatHandler::HandleSendMessageCommand(const char* args)
         return false;
 
     ///- Find the player and check that he is not logging out.
-    Player *rPlayer = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+    Player *rPlayer = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     if(!rPlayer)
     {
         SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1731,7 +1731,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()); //get player by name
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str()); //get player by name
     }
 
     if (!player)
@@ -1816,7 +1816,7 @@ bool ChatHandler::HandleUnFreezeCommand(const char *args)
     {
         name = TargetName;
         normalizePlayerName(name);
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str()); //get player by name
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str()); //get player by name
     }
 
     //effect

@@ -1643,7 +1643,7 @@ public:
 
             for (uint64 & itr : *m_guidList)
             {
-                if(WorldObject* obj = ObjectAccessor::GetObjectInWorld(itr,m_baseObject))
+                if(WorldObject* obj = ObjectAccessor::GetWorldObject(*m_baseObject, itr))
                     m_objectList->push_back(obj);
                 else
                     TC_LOG_ERROR("scripts.ai", "SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, itr);
@@ -1747,8 +1747,8 @@ class TC_GAME_API SmartAIMgr
         void LogSmartAIDBError(int32 entryOrGuid, const char* str, ...);
 
         //DEV SERVER USE ONLY
-        //Reload every creature SmartAI scripts. This may be unstable.
-        void ReloadCreaturesScripts();
+        //Reload every creature SmartAI scripts in map. This may be unstable.
+        void ReloadCreaturesScripts(Map* map);
     private:
         //event stores
         SmartAIEventMap mEventMap[SMART_SCRIPT_TYPE_MAX];

@@ -495,12 +495,7 @@ void WorldSession::HandleBattlefieldLeaveOpcode( WorldPacket & /*recvData*/ )
         {
             _player->CancelSpectate();
 
-            uint32 map = _player->GetBattlegroundEntryPointMap();
-            float positionX = _player->GetBattlegroundEntryPointX();
-            float positionY = _player->GetBattlegroundEntryPointY();
-            float positionZ = _player->GetBattlegroundEntryPointZ();
-            float positionO = _player->GetBattlegroundEntryPointO();
-            if (_player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+            if (_player->TeleportToBGEntryPoint())
             {
                 _player->SetSpectate(false);
                 bg->RemoveSpectator(_player->GetGUID());

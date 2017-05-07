@@ -242,7 +242,7 @@ void BattlegroundQueue::RemovePlayer(uint64 guid, bool decreaseInvitedCount)
                 Battleground* bg = sBattlegroundMgr->GetBattleground(group->IsInvitedToBGInstanceGUID);
                 if (bg)
                     bg->DecreaseInvitedCount(group->Team);
-                if (bg && !bg->GetPlayersSize() && !bg->GetInvitedCount(TEAM_ALLIANCE) && !bg->GetInvitedCount(TEAM_HORDE))
+                if (bg && !bg->GetPlayersSize() && !bg->GetInvitedCount(ALLIANCE) && !bg->GetInvitedCount(HORDE))
                 {
                     // no more players on battleground, set delete it
                     bg->SetDeleteThis();
@@ -368,12 +368,12 @@ bool BattlegroundQueue::BuildSelectionPool(uint32 bgTypeId, uint32 queue_id, uin
     case NORMAL_ALLIANCE:
     case ONESIDE_ALLIANCE_TEAM1:
     case ONESIDE_ALLIANCE_TEAM2:
-        side = TEAM_ALLIANCE;
+        side = ALLIANCE;
         break;
     case NORMAL_HORDE:
     case ONESIDE_HORDE_TEAM1:
     case ONESIDE_HORDE_TEAM2:
-        side = TEAM_HORDE;
+        side = HORDE;
         break;
     default:
         //unknown mode, return false
@@ -658,7 +658,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
         {
             if (invitecounter >= maxbginvites)
                 return;
-            InviteGroupToBG((*itr),bg2,TEAM_HORDE);
+            InviteGroupToBG((*itr),bg2,HORDE);
             ++invitecounter;
         }
 
@@ -668,7 +668,7 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
         {
             if (invitecounter >= maxbginvites)
                 return;
-            InviteGroupToBG((*itr),bg2,TEAM_ALLIANCE);
+            InviteGroupToBG((*itr),bg2,ALLIANCE);
             ++invitecounter;
         }
 
@@ -697,13 +697,13 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             std::list<GroupQueueInfo* >::iterator itr;
             // temporarily change the team side to enable building the next pool excluding the already selected groups
             for(itr = m_SelectionPools[ONESIDE_HORDE_TEAM1].SelectedGroups.begin(); itr != m_SelectionPools[ONESIDE_HORDE_TEAM1].SelectedGroups.end(); ++itr)
-                (*itr)->Team=TEAM_ALLIANCE;
+                (*itr)->Team=ALLIANCE;
 
             bOneSideHordeTeam2 = BuildSelectionPool(bgTypeId, queue_id,MaxPlayersPerTeam,MaxPlayersPerTeam,ONESIDE_HORDE_TEAM2,arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime, (*(m_SelectionPools[ONESIDE_HORDE_TEAM1].SelectedGroups.begin()))->ArenaTeamId);
 
             // change back the team to horde
             for(itr = m_SelectionPools[ONESIDE_HORDE_TEAM1].SelectedGroups.begin(); itr != m_SelectionPools[ONESIDE_HORDE_TEAM1].SelectedGroups.end(); ++itr)
-                (*itr)->Team=TEAM_HORDE;
+                (*itr)->Team=HORDE;
 
             if(!bOneSideHordeTeam2)
                 bOneSideHordeTeam1 = false;
@@ -718,13 +718,13 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
                 std::list<GroupQueueInfo* >::iterator itr;
                 // temporarily change the team side to enable building the next pool excluding the already selected groups
                 for(itr = m_SelectionPools[ONESIDE_ALLIANCE_TEAM1].SelectedGroups.begin(); itr != m_SelectionPools[ONESIDE_ALLIANCE_TEAM1].SelectedGroups.end(); ++itr)
-                    (*itr)->Team=TEAM_HORDE;
+                    (*itr)->Team=HORDE;
 
                 bOneSideAllyTeam2 = BuildSelectionPool(bgTypeId, queue_id,MaxPlayersPerTeam,MaxPlayersPerTeam,ONESIDE_ALLIANCE_TEAM2,arenatype, isRated, arenaMinRating, arenaMaxRating, discardTime,(*(m_SelectionPools[ONESIDE_ALLIANCE_TEAM1].SelectedGroups.begin()))->ArenaTeamId);
 
                 // change back the team to ally
                 for(itr = m_SelectionPools[ONESIDE_ALLIANCE_TEAM1].SelectedGroups.begin(); itr != m_SelectionPools[ONESIDE_ALLIANCE_TEAM1].SelectedGroups.end(); ++itr)
-                    (*itr)->Team=TEAM_ALLIANCE;
+                    (*itr)->Team=ALLIANCE;
             }
 
             if(!bOneSideAllyTeam2)
@@ -740,13 +740,13 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             // find out what pools are we using
             if(bOneSideAllyTeam1 && bOneSideAllyTeam2)
             {
-                side = TEAM_ALLIANCE;
+                side = ALLIANCE;
                 mode1 = ONESIDE_ALLIANCE_TEAM1;
                 mode2 = ONESIDE_ALLIANCE_TEAM2;
             }
             else
             {
-                side = TEAM_HORDE;
+                side = HORDE;
                 mode1 = ONESIDE_HORDE_TEAM1;
                 mode2 = ONESIDE_HORDE_TEAM2;
             }
@@ -794,10 +794,10 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
 
             // assigned team of the other group
             uint32 other_side;
-            if(side == TEAM_ALLIANCE)
-                other_side = TEAM_HORDE;
+            if(side == ALLIANCE)
+                other_side = HORDE;
             else
-                other_side = TEAM_ALLIANCE;
+                other_side = ALLIANCE;
 
             // start the joining of the bg
             bg2->SetStatus(STATUS_WAIT_JOIN);
@@ -810,13 +810,13 @@ void BattlegroundQueue::Update(uint32 bgTypeId, uint32 queue_id, uint8 arenatype
             // invite players from the first group as horde players (actually green team)
             for(itr = m_SelectionPools[mode1].SelectedGroups.begin(); itr != m_SelectionPools[mode1].SelectedGroups.end(); ++itr)
             {
-                InviteGroupToBG((*itr),bg2,TEAM_HORDE);
+                InviteGroupToBG((*itr),bg2,HORDE);
             }
 
             // invite players from the second group as ally players (actually gold team)
             for(itr = m_SelectionPools[mode2].SelectedGroups.begin(); itr != m_SelectionPools[mode2].SelectedGroups.end(); ++itr)
             {
-                InviteGroupToBG((*itr),bg2,TEAM_ALLIANCE);
+                InviteGroupToBG((*itr),bg2,ALLIANCE);
             }
 
             if (isRated)
@@ -1150,7 +1150,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
                 if (!team)
                     team = player->GetTeam();
                 
-                if (team == TEAM_ALLIANCE)
+                if (team == ALLIANCE)
                     *data << uint8(1);
                 else
                     *data << uint8(0);
@@ -1395,8 +1395,8 @@ uint32 BattlegroundMgr::CreateBattleground(uint32 bgTypeId, uint32 MinPlayersPer
     bg->SetMinPlayers(MinPlayersPerTeam*2);
     bg->SetMaxPlayers(MaxPlayersPerTeam*2);
     bg->SetName(BattlegroundName);
-    bg->SetTeamStartLoc(TEAM_ALLIANCE, Team1StartLocX, Team1StartLocY, Team1StartLocZ, Team1StartLocO);
-    bg->SetTeamStartLoc(TEAM_HORDE,    Team2StartLocX, Team2StartLocY, Team2StartLocZ, Team2StartLocO);
+    bg->SetTeamStartLoc(ALLIANCE, Team1StartLocX, Team1StartLocY, Team1StartLocZ, Team1StartLocO);
+    bg->SetTeamStartLoc(HORDE,    Team2StartLocX, Team2StartLocY, Team2StartLocZ, Team2StartLocO);
     bg->SetLevelRange(LevelMin, LevelMax);
     if(bl->type == TYPE_ARENA)
         bg->SetTimeLimit(sWorld->getConfig(CONFIG_BATTLEGROUND_TIMELIMIT_ARENA)*1000);

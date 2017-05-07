@@ -641,7 +641,7 @@ bool RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(ChatHandler* handler, cha
                 do
                 {
                     Field* fields = results->Fetch();
-                    ObjectGuid guid = ObjectGuid(HIGHGUID_PLAYER, fields[0].GetUInt32());
+                    ObjectGuid guid = ObjectGuid(HighGuid::Player, fields[0].GetUInt32());
                     Player* bot = sObjectMgr->GetPlayer(guid);
                     if (!bot)
                         continue;

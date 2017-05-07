@@ -190,7 +190,7 @@ class TC_GAME_API Item : public Object
         ItemTemplate const* GetTemplate() const { return m_itemProto; }
 
         uint64 GetOwnerGUID() const;
-        void SetOwnerGUID(uint64 guid);
+        void SetOwnerGUID(ObjectGuid const& guid);
         Player* GetOwner() const;
 
         void SetBinding(bool val);
@@ -274,6 +274,9 @@ class TC_GAME_API Item : public Object
         bool HasInvolvedQuest(uint32 /*quest_id*/) const override { return false; }
 
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet&) override;
+
+		void AddToObjectUpdate() override;
+		void RemoveFromObjectUpdate() override;
 
         uint32 GetScriptId() const { return GetTemplate()->ScriptId; }
     protected:    

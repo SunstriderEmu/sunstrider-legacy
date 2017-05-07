@@ -163,7 +163,7 @@ bool ChatHandler::HandleGoGridCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = sMapMgr->GetBaseMap(mapid);
+    Map const *map = sMapMgr->CreateBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
 
@@ -208,7 +208,7 @@ bool ChatHandler::HandleGoXYCommand(const char* args)
     else
         _player->SaveRecallPosition();
 
-    Map const *map = sMapMgr->GetBaseMap(mapid);
+    Map const *map = sMapMgr->CreateBaseMap(mapid);
     float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
     _player->TeleportTo(mapid, x, y, z, _player->GetOrientation());
@@ -341,7 +341,7 @@ bool ChatHandler::HandleGoZoneXYCommand(const char* args)
     // update to parent zone if exist (client map show only zones without parents)
     areaEntry = areaEntry->zone ? sAreaTableStore.LookupEntry(areaEntry->zone) : areaEntry;
 
-    Map const *map = sMapMgr->GetBaseMap(areaEntry->mapid);
+    Map const *map = sMapMgr->CreateBaseMap(areaEntry->mapid);
 
     if(map->Instanceable())
     {
@@ -532,7 +532,7 @@ bool ChatHandler::HandleGoCreatureCommand(const char* args)
                 Field *fields = result->Fetch();
                 uint32 creatureentry = fields[0].GetUInt32();
 
-                uint64 packedguid = MAKE_NEW_GUID(guid, creatureentry, HIGHGUID_UNIT);
+                uint64 packedguid = MAKE_NEW_GUID(guid, creatureentry, HighGuid::Unit);
                 if (Unit *cre = ObjectAccessor::GetUnit((*_player), packedguid)) {
                     PSendSysMessage("Creature found, you are now teleported on its current location!");
 

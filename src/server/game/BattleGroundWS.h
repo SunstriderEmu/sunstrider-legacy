@@ -138,12 +138,12 @@ class BattlegroundWS : public Battleground
         void AddPlayer(Player *plr) override;
 
         /* BG Flags */
-        uint64 GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[BG_TEAM_ALLIANCE]; }
-        uint64 GetHordeFlagPickerGUID() const       { return m_FlagKeepers[BG_TEAM_HORDE]; }
-        void SetAllianceFlagPicker(uint64 guid)     { m_FlagKeepers[BG_TEAM_ALLIANCE] = guid; }
-        void SetHordeFlagPicker(uint64 guid)        { m_FlagKeepers[BG_TEAM_HORDE] = guid; }
-        bool IsAllianceFlagPickedup() const         { return m_FlagKeepers[BG_TEAM_ALLIANCE] != 0; }
-        bool IsHordeFlagPickedup() const            { return m_FlagKeepers[BG_TEAM_HORDE] != 0; }
+        uint64 GetAllianceFlagPickerGUID() const    { return m_FlagKeepers[BG_ALLIANCE]; }
+        uint64 GetHordeFlagPickerGUID() const       { return m_FlagKeepers[BG_HORDE]; }
+        void SetAllianceFlagPicker(uint64 guid)     { m_FlagKeepers[BG_ALLIANCE] = guid; }
+        void SetHordeFlagPicker(uint64 guid)        { m_FlagKeepers[BG_HORDE] = guid; }
+        bool IsAllianceFlagPickedup() const         { return m_FlagKeepers[BG_ALLIANCE] != 0; }
+        bool IsHordeFlagPickedup() const            { return m_FlagKeepers[BG_HORDE] != 0; }
         void RespawnFlag(uint32 Team, bool captured);
         void RespawnFlagAfterDrop(uint32 Team);
         uint8 GetFlagState(uint32 team)             { return m_FlagState[GetTeamIndexByTeamId(team)]; }

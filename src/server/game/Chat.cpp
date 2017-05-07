@@ -842,6 +842,19 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     return commandTable;
 }
 
+ChatHandler::ChatHandler(WorldSession* session) 
+	: m_session(session) 
+{}
+
+ChatHandler::ChatHandler(Player* player) 
+	: m_session(player->GetSession()) 
+{}
+
+std::string ChatHandler::GetNameLink(Player* chr) const
+{ 
+	return playerLink(chr->GetName()); 
+}
+
 void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
 {
     WorldPacket data;
@@ -1658,7 +1671,7 @@ bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &plr, G
                 return false;
             }
 
-            plr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+            plr = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
             if(offline)
                 guid = sCharacterCache->GetCharacterGuidByName(name.c_str());
         }
@@ -1711,7 +1724,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             return false;
         }
 
-        Player* pl = sObjectAccessor->FindPlayerByName(name.c_str());
+        Player* pl = ObjectAccessor::FindPlayerByName(name.c_str());
 
         // if allowed player pointer
         if (player)

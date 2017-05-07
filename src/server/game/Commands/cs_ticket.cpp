@@ -108,7 +108,7 @@ bool ChatHandler::HandleGMTicketGetByNameCommand(const char* args)
 {
     ARGS_CHECK
 
-    Player *plr = sObjectAccessor->FindConnectedPlayerByName(args);
+    Player *plr = ObjectAccessor::FindConnectedPlayerByName(args);
     if(!plr)
     {
         SendSysMessage(LANG_NO_PLAYERS_FOUND);

@@ -457,13 +457,8 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     }
     else
     {
-        if(!GetPlayer()->pvpInfo.inHostileArea && GetPlayer()->IsPvP())
+        if(!GetPlayer()->pvpInfo.IsHostile && GetPlayer()->IsPvP())
             GetPlayer()->pvpInfo.endTimer = time(nullptr);     // start toggle-off
-    }
-
-    if(OutdoorPvP * pvp = _player->GetOutdoorPvP())
-    {
-        pvp->HandlePlayerActivityChanged(_player);
     }
 }
 
@@ -474,9 +469,12 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 
     //TC_LOG_DEBUG("network","WORLD: Recvd ZONE_UPDATE: %u", newZone);
 
-    GetPlayer()->UpdateZone(newZone);
+	// use server side data, but only after update the player position. See Player::UpdatePosition().
+	GetPlayer()->SetNeedsZoneUpdate(true);
 
-    GetPlayer()->SendInitWorldStates(true,newZone);
+    //GetPlayer()->UpdateZone(newZone);
+
+    //GetPlayer()->SendInitWorldStates(true,newZone);
 }
 
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
@@ -1169,7 +1167,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         return;
     }
 
-    Player *plr = sObjectAccessor->FindConnectedPlayerByName(charname.c_str());
+    Player *plr = ObjectAccessor::FindConnectedPlayerByName(charname.c_str());
 
     if(!plr)
     {

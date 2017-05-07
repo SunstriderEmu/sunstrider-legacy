@@ -104,17 +104,17 @@ enum EP_Towers {
 };
 
 const go_type EPCapturePoints[EP_TOWER_NUM] = {
-    {182097,0,2574.51,-4794.89,144.704,-1.45003,-0.097056,0.095578,-0.656229,0.742165},
-    {181899,0,3181.08,-4379.36,174.123,-2.03472,-0.065392,0.119494,-0.842275,0.521553},
-    {182098,0,2962.71,-3042.31,154.789,2.08426,-0.074807,-0.113837,0.855928,0.49883},
-    {182096,0,1860.85,-3731.23,196.716,-2.53214,0.033967,-0.131914,0.944741,-0.298177}
+    {182097,0,2574.51f,-4794.89f,144.704f,-1.45003f,-0.097056f, 0.095578f,-0.656229f, 0.742165f},
+    {181899,0,3181.08f,-4379.36f,174.123f,-2.03472f,-0.065392f, 0.119494f,-0.842275f, 0.521553f},
+    {182098,0,2962.71f,-3042.31f,154.789f, 2.08426f,-0.074807f,-0.113837f, 0.855928f, 0.498830f},
+    {182096,0,1860.85f,-3731.23f,196.716f,-2.53214f, 0.033967f,-0.131914f, 0.944741f,-0.298177f}
 };
 
 const go_type EPTowerFlags[EP_TOWER_NUM] = {
-    {182106,0,2569.60,-4772.93,115.399,2.72271,0,0,0.978148,0.207912},
-    {182106,0,3148.17,-4365.51,145.029,1.53589,0,0,0.694658,0.71934},
-    {182106,0,2992.63,-3022.95,125.593,3.03687,0,0,0.99863,0.052336},
-    {182106,0,1838.42,-3703.56,167.713,0.890118,0,0,0.430511,0.902585}
+    {182106,0,2569.60,-4772.93f,115.399f,2.72271f,0,0,0.978148,0.207912f},
+    {182106,0,3148.17,-4365.51f,145.029f,1.53589f,0,0,0.694658,0.71934f},
+    {182106,0,2992.63,-3022.95f,125.593f,3.03687f,0,0,0.99863,0.052336f},
+    {182106,0,1838.42,-3703.56f,167.713f,0.890118f,0,0,0.430511,0.902585f}
 };
 
 const uint32 EPTowerPlayerEnterEvents[EP_TOWER_NUM] = {10691,10699,10701,10705};
@@ -160,18 +160,14 @@ const go_type EP_NPT_LordaeronShrine = {181682,0,3167.72,-4355.91,138.785,1.6929
 
 class OutdoorPvPEP;
 
-class OutdoorPvPObjectiveEP_EWT : public OutdoorPvPObjective
+class OPvPCapturePointEP_EWT : public OPvPCapturePoint
 {
 friend class OutdoorPvPEP;
 public:
-    OutdoorPvPObjectiveEP_EWT(OutdoorPvP * pvp);
-    bool Update(uint32 diff) override;
+    OPvPCapturePointEP_EWT(OutdoorPvP * pvp);
+	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr) override;
-    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonSupportUnitAtNorthpassTower(uint32 team);
     void UpdateTowerState();
 protected:
@@ -179,18 +175,14 @@ protected:
     uint32 m_UnitsSummonedSide;
 };
 
-class OutdoorPvPObjectiveEP_NPT : public OutdoorPvPObjective
+class OPvPCapturePointEP_NPT : public OPvPCapturePoint
 {
 friend class OutdoorPvPEP;
 public:
-    OutdoorPvPObjectiveEP_NPT(OutdoorPvP * pvp);
-    bool Update(uint32 diff) override;
+    OPvPCapturePointEP_NPT(OutdoorPvP * pvp);
+	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr) override;
-    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonGO(uint32 team);
     void UpdateTowerState();
 protected:
@@ -198,18 +190,15 @@ protected:
     uint32 m_SummonedGOSide;
 };
 
-class OutdoorPvPObjectiveEP_CGT : public OutdoorPvPObjective
+class OPvPCapturePointEP_CGT : public OPvPCapturePoint
 {
 friend class OutdoorPvPEP;
 public:
-    OutdoorPvPObjectiveEP_CGT(OutdoorPvP * pvp);
-    bool Update(uint32 diff) override;
+    OPvPCapturePointEP_CGT(OutdoorPvP * pvp);
+	void ChangeState() override;
+    //bool Update(uint32 diff) override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr) override;
-    void HandlePlayerLeave(Player * plr) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void LinkGraveYard(uint32 team);
     void UpdateTowerState();
 protected:
@@ -217,20 +206,16 @@ protected:
     uint32 m_GraveyardSide;
 };
 
-class OutdoorPvPObjectiveEP_PWT : public OutdoorPvPObjective
+class OPvPCapturePointEP_PWT : public OPvPCapturePoint
 {
 friend class OutdoorPvPEP;
 public:
-    OutdoorPvPObjectiveEP_PWT(OutdoorPvP * pvp);
-    bool Update(uint32 diff) override;
+    OPvPCapturePointEP_PWT(OutdoorPvP * pvp);
+	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data) override;
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr) override;
-    void HandlePlayerLeave(Player * plr) override;
     bool HandleGossipOption(Player *plr, uint64 guid, uint32 gossipid) override;
     bool CanTalkTo(Player * plr, Creature * c, GossipMenuItems const& gso) override;
 protected:
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId) override;
     void SummonFlightMaster(uint32 team);
     void UpdateTowerState();
 protected:
@@ -240,10 +225,10 @@ protected:
 
 class OutdoorPvPEP : public OutdoorPvP
 {
-friend class OutdoorPvPObjectiveEP_EWT;
-friend class OutdoorPvPObjectiveEP_NPT;
-friend class OutdoorPvPObjectiveEP_PWT;
-friend class OutdoorPvPObjectiveEP_CGT;
+friend class OPvPCapturePointEP_EWT;
+friend class OPvPCapturePointEP_NPT;
+friend class OPvPCapturePointEP_PWT;
+friend class OPvPCapturePointEP_CGT;
 public:
     OutdoorPvPEP();
     bool SetupOutdoorPvP() override;

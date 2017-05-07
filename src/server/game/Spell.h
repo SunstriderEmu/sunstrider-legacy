@@ -932,11 +932,11 @@ class TC_GAME_API SpellEvent : public BasicEvent
 class TC_GAME_API ReflectEvent : public BasicEvent
 {
 public:
-    ReflectEvent(uint64 casterGUID, uint64 targetGUID, const SpellInfo* spellInfo) : _casterGUID(casterGUID), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
+    ReflectEvent(Unit* caster, uint64 targetGUID, const SpellInfo* spellInfo) : _caster(caster), _targetGUID(targetGUID), _spellInfo(spellInfo) { }
     bool Execute(uint64 e_time, uint32 p_time) override;
 
 protected:
-    uint64 _casterGUID;
+	Unit* _caster;
     uint64 _targetGUID;
     const SpellInfo* _spellInfo;
 };

@@ -111,16 +111,18 @@ class TC_GAME_API GameEventMgr
         uint32 GetNPCFlag(Creature * cr);
         /* Add a creature of given guid to an event (both in DB + in live memory). Return success.
         Event can be negative to have the creature spawned when event is inactive.
+		If map is given, this function will also add/remove the creature from the map if found
         */
-        bool AddCreatureToEvent(uint32 guid, int16 event_id);
-        /* Add a gobject of given guid to an event (both in DB + in live memory). 
+        bool AddCreatureToEvent(uint32 guid, int16 event_id, Map* map = nullptr);
+        /* Add a gobject of given guid to an event (both in DB + in live memory).  Return success.
         Event can be negative to have the gameobject spawned when event is inactive.
-        Return success. */
-        bool AddGameObjectToEvent(uint32 guid, int16 event_id);
-        /* Remove a creature of given guid from all events (both in DB + in live memory). Return success. */
-        bool RemoveCreatureFromEvent(uint32 guid);
-        /* Remove a gameobject of given guid from all events (both in DB + in live memory). Return success. */
-        bool RemoveGameObjectFromEvent(uint32 guid);
+		If map is given, this function will also add/remove the gobject from the map if found
+         */
+        bool AddGameObjectToEvent(uint32 guid, int16 event_id, Map* map = nullptr);
+        /* Remove a creature of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
+        bool RemoveCreatureFromEvent(uint32 guid, Map* map = nullptr);
+        /* Remove a gameobject of given guid from all events (both in DB + in live memory). If map is given, this function will also add/remove the gobject from the map if found. Return success. */
+        bool RemoveGameObjectFromEvent(uint32 guid, Map* map = nullptr);
         /* Create a new game event, both in database and live memory, return success & the id of the created event in reference */
         bool CreateGameEvent(const char* name,int16& event_id);
         /* Set start time of a game event, both in database and live memory, return success */

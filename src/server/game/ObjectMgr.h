@@ -11,6 +11,7 @@
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
 #include "ConditionMgr.h"
+#include "World.h"
 
 #include <string>
 #include <map>
@@ -23,6 +24,11 @@ class ArenaTeam;
 class Item;
 enum PetNameInvalidReason : int;
 class Player;
+struct PlayerClassInfo;
+struct PlayerClassLevelInfo;
+struct PlayerInfo;
+struct PlayerLevelInfo;
+struct AccessRequirement;
 
 struct PageText
 {
@@ -446,7 +452,7 @@ class TC_GAME_API ObjectMgr
         //Get player in world by high guid
         Player* GetPlayer(uint64 guid) const { return ObjectAccessor::FindPlayer(guid); }
         //Get player in world by low guid
-        Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HIGHGUID_PLAYER)); }
+        Player* GetPlayer(uint32 lowguid) const { return ObjectAccessor::FindPlayer(MAKE_NEW_GUID(lowguid,0,HighGuid::Player)); }
 
         GameObjectTemplate const* GetGameObjectTemplate(uint32 id);
         GameObjectTemplateContainer const* GetGameObjectTemplateStore() const { return &_gameObjectTemplateStore; }
@@ -513,18 +519,11 @@ class TC_GAME_API ObjectMgr
         PlayerClassInfo const* GetPlayerClassInfo(uint32 class_) const
         {
             if(class_ >= MAX_CLASSES) return nullptr;
-            return &playerClassInfo[class_];
+            return _playerClassInfo[class_];
         }
         void GetPlayerClassLevelInfo(uint32 class_,uint32 level, PlayerClassLevelInfo* info) const;
 
-        PlayerInfo const* GetPlayerInfo(uint32 race, uint32 class_) const
-        {
-            if(race   >= MAX_RACES)   return nullptr;
-            if(class_ >= MAX_CLASSES) return nullptr;
-            PlayerInfo const* info = &playerInfo[race][class_];
-            if(info->displayId_m==0 || info->displayId_f==0) return nullptr;
-            return info;
-        }
+		PlayerInfo const* GetPlayerInfo(uint32 race, uint32 class_) const;
         void GetPlayerLevelInfo(uint32 race, uint32 class_,uint32 level, PlayerLevelInfo* info) const;
 
         uint32 GetNearestTaxiNode( float x, float y, float z, uint32 mapid, uint32 team);
@@ -547,13 +546,6 @@ class TC_GAME_API ObjectMgr
         }
         bool IsTavernAreaTrigger(uint32 Trigger_ID) const { return mTavernAreaTriggerSet.count(Trigger_ID) != 0; }
         bool IsGameObjectForQuests(uint32 entry) const { return _gameObjectForQuestStore.count(entry) != 0; }
-        bool IsGuildVaultGameObject(Player *player, uint64 guid) const
-        {
-            if(GameObject *go = ObjectAccessor::GetGameObject(*player, guid))
-                if(go->GetGoType() == GAMEOBJECT_TYPE_GUILD_BANK)
-                    return true;
-            return false;
-        }
 
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const;
 
@@ -566,21 +558,9 @@ class TC_GAME_API ObjectMgr
         void LoadGraveyardZones();
         GraveYardData const* FindGraveYardData(uint32 id, uint32 zone);
 
-        AreaTrigger const* GetAreaTrigger(uint32 trigger) const
-        {
-            auto itr = mAreaTriggers.find( trigger );
-            if( itr != mAreaTriggers.end( ) )
-                return &itr->second;
-            return nullptr;
-        }
+		AreaTrigger const* GetAreaTrigger(uint32 trigger) const;
 
-        AccessRequirement const* GetAccessRequirement(uint32 requirement) const
-        {
-            auto itr = mAccessRequirements.find( requirement );
-            if( itr != mAccessRequirements.end( ) )
-                return &itr->second;
-            return nullptr;
-        }
+		AccessRequirement const* GetAccessRequirement(uint32 requirement) const;
 
         AreaTrigger const* GetGoBackTrigger(uint32 Map) const;
         AreaTrigger const* GetMapEntranceTrigger(uint32 Map) const;
@@ -694,7 +674,6 @@ class TC_GAME_API ObjectMgr
         void LoadExplorationBaseXP();
         void LoadPetNames();
         void LoadPetNumber();
-        void LoadCorpses();
         void LoadFishingBaseSkillLevel();
 
         void LoadReputationOnKill();
@@ -888,8 +867,10 @@ class TC_GAME_API ObjectMgr
         LocaleConstant GetDBCLocaleIndex() const { return DBCLocaleIndex; }
         void SetDBCLocaleIndex(LocaleConstant locale) { DBCLocaleIndex = locale; }
 
+		/*
         void AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance);
         void DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid);
+		*/
 
         time_t GetCreatureRespawnTime(uint32 loguid, uint32 instance);
         void SaveCreatureRespawnTime(uint32 loguid, uint32 mapId, uint32 instance, time_t t);
@@ -902,9 +883,8 @@ class TC_GAME_API ObjectMgr
         void RemoveCreatureFromGrid(uint32 guid, CreatureData const* data);
         void AddGameobjectToGrid(uint32 guid, GameObjectData const* data);
         void RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data);
-        //NYI uint32 AddGOData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0, float rotation0 = 0, float rotation1 = 0, float rotation2 = 0, float rotation3 = 0);
-        //NYI uint32 AddCreData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0);
-        //NYI bool MoveCreData(uint32 guid, uint32 map, const Position& pos);
+        uint32 AddGOData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0, float rotation0 = 0, float rotation1 = 0, float rotation2 = 0, float rotation3 = 0);
+        uint32 AddCreatureData(uint32 entry, uint32 map, float x, float y, float z, float o, uint32 spawntimedelay = 0);
 
         // reserved names
         void LoadReservedPlayersNames();
@@ -1167,10 +1147,10 @@ class TC_GAME_API ObjectMgr
 
         CreatureBaseStatsContainer _creatureBaseStatsStore;
 
-        PlayerClassInfo playerClassInfo[MAX_CLASSES];
+        PlayerClassInfo* _playerClassInfo[MAX_CLASSES];
 
         void BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* plinfo) const;
-        PlayerInfo playerInfo[MAX_RACES][MAX_CLASSES];
+        PlayerInfo* _playerInfo[MAX_RACES][MAX_CLASSES];
 
         typedef std::map<uint32,uint32> BaseXPMap;          // [area level][base xp]
         BaseXPMap mBaseXPTable;
