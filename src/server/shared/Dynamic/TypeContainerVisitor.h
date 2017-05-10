@@ -67,21 +67,21 @@ void VisitorHelper(VISITOR& v, TypeUnorderedMapContainer<OBJECT_TYPES, KEY_TYPE>
 template<class VISITOR, class TYPE_CONTAINER>
 class TypeContainerVisitor
 {
-public:
-	TypeContainerVisitor(VISITOR &v) : i_visitor(v) { }
+	public:
+		TypeContainerVisitor(VISITOR &v) : i_visitor(v) { }
 
-	void Visit(TYPE_CONTAINER &c)
-	{
-		VisitorHelper(i_visitor, c);
-	}
+		void Visit(TYPE_CONTAINER &c)
+		{
+			VisitorHelper(i_visitor, c);
+		}
 
-	void Visit(const TYPE_CONTAINER &c) const
-	{
-		VisitorHelper(i_visitor, c);
-	}
+		void Visit(const TYPE_CONTAINER &c) const
+		{
+			VisitorHelper(i_visitor, c);
+		}
 
-private:
-	VISITOR &i_visitor;
+	private:
+		VISITOR &i_visitor;
 };
 #endif
 

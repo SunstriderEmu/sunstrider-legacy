@@ -751,12 +751,12 @@ class TC_GAME_API ObjectMgr
 
         CellObjectGuids const& GetCellObjectGuids(uint16 mapid, uint8 spawnMode, uint32 cell_id)
         {
-            return mMapObjectGuids[MAKE_PAIR32(mapid,spawnMode)][cell_id];
+            return _mapObjectGuidsStore[MAKE_PAIR32(mapid,spawnMode)][cell_id];
         }
 
         CellObjectGuidsMap const& GetMapObjectGuids(uint16 mapid, uint8 spawnMode)
         {
-            return mMapObjectGuids[MAKE_PAIR32(mapid, spawnMode)];
+            return _mapObjectGuidsStore[MAKE_PAIR32(mapid, spawnMode)];
         }
 
         BroadcastText const* GetBroadcastText(uint32 id) const
@@ -1162,7 +1162,7 @@ class TC_GAME_API ObjectMgr
         HalfNameMap PetHalfName0;
         HalfNameMap PetHalfName1;
 
-        MapObjectGuids mMapObjectGuids;
+        MapObjectGuids _mapObjectGuidsStore;
         CreatureDataMap mCreatureDataMap;
         CreatureLinkedRespawnMap mCreatureLinkedRespawnMap;
         CreatureLocaleMap _creatureLocaleStore;

@@ -71,7 +71,7 @@ HashMapHolder<Player>::MapType const& ObjectAccessor::GetPlayers()
 }
 
 template class TC_GAME_API HashMapHolder<Player>;
-template class TC_GAME_API HashMapHolder<Transport>;
+template class TC_GAME_API HashMapHolder<MotionTransport>;
 
 namespace PlayerNameMapHolder
 {
@@ -630,7 +630,6 @@ void ObjectAccessor::Update(uint32 diff)
         packet.clear();                                     // clean the string
     }
 }
-*/
 
 void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 {
@@ -639,8 +638,6 @@ void ObjectAccessor::UpdateObjectVisibility(WorldObject *obj)
 
     obj->GetMap()->UpdateObjectVisibility(obj,cell,p);
 }
-
-/*
 
 /// Global definitions for the hashmap storage
 

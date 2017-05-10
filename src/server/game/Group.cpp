@@ -1078,13 +1078,28 @@ void Group::SendUpdate()
         if (!player || !player->GetSession() || player->GetGroup() != this)
             continue;
 
-                                                            // guess size
+        //LK OK                                             // guess size
         WorldPacket data(SMSG_GROUP_LIST, (1+1+1+1+8+4+GetMembersCount()*20));
         data << (uint8)m_groupType;                         // group type
+#ifndef LICH_KING
         data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
+#endif
         data << (uint8)(citr->group);                       // groupid
+#ifdef LICH_KING
+		data << uint8(slot->flags);
+#endif
         data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
+#ifdef LICH_KING
+		if (isLFGGroup())
+		{
+			data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
+			data << uint32(sLFGMgr->GetDungeon(m_guid));
+		}
+		data << uint64(m_guid);
+		data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
+#else
         data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
+#endif
         data << uint32(GetMembersCount()-1);
         for(member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
         {
@@ -1100,6 +1115,9 @@ void Group::SendUpdate()
                                                             // online-state
             data << (uint8)(onlineState);
             data << (uint8)(citr2->group);                  // groupid
+#ifdef LICH_KING
+			data << uint8(citr->flags);                     // See enum GroupMemberFlags
+#endif
             data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
         }
 
@@ -1113,7 +1131,10 @@ void Group::SendUpdate()
                 data << uint64(0);
             data << (uint8)m_lootThreshold;                 // loot threshold
             data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
-
+#ifdef LICH_KING
+			data << uint8(m_raidDifficulty);                // Raid Difficulty
+			data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
+#endif
         }
         player->SendDirectMessage( &data );
     }
@@ -1147,7 +1168,7 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         player = itr->GetSource();
-        if (player && player != pPlayer && !pPlayer->isVisibleFor(player))
+        if (player && player != pPlayer && !pPlayer->HaveAtClient(player))
             player->SendDirectMessage(&data);
     }
 }

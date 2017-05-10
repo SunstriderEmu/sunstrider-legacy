@@ -426,7 +426,6 @@ bool StartDB()
         .AddDatabase(WorldDatabase, "World");
 
 	loader.AddDatabase(LogsDatabase, "Logs"); //Strange reference bug when I append this to the last command, so I kept this out
-	auto a = nullptr;
 	
     if (!loader.Load())
         return false;

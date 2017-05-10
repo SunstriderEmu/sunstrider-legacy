@@ -115,7 +115,7 @@ struct GameObjectTemplate
             uint32 serverOnly;                              //8
             uint32 stealthed;                               //9
             uint32 large;                                   //10
-            uint32 stealthAffected;                         //11
+            uint32 invisible;                               //11
             uint32 openTextID;                              //12 can be used to replace castBarCaption?
             uint32 closeTextID;                             //13
         } trap;
@@ -595,8 +595,9 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void AddToWorld() override;
         void RemoveFromWorld() override;
+		void CleanupsBeforeDelete(bool finalCleanup = true) override;
 
-        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
+        virtual bool Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit = 0);
         void Update(uint32 diff) override;
         static GameObject* GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const;
@@ -685,8 +686,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         uint32 GetGoAnimProgress() const { return GetUInt32Value(GAMEOBJECT_ANIMPROGRESS); }
         void SetGoAnimProgress(uint32 animprogress) { SetUInt32Value(GAMEOBJECT_ANIMPROGRESS, animprogress); }
         
-        //not implemented yet
-		void SetPhaseMask(PhaseMask newPhaseMask, bool update) override;
+		void SetPhaseMask(uint32 newPhaseMask, bool update) override;
 
         void EnableCollision(bool enable);
 
@@ -721,6 +721,19 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         //Close or reset gameobject (GO_STATE_READY). No effect if gameobject is already closed
         void ResetDoorOrButton();
 
+		bool IsNeverVisible() const override;
+
+		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
+		bool IsInvisibleDueToDespawn() const override;
+
+		uint8 GetLevelForTarget(WorldObject const* target) const override
+		{
+			if (Unit* owner = GetOwner())
+				return owner->GetLevelForTarget(target);
+
+			return 1;
+		}
+
         uint32 GetLinkedGameObjectEntry() const
         {
             switch(GetGoType())
@@ -750,7 +763,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
 
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
+        //bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
         bool canDetectTrap(Player const* u, float distance) const;
 
         GameObject* LookupFishingHoleAround(float range);
@@ -760,8 +773,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
         
-        Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
-        GameObject* FindGOInGrid(uint32 entry, float range);
         void SwitchDoorOrButton(bool activate, bool alternative = false);
         
         GameObjectModel * m_model;
@@ -834,6 +845,8 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         Position m_stationaryPosition;
     private:
+		void RemoveFromOwner();
+
         GameObjectAI* m_AI;
         GridReference<GameObject> m_gridRef;
 };

@@ -17,6 +17,17 @@ inline Cell::Cell(CellCoord const& p)
     data.Part.reserved = 0;
 }
 
+inline Cell::Cell(float x, float y)
+{
+	CellCoord p = Trinity::ComputeCellCoord(x, y);
+	data.Part.grid_x = p.x_coord / MAX_NUMBER_OF_CELLS;
+	data.Part.grid_y = p.y_coord / MAX_NUMBER_OF_CELLS;
+	data.Part.cell_x = p.x_coord % MAX_NUMBER_OF_CELLS;
+	data.Part.cell_y = p.y_coord % MAX_NUMBER_OF_CELLS;
+	data.Part.nocreate = 0;
+	data.Part.reserved = 0;
+}
+
 inline int CellHelper(const float radius)
 {
     if (radius < 1.0f)
@@ -32,105 +43,86 @@ inline CellArea Cell::CalculateCellArea(const WorldObject &obj, float radius)
 
 inline CellArea Cell::CalculateCellArea(float x, float y, float radius)
 {
-    if (radius <= 0.0f)
-        return CellArea();
+	if (radius <= 0.0f)
+	{
+		CellCoord center = Trinity::ComputeCellCoord(x, y).normalize();
+		return CellArea(center, center);
+	}
 
-    //lets calculate object coord offsets from cell borders.
-    //TODO: add more correct/generic method for this task
-    const float x_offset = (x - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
-    const float y_offset = (y - CENTER_GRID_CELL_OFFSET)/SIZE_OF_GRID_CELL;
+	CellCoord centerX = Trinity::ComputeCellCoord(x - radius, y - radius).normalize();
+	CellCoord centerY = Trinity::ComputeCellCoord(x + radius, y + radius).normalize();
 
-    const float x_val = floor(x_offset + CENTER_GRID_CELL_ID + 0.5f);
-    const float y_val = floor(y_offset + CENTER_GRID_CELL_ID + 0.5f);
-
-    const float x_off = (x_offset - x_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-    const float y_off = (y_offset - y_val + CENTER_GRID_CELL_ID) * SIZE_OF_GRID_CELL;
-
-    const float tmp_diff = radius - CENTER_GRID_CELL_OFFSET;
-    //lets calculate upper/lower/right/left corners for cell search
-    int right = CellHelper(tmp_diff + x_off);
-    int left  = CellHelper(tmp_diff - x_off);
-    int upper = CellHelper(tmp_diff + y_off);
-    int lower = CellHelper(tmp_diff - y_off);
-
-    return CellArea(right, left, upper, lower);
+	return CellArea(centerX, centerY);
 }
 
 template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellCoord& standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, float radius, float x_off, float y_off) const
+inline void Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, float radius, float x_off, float y_off) const
 {
-    if (standing_cell.x_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP || standing_cell.y_coord >= TOTAL_NUMBER_OF_CELLS_PER_MAP)
-        return;
+	if (!standing_cell.IsCoordValid())
+		return;
 
     //no jokes here... Actually placing ASSERT() here was good idea, but
     //we had some problems with DynamicObjects, which pass radius = 0.0f (DB issue?)
     //maybe it is better to just return when radius <= 0.0f?
     if (radius <= 0.0f)
     {
-        m.Visit(*this, visitor);
+		map.Visit(*this, visitor);
         return;
     }
     //lets limit the upper value for search radius
-    if (radius > 333.0f)
-        radius = 333.0f;
+	if (radius > SIZE_OF_GRIDS)
+		radius = SIZE_OF_GRIDS;
 
     //lets calculate object coord offsets from cell borders.
     CellArea area = Cell::CalculateCellArea(x_off, y_off, radius);
     //if radius fits inside standing cell
     if (!area)
     {
-        m.Visit(*this, visitor);
+		map.Visit(*this, visitor);
         return;
     }
 
-    CellCoord begin_cell = standing_cell;
-    CellCoord end_cell = standing_cell;
-
-    area.ResizeBorders(begin_cell, end_cell);
-    //visit all cells, found in CalculateCellArea()
-    //if radius is known to reach cell area more than 4x4 then we should call optimized VisitCircle
-    //currently this technique works with MAX_NUMBER_OF_CELLS 16 and higher, with lower values
-    //there are nothing to optimize because SIZE_OF_GRID_CELL is too big...
-    if (((end_cell.x_coord - begin_cell.x_coord) > 4) && ((end_cell.y_coord - begin_cell.y_coord) > 4))
-    {
-        VisitCircle(visitor, m, begin_cell, end_cell);
-        return;
-    }
+	//visit all cells, found in CalculateCellArea()
+	//if radius is known to reach cell area more than 4x4 then we should call optimized VisitCircle
+	//currently this technique works with MAX_NUMBER_OF_CELLS 16 and higher, with lower values
+	//there are nothing to optimize because SIZE_OF_GRID_CELL is too big...
+	if ((area.high_bound.x_coord > (area.low_bound.x_coord + 4)) && (area.high_bound.y_coord > (area.low_bound.y_coord + 4)))
+	{
+		VisitCircle(visitor, map, area.low_bound, area.high_bound);
+		return;
+	}
 
     //ALWAYS visit standing cell first!!! Since we deal with small radiuses
     //it is very essential to call visitor for standing cell firstly...
-    m.Visit(*this, visitor);
+	map.Visit(*this, visitor);
 
-    // loop the cell range
-    for (uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; ++x)
-    {
-        for (uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; ++y)
-        {
-            CellCoord cell_pair(x,y);
-            //lets skip standing cell since we already visited it
-            if (cell_pair != standing_cell)
-            {
-                Cell r_zone(cell_pair);
-                r_zone.data.Part.nocreate = data.Part.nocreate;
-                m.Visit(r_zone, visitor);
-            }
-        }
-    }
+	// loop the cell range
+	for (uint32 x = area.low_bound.x_coord; x <= area.high_bound.x_coord; ++x)
+	{
+		for (uint32 y = area.low_bound.y_coord; y <= area.high_bound.y_coord; ++y)
+		{
+			CellCoord cellCoord(x, y);
+			//lets skip standing cell since we already visited it
+			if (cellCoord != standing_cell)
+			{
+				Cell r_zone(cellCoord);
+				r_zone.data.Part.nocreate = this->data.Part.nocreate;
+				map.Visit(r_zone, visitor);
+			}
+		}
+	}
 }
 
 template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellCoord& l, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const WorldObject &obj, float radius) const
+inline void Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, WorldObject const& obj, float radius) const
 {
-    //we should increase search radius by object's radius, otherwise
-    //we could have problems with huge creatures, which won't attack nearest players etc
-    Visit(l, visitor, m, radius + obj.GetCombatReach(), obj.GetPositionX(), obj.GetPositionY());
+	//we should increase search radius by object's radius, otherwise
+	//we could have problems with huge creatures, which won't attack nearest players etc
+	Visit(standing_cell, visitor, map, radius + obj.GetCombatReach(), obj.GetPositionX(), obj.GetPositionY());
 }
 
 template<class T, class CONTAINER>
-inline void
-Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const CellCoord& begin_cell, const CellCoord& end_cell) const
+inline void Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, const CellCoord& begin_cell, const CellCoord& end_cell) const
 {
     //here is an algorithm for 'filling' circum-squared octagon
     uint32 x_shift = (uint32)ceilf((end_cell.x_coord - begin_cell.x_coord) * 0.3f - 0.5f);
@@ -143,10 +135,10 @@ Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const Cel
     {
         for (uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; ++y)
         {
-            CellCoord cell_pair(x,y);
-            Cell r_zone(cell_pair);
-            r_zone.data.Part.nocreate = data.Part.nocreate;
-            m.Visit(r_zone, visitor);
+            CellCoord cellCoord(x,y);
+            Cell r_zone(cellCoord);
+            r_zone.data.Part.nocreate = this->data.Part.nocreate;
+			map.Visit(r_zone, visitor);
         }
     }
 
@@ -169,107 +161,14 @@ Cell::VisitCircle(TypeContainerVisitor<T, CONTAINER> &visitor, Map &m, const Cel
             //e.g. filling 2 trapezoids after filling central cell strip...
             CellCoord cell_pair_left(x_start - step, y);
             Cell r_zone_left(cell_pair_left);
-            r_zone_left.data.Part.nocreate = data.Part.nocreate;
-            m.Visit(r_zone_left, visitor);
+            r_zone_left.data.Part.nocreate = this->data.Part.nocreate;
+			map.Visit(r_zone_left, visitor);
 
             //right trapezoid cell visit
             CellCoord cell_pair_right(x_end + step, y);
             Cell r_zone_right(cell_pair_right);
-            r_zone_right.data.Part.nocreate = data.Part.nocreate;
-            m.Visit(r_zone_right, visitor);
-        }
-    }
-}
-
-template<class T, class CONTAINER>
-inline void
-Cell::Visit(const CellCoord &standing_cell, TypeContainerVisitor<T, CONTAINER> &visitor, Map &m) const
-{
-    if (!standing_cell.IsCoordValid())
-        return;
-
-    uint16 district = (District)this->data.Part.reserved;
-    if(district == CENTER_DISTRICT)
-    {
-        m.Visit(*this, visitor);
-        return;
-    }
-
-    // set up the cell range based on the district
-    // the overloaded operators handle range checking
-    CellCoord begin_cell = standing_cell;
-    CellCoord end_cell = standing_cell;
-
-    switch( district )
-    {
-        case ALL_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case UPPER_LEFT_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            break;
-        }
-        case UPPER_RIGHT_DISTRICT:
-        {
-            begin_cell -= 1;                                // up
-            end_cell >> 1;                                  // right
-            break;
-        }
-        case LOWER_LEFT_DISTRICT:
-        {
-            begin_cell << 1;                                // left
-            end_cell += 1;                                  // down
-            break;
-        }
-        case LOWER_RIGHT_DISTRICT:
-        {
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case LEFT_DISTRICT:
-        {
-            begin_cell -= 1;                                // up
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        case RIGHT_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell += 1;                                  // down
-            break;
-        }
-        case UPPER_DISTRICT:
-        {
-            begin_cell << 1; begin_cell -= 1;               // upper left
-            end_cell >> 1;                                  // right
-            break;
-        }
-        case LOWER_DISTRICT:
-        {
-            begin_cell << 1;                                // left
-            end_cell >> 1; end_cell += 1;                   // lower right
-            break;
-        }
-        default:
-        {
-            assert( false );
-            break;
-        }
-    }
-
-    // loop the cell range
-    for(uint32 x = begin_cell.x_coord; x <= end_cell.x_coord; x++)
-    {
-        for(uint32 y = begin_cell.y_coord; y <= end_cell.y_coord; y++)
-        {
-            CellCoord cell_pair(x,y);
-            Cell r_zone(cell_pair);
-            r_zone.data.Part.nocreate = data.Part.nocreate;
-            m.Visit(r_zone, visitor);
+            r_zone_right.data.Part.nocreate = this->data.Part.nocreate;
+			map.Visit(r_zone_right, visitor);
         }
     }
 }

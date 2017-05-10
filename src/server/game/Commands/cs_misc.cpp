@@ -1217,9 +1217,7 @@ bool ChatHandler::HandleRespawnCommand(const char* /*args*/)
 
     Trinity::RespawnDo u_do;
     Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(pl, u_do);
-
-    TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-    cell.Visit(p, obj_worker, *pl->GetMap());
+	pl->VisitNearbyGridObject(pl->GetGridActivationRange(), worker);
 
     return true;
 }

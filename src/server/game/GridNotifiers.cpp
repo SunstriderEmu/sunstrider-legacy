@@ -1,201 +1,252 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "WorldPacket.h"
 #include "WorldSession.h"
 #include "UpdateData.h"
-#include "Item.h"
 #include "Map.h"
 #include "MapManager.h"
 #include "Transport.h"
 #include "ObjectAccessor.h"
+#include "CellImpl.h"
 
 using namespace Trinity;
 
-void
-VisibleChangesNotifier::Visit(PlayerMapType &m)
+void VisibleNotifier::SendToSelf()
 {
-    for(auto & iter : m)
-    {
-        if(iter.GetSource() == &i_object)
-            continue;
+	// at this moment i_clientGUIDs have guids that not iterate at grid level checks
+	// but exist one case when this possible and object not out of range: transports
+	if (Transport* transport = i_player.GetTransport())
+	{
+		for (Transport::PassengerSet::const_iterator itr = transport->GetPassengers().begin(); itr != transport->GetPassengers().end(); ++itr)
+		{
+			if (vis_guids.find((*itr)->GetGUID()) != vis_guids.end())
+			{
+				vis_guids.erase((*itr)->GetGUID());
 
-        iter.GetSource()->UpdateVisibilityOf(&i_object);
-    }
+				switch ((*itr)->GetTypeId())
+				{
+				case TYPEID_GAMEOBJECT:
+					i_player.UpdateVisibilityOf((*itr)->ToGameObject(), i_data, i_visibleNow);
+					break;
+				case TYPEID_PLAYER:
+					i_player.UpdateVisibilityOf((*itr)->ToPlayer(), i_data, i_visibleNow);
+					if (!(*itr)->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+						(*itr)->ToPlayer()->UpdateVisibilityOf(&i_player);
+					break;
+				case TYPEID_UNIT:
+					i_player.UpdateVisibilityOf((*itr)->ToCreature(), i_data, i_visibleNow);
+					break;
+				case TYPEID_DYNAMICOBJECT:
+					i_player.UpdateVisibilityOf((*itr)->ToDynObject(), i_data, i_visibleNow);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	for (auto it = vis_guids.begin(); it != vis_guids.end(); ++it)
+	{
+		i_player.m_clientGUIDs.erase(*it);
+		i_data.AddOutOfRangeGUID(*it);
+
+		//if (it->IsPlayer())
+		if(IS_PLAYER_GUID(*it))
+		{
+			Player* player = ObjectAccessor::FindPlayer(*it);
+			if (player && !player->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+				player->UpdateVisibilityOf(&i_player);
+		}
+	}
+
+	if (!i_data.HasData())
+		return;
+
+	WorldPacket packet;
+	i_data.BuildPacket(&packet, i_player.GetSession()->GetClientBuild());
+	i_player.GetSession()->SendPacket(&packet);
+
+	for (std::set<Unit*>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
+		i_player.SendInitialVisiblePackets(*it);
 }
 
-void
-PlayerVisibilityNotifier::Notify()
+void VisibleChangesNotifier::Visit(CreatureMapType &m)
 {
-    // at this moment i_clientGUIDs have guids that not iterate at grid level checks
-    // but exist some case when this is possible and object not out of range: transports
-
-    if(Transport* transport = i_player.GetTransport())
-    {
-        for(auto itr : transport->GetPassengers())
-        {
-            if(i_clientGUIDs.find(itr->GetGUID())!=i_clientGUIDs.end())
-            {
-                i_clientGUIDs.erase(itr->GetGUID());
-
-                switch (itr->GetTypeId())
-                {
-                    case TYPEID_GAMEOBJECT:
-                        i_player.UpdateVisibilityOf(itr->ToGameObject(), i_data, i_visibleNow);
-                        break;
-                    case TYPEID_PLAYER:
-                        i_player.UpdateVisibilityOf(itr->ToPlayer(), i_data, i_visibleNow);
-                        itr->ToPlayer()->UpdateVisibilityOf(&i_player);
-                        break;
-                    case TYPEID_UNIT:
-                        i_player.UpdateVisibilityOf(itr->ToCreature(), i_data, i_visibleNow);
-                        break;
-                    case TYPEID_DYNAMICOBJECT:
-                        i_player.UpdateVisibilityOf(itr->ToDynObject(), i_data, i_visibleNow);
-                        break;
-                    default:
-                        break;
-                }                
-            }
-        }
-    }
-
-    //also keep far sight targets (is this needed ? maybe it's already done by PlayerRelocationNotifier atm)
-    if(i_player.GetFarSight())
-        i_clientGUIDs.erase(i_player.GetFarSight());
-
-    //remaining i_clientGUIDs are out of range and should be destroyed at client
-    i_data.AddOutOfRangeGUID(i_clientGUIDs);
-    for(uint64 i_clientGUID : i_clientGUIDs)
-    {
-        i_player.m_clientGUIDs.erase(i_clientGUID);
-
-        TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is out of range (no in active cells set) now for player %u",GUID_LOPART(i_clientGUID),GuidHigh2TypeId(GUID_HIPART(i_clientGUID)),i_player.GetGUIDLow());
-    }
-
-    if( i_data.HasData() )
-    {
-        // send create/outofrange packet to player (except player create updates that already sent using SendUpdateToPlayer)
-        WorldPacket* packetBC = nullptr;
-        WorldPacket* packetLK = nullptr;
-        WorldSession::SendUpdateDataPacketForBuild(i_data, packetBC, packetLK, i_player.GetSession());
-        for (auto it : i_player.GetSharedVisionList())
-            if(Player* p = ObjectAccessor::FindPlayer(it))
-                WorldSession::SendUpdateDataPacketForBuild(i_data, packetBC, packetLK, p->GetSession());
-
-        delete packetBC;
-        delete packetLK;
-
-        // send out of range to other players if need
-        std::set<uint64> const& oor = i_data.GetOutOfRangeGUIDs();
-        for(uint64 iter : oor)
-        {
-            if(!IS_PLAYER_GUID(iter))
-                continue;
-
-            if(Player* plr = ObjectAccessor::FindPlayer(iter))
-                plr->UpdateVisibilityOf(&i_player);
-        }
-    }
-
-    // Now do operations that required done at object visibility change to visible
-
-    // target aura duration for caster show only if target exist at caster client
-    // send data at target visibility change (adding to client)
-    for(auto vItr : i_visibleNow)
-        if(vItr!=&i_player && vItr->isType(TYPEMASK_UNIT))
-            i_player.SendInitialVisiblePackets((Unit*)vItr);
-
-    if(i_visibleNow.size() >= 30)
-        i_player.SetToNotify();
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+		if (iter->GetSource()->HasSharedVision())
+			for (SharedVisionList::const_iterator i = iter->GetSource()->GetSharedVisionList().begin();
+				i != iter->GetSource()->GetSharedVisionList().end(); ++i)
+				if ((*i)->m_seer == iter->GetSource())
+					(*i)->UpdateVisibilityOf(&i_object);
 }
 
-void
-Deliverer::Visit(PlayerMapType &m)
+void VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
 {
-    for (auto & iter : m)
-    {
-        if (!i_dist || iter.GetSource()->GetDistance(&i_source) <= i_dist)
-        {
-            // Send packet to all who are sharing the player's vision
-            for (auto itr : iter.GetSource()->GetSharedVisionList())
-                if(Player* p = ObjectAccessor::FindPlayer(itr))
-                    SendPacket(p);
-
-            VisitObject(iter.GetSource());
-        }
-    }
+	for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+		if (Unit* caster = iter->GetSource()->GetCaster())
+			if (Player* player = caster->ToPlayer())
+				if (player->m_seer == iter->GetSource())
+					player->UpdateVisibilityOf(&i_object);
 }
 
-void
-Deliverer::Visit(CreatureMapType &m)
+inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
 {
-    for (auto & iter : m)
-    {
-        if (!i_dist || iter.GetSource()->GetDistance(&i_source) <= i_dist)
-        {
-            // Send packet to all who are sharing the creature's vision
-            for (auto itr : iter.GetSource()->GetSharedVisionList())
-                if(Player* p = ObjectAccessor::FindPlayer(itr))
-                    SendPacket(p);
-        }
-    }
+	if (!u->IsAlive() || !c->IsAlive() || c == u || u->IsInFlight())
+		return;
+
+	if (!c->HasUnitState(UNIT_STATE_SIGHTLESS))
+	{
+		if (c->IsAIEnabled && c->CanSeeOrDetect(u, false, true))
+			c->AI()->MoveInLineOfSight_Safe(u);
+		else
+			if (u->GetTypeId() == TYPEID_PLAYER && u->HasStealthAura() && c->IsAIEnabled && /* c->CanSeeOrDetect(u, false, true, true) already in next check */ c->CanDoStealthAlert(u))
+				//c->AI()->TriggerAlert(u);
+				c->StartStealthAlert(u);
+	}
 }
 
-void
-Deliverer::Visit(DynamicObjectMapType &m)
+void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 {
-    for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        if (IS_PLAYER_GUID(iter->GetSource()->GetCasterGUID()))
-        {
-            // Send packet back to the caster if the caster has vision of dynamic object
-            Unit* caster_unit = iter->GetSource()->GetCaster();
-            Player* caster = caster_unit ? caster_unit->ToPlayer() : nullptr;
-            if (caster && caster->GetUInt64Value(PLAYER_FARSIGHT) == iter->GetSource()->GetGUID() &&
-                (!i_dist || iter->GetSource()->GetDistance(&i_source) <= i_dist))
-                SendPacket(caster);
-        }
-    }
+	for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Player* player = iter->GetSource();
+
+		vis_guids.erase(player->GetGUID());
+
+		i_player.UpdateVisibilityOf(player, i_data, i_visibleNow);
+
+		if (player->m_seer->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			continue;
+
+		player->UpdateVisibilityOf(&i_player);
+	}
 }
 
-void
-Deliverer::SendPacket(Player* plr)
+void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if (!plr)
-        return;
+	bool relocated_for_ai = (&i_player == i_player.m_seer);
 
-    // Don't send the packet to self if not supposed to
-    if (!i_toSelf && plr == &i_source)
-        return;
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Creature* c = iter->GetSource();
 
-    // Don't send the packet to possesor if not supposed to
-    if (!i_toPossessor && plr->IsPossessing() && plr->GetCharmGUID() == i_source.GetGUID())
-        return;
+		vis_guids.erase(c->GetGUID());
 
-    if (plr_list.insert(plr->GetGUID()).second) //return true if a new element was inserted
-        if (WorldSession* session = plr->GetSession())
-            session->SendPacket(i_message);
+		i_player.UpdateVisibilityOf(c, i_data, i_visibleNow);
+
+		if (relocated_for_ai && !c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			CreatureUnitRelocationWorker(c, &i_player);
+	}
 }
 
+void CreatureRelocationNotifier::Visit(PlayerMapType &m)
+{
+	for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Player* player = iter->GetSource();
+
+		if (!player->m_seer->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			player->UpdateVisibilityOf(&i_creature);
+
+		CreatureUnitRelocationWorker(&i_creature, player);
+	}
+}
+
+void CreatureRelocationNotifier::Visit(CreatureMapType &m)
+{
+	if (!i_creature.IsAlive())
+		return;
+
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Creature* c = iter->GetSource();
+		CreatureUnitRelocationWorker(&i_creature, c);
+
+		if (!c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			CreatureUnitRelocationWorker(c, &i_creature);
+	}
+}
+
+void DelayedUnitRelocation::Visit(CreatureMapType &m)
+{
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Creature* unit = iter->GetSource();
+		if (!unit->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			continue;
+
+		CreatureRelocationNotifier relocate(*unit);
+
+		TypeContainerVisitor<CreatureRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
+		TypeContainerVisitor<CreatureRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocate);
+
+		cell.Visit(p, c2world_relocation, i_map, *unit, i_radius);
+		cell.Visit(p, c2grid_relocation, i_map, *unit, i_radius);
+	}
+}
+
+void DelayedUnitRelocation::Visit(PlayerMapType &m)
+{
+	for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Player* player = iter->GetSource();
+		WorldObject const* viewPoint = player->m_seer;
+
+		if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
+			continue;
+
+		if (player != viewPoint && !viewPoint->IsPositionValid())
+			continue;
+
+		CellCoord pair2(Trinity::ComputeCellCoord(viewPoint->GetPositionX(), viewPoint->GetPositionY()));
+		Cell cell2(pair2);
+		//cell.SetNoCreate(); need load cells around viewPoint or player, that's why its commented
+
+		PlayerRelocationNotifier relocate(*player);
+		TypeContainerVisitor<PlayerRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
+		TypeContainerVisitor<PlayerRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocate);
+
+		cell2.Visit(pair2, c2world_relocation, i_map, *viewPoint, i_radius);
+		cell2.Visit(pair2, c2grid_relocation, i_map, *viewPoint, i_radius);
+
+		relocate.SendToSelf();
+	}
+}
+
+void AIRelocationNotifier::Visit(CreatureMapType &m)
+{
+	for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		Creature* c = iter->GetSource();
+		CreatureUnitRelocationWorker(c, &i_unit);
+		if (isCreature)
+			CreatureUnitRelocationWorker((Creature*)&i_unit, c);
+	}
+}
+
+
+void VisibleChangesNotifier::Visit(PlayerMapType &m)
+{
+	for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		if (iter->GetSource() == &i_object)
+			continue;
+
+		iter->GetSource()->UpdateVisibilityOf(&i_object);
+
+		if (iter->GetSource()->HasSharedVision())
+		{
+			for (SharedVisionList::const_iterator i = iter->GetSource()->GetSharedVisionList().begin();
+				i != iter->GetSource()->GetSharedVisionList().end(); ++i)
+			{
+				if ((*i)->m_seer == iter->GetSource())
+					(*i)->UpdateVisibilityOf(&i_object);
+			}
+		}
+	}
+}
 
 void MessageDistDeliverer::Visit(PlayerMapType &m)
 {
@@ -209,9 +260,8 @@ void MessageDistDeliverer::Visit(PlayerMapType &m)
 			continue;
 
 		// Send packet to all who are sharing the player's vision
-		for (auto itr : target->GetSharedVisionList())
-			if (Player* p = ObjectAccessor::GetPlayer(*target, itr))
-				if (p->m_seer == target)
+		for (auto p : target->GetSharedVisionList())
+			if (p->m_seer == target)
 					SendPacket(p);
 
 		//send only if player viewpoint is on himself (?except for vehicles where the viewpoint is on the vehicle?)
@@ -238,10 +288,9 @@ void MessageDistDeliverer::Visit(CreatureMapType &m)
 			continue;
 
 		// Send packet to all who are sharing the creature's vision
-		for (auto itr : target->GetSharedVisionList())
-			if (Player* p = ObjectAccessor::GetPlayer(*target, itr))
-				if (p->m_seer == target)
-					SendPacket(p);
+		for (auto p : target->GetSharedVisionList())
+			if (p->m_seer == target)
+				SendPacket(p);
 	}
 }
 
@@ -257,7 +306,7 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
 		/*
 		if (!target->IsViewpoint())
 			continue;
-			*/
+		*/
 
 		if (target->GetExactDist2dSq(i_source) > i_distSq)
 			continue;
@@ -267,12 +316,6 @@ void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
 		if (caster && caster->m_seer == target)
 			SendPacket(caster);
 	}
-}
-
-void
-MessageDeliverer::VisitObject(Player* plr)
-{
-    SendPacket(plr);
 }
 
 template<class T> void
@@ -417,7 +460,7 @@ bool AnyUnitInObjectRangeCheck::operator()(Unit* u)
 bool NearestAttackableUnitInObjectRangeCheck::operator()(Unit* u)
 {
     if (i_funit->CanAttack(u) == CAN_ATTACK_RESULT_OK && i_obj->IsWithinDistInMap(u, i_range) &&
-        !i_funit->IsFriendlyTo(u) && u->IsVisibleForOrDetect(i_funit, false))
+        !i_funit->IsFriendlyTo(u) && i_funit->CanSeeOrDetect(u))
     {
         i_range = i_obj->GetDistance(u);        // use found unit range as new range limit for next check
         return true;
@@ -479,8 +522,6 @@ void CallOfHelpCreatureInRangeDo::operator()(Creature* u)
 }
 
 bool AnyDeadUnitCheck::operator()(Unit* u) { return !u->IsAlive(); }
-
-bool AnyStealthedCheck::operator()(Unit* u) { return u->GetVisibility() == VISIBILITY_GROUP_STEALTH; }
 
 bool NearestHostileUnitInAttackDistanceCheck::operator()(Unit* u)
 {
@@ -582,7 +623,7 @@ bool NearestPlayerInObjectRangeCheck::operator()(Player* u)
 
 bool AllFriendlyCreaturesInGrid::operator() (Creature* u)
 {
-    if (u->IsAlive() && u->GetVisibility() == VISIBILITY_ON && u->IsFriendlyTo(pUnit))
+    if (u->IsAlive() && u->IsVisible() && u->IsFriendlyTo(pUnit))
         return true;
 
     return false;

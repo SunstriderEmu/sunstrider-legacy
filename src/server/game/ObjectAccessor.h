@@ -31,7 +31,7 @@ class TC_GAME_API HashMapHolder
 
 public:
 	static_assert(std::is_same<Player, T>::value
-		|| std::is_same<Transport, T>::value,
+		|| std::is_same<MotionTransport, T>::value,
 		"Only Player and Transport can be registered in global HashMapHolder");
 
 	typedef std::unordered_map<ObjectGuid, T*> MapType;
@@ -101,7 +101,7 @@ namespace ObjectAccessor
 
 		TC_GAME_API void SaveAllPlayers();
 
-		void UpdateObjectVisibility(WorldObject *obj);
+		//void UpdateObjectVisibility(WorldObject *obj);
 };
 
 #endif

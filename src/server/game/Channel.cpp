@@ -482,7 +482,7 @@ void Channel::List(Player* player)
         //uint32 gmLevelInWhoList = sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
         uint32 count  = 0;
 
-        for(auto & player : players)
+        for(auto& _player : players)
         {
             /*
             Player *plr = sObjectMgr->GetPlayer(i->first);
@@ -492,10 +492,10 @@ void Channel::List(Player* player)
             if (plr && (player->GetSession()->GetSecurity() > SEC_PLAYER || plr->GetSession()->GetSecurity() <= gmLevelInWhoList) && 
                     plr->IsVisibleGloballyFor(player))
                     */
-            if(!(player.second.invisible))
+            if(!(_player.second.invisible))
             {
-                data << uint64(player.first);
-                data << uint8(player.second.flags);             // flags seems to be changed...
+                data << uint64(_player.first);
+                data << uint8(_player.second.flags);             // flags seems to be changed...
                 ++count;
             }
         }

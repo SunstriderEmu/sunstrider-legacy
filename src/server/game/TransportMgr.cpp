@@ -437,7 +437,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     // xinef: transports are active so passengers can be relocated (grids must be loaded)
     ///trans->SetKeepActive(true);
 	// Passengers will be loaded once a player is near
-	HashMapHolder<Transport>::Insert(trans);
+	HashMapHolder<MotionTransport>::Insert(trans);
     trans->GetMap()->AddToMap<MotionTransport>(trans);
     return trans;
 }

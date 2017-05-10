@@ -39,7 +39,7 @@ enum AuraType : unsigned int
     SPELL_AURA_MOD_DAMAGE_TAKEN = 14,
     SPELL_AURA_DAMAGE_SHIELD = 15,
     SPELL_AURA_MOD_STEALTH = 16,
-    SPELL_AURA_MOD_DETECT = 17,
+    SPELL_AURA_MOD_STEALTH_DETECT = 17,
     SPELL_AURA_MOD_INVISIBILITY = 18,
     SPELL_AURA_MOD_INVISIBILITY_DETECTION = 19,
     SPELL_AURA_OBS_MOD_HEALTH = 20,                         //20,21 unofficial
@@ -113,7 +113,7 @@ enum AuraType : unsigned int
     SPELL_AURA_MOD_HEALTH_REGEN_PERCENT = 88,
     SPELL_AURA_PERIODIC_DAMAGE_PERCENT = 89,
     SPELL_AURA_MOD_RESIST_CHANCE = 90,
-    SPELL_AURA_MOD_DETECT_RANGE = 91,
+    SPELL_AURA_MOD_STEALTH_DETECT_RANGE = 91,
     SPELL_AURA_PREVENTS_FLEEING = 92,
     SPELL_AURA_MOD_UNATTACKABLE = 93,
     SPELL_AURA_INTERRUPT_REGEN = 94,
@@ -174,7 +174,7 @@ enum AuraType : unsigned int
     SPELL_AURA_RESIST_PUSHBACK  = 149,                      //    Resist Pushback
     SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT = 150,
     SPELL_AURA_TRACK_STEALTHED  = 151,                      //    Track Stealthed
-    SPELL_AURA_MOD_DETECTED_RANGE = 152,                    //    Mod Detected Range
+    SPELL_AURA_MOD_STEALTH_DETECTED_RANGE = 152,                    //    Mod Detected Range
     SPELL_AURA_SPLIT_DAMAGE_FLAT = 153,                     //    Split Damage Flat
     SPELL_AURA_MOD_STEALTH_LEVEL = 154,                     //    Stealth Level Modifier
     SPELL_AURA_MOD_WATER_BREATHING = 155,                   //    Mod Water Breathing

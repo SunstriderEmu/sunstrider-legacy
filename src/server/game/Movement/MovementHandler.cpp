@@ -223,7 +223,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     //TC_LOG_DEBUG("network", "Guid " UI64FMTD, guid);
     //TC_LOG_DEBUG("network", "Flags %u, time %u", flags, time/IN_MILLISECONDS);
 
-    Player* plMover = _player->m_mover->ToPlayer();
+    Player* plMover = _player->m_unitMovedByMe->ToPlayer();
     if (guid != plMover->GetGUID())
         return;
 
@@ -284,7 +284,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 {
     uint16 opcode = recvData.GetOpcode();
 
-    Unit* mover = _player->m_mover;
+    Unit* mover = _player->m_unitMovedByMe;
 
     ASSERT(mover != NULL);                      // there must always be a mover
 
@@ -692,6 +692,11 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     uint64 guid;
     recvData >> guid; //Client started controlling this unit
 
+	/*TC 
+	if (GetPlayer()->IsInWorld())
+        if (_player->m_unitMovedByMe->GetGUID() != guid)
+            TC_LOG_DEBUG("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is %s and should be %s" , guid.ToString().c_str(), _player->m_unitMovedByMe->GetGUID().ToString().c_str());
+			*/
     Unit* movedUnit = ObjectAccessor::GetUnit(*_player, guid);
     if(movedUnit)
         _player->SetMover(movedUnit);
@@ -712,7 +717,7 @@ void WorldSession::HandleMoveNotActiveMover(WorldPacket &recvData)
     recvData >> old_mover_guid;
 #endif
 
-    if (!_player->m_mover || !_player->m_mover->IsInWorld() || old_mover_guid != _player->m_mover->GetGUID())
+    if (!_player->m_unitMovedByMe || !_player->m_unitMovedByMe->IsInWorld() || old_mover_guid != _player->m_unitMovedByMe->GetGUID())
     {
         recvData.rfinish(); // prevent warnings spam
         return;
@@ -747,7 +752,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     recvData >> guid;
 #endif
 
-    if (!_player->m_mover || !_player->m_mover->IsInWorld() || guid != _player->m_mover->GetGUID())
+    if (!_player->m_unitMovedByMe || !_player->m_unitMovedByMe->IsInWorld() || guid != _player->m_unitMovedByMe->GetGUID())
     {
         recvData.rfinish(); // prevent warnings spam
         return;

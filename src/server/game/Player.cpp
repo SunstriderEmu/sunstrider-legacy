@@ -56,6 +56,7 @@
 #include "Mail.h"
 #include "Bag.h"
 #include "CharacterCache.h"
+#include "UpdateFieldFlags.h"
 
 #ifdef PLAYERBOT
 #include "PlayerbotAI.h"
@@ -368,8 +369,8 @@ Player::Player (WorldSession *session) :
     mSemaphoreTeleport_Far = false;
 
     m_dontMove = false;
-    m_mover = this;
-    m_movedByPlayer = this;
+    m_unitMovedByMe = this;
+    m_playerMovingMe = this;
 
     pTrader = nullptr;
     ClearTrade();
@@ -507,8 +508,6 @@ Player::Player (WorldSession *session) :
     m_playerbotMgr = nullptr;
     #endif
 
-    m_farsightVision = false;
-    
     // Experience Blocking
     m_isXpBlocked = false;
     
@@ -1163,20 +1162,28 @@ DrunkenState Player::GetDrunkenstateByValue(uint16 value)
     return DRUNKEN_SOBER;
 }
 
-void Player::SetDrunkValue(uint16 newDrunkenValue, uint32 itemId)
+void Player::SetDrunkValue(uint16 newDrunkValue, uint32 itemId)
 {
     uint32 oldDrunkenState = Player::GetDrunkenstateByValue(m_drunk);
+	if (newDrunkValue > 100)
+		newDrunkValue = 100;
 
-    m_drunk = newDrunkenValue;
+	int32 drunkPercent = newDrunkValue; //std::max<int32>(newDrunkValue, GetTotalAuraModifier(SPELL_AURA_MOD_FAKE_INEBRIATE));
+	if (drunkPercent)
+	{
+		m_invisibilityDetect.AddFlag(INVISIBILITY_DRUNK);
+		m_invisibilityDetect.SetValue(INVISIBILITY_DRUNK, drunkPercent);
+	}
+	/*
+	else if (!HasAuraType(SPELL_AURA_MOD_FAKE_INEBRIATE) && !newDrunkValue)
+		m_invisibilityDetect.DelFlag(INVISIBILITY_DRUNK);
+	*/
+
+    m_drunk = newDrunkValue;
     SetUInt32Value(PLAYER_BYTES_3,(GetUInt32Value(PLAYER_BYTES_3) & 0xFFFF0001) | (m_drunk & 0xFFFE));
+	UpdateObjectVisibility();
 
     uint32 newDrunkenState = Player::GetDrunkenstateByValue(m_drunk);
-
-    // special drunk invisibility detection
-    if(newDrunkenState >= DRUNKEN_DRUNK)
-        m_detectInvisibilityMask |= (1<<6);
-    else
-        m_detectInvisibilityMask &= ~(1<<6);
 
     if(newDrunkenState == oldDrunkenState)
         return;
@@ -2064,6 +2071,16 @@ void Player::RemoveFromWorld()
     ///- It will crash when updating the ObjectAccessor
     ///- The player should only be removed when logging out
     Unit::RemoveFromWorld();
+
+	if (m_uint32Values)
+	{
+		if (WorldObject* viewpoint = GetViewpoint())
+		{
+			TC_LOG_ERROR("entities.player", "Player::RemoveFromWorld: Player '%s' (%s) has viewpoint (Entry:%u, Type: %u) when removed from world",
+				GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), viewpoint->GetEntry(), viewpoint->GetTypeId());
+			SetViewpoint(viewpoint, false);
+		}
+	}
 }
 
 void Player::RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attacker )
@@ -2404,9 +2421,14 @@ void Player::SetGameMaster(bool on)
 
         GetHostileRefManager().setOnlineOfflineState(false);
         CombatStop();
+
+		SetPhaseMask(PHASEMASK_ANYWHERE, false);    // see and visible in all phases
+		m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
     }
     else
     {
+		SetPhaseMask(PHASEMASK_NORMAL, false);
+
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         SetFactionForRace(GetRace());
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
@@ -2419,10 +2441,10 @@ void Player::SetGameMaster(bool on)
         UpdateArea(m_areaUpdateId);
 
         GetHostileRefManager().setOnlineOfflineState(true);
+		m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
     }
 
-    SetToNotify();
-    //todo: update UNIT_FIELD_FLAGS and visibility of nearby objects
+	UpdateObjectVisibility();
 }
 
 void Player::SetGMVisible(bool on)
@@ -2438,13 +2460,14 @@ void Player::SetGMVisible(bool on)
     {
         m_ExtraFlags &= ~PLAYER_EXTRA_GM_INVISIBLE;         //remove flag
 
-        // Reapply stealth/invisibility if active or show if not any
+		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+      /* // Reapply stealth/invisibility if active or show if not any
         if(HasAuraType(SPELL_AURA_MOD_STEALTH))
             SetVisibility(VISIBILITY_GROUP_STEALTH);
         //else if(HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
         //    SetVisibility(VISIBILITY_GROUP_INVISIBILITY);
         else
-            SetVisibility(VISIBILITY_ON);
+            SetVisibility(VISIBILITY_ON); */
 
         RemoveAurasDueToSpell(transparence_spell);
     }
@@ -2455,7 +2478,7 @@ void Player::SetGMVisible(bool on)
         SetAcceptWhispers(false);
         SetGameMaster(true);
 
-        SetVisibility(VISIBILITY_OFF);
+		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, GetSession()->GetSecurity());
 
         SpellInfo const* spellproto = sSpellMgr->GetSpellInfo(transparence_spell); //Transparency 50%
         if (spellproto)
@@ -2471,7 +2494,7 @@ void Player::SetGMVisible(bool on)
     }
 }
 
-bool Player::IsGroupVisibleFor(Player* p) const
+bool Player::IsGroupVisibleFor(Player const* p) const
 {
     switch(sWorld->getConfig(CONFIG_GROUP_VISIBILITY))
     {
@@ -4261,9 +4284,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
 	UpdateZone(newzone, newarea);
 	sOutdoorPvPMgr->HandlePlayerResurrects(this, newzone);
 
-    // update visibility
-    //ObjectAccessor::UpdateVisibilityForPlayer(this);
-    SetToNotify();
+	// update visibility
+	UpdateObjectVisibility();
 
     // some items limited to specific map
     DestroyZoneLimitedItem( true, GetZoneId());
@@ -4335,7 +4357,7 @@ void Player::KillPlayer()
     // don't create corpse at this moment, player might be falling
 
     // update visibility
-    ObjectAccessor::UpdateObjectVisibility(this);
+	UpdateObjectVisibility();
 }
 
 Corpse* Player::CreateCorpse()
@@ -4348,8 +4370,7 @@ Corpse* Player::CreateCorpse()
     auto corpse = new Corpse( (m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH) ? CORPSE_RESURRECTABLE_PVP : CORPSE_RESURRECTABLE_PVE );
     SetPvPDeath(false);
 
-    if(!corpse->Create(sObjectMgr->GenerateLowGuid(HighGuid::Corpse), this, GetMapId(), GetPositionX(),
-        GetPositionY(), GetPositionZ(), GetOrientation()))
+    if(!corpse->Create(sObjectMgr->GenerateLowGuid(HighGuid::Corpse), this))
     {
         delete corpse;
 		return nullptr;
@@ -12155,7 +12176,7 @@ void Player::SwapItem( uint16 src, uint16 dst )
         {
             uint8 msg;
             ItemPosCountVec sDest;
-            uint16 eDest;
+			uint16 eDest = 0;
             if( IsInventoryPos( dst ) )
                 msg = CanStoreItem( dstbag, dstslot, sDest, pSrcItem, false );
             else if( IsBankPos ( dst ) )
@@ -12223,7 +12244,7 @@ void Player::SwapItem( uint16 src, uint16 dst )
 
         // check dest->src move possibility
         ItemPosCountVec sDest2;
-        uint16 eDest2;
+		uint16 eDest2 = 0;
         if( IsInventoryPos( src ) )
             msg = CanStoreItem( srcbag, srcslot, sDest2, pDstItem, true );
         else if( IsBankPos( src ) )
@@ -15206,7 +15227,11 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     if (transGUIDLow)
     {
         uint64 transGUID = MAKE_NEW_GUID(transGUIDLow, 0, HighGuid::Mo_Transport);
-        GameObject* transGO = GetMap()->GetGameObject(transGUID);
+		Transport* transport = nullptr;
+		if (Transport* go = HashMapHolder<MotionTransport>::Find(transGUID))
+			transport = go;
+
+		/* fixme, loading for static transport is probably broken right now. THis needs to be moved later when map is loaded
         if (!transGO) // sunwell: if not MotionTransport, look for StaticTransport
         {
 #ifdef LICH_KING
@@ -15216,9 +15241,10 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 #endif
             transGO = GetMap()->GetGameObject(transGUID);
         }
-        if (transGO)
-            if (transGO->IsInWorld() && transGO->FindMap()) // sunwell: must be on map, for one world tick transport is not in map and has old GetMapId(), player would be added to old map and to the transport, multithreading crashfix
-                m_transport = transGO->ToTransport();
+		*/
+        if (transport)
+            if (transport->IsInWorld() && transport->FindMap()) // sunwell: must be on map, for one world tick transport is not in map and has old GetMapId(), player would be added to old map and to the transport, multithreading crashfix
+				m_transport = transport;
 
         if (m_transport)
         {
@@ -15440,7 +15466,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetCreatorGUID(0);
 
     // reset some aura modifiers before aura apply
-    SetFarSight(0);
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0 );
     SetUInt32Value(PLAYER_TRACK_RESOURCES, 0 );
 
@@ -19396,10 +19421,11 @@ void Player::ReportedAfkBy(Player* reporter)
     }
 }
 
-bool Player::CanSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList, bool is3dDistance) const
+/*/
+bool Player::CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
 {
     // Always can see self
-    if (u == m_mover)
+    if (u == m_unitMovedByMe)
         return true;
 
     // Check spectator case
@@ -19495,11 +19521,10 @@ bool Player::CanSeeOrDetect(Unit const* u, bool /* detect */, bool inVisibleList
     if(u->GetVisibility() == VISIBILITY_OFF)
     {
         // GMs see all unit. gamemasters rank 1 can see all units except higher gm's. GM's in GMGROUP_VIDEO can't see invisible units.
-        if(IsGameMaster() /*&& GetSession()->GetGroupId() != GMGROUP_VIDEO */)
+        if(IsGameMaster() )
         {
             //"spies" cannot be seen by lesser ranks
             if ( u->GetTypeId() == TYPEID_PLAYER
-             /* && u->ToPlayer()->GetSession()->GetGroupId() == GMGROUP_SPY */
               && GetSession()->GetSecurity() < u->ToPlayer()->GetSession()->GetSecurity()
               && !IsInSameGroupWith(u->ToPlayer()) ) 
                 return false;
@@ -19629,6 +19654,44 @@ bool Player::IsVisibleInGridForPlayer( Player const * pl ) const
     return false;
 }
 
+*/
+
+bool Player::IsNeverVisible() const
+{
+	if (Unit::IsNeverVisible())
+		return true;
+
+	if (GetSession()->PlayerLogout() || GetSession()->PlayerLoading())
+		return true;
+
+	return false;
+}
+
+bool Player::CanAlwaysSee(WorldObject const* obj) const
+{
+	// Always can see self
+	if (m_unitMovedByMe == obj)
+		return true;
+
+	if (ObjectGuid guid = GetGuidValue(PLAYER_FARSIGHT))
+		if (obj->GetGUID() == guid)
+			return true;
+
+	return false;
+}
+
+bool Player::IsAlwaysDetectableFor(WorldObject const* seer) const
+{
+	if (Unit::IsAlwaysDetectableFor(seer))
+		return true;
+
+	if (const Player* seerPlayer = seer->ToPlayer())
+		if (IsGroupVisibleFor(seerPlayer))
+			return !(seerPlayer->duel && seerPlayer->duel->startTime != 0 && seerPlayer->duel->opponent == this);
+
+	return false;
+}
+
 bool Player::IsVisibleGloballyFor( Player* u ) const
 {
     if(!u)
@@ -19639,10 +19702,12 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
         return true;
 
     // Visible units, always are visible for all players
-    if (GetVisibility() == VISIBILITY_ON)
+	if (IsVisible())
         return true;
 
-    //Rank2 GMs can always see everyone
+	// -- Only gm's from this point, custom sunstrider rules
+
+    //Rank >=2 GMs can always see everyone
     if (u->GetSession()->GetSecurity() >= SEC_GAMEMASTER2)
        return true;
 
@@ -19654,20 +19719,123 @@ bool Player::IsVisibleGloballyFor( Player* u ) const
     if(u->GetSession()->GetSecurity() >= SEC_GAMEMASTER1 && IsInSameGroupWith(u))
         return true;
 
-    // non faction visibility non-breakable for non-GMs
-    if (GetVisibility() == VISIBILITY_OFF)
-        return false;
+	return false;
+}
 
-    // non-gm stealth/invisibility not hide from global player lists
-    return true;
+void Player::UpdateTriggerVisibility()
+{
+	if (m_clientGUIDs.empty())
+		return;
+
+	if (!IsInWorld())
+		return;
+
+	UpdateData udata;
+	WorldPacket packet;
+	for (auto itr = m_clientGUIDs.begin(); itr != m_clientGUIDs.end(); ++itr)
+	{
+		if (IS_CREATURE_OR_VEHICLE_GUID(*itr))
+			///if (itr->IsCreatureOrVehicle())
+		{
+			Creature* creature = GetMap()->GetCreature(*itr);
+			// Update fields of triggers, transformed units or unselectable units (values dependent on GM state)
+			if (!creature || (!creature->IsTrigger() && !creature->HasAuraType(SPELL_AURA_TRANSFORM) && !creature->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE)))
+				continue;
+
+			creature->SetFieldNotifyFlag(UF_FLAG_PUBLIC);
+			creature->BuildValuesUpdateBlockForPlayer(&udata, this);
+			creature->RemoveFieldNotifyFlag(UF_FLAG_PUBLIC);
+		}
+		else if (IS_GAMEOBJECT_GUID(*itr))
+			//else if (itr->IsGameObject())
+		{
+			GameObject* go = GetMap()->GetGameObject(*itr);
+			if (!go)
+				continue;
+
+			go->SetFieldNotifyFlag(UF_FLAG_PUBLIC);
+			go->BuildValuesUpdateBlockForPlayer(&udata, this);
+			go->RemoveFieldNotifyFlag(UF_FLAG_PUBLIC);
+		}
+	}
+
+	if (!udata.HasData())
+		return;
+
+	udata.BuildPacket(&packet, GetSession()->GetClientBuild());
+	GetSession()->SendPacket(&packet);
+}
+
+void Player::SendInitialVisiblePackets(Unit* target)
+{
+	SendAuraDurationsForTarget(target);
+
+	//Arena spectator
+	if (Battleground *bg = GetBattleground())
+	{
+		if (bg->isSpectator(GetGUID()))
+		{
+			for (uint8 i = 0; i < MAX_AURAS; ++i)
+			{
+				if (uint32 auraId = target->GetUInt32Value(UNIT_FIELD_AURA + i))
+				{
+					if (Player *stream = target->ToPlayer())
+					{
+						if (bg->isSpectator(stream->GetGUID()))
+							continue;
+
+						AuraMap& Auras = target->GetAuras();
+
+						for (auto & iter : Auras)
+						{
+							if (iter.second->GetId() == auraId)
+							{
+								Aura* aura = iter.second;
+
+								SpectatorAddonMsg msg;
+								uint64 casterID = 0;
+								if (aura->GetCaster())
+									casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
+								msg.SetPlayer(stream->GetName());
+								msg.CreateAura(casterID, aura->GetSpellInfo()->Id,
+									aura->IsPositive(), aura->GetSpellInfo()->Dispel,
+									aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
+									aura->GetStackAmount(), false);
+								msg.SendPacket(GetGUID());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (target->IsAlive())
+	{
+		if (target->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && target->GetVictim())
+			target->SendMeleeAttackStart(target->GetVictim());
+	}
+}
+
+template<class T>
+inline void BeforeVisibilityDestroy(T* /*t*/, Player* /*p*/) { }
+
+template<>
+inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
+{
+	if (p->GetPetGUID() == t->GetGUID() && t->IsPet())
+		t->ToPet()->Remove(PET_SAVE_NOT_IN_SLOT, true);
 }
 
 void Player::UpdateVisibilityOf(WorldObject* target)
 {
     if(HaveAtClient(target))
     {
-        if(!target->IsVisibleForInState(this,true))
-        {
+		if (!CanSeeOrDetect(target, false, true))
+		{
+			if (target->GetTypeId() == TYPEID_UNIT)
+				BeforeVisibilityDestroy<Creature>(target->ToCreature(), this);
+
             target->DestroyForPlayer(this);
             m_clientGUIDs.erase(target->GetGUID());
 
@@ -19676,121 +19844,105 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     }
     else
     {
-        if(target->IsVisibleForInState(this,false))
+		if (CanSeeOrDetect(target, false, true))
+        //if(target->IsVisibleForInState(this,false))
         {
             target->SendUpdateToPlayer(this);
-            if(target->GetTypeId()!=TYPEID_GAMEOBJECT || !((GameObject*)target)->IsTransport()) //exclude transports
-                m_clientGUIDs.insert(target->GetGUID());
+            m_clientGUIDs.insert(target->GetGUID());
 
             //TC_LOG_DEBUG("debug.grid","Object %u (Type: %u) is visible now for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),GetGUIDLow(),GetDistance(target));
 
             // target aura duration for caster show only if target exist at caster client
             // send data at target visibility change (adding to client)
             if(target->isType(TYPEMASK_UNIT))
-                if(Unit* u = target->ToUnit())
-                    SendInitialVisiblePackets(u);
+				SendInitialVisiblePackets(static_cast<Unit*>(target));
         }
-    }
-}
-
-void Player::SendInitialVisiblePackets(Unit* target)
-{
-    SendAuraDurationsForTarget(target);
-
-    //Arena spectator
-    if (Battleground *bg = GetBattleground())
-    {
-        if (bg->isSpectator(GetGUID()))
-        {
-            for(uint8 i = 0; i < MAX_AURAS; ++i)
-            {
-                if(uint32 auraId = target->GetUInt32Value(UNIT_FIELD_AURA + i))
-                {
-                    if (Player *stream = target->ToPlayer())
-                    {
-                        if (bg->isSpectator(stream->GetGUID()))
-                            continue;
-
-                        AuraMap& Auras = target->GetAuras();
-
-                        for(auto & iter : Auras)
-                        {
-                            if (iter.second->GetId() == auraId)
-                            {
-                                Aura* aura = iter.second;
-
-                                SpectatorAddonMsg msg;
-                                uint64 casterID = 0;
-                                if (aura->GetCaster())
-                                    casterID = (aura->GetCaster()->ToPlayer()) ? aura->GetCaster()->GetGUID() : 0;
-                                msg.SetPlayer(stream->GetName());
-                                msg.CreateAura(casterID, aura->GetSpellInfo()->Id,
-                                               aura->IsPositive(), aura->GetSpellInfo()->Dispel,
-                                               aura->GetAuraDuration(), aura->GetAuraMaxDuration(),
-                                               aura->GetStackAmount(), false);
-                                msg.SendPacket(GetGUID());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    if(target->IsAlive())
-    {
-        if(target->HasUnitState(UNIT_STATE_MELEE_ATTACKING) && target->GetVictim())
-            target->SendMeleeAttackStart(target->GetVictim());
     }
 }
 
 template<class T>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, T* target, std::set<Unit*>& /*v*/)
 {
     s64.insert(target->GetGUID());
 }
 
 template<>
-inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target)
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, GameObject* target, std::set<Unit*>& /*v*/)
 {
     if(!target->IsTransport())
         s64.insert(target->GetGUID());
 }
 
+template<>
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Creature* target, std::set<Unit*>& v)
+{
+	s64.insert(target->GetGUID());
+	v.insert(target);
+}
+
+template<>
+inline void UpdateVisibilityOf_helper(GuidUnorderedSet& s64, Player* target, std::set<Unit*>& v)
+{
+	s64.insert(target->GetGUID());
+	v.insert(target);
+}
+
+
 template<class T>
-void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow)
+void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow)
 {
     if(!target)
         return;
 
     if(HaveAtClient(target))
     {
-        if(!target->IsVisibleForInState(this,true))
-        {
+		if (!CanSeeOrDetect(target, false, true))
+		{
+			BeforeVisibilityDestroy<T>(target, this);
+
             target->BuildOutOfRangeUpdateBlock(&data);
             m_clientGUIDs.erase(target->GetGUID());
 
             //TC_LOG_DEBUG("debug.grid","Object %u (Type: %u, Entry: %u) is out of range for player %u. Distance = %f",target->GetGUIDLow(),target->GetTypeId(),target->GetEntry(),GetGUIDLow(),GetDistance(target));
         }
     }
-    else if(visibleNow.size() < 30)
+    else //if(visibleNow.size() < 30)
     {
-        if(target->IsVisibleForInState(this,false))
+		if (CanSeeOrDetect(target, false, true))
+        //if(target->IsVisibleForInState(this,false))
         {
-            visibleNow.insert(target);
             target->BuildCreateUpdateBlockForPlayer(&data, this);
-            UpdateVisibilityOf_helper(m_clientGUIDs,target);
+			UpdateVisibilityOf_helper(m_clientGUIDs,target, visibleNow);
 
             //TC_LOG_DEBUG("debug.grid", "Object %u (Type: %u) is visible now for player %u. Distance = %f", target->GetGUIDLow(), target->GetTypeId(), GetGUIDLow(), GetDistance(target));
         }
     }
 }
 
-template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<WorldObject*>& visibleNow);
-template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
+template void Player::UpdateVisibilityOf(Player*        target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(Creature*      target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
+template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
+
+void Player::UpdateObjectVisibility(bool forced)
+{
+	if (!forced)
+		AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+	else
+	{
+		Unit::UpdateObjectVisibility(true);
+		UpdateVisibilityForPlayer();
+	}
+}
+
+void Player::UpdateVisibilityForPlayer()
+{
+	// updates visibility of all objects around point of view for current player
+	Trinity::VisibleNotifier notifier(*this);
+	m_seer->VisitNearbyObject(GetSightRange(), notifier);
+	notifier.SendToSelf();   // send gathered data
+}
 
 void Player::InitPrimaryProffesions()
 {
@@ -19833,7 +19985,7 @@ void Player::SendComboPoints()
     if (combotarget)
     {
         WorldPacket data;
-        if (m_mover != this)
+        if (m_unitMovedByMe != this)
             return; //no combo point from pet/charmed creatures
        
         data.Initialize(SMSG_UPDATE_COMBO_POINTS, combotarget->GetPackGUID().size()+1);
@@ -19966,10 +20118,17 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
 void Player::SendInitialPacketsAfterAddToMap()
 {
-    CastSpell(this, 836, true);                             // LOGINEFFECT
+	UpdateVisibilityForPlayer();
+
+	// update zone
+	uint32 newzone, newarea;
+	GetZoneAndAreaId(newzone, newarea);
+	UpdateZone(newzone, newarea);                            // also call SendInitWorldStates();
 
     ResetTimeSync();
     SendTimeSync();
+
+	CastSpell(this, 836, true);                             // LOGINEFFECT
 
     // set some aura effects that send packet to player client after add player to map
     // SendMessageToSet not send it to player not it map, only for aura that not changed anything at re-apply
@@ -20035,8 +20194,23 @@ void Player::SendInitialPacketsAfterAddToMap()
         }
     }
 
+	//SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
+
+#ifdef LICH_KING
+															// raid downscaling - send difficulty to player
+	if (GetMap()->IsRaid())
+	{
+		if (GetMap()->GetDifficulty() != GetRaidDifficulty())
+		{
+			StoreRaidMapDifficulty();
+			SendRaidDifficulty(GetGroup() != NULL, GetStoredRaidDifficulty());
+		}
+	}
+	else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
+		SendRaidDifficulty(GetGroup() != NULL);
+#endif
 }
 
 void Player::SendSupercededSpell(uint32 oldSpell, uint32 newSpell) const
@@ -21312,6 +21486,9 @@ void Player::SetClientControl(Unit* target, uint8 allowMove)
     data << uint8(allowMove);
     SendDirectMessage(&data);
 
+	if (this != target)
+		SetViewpoint(target, allowMove);
+
     if (allowMove)
         SetMover(target);
 }
@@ -21736,17 +21913,9 @@ void Player::HandleFallUnderMap()
     }
 }
 
-WorldObject* Player::GetFarsightTarget() const
-{
-    // Players can have in farsight field another player's guid, a creature's guid, or a dynamic object's guid
-    if (uint64 guid = GetUInt64Value(PLAYER_FARSIGHT))
-        return (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT);
-    return nullptr;
-}
-
 void Player::StopCastingBindSight()
 {
-    if(WorldObject* target = GetFarsightTarget())
+    if(WorldObject* target = GetViewpoint())
     {
         if(target->isType(TYPEMASK_UNIT))
         {
@@ -21754,42 +21923,6 @@ void Player::StopCastingBindSight()
             ((Unit*)target)->RemoveAuraTypeByCaster(SPELL_AURA_MOD_POSSESS, GetGUID());
             ((Unit*)target)->RemoveAuraTypeByCaster(SPELL_AURA_MOD_POSSESS_PET, GetGUID());
         }
-    }
-}
-
-void Player::ClearFarsight()
-{
-    if (isSpectator() && spectateFrom)
-        spectateFrom = nullptr;
-
-    if (GetUInt64Value(PLAYER_FARSIGHT))
-    {
-        SetUInt64Value(PLAYER_FARSIGHT, 0);
-
-        WorldPacket data(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE, 0);
-        SendDirectMessage(&data);
-    }
-}
-
-void Player::SetFarsightTarget(WorldObject* obj)
-{
-    if (!obj || !obj->isType(TYPEMASK_PLAYER | TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT))
-        return;
-
-    if (obj->ToPlayer() == this)
-        return;
-
-    // Remove the current target if there is one
-    StopCastingBindSight();
-
-    SetUInt64Value(PLAYER_FARSIGHT, obj->GetGUID());
-
-    if (isSpectator())
-    {
-        if(spectateFrom)
-            RemovePlayerFromVision(spectateFrom);
-
-        spectateFrom = (Player*)obj;
     }
 }
 
@@ -22169,7 +22302,7 @@ void Player::SetSpectate(bool on)
 
         SetDisplayId(10045);
 
-        SetVisibility(VISIBILITY_OFF);
+		SetVisible(false);
     }
     else
     {
@@ -22191,12 +22324,11 @@ void Player::SetSpectate(bool on)
         SetDisplayId(GetNativeDisplayId());
         UpdateSpeed(MOVE_RUN);
 
-        if(!(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE)) //don't reset gm visibility
-            SetVisibility(VISIBILITY_ON);
+		if (!(m_ExtraFlags & PLAYER_EXTRA_GM_INVISIBLE)) //don't reset gm visibility
+			SetVisible(true);
     }
 
-    //ObjectAccessor::UpdateVisibilityForPlayer(this);
-    SetToNotify();
+	UpdateObjectVisibility();
 }
 
 bool Player::HaveSpectators() const
@@ -22742,9 +22874,104 @@ void Player::SetFallInformation(uint32 time, float z)
 
 void Player::SetMover(Unit* target)
 {
-    m_mover->m_movedByPlayer = nullptr;
-    m_mover = target;
-    m_mover->m_movedByPlayer = this;
+    m_unitMovedByMe->m_playerMovingMe = nullptr;
+    m_unitMovedByMe = target;
+    m_unitMovedByMe->m_playerMovingMe = this;
+}
+
+void Player::SetViewpoint(WorldObject* target, bool apply)
+{
+	if (apply)
+	{
+		TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player '%s' (%s) creates seer (Entry: %u, TypeId: %u).",
+			GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), target->GetEntry(), target->GetTypeId());
+
+		if (!AddGuidValue(PLAYER_FARSIGHT, target->GetGUID()))
+		{
+			TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player '%s' (%s) cannot add new viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
+			return;
+		}
+
+		/*
+		// we need to create object at client first (only needed for high range cases)
+        if(!caster->ToPlayer()->HaveAtClient(m_target))
+        {
+            m_target->SendUpdateToPlayer(caster->ToPlayer()); 
+            caster->ToPlayer()->m_clientGUIDs.insert(m_target->GetGUID());
+            caster->ToPlayer()->SendInitialVisiblePackets((Unit*)m_target);
+        }
+		*/
+
+		// farsight dynobj or puppet may be very far away
+		UpdateVisibilityOf(target);
+
+		if (target->isType(TYPEMASK_UNIT) 
+#ifdef LICH_KING
+			&& target != GetVehicleBase()
+#endif
+			)
+			static_cast<Unit*>(target)->AddPlayerToVision(this);
+
+		SetSeer(target);
+	}
+	else
+	{
+		TC_LOG_DEBUG("maps", "Player::CreateViewpoint: Player %s removed seer", GetName().c_str());
+
+		if (!RemoveGuidValue(PLAYER_FARSIGHT, target->GetGUID()))
+		{
+			TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player '%s' (%s) cannot remove current viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
+			return;
+		}
+
+		if (target->isType(TYPEMASK_UNIT) 
+#ifdef LICH_KING
+			&& target != GetVehicleBase()
+#endif
+			)
+			static_cast<Unit*>(target)->RemovePlayerFromVision(this);
+
+		//must immediately set seer back otherwise may crash
+		SetSeer(this);
+
+		//WorldPacket data(SMSG_CLEAR_FAR_SIGHT_IMMEDIATE, 0);
+		//GetSession()->SendPacket(&data);
+	}
+
+#ifdef LICH_KING
+	// HACK: Make sure update for PLAYER_FARSIGHT is received before SMSG_PET_SPELLS to properly hide "Release spirit" dialog
+	if (target->GetTypeId() == TYPEID_UNIT && static_cast<Unit*>(target)->HasUnitTypeMask(UNIT_MASK_MINION) && static_cast<Minion*>(target)->IsRisenAlly())
+	{
+		if (apply)
+		{
+			UpdateDataMapType update_players;
+			UpdatePlayerSet player_set; //only there for performance, avoid recreating it at each BuildUpdate call
+			BuildUpdate(update_players, player_set);
+			WorldPacket packet;
+			for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
+			{
+				iter->second.BuildPacket(&packet);
+				iter->first->GetSession()->SendPacket(&packet);
+				packet.clear();
+			}
+		}
+		else
+		{
+			m_deathTimer = 6 * MINUTE * IN_MILLISECONDS;
+
+			// Reset "Release spirit" timer clientside
+			WorldPacket data(SMSG_FORCED_DEATH_UPDATE);
+			SendDirectMessage(&data);
+		}
+	}
+#endif
+}
+
+WorldObject* Player::GetViewpoint() const
+{
+	if (ObjectGuid guid = GetGuidValue(PLAYER_FARSIGHT))
+		return static_cast<WorldObject*>(ObjectAccessor::GetObjectByTypeMask(*this, guid, TYPEMASK_SEER));
+	return nullptr;
 }
 
 void Player::SendTeleportAckPacket()

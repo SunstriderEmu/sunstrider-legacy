@@ -124,78 +124,6 @@ bool OPvPCapturePoint::AddCreature(uint32 type, uint32 entry, uint32 map, float 
 	}
 
 	return false;
-	
-	/*
-    CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(entry);
-    if(!cInfo)
-    {
-        return false;
-    }
-
-    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, nullptr);
-    CreatureModelInfo const *minfo = sObjectMgr->GetCreatureModelRandomGender(displayId);
-    if (!minfo)
-        return false;
-
-    uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
-
-    uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit,true);
-    CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
-    data.id = entry;
-    data.mapid = map;
-    data.displayid = displayId;
-    data.equipmentId = cInfo->equipmentId;
-    data.posX = x;
-    data.posY = y;
-    data.posZ = z;
-    data.orientation = o;
-    data.spawntimesecs = spawntimedelay;
-    data.spawndist = 0;
-    data.currentwaypoint = 0;
-    data.curhealth = stats->GenerateHealth(cInfo);
-    data.curmana = stats->GenerateMana(cInfo);
-    data.movementType = cInfo->MovementType;
-    data.spawnMask = 1;
-
-    sObjectMgr->AddCreatureToGrid(guid, &data);
-
-    m_Creatures[type] = MAKE_NEW_GUID(guid, entry, HighGuid::Unit);
-    m_CreatureTypes[m_Creatures[type]] = type;
-
-    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
-    if(!pMap)
-        return true;
-    auto  pCreature = new Creature;
-    if (!pCreature->Create(guid, pMap, entry))
-    {
-        TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
-        delete pCreature;
-        return true;
-    }
-
-    pCreature->AIM_Initialize();
-
-    pCreature->Relocate(x, y, z, o);
-
-    if(!pCreature->IsPositionValid())
-    {
-        TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not added to opvp. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
-        delete pCreature;
-        return false;
-    }
-
-    if(spawntimedelay)
-        pCreature->SetRespawnDelay(spawntimedelay);
-
-    pMap->AddToMap(pCreature);
-    pCreature->SetHomePosition(x, y, z, o);
-    
-    if (setActive)
-        pCreature->SetKeepActive(true);
-
-    return true;
-	*/
 }
 
 void OPvPCapturePoint::SendChangePhase()
@@ -220,41 +148,7 @@ bool OPvPCapturePoint::SetCapturePointData(uint32 entry, uint32 map, float x, fl
 		TC_LOG_ERROR("outdoorpvp", "OutdoorPvP: GO %u is not capture point!", entry);
 		return false;
 	}
-	/*
 
-    CreatureTemplate const *cInfo = sObjectMgr->GetCreatureTemplate(OPVP_TRIGGER_CREATURE_ENTRY);
-    if(!cInfo)
-        return false;
-
-    // create capture point creature
-    uint32 displayId = sObjectMgr->ChooseDisplayId(cInfo, nullptr);
-
-    uint32 creature_guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit,true);
-
-    CreatureData& cdata = sObjectMgr->NewOrExistCreatureData(creature_guid);
-
-    uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
-
-    cdata.id = OPVP_TRIGGER_CREATURE_ENTRY;
-    cdata.mapid = map;
-    cdata.displayid = displayId;
-    cdata.equipmentId = cInfo->equipmentId;
-    cdata.posX = x;
-    cdata.posY = y;
-    cdata.posZ = z;
-    cdata.orientation = o;
-    cdata.spawntimesecs = 1;
-    cdata.spawndist = 0;
-    cdata.currentwaypoint = 0;
-    cdata.curhealth = stats->GenerateHealth(cInfo);
-    cdata.curmana = stats->GenerateMana(cInfo);
-    cdata.movementType = cInfo->MovementType;
-    cdata.spawnMask = 1;
-
-    sObjectMgr->AddCreatureToGrid(creature_guid, &cdata);
-    m_CapturePointCreature = MAKE_NEW_GUID(creature_guid, OPVP_TRIGGER_CREATURE_ENTRY, HighGuid::Unit);
-	*/
     // create capture point go
 	m_capturePointSpawnId = sObjectMgr->AddGOData(entry, map, x, y, z, o, 0, rotation0, rotation1, rotation2, rotation3);
 	if (m_capturePointSpawnId == 0)
@@ -266,47 +160,6 @@ bool OPvPCapturePoint::SetCapturePointData(uint32 entry, uint32 map, float x, fl
 	m_neutralValuePct = goinfo->capturePoint.neutralPercent;
 	m_minValue = CalculatePct(m_maxValue, m_neutralValuePct);
 
-    // add to map if map is already loaded
-	/*
-    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
-    if(!pMap)
-        return true;
-    // add GO...
-    auto  go = new GameObject;
-    if(!go->Create(guid,entry, pMap, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
-    {
-        TC_LOG_ERROR("sql.sql","Gameobject template %u not found in database.", entry);
-        delete go;
-    }
-    else
-    {
-        go->SetRespawnTime(0);
-        sObjectMgr->SaveGORespawnTime(go->GetSpawnId(), 0, 0, 0);
-        pMap->AddToMap(go);
-    }
-    // add creature...
-    auto  pCreature = new Creature;
-    if (!pCreature->Create(creature_guid, pMap, OPVP_TRIGGER_CREATURE_ENTRY))
-    {
-        TC_LOG_ERROR("FIXME","Can't create creature entry: %u",entry);
-        delete pCreature;
-    }
-    else
-    {
-        pCreature->AIM_Initialize();
-
-        pCreature->Relocate(x, y, z, o);
-
-        if(!pCreature->IsPositionValid())
-        {
-            TC_LOG_ERROR("FIXME","ERROR: Creature (guidlow %d, entry %d) not added to opvp. Suggested coordinates isn't valid (X: %f Y: %f)",pCreature->GetGUIDLow(),pCreature->GetEntry(),pCreature->GetPositionX(),pCreature->GetPositionY());
-            delete pCreature;
-            return false;
-        }
-
-        pMap->AddToMap(pCreature);
-    }
-	*/
     return true;
 }
 

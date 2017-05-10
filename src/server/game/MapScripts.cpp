@@ -396,7 +396,7 @@ void Map::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(go,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *summoner->GetMap());
+                cell.Visit(p, object_checker, *summoner->GetMap(), *summoner, summoner->GetGridActivationRange());
 
                 if ( !go )
                 {
@@ -455,7 +455,7 @@ void Map::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap());
+                cell.Visit(p, object_checker, *caster->GetMap(), *caster, caster->GetGridActivationRange());
 
                 if ( !door )
                 {
@@ -509,7 +509,7 @@ void Map::ScriptsProcess()
                 Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck> checker(door,go_check);
 
                 TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithSpawnIdCheck>, GridTypeMapContainer > object_checker(checker);
-                cell.Visit(p, object_checker, *caster->GetMap());
+                cell.Visit(p, object_checker, *caster->GetMap(), *caster, caster->GetGridActivationRange());
 
                 if ( !door )
                 {

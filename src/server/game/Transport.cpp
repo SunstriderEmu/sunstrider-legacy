@@ -711,7 +711,7 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
 {
     ASSERT(map);
     SetMap(map);
@@ -725,9 +725,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
         return false;
     }
 
-#ifdef LICH_KING
     SetPhaseMask(phaseMask, false);
-#endif
     SetZoneScript();
     if (m_zoneScript)
     {
@@ -802,17 +800,6 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
     }
     else
         SetPathProgress(0);
-
-/* sunwell
-    if (GameObjectAddon const* addon = sObjectMgr->GetGameObjectAddon(guidlow))
-    {
-        if (addon->InvisibilityValue)
-        {
-            m_invisibility.AddFlag(addon->invisibilityType);
-            m_invisibility.AddValue(addon->invisibilityType, addon->InvisibilityValue);
-        }
-    }
-    */
 
     LastUsedScriptID = GetScriptId();
 

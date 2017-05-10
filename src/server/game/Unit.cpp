@@ -146,8 +146,8 @@ bool IsPassiveStackableSpell( uint32 spellId )
 }
 
 Unit::Unit(bool isWorldObject)
-: WorldObject(isWorldObject), m_movedByPlayer(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
-m_IsInNotifyList(false), m_Notified(false), IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
+: WorldObject(isWorldObject), m_playerMovingMe(nullptr), i_motionMaster(new MotionMaster(this)), m_ThreatManager(this), m_HostileRefManager(this),
+IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_CreatedByPlayer(false),
 m_last_isinwater_status(false),
@@ -193,11 +193,8 @@ m_duringRemoveFromWorld(false)
     //tmpAura = NULL;
 
     m_AurasUpdateIterator = m_Auras.end();
-    m_Visibility = VISIBILITY_ON;
 
     m_interruptMask = 0;
-    m_detectInvisibilityMask = 0;
-    m_invisibilityMask = 0;
     m_transform = 0;
     m_ShapeShiftFormSpellId = 0;
     m_canModifyStats = false;
@@ -254,6 +251,8 @@ m_duringRemoveFromWorld(false)
 
     _lastLiquid = nullptr;
     m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
+
+	m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 }
 
 Unit::~Unit()
@@ -276,30 +275,6 @@ Unit::~Unit()
 
     delete i_motionMaster;
     delete movespline;
-
-    // remove view point for spectator
-    if (!m_sharedVision.empty())
-    {
-        for (auto itr : m_sharedVision)
-        {
-            if(Player* p = ObjectAccessor::GetPlayer(*this, itr))
-            {
-                if (p->isSpectator() && p->getSpectateFrom())
-                {
-                    p->getSpectateFrom()->RemovePlayerFromVision(p);
-                    if (m_sharedVision.empty())
-                        break;
-                    --itr;
-                } else {
-                    RemovePlayerFromVision(p);
-                    if (m_sharedVision.empty())
-                        break;
-                    --itr;
-                }
-            }
-        }
-        m_sharedVision.clear();
-    }
 
     if(m_charmInfo) 
         delete m_charmInfo;
@@ -628,6 +603,15 @@ bool Unit::HasAuraTypeWithCaster(AuraType auraType, uint64 casterGUID) const
     return false;
 }
 
+bool Unit::HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const
+{
+	AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+	for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+		if (miscvalue == (*i)->GetMiscValue())
+			return true;
+	return false;
+}
+
 bool Unit::HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 casterGUID) const
 {
     for(auto itr : m_Auras)
@@ -868,12 +852,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         Kill(pVictim, durabilityLoss);
         
         //Hook for OnPVPKill Event
+		/*
         if (pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
         {
             Player *killer = ToPlayer();
             Player *killed = pVictim->ToPlayer();
-            //    sScriptMgr->OnPVPKill(killer, killed);
+            sScriptMgr->OnPVPKill(killer, killed);
         }
+		*/
     }
     else                                                    // if (health <= damage)
     {
@@ -1680,7 +1666,6 @@ uint32 Unit::CalcArmorReducedDamage(Unit* pVictim, const uint32 damage)
     if(sWorld->getConfig(CONFIG_DEBUG_DISABLE_ARMOR))
         return damage;
 
-    uint32 newdamage = 0;
     float armor = pVictim->GetArmor();
     // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
     armor += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_TARGET_RESISTANCE, SPELL_SCHOOL_MASK_NORMAL);
@@ -5080,7 +5065,7 @@ void Unit::RemoveDynObject(uint32 spellid)
         }
         else if(spellid == 0 || dynObj->GetSpellId() == spellid)
         {
-            dynObj->Delete();
+            dynObj->Remove();
             i = m_dynObjGUIDs.erase(i);
         }
         else
@@ -5094,7 +5079,7 @@ void Unit::RemoveAllDynObjects()
     {
         DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*this,*m_dynObjGUIDs.begin());
         if(dynObj)
-            dynObj->Delete();
+            dynObj->Remove();
         m_dynObjGUIDs.erase(m_dynObjGUIDs.begin());
     }
 }
@@ -7955,6 +7940,8 @@ void Unit::SetCharm(Unit* pet)
         SetUInt64Value(UNIT_FIELD_CHARM, pet ? pet->GetGUID() : 0);
 }
 
+// only called in Player::SetSeer
+// so move it to Player?
 void Unit::AddPlayerToVision(Player* plr)
 {
     if(m_sharedVision.empty())
@@ -7963,19 +7950,18 @@ void Unit::AddPlayerToVision(Player* plr)
         SetKeepActive(true);
         SetWorldObject(true);
     }
-    m_sharedVision.push_back(plr->GetGUID());
-    plr->SetFarsightTarget(this);
+	m_sharedVision.push_back(plr);
 }
 
+// only called in Player::SetSeer
 void Unit::RemovePlayerFromVision(Player* plr)
 {
-    m_sharedVision.remove(plr->GetGUID());
+	m_sharedVision.remove(plr);
     if(m_sharedVision.empty())
     {
         SetKeepActive(false);
         SetWorldObject(false);
     }
-    plr->ClearFarsight();
 }
 
 void Unit::RemoveBindSightAuras()
@@ -8128,7 +8114,6 @@ uint32 Unit::GetCastingTimeForBonus(SpellInfo const* spellProto, DamageEffectTyp
         CastingTime = 3500;
 
     int32 overTime = 0;
-    uint8 effects = 0;
     bool DirectDamage = false;
     bool AreaEffect = false;
 
@@ -10001,17 +9986,8 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
     if (target->GetEntry() == 24892 && IsPet())
         return CAN_ATTACK_RESULT_OTHERS;
 
-    if ((m_invisibilityMask || target->m_invisibilityMask) && !CanDetectInvisibilityOf(target))
-        return CAN_ATTACK_RESULT_CANNOT_DETECT_INVI;
-
-    if (target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
-    {
-        StealthDetectedStatus stealthDetectStatus = CanDetectStealthOf(target, GetDistance(target));
-        if(stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
-        else if(stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
-    }
+	if(!CanSeeOrDetect(target, true))
+        return CAN_ATTACK_RESULT_CANNOT_DETECT;
 
     return CAN_ATTACK_RESULT_OK;
 }
@@ -10028,7 +10004,7 @@ bool Unit::IsAttackableByAOE() const
     {
         if(   p->IsGameMaster()  
            || p->isSpectator()
-           || p->GetVisibility() == VISIBILITY_OFF
+           || !p->IsVisible()
           )
         return false;
     }
@@ -10080,23 +10056,26 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
                 return false;
 #endif
 
-    /* // can't attack invisible (ignore stealth for aoe spells) also if the area being looked at is from a spell use the dynamic object created instead of the casting unit.
-     TC if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO)) : !CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea() && !bySpell->HasAttribute(SPELL_ATTR3_NO_INITIAL_AGGRO))))
-        return false */
+	// visibility checks
+	// skip visibility check for GO casts, needs removal when go cast is implemented. Also ignore for gameobject and dynauras
+	if (GetEntry() != WORLD_TRIGGER && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT)))
+	{
+		// can't attack invisible
+		if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE))
+		{
+			if (obj && !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
+				return false;
+			else if (!obj)
+			{
+				// ignore stealth for aoe spells. Ignore stealth if target is player and unit in combat with same player
+				bool const ignoreStealthCheck = (bySpell && bySpell->IsAffectingArea()) ||
+					(target->GetTypeId() == TYPEID_PLAYER && target->HasStealthAura() && target->IsInCombat() && IsInCombatWith(target));
 
-    /* This replace the last TC block until Vision system has changed*/
-    if ((m_invisibilityMask || target->m_invisibilityMask) && !CanDetectInvisibilityOf(target))
-        return CAN_ATTACK_RESULT_CANNOT_DETECT_INVI;
-
-    if (!isWorldTrigger && target->GetVisibility() == VISIBILITY_GROUP_STEALTH)
-    {
-        StealthDetectedStatus stealthDetectStatus = CanDetectStealthOf(target, GetDistance(target));
-        if (stealthDetectStatus == DETECTED_STATUS_NOT_DETECTED)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH;
-        else if (stealthDetectStatus == DETECTED_STATUS_WARNING)
-            return CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE;
-    }
-    /* ###### */
+				if (!CanSeeOrDetect(target, ignoreStealthCheck))
+					return false;
+			}
+}
+	}
 
     // can't attack dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
@@ -10223,6 +10202,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     if (m_vehicle)
         if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
             return false;
+#endif
 
     // can't assist invisible
     if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && !CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
@@ -10232,7 +10212,6 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     if ((!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_UNTARGETABLE))
         && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
-#endif
 
     // can't assist dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
@@ -10412,6 +10391,7 @@ int32 Unit::ModifyPowerPct(Powers power, float pct, bool apply)
     return ModifyPower(power, (int32)amount - (int32)GetMaxPower(power));
 }
 
+/*
 bool Unit::IsVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList, bool is3dDistance) const
 {
     if(!u || !IsInMap(u))
@@ -10501,7 +10481,7 @@ StealthDetectedStatus Unit::CanDetectStealthOf(Unit const* target, float targetD
     float visibleDistance = 17.5f;
     visibleDistance += float(GetLevelForTarget(target)) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/5.0f; //max level stealth spell have 350, so if same level and no talent/items boost, this will equal 0
     visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL); //mainly from talents, improved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
-    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 0) /2.0f); //spells like Track Hidden have 30 here, so you can see 15 yards further. Spells with miscvalue != 0 aren't meant to detect units but traps only
+    visibleDistance += (float)(GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_STEALTH_DETECT, 0) /2.0f); //spells like Track Hidden have 30 here, so you can see 15 yards further. Spells with miscvalue != 0 aren't meant to detect units but traps only
     
     //min and max caps
     if(visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
@@ -10528,11 +10508,137 @@ void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
 
-    if(IsInWorld())
-        SetToNotify();
+	if (IsInWorld())
+		UpdateObjectVisibility();
 
     if(x == VISIBILITY_GROUP_STEALTH)
         DestroyForNearbyPlayers();
+}
+*/
+
+bool Unit::IsAlwaysVisibleFor(WorldObject const* seer) const
+{
+	if (WorldObject::IsAlwaysVisibleFor(seer))
+		return true;
+
+	// Always seen by owner
+	if (ObjectGuid guid = GetCharmerOrOwnerGUID())
+		if (seer->GetGUID() == guid)
+			return true;
+
+	if (Player const* seerPlayer = seer->ToPlayer())
+		if (Unit* owner = GetOwner())
+			if (Player* ownerPlayer = owner->ToPlayer())
+				if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
+					return true;
+
+	return false;
+}
+
+bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
+{
+	if (WorldObject::IsAlwaysDetectableFor(seer))
+		return true;
+
+	if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+		return true;
+
+	return false;
+}
+
+bool Unit::IsVisible() const
+{
+	return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true;
+}
+
+void Unit::SetVisible(bool x)
+{
+	if (!x)
+		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER1);
+	else
+		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+
+	UpdateObjectVisibility();
+}
+
+
+void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
+{
+	if (newPhaseMask == GetPhaseMask())
+		return;
+
+	if (IsInWorld())
+	{
+		// modify hostile references for new phasemask, some special cases deal with hostile references themselves
+		if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
+		{
+			HostileRefManager& refManager = GetHostileRefManager();
+			HostileReference* ref = refManager.getFirst();
+
+			while (ref)
+			{
+				if (Unit* unit = ref->GetSource()->GetOwner())
+					if (Creature* creature = unit->ToCreature())
+						refManager.setOnlineOfflineState(creature, creature->InSamePhase(newPhaseMask));
+
+				ref = ref->next();
+			}
+
+			// modify threat lists for new phasemask
+			if (GetTypeId() != TYPEID_PLAYER)
+			{
+				std::list<HostileReference*> threatList = getThreatManager().getThreatList();
+				std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+
+				// merge expects sorted lists
+				threatList.sort();
+				offlineThreatList.sort();
+				threatList.merge(offlineThreatList);
+
+				for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+					if (Unit* unit = (*itr)->getTarget())
+						unit->GetHostileRefManager().setOnlineOfflineState(ToCreature(), unit->InSamePhase(newPhaseMask));
+			}
+		}
+	}
+
+	// Phase player, dont update
+	WorldObject::SetPhaseMask(newPhaseMask, false);
+
+	/*
+	// Phase pets and summons
+	if (IsInWorld())
+	{
+		for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+			if ((*itr)->GetTypeId() == TYPEID_UNIT)
+				(*itr)->SetPhaseMask(newPhaseMask, true);
+
+		for (uint8 i = 0; i < MAX_SUMMON_SLOT; ++i)
+			if (m_SummonSlot[i])
+				if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
+					summon->SetPhaseMask(newPhaseMask, true);
+
+		RemoveNotOwnSingleTargetAuras(newPhaseMask); // we can lost access to caster or target
+	}
+	*/
+
+	// Update visibility after phasing pets and summons so they wont despawn
+	if (update)
+		UpdateObjectVisibility();
+}
+
+
+void Unit::UpdateObjectVisibility(bool forced)
+{
+	if (!forced)
+		AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+	else
+	{
+		WorldObject::UpdateObjectVisibility(true);
+		// call MoveInLineOfSight for nearby creatures
+		Trinity::AIRelocationNotifier notifier(*this);
+		VisitNearbyObject(GetVisibilityRange(), notifier);
+	}
 }
 
 void Unit::UpdateSpeed(UnitMoveType mtype)
@@ -10991,7 +11097,8 @@ Unit* Creature::SelectVictim(bool evade)
             {
                 --aura;
                 caster = (*aura)->GetCaster();
-                if (caster && CanSeeOrDetect(caster, true) && /* IsValidAttackTarget */ CanAttack(caster) == CAN_ATTACK_RESULT_OK && caster->isInAccessiblePlaceFor(ToCreature()))
+				if (caster && CanSeeOrDetect(caster, true) && IsValidAttackTarget(caster) && caster->isInAccessiblePlaceFor(ToCreature()))
+                //if (caster && CanSeeOrDetect(caster, true) && /* IsValidAttackTarget */ CanAttack(caster) == CAN_ATTACK_RESULT_OK && caster->isInAccessiblePlaceFor(ToCreature()))
                 {
                     target = caster;
                     break;
@@ -11049,25 +11156,25 @@ Unit* Creature::SelectVictim(bool evade)
     if(HasReactState(REACT_AGGRESSIVE))
     {
         //TC_LOG_INFO("%s SelectVictim6", GetName());
-        target = SelectNearestTarget();
-        if(target && !IsOutOfThreatArea(target))
+		target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
+		if (target && /*_IsTargetAcceptable(target) &&*/ CanAggro(target))
             return target;
     }
     
     /* if(m_attackers.size())
         return NULL; */
 
-    if(m_invisibilityMask)
-    {
-        Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
-        for(auto iAura : iAuras)
-            if(iAura->IsPermanent() && evade)
-            {
-                AI()->EnterEvadeMode();
-                break;
-            }
-        return nullptr;
-    }
+    Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+	if (!iAuras.empty())
+	{
+		for (auto iAura : iAuras)
+			if (iAura->IsPermanent() && evade)
+			{
+				AI()->EnterEvadeMode();
+				break;
+			}
+		return nullptr;
+	}
 
     // enter in evade mode in other case
     if (evade) {
@@ -11327,10 +11434,12 @@ float Unit::GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spell
 #endif
 }
 
+/*
 bool Unit::IsVisibleForInState( Player const* u, bool inVisibleList ) const
 {
     return IsVisibleForOrDetect(u, false, inVisibleList, false);
 }
+*/
 
 uint32 Unit::GetCreatureType() const
 {
@@ -11892,9 +12001,6 @@ void Unit::AddToWorld()
     if(!IsInWorld())
     {
         WorldObject::AddToWorld();
-        m_Notified = false;
-        m_IsInNotifyList = false;
-        SetToNotify();
     }
 }
 
@@ -12248,7 +12354,7 @@ void CharmInfo::SetPetNumber(uint32 petnumber, bool statwindow)
 Unit* Unit::GetMover() const
 {
     if (Player const* player = ToPlayer())
-        return player->m_mover;
+        return player->m_unitMovedByMe;
     return nullptr;
 }
 
@@ -13048,13 +13154,13 @@ void Unit::SetContestedPvP(Player *attackedPlayer)
         player->AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
         // call MoveInLineOfSight for nearby contested guards
-        player->SetVisibility(player->GetVisibility());
+		UpdateObjectVisibility();
     }
     if(!HasUnitState(UNIT_STATE_ATTACK_PLAYER))
     {
         AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         // call MoveInLineOfSight for nearby contested guards
-        SetToNotify();
+		UpdateObjectVisibility();
     }
 }
 
@@ -13272,15 +13378,6 @@ void Unit::RemoveAurasAtChanneledTarget(SpellInfo const* spellInfo, Unit * caste
 }
 
 /*-----------------------TRINITY-----------------------------*/
-
-void Unit::SetToNotify()
-{
-    if(m_IsInNotifyList)
-        return;
-
-    if(Map *map = GetMap())
-        map->AddUnitToNotify(this);
-}
 
 void Unit::Kill(Unit *pVictim, bool durabilityLoss)
 {
@@ -14035,7 +14132,6 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             break;
 #endif
         case CHARM_TYPE_POSSESS:
-            RemovePlayerFromVision(playerCharmer);
             playerCharmer->SetClientControl(this, false);
             playerCharmer->SetClientControl(charmer, true);
             charmer->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_REMOVE_CLIENT_CONTROL);
@@ -14266,42 +14362,6 @@ Unit* Unit::GetLastRedirectTarget()
 Unit* Unit::GetSummoner() const
 { 
     return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : nullptr; 
-}
-
-Creature* Unit::FindCreatureInGrid(uint32 entry, float range, bool isAlive)
-{
-    Creature* pCreature = nullptr;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck creature_check(*this, entry, isAlive, range);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(pCreature, creature_check);
-
-    TypeContainerVisitor<Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck>, GridTypeMapContainer> creature_searcher(searcher);
-
-    cell.Visit(pair, creature_searcher, *GetMap());
-    
-    return pCreature;
-}
-
-GameObject* Unit::FindGOInGrid(uint32 entry, float range)
-{
-    GameObject* pGo = nullptr;
-
-    CellCoord pair(Trinity::ComputeCellCoord(this->GetPositionX(), this->GetPositionY()));
-    Cell cell(pair);
-    cell.SetNoCreate();
-
-    Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*this, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, pGo, go_check);
-
-    TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-    cell.Visit(pair, go_searcher, *GetMap());
-    
-    return pGo;
 }
 
 void Unit::SetFullTauntImmunity(bool apply)
@@ -14759,7 +14819,7 @@ void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
         if (Unit* charmer = GetCharmer())
         {
             player = charmer->ToPlayer();
-            if (player && player->m_mover != this)
+            if (player && player->m_unitMovedByMe != this)
                 player = nullptr;
         }
     }
@@ -14836,7 +14896,7 @@ void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
     {
 		SendTeleportPacket(pos);
 		UpdatePosition(pos, true);
-        ObjectAccessor::UpdateObjectVisibility(this);
+		UpdateObjectVisibility();
     }
 }
 
@@ -15505,7 +15565,7 @@ Position Unit::GetLeapPosition(float dist)
         for (int8 j = 1; j >= 0; j--)
         {
             //search at given z then at z + maxSearchDist
-            float mapHeight = GetMap()->GetHeight(PhaseMask(1), destx, desty, destz + j * maxSearchDist / 2, true, maxSearchDist, true);
+            float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, destx, desty, destz + j * maxSearchDist / 2, true, maxSearchDist, true);
             if (mapHeight != INVALID_HEIGHT)
             {
                 //if no collision
@@ -15543,7 +15603,7 @@ Position Unit::GetLeapPosition(float dist)
     else if (this->IsFalling())
     {
         //try to find a ground not far
-        float mapHeight = GetMap()->GetHeight(PhaseMask(1), currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
+        float mapHeight = GetMap()->GetHeight(PHASEMASK_NORMAL, currentPos.GetPositionX(), currentPos.GetPositionY(), currentPos.GetPositionZ(), true, 15.0f, true);
         if (mapHeight != INVALID_HEIGHT)
             targetPos.m_positionZ = mapHeight + 1.0f;
     }

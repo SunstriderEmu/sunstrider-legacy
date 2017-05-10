@@ -16,6 +16,7 @@
 
 namespace Trinity
 {
+	/*
     struct TC_GAME_API PlayerVisibilityNotifier
     {
         Player &i_player;
@@ -29,36 +30,70 @@ namespace Trinity
 
         void Notify(void);
     };
+	*/
 
-    struct TC_GAME_API PlayerRelocationNotifier : public PlayerVisibilityNotifier
+	struct TC_GAME_API VisibleNotifier
+	{
+		Player &i_player;
+		UpdateData i_data;
+		std::set<Unit*> i_visibleNow;
+		GuidUnorderedSet vis_guids;
+
+		VisibleNotifier(Player &player) : i_player(player), vis_guids(player.m_clientGUIDs) { }
+		template<class T> void Visit(GridRefManager<T> &m);
+		void SendToSelf(void);
+	};
+
+	struct VisibleChangesNotifier
+	{
+		WorldObject &i_object;
+
+		explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) { }
+		template<class T> void Visit(GridRefManager<T> &) { }
+		void Visit(PlayerMapType &);
+		void Visit(CreatureMapType &);
+		void Visit(DynamicObjectMapType &);
+	};
+
+    struct TC_GAME_API PlayerRelocationNotifier : public VisibleNotifier
     {
-        PlayerRelocationNotifier(Player &player) : PlayerVisibilityNotifier(player) {}
-        template<class T> inline void Visit(GridRefManager<T> &m) { PlayerVisibilityNotifier::Visit(m); }
-        #ifdef WIN32
-        template<> inline void Visit(PlayerMapType &);
-        template<> inline void Visit(CreatureMapType &);
-        #endif
+        PlayerRelocationNotifier(Player &player) : VisibleNotifier(player) {}
+
+        template<class T> inline void Visit(GridRefManager<T> &m) { VisibleNotifier::Visit(m); }
+		void Visit(CreatureMapType &);
+		void Visit(PlayerMapType &);
     };
 
-    struct TC_GAME_API CreatureRelocationNotifier
-    {
-        Creature &i_creature;
-        CreatureRelocationNotifier(Creature &c) : i_creature(c) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        #ifdef WIN32
-        template<> inline void Visit(PlayerMapType &);
-        template<> inline void Visit(CreatureMapType &);
-        #endif
-    };
+	struct TC_GAME_API CreatureRelocationNotifier
+	{
+		Creature &i_creature;
+		CreatureRelocationNotifier(Creature &c) : i_creature(c) { }
+		template<class T> void Visit(GridRefManager<T> &) { }
+		void Visit(CreatureMapType &);
+		void Visit(PlayerMapType &);
+	};
 
-    struct TC_GAME_API VisibleChangesNotifier
-    {
-        WorldObject &i_object;
+	struct TC_GAME_API DelayedUnitRelocation
+	{
+		Map &i_map;
+		Cell &cell;
+		CellCoord &p;
+		const float i_radius;
+		DelayedUnitRelocation(Cell &c, CellCoord &pair, Map &map, float radius) :
+			i_map(map), cell(c), p(pair), i_radius(radius) { }
+		template<class T> void Visit(GridRefManager<T> &) { }
+		void Visit(CreatureMapType &);
+		void Visit(PlayerMapType   &);
+	};
 
-        explicit VisibleChangesNotifier(WorldObject &object) : i_object(object) {}
-        template<class T> void Visit(GridRefManager<T> &) {}
-        void Visit(PlayerMapType &);
-    };
+	struct TC_GAME_API AIRelocationNotifier
+	{
+		Unit &i_unit;
+		bool isCreature;
+		explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT) { }
+		template<class T> void Visit(GridRefManager<T> &) { }
+		void Visit(CreatureMapType &);
+	};
 
     struct GridUpdater
     {
@@ -79,40 +114,11 @@ namespace Trinity
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
-    struct TC_GAME_API Deliverer
-    {
-        WorldObject &i_source;
-        WorldPacket *i_message;
-        std::set<uint64> plr_list;
-        bool i_toPossessor;
-        bool i_toSelf;
-        float i_dist;
-        Deliverer(WorldObject &src, WorldPacket *msg, bool to_possessor, bool to_self, float dist = 0.0f) : i_source(src), i_message(msg), i_toPossessor(to_possessor), i_toSelf(to_self), i_dist(dist) {}
-        virtual void Visit(PlayerMapType &m);
-        virtual void Visit(CreatureMapType &m);
-        virtual void Visit(DynamicObjectMapType &m);
-        virtual void VisitObject(Player* plr) = 0;
-        virtual void SendPacket(Player* plr);
-        template<class SKIP> void Visit(GridRefManager<SKIP> &) {}
-    };
-
-    struct TC_GAME_API MessageDeliverer : public Deliverer
-    {
-        MessageDeliverer(Player &pl, WorldPacket *msg, bool to_possessor, bool to_self) : Deliverer(pl, msg, to_possessor, to_self) {}
-        void VisitObject(Player* plr) override;
-    };
-
-    struct TC_GAME_API ObjectMessageDeliverer : public Deliverer
-    {
-        explicit ObjectMessageDeliverer(WorldObject &src, WorldPacket *msg, bool to_possessor) : Deliverer(src, msg, to_possessor, false) {}
-        void VisitObject(Player* plr) override { SendPacket(plr); }
-    };
-
 	struct TC_GAME_API MessageDistDeliverer
 	{
 		WorldObject* i_source;
 		WorldPacket* i_message;
-		PhaseMask i_phaseMask;
+		uint32 i_phaseMask;
 		float i_distSq;
 		Team team;
 		Player const* skipped_receiver;
@@ -142,12 +148,6 @@ namespace Trinity
 			player->GetSession()->SendPacket(i_message);
 		}
 	};
-
-    struct TC_GAME_API ObjectMessageDistDeliverer : public Deliverer
-    {
-        ObjectMessageDistDeliverer(WorldObject &obj, WorldPacket *msg, bool to_possessor, float dist) : Deliverer(obj, msg, to_possessor, false, dist) {}
-        void VisitObject(Player* plr) override { SendPacket(plr); }
-    };
 
     struct TC_GAME_API ObjectUpdater
     {
@@ -208,7 +208,7 @@ namespace Trinity
     struct WorldObjectLastSearcher
     {
         uint32 i_mapTypeMask;
-        PhaseMask i_phaseMask;
+        uint32 i_phaseMask;
         WorldObject* &i_object;
         Check &i_check;
 
@@ -228,7 +228,7 @@ template<class Check>
         struct WorldObjectListSearcher
     {
         uint32 i_mapTypeMask;
-        PhaseMask i_phaseMask; //not used yet
+        uint32 i_phaseMask; //not used yet
         std::list<WorldObject*> &i_objects;
         Check& i_check;
 
@@ -459,7 +459,7 @@ template<class Check>
     template<class Check>
     struct PlayerLastSearcher
     {
-        PhaseMask i_phaseMask;
+        uint32 i_phaseMask;
         Player* &i_object;
         Check& i_check;
 
@@ -682,11 +682,6 @@ template<class Check>
     };
 
     struct TC_GAME_API AnyDeadUnitCheck
-    {
-        bool operator()(Unit* u);
-    };
-
-    struct TC_GAME_API AnyStealthedCheck
     {
         bool operator()(Unit* u);
     };
@@ -1081,15 +1076,6 @@ template<class Check>
             WorldObject const& i_obj;
             uint32 i_db_guid;
     };
-
-    #ifndef WIN32
-    template<> inline void PlayerRelocationNotifier::Visit<Creature>(CreatureMapType &);
-    template<> inline void PlayerRelocationNotifier::Visit<Player>(PlayerMapType &);
-    template<> inline void CreatureRelocationNotifier::Visit<Player>(PlayerMapType &);
-    template<> inline void CreatureRelocationNotifier::Visit<Creature>(CreatureMapType &);
-    template<> inline void DynamicObjectUpdater::Visit<Creature>(CreatureMapType &);
-    template<> inline void DynamicObjectUpdater::Visit<Player>(PlayerMapType &);
-    #endif
 }
 #endif
 

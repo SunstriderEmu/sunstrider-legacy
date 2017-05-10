@@ -123,7 +123,7 @@ class TC_GAME_API Group
             uint64      guid;
             std::string name;
             uint8       group;
-            bool        assistant;
+            bool        assistant; //todo: upgrade this to 'roles', there are other roles ( 0x2 main assist, 0x4 main tank )
         };
         typedef std::list<MemberSlot> MemberSlotList;
         typedef MemberSlotList::const_iterator member_citerator;

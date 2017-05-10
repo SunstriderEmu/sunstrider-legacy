@@ -96,7 +96,6 @@ Pet::~Pet()
     {
         for (auto & m_spell : m_spells)
             delete m_spell.second;
-		GetMap()->GetObjectsStore().Remove<Pet>(GetGUID());
     }
 
     delete m_declinedname;
@@ -171,7 +170,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     Map *map = owner->GetMap();
     uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::Pet);
     uint32 pet_number = fields[0].GetUInt32();
-    if(!Create(guid, map, petentry, pet_number))
+    if(!Create(guid, map, owner->GetPhaseMask(), petentry, pet_number))
     {
         return false;
     }
@@ -924,7 +923,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
 	SetMap(creature->GetMap());
 
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!Create(guid, creature->GetMap(), creature->GetEntry(), pet_number))
+    if(!Create(guid, creature->GetMap(), creature->GetPhaseMask(), creature->GetEntry(), pet_number))
         return false;
 
     Relocate(creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation());
@@ -999,7 +998,7 @@ bool Pet::CreateBaseAtCreatureEntry(uint32 entry, Unit* spawnOn)
 	SetMap(spawnOn->GetMap());
 
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!Create(guid, spawnOn->GetMap(), entry, pet_number))
+    if(!Create(guid, spawnOn->GetMap(), spawnOn->GetPhaseMask(), entry, pet_number))
         return false;
     
     Relocate(spawnOn->GetPositionX(), spawnOn->GetPositionY(), spawnOn->GetPositionZ(), spawnOn->GetOrientation());
@@ -1875,11 +1874,12 @@ void Pet::ToggleAutocast(uint32 spellid, bool apply)
     }
 }
 
-bool Pet::Create(uint32 guidlow, Map *map, uint32 Entry, uint32 pet_number)
+bool Pet::Create(uint32 guidlow, Map *map, uint32 phaseMask, uint32 Entry, uint32 pet_number)
 {
 	ASSERT(map);
 	SetMap(map);
 
+	SetPhaseMask(phaseMask, false);
     Object::_Create(guidlow, pet_number, HighGuid::Pet);
 
     m_spawnId = guidlow;

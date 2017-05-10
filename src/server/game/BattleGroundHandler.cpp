@@ -634,8 +634,6 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 {     
-    
-
     // ignore if we already in BG or BG queue
     if(_player->InBattleground())
         return;
@@ -644,7 +642,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
     uint8 type;                                             // 2v2, 3v3 or 5v5
     uint8 asGroup;                                          // asGroup
     uint8 isRated;                                          // isRated
-    Group * grp;
+	Group * grp = nullptr;
 
     recvData >> guid >> type >> asGroup >> isRated;
 
@@ -761,6 +759,11 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 
     if(isRated)
     {
+		if (!grp)
+		{ 
+			TC_LOG_ERROR("network.opcode", "WorldSession::HandleBattlemasterJoinArena received isRated option without asGroup option from player %s. This guy is probably playing with packets.", _player->GetName().c_str());
+			return;
+		}
         ateamId = _player->GetArenaTeamId(type);
         // check real arenateam existence only here (if it was moved to group->CanJoin .. () then we would have to get it twice)
         ArenaTeam * at = sObjectMgr->GetArenaTeamById(ateamId);
@@ -877,10 +880,6 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
 
 void WorldSession::HandleReportPvPAFK( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 playerGuid;
     recvData >> playerGuid;
     Player *reportedPlayer = sObjectMgr->GetPlayer(playerGuid);

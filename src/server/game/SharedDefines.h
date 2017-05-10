@@ -2,7 +2,6 @@
 #define TRINITY_SHAREDDEFINES_H
 
 #include "Define.h"
-#include "PhaseMask.h"
 #include <cassert>
 
 enum SpellEffIndex
@@ -768,6 +767,47 @@ enum SpellEffects
     SPELL_EFFECT_152                       = 152,
     SPELL_EFFECT_153                       = 153,
     TOTAL_SPELL_EFFECTS                    = 154
+};
+
+
+enum StealthType
+{
+    STEALTH_GENERAL     = 0,
+    STEALTH_TRAP        = 1,
+
+    TOTAL_STEALTH_TYPES = 2
+};
+
+enum InvisibilityType
+{
+    INVISIBILITY_GENERAL     =  0,
+    INVISIBILITY_UNK1        =  1,
+    INVISIBILITY_UNK2        =  2,
+    INVISIBILITY_TRAP        =  3,
+    INVISIBILITY_UNK4        =  4,
+    INVISIBILITY_UNK5        =  5,
+    INVISIBILITY_DRUNK       =  6,
+    INVISIBILITY_UNK7        =  7,
+    INVISIBILITY_UNK8        =  8,
+    INVISIBILITY_UNK9        =  9,
+    INVISIBILITY_UNK10       = 10,
+    INVISIBILITY_UNK11       = 11,
+
+    TOTAL_INVISIBILITY_TYPES = 12
+};
+
+enum ServerSideVisibilityType
+{
+    SERVERSIDE_VISIBILITY_GM          = 0,
+    SERVERSIDE_VISIBILITY_GHOST       = 1,
+
+    TOTAL_SERVERSIDE_VISIBILITY_TYPES = 2
+};
+
+enum GhostVisibilityType
+{
+    GHOST_VISIBILITY_ALIVE = 0x1,
+    GHOST_VISIBILITY_GHOST = 0x2
 };
 
 // Spell aura states

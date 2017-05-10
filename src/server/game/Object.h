@@ -50,6 +50,20 @@ enum TempSummonType
     TEMPSUMMON_MANUAL_DESPAWN              = 8              // despawns when UnSummon() is called
 };
 
+enum PhaseMasks
+{
+	PHASEMASK_NORMAL = 0x00000001,
+	PHASEMASK_ANYWHERE = 0xFFFFFFFF
+};
+
+enum NotifyFlags
+{
+    NOTIFY_NONE                     = 0x00,
+    NOTIFY_AI_RELOCATION            = 0x01,
+    NOTIFY_VISIBILITY_CHANGED       = 0x02,
+    NOTIFY_ALL                      = 0xFF
+};
+
 class WorldPacket;
 class UpdateData;
 class Creature;
@@ -442,6 +456,8 @@ class TC_GAME_API Object
         void SetStatFloatValue(uint16 index, float value);
         void SetStatInt32Value(uint16 index, int32 value);
         void SetGuidValue(uint16 index, uint64 value); //for TC compat
+		bool AddGuidValue(uint16 index, ObjectGuid value);
+		bool RemoveGuidValue(uint16 index, ObjectGuid value);
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModInt32Value(uint16 index, int32 val, bool apply);
@@ -567,6 +583,31 @@ class TC_GAME_API Object
         Object& operator=(Object const&);                   // prevent generation assigment operator
 };
 
+
+template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>
+class FlaggedValuesArray32
+{
+public:
+	FlaggedValuesArray32()
+	{
+		memset(&m_values, 0x00, sizeof(T_VALUES) * ARRAY_SIZE);
+		m_flags = 0;
+	}
+
+	T_FLAGS  GetFlags() const { return m_flags; }
+	bool     HasFlag(FLAG_TYPE flag) const { return m_flags & (1 << flag); }
+	void     AddFlag(FLAG_TYPE flag) { m_flags |= (1 << flag); }
+	void     DelFlag(FLAG_TYPE flag) { m_flags &= ~(1 << flag); }
+
+	T_VALUES GetValue(FLAG_TYPE flag) const { return m_values[flag]; }
+	void     SetValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] = value; }
+	void     AddValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] += value; }
+
+private:
+	T_VALUES m_values[ARRAY_SIZE];
+	T_FLAGS m_flags;
+};
+
 enum MapObjectCellMoveState
 {
 	MAP_OBJECT_CELL_MOVE_NONE, //not in move list
@@ -606,7 +647,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void Update ( uint32 /*time_diff*/ ) { }
 
-        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid );
+        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
 		virtual void RemoveFromWorld() override;
 
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
@@ -644,7 +685,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         //Set Z to closest allowed position, depending on fly/swim/waterwalk ability of object
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
         //Set Z to closest allowed position, depending on given fly/swim/waterwalk abilities given
-        static void UpdateAllowedPositionZ(PhaseMask phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
 
@@ -662,10 +703,10 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
 
         //for trinitycore compatibility
-        PhaseMask GetPhaseMask() const { return PhaseMask(1); }
-        bool InSamePhase(WorldObject const* obj) const { return true; }
-        bool InSamePhase(PhaseMask phasemask) const { return true; }
-		virtual void SetPhaseMask(PhaseMask newPhaseMask, bool update) {}
+        uint32 GetPhaseMask() const { return m_phaseMask; }
+		bool InSamePhase(WorldObject const* obj) const;
+		bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask) != 0; }
+		virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
 
         InstanceScript* GetInstanceScript();
 
@@ -711,19 +752,33 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
         void BuildHeartBeatMsg( WorldPacket *data ) const;
 
+		virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
+
         void SendObjectDeSpawnAnim(uint64 guid);
 
         virtual void SaveRespawnTime() {}
 
         void AddObjectToRemoveList();
 
-        float GetVisibilityRange() const;
+		float GetGridActivationRange() const;
+		float GetVisibilityRange() const;
+		float GetSightRange(WorldObject const* target = nullptr) const;
+		bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool checkAlert = false) const;
+
+		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
+		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
+
+		FlaggedValuesArray32<int32, uint32, InvisibilityType, TOTAL_INVISIBILITY_TYPES> m_invisibility;
+		FlaggedValuesArray32<int32, uint32, InvisibilityType, TOTAL_INVISIBILITY_TYPES> m_invisibilityDetect;
+
+		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibility;
+		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibilityDetect;
 
         // main visibility check function in normal case (ignore grey zone distance check)
-        bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }
+        //bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }
 
         // low level function for visibility change code, must be define in all main world object subclasses
-        virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
+        //virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
 
         // Low Level Packets
         void PlayDirectSound(uint32 Sound, Player* target = nullptr);
@@ -768,6 +823,11 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
 
 		void DestroyForNearbyPlayers();
+		virtual void UpdateObjectVisibility(bool forced = true);
+		virtual void UpdateObjectVisibilityOnCreate()
+		{
+			UpdateObjectVisibility(true);
+		}
         
         MovementInfo m_movementInfo;
         
@@ -793,6 +853,14 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		void AddToObjectUpdate() override;
 		void RemoveFromObjectUpdate() override;
 
+		//relocation and visibility system functions
+		void AddToNotify(uint16 f) { m_notifyflags |= f; }
+		bool isNeedNotify(uint16 f) const { return (m_notifyflags & f) != 0; }
+		uint16 GetNotifyFlags() const { return m_notifyflags; }
+		bool NotifyExecuted(uint16 f) const { return (m_executed_notifies & f) != 0; }
+		void SetNotified(uint16 f) { m_executed_notifies |= f; }
+		void ResetAllNotifies() { m_notifyflags = 0; m_executed_notifies = 0; }
+
     protected:
         explicit WorldObject(bool isWorldObject); //note: here it means if it is in grid object list or world object list
         std::string m_name;
@@ -806,17 +874,31 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		void SetLocationMapId(uint32 _mapId) { m_mapId = _mapId; }
 		void SetLocationInstanceId(uint32 _instanceId) { m_InstanceId = _instanceId; }
 
+		virtual bool IsNeverVisible() const { return !IsInWorld(); }
+		virtual bool IsAlwaysVisibleFor(WorldObject const* /*seer*/) const { return false; }
+		virtual bool IsInvisibleDueToDespawn() const { return false; }
+		//difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
+		virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
+
         // transports
         Transport* m_transport;
 
     private:
-        uint32 m_InstanceId;
-        Map    *m_currMap;
-       //LK uint32 m_phaseMask;                                 // in area phase state
+        Map*   m_currMap;                                   //current object's Map location
+		uint32 m_InstanceId;                                // in map copy with instance id
+        uint32 m_phaseMask;                                 // in area phase state
 
+		uint16 m_notifyflags;
+		uint16 m_executed_notifies;
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool incOwnRadius = true, bool incTargetRadius = true) const;
 
         bool mSemaphoreTeleport;
+
+		bool CanNeverSee(WorldObject const* obj) const;
+		virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
+		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;
+		bool CanDetectInvisibilityOf(WorldObject const* obj) const;
+		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
 };
 
 namespace Trinity

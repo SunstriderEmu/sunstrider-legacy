@@ -11,7 +11,7 @@ namespace ai
 
         virtual bool Execute(Event event)
         {
-            Player* master = GetMaster();
+           // Player* master = GetMaster();
 
             Group* grp = bot->GetGroupInvite();
             if (!grp)

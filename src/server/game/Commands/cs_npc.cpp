@@ -162,13 +162,11 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         }
 
     auto  pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit), map, id))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit), map, chr->GetPhaseMask(), id, x, y, z, o))
     {
         delete pCreature;
         return false;
     }
-
-    pCreature->Relocate(x,y,z,o);
 
     if(!pCreature->IsPositionValid())
     {

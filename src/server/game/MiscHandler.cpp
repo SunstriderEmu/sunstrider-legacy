@@ -523,14 +523,14 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 {
-    if(!_player->m_mover->IsAlive())
+    if(!_player->m_unitMovedByMe->IsAlive())
         return;
 
     uint8 animstate;
     recvData >> animstate;
 
-    if (_player->m_mover->GetStandState() != animstate)
-        _player->m_mover->SetStandState(animstate);
+    if (_player->m_unitMovedByMe->GetStandState() != animstate)
+        _player->m_unitMovedByMe->SetStandState(animstate);
 }
 
 void WorldSession::HandleBugOpcode( WorldPacket & recvData )
@@ -1273,22 +1273,24 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-    uint8 apply;
-    recvData >> apply;
+	bool apply;
+	recvData >> apply;
 
-    _player->SetFarsightVision(apply);
-    if(apply)
-    {
-        TC_LOG_DEBUG("network", "Added FarSight " UI64FMTD " to player %u", _player->GetGuidValue(PLAYER_FARSIGHT), _player->GetGUIDLow());
+	if (apply)
+	{
+		TC_LOG_DEBUG("network", "Added FarSight %s to player %u", ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str(), ObjectGuid(_player->GetGUID()).GetCounter());
+		if (WorldObject* target = _player->GetViewpoint())
+			_player->SetSeer(target);
+		else
+			TC_LOG_DEBUG("network", "Player %s (%s) requests non-existing seer %s", _player->GetName().c_str(), ObjectGuid(_player->GetGUID()).ToString().c_str(), ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str());
+	}
+	else
+	{
+		TC_LOG_DEBUG("network", "Player %u set vision to self", ObjectGuid(_player->GetGUID()).GetCounter());
+		_player->SetSeer(_player);
+	}
 
-        //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
-        WorldObject* farSightTarget = _player->GetFarsightTarget();
-        if(farSightTarget && farSightTarget->isType(TYPEMASK_UNIT))
-            farSightTarget->ToUnit()->SetToNotify(); 
-        else
-            TC_LOG_DEBUG("network", "Player %s (%u) requests non-existing seer " UI64FMTD, _player->GetName().c_str(), _player->GetGUIDLow(), _player->GetGuidValue(PLAYER_FARSIGHT));
-    }
-    GetPlayer()->SetToNotify();
+	GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
@@ -1413,10 +1415,21 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 
     recvData.read_skip<uint32>();                          // unk
 
+#ifdef LICH_KING
+	MovementInfo movementInfo;
+	movementInfo.guid = guid;
+	ReadMovementInfo(recvData, &movementInfo);
+
+	recvData.read_skip<float>();                           // unk2
+
+	_player->m_unitMovedByMe->m_movementInfo.flags = movementInfo.GetMovementFlags();
+#else
     uint32 flags;
     recvData >> flags;
 
-    _player->m_mover->m_movementInfo.flags = flags;
+	_player->m_unitMovedByMe->m_movementInfo.flags = flags;
+#endif
+
 }
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)

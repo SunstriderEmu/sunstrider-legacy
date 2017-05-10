@@ -1177,12 +1177,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void StopCastingCharm() { Uncharm(); }
         void StopCastingBindSight();
-        WorldObject* GetFarsightTarget() const;
-        void ClearFarsight();
-        void SetFarsightTarget(WorldObject* target);
-        // Controls if vision is currently on farsight object, updated in FAR_SIGHT opcode
-        void SetFarsightVision(bool apply) { m_farsightVision = apply; }
-        bool HasFarsightVision() const { return m_farsightVision; }
 
         bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
 
@@ -1832,7 +1826,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void CheckDuelDistance(time_t currTime);
         void DuelComplete(DuelCompleteType type);
 
-        bool IsGroupVisibleFor(Player* p) const;
+        bool IsGroupVisibleFor(Player const* p) const;
         bool IsInSameGroupWith(Player const* p) const;
         bool IsInSameRaidWith(Player const* p) const { return p==this || (GetGroup() != nullptr && GetGroup() == p->GetGroup()); }
         void UninviteFromGroup();
@@ -2305,7 +2299,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         /*********************************************************/
         
         void UpdateFallInformationIfNeed(MovementInfo const& minfo, uint16 opcode);
-        Unit* m_mover; //player is moving this unit (most time self)
+		// only changed for direct client control (possess, vehicle etc.), not stuff you control using pet commands
+		Unit* m_unitMovedByMe;
         WorldObject* m_seer;
         void SetFallInformation(uint32 time, float z);
         void HandleFall(MovementInfo const& movementInfo);
@@ -2337,8 +2332,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void SetMover(Unit* target);
 
-        uint64 GetFarSight() const { return GetUInt64Value(PLAYER_FARSIGHT); }
-        void SetFarSight(uint64 guid) { SetUInt64Value(PLAYER_FARSIGHT, guid); }
+		void SetSeer(WorldObject* target) { m_seer = target; }
+		void SetViewpoint(WorldObject* target, bool apply);
+		WorldObject* GetViewpoint() const;
 
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
@@ -2374,20 +2370,21 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetHomebind(WorldLocation const& loc, uint32 area_id);
 
         // currently visible objects at player client
-        typedef std::set<uint64> ClientGUIDs;
-        ClientGUIDs m_clientGUIDs;
+		GuidUnorderedSet m_clientGUIDs;
 
         bool HaveAtClient(WorldObject const* u) const { return u==this || m_clientGUIDs.find(u->GetGUID())!=m_clientGUIDs.end(); }
 
-        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const override;
-        bool IsVisibleInGridForPlayer(Player const* pl) const override;
+		bool IsNeverVisible() const override;
         bool IsVisibleGloballyFor(Player* pl) const;
 
-        void UpdateVisibilityOf(WorldObject* target);
         void SendInitialVisiblePackets(Unit* target);
+		void UpdateObjectVisibility(bool forced = true) override;
+		void UpdateVisibilityForPlayer();
+		void UpdateVisibilityOf(WorldObject* target);
+		void UpdateTriggerVisibility();
 
         template<class T>
-            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<WorldObject*>& visibleNow);
+            void UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
         uint8 m_forced_speed_changes[MAX_MOVE_TYPE];
 
@@ -2701,8 +2698,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint16 tradeItems[TRADE_SLOT_COUNT];
         uint32 tradeGold;
 
-        time_t m_nextThinkTime;
-
         bool   m_DailyQuestChanged;
         time_t m_lastDailyQuestTime;
 
@@ -2768,6 +2763,9 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         uint32 _activeCheats; //mask from PlayerCommandStates
 
+		bool CanAlwaysSee(WorldObject const* obj) const override;
+		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
+
 		bool m_needsZoneUpdate;
 
 #ifdef PLAYERBOT
@@ -2785,8 +2783,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         float  m_summon_y;
         float  m_summon_z;
         bool   m_invite_summon;
-
-        bool m_farsightVision;
 
         DeclinedName *m_declinedname;
         

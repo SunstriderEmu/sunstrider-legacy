@@ -10,7 +10,6 @@ CollectSourceFiles(
   ${EXCLUDE_PLAYERBOT}
 )
 
-  
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
 set(PRIVATE_PCH_SOURCE PrecompiledHeaders/gamePCH.cpp)
 

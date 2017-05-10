@@ -329,7 +329,7 @@ list<ObjectGuid> ChatHelper::parseGameobjects(string& text)
             break;
 
         std::string entryC = text.substr(pos, endPos - pos);     // get std::string within window i.e entry
-        uint32 entry = atol(entryC.c_str());     // convert ascii to float
+  //      uint32 entry = atol(entryC.c_str());     // convert ascii to float
 
         ObjectGuid lootCurrent = ObjectGuid(guid);
 

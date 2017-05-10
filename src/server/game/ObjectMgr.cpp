@@ -1398,7 +1398,7 @@ void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.creatures.insert(guid);
         }
     }
@@ -1414,7 +1414,7 @@ void ObjectMgr::RemoveCreatureFromGrid(uint32 guid, CreatureData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.creatures.erase(guid);
         }
     }
@@ -1565,7 +1565,7 @@ void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.gameobjects.insert(guid);
         }
     }
@@ -1581,7 +1581,7 @@ void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.gameobjects.erase(guid);
         }
     }
@@ -1650,26 +1650,6 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
 	if (!map)
 		return 0;
 
-	/*
-	 uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit,true);
-    CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
-    data.id = entry;
-    data.mapid = map;
-    data.displayid = displayId;
-    data.equipmentId = cInfo->equipmentId;
-    data.posX = x;
-    data.posY = y;
-    data.posZ = z;
-    data.orientation = o;
-    data.spawntimesecs = spawntimedelay;
-    data.spawndist = 0;
-    data.currentwaypoint = 0;
-    data.curhealth = stats->GenerateHealth(cInfo);
-    data.curmana = stats->GenerateMana(cInfo);
-    data.movementType = cInfo->MovementType;
-    data.spawnMask = 1;
-	*/
-
 	//TC ObjectGuid::LowType guid = GenerateCreatureSpawnId();
 	ObjectGuid::LowType guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit, true);
 
@@ -1698,7 +1678,7 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
 	AddCreatureToGrid(guid, &data);
 
 	// We use spawn coords to spawn
-	if (!map->Instanceable() && map->IsGridLoaded(x, y))
+	if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
 	{
 		Creature* creature = new Creature();
 		if (!creature->LoadCreatureFromDB(guid, map))
@@ -6623,22 +6603,6 @@ void ObjectMgr::DeleteGOData(uint32 guid)
 
     mGameObjectDataMap.erase(guid);
 }
-
-/*
-void ObjectMgr::AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance)
-{
-    // corpses are always added to spawn mode 0 and they are spawned by their instance id
-    CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(mapid,0)][cellid];
-    cell_guids.corpses[player_guid] = instance;
-}
-
-void ObjectMgr::DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid)
-{
-    // corpses are always added to spawn mode 0 and they are spawned by their instance id
-    CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(mapid,0)][cellid];
-    cell_guids.corpses.erase(player_guid);
-}
-*/
 
 void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
 {

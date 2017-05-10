@@ -65,22 +65,35 @@ GameObject::GameObject() : WorldObject(false), MapObject(),
 
 GameObject::~GameObject()
 {
-    if(m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
-    {
-        // crash possible at access to deleted GO in Unit::m_gameobj
-        uint64 owner_guid = GetOwnerGUID();
-        if(owner_guid)
-        {
-            Unit* owner = ObjectAccessor::GetUnit(*this,owner_guid);
-            if(owner)
-                owner->RemoveGameObject(this,false);
-            else if(!IS_PLAYER_GUID(owner_guid))
-                TC_LOG_ERROR("FIXME","Delete GameObject (GUID: %u Entry: %u ) that have references in not found creature %u GO list. Crash possible later.",GetGUIDLow(),GetGOInfo()->entry,GUID_LOPART(owner_guid));
-        }
-    }
-    
     delete m_AI;
     delete m_model;
+}
+
+void GameObject::CleanupsBeforeDelete(bool finalCleanup)
+{
+	WorldObject::CleanupsBeforeDelete(finalCleanup);
+
+	if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
+		RemoveFromOwner();
+}
+
+void GameObject::RemoveFromOwner()
+{
+	ObjectGuid ownerGUID = GetOwnerGUID();
+	if (!ownerGUID)
+		return;
+
+	if (Unit* owner = ObjectAccessor::GetUnit(*this, ownerGUID))
+	{
+		owner->RemoveGameObject(this, false);
+		ASSERT(!GetOwnerGUID());
+		return;
+	}
+
+	// This happens when a mage portal is despawned after the caster changes map (for example using the portal)
+	TC_LOG_DEBUG("misc", "Removed GameObject (GUID: %u Entry: %u SpellId: %u LinkedGO: %u) that just lost any reference to the owner (%s) GO list",
+		ObjectGuid(GetGUID()).GetCounter(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.ToString().c_str());
+	SetOwnerGUID(0 /*ObjectGuid::Empty*/);
 }
 
 std::string GameObject::GetAIName() const
@@ -242,7 +255,7 @@ void GameObject::RemoveFromWorld()
     }
 }
 
-bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
+bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
 	SetMap(map);
@@ -256,7 +269,7 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
         return false;
     }
 
-	//SetPhaseMask(phaseMask, false);
+	SetPhaseMask(phaseMask, false);
 
 	SetZoneScript();
 	if (m_zoneScript)
@@ -314,9 +327,28 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, Position const
     SetGoType(GameobjectTypes(goinfo->type));
     m_prevGoState = go_state;
     SetGoState(GOState(go_state));
-    SetGoAnimProgress(animprogress);
 
     SetGoArtKit(ArtKit);
+
+	switch (goinfo->type)
+	{
+	case GAMEOBJECT_TYPE_TRAP:
+		if (GetGOInfo()->trap.stealthed)
+		{
+			m_stealth.AddFlag(STEALTH_TRAP);
+			m_stealth.AddValue(STEALTH_TRAP, 350); //TC has 70 here
+		}
+
+		if (GetGOInfo()->trap.invisible)
+		{
+			m_invisibility.AddFlag(INVISIBILITY_TRAP);
+			m_invisibility.AddValue(INVISIBILITY_TRAP, 300);
+		}
+		break;
+	default:
+		SetGoAnimProgress(animprogress);
+		break;
+	}
 
     // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
@@ -644,8 +676,7 @@ void GameObject::Update(uint32 diff)
             if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
                 SaveRespawnTime();
 
-            ObjectAccessor::UpdateObjectVisibility(this);
-
+			DestroyForNearbyPlayers();
             break;
         }
     }
@@ -798,7 +829,7 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     if (map->GetInstanceId() != 0) 
         guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true);
 
-    if (!Create(guid,entry, map, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
+    if (!Create(guid,entry, map, PHASEMASK_NORMAL, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
         return false;
 
     switch(GetGOInfo()->type)
@@ -919,14 +950,12 @@ void GameObject::SetDisplayId(uint32 displayid)
     UpdateModel();
 }
 
-void GameObject::SetPhaseMask(PhaseMask newPhaseMask, bool update)
+void GameObject::SetPhaseMask(uint32 newPhaseMask, bool update)
 {
-#ifdef LICH_KING
     WorldObject::SetPhaseMask(newPhaseMask, update);
 
     if (m_model && m_model->isEnabled())
         EnableCollision(true);
-#endif
 }
 
 void GameObject::EnableCollision(bool enable)
@@ -1008,6 +1037,7 @@ void GameObject::SaveRespawnTime()
         sObjectMgr->SaveGORespawnTime(m_spawnId,GetMapId(), GetInstanceId(),m_respawnTime);
 }
 
+/*
 bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
 {
     // Not in world
@@ -1026,7 +1056,7 @@ bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
         return true;
 
     // quick check visibility false cases for non-GM-mode or gm in video group
-    if(!(u->IsGameMaster() /*&& u->GetSession()->GetGroupId() != GMGROUP_VIDEO*/) && !u->isSpectator())
+    if(!(u->IsGameMaster() ) && !u->isSpectator())
     {
         // despawned and then not visible for non-GM in GM-mode
         if(!isSpawned())
@@ -1053,6 +1083,7 @@ bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
     return IsWithinDistInMap(target,World::GetMaxVisibleDistanceForObject() +
         (inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
+*/
 
 bool GameObject::canDetectTrap(Player const* u, float distance) const
 {
@@ -1068,7 +1099,7 @@ bool GameObject::canDetectTrap(Player const* u, float distance) const
     //guessed values
     float visibleDistance = 7.5f;
     visibleDistance += (int32(u->GetLevel()) - int32(GetOwner()->GetLevel())) /5.0f;
-    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
+    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_STEALTH_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
 
     return distance < visibleDistance;
 }
@@ -1186,6 +1217,59 @@ void GameObject::ResetDoorOrButton()
     m_cooldownTime = 0;
 }
 
+
+bool GameObject::IsNeverVisible() const
+{
+	if (WorldObject::IsNeverVisible())
+		return true;
+
+	if (GetGoType() == GAMEOBJECT_TYPE_SPELL_FOCUS && GetGOInfo()->spellFocus.serverOnly == 1)
+		return true;
+
+	return false;
+}
+
+bool GameObject::IsAlwaysVisibleFor(WorldObject const* seer) const
+{
+	if (WorldObject::IsAlwaysVisibleFor(seer))
+		return true;
+
+	if (IsTransport() || IsMotionTransport() 
+#ifdef LICH_KING
+		|| IsDestructibleBuilding()
+#endif
+		)
+		return true;
+
+	if (!seer)
+		return false;
+
+	// Always seen by owner and friendly units
+	if (ObjectGuid guid = GetOwnerGUID())
+	{
+		if (seer->GetGUID() == guid)
+			return true;
+
+		Unit* owner = GetOwner();
+		if (Unit const* unitSeer = seer->ToUnit())
+			if (owner && owner->IsFriendlyTo(unitSeer))
+				return true;
+	}
+
+	return false;
+}
+
+bool GameObject::IsInvisibleDueToDespawn() const
+{
+	if (WorldObject::IsInvisibleDueToDespawn())
+		return true;
+
+	// Despawned
+	if (!isSpawned())
+		return true;
+
+	return false;
+}
 
 void GameObject::SetGoArtKit(uint32 kit)
 {
@@ -1689,7 +1773,6 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
 	// remove immunity flags, to allow spell to target anything
 	trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
 
-    //trigger->SetVisibility(VISIBILITY_OFF); //should this be true?
     trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if(Unit *owner = GetOwner())
     {

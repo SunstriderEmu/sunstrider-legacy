@@ -192,7 +192,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                           
                         }
                         
-                        if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), SI_SILITHYST_MOUND, map, plr->GetPosition(),G3D::Quat(), 255, GO_STATE_READY))
+                        if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), SI_SILITHYST_MOUND, map, PHASEMASK_NORMAL, plr->GetPosition(), G3D::Quat(), 255, GO_STATE_READY))
                         {
                             delete go;
                         }
@@ -221,7 +221,7 @@ bool OutdoorPvPSI::HandleDropFlag(Player *plr, uint32 spellId)
                           delete go;
                           return true;
                         }
-                        if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true),SI_SILITHYST_MOUND, map ,plr->GetPosition(),G3D::Quat(), 255, GO_STATE_READY))
+                        if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true),SI_SILITHYST_MOUND, map, PHASEMASK_NORMAL, plr->GetPosition(),G3D::Quat(), 255, GO_STATE_READY))
                         {
                             delete go;
                         }

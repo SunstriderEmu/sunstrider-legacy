@@ -51,9 +51,9 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         // 14 SPELL_AURA_MOD_DAMAGE_TAKEN implemented in Unit::MeleeDamageBonus and Unit::SpellDamageBonusDone
     &Aura::HandleNoImmediateEffect,                         // 15 SPELL_AURA_DAMAGE_SHIELD    implemented in Unit::DoAttackDamage
     &Aura::HandleModStealth,                                // 16 SPELL_AURA_MOD_STEALTH
-    &Aura::HandleNoImmediateEffect,                         // 17 SPELL_AURA_MOD_STEALTH_DETECT
-    &Aura::HandleInvisibility,                              // 18 SPELL_AURA_MOD_INVISIBILITY
-    &Aura::HandleInvisibilityDetect,                        // 19 SPELL_AURA_MOD_INVISIBILITY_DETECTION
+    &Aura::HandleModStealthDetect,                          // 17 SPELL_AURA_MOD_STEALTH_DETECT
+    &Aura::HandleModInvisibility,                              // 18 SPELL_AURA_MOD_INVISIBILITY
+    &Aura::HandleModInvisibilityDetect,                        // 19 SPELL_AURA_MOD_INVISIBILITY_DETECTION
     &Aura::HandleAuraModTotalHealthPercentRegen,            // 20 SPELL_AURA_OBS_MOD_HEALTH
     &Aura::HandleAuraModTotalPowerPercentRegen,             // 21 SPELL_AURA_OBS_MOD_POWER
     &Aura::HandleAuraModResistance,                         // 22 SPELL_AURA_MOD_RESISTANCE
@@ -110,7 +110,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleModPowerCost,                              // 73 SPELL_AURA_MOD_POWER_COST_SCHOOL
     &Aura::HandleNoImmediateEffect,                         // 74 SPELL_AURA_REFLECT_SPELLS_SCHOOL  implemented in Unit::SpellHitResult
     &Aura::HandleNoImmediateEffect,                         // 75 SPELL_AURA_MOD_LANGUAGE
-    &Aura::HandleFarSight,                                  // 76 SPELL_AURA_FAR_SIGHT
+    &Aura::HandleNoImmediateEffect,                         // 76 SPELL_AURA_FAR_SIGHT
     &Aura::HandleModMechanicImmunity,                       // 77 SPELL_AURA_MECHANIC_IMMUNITY
     &Aura::HandleAuraMounted,                               // 78 SPELL_AURA_MOUNTED
     &Aura::HandleModDamagePercentDone,                      // 79 SPELL_AURA_MOD_DAMAGE_PERCENT_DONE
@@ -125,7 +125,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         // 88 SPELL_AURA_MOD_HEALTH_REGEN_PERCENT
     &Aura::HandlePeriodicDamagePCT,                         // 89 SPELL_AURA_PERIODIC_DAMAGE_PERCENT
     &Aura::HandleUnused,                                    // 90 SPELL_AURA_MOD_RESIST_CHANCE  Useless
-    &Aura::HandleNoImmediateEffect,                         // 91 SPELL_AURA_MOD_DETECT_RANGE implemented in Creature::GetAttackDistance
+    &Aura::HandleNoImmediateEffect,                         // 91 SPELL_AURA_MOD_STEALTH_DETECT_RANGE implemented in Creature::GetAttackDistance
     &Aura::HandlePreventFleeing,                            // 92 SPELL_AURA_PREVENTS_FLEEING
     &Aura::HandleModUnattackable,                           // 93 SPELL_AURA_MOD_UNATTACKABLE
     &Aura::HandleNoImmediateEffect,                         // 94 SPELL_AURA_INTERRUPT_REGEN implemented in Player::RegenerateAll
@@ -186,7 +186,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //149 SPELL_AURA_RESIST_PUSHBACK
     &Aura::HandleShieldBlockValue,                          //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
     &Aura::HandleAuraTrackStealthed,                        //151 SPELL_AURA_TRACK_STEALTHED
-    &Aura::HandleNoImmediateEffect,                         //152 SPELL_AURA_MOD_DETECTED_RANGE implemented in Creature::GetAttackDistance
+    &Aura::HandleNoImmediateEffect,                         //152 SPELL_AURA_MOD_STEALTH_DETECTED_RANGE implemented in Creature::GetAttackDistance
     &Aura::HandleNoImmediateEffect,                         //153 SPELL_AURA_SPLIT_DAMAGE_FLAT
     &Aura::HandleModStealthLevel,                           //154 SPELL_AURA_MOD_STEALTH_LEVEL
     &Aura::HandleNoImmediateEffect,                         //155 SPELL_AURA_MOD_WATER_BREATHING
@@ -2248,13 +2248,6 @@ void Aura::HandleAuraDummy(bool apply, bool Real)
     // AT REMOVE
     else
     {
-        if( m_target->GetTypeId() == TYPEID_PLAYER && GetSpellInfo()->Effects[0].Effect==72 )
-        {
-            // spells with SpellEffect=72 and aura=4: 6196, 6197, 21171, 21425
-            (m_target->ToPlayer())->ClearFarsight();
-            return;
-        }
-
         if( (IsQuestTameSpell(GetId())) && caster && caster->IsAlive() && m_target->IsAlive())
         {
             uint32 finalSpelId = 0;
@@ -3258,28 +3251,7 @@ void Aura::HandleBindSight(bool apply, bool Real)
     if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (apply)
-    {
-        // we need to create object at client first (only needed for high range cases)
-        if(!caster->ToPlayer()->HaveAtClient(m_target))
-        {
-            m_target->SendUpdateToPlayer(caster->ToPlayer()); 
-            caster->ToPlayer()->m_clientGUIDs.insert(m_target->GetGUID());
-            caster->ToPlayer()->SendInitialVisiblePackets((Unit*)m_target);
-        }
-        m_target->AddPlayerToVision(caster->ToPlayer());
-    } else {
-        m_target->RemovePlayerFromVision(caster->ToPlayer());
-    }
-}
-
-void Aura::HandleFarSight(bool apply, bool Real)
-{
-    Unit* caster = GetCaster();
-    if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    (caster->ToPlayer())->SetFarSight(apply ? m_target->GetGUID() : 0);
+	caster->ToPlayer()->SetViewpoint(m_target, apply);
 }
 
 void Aura::HandleAuraTrackCreatures(bool apply, bool Real)
@@ -3315,7 +3287,7 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
     if(m_target->GetTypeId()==TYPEID_PLAYER)
     {
         if(Real)
-			m_target->SetToNotify(); //update current vision
+			m_target->UpdateObjectVisibility(); //update current vision
     } else {
         return;
     }
@@ -3333,10 +3305,24 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
     m_target->ApplyModFlag(PLAYER_FIELD_BYTES, PLAYER_FIELD_BYTE_TRACK_STEALTHED, apply);
 }
 
-void Aura::HandleModStealthLevel(bool Apply, bool Real)
+void Aura::HandleModStealthLevel(bool apply, bool Real)
 {
-    if(Real) 
-        m_target->SetToNotify(); //update visibility for nearby units
+	Unit* target = GetTarget();
+	StealthType type = StealthType(GetMiscValue());
+
+
+	if (Real) 
+	{
+		//TC has not *5 here. Here I assume having 1 "stealth level" is being considered 1 level higher on stealth detection calculation
+		//Ismproved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
+
+		if (apply)
+			target->m_stealth.AddValue(type, GetAmount() * 5); 
+		else
+			target->m_stealth.AddValue(type, -GetAmount() * 5);
+
+		m_target->UpdateObjectVisibility(); //update visibility for nearby units
+	}
 }
 
 void Aura::HandleAuraModScale(bool apply, bool Real)
@@ -3525,7 +3511,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
 
         m_target->AddUnitState(UNIT_STATE_DIED);
         m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
 
         // prevent interrupt message
         if(m_caster_guid==m_target->GetGUID() && m_target->GetCurrentSpell(CURRENT_GENERIC_SPELL))
@@ -3588,9 +3574,9 @@ void Aura::HandleAuraModDisarm(bool apply, bool Real)
 
         if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
         {
+			/* TODO: update weapon damage & auras
             uint8 attacktype = Player::GetAttackBySlot(EQUIPMENT_SLOT_MAINHAND);
 
-            /* TODO: update weapon damage & auras
             player->ApplyItemDependentAuras(item, !apply);
             if (attacktype < MAX_ATTACK)
                 player->_ApplyWeaponDamage(slot, item->GetTemplate(), NULL, !apply);
@@ -3628,46 +3614,76 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
     m_target->SetControlled(apply, UNIT_STATE_STUNNED);
 }
 
+
+void Aura::HandleModStealthDetect(bool apply, bool Real)
+{
+	if (!Real)
+		return;
+
+	Unit* target = GetTarget();
+	StealthType type = StealthType(GetMiscValue());
+
+	if (apply)
+	{
+		target->m_stealthDetect.AddFlag(type);
+		target->m_stealthDetect.AddValue(type, GetAmount());
+	}
+	else
+	{
+		if (!target->HasAuraType(SPELL_AURA_MOD_STEALTH_DETECT))
+			target->m_stealthDetect.DelFlag(type);
+
+		target->m_stealthDetect.AddValue(type, -GetAmount());
+	}
+
+	// call functions which may have additional effects after chainging state of unit
+	target->UpdateObjectVisibility();
+}
+
 void Aura::HandleModStealth(bool apply, bool Real)
 {
+	if (!Real)
+		return;
+
+	Unit* target = GetTarget();
+	StealthType type = StealthType(GetMiscValue());
+
     if(apply)
     {
-        if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
+        if(m_target->GetTypeId()==TYPEID_PLAYER)
         {
-            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);  // drop flag at stealth in bg
+			target->m_stealth.AddFlag(type);
+			target->m_stealth.AddValue(type, GetAmount());
+
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);  // drop flag at stealth in bg
         }
 
-        // only at real aura add
-        if(Real)
-        {
-            m_target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
-            if(m_target->GetTypeId()==TYPEID_PLAYER)
-                m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
-        }
+        m_target->SetStandFlags(UNIT_STAND_FLAGS_CREEP);
+        if(m_target->GetTypeId()==TYPEID_PLAYER)
+            m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
     }
     else
     {
-        // only at real aura remove
-        if(Real)
+		target->m_stealth.AddValue(type, -GetAmount());
+
+        // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
+        if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
         {
-            // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
-            if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH) && m_target->GetVisibility() != VISIBILITY_OFF)
-            {
-                m_target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
-                if(m_target->GetTypeId()==TYPEID_PLAYER)
-                    m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
-            }
+			target->m_stealth.DelFlag(type);
+
+            m_target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
+            if(m_target->GetTypeId()==TYPEID_PLAYER)
+                m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_STEALTH);
         }
     }
 
-    if(Real)
-        m_target->SetToNotify(); //update visibility for nearby units
+    m_target->UpdateObjectVisibility(); //update visibility for nearby units
 
-    // Master of Subtlety
+    // Master of Subtlety HACK
     Unit::AuraList const& mDummyAuras = m_target->GetAurasByType(SPELL_AURA_DUMMY);
     for(auto mDummyAura : mDummyAuras)
     {
-        if (mDummyAura->GetSpellInfo()->SpellIconID == 2114 && Real)
+        if (mDummyAura->GetSpellInfo()->SpellIconID == 2114)
         {
             if (apply)
             {
@@ -3681,65 +3697,88 @@ void Aura::HandleModStealth(bool apply, bool Real)
     }
 }
 
-void Aura::HandleInvisibility(bool apply, bool Real)
+void Aura::HandleModInvisibility(bool apply, bool Real)
 {
+	InvisibilityType type = InvisibilityType(GetMiscValue());
+
     if(apply)
     {
-        m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
+//        m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
 
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); // also drop flag at invisibiliy in bg
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); // also drop flag at invisibiliy in bg
 
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
 			m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
-        // apply only if not in GM invisibility and not stealth
-        if(m_target->GetVisibility()==VISIBILITY_ON)
-            m_target->SetVisibility(VISIBILITY_ON);
+		m_target->m_invisibility.AddFlag(type);
+		m_target->m_invisibility.AddValue(type, GetAmount());
     }
     else
     {
-        // recalculate value at modifier remove (current aura already removed)
-        m_target->m_invisibilityMask = 0;
-        Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
-        for(auto itr = auras.begin(); itr != auras.end(); ++itr)
-            m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
-
-        // only at real aura remove and if not have different invisibility auras.
-        if(Real && m_target->m_invisibilityMask == 0)
-        {
-            // remove glow vision
-            if(m_target->GetTypeId() == TYPEID_PLAYER)
+		if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
+		{
+			// if not have different invisibility auras.
+			// remove glow vision
+			if (Real && m_target->GetTypeId() == TYPEID_PLAYER)
 				m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
-            // apply only if not in GM invisibility & not stealthed while invisible
-            if(m_target->GetVisibility()!=VISIBILITY_OFF)
-            {
-                // if have stealth aura then already have stealth visibility
-                if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
-                {
-                    m_target->SetVisibility(VISIBILITY_ON);
-                }
-            }
-        }
-    }
+			m_target->m_invisibility.DelFlag(type);
+		}
+		else {
+			bool found = false;
+			Unit::AuraEffectList const& invisAuras = m_target->GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
+			for (Unit::AuraEffectList::const_iterator i = invisAuras.begin(); i != invisAuras.end(); ++i)
+			{
+				if (GetMiscValue() == (*i)->GetMiscValue())
+				{
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+				m_target->m_invisibility.DelFlag(type);
+		}
+
+		m_target->m_invisibility.AddValue(type, -GetAmount());
+	}
+
+	if(apply && Real)
+		m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
+
+	m_target->UpdateObjectVisibility();
+
+    // recalculate value at modifier remove (current aura already removed)
+	/*
+    m_target->m_invisibilityMask = 0;
+    Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
+    for(auto itr = auras.begin(); itr != auras.end(); ++itr)
+        m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
+	*/
+    // only at real aura remove and if not have different invisibility auras.
 }
 
-void Aura::HandleInvisibilityDetect(bool apply, bool Real)
+void Aura::HandleModInvisibilityDetect(bool apply, bool Real)
 {
-    if(apply)
-    {
-        m_target->m_detectInvisibilityMask |= (1 << m_modifier.m_miscvalue);
-    }
-    else
-    {
-        // recalculate value at modifier remove (current aura already removed)
-        m_target->m_detectInvisibilityMask = 0;
-        Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY_DETECTION);
-        for(auto itr = auras.begin(); itr != auras.end(); ++itr)
-            m_target->m_detectInvisibilityMask |= (1 << m_modifier.m_miscvalue);
-    }
-    if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
-        m_target->SetToNotify(); //update current vision
+	if (!Real)
+		return;
+
+	InvisibilityType type = InvisibilityType(GetMiscValue());
+
+	if (apply)
+	{
+		m_target->m_invisibilityDetect.AddFlag(type);
+		m_target->m_invisibilityDetect.AddValue(type, GetAmount());
+	}
+	else
+	{
+		if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY_DETECTION))
+			m_target->m_invisibilityDetect.DelFlag(type);
+
+		m_target->m_invisibilityDetect.AddValue(type, -GetAmount());
+	}
+
+	// call functions which may have additional effects after chainging state of unit
+	m_target->UpdateObjectVisibility();
 }
 
 void Aura::HandleAuraModRoot(bool apply, bool Real)
@@ -4040,7 +4079,7 @@ void Aura::HandleAuraModEffectImmunity(bool apply, bool Real)
 
     // when removing flag aura, handle flag drop
     Player* player = m_target->ToPlayer();
-    if (!apply && player && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_UNATTACKABLE))
+    if (!apply && player && (GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION))
     {
         if (player->InBattleground())
         {
@@ -4062,7 +4101,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
     GetSpellInfo()->ApplyAllSpellImmunitiesTo(m_target, GetEffIndex(), apply);
 
     if (apply && m_modifier.m_miscvalue == SPELL_SCHOOL_MASK_NORMAL)
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
 
     if (Real && GetSpellInfo()->Mechanic == MECHANIC_BANISH)
     {
@@ -4090,7 +4129,7 @@ void Aura::HandleAuraModSchoolImmunity(bool apply, bool Real)
     // remove all flag auras (they are positive, but they must be removed when you are immune)
     if (apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)
         && GetSpellInfo()->HasAttribute(SPELL_ATTR2_DAMAGE_REDUCED_SHIELD))
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
         */
 
     if(Real && apply && GetSpellInfo()->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY))
@@ -5477,6 +5516,8 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
     if(apply)
     {
         m_target->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
+		m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
+		m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
     }
     else
     {
@@ -5484,6 +5525,8 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
             return;
 
         m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
+		m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+		m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
     }
 }
 
@@ -5594,7 +5637,7 @@ void Aura::HandleModUnattackable( bool apply, bool real )
     if(real && apply)
     {
         m_target->CombatStop();
-        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE); //drop flag in bg
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); //drop flag in bg
     }
 
     m_target->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE, apply);
@@ -5621,7 +5664,7 @@ void Aura::HandleSpiritOfRedemption( bool apply, bool Real )
             if(!m_target->IsStandState())
                 m_target->SetStandState(PLAYER_STATE_NONE);
 
-            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_UNATTACKABLE);
+            m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
         }
 
         m_target->SetHealth(1);

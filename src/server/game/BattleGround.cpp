@@ -786,7 +786,8 @@ void Battleground::EndBattleground(uint32 winner)
     }
 
     // inform invited players about the removal
-    sBattlegroundMgr->m_BattlegroundQueues[sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType())].BGEndedRemoveInvites(this);
+	auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
+    sBattlegroundMgr->m_BattlegroundQueues[queueTypeId].BGEndedRemoveInvites(this);
 
     if(Source)
     {
@@ -1496,15 +1497,15 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
 
 bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, bool inactive)
 {
-    Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceID());
-    if(!map)
-        return false;
+	Map* map = FindBgMap();
+	if (!map)
+		return false;
 
     // must be created this way, adding to godatamap would add it to the base map of the instance
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // so we must create it specific for this instance
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true),entry, map, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3),255, GO_STATE_READY))
+    if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true),entry, GetBgMap(), PHASEMASK_NORMAL, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("battleground","Gameobject template %u not found in database! Battleground not created!", entry);
         TC_LOG_ERROR("battleground","Cannot create gameobject template %u! Battleground not created!", entry);
@@ -1625,7 +1626,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
         return nullptr;
 
 	auto  pCreature = new Creature();
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), map, entry))
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), map, PHASEMASK_NORMAL, entry, x, y, z, o))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;
@@ -1741,7 +1742,8 @@ void Battleground::EndNow()
     SetStatus(STATUS_WAIT_LEAVE);
     SetRemovalTimer(TIME_TO_AUTOREMOVE);
     // inform invited players about the removal
-    sBattlegroundMgr->m_BattlegroundQueues[sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType())].BGEndedRemoveInvites(this);
+	auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
+    sBattlegroundMgr->m_BattlegroundQueues[queueTypeId].BGEndedRemoveInvites(this);
 }
 
 // Battleground messages are localized using the dbc lang, they are not client language dependent

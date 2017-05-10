@@ -9,7 +9,7 @@
 #include "World.h"
 #include "DBCStores.h"
 
-MapInstanced::MapInstanced(uint32 id) : Map(MAP_TYPE_MAP_INSTANCED, id, 0, DUNGEON_DIFFICULTY_NORMAL)
+MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(MAP_TYPE_MAP_INSTANCED, expiry, id, 0, DUNGEON_DIFFICULTY_NORMAL)
 {
     // fill with zero
     memset(&GridMapReference, 0, MAX_NUMBER_OF_GRIDS*MAX_NUMBER_OF_GRIDS*sizeof(uint16));
@@ -254,7 +254,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 
-	auto map = new InstanceMap(GetId(), InstanceId, difficulty, this);
+	auto map = new InstanceMap(MAP_TYPE_INSTANCE_MAP, GetId(), InstanceId, difficulty, this);
     assert(map->IsDungeon());
 
 	//TC  map->LoadRespawnTimes();
@@ -274,7 +274,7 @@ BattlegroundMap* MapInstanced::CreateBattleground(uint32 InstanceId, Battlegroun
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateBattleground: map bg %d for %d created.", InstanceId, GetId());
 
-	auto map = new BattlegroundMap(GetId(), InstanceId, this);
+	auto map = new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, this);
     assert(map->IsBattlegroundOrArena());
     map->SetBG(bg);
 

@@ -241,7 +241,7 @@ void SpellCastTargets::Write(ByteBuffer& data)
 
 uint64 SpellCastTargets::GetUnitTargetGUID() const
 {
-    switch (GUID_HIPART(m_objectTargetGUID))
+    switch (ObjectGuid(m_objectTargetGUID).GetHigh())
     {
     case HighGuid::Player:
     case HighGuid::Vehicle:
@@ -898,16 +898,9 @@ void Spell::SelectSpellTargets()
             {
                 GameObject* go = nullptr;
 
-                CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
-                Cell cell(pair);
-                cell.SetNoCreate();
-
                 Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 183350, 100.0f);
                 Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(m_caster, go, go_check);
-
-                TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-                cell.Visit(pair, go_searcher, *m_caster->GetMap());
+				m_caster->GetMap()->VisitGrid(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), 100.0f, searcher);
 
                 if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
                     go->SetLootState(GO_JUST_DEACTIVATED);
@@ -917,16 +910,9 @@ void Spell::SelectSpellTargets()
 
                 go = nullptr;
 
-                CellCoord pair2(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
-                Cell cell2(pair2);
-                cell2.SetNoCreate();
-
                 Trinity::NearestGameObjectEntryInObjectRangeCheck go_check2(*m_caster, 183351, 100.0f);
                 Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher2(m_caster, go, go_check2);
-
-                TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher2(searcher2);
-
-                cell2.Visit(pair2, go_searcher2, *m_caster->GetMap());
+				m_caster->GetMap()->VisitGrid(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), 100.0f, searcher2);
 
                 if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
                     go->SetLootState(GO_JUST_DEACTIVATED);
@@ -1738,9 +1724,9 @@ void Spell::SelectImplicitChainTargets(SpellEffIndex effIndex, SpellImplicitTarg
         // Chain primary target is added earlier
         CallScriptObjectAreaTargetSelectHandlers(targets, effIndex, targetType);
 
-        for (auto & target : targets)
-            if (Unit* unitTarget = target->ToUnit())
-                AddUnitTarget(unitTarget, effMask, false);
+        for (auto & _target : targets)
+            if (Unit* _unitTarget = _target->ToUnit())
+                AddUnitTarget(_unitTarget, effMask, false);
     }
 }
 
@@ -2839,7 +2825,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         if( !caster->IsFriendlyTo(unit) )
         {
             // reset damage to 0 if target has Invisibility or Vanish aura (_only_ vanish, not stealth) and isn't visible for caster
-            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->IsVisibleForOrDetect(caster, true)) ? false : true;
+            bool isVisibleForHit = ( (unit->HasAuraType(SPELL_AURA_MOD_INVISIBILITY) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE ,SPELLFAMILYFLAG_ROGUE_VANISH)) && !unit->CanSeeOrDetect(caster, true)) ? false : true;
             
             // for delayed spells ignore not visible explicit target
             if(m_spellInfo->Speed > 0.0f && unit==m_targets.GetUnitTarget() && !isVisibleForHit)
@@ -3285,7 +3271,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
     }
-    return SPELL_CAST_OK;
+	return uint32(SPELL_CAST_OK);
 }
 
 void Spell::cancel()
@@ -3391,7 +3377,7 @@ void Spell::cast(bool skipCheck)
 
     if(Unit *pTarget = m_targets.GetUnitTarget())
     {
-        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->IsVisibleForOrDetect(m_caster, true))
+        if(!m_IsTriggeredSpell && pTarget->IsAlive() && (pTarget->HasAuraType(SPELL_AURA_MOD_STEALTH) || pTarget->HasAuraType(SPELL_AURA_MOD_INVISIBILITY)) && !pTarget->IsFriendlyTo(m_caster) && !pTarget->CanSeeOrDetect(m_caster, false))
         {
             SendCastResult(SPELL_FAILED_BAD_TARGETS);
             finish(false);
@@ -5947,7 +5933,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             case SPELL_EFFECT_TRANS_DOOR:
             {
                 if (m_spellInfo->Id == 39161 && m_caster) {
-                    Creature* gorgrom = m_caster->FindCreatureInGrid(21514, 10.0f, false);
+                    Creature* gorgrom = m_caster->FindNearestCreature(21514, 10.0f, false);
                     if (!gorgrom)
                         return SPELL_FAILED_TRY_AGAIN;
                 }
@@ -7144,8 +7130,8 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
         if (target->GetCharmerGUID())
             return false;
 
-        if (int32 damage = m_caster->CalculateSpellDamage(m_spellInfo, eff, m_spellInfo->Effects[eff].BasePoints, target))
-            if ((int32)target->GetLevel() > damage)
+        if (int32 _damage = m_caster->CalculateSpellDamage(m_spellInfo, eff, m_spellInfo->Effects[eff].BasePoints, target))
+            if ((int32)target->GetLevel() > _damage)
                 return false;
         break;
     default:
@@ -7293,7 +7279,7 @@ bool Spell::CheckTarget(Unit* target, uint32 eff)
     //Check player targets and remove if in GM mode or GM invisibility (for not self casting case)
     if( target != m_caster && target->GetTypeId()==TYPEID_PLAYER)
     {
-        if((target->ToPlayer())->GetVisibility()==VISIBILITY_OFF)
+        if(!(target->ToPlayer())->IsVisible())
             return false;
 
         if((target->ToPlayer())->IsGameMaster() && !m_spellInfo->IsPositive())

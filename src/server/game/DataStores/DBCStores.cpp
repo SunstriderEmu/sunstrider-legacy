@@ -540,7 +540,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     DBCData.w = dbcentry->base_o;
 
 #ifndef LICH_KING
-    // kelno: This is not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
+    // kelno: This is adapted from LK code, not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
 
     uint32 targetInterpolationMin = 0;
     uint32 targetInterpolationMax = 0;

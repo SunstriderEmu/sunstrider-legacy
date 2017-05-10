@@ -445,7 +445,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
     {
         ThreatManager *threatManager = ref->GetSource();
         Unit *unit = threatManager->GetOwner();
-        float threat = ref->getThreat();
+      //  float threat = ref->getThreat();
 
         unit->RemoveAllAttackers();
         unit->ClearInCombat();

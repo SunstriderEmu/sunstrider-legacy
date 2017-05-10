@@ -26,6 +26,8 @@ class TC_GAME_API GuardAI : public CreatureAI
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
 
+		bool CanSeeAlways(WorldObject const* obj) override;
+
     private:
         Creature &i_creature;
         uint64 i_victimGuid;

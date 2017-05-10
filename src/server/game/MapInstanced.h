@@ -15,7 +15,7 @@ class TC_GAME_API MapInstanced : public Map
     public:
         typedef std::unordered_map< uint32, Map* > InstancedMaps;
 
-        MapInstanced(uint32 id);
+        MapInstanced(uint32 id, time_t expiry);
         ~MapInstanced() override = default;
 
         // functions overwrite Map versions

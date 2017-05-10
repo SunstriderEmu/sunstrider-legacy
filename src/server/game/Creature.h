@@ -134,7 +134,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_TAUNT             = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT              = 0x00020000,       // creature can't do critical strikes
     CREATURE_FLAG_EXTRA_HOMELESS             = 0x00040000,       // consider current position instead of home position for threat area
-    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE      = 0x00080000,       // not visible for alive players
+    CREATURE_FLAG_EXTRA_GHOST_VISIBILITY     = 0x00080000,       // creature will be only visible for dead players
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC       = 0x00100000,       // periodic on place relocation when ooc (use this for static mobs only)
     CREATURE_FLAG_EXTRA_DUAL_WIELD           = 0x00200000,       // can dual wield
     CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ = 0x00400000,       // creature does not need to take player damage for kill credit
@@ -495,7 +495,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data = nullptr);
+        bool Create (uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, float x, float y, float z, float ang, const CreatureData *data = nullptr);
         //get data from SQL storage
         void LoadCreatureAddon();
         //reapply creature addon data to creature
@@ -554,7 +554,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         }
         bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
 
-        uint32 GetLevelForTarget(Unit const* target) const override; // overwrite Unit::GetLevelForTarget for boss level support
+        uint8 GetLevelForTarget(WorldObject const* target) const override; // overwrite Unit::GetLevelForTarget for boss level support
 
         bool isMoving();
         bool IsInEvadeMode() const;
@@ -567,7 +567,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         void WarnDeathToFriendly();
 
-        CreatureAI* AI() { return (CreatureAI*)i_AI; }
+		CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(i_AI); }
 
         uint32 GetShieldBlockValue() const override                  //dunno mob block value
         {
@@ -653,7 +653,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
         uint32 m_GlobalCooldown;
 
-        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const override;
         bool IsWithinSightDist(Unit const* u) const;
         /* Return if creature can aggro and start attacking target, depending on faction, distance, LoS, if target is attackable, ...
         @assistAggro check for assisting instead of standard aggro. This changes the allowed distance only.
@@ -684,8 +683,6 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
-
-        bool IsVisibleInGridForPlayer(Player const* pl) const override;
 
         void RemoveCorpse(bool setSpawnTime = true, bool destroyForNearbyPlayers = true);
         
@@ -802,6 +799,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;
 
+		float m_SightDistance, m_CombatDistance;
+
         // Handling caster facing during spellcast
         void SetTarget(uint64 guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
@@ -828,6 +827,9 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
+
+		bool IsInvisibleDueToDespawn() const override;
+		bool CanAlwaysSee(WorldObject const* obj) const override;
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;

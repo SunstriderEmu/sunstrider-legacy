@@ -64,7 +64,7 @@ class TC_GAME_API CreatureAI : public UnitAI
             EVADE_REASON_OTHER,
         };
 
-        explicit CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
+		explicit CreatureAI(Creature *c);
 
         ~CreatureAI() override = default;
 
@@ -77,11 +77,8 @@ class TC_GAME_API CreatureAI : public UnitAI
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
         virtual bool AssistPlayerInCombatAgainst(Unit* who);
 
-        // Called at each *who move, AND if creature is aggressive
-        virtual void MoveInLineOfSight(Unit *);
-        
-        //Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
-        virtual void MoveInLineOfSight2(Unit *) {}
+		// Called if IsVisible(Unit* who) is true at each who move, reaction at visibility zone enter
+		void MoveInLineOfSight_Safe(Unit* who);
 
         // Called for reaction at stopping attack at no attackers or targets
         virtual void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);
@@ -147,8 +144,13 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 
         virtual void OnRemove() {}
-        
+
+		//LK
+		virtual void PassengerBoarded(Unit* /*passenger*/, int8 /*seatId*/, bool /*apply*/) { }
+
         virtual void OnSpellClick(Unit* /*clicker*/, bool& /*result*/) { }
+
+		virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
 
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }
@@ -159,7 +161,16 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual PlayerAI* GetAIForCharmedPlayer(Player* /*who*/) { return nullptr; }
 
     protected:
-        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);        
+		// Called at each *who move, AND if creature is aggressive
+		virtual void MoveInLineOfSight(Unit *);
+
+		//Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
+		virtual void MoveInLineOfSight2(Unit *) {}
+
+        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);  
+
+	private:
+		bool m_MoveInLineOfSight_locked;
 };
 
 struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>

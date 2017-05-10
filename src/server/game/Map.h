@@ -113,7 +113,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-		Map(MapType type, uint32 id, uint32 InstanceId, uint8 SpawnMode, Map* parent = nullptr);
+		Map(MapType type, time_t expiry, uint32 id, uint32 InstanceId, uint8 SpawnMode, Map* parent = nullptr);
         ~Map() override;
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
@@ -138,10 +138,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void DoUpdate(uint32 maxDiff, uint32 minimumTimeSinceLastUpdate = 0);
         virtual void Update(const uint32&);
 
-        void MessageBroadcast(Player*, WorldPacket *, bool to_self, bool to_possessor);
-        void MessageBroadcast(WorldObject *, WorldPacket *, bool to_possessor);
-
 		virtual float GetDefaultVisibilityDistance() const;
+		virtual float GetVisibilityNotifierPeriod() const;
         float GetVisibilityRange() const { return m_VisibleDistance; }
         //function for setting up visibility distance for maps on per-type/per-Id basis
         virtual void InitVisibilityDistance();
@@ -158,9 +156,25 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		bool UnloadGrid(NGridType& ngrid, bool pForce);
         virtual void UnloadAll();
 
+		void ResetGridExpiry(NGridType &grid, float factor = 1) const
+		{
+			grid.ResetTimeTracker(time_t(float(i_gridExpiry)*factor));
+		}
+
+		time_t GetGridExpiry(void) const { return i_gridExpiry; }
+		uint32 GetId(void) const { return i_id; }
+
+		bool IsRemovalGrid(float x, float y) const
+		{
+			GridCoord p = Trinity::ComputeGridCoord(x, y);
+			return !getNGrid(p.x_coord, p.y_coord) /* || getNGrid(p.x_coord, p.y_coord)->GetGridState() == GRID_STATE_REMOVAL*/; //removed state is disabled on sunstrider
+		}
+
         bool IsGridLoaded(float x, float y) const;
 
-        uint32 GetId(void) const { return i_id; }
+
+		static void InitStateMachine();
+		static void DeleteStateMachine();
 
 		Map const* GetParent() const { return m_parentMap; }
 
@@ -189,17 +203,17 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         /* Get map level (checking vmaps) or liquid level at given point */
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr, bool swim = false) const;
         //Returns INVALID_HEIGHT if nothing found. walkableOnly NYI
-        float GetHeight(PhaseMask phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
+        float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH, bool walkableOnly = false) const;
         bool GetLiquidLevelBelow(float x, float y, float z, float& liquidLevel, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         void RemoveGameObjectModel(const GameObjectModel& model) { _dynamicTree.remove(model); }
         void InsertGameObjectModel(const GameObjectModel& model) { _dynamicTree.insert(model); }
         bool ContainsGameObjectModel(const GameObjectModel& model) const { return _dynamicTree.contains(model);}
         Transport* GetTransportForPos(uint32 phase, float x, float y, float z, WorldObject* worldobject = nullptr);
 
-        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask = (PhaseMask)0, VMAP::ModelIgnoreFlags ignoreFlags = /*VMAP::ModelIgnoreFlags::Nothing*/ VMAP::ModelIgnoreFlags(0)) const;
+        bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask = 0, VMAP::ModelIgnoreFlags ignoreFlags = /*VMAP::ModelIgnoreFlags::Nothing*/ VMAP::ModelIgnoreFlags(0)) const;
         void Balance() { _dynamicTree.balance(); }
         //get dynamic collision (gameobjects only ?)
-        bool getObjectHitPos(PhaseMask phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
+        bool getObjectHitPos(uint32 phasemask, float x1, float y1, float z1, float x2, float y2, float z2, float& rx, float &ry, float& rz, float modifyDist);
 
         ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData *data = nullptr) const;
 
@@ -257,14 +271,15 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void AddObjectToSwitchList(WorldObject *obj, bool on);
         virtual void DelayedUpdate(const uint32 diff);
 
+		void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellCoord cellpair);
+		void UpdateObjectsVisibilityFor(Player* player, Cell cell, CellCoord cellpair);
+
 		void LoadCorpseData();
 		void DeleteCorpseData();
 		void AddCorpse(Corpse* corpse);
 		void RemoveCorpse(Corpse* corpse);
 		Corpse* ConvertCorpseToBones(ObjectGuid const& ownerGuid, bool insignia = false);
 		void RemoveOldCorpses();
-
-        void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellCoord cellpair);
 
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
@@ -316,13 +331,15 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
-        bool ActiveObjectsNearGrid(uint32 x, uint32 y) const;
+		bool ActiveObjectsNearGrid(NGridType const& ngrid) const;
 
 		void AddWorldObject(WorldObject* obj) { i_worldObjects.insert(obj); }
 		void RemoveWorldObject(WorldObject* obj) { i_worldObjects.erase(obj); }
 
+		/*
         void AddUnitToNotify(Unit* unit);
         void RelocationNotify();
+		*/
 
         void SendToPlayers(WorldPacket* data) const;
 
@@ -404,7 +421,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         GridMap *GetGrid(float x, float y);
 
-        //uint64 CalculateGridMask(const uint32 &y) const;
+		void SetTimer(uint32 t) { i_gridExpiry = t < MIN_GRID_DELAY ? MIN_GRID_DELAY : t; }
 
         void SendInitSelf( Player * player );
 
@@ -482,6 +499,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         MapRefManager m_mapRefManager;
         MapRefManager::iterator m_mapRefIter;
 
+		int32 m_VisibilityNotifyPeriod;
+
         /** The objects in m_activeForcedNonPlayers are always kept active and makes everything around them also active, just like players
         */
         typedef std::set<WorldObject*> ActiveForcedNonPlayers;
@@ -494,11 +513,16 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         GridMap *GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
+		//these functions used to process player/mob aggro reactions and
+		//visibility calculations. Highly optimized for massive calculations
+		void ProcessRelocationNotifies(const uint32 diff);
+
         MapType i_mapType;
 		bool i_scriptLock;
-		bool i_lock;
+		/*
         std::vector<uint64> i_unitsToNotifyBacklog;
         std::vector<Unit*> i_unitsToNotify;
+		*/
         std::set<WorldObject *> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
 		std::set<WorldObject*> i_worldObjects;
@@ -560,6 +584,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		std::unordered_set<Object*> _updateObjects;
         uint32 _lastMapUpdate;
 
+		time_t i_gridExpiry;
+
 		//used for fast base_map (e.g. MapInstanced class object) search for
 		//InstanceMaps and BattlegroundMaps...
 		Map* m_parentMap;
@@ -578,7 +604,7 @@ enum InstanceResetMethod
 class TC_GAME_API InstanceMap : public Map
 {
     public:
-        InstanceMap(uint32 id, uint32 InstanceId, uint8 SpawnMode, Map* parent);
+        InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* parent);
         ~InstanceMap() override;
         bool AddPlayerToMap(Player *) override;
         void RemovePlayerFromMap(Player *, bool) override;
@@ -595,6 +621,7 @@ class TC_GAME_API InstanceMap : public Map
         void SetResetSchedule(bool on);
 
         float GetDefaultVisibilityDistance() const override;
+		float GetVisibilityNotifierPeriod() const override;
     private:
         bool m_resetAfterUnload;
         bool m_unloadWhenEmpty;
@@ -605,7 +632,7 @@ class TC_GAME_API InstanceMap : public Map
 class TC_GAME_API BattlegroundMap : public Map
 {
     public:
-		BattlegroundMap(uint32 id, uint32 InstanceId, Map* parent);
+		BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId, Map* parent); //expiry arg is fake here, battlegrounds grids are never unloaded
         ~BattlegroundMap() override;
 
         bool AddPlayerToMap(Player *) override;
@@ -618,42 +645,31 @@ class TC_GAME_API BattlegroundMap : public Map
         void HandleCrash() override;
 
 		float GetDefaultVisibilityDistance() const override;
+		float GetVisibilityNotifierPeriod() const override;
+
         Battleground* GetBG() { return m_bg; }
         void SetBG(Battleground* bg) { m_bg = bg; }
     private:
         Battleground* m_bg;
 };
 
-/*inline
-uint64
-Map::CalculateGridMask(const uint32 &y) const
-{
-    uint64 mask = 1;
-    mask <<= y;
-    return mask;
-}
-*/
-
 template<class T, class CONTAINER>
-inline void
-Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
+inline void Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
 {
     const uint32 x = cell.GridX();
     const uint32 y = cell.GridY();
     const uint32 cell_x = cell.CellX();
     const uint32 cell_y = cell.CellY();
 
-    if( !cell.NoCreate() || IsGridLoaded(x,y) )
+    if( !cell.NoCreate() || IsGridLoaded(GridCoord(x,y)) )
     {
         EnsureGridLoaded(cell);
-        //LOCK_TYPE guard(i_info[x][y]->i_lock);
         getNGrid(x, y)->VisitGrid(cell_x, cell_y, visitor);
     }
 }
 
 template<class NOTIFIER>
-inline void
-Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
+inline void Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
 {
     CellCoord p(Trinity::ComputeCellCoord(x, y));
     Cell cell(p);

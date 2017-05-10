@@ -9,6 +9,11 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 
+CreatureAI::CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_MoveInLineOfSight_locked(false)
+{
+
+}
+
 //Disable CreatureAI when charmed
 void CreatureAI::OnCharmed(Unit* charmer, bool apply)
 {
@@ -70,6 +75,17 @@ bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
     return false;
 }
 
+// scripts does not take care about MoveInLineOfSight loops
+// MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
+void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
+{
+	if (m_MoveInLineOfSight_locked == true)
+		return;
+	m_MoveInLineOfSight_locked = true;
+	MoveInLineOfSight(who);
+	m_MoveInLineOfSight_locked = false;
+}
+
 void CreatureAI::MoveInLineOfSight(Unit* who)
 {
     //if has just respawned and not a summon, wait a bit before reacting
@@ -80,11 +96,13 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         return;
 
     CanAttackResult result = me->CanAggro(who, false);
+	/*
     if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE
        && me->CanDoStealthAlert(who))
     {
         me->StartStealthAlert(who);
     }
+	*/
 
     if(result != CAN_ATTACK_RESULT_OK) 
         return;

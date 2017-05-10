@@ -214,7 +214,7 @@ class TC_GAME_API ThreatManager
         // I hope they are used as little as possible.
         inline std::list<HostileReference*>& getThreatList() { return iThreatContainer.getThreatList(); }
         inline std::list<HostileReference*> const& getThreatList() const { return iThreatContainer.getThreatList(); }
-        inline std::list<HostileReference*>& getOfflieThreatList() { return iThreatOfflineContainer.getThreatList(); }
+        inline std::list<HostileReference*>& getOfflineThreatList() { return iThreatOfflineContainer.getThreatList(); }
         inline ThreatContainer& getOnlineContainer() { return iThreatContainer; }
         inline ThreatContainer& getOfflineContainer() { return iThreatOfflineContainer; }
 };

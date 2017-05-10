@@ -38,7 +38,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         void RemoveFromWorld() override;
 
         bool Create( uint32 guidlow );
-        bool Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float y, float z, float ang );
+        bool Create( uint32 guidlow, Player *owner);
 
 		void SaveToDB();
 		bool LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields);
@@ -52,11 +52,8 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
         void ResetGhostTime() { m_time = time(nullptr); }
         CorpseType GetType() const { return m_type; }
 
-		/*
-        GridCoord const& GetGrid() const { return m_grid; }
-        void SetGrid(GridCoord const& grid) { m_grid = grid; }
-		*/
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
+		CellCoord const& GetCellCoord() const { return _cellCoord; }
+		void SetCellCoord(CellCoord const& cellCoord) { _cellCoord = cellCoord; }
 
         Loot loot;                                          // remove insignia ONLY at BG
         Player* lootRecipient;
@@ -64,10 +61,7 @@ class TC_GAME_API Corpse : public WorldObject, public GridObject<Corpse>
 
 		bool IsExpired(time_t t) const;
 
-		bool IsInGrid() const { return m_gridRef.isValid(); }
-
-		CellCoord const& GetCellCoord() const { return _cellCoord; }
-		void SetCellCoord(CellCoord const& cellCoord) { _cellCoord = cellCoord; }
+		//bool IsInGrid() const { return m_gridRef.isValid(); }
 
     private:
         GridReference<Corpse> m_gridRef;

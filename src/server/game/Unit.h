@@ -68,7 +68,7 @@ enum SpellAuraInterruptFlags
     AURA_INTERRUPT_FLAG_MOUNT               = 0x00020000,   // 17   misdirect, aspect, swim speed
     AURA_INTERRUPT_FLAG_NOT_SEATED          = 0x00040000,   // 18   removed by standing up
     AURA_INTERRUPT_FLAG_CHANGE_MAP          = 0x00080000,   // 19   leaving map/getting teleported
-    AURA_INTERRUPT_FLAG_UNATTACKABLE        = 0x00100000,   // 20   invulnerable or stealth
+    AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION        = 0x00100000,   // 20   removed by auras that make you invulnerable, or make other to lose selection on you
     AURA_INTERRUPT_FLAG_UNK21               = 0x00200000,   // 21
     AURA_INTERRUPT_FLAG_TELEPORTED          = 0x00400000,   // 22
     AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT    = 0x00800000,   // 23   removed by entering pvp combat
@@ -555,6 +555,7 @@ enum DamageEffectType : unsigned int
     SELF_DAMAGE             = 5
 };
 
+/*
 enum UnitVisibility : unsigned int
 {
     VISIBILITY_OFF                = 0,                      // absolute, not detectable, GM-like, can see all other
@@ -564,6 +565,7 @@ enum UnitVisibility : unsigned int
     //VISIBILITY_GROUP_NO_DETECT    = 4,                      // state just at stealth apply for update Grid state. Don't remove, otherwise stealth spells will break
     VISIBILITY_RESPAWN            = 5                       // special totally not detectable visibility for force delete object at respawn command
 };
+*/
 
 // Value masks for UNIT_FIELD_FLAGS
 enum UnitFlags : unsigned int
@@ -942,7 +944,7 @@ enum SplineType
     SPLINETYPE_FACING_ANGLE  = 4
 };
 
-typedef std::list<uint64> SharedVisionList;
+typedef std::list<Player*> SharedVisionList;
 
 enum CharmType
 {
@@ -1018,7 +1020,7 @@ enum ReactiveType
 Not sure about this but: Creatures should only warn players, and bosses shouldn't warn at all. 
 Only on units hostile to players and able to attack him.
 */
-#define STEALTH_DETECT_WARNING_RANGE 3.0f   
+//#define STEALTH_DETECT_WARNING_RANGE 3.0f   
 //if in warning range, we can do the suspicious look.
 //time in ms between two warning, counting from warning start (= ignoring duration)
 #define STEALTH_ALERT_COOLDOWN 16000
@@ -1044,9 +1046,10 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_NOT_IN_LOS, //not in Line of Sight
     CAN_ATTACK_RESULT_FRIENDLY, //target is friendly
     CAN_ATTACK_RESULT_TARGET_FLAGS, //could not attack because of target flags
-    CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
-    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
-    CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
+	CAN_ATTACK_RESULT_CANNOT_DETECT,
+    //CAN_ATTACK_RESULT_CANNOT_DETECT_INVI, //target cannot be detected because it's invisible to us
+    //CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH, //target cannot be detected because it's stealthed from us
+    //CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE, //target cannot be detected because it's stealthed from us but is in warn range
     CAN_ATTACK_RESULT_SELF_EVADE, //creature is currently evading
     CAN_ATTACK_RESULT_TARGET_EVADE, //target is a creature in evade mode
     CAN_ATTACK_RESULT_SELF_UNIT_FLAGS, //create cannot attack because of own unit flags
@@ -1170,7 +1173,7 @@ class TC_GAME_API Unit : public WorldObject
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
         uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
-        virtual uint32 GetLevelForTarget(Unit const* /*target*/) const { return GetLevel(); }
+        virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return GetLevel(); }
         void SetLevel(uint32 lvl);
         uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
         uint32 GetRaceMask() const { return 1 << (GetRace()-1); }
@@ -1364,6 +1367,7 @@ class TC_GAME_API Unit : public WorldObject
         }
         uint32 GetAuraCount(uint32 spellId) const;
         bool HasAuraType(AuraType auraType) const;
+		bool HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const;
         bool HasAuraTypeWithFamilyFlags(AuraType auraType, uint32 familyName,  uint64 familyFlags) const;
         bool HasAuraTypeWithCaster(AuraType auraType, uint64 caster) const;
         bool HasAuraEffect(uint32 spellId, uint8 effIndex = 0) const
@@ -1459,6 +1463,9 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateSplinePosition();
         void DisableSpline();
 
+		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
+		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
+
         void KnockbackFrom(float x, float y, float speedXY, float speedZ);
         void JumpTo(float speedXY, float speedZ, bool forward = true);
         void JumpTo(WorldObject* obj, float speedZ);
@@ -1538,7 +1545,7 @@ class TC_GAME_API Unit : public WorldObject
         //Renamed from TC: m_movedPlayer;
         Unit* GetMover() const;
         Player* GetPlayerMover() const;
-        Player* m_movedByPlayer;
+        Player* m_playerMovingMe;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
         void RemovePlayerFromVision(Player* plr);
@@ -1652,8 +1659,6 @@ class TC_GAME_API Unit : public WorldObject
         uint64 m_TotemSlot[MAX_TOTEM];
         uint64 m_TotemSlot254;
         uint64 m_ObjectSlot[4];
-        uint32 m_detectInvisibilityMask;
-        uint32 m_invisibilityMask;
         uint32 m_ShapeShiftFormSpellId;
         ShapeshiftForm m_form;
         float m_modMeleeHitChance;
@@ -1754,22 +1759,17 @@ class TC_GAME_API Unit : public WorldObject
 
         virtual float GetFollowAngle() const { return static_cast<float>(M_PI/2); }
 
-        // compat TC
-        bool IsVisible() const { return m_Visibility != VISIBILITY_OFF; }
-        // Visibility system
-        UnitVisibility GetVisibility() const { return m_Visibility; }
-        void SetVisibility(UnitVisibility x);
+		// Visibility system
+		bool IsVisible() const;
+		void SetVisible(bool x);
 
-        // common function for visibility checks for player/creatures with detection code
-        virtual bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool IsVisibleForOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const;
-        bool CanDetectInvisibilityOf(Unit const* u) const;
-        StealthDetectedStatus CanDetectStealthOf(Unit const* u, float distance) const;
+		void SetPhaseMask(uint32 newPhaseMask, bool update) override;// overwrite WorldObject::SetPhaseMask
+		void UpdateObjectVisibility(bool forced = true) override;
 
         // virtual functions for all world objects types
-        bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
+        //bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
         // function for low level grid visibility checks in player/creature cases
-        virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
+        //virtual bool IsVisibleInGridForPlayer(Player const* pl) const = 0;
 
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
@@ -1987,9 +1987,9 @@ class TC_GAME_API Unit : public WorldObject
         void RemovePetAura(PetAura const* petSpell);
 
         // relocation notification
-        void SetToNotify();
-        bool m_Notified, m_IsInNotifyList;
-        float oldX, oldY, oldZ;
+        //void SetToNotify();
+        //bool m_Notified, m_IsInNotifyList;
+        //float oldX, oldY, oldZ;
 
         void SetReducedThreatPercent(uint32 pct, uint64 guid)
         {
@@ -2008,10 +2008,6 @@ class TC_GAME_API Unit : public WorldObject
 
         bool IsAIEnabled, NeedChangeAI;
              
-        //TODO: these should be removed in favor of WorldObject::FindNearestCreature and FindNearestGameObject
-        Creature* FindCreatureInGrid(uint32 entry, float range, bool isAlive);
-        GameObject* FindGOInGrid(uint32 entry, float range);
-        
 		bool IsDuringRemoveFromWorld() const { return m_duringRemoveFromWorld; }
 
         Pet* ToPet() { if(IsPet()) return reinterpret_cast<Pet*>(this); else return nullptr; } 
@@ -2148,8 +2144,6 @@ class TC_GAME_API Unit : public WorldObject
         uint32 m_CombatTimer;
         uint32 m_lastManaUse;                               // msecs
         TimeTrackerSmall m_movesplineTimer;
-
-        UnitVisibility m_Visibility;
 
         Diminishing m_Diminishing;
         // Manage all Units threatening us

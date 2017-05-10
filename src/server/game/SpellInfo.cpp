@@ -1152,11 +1152,10 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
         return SPELL_FAILED_BAD_TARGETS;
 
     // check visibility - ignore stealth for implicit (area) targets
-#ifdef LICH_KING
     if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
         return SPELL_FAILED_BAD_TARGETS;
-#endif
-    Unit const* unitTarget = target->ToUnit();
+    
+	Unit const* unitTarget = target->ToUnit();
 
     // creature/player specific target checks
     if (unitTarget)

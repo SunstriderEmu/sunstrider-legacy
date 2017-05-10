@@ -983,7 +983,7 @@ void Spell::EffectDummy(uint32 i)
 
                     if (!creatureTarget || !pGameObj) return;
 
-                    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), 181574, creatureTarget->GetMap(),
+                    if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), 181574, creatureTarget->GetMap(), unitTarget->GetPhaseMask(),
                         creatureTarget->GetPosition(), G3D::Quat(), 255, GO_STATE_READY))
                     {
                         delete pGameObj;
@@ -2495,7 +2495,7 @@ void Spell::EffectTriggerSpell(uint32 i)
 
             // get highest rank of the Stealth spell
             bool found = false;
-            SpellInfo const *spellInfo;
+			SpellInfo const *spellInfo = nullptr;
             const PlayerSpellMap& sp_list = (m_caster->ToPlayer())->GetSpellMap();
             for (const auto & itr : sp_list)
             {
@@ -2519,10 +2519,13 @@ void Spell::EffectTriggerSpell(uint32 i)
                 return;
 
             // reset cooldown on it if needed
-            if((m_caster->ToPlayer())->HasSpellCooldown(spellInfo->Id))
-                (m_caster->ToPlayer())->RemoveSpellCooldown(spellInfo->Id);
+			if (spellInfo)
+			{
+				if ((m_caster->ToPlayer())->HasSpellCooldown(spellInfo->Id))
+					(m_caster->ToPlayer())->RemoveSpellCooldown(spellInfo->Id);
 
-            m_TriggerSpells.push_back(spellInfo);
+				m_TriggerSpells.push_back(spellInfo);
+			}
 
             //also cast dummy aura
             m_caster->CastSpell(m_caster,18461, true);
@@ -3516,15 +3519,14 @@ void Spell::EffectPersistentAA(uint32 i)
     int32 duration = m_spellInfo->GetDuration();
     auto  dynObj = new DynamicObject(false);
 
-    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), caster, m_spellInfo->Id, i, destTarget->GetPositionX(), destTarget->GetPositionY(), destTarget->GetPositionZ(), duration, radius))
+    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), caster, m_spellInfo->Id, i, *destTarget, duration, radius, DYNAMIC_OBJECT_AREA_SPELL))
     {
         delete dynObj;
         return;
     }
     dynObj->SetUInt32Value(OBJECT_FIELD_TYPE, 65);
-    dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x01eeeeee);
+    //dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x01eeeeee);
     caster->AddDynObject(dynObj);
-    dynObj->GetMap()->AddToMap(dynObj, true);
 }
 
 void Spell::EffectEnergize(uint32 i)
@@ -4391,7 +4393,8 @@ void Spell::EffectAddFarsight(uint32 i)
     float radius = m_spellInfo->Effects[i].CalcRadius(m_originalCaster->GetSpellModOwner(), this);
     int32 duration = m_spellInfo->GetDuration();
     auto  dynObj = new DynamicObject(false);
-    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), m_caster, m_spellInfo->Id, 4, POSITION_GET_X_Y_Z(destTarget), duration, radius))
+	
+    if(!dynObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::DynamicObject), m_caster, m_spellInfo->Id, 0, *destTarget, duration, radius, DYNAMIC_OBJECT_FARSIGHT_FOCUS))
     {
         delete dynObj;
         return;
@@ -4399,11 +4402,9 @@ void Spell::EffectAddFarsight(uint32 i)
     dynObj->SetUInt32Value(OBJECT_FIELD_TYPE, 65);
     dynObj->SetUInt32Value(DYNAMICOBJECT_BYTES, 0x80000002);
     m_caster->AddDynObject(dynObj);
+	dynObj->SetKeepActive(true);
 
-    dynObj->SetKeepActive(true);    //must before add to map to be put in world container
-    dynObj->GetMap()->AddToMap(dynObj, true); //grid will also be loaded
-
-    (m_caster->ToPlayer())->SetFarsightTarget(dynObj);
+	dynObj->SetCasterViewpoint();
 }
 
 void Spell::EffectSummonWild(uint32 i)
@@ -5481,7 +5482,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
 
     Map *map = target->GetMap();
 
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map, target->GetPhaseMask(),
         Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
     {
         delete pGameObj;
@@ -5534,7 +5535,7 @@ void Spell::EffectSummonObjectWild(uint32 i)
     if(uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         auto  linkedGO = new GameObject;
-        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, map,
+        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, map, pGameObj->GetPhaseMask(),
             Position(x, y, z, target->GetOrientation()), G3D::Quat(), 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);
@@ -5834,7 +5835,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!unitTarget || !unitTarget->IsAlive())
                 return;
 
-            uint32 spellId;
+			uint32 spellId = 0;
             switch((uint32)m_caster->GetMap()->rand32()%7)
             {
             case 0: spellId = 24717; break; // Pirate Costume
@@ -6382,6 +6383,8 @@ void Spell::EffectSanctuary(uint32 /*i*/)
     if(!unitTarget)
         return;
 
+	unitTarget->GetHostileRefManager().UpdateVisibility();
+
     std::list<Unit*> targets;
     Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(unitTarget, unitTarget, m_caster->GetMap()->GetVisibilityRange());
     Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_caster, targets, u_check);
@@ -6421,7 +6424,7 @@ void Spell::EffectAddComboPoints(uint32 /*i*/)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (!m_caster->m_movedByPlayer)
+    if (!m_caster->m_playerMovingMe)
         return;
 
     if (damage <= 0)
@@ -6429,11 +6432,11 @@ void Spell::EffectAddComboPoints(uint32 /*i*/)
         
     //HACK
     if (m_spellInfo->Id == 15250) {
-        m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, true);
+        m_caster->m_playerMovingMe->AddComboPoints(unitTarget, damage, true);
         return;
     }
 
-    m_caster->m_movedByPlayer->AddComboPoints(unitTarget, damage, false);
+    m_caster->m_playerMovingMe->AddComboPoints(unitTarget, damage, false);
 }
 
 void Spell::EffectDuel(uint32 i)
@@ -6487,7 +6490,7 @@ void Spell::EffectDuel(uint32 i)
     uint32 gameobject_id = m_spellInfo->Effects[i].MiscValue;
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), gameobject_id, map, m_caster->GetPhaseMask(),
         Position( m_caster->GetPositionX()+(unitTarget->GetPositionX()-m_caster->GetPositionX())/2 ,
         m_caster->GetPositionY()+(unitTarget->GetPositionY()-m_caster->GetPositionY())/2 ,
         m_caster->GetPositionZ(),
@@ -6645,16 +6648,16 @@ void Spell::EffectSummonTotem(uint32 i)
 
     auto  pTotem = new Totem;
 
-    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), m_caster->GetMap(), m_spellInfo->Effects[i].MiscValue ))
+	float angle = slot < MAX_TOTEM ? M_PI / MAX_TOTEM - (slot * 2 * M_PI / MAX_TOTEM) : 0;
+	Position pos = m_caster->GetFirstWalkableCollisionPosition(4.5f, angle);
+	pTotem->Relocate(pos);
+
+    if(!pTotem->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), m_caster->GetMap(), SpawnMask(0), m_spellInfo->Effects[i].MiscValue, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), m_caster->GetOrientation()))
     {
         delete pTotem;
         return;
     }
     
-    float angle = slot < MAX_TOTEM ? M_PI/MAX_TOTEM - (slot*2*M_PI/MAX_TOTEM) : 0;
-    Position pos = m_caster->GetFirstWalkableCollisionPosition(4.5f, angle);
-    pTotem->Relocate(pos);
-
     if(slot < MAX_TOTEM)
         m_caster->m_TotemSlot[slot] = pTotem->GetGUID();
     else if (slot == 254)
@@ -6883,7 +6886,7 @@ void Spell::EffectSummonObject(uint32 i)
         m_caster->GetClosePoint(x,y,z,DEFAULT_PLAYER_BOUNDING_RADIUS);
 
     Map *map = m_caster->GetMap();
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), go_id, map, Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), go_id, map, m_caster->GetPhaseMask(), Position(x, y, z, m_caster->GetOrientation()), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return;
@@ -7221,7 +7224,7 @@ void Spell::EffectSummonCritter(uint32 i)
     Map *map = m_caster->GetMap();
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
     if(!critter->Create(sObjectMgr->GenerateLowGuid(HighGuid::Pet),
-        map, pet_entry, pet_number))
+        map, m_caster->GetPhaseMask(), pet_entry, pet_number))
     {
         TC_LOG_ERROR("network.opcode","Spell::EffectSummonCritter, spellid %u: no such creature entry %u", m_spellInfo->Id, pet_entry);
         delete critter;
@@ -7628,7 +7631,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
 
     Position pos = { fx, fy, fz, m_caster->GetOrientation() };
     G3D::Quat rot = G3D::Matrix3::fromEulerAnglesZYX(m_caster->GetOrientation(), 0.f, 0.f);
-    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), name_id, cMap,
+    if(!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), name_id, cMap, m_caster->GetPhaseMask(),
         pos, rot, 255, GO_STATE_READY))
     {
         delete pGameObj;
@@ -7699,7 +7702,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(uint32 linkedEntry = pGameObj->GetLinkedGameObjectEntry())
     {
         auto  linkedGO = new GameObject;
-        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, cMap,
+        if(linkedGO->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), linkedEntry, cMap, pGameObj->GetPhaseMask(),
             pos, rot, 255, GO_STATE_READY))
         {
             linkedGO->SetRespawnTime(duration > 0 ? duration/1000 : 0);

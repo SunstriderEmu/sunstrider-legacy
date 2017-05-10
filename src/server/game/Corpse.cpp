@@ -58,24 +58,24 @@ bool Corpse::Create( uint32 guidlow )
     return true;
 }
 
-bool Corpse::Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float y, float z, float ang )
+bool Corpse::Create( uint32 guidlow, Player *owner )
 {
-    WorldObject::_Create(guidlow, HighGuid::Corpse, mapid);
+    WorldObject::_Create(guidlow, HighGuid::Corpse, owner->GetPhaseMask());
 
-    Relocate(x,y,z,ang);
+	Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ(), owner->GetOrientation());
 
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            guidlow,owner->GetName().c_str(),x,y);
+            guidlow,owner->GetName().c_str(), owner->GetPositionX(), owner->GetPositionY());
         return false;
     }
 
 	SetObjectScale(1.0f);
-    SetFloatValue( CORPSE_FIELD_POS_X, x );
-    SetFloatValue( CORPSE_FIELD_POS_Y, y );
-    SetFloatValue( CORPSE_FIELD_POS_Z, z );
-    SetFloatValue( CORPSE_FIELD_FACING, ang );
+    SetFloatValue( CORPSE_FIELD_POS_X, owner->GetPositionX());
+    SetFloatValue( CORPSE_FIELD_POS_Y, owner->GetPositionY());
+    SetFloatValue( CORPSE_FIELD_POS_Z, owner->GetPositionZ());
+    SetFloatValue( CORPSE_FIELD_FACING, owner->GetOrientation());
     SetUInt64Value( CORPSE_FIELD_OWNER, owner->GetGUID() );
 
 	_cellCoord = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
@@ -182,7 +182,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
         return false;
     }
 
-    m_grid = Trinity::ComputeGridPair(GetPositionX(), GetPositionY());
+    m_grid = Trinity::ComputeGridCoord(GetPositionX(), GetPositionY());
 
     return true;
 }
@@ -222,7 +222,7 @@ bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 	// place
 	SetLocationInstanceId(instanceId);
 	SetLocationMapId(mapId);
-	SetPhaseMask(PhaseMask(phaseMask), false);
+	SetPhaseMask(phaseMask, false);
 	Relocate(posX, posY, posZ, o);
 
 	if (!IsPositionValid())
@@ -248,8 +248,10 @@ bool Corpse::IsExpired(time_t t) const
 		return m_time < t - 3 * DAY;
 }
 
+/*
 bool Corpse::IsVisibleForInState(Player const* u, bool inVisibleList) const
 {
     return IsInWorld() && u->IsInWorld() && IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
 }
+*/
 

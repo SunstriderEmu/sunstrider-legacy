@@ -32,7 +32,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
 
     // ignore for remote control state
-    if (pUser->m_mover != pUser)
+    if (pUser->m_unitMovedByMe != pUser)
         return;
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
@@ -134,7 +134,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     uint8 bagIndex, slot;
 
     // ignore for remote control state
-    if (pUser->m_mover != pUser)
+    if (pUser->m_unitMovedByMe != pUser)
         return;
 
     recvPacket >> bagIndex >> slot;
@@ -246,7 +246,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     }
 
     // ignore for remote control state
-    if (GetPlayer()->m_mover != GetPlayer())
+    if (GetPlayer()->m_unitMovedByMe != GetPlayer())
         return;
 
     if (sScriptMgr->OnGossipHello(_player, gameObjTarget))
@@ -265,7 +265,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     
 
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_mover;
+    Unit* mover = _player->m_unitMovedByMe;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
     {
         recvPacket.rfinish(); // prevent spam at ignore packet
@@ -436,7 +436,7 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_mover;
+    Unit* mover = _player->m_unitMovedByMe;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
         return;
 
@@ -449,7 +449,7 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
     // ignore for remote control state
-    if (_player->m_mover != _player)
+    if (_player->m_unitMovedByMe != _player)
         return;
 
     uint8 slotId;

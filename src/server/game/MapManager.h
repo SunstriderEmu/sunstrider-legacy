@@ -6,6 +6,7 @@
 #include "Map.h"
 #include "MapUpdater.h"
 #include "MapInstanced.h"
+#include "GridStates.h"
 
 class WorldLocation;
 
@@ -36,6 +37,14 @@ class TC_GAME_API MapManager
 
         void Initialize(void);
         void Update(time_t);
+
+		void SetGridCleanUpDelay(uint32 t)
+		{
+			if (t < MIN_GRID_DELAY)
+				i_gridCleanUpDelay = MIN_GRID_DELAY;
+			else
+				i_gridCleanUpDelay = t;
+		}
 
         inline void SetMapUpdateInterval(uint32 t)
         {
@@ -113,6 +122,7 @@ class TC_GAME_API MapManager
         MapMapType i_maps;
         IntervalTimer i_timer;
         std::mutex _mapsLock;
+		uint32 i_gridCleanUpDelay;
 
         InstanceIds _instanceIds;
         uint32 _nextInstanceId;

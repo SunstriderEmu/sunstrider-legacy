@@ -14,7 +14,6 @@
 
 BattlegroundAV::BattlegroundAV()
 {
-
     m_BgObjects.resize(BG_AV_OBJECT_MAX);
     m_BgCreatures.resize(AV_CPLACE_MAX+AV_STATICCPLACE_MAX);
 }
@@ -940,7 +939,6 @@ const BG_AV_Nodes BattlegroundAV::GetNodeThroughObject(uint32 object)
     
     TC_LOG_ERROR("FIXME","BattlegroundAV: ERROR! GetPlace got a wrong object :(");
     ABORT();
-    return BG_AV_Nodes(0);
 }
 
 const uint32 BattlegroundAV::GetObjectThroughNode(BG_AV_Nodes node)
@@ -978,7 +976,6 @@ const uint32 BattlegroundAV::GetObjectThroughNode(BG_AV_Nodes node)
     
     TC_LOG_ERROR("FIXME","BattlegroundAV: Error! GetPlaceNode couldn't resolve node %i",node);
     ABORT();
-    return 0;
 }
 
 

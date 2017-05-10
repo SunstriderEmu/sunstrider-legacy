@@ -76,7 +76,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         bool foundAura = false;
         for(auto langAura : langAuras)
         {
-            if(langAura->GetModifier()->m_miscvalue == lang)
+            if(langAura->GetModifier()->m_miscvalue == int32(lang))
             {
                 foundAura = true;
                 break;
@@ -258,7 +258,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
 
             // gm shoudln't send whisper addon message while invisible (this may help with players knowing a gamemaster is around in some case where both have addons)
-            if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->IsGameMaster())
+            if (lang == LANG_ADDON && !GetPlayer()->IsVisible() && !toPlayer->IsGameMaster())
                 break;
 
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
@@ -530,7 +530,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 {
-    if(!_player->m_mover->IsAlive())
+    if(!_player->m_unitMovedByMe->IsAlive())
         return;
 
     GetPlayer()->UpdateSpeakTime();
@@ -571,14 +571,14 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             case EMOTE_ONESHOT_NONE:
                 break;
             default:
-                _player->m_mover->HandleEmoteCommand(emote_anim);
+                _player->m_unitMovedByMe->HandleEmoteCommand(emote_anim);
                 break;
         }
 
-        if(_player->m_mover->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
+        if(_player->m_unitMovedByMe->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
         {
             data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-            data << _player->m_mover->GetGUID();
+            data << _player->m_unitMovedByMe->GetGUID();
             data << uint32(text_emote);
             data << uint32(emoteNum);
             data << uint32(namlen);
@@ -587,7 +587,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             else
                 data << (uint8)0x00;
         
-            _player->m_mover->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
+            _player->m_unitMovedByMe->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
         }
 
         //Send scripted event call

@@ -8,6 +8,9 @@ class Unit;
 #define SMARTAI_AI_NAME "SmartAI"
 #define SMARTAI_GOBJECT_AI_NAME "SmartGameObjectAI"
 
+#include <boost/serialization/strong_typedef.hpp>
+BOOST_STRONG_TYPEDEF(unsigned int, SmartPhaseMask)
+
 struct WayPoint
 {
     WayPoint(uint32 _id, float _x, float _y, float _z)
@@ -74,7 +77,7 @@ enum SMART_EVENT_PHASE_BITS
                                      SMART_EVENT_PHASE_11_BIT + SMART_EVENT_PHASE_12_BIT
 };
 
-const uint32 SmartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
+const uint32 smartPhaseMask[SMART_EVENT_PHASE_COUNT][2] =
 {
     {SMART_EVENT_PHASE_1, SMART_EVENT_PHASE_1_BIT },
     {SMART_EVENT_PHASE_2, SMART_EVENT_PHASE_2_BIT },
@@ -186,7 +189,7 @@ enum SMART_EVENT
 struct SmartEvent
 {
     SMART_EVENT type;
-    PhaseMask event_phase_mask;
+    SmartPhaseMask event_phase_mask;
     uint32 event_chance;
     uint32 event_flags;
     union

@@ -671,8 +671,10 @@ class TC_GAME_API World
         static float GetMaxVisibleDistanceInBGArenas()      { return m_MaxVisibleDistanceInBGArenas;   }
         static float GetMaxVisibleDistanceForObject()   { return m_MaxVisibleDistanceForObject;   }
         static float GetMaxVisibleDistanceInFlight()    { return m_MaxVisibleDistanceInFlight;    }
-        static float GetVisibleUnitGreyDistance()       { return m_VisibleUnitGreyDistance;       }
-        static float GetVisibleObjectGreyDistance()     { return m_VisibleObjectGreyDistance;     }
+
+		static int32 GetVisibilityNotifyPeriodOnContinents() { return m_visibility_notify_periodOnContinents; }
+		static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances; }
+		static int32 GetVisibilityNotifyPeriodInBGArenas() { return m_visibility_notify_periodInBGArenas; }
 
         //movement anticheat enable flag
         inline bool GetMvAnticheatEnable()             {return m_MvAnticheatEnable;}
@@ -796,8 +798,10 @@ class TC_GAME_API World
         static float m_MaxVisibleDistanceInBGArenas;
         static float m_MaxVisibleDistanceForObject;
         static float m_MaxVisibleDistanceInFlight;
-        static float m_VisibleUnitGreyDistance;
-        static float m_VisibleObjectGreyDistance;
+
+		static int32 m_visibility_notify_periodOnContinents;
+		static int32 m_visibility_notify_periodInInstances;
+		static int32 m_visibility_notify_periodInBGArenas;
 
         //movement anticheat enable flag
         bool m_MvAnticheatEnable;

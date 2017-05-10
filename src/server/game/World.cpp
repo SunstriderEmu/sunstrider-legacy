@@ -74,8 +74,10 @@ float World::m_MaxVisibleDistanceInBGArenas   = DEFAULT_VISIBILITY_BGARENAS;
 float World::m_MaxVisibleDistanceForObject    = DEFAULT_VISIBILITY_DISTANCE;
 
 float World::m_MaxVisibleDistanceInFlight     = DEFAULT_VISIBILITY_DISTANCE;
-float World::m_VisibleUnitGreyDistance        = 0;
-float World::m_VisibleObjectGreyDistance      = 0;
+
+TC_GAME_API int32 World::m_visibility_notify_periodOnContinents = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+TC_GAME_API int32 World::m_visibility_notify_periodInInstances = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+TC_GAME_API int32 World::m_visibility_notify_periodInBGArenas = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
 
 // ServerMessages.dbc
 enum ServerMessageType
@@ -797,7 +799,7 @@ void World::LoadConfigSettings(bool reload)
         m_configs[CONFIG_GM_DEFAULT_GUILD] = 0;
     }
 
-    m_configs[CONFIG_GROUP_VISIBILITY] = sConfigMgr->GetIntDefault("Visibility.GroupMode",0);
+    m_configs[CONFIG_GROUP_VISIBILITY] = sConfigMgr->GetIntDefault("Visibility.GroupMode", 1);
 
     m_configs[CONFIG_LOG_BG_STATS] = sConfigMgr->GetIntDefault("DBLog.bgstats", -1);
     m_configs[CONFIG_LOG_BOSS_DOWNS] = sConfigMgr->GetIntDefault("DBLog.BossDowns", -1);
@@ -961,19 +963,6 @@ void World::LoadConfigSettings(bool reload)
     
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfigMgr->GetIntDefault("GroupLeaderReconnectPeriod", 180);
 
-    m_VisibleUnitGreyDistance = sConfigMgr->GetFloatDefault("Visibility.Distance.Grey.Unit", 1);
-    if(m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
-    {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.Grey.Unit can't be greater %f",MAX_VISIBILITY_DISTANCE);
-        m_VisibleUnitGreyDistance = MAX_VISIBILITY_DISTANCE;
-    }
-    m_VisibleObjectGreyDistance = sConfigMgr->GetFloatDefault("Visibility.Distance.Grey.Object", 10);
-    if(m_VisibleObjectGreyDistance >  MAX_VISIBILITY_DISTANCE)
-    {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.Grey.Object can't be greater %f",MAX_VISIBILITY_DISTANCE);
-        m_VisibleObjectGreyDistance = MAX_VISIBILITY_DISTANCE;
-    }
-
     //visibility on continents
     m_MaxVisibleDistanceOnContinents      = sConfigMgr->GetFloatDefault("Visibility.Distance.Continents",     DEFAULT_VISIBILITY_DISTANCE);
     if (m_MaxVisibleDistanceOnContinents < 45*sWorld->GetRate(RATE_CREATURE_AGGRO))
@@ -981,10 +970,10 @@ void World::LoadConfigSettings(bool reload)
         TC_LOG_ERROR("server.loading","Visibility.Distance.Continents can't be less max aggro radius %f", 45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceOnContinents = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
-    else if (m_MaxVisibleDistanceOnContinents + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
+    else if (m_MaxVisibleDistanceOnContinents  >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.Continents can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
-        m_MaxVisibleDistanceOnContinents = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Continents can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceOnContinents = MAX_VISIBILITY_DISTANCE ;
     }
 
     //visibility in instances
@@ -994,10 +983,10 @@ void World::LoadConfigSettings(bool reload)
         TC_LOG_ERROR("server.loading","Visibility.Distance.Instances can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceInInstances = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
-    else if (m_MaxVisibleDistanceInInstances + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
+    else if (m_MaxVisibleDistanceInInstances >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.Instances can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
-        m_MaxVisibleDistanceInInstances = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Instances can't be greater %f",MAX_VISIBILITY_DISTANCE );
+        m_MaxVisibleDistanceInInstances = MAX_VISIBILITY_DISTANCE ;
     }
 
     //visibility in BG/Arenas
@@ -1007,10 +996,10 @@ void World::LoadConfigSettings(bool reload)
         TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be less max aggro radius %f",45*sWorld->GetRate(RATE_CREATURE_AGGRO));
         m_MaxVisibleDistanceInBGArenas = 45*sWorld->GetRate(RATE_CREATURE_AGGRO);
     }
-    else if (m_MaxVisibleDistanceInBGArenas + m_VisibleUnitGreyDistance >  MAX_VISIBILITY_DISTANCE)
+    else if (m_MaxVisibleDistanceInBGArenas + MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be greater %f",MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance);
-        m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE - m_VisibleUnitGreyDistance;
+        TC_LOG_ERROR("server.loading","Visibility.Distance.BGArenas can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceInBGArenas = MAX_VISIBILITY_DISTANCE ;
     }
 
     m_MaxVisibleDistanceForObject    = sConfigMgr->GetFloatDefault("Visibility.Distance.Object",   DEFAULT_VISIBILITY_DISTANCE);
@@ -1019,18 +1008,22 @@ void World::LoadConfigSettings(bool reload)
         TC_LOG_ERROR("server.loading","Visibility.Distance.Object can't be less max aggro radius %f",float(INTERACTION_DISTANCE));
         m_MaxVisibleDistanceForObject = INTERACTION_DISTANCE;
     }
-    else if(m_MaxVisibleDistanceForObject + m_VisibleObjectGreyDistance >  MAX_VISIBILITY_DISTANCE)
+    else if(m_MaxVisibleDistanceForObject  >  MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.Object can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
-        m_MaxVisibleDistanceForObject = MAX_VISIBILITY_DISTANCE - m_VisibleObjectGreyDistance;
+        TC_LOG_ERROR("server.loading","Visibility.Distance.Object can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceForObject = MAX_VISIBILITY_DISTANCE ;
     }
 
     m_MaxVisibleDistanceInFlight    = sConfigMgr->GetFloatDefault("Visibility.Distance.InFlight",      DEFAULT_VISIBILITY_DISTANCE);
-    if(m_MaxVisibleDistanceInFlight + m_VisibleObjectGreyDistance > MAX_VISIBILITY_DISTANCE)
+    if(m_MaxVisibleDistanceInFlight > MAX_VISIBILITY_DISTANCE)
     {
-        TC_LOG_ERROR("server.loading","Visibility.Distance.InFlight can't be greater %f",MAX_VISIBILITY_DISTANCE-m_VisibleObjectGreyDistance);
-        m_MaxVisibleDistanceInFlight = MAX_VISIBILITY_DISTANCE - m_VisibleObjectGreyDistance;
+        TC_LOG_ERROR("server.loading","Visibility.Distance.InFlight can't be greater %f",MAX_VISIBILITY_DISTANCE);
+        m_MaxVisibleDistanceInFlight = MAX_VISIBILITY_DISTANCE;
     }
+
+	m_visibility_notify_periodOnContinents = sConfigMgr->GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+	m_visibility_notify_periodInInstances = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InInstances", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+	m_visibility_notify_periodInBGArenas = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InBGArenas", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
 
     ///- Read the "Data" directory from the config file
     std::string dataPath = sConfigMgr->GetStringDefault("DataDir","./");
@@ -2278,7 +2271,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
 
     QueryResult resultAccounts = nullptr;                     //used for kicking
     
-    uint32 authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
+//    uint32 authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
 
     ///- Update the database with ban information
     switch(mode)
