@@ -126,7 +126,14 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void EnterCombat(Unit* enemy) {}
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
-        
+
+		// Called when owner takes damage
+		virtual void OwnerAttackedBy(Unit* /*attacker*/) { }
+
+		// Called when owner attacks something
+		virtual void OwnerAttacked(Unit* /*target*/) { }
+
+
         virtual void DespawnDueToGameEventEnd(int32 /*eventId*/) {}
 
         // called when the corpse of this creature gets removed

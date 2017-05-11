@@ -331,10 +331,11 @@ template<class Check>
     template<class Check>
         struct UnitSearcher
     {
+		uint32 i_phaseMask;
         Unit* &i_object;
         Check & i_check;
 
-        UnitSearcher(Unit* & result, Check & check) : i_object(result),i_check(check) {}
+        UnitSearcher(WorldObject const* searcher, Unit* & result, Check & check) : i_phaseMask(searcher->GetPhaseMask()), i_object(result),i_check(check) {}
 
         void Visit(CreatureMapType &m);
         void Visit(PlayerMapType &m);
@@ -688,10 +689,10 @@ template<class Check>
 
     // Creature checks
 
-    class TC_GAME_API NearestHostileUnitInAttackDistanceCheck
+    class TC_GAME_API NearestHostileUnitInAggroRangeCheck
     {
         public:
-            explicit NearestHostileUnitInAttackDistanceCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
+            explicit NearestHostileUnitInAggroRangeCheck(Creature const* creature, float dist = 0, bool playerOnly = false, bool furthest = false) : m_creature(creature), i_playerOnly(playerOnly), m_minRange(0), i_furthest(furthest)
             {
                 m_range = (dist == 0 ? 9999 : dist);
                 m_force = (dist == 0 ? false : true);
@@ -704,7 +705,7 @@ template<class Check>
             bool m_force;
             bool i_playerOnly;
             bool i_furthest;
-            NearestHostileUnitInAttackDistanceCheck(NearestHostileUnitInAttackDistanceCheck const&);
+            NearestHostileUnitInAggroRangeCheck(NearestHostileUnitInAggroRangeCheck const&);
     };
 
     class TC_GAME_API AllWorldObjectsInRange

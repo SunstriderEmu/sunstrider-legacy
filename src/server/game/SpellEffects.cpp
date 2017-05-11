@@ -7452,7 +7452,21 @@ void Spell::EffectResurrectPet(uint32 /*i*/)
     pet->ClearUnitState(UNIT_STATE_ALL_STATE);
     pet->SetHealth(pet->CountPctFromMaxHealth(damage));
 
-    pet->AIM_Initialize();
+	// Reset things for when the AI to takes over
+	CharmInfo *ci = pet->GetCharmInfo();
+	if (ci)
+	{
+		// In case the pet was at stay, we don't want it running back
+		ci->SaveStayPosition();
+		ci->SetIsAtStay(ci->HasCommandState(COMMAND_STAY));
+
+		ci->SetIsFollowing(false);
+		ci->SetIsCommandAttack(false);
+		ci->SetIsCommandFollow(false);
+		ci->SetIsReturning(false);
+	}
+
+	pet->AIM_Initialize();
 
     // _player->PetSpellInitialize(); -- action bar not removed at death and not required send at revive
     pet->SavePetToDB(PET_SAVE_AS_CURRENT);

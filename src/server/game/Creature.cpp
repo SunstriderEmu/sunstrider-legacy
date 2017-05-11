@@ -1716,7 +1716,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
         if(!IsWithinSightDist(who))
             return CAN_ATTACK_RESULT_TOO_FAR;
     } else {
-        if(!IsWithinDistInMap(who, GetAttackDistance(who) + m_CombatDistance)) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
+        if(!IsWithinDistInMap(who, GetAggroRange(who) + m_CombatDistance)) //m_CombatDistance is usually 0 for melee. Ranged creatures will aggro from further, is this correct?
             return CAN_ATTACK_RESULT_TOO_FAR;
     }
 
@@ -1734,7 +1734,7 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
     return CAN_ATTACK_RESULT_OK;
 }
 
-float Creature::GetAttackDistance(Unit const* pl) const
+float Creature::GetAggroRange(Unit const* pl) const
 {
     float aggroRate = sWorld->GetRate(RATE_CREATURE_AGGRO);
     if(aggroRate==0)
@@ -2166,8 +2166,8 @@ Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, b
         if (dist == 0.0f)
             dist = MAX_SEARCHER_DISTANCE;
 
-        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist, playerOnly, furthest);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
+        Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, dist, playerOnly, furthest);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
         VisitNearbyObject(dist, searcher);
     }
 
@@ -2190,17 +2190,34 @@ Unit* Creature::SelectNearestTargetInAttackDistance(float dist) const
         dist = MAX_SEARCHER_DISTANCE;
 
     {
-        Trinity::NearestHostileUnitInAttackDistanceCheck u_check(this, dist);
-        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck> searcher(this, target, u_check);
+        Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, dist);
+        Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
 
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAttackDistanceCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+        TypeContainerVisitor<Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
         cell.Visit(p, world_unit_searcher, *GetMap(), *this, dist);
         cell.Visit(p, grid_unit_searcher, *GetMap(), *this, dist);
     }
 
     return target;
+}
+
+Unit* Creature::SelectNearestHostileUnitInAggroRange(bool useLOS) const
+{
+	// Selects nearest hostile target within creature's aggro range. Used primarily by
+	//  pets set to aggressive. Will not return neutral or friendly targets.
+
+	Unit* target = NULL;
+
+	{
+		Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, useLOS);
+		Trinity::UnitSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
+
+		VisitNearbyGridObject(MAX_AGGRO_RADIUS, searcher);
+	}
+
+	return target;
 }
 
 void Creature::CallAssistance()
@@ -2360,7 +2377,7 @@ bool Creature::IsOutOfThreatArea(Unit* pVictim) const
         GetHomePosition(x,y,z,o);
         length = pVictim->GetDistance(x, y, z);
     }
-    float AttackDist = GetAttackDistance(pVictim);
+    float AttackDist = GetAggroRange(pVictim);
     uint32 ThreatRadius = sWorld->getConfig(CONFIG_THREAT_RADIUS);
 
     //Use AttackDistance in distance check if threat radius is lower. This prevents creature bounce in and out of combat every update tick.
@@ -2883,6 +2900,36 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     SendMessageToSet(&data, false);
 #endif
     return true;
+}
+
+uint32 Creature::GetPetAutoSpellOnPos(uint8 pos) const
+{
+	if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
+		return 0;
+	else
+		return m_charmInfo->GetCharmSpell(pos)->spellId;
+}
+
+float Creature::GetPetChaseDistance() const
+{
+	float range = MELEE_RANGE;
+
+	for (uint8 i = 0; i < GetPetAutoSpellSize(); ++i)
+	{
+		uint32 spellID = GetPetAutoSpellOnPos(i);
+		if (!spellID)
+			continue;
+
+		if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellID))
+		{
+			if (spellInfo->GetRecoveryTime() == 0 &&  // No cooldown
+				spellInfo->RangeEntry->ID != 1 /*Self*/ && spellInfo->RangeEntry->ID != 2 /*Combat Range*/ &&
+				spellInfo->GetMinRange() > range)
+				range = spellInfo->GetMinRange();
+		}
+	}
+
+	return range;
 }
 
 bool Creature::SetWalk(bool enable)

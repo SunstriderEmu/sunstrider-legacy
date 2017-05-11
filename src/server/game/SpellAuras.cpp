@@ -125,7 +125,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         // 88 SPELL_AURA_MOD_HEALTH_REGEN_PERCENT
     &Aura::HandlePeriodicDamagePCT,                         // 89 SPELL_AURA_PERIODIC_DAMAGE_PERCENT
     &Aura::HandleUnused,                                    // 90 SPELL_AURA_MOD_RESIST_CHANCE  Useless
-    &Aura::HandleNoImmediateEffect,                         // 91 SPELL_AURA_MOD_STEALTH_DETECT_RANGE implemented in Creature::GetAttackDistance
+    &Aura::HandleNoImmediateEffect,                         // 91 SPELL_AURA_MOD_STEALTH_DETECT_RANGE implemented in Creature::GetAggroRange
     &Aura::HandlePreventFleeing,                            // 92 SPELL_AURA_PREVENTS_FLEEING
     &Aura::HandleModUnattackable,                           // 93 SPELL_AURA_MOD_UNATTACKABLE
     &Aura::HandleNoImmediateEffect,                         // 94 SPELL_AURA_INTERRUPT_REGEN implemented in Player::RegenerateAll
@@ -186,7 +186,7 @@ pAuraHandler AuraHandler[TOTAL_AURAS]=
     &Aura::HandleNoImmediateEffect,                         //149 SPELL_AURA_RESIST_PUSHBACK
     &Aura::HandleShieldBlockValue,                          //150 SPELL_AURA_MOD_SHIELD_BLOCKVALUE_PCT
     &Aura::HandleAuraTrackStealthed,                        //151 SPELL_AURA_TRACK_STEALTHED
-    &Aura::HandleNoImmediateEffect,                         //152 SPELL_AURA_MOD_STEALTH_DETECTED_RANGE implemented in Creature::GetAttackDistance
+    &Aura::HandleNoImmediateEffect,                         //152 SPELL_AURA_MOD_STEALTH_DETECTED_RANGE implemented in Creature::GetAggroRange
     &Aura::HandleNoImmediateEffect,                         //153 SPELL_AURA_SPLIT_DAMAGE_FLAT
     &Aura::HandleModStealthLevel,                           //154 SPELL_AURA_MOD_STEALTH_LEVEL
     &Aura::HandleNoImmediateEffect,                         //155 SPELL_AURA_MOD_WATER_BREATHING
@@ -3380,24 +3380,36 @@ void Aura::HandleModPossessPet(bool apply, bool Real)
     if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
+	if (m_target->GetTypeId() != TYPEID_UNIT || !m_target->IsPet())
+		return;
+
+	Pet* pet = m_target->ToPet();
+
     if(apply)
     {
-        if(caster->GetPet() != m_target)
+        if(caster->GetPet() != pet)
             return;
 
-        m_target->SetCharmedBy(caster, true);
+		// Must clear current motion or pet leashes back to owner after a few yards
+		//  when under spell 'Eyes of the Beast'
+		pet->GetMotionMaster()->Clear();
+		pet->SetCharmedBy(caster, true);
     }
-    else
-    {
-        m_target->RemoveCharmedBy(caster);
+	else
+	{
+		pet->RemoveCharmedBy(caster);
 
-        // Reinitialize the pet bar and make the pet come back to the owner
-        (caster->ToPlayer())->PetSpellInitialize();
-        if(!m_target->GetVictim())
-        {
-            m_target->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, m_target->GetFollowAngle());
-            m_target->GetCharmInfo()->SetCommandState(COMMAND_FOLLOW);
-        }
+		if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
+			pet->Remove(PET_SAVE_NOT_IN_SLOT, true);
+		else
+		{
+			// Reinitialize the pet bar and make the pet come back to the owner
+			(caster->ToPlayer())->PetSpellInitialize();
+			if (!pet->GetVictim() && !pet->GetCharmInfo()->HasCommandState(COMMAND_STAY))
+			{
+				pet->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, pet->GetFollowAngle());
+			}
+		}
     }
 }
 

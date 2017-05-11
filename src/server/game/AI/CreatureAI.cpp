@@ -92,25 +92,21 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-    if(AssistPlayerInCombatAgainst(who))
-        return;
+	if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
+		return;
 
-    CanAttackResult result = me->CanAggro(who, false);
-	/*
-    if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE
-       && me->CanDoStealthAlert(who))
-    {
-        me->StartStealthAlert(who);
-    }
-	*/
-
-    if(result != CAN_ATTACK_RESULT_OK) 
-        return;
+	if (!me->HasReactState(REACT_AGGRESSIVE))
+		return;
 
     //attack target if no current victim, else just enter combat with it
     if (!me->GetVictim())
     {
-        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+		if (AssistPlayerInCombatAgainst(who))
+			return;
+
+		CanAttackResult result = me->CanAggro(who, false);
+		if (result != CAN_ATTACK_RESULT_OK)
+			return;
 
         if (me->HasUnitState(UNIT_STATE_DISTRACTED))
         {
@@ -119,7 +115,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         }
 
         me->ClearUnitState(UNIT_STATE_EVADE);
-
+		who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
     } else {
         if(!me->IsInCombatWith(who))

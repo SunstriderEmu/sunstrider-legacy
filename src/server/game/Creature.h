@@ -658,7 +658,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         @assistAggro check for assisting instead of standard aggro. This changes the allowed distance only.
         */
         CanAttackResult CanAggro(Unit const* u, bool assistAggro = false) const;
-        float GetAttackDistance(Unit const* pl) const;
+        float GetAggroRange(Unit const* pl) const;
         
         /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/
         /* return true if the creature can do a suspicious look on target. This does NOT check for detection range, use CanAggro, CanAttack or CanDetectStealthOf results to ensure this distance is correct. */
@@ -669,7 +669,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         //select nearest alive player
         Unit* SelectNearestTargetInAttackDistance(float dist) const;
-
+		Unit* SelectNearestHostileUnitInAggroRange(bool useLOS = false) const;
 
         /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();
@@ -713,13 +713,8 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
-        virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
-        {
-            if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
-                return 0;
-            else
-                return m_charmInfo->GetCharmSpell(pos)->spellId;
-        }
+		virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
+		float GetPetChaseDistance() const;
 
         void SetHomePosition(float x, float y, float z, float o) { m_homePosition.Relocate(x, y, z, o); }
         void SetHomePosition(const Position &pos) { m_homePosition.Relocate(pos); }

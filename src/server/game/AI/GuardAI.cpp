@@ -41,7 +41,7 @@ void GuardAI::MoveInLineOfSight(Unit *u)
         && u->isInAccessiblePlaceFor(&i_creature) 
         && ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) ))
     {
-        float attackRadius = i_creature.GetAttackDistance(u);
+        float attackRadius = i_creature.GetAggroRange(u);
         if(i_creature.IsWithinDistInMap(u,attackRadius))
             AttackStart(u);
     }

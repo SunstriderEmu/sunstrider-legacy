@@ -527,7 +527,7 @@ void GameObject::Update(uint32 diff)
                 if(owner && NeedDespawn)                    // hunter trap
                 {
                     Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck u_check(this, owner, radius);
-                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(trapTarget, u_check);
+                    Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(this, trapTarget, u_check);
 
                     this->VisitNearbyGridObject(radius, checker);
 

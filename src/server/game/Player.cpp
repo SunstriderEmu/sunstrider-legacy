@@ -15066,13 +15066,14 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(PLAYER_BYTES, fields[LOAD_DATA_PLAYERBYTES].GetUInt32());   // PlayerBytes
     SetUInt32Value(PLAYER_BYTES_2, fields[LOAD_DATA_PLAYERBYTES2].GetUInt32()); // PlayerBytes2
     SetUInt32Value(PLAYER_FLAGS, fields[LOAD_DATA_PLAYERFLAGS].GetUInt32());   // PlayerFlags
+	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK);
     SetUInt32Value(PLAYER_BYTES_3, (fields[LOAD_DATA_DRUNK].GetUInt16() & 0xFFFE) | fields[LOAD_DATA_GENDER].GetUInt8());
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[LOAD_DATA_WATCHED_FACTION].GetUInt32());
     SetUInt32Value(PLAYER_AMMO_ID, fields[LOAD_DATA_AMMOID].GetUInt32());
     SetByteValue(PLAYER_FIELD_BYTES, 2, fields[LOAD_DATA_ACTIONBARS].GetUInt8());
     _LoadIntoDataField(fields[LOAD_DATA_EXPLOREDZONES].GetString(), PLAYER_EXPLORED_ZONES_1, 128);
     _LoadIntoDataField(fields[LOAD_DATA_KNOWNTITLES].GetString(), PLAYER_FIELD_KNOWN_TITLES, 2);
-    
+
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_PLAYER_BOUNDING_RADIUS);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
     //SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
@@ -17975,10 +17976,23 @@ void Player::PetSpellInitialize()
         // first line + actionbar + spellcount + spells + last adds
         WorldPacket data(SMSG_PET_SPELLS, 16+40+1+4*addlist+25);
 
-        CharmInfo *charmInfo = pet->GetCharmInfo();
-
+        CharmInfo* charmInfo = pet->GetCharmInfo();
+		if (!charmInfo)
+		{
+			TC_LOG_ERROR("entities.pet", "Pet has not charmInfo at PetSpellInitialize time, this should never happen!");
+			return;
+		}
                                                             //16
-        data << (uint64)pet->GetGUID() << uint32(0x00000000) << uint8(pet->GetReactState()) << uint8(charmInfo->GetCommandState()) << uint16(0);
+		data << (uint64)pet->GetGUID();
+#ifdef LICH_KING
+		data << uint16(pet->GetCreatureTemplate()->family);         // creature family (required for pet talents)
+		data << uint32(pet->GetDuration());
+#else
+		data << uint32(0x00000000); // Maybe duration?
+#endif
+		data << uint8(pet->GetReactState());
+		data << uint8(charmInfo->GetCommandState());
+		data << uint16(0); // Flags, mostly unknown
 
         for(uint32 i = 0; i < 10; i++)                      //40
         {

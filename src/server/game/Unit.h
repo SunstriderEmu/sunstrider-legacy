@@ -142,6 +142,7 @@ enum SpellFacingFlags
 #define BASE_ATTACK_TIME 2000
 
 #define MAX_AGGRO_RESET_TIME 10 // in seconds
+#define MAX_AGGRO_RADIUS 45.0f  // yards
 
 #define DEFAULT_HOVER_HEIGHT 1.0f
 
@@ -954,6 +955,16 @@ enum CharmType
     CHARM_TYPE_CONVERT
 };
 
+enum ActionBarIndex
+{
+	ACTION_BAR_INDEX_START = 0,
+	ACTION_BAR_INDEX_PET_SPELL_START = 3,
+	ACTION_BAR_INDEX_PET_SPELL_END = 7,
+	ACTION_BAR_INDEX_END = 10
+};
+
+#define MAX_UNIT_ACTION_BAR_INDEX (ACTION_BAR_INDEX_END-ACTION_BAR_INDEX_START)
+
 class TC_GAME_API CharmInfo
 {
     public:
@@ -965,9 +976,6 @@ class TC_GAME_API CharmInfo
         void SetCommandState(CommandStates st) { m_CommandState = st; }
         CommandStates GetCommandState() { return m_CommandState; }
         bool HasCommandState(CommandStates state) { return (m_CommandState == state); }
-        //void SetReactState(ReactStates st) { m_reactState = st; }
-        //ReactStates GetReactState() { return m_reactState; }
-        //bool HasReactState(ReactStates state) { return (m_reactState == state); }
 
         void InitPossessCreateSpells();
         void InitCharmCreateSpells();
@@ -982,17 +990,38 @@ class TC_GAME_API CharmInfo
         
         GlobalCooldownMgr& GetGlobalCooldownMgr() { return m_GlobalCooldownMgr; }
 
+		void SetIsCommandAttack(bool val);
+		bool IsCommandAttack();
+		void SetIsCommandFollow(bool val);
+		bool IsCommandFollow();
+		void SetIsAtStay(bool val);
+		bool IsAtStay();
+		void SetIsFollowing(bool val);
+		bool IsFollowing();
+		void SetIsReturning(bool val);
+		bool IsReturning();
+		void SaveStayPosition();
+		void GetStayPosition(float &x, float &y, float &z);
+
     private:
         Unit* m_unit;
         UnitActionBarEntry PetActionBar[10];
         CharmSpellEntry m_charmspells[CREATURE_MAX_SPELLS];
         CommandStates   m_CommandState;
-        //ReactStates     m_reactState;
         uint32          m_petnumber;
         bool            m_barInit;
 
         //for restoration after charmed
-        ReactStates     m_oldReactState;
+		ReactStates     m_oldReactState;
+			
+		bool _isCommandAttack;
+		bool _isCommandFollow;
+		bool _isAtStay;
+		bool _isFollowing;
+		bool _isReturning;
+		float _stayX;
+		float _stayY;
+		float _stayZ;
 
         GlobalCooldownMgr m_GlobalCooldownMgr;
 };
@@ -1359,6 +1388,7 @@ class TC_GAME_API Unit : public WorldObject
         void SetInCombatWith(Unit* enemy);
         bool IsInCombatWith(Unit const* enemy) const;
         void ClearInCombat();
+		void ClearInPetCombat();
         uint32 GetCombatTimer() const { return m_CombatTimer; }
 
         //TC compat
@@ -1487,7 +1517,7 @@ class TC_GAME_API Unit : public WorldObject
         uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
         uint64 GetCharmerGUID() const { return GetUInt64Value(UNIT_FIELD_CHARMEDBY); }
         void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
-        uint64 GetCharmGUID() const { return  GetUInt64Value(UNIT_FIELD_CHARM); }
+        uint64 GetCharmGUID() const { return  GetUInt64Value( UNIT_FIELD_CHARM); }
         //not tc like yet
         void SetPetGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_SUMMON, guid); }
         //not tc like yet
@@ -1542,7 +1572,6 @@ class TC_GAME_API Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
-        //Renamed from TC: m_movedPlayer;
         Unit* GetMover() const;
         Player* GetPlayerMover() const;
         Player* m_playerMovingMe;

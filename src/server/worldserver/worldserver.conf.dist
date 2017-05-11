@@ -206,11 +206,6 @@ Locale = 0
 #        Default: 1 (true)
 #                 0 (false)
 #        
-#    vmap.petLOS
-#        Check LOS for pets, to avoid them going through walls etc.
-#        Default: 0 (disable, less CPU usage)
-#                 1 (enable, each pet attack command will check for LOS)
-#
 #    TargetPosRecalculateRange
 #        Max distance from movement target point (+moving unit size) and targeted object (+size)
 #        after that new target movmeent point calculated. Max: melee attack range (5), min: contact range (0.5)
@@ -265,7 +260,6 @@ PlayerSaveInterval = 60000
 DisconnectToleranceInterval = 0
 vmap.enableLOS = 1
 vmap.enableHeight = 1
-vmap.petLOS = 1
 TargetPosRecalculateRange = 0.5
 UpdateUptimeInterval = 10
 MaxCoreStuckTime = 0

@@ -98,7 +98,7 @@ void FollowerAI::MoveInLineOfSight(Unit* pWho)
 
         if (me->IsHostileTo(pWho))
         {
-            float fAttackRadius = me->GetAttackDistance(pWho);
+            float fAttackRadius = me->GetAggroRange(pWho);
             if (me->IsWithinDistInMap(pWho, fAttackRadius) && me->IsWithinLOSInMap(pWho, VMAP::ModelIgnoreFlags::M2))
             {
                 if (!me->GetVictim())

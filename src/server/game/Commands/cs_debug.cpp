@@ -1000,7 +1000,7 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
     if (!target || !target->ToCreature())
         return false;
         
-    PSendSysMessage("AttackDistance: %f - ModDetectRange: %i", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECT_RANGE));
+    PSendSysMessage("AttackDistance: %f - ModDetectRange: %i", target->ToCreature()->GetAggroRange(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECT_RANGE));
     return true;
 }
 

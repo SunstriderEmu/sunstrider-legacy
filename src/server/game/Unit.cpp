@@ -684,6 +684,21 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
+	if (pVictim->GetTypeId() == TYPEID_PLAYER && this != pVictim)
+	{
+		// Signal to pets that their owner was attacked - except when DOT.
+		if (damagetype != DOT)
+		{
+			Pet* pet = pVictim->ToPlayer()->GetPet();
+
+			if (pet && pet->IsAlive())
+				pet->AI()->OwnerAttackedBy(this);
+		}
+
+		if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+			return 0;
+	}
+
     // Kidney Shot hackz
     if (pVictim->HasAuraEffect(408) || pVictim->HasAuraEffect(8643)) {
         Aura *aur = nullptr;
@@ -716,11 +731,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         if(pVictim->IsInSanctuary())
             return 0;
     }
-
-    // Handler for god command
-    if(pVictim->GetTypeId() == TYPEID_PLAYER)
-        if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
-            return 0;
 
     //Script Event damage taken
     if( pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled )
@@ -7631,6 +7641,16 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SendMeleeAttackStart(victim);
     }
 
+	// Let the pet know we've started attacking someting. Handles melee attacks only
+	// Spells such as auto-shot and others handled in WorldSession::HandleCastSpellOpcode
+	if (this->GetTypeId() == TYPEID_PLAYER)
+	{
+		Pet* playerPet = this->ToPlayer()->GetPet();
+
+		if (playerPet && playerPet->IsAlive())
+			playerPet->AI()->OwnerAttacked(victim);
+	}
+
     return true;
 }
 
@@ -8071,8 +8091,11 @@ Unit* Unit::GetFirstControlled() const
     // Sequence: charmed, pet, other guardians
     Unit* unit = GetCharm();
     if (!unit)
-        if (uint64 guid = GetMinionGUID())
-            unit = ObjectAccessor::GetUnit(*this, guid);
+		if (uint64 guid = GetMinionGUID())
+		{
+			unit = ObjectAccessor::GetUnit(*this, guid);
+		}
+
 
     return unit;
 }
@@ -9944,6 +9967,85 @@ void Unit::ClearInCombat()
         return;
 
     RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+}
+
+void Unit::ClearInPetCombat()
+{
+	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+	if (Unit* owner = GetOwner())
+		owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+}
+
+
+void CharmInfo::SetIsCommandAttack(bool val)
+{
+	_isCommandAttack = val;
+}
+
+bool CharmInfo::IsCommandAttack()
+{
+	return _isCommandAttack;
+}
+
+void CharmInfo::SetIsCommandFollow(bool val)
+{
+	_isCommandFollow = val;
+}
+
+bool CharmInfo::IsCommandFollow()
+{
+	return _isCommandFollow;
+}
+
+void CharmInfo::SaveStayPosition()
+{
+	//! At this point a new spline destination is enabled because of Unit::StopMoving()
+	G3D::Vector3 stayPos = m_unit->movespline->FinalDestination();
+
+	if (m_unit->movespline->onTransport)
+		if (TransportBase* transport = m_unit->GetTransport())
+			transport->CalculatePassengerPosition(stayPos.x, stayPos.y, stayPos.z);
+
+	_stayX = stayPos.x;
+	_stayY = stayPos.y;
+	_stayZ = stayPos.z;
+}
+
+void CharmInfo::GetStayPosition(float &x, float &y, float &z)
+{
+	x = _stayX;
+	y = _stayY;
+	z = _stayZ;
+}
+
+void CharmInfo::SetIsAtStay(bool val)
+{
+	_isAtStay = val;
+}
+
+bool CharmInfo::IsAtStay()
+{
+	return _isAtStay;
+}
+
+void CharmInfo::SetIsFollowing(bool val)
+{
+	_isFollowing = val;
+}
+
+bool CharmInfo::IsFollowing()
+{
+	return _isFollowing;
+}
+
+void CharmInfo::SetIsReturning(bool val)
+{
+	_isReturning = val;
+}
+
+bool CharmInfo::IsReturning()
+{
+	return _isReturning;
 }
 
 // force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
@@ -12172,7 +12274,9 @@ void Unit::DeleteCharmInfo()
 }
 
 CharmInfo::CharmInfo(Unit* unit)
-: m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false)
+: m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false),
+  _isCommandAttack(false), _isCommandFollow(false), _isAtStay(false), _isFollowing(false), _isReturning(false),
+  _stayX(0.0f), _stayY(0.0f), _stayZ(0.0f)
 {
     for(int i =0; i<4; ++i)
     {
@@ -14095,6 +14199,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         c->ResetCreatureEmote();
     
     HandleEmoteCommand(0);
+	GetMotionMaster()->InitDefault();
 
     if (Creature* creature = ToCreature())
     {
@@ -14118,6 +14223,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
     ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
 #endif
 
+	charmer->SetCharm(nullptr);
     Player* playerCharmer = charmer->ToPlayer();
 
     if (playerCharmer)
@@ -14166,7 +14272,7 @@ void Unit::RemoveCharmedBy(Unit *charmer)
         {
             if(charmer && !IsFriendlyTo(charmer))
             {
-                (this->ToCreature())->AddThreat(charmer, 10000.0f);
+                (this->ToCreature())->AddThreat(charmer, 10000.0f); //maybe tweak this for lower levels
                 (this->ToCreature())->AI()->AttackStart(charmer);
             }
             else {
@@ -14174,8 +14280,6 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             }
         }
     }
-
-    charmer->SetCharm(nullptr);
 
     if (Player* player = ToPlayer())
     {
@@ -14185,11 +14289,6 @@ void Unit::RemoveCharmedBy(Unit *charmer)
             IsAIEnabled = false;
         }
         player->SetClientControl(this, true);
-    }
-
-    if(GetTypeId() == TYPEID_PLAYER || (GetTypeId() == TYPEID_UNIT && !(this->ToCreature())->IsPet()))
-    {
-        DeleteCharmInfo();
     }
 
     // a guardian should always have charminfo

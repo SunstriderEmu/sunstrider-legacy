@@ -1683,7 +1683,7 @@ bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) co
 		if (unit && unit->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
 			visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
 
-		if (checkAlert && unit && unit->ToCreature() && visibleDistance <= unit->ToCreature()->GetAttackDistance(unitTarget) + unit->ToCreature()->m_CombatDistance)
+		if (checkAlert && unit && unit->ToCreature() && visibleDistance <= unit->ToCreature()->GetAggroRange(unitTarget) + unit->ToCreature()->m_CombatDistance)
 			return true;
 
 		if (distance <= visibleDistance)
