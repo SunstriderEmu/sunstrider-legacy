@@ -159,25 +159,6 @@ void ObjectWorldLoader::Visit(CorpseMapType &m)
 	}
 }
 
-
-/*
-void
-ObjectGridLoader::Load(GridType &grid)
-{
-    {
-        TypeContainerVisitor<ObjectGridLoader, GridTypeMapContainer > loader(*this);
-        grid.Visit(loader);
-    }
-
-    {
-        ObjectWorldLoader wloader(*this);
-        TypeContainerVisitor<ObjectWorldLoader, WorldTypeMapContainer > loader(wloader);
-        grid.Visit(loader);
-        i_corpses = wloader.i_corpses;
-    }
-}
-*/
-
 void ObjectGridLoader::LoadN()
 {
 	i_gameObjects = 0; i_creatures = 0; i_corpses = 0;

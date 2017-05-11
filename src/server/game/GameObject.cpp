@@ -1085,25 +1085,6 @@ bool GameObject::IsVisibleForInState(Player const* u, bool inVisibleList) const
 }
 */
 
-bool GameObject::canDetectTrap(Player const* u, float distance) const
-{
-    if(u->HasUnitState(UNIT_STATE_STUNNED))
-        return false;
-    if(distance < GetGOInfo()->size) //collision
-        return true;
-    if(!u->HasInArc(M_PI, this)) //behind
-        return false;
-    if(u->HasAuraType(SPELL_AURA_DETECT_STEALTH))
-        return true;
-
-    //guessed values
-    float visibleDistance = 7.5f;
-    visibleDistance += (int32(u->GetLevel()) - int32(GetOwner()->GetLevel())) /5.0f;
-    visibleDistance += u->GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_STEALTH_DETECT, 1) /5.0f; //only "Detect Traps" has this, with base points = 70
-
-    return distance < visibleDistance;
-}
-
 void GameObject::Respawn()
 {
     if(m_spawnedByDefault && m_respawnTime > 0)

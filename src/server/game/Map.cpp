@@ -305,63 +305,6 @@ void Map::AddToGrid(DynamicObject* obj, Cell const& cell)
 	obj->SetCurrentCell(cell);
 }
 
-/*
-template<class T>
-void Map::RemoveFromGrid(T* obj, NGridType *grid, Cell const& cell)
-{
-#ifdef TRINITY_DEBUG
-    if (dynamic_cast<MotionTransport*>(obj))
-        ASSERT("Map::RemoveFromGrid called with a transport object " && false); //transports should never be removed from map
-#endif
-    (*grid)(cell.CellX(), cell.CellY()).template RemoveGridObject<T>(obj);
-}
-
-template<>
-void Map::RemoveFromGrid(Player* obj, NGridType *grid, Cell const& cell)
-{
-    (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj);
-}
-
-template<>
-void Map::RemoveFromGrid(Corpse *obj, NGridType *grid, Cell const& cell)
-{
-    // remove from world object registry in grid
-    if(obj->GetType()!=CORPSE_BONES)
-    {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject(obj);
-    }
-    // remove from grid object store
-    else
-    {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject(obj);
-    }
-}
-
-template<>
-void Map::RemoveFromGrid(Creature* obj, NGridType *grid, Cell const& cell)
-{
-    // remove from world object registry in grid
-    if(obj->IsPet() || obj->m_isTempWorldObject)
-    {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<Creature>(obj);
-    }
-    // remove from grid object store
-    else
-    {
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<Creature>(obj);
-    }
-}
-
-template<>
-void Map::RemoveFromGrid(DynamicObject* obj, NGridType *grid, Cell const& cell)
-{
-    if(obj->isActiveObject()) // only farsight
-        (*grid)(cell.CellX(), cell.CellY()).RemoveWorldObject<DynamicObject>(obj);
-    else
-        (*grid)(cell.CellX(), cell.CellY()).RemoveGridObject<DynamicObject>(obj);
-}
-*/
-
 template<class T>
 void Map::SwitchGridContainers(T* /*obj*/, bool /*on*/) { }
 

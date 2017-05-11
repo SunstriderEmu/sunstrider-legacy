@@ -774,12 +774,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibility;
 		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibilityDetect;
 
-        // main visibility check function in normal case (ignore grey zone distance check)
-        //bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }
-
-        // low level function for visibility change code, must be define in all main world object subclasses
-        //virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
-
         // Low Level Packets
         void PlayDirectSound(uint32 Sound, Player* target = nullptr);
         

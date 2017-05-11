@@ -19859,7 +19859,6 @@ void Player::UpdateVisibilityOf(WorldObject* target)
     else
     {
 		if (CanSeeOrDetect(target, false, true))
-        //if(target->IsVisibleForInState(this,false))
         {
             target->SendUpdateToPlayer(this);
             m_clientGUIDs.insert(target->GetGUID());
@@ -19923,7 +19922,6 @@ void Player::UpdateVisibilityOf(T* target, UpdateData& data, std::set<Unit*>& vi
     else //if(visibleNow.size() < 30)
     {
 		if (CanSeeOrDetect(target, false, true))
-        //if(target->IsVisibleForInState(this,false))
         {
             target->BuildCreateUpdateBlockForPlayer(&data, this);
 			UpdateVisibilityOf_helper(m_clientGUIDs,target, visibleNow);

@@ -11536,13 +11536,6 @@ float Unit::GetSpellMinRangeForTarget(Unit const* target, SpellInfo const* spell
 #endif
 }
 
-/*
-bool Unit::IsVisibleForInState( Player const* u, bool inVisibleList ) const
-{
-    return IsVisibleForOrDetect(u, false, inVisibleList, false);
-}
-*/
-
 uint32 Unit::GetCreatureType() const
 {
     if(GetTypeId() == TYPEID_PLAYER)

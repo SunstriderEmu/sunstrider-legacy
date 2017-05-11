@@ -763,9 +763,6 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
 
         void TriggeringLinkedGameObject( uint32 trapEntry, Unit* target);
 
-        //bool IsVisibleForInState(Player const* u, bool inVisibleList) const override;
-        bool canDetectTrap(Player const* u, float distance) const;
-
         GameObject* LookupFishingHoleAround(float range);
 
         //returns SpellCastResult
