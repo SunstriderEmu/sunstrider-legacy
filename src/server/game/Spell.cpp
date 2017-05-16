@@ -1511,12 +1511,8 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
         bool totemCollision = false;
         if (m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON)
         {
-#ifdef LICH_KING
             SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(m_spellInfo->Effects[effIndex].MiscValueB);
             if (properties && (properties->Type == SUMMON_TYPE_TOTEM || properties->Type == SUMMON_TYPE_LIGHTWELL))
-#else
-            if (m_spellInfo->Effects[effIndex].MiscValueB == SUMMON_TYPE_TOTEM)
-#endif
             {
                 totemCollision = true;
                 /* sunwell m_caster->GetFirstCollisionPositionForTotem(pos, dist, angle, false); */
@@ -1647,13 +1643,13 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         target = m_caster->GetCharmerOrOwner();
         break;
     case TARGET_UNIT_PET:
-        target = m_caster->GetPet(); /* TC: GetGuardianPet() */
+		target = m_caster->GetGuardianPet();
         if (!target)
             target = m_caster->GetCharm();
         break;
     case TARGET_UNIT_SUMMONER:
         if (m_caster->IsSummon())
-            target = m_caster->ToTemporarySummon()->GetSummoner(); 
+            target = m_caster->ToTempSummon()->GetSummoner(); 
         break;
 #ifdef LICH_KING
     case TARGET_UNIT_VEHICLE:
@@ -2532,7 +2528,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo *target)
         if (crit)
         {
             procEx |= PROC_EX_CRITICAL_HIT;
-            addhealth = caster->SpellCriticalBonus(m_spellInfo, addhealth, nullptr);
+            addhealth = caster->SpellCriticalDamageBonus(m_spellInfo, addhealth, nullptr);
         }
         else
             procEx |= PROC_EX_NORMAL_HIT;
@@ -3773,7 +3769,7 @@ void Spell::SendSpellCooldown()
 
     // Add cooldown for max (disable spell)
     // Cooldown started on SendCooldownEvent call
-    if (m_spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
+    if (m_spellInfo->IsCooldownStartedOnEvent())
     {
         _player->AddSpellCooldown(m_spellInfo->Id, 0, time(nullptr) - 1);
         return;
@@ -4013,7 +4009,17 @@ void Spell::finish(bool ok, bool cancelChannel)
     
     if(!m_caster->IsNonMeleeSpellCast(false, false, true))
         m_caster->ClearUnitState(UNIT_STATE_CASTING);
-    
+
+	// Unsummon summon as possessed creatures on spell cancel
+	if (m_spellInfo->IsChanneled() && m_caster->GetTypeId() == TYPEID_PLAYER)
+	{
+		if (Unit* charm = m_caster->GetCharm())
+			if (charm->GetTypeId() == TYPEID_UNIT
+				&& charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET)
+				&& charm->GetUInt32Value(UNIT_CREATED_BY_SPELL) == m_spellInfo->Id)
+				((Puppet*)charm)->UnSummon();
+	}
+
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.GetUnitTarget(), ok);
         
@@ -5813,7 +5819,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_RESURRECT_PET:
             {
-                Creature *pet = m_caster->GetPet();
+				Creature* pet = m_caster->GetGuardianPet();
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
@@ -5827,25 +5833,24 @@ SpellCastResult Spell::CheckCast(bool strict)
             // These won't show up in m_caster->GetMinionGUID()
             case SPELL_EFFECT_SUMMON:
             {
-                switch(m_spellInfo->Effects[i].MiscValueB)
+			 SummonPropertiesEntry const* SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->Effects[i].MiscValueB);
+                if (!SummonProperties)
+                    break;
+                switch (SummonProperties->Category)
                 {
-                    case SUMMON_TYPE_POSESSED:
-                    case SUMMON_TYPE_POSESSED2:
-                    case SUMMON_TYPE_POSESSED3:
-                    case SUMMON_TYPE_DEMON:
-                    case SUMMON_TYPE_SUMMON:
-                    {
-                        if(!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetMinionGUID())
+                    case SUMMON_CATEGORY_PET:
+                        if (!m_spellInfo->HasAttribute(SPELL_ATTR1_DISMISS_PET) && m_caster->GetPetGUID())
                             return SPELL_FAILED_ALREADY_HAVE_SUMMON;
-
-                        if(m_caster->GetCharmGUID())
+                    // intentional missing break, check both GetPetGUID() and GetCharmGUID for SUMMON_CATEGORY_PET
+                    case SUMMON_CATEGORY_PUPPET:
+                        if (m_caster->GetCharmGUID())
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
                         break;
-                    }
-                    case SUMMON_TYPE_GUARDIAN:
-                        if (m_spellInfo->Id == 13166 && m_caster && m_caster->GetMapId() == 580)
-                            return SPELL_FAILED_TRY_AGAIN;
-                        break;
+					case SUMMON_CATEGORY_ALLY:
+						//hack for?
+						if (m_spellInfo->Id == 13166 && m_caster && m_caster->GetMapId() == 580)
+							return SPELL_FAILED_TRY_AGAIN;
+						break;
                 }
                 break;
             }
@@ -6158,7 +6163,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         if (Effect.TargetA.GetTarget() == TARGET_UNIT_PET)
         {
-            if (!m_caster->GetPet() /* TC: GetGuardianPet */ && !m_caster->GetCharm())
+            if (!m_caster->GetGuardianPet() && !m_caster->GetCharm())
             {
                 if (m_triggeredByAuraSpell)              // not report pet not existence for triggered spells
                     return SPELL_FAILED_DONT_REPORT;

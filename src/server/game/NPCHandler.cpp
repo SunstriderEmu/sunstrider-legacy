@@ -631,7 +631,7 @@ void WorldSession::HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, Pre
         return;
     }
 
-    auto  newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -763,7 +763,7 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
     _player->RemovePet(pet, PetSaveMode(slot));
 
     // summon unstabled pet
-    auto  newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -775,10 +775,6 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 npcGUID, itemGUID;
     uint8 guildBank;                                        // new in 2.3.2, bool that means from guild bank money
 

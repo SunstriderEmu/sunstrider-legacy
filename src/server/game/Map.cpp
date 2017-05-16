@@ -32,6 +32,7 @@
 #include "ObjectGridLoader.h"
 #include "Pet.h"
 #include "GridStates.h"
+#include "Totem.h"
 
 #define DEFAULT_GRID_EXPIRY     300
 #define MAX_GRID_LOAD_TIME      50
@@ -3361,4 +3362,101 @@ void Map::RemoveOldCorpses()
 		RemoveCorpse(bones);
 		delete bones;
 	}
+}
+
+TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= nullptr*/, uint32 duration /*= 0*/, Unit* summoner /*= nullptr*/, uint32 spellId /*= 0*/)
+{
+	uint32 mask = UNIT_MASK_SUMMON;
+	if (properties)
+	{
+		switch (properties->Category)
+		{
+		case SUMMON_CATEGORY_PET:
+			mask = UNIT_MASK_GUARDIAN;
+			break;
+		case SUMMON_CATEGORY_PUPPET: //Only property 65 has this one. Spell such has : Eye of Kilrogg / Dream Vision / Using Steam Tonk Controller
+			mask = UNIT_MASK_PUPPET;
+			break;
+		case SUMMON_CATEGORY_VEHICLE:
+			mask = UNIT_MASK_MINION;
+			break;
+		case SUMMON_CATEGORY_WILD:
+		case SUMMON_CATEGORY_ALLY:
+		case SUMMON_CATEGORY_UNK:
+		{
+			switch (properties->Type)
+			{
+			case SUMMON_TYPE_MINION:
+			case SUMMON_TYPE_GUARDIAN:
+			case SUMMON_TYPE_GUARDIAN2:
+				mask = UNIT_MASK_GUARDIAN;
+				break;
+			case SUMMON_TYPE_TOTEM:
+			case SUMMON_TYPE_LIGHTWELL:
+				mask = UNIT_MASK_TOTEM;
+				break;
+			case SUMMON_TYPE_VEHICLE:
+			case SUMMON_TYPE_VEHICLE2:
+				mask = UNIT_MASK_SUMMON;
+				break;
+			case SUMMON_TYPE_MINIPET:
+				mask = UNIT_MASK_MINION;
+				break;
+			default:
+#ifdef LICH_KING
+				if (properties->Flags & 512) // Mirror Image, Summon Gargoyle
+					mask = UNIT_MASK_GUARDIAN;
+#endif
+				break;
+			}
+			break;
+		}
+		default:
+			return NULL;
+		}
+	}
+
+	uint32 phase = PHASEMASK_NORMAL;
+	if (summoner)
+		phase = summoner->GetPhaseMask();
+
+	TempSummon* summon = NULL;
+	switch (mask)
+	{
+	case UNIT_MASK_SUMMON:
+		summon = new TempSummon(properties, summoner, false);
+		break;
+	case UNIT_MASK_GUARDIAN:
+		summon = new Guardian(properties, summoner, false);
+		break;
+	case UNIT_MASK_PUPPET:
+		summon = new Puppet(properties, summoner);
+		break;
+	case UNIT_MASK_TOTEM:
+		summon = new Totem(properties, summoner);
+		break;
+	case UNIT_MASK_MINION:
+		summon = new Minion(properties, summoner, false);
+		break;
+	}
+
+	if (!summon->Create(GenerateLowGuid<HighGuid::Unit>(), this, phase, entry, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), nullptr/*, vehId*/))
+	{
+		delete summon;
+		return NULL;
+	}
+
+	summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
+
+	summon->SetHomePosition(pos);
+
+	summon->InitStats(duration);
+	AddToMap(summon->ToCreature());
+	summon->InitSummon();
+
+	// call MoveInLineOfSight for nearby creatures
+	Trinity::AIRelocationNotifier notifier(*summon);
+	summon->VisitNearbyObject(GetVisibilityRange(), notifier);
+
+	return summon;
 }

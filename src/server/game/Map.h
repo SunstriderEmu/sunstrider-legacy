@@ -36,6 +36,9 @@ class InstanceMap;
 class MapInstanced;
 enum WeatherState : int;
 class Object;
+class TempSummon;
+struct Position;
+struct SummonPropertiesEntry;
 
 struct ScriptAction
 {
@@ -284,6 +287,8 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void resetMarkedCells() { marked_cells.reset(); }
         bool isCellMarked(uint32 pCellId) { return marked_cells.test(pCellId); }
         void markCell(uint32 pCellId) { marked_cells.set(pCellId); }
+
+		TempSummon* SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = nullptr, uint32 duration = 0, Unit* summoner = nullptr, uint32 spellId = 0);
         Player* GetPlayer(ObjectGuid const& guid);
 		Corpse* GetCorpse(ObjectGuid const& guid);
         Creature* GetCreature(ObjectGuid guid);
@@ -413,6 +418,20 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void SetZoneWeather(uint32 zoneId, WeatherState weatherId, float weatherGrade);
         void SetZoneOverrideLight(uint32 zoneId, uint32 lightId, uint32 fadeInTime);
 
+		template<HighGuid high>
+		inline ObjectGuid::LowType GenerateLowGuid()
+		{
+			static_assert(ObjectGuidTraits<high>::MapSpecific, "Only map specific guid can be generated in Map context");
+			return GetGuidSequenceGenerator<high>().Generate();
+		}
+
+		template<HighGuid high>
+		inline ObjectGuid::LowType GetMaxLowGuid()
+		{
+			static_assert(ObjectGuidTraits<high>::MapSpecific, "Only map specific guid can be retrieved in Map context");
+			return GetGuidSequenceGenerator<high>().GetNextAfterMaxUsed();
+		}
+
 		uint32 GetLastMapUpdateTime() const { return _lastMapUpdate; }
     private:
 
@@ -478,7 +497,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
 		void SendObjectUpdates();
 
-        void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
+        //void UpdateActiveCells(const float &x, const float &y, const uint32 &t_diff);
 
         bool AllTransportsEmpty() const; // sunwell
         void AllTransportsRemovePassengers(); // sunwell
@@ -573,6 +592,17 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 
         ZoneDynamicInfoMap _zoneDynamicInfo;
         uint32 _defaultLight;
+
+		template<HighGuid high>
+		inline ObjectGuidGeneratorBase& GetGuidSequenceGenerator()
+		{
+			auto itr = _guidGenerators.find(high);
+			if (itr == _guidGenerators.end())
+				itr = _guidGenerators.insert(std::make_pair(high, std::unique_ptr<ObjectGuidGenerator<high>>(new ObjectGuidGenerator<high>()))).first;
+
+			return *itr->second;
+		}
+		std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
         
 		MapStoredObjectTypesContainer _objectsStore;
         CreatureBySpawnIdContainer _creatureBySpawnIdStore;

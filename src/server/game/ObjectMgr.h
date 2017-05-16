@@ -702,6 +702,7 @@ class TC_GAME_API ObjectMgr
         
         std::string GeneratePetName(uint32 entry);
         uint32 GetBaseXP(uint32 level);
+		uint32 GetXPForLevel(uint8 level) const;
 
         int32 GetFishingBaseSkillLevel(uint32 entry) const
         {
@@ -714,17 +715,22 @@ class TC_GAME_API ObjectMgr
         CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
 
         void SetHighestGuids();
-        //setting temporary to true will use an alternate (higher) set of guid. This is done to prevent overflows.
-        uint32 GenerateLowGuid(HighGuid guidhigh, bool temporary = false);
-        uint32 AltGenerateLowGuid(uint32 type, bool& temporary);
+
+		template<HighGuid type>
+		inline ObjectGuidGeneratorBase& GetGenerator()
+		{
+			static_assert(ObjectGuidTraits<type>::Global, "Only global guid can be generated in ObjectMgr context");
+			return GetGuidSequenceGenerator<type>();
+		}
+
         uint32 GenerateAuctionID();
         uint32 GenerateMailID();
         uint32 GenerateItemTextID();
         uint32 GeneratePetNumber();
         uint32 GenerateArenaTeamId();
         uint32 GenerateGuildId();
-
-        bool IsInTemporaryGuidRange(uint32 type, uint32 guid);
+		uint32 GenerateCreatureSpawnId();
+		uint32 GenerateGameObjectSpawnId();
 
         uint32 CreateItemText(SQLTransaction& charTrans, std::string const& text);
         uint32 CreateItemText(std::string const& text);
@@ -1006,8 +1012,6 @@ class TC_GAME_API ObjectMgr
         GmTicketList m_GMTicketList;
         uint64 GenerateGMTicketId();
 
-        uint32 GetMaxCreatureGUID() { return m_hiCreatureGuid; }
-        
         uint32 GetLoadedScriptsStats(uint32& entryLoaded, uint32& guidLoaded)
         {
             entryLoaded = m_creatureScriptsByEntry.size();
@@ -1029,45 +1033,33 @@ class TC_GAME_API ObjectMgr
         void LoadFactionChangeQuests();
         void LoadFactionChangeReputGeneric();
 
-        bool isUsingAlternateGuidGeneration() { return m_hiCreatureRegularModeGuid; };
-        uint32 getCurrentCreatureGuidIndex() { return m_hiCreatureGuid; };
-        uint32 getAltCurrentCreatureGuidIndex() { return m_hiTempCreatureGuid; };
-        uint32 getAltCreatureGuidStartIndex() { return m_hiTempCreatureGuidStart; };
-        uint32 getCurrentGoGuidIndex() { return m_hiTempGoGuid; };
-        uint32 getAltCurrentGoGuidIndex() { return m_hiTempGoGuidStart; };
-        uint32 getAltGoGuidStartIndex() { return m_hiTempGoGuidStart; };
-        
         bool IsTransportMap(uint32 mapId) const { return _transportMaps.count(mapId); }
 
     protected:
 
         // first free id for selected id type
-        uint32 m_auctionid;
-        uint32 m_mailid;
-        uint32 m_ItemTextId;
-        uint32 m_arenaTeamId;
-        uint32 m_guildId;
-        uint32 m_hiPetNumber;
-        uint64 m_GMticketid;
+        uint32 _auctionId;
+		std::atomic<uint32> _mailid;
+        uint32 _ItemTextId;
+        uint32 _arenaTeamId;
+        uint32 _guildId;
+		std::atomic<uint32> _hiPetNumber;
+        uint64 _GMticketid;
 
-        // first free low guid for seelcted guid type
-        uint32 m_hiCharGuid;
+		uint32 _creatureSpawnId;
+		uint32 _gameObjectSpawnId;
 
-        uint32 m_hiCreatureGuid;
-        uint32 m_hiTempCreatureGuidStart;
-        uint32 m_hiTempCreatureGuid;
-        bool m_hiCreatureRegularModeGuid; //Debug or if m_hiCreatureGuid has reached m_hiTempCreatureGuidStart
+		// first free low guid for selected guid type
+		template<HighGuid high>
+		inline ObjectGuidGeneratorBase& GetGuidSequenceGenerator()
+		{
+			auto itr = _guidGenerators.find(high);
+			if (itr == _guidGenerators.end())
+				itr = _guidGenerators.insert(std::make_pair(high, std::unique_ptr<ObjectGuidGenerator<high>>(new ObjectGuidGenerator<high>()))).first;
 
-        uint32 m_hiGoGuid;
-        uint32 m_hiTempGoGuidStart;
-        uint32 m_hiTempGoGuid;
-        bool m_hiGoRegularModeGuid;
-
-        uint32 m_hiPetGuid;
-        uint32 m_hiItemGuid;
-        uint32 m_hiDoGuid;
-        uint32 m_hiCorpseGuid;
-        uint32 m_hiTransportGuid;
+			return *itr->second;
+		}
+		std::map<HighGuid, std::unique_ptr<ObjectGuidGeneratorBase>> _guidGenerators;
 
         QuestMap            mQuestTemplates;
 

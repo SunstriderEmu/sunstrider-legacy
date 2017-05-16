@@ -226,10 +226,12 @@ struct PlayerInfo
 
 struct PvPInfo
 {
-    PvPInfo() : IsInHostileArea(false), IsHostile(false), endTimer(0) {}
+    PvPInfo() : IsInHostileArea(false), IsHostile(false), IsInNoPvPArea(false), IsInFFAPvPArea(false), endTimer(0) {}
 
 	bool IsHostile;
     bool IsInHostileArea;
+    bool IsInNoPvPArea;                 ///> Marks if player is in a sanctuary or friendly capital city
+    bool IsInFFAPvPArea;                ///> Marks if player is in an FFAPvP area (such as Gurubashi Arena)
     time_t endTimer;
 };
 
@@ -1175,7 +1177,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void AddToWorld() override;
         void RemoveFromWorld() override;
 
-        void StopCastingCharm() { Uncharm(); }
+		void StopCastingCharm();
         void StopCastingBindSight();
 
         bool TeleportTo(uint32 mapid, float x, float y, float z, float orientation, uint32 options = 0);
@@ -1297,15 +1299,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false, RemovePetReason reason = REMOVE_PET_REASON_OTHER);
-        void RemoveMiniPet();
-        Pet* GetMiniPet() const;
-        void SetMiniPet(Pet* pet);
-        void RemoveGuardians();
-        void RemoveGuardiansWithEntry(uint32 entry);
-        bool HasGuardianWithEntry(uint32 entry);
-        void AddGuardian(Pet* pet);
-        GuardianPetList const& GetGuardians() const { return m_guardianPets; }
-        void Uncharm();
 
         /// Handles said message in regular chat based on declared language and in config pre-defined Range.
         void Say(std::string const& text, Language language, WorldObject const* = nullptr) override;
@@ -1330,7 +1323,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         Item* GetWeaponForAttack(WeaponAttackType attackType, bool useable = false) const;
         bool HasMainWeapon() const override;
         Item* GetShield(bool useable = false) const;
-        static uint32 GetAttackBySlot( uint8 slot );        // MAX_ATTACK if not weapon slot
+        static WeaponAttackType GetAttackBySlot( uint8 slot );        // MAX_ATTACK if not weapon slot
         std::vector<Item *> &GetItemUpdateQueue() { return m_itemUpdateQueue; }
         static bool IsInventoryPos( uint16 pos ) { return IsInventoryPos(pos >> 8,pos & 255); }
         static bool IsInventoryPos( uint8 bag, uint8 slot );
@@ -1400,8 +1393,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
                                                             // in trade, auction, guild bank, mail....
         void MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool update, bool in_characterInventoryDB = false);
                                                             // in trade, guild bank, mail....
-        void DisableItemDependentAurasAndCasts( Item * pItem );
-        void EnableItemDependantAuras(Item* pItem, bool skipItems = false);
+        void RemoveItemDependentAurasAndCasts(Item* pItem);
         void DestroyItem( uint8 bag, uint8 slot, bool update );
         void DestroyItemCount( uint32 item, uint32 count, bool update, bool unequip_check = false, bool inBankAlso = false);
         void DestroyItemCount( Item* item, uint32& count, bool update );
@@ -1601,13 +1593,21 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendTalentWipeConfirm(uint64 guid);
         void RewardRage( uint32 damage, uint32 weaponSpeedHitFactor, bool attacker );
         void SendPetSkillWipeConfirm();
-        void CalcRage( uint32 damage,bool attacker );
+        //void CalcRage( uint32 damage,bool attacker );
         void RegenerateAll();
         void Regenerate(Powers power);
         void RegenerateHealth();
         void ResetAllPowers();
         void setRegenTimer(uint32 time) {m_regenTimer = time;}
         void setWeaponChangeTimer(uint32 time) {m_weaponChangeTimer = time;}
+
+        void UpdateWeaponDependentCritAuras(WeaponAttackType attackType);
+        void UpdateAllWeaponDependentCritAuras();
+
+        void UpdateWeaponDependentAuras(WeaponAttackType attackType);
+        void ApplyItemDependentAuras(Item* item, bool apply);
+
+        bool CheckAttackFitToAuraRequirement(WeaponAttackType attackType, AuraEffect const* aurEff) const override;
 
         uint32 GetMoney() const;
         bool ModifyMoney(int32 amount, bool sendError = true);
@@ -1791,6 +1791,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SendInitialActionButtons();
 
         PvPInfo pvpInfo;
+		void UpdatePvPState(bool onlyFFA = false);
         void UpdatePvP(bool state, bool ovrride=false);
         void UpdateZone(uint32 newZone, uint32 newArea);
         void UpdateArea(uint32 newArea);
@@ -1840,7 +1841,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         uint32 GetGuildId() const;
         Guild* GetGuild() const;
         uint32 GetRank() const;
-        int GetGuildIdInvited() const { return m_GuildIdInvited; }
+        int GetGuildIdInvited() const { return _guildIdInvited; }
         static void RemovePetitionsAndSigns(uint64 guid, uint32 type, SQLTransaction trans);
         static uint32 GetGuildIdFromCharacterInfo(uint32 guid);
 
@@ -1848,8 +1849,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetInArenaTeam(uint32 ArenaTeamId, uint8 slot);
         static uint32 GetArenaTeamIdFromCharacterInfo(uint64 guid, uint8 slot);
         uint32 GetArenaTeamId(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * 6)); }
-        void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
-        uint32 GetArenaTeamIdInvited() const { return m_ArenaTeamIdInvited; }
+        void SetArenaTeamIdInvited(uint32 ArenaTeamId) { _arenaTeamIdInvited = ArenaTeamId; }
+        uint32 GetArenaTeamIdInvited() const { return _arenaTeamIdInvited; }
         uint8 GetGladiatorRank() const;
         void UpdateGladiatorTitle(uint8 rank);
         void UpdateArenaTitles();
@@ -2112,21 +2113,29 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void SetCanBlock(bool value);
 
         void SetRegularAttackTime();
-        void SetBaseModValue(BaseModGroup modGroup, BaseModType modType, float value) { m_auraBaseMod[modGroup][modType] = value; }
-        void HandleBaseModValue(BaseModGroup modGroup, BaseModType modType, float amount, bool apply);
+
+        void HandleBaseModFlatValue(BaseModGroup modGroup, float amount, bool apply);
+        void ApplyBaseModPctValue(BaseModGroup modGroup, float pct);
+
+        void SetBaseModFlatValue(BaseModGroup modGroup, float val);
+        void SetBaseModPctValue(BaseModGroup modGroup, float val);
+
+        void UpdateDamageDoneMods(WeaponAttackType attackType) override;
+        void UpdateBaseModGroup(BaseModGroup modGroup);
+
         float GetBaseModValue(BaseModGroup modGroup, BaseModType modType) const;
         float GetTotalBaseModValue(BaseModGroup modGroup) const;
-        float GetTotalPercentageModValue(BaseModGroup modGroup) const { return m_auraBaseMod[modGroup][FLAT_MOD] + m_auraBaseMod[modGroup][PCT_MOD]; }
+
         void _ApplyAllStatBonuses();
         void _RemoveAllStatBonuses();
 
         void CastItemUseSpell(Item* item, SpellCastTargets const& targets, uint8 cast_count, uint32 glyphIndex = 0);
-        void _ApplyItemMods(Item *item,uint8 slot,bool apply);
+        void _ApplyItemMods(Item *item,uint8 slot,bool apply, bool updateItemAuras = true);
         void _RemoveAllItemMods();
         void _ApplyAllItemMods();
         void _ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply);
+        void _ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, /* TC ScalingStatValuesEntry const* ssv, */ bool apply);
         void _ApplyAmmoBonuses();
-        void _ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply);
         bool EnchantmentFitsRequirements(uint32 enchantmentcondition, int8 slot);
         void ToggleMetaGemsActive(uint8 exceptslot, bool apply);
         void CorrectMetaGemEnchants(uint8 slot, bool apply);
@@ -2653,8 +2662,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         
         SkillStatusMap mSkillStatus;
 
-        uint32 m_GuildIdInvited;
-        uint32 m_ArenaTeamIdInvited;
+        uint32 _guildIdInvited;
+        uint32 _arenaTeamIdInvited;
 
         PlayerMails m_mail;
         PlayerSpellMap m_spells;
@@ -2669,8 +2678,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         ActionButtonList m_actionButtons;
 
-        float m_auraBaseMod[BASEMOD_END][MOD_END];
-
+        float m_auraBaseFlatMod[BASEMOD_END];
+        float m_auraBasePctMod[BASEMOD_END];
         SpellModList m_spellMods[MAX_SPELLMOD];
         int32 m_SpellModRemoveCount;
         EnchantDurationList m_enchantDuration;
@@ -2773,8 +2782,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         PlayerbotMgr* m_playerbotMgr;
 #endif
 
-        uint64 m_miniPet;
-        GuardianPetList m_guardianPets;
+        //GuardianPetList m_guardianPets;
 
         // Player summoning
         time_t m_summon_expire;

@@ -252,18 +252,33 @@ class TC_GAME_API PackedGuid
         ByteBuffer _packedGuid;
 };
 
-template<HighGuid high>
-class TC_GAME_API ObjectGuidGenerator
+
+class TC_GAME_API ObjectGuidGeneratorBase
 {
-    public:
-        explicit ObjectGuidGenerator(uint32 start = 1) : _nextGuid(start) { }
+public:
+	ObjectGuidGeneratorBase(ObjectGuid::LowType start = 1) : _nextGuid(start) { }
 
-        void Set(uint32 val) { _nextGuid = val; }
-        uint32 Generate();
-        uint32 GetNextAfterMaxUsed() const { return _nextGuid; }
+	virtual void Set(ObjectGuid::LowType val) { _nextGuid = val; }
+	virtual ObjectGuid::LowType Generate() = 0;
+	ObjectGuid::LowType GetNextAfterMaxUsed() const { return _nextGuid; }
 
-    private:
-        uint32 _nextGuid;
+protected:
+	static void HandleCounterOverflow(HighGuid high);
+	ObjectGuid::LowType _nextGuid;
+};
+
+template<HighGuid high>
+class TC_GAME_API ObjectGuidGenerator : public ObjectGuidGeneratorBase
+{
+public:
+	explicit ObjectGuidGenerator(ObjectGuid::LowType start = 1) : ObjectGuidGeneratorBase(start) { }
+
+	ObjectGuid::LowType Generate() override
+	{
+		if (_nextGuid >= ObjectGuid::GetMaxCounter(high) - 1)
+			HandleCounterOverflow(high);
+		return _nextGuid++;
+	}
 };
 
 TC_GAME_API ByteBuffer& operator<<(ByteBuffer& buf, ObjectGuid const& guid);

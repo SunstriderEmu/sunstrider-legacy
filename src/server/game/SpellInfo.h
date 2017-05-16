@@ -462,6 +462,7 @@ public:
     bool IsPassive() const;
     bool IsStackableWithRanks() const;
     bool IsPassiveStackableWithRanks() const;
+	bool IsCooldownStartedOnEvent() const;
     bool IsChannelCategorySpell() const;
     bool IsBinarySpell() const;
 

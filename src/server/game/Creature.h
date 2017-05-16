@@ -18,7 +18,7 @@ class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
-class TemporarySummon;
+class TempSummon;
 class Group;
 
 enum Gossip_Option
@@ -501,6 +501,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         //reapply creature addon data to creature
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
+        void UpdateLevelDependantStats();
         void LoadEquipment(uint32 equip_entry, bool force = false);
         void SetSpawnHealth();
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
@@ -800,6 +801,7 @@ class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public Ma
         void SetTarget(uint64 guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
+        bool IsFocusing(Spell const* focusSpell = nullptr, bool withDelay = false) override;
 
         CreatureTextRepeatIds GetTextRepeatGroup(uint8 textGroup);
         void SetTextRepeatId(uint8 textGroup, uint8 id);

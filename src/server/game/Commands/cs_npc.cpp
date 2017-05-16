@@ -132,7 +132,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     if (Transport* tt = chr->GetTransport())
         if (MotionTransport* trans = tt->ToMotionTransport())
         {
-            uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit);
+            uint32 guid = sObjectMgr->GenerateCreatureSpawnId();
             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
             data.id = id;
             data.posX = chr->GetTransOffsetX();
@@ -162,7 +162,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         }
 
     auto  pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit), map, chr->GetPhaseMask(), id, x, y, z, o))
+    if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, x, y, z, o))
     {
         delete pCreature;
         return false;

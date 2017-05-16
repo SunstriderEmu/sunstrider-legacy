@@ -255,6 +255,7 @@ void GameObject::RemoveFromWorld()
     }
 }
 
+//spawnId will be generated on save later if needed
 bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
@@ -751,10 +752,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         return;
 
     if (!m_spawnId)
-        m_spawnId = GetGUIDLow();
-
-    if(sObjectMgr->isUsingAlternateGuidGeneration() && m_spawnId > sObjectMgr->getAltGoGuidStartIndex())
-        TC_LOG_ERROR("FIXME","Gameobject with guid %u (entry %u) in temporary range was saved to database.",m_spawnId,m_goInfo->entry); 
+		m_spawnId = sObjectMgr->GenerateGameObjectSpawnId();
 
     // update in loaded data (changing data only in this place)
     GameObjectData& data = sObjectMgr->NewGOData(m_spawnId);
@@ -800,9 +798,6 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->PAppend("DELETE FROM gameobject WHERE guid = '%u'", m_spawnId);
     trans->PAppend( ss.str( ).c_str( ) );
     WorldDatabase.CommitTransaction(trans);
-
-    if(sObjectMgr->IsInTemporaryGuidRange(uint32(HighGuid::GameObject),m_spawnId))
-        TC_LOG_ERROR("FIXME","Gameobject %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
 bool GameObject::LoadFromDB(uint32 guid, Map *map)
@@ -826,10 +821,8 @@ bool GameObject::LoadFromDB(uint32 guid, Map *map)
     uint32 ArtKit = data->ArtKit;
 
     m_spawnId = guid;
-    if (map->GetInstanceId() != 0) 
-        guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true);
 
-    if (!Create(guid,entry, map, PHASEMASK_NORMAL, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
+    if (!Create(map->GenerateLowGuid<HighGuid::GameObject>(),entry, map, PHASEMASK_NORMAL, Position(x, y, z, ang), data->rotation, animprogress, GOState(go_state), ArtKit) )
         return false;
 
     switch(GetGOInfo()->type)

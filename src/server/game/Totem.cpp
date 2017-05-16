@@ -27,11 +27,13 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 
-Totem::Totem() : Creature()
+Totem::Totem(SummonPropertiesEntry const* properties, Unit* owner) : Minion(properties, owner, false)
 {
     m_unitTypeMask |= UNIT_MASK_TOTEM;
     m_duration = 0;
     m_type = TOTEM_PASSIVE;
+
+	this->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 }
 
 
@@ -59,55 +61,14 @@ void Totem::Update( uint32 time )
     Creature::Update( time );
 }
 
-void Totem::Summon(Unit* owner)
+void Totem::UnSummon(uint32 msTime)
 {
-    CreatureTemplate const *cinfo = GetCreatureTemplate();
-    if (owner->GetTypeId()==TYPEID_PLAYER && cinfo)
-    {
-        uint32 modelid = 0;
-        if((owner->ToPlayer())->GetTeam() == HORDE)
-        {
-            if(cinfo->Modelid3)
-                modelid = cinfo->Modelid3;
-            else if(cinfo->Modelid4)
-                modelid = cinfo->Modelid4;
-        }
-        else
-        {
-            if(cinfo->Modelid1)
-                modelid = cinfo->Modelid1;
-            else if(cinfo->Modelid2)
-                modelid = cinfo->Modelid2;
-        }
-        if (modelid)
-            SetDisplayId(modelid);
-        else
-            TC_LOG_ERROR("FIXME","Totem::Summon: Missing modelid information for entry %u, team %u, totem will use default values.",GetEntry(),(owner->ToPlayer())->GetTeam());
-    }
+	if (msTime)
+	{
+		m_Events.AddEvent(new ForcedUnsummonDelayEvent(*this), m_Events.CalculateTime(msTime));
+		return;
+	}
 
-    // Only add if a display exists.
-	SetMap(owner->GetMap());
-    owner->GetMap()->AddToMap(this->ToCreature(), true);
-
-    WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
-    data << GetGUID();
-    SendMessageToSet(&data,true);
-
-    AIM_Initialize();
-
-    switch(m_type)
-    {
-        case TOTEM_PASSIVE: CastSpell(this, GetSpell(), true); break;
-        case TOTEM_STATUE:  CastSpell(GetOwner(), GetSpell(), true); break;
-        default: break;
-    }
-
-    if(GetEntry() == SENTRY_TOTEM_ENTRY)
-        SetReactState(REACT_AGGRESSIVE);
-}
-
-void Totem::UnSummon()
-{
     SendObjectDeSpawnAnim(GetGUID());
 
     CombatStop();
@@ -115,15 +76,16 @@ void Totem::UnSummon()
     Unit *owner = this->GetOwner();
     if (owner)
     {
-        // clear owenr's totem slot
-        for(uint64 & i : owner->m_TotemSlot)
-        {
-            if(i==GetGUID())
-            {
-                i = 0;
-                break;
-            }
-        }
+		// clear owner's totem slot
+		for (uint8 i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
+		{
+			if (GetOwner()->m_SummonSlot[i] == GetGUID())
+			{
+				//GetOwner()->m_SummonSlot[i].Clear();
+				GetOwner()->m_SummonSlot[i] = 0;
+				break;
+			}
+		}
 
         owner->RemoveAurasDueToSpell(GetSpell());
 
@@ -165,6 +127,7 @@ void Totem::SetOwner(uint64 guid)
     }
 }
 
+/*
 Unit *Totem::GetOwner()
 {
     uint64 ownerid = GetOwnerGUID();
@@ -172,20 +135,7 @@ Unit *Totem::GetOwner()
         return nullptr;
     return ObjectAccessor::GetUnit(*this, ownerid);
 }
-
-void Totem::SetTypeBySummonSpell(SpellInfo const * spellProto)
-{
-    // Get spell casted by totem
-    SpellInfo const * totemSpell = sSpellMgr->GetSpellInfo(GetSpell());
-    if (totemSpell)
-    {
-        // If spell have cast time -> so its active totem
-        if (totemSpell->CalcCastTime())
-            m_type = TOTEM_ACTIVE;
-    }
-    if(spellProto->SpellIconID==2056)
-        m_type = TOTEM_STATUE;                              //Jewelery statue
-}
+*/
 
 bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 {
@@ -203,3 +153,62 @@ bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
     return Creature::IsImmunedToSpell(spellInfo, useCharges);
 }
 
+void Totem::InitSummon()
+{
+    if (uint32 spell_id = GetSpell())
+    {
+        switch (m_type)
+        {
+            case TOTEM_PASSIVE: CastSpell(this, GetSpell(), true); break;
+            case TOTEM_STATUE:  CastSpell(GetOwner(), GetSpell(), true); break; //TC does not do this one, is there a reason?
+        }
+    }
+
+	// Some totems can have both instant effect and passive spell
+	if (GetSpell(1))
+		CastSpell(this, GetSpell(1), true);
+
+#ifndef LICH_KING
+    WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
+    data << GetGUID();
+    SendMessageToSet(&data, true);
+#endif
+}
+
+void Totem::InitStats(uint32 duration)
+{
+	// client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
+	if (GetOwner()->GetTypeId() == TYPEID_PLAYER
+		&& m_Properties->Slot >= SUMMON_SLOT_TOTEM
+		&& m_Properties->Slot < MAX_TOTEM_SLOT)
+	{
+		WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
+		data << uint8(m_Properties->Slot - 1);
+		data << uint64(GetGUID());
+		data << uint32(duration);
+		data << uint32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
+		GetOwner()->ToPlayer()->SendDirectMessage(&data);
+
+		// set display id depending on caster's race
+		SetDisplayId(GetOwner()->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
+	}
+
+	Minion::InitStats(duration);
+
+	// Get spell cast by totem
+	if (SpellInfo const* totemSpell = sSpellMgr->GetSpellInfo(GetSpell()))
+	{
+		if (totemSpell->CalcCastTime())   // If spell has cast time -> its an active totem
+			m_type = TOTEM_ACTIVE;
+
+		if (totemSpell->SpellIconID == 2056)
+			m_type = TOTEM_STATUE;                              //Jewelery statue
+	}
+
+	if (GetEntry() == SENTRY_TOTEM_ENTRY)
+		SetReactState(REACT_AGGRESSIVE);
+
+	m_duration = duration;
+
+	SetLevel(GetOwner()->GetLevel());
+}

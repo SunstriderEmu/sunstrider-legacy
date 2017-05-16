@@ -399,11 +399,11 @@ class TC_GAME_API Battleground
                 ++m_PlayersCount[GetTeamIndexByTeamId(Team)];
         }
 
-        uint32 GetArenaTeamIdForIndex(uint32 index) { return m_ArenaTeamIds[index]; }
+        uint32 GetArenaTeamIdForIndex(uint32 index) { return _arenaTeamIds[index]; }
 
         // used for rated arena battles
-        void SetArenaTeamIdForTeam(uint32 Team, uint32 ArenaTeamId) { m_ArenaTeamIds[GetTeamIndexByTeamId(Team)] = ArenaTeamId; }
-        uint32 GetArenaTeamIdForTeam(uint32 Team) const { return m_ArenaTeamIds[GetTeamIndexByTeamId(Team)]; }
+        void SetArenaTeamIdForTeam(uint32 Team, uint32 ArenaTeamId) { _arenaTeamIds[GetTeamIndexByTeamId(Team)] = ArenaTeamId; }
+        uint32 GetArenaTeamIdForTeam(uint32 Team) const { return _arenaTeamIds[GetTeamIndexByTeamId(Team)]; }
         void SetArenaTeamRatingChangeForTeam(uint32 Team, int32 RatingChange) { m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)] = RatingChange; }
         int32 GetArenaTeamRatingChangeForTeam(uint32 Team) const { return m_ArenaTeamRatingChanges[GetTeamIndexByTeamId(Team)]; }
 
@@ -539,7 +539,7 @@ class TC_GAME_API Battleground
         uint32 m_PlayersCount[2];
 
         /* Arena team ids by team */
-        uint32 m_ArenaTeamIds[2];
+        uint32 _arenaTeamIds[2];
 
         int32 m_ArenaTeamRatingChanges[2];
 

@@ -1117,9 +1117,6 @@ void World::LoadConfigSettings(bool reload)
 
     m_configs[CONFIG_WHISPER_MINLEVEL] = sConfigMgr->GetIntDefault("Whisper.MinLevel", 1);
 
-    m_configs[CONFIG_GUIDDISTRIB_NEWMETHOD] = sConfigMgr->GetBoolDefault("GuidDistribution.NewMethod", true);
-    m_configs[CONFIG_GUIDDISTRIB_PROPORTION] = sConfigMgr->GetIntDefault("GuidDistribution.Proportion", 90);
-
     m_configs[CONFIG_ARENA_SPECTATOR_ENABLE] = sConfigMgr->GetBoolDefault("ArenaSpectator.Enable", true);
     m_configs[CONFIG_ARENA_SPECTATOR_MAX] = sConfigMgr->GetIntDefault("ArenaSpectator.Max", 10);
     m_configs[CONFIG_ARENA_SPECTATOR_GHOST] = sConfigMgr->GetBoolDefault("ArenaSpectator.Ghost", true);

@@ -1119,7 +1119,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket *data, Battleground *bg)
         }
         
         for (int i = 1; i >= 0; --i) {
-            uint32 teamId = bg->m_ArenaTeamIds[i];
+            uint32 teamId = bg->_arenaTeamIds[i];
             ArenaTeam* at = sObjectMgr->GetArenaTeamById(teamId);
             if (at)
                 *data << at->GetName();

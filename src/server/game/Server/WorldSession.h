@@ -782,6 +782,7 @@ class TC_GAME_API WorldSession
         void HandleTutorialReset( WorldPacket & recvData );
 
         //Pet
+		void HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid, uint16 flag, uint64 guid2);
         void HandlePetAction( WorldPacket & recvData );
         void HandlePetStopAttack(WorldPacket& recvData);
         void HandlePetNameQuery( WorldPacket & recvData );

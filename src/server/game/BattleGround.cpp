@@ -157,8 +157,8 @@ Battleground::Battleground()
     m_TeamStartLocO[BG_ALLIANCE]   = 0;
     m_TeamStartLocO[BG_HORDE]      = 0;
 
-    m_ArenaTeamIds[BG_ALLIANCE]   = 0;
-    m_ArenaTeamIds[BG_HORDE]      = 0;
+    _arenaTeamIds[BG_ALLIANCE]   = 0;
+    _arenaTeamIds[BG_HORDE]      = 0;
 
     m_ArenaTeamRatingChanges[BG_ALLIANCE]   = 0;
     m_ArenaTeamRatingChanges[BG_HORDE]      = 0;
@@ -621,7 +621,7 @@ void Battleground::EndBattleground(uint32 winner)
             final_loser_rating = loser_arena_team->GetStats().rating;
             final_winner_rating = winner_arena_team->GetStats().rating;
 
-            TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, m_ArenaTeamIds[BG_ALLIANCE], m_ArenaTeamIds[BG_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
+            TC_LOG_DEBUG("arena","Arena match Type: %u for Team1Id: %u - Team2Id: %u ended. WinnerTeamId: %u. Winner rating: %u, Loser rating: %u. RatingChange: %i.", m_ArenaType, _arenaTeamIds[BG_ALLIANCE], _arenaTeamIds[BG_HORDE], winner_arena_team->GetId(), final_winner_rating, final_loser_rating, winner_change);
             for (auto itr = GetPlayerScoresBegin();itr !=GetPlayerScoresEnd(); ++itr) {
                 if (Player* player = sObjectMgr->GetPlayer(itr->first)) {
                     TC_LOG_DEBUG("arena","Statistics for %s (GUID: " UI64FMTD ", Team Id: %d, IP: %s): %u damage, %u healing, %u killing blows", player->GetName().c_str(), itr->first, player->GetArenaTeamId(m_ArenaType == 5 ? 2 : m_ArenaType == 3), player->GetSession()->GetRemoteAddress().c_str(), itr->second->DamageDone, itr->second->HealingDone, itr->second->KillingBlows);
@@ -658,12 +658,12 @@ void Battleground::EndBattleground(uint32 winner)
             ss << "team2_member4, team2_member4_ip, team2_member4_heal, team2_member4_damage, team2_member4_kills, ";
             ss << "team2_member5, team2_member5_ip, team2_member5_heal, team2_member5_damage, team2_member5_kills, ";
             ss << "start_time, end_time, winner, rating_change, winner_rating, loser_rating, team1_name, team2_name) VALUES (";
-            ss << uint32(m_ArenaType) << ", " << m_ArenaTeamIds[BG_ALLIANCE] << ", ";
+            ss << uint32(m_ArenaType) << ", " << _arenaTeamIds[BG_ALLIANCE] << ", ";
             for (auto & itr : m_team1LogInfo)
                 ss << itr.second->guid << ", '" << itr.second->ip.c_str() << "', " << itr.second->heal << ", " << itr.second->damage << ", " << uint32(itr.second->kills) << ", ";
             for (uint8 i = 0; i < (5 - m_team1LogInfo.size()); i++)
                 ss << "0, '', 0, 0, 0, ";
-            ss << m_ArenaTeamIds[BG_HORDE] << ", ";
+            ss << _arenaTeamIds[BG_HORDE] << ", ";
             for (auto & itr : m_team2LogInfo)
                 ss << itr.second->guid << ", '" << itr.second->ip.c_str() << "', " << itr.second->heal << ", " << itr.second->damage << ", " << uint32(itr.second->kills) << ", ";
             for (uint8 i = 0; i < (5 - m_team2LogInfo.size()); i++)
@@ -675,7 +675,7 @@ void Battleground::EndBattleground(uint32 winner)
             else if (winner == HORDE)
                 ss << ", '" << loser_arena_team->GetName() << "', '" << winner_arena_team->GetName() << "')";
             LogsDatabase.Execute(ss.str().c_str());
-            //LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, m_ArenaTeamIds[BG_ALLIANCE], m_ArenaTeamIds[BG_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
+            //LogsDatabase.PExecute("INSERT INTO arena_match (type, team1, team2, team1_members, team2_members, start_time, end_time, winner, rating_change) VALUES (%u, %u, %u, \"%s\", \"%s\", %u, %u, %u, %u)", m_ArenaType, _arenaTeamIds[BG_ALLIANCE], _arenaTeamIds[BG_HORDE], oss_team1Members.str().c_str(), oss_team2Members.str().c_str(), GetStartTimestamp(), time(NULL), winner_arena_team->GetId(), winner_change);
         }
         else
         {
@@ -1112,7 +1112,7 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
                 // summon old pet if there was one and there isn't a current pet
                 if(!plr->GetPet() && plr->GetTemporaryUnsummonedPetNumber())
                 {
-                    auto  NewPet = new Pet;
+                    auto NewPet = new Pet(plr);
                     if(!NewPet->LoadPetFromDB(plr, 0, plr->GetTemporaryUnsummonedPetNumber(), true))
                         delete NewPet;
 
@@ -1237,7 +1237,7 @@ void Battleground::StartBattleground()
     SetLastResurrectTime(0);
     SetStartTimestamp(time(nullptr));
     if(m_IsRated) 
-        TC_LOG_DEBUG("arena","Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, m_ArenaTeamIds[BG_ALLIANCE], m_ArenaTeamIds[BG_HORDE]);
+        TC_LOG_DEBUG("arena","Arena match type: %u for Team1Id: %u - Team2Id: %u started.", m_ArenaType, _arenaTeamIds[BG_ALLIANCE], _arenaTeamIds[BG_HORDE]);
 }
 
 void Battleground::onAddSpectator(Player *spectator)
@@ -1505,7 +1505,7 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
     // so we must create it specific for this instance
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true),entry, GetBgMap(), PHASEMASK_NORMAL, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
+    if(!go->Create(GetBgMap()->GenerateLowGuid<HighGuid::GameObject>(), entry, GetBgMap(), PHASEMASK_NORMAL, Position(x,y,z,o), G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
     {
         TC_LOG_ERROR("battleground","Gameobject template %u not found in database! Battleground not created!", entry);
         TC_LOG_ERROR("battleground","Cannot create gameobject template %u! Battleground not created!", entry);
@@ -1626,7 +1626,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
         return nullptr;
 
 	auto  pCreature = new Creature();
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), map, PHASEMASK_NORMAL, entry, x, y, z, o))
+    if (!pCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, entry, x, y, z, o))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
         delete pCreature;

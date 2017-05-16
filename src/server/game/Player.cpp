@@ -360,8 +360,8 @@ Player::Player (WorldSession *session) :
 
     m_ControlledByPlayer = true;
 
-    m_GuildIdInvited = 0;
-    m_ArenaTeamIdInvited = 0;
+    _guildIdInvited = 0;
+    _arenaTeamIdInvited = 0;
 
     m_atLoginFlags = AT_LOGIN_NONE;
 
@@ -474,11 +474,11 @@ Player::Player (WorldSession *session) :
         m_talents[i] = new PlayerTalentMap();
     }
     */
-
-    for (auto & i : m_auraBaseMod)
+    
+    for (uint8 i = 0; i < BASEMOD_END; ++i)
     {
-        i[FLAT_MOD] = 0.0f;
-        i[PCT_MOD] = 1.0f;
+        m_auraBaseFlatMod[i] = 0.0f;
+        m_auraBasePctMod[i]  = 1.0f;
     }
 
     // Honor System
@@ -739,7 +739,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
     UpdateMaxHealth();                                      // Update max Health (for add bonus from stamina)
-    SetHealth(GetMaxHealth());
+    SetFullHealth();
     if (GetPowerType()==POWER_MANA)
     {
         UpdateMaxPower(POWER_MANA);                         // Update max Mana (for add bonus from intellect)
@@ -1539,10 +1539,6 @@ void Player::SetDeathState(DeathState s)
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add SetDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
         RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true, REMOVE_PET_REASON_PLAYER_DIED);
 
-        // remove uncontrolled pets
-        RemoveMiniPet();
-        RemoveGuardians();
-
         // save value before aura remove in Unit::setDeathState
         ressSpellId = GetUInt32Value(PLAYER_SELF_RES_SPELL);
 
@@ -2047,9 +2043,8 @@ void Player::RemoveFromWorld()
         ///- Release charmed creatures, unsummon totems and remove pets/guardians
         StopCastingCharm();
         StopCastingBindSight();
+		UnsummonPetTemporaryIfAny();
         UnsummonAllTotems();
-        RemoveMiniPet();
-        RemoveGuardians();
         ClearComboPoints();
         ClearComboPointHolders();
         uint64 lootGuid = GetLootGUID();
@@ -2251,7 +2246,7 @@ void Player::RegenerateHealth()
 
 void Player::ResetAllPowers()
 {
-    SetHealth(GetMaxHealth());
+    SetFullHealth();
     switch (GetPowerType())
     {
         case POWER_MANA:
@@ -2271,6 +2266,86 @@ void Player::ResetAllPowers()
         default:
             break;
     }
+}
+
+// this one rechecks weapon auras and stores them in BaseModGroup container
+// needed for things like axe specialization applying only to axe weapons in case of dual-wield
+void Player::UpdateWeaponDependentCritAuras(WeaponAttackType attackType)
+{
+    BaseModGroup modGroup;
+    switch (attackType)
+    {
+    case BASE_ATTACK:
+        modGroup = CRIT_PERCENTAGE;
+        break;
+    case OFF_ATTACK:
+        modGroup = OFFHAND_CRIT_PERCENTAGE;
+        break;
+    case RANGED_ATTACK:
+        modGroup = RANGED_CRIT_PERCENTAGE;
+        break;
+    default:
+        ABORT();
+        break;
+    }
+
+    float amount = 0.0f;
+    amount += GetTotalAuraModifier(SPELL_AURA_MOD_WEAPON_CRIT_PERCENT, std::bind(&Unit::CheckAttackFitToAuraRequirement, this, attackType, std::placeholders::_1));
+
+#ifdef LICH_KING
+    // these auras don't have item requirement (only Combat Expertise in 3.3.5a)
+    amount += GetTotalAuraModifier(SPELL_AURA_MOD_CRIT_PCT);
+#endif
+
+    SetBaseModFlatValue(modGroup, amount);
+}
+
+void Player::UpdateAllWeaponDependentCritAuras()
+{
+    for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
+        UpdateWeaponDependentCritAuras(WeaponAttackType(i));
+}
+
+void Player::UpdateWeaponDependentAuras(WeaponAttackType attackType)
+{
+    UpdateWeaponDependentCritAuras(attackType);
+    UpdateDamageDoneMods(attackType);
+    UpdateDamagePctDoneMods(attackType);
+}
+
+void Player::ApplyItemDependentAuras(Item* item, bool apply)
+{
+    if (apply)
+    {
+        PlayerSpellMap const& spells = GetSpellMap();
+        for (auto itr = spells.begin(); itr != spells.end(); ++itr)
+        {
+            if (itr->second->state == PLAYERSPELL_REMOVED || itr->second->disabled)
+                continue;
+
+            SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr->first);
+            if (!spellInfo || !spellInfo->IsPassive() || spellInfo->EquippedItemClass < 0)
+                continue;
+
+            if (!HasAura(itr->first) && HasItemFitToSpellRequirements(spellInfo))
+                AddAura(itr->first, this);  // no SMSG_SPELL_GO in sniff found
+        }
+    }
+    else
+        RemoveItemDependentAurasAndCasts(item);
+}
+
+bool Player::CheckAttackFitToAuraRequirement(WeaponAttackType attackType, AuraEffect const* aurEff) const
+{
+    SpellInfo const* spellInfo = aurEff->GetSpellInfo();
+    if (spellInfo->EquippedItemClass == -1)
+        return true;
+
+    Item* item = GetWeaponForAttack(attackType, true);
+    if (!item || !item->IsFitToSpellRequirements(spellInfo))
+        return false;
+
+    return true;
 }
 
 bool Player::CanInteractWithQuestGiver(Object* questGiver)
@@ -2649,7 +2724,7 @@ void Player::GiveLevel(uint32 level)
 
     SendDirectMessage(&data);
 
-    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::xp_to_level(level));
+    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::GetXPForLevel(level));
 
     //update level, max level of skills
     if(GetLevel()!= level)
@@ -2673,7 +2748,7 @@ void Player::GiveLevel(uint32 level)
         UpdateSkillsToMaxSkillsForLevel();
 
     // set current level health and mana/energy to maximum after applying all mods.
-    SetHealth(GetMaxHealth());
+    SetFullHealth();
     SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
@@ -2729,7 +2804,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     sObjectMgr->GetPlayerLevelInfo(GetRace(),GetClass(),GetLevel(),&info);
 
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL) );
-    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::xp_to_level(GetLevel()));
+    SetUInt32Value(PLAYER_NEXT_LEVEL_XP, Trinity::XP::GetXPForLevel(GetLevel()));
 
     UpdateSkillsForLevel ();
 
@@ -2845,7 +2920,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_AFK | PLAYER_FLAGS_DND | PLAYER_FLAGS_GM | PLAYER_FLAGS_GHOST | PLAYER_FLAGS_IN_PVP || PLAYER_FLAGS_FFA_PVP);
 
     RemoveStandFlags(UNIT_STAND_FLAGS_ALL);                 // one form stealth modified bytes
-    //LK  RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP | UNIT_BYTE2_FLAG_SANCTUARY);
+    //TC RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP | UNIT_BYTE2_FLAG_SANCTUARY);
 
     // restore if need some important flags
     SetUInt32Value(PLAYER_FIELD_BYTES2, 0 );                // flags empty by default
@@ -2854,7 +2929,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
         _ApplyAllStatBonuses();
 
     // set current level health and mana/energy to maximum after applying all mods.
-    SetHealth(GetMaxHealth());
+    SetFullHealth();
     SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     if(GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
@@ -4370,7 +4445,7 @@ Corpse* Player::CreateCorpse()
     auto corpse = new Corpse( (m_ExtraFlags & PLAYER_EXTRA_PVP_DEATH) ? CORPSE_RESURRECTABLE_PVP : CORPSE_RESURRECTABLE_PVE );
     SetPvPDeath(false);
 
-    if(!corpse->Create(sObjectMgr->GenerateLowGuid(HighGuid::Corpse), this))
+    if(!corpse->Create(GetMap()->GenerateLowGuid<HighGuid::Corpse>(), this))
     {
         delete corpse;
 		return nullptr;
@@ -4805,68 +4880,145 @@ void Player::UpdateDefense()
     }
 }
 
-void Player::HandleBaseModValue(BaseModGroup modGroup, BaseModType modType, float amount, bool apply)
+void Player::HandleBaseModFlatValue(BaseModGroup modGroup, float amount, bool apply)
 {
-    if(modGroup >= BASEMOD_END || modType >= MOD_END)
+    if (modGroup >= BASEMOD_END)
     {
-        TC_LOG_ERROR("entities.player","ERROR in HandleBaseModValue(): non existed BaseModGroup of wrong BaseModType!");
+        TC_LOG_ERROR("spells", "Player::HandleBaseModFlatValue: Invalid BaseModGroup/BaseModType (%u/%u) for player '%s' (%s)",
+            modGroup, FLAT_MOD, GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
         return;
     }
 
-    if (modType == FLAT_MOD)
-        m_auraBaseMod[modGroup][modType] += apply ? amount : -amount;
-    else // PCT_MOD
-        ApplyPercentModFloatVar(m_auraBaseMod[modGroup][modType], amount, apply);
+    m_auraBaseFlatMod[modGroup] += apply ? amount : -amount;
+    UpdateBaseModGroup(modGroup);
+}
 
-    if(!CanModifyStats())
+void Player::ApplyBaseModPctValue(BaseModGroup modGroup, float pct)
+{
+    if (modGroup >= BASEMOD_END)
+    {
+        TC_LOG_ERROR("spells", "Player::ApplyBaseModPctValue: Invalid BaseModGroup/BaseModType (%u/%u) for player '%s' (%s)",
+            modGroup, FLAT_MOD, GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
+        return;
+    }
+
+    AddPct(m_auraBasePctMod[modGroup], pct);
+    UpdateBaseModGroup(modGroup);
+}
+
+void Player::SetBaseModFlatValue(BaseModGroup modGroup, float val)
+{
+    if (m_auraBaseFlatMod[modGroup] == val)
         return;
 
-    switch(modGroup)
+    m_auraBaseFlatMod[modGroup] = val;
+    UpdateBaseModGroup(modGroup);
+}
+
+void Player::SetBaseModPctValue(BaseModGroup modGroup, float val)
+{
+    if (m_auraBasePctMod[modGroup] == val)
+        return;
+
+    m_auraBasePctMod[modGroup] = val;
+    UpdateBaseModGroup(modGroup);
+}
+
+void Player::UpdateDamageDoneMods(WeaponAttackType attackType)
+{
+    Unit::UpdateDamageDoneMods(attackType);
+
+    UnitMods unitMod;
+    switch (attackType)
     {
-        case CRIT_PERCENTAGE:              UpdateCritPercentage(BASE_ATTACK);                          break;
-        case RANGED_CRIT_PERCENTAGE:       UpdateCritPercentage(RANGED_ATTACK);                        break;
-        case OFFHAND_CRIT_PERCENTAGE:      UpdateCritPercentage(OFF_ATTACK);                           break;
-        case SHIELD_BLOCK_VALUE:           UpdateShieldBlockValue();                                   break;
-        default: break;
+    case BASE_ATTACK:
+        unitMod = UNIT_MOD_DAMAGE_MAINHAND;
+        break;
+    case OFF_ATTACK:
+        unitMod = UNIT_MOD_DAMAGE_OFFHAND;
+        break;
+    case RANGED_ATTACK:
+        unitMod = UNIT_MOD_DAMAGE_RANGED;
+        break;
+    default:
+        ABORT();
+        break;
+    }
+
+    float amount = 0.0f;
+    Item* item = GetWeaponForAttack(attackType, true);
+    if (!item)
+        return;
+
+    for (uint8 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
+    {
+        SpellItemEnchantmentEntry const* enchantmentEntry = sSpellItemEnchantmentStore.LookupEntry(item->GetEnchantmentId(EnchantmentSlot(slot)));
+        if (!enchantmentEntry)
+            continue;
+
+        for (uint8 i = 0; i < MAX_ITEM_ENCHANTMENT_EFFECTS; ++i)
+        {
+            switch (enchantmentEntry->type[i])
+            {
+            case ITEM_ENCHANTMENT_TYPE_DAMAGE:
+                amount += enchantmentEntry->amount[i];
+                break;
+            case ITEM_ENCHANTMENT_TYPE_TOTEM:
+                if (GetClass() == CLASS_SHAMAN)
+                    amount += enchantmentEntry->amount[i] * item->GetTemplate()->Delay / 1000.0f;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    HandleStatFlatModifier(unitMod, TOTAL_VALUE, amount, true);
+}
+
+
+void Player::UpdateBaseModGroup(BaseModGroup modGroup)
+{
+    if (!CanModifyStats())
+        return;
+
+    switch (modGroup)
+    {
+    case CRIT_PERCENTAGE:              UpdateCritPercentage(BASE_ATTACK);                          break;
+    case RANGED_CRIT_PERCENTAGE:       UpdateCritPercentage(RANGED_ATTACK);                        break;
+    case OFFHAND_CRIT_PERCENTAGE:      UpdateCritPercentage(OFF_ATTACK);                           break;
+    case SHIELD_BLOCK_VALUE:           UpdateShieldBlockValue();                                   break;
+    default: break;
     }
 }
 
 float Player::GetBaseModValue(BaseModGroup modGroup, BaseModType modType) const
 {
-    if(modGroup >= BASEMOD_END || modType > MOD_END)
+    if (modGroup >= BASEMOD_END || modType >= MOD_END)
     {
-        TC_LOG_ERROR("entities.player","ERROR: trial to access non existed BaseModGroup or wrong BaseModType!");
+        TC_LOG_ERROR("spells", "Player::GetBaseModValue: Invalid BaseModGroup/BaseModType (%u/%u) for player '%s' (%s)",
+            modGroup, modType, GetName().c_str(), ObjectGuid( GetGUID()).ToString().c_str());
         return 0.0f;
     }
 
-    if(modType == PCT_MOD && m_auraBaseMod[modGroup][PCT_MOD] <= 0.0f)
-        return 0.0f;
-
-    return m_auraBaseMod[modGroup][modType];
+    return (modType == FLAT_MOD ? m_auraBaseFlatMod[modGroup] : m_auraBasePctMod[modGroup]);
 }
 
 float Player::GetTotalBaseModValue(BaseModGroup modGroup) const
 {
-    if(modGroup >= BASEMOD_END)
+    if (modGroup >= BASEMOD_END)
     {
-        TC_LOG_ERROR("entities.player","ERROR: wrong BaseModGroup in GetTotalBaseModValue()!");
+        TC_LOG_ERROR("spells", "Player::GetTotalBaseModValue: Invalid BaseModGroup (%u) for player '%s' (%s)",
+            modGroup, GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
         return 0.0f;
     }
 
-    if(m_auraBaseMod[modGroup][PCT_MOD] <= 0.0f)
-        return 0.0f;
-
-    return m_auraBaseMod[modGroup][FLAT_MOD] * m_auraBaseMod[modGroup][PCT_MOD];
+    return m_auraBaseFlatMod[modGroup] * m_auraBasePctMod[modGroup];
 }
 
 uint32 Player::GetShieldBlockValue() const
 {
-    BaseModGroup modGroup = SHIELD_BLOCK_VALUE;
-
-    float value = GetTotalBaseModValue(modGroup) + GetStat(STAT_STRENGTH)/20 - 1;
-
-    value = (value < 0) ? 0 : value;
-
+    float value = std::max(0.f, (m_auraBaseFlatMod[SHIELD_BLOCK_VALUE] + GetStat(STAT_STRENGTH) * 0.5f - 10) * m_auraBasePctMod[SHIELD_BLOCK_VALUE]);
     return uint32(value);
 }
 
@@ -5109,7 +5261,7 @@ void Player::ApplyRatingMod(CombatRating cr, int32 value, bool apply)
         case CR_CRIT_TAKEN_MELEE:                           // Implemented in Unit::RollMeleeOutcomeAgainst (only for chance to crit)
         case CR_CRIT_TAKEN_RANGED:
             break;
-        case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalBonus (only for chance to crit)
+        case CR_CRIT_TAKEN_SPELL:                           // Implemented in Unit::SpellCriticalDamageBonus (only for chance to crit)
             break;
         case CR_HASTE_MELEE:
         case CR_HASTE_RANGED:
@@ -6885,6 +7037,53 @@ uint32 Player::GetLevelFromStorage(uint64 guid)
     return 0;
 }
 
+void Player::UpdatePvPState(bool onlyFFA)
+{
+    /// @todo should we always synchronize UNIT_FIELD_BYTES_2, 1 of controller and controlled?
+    // no, we shouldn't, those are checked for affecting player by client
+    if (!pvpInfo.IsInNoPvPArea && !IsGameMaster()
+        && (pvpInfo.IsInFFAPvPArea || sWorld->IsFFAPvPRealm()))
+    {
+        if (!IsFFAPvP())
+        {
+#ifdef LICH_KING
+            SetByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP);
+            for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+                (*itr)->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP);
+#else
+
+            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+            //ON BC controlled creatures FFA is handled by the client depending on owner?
+#endif
+        }
+    }
+    else if (IsFFAPvP())
+    {
+#ifdef LICH_KING
+        RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP);
+        for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            (*itr)->RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_FFA_PVP);
+#else
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
+        //ON BC controlled creatures FFA is handled by the client depending on owner?
+#endif
+    }
+
+    if (onlyFFA)
+        return;
+
+    if (pvpInfo.IsHostile)                               // in hostile area
+    {
+        if (!IsPvP() || pvpInfo.endTimer)
+            UpdatePvP(true, true);
+    }
+    else                                                    // in friendly area
+    {
+        if (IsPvP() && !HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP) && !pvpInfo.endTimer)
+            pvpInfo.endTimer = time(nullptr);                  // start toggle-off
+    }
+}
+
 void Player::UpdateArea(uint32 newArea)
 {
     // FFA_PVP flags are area and not zone id dependent
@@ -6893,20 +7092,35 @@ void Player::UpdateArea(uint32 newArea)
 
     AreaTableEntry const* area = sAreaTableStore.LookupEntry(newArea);
 
-    if(area && ((area->flags & AREA_FLAG_ARENA) || (sWorld->IsZoneFFA(area->ID)) || (area->ID == 3775))) // Hack
-    {
-        if(!IsGameMaster())
-            SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
-    }
-    else
-    {
-        // remove ffa flag only if not ffapvp realm
-        // removal in sanctuaries and capitals is handled in zone update
-        if(HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP) && !sWorld->IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
-    }
+    bool oldFFAPvPArea = pvpInfo.IsInFFAPvPArea;
+    pvpInfo.IsInFFAPvPArea = (area && ((area->flags & AREA_FLAG_ARENA) || (sWorld->IsZoneFFA(area->ID)) || (area->ID == 3775))); //last one is hack
+    UpdatePvPState(true);
+
+    // check if we were in ffa arena and we left
+    if (oldFFAPvPArea && !pvpInfo.IsInFFAPvPArea)
+        ValidateAttackersAndOwnTarget();
 
     UpdateAreaDependentAuras(newArea);
+
+    pvpInfo.IsInNoPvPArea = false;
+    if (area && area->IsSanctuary())    // in sanctuary
+    {
+#ifdef LICH_KING
+        SetByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_SANCTUARY);
+#else
+        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
+#endif
+        pvpInfo.IsInNoPvPArea = true;
+        if (!duel)
+            CombatStopWithPets();
+    }
+    else
+#ifdef LICH_KING
+        RemoveByteFlag(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, UNIT_BYTE2_FLAG_SANCTUARY);
+#else
+        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
+#endif
+
 }
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
@@ -6968,28 +7182,6 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
         (!IsInDuelArea() && sWorld->IsPvPRealm() && zone->team == 0)  ||
         InBattleground();                                   // overwrite for battlegrounds, maybe batter some zone flags but current known not 100% fit to this
 
-    if(pvpInfo.IsInHostileArea)                               // in hostile area
-    {
-        if(!IsPvP() || pvpInfo.endTimer != 0)
-            UpdatePvP(true, true);
-    }
-    else                                                    // in friendly area
-    {
-        if(IsPvP() && (IsInDuelArea() || (!HasFlag(PLAYER_FLAGS,PLAYER_FLAGS_IN_PVP) && pvpInfo.endTimer == 0)) )
-            pvpInfo.endTimer = time(nullptr);                     // start toggle-off
-    }
-
-    if(zone->flags & AREA_FLAG_SANCTUARY || (sWorld->IsZoneSanctuary(zone->ID)))
-    {
-        SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
-        if(sWorld->IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
-    }
-    else
-    {
-        RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_SANCTUARY);
-    }
-
 	// Treat players having a quest flagging for PvP as always in hostile area
 	pvpInfo.IsHostile = pvpInfo.IsInHostileArea 
 #ifdef LICH_KING
@@ -6999,12 +7191,13 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
 
     if(zone->flags & AREA_FLAG_CAPITAL)                     // in capital city
     {
+        if (!pvpInfo.IsHostile || zone->IsSanctuary())
+            SetRestType(REST_TYPE_IN_CITY);
+
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
-        SetRestType(REST_TYPE_IN_CITY);
         InnEnter(time(nullptr),GetMapId(),0,0,0);
 
-        if(sWorld->IsFFAPvPRealm())
-            RemoveFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
+        pvpInfo.IsInNoPvPArea = true;
     }
     else                                                    // anywhere else
     {
@@ -7016,22 +7209,17 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
                 {
                     RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
                     SetRestType(REST_TYPE_NO);
-
-                    if(sWorld->IsFFAPvPRealm())
-                        SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
                 }
             }
             else                                            // not in tavern (leave city then)
             {
                 RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING);
                 SetRestType(REST_TYPE_NO);
-
-                // Set player to FFA PVP when not in rested environment.
-                if(sWorld->IsFFAPvPRealm())
-                    SetFlag(PLAYER_FLAGS,PLAYER_FLAGS_FFA_PVP);
             }
         }
     }
+
+    UpdatePvPState();
 
     // remove items with area/map limitations (delete only for alive player to allow back in ghost mode)
     // if player resurrected at teleport this will be applied in resurrect code
@@ -7174,7 +7362,7 @@ void Player::DuelComplete(DuelCompleteType type)
     // Refresh in PvPZone
     if(IsInDuelArea())
     {
-        SetHealth(GetMaxHealth());
+        SetFullHealth();
         if(Pet* pet = GetPet())
             pet->SetHealth(pet->GetMaxHealth());
         if(GetPowerType() == POWER_MANA || GetClass() == CLASS_DRUID)
@@ -7201,7 +7389,7 @@ void Player::DuelComplete(DuelCompleteType type)
 
 //---------------------------------------------------------//
 
-void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
+void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply, bool updateItemAuras /*= true*/)
 {
     if(slot >= INVENTORY_SLOT_BAG_END || !item)
         return;
@@ -7227,6 +7415,15 @@ void Player::_ApplyItemMods(Item *item, uint8 slot,bool apply)
         SetCanBlock(false);
 
     ApplyItemEquipSpell(item,apply);
+    if (updateItemAuras)
+    {
+        ApplyItemDependentAuras(item, apply);
+
+        WeaponAttackType const attackType = Player::GetAttackBySlot(slot);
+        if (attackType != MAX_ATTACK)
+            UpdateWeaponDependentAuras(attackType);
+    }
+
     ApplyEnchantment(item, apply);
 
     if(proto->Socket[0].Color)                              //only (un)equipping of items with sockets can influence metagems, so no need to waste time with normal items
@@ -7248,30 +7445,30 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         switch (i.ItemStatType)
         {
             case ITEM_MOD_MANA:
-                HandleStatModifier(UNIT_MOD_MANA, BASE_VALUE, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, float(val), apply);
                 break;
             case ITEM_MOD_HEALTH:                           // modify HP
-                HandleStatModifier(UNIT_MOD_HEALTH, BASE_VALUE, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, float(val), apply);
                 break;
             case ITEM_MOD_AGILITY:                          // modify agility
-                HandleStatModifier(UNIT_MOD_STAT_AGILITY, BASE_VALUE, float(val), apply);
-                ApplyStatBuffMod(STAT_AGILITY, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_STAT_AGILITY, BASE_VALUE, float(val), apply);
+				UpdateStatBuffMod(STAT_AGILITY);
                 break;
             case ITEM_MOD_STRENGTH:                         //modify strength
-                HandleStatModifier(UNIT_MOD_STAT_STRENGTH, BASE_VALUE, float(val), apply);
-                ApplyStatBuffMod(STAT_STRENGTH, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_STAT_STRENGTH, BASE_VALUE, float(val), apply);
+				UpdateStatBuffMod(STAT_STRENGTH);
                 break;
             case ITEM_MOD_INTELLECT:                        //modify intellect
-                HandleStatModifier(UNIT_MOD_STAT_INTELLECT, BASE_VALUE, float(val), apply);
-                ApplyStatBuffMod(STAT_INTELLECT, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_STAT_INTELLECT, BASE_VALUE, float(val), apply);
+				UpdateStatBuffMod(STAT_INTELLECT);
                 break;
             case ITEM_MOD_SPIRIT:                           //modify spirit
-                HandleStatModifier(UNIT_MOD_STAT_SPIRIT, BASE_VALUE, float(val), apply);
-                ApplyStatBuffMod(STAT_SPIRIT, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_STAT_SPIRIT, BASE_VALUE, float(val), apply);
+				UpdateStatBuffMod(STAT_SPIRIT);
                 break;
             case ITEM_MOD_STAMINA:                          //modify stamina
-                HandleStatModifier(UNIT_MOD_STAT_STAMINA, BASE_VALUE, float(val), apply);
-                ApplyStatBuffMod(STAT_STAMINA, float(val), apply);
+				HandleStatFlatModifier(UNIT_MOD_STAT_STAMINA, BASE_VALUE, float(val), apply);
+				UpdateStatBuffMod(STAT_STAMINA);
                 break;
             case ITEM_MOD_DEFENSE_SKILL_RATING:
                 ApplyRatingMod(CR_DEFENSE_SKILL, int32(val), apply);
@@ -7366,33 +7563,50 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         }
     }
 
-    if (proto->Armor)
-        HandleStatModifier(UNIT_MOD_ARMOR, BASE_VALUE, float(proto->Armor), apply);
+	uint32 armor = proto->Armor;
+	if (armor)
+	{
+		UnitModifierFlatType modType = TOTAL_VALUE;
+		if (proto->Class == ITEM_CLASS_ARMOR)
+		{
+			switch (proto->SubClass)
+			{
+			case ITEM_SUBCLASS_ARMOR_CLOTH:
+			case ITEM_SUBCLASS_ARMOR_LEATHER:
+			case ITEM_SUBCLASS_ARMOR_MAIL:
+			case ITEM_SUBCLASS_ARMOR_PLATE:
+			case ITEM_SUBCLASS_ARMOR_SHIELD:
+				modType = BASE_VALUE;
+				break;
+			}
+		}
+		HandleStatFlatModifier(UNIT_MOD_ARMOR, modType, float(armor), apply);
+	}
 
-    // Add armor bonus from ArmorDamageModifier if > 0
-    if (proto->ArmorDamageModifier > 0)
-        HandleStatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
+	// Add armor bonus from ArmorDamageModifier if > 0
+	if (proto->ArmorDamageModifier > 0)
+		HandleStatFlatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(proto->ArmorDamageModifier), apply);
 
     if (proto->Block)
-        HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, float(proto->Block), apply);
+        HandleBaseModFlatValue(SHIELD_BLOCK_VALUE, float(proto->Block), apply);
 
     if (proto->HolyRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_HOLY, BASE_VALUE, float(proto->HolyRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_HOLY, BASE_VALUE, float(proto->HolyRes), apply);
 
     if (proto->FireRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_FIRE, BASE_VALUE, float(proto->FireRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_FIRE, BASE_VALUE, float(proto->FireRes), apply);
 
     if (proto->NatureRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(proto->NatureRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(proto->NatureRes), apply);
 
     if (proto->FrostRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_FROST, BASE_VALUE, float(proto->FrostRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_FROST, BASE_VALUE, float(proto->FrostRes), apply);
 
     if (proto->ShadowRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(proto->ShadowRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(proto->ShadowRes), apply);
 
     if (proto->ArcaneRes)
-        HandleStatModifier(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(proto->ArcaneRes), apply);
+		HandleStatFlatModifier(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(proto->ArcaneRes), apply);
 
     WeaponAttackType attType = BASE_ATTACK;
     float damage = 0.0f;
@@ -7408,76 +7622,70 @@ void Player::_ApplyItemBonuses(ItemTemplate const *proto,uint8 slot,bool apply)
         attType = OFF_ATTACK;
     }
 
-    _ApplyWeaponOnlyDamageMods(attType,apply);
+    if (CanUseAttackType(attType))
+        _ApplyWeaponDamage(slot, proto, /*ssv,*/ apply);
+}
 
-    if (proto->Damage[0].DamageMin > 0 )
+void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, bool apply)
+{
+    WeaponAttackType attType = BASE_ATTACK;
+    float damage = 0.0f;
+
+    if (slot == EQUIPMENT_SLOT_RANGED && (
+        proto->InventoryType == INVTYPE_RANGED || proto->InventoryType == INVTYPE_THROWN ||
+        proto->InventoryType == INVTYPE_RANGEDRIGHT))
     {
-        damage = apply ? proto->Damage[0].DamageMin : BASE_MINDAMAGE;
-        SetBaseWeaponDamage(attType, MINDAMAGE, damage);
-        //TC_LOG_ERROR("entities.player","applying mindam: assigning %f to weapon mindamage, now is: %f", damage, GetWeaponDamageRange(attType, MINDAMAGE));
+        attType = RANGED_ATTACK;
+    }
+    else if (slot == EQUIPMENT_SLOT_OFFHAND)
+    {
+        attType = OFF_ATTACK;
     }
 
-    if (proto->Damage[0].DamageMax  > 0 )
+    float minDamage = proto->Damage[0].DamageMin;
+    float maxDamage = proto->Damage[0].DamageMax;
+
+#ifdef LICH_KING
+    // If set dpsMod in ScalingStatValue use it for min (70% from average), max (130% from average) damage
+    if (ssv)
     {
-        damage = apply ? proto->Damage[0].DamageMax : BASE_MAXDAMAGE;
+        int32 extraDPS = ssv->getDPSMod(proto->ScalingStatValue);
+        if (extraDPS)
+        {
+            float average = extraDPS * proto->Delay / 1000.0f;
+            minDamage = 0.7f * average;
+            maxDamage = 1.3f * average;
+        }
+    }
+#endif
+
+    if (minDamage > 0)
+    {
+        damage = apply ? minDamage : BASE_MINDAMAGE;
+        SetBaseWeaponDamage(attType, MINDAMAGE, damage);
+    }
+
+    if (maxDamage  > 0)
+    {
+        damage = apply ? maxDamage : BASE_MAXDAMAGE;
         SetBaseWeaponDamage(attType, MAXDAMAGE, damage);
     }
 
-    if(!IsUseEquipedWeapon(slot==EQUIPMENT_SLOT_MAINHAND))
+    if (!IsUseEquipedWeapon(slot == EQUIPMENT_SLOT_MAINHAND)) //false if in feral form or disarmed
         return;
 
     if (proto->Delay)
     {
-        if(slot == EQUIPMENT_SLOT_RANGED)
-            SetAttackTime(RANGED_ATTACK, apply ? proto->Delay: BASE_ATTACK_TIME);
-        else if(slot==EQUIPMENT_SLOT_MAINHAND)
-            SetAttackTime(BASE_ATTACK, apply ? proto->Delay: BASE_ATTACK_TIME);
-        else if(slot==EQUIPMENT_SLOT_OFFHAND)
-            SetAttackTime(OFF_ATTACK, apply ? proto->Delay: BASE_ATTACK_TIME);
+        if (slot == EQUIPMENT_SLOT_RANGED)
+            SetAttackTime(RANGED_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
+        else if (slot == EQUIPMENT_SLOT_MAINHAND)
+            SetAttackTime(BASE_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
+        else if (slot == EQUIPMENT_SLOT_OFFHAND)
+            SetAttackTime(OFF_ATTACK, apply ? proto->Delay : BASE_ATTACK_TIME);
     }
 
-    if(CanModifyStats() && (damage || proto->Delay))
+    if (CanModifyStats() && (damage || proto->Delay))
         UpdateDamagePhysical(attType);
-}
-
-void Player::_ApplyWeaponOnlyDamageMods(WeaponAttackType attType, bool apply)
-{
-    BaseModGroup modCrit = BASEMOD_END;
-    UnitMods modDamage = UNIT_MOD_END;
-
-    switch(attType)
-    {
-        case BASE_ATTACK:   
-            modCrit = CRIT_PERCENTAGE;        
-            modDamage = UNIT_MOD_DAMAGE_MAINHAND;
-            break;
-        case OFF_ATTACK:    
-            modCrit = OFFHAND_CRIT_PERCENTAGE;
-            modDamage = UNIT_MOD_DAMAGE_OFFHAND;
-            break;
-        case RANGED_ATTACK: 
-            modCrit = RANGED_CRIT_PERCENTAGE; 
-            modDamage = UNIT_MOD_DAMAGE_RANGED;
-            break;
-        default: 
-            return;
-    }
-
-    //Apply all auras with SPELL_ATTR0_AFFECT_WEAPON only
-    AuraList const& auraCritList = GetAurasByType(SPELL_AURA_MOD_CRIT_PERCENT);
-    for(auto itr : auraCritList)
-        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
-            HandleBaseModValue(modCrit, FLAT_MOD, float (itr->GetModifierValue()), apply);
-
-    AuraList const& auraDamageFlatList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_DONE);
-    for(auto itr : auraDamageFlatList)
-        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
-            HandleStatModifier(modDamage, TOTAL_VALUE, float(itr->GetModifierValue()),apply);
-
-    AuraList const& auraDamagePCTList = GetAurasByType(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
-    for(auto itr : auraDamagePCTList)
-        if(itr->GetSpellInfo()->SchoolMask & SPELL_SCHOOL_NORMAL)
-            HandleStatModifier(modDamage, TOTAL_PCT, float(itr->GetModifierValue()),apply);
 }
 
 void Player::ApplyItemEquipSpell(Item *item, bool apply, bool form_change)
@@ -7868,7 +8076,7 @@ void Player::_RemoveAllItemMods()
             if(!proto)
                 continue;
 
-            DisableItemDependentAurasAndCasts(m_items[i]);
+            ApplyItemDependentAuras(m_items[i], false);
             _ApplyItemBonuses(proto,i, false);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7890,6 +8098,7 @@ void Player::_ApplyAllItemMods()
             if(!proto)
                 continue;
 
+            ApplyItemDependentAuras(m_items[i], true);
             _ApplyItemBonuses(proto,i, true);
 
             if( i == EQUIPMENT_SLOT_RANGED )
@@ -7915,7 +8124,9 @@ void Player::_ApplyAllItemMods()
 
             ApplyItemEquipSpell(m_items[i],true);
             ApplyEnchantment(m_items[i], true);
-            EnableItemDependantAuras(m_items[i], true);
+            WeaponAttackType const attackType = Player::GetAttackBySlot(i);
+            if (attackType != MAX_ATTACK)
+                UpdateWeaponDependentAuras(attackType);
         }
     }
 }
@@ -9436,7 +9647,7 @@ Item* Player::GetShield(bool useable) const
     return item;
 }
 
-uint32 Player::GetAttackBySlot( uint8 slot )
+WeaponAttackType Player::GetAttackBySlot( uint8 slot )
 {
     switch(slot)
     {
@@ -11241,48 +11452,6 @@ Item* Player::EquipNewItem( uint16 pos, uint32 item, bool update, ItemTemplate c
     return nullptr;
 }
 
-// update auras from itemclass restricted spells
-void Player::EnableItemDependantAuras(Item* pItem, bool /* skipItems */)
-{
-    ItemTemplate const* proto = pItem->GetTemplate();
-    if(!proto) return;
-
-    auto CheckSpell = [&] (SpellInfo const* spellInfo) 
-    { 
-        if (   !spellInfo->IsPassive()
-            || int32(proto->Class) != spellInfo->EquippedItemClass //check only spells limited to this item class/subclass
-            || !(spellInfo->EquippedItemSubClassMask & (1 << proto->SubClass))
-            || !pItem->IsFitToSpellRequirements(spellInfo)
-           )
-            return false;
-
-        return true;
-    };
-
-    //update learned spells
-    const PlayerSpellMap& pSpellMap = GetSpellMap();
-    for (auto itr : pSpellMap) 
-    {
-        if (itr.second->state == PLAYERSPELL_REMOVED)
-            continue;
-
-        if(SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(itr.first))
-            if(CheckSpell(spellInfo) && !HasAuraEffect(spellInfo->Id))
-                CastSpell(this, spellInfo->Id, true);
-    }
-
-    //update disabled auras (for example auras from quivers aren't updated yet at this point)
-    AuraMap const& auras = GetAuras();
-    for(auto itr : auras)
-    {
-        if(itr.second->IsActive())
-            continue;
-
-        if(CheckSpell(itr.second->GetSpellInfo()))
-            itr.second->ApplyModifier(true);
-    }
-}
-
 Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
 {
     if( pItem )
@@ -11308,7 +11477,6 @@ Item* Player::EquipItem( uint16 pos, Item *pItem, bool update )
                     AddItemsSetItem(this,pItem);
 
                 _ApplyItemMods(pItem, slot, true);
-                EnableItemDependantAuras(pItem);
 
                 if(pProto && IsInCombat()&& pProto->Class == ITEM_CLASS_WEAPON && m_weaponChangeTimer == 0)
                 {
@@ -11481,11 +11649,7 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
                 if(pProto && pProto->ItemSet)
                     RemoveItemsSetItem(this,pProto);
 
-                _ApplyItemMods(pItem, slot, false);
-
-                // remove item dependent auras and casts (only weapon and armor slots)
-                if(slot < EQUIPMENT_SLOT_END)
-                    DisableItemDependentAurasAndCasts(pItem);
+                _ApplyItemMods(pItem, slot, false, update);
 
                 // remove held enchantments
                 if ( slot == EQUIPMENT_SLOT_MAINHAND )
@@ -11500,7 +11664,22 @@ void Player::RemoveItem( uint8 bag, uint8 slot, bool update )
                         pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_0);
                         pItem->ClearEnchantment(PROP_ENCHANTMENT_SLOT_1);
                     }
+                    UpdateExpertise(BASE_ATTACK);
                 }
+                else if (slot == EQUIPMENT_SLOT_OFFHAND)
+                    UpdateExpertise(OFF_ATTACK);
+#ifdef LICH_KING
+                // update armor penetration - passive auras may need it
+                switch (slot)
+                {
+                    case EQUIPMENT_SLOT_MAINHAND:
+                    case EQUIPMENT_SLOT_OFFHAND:
+                    case EQUIPMENT_SLOT_RANGED:
+                        RecalculateRating(CR_ARMOR_PENETRATION);
+                    default:
+                        break;
+                }
+#endif
             }
 
             m_items[slot] = nullptr;
@@ -11566,6 +11745,39 @@ void Player::MoveItemToInventory(ItemPosCountVec const& dest, Item* pItem, bool 
     }
 }
 
+void Player::RemoveItemDependentAurasAndCasts(Item* pItem)
+{
+    AuraMap& auras = GetAuras();
+    for (AuraMap::iterator itr = auras.begin(); itr != auras.end();)
+    {
+        Aura* aura = itr->second;
+
+        // skip not self applied auras
+        SpellInfo const* spellInfo = aura->GetSpellInfo();
+        if (aura->GetCasterGUID() != GetGUID())
+        {
+            ++itr;
+            continue;
+        }
+
+        // skip if not item dependent or have alternative item
+        if (HasItemFitToSpellRequirements(spellInfo, pItem))
+        {
+            ++itr;
+            continue;
+        }
+
+        // no alt item, remove aura, restart check
+        RemoveAura(itr);
+    }
+
+    // currently cast spells can be dependent from item
+    for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
+        if (Spell* spell = GetCurrentSpell(CurrentSpellTypes(i)))
+            if (spell->getState() != SPELL_STATE_DELAYED && !HasItemFitToSpellRequirements(spell->m_spellInfo, pItem))
+                InterruptSpell(CurrentSpellTypes(i));
+}
+
 void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
 {
     Item *pItem = GetItemByPos( bag, slot );
@@ -11608,9 +11820,6 @@ void Player::DestroyItem( uint8 bag, uint8 slot, bool update )
 
             if ( slot < EQUIPMENT_SLOT_END )
             {
-                // remove item dependent auras and casts (only weapon and armor slots)
-                DisableItemDependentAurasAndCasts(pItem);
-
                 // equipment visual show
                 SetVisibleItemSlot(slot,nullptr);
             }
@@ -12659,13 +12868,11 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 // processed in Player::CastItemCombatSpell
                 break;
             case ITEM_ENCHANTMENT_TYPE_DAMAGE:
-                if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
-                    HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, float(enchant_amount), apply);
-                else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
-                    HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, float(enchant_amount), apply);
-                else if (item->GetSlot() == EQUIPMENT_SLOT_RANGED)
-                    HandleStatModifier(UNIT_MOD_DAMAGE_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
-                break;
+            {
+                WeaponAttackType const attackType = Player::GetAttackBySlot(item->GetSlot());
+                if (attackType != MAX_ATTACK)
+                    UpdateDamageDoneMods(attackType);
+            } break;
             case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
                 if(enchant_spell_id)
                 {
@@ -12725,7 +12932,7 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                     }
                 }
 
-                HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + enchant_spell_id), TOTAL_VALUE, float(enchant_amount), apply);
+				HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + enchant_spell_id), TOTAL_VALUE, float(enchant_amount), apply);
                 break;
             case ITEM_ENCHANTMENT_TYPE_STAT:
             {
@@ -12748,24 +12955,24 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                 switch (enchant_spell_id)
                 {
                     case ITEM_MOD_AGILITY:
-                        HandleStatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, float(enchant_amount), apply);
-                        ApplyStatBuffMod(STAT_AGILITY, enchant_amount, apply);
+						HandleStatFlatModifier(UNIT_MOD_STAT_AGILITY, TOTAL_VALUE, float(enchant_amount), apply);
+						UpdateStatBuffMod(STAT_AGILITY);
                         break;
                     case ITEM_MOD_STRENGTH:
-                        HandleStatModifier(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE, float(enchant_amount), apply);
-                        ApplyStatBuffMod(STAT_STRENGTH, enchant_amount, apply);
+						HandleStatFlatModifier(UNIT_MOD_STAT_STRENGTH, TOTAL_VALUE, float(enchant_amount), apply);
+						UpdateStatBuffMod(STAT_STRENGTH);
                         break;
                     case ITEM_MOD_INTELLECT:
-                        HandleStatModifier(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE, float(enchant_amount), apply);
-                        ApplyStatBuffMod(STAT_INTELLECT, enchant_amount, apply);
+						HandleStatFlatModifier(UNIT_MOD_STAT_INTELLECT, TOTAL_VALUE, float(enchant_amount), apply);
+						UpdateStatBuffMod(STAT_INTELLECT);
                         break;
                     case ITEM_MOD_SPIRIT:
-                        HandleStatModifier(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE, float(enchant_amount), apply);
-                        ApplyStatBuffMod(STAT_SPIRIT, enchant_amount, apply);
+						HandleStatFlatModifier(UNIT_MOD_STAT_SPIRIT, TOTAL_VALUE, float(enchant_amount), apply);
+						UpdateStatBuffMod(STAT_SPIRIT);
                         break;
                     case ITEM_MOD_STAMINA:
-                        HandleStatModifier(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE, float(enchant_amount), apply);
-                        ApplyStatBuffMod(STAT_STAMINA, enchant_amount, apply);
+						HandleStatFlatModifier(UNIT_MOD_STAT_STAMINA, TOTAL_VALUE, float(enchant_amount), apply);
+						UpdateStatBuffMod(STAT_STAMINA);
                         break;
                     case ITEM_MOD_DEFENSE_SKILL_RATING:
                         (this->ToPlayer())->ApplyRatingMod(CR_DEFENSE_SKILL, enchant_amount, apply);
@@ -12860,6 +13067,47 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
                     case ITEM_MOD_EXPERTISE_RATING:
                         (this->ToPlayer())->ApplyRatingMod(CR_EXPERTISE, enchant_amount, apply);
                         break;
+#ifdef LICH_KING
+					case ITEM_MOD_ATTACK_POWER:
+						HandleStatFlatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(enchant_amount), apply);
+						HandleStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u ATTACK_POWER", enchant_amount);
+						break;
+					case ITEM_MOD_RANGED_ATTACK_POWER:
+						HandleStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u RANGED_ATTACK_POWER", enchant_amount);
+						break;
+						//                        case ITEM_MOD_FERAL_ATTACK_POWER:
+						//                            ApplyFeralAPBonus(enchant_amount, apply);
+						//                            TC_LOG_DEBUG("entities.player.items", "+ %u FERAL_ATTACK_POWER", enchant_amount);
+						//                            break;
+					case ITEM_MOD_MANA_REGENERATION:
+						ApplyManaRegenBonus(enchant_amount, apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u MANA_REGENERATION", enchant_amount);
+						break;
+					case ITEM_MOD_ARMOR_PENETRATION_RATING:
+						ApplyRatingMod(CR_ARMOR_PENETRATION, enchant_amount, apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u ARMOR PENETRATION", enchant_amount);
+						break;
+					case ITEM_MOD_SPELL_POWER:
+						ApplySpellPowerBonus(enchant_amount, apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u SPELL_POWER", enchant_amount);
+						break;
+					case ITEM_MOD_HEALTH_REGEN:
+						ApplyHealthRegenBonus(enchant_amount, apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u HEALTH_REGENERATION", enchant_amount);
+						break;
+					case ITEM_MOD_SPELL_PENETRATION:
+						ApplySpellPenetrationBonus(enchant_amount, apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u SPELL_PENETRATION", enchant_amount);
+						break;
+					case ITEM_MOD_BLOCK_VALUE:
+						HandleBaseModFlatValue(SHIELD_BLOCK_VALUE, float(enchant_amount), apply);
+						TC_LOG_DEBUG("entities.player.items", "+ %u BLOCK_VALUE", enchant_amount);
+						break;
+					case ITEM_MOD_SPELL_HEALING_DONE:   // deprecated
+					case ITEM_MOD_SPELL_DAMAGE_DONE:    // deprecated
+#endif
                     default:
                         break;
                 }
@@ -12869,16 +13117,18 @@ void Player::ApplyEnchantment(Item *item,EnchantmentSlot slot,bool apply, bool a
             {
                 if(GetClass() == CLASS_SHAMAN)
                 {
-                    float addValue = 0.0f;
-                    if(item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                    switch(item->GetSlot())
                     {
-                        addValue = float(enchant_amount * item->GetTemplate()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, addValue, apply);
-                    }
-                    else if(item->GetSlot() == EQUIPMENT_SLOT_OFFHAND )
-                    {
-                        addValue = float(enchant_amount * item->GetTemplate()->Delay/1000.0f);
-                        HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, addValue, apply);
+                        case EQUIPMENT_SLOT_MAINHAND:
+                        case EQUIPMENT_SLOT_OFFHAND:
+                        {
+                            UnitMods mod = item->GetSlot() == EQUIPMENT_SLOT_MAINHAND ? UNIT_MOD_DAMAGE_MAINHAND : UNIT_MOD_DAMAGE_OFFHAND;
+                            float addValue = float(enchant_amount * item->GetTemplate()->Delay / 1000.0f);
+                            HandleStatFlatModifier(mod, TOTAL_VALUE, addValue, apply);
+                            break;
+                        }
+                        default:
+                            break;
                     }
                 }
                 break;
@@ -15043,7 +15293,6 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     //Need to call it to initialize m_team (m_team can be calculated from m_race)
     //Other way is to saves m_team into characters table.
     SetFactionForRace(m_race);
-    SetCharm(nullptr);
     
     // Override some data fields
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[LOAD_DATA_LEVEL].GetUInt8());
@@ -15460,11 +15709,13 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
     SetUInt32Value(UNIT_CHANNEL_SPELL,0);
 
     // clear charm/summon related fields
-    SetCharm(nullptr);
-    SetPet(nullptr);
-    SetCharmerGUID(0);
     SetOwnerGUID(0);
     SetCreatorGUID(0);
+	SetGuidValue(PLAYER_FARSIGHT, 0);
+	SetGuidValue(UNIT_FIELD_CHARMEDBY, ObjectGuid::Empty);
+	SetGuidValue(UNIT_FIELD_CHARM, ObjectGuid::Empty);
+	SetGuidValue(UNIT_FIELD_SUMMON, ObjectGuid::Empty);
+	SetGuidValue(PLAYER_FARSIGHT, ObjectGuid::Empty);
 
     // reset some aura modifiers before aura apply
     SetUInt32Value(PLAYER_TRACK_CREATURES, 0 );
@@ -16125,7 +16376,7 @@ void Player::LoadPet()
     // just not added to the map
     if(IsInWorld())
     {
-        auto pet = new Pet;
+        auto pet = new Pet(this);
         if(!pet->LoadPetFromDB(this,0,0,true))
             delete pet;
     }
@@ -17735,25 +17986,6 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, RemovePet
     if(!pet || !pet->IsInWorld() || pet->GetOwnerGUID()!=GetGUID())
         return;
 
-    // only if current pet in slot
-    switch(pet->getPetType())
-    {
-        case MINI_PET:
-            m_miniPet = 0;
-            break;
-        case GUARDIAN_PET:
-            m_guardianPets.erase(pet->GetGUID());
-            break;
-        case POSSESSED_PET:
-            m_guardianPets.erase(pet->GetGUID());
-            pet->RemoveCharmedBy(nullptr);
-            break;
-        default:
-            if(GetMinionGUID() == pet->GetGUID())
-                SetPet(nullptr);
-            break;
-    }
-
     pet->CombatStop();
 
     if(returnreagent)
@@ -17781,6 +18013,8 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, RemovePet
 
     pet->SavePetToDB(mode);
 
+	SetMinion(pet, false);
+
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
@@ -17796,63 +18030,7 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent, RemovePet
     }
 }
 
-void Player::RemoveMiniPet()
-{
-    if(Pet* pet = GetMiniPet())
-    {
-        pet->Remove(PET_SAVE_AS_DELETED);
-        m_miniPet = 0;
-    }
-}
-
-Pet* Player::GetMiniPet() const
-{
-    if(!m_miniPet)
-        return nullptr;
-    return ObjectAccessor::GetPet(*this,m_miniPet);
-}
-
-void Player::SetMiniPet(Pet* pet) { m_miniPet = pet->GetGUID(); }
-
-void Player::AddGuardian(Pet* pet) { m_guardianPets.insert(pet->GetGUID()); }
-
-void Player::RemoveGuardians()
-{
-    while(!m_guardianPets.empty())
-    {
-        uint64 guid = *m_guardianPets.begin();
-        if(Pet* pet = ObjectAccessor::GetPet(*this,guid))
-            pet->Remove(PET_SAVE_AS_DELETED);
-
-        m_guardianPets.erase(guid);
-    }
-}
-
-void Player::RemoveGuardiansWithEntry(uint32 entry)
-{
-    while(!m_guardianPets.empty())
-    {
-        uint64 guid = *m_guardianPets.begin();
-        if (Pet* pet = ObjectAccessor::GetPet(*this,guid)) {
-            if (pet->GetEntry() == entry)
-                pet->Remove(PET_SAVE_AS_DELETED);
-        }
-
-        m_guardianPets.erase(guid);
-    }
-}
-
-bool Player::HasGuardianWithEntry(uint32 entry)
-{
-    // pet guid middle part is entry (and creature also)
-    // and in guardian list must be guardians with same entry _always_
-    for(uint64 m_guardianPet : m_guardianPets)
-        if(GUID_ENPART(m_guardianPet)==entry)
-            return true;
-
-    return false;
-}
-
+/*
 void Player::Uncharm()
 {
     Unit* charm = GetCharm();
@@ -17875,6 +18053,46 @@ void Player::Uncharm()
     {
         TC_LOG_ERROR("entities.player","CRASH ALARM! Player %s is not able to uncharm unit (Entry: %u, Type: %u)", GetName().c_str(), charm->GetEntry(), charm->GetTypeId());
     }
+}
+*/
+
+void Player::StopCastingCharm()
+{
+#ifdef LICH_KING
+	if (IsGhouled())
+	{
+		RemoveGhoul();
+		return;
+	}
+#endif
+
+	Unit* charm = GetCharm();
+	if (!charm)
+		return;
+
+	if (charm->GetTypeId() == TYPEID_UNIT)
+	{
+		if (charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET))
+			static_cast<Puppet*>(charm)->UnSummon();
+#ifdef LICH_KING
+		else if (charm->IsVehicle())
+			ExitVehicle();
+#endif
+	}
+	if (GetCharmGUID())
+		charm->RemoveCharmAuras();
+
+	if (GetCharmGUID())
+	{
+		TC_LOG_FATAL("entities.player", "Player::StopCastingCharm: Player '%s' (%s) is not able to uncharm unit (%s)", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str(), ObjectGuid(GetCharmGUID()).ToString().c_str());
+		if (!ObjectGuid(charm->GetCharmerGUID()).IsEmpty())
+		{
+			TC_LOG_FATAL("entities.player", "Player::StopCastingCharm: Charmed unit has charmer %s", ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
+			ABORT();
+		}
+
+		SetCharm(charm, false);
+	}
 }
 
 void Player::Say(std::string const& text, Language language, WorldObject const* /*= nullptr*/)
@@ -18633,7 +18851,7 @@ void Player::ContinueTaxiFlight()
 
 void Player::ProhibitSpellSchool(SpellSchoolMask idSchoolMask, uint32 unTimeMs )
 {
-                                                            // last check 2.0.10
+                                                            // last check on structure 2.0.10
     WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+m_spells.size()*8);
     data << GetGUID();
     data << uint8(0x0);                                     // flags (0x1, 0x2)
@@ -19023,10 +19241,8 @@ void Player::UpdatePvP(bool state, bool ovrride)
     if(!state || ovrride)
     {
         SetPvP(state);
-        if(Pet* pet = GetPet())
-            pet->SetPvP(state);
-        if(Unit* charmed = GetCharm())
-            charmed->SetPvP(state);
+		for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+			(*itr)->SetPvP(state);
 
         pvpInfo.endTimer = 0;
     }
@@ -19037,11 +19253,8 @@ void Player::UpdatePvP(bool state, bool ovrride)
         else
         {
             SetPvP(state);
-
-            if(Pet* pet = GetPet())
-                pet->SetPvP(state);
-            if(Unit* charmed = GetCharm())
-                charmed->SetPvP(state);
+			for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+				(*itr)->SetPvP(state);
         }
     }
 }
@@ -21236,6 +21449,7 @@ bool Player::HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item cons
 }
 
 // Recheck auras requiring a specific item class/subclass
+/*
 void Player::DisableItemDependentAurasAndCasts( Item * pItem )
 {
     AuraMap& auras = GetAuras();
@@ -21261,6 +21475,7 @@ void Player::DisableItemDependentAurasAndCasts( Item * pItem )
             InterruptSpell(i);
     }
 }
+*/
 
 uint32 Player::GetResurrectionSpellId()
 {
@@ -22257,7 +22472,7 @@ void Player::UnsummonPetTemporaryIfAny()
     if (!pet)
         return;
 
-    if (!m_temporaryUnsummonedPetNumber && pet->isControlled() && !pet->isTemporarySummoned())
+    if (!m_temporaryUnsummonedPetNumber && pet->isControlled() && !pet->isTempSummoned())
     {
         m_temporaryUnsummonedPetNumber = pet->GetCharmInfo()->GetPetNumber();
         m_oldpetspell = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
@@ -22306,7 +22521,7 @@ void Player::SetSpectate(bool on)
         }
         SetTemporaryUnsummonedPetNumber(0);
         UnsummonPetTemporaryIfAny();
-        RemoveMiniPet();
+        RemoveAllControlled();
 
         ResetContestedPvP();
 
@@ -23034,9 +23249,9 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     if (GetMinionGUID())
         return;
 
-    auto  NewPet = new Pet;
-    if (!NewPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
-        delete NewPet;
+    Pet* newPet = new Pet(this);
+    if (!newPet->LoadPetFromDB(this, 0, m_temporaryUnsummonedPetNumber, true))
+        delete newPet;
 
     m_temporaryUnsummonedPetNumber = 0;
 }
@@ -23463,7 +23678,7 @@ void Player::SetRank(uint32 rankId)
 
 void Player::SetGuildIdInvited(uint32 GuildId) 
 {
-    m_GuildIdInvited = GuildId; 
+    _guildIdInvited = GuildId; 
 }
 
 uint32 Player::GetGuildId() const 

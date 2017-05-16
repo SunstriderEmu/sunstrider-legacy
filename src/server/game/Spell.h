@@ -299,7 +299,7 @@ class TC_GAME_API Spell
         void EffectProficiency(uint32 i);
         void EffectApplyAreaAura(uint32 i);
         void EffectSummonType(uint32 i);
-        void EffectSummon(uint32 i);
+        //void EffectSummon(uint32 i);
         void EffectLearnSpell(uint32 i);
         void EffectDispel(uint32 i);
         void EffectDualWield(uint32 i);
@@ -688,6 +688,9 @@ class TC_GAME_API Spell
         TriggerSpells m_TriggerSpells;
         typedef std::vector< std::pair<SpellInfo const*, int32> > ChanceTriggerSpells;
         ChanceTriggerSpells m_ChanceTriggerSpells;
+
+		// effect helpers
+		void SummonGuardian(uint32 effectIndex, uint32 entry, SummonPropertiesEntry const* properties, uint32 numSummons);
 
         uint32 m_spellState;
         uint32 m_timer;

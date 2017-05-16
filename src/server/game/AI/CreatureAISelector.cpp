@@ -35,6 +35,8 @@ namespace FactorySelector
             else if (creature->IsVehicle())
                 ai_factory = ai_registry.GetRegistryItem("VehicleAI");
 #endif
+			else if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN) && ((Guardian*)creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+				ai_factory = sCreatureAIRegistry->GetRegistryItem("PetAI");
             else if( creature->IsGuard() )
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("GuardAI");
             else if(creature->IsTotem())
@@ -43,8 +45,8 @@ namespace FactorySelector
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
             else if(creature->IsTrigger())
                 ai_factory = sCreatureAIRegistry->GetRegistryItem("NullCreatureAI");
-            else if(creature->IsCritter())
-                ai_factory = sCreatureAIRegistry->GetRegistryItem("CritterAI");
+			else if (creature->IsCritter() && !creature->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+				ai_factory = sCreatureAIRegistry->GetRegistryItem("CritterAI");
         }
 
         // Else select by permit check

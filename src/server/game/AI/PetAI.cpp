@@ -447,7 +447,7 @@ void PetAI::UpdateAI(const uint32 diff)
             if (!spellInfo)
                 continue;
 
-			/* T
+			/* TC
 			if (me->GetCharmInfo() && me->GetSpellHistory()->HasGlobalCooldown(spellInfo))
 				continue;
 				*/

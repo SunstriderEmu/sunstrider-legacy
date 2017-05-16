@@ -124,7 +124,7 @@ class TC_GAME_API Aura
         void HandleAuraModParryPercent(bool Apply, bool Real);
         void HandleAuraModDodgePercent(bool Apply, bool Real);
         void HandleAuraModBlockPercent(bool Apply, bool Real);
-        void HandleAuraModCritPercent(bool Apply, bool Real);
+        void HandleAuraModWeaponCritPercent(bool Apply, bool Real);
         void HandlePeriodicLeech(bool Apply, bool Real);
         void HandleModHitChance(bool Apply, bool Real);
         void HandleModSpellHitChance(bool Apply, bool Real);
@@ -173,6 +173,7 @@ class TC_GAME_API Aura
         void HandleModManaRegen(bool apply, bool Real);
         void HandleComprehendLanguage(bool apply, bool Real);
         void HandleShieldBlockValue(bool apply, bool Real);
+        void HandleShieldBlockValuePercent(bool apply, bool Real);
         void HandleModSpellCritChanceShool(bool apply, bool Real);
         void HandleAuraRetainComboPoints(bool apply, bool Real);
         void HandleModSpellDamagePercentFromStat(bool apply, bool Real);
@@ -284,6 +285,7 @@ class TC_GAME_API Aura
         bool IsTrigger() const { return m_IsTrigger; }
         bool IsPassive() const { return m_isPassive; }
         bool IsPersistent() const { return m_isPersistent; }
+		bool IsCooldownStartedOnEvent() const;
         bool IsDeathPersistent() const { return m_isDeathPersist; }
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
@@ -303,6 +305,7 @@ class TC_GAME_API Aura
         bool IsUpdated() { return m_updated; }
         void SetUpdated(bool val) { m_updated = val; }
         void SetRemoveMode(AuraRemoveMode mode) { m_removeMode = mode; }
+		AuraRemoveMode GetRemoveMode() const { return m_removeMode; }
 
         int32 m_procCharges;
         void SetCharges(int32 charges) { m_procCharges = charges; }

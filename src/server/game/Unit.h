@@ -21,7 +21,9 @@
 class UnitAI;
 class SpellCastTargets;
 class Aura;
-class TemporarySummon;
+class TempSummon;
+class Guardian;
+class Minion;
 
 #define WORLD_TRIGGER   12999
 
@@ -192,7 +194,7 @@ enum UnitBytes1Offsets
 enum UnitBytes2Offsets
 {
     UNIT_BYTES_2_OFFSET_SHEATH_STATE = 0,
-    UNIT_BYTES_2_OFFSET_1_UNK = 1, //Not sure what this index is for. TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1,
+    UNIT_BYTES_2_OFFSET_1_UNK = 1, //Not sure what this index is for. TC has UNIT_BYTES_2_OFFSET_PVP_FLAG = 1, but this may not be on BC since PvP handling has changed a lot
     UNIT_BYTES_2_OFFSET_PET_FLAGS = 2,
     UNIT_BYTES_2_OFFSET_SHAPESHIFT_FORM = 3,
 };
@@ -358,13 +360,18 @@ struct SpellImmune
 
 typedef std::list<SpellImmune> SpellImmuneList;
 
-enum UnitModifierType
+enum UnitModifierFlatType
 {
-    BASE_VALUE = 0,
-    BASE_PCT = 1,
-    TOTAL_VALUE = 2,
-    TOTAL_PCT = 3,
-    MODIFIER_TYPE_END = 4
+	BASE_VALUE = 0,
+	TOTAL_VALUE = 1,
+	MODIFIER_TYPE_FLAT_END = 2
+};
+
+enum UnitModifierPctType
+{
+	BASE_PCT = 0,
+	TOTAL_PCT = 1,
+	MODIFIER_TYPE_PCT_END = 2
 };
 
 enum WeaponDamageRange
@@ -517,6 +524,7 @@ enum WeaponAttackType : unsigned int
     MAX_ATTACK    = 3
 };
 
+//BC has no spell with more than CR_EXPERTISE
 enum CombatRating : unsigned int
 {
     CR_WEAPON_SKILL             = 0,
@@ -543,7 +551,10 @@ enum CombatRating : unsigned int
     CR_WEAPON_SKILL_OFFHAND     = 21,
     CR_WEAPON_SKILL_RANGED      = 22,
     CR_EXPERTISE                = 23,
-    MAX_COMBAT_RATING           = 24
+#ifdef LICH_KING
+    CR_ARMOR_PENETRATION        = 24,
+#endif
+    MAX_COMBAT_RATING           ,
 };
 
 enum DamageEffectType : unsigned int
@@ -742,7 +753,6 @@ enum UnitTypeMask : int
     UNIT_MASK_TOTEM                 = 0x00000008,
     UNIT_MASK_PET                   = 0x00000010,
     UNIT_MASK_VEHICLE               = 0x00000020,
-    //NYI
     UNIT_MASK_PUPPET                = 0x00000040,
     UNIT_MASK_HUNTER_PET            = 0x00000080,
     UNIT_MASK_CONTROLABLE_GUARDIAN  = 0x00000100,
@@ -923,6 +933,16 @@ enum CommandStates
     COMMAND_ABANDON = 3
 };
 
+#ifdef LICH_KING
+#define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
+#define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFF000000) >> 24)
+#define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 24))
+#else
+#define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x0000FFFF)
+#define UNIT_ACTION_BUTTON_TYPE(X)   ((uint32(X) & 0xFFFF0000) >> 16)
+#define MAKE_UNIT_ACTION_BUTTON(A, T) (uint32(A) | (uint32(T) << 16))
+#endif
+
 struct CharmSpellEntry
 {
     uint16 spellId;
@@ -981,8 +1001,10 @@ class TC_GAME_API CharmInfo
         void InitCharmCreateSpells();
         void InitPetActionBar();
         void InitEmptyActionBar(bool withAttack = true);
+
                                                             //return true if successful
-        bool AddSpellToAB(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate = ACT_DECIDE);
+        bool AddSpellToActionBar(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate = ACT_DECIDE);
+		void LoadPetActionBar(const std::string& data);
         void ToggleCreatureAutocast(uint32 spellid, bool apply);
 
         UnitActionBarEntry* GetActionBarEntry(uint8 index) { return &(PetActionBar[index]); }
@@ -1039,7 +1061,15 @@ enum ReactiveType
     MAX_REACTIVE
 };
 
+#define SUMMON_SLOT_PET     0
+#define SUMMON_SLOT_TOTEM   1
+#define MAX_TOTEM_SLOT      5
+#define SUMMON_SLOT_MINIPET 5
+#define SUMMON_SLOT_QUEST   6
 #define MAX_TOTEM 4
+#define MAX_SUMMON_SLOT     7
+
+#define MAX_GAMEOBJECT_SLOT 4
 
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
@@ -1087,12 +1117,23 @@ enum CanAttackResult
     CAN_ATTACK_RESULT_OTHERS, //all others reason
 };
 
+enum PlayerTotemType
+{
+    SUMMON_TYPE_TOTEM_FIRE  = 63,
+    SUMMON_TYPE_TOTEM_EARTH = 81,
+    SUMMON_TYPE_TOTEM_WATER = 82,
+    SUMMON_TYPE_TOTEM_AIR   = 83
+};
+
 struct SpellProcEventEntry;                                 // used only privately
 
 class TC_GAME_API Unit : public WorldObject
 {
     public:
         typedef std::set<Unit*> AttackerSet;
+        typedef std::vector<Unit*> UnitVector;
+		typedef std::set<Unit*> ControlList;
+
         typedef std::pair<uint32, uint8> spellEffectPair;
         typedef std::multimap< spellEffectPair, Aura*> AuraMap;
         typedef std::list<Aura *> AuraList;
@@ -1181,6 +1222,7 @@ class TC_GAME_API Unit : public WorldObject
             return m_attacking;
         }
         
+        void ValidateAttackersAndOwnTarget();
         void CombatStop(bool cast = false);
         void CombatStopWithPets(bool cast = false);
         Unit* SelectNearbyTarget(float dist = NOMINAL_MELEE_RANGE) const;
@@ -1192,14 +1234,14 @@ class TC_GAME_API Unit : public WorldObject
 
         uint32 HasUnitTypeMask(uint32 mask) const { return mask & m_unitTypeMask; }
         void AddUnitTypeMask(uint32 mask) { m_unitTypeMask |= mask; }
-        bool IsSummon() const { return (m_unitTypeMask & UNIT_MASK_SUMMON) != 0; }
+        bool IsSummon() const   { return (m_unitTypeMask & UNIT_MASK_SUMMON) != 0; }
         bool IsGuardian() const { return (m_unitTypeMask & UNIT_MASK_GUARDIAN) != 0; }
-        bool IsPet() const { return (m_unitTypeMask & UNIT_MASK_PET) != 0; }
-        bool IsHunterPet() const { return (m_unitTypeMask & UNIT_MASK_HUNTER_PET) != 0; }
-        bool IsTotem() const { return (m_unitTypeMask & UNIT_MASK_TOTEM) != 0; }
-        bool IsVehicle() const { return (m_unitTypeMask & UNIT_MASK_VEHICLE) != 0; }
+        bool IsPet() const      { return (m_unitTypeMask & UNIT_MASK_PET) != 0; }
+        bool IsHunterPet() const{ return (m_unitTypeMask & UNIT_MASK_HUNTER_PET) != 0; }
+        bool IsTotem() const    { return (m_unitTypeMask & UNIT_MASK_TOTEM) != 0; }
+        bool IsVehicle() const  { return (m_unitTypeMask & UNIT_MASK_VEHICLE) != 0; }
 
-        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
+        //Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
         uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
         virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return GetLevel(); }
@@ -1515,16 +1557,21 @@ class TC_GAME_API Unit : public WorldObject
         /** Set a "X's minion" text on the creature */
         void SetCreatorGUID(uint64 creator) { SetUInt64Value(UNIT_FIELD_CREATEDBY, creator); }
         uint64 GetMinionGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
+		void SetMinionGUID(uint64 guid) { SetGuidValue(UNIT_FIELD_SUMMON, guid); }
         uint64 GetCharmerGUID() const { return GetUInt64Value(UNIT_FIELD_CHARMEDBY); }
         void SetCharmerGUID(uint64 owner) { SetUInt64Value(UNIT_FIELD_CHARMEDBY, owner); }
         uint64 GetCharmGUID() const { return  GetUInt64Value( UNIT_FIELD_CHARM); }
-        //not tc like yet
-        void SetPetGUID(uint64 guid) { SetUInt64Value(UNIT_FIELD_SUMMON, guid); }
-        //not tc like yet
-        uint64 GetPetGUID() const { return GetUInt64Value(UNIT_FIELD_SUMMON); }
+		void SetPetGUID(uint64 guid) { m_SummonSlot[SUMMON_SLOT_PET] = guid; }
+		uint64 GetPetGUID() const { return m_SummonSlot[SUMMON_SLOT_PET]; }
+#ifdef LICH_KING
+		void SetCritterGUID(uint64 guid) { SetGuidValue(UNIT_FIELD_CRITTER, guid); }
+		uint64 GetCritterGUID() const { return GetGuidValue(UNIT_FIELD_CRITTER);
+#else
+		void SetCritterGUID(uint64 guid) { m_miniPet = guid; }
+		uint64 GetCritterGUID() const { return m_miniPet; }
+#endif
 
         bool IsControlledByPlayer() const { return m_ControlledByPlayer; }
-        bool IsCreatedByPlayer() const { return m_CreatedByPlayer; }
 
         uint64 GetCharmerOrOwnerGUID() const { return GetCharmerGUID() ? GetCharmerGUID() : GetOwnerGUID(); }
         uint64 GetCharmerOrOwnerOrOwnGUID() const
@@ -1539,7 +1586,8 @@ class TC_GAME_API Unit : public WorldObject
 
         Unit* GetOwner() const;
         Pet* GetPet() const;
-        Unit* GetGuardianPet() const;
+		Guardian* GetGuardianPet() const;
+		Minion* GetFirstMinion() const;
         Unit* GetCharmer() const;
         Unit* GetCharm() const;
         Unit* GetCharmerOrOwner() const { return GetCharmerGUID() ? GetCharmer() : GetOwner(); }
@@ -1554,13 +1602,19 @@ class TC_GAME_API Unit : public WorldObject
         Player* GetAffectingPlayer() const;
         bool IsCharmedOwnedByPlayerOrPlayer() const;
 
-        void SetPet(Pet* pet);
-        void SetCharm(Unit* pet);
-        void SetCharmedBy(Unit* charmer, bool possess);
+		void SetMinion(Minion *minion, bool apply);
+		void GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry);
+		void RemoveAllMinionsByEntry(uint32 entry);
+        //void SetPet(Pet* pet);
+		void SetCharm(Unit* target, bool apply);
+		bool SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* aurApp = NULL);
         void RemoveCharmedBy(Unit* charmer);
         void RestoreFaction();
 
-        Unit* GetFirstControlled() const;
+		ControlList m_Controlled;
+		Unit* GetFirstControlled() const;
+		void RemoveAllControlled();
+		uint64 m_miniPet;
 
         bool IsCharmed() const { return GetCharmerGUID() != 0; }
         bool IsPossessed() const { return HasUnitState(UNIT_STATE_POSSESSED); }
@@ -1631,19 +1685,11 @@ class TC_GAME_API Unit : public WorldObject
 
         float GetResistanceBuffMods(SpellSchools school, bool positive) const { return GetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school ); }
         void SetResistanceBuffMods(SpellSchools school, bool positive, float val) { SetFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school,val); }
-        void ApplyResistanceBuffModsMod(SpellSchools school, bool positive, float val, bool apply) { ApplyModSignedFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school, val, apply); }
-        void ApplyResistanceBuffModsPercentMod(SpellSchools school, bool positive, float val, bool apply) { ApplyPercentModFloatValue(positive ? UNIT_FIELD_RESISTANCEBUFFMODSPOSITIVE+school : UNIT_FIELD_RESISTANCEBUFFMODSNEGATIVE+school, val, apply); }
-        void InitStatBuffMods()
-        {
-            for(int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_POSSTAT0+i, 0);
-            for(int i = STAT_STRENGTH; i < MAX_STATS; ++i) SetFloatValue(UNIT_FIELD_NEGSTAT0+i, 0);
-        }
-        void ApplyStatBuffMod(Stats stat, float val, bool apply) { ApplyModSignedFloatValue((val > 0 ? UNIT_FIELD_POSSTAT0+stat : UNIT_FIELD_NEGSTAT0+stat), val, apply); }
-        void ApplyStatPercentBuffMod(Stats stat, float val, bool apply)
-        {
-            ApplyPercentModFloatValue(UNIT_FIELD_POSSTAT0+stat, val, apply);
-            ApplyPercentModFloatValue(UNIT_FIELD_NEGSTAT0+stat, val, apply);
-        }
+
+		void UpdateResistanceBuffModsMod(SpellSchools school);
+		void InitStatBuffMods();
+		void UpdateStatBuffMod(Stats stat);
+
         void SetCreateStat(Stats stat, float val) { m_createStats[stat] = val; }
         void SetCreateHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_BASE_HEALTH, val); }
         uint32 GetCreateHealth() const { return GetUInt32Value(UNIT_FIELD_BASE_HEALTH); }
@@ -1680,14 +1726,14 @@ class TC_GAME_API Unit : public WorldObject
         inline Spell* GetCurrentSpell(uint32 spellType) const { return m_currentSpells[spellType]; }
 
         // Check if our current channel spell has attribute SPELL_ATTR5_CAN_CHANNEL_WHEN_MOVING
-        bool IsMovementPreventedByCasting() const;
+        virtual bool IsMovementPreventedByCasting() const;
+        virtual bool IsFocusing(Spell const* /*focusSpell*/ = nullptr, bool /*withDelay*/ = false) { return false; }
 
         Spell* m_currentSpells[CURRENT_MAX_SPELL];
 
         uint32 m_addDmgOnce;
-        uint64 m_TotemSlot[MAX_TOTEM];
-        uint64 m_TotemSlot254;
-        uint64 m_ObjectSlot[4];
+        uint64 m_SummonSlot[MAX_SUMMON_SLOT];
+        uint64 m_ObjectSlot[MAX_GAMEOBJECT_SLOT];
         uint32 m_ShapeShiftFormSpellId;
         ShapeshiftForm m_form;
         float m_modMeleeHitChance;
@@ -1702,9 +1748,27 @@ class TC_GAME_API Unit : public WorldObject
         EventProcessor m_Events;
 
         // stat system
-        bool HandleStatModifier(UnitMods unitMod, UnitModifierType modifierType, float amount, bool apply);
-        void SetModifierValue(UnitMods unitMod, UnitModifierType modifierType, float value) { m_auraModifiersGroup[unitMod][modifierType] = value; }
-        float GetModifierValue(UnitMods unitMod, UnitModifierType modifierType) const;
+		void HandleStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float amount, bool apply);
+		void ApplyStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float amount);
+
+
+		void SetStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float val);
+		void SetStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float val);
+
+		float GetFlatModifierValue(UnitMods unitMod, UnitModifierFlatType modifierType) const;
+		float GetPctModifierValue(UnitMods unitMod, UnitModifierPctType modifierType) const;
+
+		void UpdateUnitMod(UnitMods unitMod);
+
+        // only players have item requirements
+        virtual bool CheckAttackFitToAuraRequirement(WeaponAttackType /*attackType*/, AuraEffect const* /*aurEff*/) const { return true; }
+
+        virtual void UpdateDamageDoneMods(WeaponAttackType attackType);
+        void UpdateAllDamageDoneMods();
+
+        void UpdateDamagePctDoneMods(WeaponAttackType attackType);
+        void UpdateAllDamagePctDoneMods();
+
         float GetTotalStatValue(Stats stat) const;
         float GetTotalAuraModValue(UnitMods unitMod) const;
         SpellSchools GetSpellSchoolByAuraGroup(UnitMods unitMod) const;
@@ -1715,6 +1779,7 @@ class TC_GAME_API Unit : public WorldObject
         virtual bool UpdateStats(Stats stat) = 0;
         virtual bool UpdateAllStats() = 0;
         virtual void UpdateResistances(uint32 school) = 0;
+		virtual void UpdateAllResistances();
         virtual void UpdateArmor() = 0;
         virtual void UpdateMaxHealth() = 0;
         virtual void UpdateMaxPower(Powers power) = 0;
@@ -1752,7 +1817,6 @@ class TC_GAME_API Unit : public WorldObject
         Movement::MoveSpline * movespline;
 
         bool m_ControlledByPlayer;
-        bool m_CreatedByPlayer;
 
         bool HandleSpellClick(Unit* clicker, int8 seatId = -1);
 #ifdef LICH_KING
@@ -1839,9 +1903,14 @@ class TC_GAME_API Unit : public WorldObject
         int32 GetMaxPositiveAuraModifier(AuraType auratype) const;
         int32 GetMaxNegativeAuraModifier(AuraType auratype) const;
 
+        int32 GetTotalAuraModifier(AuraType auratype, std::function<bool(AuraEffect const*)> const& predicate) const;
+        float GetTotalAuraMultiplier(AuraType auratype, std::function<bool(AuraEffect const*)> const& predicate) const;
+        int32 GetMaxPositiveAuraModifier(AuraType auratype, std::function<bool(AuraEffect const*)> const& predicate) const;
+        int32 GetMaxNegativeAuraModifier(AuraType auratype, std::function<bool(AuraEffect const*)> const& predicate) const;
+
         int32 GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
         float GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
-        int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
+        int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, AuraEffect const* except = nullptr) const;
         int32 GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
 
         int32 GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
@@ -1859,6 +1928,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetNativeDisplayId() const { return GetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID); }
         void SetNativeDisplayId(uint32 modelId) { SetUInt32Value(UNIT_FIELD_NATIVEDISPLAYID, modelId); }
         ShapeshiftForm GetShapeshiftForm() const { return ShapeshiftForm(GetByteValue(UNIT_FIELD_BYTES_2, 3)); }
+        uint32 GetModelForTotem(PlayerTotemType totemType);
         uint32 GetModelForForm (ShapeshiftForm from) const;
         void SetTransForm(uint32 spellid) { m_transform = spellid;}
         uint32 GetTransForm() const { return m_transform;}
@@ -1917,7 +1987,7 @@ class TC_GAME_API Unit : public WorldObject
 
         bool   IsSpellBlocked(Unit *pVictim, SpellInfo const *spellProto, WeaponAttackType attackType = BASE_ATTACK);
         bool   IsSpellCrit(Unit *pVictim, SpellInfo const *spellProto, SpellSchoolMask schoolMask, WeaponAttackType attackType = BASE_ATTACK);
-        uint32 SpellCriticalBonus(SpellInfo const *spellProto, uint32 damage, Unit *pVictim);
+        uint32 SpellCriticalDamageBonus(SpellInfo const *spellProto, uint32 damage, Unit *pVictim);
         //Spells disabled in spell_disabled table
         bool IsSpellDisabled(uint32 const spellId);
 
@@ -2045,8 +2115,8 @@ class TC_GAME_API Unit : public WorldObject
         Totem* ToTotem(){ if(IsTotem()) return reinterpret_cast<Totem*>(this); else return nullptr; } 
         Totem const* ToTotem() const { if (IsTotem()) return reinterpret_cast<Totem const*>(this); else return nullptr; }
 
-        TemporarySummon* ToTemporarySummon() { if (IsSummon()) return reinterpret_cast<TemporarySummon*>(this); else return nullptr; }
-        TemporarySummon const* ToTemporarySummon() const { if (IsSummon()) return reinterpret_cast<TemporarySummon const*>(this); else return nullptr; }
+        TempSummon* ToTempSummon() { if (IsSummon()) return reinterpret_cast<TempSummon*>(this); else return nullptr; }
+        TempSummon const* ToTempSummon() const { if (IsSummon()) return reinterpret_cast<TempSummon const*>(this); else return nullptr; }
 
         void SetSummoner(Unit* summoner) { m_summoner = summoner->GetGUID(); }
         virtual Unit* GetSummoner() const;
@@ -2133,7 +2203,8 @@ class TC_GAME_API Unit : public WorldObject
         AuraStateAurasMap m_auraStateAuras;        // List of all auras affecting aura states, casted by who, Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
 
-        float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
+		float m_auraFlatModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_FLAT_END];
+		float m_auraPctModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_PCT_END];
         float m_weaponDamage[MAX_ATTACK][2];
         bool m_canModifyStats;
         //std::list< spellEffectPair > AuraSpells[TOTAL_AURAS];  // TODO: use this if ok for mem

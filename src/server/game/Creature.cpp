@@ -495,13 +495,13 @@ bool Creature::UpdateEntry(uint32 Entry, const CreatureData *data )
     SetMeleeDamageSchool(SpellSchools(cInfo->dmgschool));
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
     float armor = (float)stats->GenerateArmor(cInfo); /// @todo Why is this treated as uint32 when it's a float?
-    SetModifierValue(UNIT_MOD_ARMOR,             BASE_VALUE, armor);
-    SetModifierValue(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY-1])); //shifted by 1 because SPELL_SCHOOL_NORMAL is not in array
-    SetModifierValue(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FIRE-1]));
-    SetModifierValue(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_NATURE-1]));
-    SetModifierValue(UNIT_MOD_RESISTANCE_FROST,  BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FROST-1]));
-    SetModifierValue(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_SHADOW-1]));
-    SetModifierValue(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_ARCANE-1]));
+    SetStatFlatModifier(UNIT_MOD_ARMOR,             BASE_VALUE, armor);
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_HOLY,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_HOLY-1])); //shifted by 1 because SPELL_SCHOOL_NORMAL is not in array
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_FIRE,   BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FIRE-1]));
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_NATURE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_NATURE-1]));
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_FROST,  BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_FROST-1]));
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_SHADOW, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_SHADOW-1]));
+    SetStatFlatModifier(UNIT_MOD_RESISTANCE_ARCANE, BASE_VALUE, float(cInfo->resistance[SPELL_SCHOOL_ARCANE-1]));
 
     if(GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_DUAL_WIELD)
         SetCanDualWield(true);
@@ -1210,8 +1210,8 @@ void Creature::SaveToDB()
 void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 {
     // update in loaded data
-    if (!m_spawnId)
-        m_spawnId = GetGUIDLow();
+	if (!m_spawnId)
+		m_spawnId = sObjectMgr->GenerateCreatureSpawnId();
 
     CreatureData& data = sObjectMgr->NewOrExistCreatureData(m_spawnId);
 
@@ -1223,9 +1223,6 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
         // check if it's a custom model and if not, use 0 for displayId
         if(displayId == cinfo->Modelid1 || displayId == cinfo->Modelid2 ||
             displayId == cinfo->Modelid3 || displayId == cinfo->Modelid4) displayId = 0;
-
-        if(sObjectMgr->isUsingAlternateGuidGeneration() && m_spawnId > sObjectMgr->getAltCreatureGuidStartIndex())
-            TC_LOG_ERROR("creature","Creature with guid %u (entry %u) in temporary range was saved to database.",m_spawnId,cinfo->Entry); 
     }
 
     // data->guid = guid must not be update at save
@@ -1281,24 +1278,14 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
     trans->Append( ss.str( ).c_str( ) );
 
     WorldDatabase.CommitTransaction(trans);
-
-    if(sObjectMgr->IsInTemporaryGuidRange(uint32(HighGuid::Unit), m_spawnId))
-        TC_LOG_ERROR("server","Creature %u has been saved but was in temporary guid range ! fixmefixmefixme", m_spawnId);
 }
 
-void Creature::SelectLevel()
+void Creature::UpdateLevelDependantStats()
 {
-    const CreatureTemplate* cInfo = GetCreatureTemplate();
-    if(!cInfo)
-        return;
+    CreatureTemplate const* cInfo = GetCreatureTemplate();
+    uint32 rank = IsPet() ? 0 : cInfo->rank;
+    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
 
-    // level
-    uint32 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
-    uint32 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
-    uint32 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
-    SetLevel(level);
-
-    CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(level, cInfo->unit_class);
 
     // health
     uint32 health = stats->GenerateHealth(cInfo);
@@ -1317,8 +1304,8 @@ void Creature::SelectLevel()
 
     /// @todo set UNIT_FIELD_POWER*, for some creature class case (energy, etc)
 
-    SetModifierValue(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
-    SetModifierValue(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
+    SetStatFlatModifier(UNIT_MOD_HEALTH, BASE_VALUE, (float)health);
+    SetStatFlatModifier(UNIT_MOD_MANA, BASE_VALUE, (float)mana);
 
     // damage
 
@@ -1336,8 +1323,26 @@ void Creature::SelectLevel()
     SetBaseWeaponDamage(RANGED_ATTACK, MINDAMAGE, weaponBaseMinDamage);
     SetBaseWeaponDamage(RANGED_ATTACK, MAXDAMAGE, weaponBaseMaxDamage);
 
-    SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, stats->AttackPower);
-    SetModifierValue(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, stats->RangedAttackPower);
+    SetStatFlatModifier(UNIT_MOD_ATTACK_POWER, BASE_VALUE, stats->AttackPower);
+    SetStatFlatModifier(UNIT_MOD_ATTACK_POWER_RANGED, BASE_VALUE, stats->RangedAttackPower);
+
+    float armor = (float)stats->GenerateArmor(cInfo); /// @todo Why is this treated as uint32 when it's a float?
+    SetStatFlatModifier(UNIT_MOD_ARMOR, BASE_VALUE, armor);
+}
+
+void Creature::SelectLevel()
+{
+    const CreatureTemplate* cInfo = GetCreatureTemplate();
+    if(!cInfo)
+        return;
+
+    // level
+    uint32 minlevel = std::min(cInfo->maxlevel, cInfo->minlevel);
+    uint32 maxlevel = std::max(cInfo->maxlevel, cInfo->minlevel);
+    uint32 level = minlevel == maxlevel ? minlevel : urand(minlevel, maxlevel);
+    SetLevel(level);
+
+    UpdateLevelDependantStats();
 }
 
 bool Creature::CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data)
@@ -1420,7 +1425,7 @@ bool Creature::LoadCreatureFromDB(uint32 spawnId, Map *map, bool addToMap, bool 
 
     m_respawnradius = data->spawndist;
     m_respawnDelay = data->spawntimesecs;
-    if(!Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit, map->GetInstanceId() != 0), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->posX, data->posY, data->posZ, data->orientation, data))
+    if(!Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL /*data->phaseMask*/, data->id, data->posX, data->posY, data->posZ, data->orientation, data))
         return false;
 
     if(!IsPositionValid())
@@ -1908,8 +1913,8 @@ void Creature::Respawn(bool force /* = false */)
 
 void Creature::DespawnOrUnsummon(uint32 msTimeToDespawn /*= 0*/)
 {
-    if (TemporarySummon* summon = this->ToTemporarySummon())
-        summon->UnSummon(/* msTimeToDespawn */); //todo : handle msTimeToDespawn for summons
+    if (TempSummon* summon = this->ToTempSummon())
+        summon->UnSummon(msTimeToDespawn); 
     else
         ForcedDespawn(msTimeToDespawn);
 }
@@ -2882,6 +2887,35 @@ void Creature::ReleaseFocus(Spell const* focusSpell)
 
     if (focusSpell->GetSpellInfo()->HasAttribute(SPELL_ATTR5_DONT_TURN_DURING_CAST))
         ClearUnitState(UNIT_STATE_ROTATING);
+}
+
+
+
+bool Creature::IsFocusing(Spell const* focusSpell, bool withDelay)
+{
+    if (!IsAlive()) // dead creatures cannot focus
+    {
+        ReleaseFocus(nullptr/*, false*/);
+        return false;
+    }
+
+    if (focusSpell && (focusSpell != _focusSpell))
+        return false;
+
+    /* TC 
+    if (!_focusSpell)
+    {
+        if (!withDelay || !m_focusDelay)
+            return false;
+        if (GetMSTimeDiffToNow(m_focusDelay) > 1000) // @todo figure out if we can get rid of this magic number somehow
+        {
+            m_focusDelay = 0; // save checks in the future
+            return false;
+        }
+    }
+    */
+
+    return true;
 }
 
 bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)

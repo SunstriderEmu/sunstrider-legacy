@@ -1223,6 +1223,13 @@ void WorldObject::GetRandomPoint( const Position &pos, float distance, float &ra
     UpdateGroundPositionZ(rand_x,rand_y,rand_z);            // update to LOS height if available
 }
 
+Position WorldObject::GetRandomPoint(const Position &srcPos, float distance) const
+{
+	float x, y, z;
+	GetRandomPoint(srcPos, distance, x, y, z);
+	return Position(x, y, z, GetOrientation());
+}
+
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
 {
     float new_z = GetMap()->GetHeight(x,y,z,true);
@@ -1716,12 +1723,36 @@ void WorldObject::ClearZoneScript()
 	m_zoneScript = NULL;
 }
 
-
-Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype,uint32 despwtime) const
+TempSummon* WorldObject::SummonCreature(uint32 entry, Position const& pos, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 duration /*= 0*/) const
 {
-    auto pCreature = new TemporarySummon(GetGUID());
+	if (Map* map = FindMap())
+	{
+		if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL))
+		{
+			summon->SetTempSummonType(spwtype);
+			return summon;
+		}
+	}
 
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HighGuid::Unit,true), GetMap(), GetPhaseMask(), id, x, y, z, ang))
+	return nullptr;
+}
+
+TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype,uint32 despwtime) const
+{
+	if (!x && !y && !z)
+	{
+		GetClosePoint(x, y, z, GetCombatReach());
+		ang = GetOrientation();
+	}
+
+	Position pos;
+	pos.Relocate(x, y, z, ang);
+	return SummonCreature(id, pos, spwtype, despwtime);
+
+	/*
+    auto pCreature = new TempSummon(GetGUID());
+
+    if (!pCreature->Create(GetMap()->GenerateLowGuid<HighGuid::Unit>(), GetMap(), GetPhaseMask(), id, x, y, z, ang))
     {
         delete pCreature;
         return nullptr;
@@ -1762,11 +1793,12 @@ Creature* WorldObject::SummonCreature(uint32 id, float x, float y, float z, floa
 
     //return the creature therewith the summoner has access to it
     return pCreature;
+	*/
 }
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
-    auto  pet = new Pet(petType);
+    auto pet = new Pet(this, petType);
 
     if(petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
     {
@@ -1796,15 +1828,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         return nullptr;
     }
 
-    Map *map = GetMap();
-    uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!pet->Create(sObjectMgr->GenerateLowGuid(HighGuid::Pet), map, GetPhaseMask(), entry, pet_number))
-    {
-        TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
-        delete pet;
-        return nullptr;
-    }
-
     pet->Relocate(x, y, z, ang);
 
     if(!pet->IsPositionValid())
@@ -1814,44 +1837,59 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         return nullptr;
     }
 
+	Map *map = GetMap();
+	uint32 pet_number = sObjectMgr->GeneratePetNumber();
+	if (!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
+	{
+		TC_LOG_ERROR("FIXME", "no such creature entry %u", entry);
+		delete pet;
+		return nullptr;
+	}
+
     pet->SetOwnerGUID(GetGUID());
-    pet->SetCreatorGUID(GetGUID());
-    pet->SetUInt32Value(UNIT_FIELD_FACTIONTEMPLATE, GetFaction());
+	pet->SetCreatorGUID(GetGUID());
+	pet->SetFaction(GetFaction());
 
     // this enables pet details window (Shift+P)
     pet->GetCharmInfo()->SetPetNumber(pet_number, false);
 
-    pet->AIM_Initialize();
-
-    map->AddToMap(pet->ToCreature(), true);
+    //pet->AIM_Initialize();
 
     pet->SetPowerType(POWER_MANA);
     pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
     pet->InitStatsForLevel(GetLevel());
 
+	SetMinion(pet, true);
+
     switch(petType)
     {
-        case GUARDIAN_PET:
-            pet->AddUnitTypeMask(UNIT_MASK_GUARDIAN);
-        case POSSESSED_PET:
-            pet->SetUInt32Value(UNIT_FIELD_FLAGS,0);
-            AddGuardian(pet);
-            break;
         case SUMMON_PET:
-            pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
+			// this enables pet details window (Shift+P)
+			pet->GetCharmInfo()->SetPetNumber(pet_number, true);
+			pet->SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, CLASS_MAGE);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-            pet->SetHealth(pet->GetMaxHealth());
+			pet->SetFullHealth();
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
-            pet->InitPetCreateSpells();
-            pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-            SetPet(pet);
-            PetSpellInitialize();
             break;
         default:
             break;
     }
+
+	map->AddToMap(pet->ToCreature(), true);
+
+	switch (petType)
+	{
+		case SUMMON_PET:
+			pet->InitPetCreateSpells();
+			//TC pet->InitTalentForLevel();
+			pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+			PetSpellInitialize();
+			break;
+		default:
+			break;
+	}
 
     if(petType == SUMMON_PET)
     {
@@ -1872,20 +1910,14 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     if(duration > 0)
         pet->SetDuration(duration);
     
-    //scripts hooks
-    if(pet->AI())
-        pet->AI()->IsSummonedBy(this->ToUnit());
-
-    if(GetTypeId()==TYPEID_UNIT && (this->ToCreature())->IsAIEnabled) 
-        (this->ToCreature())->AI()->JustSummoned(pet);
-
     return pet;
 }
 
+/*
 Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 duration)
 {
     PetType petType = SUMMON_PET;
-    auto  pet = new Pet(petType);
+    Pet* pet = new Pet(this, petType);
 
     // petentry==0 for hunter "call pet" (current pet summoned if any)
     if(!entry)
@@ -1896,7 +1928,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
 
     Map *map = GetMap();
     uint32 pet_number = sObjectMgr->GeneratePetNumber();
-    if(!pet->Create(sObjectMgr->GenerateLowGuid(HighGuid::Pet), map, GetPhaseMask(), entry, pet_number))
+    if(!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
     {
         TC_LOG_ERROR("FIXME","no such creature entry %u", entry);
         delete pet;
@@ -1918,12 +1950,12 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
 
     pet->AIM_Initialize();
 
-    map->AddToMap(pet->ToCreature());
-
     pet->SetPowerType(POWER_MANA);
     pet->SetUInt32Value(UNIT_NPC_FLAGS , 0);
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
     pet->InitStatsForLevel(GetLevel());
+
+	SetMinion(pet, true);
 
     switch(petType)
     {
@@ -1931,20 +1963,34 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
             pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-            pet->SetHealth(pet->GetMaxHealth());
+			pet->SetFullHealth();
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
-            pet->InitPetCreateSpells();
-            SetPet(pet);
             break;
         default:
             break;
     }
+
+	map->AddToMap(pet->ToCreature());
+
+	switch (petType)
+	{
+	case SUMMON_PET:
+		pet->InitPetCreateSpells();
+		//TC pet->InitTalentForLevel();
+		pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+		PetSpellInitialize();
+		break;
+	default:
+		break;
+	}
+
 
     if(duration > 0)
         pet->SetDuration(duration);
 
     return pet;
 }
+*/
 
 GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const
 {
@@ -1960,7 +2006,7 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, Position const& pos, G3D
     Map *map = GetMap();
     GameObject* go = sObjectMgr->IsGameObjectStaticTransport(entry) ? new StaticTransport() : new GameObject();
 
-    if(!go->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true), entry, map, GetPhaseMask(), pos, rot, 255, GO_STATE_READY))
+    if(!go->Create(map->GenerateLowGuid<HighGuid::GameObject>(), entry, map, GetPhaseMask(), pos, rot, 255, GO_STATE_READY))
     {
         delete go;
         return nullptr;

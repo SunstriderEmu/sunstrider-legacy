@@ -408,7 +408,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 
             Player newChar(this);
             newChar.GetMotionMaster()->Initialize();
-            if (!newChar.Create(sObjectMgr->GenerateLowGuid(HighGuid::Player), createInfo.get()))
+            if (!newChar.Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), createInfo.get()))
             {
                 // Player not create (race/class/etc problem?)
                 newChar.CleanupsBeforeDelete();

@@ -131,7 +131,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     if (Transport* trans = chr->GetTransport())
     {
 #ifdef LICH_KING
-        uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject);
+        uint32 guid = sObjectMgr->GenerateGameObjectSpawnId();
         GameObjectData& data = sObjectMgr->NewGOData(guid);
         data.id = id;
         data.posX = chr->GetTransOffsetX();
@@ -166,7 +166,8 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     }
 
     auto pGameObj = new GameObject;
-    uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HighGuid::GameObject);
+	uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
+	//use AddGOData instead? Then how do we spawn them in instance?
 
     if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {

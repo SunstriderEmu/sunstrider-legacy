@@ -2332,38 +2332,54 @@ enum DiminishingGroup : uint32
 
 enum SummonCategory : uint32
 {
-    SUMMON_CATEGORY_WILD = 0,
-    SUMMON_CATEGORY_ALLY = 1,
-    SUMMON_CATEGORY_PET = 2,
-    SUMMON_CATEGORY_PUPPET = 3,
-#ifdef LICH_KING
+    SUMMON_CATEGORY_WILD    = 0,
+    SUMMON_CATEGORY_ALLY    = 1,
+    SUMMON_CATEGORY_PET     = 2,
+    SUMMON_CATEGORY_PUPPET  = 3,
+	//LK only from this point
     SUMMON_CATEGORY_VEHICLE = 4,
-    SUMMON_CATEGORY_UNK = 5  // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
-                             // uses this category
-#endif
+    SUMMON_CATEGORY_UNK     = 5, // as of patch 3.3.5a only Bone Spike in Icecrown Citadel uses this category
 };
 
-enum SummonType : uint32
+//Only ones used on BC: 0,1,2,4,5
+enum SummonType
 {
-    SUMMON_TYPE_CRITTER     = 41,
-    SUMMON_TYPE_GUARDIAN    = 61,
-    SUMMON_TYPE_TOTEM_SLOT1 = 63,
-    SUMMON_TYPE_WILD        = 64,
-    SUMMON_TYPE_POSESSED    = 65,
-    SUMMON_TYPE_DEMON       = 66,
-    SUMMON_TYPE_SUMMON      = 67,
-    SUMMON_TYPE_TOTEM_SLOT2 = 81,
-    SUMMON_TYPE_TOTEM_SLOT3 = 82,
-    SUMMON_TYPE_TOTEM_SLOT4 = 83,
-    SUMMON_TYPE_TOTEM       = 121,
-    SUMMON_TYPE_UNKNOWN3    = 181,
-    SUMMON_TYPE_UNKNOWN4    = 187,
-    SUMMON_TYPE_UNKNOWN1    = 247,
-    SUMMON_TYPE_CRITTER2    = 407,
-    SUMMON_TYPE_CRITTER3    = 307,
-    SUMMON_TYPE_UNKNOWN5    = 409,
-    SUMMON_TYPE_POSESSED3   = 427,
-    SUMMON_TYPE_POSESSED2   = 428
+    SUMMON_TYPE_NONE        = 0,
+    SUMMON_TYPE_PET         = 1,
+    SUMMON_TYPE_GUARDIAN    = 2,
+    SUMMON_TYPE_MINION      = 3,
+    SUMMON_TYPE_TOTEM       = 4,
+    SUMMON_TYPE_MINIPET     = 5,
+    SUMMON_TYPE_GUARDIAN2   = 6,
+    SUMMON_TYPE_WILD2       = 7,
+    SUMMON_TYPE_WILD3       = 8,    // Related to phases and DK prequest line (3.3.5a)
+    SUMMON_TYPE_VEHICLE     = 9,
+    SUMMON_TYPE_VEHICLE2    = 10,   // Oculus and Argent Tournament vehicles (3.3.5a)
+    SUMMON_TYPE_LIGHTWELL   = 11,
+    SUMMON_TYPE_JEEVES      = 12
+};
+
+enum SummonPropertiesId : uint32
+{
+    SUMMON_PROPERTIES_ID_CRITTER     = 41,
+    SUMMON_PROPERTIES_ID_GUARDIAN    = 61,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT1 = 63,
+    SUMMON_PROPERTIES_ID_WILD        = 64,
+    SUMMON_PROPERTIES_ID_POSESSED    = 65,
+    SUMMON_PROPERTIES_ID_DEMON       = 66,
+    SUMMON_PROPERTIES_ID_SUMMON      = 67,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT2 = 81,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT3 = 82,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT4 = 83,
+    SUMMON_PROPERTIES_ID_TOTEM       = 121,
+    SUMMON_PROPERTIES_ID_UNKNOWN3    = 181,
+    SUMMON_PROPERTIES_ID_UNKNOWN4    = 187,
+    SUMMON_PROPERTIES_ID_UNKNOWN1    = 247,
+    SUMMON_PROPERTIES_ID_CRITTER2    = 407,
+    SUMMON_PROPERTIES_ID_CRITTER3    = 307,
+    SUMMON_PROPERTIES_ID_UNKNOWN5    = 409,
+    SUMMON_PROPERTIES_ID_POSESSED3   = 427,
+    SUMMON_PROPERTIES_ID_POSESSED2   = 428
 };
 
 enum EventId : uint32

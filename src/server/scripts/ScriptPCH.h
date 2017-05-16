@@ -22,6 +22,7 @@
 #include "Player.h"
 #include "GossipDef.h"
 #include "SpellScript.h"
+#include "TemporarySummon.h"
 
 #ifdef _WIN32
 #include <windows.h>

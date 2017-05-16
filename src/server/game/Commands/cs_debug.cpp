@@ -1526,7 +1526,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
         if (permanent)
         {
             auto pGameObj = new GameObject;
-            if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HighGuid::GameObject), itr.entry, player->GetMap(), PHASEMASK_NORMAL, itr.position, itr.rot, 0, GO_STATE_READY))
+            if (!pGameObj->Create(player->GetMap()->GenerateLowGuid<HighGuid::GameObject>(), itr.entry, player->GetMap(), PHASEMASK_NORMAL, itr.position, itr.rot, 0, GO_STATE_READY))
             {
                 delete pGameObj;
                 PSendSysMessage("Failed to create object %u", itr.entry);

@@ -46,6 +46,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "GameObject.h"
+#include "Formulas.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -109,28 +110,16 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
     return nullptr;
 }
 
-ObjectMgr::ObjectMgr()
+ObjectMgr::ObjectMgr() :
+	_creatureSpawnId(1),
+	_gameObjectSpawnId(1),
+    _hiPetNumber(1),
+    _ItemTextId(1),
+    _mailid(1),
+    _guildId(1),
+    _arenaTeamId(1),
+    _auctionId(1)
 {
-    m_hiCharGuid        = 1;
-    m_hiCreatureGuid    = 1;
-    m_hiTempCreatureGuidStart = 1;
-    m_hiTempCreatureGuid = 1;
-    m_hiCreatureRegularModeGuid = !sWorld->getConfig(CONFIG_GUIDDISTRIB_NEWMETHOD);
-    m_hiPetGuid         = 1;
-    m_hiItemGuid        = 1;
-    m_hiGoGuid          = 1;
-    m_hiTempGoGuidStart = 1;
-    m_hiTempGoGuid = 1;
-    m_hiGoRegularModeGuid = !sWorld->getConfig(CONFIG_GUIDDISTRIB_NEWMETHOD);
-    m_hiDoGuid          = 1;
-    m_hiCorpseGuid      = 1;
-    m_hiTransportGuid   = 1;
-    m_hiPetNumber       = 1;
-    m_ItemTextId        = 1;
-    m_mailid            = 1;
-    m_guildId           = 1;
-    m_arenaTeamId       = 1;
-    m_auctionid         = 1;
 
     mGuildBankTabPrice.resize(GUILD_BANK_MAX_TABS);
     mGuildBankTabPrice[0] = 100;
@@ -1597,8 +1586,7 @@ ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, fl
 	if (!map)
 		return 0;
 
-	//TC ObjectGuid::LowType guid = GenerateGameObjectSpawnId();
-	ObjectGuid::LowType guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject, true);
+	ObjectGuid::LowType guid = GenerateGameObjectSpawnId();
 
 	GameObjectData& data = NewGOData(guid);
 	data.id = entry;
@@ -1650,8 +1638,7 @@ ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float
 	if (!map)
 		return 0;
 
-	//TC ObjectGuid::LowType guid = GenerateCreatureSpawnId();
-	ObjectGuid::LowType guid = sObjectMgr->GenerateLowGuid(HighGuid::Unit, true);
+	ObjectGuid::LowType guid = GenerateCreatureSpawnId();
 
 	CreatureData& data = NewOrExistCreatureData(guid);
 	data.id = entry;
@@ -5656,142 +5643,145 @@ void ObjectMgr::SetHighestGuids()
 {
     QueryResult result = CharacterDatabase.Query( "SELECT MAX(guid) FROM characters" );
     if( result )
-    {
-        m_hiCharGuid = (*result)[0].GetUInt32()+1;
-    }
-
-    result = WorldDatabase.Query( "SELECT MAX(guid) FROM creature" );
-    if( result )
-    {
-        m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
-        uint32 proportion = sWorld->getConfig(CONFIG_GUIDDISTRIB_PROPORTION);
-        if (proportion > 95 || proportion < 50)
-        {
-            TC_LOG_INFO("server.loading","Invalid GuidDistribution.Proportion in conf, setting to 90");
-            proportion = 90;
-        }
-        m_hiTempCreatureGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
-        m_hiTempCreatureGuid = m_hiTempCreatureGuidStart;
-        TC_LOG_INFO("server.loading","Temporary creatures guid range initialized at %u", m_hiTempCreatureGuid);
-    } else m_hiCreatureRegularModeGuid = true;
-
-    // pet guids are not saved to DB, set to 0 (pet guid != pet id)
-    m_hiPetGuid = 0;
+		GetGuidSequenceGenerator<HighGuid::Player>().Set((*result)[0].GetUInt32() + 1);
 
     result = CharacterDatabase.Query( "SELECT MAX(guid) FROM item_instance" );
-    if( result )
-    {
-        m_hiItemGuid = (*result)[0].GetUInt32()+1;
-    }
+	if( result )
+		GetGuidSequenceGenerator<HighGuid::Item>().Set((*result)[0].GetUInt32() + 1);
 
-    // Cleanup other tables from not existed guids (>=m_hiItemGuid)
+    // Cleanup other tables from not existed guids (>=_hiItemGuid)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
+    trans->PAppend("DELETE FROM character_inventory WHERE item >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM mail_items WHERE item_guid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM auctionhouse WHERE itemguid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
     CharacterDatabase.CommitTransaction(trans);
 
-    result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject" );
-    if( result )
-    {
-        m_hiGoGuid = (*result)[0].GetUInt32()+1;
-        uint32 proportion = sWorld->getConfig(CONFIG_GUIDDISTRIB_PROPORTION);
-        if (proportion > 95 || proportion < 50)
-        {
-            TC_LOG_INFO("server.loading","Invalid GuidDistribution.Proportion in conf, setting to 90");
-            proportion = 90;
-        }
-        m_hiTempGoGuidStart = m_hiGoGuid + ((0x00FFFFFF-m_hiGoGuid) * (100-proportion))/100;
-        m_hiTempGoGuid = m_hiTempGoGuidStart;
-        TC_LOG_INFO("server.loading","Temporary gameobjects guid range initialized at %u", m_hiTempGoGuid);
-    } else m_hiGoRegularModeGuid = true;
+	/* TC
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM transports");
+	if (result)
+		GetGuidSequenceGenerator<HighGuid::Mo_Transport>().Set((*result)[0].GetUInt32() + 1);
+		*/
+	GetGuidSequenceGenerator<HighGuid::Mo_Transport>().Set(1);
 
     result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse" );
     if( result )
     {
-        m_auctionid = (*result)[0].GetUInt32()+1;
+        _auctionId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(id) FROM mail" );
     if( result )
     {
-        m_mailid = (*result)[0].GetUInt32()+1;
+        _mailid = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(id) FROM item_text" );
     if( result )
     {
-        m_ItemTextId = (*result)[0].GetUInt32()+1;
-    }
-
-    result = CharacterDatabase.Query( "SELECT MAX(guid) FROM corpse" );
-    if( result )
-    {
-        m_hiCorpseGuid = (*result)[0].GetUInt32()+1;
+        _ItemTextId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
     if (result)
     {
-        m_arenaTeamId = (*result)[0].GetUInt32()+1;
+        _arenaTeamId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(guildid) FROM guild" );
     if (result)
     {
-        m_guildId = (*result)[0].GetUInt32()+1;
+        _guildId = (*result)[0].GetUInt32()+1;
     }
+
+	//db guids are actually spawnIds
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
+	if (result)
+		_creatureSpawnId = (*result)[0].GetUInt32() + 1;
+
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject");
+	if (result)
+		_gameObjectSpawnId = (*result)[0].GetUInt32() + 1;
 }
 
 uint32 ObjectMgr::GenerateArenaTeamId()
 {
-    if(m_arenaTeamId>=0xFFFFFFFE)
+    if(_arenaTeamId>=0xFFFFFFFE)
     {
         TC_LOG_ERROR("server","Arena team ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_arenaTeamId++;
+    return _arenaTeamId++;
 }
 
 uint32 ObjectMgr::GenerateGuildId()
 {
-    if(m_guildId>=0xFFFFFFFE)
+    if(_guildId>=0xFFFFFFFE)
     {
         TC_LOG_ERROR("server","Guild ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_guildId++;
+    return _guildId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
 {
-    if(m_auctionid>=0xFFFFFFFE)
+    if(_auctionId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Auctions ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Auctions ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_auctionid++;
+    return _auctionId++;
 }
 
 uint32 ObjectMgr::GenerateMailID()
 {
-    if(m_mailid>=0xFFFFFFFE)
+    if(_mailid>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Mail ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Mail ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_mailid++;
+    return _mailid++;
 }
 
 uint32 ObjectMgr::GenerateItemTextID()
 {
-    if(m_ItemTextId>=0xFFFFFFFE)
+    if(_ItemTextId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Item text ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Item text ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_ItemTextId++;
+    return _ItemTextId++;
+}
+
+uint32 ObjectMgr::GeneratePetNumber()
+{
+	if (_hiPetNumber >= 0xFFFFFFFE)
+	{
+		TC_LOG_ERROR("misc", "_hiPetNumber Id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info.");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _hiPetNumber++;
+}
+
+uint32 ObjectMgr::GenerateCreatureSpawnId()
+{
+	if (_creatureSpawnId >= uint32(0xFFFFFF))
+	{
+		TC_LOG_ERROR("misc", "Creature spawn id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info.");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _creatureSpawnId++;
+}
+
+uint32 ObjectMgr::GenerateGameObjectSpawnId()
+{
+	if (_gameObjectSpawnId >= uint32(0xFFFFFF))
+	{
+		TC_LOG_ERROR("misc", "Creature spawn id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info. ");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _gameObjectSpawnId++;
 }
 
 uint32 ObjectMgr::CreateItemText(SQLTransaction& charTrans, std::string const& text)
@@ -5813,152 +5803,6 @@ uint32 ObjectMgr::CreateItemText(std::string const& text)
     uint32 id = CreateItemText(trans, text);
     CharacterDatabase.CommitTransaction(trans);
     return id;
-}
-
-uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
-{
-    switch(guidhigh)
-    {
-         case HighGuid::Mo_Transport:
-         case HighGuid::Transport:
-             return m_hiTransportGuid++;
-         case HighGuid::GameObject:
-            if(m_hiGoRegularModeGuid)
-            {
-                if(m_hiGoGuid >= 0x00FFFFFE)
-                {
-                    TC_LOG_ERROR("FIXME","Gameobject guid overflow!! Can't continue, shutting down server. ");
-                    World::StopNow(ERROR_EXIT_CODE);
-                }
-                //TC_LOG_ERROR("FIXME","GenerateLowGuid : returning m_hiGoGuid = %u",m_hiGoGuid);
-                return m_hiGoGuid++;
-            } else {
-                return AltGenerateLowGuid(uint32(HighGuid::GameObject),temporary);
-            }
-        case HighGuid::Unit:
-            if(m_hiCreatureRegularModeGuid)
-            {
-                if(m_hiCreatureGuid >= 0x00FFFFFE)
-                {
-                    TC_LOG_ERROR("server","Creature guid overflow!! Can't continue, shutting down server. ");
-                    World::StopNow(ERROR_EXIT_CODE);
-                }
-                //TC_LOG_ERROR("server","GenerateLowGuid : returning m_hiCreatureGuid = %u",m_hiCreatureGuid);
-                return m_hiCreatureGuid++;
-            } else {
-                return AltGenerateLowGuid(uint32(HighGuid::Unit),temporary);
-            }
-        case HighGuid::Item:
-            if(m_hiItemGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Item guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiItemGuid++;
-        case HighGuid::Pet:
-            if(m_hiPetGuid >= 0x00FFFFFE)
-            {
-                TC_LOG_ERROR("server","Pet guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiPetGuid++;
-        case HighGuid::Player:
-            if(m_hiCharGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Players guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiCharGuid++;
-        case HighGuid::Corpse:
-            if(m_hiCorpseGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Corpse guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiCorpseGuid++;
-        case HighGuid::DynamicObject:
-            if(m_hiDoGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","DynamicObject guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiDoGuid++;
-        default:
-            ASSERT(0);
-    }
-
-    ASSERT(0);
-    return 0;
-}
-
-uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary)
-{
-    uint32* baseguid;
-    uint32* tempguid;
-    uint32* tempstartguid;
-    bool* regularmode;
-
-    switch(HighGuid(type))
-    {
-    case HighGuid::Unit:
-        baseguid = &m_hiCreatureGuid;
-        tempguid = &m_hiTempCreatureGuid;
-        tempstartguid = &m_hiTempCreatureGuidStart;
-        regularmode = &m_hiCreatureRegularModeGuid;
-        break;
-    case HighGuid::GameObject:
-        baseguid = &m_hiGoGuid;
-        tempguid = &m_hiTempGoGuid;
-        tempstartguid = &m_hiTempGoGuidStart;
-        regularmode = &m_hiGoRegularModeGuid;
-        break;
-    default:
-        return 0;
-    }
-    
-    if (temporary)
-    {
-        if(*tempguid >= 0x00FFFFFE)
-        {
-           TC_LOG_ERROR("server","ERROR : AltGenerateLowGuid(%i) : Temporary guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.",type);
-           World::StopNow(ERROR_EXIT_CODE);
-        }
-
-        return (*tempguid)++;
-    } else {
-        if ((*baseguid) +1 >= *tempstartguid) 
-        {
-                TC_LOG_ERROR("server","AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
-                *regularmode = true;
-                *baseguid = *tempguid;
-        } 
-        return (*baseguid)++;
-    }
-}
-
-bool ObjectMgr::IsInTemporaryGuidRange(uint32 type, uint32 guid)
-{
-    bool* regularmode;
-    uint32* tempstartguid;
-
-    switch(HighGuid(type))
-    {
-    case HighGuid::Unit:
-        regularmode = &m_hiCreatureRegularModeGuid;
-        tempstartguid = &m_hiTempCreatureGuidStart;
-        break;
-    case HighGuid::GameObject:
-        regularmode = &m_hiGoRegularModeGuid;
-        tempstartguid = &m_hiTempGoGuidStart;
-        break;
-    default:
-        return false;
-    }
-
-    if (*regularmode)
-        return false;
-    else
-        return (guid >= *tempstartguid);  
 }
 
 void ObjectMgr::LoadGameObjectLocales()
@@ -6235,6 +6079,11 @@ uint32 ObjectMgr::GetBaseXP(uint32 level)
     return mBaseXPTable[level] ? mBaseXPTable[level] : 0;
 }
 
+uint32 ObjectMgr::GetXPForLevel(uint8 level) const
+{
+	return Trinity::XP::GetXPForLevel(level);
+}
+
 void ObjectMgr::LoadPetNames()
 {
     uint32 count = 0;
@@ -6271,10 +6120,10 @@ void ObjectMgr::LoadPetNumber()
     if(result)
     {
         Field *fields = result->Fetch();
-        m_hiPetNumber = fields[0].GetUInt32()+1;
+        _hiPetNumber = fields[0].GetUInt32()+1;
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded the max pet number: %d", m_hiPetNumber-1);
+    TC_LOG_INFO("server.loading", ">> Loaded the max pet number: %d", _hiPetNumber-1);
     
 }
 
@@ -6293,11 +6142,6 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
     }
 
     return *(list0.begin()+urand(0, list0.size()-1)) + *(list1.begin()+urand(0, list1.size()-1));
-}
-
-uint32 ObjectMgr::GeneratePetNumber()
-{
-    return ++m_hiPetNumber;
 }
 
 /*
@@ -8116,7 +7960,7 @@ bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 sta
 
 uint64 ObjectMgr::GenerateGMTicketId()
 {
-  return ++m_GMticketid;
+  return ++_GMticketid;
 }
 
 void ObjectMgr::LoadGMTickets()
@@ -8157,7 +8001,7 @@ void ObjectMgr::LoadGMTickets()
   } while( result->NextRow() );
 
   result = CharacterDatabase.PQuery("SELECT MAX(`guid`) from `gm_tickets`");
-  m_GMticketid = (*result)[0].GetUInt64(); 
+  _GMticketid = (*result)[0].GetUInt64(); 
 
   TC_LOG_INFO("server.loading",">>> %u GM Tickets loaded from the database.", count);
   

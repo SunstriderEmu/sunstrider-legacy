@@ -1324,17 +1324,8 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
                 if (caster->_IsValidAssistTarget(unitTarget, this))
                     return SPELL_CAST_OK;
             if (neededTargets & TARGET_FLAG_UNIT_MINIPET)
-#ifdef LICH_KING
                 if (unitTarget->GetGUID() == caster->GetCritterGUID())
                     return SPELL_CAST_OK;
-#else
-                if (Player const* p = caster->ToPlayer())
-                {
-                    Creature* miniPet = p->GetMiniPet();
-                    if (miniPet && unitTarget->GetGUID() == miniPet->GetGUID())
-                        return SPELL_CAST_OK;
-                }
-#endif
 #ifdef LICH_KING
             if (neededTargets & TARGET_FLAG_UNIT_PASSENGER)
                 if (unitTarget->IsOnVehicle(caster))
@@ -1444,6 +1435,14 @@ float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
         if (Player* modOwner = caster->GetSpellModOwner())
             modOwner->ApplySpellMod(Id, SPELLMOD_RANGE, range, spell);
     return range;
+}
+
+bool SpellInfo::IsCooldownStartedOnEvent() const
+{
+	if (HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
+		return true;
+
+	return Category && Category->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_STARTS_ON_EVENT;
 }
 
 bool SpellInfo::IsChannelCategorySpell() const

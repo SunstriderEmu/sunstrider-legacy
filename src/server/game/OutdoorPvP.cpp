@@ -44,46 +44,6 @@ bool OPvPCapturePoint::AddObject(uint32 type, uint32 entry, uint32 map, float x,
 		return true;
 	}
 
-	/*
-	GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
-    if (!goinfo)
-        return false;
-
-    uint32 guid = sObjectMgr->GenerateLowGuid(HighGuid::GameObject,true);
-
-    GameObjectData& data = sObjectMgr->NewGOData(guid);
-
-    data.id             = entry;
-    data.mapid          = map;
-    data.posX           = x;
-    data.posY           = y;
-    data.posZ           = z;
-    data.orientation    = o;
-    data.rotation       = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
-    data.spawntimesecs  = 0;
-    data.animprogress   = 100;
-    data.spawnMask      = 1;
-    data.go_state       = 1;
-
-    sObjectMgr->AddGameobjectToGrid(guid, &data);
-
-    // 2 way registering
-
-    Map * pMap = sMapMgr->FindBaseNonInstanceMap(map);
-    if(!pMap)
-        return true;
-    auto  go = new GameObject;
-    if(!go->Create(guid,entry, pMap,Position(x,y,z,o),G3D::Quat(rotation0,rotation1,rotation2,rotation3), 255, GO_STATE_READY))
-    {
-        TC_LOG_ERROR("FIXME","Gameobject template %u not found in database.", entry);
-        delete go;
-        return true;
-    }
-
-    go->SetRespawnTime(0);
-    sObjectMgr->SaveGORespawnTime(go->GetSpawnId(),0,0,0);
-    pMap->AddToMap(go);
-	*/
     return true;
 }
 

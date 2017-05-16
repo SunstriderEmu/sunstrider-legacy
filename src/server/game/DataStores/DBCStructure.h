@@ -35,12 +35,7 @@ struct AreaTableEntry
     float     maxDepth;                                     // 33
 
     // helpers
-    bool IsSanctuary() const
-    {
-        if (mapid == 609)
-            return true;
-        return (flags & AREA_FLAG_SANCTUARY);
-    }
+    bool IsSanctuary() const;
 };
 
 struct AreaTriggerEntry
@@ -470,11 +465,13 @@ struct ItemExtendedCostEntry
     uint32      reqpersonalarenarating;                     // 13 required personal arena rating
 };
 
+#define MAX_ITEM_ENCHANTMENT_EFFECTS 3
+
 struct ItemRandomPropertiesEntry
 {
     uint32    ID;                                           // 0
     //char*     internalName                                // 1   unused
-    uint32    enchant_id[3];                                // 2-4
+    uint32    enchant_id[MAX_ITEM_ENCHANTMENT_EFFECTS];     // 2-4
                                                             // 5-6 unused, 0 only values, reserved for additional enchantments?
     //char*     nameSuffix[16]                              // 7-22, unused
                                                             // 23 nameSufix flags, unused
@@ -486,9 +483,13 @@ struct ItemRandomSuffixEntry
     //char*     name[16]                                    // 1-16 unused
                                                             // 17, name flags, unused
                                                             // 18  unused
-    uint32    enchant_id[3];                                // 19-21
-    uint32    prefix[3];                                    // 22-24
+    uint32    enchant_id[MAX_ITEM_ENCHANTMENT_EFFECTS];     // 19-21
+    uint32    prefix[MAX_ITEM_ENCHANTMENT_EFFECTS];         // 22-24
 };
+
+
+//Not sure for BC #define MAX_ITEM_SET_ITEMS 10
+#define MAX_ITEM_SET_SPELLS 8
 
 struct ItemSetEntry
 {
@@ -497,8 +498,8 @@ struct ItemSetEntry
                                                             // 17 string flags, unused
                                                             // 18-28 items from set, but not have all items listed, use ItemTemplate::ItemSet instead
                                                             // 29-34 unused
-    uint32    spells[8];                                    // 35-42
-    uint32    items_to_triggerspell[8];                     // 43-50
+    uint32    spells[MAX_ITEM_SET_SPELLS];                  // 35-42
+    uint32    items_to_triggerspell[MAX_ITEM_SET_SPELLS];   // 43-50
     uint32    required_skill_id;                            // 51
     uint32    required_skill_value;                         // 52
 };

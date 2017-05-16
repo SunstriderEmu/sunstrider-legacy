@@ -676,7 +676,8 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
         //roll for over-threshold item if it's one-player loot
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HighGuid::Item),0,HighGuid::Item);
+			uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
+
             auto  r=new Roll(newitemGUID,*i);
 
             //a vector is filled with only near party members
@@ -742,7 +743,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
         //only roll for one-player items, not for ones everyone can get
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HighGuid::Item),0,HighGuid::Item);
+            uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
             auto  r=new Roll(newitemGUID,*i);
 
             for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
