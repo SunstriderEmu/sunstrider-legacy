@@ -4642,13 +4642,15 @@ void Spell::EffectSummonPet(uint32 i)
             owner = m_originalCaster;
     }
 
+    uint32 petentry = m_spellInfo->Effects[i].MiscValue;
+
     if(!owner)
     {
-        EffectSummonWild(i);
+        SummonPropertiesEntry const* properties = sSummonPropertiesStore.LookupEntry(67);
+        if (properties)
+            SummonGuardian(i, petentry, properties, 1);
         return;
     }
-
-    uint32 petentry = m_spellInfo->Effects[i].MiscValue;
 
     Pet* OldSummon = owner->GetPet();
 

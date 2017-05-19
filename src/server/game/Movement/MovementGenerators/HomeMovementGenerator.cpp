@@ -42,9 +42,9 @@ bool HomeMovementGenerator<Creature>::DoInitialize(Creature* owner)
 template<>
 void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
 {
+    owner->ClearUnitState(UNIT_STATE_EVADE);
     if (_arrived)
     {
-        owner->ClearUnitState(UNIT_STATE_EVADE);
         owner->SetWalk(true);
         owner->InitCreatureAddon(true);
         owner->AI()->JustReachedHome();

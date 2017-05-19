@@ -32,8 +32,6 @@ Totem::Totem(SummonPropertiesEntry const* properties, Unit* owner) : Minion(prop
     m_unitTypeMask |= UNIT_MASK_TOTEM;
     m_duration = 0;
     m_type = TOTEM_PASSIVE;
-
-	this->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 }
 
 
@@ -155,6 +153,8 @@ bool Totem::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 
 void Totem::InitSummon()
 {
+    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE); //sunstrider
+
     if (uint32 spell_id = GetSpell())
     {
         switch (m_type)

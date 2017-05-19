@@ -295,15 +295,23 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint32 spellid
 void WorldSession::HandlePetAction( WorldPacket & recvData )
 {
     uint64 guid1;
-	uint32 data;
     uint64 guid2;
 
-    recvData >> guid1;        //pet guid
-	recvData >> data;
+    recvData >> guid1;          //pet guid
+#ifdef LICH_KING
+    uint32 data;
+    recvData >> data;
     recvData >> guid2;                                     //tag guid
 
 	uint32 spellid = UNIT_ACTION_BUTTON_ACTION(data);
 	uint8 flag = UNIT_ACTION_BUTTON_TYPE(data);
+#else
+    uint16 spellid;
+    uint16 flag;
+    recvData >> spellid;
+    recvData >> flag;                                      //delete = 0x0700 CastSpell = C100
+    recvData >> guid2;                                     //tag guid
+#endif
 
     // used also for charmed creature
     Unit* pet= ObjectAccessor::GetUnit(*_player, guid1);

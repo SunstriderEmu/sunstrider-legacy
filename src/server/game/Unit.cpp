@@ -15228,6 +15228,7 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
 {
     switch (GetRace())
     {
+#ifdef LICH_KING
     case RACE_ORC:
     {
         switch (totemType)
@@ -15273,7 +15274,14 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
         }
         break;
     }
+#endif
+#ifndef LICH_KING
+    //BC does not have model per race
+    case RACE_TROLL:
+    case RACE_ORC:
+#endif
     case RACE_TAUREN:
+    default:
     {
         switch (totemType)
         {

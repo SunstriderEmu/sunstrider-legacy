@@ -202,8 +202,8 @@ void Map::DeleteStateMachine()
 	//delete si_GridStates[GRID_STATE_REMOVAL];
 }
 
-Map::Map(MapType type, time_t expiry, uint32 id, uint32 InstanceId, uint8 SpawnMode, Map* _parent)
-   : i_mapEntry (sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
+Map::Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* _parent)
+   : i_mapEntry(sMapStore.LookupEntry(id)), i_spawnMode(SpawnMode),
    _creatureToMoveLock(false), _gameObjectsToMoveLock(false), _dynamicObjectsToMoveLock(false),
    i_id(id), i_InstanceId(InstanceId), m_unloadTimer(0), _lastMapUpdate(0),
    m_VisibleDistance(DEFAULT_VISIBILITY_DISTANCE), m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),

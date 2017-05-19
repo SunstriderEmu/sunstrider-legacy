@@ -246,7 +246,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
 	m_charmInfo->SetPetNumber(pet_number, IsPermanentPetFor(owner));
 
-    SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
     SetDisplayId(fields[3].GetUInt32());
     SetNativeDisplayId(fields[3].GetUInt32());
     uint32 petlevel = fields[4].GetUInt8();
@@ -1207,10 +1206,19 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 			SetBonusDamage(int32(val * 0.15f));
 			//bonusAP += val * 0.57;
 						
-            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)) );
-            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)) );
+            float minDmg = float(petlevel - (petlevel / 4));
+            float maxDmg = float(petlevel + (petlevel / 4));
+            float factor = 1.0f;
+            
+            if (GetEntry() == ENTRY_FELGUARD) 
+                factor = 2.0f; //pure guess here, need the right value
+
+            SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, minDmg * factor);
+            SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxDmg * factor );
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
+
+            //+ Felguard handling ?
             break;
         }
         case HUNTER_PET:

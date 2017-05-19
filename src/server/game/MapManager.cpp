@@ -54,7 +54,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
         }
         else
         {
-            m = new Map(MAP_TYPE_MAP, i_gridCleanUpDelay, id, 0, REGULAR_DIFFICULTY);
+            m = new Map(MAP_TYPE_MAP, id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
 			//TC map->LoadRespawnTimes();
 			m->LoadCorpseData();
         }

@@ -142,6 +142,9 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
     if (!_EnterEvadeMode(why))
         return;
 
+    if (!me->IsAlive())
+        return;
+
     //TC_LOG_DEBUG("entities.unit", "Creature %u enters evade mode.", me->GetEntry());
 
 #ifdef LICH_KING
@@ -155,20 +158,11 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
         }
         else
         {
-            // Required to prevent attacking creatures that are evading and cause them to reenter combat
-            // Does not apply to MoveFollow
-            me->AddUnitState(UNIT_STATE_EVADE);
             me->GetMotionMaster()->MoveTargetedHome();
         }
 #ifdef LICH_KING
     }
 #endif
-
-    if(me->IsAlive())
-    {
-        me->AddUnitState(UNIT_STATE_EVADE);
-        me->GetMotionMaster()->MoveTargetedHome();
-    }
 
     Reset();
 

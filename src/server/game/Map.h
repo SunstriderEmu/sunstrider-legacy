@@ -116,7 +116,7 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
     public:
-		Map(MapType type, time_t expiry, uint32 id, uint32 InstanceId, uint8 SpawnMode, Map* parent = nullptr);
+		explicit Map(MapType type, uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, Map* parent = nullptr);
         ~Map() override;
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
