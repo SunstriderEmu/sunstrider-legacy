@@ -93,6 +93,16 @@ enum BattlegroundStatus
     STATUS_WAIT_LEAVE   = 4                                 // custom
 };
 
+enum BattlegroundStartingEvents
+{
+    BG_STARTING_EVENT_NONE  = 0x00,
+    BG_STARTING_EVENT_1     = 0x01,
+    //BG_STARTING_EVENT_2     = 0x02, //unused
+    BG_STARTING_EVENT_3     = 0x04,
+    BG_STARTING_EVENT_4     = 0x08,
+    BG_STARTING_EVENT_5     = 0x10,
+};
+
 struct BattlegroundPlayer
 {
     uint32  ElapsedTimeDisconnected;                                 // for tracking and removing offline players from queue after 5 minutes
@@ -433,10 +443,8 @@ class TC_GAME_API Battleground
         void SetHoliday(bool is_holiday);
 
         // TODO: make this protected:
-        typedef std::vector<ObjectGuid> BGObjects;
-        typedef std::vector<ObjectGuid> BGCreatures;
-        BGObjects m_BgObjects;
-        BGCreatures m_BgCreatures;
+        GuidVector BgObjects;
+        GuidVector BgCreatures;
         void SpawnBGObject(uint32 type, uint32 respawntime);
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0, bool inactive = false);
 //        void SpawnBGCreature(uint32 type, uint32 respawntime);

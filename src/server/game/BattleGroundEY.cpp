@@ -20,8 +20,8 @@ uint32 BG_EY_HonorScoreTicks[BG_HONOR_MODE_NUM] = {
 BattlegroundEY::BattlegroundEY()
 {
     m_BuffChange = true;
-    m_BgObjects.resize(BG_EY_OBJECT_MAX);
-    m_BgCreatures.resize(BG_EY_CREATURES_MAX);
+    BgObjects.resize(BG_EY_OBJECT_MAX);
+    BgCreatures.resize(BG_EY_CREATURES_MAX);
     m_Points_Trigger[FEL_REALVER] = TR_FEL_REALVER_BUFF;
     m_Points_Trigger[BLOOD_ELF] = TR_BLOOD_ELF_BUFF;
     m_Points_Trigger[DRAENEI_RUINS] = TR_DRAENEI_RUINS_BUFF;
@@ -40,9 +40,9 @@ void BattlegroundEY::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if(!(m_Events & 0x01))
+        if(!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
 
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
@@ -62,21 +62,21 @@ void BattlegroundEY::Update(time_t diff)
             SetStartDelayTime(START_DELAY0);
         }
         // After 1 minute, warning is signalled
-        else if(GetStartDelayTime() <= START_DELAY1 && !(m_Events & 0x04))
+        else if(GetStartDelayTime() <= START_DELAY1 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(GetTrinityString(LANG_BG_EY_ONE_MINUTE));
         }
         // After 1,5 minute, warning is signalled
-        else if(GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x08))
+        else if(GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(GetTrinityString(LANG_BG_EY_HALF_MINUTE));
         }
         // After 2 minutes, gates OPEN ! x)
-        else if(GetStartDelayTime() < 0 && !(m_Events & 0x10))
+        else if(GetStartDelayTime() < 0 && !(m_Events & BG_STARTING_EVENT_5))
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
             SpawnBGObject(BG_EY_OBJECT_DOOR_A, RESPAWN_ONE_DAY);
             SpawnBGObject(BG_EY_OBJECT_DOOR_H, RESPAWN_ONE_DAY);
 
@@ -159,7 +159,7 @@ void BattlegroundEY::CheckSomeoneJoinedPoint()
     GameObject *obj = nullptr;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
-        obj = GetBGObject(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
+        obj = GetBGObject(BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i);
         if (obj)
         {
             uint8 j = 0;
@@ -199,7 +199,7 @@ void BattlegroundEY::CheckSomeoneLeftPoint()
     GameObject *obj = nullptr;
     for(uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
-        obj = GetBGObject(m_BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i]);
+        obj = GetBGObject(BG_EY_OBJECT_TOWER_CAP_FEL_REALVER + i);
         if(obj)
         {
             uint8 j = 0;
@@ -403,7 +403,7 @@ void BattlegroundEY::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4571:
             break;
         default:
-            TC_LOG_ERROR("FIXME","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg.battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -476,14 +476,14 @@ bool BattlegroundEY::SetupBattleground()
         AreaTriggerEntry const* at = sAreaTriggerStore.LookupEntry(m_Points_Trigger[i]);
         if( !at )
         {
-            TC_LOG_ERROR("FIXME","BattlegroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
+            TC_LOG_ERROR("bg.battleground","BattlegroundEY: Unknown trigger: %u", m_Points_Trigger[i]);
             continue;
         }
         if (   !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3, Buff_Entries[0], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 1, Buff_Entries[1], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             || !AddObject(BG_EY_OBJECT_SPEEDBUFF_FEL_REALVER + i * 3 + 2, Buff_Entries[2], at->x, at->y, at->z, 0.907571f, 0, 0, 0.438371f, 0.898794f, RESPAWN_ONE_DAY)
             )
-            TC_LOG_ERROR("FIXME","BattlegroundEY: Cannot spawn buff");
+            TC_LOG_ERROR("bg.battleground","BattlegroundEY: Cannot spawn buff");
     }
 
     WorldSafeLocsEntry const *sg = nullptr;
@@ -553,11 +553,11 @@ void BattlegroundEY::RespawnFlagAfterDrop()
 {
     RespawnFlag(true);
 
-    GameObject *obj = GetBGObject(GetDroppedFlagGUID());
+    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID());
     if(obj)
         obj->Delete();
     else
-        TC_LOG_ERROR("FIXME","BattlegroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
+        TC_LOG_ERROR("bg.battleground","BattlegroundEY: Unknown dropped flag guid: %u",GUID_LOPART(GetDroppedFlagGUID()));
 
     SetDroppedFlagGUID(0);
 }
@@ -715,13 +715,13 @@ void BattlegroundEY::EventTeamCapturedPoint(Player *Source, uint32 Point)
     m_PointOwnedByTeam[Point] = Team;
     m_PointState[Point] = EY_POINT_UNDER_CONTROL;
 
-    if(m_BgCreatures[Point])
+    if(BgCreatures[Point])
         DelCreature(Point);
 
     WorldSafeLocsEntry const *sg = nullptr;
     sg = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[Point].GraveYardId);
     if(!sg || !AddSpiritGuide(Point, sg->x, sg->y, sg->z, 3.124139f, Team))
-        TC_LOG_ERROR("FIXME","BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
+        TC_LOG_ERROR("bg.battleground","BatteGroundEY: Failed to spawn spirit guide! point: %u, team: %u, graveyard_id: %u",
             Point, Team, m_CapturingPointTypes[Point].GraveYardId);
 
 //    SpawnBGCreature(Point,RESPAWN_IMMEDIATELY);
@@ -854,7 +854,7 @@ WorldSafeLocsEntry const *BattlegroundEY::GetClosestGraveYard(float x, float y, 
 
     if(!entry)
     {
-        TC_LOG_ERROR("FIXME","BattlegroundEY: Not found the main team graveyard. Graveyard system isn't working!");
+        TC_LOG_ERROR("bg.battleground","BattlegroundEY: Not found the main team graveyard. Graveyard system isn't working!");
         return nullptr;
     }
 
@@ -867,7 +867,7 @@ WorldSafeLocsEntry const *BattlegroundEY::GetClosestGraveYard(float x, float y, 
         {
             entry = sWorldSafeLocsStore.LookupEntry(m_CapturingPointTypes[i].GraveYardId);
             if(!entry)
-                TC_LOG_ERROR("FIXME","BattlegroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
+                TC_LOG_ERROR("bg.battleground","BattlegroundEY: Not found graveyard: %u",m_CapturingPointTypes[i].GraveYardId);
             else
             {
                 distance = (entry->x - x)*(entry->x - x) + (entry->y - y)*(entry->y - y) + (entry->z - z)*(entry->z - z);

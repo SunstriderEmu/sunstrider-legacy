@@ -31,8 +31,8 @@ uint32 BG_WSG_Reputation[BG_HONOR_MODE_NUM][BG_WSG_REWARD_NUM] = {
 
 BattlegroundWS::BattlegroundWS()
 {
-    m_BgObjects.resize(BG_WS_OBJECT_MAX);
-    m_BgCreatures.resize(BG_CREATURES_MAX_WS);
+    BgObjects.resize(BG_WS_OBJECT_MAX);
+    BgCreatures.resize(BG_CREATURES_MAX_WS);
 }
 
 BattlegroundWS::~BattlegroundWS()
@@ -49,9 +49,9 @@ void BattlegroundWS::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if(!(m_Events & 0x01))
+        if(!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
 
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
@@ -74,21 +74,21 @@ void BattlegroundWS::Update(time_t diff)
             SetStartDelayTime(START_DELAY0);
         }
         // After 1 minute, warning is signalled
-        else if(GetStartDelayTime() <= START_DELAY1 && !(m_Events & 0x04))
+        else if(GetStartDelayTime() <= START_DELAY1 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(GetTrinityString(LANG_BG_WS_ONE_MINUTE));
         }
         // After 1,5 minute, warning is signalled
-        else if(GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x08))
+        else if(GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(GetTrinityString(LANG_BG_WS_HALF_MINUTE));
         }
         // After 2 minutes, gates OPEN !
-        else if(GetStartDelayTime() < 0 && !(m_Events & 0x10))
+        else if(GetStartDelayTime() < 0 && !(m_Events & BG_STARTING_EVENT_5))
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
             for(uint32 i = BG_WS_OBJECT_DOOR_A_1; i <= BG_WS_OBJECT_DOOR_A_4; i++)
                 DoorOpen(i);
             for(uint32 i = BG_WS_OBJECT_DOOR_H_1; i <= BG_WS_OBJECT_DOOR_H_2; i++)
@@ -231,11 +231,11 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
 
     PlaySoundToAll(BG_WS_SOUND_FLAGS_RESPAWNED);
 
-    GameObject *obj = GetBGObject(GetDroppedFlagGUID(team));
+    GameObject *obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team));
     if(obj)
         obj->Delete();
     else
-        TC_LOG_ERROR("FIXME","unknown droped flag bg, guid: %u",GUID_LOPART(GetDroppedFlagGUID(team)));
+        TC_LOG_ERROR("bg.battleground","unknown droped flag bg, guid: %u",GUID_LOPART(GetDroppedFlagGUID(team)));
 
     SetDroppedFlagGUID(0,team);
     m_BothFlagsKept = false;
@@ -430,7 +430,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
 
     //alliance flag picked up from base
     if(Source->GetTeam() == HORDE && this->GetFlagState(ALLIANCE) == BG_WS_FLAG_STATE_ON_BASE
-        && this->m_BgObjects[BG_WS_OBJECT_A_FLAG] == ObjectGuid(target_obj->GetGUID()))
+        && this->BgObjects[BG_WS_OBJECT_A_FLAG] == ObjectGuid(target_obj->GetGUID()))
     {
         SendMessageToAll(LANG_BG_WS_PICKEDUP_AF, CHAT_MSG_BG_SYSTEM_HORDE, Source);
         PlaySoundToAll(BG_WS_SOUND_ALLIANCE_FLAG_PICKED_UP);
@@ -447,7 +447,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player *Source, GameObject* target
 
     //horde flag picked up from base
     if (Source->GetTeam() == ALLIANCE && this->GetFlagState(HORDE) == BG_WS_FLAG_STATE_ON_BASE
-        && this->m_BgObjects[BG_WS_OBJECT_H_FLAG] == ObjectGuid(target_obj->GetGUID()))
+        && this->BgObjects[BG_WS_OBJECT_H_FLAG] == ObjectGuid(target_obj->GetGUID()))
     {
         SendMessageToAll(LANG_BG_WS_PICKEDUP_HF, CHAT_MSG_BG_SYSTEM_ALLIANCE, Source);
         PlaySoundToAll(BG_WS_SOUND_HORDE_FLAG_PICKED_UP);
@@ -536,7 +536,7 @@ void BattlegroundWS::RemovePlayer(Player *plr, uint64 guid)
     {
         if(!plr)
         {
-            TC_LOG_ERROR("FIXME","BattlegroundWS: Removing offline player who has the FLAG!!");
+            TC_LOG_ERROR("bg.battleground","BattlegroundWS: Removing offline player who has the FLAG!!");
             this->SetAllianceFlagPicker(0);
             this->RespawnFlag(ALLIANCE, false);
         }
@@ -547,7 +547,7 @@ void BattlegroundWS::RemovePlayer(Player *plr, uint64 guid)
     {
         if(!plr)
         {
-            TC_LOG_ERROR("FIXME","BattlegroundWS: Removing offline player who has the FLAG!!");
+            TC_LOG_ERROR("bg.battleground","BattlegroundWS: Removing offline player who has the FLAG!!");
             this->SetHordeFlagPicker(0);
             this->RespawnFlag(HORDE, false);
         }
@@ -583,22 +583,22 @@ void BattlegroundWS::HandleAreaTrigger(Player *Source, uint32 Trigger)
     switch(Trigger)
     {
         case 3686:                                          // Alliance elixir of speed spawn. Trigger not working, because located inside other areatrigger, can be replaced by IsWithinDist(object, dist) in Battleground::Update().
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_SPEEDBUFF_1];
+            //buff_guid = BgObjects[BG_WS_OBJECT_SPEEDBUFF_1];
             break;
         case 3687:                                          // Horde elixir of speed spawn. Trigger not working, because located inside other areatrigger, can be replaced by IsWithinDist(object, dist) in Battleground::Update().
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_SPEEDBUFF_2];
+            //buff_guid = BgObjects[BG_WS_OBJECT_SPEEDBUFF_2];
             break;
         case 3706:                                          // Alliance elixir of regeneration spawn
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_REGENBUFF_1];
+            //buff_guid = BgObjects[BG_WS_OBJECT_REGENBUFF_1];
             break;
         case 3708:                                          // Horde elixir of regeneration spawn
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_REGENBUFF_2];
+            //buff_guid = BgObjects[BG_WS_OBJECT_REGENBUFF_2];
             break;
         case 3707:                                          // Alliance elixir of berserk spawn
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_BERSERKBUFF_1];
+            //buff_guid = BgObjects[BG_WS_OBJECT_BERSERKBUFF_1];
             break;
         case 3709:                                          // Horde elixir of berserk spawn
-            //buff_guid = m_BgObjects[BG_WS_OBJECT_BERSERKBUFF_2];
+            //buff_guid = BgObjects[BG_WS_OBJECT_BERSERKBUFF_2];
             break;
         case 3646:                                          // Alliance Flag spawn
             if(m_FlagState[BG_HORDE] && !m_FlagState[BG_ALLIANCE])
@@ -616,7 +616,7 @@ void BattlegroundWS::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4629:                                          // unk4
             break;
         default:
-            TC_LOG_ERROR("FIXME","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg.battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }
@@ -686,10 +686,10 @@ void BattlegroundWS::ResetBGSubclass()
     m_MaxLevel = 0;
 
     /* Spirit nodes is static at this BG and then not required deleting at BG reset.
-    if(m_BgCreatures[WS_SPIRIT_MAIN_ALLIANCE])
+    if(BgCreatures[WS_SPIRIT_MAIN_ALLIANCE])
         DelCreature(WS_SPIRIT_MAIN_ALLIANCE);
 
-    if(m_BgCreatures[WS_SPIRIT_MAIN_HORDE])
+    if(BgCreatures[WS_SPIRIT_MAIN_HORDE])
         DelCreature(WS_SPIRIT_MAIN_HORDE);
     */
 }
@@ -771,7 +771,7 @@ WorldSafeLocsEntry const *BattlegroundWS::GetClosestGraveYard(float x, float y, 
         entry = sObjectMgr->GetClosestGraveYard(x, y, z, GetMapId(), team);
     
     if (!entry) {
-        TC_LOG_ERROR("FIXME","BattlegroundWS: Not found the team graveyard. Graveyard system isn't working!");
+        TC_LOG_ERROR("bg.battleground","BattlegroundWS: Not found the team graveyard. Graveyard system isn't working!");
         return nullptr;
     }
     

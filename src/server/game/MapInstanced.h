@@ -23,7 +23,7 @@ class TC_GAME_API MapInstanced : public Map
         void DelayedUpdate(const uint32 diff) override;
         //bool RemoveBones(uint64 guid, float x, float y) override;
         void UnloadAll() override;
-        bool CanEnter(Player* player) override;
+        EnterState CannotEnter(Player* /*player*/) override;
 
 		Map* CreateInstanceForPlayer(const uint32 mapId, Player* player, uint32 loginInstanceId = 0);
         Map* FindInstanceMap(uint32 InstanceId);

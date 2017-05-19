@@ -26,8 +26,8 @@ uint32 BG_AB_ReputationScoreTicks[BG_HONOR_MODE_NUM] = {
 BattlegroundAB::BattlegroundAB()
 {
     m_BuffChange = true;
-    m_BgObjects.resize(BG_AB_OBJECT_MAX);
-    m_BgCreatures.resize(BG_AB_ALL_NODES_COUNT);
+    BgObjects.resize(BG_AB_OBJECT_MAX);
+    BgCreatures.resize(BG_AB_ALL_NODES_COUNT);
 }
 
 BattlegroundAB::~BattlegroundAB()
@@ -72,21 +72,21 @@ void BattlegroundAB::Update(time_t diff)
             SetStartDelayTime(START_DELAY0);
         }
         // After 1 minute, warning is signalled
-        else if( GetStartDelayTime() <= START_DELAY1 && !(m_Events & 0x04) )
+        else if( GetStartDelayTime() <= START_DELAY1 && !(m_Events & BG_STARTING_EVENT_3) )
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(GetTrinityString(LANG_BG_AB_ONEMINTOSTART));
         }
         // After 1,5 minute, warning is signalled
-        else if( GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x08) )
+        else if( GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_4) )
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(GetTrinityString(LANG_BG_AB_HALFMINTOSTART));
         }
         // After 2 minutes, gates OPEN ! x)
-        else if( GetStartDelayTime() < 0 && !(m_Events & 0x10) )
+        else if( GetStartDelayTime() < 0 && !(m_Events & BG_STARTING_EVENT_5) )
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
             SendMessageToAll(GetTrinityString(LANG_BG_AB_STARTED));
 
             // spawn neutral banners
@@ -405,7 +405,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
         return;
 
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
-    std::vector<uint64> ghost_list = m_ReviveQueue[m_BgCreatures[node]];
+    std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
     if( !ghost_list.empty() )
     {
         WorldSafeLocsEntry const *ClosestGrave = nullptr;
@@ -422,7 +422,7 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
         }
     }
 
-     if( m_BgCreatures[node] )
+     if( BgCreatures[node] )
         DelCreature(node);
 
     // buff object isn't despawned
@@ -439,11 +439,11 @@ void BattlegroundAB::EventPlayerClickedOnFlag(Player *source, GameObject* /*targ
         return;
 
     uint8 node = BG_AB_NODE_STABLES;
-    GameObject* obj = source->GetMap()->GetGameObject(m_BgObjects[node * 8 + 7]);
+    GameObject* obj = source->GetMap()->GetGameObject(BgObjects[node * 8 + 7]);
     while ( (node < BG_AB_DYNAMIC_NODES_COUNT) && ((!obj) || (!source->IsWithinDistInMap(obj,10))))
     {
         ++node;
-        obj = GetBGObject(m_BgObjects[node*8+BG_AB_OBJECT_AURA_CONTESTED]);
+        obj = GetBGObject(node*8+BG_AB_OBJECT_AURA_CONTESTED);
     }
 
     if( node == BG_AB_DYNAMIC_NODES_COUNT)
@@ -600,7 +600,7 @@ void BattlegroundAB::ResetBGSubclass()
     }
 
     for (uint8 i = 0; i < BG_AB_ALL_NODES_COUNT; ++i)
-        if(m_BgCreatures[i])
+        if(BgCreatures[i])
             DelCreature(i);
 }
 

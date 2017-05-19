@@ -2433,7 +2433,8 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         BoundInstancesMap m_boundInstances[MAX_DIFFICULTY];
         InstancePlayerBind* GetBoundInstance(uint32 mapid, Difficulty difficulty);
         BoundInstancesMap& GetBoundInstances(Difficulty difficulty) { return m_boundInstances[difficulty]; }
-        InstanceSave * GetInstanceSave(uint32 mapid);
+        //raid is unused on BC
+        InstanceSave * GetInstanceSave(uint32 mapid, bool raid = false);
         void UnbindInstance(uint32 mapid, Difficulty difficulty, bool unload = false);
         void UnbindInstance(BoundInstancesMap::iterator &itr, Difficulty difficulty, bool unload = false);
         InstancePlayerBind* BindToInstance(InstanceSave *save, bool permanent, bool load = false);

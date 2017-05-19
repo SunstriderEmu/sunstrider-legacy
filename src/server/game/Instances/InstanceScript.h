@@ -110,7 +110,7 @@ class TC_GAME_API InstanceScript : public ZoneScript
         virtual uint64 GetData64(uint32 Data) const { return 0; }
         virtual void SetData64(uint32 Data, uint64 Value) { }
 
-        //Used by the map's CanEnter function.
+        //Used by the map's CannotEnter function.
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
 

@@ -10,7 +10,7 @@
 
 BattlegroundNA::BattlegroundNA()
 {
-    m_BgObjects.resize(BG_NA_OBJECT_MAX);
+    BgObjects.resize(BG_NA_OBJECT_MAX);
 }
 
 BattlegroundNA::~BattlegroundNA()
@@ -27,9 +27,9 @@ void BattlegroundNA::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if (!(m_Events & 0x01))
+        if (!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
             {
@@ -43,15 +43,15 @@ void BattlegroundNA::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
         // After 30 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x04))
+        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(LANG_ARENA_THIRTY_SECONDS);
         }
         // After 15 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & 0x08))
+        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(LANG_ARENA_FIFTEEN_SECONDS);
         }
         // delay expired (1 minute)

@@ -1903,7 +1903,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         // Check enter rights before map getting to avoid creating instance copy for player
         // this check not dependent from map instance copy and same for all instance copies of selected map
-        if (!sMapMgr->CanPlayerEnter(mapid, this))
+        if (sMapMgr->PlayerCannotEnter(mapid, this, false))
             return false;
 
         //I think this always returns true. Correct me if I am wrong.
@@ -15595,25 +15595,70 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 	// load the player's map here if it's not already loaded
 	if (!map)
 		map = sMapMgr->CreateMap(mapId, this, instanceId);
+    AreaTrigger const* areaTrigger = nullptr;
+    bool check = false;
 
     if (!map)
     {
-        AreaTrigger const* at = sObjectMgr->GetGoBackTrigger(mapId);
-        if (at)
+        areaTrigger = sObjectMgr->GetGoBackTrigger(mapId);
+        check = true;
+    }
+    else if (map->IsDungeon()) // if map is dungeon...
+    {
+        if (Map::EnterState denyReason = ((InstanceMap*)map)->CannotEnter(this)) // ... and can't enter map, then look for entry point.
         {
-            Relocate(at->target_X, at->target_Y, at->target_Z, GetOrientation());
-			if (mapId != at->target_mapId)
-			{
-				mapId = at->target_mapId;
-				map = sMapMgr->CreateMap(mapId, this);
-			}
-            TC_LOG_ERROR("entities.player","Player (guidlow %d) is teleported to gobacktrigger (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+            switch (denyReason)
+            {
+            case Map::CANNOT_ENTER_DIFFICULTY_UNAVAILABLE:
+#ifdef LICH_KING
+                SendTransferAborted(map->GetId(), TRANSFER_ABORT_DIFFICULTY, map->GetDifficulty());
+#else
+                SendTransferAborted(map->GetId(), TRANSFER_ABORT_DIFFICULTY2); //on BC unavailable difficulty will always be heroic
+#endif
+                break;
+            case Map::CANNOT_ENTER_INSTANCE_BIND_MISMATCH:
+                //TC ChatHandler(GetSession()).PSendSysMessage(GetSession()->GetTrinityString(LANG_INSTANCE_BIND_MISMATCH), map->GetMapName());
+                ChatHandler(GetSession()).PSendSysMessage("You are already locked to %s.", map->GetMapName());
+                break;
+            case Map::CANNOT_ENTER_TOO_MANY_INSTANCES:
+                SendTransferAborted(map->GetId(), TRANSFER_ABORT_TOO_MANY_INSTANCES);
+                break;
+            case Map::CANNOT_ENTER_MAX_PLAYERS:
+                SendTransferAborted(map->GetId(), TRANSFER_ABORT_MAX_PLAYERS);
+                break;
+            case Map::CANNOT_ENTER_ZONE_IN_COMBAT:
+                SendTransferAborted(map->GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
+                break;
+            default:
+                break;
+            }
+            areaTrigger = sObjectMgr->GetGoBackTrigger(mapId);
+            check = true;
+        }
+        else if (instanceId && !sInstanceSaveMgr->GetInstanceSave(instanceId)) // ... and instance is reseted then look for entrance.
+        {
+            areaTrigger = sObjectMgr->GetMapEntranceTrigger(mapId);
+            check = true;
+        }
+    }
+
+    if (check) // in case of special event when creating map...
+    {
+        if (areaTrigger) // ... if we have an areatrigger, then relocate to new map/coordinates.
+        {
+            Relocate(areaTrigger->target_X, areaTrigger->target_Y, areaTrigger->target_Z, GetOrientation());
+            if (mapId != areaTrigger->target_mapId)
+            {
+                mapId = areaTrigger->target_mapId;
+                map = sMapMgr->CreateMap(mapId, this);
+            }
         }
         else
         {
+            TC_LOG_ERROR("entities.player", "Player::LoadFromDB: Player '%s' (%s) Map: %u, X: %f, Y: %f, Z: %f, O: %f. Areatrigger not found.",
+                m_name.c_str(), ObjectGuid(HighGuid::Player, guid).ToString().c_str(), mapId, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
             RelocateToHomebind();
-			map = nullptr;
-            TC_LOG_ERROR("entities.player","Player (guidlow %d) is teleported to home (Map: %u X: %f Y: %f Z: %f O: %f).",guid,GetMapId(),GetPositionX(),GetPositionY(),GetPositionZ(),GetOrientation());
+            map = nullptr;
         }
     }
 
@@ -16701,7 +16746,7 @@ InstancePlayerBind* Player::GetBoundInstance(uint32 mapid, Difficulty difficulty
     return nullptr;
 }
 
-InstanceSave * Player::GetInstanceSave(uint32 mapid)
+InstanceSave * Player::GetInstanceSave(uint32 mapid, bool /*raid*/)
 {
     InstancePlayerBind *pBind = GetBoundInstance(mapid, GetDifficulty());
     InstanceSave *pSave = pBind ? pBind->save : nullptr;

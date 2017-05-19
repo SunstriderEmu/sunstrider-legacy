@@ -2592,13 +2592,13 @@ float InstanceMap::GetVisibilityNotifierPeriod() const
 /*
     Do map specific checks to see if the player can enter
 */
-bool InstanceMap::CanEnter(Player *player)
+Map::EnterState InstanceMap::CannotEnter(Player* player)
 {
     if(player->GetMapRef().getTarget() == this)
     {
-//        TC_LOG_ERROR("maps","InstanceMap::CanEnter - player %s(%u) already in map %d,%d,%d!", player->GetName(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
-//        ABORT();
-        return false;
+        TC_LOG_ERROR("maps","InstanceMap::CanEnter - player %s(%u) already in map %d,%d,%d!", player->GetName(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
+        ABORT();
+        return CANNOT_ENTER_ALREADY_IN_MAP;
     }
 
     // cannot enter if the instance is full (player cap), GMs don't count
@@ -2606,19 +2606,21 @@ bool InstanceMap::CanEnter(Player *player)
     if (!player->IsGameMaster() && GetPlayersCountExceptGMs() >= iTemplate->maxPlayers)
     {
         //TC_LOG_DEBUG("maps","MAP: Instance '%u' of map '%s' cannot have more than '%u' players. Player '%s' rejected", GetInstanceId(), GetMapName(), iTemplate->maxPlayers, player->GetName());
-        player->SendTransferAborted(GetId(), TRANSFER_ABORT_MAX_PLAYERS);
-        return false;
+        return CANNOT_ENTER_MAX_PLAYERS;
     }
 
     // cannot enter while players in the instance are in combat
     Group *pGroup = player->GetGroup();
     if(!player->IsGameMaster() && pGroup && pGroup->InCombatToInstance(GetInstanceId()) && player->GetMapId() != GetId())
-    {
-        player->SendTransferAborted(GetId(), TRANSFER_ABORT_ZONE_IN_COMBAT);
-        return false;
-    }
+        return CANNOT_ENTER_ZONE_IN_COMBAT;
 
-    return Map::CanEnter(player);
+    // cannot enter if player is permanent saved to a different instance id
+    if (InstancePlayerBind* playerBind = player->GetBoundInstance(GetId(), GetDifficulty()))
+        if (playerBind->perm && playerBind->save)
+            if (playerBind->save->GetInstanceId() != GetInstanceId())
+                return CANNOT_ENTER_INSTANCE_BIND_MISMATCH;
+
+    return Map::CannotEnter(player);
 }
 
 /*
@@ -2989,6 +2991,12 @@ BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId, Ma
 
 BattlegroundMap::~BattlegroundMap()
 {
+    if (m_bg)
+    {
+        //unlink to prevent crash, always unlink all pointer reference before destruction
+        m_bg->SetBgMap(NULL);
+        m_bg = NULL;
+    }
 }
 
 float BattlegroundMap::GetDefaultVisibilityDistance() const
@@ -3001,28 +3009,30 @@ float BattlegroundMap::GetVisibilityNotifierPeriod() const
 	return World::GetVisibilityNotifyPeriodInBGArenas();
 }
 
-bool BattlegroundMap::CanEnter(Player * player)
+Map::EnterState BattlegroundMap::CannotEnter(Player* player)
 {
     if(player->GetMapRef().getTarget() == this)
     {
         TC_LOG_ERROR("maps","BGMap::CanEnter - player %u already in map!", player->GetGUIDLow());
         ABORT();
+        return CANNOT_ENTER_ALREADY_IN_MAP;
     }
 
     if(player->GetBattlegroundId() != GetInstanceId())
-        return false;
+        return CANNOT_ENTER_INSTANCE_BIND_MISMATCH;
 
     // player number limit is checked in bgmgr, no need to do it here
 
-    return Map::CanEnter(player);
+    return Map::CannotEnter(player);
 }
 
 bool BattlegroundMap::AddPlayerToMap(Player * player)
 {
     {
         std::lock_guard<std::mutex> lock(_mapLock);
-        if(!CanEnter(player))
-            return false;
+        //Check moved to void WorldSession::HandleMoveWorldportAckOpcode()
+        //if(!CanEnter(player))
+          //  return false;
         // reset instance validity, battleground maps do not homebind
         player->m_InstanceValid = true;
     }

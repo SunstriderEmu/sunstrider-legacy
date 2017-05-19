@@ -189,12 +189,12 @@ Battleground::~Battleground()
 {
     // remove objects and creatures
     // (this is done automatically in mapmanager update, when the instance is reset after the reset time)
-    int size = m_BgCreatures.size();
+    int size = BgCreatures.size();
     for(int i = 0; i < size; ++i)
     {
         DelCreature(i);
     }
-    size = m_BgObjects.size();
+    size = BgObjects.size();
     for(int i = 0; i < size; ++i)
     {
         DelObject(i);
@@ -371,14 +371,10 @@ void Battleground::Update(time_t diff)
         if(m_RemovalTime >= TIME_TO_AUTOREMOVE)                 // 2 minutes
         {
             for(auto & m_Player : m_Players)
-            {
                 m_RemovedPlayers[m_Player.first] = 1;           // add to remove list (BG)
-            }
 
             for (uint64 m_Spectator : m_Spectators)
-            {
                 m_RemovedPlayers[m_Spectator] = 1;
-            }
             // do not change any battleground's private variables
         }
     }
@@ -1518,7 +1514,7 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
 
     // add to world, so it can be later looked up from HashMapHolder
     map->AddToMap(go);
-    m_BgObjects[type] = go->GetGUID();
+    BgObjects[type] = go->GetGUID();
     return true;
 }
 
@@ -1526,8 +1522,7 @@ bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float 
 //it would be nice to correctly implement GO_ACTIVATED state and open/close doors in gameobject code
 void Battleground::DoorClose(uint32 type)
 {
-    GameObject *obj = GetBGObject(m_BgObjects[type]);
-    if(obj)
+    if(GameObject *obj = GetBgMap()->GetGameObject(BgObjects[type]))
     {
         //if doors are open, close it
         if( obj->getLootState() == GO_ACTIVATED && !obj->GetGoState() )
@@ -1538,91 +1533,81 @@ void Battleground::DoorClose(uint32 type)
         }
     }
     else
-    {
-        TC_LOG_ERROR("bg.battleground","Battleground: Door object not found (cannot close doors)");
-    }
+        TC_LOG_ERROR("bg.battleground", "Battleground::DoorClose: door gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+            type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
 }
 
 void Battleground::DoorOpen(uint32 type)
 {
-    GameObject *obj = GetBGObject(m_BgObjects[type]);
-    if(obj)
+    if(GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]))
     {
         //change state to be sure they will be opened
         obj->SetLootState(GO_READY);
         obj->UseDoorOrButton(RESPAWN_ONE_DAY);
     }
     else
-    {
-        TC_LOG_ERROR("battleground","Battleground: Door object not found! - doors will be closed.");
-    }
+        TC_LOG_ERROR("bg.battleground", "Battleground::DoorOpen: door gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+            type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
 }
 
 GameObject* Battleground::GetBGObject(uint32 type, bool logError)
 {
-	GameObject* obj = GetBgMap()->GetGameObject(m_BgObjects[type]);
+	GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]);
 	if (!obj)
 	{
 		if (logError)
 			TC_LOG_ERROR("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, m_BgObjects[type].ToString().c_str(), m_MapId, m_InstanceID);
+				type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
 		else
 			TC_LOG_INFO("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, m_BgObjects[type].ToString().c_str(), m_MapId, m_InstanceID);
+				type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
 	}
 	return obj;
 }
 
 Creature* Battleground::GetBGCreature(uint32 type, bool logError)
 {
-	Creature* creature = GetBgMap()->GetCreature(m_BgCreatures[type]);
+	Creature* creature = GetBgMap()->GetCreature(BgCreatures[type]);
 	if (!creature)
 	{
 		if (logError)
 			TC_LOG_ERROR("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, m_BgCreatures[type].ToString().c_str(), m_MapId, m_InstanceID);
+				type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
 		else
 			TC_LOG_INFO("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, m_BgCreatures[type].ToString().c_str(), m_MapId, m_InstanceID);
+				type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
 	}
 	return creature;
 }
 
 void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
 {
-    Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceID());
-    if(!map)
-        return;
-    if( respawntime == 0 )
-    {
-        GameObject *obj = GetBGObject(m_BgObjects[type]);
-        if(obj)
+    if (Map* map = FindBgMap())
+        if (GameObject* obj = map->GetGameObject(BgObjects[type]))
         {
-            //we need to change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
-            if( obj->getLootState() == GO_JUST_DEACTIVATED)
-                obj->SetLootState(GO_READY);
-            if( obj->IsInactive() )
-                obj->SetInactive(false);
-            obj->SetRespawnTime(0);
-            map->AddToMap(obj);
-        }
-    }
-    else
-    {
-        GameObject *obj = GetBGObject(m_BgObjects[type]);
-        if(obj)
-        {
-            map->AddToMap(obj);
+            if (respawntime)
+                obj->SetLootState(GO_JUST_DEACTIVATED);
+            else
+            {
+                if (obj->getLootState() == GO_JUST_DEACTIVATED)
+                    // Change state from GO_JUST_DEACTIVATED to GO_READY in case battleground is starting again
+                    obj->SetLootState(GO_READY);
+                if (obj->IsInactive())
+                    obj->SetInactive(false);
+            }
             obj->SetRespawnTime(respawntime);
-            obj->SetLootState(GO_JUST_DEACTIVATED);
+            if(!obj->IsInWorld()) //sunstrider: TC code tries to add it to map a second time in some cases
+                map->AddToMap(obj);
         }
-    }
 }
 
 Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y, float z, float o, uint32 respawntime)
 {
-    Map * map = sMapMgr->FindMap(GetMapId(),GetInstanceID());
-    if(!map)
+    // If the assert is called, means that BgCreatures must be resized!
+    ASSERT(type < BgCreatures.size());
+
+    Map* map = FindBgMap();
+    if (!map)
         return nullptr;
 
 	auto  pCreature = new Creature();
@@ -1645,44 +1630,54 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
     pCreature->SetHomePosition(x, y, z, o);
     pCreature->AIM_Initialize();
 
-    map->AddToMap(pCreature);
-    m_BgCreatures[type] = pCreature->GetGUID();
+    if (!map->AddToMap(pCreature))
+    {
+        delete pCreature;
+        return nullptr;
+    }
 
-    return  pCreature;
+    BgCreatures[type] = pCreature->GetGUID();
+
+    if (respawntime)
+        pCreature->SetRespawnDelay(respawntime);
+
+    return pCreature;
 }
 
 bool Battleground::DelCreature(uint32 type)
 {
-    if(!m_BgCreatures[type])
+    if(!BgCreatures[type])
         return true;
 
-    Creature *cr = GetBGCreature(m_BgCreatures[type]);
+    Creature *cr = GetBgMap()->GetCreature(BgCreatures[type]);
     if(!cr)
     {
-        TC_LOG_ERROR("battleground","Can't find creature guid: %u",GUID_LOPART(m_BgCreatures[type]));
+        TC_LOG_ERROR("bg.battleground", "Battleground::DelCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+            type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
         return false;
     }
 
     cr->AI()->EnterEvadeMode();
     cr->AddObjectToRemoveList();
-    m_BgCreatures[type] = 0;
+    BgCreatures[type] = 0;
     return true;
 }
 
 bool Battleground::DelObject(uint32 type)
 {
-    if(!m_BgObjects[type])
+    if(!BgObjects[type])
         return true;
 
-    GameObject *obj = GetBGObject(m_BgObjects[type]);
+    GameObject *obj = GetBgMap()->GetGameObject(BgObjects[type]);
     if(!obj)
     {
-        TC_LOG_ERROR("battleground","Can't find gobject guid: %u",GUID_LOPART(m_BgObjects[type]));
+        TC_LOG_ERROR("bg.battleground", "Battleground::DelObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+            type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
         return false;
     }
     obj->SetRespawnTime(0);                                 // not save respawn time
     obj->Delete();
-    m_BgObjects[type] = 0;
+    BgObjects[type] = 0;
     return true;
 }
 
@@ -1760,13 +1755,13 @@ buffs are in their positions when battleground starts
 */
 void Battleground::HandleTriggerBuff(ObjectGuid const& go_guid)
 {
-    GameObject *obj = GetBGObject(go_guid);
+    GameObject *obj = GetBgMap()->GetGameObject(go_guid);
     if(!obj || obj->GetGoType() != GAMEOBJECT_TYPE_TRAP || !obj->isSpawned())
         return;
 
     //change buff type, when buff is used:
-    int32 index = m_BgObjects.size() - 1;
-    while (index >= 0 && m_BgObjects[index] != go_guid)
+    int32 index = BgObjects.size() - 1;
+    while (index >= 0 && BgObjects[index] != go_guid)
         index--;
     if (index < 0)
     {
@@ -1887,8 +1882,8 @@ void Battleground::SetHoliday(bool is_holiday)
 
 int32 Battleground::GetObjectType(ObjectGuid const& guid)
 {
-    for(uint32 i = 0;i < m_BgObjects.size(); i++)
-        if(m_BgObjects[i] == guid)
+    for(uint32 i = 0;i < BgObjects.size(); i++)
+        if(BgObjects[i] == guid)
             return i;
     TC_LOG_ERROR("bg.battleground","Battleground: cheating? a player used a gameobject which isnt supposed to be a usable object!");
     return -1;

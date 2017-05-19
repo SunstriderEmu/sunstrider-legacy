@@ -166,6 +166,8 @@ class TC_GAME_API Group
         bool isBGGroup()   const { return m_bgGroup != nullptr; }
         //only for TC compat
         bool isBFGroup()   const { return false; }
+        //only for TC compat
+        bool isLFGGroup()  const { return false; }
         bool IsCreated()   const { return GetMembersCount() > 0; }
         //group currently use leader guid as identifier, this function is here for compat with trinity code
         inline const uint32 GetLowGUID() const { return GetLeaderGUID();  }

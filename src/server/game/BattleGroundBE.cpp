@@ -10,7 +10,7 @@
 
 BattlegroundBE::BattlegroundBE()
 {
-    m_BgObjects.resize(BG_BE_OBJECT_MAX);
+    BgObjects.resize(BG_BE_OBJECT_MAX);
 }
 
 BattlegroundBE::~BattlegroundBE()
@@ -27,9 +27,9 @@ void BattlegroundBE::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if (!(m_Events & 0x01))
+        if (!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
             {
@@ -46,21 +46,21 @@ void BattlegroundBE::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
         // After 30 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x04))
+        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(LANG_ARENA_THIRTY_SECONDS);
         }
         // After 15 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & 0x08))
+        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(LANG_ARENA_FIFTEEN_SECONDS);
         }
         // delay expired (1 minute)
-        else if (GetStartDelayTime() <= 0 && !(m_Events & 0x10))
+        else if (GetStartDelayTime() <= 0 && !(m_Events & BG_STARTING_EVENT_5))
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
 
             for(uint32 i = BG_BE_OBJECT_DOOR_1; i <= BG_BE_OBJECT_DOOR_2; i++)
                 DoorOpen(i);
@@ -162,10 +162,10 @@ void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
     switch(Trigger)
     {
         case 4538:                                          // buff trigger?
-            //buff_guid = m_BgObjects[BG_BE_OBJECT_BUFF_1];
+            //buff_guid = BgObjects[BG_BE_OBJECT_BUFF_1];
             break;
         case 4539:                                          // buff trigger?
-            //buff_guid = m_BgObjects[BG_BE_OBJECT_BUFF_2];
+            //buff_guid = BgObjects[BG_BE_OBJECT_BUFF_2];
             break;
         default:
             TC_LOG_ERROR("battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);

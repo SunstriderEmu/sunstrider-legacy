@@ -721,10 +721,97 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     if(!at)
         return;
 
-    if(!GetPlayer()->Satisfy(sObjectMgr->GetAccessRequirement(at->access_id), at->target_mapId, true))
-        return;
+    bool teleported = false;
+    if (pl->GetMapId() != at->target_mapId)
+    {
+        if (Map::EnterState denyReason = sMapMgr->PlayerCannotEnter(at->target_mapId, pl, false))
+        {
+            bool reviveAtTrigger = false; // should we revive the player if he is trying to enter the correct instance?
+            switch (denyReason)
+            {
+            case Map::CANNOT_ENTER_NO_ENTRY:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter map with id %d which has no entry", pl->GetName().c_str(), at->target_mapId);
+                break;
+            case Map::CANNOT_ENTER_UNINSTANCED_DUNGEON:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter dungeon map %d but no instance template was found", pl->GetName().c_str(), at->target_mapId);
+                break;
+            case Map::CANNOT_ENTER_DIFFICULTY_UNAVAILABLE:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter instance map %d but the requested difficulty was not found", pl->GetName().c_str(), at->target_mapId);
+                if (MapEntry const* entry = sMapStore.LookupEntry(at->target_mapId))
+#ifdef LICH_KING
+                    pl->SendTransferAborted(entry->MapID, TRANSFER_ABORT_DIFFICULTY, player->GetDifficulty(entry->IsRaid()));
+#else
+                    pl->SendTransferAborted(entry->MapID, TRANSFER_ABORT_DIFFICULTY2);
+#endif
+                break;
+            case Map::CANNOT_ENTER_NOT_IN_RAID:
+            {
+                WorldPacket data(SMSG_RAID_GROUP_ONLY, 4 + 4);
+                data << uint32(0);
+                data << uint32(2); // You must be in a raid group to enter this instance.
+                pl->GetSession()->SendPacket(&data);
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' must be in a raid group to enter instance map %d", pl->GetName().c_str(), at->target_mapId);
+                reviveAtTrigger = true;
+                break;
+            }
+            case Map::CANNOT_ENTER_CORPSE_IN_DIFFERENT_INSTANCE:
+            {
+                /* TC
+                WorldPacket data(SMSG_CORPSE_NOT_IN_INSTANCE);
+                pl->GetSession()->SendPacket(&data);
+                */
+                ChatHandler(pl->GetSession()).PSendSysMessage("Your corpse is in a different instance.");
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' does not have a corpse in instance map %d and cannot enter", pl->GetName().c_str(), at->target_mapId);
+                break;
+            }
+            case Map::CANNOT_ENTER_INSTANCE_BIND_MISMATCH:
+                if (MapEntry const* entry = sMapStore.LookupEntry(at->target_mapId))
+                {
+                    char const* mapName = entry->name[pl->GetSession()->GetSessionDbcLocale()];
+                    TC_LOG_DEBUG("maps", "MAP: Player '%s' cannot enter instance map '%s' because their permanent bind is incompatible with their group's", pl->GetName().c_str(), mapName);
+                    // is there a special opcode for this?
+                    // @todo figure out how to get player localized difficulty string (e.g. "10 player", "Heroic" etc)
+                    //TC ChatHandler(pl->GetSession()).PSendSysMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_BIND_MISMATCH), mapName);
+                    ChatHandler(pl->GetSession()).PSendSysMessage("You are already locked to %s.", mapName);
+                    
+                }
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_TOO_MANY_INSTANCES:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_TOO_MANY_INSTANCES);
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' cannot enter instance map %d because he has exceeded the maximum number of instances per hour.", pl->GetName().c_str(), at->target_mapId);
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_MAX_PLAYERS:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_MAX_PLAYERS);
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_ZONE_IN_COMBAT:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_ZONE_IN_COMBAT);
+                reviveAtTrigger = true;
+                break;
+            default:
+                break;
+            }
 
-    GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
+            if (reviveAtTrigger) // check if the player is touching the areatrigger leading to the map his corpse is on
+                if (!pl->IsAlive() && pl->HasCorpse())
+                    if (pl->GetCorpseLocation().GetMapId() == at->target_mapId)
+                    {
+                        pl->ResurrectPlayer(0.5f);
+                        pl->SpawnCorpseBones();
+                    }
+
+            return;
+        }
+
+        if (Group* group = pl->GetGroup())
+            if (group->isLFGGroup() && pl->GetMap()->IsDungeon())
+                teleported = pl->TeleportToBGEntryPoint();
+    }
+
+    if (!teleported)
+        GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
 }
 
 void WorldSession::HandleUpdateAccountData(WorldPacket &/*recvData*/)

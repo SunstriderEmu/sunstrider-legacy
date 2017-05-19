@@ -10,7 +10,7 @@
 
 BattlegroundRL::BattlegroundRL()
 {
-    m_BgObjects.resize(BG_RL_OBJECT_MAX);
+    BgObjects.resize(BG_RL_OBJECT_MAX);
 }
 
 BattlegroundRL::~BattlegroundRL()
@@ -44,21 +44,21 @@ void BattlegroundRL::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
         // After 30 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x04))
+        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(LANG_ARENA_THIRTY_SECONDS);
         }
         // After 15 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & 0x08))
+        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(LANG_ARENA_FIFTEEN_SECONDS);
         }
         // delay expired (1 minute)
-        else if (GetStartDelayTime() <= 0 && !(m_Events & 0x10))
+        else if (GetStartDelayTime() <= 0 && !(m_Events & BG_STARTING_EVENT_5))
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
 
             for(uint32 i = BG_RL_OBJECT_DOOR_1; i <= BG_RL_OBJECT_DOOR_2; i++)
                 DoorOpen(i);
@@ -122,7 +122,7 @@ void BattlegroundRL::HandleKillPlayer(Player *player, Player *killer)
 
     if(!killer)
     {
-        TC_LOG_ERROR("FIXME","Killer player not found");
+        TC_LOG_ERROR("bg.battleground","Killer player not found");
         return;
     }
 
@@ -163,7 +163,7 @@ void BattlegroundRL::HandleAreaTrigger(Player *Source, uint32 Trigger)
         case 4697:                                          // buff trigger?
             break;
         default:
-            TC_LOG_ERROR("FIXME","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
+            TC_LOG_ERROR("bg.battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
             Source->GetSession()->SendAreaTriggerMessage("Warning: Unhandled AreaTrigger in Battleground: %u", Trigger);
             break;
     }

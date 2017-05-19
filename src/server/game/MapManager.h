@@ -78,7 +78,7 @@ class TC_GAME_API MapManager
 
         static bool IsValidMapCoord(WorldLocation const& loc);
 
-        bool CanPlayerEnter(uint32 mapid, Player* player);
+        Map::EnterState PlayerCannotEnter(uint32 mapid, Player* player, bool loginCheck = false);
         void InitializeVisibilityDistanceInfo();
 
         /* statistics */

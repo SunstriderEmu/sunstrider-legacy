@@ -249,7 +249,7 @@ void WorldSession::HandleGameObjectQueryOpcode( WorldPacket & recvData )
         data << uint32(entryID | 0x80000000);
         SendPacket( &data );
     }
-        TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
+        //TC_LOG_DEBUG("network", "WORLD: Sent SMSG_GAMEOBJECT_QUERY_RESPONSE");
 }
 
 void WorldSession::HandleCorpseQueryOpcode(WorldPacket & /*recvData*/)
