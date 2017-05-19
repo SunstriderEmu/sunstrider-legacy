@@ -254,7 +254,7 @@ InstanceMap* MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave *save,
 
     TC_LOG_DEBUG("maps", "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save ? "" : "new ", InstanceId, GetId(), difficulty ? "heroic" : "normal");
 
-	auto map = new InstanceMap(MAP_TYPE_INSTANCE_MAP, GetId(), InstanceId, difficulty, this);
+	auto map = new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, this);
     assert(map->IsDungeon());
 
 	//TC  map->LoadRespawnTimes();

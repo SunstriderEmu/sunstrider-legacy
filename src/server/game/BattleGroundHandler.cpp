@@ -134,7 +134,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
             sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(member, ginfo);
         }
 
-        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, _player->GetBattlegroundQueueIdFromLevel());
+        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(bgTypeId, _player->GetBattlegroundQueueIdFromLevel());
     }
     else
     {
@@ -151,7 +151,7 @@ void WorldSession::_HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,boo
         SendPacket(&data);
 
         sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(_player, ginfo);
-        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, _player->GetBattlegroundQueueIdFromLevel());
+        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(bgTypeId, _player->GetBattlegroundQueueIdFromLevel());
     }
 }
 
@@ -470,7 +470,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
                 sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_NONE, 0, 0);
                 sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].RemovePlayer(_player->GetGUID(), true);
                 // player left queue, we should update it, maybe now his group fits in
-                sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId,_player->GetBattlegroundQueueIdFromLevel(),arenatype,israted,rating);
+                sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(bgTypeId,_player->GetBattlegroundQueueIdFromLevel(),arenatype,israted,rating);
                 SendPacket(&data);
                 break;
             default:
@@ -859,7 +859,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
             sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(member, ginfo);
         }
 
-        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, _player->GetBattlegroundQueueIdFromLevel(), arenatype, isRated, arenaRating);
+        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(bgTypeId, _player->GetBattlegroundQueueIdFromLevel(), arenatype, isRated, arenaRating);
     }
     else
     {
@@ -874,7 +874,7 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&data, bg, _player->GetTeam(), queueSlot, STATUS_WAIT_QUEUE, sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].GetAvgTime(), 0, arenatype, isRated);
         SendPacket(&data);
         sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].AddPlayer(_player, ginfo);
-        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].Update(bgTypeId, _player->GetBattlegroundQueueIdFromLevel(), arenatype, isRated, arenaRating);
+        sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(bgTypeId, _player->GetBattlegroundQueueIdFromLevel(), arenatype, isRated, arenaRating);
     }
 }
 

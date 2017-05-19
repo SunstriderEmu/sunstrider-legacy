@@ -465,6 +465,7 @@ class TC_GAME_API Battleground
         bool IsPlayerInBattleground(uint64 guid);
         void PlayerRelogin(uint64 guid);
 
+        bool ToBeDeleted() const { return m_SetDeleteThis; }
         void SetDeleteThis() {m_SetDeleteThis = true;}
 
         typedef std::set<uint64> SpectatorList;
