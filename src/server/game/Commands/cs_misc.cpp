@@ -1750,7 +1750,7 @@ bool ChatHandler::HandleFreezeCommand(const char *args)
         PSendSysMessage(LANG_COMMAND_FREEZE,name.c_str());
 
         //stop combat + make player unattackable + duel stop + stop some spells
-        player->SetFaction(35);
+        player->SetFaction(FACTION_FRIENDLY);
         player->CombatStop();
         if(player->IsNonMeleeSpellCast(true))
             player->InterruptNonMeleeSpells(true);

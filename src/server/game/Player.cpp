@@ -2488,7 +2488,7 @@ void Player::SetGameMaster(bool on)
     if(on)
     {
         m_ExtraFlags |= PLAYER_EXTRA_GM_ON;
-        SetFaction(35);
+        SetFaction(FACTION_FRIENDLY);
         SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
@@ -22555,7 +22555,7 @@ void Player::SetSpectate(bool on)
         SetSpeedRate(MOVE_RUN, 2.5);
         spectatorFlag = true;
 
-        SetFaction(35);
+        SetFaction(FACTION_FRIENDLY);
 
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_FFA_PVP);
 

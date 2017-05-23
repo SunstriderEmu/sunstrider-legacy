@@ -2811,7 +2811,7 @@ struct WorldObjectChangeAccumulator
     Maybe we could:
     - Do a first pass where we just count players in range that should receive the packet
     - If that count passes a certain threshold (maybe a very low one like 2-3?), send all those players a packet containing all the changes
-    I'm almost sure that a client ignore "privates" field anyway (like those with UF_OWNER) so that shouldn't cause problems
+    I think that a client ignore "privates" field it shouldn't receive anyway (like those with UF_OWNER) so that shouldn't cause problems
     */
     void BuildPacket(Player* player)
     {

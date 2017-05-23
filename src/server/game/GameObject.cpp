@@ -1759,7 +1759,7 @@ uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster
     }
     else
     {
-		trigger->SetFaction(spellInfo->IsPositive() ? 35 : 14);
+		trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
         return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster);
     }
 }
