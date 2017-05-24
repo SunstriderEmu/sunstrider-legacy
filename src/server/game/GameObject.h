@@ -775,7 +775,7 @@ class TC_GAME_API GameObject : public WorldObject, public GridObject<GameObject>
         GameObjectModel * m_model;
         void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr) const;
         
-        float GetInteractionDistance();
+        float GetInteractionDistance() const;
 
         bool IsStaticTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_TRANSPORT; }
         bool IsMotionTransport() const { return GetGOInfo()->type == GAMEOBJECT_TYPE_MO_TRANSPORT; }

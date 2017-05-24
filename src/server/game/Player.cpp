@@ -2421,8 +2421,8 @@ Creature* Player::GetNPCIfCanInteractWith(uint64 guid, uint32 npcflagmask)
             return nullptr;
     }
 
-    // not too far
-    if (!creature->IsWithinDistInMap(this, INTERACTION_DISTANCE))
+    // not too far, taken from CGGameUI::SetInteractTarget
+    if (!creature->IsWithinDistInMap(this, creature->GetCombatReach() + 4.0f))
         return nullptr;
 
     return creature;

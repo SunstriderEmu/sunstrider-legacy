@@ -1855,7 +1855,7 @@ void GameObject::SetDespawnTimer(uint32 timer)
     m_despawnTime = time(nullptr) + timer;
 }
 
-float GameObject::GetInteractionDistance()
+float GameObject::GetInteractionDistance() const
 {
     switch (GetGoType())
     {
@@ -1868,7 +1868,7 @@ float GameObject::GetInteractionDistance()
         case GAMEOBJECT_TYPE_FISHINGNODE:
             return 20.0f + CONTACT_DISTANCE; // max spell range
         default:
-            return INTERACTION_DISTANCE;
+            return INTERACTION_DISTANCE + 4.0f; //sunstrider: little leeway
     }
 }
 
