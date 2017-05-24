@@ -14431,8 +14431,13 @@ bool Player::CanShareQuest(uint32 quest_id) const
     if( qInfo && qInfo->HasFlag(QUEST_FLAGS_SHARABLE) )
     {
         auto itr = m_QuestStatus.find( quest_id );
-        if( itr != m_QuestStatus.end() )
-            return itr->second.m_status == QUEST_STATUS_NONE || itr->second.m_status == QUEST_STATUS_INCOMPLETE;
+        if( itr != m_QuestStatus.end() ) 
+        {
+            //TODO TC:  in pool and not currently available (wintergrasp weekly, dalaran weekly) - can't share
+            // ...
+
+            return true;
+        }
     }
     return false;
 }
