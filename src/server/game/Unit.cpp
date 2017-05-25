@@ -8281,7 +8281,7 @@ void Unit::SetCharm(Unit* charm, bool apply)
 	}
 }
 
-// only called in Player::SetSeer
+// only called in Player::SetViewpoint
 // so move it to Player?
 void Unit::AddPlayerToVision(Player* plr)
 {
@@ -8294,7 +8294,7 @@ void Unit::AddPlayerToVision(Player* plr)
 	m_sharedVision.push_back(plr);
 }
 
-// only called in Player::SetSeer
+// only called in Player::SetViewpoint
 void Unit::RemovePlayerFromVision(Player* plr)
 {
 	m_sharedVision.remove(plr);

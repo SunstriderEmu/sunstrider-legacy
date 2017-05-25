@@ -2212,6 +2212,7 @@ class TC_GAME_API Unit : public WorldObject
         float m_speed_rate[MAX_MOVE_TYPE];
 
         CharmInfo *m_charmInfo;
+        //Players sharing this unit vision
         SharedVisionList m_sharedVision;
 
         virtual SpellSchoolMask GetMeleeDamageSchoolMask() const;

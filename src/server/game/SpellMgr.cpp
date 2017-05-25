@@ -1616,9 +1616,11 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+        case 6495: // Sentry totem
+            spellInfo->EffectRadiusIndex[0] = 0; //remove radius, this spell has 100.0f and we don't want to to be summoned 100 yards away
         case 37540: // Fireball Barrage
         case 37632: // Toxic Barrage
-            spellInfo->EffectImplicitTargetA[effectIndex] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             break;
 #ifdef LICH_KING
         // Arcane Overload
