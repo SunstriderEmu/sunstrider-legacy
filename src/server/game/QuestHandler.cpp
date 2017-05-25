@@ -470,73 +470,98 @@ void WorldSession::HandleQuestgiverQuestAutoLaunch(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 {
-    uint32 quest;
-    recvPacket >> quest;
+    uint32 questId;
+    recvPacket >> questId;
 
-    Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest);
-    if( pQuest )
+    Player* sender = _player;
+    if (!sender->CanShareQuest(questId))
+        return;
+
+    Group* group = sender->GetGroup();
+    if (!group)
     {
-        if( _player->GetGroup() )
+        sender->SendPushToPartyResponse(sender, QUEST_PARTY_MSG_NOT_IN_PARTY);
+        return;
+    }
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return;
+
+    for(GroupReference *itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+    {
+        Player* receiver = itr->GetSource();
+        if (!receiver || receiver == sender)     // skip self
+            continue;
+
+        if(sender->GetDistance(receiver) > 10.0f )
         {
-            Group *pGroup = _player->GetGroup();
-            if( pGroup )
-            {
-                for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
-                {
-                    Player *pPlayer = itr->GetSource();
-                    if (!pPlayer || pPlayer == _player)     // skip self
-                        continue;
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_TOO_FAR );
+            continue;
+        }
 
-                    _player->SendPushToPartyResponse(pPlayer, QUEST_PARTY_MSG_SHARING_QUEST);
+        if( !receiver->SatisfyQuestStatus( quest, false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_HAVE_QUEST );
+            continue;
+        }
 
-                    if( _player->GetDistance( pPlayer ) > 10 )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_TOO_FAR );
-                        continue;
-                    }
+        if(receiver->GetQuestStatus( questId ) == QUEST_STATUS_COMPLETE )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_FINISH_QUEST );
+            continue;
+        }
 
-                    if( !pPlayer->SatisfyQuestStatus( pQuest, false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_HAVE_QUEST );
-                        continue;
-                    }
+        if (!receiver->SatisfyQuestDay(quest, false))
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_NOT_ELIGIBLE_TODAY);
+            continue;
+        }
 
-                    if( pPlayer->GetQuestStatus( quest ) == QUEST_STATUS_COMPLETE )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_FINISH_QUEST );
-                        continue;
-                    }
-
-                    if( !pPlayer->CanTakeQuest( pQuest, false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_CANT_TAKE_QUEST );
-                        continue;
-                    }
-
-                    if( !pPlayer->SatisfyQuestLog( false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_LOG_FULL );
-                        continue;
-                    }
-
-                    if( pPlayer->GetDivider() != 0  )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_BUSY );
-                        continue;
-                    }
-                    
-                    if (sWorld->IsQuestInAPool(pQuest->GetQuestId())) {
-                        if (!sWorld->IsQuestCurrentOfAPool(pQuest->GetQuestId())) {
-                            ChatHandler(_player).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
-                            break;  // Quest cannot be shared today, no point continuing
-                        }
-                    }
-
-                    pPlayer->PlayerTalkClass->SendQuestGiverQuestDetails( pQuest, _player->GetGUID(), true );
-                    pPlayer->SetDivider( _player->GetGUID() );
-                }
+        //old code
+        if (sWorld->IsQuestInAPool(questId)) {
+            if (!sWorld->IsQuestCurrentOfAPool(questId)) {
+                ChatHandler(sender).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
+                break;  // Quest cannot be shared today, no point continuing
             }
         }
+
+        if( !receiver->CanTakeQuest(quest, false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_CANT_TAKE_QUEST );
+            continue;
+        }
+
+        if( !receiver->SatisfyQuestLog( false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_LOG_FULL );
+            continue;
+        }
+
+        if(receiver->GetDivider() != 0  )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_BUSY );
+            continue;
+        }
+
+        sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_SHARING_QUEST);
+                    
+        /* TC
+        if (quest->IsAutoAccept() && receiver->CanAddQuest(quest, true) && receiver->CanTakeQuest(quest, true))
+            receiver->AddQuestAndCheckCompletion(quest, sender);
+            */
+        if ((quest->IsAutoComplete() && quest->IsRepeatable() && !quest->IsDailyOrWeekly()) 
+#ifdef LICH_KING
+            || quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE)
+#endif
+            )
+            receiver->PlayerTalkClass->SendQuestGiverRequestItems(quest, sender->GetGUID(), receiver->CanCompleteRepeatableQuest(quest), true);
+        else
+        {
+            receiver->SetDivider(sender->GetGUID());
+            receiver->PlayerTalkClass->SendQuestGiverQuestDetails(quest, receiver->GetGUID(), true);
+        }
+
     }
 }
 
@@ -546,18 +571,14 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
     uint8 msg;
     recvPacket >> guid >> msg;
 
-    if( _player->GetDivider() != 0 )
+    if(guid == _player->GetDivider())
     {
-        Player *pPlayer = ObjectAccessor::FindPlayer( _player->GetDivider() );
-        if( pPlayer )
-        {
-            WorldPacket data( MSG_QUEST_PUSH_RESULT, (8+1) );
-            data << uint64(guid);
-            data << uint8(msg);                             // valid values: 0-8
-            pPlayer->SendDirectMessage(&data);
-            _player->SetDivider( 0 );
-        }
+        Player* player = ObjectAccessor::FindPlayer(guid);
+        if (player)
+            player->SendPushToPartyResponse(_player, msg);
     }
+
+    _player->SetDivider(0);
 }
 
 uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)

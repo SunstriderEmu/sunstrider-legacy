@@ -51,6 +51,10 @@ enum QuestShareMessages
     QUEST_PARTY_MSG_LOG_FULL        = 6,
     QUEST_PARTY_MSG_HAVE_QUEST      = 7,
     QUEST_PARTY_MSG_FINISH_QUEST    = 8,
+    //ARE THOSE NEXT ONES BC ?
+    QUEST_PARTY_MSG_SHARING_TIMER_EXPIRED   = 9,
+    QUEST_PARTY_MSG_NOT_IN_PARTY            = 10,
+    QUEST_PARTY_MSG_NOT_ELIGIBLE_TODAY      = 11
 };
 
 enum __QuestTradeSkill
@@ -222,15 +226,17 @@ class Quest
         uint32 GetQuestStartScript() const { return QuestStartScript; }
         uint32 GetQuestCompleteScript() const { return QuestCompleteScript; }
         bool   IsRepeatable() const { return QuestFlags & QUEST_TRINITY_FLAGS_REPEATABLE; }
-        bool   IsAutoComplete() const { return QuestMethod == 0; }
+        bool   IsAutoComplete() const;
         uint32 GetFlags() const { return QuestFlags; }
         bool   IsDaily() const { return QuestFlags & QUEST_FLAGS_DAILY; }
 #ifdef LICH_KING
         bool   IsWeekly() const { return (QuestFlags & QUEST_FLAGS_WEEKLY) != 0; }
         bool   IsMonthly() const { return (SpecialFlags & QUEST_SPECIAL_FLAGS_MONTHLY) != 0; }
+        bool   IsDailyOrWeekly() const { return (_flags & (QUEST_FLAGS_DAILY | QUEST_FLAGS_WEEKLY)) != 0; }
 #else
         bool   IsWeekly() const { return false; }
         bool   IsMonthly() const { return false; }
+        bool   IsDailyOrWeekly() const { return IsDaily(); }
 #endif
         bool   IsSeasonal() const 
         { 

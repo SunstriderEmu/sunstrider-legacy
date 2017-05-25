@@ -209,3 +209,11 @@ int32  Quest::GetRewOrReqMoney() const
     return int32(RewardOrReqMoney * sWorld->GetRate(RATE_DROP_MONEY));
 }
 
+bool Quest::IsAutoComplete() const 
+{ 
+    return QuestMethod == 0 
+#ifdef LICH_KING
+        || HasFlag(QUEST_FLAGS_AUTOCOMPLETE)
+#endif
+        ;
+}
