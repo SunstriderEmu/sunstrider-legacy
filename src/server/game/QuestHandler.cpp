@@ -480,7 +480,11 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
     Group* group = sender->GetGroup();
     if (!group)
     {
+#ifdef LICH_KING
         sender->SendPushToPartyResponse(sender, QUEST_PARTY_MSG_NOT_IN_PARTY);
+#else
+        ChatHandler(sender).PSendSysMessage("You are not in a party.");
+#endif
         return;
     }
 
@@ -514,14 +518,18 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 
         if (!receiver->SatisfyQuestDay(quest, false))
         {
+#ifdef LICH_KING
             sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_NOT_ELIGIBLE_TODAY);
+#else
+            ChatHandler(sender).PSendSysMessage("You can't take any more daily quests.");
+#endif  
             continue;
         }
 
-        //old code
         if (sWorld->IsQuestInAPool(questId)) {
             if (!sWorld->IsQuestCurrentOfAPool(questId)) {
-                ChatHandler(sender).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
+                //ChatHandler(sender).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
+                ChatHandler(sender).PSendSysMessage("This quest is not available today, you can't share it.");
                 break;  // Quest cannot be shared today, no point continuing
             }
         }

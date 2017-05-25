@@ -24,9 +24,9 @@ include_directories(${CMAKE_SOURCE_DIR}/dep/libircclient/include/)
 
 #For Windows, use prebuilt libircclient library instead of building it
 if (WIN32)
-    if(TRINITY_PLATFORM EQUAL 64)
+    if(PLATFORM EQUAL 64)
         set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/libircclient/prebuilt_win_lib/64/libircclient.lib)
-    elseif(TRINITY_PLATFORM EQUAL 32)
+    elseif(PLATFORM EQUAL 32)
         set (LIBIRCCLIENT_LIB_WIN ${PROJECT_SOURCE_DIR}/dep/libircclient/prebuilt_win_lib/32/libircclient.lib)
     else()
         message(SEND_ERROR "Could not find platform when trying to set LIBIRCCLIENT_LIB_WIN")
