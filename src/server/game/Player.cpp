@@ -306,7 +306,11 @@ Player::Player (WorldSession *session) :
     m_DelayedOperations(0),
     m_hasMovedInUpdate(false),
 	m_seer(this),
-	m_needsZoneUpdate(false)
+	m_needsZoneUpdate(false),
+    m_timeSyncCounter(0),
+    m_timeSyncTimer(0),
+    m_timeSyncClient(0),
+    m_timeSyncServer(0)
 {
     m_speakTime = 0;
     m_speakCount = 0;
@@ -23163,16 +23167,6 @@ void Player::SetViewpoint(WorldObject* target, bool apply)
 			TC_LOG_FATAL("entities.player", "Player::CreateViewpoint: Player '%s' (%s) cannot add new viewpoint!", GetName().c_str(), ObjectGuid(GetGUID()).ToString().c_str());
 			return;
 		}
-
-		/*
-		// we need to create object at client first (only needed for high range cases)
-        if(!caster->ToPlayer()->HaveAtClient(m_target))
-        {
-            m_target->SendUpdateToPlayer(caster->ToPlayer()); 
-            caster->ToPlayer()->m_clientGUIDs.insert(m_target->GetGUID());
-            caster->ToPlayer()->SendInitialVisiblePackets((Unit*)m_target);
-        }
-		*/
 
 		// farsight dynobj or puppet may be very far away
 		UpdateVisibilityOf(target);

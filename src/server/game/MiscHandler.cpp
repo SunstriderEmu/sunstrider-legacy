@@ -29,6 +29,7 @@
 #include "GameObjectAI.h"
 #include "IRCMgr.h"
 #include "WhoListStorage.h"
+#include "GameTime.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
 {
@@ -1399,13 +1400,26 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
     GetPlayer()->SetUInt32Value(PLAYER_CHOSEN_TITLE, title);
 }
 
-void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
+void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
 {
-    uint32 counter, time_;
-    recvData >> counter >> time_;
+    uint32 counter, clientTicks;
+    recvData >> counter >> clientTicks;
 
     // time_ seems always more than GetMSTime()
     // uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
+
+    if (counter != _player->m_timeSyncCounter - 1)
+        TC_LOG_DEBUG("network", "Wrong time sync counter from player %s (cheater?)", _player->GetName().c_str());
+
+#ifdef TRINITY_DEBUG
+    TC_LOG_DEBUG("network", "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
+    uint32 ourTicks = clientTicks + (GameTime::GetGameTimeMS() - _player->m_timeSyncServer);
+
+    // diff should be small
+    TC_LOG_DEBUG("network", "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
+#endif
+
+    _player->m_timeSyncClient = clientTicks;
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )
