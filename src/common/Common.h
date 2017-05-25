@@ -44,7 +44,7 @@
 
 #include "Debugging/Errors.h"
 
-#if COMPILER == COMPILER_MICROSOFT
+#if COMPILER == TRINITY_COMPILER_MICROSOFT
 
 #pragma warning(disable:4996)
 
@@ -75,7 +75,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #define STRCASECMP stricmp
 #else
 #define STRCASECMP strcasecmp
@@ -96,7 +96,7 @@
 
 #include "Threading/LockedQueue.h"
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #  define FD_SETSIZE 4096
 // XP winver - needed to compile with standard leak check in MemoryLeaks.h
 // uncomment later if needed
@@ -112,7 +112,7 @@
 #  include <netdb.h>
 #endif
 
-#if COMPILER == COMPILER_MICROSOFT
+#if COMPILER == TRINITY_COMPILER_MICROSOFT
 
 #include <float.h>
 

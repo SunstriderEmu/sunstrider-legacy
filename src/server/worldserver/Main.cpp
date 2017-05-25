@@ -36,7 +36,7 @@
 #include "ScriptReloadMgr.h"
 #include "AppenderDB.h"
 #include <segvcatch.h>
-#if PLATFORM == PLATFORM_UNIX
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
 #include <fstream>
 #include <execinfo.h>
 #endif
@@ -93,7 +93,7 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
 //segv handler, print stack to dump file
 void handle_segv()
 {
-#if PLATFORM == PLATFORM_UNIX
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
     void* arr[20];
     size_t size = backtrace(arr, 20);
     fprintf(stderr, "SEGV or PFE occured :\n");
@@ -202,7 +202,7 @@ extern int main(int argc, char **argv)
 
     // Set signal handlers (this must be done before starting io_service threads, because otherwise they would unblock and exit)
     boost::asio::signal_set signals(_ioService, SIGINT, SIGTERM);
-#if PLATFORM == PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     signals.add(SIGBREAK);
 #endif
     signals.async_wait(SignalHandler);

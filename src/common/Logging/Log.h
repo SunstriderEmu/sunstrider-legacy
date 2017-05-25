@@ -148,7 +148,7 @@ inline bool Log::ShouldLog(std::string const& type, LogLevel level) const
         } \
     }
 
-#if PLATFORM != PLATFORM_WINDOWS
+#if TRINITY_PLATFORM != TRINITY_PLATFORM_WINDOWS
 void check_args(const char* format, ...) ATTR_PRINTF(1, 2);
 
 // This will catch format errors on build time

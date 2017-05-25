@@ -73,7 +73,7 @@ public:
 // Ugly, horrible, i don't even..., hack for VS2013 to work around missing discrete_distribution(iterator, iterator) constructor
 namespace Trinity
 {
-#if COMPILER == COMPILER_MICROSOFT && _MSC_VER <= 1800
+#if COMPILER == TRINITY_COMPILER_MICROSOFT && _MSC_VER <= 1800
     template<typename T>
     struct discrete_distribution_param : public std::discrete_distribution<T>::param_type
     {

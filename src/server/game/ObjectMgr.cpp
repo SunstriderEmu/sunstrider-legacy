@@ -1320,7 +1320,7 @@ void ObjectMgr::LoadCreatures()
         int32 gameEvent     = fields[16].GetInt32();
         data.poolId         = fields[17].GetUInt32();
 //Not sure this is a correct general rule, correct it if needed. My windows MariaDB returns a NEWDECIMAL while our Debian MariaDB returns a LONGLONG
-#if PLATFORM == PLATFORM_UNIX
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
         data.instanceEventId = fields[18].GetUInt64();
 #else
         data.instanceEventId = fields[18].GetDouble();

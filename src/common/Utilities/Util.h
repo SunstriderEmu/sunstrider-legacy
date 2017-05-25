@@ -332,7 +332,7 @@ public:
     }
 };
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #define UTF8PRINTF(OUT,FRM,RESERR)                      \
 {                                                       \
     char temp_buf[6000];                                \

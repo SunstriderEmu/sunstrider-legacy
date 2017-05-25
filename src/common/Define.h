@@ -19,7 +19,7 @@
 #  endif
 #endif
 
-#if PLATFORM == PLATFORM_WINDOWS
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 #  define TRINITY_LIBRARY_HANDLE HMODULE
 #  define TRINITY_PATH_MAX MAX_PATH
 #  ifndef DECLSPEC_NORETURN
@@ -28,28 +28,28 @@
 #  ifndef DECLSPEC_DEPRECATED
 #    define DECLSPEC_DEPRECATED __declspec(deprecated)
 #  endif //DECLSPEC_DEPRECATED
-#else //PLATFORM != PLATFORM_WINDOWS
+#else //TRINITY_PLATFORM != TRINITY_PLATFORM_WINDOWS
 #  define TRINITY_LIBRARY_HANDLE void*
 #  define TRINITY_PATH_MAX PATH_MAX
 #  define DECLSPEC_NORETURN
 #  define DECLSPEC_DEPRECATED
-#endif //PLATFORM
+#endif //TRINITY_PLATFORM
 
-#if COMPILER == COMPILER_GNU
+#if COMPILER == TRINITY_COMPILER_GNU
 #  define ATTR_NORETURN __attribute__((noreturn))
 #  define ATTR_PRINTF(F,V) __attribute__ ((format (printf, F, V)))
 #  define ATTR_DEPRECATED __attribute__((__deprecated__))
-#else //COMPILER != COMPILER_GNU
+#else //COMPILER != TRINITY_COMPILER_GNU
 #  define ATTR_NORETURN
 #  define ATTR_PRINTF(F,V)
 #  define ATTR_DEPRECATED
-#endif //COMPILER == COMPILER_GNU
+#endif //COMPILER == TRINITY_COMPILER_GNU
 
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
-#  if COMPILER == COMPILER_MICROSOFT
+#  if COMPILER == TRINITY_COMPILER_MICROSOFT
 #    define TC_API_EXPORT __declspec(dllexport)
 #    define TC_API_IMPORT __declspec(dllimport)
-#  elif COMPILER == COMPILER_GNU
+#  elif COMPILER == TRINITY_COMPILER_GNU
 #    define TC_API_EXPORT __attribute__((visibility("default")))
 #    define TC_API_IMPORT
 #  else
