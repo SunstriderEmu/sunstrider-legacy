@@ -110,6 +110,7 @@ void Pet::AddToWorld()
     {   
 		GetMap()->GetObjectsStore().Insert<Pet>(GetGUID(), this);
         Unit::AddToWorld();
+        AIM_Initialize();
     }
 
 	// Prevent stuck pets when zoning. Pets default to "follow" when added to world
@@ -589,7 +590,7 @@ void Pet::Update(uint32 diff)
         {
             // unsummon pet that lost owner
             Unit* owner = GetOwner();
-            if(!owner || (!IsWithinDistInMap(owner, OWNER_MAX_DISTANCE) && !IsPossessed()) || (isControlled() && !owner->GetMinionGUID()))
+            if(!owner || (!IsWithinDistInMap(owner, OWNER_MAX_DISTANCE) && !IsPossessed()) || (isControlled() && !owner->GetPetGUID()))
             {
                 Remove(PET_SAVE_NOT_IN_SLOT, true);
                 return;
@@ -597,7 +598,7 @@ void Pet::Update(uint32 diff)
 
             if(isControlled())
             {
-                if( owner->GetMinionGUID() != GetGUID() )
+                if( owner->GetPetGUID() != GetGUID() )
                 {
                     Remove(getPetType()==HUNTER_PET?PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
                     return;

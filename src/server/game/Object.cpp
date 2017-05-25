@@ -1846,7 +1846,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
 		return nullptr;
 	}
 
-    pet->SetOwnerGUID(GetGUID());
 	pet->SetCreatorGUID(GetGUID());
 	pet->SetFaction(GetFaction());
 

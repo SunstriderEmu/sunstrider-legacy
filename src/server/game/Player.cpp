@@ -20896,6 +20896,10 @@ void Player::LearnAllClassSpells()
         case CLASS_WARLOCK:
             AddSpell(5784, true); //mount 40
             AddSpell(23161, true); //mount 60
+            AddSpell(688, true); //imp
+            AddSpell(697, true); //void walker
+            AddSpell(712, true); //Succubus
+            AddSpell(691, true); //Fel Hunter
             break;
         default:
             break;
