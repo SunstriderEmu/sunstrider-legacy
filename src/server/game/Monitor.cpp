@@ -83,6 +83,7 @@ void Monitor::MapUpdateEnd(Map& map)
 	auto& mapTick = mapsTicksInfo.ticks[mapsTicksInfo.currentTick];
 	if (mapTick.startTime == 0)
 		return; //shouldn't happen unless we changed CONFIG_MONITORING_ENABLED while running
+
 	mapTick.endTime = GetMSTime();
 	uint32 diff = mapTick.endTime - mapTick.startTime;
 	_currentWorldTickLock.unlock();
@@ -308,18 +309,18 @@ void MonitorAutoReboot::Update(uint32 diff)
 
 void MonitorDynamicLoS::UpdateForMap(Map& map, uint32 diff)
 {
-  //is it time to check?
-  _mapCheckTimersLock.lock();
-	auto& timer = _mapCheckTimers[uint64(&map)].timer;
-	timer += diff;
+    //is it time to check?
+    _mapCheckTimersLock.lock();
+    auto& timer = _mapCheckTimers[uint64(&map)].timer;
+    timer += diff;
 
-  if (timer < CHECK_INTERVAL) {
+    if (timer < CHECK_INTERVAL) {
     _mapCheckTimersLock.unlock();
     return;
-  }
+    }
 
-	timer = 0;
-  _mapCheckTimersLock.unlock();
+    timer = 0;
+    _mapCheckTimersLock.unlock();
 
 	uint32 abnormalDiff = sWorld->getConfig(CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF);
 	if (!abnormalDiff)

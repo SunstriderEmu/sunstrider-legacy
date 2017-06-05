@@ -1212,14 +1212,13 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             float factor = 1.0f;
             
             if (GetEntry() == ENTRY_FELGUARD) 
-                factor = 2.0f; //pure guess here, need the right value
+                factor = 1.4f; //pure guess here, need the right value
 
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, minDmg * factor);
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, maxDmg * factor );
 
             //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
 
-            //+ Felguard handling ?
             break;
         }
         case HUNTER_PET:

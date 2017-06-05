@@ -161,7 +161,7 @@ class TC_GAME_API UnitAI
         Unit* SelectTarget(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 
-        virtual void sGossipHello(Player* player) {}
+        virtual void GossipHello(Player* player) {}
         virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
         virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
         virtual void sQuestAccept(Player* player, Quest const* quest) {}

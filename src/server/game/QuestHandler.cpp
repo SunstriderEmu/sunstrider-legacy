@@ -88,7 +88,7 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
     _player->PrepareGossipMenu(pCreature, _player->GetDefaultGossipMenuForSource(pCreature), true);
     _player->SendPreparedGossip(pCreature);
     
-    pCreature->AI()->sGossipHello(_player);
+    pCreature->AI()->GossipHello(_player);
 }
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )

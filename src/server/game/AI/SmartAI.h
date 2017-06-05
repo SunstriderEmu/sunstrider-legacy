@@ -160,7 +160,7 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
-        void sGossipHello(Player* player) override;
+        void GossipHello(Player* player) override;
         void sGossipSelect(Player* player, uint32 sender, uint32 action) override;
         void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
         void sQuestAccept(Player* player, Quest const* quest) override;

@@ -353,11 +353,11 @@ int32 UpdateFieldsDebug::GetBaseIndex(TypeID type, uint32 index)
         case PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT: return PLAYER_FIELD_MOD_MANA_REGEN_INTERRUPT;
         case PLAYER_FIELD_MAX_LEVEL: return PLAYER_FIELD_MAX_LEVEL;
         case PLAYER_FIELD_DAILY_QUESTS_1: return PLAYER_FIELD_DAILY_QUESTS_1;
+        default: 
+            //if we got here, index is not yet a base index
+            //search recursively in previous indexes
+            return GetBaseIndex(type, index - 1);
     }
-
-    //if we got here, index is not yet a base index
-    //search recursively in previous indexes
-    return GetBaseIndex(type, index - 1);
 }
 
 bool UpdateFieldsDebug::GetFieldNameString(TypeID type, uint32 index, std::string& str)
@@ -1169,6 +1169,7 @@ UpdateFieldsDebug::UpdateFieldType UpdateFieldsDebug::GetUpdateFieldType(TypeID 
     return UPDATE_FIELD_TYPE_UNKNOWN;
 }
 
+//FIXME: not working for float values
 uint32 UpdateFieldsDebug::InsertFieldInStream(TypeID type, uint32 index, std::vector<uint32> const& values, std::stringstream& stream)
 {
     if (index >= values.size())

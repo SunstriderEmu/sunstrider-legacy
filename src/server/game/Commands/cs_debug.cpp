@@ -6,6 +6,7 @@
 #include "ChannelMgr.h"
 #include "GossipDef.h"
 
+//FIXME: not working for float values
 void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
 {
     uint32 valuesCount = target->GetValuesCount();
@@ -809,7 +810,7 @@ bool ChatHandler::HandleDebugGetValueCommand(const char* args)
     }
 
     std::vector<uint32> values;
-    FillSnapshotValues(target, values);
+    FillSnapshotValues(target, values); //todo: no need to fill this for all values
 
     TypeID type = TypeID(target->GetTypeId());
     std::string fieldName = "[UNKNOWN]";
