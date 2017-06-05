@@ -1616,58 +1616,42 @@ struct SmartScriptHolder
 
 typedef std::unordered_map<uint32, std::shared_ptr<WayPoint>> WPPath;
 
-typedef std::list<WorldObject*> ObjectList;
-class ObjectGuidList
+typedef std::vector<WorldObject*> ObjectVector;
+
+class ObjectGuidVector
 {
-    ObjectList* m_objectList;
-    GuidList* m_guidList;
-    WorldObject* m_baseObject;
 
 public:
-    ObjectGuidList(ObjectList* objectList, WorldObject* baseObject)
+    explicit ObjectGuidVector(ObjectVector const& objectVector)
     {
-        ASSERT(objectList != NULL);
-        m_objectList = objectList;
-        m_baseObject = baseObject;
-        m_guidList = new GuidList();
-
-        for (auto & itr : *objectList)
-        {
-            m_guidList->push_back(itr->GetGUID());
-        }
+        _guidVector.reserve(_objectVector.size());
+        for (WorldObject* obj : _objectVector)
+            _guidVector.push_back(obj->GetGUID());
     }
 
-    ObjectList* GetObjectList()
+    ObjectVector const* GetObjectVector(WorldObject const& ref) const
     {
-        if (m_baseObject)
-        {
-            //sanitize list using m_guidList
-            m_objectList->clear();
-
-            for (uint64 & itr : *m_guidList)
-            {
-                if(WorldObject* obj = ObjectAccessor::GetWorldObject(*m_baseObject, itr))
-                    m_objectList->push_back(obj);
-                else
-                    TC_LOG_ERROR("scripts.ai", "SmartScript::mTargetStorage stores a guid to an invalid object: " UI64FMTD, itr);
-            }
-        }
-
-        return m_objectList;
+        UpdateObjects(ref);
+        return &_objectVector;
     }
 
-    bool Equals(ObjectList* objectList)
+    ~ObjectGuidVector() {}
+
+private:
+    //sanitize vector using _guidVector
+    void UpdateObjects(WorldObject const& ref) const
     {
-        return m_objectList == objectList;
+        _objectVector.clear();
+
+        for (uint64 const& guid : _guidVector)
+            if (WorldObject* obj = ObjectAccessor::GetWorldObject(ref, guid))
+                _objectVector.push_back(obj);
     }
 
-    ~ObjectGuidList()
-    {
-        delete m_objectList;
-        delete m_guidList;
-    }
+    GuidVector _guidVector;
+    mutable ObjectVector _objectVector;
 };
-typedef  std::unordered_map<uint32, ObjectGuidList*> ObjectListMap;
+typedef std::unordered_map<uint32, ObjectGuidVector> ObjectVectorMap;
 
 class TC_GAME_API SmartWaypointMgr
 {

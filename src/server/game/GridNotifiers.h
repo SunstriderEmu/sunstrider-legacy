@@ -184,6 +184,31 @@ namespace Trinity
 
     // WorldObject searchers & workers
 
+    // Generic base class to insert elements into arbitrary containers using push_back
+    template<typename Type>
+    class ContainerInserter {
+        using InserterType = void(*)(void*, Type&&);
+
+        void* ref;
+        InserterType inserter;
+
+        // MSVC workaround
+        template<typename T>
+        static void InserterOf(void* ref, Type&& type)
+        {
+            static_cast<T*>(ref)->push_back(std::move(type));
+        }
+
+    protected:
+        template<typename T>
+        ContainerInserter(T& ref_) : ref(&ref_), inserter(&InserterOf<T>) { }
+
+        void Insert(Type type)
+        {
+            inserter(ref, std::move(type));
+        }
+    };
+
     template<class Check>
         struct WorldObjectSearcher
     {
@@ -224,16 +249,17 @@ namespace Trinity
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
 
-template<class Check>
-        struct WorldObjectListSearcher
+    template<class Check>
+    struct WorldObjectListSearcher : ContainerInserter<WorldObject*>
     {
         uint32 i_mapTypeMask;
         uint32 i_phaseMask; //not used yet
-        std::list<WorldObject*> &i_objects;
         Check& i_check;
 
-        WorldObjectListSearcher(WorldObject const* searcher, std::list<WorldObject*> &objects, Check & check, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) : 
-            i_objects(objects), i_phaseMask(searcher->GetPhaseMask()), i_check(check),i_mapTypeMask(mapTypeMask) {}
+        template<typename Container>
+        WorldObjectListSearcher(WorldObject const* searcher, Container& container, Check & check, uint32 mapTypeMask = GRID_MAP_TYPE_MASK_ALL) :
+            ContainerInserter<WorldObject*>(container),
+            i_phaseMask(searcher->GetPhaseMask()), i_check(check), i_mapTypeMask(mapTypeMask) {}
 
         void Visit(PlayerMapType &m);
         void Visit(CreatureMapType &m);

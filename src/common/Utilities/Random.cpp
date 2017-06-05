@@ -76,6 +76,12 @@ double rand_chance()
     return GetRng()->Random() * 100.0;
 }
 
+uint32 urandweighted(size_t count, double const* chances)
+{
+    std::discrete_distribution<uint32> dd(chances, chances + count);
+    return dd(SFMTEngine::Instance());
+}
+
 SFMTEngine& SFMTEngine::Instance()
 {
     static SFMTEngine engine;

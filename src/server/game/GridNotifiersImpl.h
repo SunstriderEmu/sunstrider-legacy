@@ -320,9 +320,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for(auto & itr : m)
+    for(auto& itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -333,7 +333,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -344,7 +344,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -355,7 +355,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -366,7 +366,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 // Gameobject searchers

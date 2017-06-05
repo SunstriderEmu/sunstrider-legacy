@@ -1317,7 +1317,7 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
                     if ((*j)->IsAffectedOnSpell(m_spellInfo))
                         maxTargets += (*j)->GetAmount();
 #endif
-                Trinity::Containers::RandomResizeList(targets, maxTargets);
+                Trinity::Containers::RandomResize(targets, maxTargets);
             }
 
             for (auto & target : targets)
@@ -1411,7 +1411,7 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
                 if ((*j)->IsAffectedOnSpell(m_spellInfo))
                     maxTargets += (*j)->GetAmount();
 #endif
-            Trinity::Containers::RandomResizeList(targets, maxTargets);
+            Trinity::Containers::RandomResize(targets, maxTargets);
         }
 
         for (auto & target : targets)
@@ -2051,7 +2051,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
     // xinef: if we have select category nearby and checktype entry, select random of what we have, not by distance
     if (selectCategory == TARGET_SELECT_CATEGORY_NEARBY && selectType == TARGET_CHECK_ENTRY)
     {
-        Trinity::Containers::RandomResizeList(tempTargets, chainTargets);
+        Trinity::Containers::RandomResize(tempTargets, chainTargets);
         targets = tempTargets;
         return;
     }
@@ -3022,7 +3022,7 @@ void Spell::SetTargetMap(uint32 i, uint32 cur)
                     if(unitList.size() > 1)
                         unitList.remove(m_caster->GetVictim());
                 }
-                Trinity::Containers::RandomResizeList(unitList, m_spellValue->MaxAffectedTargets);
+                Trinity::Containers::RandomResize(unitList, m_spellValue->MaxAffectedTargets);
             }
             else if (m_spellInfo->Id == 27285)  // Seed of Corruption proc spell
                 unitList.remove(m_targets.GetUnitTarget());

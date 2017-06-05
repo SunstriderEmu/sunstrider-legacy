@@ -1944,7 +1944,7 @@ Player* Group::GetRandomMember()
         players.push_back(player);
     }
     
-    Trinity::Containers::RandomResizeList(players, 1);
+    Trinity::Containers::RandomResize(players, 1);
     
     return players.front();
 }
