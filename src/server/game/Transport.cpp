@@ -613,7 +613,7 @@ void MotionTransport::DelayedTeleportTransport()
             float destX, destY, destZ, destO;
             obj->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
             TransportBase::CalculatePassengerPosition(destX, destY, destZ, &destO, x, y, z, o);
-            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT))
+            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | TELE_TO_TRANSPORT_TELEPORT))
                 _passengers.erase(obj);
         }
         break;

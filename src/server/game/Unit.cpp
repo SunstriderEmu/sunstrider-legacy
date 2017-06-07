@@ -11276,7 +11276,7 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
 #endif
     };
 
-    if (Player* playerMover = GetPlayerMover()) // unit controlled by a player.
+    if (Player* playerMover = GetPlayerBeingMoved()) // unit controlled by a player.
     {
         // Send notification to self. this packet is only sent to one client (the client of the player concerned by the change).
         WorldPacket self;
@@ -12961,16 +12961,16 @@ void CharmInfo::SetPetNumber(uint32 petnumber, bool statwindow)
         m_unit->SetUInt32Value(UNIT_FIELD_PETNUMBER, 0);
 }
 
-Unit* Unit::GetMover() const
+Unit* Unit::GetUnitBeingMoved() const
 {
     if (Player const* player = ToPlayer())
         return player->m_unitMovedByMe;
     return nullptr;
 }
 
-Player* Unit::GetPlayerMover() const
+Player* Unit::GetPlayerBeingMoved() const
 {
-    if (Unit* mover = GetMover())
+    if (Unit* mover = GetUnitBeingMoved())
         return mover->ToPlayer();
     return nullptr;
 }
@@ -15508,6 +15508,15 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
     return result;
 }
 
+TransportBase* Unit::GetDirectTransport() const
+{
+#ifdef LICH_KING
+    if (Vehicle* veh = GetVehicle())
+        return veh;
+#endif
+    return GetTransport();
+}
+
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
 	Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
@@ -15654,22 +15663,46 @@ void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
     }
 }
 
-void Unit::SendTeleportPacket(Position const& pos)
+void Unit::SendTeleportPacket(Position const& pos, bool teleportingTransport /*= false*/)
 {
-	Position oldPos = { GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation() };
-	//for units, temporary relocate to given position for BuildMovementPacket to send the correct position
-	if (GetTypeId() == TYPEID_UNIT)
-		Relocate(&pos);
+    // MSG_MOVE_TELEPORT is sent to nearby players to signal the teleport
+    // MSG_MOVE_TELEPORT_ACK is sent to self in order to trigger ACK and update the position server side
 
-	WorldPacket data(MSG_MOVE_TELEPORT, 38);
-	data << GetPackGUID();
-	BuildMovementPacket(&data);
-	if (GetTypeId() == TYPEID_UNIT)
-		Relocate(&oldPos);
-	if (GetTypeId() == TYPEID_PLAYER)
-		Relocate(&pos);
+    MovementInfo teleportMovementInfo = m_movementInfo;
+    teleportMovementInfo.pos.Relocate(pos);
+    Position transportPos = m_movementInfo.transport.pos;
+    if (TransportBase* transportBase = GetDirectTransport())
+    {
+        // if its the transport that is teleported then we have old transport position here and cannot use it to calculate offsets
+        // assume that both transport teleport and teleport within transport cannot happen at the same time
+        if (!teleportingTransport)
+        {
+            float x, y, z, o;
+            pos.GetPosition(x, y, z, o);
+            transportBase->CalculatePassengerOffset(x, y, z, &o);
+            transportPos.Relocate(x, y, z, o);
+        }
+    }
 
-	SendMessageToSet(&data, false);
+	WorldPacket moveUpdateTeleport(MSG_MOVE_TELEPORT, 38);
+    moveUpdateTeleport << GetPackGUID();
+    Unit* broadcastSource = this;
+
+    if (Player* playerMover = GetPlayerBeingMoved())
+    {
+        WorldPacket moveTeleport(MSG_MOVE_TELEPORT_ACK, 41);
+        moveTeleport << GetPackGUID();
+        moveTeleport << uint32(0);                                     // this value increments every time
+        Unit::BuildMovementPacket(pos, transportPos, teleportMovementInfo, &moveTeleport);
+        playerMover->SendDirectMessage(&moveTeleport);
+
+        broadcastSource = playerMover;
+    }
+
+    Unit::BuildMovementPacket(pos, transportPos, teleportMovementInfo, &moveUpdateTeleport);
+
+    // Broadcast the packet to everyone except self.
+    broadcastSource->SendMessageToSet(&moveUpdateTeleport, false);
 }
 
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)

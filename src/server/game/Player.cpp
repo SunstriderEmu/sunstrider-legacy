@@ -1893,7 +1893,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 #endif
 			Relocate(x, y, z, orientation);
             SendTeleportAckPacket();
-			SendTeleportPacket(oldPos); // this automatically relocates to oldPos in order to broadcast the packet in the right place
+			SendTeleportPacket(oldPos, (options & TELE_TO_TRANSPORT_TELEPORT) != 0); // this automatically relocates to oldPos in order to broadcast the packet in the right place
 
             if (!IsWithinDist3d(x, y, z, GetMap()->GetVisibilityRange()))
                 RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED);
@@ -4221,9 +4221,9 @@ void Player::SetMovement(PlayerMovementType pType)
     data << uint32(0);
     
     /* Should we also send it to mover? Or does the target session broadcast the change itself later?
-    if (GetMover() && GetMover()->GetTypeId() == TYPEID_PLAYER)
+    if (GetUnitBeingMoved() && GetUnitBeingMoved()->GetTypeId() == TYPEID_PLAYER)
     {
-         Player* pMover = (Player*)GetMover();
+         Player* pMover = (Player*)GetUnitBeingMoved();
          if (pMover != this)
              pMover->GetSession()->SendPacket(data);
     }

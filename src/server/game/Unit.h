@@ -24,6 +24,7 @@ class Aura;
 class TempSummon;
 class Guardian;
 class Minion;
+class TransportBase;
 
 #define WORLD_TRIGGER   12999
 
@@ -1524,7 +1525,7 @@ class TC_GAME_API Unit : public WorldObject
         Position GetLeapPosition(float dist);
 		void NearTeleportTo(Position const& pos, bool casting = false);
 		void NearTeleportTo(float x, float y, float z, float orientation, bool casting = false) { NearTeleportTo(Position(x, y, z, orientation), casting); }
-        void SendTeleportPacket(Position const& pos);
+        void SendTeleportPacket(Position const& pos, bool teleportingTransport = false);
         virtual bool UpdatePosition(float x, float y, float z, float ang, bool teleport = false);
         // returns true if unit's position really changed
         virtual bool UpdatePosition(const Position &pos, bool teleport = false);
@@ -1626,8 +1627,13 @@ class TC_GAME_API Unit : public WorldObject
         CharmInfo* InitCharmInfo();
         void       DeleteCharmInfo();
         void UpdateCharmAI();
-        Unit* GetMover() const;
-        Player* GetPlayerMover() const;
+        // returns the unit that this player IS CONTROLLING
+        Unit* GetUnitBeingMoved() const;
+        // returns the player that this player IS CONTROLLING
+        Player* GetPlayerBeingMoved() const;
+        // returns the player that this unit is BEING CONTROLLED BY
+        Player* GetPlayerMovingMe() const { return m_playerMovingMe; }
+        // only set for direct client control (possess effects, vehicles and similar)
         Player* m_playerMovingMe;
         SharedVisionList const& GetSharedVisionList() { return m_sharedVision; }
         void AddPlayerToVision(Player* plr);
@@ -1829,6 +1835,8 @@ class TC_GAME_API Unit : public WorldObject
         void _ExitVehicle(Position const* exitPosition = NULL);
         void _EnterVehicle(Vehicle* vehicle, int8 seatId, AuraApplication const* aurApp = NULL);
 #endif
+        /// Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
+        TransportBase* GetDirectTransport() const;
 
         void BuildMovementPacket(ByteBuffer *data) const;
 		static void BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data);

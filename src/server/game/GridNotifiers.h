@@ -16,22 +16,6 @@
 
 namespace Trinity
 {
-	/*
-    struct TC_GAME_API PlayerVisibilityNotifier
-    {
-        Player &i_player;
-        UpdateData i_data;
-        Player::ClientGUIDs i_clientGUIDs;
-        std::set<WorldObject*> i_visibleNow;
-
-        PlayerVisibilityNotifier(Player &player) : i_player(player),i_clientGUIDs(player.m_clientGUIDs) {}
-
-        template<class T> inline void Visit(GridRefManager<T> &);
-
-        void Notify(void);
-    };
-	*/
-
 	struct TC_GAME_API VisibleNotifier
 	{
 		Player &i_player;
@@ -87,7 +71,7 @@ namespace Trinity
 	};
 
 	struct TC_GAME_API AIRelocationNotifier
-	{
+	{ 
 		Unit &i_unit;
 		bool isCreature;
 		explicit AIRelocationNotifier(Unit &unit) : i_unit(unit), isCreature(unit.GetTypeId() == TYPEID_UNIT) { }
@@ -210,7 +194,7 @@ namespace Trinity
     };
 
     template<class Check>
-        struct WorldObjectSearcher
+    struct WorldObjectSearcher
     {
         uint32 i_mapTypeMask;
         uint32 i_phaseMask; //Not yet used
@@ -271,7 +255,7 @@ namespace Trinity
     };
 
     template<class Do>
-        struct WorldObjectWorker
+    struct WorldObjectWorker
     {
         Do const& i_do;
 
@@ -312,7 +296,7 @@ namespace Trinity
     // Gameobject searchers
 
     template<class Check>
-        struct GameObjectSearcher
+    struct GameObjectSearcher
     {
         GameObject* &i_object;
         Check &i_check;
