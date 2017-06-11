@@ -1484,7 +1484,6 @@ class TC_GAME_API Unit : public WorldObject
 
         virtual bool IsInWater() const;
         virtual bool IsUnderWater() const;
-        virtual void UpdateUnderwaterState(Map* m, float x, float y, float z);
         bool isInAccessiblePlaceFor(Creature const* c) const;
         
         void SetFullTauntImmunity(bool apply);
@@ -1535,6 +1534,9 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateSplineMovement(uint32 t_diff);
         void UpdateSplinePosition();
         void DisableSpline();
+
+        void ProcessPositionDataChanged(PositionFullTerrainStatus const& data) override;
+        virtual void ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData);
 
 		bool IsAlwaysVisibleFor(WorldObject const* seer) const override;
 		bool IsAlwaysDetectableFor(WorldObject const* seer) const override;
@@ -2161,13 +2163,6 @@ class TC_GAME_API Unit : public WorldObject
         void old_TextEmote(int32 textId, uint64 TargetGuid, bool IsBossEmote = false);
         void old_Whisper(int32 textId, uint64 receiver, bool IsBossWhisper = false);
 
-        // update m_last_isunderwater_status 
-        void UpdateEnvironmentIfNeeded(const uint8 option);
-
-        Position m_last_environment_position;
-        bool m_last_isinwater_status;
-        bool m_last_isunderwater_status;
-        bool m_is_updating_environment;
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2175,6 +2170,9 @@ class TC_GAME_API Unit : public WorldObject
 
         UnitAI* i_AI;
         UnitAI* i_disabledAI;
+
+        bool _is_in_water_status;
+        bool m_last_isunderwater_status;
 
         void _UpdateSpells(uint32 time);
         void _DeleteAuras();

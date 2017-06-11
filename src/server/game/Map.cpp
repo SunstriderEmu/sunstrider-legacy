@@ -1039,6 +1039,7 @@ void Map::PlayerRelocation(Player *player, float x, float y, float z, float orie
 		AddToGrid(player, new_cell);
     }
 
+    player->UpdatePositionData();
 	player->UpdateObjectVisibility(false);
 }
 
@@ -1065,6 +1066,7 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
         if (creature->IsVehicle())
             creature->GetVehicleKit()->RelocatePassengers();
 #endif
+        creature->UpdatePositionData();
 		creature->UpdateObjectVisibility(false);
 		RemoveCreatureFromMoveList(creature);
     }
@@ -1091,6 +1093,7 @@ void Map::GameObjectRelocation(GameObject* go, float x, float y, float z, float 
     {
         go->Relocate(x, y, z, ang);
         go->UpdateModelPosition();
+        go->UpdatePositionData();
 		go->UpdateObjectVisibility(false);
 		RemoveGameObjectFromMoveList(go);
     }
@@ -1121,6 +1124,7 @@ void Map::DynamicObjectRelocation(DynamicObject* dynObj, float x, float y, float
 	else
 	{
 		dynObj->Relocate(x, y, z, orientation);
+        dynObj->UpdatePositionData();
 		dynObj->UpdateObjectVisibility(false);
 		RemoveDynamicObjectFromMoveList(dynObj);
 	}
@@ -1219,6 +1223,7 @@ void Map::MoveAllCreaturesInMoveList()
 		if (c->IsVehicle())
 			c->GetVehicleKit()->RelocatePassengers();
 #endif
+            c->UpdatePositionData();
 			c->UpdateObjectVisibility(false);
         }
         else
@@ -1270,6 +1275,7 @@ void Map::MoveAllGameObjectsInMoveList()
             // update pos
 			go->Relocate(go->_newPosition);
             go->UpdateModelPosition();
+            go->UpdatePositionData();
             UpdateObjectVisibility(go,new_cell,new_val);
         }
         else
@@ -1316,8 +1322,8 @@ void Map::MoveAllDynamicObjectsInMoveList()
 		{
 			// update pos
 			dynObj->Relocate(dynObj->_newPosition);
-			//dynObj->UpdateObjectVisibility(false);
-			UpdateObjectVisibility(dynObj, new_cell, new_val);
+            dynObj->UpdatePositionData();
+			dynObj->UpdateObjectVisibility(false);
 		}
 		else
 		{
@@ -1523,6 +1529,7 @@ bool Map::CreatureRespawnRelocation(Creature *c, bool diffGridOnly)
         c->Relocate(resp_x, resp_y, resp_z, resp_o);
         c->GetMotionMaster()->Initialize();                 // prevent possible problems with default move generators
         //CreatureRelocationNotify(c,resp_cell,resp_cell.GetCellCoord());
+        c->UpdatePositionData();
 		c->UpdateObjectVisibility(false);
         return true;
     }
@@ -1549,6 +1556,7 @@ bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
     if(GameObjectCellRelocation(go,resp_cell))
     {
         go->Relocate(resp_x, resp_y, resp_z, resp_o);
+        go->UpdatePositionData();
         UpdateObjectVisibility(go,resp_cell,resp_val);
         return true;
     }
@@ -1658,8 +1666,16 @@ float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NU
 
         LiquidData liquid_status;
 
-        ZLiquidStatus res = getLiquidStatus(x, y, ground_z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
-        return res ? liquid_status.level : ground_z;
+        ZLiquidStatus res = GetLiquidStatus(x, y, ground_z, MAP_ALL_LIQUIDS, &liquid_status);
+        switch (res)
+        {
+        case LIQUID_MAP_ABOVE_WATER:
+            return std::max<float>(liquid_status.level, ground_z);
+        case LIQUID_MAP_NO_WATER:
+            return ground_z;
+        default:
+            return liquid_status.level;
+        }
     }
 
     return INVALID_HEIGHT;
@@ -1915,25 +1931,57 @@ uint8 Map::GetTerrainType(float x, float y) const
         return 0;
 }
 
-ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, LiquidData* data) const
+ZLiquidStatus Map::GetLiquidStatus(float x, float y, float z, uint8 reqLiquidTypeMask, LiquidData* data) const
 {
     ZLiquidStatus result = LIQUID_MAP_NO_WATER;
     VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
     float liquid_level = INVALID_HEIGHT;
     float ground_level = INVALID_HEIGHT;
-    BaseLiquidType baseLiquidType = BASE_LIQUID_TYPE_NO_WATER;
-    if (vmgr->GetLiquidLevel(GetId(), x, y, z, reqBaseLiquidTypeMask, liquid_level, ground_level, baseLiquidType))
+    LiquidType liquid_type = LIQUID_TYPE_NO_WATER;
+    if (vmgr->GetLiquidLevel(GetId(), x, y, z, reqLiquidTypeMask, liquid_level, ground_level, liquid_type))
     {
-        TC_LOG_DEBUG("maps", "getLiquidStatus(): vmap liquid level: %f ground: %f base liquid type: %u", liquid_level, ground_level, uint32(baseLiquidType));
+        TC_LOG_DEBUG("maps", "GetLiquidStatus(): vmap liquid level: %f ground: %f base liquid type: %u", liquid_level, ground_level, uint32(liquid_type));
         // Check water level and ground level
         if (liquid_level > ground_level && z > ground_level - 2)
         {
             // All ok in water -> store data
             if (data)
             {
+#ifdef LICH_KING
+                // hardcoded in client like this
+                // sunstrider: What? Ocean water on Outland map is Green Lava? Does that make sense?
+                if (GetId() == 530 && liquid_type == 2)
+                    liquid_type = 15;
+#endif
+
+                uint32 liquidFlagType = 0;
+                if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(liquid_type))
+                    liquidFlagType = liq->GetType();
+
+                if (liquid_type && liquid_type < LIQUID_TYPE_NAXXRAMAS_SLIME) //first special water? No need to check for those
+                {
+                    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(GetAreaId(x, y, z)))
+                    {
+                        LiquidType overrideLiquid = LiquidType(area->LiquidTypeOverride[liquidFlagType]);
+                        if (!overrideLiquid && area->zone)
+                        {
+                            area = sAreaTableStore.LookupEntry(area->zone);
+                            if (area)
+                                overrideLiquid = LiquidType(area->LiquidTypeOverride[liquidFlagType]);
+                        }
+
+                        if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(overrideLiquid))
+                        {
+                            liquid_type = overrideLiquid;
+                            liquidFlagType = liq->GetType();
+                        }
+                    }
+                }
+
                 data->level = liquid_level;
                 data->depth_level = ground_level;
-                data->baseLiquidType = baseLiquidType;
+                data->entry = liquid_type;
+                data->type_flags = GetLiquidFlagsFromType(liquidFlagType);
             }
 
             float delta = liquid_level - z;
@@ -1952,7 +2000,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask
     if (GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y))
     {
         LiquidData map_data;
-        ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, reqBaseLiquidTypeMask, &map_data);
+        ZLiquidStatus map_result = gmap->GetLiquidStatus(x, y, z, reqLiquidTypeMask, &map_data);
         // Not override LIQUID_MAP_ABOVE_WATER with LIQUID_MAP_NO_WATER:
         if (map_result != LIQUID_MAP_NO_WATER && (map_data.level > ground_level))
         {
@@ -1965,6 +2013,108 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask
     }
     return result;
 }
+
+void Map::GetFullTerrainStatusForPosition(float x, float y, float z, PositionFullTerrainStatus& data, uint8 reqLiquidType) const
+{
+    VMAP::IVMapManager* vmgr = VMAP::VMapFactory::createOrGetVMapManager();
+    VMAP::AreaAndLiquidData vmapData;
+    vmgr->getAreaAndLiquidData(GetId(), x, y, z, reqLiquidType, vmapData);
+    if (vmapData.areaInfo)
+        data.areaInfo = boost::in_place(vmapData.areaInfo->adtId, vmapData.areaInfo->rootId, vmapData.areaInfo->groupId, vmapData.areaInfo->mogpFlags);
+
+    GridMap* gmap = const_cast<Map*>(this)->GetGrid(x, y);
+    float mapHeight = gmap->getHeight(x, y);
+
+    // area lookup
+    AreaTableEntry const* areaEntry = nullptr;
+    if (vmapData.areaInfo && (z + 2.0f <= mapHeight || mapHeight <= vmapData.floorZ))
+        if (WMOAreaTableEntry const* wmoEntry = GetWMOAreaTableEntryByTripple(vmapData.areaInfo->rootId, vmapData.areaInfo->adtId, vmapData.areaInfo->groupId))
+            areaEntry = sAreaTableStore.LookupEntry(wmoEntry->areaId);
+
+    if (areaEntry)
+    {
+        data.floorZ = vmapData.floorZ;
+        data.areaId = areaEntry->ID;
+    }
+    else
+    {
+        data.floorZ = mapHeight;
+        if (gmap)
+            data.areaId = gmap->getArea(x, y);
+        else
+            data.areaId = 0;
+
+        if (!data.areaId)
+            data.areaId = i_mapEntry->linked_zone;
+
+        if (data.areaId)
+            areaEntry = sAreaTableStore.LookupEntry(data.areaId);
+    }
+
+    // liquid processing
+    data.liquidStatus = LIQUID_MAP_NO_WATER;
+    if (vmapData.liquidInfo && vmapData.liquidInfo->level > vmapData.floorZ && z + 2.0f > vmapData.floorZ)
+    {
+        uint32 liquidType = vmapData.liquidInfo->type;
+#ifdef LICH_KING
+        if (GetId() == 530 && liquidType == 2) // gotta love blizzard hacks
+            liquidType = 15;
+#endif
+
+        uint32 liquidFlagType = 0;
+        if (LiquidTypeEntry const* liquidData = sLiquidTypeStore.LookupEntry(liquidType))
+            liquidFlagType = liquidData->GetType();
+
+        if (liquidType && liquidType < LIQUID_TYPE_NAXXRAMAS_SLIME && areaEntry)
+        {
+            uint32 overrideLiquid = areaEntry->LiquidTypeOverride[liquidFlagType];
+            if (!overrideLiquid && areaEntry->zone)
+            {
+                AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(areaEntry->zone);
+                if (zoneEntry)
+                    overrideLiquid = zoneEntry->LiquidTypeOverride[liquidFlagType];
+            }
+
+            if (LiquidTypeEntry const* overrideData = sLiquidTypeStore.LookupEntry(overrideLiquid))
+            {
+                liquidType = overrideLiquid;
+                liquidFlagType = overrideData->GetType();
+            }
+        }
+
+        data.liquidInfo = boost::in_place();
+        data.liquidInfo->level = vmapData.liquidInfo->level;
+        data.liquidInfo->depth_level = vmapData.floorZ;
+        data.liquidInfo->entry = liquidType;
+        data.liquidInfo->type_flags = GetLiquidFlagsFromType(liquidFlagType);
+
+        float delta = vmapData.liquidInfo->level - z;
+        if (delta > 2.0f)
+            data.liquidStatus = LIQUID_MAP_UNDER_WATER;
+        else if (delta > 0.0f)
+            data.liquidStatus = LIQUID_MAP_IN_WATER;
+        else if (delta > -0.1f)
+            data.liquidStatus = LIQUID_MAP_WATER_WALK;
+        else
+            data.liquidStatus = LIQUID_MAP_ABOVE_WATER;
+    }
+    // look up liquid data from grid map
+    if (gmap && (data.liquidStatus == LIQUID_MAP_ABOVE_WATER || data.liquidStatus == LIQUID_MAP_NO_WATER))
+    {
+        LiquidData gridMapLiquid;
+        ZLiquidStatus gridMapStatus = gmap->GetLiquidStatus(x, y, z, reqLiquidType, &gridMapLiquid);
+        if (gridMapStatus != LIQUID_MAP_NO_WATER && (gridMapLiquid.level > vmapData.floorZ))
+        {
+#ifdef LICH_KING
+            if (GetId() == 530 && gridMapLiquid.entry == 2)
+                gridMapLiquid.entry = 15;
+#endif
+            data.liquidInfo = gridMapLiquid;
+            data.liquidStatus = gridMapStatus;
+        }
+    }
+}
+
 
 float Map::GetWaterLevel(float x, float y) const
 {
@@ -2006,25 +2156,14 @@ bool Map::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, floa
 
 bool Map::IsInWater(float x, float y, float pZ, LiquidData *data) const
 {
-    // Check surface in x, y point for liquid
-    if (const_cast<Map*>(this)->GetGrid(x, y))
-    {
-        LiquidData liquid_status;
-        LiquidData *liquid_ptr = data ? data : &liquid_status;
-        if (getLiquidStatus(x, y, pZ, BASE_LIQUID_TYPE_MASK_ALL, liquid_ptr) != LIQUID_MAP_NO_WATER)
-            return true;
-    }
-    return false;
+    LiquidData liquid_status;
+    LiquidData *liquid_ptr = data ? data : &liquid_status;
+    return (GetLiquidStatus(x, y, pZ, MAP_ALL_LIQUIDS, liquid_ptr) & (LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER)) != 0;
 }
 
 bool Map::IsUnderWater(float x, float y, float z) const
 {
-    if (const_cast<Map*>(this)->GetGrid(x, y))
-    {
-        if (getLiquidStatus(x, y, z, BaseLiquidTypeMask(BASE_LIQUID_TYPE_MASK_WATER|BASE_LIQUID_TYPE_MASK_OCEAN)) == LIQUID_MAP_UNDER_WATER)
-            return true;
-    }
-    return false;
+    return (GetLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN) & LIQUID_MAP_UNDER_WATER) != 0;
 }
 
 bool Map::CheckGridIntegrity(Creature* c, bool moved) const

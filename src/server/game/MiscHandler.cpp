@@ -749,7 +749,11 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
             {
                 WorldPacket data(SMSG_RAID_GROUP_ONLY, 4 + 4);
                 data << uint32(0);
+#ifdef LICH_KING
                 data << uint32(2); // You must be in a raid group to enter this instance.
+#else
+                data << uint32(1); // You must be in a raid group to enter this instance.
+#endif
                 pl->GetSession()->SendPacket(&data);
                 TC_LOG_DEBUG("maps", "MAP: Player '%s' must be in a raid group to enter instance map %d", pl->GetName().c_str(), at->target_mapId);
                 reviveAtTrigger = true;

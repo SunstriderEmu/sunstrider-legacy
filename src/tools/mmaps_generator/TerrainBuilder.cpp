@@ -8,6 +8,7 @@
 #include "MapTree.h"
 #include "ModelInstance.h"
 #include "MapDefines.h"
+#include "WaterDefines.h"
 
 // ******************************************
 // Map file format defines
@@ -39,9 +40,6 @@ struct map_heightHeader
     float  gridMaxHeight;
 };
 
-#define MAP_LIQUID_NO_TYPE    0x0001
-#define MAP_LIQUID_NO_HEIGHT  0x0002
-
 struct map_liquidHeader
 {
     uint32 fourcc;
@@ -53,14 +51,6 @@ struct map_liquidHeader
     uint8  height;
     float  liquidLevel;
 };
-
-#define MAP_LIQUID_TYPE_NO_WATER    0x00
-#define MAP_LIQUID_TYPE_WATER       0x01
-#define MAP_LIQUID_TYPE_OCEAN       0x02
-#define MAP_LIQUID_TYPE_MAGMA       0x04
-#define MAP_LIQUID_TYPE_SLIME       0x08
-#define MAP_LIQUID_TYPE_DARK_WATER  0x10
-#define MAP_LIQUID_TYPE_WMO_WATER   0x20
 
 namespace MMAP
 {
@@ -215,10 +205,18 @@ namespace MMAP
             // hole data
             if (fheader.holesSize != 0)
             {
-                memset(holes, 0, fheader.holesSize);
-                fseek(mapFile, fheader.holesOffset, SEEK_SET);
-                if (fread(holes, fheader.holesSize, 1, mapFile) != 1)
-                    printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
+                //sunstrider: extra check. Is my game corrupted?
+                if (fheader.holesSize > sizeof(holes))
+                {
+                    //why? 
+                    printf("TerrainBuilder::loadMap: tile has more than 16*16 holes? Found %u\n", fheader.holesSize);
+                }
+                else {
+                    memset(holes, 0, fheader.holesSize);
+                    fseek(mapFile, fheader.holesOffset, SEEK_SET);
+                    if (fread(holes, fheader.holesSize, 1, mapFile) != 1)
+                        printf("TerrainBuilder::loadMap: Failed to read some data expected 1, read 0\n");
+                }
             }
 
             int count = meshData.solidVerts.size() / 3;
@@ -695,19 +693,21 @@ namespace MMAP
                         uint8 type = NAV_EMPTY;
 
                         // convert liquid type to NavTerrain
+#ifdef LICH_KING
+                        switch (liquid->GetType() & 3) 
+                        //this is needed on LK because wmo get liquid type such as : 13 14 17 19 20. On BC we got classic water types (1 to 4)
+#else
                         switch (liquid->GetType())
-						/*TC LK:   switch (liquid->GetType() & 3) //see https://github.com/TrinityCore/TrinityCore/commit/0df0cb30ca9de2015ec774e50bb69337382576d3#diff-b88fe5175081c03d6a63f61527e39f42L713
-						We shouldn't need this for BC
-						*/
+#endif
                         {
-                        case WMO_LIQUID_TYPE_WATER:
-                        case WMO_LIQUID_TYPE_OCEAN:
+                        case LIQUID_TYPE_WATER:
+                        case LIQUID_TYPE_OCEAN:
                             type = NAV_WATER;
                             break;
-                        case WMO_LIQUID_TYPE_LAVA:
+                        case LIQUID_TYPE_MAGMA:
                             type = NAV_MAGMA;
                             break;
-                        case WMO_LIQUID_TYPE_SLIME:
+                        case LIQUID_TYPE_SLIME:
                             type = NAV_SLIME;
                             break;
                         }

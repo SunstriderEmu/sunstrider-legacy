@@ -7068,33 +7068,17 @@ void Spell::EffectTransmitted(uint32 effIndex)
     {
         LiquidData liqData;
         uint32 area_id = m_caster->GetAreaId();
-        // Hack for SSC
-        if (area_id != 3607)
-        {
-            ZLiquidStatus status = cMap->getLiquidStatus(fx, fy, fz + 1.0f, BaseLiquidTypeMask(BASE_LIQUID_TYPE_MASK_WATER|BASE_LIQUID_TYPE_MASK_OCEAN),&liqData);
-            if(status == LIQUID_MAP_NO_WATER)
-               if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
+        ZLiquidStatus status = cMap->GetLiquidStatus(fx, fy, fz + 1.0f, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN, &liqData);
+        if(status == LIQUID_MAP_NO_WATER)
+            if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole
             { // but this is not proper, we really need to ignore not materialized objects
                 SendCastResult(SPELL_FAILED_NOT_HERE);
                 SendChannelUpdate(0);
                 return;
             }
 
-            // replace by water level in this case
-            fz = liqData.level;
-        }
-        else
-        {
-            GameObject* gob = m_caster->FindNearestGameObject(184956, 20.0f);
-            if (!gob)
-            {
-                SendCastResult(SPELL_FAILED_NOT_HERE);
-                SendChannelUpdate(0);
-                return;
-            }
-            // Hack for SSC
-            fz = -20.0f;
-        }
+        // replace by water level in this case
+        fz = liqData.level;
         
     }
     // if gameobject is summoning object, it should be spawned right on caster's position

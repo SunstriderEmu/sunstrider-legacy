@@ -1,82 +1,56 @@
 
-#ifndef TRINITYCORE_WATER_DEFINES_H
-#define TRINITYCORE_WATER_DEFINES_H
+#ifndef SUNSTRIDER_WATER_DEFINES_H
+#define SUNSTRIDER_WATER_DEFINES_H
 
 /*
 Some data around Liquid types
 
-LiquidType has the following entries which are currently never used:
-    NAXXRAMAS_SLIME = 21,
-    COILFANG_RAID_WATER = 41,
-    HYJAL_PAST_WATER = 61, 
+On BC Map water and WMO waters use the same types. Values are indexes off LiquidType DBC. 99,9% of places use values between 1 and 4, but there are some special waters with spells, listed in LiquidType
 
-The WMO liquid type field has :
-Stormwind water = 5
-Orgrimmar water = 5
-slaves pen water = 5
-azshara building water = 5
-ironforge water = 5
-ironforge lava = 7
-blackrock lava (outside instance) = 7
-molten core = 7
-naxxramas slime = 8
-undercity slime = 4 (this one is not supposed to make damage so I guess it's supposed to be different)
+Example values on BC :
+1 (water) : Shattrath
+2 (ocean) : any ?
+3 (lava) : Iron Forge and Lava Dunegon
+4 (slime) : Undercity and "World\\wmo\\Outland\\Shadowmoon\\Slagpit\\Shadowmoon_Slagpit01.wmo"
 
-The maps have the following values :
-booty bay water = 2
-Dark water = 18
-Hyjal water under the tree = 1
-Rivers/lakes in strangletorn = 1
+There are also some infos here: http://www.pxr.dk/wowdev/wiki/index.php?title=WMO/v17#MLIQ_chunk
+Most of it isn't for BC though
 
-So we have the following problems with current implementations :
-- The special LiquidType entries are never used. Water from Hyjal or Naxx don't seems to have any special values so I don't know how we're supposed to used them.
-- The dark water with 18 seems to indicate another problem, there is a hack around this atm
-
-There are also some research here that may give some ideas but it doesn't seem to apply to BC : http://www.pxr.dk/wowdev/wiki/index.php?title=WMO/v17#MLIQ_chunk
-Or maybe it's just plain wrong.
-Also there are flags in the MCLQ we currently don't use, I've not searched much on this side yet (I can just tell you that in the hyjal water it's still = 1, so I've no great hope).
+MAP_LIQUID_VALUES are not client files values but values stored by the extractors
 */
 
-enum BaseLiquidType
+enum LiquidType
 {
-    BASE_LIQUID_TYPE_NO_WATER = 0,
-    BASE_LIQUID_TYPE_WATER = 1,
-    BASE_LIQUID_TYPE_OCEAN = 2,
-    BASE_LIQUID_TYPE_MAGMA = 3,
-    BASE_LIQUID_TYPE_SLIME = 4,
-    BASE_LIQUID_TYPE_DARK_WATER = 5,
+    LIQUID_TYPE_NO_WATER = 0,
+    LIQUID_TYPE_WATER = 1,
+    LIQUID_TYPE_OCEAN = 2,
+    LIQUID_TYPE_MAGMA = 3,
+    LIQUID_TYPE_SLIME = 4,
+
+    //those next ones are only present in area table liquid overrides and are associated with spells
+    LIQUID_TYPE_NAXXRAMAS_SLIME  = 21,
+    LIQUID_TYPE_COILFANG_WATER   = 41,
+    LIQUID_TYPE_HYJAL_PAST_WATER = 61,
 };
 
-enum BaseLiquidTypeMask
-{
-    BASE_LIQUID_TYPE_MASK_NONE  = 0x0,
-    BASE_LIQUID_TYPE_MASK_WATER = 0x1,
-    BASE_LIQUID_TYPE_MASK_OCEAN = 0x2,
-    BASE_LIQUID_TYPE_MASK_MAGMA = 0x4,
-    BASE_LIQUID_TYPE_MASK_SLIME = 0x8,
-    BASE_LIQUID_TYPE_MASK_DARK_WATER = 0x10,
+#define MAP_LIQUID_STATUS_SWIMMING (LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER)
+#define MAP_LIQUID_STATUS_IN_CONTACT (MAP_LIQUID_STATUS_SWIMMING | LIQUID_MAP_WATER_WALK)
 
-    BASE_LIQUID_TYPE_MASK_ALL = (BASE_LIQUID_TYPE_MASK_NONE | BASE_LIQUID_TYPE_MASK_WATER | BASE_LIQUID_TYPE_MASK_OCEAN | BASE_LIQUID_TYPE_MASK_MAGMA | BASE_LIQUID_TYPE_MASK_SLIME | BASE_LIQUID_TYPE_MASK_DARK_WATER),
-};
+#define MAP_LIQUID_TYPE_NO_WATER    0x00
+#define MAP_LIQUID_TYPE_WATER       0x01
+#define MAP_LIQUID_TYPE_OCEAN       0x02
+#define MAP_LIQUID_TYPE_MAGMA       0x04
+#define MAP_LIQUID_TYPE_SLIME       0x08
 
-enum MapLiquidType
-{
-    MAP_LIQUID_TYPE_NO_WATER    = 0,
-    MAP_LIQUID_TYPE_WATER       = 1,
-    MAP_LIQUID_TYPE_OCEAN       = 2,
-    MAP_LIQUID_TYPE_MAGMA       = 3,
-    MAP_LIQUID_TYPE_SLIME       = 4,
-    MAP_LIQUID_TYPE_DARK_WATER  = 18, //this is STRANGE
-};
+#define MAP_ALL_LIQUIDS   (MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN | MAP_LIQUID_TYPE_MAGMA | MAP_LIQUID_TYPE_SLIME)
 
-enum WmoLiquidType
-{
-    WMO_LIQUID_TYPE_NO_WATER = 4,
-    WMO_LIQUID_TYPE_WATER = 5,
-    WMO_LIQUID_TYPE_OCEAN = 6, //not sure, this is a guess
-    WMO_LIQUID_TYPE_LAVA = 7,
-    WMO_LIQUID_TYPE_SLIME = 8,
-};
+#define MAP_LIQUID_TYPE_DARK_WATER  0x10
+#ifdef LICH_KING
+#define MAP_LIQUID_TYPE_WMO_WATER   0x20
+#endif
+
+#define MAP_LIQUID_NO_TYPE    0x0001
+#define MAP_LIQUID_NO_HEIGHT  0x0002
 
 enum ZLiquidStatus
 {
@@ -89,9 +63,10 @@ enum ZLiquidStatus
 
 struct LiquidData
 {
-    BaseLiquidType baseLiquidType;
+    uint32 type_flags;
+    uint32 entry;
     float  level;
     float  depth_level;
 };
 
-#endif
+#endif // SUNSTRIDER_WATER_DEFINES_H

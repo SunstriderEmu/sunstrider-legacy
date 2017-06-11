@@ -150,9 +150,8 @@ Unit::Unit(bool isWorldObject)
 IsAIEnabled(false), NeedChangeAI(false), movespline(new Movement::MoveSpline()),
 i_AI(nullptr), i_disabledAI(nullptr), m_removedAurasCount(0), m_procDeep(0), m_unitTypeMask(UNIT_MASK_NONE),
 _lastDamagedTime(0), m_movesplineTimer(0), m_ControlledByPlayer(false), m_miniPet(0), 
-m_last_isinwater_status(false),
+_is_in_water_status(false),
 m_last_isunderwater_status(false),
-m_is_updating_environment(false),
 m_duringRemoveFromWorld(false)
 {
     m_objectType |= TYPEMASK_UNIT;
@@ -253,7 +252,6 @@ m_duringRemoveFromWorld(false)
     _targetLocked = false;
 
     _lastLiquid = nullptr;
-    m_last_environment_position.Relocate(-5000.0f, -5000.0f, -5000.0f, 0.0f);
 
 	m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 }
@@ -345,7 +343,6 @@ void Unit::Update( uint32 p_time )
 
     UpdateSplineMovement(p_time);
     i_motionMaster->UpdateMotion(p_time);
-	UpdateUnderwaterState(GetMap(), GetPositionX(), GetPositionY(), GetPositionZ());
 }
 
 bool Unit::HaveOffhandWeapon() const
@@ -3626,90 +3623,55 @@ bool Unit::isInAccessiblePlaceFor(Creature const* c) const
         return c->CanWalk() || c->CanFly();
 }
 
-//idea from sunwell core, extend from there if needed
-void Unit::UpdateEnvironmentIfNeeded(const uint8 /*option*/)
-{
-    if (m_is_updating_environment)
-        return;
-
-    if (GetTypeId() != TYPEID_UNIT || !IsAlive() || !IsInWorld() || !FindMap() /*|| IsDuringRemoveFromWorld()*/ || !IsPositionValid())
-        return;
-
-    //almost not moved
-    if (GetExactDistSq(&m_last_environment_position) < 2.5f*2.5f)
-        return;
-
-    m_is_updating_environment = true;
-
-    LiquidData liquid_status;
-    auto liquidStatus = GetBaseMap()->getLiquidStatus(GetPositionX(), GetPositionY(), GetPositionZ(), BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
-    bool enoughWater = (liquid_status.level > INVALID_HEIGHT && liquid_status.level > liquid_status.depth_level && liquid_status.level - liquid_status.depth_level >= 1.5f); // also check if theres enough water - at least 2yd
-    m_last_isinwater_status = liquidStatus >= LIQUID_MAP_IN_WATER && enoughWater;
-    m_last_isunderwater_status = liquidStatus == LIQUID_MAP_UNDER_WATER && enoughWater;
-
-    m_last_environment_position = GetPosition();
-
-    m_is_updating_environment = false;
-}
-
 bool Unit::IsInWater() const
 {
-    const_cast<Unit*>(this)->UpdateEnvironmentIfNeeded(1);
-    return m_last_isinwater_status;
+    return _is_in_water_status;
 }
 
 bool Unit::IsUnderWater() const
 {
-    const_cast<Unit*>(this)->UpdateEnvironmentIfNeeded(1);
     return m_last_isunderwater_status;
 }
 
-void Unit::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Unit::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
 {
-    if (IsFlying() || !IsPet()
-#ifdef LICH_LING
-        && !IsVehicle()
-#endif
-     )
+    WorldObject::ProcessPositionDataChanged(data);
+    ProcessTerrainStatusUpdate(data.liquidStatus, data.liquidInfo);
+}
+
+void Unit::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData)
+{
+    if (IsFlying() || (!IsControlledByPlayer()))
         return;
 
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
-    if (!res)
+    // remove appropriate auras if we are swimming/not swimming respectively
+    if (status & MAP_LIQUID_STATUS_SWIMMING)
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_ABOVEWATER);
+    else
+        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
+
+    // liquid aura handling
+    LiquidTypeEntry const* curLiquid = nullptr;
+    if ((status & MAP_LIQUID_STATUS_SWIMMING) && liquidData)
+        curLiquid = sLiquidTypeStore.LookupEntry(liquidData->entry);
+    if (curLiquid != _lastLiquid)
     {
         if (_lastLiquid && _lastLiquid->SpellId)
             RemoveAurasDueToSpell(_lastLiquid->SpellId);
-
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
-        _lastLiquid = nullptr;
-        return;
+        if (curLiquid && curLiquid->SpellId)
+            CastSpell(this, curLiquid->SpellId, true);
+        _lastLiquid = curLiquid;
     }
 
-    if (uint32 type = liquid_status.baseLiquidType)
+    if(liquidData)
     {
-        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(type);
-        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != type)
-            RemoveAurasDueToSpell(_lastLiquid->SpellId);
-
-        if (liquid && liquid->SpellId)
-        {
-            if (res & (LIQUID_MAP_UNDER_WATER | LIQUID_MAP_IN_WATER))
-            {
-                if (!HasAuraEffect(liquid->SpellId))
-                    CastSpell(this, liquid->SpellId, true);
-            }
-            else
-                RemoveAurasDueToSpell(liquid->SpellId);
-        }
-
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_ABOVEWATER);
-        _lastLiquid = liquid;
+        bool enoughWater = (liquidData->level > INVALID_HEIGHT && liquidData->level > liquidData->depth_level && liquidData->level - liquidData->depth_level >= 1.5f); // also check if theres enough water - at least 2yd
+        _is_in_water_status = status >= LIQUID_MAP_IN_WATER && enoughWater;
+        m_last_isunderwater_status = status == LIQUID_MAP_UNDER_WATER && enoughWater;
     }
-    else if (_lastLiquid && _lastLiquid->SpellId)
-    {
-        RemoveAurasDueToSpell(_lastLiquid->SpellId);
-        RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_NOT_UNDERWATER);
-        _lastLiquid = nullptr;
+    else {
+        _is_in_water_status = false;
+        m_last_isunderwater_status = false;
     }
 }
 
@@ -15739,8 +15701,7 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
     else if (turn)
         UpdateOrientation(orientation);
 
-    // code block for underwater state update
-    UpdateUnderwaterState(GetMap(), x, y, z);
+    UpdatePositionData();
 
     return (relocated || turn);
 }

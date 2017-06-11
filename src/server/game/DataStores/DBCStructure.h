@@ -31,7 +31,7 @@ struct AreaTableEntry
     char*     area_name[16];                                // 11-26
                                                             // 27, string flags, unused
     uint32    team;                                         // 28
-    uint32    LiquidTypeOverride[4];                        // 29-32 liquid override by type
+    uint32    LiquidTypeOverride[4];                        // 29-32 liquid override by type. Only values on BC are 61 and 41 in first field. 61 is hyjal water ! 41 is coilfang water.
     float     maxDepth;                                     // 33
 
     // helpers
@@ -1133,13 +1133,29 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 #define TaxiMaskSize 16
 typedef uint32 TaxiMask[TaxiMaskSize];
 
+enum BCLiquidTypeType : uint32
+{
+    BCLiquidTypeType_Magma = 0,
+    BCLiquidTypeType_Slime = 2,
+    BCLiquidTypeType_Water = 3,
+    BCLiquidTypeType_Ocean = BCLiquidTypeType_Water,
+};
+
+//this got largely extended with LK. A lot of new fields and new liquid types were added, but those already present were not re ordered. WMO liquid also appeared on LK.
 struct LiquidTypeEntry
 {
+#ifdef LICH_KING
+    FixThis
+#endif
     uint32 Id;
-   //uint32 Unknown; //may be Flags
-   //uint32 Unknown; //may be SoundBank
-   //uint32 Unknown; //may be SoundID
+    //char*  Name;
+    uint32 BCType;  //types were re ordered with LK. See BCLiquidTypeType for BC values. Renamed from Type to BCType to ensure no confusion is made + added a function to access it (only useful if we get LICH_KING support one day...)
     uint32 SpellId;
+
+    uint32 GetType() const
+    {
+        return BCType;
+    };
 };
 
 struct LightEntry

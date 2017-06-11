@@ -648,6 +648,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual void Update ( uint32 /*time_diff*/ ) { }
 
         void _Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
+        virtual void AddToWorld() override;
 		virtual void RemoveFromWorld() override;
 
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
@@ -699,9 +700,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         uint32 GetInstanceId() const { return m_InstanceId; }
 
-        uint32 GetZoneId() const;
-        uint32 GetAreaId() const;
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
+        uint32 GetZoneId() const { return m_zoneId; }
+        uint32 GetAreaId() const { return m_areaId; }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const { zoneid = m_zoneId, areaid = m_areaId; }
 
         //for trinitycore compatibility
         uint32 GetPhaseMask() const { return m_phaseMask; }
@@ -840,6 +841,9 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
 
+        void UpdatePositionData();
+        float GetFloorZ() const;
+
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) override;
 
 		void AddToObjectUpdate() override;
@@ -874,6 +878,11 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         // transports
         Transport* m_transport;
+
+        virtual void ProcessPositionDataChanged(PositionFullTerrainStatus const& data);
+        uint32 m_zoneId;
+        uint32 m_areaId;
+        float m_staticFloorZ;
 
     private:
         Map*   m_currMap;                                   //current object's Map location

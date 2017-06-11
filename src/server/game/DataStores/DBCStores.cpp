@@ -1093,6 +1093,30 @@ uint32 const* GetTalentTabPages(uint32 cls)
     return sTalentTabPages[cls];
 }
 
+uint32 GetLiquidFlagsFromType(uint32 liquidType)
+{
+#ifdef LICH_KING
+    return 1 << liquidType;
+#else
+    //BC got different values in the type field, they were re ordered from LK
+    switch (liquidType)
+    {
+        case BCLiquidTypeType_Magma: return MAP_LIQUID_TYPE_MAGMA;
+        case BCLiquidTypeType_Slime: return MAP_LIQUID_TYPE_SLIME;
+        case BCLiquidTypeType_Water:
+        default:                     return MAP_LIQUID_TYPE_WATER;
+    }
+#endif
+}
+
+uint32 GetLiquidFlags(uint32 liquidTypeRec)
+{
+    if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(liquidTypeRec))
+        return GetLiquidFlagsFromType(liq->GetType());
+
+    return 0;
+}
+
 uint32 GetDefaultMapLight(uint32 mapId)
 {
     for (int32 i = sLightStore.GetNumRows(); i >= 0; --i)

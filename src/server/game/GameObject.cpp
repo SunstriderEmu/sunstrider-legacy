@@ -466,8 +466,9 @@ void GameObject::Update(uint32 diff)
                                 SetLootState(GO_JUST_DEACTIVATED);
                                 return;
                             }
-                                                            // respawn timer
-                            GetMap()->AddToMap(this);
+                            // respawn timer
+                            if(!IsInWorld())
+                                GetMap()->AddToMap(this);
                             break;
                     }
 

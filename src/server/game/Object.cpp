@@ -791,6 +791,9 @@ WorldObject::WorldObject(bool isWorldObject) :
 	m_currMap(nullptr),
 	m_zoneScript(nullptr),
 	m_name(""),
+    m_zoneId(0),
+    m_areaId(0),
+    m_staticFloorZ(VMAP_INVALID_HEIGHT),
 	m_groupLootTimer(0),
 	m_notifyflags(0),
 	m_executed_notifies(0),
@@ -887,6 +890,29 @@ WorldObject::~WorldObject()
 	}
 }
 
+
+void WorldObject::UpdatePositionData()
+{
+    PositionFullTerrainStatus data;
+    GetMap()->GetFullTerrainStatusForPosition(GetPositionX(), GetPositionY(), GetPositionZ(), data);
+    ProcessPositionDataChanged(data);
+}
+
+void WorldObject::ProcessPositionDataChanged(PositionFullTerrainStatus const& data)
+{
+    m_zoneId = m_areaId = data.areaId;
+    if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(m_areaId))
+        if (area->zone)
+            m_zoneId = area->zone;
+    m_staticFloorZ = data.floorZ;
+}
+
+void WorldObject::AddToWorld()
+{
+    Object::AddToWorld();
+    GetBaseMap()->GetZoneAndAreaId(m_zoneId, m_areaId, GetPositionX(), GetPositionY(), GetPositionZ());
+}
+
 void WorldObject::RemoveFromWorld()
 {
 	if (!IsInWorld())
@@ -896,7 +922,6 @@ void WorldObject::RemoveFromWorld()
 
 	Object::RemoveFromWorld();
 }
-
 
 void WorldObject::SetMap(Map* map)
 {
@@ -931,6 +956,7 @@ Map const* WorldObject::GetBaseMap() const
 	return m_currMap->GetParent();
 }
 
+/*
 uint32 WorldObject::GetZoneId() const
 {
     return GetBaseMap()->GetZoneId(m_positionX,m_positionY,m_positionZ);
@@ -945,6 +971,7 @@ void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
 {
     GetBaseMap()->GetZoneAndAreaId(zoneid, areaid, m_positionX, m_positionY, m_positionZ);
 }
+*/
 
 InstanceScript* WorldObject::GetInstanceScript()
 {
@@ -2198,7 +2225,7 @@ float NormalizeZforCollision(WorldObject* obj, float x, float y, float z)
                 return z;
         }
         LiquidData liquid_status;
-        ZLiquidStatus res = obj->GetMap()->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
+        ZLiquidStatus res = obj->GetMap()->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &liquid_status);
         if (res && liquid_status.level > helper) // water must be above ground
         {
             if (liquid_status.level > z) // z is underwater
@@ -2886,6 +2913,14 @@ uint64 WorldObject::GetTransGUID() const
     if (GetTransport())
         return GetTransport()->GetGUID();
     return 0;
+}
+
+float WorldObject::GetFloorZ() const
+{
+    if (!IsInWorld())
+        return m_staticFloorZ;
+    //this is the same as Map::GetHeight but we use our cached value for the map height instead for performance
+    return std::max<float>(m_staticFloorZ, GetMap()->GetGameObjectFloor(GetPhaseMask(), GetPositionX(), GetPositionY(), GetPositionZ()));
 }
 
 uint64 Object::GetGUID() const { return GetUInt64Value(OBJECT_FIELD_GUID); }

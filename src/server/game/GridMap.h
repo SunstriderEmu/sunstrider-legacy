@@ -3,6 +3,7 @@
 
 #include "Define.h"
 #include "GridDefines.h"
+#include "WaterDefines.h"
 
 
 // ******************************************
@@ -46,9 +47,6 @@ struct map_heightHeader
     float  gridMaxHeight;
 };
 
-#define MAP_LIQUID_NO_TYPE    0x0001
-#define MAP_LIQUID_NO_HEIGHT  0x0002
-
 struct map_liquidHeader
 {
     uint32 fourcc;
@@ -86,11 +84,11 @@ class GridMap
 
     // Liquid data
     float _liquidLevel;
-    uint16* _liquidEntry;
+    uint16* _liquidEntry; //liquid entry for chunk ?
     uint8* _liquidFlags;
     float* _liquidMap;
     uint16 _gridArea;
-    uint16 _liquidType;
+    uint16 _liquidType; //default liquid type for map?
     uint8 _liquidOffX;
     uint8 _liquidOffY;
     uint8 _liquidWidth;
@@ -120,7 +118,7 @@ public:
     float getMinHeight(float x, float y) const;
     float getLiquidLevel(float x, float y) const;
     uint8 getTerrainType(float x, float y) const;
-    ZLiquidStatus getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data = nullptr);
+    ZLiquidStatus GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidTypeMask, LiquidData* data = nullptr);
     
     static bool ExistMap(uint32 mapid, int x, int y);
     static bool ExistVMap(uint32 mapid, int x, int y);

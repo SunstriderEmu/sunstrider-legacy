@@ -86,7 +86,7 @@ namespace VMAP
     // ===================== WmoLiquid ==================================
 
     WmoLiquid::WmoLiquid(uint32 width, uint32 height, const Vector3 &corner, uint32 type):
-        iTilesX(width), iTilesY(height), iCorner(corner), iType((WmoLiquidType)type)
+        iTilesX(width), iTilesY(height), iCorner(corner), iType((LiquidType)type)
     {
         iHeight = new float[(width+1)*(height+1)];
         iFlags = new uint8[width*height];
@@ -395,20 +395,24 @@ namespace VMAP
         return false;
     }
 
-    BaseLiquidType GroupModel::GetBaseLiquidType() const
+    LiquidType GroupModel::GetLiquidType() const
     {
         if (iLiquid)
-            return BaseLiquidType(iLiquid->GetType() - 4);
+#ifdef LICH_KING
+            return LiquidType(iLiquid->GetType() - 4);
+#else
+            return LiquidType(iLiquid->GetType() > LIQUID_TYPE_SLIME ? iLiquid->GetType() - 4 : iLiquid->GetType()); //not sure this is ok. WMO seems to have values with +4 but... not all of them? IronForge does, SSC does not. But is SSC supposed to be fishable?
+#endif
 
-        return BASE_LIQUID_TYPE_NO_WATER;
+        return LIQUID_TYPE_NO_WATER;
     }
 
-    WmoLiquidType GroupModel::GetWMOLiquidType() const
+    LiquidType GroupModel::GetWMOLiquidType() const
     {
         if (iLiquid)
             return iLiquid->GetType();
 
-        return WMO_LIQUID_TYPE_NO_WATER;
+        return LIQUID_TYPE_NO_WATER;
     }
 
     void GroupModel::getMeshData(std::vector<G3D::Vector3>& outVertices, std::vector<MeshTriangle>& outTriangles, WmoLiquid*& liquid)
@@ -524,6 +528,7 @@ namespace VMAP
         groupTree.intersectPoint(p, callback);
         if (callback.hit != groupModels.end())
         {
+            info.rootId = RootWMOID;
             info.hitModel = &(*callback.hit);
             dist = callback.zDist;
             return true;

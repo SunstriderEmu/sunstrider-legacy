@@ -1111,7 +1111,7 @@ void Player::HandleDrowning(uint32 time_diff)
             SendMirrorTimer(FATIGUE_TIMER, DarkWaterTime, m_MirrorTimer[FATIGUE_TIMER], 10);
     }
 
-    if (m_MirrorTimerFlags & (UNDERWATER_INLAVA|UNDERWATER_INSLIME))
+    if (m_MirrorTimerFlags & (UNDERWATER_INLAVA)) //sunstrider: removed UNDERWATER_INSLIME from this check. Slime shouldn't do damage to players except in naxxramas, where it's handled with a special water type applying the spell 28801
     {
         // Breath timer not activated - activate it
         if (m_MirrorTimer[FIRE_TIMER] == DISABLED_MIRROR_TIMER)
@@ -1125,10 +1125,10 @@ void Player::HandleDrowning(uint32 time_diff)
                 // Calculate and deal damage
                 // TODO: Check this formula
                 uint32 damage = GetMap()->urand(600, 700);
-                if (m_MirrorTimerFlags&UNDERWATER_INLAVA)
+                //if (m_MirrorTimerFlags & UNDERWATER_INLAVA)
                     EnvironmentalDamage(DAMAGE_LAVA, damage);
-                else
-                    EnvironmentalDamage(DAMAGE_SLIME, damage);
+                /*else
+                    EnvironmentalDamage(DAMAGE_SLIME, damage);*/
             }
         }
     }
@@ -1891,10 +1891,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 #else
                 z += UNIT_DEFAULT_HOVERHEIGHT;
 #endif
-			Relocate(x, y, z, orientation);
-            SendTeleportAckPacket();
-			SendTeleportPacket(oldPos, (options & TELE_TO_TRANSPORT_TELEPORT) != 0); // this automatically relocates to oldPos in order to broadcast the packet in the right place
-
+            SendTeleportPacket(m_teleport_dest, (options & TELE_TO_TRANSPORT_TELEPORT) != 0);
             if (!IsWithinDist3d(x, y, z, GetMap()->GetVisibilityRange()))
                 RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED);
         }
@@ -22009,81 +22006,55 @@ void Player::SetOriginalGroup(Group *group, int8 subgroup)
     }
 }
 
-void Player::UpdateUnderwaterState(Map* m, float x, float y, float z)
+void Player::ProcessTerrainStatusUpdate(ZLiquidStatus status, Optional<LiquidData> const& liquidData)
 {
-    LiquidData liquid_status;
-    ZLiquidStatus res = m->getLiquidStatus(x, y, z, BASE_LIQUID_TYPE_MASK_ALL, &liquid_status);
-    if (!res)
+    if (IsFlying())
     {
         m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
-        if (_lastLiquid && _lastLiquid->SpellId)
-            RemoveAurasDueToSpell(_lastLiquid->SpellId);
-
-        _lastLiquid = nullptr;
         return;
     }
 
-    if (uint32 type = liquid_status.baseLiquidType)
-    {
-        LiquidTypeEntry const* liquid = sLiquidTypeStore.LookupEntry(type);
-        if (_lastLiquid && _lastLiquid->SpellId && _lastLiquid->Id != type)
-            RemoveAurasDueToSpell(_lastLiquid->SpellId);
+    // process liquid auras using generic unit code
+    Unit::ProcessTerrainStatusUpdate(status, liquidData);
 
-        if (liquid && liquid->SpellId)
+    // player specific logic for mirror timers
+    if (status && liquidData)
+    {
+        // Breath bar state (under water in any liquid type)
+        if (liquidData->type_flags & MAP_ALL_LIQUIDS)
         {
-            if (res == LIQUID_MAP_UNDER_WATER || res == LIQUID_MAP_IN_WATER)
-            {
-                if (!HasAuraEffect(liquid->SpellId))
-                    CastSpell(this, liquid->SpellId, true);
-            }
+            if (status & LIQUID_MAP_UNDER_WATER)
+                m_MirrorTimerFlags |= UNDERWATER_INWATER;
             else
-                RemoveAurasDueToSpell(liquid->SpellId);
+                m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
         }
 
-        _lastLiquid = liquid;
-    }
-    else if (_lastLiquid && _lastLiquid->SpellId)
-    {
-        RemoveAurasDueToSpell(_lastLiquid->SpellId);
-        _lastLiquid = nullptr;
-    }
-
-
-    // All liquids type - check under water position
-    if (liquid_status.baseLiquidType != BASE_LIQUID_TYPE_NO_WATER)
-    {
-        if (res == LIQUID_MAP_UNDER_WATER)
-            m_MirrorTimerFlags |= UNDERWATER_INWATER;
+        // Fatigue bar state (if not on flight path or transport)
+        if ((liquidData->type_flags & MAP_LIQUID_TYPE_DARK_WATER) && !IsInFlight() && !GetTransport())
+            m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
         else
-            m_MirrorTimerFlags &= ~UNDERWATER_INWATER;
-    }
+            m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
 
-    // Allow travel in dark water on taxi or transport
-    if ((liquid_status.baseLiquidType == BASE_LIQUID_TYPE_DARK_WATER) && !IsInFlight() && !GetTransport())
-        m_MirrorTimerFlags |= UNDERWATER_INDARKWATER;
+        // Lava state (any contact)
+        if (liquidData->type_flags & MAP_LIQUID_TYPE_MAGMA)
+        {
+            if (status & MAP_LIQUID_STATUS_IN_CONTACT)
+                m_MirrorTimerFlags |= UNDERWATER_INLAVA;
+            else
+                m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
+        }
+
+        // Slime state (any contact)
+        if (liquidData->type_flags & MAP_LIQUID_TYPE_SLIME)
+        {
+            if (status & MAP_LIQUID_STATUS_IN_CONTACT)
+                m_MirrorTimerFlags |= UNDERWATER_INSLIME;
+            else
+                m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
+        }
+    }
     else
-        m_MirrorTimerFlags &= ~UNDERWATER_INDARKWATER;
-
-    // in lava check, anywhere in lava level
-    if (liquid_status.baseLiquidType == BASE_LIQUID_TYPE_MAGMA)
-    {
-        if (res == LIQUID_MAP_UNDER_WATER
-            || res == LIQUID_MAP_IN_WATER 
-            || res == LIQUID_MAP_WATER_WALK )
-            m_MirrorTimerFlags |= UNDERWATER_INLAVA;
-        else
-            m_MirrorTimerFlags &= ~UNDERWATER_INLAVA;
-    }
-    // in slime check, anywhere in slime level
-    if (liquid_status.baseLiquidType == BASE_LIQUID_TYPE_SLIME)
-    {
-        if (res == LIQUID_MAP_UNDER_WATER 
-            || res == LIQUID_MAP_IN_WATER 
-            || res == LIQUID_MAP_WATER_WALK )
-            m_MirrorTimerFlags |= UNDERWATER_INSLIME;
-        else
-            m_MirrorTimerFlags &= ~UNDERWATER_INSLIME;
-    }
+        m_MirrorTimerFlags &= ~(UNDERWATER_INWATER | UNDERWATER_INLAVA | UNDERWATER_INSLIME | UNDERWATER_INDARKWATER);
 }
 
 void Player::SetCanParry( bool value )
