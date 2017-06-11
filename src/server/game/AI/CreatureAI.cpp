@@ -126,6 +126,20 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     }
 }
 
+void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
+{
+    if (!target || !me->IsAlive())
+        return;
+
+    if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanAttack(target, true))
+    {
+        if (me->IsInCombat())
+            me->AddThreat(target, 0.0f);
+        else
+            AttackStart(target);
+    }
+}
+
 bool CreatureAI::UpdateVictim(bool evade)
 {
     if(!me->IsInCombat())

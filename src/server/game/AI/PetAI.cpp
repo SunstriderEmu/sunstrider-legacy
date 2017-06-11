@@ -185,18 +185,28 @@ void PetAI::HandleReturnMovement()
 	me->ClearInPetCombat();
 }
 
+
 void PetAI::AttackStart(Unit* target)
 {
-	// Overrides Unit::AttackStart to correctly evaluate Pet states
+    // Overrides Unit::AttackStart to prevent pet from switching off its assigned target
+    if (!target || target == me)
+        return;
 
-	// Check all pet states to decide if we can attack this target
-	if (!CanAttack(target))
-		return;
+    if (me->GetVictim() && me->EnsureVictim()->IsAlive())
+        return;
 
-	// Only chase if not commanded to stay or if stay but commanded to attack
-	DoAttack(target, (!me->GetCharmInfo()->HasCommandState(COMMAND_STAY) || me->GetCharmInfo()->IsCommandAttack()));
+    _AttackStart(target);
 }
 
+void PetAI::_AttackStart(Unit* target)
+{
+    // Check all pet states to decide if we can attack this target
+    if (!CanAttack(target))
+        return;
+
+    // Only chase if not commanded to stay or if stay but commanded to attack
+    DoAttack(target, (!me->GetCharmInfo()->HasCommandState(COMMAND_STAY) || me->GetCharmInfo()->IsCommandAttack()));
+}
 
 void PetAI::MovementInform(uint32 moveType, uint32 data)
 {
@@ -238,27 +248,7 @@ void PetAI::OwnerAttackedBy(Unit* attacker)
 	// Called when owner takes damage. This function helps keep pets from running off
 	//  simply due to owner gaining aggro.
 
-	if (!attacker)
-		return;
-
-	// Passive pets don't do anything
-	if (me->HasReactState(REACT_PASSIVE))
-		return;
-
-	// Prevent pet from disengaging from current target
-	if (me->GetVictim() && me->EnsureVictim()->IsAlive())
-		return;
-
-	// Continue to evaluate and attack if necessary
-	AttackStart(attacker);
-}
-
-void PetAI::AttackedBy(Unit* attacker)
-{
-	// Called when pet takes damage. This function helps keep pets from running off
-	//  simply due to gaining aggro.
-
-	if (!attacker)
+    if (!attacker || !me->IsAlive())
 		return;
 
 	// Passive pets don't do anything
@@ -305,7 +295,7 @@ void PetAI::OwnerAttacked(Unit* target)
 	//  that they need to assist
 
 	// Target might be NULL if called from spell with invalid cast targets
-	if (!target)
+    if (!target || !me->IsAlive())
 		return;
 
 	// Passive pets don't do anything
@@ -418,7 +408,7 @@ void PetAI::UpdateAI(const uint32 diff)
 				// Aggressive - Allow auto select if owner or pet don't have a target
 				// Stay - Only pick from pet or owner targets / attackers so targets won't run by
 				//   while chasing our owner. Don't do auto select.
-				// All other cases (ie: defensive) - Targets are assigned by AttackedBy(), OwnerAttackedBy(), OwnerAttacked(), etc.
+				// All other cases (ie: defensive) - Targets are assigned by DamageTaken(), OwnerAttackedBy(), OwnerAttacked(), etc.
 				Unit* nextTarget = SelectNextTarget(me->HasReactState(REACT_AGGRESSIVE));
 
 				if (nextTarget)

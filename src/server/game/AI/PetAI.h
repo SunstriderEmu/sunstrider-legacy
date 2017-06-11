@@ -25,10 +25,11 @@ class TC_GAME_API PetAI : public CreatureAI
 
 		void MovementInform(uint32 moveType, uint32 data) override;
 		void KilledUnit(Unit* /*victim*/) override;
-		void AttackStart(Unit* target) override;
+        void AttackStart(Unit* target) override; // only start attacking if not attacking something else already
+        void _AttackStart(Unit* target); // always start attacking if possible
 		void OwnerAttackedBy(Unit* attacker) override;
 		void OwnerAttacked(Unit* target) override;
-		void AttackedBy(Unit* attacker) override;
+        void DamageTaken(Unit* attacker, uint32& /*damage*/) override { AttackStart(attacker); }
 		void ReceiveEmote(Player* player, uint32 textEmote) override;
 
 		void ForceAttackBreakable(Unit const* target);

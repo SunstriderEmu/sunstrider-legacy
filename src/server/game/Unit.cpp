@@ -692,10 +692,10 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
             // Signal to pets that their owner was attacked - except when DOT.
             if (damagetype != DOT)
             {
-                Pet* pet = pVictim->ToPlayer()->GetPet();
-
-                if (pet && pet->IsAlive())
-                    pet->AI()->OwnerAttackedBy(this);
+                for (Unit* controlled : pVictim->m_Controlled)
+                    if (Creature* cControlled = controlled->ToCreature())
+                        if (cControlled->IsAIEnabled)
+                            cControlled->AI()->OwnerAttackedBy(this);
             }
         }
 
@@ -881,26 +881,6 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         //TC_LOG_DEBUG("FIXME","DealDamageAlive");
 
         pVictim->ModifyHealth(- (int32)damage);
-
-        if(damagetype != DOT)
-        {
-            if(!GetVictim())
-            /*{
-                // if have target and damage pVictim just call AI reaction
-                if(pVictim != GetVictim() && pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
-                    (pVictim->ToCreature())->AI()->AttackedBy(this);
-            }
-            else*/
-            {
-                // if not have main target then attack state with target (including AI call)
-                if(pVictim != GetVictim() && pVictim->GetTypeId()==TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
-                    (pVictim->ToCreature())->AI()->AttackedBy(this);
-
-                //start melee attacks only after melee hit
-                if(!ToCreature() || ToCreature()->GetReactState() != REACT_PASSIVE)
-                    Attack(pVictim,(damagetype == DIRECT_DAMAGE));
-            }
-        }
 
         if(damagetype == DIRECT_DAMAGE || damagetype == SPELL_DIRECT_DAMAGE)
         {
@@ -2070,9 +2050,6 @@ void Unit::AttackerStateUpdate(Unit *pVictim, WeaponAttackType attType, bool ext
         
     CombatStart(pVictim);
     RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_MELEE_ATTACK);
-    
-    if (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
-        (pVictim->ToCreature())->AI()->AttackedBy(this);
 
     if (attType != BASE_ATTACK && attType != OFF_ATTACK)
         return;                                             // ignore ranged case
@@ -7622,9 +7599,6 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
     m_attacking = victim;
     m_attacking->_addAttacker(this);
 
-    //if(m_attacking->GetTypeId()==TYPEID_UNIT && (m->ToCreature()_attacking)->IsAIEnabled)
-    //    (m->ToCreature()_attacking)->AI()->AttackedBy(this);
-
     if (GetTypeId() == TYPEID_UNIT && !(ToCreature()->IsPet())) {
         SendAIReaction(AI_REACTION_HOSTILE);
         ToCreature()->CallAssistance();
@@ -7633,8 +7607,7 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SetInCombatWith(victim);
         if (victim->GetTypeId() == TYPEID_PLAYER)
             victim->SetInCombatWith(this);
-        else
-            (victim->ToCreature())->AI()->AttackedBy(this);
+
         AddThreat(victim, 0.0f);
     }
 
@@ -7650,13 +7623,13 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
 
 	// Let the pet know we've started attacking someting. Handles melee attacks only
 	// Spells such as auto-shot and others handled in WorldSession::HandleCastSpellOpcode
-	if (this->GetTypeId() == TYPEID_PLAYER)
-	{
-		Pet* playerPet = this->ToPlayer()->GetPet();
-
-		if (playerPet && playerPet->IsAlive())
-			playerPet->AI()->OwnerAttacked(victim);
-	}
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        for (Unit* controlled : m_Controlled)
+            if (Creature* cControlled = controlled->ToCreature())
+                if (cControlled->IsAIEnabled)
+                    cControlled->AI()->OwnerAttacked(victim);
+    }
 
     return true;
 }
