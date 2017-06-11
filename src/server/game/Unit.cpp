@@ -687,17 +687,21 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
 
 	if (pVictim->GetTypeId() == TYPEID_PLAYER && this != pVictim)
 	{
-		// Signal to pets that their owner was attacked - except when DOT.
-		if (damagetype != DOT)
-		{
-			Pet* pet = pVictim->ToPlayer()->GetPet();
+        if (this != pVictim)
+        {
+            // Signal to pets that their owner was attacked - except when DOT.
+            if (damagetype != DOT)
+            {
+                Pet* pet = pVictim->ToPlayer()->GetPet();
 
-			if (pet && pet->IsAlive())
-				pet->AI()->OwnerAttackedBy(this);
-		}
+                if (pet && pet->IsAlive())
+                    pet->AI()->OwnerAttackedBy(this);
+            }
+        }
 
-		if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
-			return 0;
+        //sunstrider: moved out of last check, some damage are caused by self
+        if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+            return 0;
 	}
 
     // Kidney Shot hackz
