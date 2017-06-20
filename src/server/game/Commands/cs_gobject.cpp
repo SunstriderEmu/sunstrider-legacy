@@ -462,9 +462,11 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
         return false;
     }
 
+    uint32_t const autoCloseTime = obj->GetGOInfo()->GetAutoCloseTime() ? 10000u : 0u;
+
     // Activate
     obj->SetLootState(GO_READY);
-    obj->UseDoorOrButton(10000);
+    obj->UseDoorOrButton(autoCloseTime);
 
     PSendSysMessage("Object activated!");
 
