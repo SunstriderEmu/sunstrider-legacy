@@ -34,6 +34,7 @@ class WorldSocketThread : public NetworkThread<WorldSocket>
 public:
     void SocketAdded(std::shared_ptr<WorldSocket> sock) override
     {
+        sock->SetSendBufferSize(sWorldSocketMgr.GetApplicationSendBufferSize());
         //sScriptMgr->OnSocketOpen(sock);
     }
 
@@ -43,7 +44,7 @@ public:
     }
 };
 
-WorldSocketMgr::WorldSocketMgr() : BaseSocketMgr(), _socketSendBufferSize(-1), m_SockOutUBuff(65536), _tcpNoDelay(true)
+WorldSocketMgr::WorldSocketMgr() : BaseSocketMgr(), _socketSystemSendBufferSize(-1), _socketApplicationSendBufferSize(65536), _tcpNoDelay(true)
 {
 }
 
@@ -61,17 +62,18 @@ bool WorldSocketMgr::StartNetwork(boost::asio::io_service& service, std::string 
     TC_LOG_DEBUG("misc", "Max allowed socket connections %d", max_connections);
 
     // -1 means use default
-    _socketSendBufferSize = sConfigMgr->GetIntDefault("Network.OutKBuff", -1);
+    _socketSystemSendBufferSize = sConfigMgr->GetIntDefault("Network.OutKBuff", -1);
 
-    m_SockOutUBuff = sConfigMgr->GetIntDefault("Network.OutUBuff", 65536);
+    _socketApplicationSendBufferSize = sConfigMgr->GetIntDefault("Network.OutUBuff", 65536);
 
-    if (m_SockOutUBuff <= 0)
+    if (_socketApplicationSendBufferSize <= 0)
     {
         TC_LOG_ERROR("misc", "Network.OutUBuff is wrong in your config file");
         return false;
     }
 
-    BaseSocketMgr::StartNetwork(service, bindIp, port, threadCount);
+    if(!BaseSocketMgr::StartNetwork(service, bindIp, port, threadCount))
+        return false;
 
     _acceptor->SetSocketFactory(std::bind(&BaseSocketMgr::GetSocketForAccept, this));
 
@@ -91,10 +93,10 @@ void WorldSocketMgr::StopNetwork()
 void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
 {
     // set some options here
-    if (_socketSendBufferSize >= 0)
+    if (_socketSystemSendBufferSize >= 0)
     {
         boost::system::error_code err;
-        sock.set_option(boost::asio::socket_base::send_buffer_size(_socketSendBufferSize), err);
+        sock.set_option(boost::asio::socket_base::send_buffer_size(_socketSystemSendBufferSize), err);
         if (err && err != boost::system::errc::not_supported)
         {
             TC_LOG_ERROR("misc", "WorldSocketMgr::OnSocketOpen sock.set_option(boost::asio::socket_base::send_buffer_size) err = %s", err.message().c_str());
@@ -114,7 +116,7 @@ void WorldSocketMgr::OnSocketOpen(tcp::socket&& sock, uint32 threadIndex)
         }
     }
 
-    //sock->m_OutBufferSize = static_cast<size_t> (m_SockOutUBuff);
+    //sock->m_OutBufferSize = static_cast<size_t> (_socketApplicationSendBufferSize);
 
     BaseSocketMgr::OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
 }

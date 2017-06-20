@@ -27,7 +27,7 @@ private:
 using boost::asio::ip::tcp;
 
 WorldSocket::WorldSocket(tcp::socket&& socket)
-    : Socket(std::move(socket)), _authSeed(rand32()), _OverSpeedPings(0), _worldSession(nullptr), _authed(false), _authCrypt(nullptr)
+    : Socket(std::move(socket)), _authSeed(rand32()), _OverSpeedPings(0), _worldSession(nullptr), _authed(false), _authCrypt(nullptr), _sendBufferSize(4096)
 {
     _headerBuffer.Resize(sizeof(ClientPktHeader));
 }
@@ -86,7 +86,7 @@ void WorldSocket::CheckIpCallback(PreparedQueryResult result)
 bool WorldSocket::Update()
 {
     EncryptablePacket* queued;
-    MessageBuffer buffer;
+    MessageBuffer buffer(_sendBufferSize);
     while (_bufferQueue.Dequeue(queued))
     {
         ServerPktHeader header(queued->size() + 2, queued->GetOpcode());
@@ -96,7 +96,7 @@ bool WorldSocket::Update()
         if (buffer.GetRemainingSpace() < queued->size() + header.getHeaderLength())
         {
             QueuePacket(std::move(buffer));
-            buffer.Resize(4096);
+            buffer.Resize(_sendBufferSize);
         }
 
         if (buffer.GetRemainingSpace() >= queued->size() + header.getHeaderLength())

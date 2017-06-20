@@ -46,6 +46,8 @@ public:
 
     void SendPacket(WorldPacket const& packet);
 
+    void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
+
     // see _lastPacketsSent. Use _lastPacketsSent_mutex while using it
     std::list<WorldPacket> const& GetLastPacketsSent();
     boost::shared_mutex& GetLastPacketsSentMutex()
@@ -97,6 +99,7 @@ private:
     MessageBuffer _headerBuffer;
     MessageBuffer _packetBuffer;
     MPSCQueue<EncryptablePacket> _bufferQueue;
+    std::size_t _sendBufferSize;
 
     QueryCallbackProcessor _queryProcessor;
     std::string _ipCountry;
