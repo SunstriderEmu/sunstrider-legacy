@@ -654,6 +654,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         }
     }
 
+    if (!cInfo->AIName.empty() && !sCreatureAIRegistry->HasItem(cInfo->AIName))
+    {
+        TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has non-registered `AIName` '%s' set, removing", cInfo->Entry, cInfo->AIName.c_str());
+        const_cast<CreatureTemplate*>(cInfo)->AIName.clear();
+    }
+
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
     if(!factionTemplate) {
         TC_LOG_FATAL("sql.sql", "Creature (Entry: %u) has non-existing faction template (%u). This can lead to crashes, aborting.", cInfo->Entry, cInfo->faction);
@@ -1341,6 +1347,12 @@ void ObjectMgr::LoadCreatures()
                 TC_LOG_ERROR("sql.sql","Table `creature` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", data.id, data.equipmentId);
                 data.equipmentId = -1;
             }
+        }
+
+        if (data.movementType >= MAX_DB_MOTION_TYPE)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u Entry: %u) with wrong movement generator type (%u), ignored and set to IDLE.", guid, data.id, data.movementType);
+            data.movementType = IDLE_MOTION_TYPE;
         }
 
         if(data.spawndist < 0.0f)
@@ -5880,6 +5892,13 @@ void ObjectMgr::LoadGameObjectTemplate()
 
         got.AIName = fields[32].GetString();
         got.ScriptId = GetScriptId(fields[33].GetCString());
+
+        // Checks
+        if (!got.AIName.empty() && !sGameObjectAIRegistry->HasItem(got.AIName))
+        {
+            TC_LOG_ERROR("sql.sql", "GameObject (Entry: %u) has non-registered `AIName` '%s' set, removing", got.entry, got.AIName.c_str());
+            got.AIName.clear();
+        }
 
         switch(got.type)
         {

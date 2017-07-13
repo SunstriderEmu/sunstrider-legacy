@@ -10,9 +10,9 @@ class GameObject;
 
 namespace FactorySelector
 {
-    CreatureAI* selectAI(Creature *);
-    MovementGenerator* selectMovementGenerator(Creature *);
-    GameObjectAI* SelectGameObjectAI(GameObject *go);
+    CreatureAI* SelectAI(Creature*);
+    MovementGenerator* SelectMovementGenerator(Unit*);
+    GameObjectAI* SelectGameObjectAI(GameObject*);
 }
 #endif
 

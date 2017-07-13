@@ -1284,6 +1284,9 @@ void World::SetInitialWorldSettings()
     TC_LOG_INFO("server.loading", "Loading Spell Required Data..." );
     sSpellMgr->LoadSpellRequired();
 
+    ///- Initialize static helper structures
+    AIRegistry::Initialize();
+
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
     sSpellMgr->LoadSpellInfoStore(false);
     
@@ -1633,9 +1636,6 @@ void World::SetInitialWorldSettings()
     mail_timer = ((((localTm.tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
     mail_timer_expires = ( (DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
-
-    ///- Initilize static helper structures
-    AIRegistry::Initialize();
 
     ///- Initialize MapManager
     TC_LOG_INFO("server.loading", "Starting Map System" );

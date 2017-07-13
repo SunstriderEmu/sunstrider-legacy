@@ -23,6 +23,10 @@
 #include "GossipDef.h"
 #include "SpellScript.h"
 #include "TemporarySummon.h"
+#include "Player.h"
+#include "ObjectAccessor.h"
+#include "MotionMaster.h"
+#include "Map.h"
 
 #ifdef _WIN32
 #include <windows.h>

@@ -53,3 +53,22 @@ void CritterAI::EnterEvadeMode(EvadeReason why)
         me->SetControlled(false, UNIT_STATE_FLEEING);
     CreatureAI::EnterEvadeMode(why);
 }
+
+int32 CritterAI::Permissible(Creature const* creature)
+{
+    if (creature->IsCritter() && !creature->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        return PERMIT_BASE_PROACTIVE;
+
+    return PERMIT_BASE_NO;
+}
+
+int32 NullCreatureAI::Permissible(Creature const* creature)
+{
+    if (creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
+        return PERMIT_BASE_PROACTIVE + 50;
+
+    if (creature->IsTrigger())
+        return PERMIT_BASE_REACTIVE;
+
+    return PERMIT_BASE_IDLE;
+}

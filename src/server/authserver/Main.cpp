@@ -67,12 +67,14 @@ int main(int argc, char** argv)
 
 
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+    /* sunstrider: whatever, we'll never use this
     if (configService.compare("install") == 0)
         return WinServiceInstall() == true ? 0 : 1;
     else if (configService.compare("uninstall") == 0)
         return WinServiceUninstall() == true ? 0 : 1;
     else if (configService.compare("run") == 0)
         return WinServiceRun() ? 0 : 1;
+        */
 #endif
 
     std::string configError;

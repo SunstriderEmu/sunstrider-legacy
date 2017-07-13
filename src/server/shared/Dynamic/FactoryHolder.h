@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #ifndef TRINITY_FACTORY_HOLDER
 #define TRINITY_FACTORY_HOLDER
@@ -25,25 +6,23 @@
 #include "TypeList.h"
 #include "ObjectRegistry.h"
 
-/** FactoryHolder holds a factory object of a specific type
+ /** FactoryHolder holds a factory object of a specific type
  */
-template<class T, class Key = std::string>
+template<class T, class O, class Key = std::string>
 class FactoryHolder
 {
-    public:
-        typedef ObjectRegistry<FactoryHolder<T, Key >, Key > FactoryHolderRegistry;
+public:
+    typedef ObjectRegistry<FactoryHolder<T, O, Key>, Key> FactoryHolderRegistry;
 
-        FactoryHolder(Key k) : i_key(std::move(k)) {}
-        virtual ~FactoryHolder() = default;
-        inline Key key() const { return i_key; }
+    explicit FactoryHolder(Key const& k) : _key(k) { }
+    virtual ~FactoryHolder() { }
 
-        void RegisterSelf(void) { FactoryHolderRegistry::instance()->InsertItem(this, i_key); }
-        void DeregisterSelf(void) { FactoryHolderRegistry::instance()->RemoveItem(this, false); }
+    void RegisterSelf() { FactoryHolderRegistry::instance()->InsertItem(this, _key); }
 
-        /// Abstract Factory create method
-        virtual T* Create(void *data = nullptr) const = 0;
-    private:
-        Key i_key;
+    /// Abstract Factory create method
+    virtual T* Create(O* object = nullptr) const = 0;
+private:
+    Key const _key;
 };
 
 /** Permissible is a classic way of letting the object decide
@@ -55,7 +34,7 @@ class Permissible
 {
     public:
         virtual ~Permissible() = default;
-        virtual int Permit(const T *) const = 0;
+        virtual int32 Permit(const T *) const = 0;
 };
 #endif
 

@@ -886,6 +886,7 @@ int SmartGameObjectAI::Permissible(const GameObject* g)
 {
     if (g->GetAIName() == SMARTAI_GOBJECT_AI_NAME)
         return PERMIT_BASE_SPECIAL;
+
     return PERMIT_BASE_NO;
 }
 

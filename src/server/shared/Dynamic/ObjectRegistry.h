@@ -74,12 +74,6 @@ class ObjectRegistry
             }
         }
 
-        /// Returns true if registry contains an item
-        bool HasItem(Key key) const
-        {
-            return (i_registeredObjects.find(key) != i_registeredObjects.end());
-        }
-
         /// Inefficiently return a vector of registered items
         unsigned int GetRegisteredItems(std::vector<Key> &l) const
         {
@@ -88,6 +82,12 @@ class ObjectRegistry
             for (typename RegistryMapType::const_iterator iter = i_registeredObjects.begin(); iter != i_registeredObjects.end(); ++iter)
                 l[sz++] = iter->first;
             return i_registeredObjects.size();
+        }
+
+        /// Returns true if registry contains an item
+        bool HasItem(Key const& key) const
+        {
+            return (i_registeredObjects.count(key) > 0);
         }
 
         /// Return the map of registered items

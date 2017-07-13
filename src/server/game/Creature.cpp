@@ -909,7 +909,7 @@ bool Creature::AIM_Initialize(CreatureAI* ai)
 
     AIM_Destroy();
 
-    i_AI = ai ? ai : FactorySelector::selectAI(this);
+    i_AI = ai ? ai : FactorySelector::SelectAI(this);
     IsAIEnabled = true;     // Keep this when getting rid of old system
     i_AI->InitializeAI();
     

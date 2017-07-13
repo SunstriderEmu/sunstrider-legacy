@@ -14,7 +14,8 @@ class TC_GAME_API PassiveAI : public CreatureAI
         void AttackStart(Unit *) override {}
 
         void UpdateAI(const uint32) override;
-        static int Permissible(const Creature *) { return PERMIT_BASE_IDLE;  }
+
+        static int32 Permissible(Creature const* /*creature*/) { return PERMIT_BASE_NO; }
 };
 
 class TC_GAME_API PossessedAI : public PassiveAI
@@ -28,6 +29,8 @@ class TC_GAME_API PossessedAI : public PassiveAI
 
         void JustDied(Unit*) override;
         void KilledUnit(Unit* victim) override;
+
+        static int32 Permissible(Creature const* /*creature*/) { return PERMIT_BASE_NO; }
 };
 
 class TC_GAME_API NullCreatureAI : public PassiveAI
@@ -37,6 +40,8 @@ class TC_GAME_API NullCreatureAI : public PassiveAI
 
         void UpdateAI(const uint32) override {}
         void EnterEvadeMode(EvadeReason /* why */) override {}
+
+        static int32 Permissible(Creature const* creature);
 };
 
 class TC_GAME_API CritterAI : public PassiveAI
@@ -46,6 +51,8 @@ class TC_GAME_API CritterAI : public PassiveAI
 
         void DamageTaken(Unit *done_by, uint32 & /*damage*/) override;
         void EnterEvadeMode(EvadeReason /* why */) override;
+
+        static int32 Permissible(Creature const* creature);
 };
 
 #endif

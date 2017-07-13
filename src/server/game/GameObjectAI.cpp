@@ -6,6 +6,7 @@ int GameObjectAI::Permissible(const GameObject* go)
 {
     if (go->GetAIName() == "GameObjectAI")
         return PERMIT_BASE_SPECIAL;
+
     return PERMIT_BASE_NO;
 }
 
