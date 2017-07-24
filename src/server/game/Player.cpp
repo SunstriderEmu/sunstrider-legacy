@@ -13758,19 +13758,6 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
     //    SetTimedQuest( 0 );
     m_timedquests.erase(pQuest->GetQuestId());
 
-    if ( pQuest->GetRewardChoiceItemsCount() > 0 )
-    {
-        if( pQuest->RewardChoiceItemId[reward] )
-        {
-            ItemPosCountVec dest;
-            if( CanStoreNewItem( NULL_BAG, NULL_SLOT, dest, pQuest->RewardChoiceItemId[reward], pQuest->RewardChoiceItemCount[reward] ) == EQUIP_ERR_OK )
-            {
-                Item* item = StoreNewItem( dest, pQuest->RewardChoiceItemId[reward], true);
-                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false);
-            }
-        }
-    }
-
     if ( pQuest->GetRewardItemsCount() > 0 )
     {
         for (uint32 i=0; i < pQuest->GetRewardItemsCount(); ++i)
@@ -13783,6 +13770,19 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
                     Item* item = StoreNewItem( dest, pQuest->RewardItemId[i], true);
                     SendNewItem(item, pQuest->RewardItemIdCount[i], true, false);
                 }
+            }
+        }
+    }
+
+    if (pQuest->GetRewardChoiceItemsCount() > 0)
+    {
+        if (pQuest->RewardChoiceItemId[reward])
+        {
+            ItemPosCountVec dest;
+            if (CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, pQuest->RewardChoiceItemId[reward], pQuest->RewardChoiceItemCount[reward]) == EQUIP_ERR_OK)
+            {
+                Item* item = StoreNewItem(dest, pQuest->RewardChoiceItemId[reward], true);
+                SendNewItem(item, pQuest->RewardChoiceItemCount[reward], true, false);
             }
         }
     }
@@ -13807,8 +13807,6 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
 
     if(!sWorld->getConfig(CONFIG_BUGGY_QUESTS_AUTOCOMPLETE) || !pQuest->IsMarkedAsBugged()) //don't reward as much if the quest was auto completed
     {
-        RewardReputation( pQuest );
-
         if ( GetLevel() < sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL) )
             GiveXP( XP , nullptr );
         else
@@ -13820,6 +13818,8 @@ void Player::RewardQuest( Quest const *pQuest, uint32 reward, Object* questGiver
          // honor reward
         if(pQuest->GetRewHonorableKills())
         RewardHonor(nullptr, 0, Trinity::Honor::hk_honor_at_level(GetLevel(), pQuest->GetRewHonorableKills()));
+
+        RewardReputation(pQuest);
     }
 
     // title reward
