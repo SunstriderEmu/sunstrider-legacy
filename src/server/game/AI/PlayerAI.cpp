@@ -956,17 +956,31 @@ void PlayerAI::CancelAllShapeshifts()
 #endif
 }
 
-struct UncontrolledTargetSelectPredicate : public std::unary_function<Unit*, bool>
+struct ValidTargetSelectPredicate
 {
+    ValidTargetSelectPredicate(UnitAI const* ai) : _ai(ai) { }
+    UnitAI const* const _ai;
+
     bool operator()(Unit const* target) const
     {
-        return !target->HasBreakableByDamageCrowdControlAura();
+        return _ai->CanAIAttack(target);
     }
 };
+
+bool SimpleCharmedPlayerAI::CanAIAttack(Unit const* who) const
+{
+    if (!me->IsValidAttackTarget(who) || who->HasBreakableByDamageCrowdControlAura())
+        return false;
+    if (Unit* charmer = me->GetCharmer())
+        if (!charmer->IsValidAttackTarget(who))
+            return false;
+    return UnitAI::CanAIAttack(who);
+}
+
 Unit* SimpleCharmedPlayerAI::SelectAttackTarget() const
 {
     if (Unit* charmer = me->GetCharmer())
-        return charmer->IsAIEnabled ? charmer->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 0, UncontrolledTargetSelectPredicate()) : charmer->GetVictim();
+        return charmer->IsAIEnabled ? charmer->GetAI()->SelectTarget(SELECT_TARGET_RANDOM, 0, ValidTargetSelectPredicate(this)) : charmer->GetVictim();
     return nullptr;
 }
 
@@ -1579,11 +1593,23 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
     if (charmer->IsInCombat())
     {
         Unit* target = me->GetVictim();
-        if (!target || !charmer->IsValidAttackTarget(target) || target->HasBreakableByDamageCrowdControlAura())
+        if (!target || !CanAIAttack(target))
         {
             target = SelectAttackTarget();
-            if (!target)
+            if (!target || !CanAIAttack(target))
+            {
+                if (!_isFollowing)
+                {
+                    _isFollowing = true;
+                    me->AttackStop();
+                    me->CastStop();
+                    me->StopMoving();
+                    me->GetMotionMaster()->Clear();
+                    me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+                }
                 return;
+            }
+            _isFollowing = false;
 
             if (IsRangedAttacker())
             {
@@ -1636,8 +1662,9 @@ void SimpleCharmedPlayerAI::UpdateAI(const uint32 diff)
 
         DoAutoAttackIfReady();
     }
-    else
+    else if (!_isFollowing)
     {
+        _isFollowing = true;
         me->AttackStop();
         me->CastStop();
         if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
