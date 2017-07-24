@@ -642,6 +642,7 @@ bool Player::Create(uint32 guidlow, const std::string& name, uint8 race, uint8 c
     }
 
 	SetMap(sMapMgr->CreateMap(info->mapId, this));
+    UpdatePositionData();
 
     uint8 powertype = cEntry->PowerType;
 
@@ -15673,6 +15674,7 @@ bool Player::LoadFromDB( uint32 guid, SQLQueryHolder *holder )
 	}
 
 	SetMap(map);
+    UpdatePositionData();
 #ifdef LICH_KING
 	StoreRaidMapDifficulty();
 #endif
