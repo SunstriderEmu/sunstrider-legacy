@@ -22976,9 +22976,6 @@ void Player::UpdateArenaTitles()
 
 bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
 {
-    if (!packetOnly && !Unit::SetFlying(apply))
-        return false;
-
     if (!apply)
         SetFallInformation(0, GetPositionZ());
 
@@ -22987,10 +22984,16 @@ bool Player::SetFlying(bool apply, bool packetOnly /* = false */)
     data << uint32(0);          //! movement counter
     SendDirectMessage(&data);
 
-    data.Initialize(MSG_MOVE_UPDATE_CAN_FLY, 64);
-    data << GetPackGUID();
-    BuildMovementPacket(&data);
-    SendMessageToSet(&data, false);
+    if (packetOnly || Unit::SetFlying(apply))
+    {
+        data.Initialize(MSG_MOVE_UPDATE_CAN_FLY, 64);
+        data << GetPackGUID();
+        BuildMovementPacket(&data);
+        SendMessageToSet(&data, false);
+    }
+    else
+        return false;
+
     return true;
 }
 
