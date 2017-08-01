@@ -66,8 +66,8 @@ Location MoveSpline::ComputePosition() const
             c.orientation = atan2(hermite.y, hermite.x);
         }
 #ifdef LICH_KING
-        if (splineflags.orientationInversed)
-            c.orientation = -c.orientation;
+        if (splineflags.backward)
+            c.orientation = c.orientation - float(M_PI);
 #endif
     }
     return c;
