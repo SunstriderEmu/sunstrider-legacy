@@ -681,6 +681,7 @@ class TC_GAME_API InstanceMap : public Map
         void CreateInstanceScript(bool load);
         bool Reset(uint8 method);
         uint32 GetScriptId() { return i_script_id; }
+        std::string const& GetScriptName() const;
         InstanceScript* GetInstanceScript() { return i_data; }
         void PermBindAllPlayers(Player *player);
         void UnloadAll() override;

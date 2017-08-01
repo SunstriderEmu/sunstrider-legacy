@@ -32,6 +32,4 @@ class TC_GAME_API IdleMovementGenerator : public MovementGenerator
         MovementGeneratorType GetMovementGeneratorType() override { return IDLE_MOTION_TYPE; }
 };
 
-extern IdleMovementGenerator si_idleMovement;
-
 #endif //TRINITY_IDLEMOVEMENTGENERATOR_H

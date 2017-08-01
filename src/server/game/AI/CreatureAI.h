@@ -179,22 +179,6 @@ class TC_GAME_API CreatureAI : public UnitAI
         void _OnOwnerCombatInteraction(Unit* target);
 };
 
-struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>
-{
-
-    SelectableAI(const char *id) : FactoryHolder<CreatureAI>(id) {}
-};
-
-template<class REAL_AI>
-struct CreatureAIFactory : public SelectableAI
-{
-    CreatureAIFactory(const char *name) : SelectableAI(name) {}
-
-    CreatureAI* Create(void *) const override;
-
-    int Permit(const Creature *c) const override { return REAL_AI::Permissible(c); }
-};
-
 enum Permitions
 {
     PERMIT_BASE_NO                 = -1,
@@ -204,40 +188,6 @@ enum Permitions
     PERMIT_BASE_FACTION_SPECIFIC   = 400,
     PERMIT_BASE_SPECIAL            = 800
 };
-
-typedef FactoryHolder<CreatureAI> CreatureAICreator;
-typedef FactoryHolder<CreatureAI>::FactoryHolderRegistry CreatureAIRegistry;
-
-#define sCreatureAIRegistry CreatureAIRegistry::instance()
-
-//GO
-struct SelectableGameObjectAI : public FactoryHolder<GameObjectAI>, public Permissible<GameObject>
-{
-    SelectableGameObjectAI(const char *id) : FactoryHolder<GameObjectAI>(id) {}
-};
-
-template<class REAL_GO_AI>
-struct GameObjectAIFactory : public SelectableGameObjectAI
-{
-    GameObjectAIFactory(const char *name) : SelectableGameObjectAI(name) {}
-
-    GameObjectAI* Create(void *) const override;
-
-    int Permit(const GameObject *g) const override { return REAL_GO_AI::Permissible(g); }
-};
-
-template<class REAL_GO_AI>
-inline GameObjectAI*
-GameObjectAIFactory<REAL_GO_AI>::Create(void *data) const
-{
-    GameObject* go = reinterpret_cast<GameObject *>(data);
-    return (new REAL_GO_AI(go));
-}
-
-typedef FactoryHolder<GameObjectAI> GameObjectAICreator;
-typedef FactoryHolder<GameObjectAI>::FactoryHolderRegistry GameObjectAIRegistry;
-
-#define sGameObjectAIRegistry GameObjectAIRegistry::instance()
 
 #endif
 

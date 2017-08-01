@@ -1699,6 +1699,9 @@ CanAttackResult Creature::CanAggro(Unit const* who, bool assistAggro /* = false 
     if(IsCivilian())
         return CAN_ATTACK_RESULT_CIVILIAN;
 
+    if (IsAIEnabled && !AI()->CanAIAttack(who))
+        return CAN_ATTACK_RESULT_OTHERS;
+
     // This set of checks is should be done only for creatures
     if ((HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC) && who->GetTypeId() != TYPEID_PLAYER)                                   // flag is valid only for non player characters
         || (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) && who->GetTypeId() == TYPEID_PLAYER)                                 // immune to PC and target is a player, return false

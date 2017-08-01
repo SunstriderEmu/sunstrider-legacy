@@ -3,6 +3,7 @@
 #define SC_PRECOMPILED_H
 
 #include <memory>
+#include "CreatureAIImpl.h"
 #include "Util.h"
 #include "Transaction.h"
 #include "SpellMgr.h"

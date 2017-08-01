@@ -485,6 +485,12 @@ void BossAI::_Reset()
         instance->SetData(_bossId, NOT_STARTED);
 }
 
+bool BossAI::CanAIAttack(Unit const* target) const
+{
+ //TC   return CheckBoundary(target);
+    return true;
+}
+
 void BossAI::_JustDied()
 {
     events.Reset();

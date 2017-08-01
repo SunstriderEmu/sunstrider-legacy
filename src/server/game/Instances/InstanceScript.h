@@ -241,28 +241,5 @@ class TC_GAME_API DialogueHelper
         bool m_bIsFirstSide;
 };
 
-//create AI only if instance has a script with given name
-template<class AI, class T>
-AI* GetInstanceAI(T* obj, char const* scriptName)
-{
-    if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
-        if (instance->GetInstanceScript())
-            if (instance->GetScriptId() == sObjectMgr->GetScriptId(scriptName))
-                return new AI(obj);
-
-    return NULL;
-};
-
-//create AI only if instance has a script
-template<class AI, class T>
-AI* GetInstanceAI(T* obj)
-{
-    if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
-        if (instance->GetInstanceScript())
-            return new AI(obj);
-
-    return NULL;
-};
-
 #endif
 

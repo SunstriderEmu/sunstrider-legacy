@@ -2979,6 +2979,11 @@ bool InstanceMap::Reset(uint8 method)
     return m_mapRefManager.isEmpty();
 }
 
+std::string const& InstanceMap::GetScriptName() const
+{
+    return sObjectMgr->GetScriptName(i_script_id);
+}
+
 void InstanceMap::PermBindAllPlayers(Player *player)
 {
     InstanceSave *save = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());

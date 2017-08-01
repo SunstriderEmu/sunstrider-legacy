@@ -18,9 +18,14 @@
 #include "MoveSplineInit.h"
 #include <cassert>
 
-inline bool isStatic(MovementGenerator *mv)
+inline MovementGenerator* GetIdleMovementGenerator()
 {
-    return (mv == &si_idleMovement);
+    return sMovementGeneratorRegistry->GetRegistryItem(IDLE_MOTION_TYPE)->Create();
+}
+
+inline bool isStatic(MovementGenerator* movement)
+{
+    return (movement == GetIdleMovementGenerator());
 }
 
 void MotionMaster::Initialize()
@@ -46,15 +51,7 @@ void MotionMaster::Initialize()
 // set new default movement generator
 void MotionMaster::InitDefault()
 {
-    if (_owner->GetTypeId() == TYPEID_UNIT && _owner->IsAlive())
-    {
-        MovementGenerator* movement = FactorySelector::SelectMovementGenerator(_owner);
-        bool success = Mutate(movement == nullptr ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
-        if (success)
-            return; //else default to idle below
-    }
-
-    Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
+    Mutate(FactorySelector::SelectMovementGenerator(_owner), MOTION_SLOT_IDLE);
 }
 
 MotionMaster::~MotionMaster()
@@ -212,7 +209,7 @@ void MotionMaster::MoveIdle()
         MovementExpired(false);
     //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
     if (empty() || !isStatic(top()))
-        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
+        Mutate(GetIdleMovementGenerator(), MOTION_SLOT_IDLE);
 }
 
 void MotionMaster::MoveRandom(float spawndist)

@@ -1,5 +1,7 @@
 add_definitions(-D_WIN32_WINNT=0x0601)
-
+add_definitions(-DWIN32_LEAN_AND_MEAN)
+add_definitions(-DNOMINMAX)
+  
 # Package overloads
 set(BZIP2_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/dep/bzip2")
 set(ZLIB_INCLUDE_DIR " ${PROJECT_SOURCE_DIR}/dep/zlib")

@@ -1,4 +1,7 @@
 
+#include "CreatureAIFactory.h"
+#include "GameObjectAIFactory.h"
+
 #include "CreatureAIRegistry.h"
 #include "NullCreatureAI.h"
 #include "AOEAI.h"
@@ -11,7 +14,6 @@
 #include "ReactorAI.h"
 #include "RandomMovementGenerator.h"
 #include "CreatureAIImpl.h"
-#include "MovementGeneratorImpl.h"
 #include "MapManager.h"
 #include "WaypointMovementGenerator.h"
 

@@ -698,6 +698,11 @@ void SmartAI::OnCharmed(Unit* charmer, bool apply)
     GetScript()->ProcessEventsFor(SMART_EVENT_CHARMED, nullptr, 0, 0, apply);
 }
 
+bool SmartAI::CanAIAttack(Unit const* /*who*/) const
+{
+    return !(me->HasReactState(REACT_PASSIVE));
+}
+
 void SmartAI::DoAction(int32 param)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_ACTION_DONE, nullptr, param);

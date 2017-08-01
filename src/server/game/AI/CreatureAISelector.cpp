@@ -2,6 +2,7 @@
 #include "Creature.h"
 #include "CreatureAIImpl.h"
 #include "CreatureAISelector.h"
+#include "CreatureAIFactory.h"
 #include "NullCreatureAI.h"
 #include "MovementGenerator.h"
 #include "ScriptCalls.h"

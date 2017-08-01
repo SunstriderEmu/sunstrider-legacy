@@ -11,18 +11,18 @@
 template<class T, class O, class Key = std::string>
 class FactoryHolder
 {
-public:
-    typedef ObjectRegistry<FactoryHolder<T, O, Key>, Key> FactoryHolderRegistry;
+    public:
+        typedef ObjectRegistry<FactoryHolder<T, O, Key>, Key> FactoryHolderRegistry;
 
-    explicit FactoryHolder(Key const& k) : _key(k) { }
-    virtual ~FactoryHolder() { }
+        explicit FactoryHolder(Key const& k) : _key(k) { }
+        virtual ~FactoryHolder() { }
 
-    void RegisterSelf() { FactoryHolderRegistry::instance()->InsertItem(this, _key); }
+        void RegisterSelf() { FactoryHolderRegistry::instance()->InsertItem(this, _key); }
 
-    /// Abstract Factory create method
-    virtual T* Create(O* object = nullptr) const = 0;
-private:
-    Key const _key;
+        /// Abstract Factory create method
+        virtual T* Create(O* object = nullptr) const = 0;
+    private:
+        Key const _key;
 };
 
 /** Permissible is a classic way of letting the object decide

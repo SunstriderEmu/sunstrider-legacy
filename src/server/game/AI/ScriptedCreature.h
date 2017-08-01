@@ -213,6 +213,8 @@ public:
     void JustDied(Unit* /*killer*/) override { _JustDied(); }
     void JustReachedHome() override { _JustReachedHome(); }
 
+    bool CanAIAttack(Unit const* target) const override;
+
 protected:
     void _Reset();
     void _EnterCombat();

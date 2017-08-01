@@ -57,7 +57,8 @@ class TC_GAME_API UnitAI
     public:
         UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
         virtual ~UnitAI() = default;
-        
+
+        virtual bool CanAIAttack(Unit const* /*target*/) const { return true; }
         virtual void AttackStart(Unit *);
         void AttackStartCaster(Unit* victim, float dist);
         virtual void UpdateAI(const uint32 diff) { }
