@@ -6007,7 +6007,7 @@ void Player::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, b
 		dist += VISIBILITY_COMPENSATION; // sunwell: to ensure everyone receives all important packets
 
 	Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only, skipped_rcvr);
-	VisitNearbyWorldObject(dist, notifier);
+    Cell::VisitWorldObjects(this, notifier, dist);
 }
 
 void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
@@ -6018,7 +6018,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 	// we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
 	// update: replaced by GetMap()->GetVisibilityRange()
 	Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
-	VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
 }
 
 void Player::SendDirectMessage(WorldPacket *data) const
@@ -20209,7 +20209,7 @@ void Player::UpdateVisibilityForPlayer()
 {
 	// updates visibility of all objects around point of view for current player
 	Trinity::VisibleNotifier notifier(*this);
-	m_seer->VisitNearbyObject(GetSightRange(), notifier);
+    Cell::VisitAllObjects(m_seer, notifier, GetSightRange());
 	notifier.SendToSelf();   // send gathered data
 }
 

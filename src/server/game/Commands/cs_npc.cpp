@@ -1137,7 +1137,7 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 
     Trinity::FactionDo u_do(entryId, factionId);
     Trinity::WorldObjectWorker<Trinity::FactionDo> worker(player, u_do);
-    player->VisitNearbyGridObject(MAX_SEARCHER_DISTANCE, worker);
+    Cell::VisitGridObjects(player, worker, MAX_SEARCHER_DISTANCE);
 
     return true;
 }

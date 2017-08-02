@@ -64,7 +64,7 @@ void TotemAI::UpdateAI(const uint32 /*diff*/)
         victim = nullptr;
         Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
         Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
-        me->VisitNearbyObject(max_range, checker);
+        Cell::VisitGridObjects(me, checker, max_range);
     }
 
     // If have target

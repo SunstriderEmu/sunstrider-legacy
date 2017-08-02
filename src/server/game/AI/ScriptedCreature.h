@@ -50,13 +50,14 @@ private:
     const uint32 m_cooldown;
 };
 
+/*
 //Get a single creature of given entry
 TC_GAME_API Creature* FindCreature(uint32 entry, float range, Unit* Finder);
 //Get every creatures of given entry within given range
 TC_GAME_API void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder);
-
 //Get a single gameobject of given entry
 TC_GAME_API GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
+*/
 
 struct TC_GAME_API ScriptedAI : public CreatureAI
 {

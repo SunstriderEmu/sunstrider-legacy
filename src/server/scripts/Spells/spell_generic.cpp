@@ -31,9 +31,9 @@ class spell_gen_cannibalize : public SpellScriptLoader
                 // search for nearby enemy corpse in range
                 Trinity::CannibalizeObjectCheck u_check(caster, max_range);
                 Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(caster, result, u_check);
-                caster->VisitNearbyGridObject(max_range, searcher);
+                Cell::VisitGridObjects(caster, searcher, max_range);
                 if (!result)
-                    caster->VisitNearbyWorldObject(max_range, searcher);
+                    Cell::VisitWorldObjects(me, searcher, max_range);
 
                 if (!result)
                     return SPELL_FAILED_NO_EDIBLE_CORPSES;

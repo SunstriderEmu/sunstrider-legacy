@@ -532,12 +532,12 @@ void GameObject::Update(uint32 diff)
                     Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck u_check(this, owner, radius);
                     Trinity::UnitSearcher<Trinity::AnyUnfriendlyAoEAttackableUnitInObjectRangeCheck> checker(this, trapTarget, u_check);
 
-                    this->VisitNearbyGridObject(radius, checker);
+                    Cell::VisitGridObjects(this, checker, radius);
 
                     // or unfriendly player/pet
                     if(!trapTarget)
                     {
-                        this->VisitNearbyWorldObject(radius, checker);
+                        Cell::VisitWorldObjects(this, checker, radius);
                     }
                 }
 				else if (GetOwnerGUID())
@@ -552,7 +552,7 @@ void GameObject::Update(uint32 diff)
                     Player* p_ok = nullptr;
                     Trinity::AnyPlayerInObjectRangeCheck p_check(this, radius);
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> checker(this, p_ok, p_check);
-                    this->VisitNearbyWorldObject(radius, checker);
+                    Cell::VisitWorldObjects(this, checker, radius);
                     trapTarget = p_ok;
                 }
 
@@ -1147,7 +1147,7 @@ void GameObject::TriggeringLinkedGameObject( uint32 trapEntry, Unit* target)
         // using original GO distance
         Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target,trapEntry,range);
         Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(target, trapGO,go_check);
-        VisitNearbyGridObject(range, checker);
+        Cell::VisitGridObjects(this, checker, range);
     }
 
     // found correct GO
@@ -1161,7 +1161,7 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
 
     Trinity::NearestGameObjectFishingHole u_check(*this, range);
     Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(ok, u_check);
-    VisitNearbyGridObject(range, checker);
+    Cell::VisitGridObjects(this, checker, range);
 
     return ok;
 }

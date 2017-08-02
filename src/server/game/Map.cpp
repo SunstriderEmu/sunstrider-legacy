@@ -2209,28 +2209,6 @@ const char* Map::GetMapName() const
     return i_mapEntry ? i_mapEntry->name[sWorld->GetDefaultDbcLocale()] : "UNNAMEDMAP\x0";
 }
 
-void Map::UpdateObjectVisibility( WorldObject* obj, Cell cell, CellCoord cellpair)
-{
-    cell.SetNoCreate();
-    Trinity::VisibleChangesNotifier notifier(*obj);
-    TypeContainerVisitor<Trinity::VisibleChangesNotifier, WorldTypeMapContainer > player_notifier(notifier);
-    cell.Visit(cellpair, player_notifier, *this, *obj, GetVisibilityRange());
-}
-
-void Map::UpdateObjectsVisibilityFor(Player* player, Cell cell, CellCoord cellpair)
-{
-	Trinity::VisibleNotifier notifier(*player);
-
-	cell.SetNoCreate();
-	TypeContainerVisitor<Trinity::VisibleNotifier, WorldTypeMapContainer > world_notifier(notifier);
-	TypeContainerVisitor<Trinity::VisibleNotifier, GridTypeMapContainer  > grid_notifier(notifier);
-	cell.Visit(cellpair, world_notifier, *this, *player->m_seer, player->GetSightRange());
-	cell.Visit(cellpair, grid_notifier, *this, *player->m_seer, player->GetSightRange());
-
-	// send data
-	notifier.SendToSelf();
-}
-
 void Map::SendInitSelf( Player * player)
 {
     TC_LOG_DEBUG("maps","Creating player data for himself %u", player->GetGUIDLow());
@@ -3610,7 +3588,7 @@ TempSummon* Map::SummonCreature(uint32 entry, Position const& pos, SummonPropert
 
 	// call MoveInLineOfSight for nearby creatures
 	Trinity::AIRelocationNotifier notifier(*summon);
-	summon->VisitNearbyObject(GetVisibilityRange(), notifier);
+    Cell::VisitAllObjects(summon, notifier, GetVisibilityRange());
 
 	return summon;
 }

@@ -313,9 +313,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
         void AddObjectToSwitchList(WorldObject *obj, bool on);
         virtual void DelayedUpdate(const uint32 diff);
 
-		void UpdateObjectVisibility(WorldObject* obj, Cell cell, CellCoord cellpair);
-		void UpdateObjectsVisibilityFor(Player* player, Cell cell, CellCoord cellpair);
-
 		void LoadCorpseData();
 		void DeleteCorpseData();
 		void AddCorpse(Corpse* corpse);
@@ -409,9 +406,6 @@ class TC_GAME_API Map : public GridRefManager<NGridType>
 		void UpdateIteratorBack(Player* player);
 
         template<class T> void SwitchGridContainers(T* obj, bool active);
-        template<class NOTIFIER> void VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier);
         CreatureGroupHolderType CreatureGroupHolder;
 
         MTRand mtRand;
@@ -723,56 +717,5 @@ class TC_GAME_API BattlegroundMap : public Map
         Battleground* m_bg;
 };
 
-template<class T, class CONTAINER>
-inline void Map::Visit(const Cell &cell, TypeContainerVisitor<T, CONTAINER> &visitor)
-{
-    const uint32 x = cell.GridX();
-    const uint32 y = cell.GridY();
-    const uint32 cell_x = cell.CellX();
-    const uint32 cell_y = cell.CellY();
-
-    if( !cell.NoCreate() || IsGridLoaded(GridCoord(x,y)) )
-    {
-        EnsureGridLoaded(cell);
-        getNGrid(x, y)->VisitGrid(cell_x, cell_y, visitor);
-    }
-}
-
-template<class NOTIFIER>
-inline void Map::VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier)
-{
-    CellCoord p(Trinity::ComputeCellCoord(x, y));
-    Cell cell(p);
-    cell.SetNoCreate();
-
-    TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
-    cell.Visit(p, world_object_notifier, *this, radius, x, y);
-    TypeContainerVisitor<NOTIFIER, GridTypeMapContainer >  grid_object_notifier(notifier);
-    cell.Visit(p, grid_object_notifier, *this, radius, x, y);
-}
-
-template<class NOTIFIER>
-inline void
-Map::VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier)
-{
-    CellCoord p(Trinity::ComputeCellCoord(x, y));
-    Cell cell(p);
-    cell.SetNoCreate();
-
-    TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
-    cell.Visit(p, world_object_notifier, *this, radius, x, y);
-}
-
-template<class NOTIFIER>
-inline void
-Map::VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier)
-{
-    CellCoord p(Trinity::ComputeCellCoord(x, y));
-    Cell cell(p);
-    cell.SetNoCreate();
-
-    TypeContainerVisitor<NOTIFIER, GridTypeMapContainer >  grid_object_notifier(notifier);
-    cell.Visit(p, grid_object_notifier, *this, radius, x, y);
-}
 #endif
 

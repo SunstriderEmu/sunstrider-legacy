@@ -724,14 +724,14 @@ void AreaAura::Update(uint32 diff)
                 {
                     Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(caster, caster, m_radius, GetSpellInfo()->HasAttribute(SPELL_ATTR3_ONLY_TARGET_PLAYERS), false, true);
                     Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(caster, targets, u_check);
-                    caster->VisitNearbyObject(m_radius, searcher);
+                    Cell::VisitAllObjects(caster, searcher, m_radius);
                     break;
                 }
                 case AREA_AURA_ENEMY:
                 {
                     Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(caster, caster, m_radius, GetSpellInfo(), false, true); // No GetCharmer in searcher
                     Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck> searcher(caster, targets, u_check);
-                    caster->VisitNearbyObject(m_radius, searcher);
+                    Cell::VisitAllObjects(caster, searcher, m_radius);
                     break;
                 }
                 case AREA_AURA_OWNER:
@@ -3483,7 +3483,7 @@ void Aura::HandleFeignDeath(bool apply, bool Real)
         std::list<Unit*> targets;
         Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(m_target, m_target, m_target->GetMap()->GetVisibilityRange());
         Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(m_target, targets, u_check);
-        m_target->VisitNearbyObject(m_target->GetMap()->GetVisibilityRange(), searcher);
+        Cell::VisitAllObjects(m_target, searcher, m_target->GetMap()->GetVisibilityRange());
 
         /* first pass, interrupt spells and check for units attacking the misdirection target */
         for(auto & target : targets)

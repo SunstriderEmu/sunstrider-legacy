@@ -78,7 +78,7 @@ namespace FactorySelector
         if (unit->GetTypeId() == TYPEID_UNIT)
         {
             type = unit->ToCreature()->GetDefaultMovementType();
-            //override default WAYPOINT_MOTION_TYPE type if no waypoint path id found for creature (or WAYPOINT_MOTION_TYPE will fail anyway)
+            //sunstrider: override default WAYPOINT_MOTION_TYPE type if no waypoint path id found for creature (or WAYPOINT_MOTION_TYPE will fail anyway)
             if (type == WAYPOINT_MOTION_TYPE && unit->ToCreature()->GetWaypointPathId() == 0)
                 type = IDLE_MOTION_TYPE;
         }

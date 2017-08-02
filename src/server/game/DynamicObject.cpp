@@ -170,7 +170,7 @@ void DynamicObject::Update(uint32 p_time)
 		if (m_updateTimer < p_time)
 		{
 			Trinity::DynamicObjectUpdater notifier(*this, caster);
-			VisitNearbyObject(GetRadius(), notifier);
+            Cell::VisitAllObjects(this, notifier, GetRadius());
 			m_updateTimer = 500; // is this blizzlike?
 		}
 		else m_updateTimer -= p_time;

@@ -607,6 +607,8 @@ void BossAI::UpdateAI(uint32 diff)
     DoMeleeAttackIfReady();
 }
 
+/* remove this block if you don't know why it's commented out
+
 Creature* FindCreature(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
@@ -639,13 +641,14 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
     Finder->VisitNearbyGridObject(range, searcher);
     return target;
 }
+*/
 
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     Unit* pUnit = nullptr;
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pUnit;
 }
 
@@ -654,7 +657,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     std::list<Creature*> pList;
     Trinity::FriendlyCCedInRange u_check(me, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, pList, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
 
@@ -663,7 +666,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     std::list<Creature*> pList;
     Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, pList, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
 

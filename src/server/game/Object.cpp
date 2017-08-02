@@ -1378,7 +1378,7 @@ void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool se
 	if (includeMargin)
 		dist += VISIBILITY_COMPENSATION; // pussywizard: to ensure everyone receives all important packets
 	Trinity::MessageDistDeliverer notifier(this, data, dist, false, skipped_rcvr);
-	VisitNearbyWorldObject(dist, notifier);
+    Cell::VisitWorldObjects(this, notifier, dist);
 }
 
 void WorldObject::SendObjectDeSpawnAnim(uint64 guid)
@@ -2083,7 +2083,7 @@ Creature* WorldObject::FindNearestCreature(uint32 entry, float range, bool alive
        Creature *creature = nullptr;
        Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(*this, entry, alive, range);
        Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(creature, checker);
-       VisitNearbyObject(range, searcher);
+       Cell::VisitAllObjects(this, searcher, range);
        return creature;
 }
 
@@ -2092,7 +2092,8 @@ GameObject* WorldObject::FindNearestGameObject(uint32 entry, float range) const
     GameObject *go = nullptr;
     Trinity::NearestGameObjectEntryInObjectRangeCheck checker(*this, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(this, go, checker);
-    VisitNearbyGridObject(range, searcher);
+    Cell::VisitGridObjects(this, searcher, range);
+
     return go;
 }
 
@@ -2101,7 +2102,7 @@ GameObject* WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float
     GameObject* go = nullptr;
     Trinity::NearestGameObjectTypeInObjectRangeCheck checker(*this, type, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(this, go, checker);
-    VisitNearbyGridObject(range, searcher);
+    Cell::VisitGridObjects(this, searcher, range);
     return go;
 }
 
@@ -2111,7 +2112,7 @@ Player* WorldObject::SelectNearestPlayer(float distance, bool alive) const
 
     Trinity::NearestPlayerInObjectRangeCheck checker(*this, alive, distance);
     Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(this, target, checker);
-    VisitNearbyObject(distance, searcher);
+    Cell::VisitAllObjects(this, searcher, distance);
 
     return target;
 }
@@ -2766,7 +2767,7 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
 	//updates object's visibility for nearby players
 	Trinity::VisibleChangesNotifier notifier(*this);
-	VisitNearbyWorldObject(GetVisibilityRange(), notifier);
+    Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
 }
 
 /** Fill UpdateData's for each player in range of given object */
@@ -2886,7 +2887,7 @@ void WorldObject::DestroyForNearbyPlayers()
 	std::list<Player*> targets;
 	Trinity::AnyPlayerInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
 	Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
-	VisitNearbyWorldObject(GetMap()->GetVisibilityRange(), searcher);
+    Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityRange());
 	for (auto& player : targets) {
 		if (player == this)
 			continue;

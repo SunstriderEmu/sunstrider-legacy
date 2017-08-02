@@ -101,8 +101,16 @@ struct Cell
         uint32 All;
     } data;
 
-    template<class T, class CONTAINER> void Visit(const CellCoord&, TypeContainerVisitor<T, CONTAINER> &visitor, Map &, const WorldObject&, float) const;
-    template<class T, class CONTAINER> void Visit(const CellCoord &, TypeContainerVisitor<T, CONTAINER> &visitor, Map &, float radius, float x_off, float y_off) const;
+    template<class T, class CONTAINER> void Visit(CellCoord const&, TypeContainerVisitor<T, CONTAINER>& visitor, Map&, WorldObject const& obj, float radius) const;
+    template<class T, class CONTAINER> void Visit(CellCoord const&, TypeContainerVisitor<T, CONTAINER>& visitor, Map&, float x, float y, float radius) const;
+
+    template<class T> static void VisitGridObjects(WorldObject const* obj, T& visitor, float radius, bool dont_load = true);
+    template<class T> static void VisitWorldObjects(WorldObject const* obj, T& visitor, float radius, bool dont_load = true);
+    template<class T> static void VisitAllObjects(WorldObject const* obj, T& visitor, float radius, bool dont_load = true);
+    
+    template<class T> static void VisitGridObjects(float x, float y, Map* map, T& visitor, float radius, bool dont_load = true);
+    template<class T> static void VisitWorldObjects(float x, float y, Map* map, T& visitor, float radius, bool dont_load = true);
+    template<class T> static void VisitAllObjects(float x, float y, Map* map, T& visitor, float radius, bool dont_load = true);
 
     static CellArea CalculateCellArea(const WorldObject &obj, float radius);
     static CellArea CalculateCellArea(float x, float y, float radius);

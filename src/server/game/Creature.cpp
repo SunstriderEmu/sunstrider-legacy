@@ -2160,7 +2160,7 @@ void Creature::DoFleeToGetAssistance(float radius) // Optional parameter
 
     Trinity::NearestAssistCreatureInCreatureRangeCheck u_check(this,GetVictim(),radius);
     Trinity::CreatureLastSearcher<Trinity::NearestAssistCreatureInCreatureRangeCheck> searcher(pCreature, u_check);
-    VisitNearbyGridObject(radius, searcher);
+    Cell::VisitGridObjects(this, searcher, radius);
 
     if(!pCreature)
         SetControlled(true, UNIT_STATE_FLEEING);
@@ -2178,7 +2178,7 @@ Unit* Creature::SelectNearestTarget(float dist, bool playerOnly /* = false */, b
 
         Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, dist, playerOnly, furthest);
         Trinity::UnitLastSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
-        VisitNearbyObject(dist, searcher);
+        Cell::VisitAllObjects(this, searcher, dist);
     }
 
     return target;
@@ -2224,7 +2224,7 @@ Unit* Creature::SelectNearestHostileUnitInAggroRange(bool useLOS) const
 		Trinity::NearestHostileUnitInAggroRangeCheck u_check(this, useLOS);
 		Trinity::UnitSearcher<Trinity::NearestHostileUnitInAggroRangeCheck> searcher(this, target, u_check);
 
-		VisitNearbyGridObject(MAX_AGGRO_RADIUS, searcher);
+        Cell::VisitGridObjects(this, searcher, MAX_AGGRO_RADIUS);
 	}
 
 	return target;
@@ -3175,7 +3175,7 @@ void Creature::WarnDeathToFriendly()
 
     Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned u_check(this, this, CREATURE_MAX_DEATH_WARN_RANGE);
     Trinity::CreatureListSearcherWithRange<Trinity::AnyFriendlyUnitInObjectRangeCheckWithRangeReturned> searcher(this, warnList, u_check);
-    VisitNearbyGridObject(CREATURE_MAX_DEATH_WARN_RANGE, searcher);
+    Cell::VisitGridObjects(this, searcher, CREATURE_MAX_DEATH_WARN_RANGE);
 
     for(auto itr : warnList) 
         if(itr.first->IsAIEnabled)

@@ -3035,7 +3035,7 @@ void SmartScript::GetWorldObjectsInDist(ObjectVector& targets, float dist) const
 
     Trinity::AllWorldObjectsInRange u_check(obj, dist);
     Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(obj, targets, u_check);
-    obj->VisitNearbyObject(dist, searcher);
+    Cell::VisitAllObjects(obj, searcher, dist);
 }
 
 void SmartScript::ProcessEvent(SmartScriptHolder& e, Unit* unit, uint32 var0, uint32 var1, bool bvar, const SpellInfo* spell, GameObject* gob)
@@ -3986,7 +3986,7 @@ Unit* SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, unit, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitGridObjects(me, searcher, range);
     return unit;
 }
 
@@ -3997,7 +3997,7 @@ void SmartScript::DoFindFriendlyCC(std::list<Creature*>& _list, float range)
     
     Trinity::FriendlyCCedInRange u_check(me, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, _list, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitGridObjects(me, searcher, range);
 }
 
 void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& list, float range, uint32 spellid)
@@ -4007,7 +4007,7 @@ void SmartScript::DoFindFriendlyMissingBuff(std::list<Creature*>& list, float ra
 
     Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, list, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitGridObjects(me, searcher, range);
 }
 
 Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool playerOnly, bool nearest)
@@ -4018,7 +4018,7 @@ Unit* SmartScript::DoFindClosestOrFurthestFriendlyInRange(float range, bool play
     Unit *target = nullptr;
     Trinity::NearestFriendlyUnitInObjectRangeCheck u_check(me, me, range,playerOnly,nearest);
     Trinity::UnitLastSearcher<Trinity::NearestFriendlyUnitInObjectRangeCheck> searcher(me, target, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitGridObjects(me, searcher, range);
 
     return target;
 }

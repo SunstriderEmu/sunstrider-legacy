@@ -798,7 +798,7 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Player* SelectNearestPlayer(float distance, bool alive = true) const;
 
         bool isActiveObject() const { return m_isActive; }
-        /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
+        /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitAllObjects).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.
         */
         void SetKeepActive(bool isActiveObject);
@@ -806,10 +806,6 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 		bool IsPermanentWorldObject() const { return m_isWorldObject; }
 		bool IsWorldObject() const;
 
-
-        template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier); }
         bool m_isTempWorldObject;
 
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
