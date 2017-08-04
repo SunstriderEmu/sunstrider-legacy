@@ -6173,14 +6173,6 @@ void Aura::PeriodicTick()
             pdamage = pCaster->SpellDamageBonusDone(m_target,GetSpellInfo(),pdamage,DOT);
             pdamage = m_target->SpellDamageBonusTaken(pCaster, GetSpellInfo(), pdamage, DOT);
 
-            //Calculate armor mitigation if it is a physical spell
-            if (GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_NORMAL)
-            {
-                uint32 pdamageReductedArmor = pCaster->CalcArmorReducedDamage(m_target, pdamage);
-                cleanDamage.damage += pdamage - pdamageReductedArmor;
-                pdamage = pdamageReductedArmor;
-            }
-
             // talent Soul Siphon add bonus to Drain Life spells
             if( GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x8) )
             {
