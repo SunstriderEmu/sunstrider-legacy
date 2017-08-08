@@ -738,11 +738,14 @@ void MotionMaster::MoveRotate(uint32 time, RotateDirection direction)
 
 void MotionMaster::PropagateSpeedChange()
 {
-    for (int i = 0; i <= _top; ++i)
-    {
-        if (Impl[i])
-            Impl[i]->UnitSpeedChanged();
-    }
+    if (empty())
+        return;
+
+    MovementGenerator* movement = top();
+    if (!movement)
+        return;
+
+    movement->UnitSpeedChanged();
 }
 
 void MotionMaster::ReinitializeMovement()
