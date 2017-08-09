@@ -6047,16 +6047,6 @@ void Aura::PeriodicTick()
                 pdamage = pCaster->SpellDamageBonusDone(m_target,GetSpellInfo(),amount,DOT);
                 pdamage = m_target->SpellDamageBonusTaken(pCaster, GetSpellInfo(), pdamage, DOT);
 
-                // Calculate armor mitigation if it is a physical spell
-                // But not for bleed mechanic spells
-                if ( GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_NORMAL &&
-                     GetEffectMechanic(GetSpellInfo(), m_effIndex) != MECHANIC_BLEED)
-                {
-                    uint32 pdamageReductedArmor = pCaster->CalcArmorReducedDamage(m_target, pdamage);
-                    cleanDamage.damage += pdamage - pdamageReductedArmor;
-                    pdamage = pdamageReductedArmor;
-                }
-
                 // Curse of Agony damage-per-tick calculation
                 if (GetSpellInfo()->SpellFamilyName==SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x0000000000000400LL) && GetSpellInfo()->SpellIconID==544)
                 {
@@ -6182,14 +6172,6 @@ void Aura::PeriodicTick()
             uint32 pdamage = GetModifierValuePerStack() > 0 ? GetModifierValuePerStack() : 0;
             pdamage = pCaster->SpellDamageBonusDone(m_target,GetSpellInfo(),pdamage,DOT);
             pdamage = m_target->SpellDamageBonusTaken(pCaster, GetSpellInfo(), pdamage, DOT);
-
-            //Calculate armor mitigation if it is a physical spell
-            if (GetSpellInfo()->GetSchoolMask() & SPELL_SCHOOL_MASK_NORMAL)
-            {
-                uint32 pdamageReductedArmor = pCaster->CalcArmorReducedDamage(m_target, pdamage);
-                cleanDamage.damage += pdamage - pdamageReductedArmor;
-                pdamage = pdamageReductedArmor;
-            }
 
             // talent Soul Siphon add bonus to Drain Life spells
             if( GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags & 0x8) )
