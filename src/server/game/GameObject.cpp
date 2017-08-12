@@ -371,9 +371,10 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
 
 void GameObject::Update(uint32 diff)
 {
-    if(!m_AI)
-        if (!AIM_Initialize())
-            TC_LOG_ERROR("misc","Could not initialize GameObjectAI");
+    if (AI())
+        AI()->UpdateAI(diff);
+    else if (!AIM_Initialize())
+        TC_LOG_ERROR("misc","Could not initialize GameObjectAI");
 
     switch (m_lootState)
     {
@@ -684,10 +685,6 @@ void GameObject::Update(uint32 diff)
         }
     }
     
-    if (AI())
-        AI()->UpdateAI(diff);
-
-    sScriptMgr->OnGameObjectUpdate(this, diff);
 }
 
 void GameObject::Refresh()
@@ -880,8 +877,6 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     if(AI())
         AI()->OnLootStateChanged(state, unit);
 
-    sScriptMgr->OnGameObjectLootStateChanged(this, state, unit);
-
     /*if (m_model)
     {
         // startOpen determines whether we are going to add or remove the LoS on activation
@@ -910,8 +905,6 @@ void GameObject::SetGoState(GOState state)
     SetUInt32Value(GAMEOBJECT_STATE, state);
     if(AI())
         AI()->OnStateChanged(state, nullptr);
-
-    sScriptMgr->OnGameObjectStateChanged(this, state);
 
     if (m_model && !IsTransport())
     {
@@ -1276,10 +1269,8 @@ void GameObject::Use(Unit* user)
 
     if (Player* playerUser = user->ToPlayer())
     {
-        if (sScriptMgr->OnGossipHello(playerUser, this))
-            return;
-
-        if (AI()->GossipHello(playerUser, false))
+        playerUser->PlayerTalkClass->ClearMenus();
+        if (AI()->GossipHello(playerUser))
             return;
     }
 

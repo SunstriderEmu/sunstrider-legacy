@@ -517,8 +517,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 {
-    
-    
     if(!GetPlayer()->IsAlive())
         return;
     
@@ -540,7 +538,6 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
         return;
     }
-
     
 
     uint32 text_emote, emoteNum;
@@ -593,7 +590,6 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         //Send scripted event call
         if(i_target)
             if (Creature *pCreature = i_target->ToCreature()) {
-                sScriptMgr->ReceiveEmote(GetPlayer(),pCreature, text_emote);
                 pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
             }
     }
@@ -601,10 +597,6 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 {
-    
-    
-    
-
     uint64 iguid;
     uint8 reason;
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_CHAT_IGNORED");

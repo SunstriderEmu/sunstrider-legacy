@@ -249,15 +249,7 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     if (GetPlayer()->m_unitMovedByMe != GetPlayer())
         return;
 
-    if (sScriptMgr->OnGossipHello(_player, gameObjTarget))
-        return;
-        
-    if (gameObjTarget->AI()->GossipHello(_player, false))
-        return;
-
     gameObjTarget->Use(_player);
-
-    //TC LK _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
 }
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)

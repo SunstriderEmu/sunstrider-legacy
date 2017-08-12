@@ -167,9 +167,11 @@ namespace MMAP
             buildMap(mapId);
         }
     }
-    void MapBuilder::buildAllMaps(int threads)
+    void MapBuilder::buildAllMaps(unsigned int threads)
     {
-        for (int i = 0; i < threads; ++i)
+        printf("Using %u threads to extract mmaps\n", threads);
+
+        for (unsigned int i = 0; i < threads; ++i)
         {
             _workerThreads.push_back(std::thread(&MapBuilder::WorkerThread, this));
         }

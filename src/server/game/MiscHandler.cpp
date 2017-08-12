@@ -123,14 +123,13 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelectCode(_player, menuId, gossipListId, code.c_str());
+            unit->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str());
             if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
         else
         {
-            go->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
-            if (!sScriptMgr->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+            if (!go->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str()))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }
@@ -138,14 +137,13 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelect(_player, menuId, gossipListId);
+            unit->AI()->GossipSelect(_player, menuId, gossipListId);
             if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
         else
         {
-            go->AI()->OnGossipSelect(_player, menuId, gossipListId);
-            if (!sScriptMgr->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
+            if (!go->AI()->GossipSelect(_player, menuId, gossipListId))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }

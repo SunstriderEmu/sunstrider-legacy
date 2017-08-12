@@ -1492,6 +1492,7 @@ char const* ScriptMgr::ScriptsVersion()
     return "Sunstrider scripting library";
 }
 
+/*
 bool ScriptMgr::OnGossipHello( Player * player, Creature *creature)
 {
     ASSERT(player);
@@ -1523,18 +1524,6 @@ bool ScriptMgr::OnGossipSelectCode( Player *player, Creature *creature, uint32 s
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, creature, sender, action, code);
-}
-
-
-bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code)
-{
-    ASSERT(player);
-    ASSERT(go);
-    ASSERT(code);
-
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
 bool ScriptMgr::OnQuestAccept( Player *player, Creature *creature, Quest const *quest)
@@ -1593,14 +1582,6 @@ uint32 ScriptMgr::GetDialogStatus( Player *player, Creature *creature)
     return tmpscript->GetDialogStatus(player, creature);
 }
 
-CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
-{
-    ASSERT(creature);
-
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
-    return tmpscript->GetAI(creature);
-}
-
 void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
 {
     ASSERT(creature);
@@ -1609,6 +1590,27 @@ void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
     tmpscript->OnUpdate(creature, diff);
 }
 
+bool ScriptMgr::ReceiveEmote( Player *player, Creature *creature, uint32 emote )
+{
+    ASSERT(player);
+    ASSERT(creature);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnReceiveEmote(player, creature, emote);
+}
+
+*/
+
+CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
+{
+    ASSERT(creature);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
+    return tmpscript->GetAI(creature);
+}
+
+/*
 bool ScriptMgr::OnGossipHello( Player *player, GameObject *go )
 {
     ASSERT(player);
@@ -1626,6 +1628,17 @@ bool ScriptMgr::OnGossipSelect(Player* player, GameObject* go, uint32 sender, ui
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     return tmpscript->OnGossipSelect(player, go, sender, action);
+}
+
+bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code)
+{
+    ASSERT(player);
+    ASSERT(go);
+    ASSERT(code);
+
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
 bool ScriptMgr::OnQuestAccept(Player* player, GameObject* go, Quest const* quest)
@@ -1699,6 +1712,7 @@ void ScriptMgr::OnGameObjectUpdate(GameObject* go, uint32 diff)
     GET_SCRIPT(GameObjectScript, go->GetScriptId(), tmpscript);
     tmpscript->OnUpdate(go, diff);
 }
+*/
 
 GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* go)
 {
@@ -1744,16 +1758,6 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
 
     GET_SCRIPT_RET(ItemScript, proto->ScriptId, tmpscript, false);
     return tmpscript->OnExpire(player, proto);
-}
-
-bool ScriptMgr::ReceiveEmote( Player *player, Creature *creature, uint32 emote )
-{
-    ASSERT(player);
-    ASSERT(creature);
-
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnReceiveEmote(player, creature, emote);
 }
 
 bool ScriptMgr::EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *creature)

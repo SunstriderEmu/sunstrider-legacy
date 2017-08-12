@@ -1488,6 +1488,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         QuestStatus GetQuestStatus( uint32 quest_id ) const;
         void SetQuestStatus( uint32 quest_id, QuestStatus status );
         void AutoCompleteQuest( Quest const* qInfo );
+        QuestGiverStatus GetQuestDialogStatus(Object* questGiver);
 
         void SetDailyQuestStatus( uint32 quest_id );
         void ResetDailyQuestStatus();

@@ -89,7 +89,7 @@ enum QuestStatus
     MAX_QUEST_STATUS
 };
 
-enum __QuestGiverStatus
+enum QuestGiverStatus
 {
     DIALOG_STATUS_NONE                     = 0,
     DIALOG_STATUS_UNAVAILABLE              = 1,

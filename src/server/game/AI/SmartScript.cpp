@@ -2117,13 +2117,11 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SEND_GOSSIP_MENU: gossipMenuId %d, gossipNpcTextId %d",
                 e.action.sendGossipMenu.gossipMenuId, e.action.sendGossipMenu.gossipNpcTextId);
 
-            /* TC
             // override default gossip
             if (me)
                 ENSURE_AI(SmartAI, me->AI())->SetGossipReturn(true);
             else if (go)
                 ENSURE_AI(SmartGameObjectAI, go->AI())->SetGossipReturn(true);
-            */
 
             for (WorldObject* target : targets)
             {

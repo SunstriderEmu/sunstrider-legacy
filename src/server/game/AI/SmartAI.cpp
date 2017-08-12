@@ -57,6 +57,7 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
     mInvincibilityHpLevel = 0;
 
     mJustReset = false;
+    _gossipReturn = false;
 }
 
 bool SmartAI::IsAIControlled() const
@@ -756,27 +757,31 @@ void SmartAI::SetEvadeDisabled(bool disable)
 
 void SmartAI::GossipHello(Player* player)
 {
+    _gossipReturn = false;
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player);
+    return _gossipReturn;
 }
 
-void SmartAI::sGossipSelect(Player* player, uint32 sender, uint32 action)
+void SmartAI::GossipSelect(Player* player, uint32 sender, uint32 action)
 {
+    _gossipReturn = false;
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_SELECT, player, sender, action);
+    return _gossipReturn;
 }
 
-void SmartAI::sGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
+void SmartAI::GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { }
 
-void SmartAI::sQuestAccept(Player* player, Quest const* quest)
+void SmartAI::QuestAccept(Player* player, Quest const* quest)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_ACCEPTED_QUEST, player, quest->GetQuestId());
 }
 
-void SmartAI::sQuestReward(Player* player, Quest const* quest, uint32 opt)
+void SmartAI::QuestReward(Player* player, Quest const* quest, uint32 opt)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_REWARD_QUEST, player, quest->GetQuestId(), opt);
 }
 
-bool SmartAI::sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex)
+bool SmartAI::OnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_DUMMY_EFFECT, caster, spellId, effIndex);
     return true;
@@ -913,28 +918,37 @@ void SmartGameObjectAI::Reset()
 }
 
 // Called when a player opens a gossip dialog with the gameobject.
-bool SmartGameObjectAI::GossipHello(Player* player, bool reportUse)
+bool SmartGameObjectAI::GossipHello(Player* player)
 {
     TC_LOG_DEBUG("scripts.ai","SmartGameObjectAI::GossipHello");
-    GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, uint32(reportUse), 0, false, nullptr, go);
-    return false;
+    _gossipReturn = false;
+    GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, 0, 0, false, nullptr, go);
+    return _gossipReturn;
+}
+
+bool SmartGameObjectAI::OnReportUse(Player* player)
+{
+    TC_LOG_DEBUG("scripts.ai", "SmartGameObjectAI::OnReportUse");
+    _gossipReturn = false;
+    GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_HELLO, player, 1, 0, false, nullptr, me);
+    return _gossipReturn;
 }
 
 // Called when a player selects a gossip item in the gameobject's gossip menu.
-bool SmartGameObjectAI::OnGossipSelect(Player* player, uint32 sender, uint32 action)
+bool SmartGameObjectAI::GossipSelect(Player* player, uint32 sender, uint32 action)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_GOSSIP_SELECT, player, sender, action, false, nullptr, go);
     return false;
 }
 
 // Called when a player selects a gossip with a code in the gameobject's gossip menu.
-bool SmartGameObjectAI::OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/)
+bool SmartGameObjectAI::GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/)
 {
     return false;
 }
 
 // Called when a player accepts a quest from the gameobject.
-bool SmartGameObjectAI::OnQuestAccept(Player* player, Quest const* quest)
+bool SmartGameObjectAI::QuestAccept(Player* player, Quest const* quest)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_ACCEPTED_QUEST, player, quest->GetQuestId(), 0, false, nullptr, go);
     return false;
