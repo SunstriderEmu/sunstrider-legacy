@@ -1257,13 +1257,6 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 //*********************************
 //*** Functions used internally ***
 
-void ScriptMgr::RegisterOLDScript(OLDScript*& script)
-{
-    auto  cScript = new CreatureScript(script->Name.c_str());
-    cScript->baseScript = script;
-    script = nullptr; //CreatureScript object now own the script pointer, remove it for caller
-}
-
 #define SCR_MAP_BGN(M, V, I, E, C, T) \
     if (V->GetEntry() && V->GetEntry()->T()) \
     { \
@@ -1760,17 +1753,10 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
     return tmpscript->OnExpire(player, proto);
 }
 
-bool ScriptMgr::EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *creature)
-{
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    return tmpscript->OnEffectDummyCreature(caster, spellId, effIndex, creature);
-}
-
 SpellScriptLoader* ScriptMgr::GetSpellScriptLoader(uint32 scriptId)
 {
     return ScriptRegistry<SpellScriptLoader>::Instance()->GetScriptById(scriptId);
 }
-
 
 InstanceScript* ScriptMgr::CreateInstanceScript(InstanceMap* map)
 {
@@ -1814,8 +1800,6 @@ CreatureScript::CreatureScript(const char* name)
 
 CreatureScript::~CreatureScript()
 {
-    //delete used base OLDScript if any
-    delete baseScript;
 }
 
 GameObjectScript::GameObjectScript(const char* name)

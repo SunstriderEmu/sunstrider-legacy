@@ -146,6 +146,7 @@ class TC_GAME_API CreatureAI : public UnitAI
         //called for friendly creatures death FOR UP TO 60m
         virtual void FriendlyKilled(Creature const* c, float range) {}
 
+        //remove me as soon as you can
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 
         virtual void OnRemove() {}
