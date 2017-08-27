@@ -874,18 +874,7 @@ void Spell::SelectSpellTargets()
             }
             case 40160: // Throw Bomb
             {
-                GameObject* go = nullptr;
-
-                CellCoord pair(Trinity::ComputeCellCoord(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()));
-                Cell cell(pair);
-                cell.SetNoCreate();
-
-                Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 185861, 100.0f);
-                Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(m_caster, go, go_check);
-
-                TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer> go_searcher(searcher);
-
-                cell.Visit(pair, go_searcher, *m_caster->GetMap(), *m_caster, 100.0f);
+                GameObject* go = m_caster->FindNearestGameObject(185861, 100.0f);
 
                 if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 4.0f) {
                     go->SetLootState(GO_JUST_DEACTIVATED);
@@ -896,30 +885,16 @@ void Spell::SelectSpellTargets()
             }
             case 33655: // Dropping the Nether Modulator
             {
-                GameObject* go = nullptr;
-
-                Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*m_caster, 183350, 100.0f);
-                Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(m_caster, go, go_check);
-				m_caster->GetMap()->VisitGrid(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), 100.0f, searcher);
-
-                if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
-                    go->SetLootState(GO_JUST_DEACTIVATED);
-                    m_caster->ToPlayer()->KilledMonsterCredit(19291, go->GetGUID());
-                    break;
+                for(uint32 entry : { 183350, 183351 })
+                {
+                    GameObject* go = m_caster->FindNearestGameObject(entry, 100.0f);
+                    if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
+                        go->SetLootState(GO_JUST_DEACTIVATED);
+                        m_caster->ToPlayer()->KilledMonsterCredit(19291, go->GetGUID());
+                        break;
+                    }
                 }
-
-                go = nullptr;
-
-                Trinity::NearestGameObjectEntryInObjectRangeCheck go_check2(*m_caster, 183351, 100.0f);
-                Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher2(m_caster, go, go_check2);
-				m_caster->GetMap()->VisitGrid(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY(), 100.0f, searcher2);
-
-                if (go && go->GetDistance2d(m_targets.GetDstPos()->GetPositionX(), m_targets.GetDstPos()->GetPositionY()) <= 17.0f) {
-                    go->SetLootState(GO_JUST_DEACTIVATED);
-                    m_caster->ToPlayer()->KilledMonsterCredit(19292, go->GetGUID());
-                    break;
-                }
-
+                
                 break;
             }
 

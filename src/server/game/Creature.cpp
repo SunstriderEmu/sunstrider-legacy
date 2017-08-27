@@ -780,8 +780,6 @@ void Creature::Update(uint32 diff)
             else
                 m_transportCheckTimer -= diff;
         }
-
-        sScriptMgr->OnCreatureUpdate(this, diff);
     }
 }
 

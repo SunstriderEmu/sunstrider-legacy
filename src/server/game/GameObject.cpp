@@ -28,6 +28,7 @@
 #include "Transport.h"
 #include "UpdateFieldFlags.h"
 #include "ScriptMgr.h"
+#include "GossipDef.h"
 
 #include "Models/GameObjectModel.h"
 #include "DynamicTree.h"

@@ -289,14 +289,13 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         }
     }
 
-    if(!sScriptMgr->OnGossipHello( _player, unit ))
+    _player->PlayerTalkClass->ClearMenus();
+    if (!unit->AI()->GossipHello(_player))
     {
         _player->TalkedToCreature(unit->GetEntry(),unit->GetGUID());
         _player->PrepareGossipMenu(unit, _player->GetDefaultGossipMenuForSource(unit), true);
         _player->SendPreparedGossip(unit);
     }
-    
-    unit->AI()->GossipHello(_player);
 }
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )

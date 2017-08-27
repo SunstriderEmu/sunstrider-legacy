@@ -519,7 +519,7 @@ bool Map::AddPlayerToMap(Player *player)
     SendZoneDynamicInfo(player);
 
     player->m_clientGUIDs.clear();
-
+    player->UpdateObjectVisibility(false);
 
 	if (player->IsAlive())
 		ConvertCorpseToBones(player->GetGUID());
@@ -549,9 +549,9 @@ bool Map::AddToMap(T *obj, bool checkTransport)
 	/// @todo Needs clean up. An object should not be added to map twice.
 	if (obj->IsInWorld())
 	{
-		DEBUG_ASSERT(false);
+		DEBUG_ASSERT(false); //sunstrider addition
 		ASSERT(obj->IsInGrid());
-		//obj->UpdateObjectVisibility(true);
+        obj->UpdateObjectVisibility(true);
 		return true;
 	}
 
@@ -914,7 +914,6 @@ void Map::RemovePlayerFromMap(Player *player, bool remove)
 	player->RemoveFromGrid();
 
     SendRemoveTransports(player);
-    UpdateObjectVisibility(player,cell,p);
 
     if (remove)
     {
@@ -934,23 +933,20 @@ Map::RemoveFromMap(T *obj, bool remove)
 		return;
 	}
 
-	Cell cell(p);
-	if (!IsGridLoaded(GridCoord(cell.data.Part.grid_x, cell.data.Part.grid_y)))
-		return;
-
-    //TC_LOG_DEBUG("maps","Remove object " UI64FMTD " from grid[%u,%u]", obj->GetGUID(), uint32(cell.data.Part.grid_x), uint32(cell.data.Part.grid_y));
-    //NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    //assert( grid != nullptr);
-
+    bool const inWorld = obj->IsInWorld() && obj->GetTypeId() >= TYPEID_UNIT && obj->GetTypeId() <= TYPEID_GAMEOBJECT;
     obj->RemoveFromWorld();
+
     if(obj->isActiveObject())
         RemoveFromForceActive(obj);
+
+    if (!inWorld) // if was in world, RemoveFromWorld() called DestroyForNearbyPlayers()
+        obj->DestroyForNearbyPlayers(); // previous obj->UpdateObjectVisibility(true)
+
     obj->RemoveFromGrid();
+
 	obj->ResetMap();
 
-    UpdateObjectVisibility(obj,cell,p);
-
-    if( remove)
+    if(remove)
     {
         // if option set then object already saved at this moment
         if(!sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
@@ -1066,8 +1062,8 @@ void Map::CreatureRelocation(Creature *creature, float x, float y, float z, floa
         if (creature->IsVehicle())
             creature->GetVehicleKit()->RelocatePassengers();
 #endif
-        creature->UpdatePositionData();
 		creature->UpdateObjectVisibility(false);
+        creature->UpdatePositionData();
 		RemoveCreatureFromMoveList(creature);
     }
     assert(CheckGridIntegrity(creature,true));
@@ -1276,7 +1272,7 @@ void Map::MoveAllGameObjectsInMoveList()
 			go->Relocate(go->_newPosition);
             go->UpdateModelPosition();
             go->UpdatePositionData();
-            UpdateObjectVisibility(go,new_cell,new_val);
+            go->UpdateObjectVisibility(false);
         }
         else
         {
@@ -1557,7 +1553,7 @@ bool Map::GameObjectRespawnRelocation(GameObject* go, bool diffGridOnly)
     {
         go->Relocate(resp_x, resp_y, resp_z, resp_o);
         go->UpdatePositionData();
-        UpdateObjectVisibility(go,resp_cell,resp_val);
+        go->UpdateObjectVisibility(false);
         return true;
     }
 

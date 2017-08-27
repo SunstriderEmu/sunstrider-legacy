@@ -2365,9 +2365,6 @@ void Spell::EffectDummy(uint32 i)
         return;
     }
     
-    if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->EffectDummyCreature(m_caster, m_spellInfo->Id, i, unitTarget->ToCreature());
-
     if (unitTarget && unitTarget->ToCreature() && unitTarget->ToCreature()->IsAIEnabled)
         unitTarget->ToCreature()->AI()->sOnDummyEffect(m_caster, m_spellInfo->Id, i);
 }
@@ -3675,10 +3672,8 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
             return;
         }
 
-        if (sScriptMgr->OnGossipHello(player, gameObjTarget))
-            return;
-            
-        if (gameObjTarget->AI()->GossipHello(player, false))
+        player->PlayerTalkClass->ClearMenus();
+        if (gameObjTarget->AI()->GossipHello(player))
             return;
 
         switch (gameObjTarget->GetGoType())
@@ -3711,7 +3706,6 @@ void Spell::SendLoot(uint64 guid, LootType loottype)
                     if(player->GetQuestStatus(gameObjTarget->GetGOInfo()->goober.questId) != QUEST_STATUS_INCOMPLETE)
                         return;
 
-                sScriptMgr->OnGossipHello(player, gameObjTarget);
 				gameObjTarget->GetMap()->ScriptsStart(sGameObjectScripts, gameObjTarget->GetSpawnId(), player, gameObjTarget);
 
                 gameObjTarget->AddUniqueUse(player);
