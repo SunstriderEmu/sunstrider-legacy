@@ -717,5 +717,20 @@ class TC_GAME_API BattlegroundMap : public Map
         Battleground* m_bg;
 };
 
+template<class T, class CONTAINER>
+inline void Map::Visit(Cell const& cell, TypeContainerVisitor<T, CONTAINER>& visitor)
+{
+    const uint32 x = cell.GridX();
+    const uint32 y = cell.GridY();
+    const uint32 cell_x = cell.CellX();
+    const uint32 cell_y = cell.CellY();
+
+    if (!cell.NoCreate() || IsGridLoaded(GridCoord(x, y)))
+    {
+        EnsureGridLoaded(cell);
+        getNGrid(x, y)->VisitGrid(cell_x, cell_y, visitor);
+    }
+}
+
 #endif
 

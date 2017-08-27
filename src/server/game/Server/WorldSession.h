@@ -424,8 +424,6 @@ class TC_GAME_API WorldSession
         std::shared_ptr<ReplayPlayer> GetReplayPlayer() { return m_replayPlayer; }
         std::shared_ptr<ReplayRecorder> GetReplayRecorder() { return m_replayRecorder; }
 
-        uint32 GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus);
-
         std::atomic<int32> m_timeOutTime;
 
         void UpdateTimeOutTime(uint32 diff)

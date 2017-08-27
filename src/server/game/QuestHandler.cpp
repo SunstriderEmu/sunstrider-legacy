@@ -686,7 +686,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             questStatus = _player->GetQuestDialogStatus(questgiver);
             if( questStatus > 6 )
-                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
+                questStatus = _player->GetQuestDialogStatus(questgiver);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);
@@ -701,7 +701,7 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             questStatus = _player->GetQuestDialogStatus(questgiver);
             if( questStatus > 6 )
-                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
+                questStatus = _player->GetQuestDialogStatus(questgiver);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);
