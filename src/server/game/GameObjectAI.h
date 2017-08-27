@@ -39,14 +39,15 @@ class TC_GAME_API GameObjectAI
         // Called when a player selects a gossip with a code in the gameobject's gossip menu.
         virtual bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) {return false;}
 
-        virtual bool QuestAccept(Player* player, Quest const* quest) {return false;}
+        virtual void QuestAccept(Player* player, Quest const* quest) {  }
 
-        virtual bool QuestReward(Player* player, Quest const* quest, uint32 opt) {return false;}
+        virtual void QuestReward(Player* player, Quest const* quest, uint32 opt) { }
+
         uint32 GetDialogStatus(Player* /*player*/);
-        virtual void Destroyed(Player* player, uint32 eventId) {}
-        virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) {}
-        virtual void GetData(uint32 id) const {}
-        virtual void EventInform(uint32 /*eventId*/) {}
+        virtual void Destroyed(Player* player, uint32 eventId) { }
+        virtual void SetData(uint32 id, uint32 value, Unit* setter = nullptr) { }
+        virtual void GetData(uint32 id) const { }
+        virtual void EventInform(uint32 /*eventId*/) { }
         virtual void SpellHit(Unit* /*unit*/, const SpellInfo* /*spellInfo*/) { }
 
         virtual void OnStateChanged(GOState /*state*/, Unit* /*unit*/) { }

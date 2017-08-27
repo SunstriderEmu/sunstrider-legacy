@@ -13678,7 +13678,7 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
     switch (questGiver->GetTypeId())
     {
         case TYPEID_UNIT:
-            sScriptMgr->OnQuestAccept(this, (questGiver->ToCreature()), quest);
+            PlayerTalkClass->ClearMenus();
             questGiver->ToCreature()->AI()->QuestAccept(this, quest);
             break;
         case TYPEID_ITEM:
@@ -13704,8 +13704,8 @@ void Player::AddQuestAndCheckCompletion(Quest const* quest, Object* questGiver)
             break;
         }
         case TYPEID_GAMEOBJECT:
-            sScriptMgr->OnQuestAccept(this, questGiver->ToGameObject(), quest);
-            questGiver->ToGameObject()->AI()->OnQuestAccept(this, quest);
+            PlayerTalkClass->ClearMenus();
+            questGiver->ToGameObject()->AI()->QuestAccept(this, quest);
             break;
         default:
             break;
