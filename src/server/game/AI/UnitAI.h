@@ -3,6 +3,7 @@
 
 #include "Define.h"
 #include "Unit.h"
+#include "QuestDef.h"
 class Unit;
 class Quest;
 class Player;

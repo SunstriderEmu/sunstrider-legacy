@@ -280,11 +280,12 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
             {
                 case TYPEID_UNIT:
                     // Send next quest
+                    Creature* questgiver = pObject->ToCreature();
                     if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
                         _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
 
                     _player->PlayerTalkClass->ClearMenus();
-                    pObject->ToCreature()->AI()->QuestReward(_player, pQuest, reward);
+                    questgiver->AI()->QuestReward(_player, pQuest, reward);
                     break;
                 case TYPEID_GAMEOBJECT:
                     // Send next quest
