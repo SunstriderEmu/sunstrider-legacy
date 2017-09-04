@@ -33,7 +33,7 @@ class spell_gen_cannibalize : public SpellScriptLoader
                 Trinity::WorldObjectSearcher<Trinity::CannibalizeObjectCheck > searcher(caster, result, u_check);
                 Cell::VisitGridObjects(caster, searcher, max_range);
                 if (!result)
-                    Cell::VisitWorldObjects(me, searcher, max_range);
+                    Cell::VisitWorldObjects(caster, searcher, max_range);
 
                 if (!result)
                     return SPELL_FAILED_NO_EDIBLE_CORPSES;
