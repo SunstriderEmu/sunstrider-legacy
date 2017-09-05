@@ -92,7 +92,7 @@ struct DynTreeImpl : public ParentTree/*, public Intersectable*/
 
     void update(uint32 difftime)
     {
-        if (!size())
+        if (empty())
             return;
 
         rebalance_timer.Update(difftime);
@@ -135,11 +135,6 @@ void DynamicMapTree::balance()
     impl->balance();
 }
 
-int DynamicMapTree::size() const
-{
-    return impl->size();
-}
-
 void DynamicMapTree::update(uint32 t_diff)
 {
     impl->update(t_diff);
@@ -162,7 +157,7 @@ struct DynamicTreeIntersectionCallback_WithLogger
 {
     bool did_hit;
     uint32 phase_mask;
-    DynamicTreeIntersectionCallback_WithLogger(PhaseMask phasemask) : did_hit(false), phase_mask(phasemask)
+    DynamicTreeIntersectionCallback_WithLogger(uint32 phasemask) : did_hit(false), phase_mask(phasemask)
     {
         TC_LOG_DEBUG("maps", "Dynamic Intersection log");
     }
@@ -180,7 +175,7 @@ struct DynamicTreeIntersectionCallback_WithLogger
     bool didHit() const { return did_hit;}
 };
 
-bool DynamicMapTree::getIntersectionTime(const PhaseMask phasemask, const G3D::Ray& ray,
+bool DynamicMapTree::getIntersectionTime(const uint32 phasemask, const G3D::Ray& ray,
                                          const G3D::Vector3& endPos, float& maxDist) const
 {
     float distance = maxDist;
@@ -191,7 +186,7 @@ bool DynamicMapTree::getIntersectionTime(const PhaseMask phasemask, const G3D::R
     return callback.didHit();
 }
 
-bool DynamicMapTree::getObjectHitPos(const PhaseMask phasemask, const G3D::Vector3& startPos,
+bool DynamicMapTree::getObjectHitPos(const uint32 phasemask, const G3D::Vector3& startPos,
                                      const G3D::Vector3& endPos, G3D::Vector3& resultHit,
                                      float modifyDist) const
 {
@@ -231,7 +226,7 @@ bool DynamicMapTree::getObjectHitPos(const PhaseMask phasemask, const G3D::Vecto
     return result;
 }
 
-bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, PhaseMask phasemask) const
+bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const
 {
     G3D::Vector3 v1(x1, y1, z1), v2(x2, y2, z2);
 
@@ -247,7 +242,7 @@ bool DynamicMapTree::isInLineOfSight(float x1, float y1, float z1, float x2, flo
     return !callback.did_hit;
 }
 
-float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, PhaseMask phasemask) const
+float DynamicMapTree::getHeight(float x, float y, float z, float maxSearchDist, uint32 phasemask) const
 {
     G3D::Vector3 v(x, y, z);
     G3D::Ray r(v, G3D::Vector3(0, 0, -1));

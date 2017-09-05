@@ -84,11 +84,12 @@ class TC_GAME_API PlayerAI : public UnitAI
 class SimpleCharmedPlayerAI : public PlayerAI
 {
     public:
-        SimpleCharmedPlayerAI(Player* player) : PlayerAI(player), _castCheckTimer(500), _chaseCloser(false), _forceFacing(true) { }
+        SimpleCharmedPlayerAI(Player* player) : PlayerAI(player), _castCheckTimer(2500), _chaseCloser(false), _forceFacing(true), _isFollowing(false) { }
         void UpdateAI(const uint32 diff) override;
         void OnCharmed(Unit* /* charmer */, bool apply) override;
 
     protected:
+        bool CanAIAttack(Unit const* who) const override;
         Unit* SelectAttackTarget() const override;
 
     private:
@@ -96,6 +97,7 @@ class SimpleCharmedPlayerAI : public PlayerAI
         uint32 _castCheckTimer;
         bool _chaseCloser;
         bool _forceFacing;
+        bool _isFollowing;
 };
 
 #endif

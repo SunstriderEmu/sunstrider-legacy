@@ -93,7 +93,7 @@ void WorldSession::SendAuctionOwnerNotification( AuctionEntry* auction)
 //this function sends mail to old bidder
 void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPrice)
 {
-    uint64 oldBidder_guid = MAKE_NEW_GUID(auction->bidder,0, HIGHGUID_PLAYER);
+    uint64 oldBidder_guid = MAKE_NEW_GUID(auction->bidder,0, HighGuid::Player);
     Player *oldBidder = sObjectMgr->GetPlayer(oldBidder_guid);
 
     uint32 oldBidder_accId = 0;
@@ -119,7 +119,7 @@ void WorldSession::SendAuctionOutbiddedMail(AuctionEntry *auction, uint32 newPri
 //this function sends mail, when auction is cancelled to old bidder
 void WorldSession::SendAuctionCancelledToBidderMail( AuctionEntry* auction )
 {
-    uint64 bidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HIGHGUID_PLAYER);
+    uint64 bidder_guid = MAKE_NEW_GUID(auction->bidder, 0, HighGuid::Player);
     Player *bidder = sObjectMgr->GetPlayer(bidder_guid);
 
     uint32 bidder_accId = 0;
@@ -297,8 +297,8 @@ void WorldSession::HandleAuctionPlaceBid( WorldPacket & recvData )
     }
 
     // impossible have online own another character (use this for speedup check in case online owner)
-    Player* auction_owner = sObjectMgr->GetPlayer(MAKE_NEW_GUID(auction->owner, 0, HIGHGUID_PLAYER));
-    if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(auction->owner, 0, HIGHGUID_PLAYER)) == pl->GetSession()->GetAccountId())
+    Player* auction_owner = sObjectMgr->GetPlayer(MAKE_NEW_GUID(auction->owner, 0, HighGuid::Player));
+    if( !auction_owner && sCharacterCache->GetCharacterAccountIdByGuid(MAKE_NEW_GUID(auction->owner, 0, HighGuid::Player)) == pl->GetSession()->GetAccountId())
     {
         //you cannot bid your another character auction:
         SendAuctionCommandResult( 0, AUCTION_PLACE_BID, CANNOT_BID_YOUR_AUCTION_ERROR );

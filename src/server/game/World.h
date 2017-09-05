@@ -62,8 +62,8 @@ enum ShutdownExitCode : int
 /// Timers for different object refresh rates
 enum WorldTimers
 {
-    WUPDATE_OBJECTS        = 0,
-    WUPDATE_SESSIONS       = 1,
+    // WUPDATE_UNUSED        = 0,
+	// WUPDATE_UNUSED        = 1,
     WUPDATE_AUCTIONS       = 2,
     WUPDATE_WEATHERS       = 3,
     WUPDATE_UPTIME         = 4,
@@ -222,7 +222,6 @@ enum WorldConfigs
     CONFIG_MIN_LOG_UPDATE,
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PREMATURE_BG_REWARD,
-    CONFIG_PET_LOS,
     CONFIG_NUMTHREADS,
     
     CONFIG_WORLDCHANNEL_MINLEVEL,
@@ -276,9 +275,6 @@ enum WorldConfigs
     CONFIG_WARDEN_BAN_TIME,
     
     CONFIG_WHISPER_MINLEVEL,
-
-    CONFIG_GUIDDISTRIB_NEWMETHOD,
-    CONFIG_GUIDDISTRIB_PROPORTION,
 
     CONFIG_ARENA_SPECTATOR_ENABLE,
     CONFIG_ARENA_SPECTATOR_MAX,
@@ -573,12 +569,6 @@ class TC_GAME_API World
         /// Get the path where data (dbc, maps) are stored on disk
         std::string GetDataPath() const { return m_dataPath; }
 
-        /// When server started?
-        time_t const& GetStartTime() const { return m_startTime; }
-        /// What time is it?
-        time_t const& GetGameTime() const { return m_gameTime; }
-        /// Uptime (in secs)
-        uint32 GetUptime() const { return uint32(m_gameTime - m_startTime); }
         /// Update time
         uint32 GetUpdateTime() const { return m_updateTime; }
         void SetRecordDiffInterval(int32 t) { if(t >= 0) m_configs[CONFIG_INTERVAL_LOG_UPDATE] = (uint32)t; }
@@ -668,10 +658,7 @@ class TC_GAME_API World
         // unbanAuthor can be null
         bool RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSession const* unbanAuthor);
 
-        void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, Object* source, Object* target, bool start = true);
-        void ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target);
-        bool IsScriptScheduled() const { return !m_scriptSchedule.empty(); }
-
+        
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
         // for max speed access
@@ -680,8 +667,10 @@ class TC_GAME_API World
         static float GetMaxVisibleDistanceInBGArenas()      { return m_MaxVisibleDistanceInBGArenas;   }
         static float GetMaxVisibleDistanceForObject()   { return m_MaxVisibleDistanceForObject;   }
         static float GetMaxVisibleDistanceInFlight()    { return m_MaxVisibleDistanceInFlight;    }
-        static float GetVisibleUnitGreyDistance()       { return m_VisibleUnitGreyDistance;       }
-        static float GetVisibleObjectGreyDistance()     { return m_VisibleObjectGreyDistance;     }
+
+		static int32 GetVisibilityNotifyPeriodOnContinents() { return m_visibility_notify_periodOnContinents; }
+		static int32 GetVisibilityNotifyPeriodInInstances() { return m_visibility_notify_periodInInstances; }
+		static int32 GetVisibilityNotifyPeriodInBGArenas() { return m_visibility_notify_periodInBGArenas; }
 
         //movement anticheat enable flag
         inline bool GetMvAnticheatEnable()             {return m_MvAnticheatEnable;}
@@ -744,7 +733,6 @@ class TC_GAME_API World
 
     protected:
         void _UpdateGameTime();
-        void ScriptsProcess();
         // callback for UpdateRealmCharacters
         void _UpdateRealmCharCount(PreparedQueryResult resultCharCount);
 
@@ -765,7 +753,6 @@ class TC_GAME_API World
         bool m_isClosed;
 
         time_t m_startTime;
-        time_t m_gameTime;
         IntervalTimer m_timers[WUPDATE_COUNT];
         uint32 mail_timer;
         uint32 mail_timer_expires;
@@ -780,8 +767,6 @@ class TC_GAME_API World
         DisconnectMap m_disconnects;
         uint32 m_maxActiveSessionCount;
         uint32 m_maxQueuedSessionCount;
-
-        std::multimap<time_t, ScriptAction> m_scriptSchedule;
 
         std::string m_newCharString;
 
@@ -809,8 +794,10 @@ class TC_GAME_API World
         static float m_MaxVisibleDistanceInBGArenas;
         static float m_MaxVisibleDistanceForObject;
         static float m_MaxVisibleDistanceInFlight;
-        static float m_VisibleUnitGreyDistance;
-        static float m_VisibleObjectGreyDistance;
+
+		static int32 m_visibility_notify_periodOnContinents;
+		static int32 m_visibility_notify_periodInInstances;
+		static int32 m_visibility_notify_periodInBGArenas;
 
         //movement anticheat enable flag
         bool m_MvAnticheatEnable;

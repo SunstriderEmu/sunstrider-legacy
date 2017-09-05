@@ -10,7 +10,7 @@
 
 BattlegroundBE::BattlegroundBE()
 {
-    m_BgObjects.resize(BG_BE_OBJECT_MAX);
+    BgObjects.resize(BG_BE_OBJECT_MAX);
 }
 
 BattlegroundBE::~BattlegroundBE()
@@ -27,9 +27,9 @@ void BattlegroundBE::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if (!(m_Events & 0x01))
+        if (!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
             {
@@ -46,21 +46,21 @@ void BattlegroundBE::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
         // After 30 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x04))
+        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(LANG_ARENA_THIRTY_SECONDS);
         }
         // After 15 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & 0x08))
+        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(LANG_ARENA_FIFTEEN_SECONDS);
         }
         // delay expired (1 minute)
-        else if (GetStartDelayTime() <= 0 && !(m_Events & 0x10))
+        else if (GetStartDelayTime() <= 0 && !(m_Events & BG_STARTING_EVENT_5))
         {
-            m_Events |= 0x10;
+            m_Events |= BG_STARTING_EVENT_5;
 
             for(uint32 i = BG_BE_OBJECT_DOOR_1; i <= BG_BE_OBJECT_DOOR_2; i++)
                 DoorOpen(i);
@@ -76,10 +76,10 @@ void BattlegroundBE::Update(time_t diff)
                 if(Player *plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
-            if(!GetPlayersCountByTeam(TEAM_ALLIANCE) && GetPlayersCountByTeam(TEAM_HORDE))
-                EndBattleground(TEAM_HORDE);
-            else if(GetPlayersCountByTeam(TEAM_ALLIANCE) && !GetPlayersCountByTeam(TEAM_HORDE))
-                EndBattleground(TEAM_ALLIANCE);
+            if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+                EndBattleground(HORDE);
+            else if(GetPlayersCountByTeam(ALLIANCE) && !GetPlayersCountByTeam(HORDE))
+                EndBattleground(ALLIANCE);
         }
     }
 
@@ -97,8 +97,8 @@ void BattlegroundBE::AddPlayer(Player *plr)
 
     m_PlayerScores[plr->GetGUID()] = sc;
 
-    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(HORDE));
 }
 
 void BattlegroundBE::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
@@ -106,14 +106,14 @@ void BattlegroundBE::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     if(GetStatus() == STATUS_WAIT_LEAVE)
         return;
 
-    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(HORDE));
 
     if (GetStatus() != STATUS_WAIT_JOIN) {
-        if(!GetAlivePlayersCountByTeam(TEAM_ALLIANCE) && GetPlayersCountByTeam(TEAM_HORDE))
-            EndBattleground(TEAM_HORDE);
-        else if(GetPlayersCountByTeam(TEAM_ALLIANCE) && !GetAlivePlayersCountByTeam(TEAM_HORDE))
-            EndBattleground(TEAM_ALLIANCE);
+        if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+            EndBattleground(HORDE);
+        else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
+            EndBattleground(ALLIANCE);
     }
 }
 
@@ -130,18 +130,18 @@ void BattlegroundBE::HandleKillPlayer(Player *player, Player *killer)
 
     Battleground::HandleKillPlayer(player,killer);
 
-    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(HORDE));
 
-    if(!GetAlivePlayersCountByTeam(TEAM_ALLIANCE))
+    if(!GetAlivePlayersCountByTeam(ALLIANCE))
     {
         // all opponents killed
-        EndBattleground(TEAM_HORDE);
+        EndBattleground(HORDE);
     }
-    else if(!GetAlivePlayersCountByTeam(TEAM_HORDE))
+    else if(!GetAlivePlayersCountByTeam(HORDE))
     {
         // all opponents killed
-        EndBattleground(TEAM_ALLIANCE);
+        EndBattleground(ALLIANCE);
     }
 }
 
@@ -162,10 +162,10 @@ void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
     switch(Trigger)
     {
         case 4538:                                          // buff trigger?
-            //buff_guid = m_BgObjects[BG_BE_OBJECT_BUFF_1];
+            //buff_guid = BgObjects[BG_BE_OBJECT_BUFF_1];
             break;
         case 4539:                                          // buff trigger?
-            //buff_guid = m_BgObjects[BG_BE_OBJECT_BUFF_2];
+            //buff_guid = BgObjects[BG_BE_OBJECT_BUFF_2];
             break;
         default:
             TC_LOG_ERROR("battleground","WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
@@ -179,8 +179,8 @@ void BattlegroundBE::HandleAreaTrigger(Player *Source, uint32 Trigger)
 
 void BattlegroundBE::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(0x9f1) << uint32(GetAlivePlayersCountByTeam(TEAM_ALLIANCE));           // 7
-    data << uint32(0x9f0) << uint32(GetAlivePlayersCountByTeam(TEAM_HORDE));           // 8
+    data << uint32(0x9f1) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
+    data << uint32(0x9f0) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
     data << uint32(0x9f3) << uint32(1);           // 9
 }
 

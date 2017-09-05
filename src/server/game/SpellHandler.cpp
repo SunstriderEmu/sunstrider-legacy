@@ -32,7 +32,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     recvPacket >> bagIndex >> slot >> spell_count >> cast_count >> item_guid;
 
     // ignore for remote control state
-    if (pUser->m_mover != pUser)
+    if (pUser->m_unitMovedByMe != pUser)
         return;
 
     Item *pItem = pUser->GetItemByPos(bagIndex, slot);
@@ -134,7 +134,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
     uint8 bagIndex, slot;
 
     // ignore for remote control state
-    if (pUser->m_mover != pUser)
+    if (pUser->m_unitMovedByMe != pUser)
         return;
 
     recvPacket >> bagIndex >> slot;
@@ -246,18 +246,10 @@ void WorldSession::HandleGameObjectUseOpcode( WorldPacket & recvData )
     }
 
     // ignore for remote control state
-    if (GetPlayer()->m_mover != GetPlayer())
-        return;
-
-    if (sScriptMgr->OnGossipHello(_player, gameObjTarget))
-        return;
-        
-    if (gameObjTarget->AI()->GossipHello(_player, false))
+    if (GetPlayer()->m_unitMovedByMe != GetPlayer())
         return;
 
     gameObjTarget->Use(_player);
-
-    //TC LK _player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, go->GetEntry());
 }
 
 void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
@@ -265,7 +257,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     
 
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_mover;
+    Unit* mover = _player->m_unitMovedByMe;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
     {
         recvPacket.rfinish(); // prevent spam at ignore packet
@@ -382,8 +374,6 @@ void WorldSession::HandleCancelAuraOpcode( WorldPacket& recvPacket)
 
 void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
 {
-    
-
     uint64 guid;
     uint32 spellId;
 
@@ -405,7 +395,7 @@ void WorldSession::HandlePetCancelAuraOpcode( WorldPacket& recvPacket)
         return;
     }
 
-    if(pet != GetPlayer()->GetPet() && pet != GetPlayer()->GetCharm())
+    if(pet != GetPlayer()->GetGuardianPet() && pet != GetPlayer()->GetCharm())
     {
         TC_LOG_ERROR( "network", "HandlePetCancelAura.Pet %u isn't pet of player %s", uint32(GUID_LOPART(guid)),GetPlayer()->GetName().c_str() );
         return;
@@ -436,7 +426,7 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode( WorldPacket& recvPacket)
 void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 {
     // ignore for remote control state (for player case)
-    Unit* mover = _player->m_mover;
+    Unit* mover = _player->m_unitMovedByMe;
     if (mover != _player && mover->GetTypeId() == TYPEID_PLAYER)
         return;
 
@@ -449,20 +439,21 @@ void WorldSession::HandleCancelChanneling( WorldPacket & recvData )
 void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
 {
     // ignore for remote control state
-    if (_player->m_mover != _player)
+    if (_player->m_unitMovedByMe != _player)
         return;
 
     uint8 slotId;
 
     recvPacket >> slotId;
 
-    if (slotId >= MAX_TOTEM)
+    if (slotId >= MAX_TOTEM_SLOT)
         return;
 
-    if(!_player->m_TotemSlot[slotId])
+    if(!_player->m_SummonSlot[slotId])
         return;
 
-    Creature* totem = ObjectAccessor::GetCreature(*_player,_player->m_TotemSlot[slotId]);
+	Creature* totem = ObjectAccessor::GetCreature(*_player, _player->m_SummonSlot[slotId]);
+
     // Don't unsummon sentry totem
     if(totem && totem->IsTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)
         ((Totem*)totem)->UnSummon();
@@ -486,7 +477,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
     recvData >> guid;
 
     // Get unit for which data is needed by client
-    Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)nullptr);
+    Unit* unit = _player->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 

@@ -2,27 +2,12 @@
 #define TRINITY_OBJECTDEFINES_H
 
 #include "Define.h"
+#include "ObjectGuid.h"
 
 #ifndef UINT64_C
     #define UINT64_C(x)  (x ## ULL)
 #endif
 
-enum HighGuid
-{
-    HIGHGUID_ITEM           = 0x4000,                      // blizz 4000
-    HIGHGUID_CONTAINER      = 0x4000,                      // blizz 4000
-    HIGHGUID_PLAYER         = 0x0000,                      // blizz 0000
-    HIGHGUID_GAMEOBJECT     = 0xF110,                      // blizz F110
-    HIGHGUID_TRANSPORT      = 0xF120,                      // blizz F120 (for GAMEOBJECT_TYPE_TRANSPORT)
-    HIGHGUID_UNIT           = 0xF130,                      // blizz F130
-    HIGHGUID_PET            = 0xF140,                      // blizz F140
-    HIGHGUID_VEHICLE        = 0xF150,                      // blizz F550
-    HIGHGUID_DYNAMICOBJECT  = 0xF100,                      // blizz F100
-    HIGHGUID_CORPSE         = 0xF101,                      // blizz F100
-    HIGHGUID_MO_TRANSPORT   = 0x1FC0,                      // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
-    HIGHGUID_INSTANCE       = 0x1F40,                      // blizz 1F40
-    HIGHGUID_GROUP          = 0x1F50
-};
 
 // used for creating values for respawn for example
 inline uint64 MAKE_PAIR64(uint32 l, uint32 h);
@@ -70,19 +55,19 @@ uint16 PAIR32_LOPART(uint32 x)
 
 #define IS_EMPTY_GUID(Guid)          ( Guid == 0 )
 
-#define IS_CREATURE_GUID(Guid)       ( GUID_HIPART(Guid) == HIGHGUID_UNIT )
-#define IS_VEHICLE_GUID(Guid)        ( GUID_HIPART(Guid) == HIGHGUID_VEHICLE)
+#define IS_CREATURE_GUID(Guid)       ( GUID_HIPART(Guid) == uint32(HighGuid::Unit) )
+#define IS_VEHICLE_GUID(Guid)        ( GUID_HIPART(Guid) == uint32(HighGuid::Vehicle) )
 #define IS_CREATURE_OR_VEHICLE_GUID(Guid) ( IS_CREATURE_GUID(Guid) || IS_VEHICLE_GUID(Guid) )
-#define IS_PET_GUID(Guid)            ( GUID_HIPART(Guid) == HIGHGUID_PET )
+#define IS_PET_GUID(Guid)            ( GUID_HIPART(Guid) == uint32(HighGuid::Pet) )
 #define IS_CREATURE_OR_PET_GUID(Guid)( IS_CREATURE_GUID(Guid) || IS_PET_GUID(Guid) )
-#define IS_PLAYER_GUID(Guid)         ( GUID_HIPART(Guid) == HIGHGUID_PLAYER && Guid != 0 )  // special case for empty guid need check (since HIGHGUID_PLAYER == 0)
+#define IS_PLAYER_GUID(Guid)         ( GUID_HIPART(Guid) == uint32(HighGuid::Player) && Guid != 0 )  // special case for empty guid need check (since HighGuid::Player == 0)
 #define IS_UNIT_GUID(Guid)           ( IS_CREATURE_OR_PET_GUID(Guid) || IS_PLAYER_GUID(Guid) )
-#define IS_ITEM_GUID(Guid)           ( GUID_HIPART(Guid) == HIGHGUID_ITEM )
-#define IS_GAMEOBJECT_GUID(Guid)     ( GUID_HIPART(Guid) == HIGHGUID_GAMEOBJECT )
-#define IS_DYNAMICOBJECT_GUID(Guid)  ( GUID_HIPART(Guid) == HIGHGUID_DYNAMICOBJECT )
-#define IS_CORPSE_GUID(Guid)         ( GUID_HIPART(Guid) == HIGHGUID_CORPSE )
-#define IS_TRANSPORT(Guid)           ( GUID_HIPART(Guid) == HIGHGUID_TRANSPORT )
-#define IS_MO_TRANSPORT(Guid)        ( GUID_HIPART(Guid) == HIGHGUID_MO_TRANSPORT )
+#define IS_ITEM_GUID(Guid)           ( GUID_HIPART(Guid) == uint32(HighGuid::Item) )
+#define IS_GAMEOBJECT_GUID(Guid)     ( GUID_HIPART(Guid) == uint32(HighGuid::GameObject) )
+#define IS_DYNAMICOBJECT_GUID(Guid)  ( GUID_HIPART(Guid) == uint32(HighGuid::DynamicObject) )
+#define IS_CORPSE_GUID(Guid)         ( GUID_HIPART(Guid) == uint32(HighGuid::Corpse) )
+#define IS_TRANSPORT(Guid)           ( GUID_HIPART(Guid) == uint32(HighGuid::Transport) )
+#define IS_MO_TRANSPORT(Guid)        ( GUID_HIPART(Guid) == uint32(HighGuid::Mo_Transport) )
 
 // l - OBJECT_FIELD_GUID
 // e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MO_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets
@@ -99,18 +84,18 @@ uint16 PAIR32_LOPART(uint32 x)
 
 inline bool IsGuidHaveEnPart(uint64 const& guid)
 {
-    switch(GUID_HIPART(guid))
+    switch(HighGuid(GUID_HIPART(guid)))
     {
-        case HIGHGUID_ITEM:
-        case HIGHGUID_PLAYER:
-        case HIGHGUID_DYNAMICOBJECT:
-        case HIGHGUID_CORPSE:
+        case HighGuid::Item:
+        case HighGuid::Player:
+        case HighGuid::DynamicObject:
+        case HighGuid::Corpse:
             return false;
-        case HIGHGUID_GAMEOBJECT:
-        case HIGHGUID_TRANSPORT:
-        case HIGHGUID_UNIT:
-        case HIGHGUID_PET:
-        case HIGHGUID_MO_TRANSPORT:
+        case HighGuid::GameObject:
+        case HighGuid::Transport:
+        case HighGuid::Unit:
+        case HighGuid::Pet:
+        case HighGuid::Mo_Transport:
         default:
             return true;
     }
@@ -121,17 +106,17 @@ inline bool IsGuidHaveEnPart(uint64 const& guid)
 
 inline char const* GetLogNameForGuid(uint64 guid)
 {
-    switch(GUID_HIPART(guid))
+    switch(HighGuid(GUID_HIPART(guid)))
     {
-        case HIGHGUID_ITEM:         return "item";
-        case HIGHGUID_PLAYER:       return guid ? "player" : "none";
-        case HIGHGUID_GAMEOBJECT:   return "gameobject";
-        case HIGHGUID_TRANSPORT:    return "transport";
-        case HIGHGUID_UNIT:         return "creature";
-        case HIGHGUID_PET:          return "pet";
-        case HIGHGUID_DYNAMICOBJECT:return "dynobject";
-        case HIGHGUID_CORPSE:       return "corpse";
-        case HIGHGUID_MO_TRANSPORT: return "mo_transport";
+        case HighGuid::Item:         return "item";
+        case HighGuid::Player:       return guid ? "player" : "none";
+        case HighGuid::GameObject:   return "gameobject";
+        case HighGuid::Transport:    return "transport";
+        case HighGuid::Unit:         return "creature";
+        case HighGuid::Pet:          return "pet";
+        case HighGuid::DynamicObject:return "dynobject";
+        case HighGuid::Corpse:       return "corpse";
+        case HighGuid::Mo_Transport: return "mo_transport";
         default:
             return "<unknown>";
     }

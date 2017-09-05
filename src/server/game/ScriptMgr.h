@@ -41,7 +41,6 @@ struct AreaTriggerEntry;
 struct AreaTableEntry;
 enum ShutdownExitCode : int;
 enum ShutdownMask : int;
-struct OLDScript;
 struct SpellSummary;
 class ScriptMgr;
 class SpellScript;
@@ -80,31 +79,6 @@ protected:
 public:
 
     virtual void OnUpdate(TObject* /*obj*/, uint32 /*diff*/) { }
-};
-
-struct OLDScript
-{
-public:
-    std::string const& GetName() { return Name; }
-
-    OLDScript()
-    {}
-
-    std::string Name;
-
-    //Methods to be scripted
-    bool(*OnGossipHello)(Player*, Creature*) = nullptr;
-    bool(*OnQuestAccept)(Player*, Creature*, Quest const*) = nullptr;
-    bool(*OnGossipSelect)(Player*, Creature*, uint32, uint32) = nullptr;
-    bool(*OnGossipSelectCode)(Player*, Creature*, uint32, uint32, const char*) = nullptr;
-    bool(*OnQuestSelect)(Player*, Creature*, Quest const*) = nullptr;
-    bool(*OnQuestComplete)(Player*, Creature*, Quest const*) = nullptr;
-    uint32(*pGetDialogStatus)(Player*, Creature*) = nullptr;
-    bool(*OnQuestReward)(Player*, Creature*, Quest const*, uint32) = nullptr;
-    bool(*OnReceiveEmote)(Player*, Creature*, uint32 emote) = nullptr;
-    bool(*OnEffectDummyCreature)(Unit*, uint32, uint32, Creature*) = nullptr;
-
-    CreatureAI* (*GetAI)(Creature*) = nullptr;
 };
 
 class TC_GAME_API SpellScriptLoader : public ScriptObject
@@ -209,9 +183,6 @@ public:
 
 class TC_GAME_API CreatureScript : public ScriptObject, public UpdatableScript<Creature>
 {
-    //make ScriptMgr friend so that we can create CreatureScript's from OLDScript from there (to be removed when OLDScript is discarded)
-    friend class ScriptMgr;
-
 protected:
 
     CreatureScript(const char* name);
@@ -219,95 +190,8 @@ protected:
 public:
     ~CreatureScript() override;
 
-    // Called when a player opens a gossip dialog with the creature.
-    virtual bool OnGossipHello(Player* player, Creature* creature) // { return false; }
-    {
-        if (baseScript && baseScript->OnGossipHello)
-            return baseScript->OnGossipHello(player, creature);
-        return false;
-    }
-
-    // Called when a player selects a gossip item in the creature's gossip menu.
-    virtual bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action) // { return false; }
-    {
-        if (baseScript && baseScript->OnGossipSelect)
-            return baseScript->OnGossipSelect(player, creature, sender, action);
-        return false;
-    }
-
-    // Called when a player selects a gossip with a code in the creature's gossip menu.
-    virtual bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code) // { return false; }
-    {
-        if (baseScript && baseScript->OnGossipSelectCode)
-            return baseScript->OnGossipSelectCode(player, creature, sender, action, code);
-        return false;
-    }
-
-    // Called when a player accepts a quest from the creature.
-    virtual bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest) // { return false; }
-    {
-        if (baseScript && baseScript->OnQuestAccept)
-            return baseScript->OnQuestAccept(player, creature, quest);
-        return false;
-    }
-
-    // Called when a player selects a quest in the creature's quest menu.
-    virtual bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest) //{ return false; }
-    {
-        if (baseScript && baseScript->OnQuestSelect)
-            return baseScript->OnQuestSelect(player, creature, quest);
-        return false;
-    }
-
-    // Called when a player completes a quest with the creature.
-    virtual bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest) //{ return false; }
-    {
-        if (baseScript && baseScript->OnQuestComplete)
-            return baseScript->OnQuestComplete(player, creature, quest);
-        return false;
-    }
-
-    // Called when a player selects a quest reward.
-    virtual bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt) //{ return false; }
-    {
-        if (baseScript && baseScript->OnQuestReward)
-            return baseScript->OnQuestReward(player, creature, quest, opt);
-        return false;
-    }
-
-    //OLD! Only here for backward compat, if you're scripting a new creature override CreatureAI::ReceiveEmote instead
-    virtual bool OnReceiveEmote(Player* player, Creature* creature, uint32 emote) //{ return false; }
-    {
-        if (baseScript && baseScript->OnReceiveEmote)
-            return baseScript->OnReceiveEmote(player, creature, emote);
-        return false;
-    }
-
-    virtual bool OnEffectDummyCreature(Unit* caster, uint32 spellid, uint32 effIndex, Creature* targetCreature) // { return false; }
-    {
-        if (baseScript && baseScript->OnEffectDummyCreature)
-            return baseScript->OnEffectDummyCreature(caster, spellid, effIndex, targetCreature);
-        return false;
-    }
-
-    // Called when the dialog status between a player and the creature is requested.
-    virtual uint32 GetDialogStatus(Player* player, Creature* creature) //{ return DIALOG_STATUS_SCRIPTED_NO_STATUS; }
-    {
-        if (baseScript && baseScript->pGetDialogStatus)
-            return baseScript->pGetDialogStatus(player, creature);
-        return DIALOG_STATUS_SCRIPTED_NO_STATUS;
-    }
-
     // Called when a CreatureAI object is needed for the creature.
-    virtual CreatureAI* GetAI(Creature* creature) const //{ return NULL; }
-    {
-        if (baseScript && baseScript->GetAI)
-            return baseScript->GetAI(creature);
-        return nullptr;
-    }
-
-    //Backward compat function, OLDScript used to create this script, this is stored here because we use it's member functions
-    OLDScript* baseScript = nullptr;
+    virtual CreatureAI* GetAI(Creature* creature) const { return NULL; }
 };
 
 class TC_GAME_API GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
@@ -317,36 +201,6 @@ protected:
     GameObjectScript(const char* name);
 
 public:
-
-    // Called when a player opens a gossip dialog with the gameobject.
-    virtual bool OnGossipHello(Player* /*player*/, GameObject* /*go*/) { return false; }
-
-    // Called when a player selects a gossip item in the gameobject's gossip menu.
-    virtual bool OnGossipSelect(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
-
-    // Called when a player selects a gossip with a code in the gameobject's gossip menu.
-    virtual bool OnGossipSelectCode(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
-
-    // Called when a player accepts a quest from the gameobject.
-    virtual bool OnQuestAccept(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/) { return false; }
-
-    // Called when a player selects a quest reward.
-    virtual bool OnQuestReward(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
-
-    // Called when the dialog status between a player and the gameobject is requested.
-    virtual uint32 GetDialogStatus(Player* /*player*/, GameObject* /*go*/) { return DIALOG_STATUS_SCRIPTED_NO_STATUS; }
-
-    // Called when the game object is destroyed (destructible buildings only).
-    virtual void OnDestroyed(GameObject* /*go*/, Player* /*player*/) { }
-
-    // Called when the game object is damaged (destructible buildings only).
-    virtual void OnDamaged(GameObject* /*go*/, Player* /*player*/) { }
-
-    // Called when the game object loot state is changed.
-    virtual void OnLootStateChanged(GameObject* /*go*/, uint32 /*state*/, Unit* /*unit*/) { }
-
-    // Called when the game object state is changed.
-    virtual void OnGameObjectStateChanged(GameObject* /*go*/, uint32 /*state*/) { }
 
     // Called when a GameObjectAI object is needed for the gameobject.
     virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return nullptr; }
@@ -385,7 +239,6 @@ class TC_GAME_API ScriptMgr
         /* Add given script to m_script list if the script is used in database. DO NOT use script afterwards as this function may delete it.
           Pointer script* will be freed upon ScriptMgr deletion, or immediately if registering failed
         **/
-        void RegisterOLDScript(OLDScript*& script);
         void FillSpellSummary();
 
         void IncreaseScriptCount() { ++_scriptCount; }
@@ -560,6 +413,7 @@ public: /* Script contexts */
 
     public: /* CreatureScript */
 
+        /*
         bool OnGossipHello(Player* player, Creature* creature);
         bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action);
         bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code);
@@ -568,25 +422,15 @@ public: /* Script contexts */
         bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
         bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
         uint32 GetDialogStatus(Player* player, Creature* creature);
-        CreatureAI* GetCreatureAI(Creature* creature);
         void OnCreatureUpdate(Creature* creature, uint32 diff);
         //!Only here for backward compat, if you're scripting a new creature override CreatureAI::ReceiveEmote instead
         bool ReceiveEmote(Player *player, Creature *_Creature, uint32 emote);
         bool EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *crTarget);
+        */
+        CreatureAI* GetCreatureAI(Creature* creature);
 
     public: /* GameObjectScript */
 
-        bool OnGossipHello(Player* player, GameObject* go);
-        bool OnGossipSelect(Player* player, GameObject* go, uint32 sender, uint32 action);
-        bool OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code);
-        bool OnQuestAccept(Player* player, GameObject* go, Quest const* quest);
-        bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt);
-        uint32 GetDialogStatus(Player* player, GameObject* go);
-        void OnGameObjectDestroyed(GameObject* go, Player* player);
-        void OnGameObjectDamaged(GameObject* go, Player* player);
-        void OnGameObjectLootStateChanged(GameObject* go, uint32 state, Unit* unit);
-        void OnGameObjectStateChanged(GameObject* go, uint32 state);
-        void OnGameObjectUpdate(GameObject* go, uint32 diff);
         GameObjectAI* GetGameObjectAI(GameObject* go);
 
     public: /* AreaTriggerScript */

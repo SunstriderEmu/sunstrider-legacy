@@ -14,8 +14,9 @@
 #include "GridMap.h"
 
 MapManager::MapManager() : 
-    _nextInstanceId(0)
+    _nextInstanceId(0), _scheduledScripts(0)
 {
+	i_gridCleanUpDelay = 5 * MINUTE * IN_MILLISECONDS ; //sWorld->getIntConfig(CONFIG_INTERVAL_GRIDCLEAN);
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
@@ -24,6 +25,8 @@ MapManager::~MapManager()
 
 void MapManager::Initialize()
 {
+	Map::InitStateMachine();
+
     int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
     if (num_threads > 0)
@@ -47,11 +50,13 @@ Map* MapManager::CreateBaseMap(uint32 id)
         const MapEntry* entry = sMapStore.LookupEntry(id);
         if (entry && entry->Instanceable())
         {
-            m = new MapInstanced(id);
+            m = new MapInstanced(id, i_gridCleanUpDelay);
         }
         else
         {
-            m = new Map(MAP_TYPE_MAP, id, 0, REGULAR_DIFFICULTY);
+            m = new Map(MAP_TYPE_MAP, id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
+			//TC map->LoadRespawnTimes();
+			m->LoadCorpseData();
         }
         i_maps[id] = m;
     }
@@ -74,12 +79,12 @@ Map* MapManager::FindBaseMap(uint32 id) const
     return (iter == i_maps.end() ? nullptr : iter->second);
 }
 
-Map* MapManager::CreateMap(uint32 id, const WorldObject* obj)
+Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
 {
     Map *m = CreateBaseMap(id);
 
-    if (m && obj && m->Instanceable()) 
-        m = ((MapInstanced*)m)->GetInstance(obj);
+    if (m && m->Instanceable()) 
+		m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
 
     return m;
 }
@@ -96,90 +101,91 @@ Map* MapManager::FindMap(uint32 mapid, uint32 instanceId)
     return ((MapInstanced*)map)->FindInstanceMap(instanceId);
 }
 
-/*
-    checks that do not require a map to be created
-    will send transfer error messages on fail
-*/
-bool MapManager::CanPlayerEnter(uint32 mapid, Player* player)
+Map::EnterState MapManager::PlayerCannotEnter(uint32 mapid, Player* player, bool loginCheck)
 {
-    const MapEntry *entry = sMapStore.LookupEntry(mapid);
-    if(!entry) return false;
-    const char *mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
+    MapEntry const* entry = sMapStore.LookupEntry(mapid);
+    if (!entry)
+        return Map::CANNOT_ENTER_NO_ENTRY;
 
-    if(entry->map_type == MAP_INSTANCE || entry->map_type == MAP_RAID)
+    if (!entry->IsDungeon())
+        return Map::CAN_ENTER;
+
+    InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(mapid);
+    if (!instance)
+        return Map::CANNOT_ENTER_UNINSTANCED_DUNGEON;
+
+    Difficulty targetDifficulty, requestedDifficulty;
+    targetDifficulty = requestedDifficulty = player->GetDifficulty(entry->IsRaid());
+    // Get the highest available difficulty if current setting is higher than the instance allows
+    MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(entry->MapID, targetDifficulty);
+    if (!mapDiff)
+        return Map::CANNOT_ENTER_DIFFICULTY_UNAVAILABLE;
+
+    //Bypass checks for GMs
+    if (player->IsGameMaster())
+        return Map::CAN_ENTER;
+
+    char const* mapName = entry->name[player->GetSession()->GetSessionDbcLocale()];
+
+    Group* group = player->GetGroup();
+    if (entry->IsRaid()) // can only enter in a raid group
+        if ((!group || !group->isRaidGroup()) && !sWorld->getBoolConfig(CONFIG_INSTANCE_IGNORE_RAID))
+            return Map::CANNOT_ENTER_NOT_IN_RAID;
+
+    if (!player->IsAlive())
     {
-        if (entry->map_type == MAP_RAID)
+        if (player->HasCorpse())
         {
-            // GMs can avoid raid limitations
-            if((player->GetSession()->GetSecurity() == SEC_PLAYER) /* && player->GetSession()->GetGroupId() == 0 */&& !sWorld->getConfig(CONFIG_INSTANCE_IGNORE_RAID))
+            // let enter in ghost mode in instance that connected to inner instance with corpse
+            uint32 corpseMap = player->GetCorpseLocation().GetMapId();
+            do
             {
-                // can only enter in a raid group
-                Group* group = player->GetGroup();
-                if (!group || !group->isRaidGroup())
-                {
-                    // probably there must be special opcode, because client has this string constant in GlobalStrings.lua
-                    // TODO: this is not a good place to send the message
-                    player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(810), mapName);
-                    return false;
-                }
-            }
+                if (corpseMap == mapid)
+                    break;
+
+                InstanceTemplate const* corpseInstance = sObjectMgr->GetInstanceTemplate(corpseMap);
+                corpseMap = corpseInstance ? corpseInstance->parent : 0;
+            } while (corpseMap);
+
+            if (!corpseMap)
+                return Map::CANNOT_ENTER_CORPSE_IN_DIFFERENT_INSTANCE;
+
+            TC_LOG_DEBUG("maps", "MAP: Player '%s' has corpse in instance '%s' and can enter.", player->GetName().c_str(), mapName);
         }
-
-        Difficulty targetDifficulty, requestedDifficulty;
-        targetDifficulty = requestedDifficulty = player->GetDifficulty(entry->IsRaid());
-        // Get the highest available difficulty if current setting is higher than the instance allows
-        MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(entry->MapID, targetDifficulty);
-        if (!mapDiff)
-        {
-            player->SendTransferAborted(mapid, TRANSFER_ABORT_DIFFICULTY2);      //Send aborted message
-            return false;
-        }
-
-        if (!player->IsAlive())
-        {
-            if(Corpse *corpse = player->GetCorpse())
-            {
-                // let enter in ghost mode in instance that connected to inner instance with corpse
-                uint32 instance_map = corpse->GetMapId();
-                do
-                {
-                    if(instance_map==mapid)
-                        break;
-
-                    InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(instance_map);
-                    instance_map = instance ? instance->parent : 0;
-                }
-                while (instance_map);
-
-                if (!instance_map)
-                {
-                    player->GetSession()->SendAreaTriggerMessage(player->GetSession()->GetTrinityString(811), mapName);
-                    return false;
-                }
-                //TC_LOG_DEBUG("network.opcode","MAP: Player '%s' has corpse in instance '%s' and can enter", player->GetName(), mapName);
-                player->ResurrectPlayer(0.5f, false);
-                player->SpawnCorpseBones();
-            }
-            else
-            {
-                //TC_LOG_ERROR("network.opcode","Map::CanEnter - player '%s' is dead but doesn't have a corpse!", player->GetName());
-            }
-        }
-
-        // Requirements
-        InstanceTemplate const* instance = sObjectMgr->GetInstanceTemplate(mapid);
-        if(!instance)
-            return false;
-        
-        return player->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), mapid, true);
+        else
+            TC_LOG_DEBUG("maps", "Map::PlayerCannotEnter - player '%s' is dead but does not have a corpse!", player->GetName().c_str());
     }
-    else
-        return true;
-}
 
-void MapManager::RemoveBonesFromMap(uint32 mapid, uint64 guid, float x, float y)
-{
-    CreateBaseMap(mapid)->RemoveBones(guid, x, y);
+    //Get instance where player's group is bound & its map
+    if (!loginCheck && group)
+    {
+        InstanceGroupBind* boundInstance = group->GetBoundInstance(entry);
+        if (boundInstance && boundInstance->save)
+            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
+                if (Map::EnterState denyReason = boundMap->CannotEnter(player))
+                    return denyReason;
+    }
+
+    // players are only allowed to enter 5 instances per hour
+    if (entry->IsDungeon() && (!player->GetGroup() || (player->GetGroup() && !player->GetGroup()->isLFGGroup())))
+    {
+        uint32 instanceIdToCheck = 0;
+        if (InstanceSave* save = player->GetInstanceSave(mapid, entry->IsRaid()))
+            instanceIdToCheck = save->GetInstanceId();
+
+        // instanceId can never be 0 - will not be found
+        /* TC
+        if (!player->CheckInstanceCount(instanceIdToCheck) && !player->IsDead())
+            return Map::CANNOT_ENTER_TOO_MANY_INSTANCES;
+            */
+    }
+
+    //Other requirements
+    //TC if (player->Satisfy(sObjectMgr->GetAccessRequirement(mapid, targetDifficulty), mapid, true))
+    if (player->Satisfy(sObjectMgr->GetAccessRequirement(instance->access_id), mapid, true))
+        return Map::CAN_ENTER;
+    else
+        return Map::CANNOT_ENTER_UNSPECIFIED_REASON;
 }
 
 void MapManager::Update(time_t diff)
@@ -198,9 +204,11 @@ void MapManager::Update(time_t diff)
 
     if (m_updater.activated())
     {
+		/* We keep instances updates looping while continents are updated.
+		Once all continents are done, we wait for the current instances updates to finish and stop.
+		*/
         m_updater.enableUpdateLoop(true);
         m_updater.waitUpdateOnces();
-        //now that continents are done, stop instances too
         m_updater.enableUpdateLoop(false);
         m_updater.waitUpdateLoops();
     }
@@ -209,15 +217,12 @@ void MapManager::Update(time_t diff)
     for (auto & i_map : i_maps)
         i_map.second->DelayedUpdate(uint32(i_timer.GetCurrent()));
 
-    sObjectAccessor->Update(i_timer.GetCurrent());
-    sWorld->RecordTimeDiff("UpdateObjectAccessor");
-
     i_timer.SetCurrent(0);
 }
 
 bool MapManager::ExistMapAndVMap(uint32 mapid, float x,float y)
 {
-    GridPair p = Trinity::ComputeGridPair(x,y);
+    GridCoord p = Trinity::ComputeGridCoord(x,y);
 
     int gx = (MAX_NUMBER_OF_GRIDS - 1) - p.x_coord;
     int gy = (MAX_NUMBER_OF_GRIDS - 1) - p.y_coord;
@@ -247,6 +252,8 @@ void MapManager::UnloadAll()
 
     if (m_updater.activated())
         m_updater.deactivate();
+
+	Map::DeleteStateMachine();
 }
 
 uint32 MapManager::GetNumInstances()

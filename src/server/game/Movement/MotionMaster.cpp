@@ -18,9 +18,14 @@
 #include "MoveSplineInit.h"
 #include <cassert>
 
-inline bool isStatic(MovementGenerator *mv)
+inline MovementGenerator* GetIdleMovementGenerator()
 {
-    return (mv == &si_idleMovement);
+    return sMovementGeneratorRegistry->GetRegistryItem(IDLE_MOTION_TYPE)->Create();
+}
+
+inline bool isStatic(MovementGenerator* movement)
+{
+    return (movement == GetIdleMovementGenerator());
 }
 
 void MotionMaster::Initialize()
@@ -46,15 +51,7 @@ void MotionMaster::Initialize()
 // set new default movement generator
 void MotionMaster::InitDefault()
 {
-    if (_owner->GetTypeId() == TYPEID_UNIT && _owner->IsAlive())
-    {
-        MovementGenerator* movement = FactorySelector::selectMovementGenerator(_owner->ToCreature());
-        bool success = Mutate(movement == nullptr ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
-        if (success)
-            return; //else default to idle below
-    }
-
-    Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
+    Mutate(FactorySelector::SelectMovementGenerator(_owner), MOTION_SLOT_IDLE);
 }
 
 MotionMaster::~MotionMaster()
@@ -212,7 +209,7 @@ void MotionMaster::MoveIdle()
         MovementExpired(false);
     //! Should be preceded by MovementExpired or Clear if there's an overlying movementgenerator active
     if (empty() || !isStatic(top()))
-        Mutate(&si_idleMovement, MOTION_SLOT_IDLE);
+        Mutate(GetIdleMovementGenerator(), MOTION_SLOT_IDLE);
 }
 
 void MotionMaster::MoveRandom(float spawndist)
@@ -441,13 +438,14 @@ void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
 
 void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ)
 {
-    //this function may make players fall below map
-    if (_owner->GetTypeId() == TYPEID_PLAYER)
-        return;
-#ifndef LICH_KING
+	//this function may make players fall below map
+	if (_owner->GetTypeId() == TYPEID_PLAYER)
+		return;
+
+	//BC creatures can't be knocked back
+#ifdef LICH_KING
     else
         return; //BC creatures can't be knocked back
-#endif
 
     if (speedXY <= 0.1f)
         return;
@@ -466,6 +464,7 @@ void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, floa
     init.SetVelocity(speedXY);
     init.Launch();
     Mutate(new EffectMovementGenerator(0), MOTION_SLOT_CONTROLLED);
+#endif
 }
 
 void MotionMaster::MoveJumpTo(float angle, float speedXY, float speedZ)
@@ -689,8 +688,8 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     {
         bool delayed = (_top == slot && (_cleanFlag & MMCF_UPDATE));
 
-        Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
-        //kelno: crashfix from sunwell: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
+        Impl[slot] = nullptr; // in case a new one is generated in this slot during directdelete
+        //kelno: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
         while (!empty() && !top())
             --_top;
 

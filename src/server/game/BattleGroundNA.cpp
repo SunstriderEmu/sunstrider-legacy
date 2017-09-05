@@ -10,7 +10,7 @@
 
 BattlegroundNA::BattlegroundNA()
 {
-    m_BgObjects.resize(BG_NA_OBJECT_MAX);
+    BgObjects.resize(BG_NA_OBJECT_MAX);
 }
 
 BattlegroundNA::~BattlegroundNA()
@@ -27,9 +27,9 @@ void BattlegroundNA::Update(time_t diff)
     {
         ModifyStartDelayTime(diff);
 
-        if (!(m_Events & 0x01))
+        if (!(m_Events & BG_STARTING_EVENT_1))
         {
-            m_Events |= 0x01;
+            m_Events |= BG_STARTING_EVENT_1;
             // setup here, only when at least one player has ported to the map
             if(!SetupBattleground())
             {
@@ -43,15 +43,15 @@ void BattlegroundNA::Update(time_t diff)
             SendMessageToAll(LANG_ARENA_ONE_MINUTE);
         }
         // After 30 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & 0x04))
+        else if (GetStartDelayTime() <= START_DELAY2 && !(m_Events & BG_STARTING_EVENT_3))
         {
-            m_Events |= 0x04;
+            m_Events |= BG_STARTING_EVENT_3;
             SendMessageToAll(LANG_ARENA_THIRTY_SECONDS);
         }
         // After 15 seconds, warning is signalled
-        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & 0x08))
+        else if (GetStartDelayTime() <= START_DELAY3 && !(m_Events & BG_STARTING_EVENT_4))
         {
-            m_Events |= 0x08;
+            m_Events |= BG_STARTING_EVENT_4;
             SendMessageToAll(LANG_ARENA_FIFTEEN_SECONDS);
         }
         // delay expired (1 minute)
@@ -73,10 +73,10 @@ void BattlegroundNA::Update(time_t diff)
                 if(Player *plr = sObjectMgr->GetPlayer(itr.first))
                     plr->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
 
-            if(!GetPlayersCountByTeam(TEAM_ALLIANCE) && GetPlayersCountByTeam(TEAM_HORDE))
-                EndBattleground(TEAM_HORDE);
-            else if(GetPlayersCountByTeam(TEAM_ALLIANCE) && !GetPlayersCountByTeam(TEAM_HORDE))
-                EndBattleground(TEAM_ALLIANCE);
+            if(!GetPlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+                EndBattleground(HORDE);
+            else if(GetPlayersCountByTeam(ALLIANCE) && !GetPlayersCountByTeam(HORDE))
+                EndBattleground(ALLIANCE);
         }
     }
 
@@ -94,8 +94,8 @@ void BattlegroundNA::AddPlayer(Player *plr)
 
     m_PlayerScores[plr->GetGUID()] = sc;
 
-    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 }
 
 void BattlegroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
@@ -103,14 +103,14 @@ void BattlegroundNA::RemovePlayer(Player* /*plr*/, uint64 /*guid*/)
     if(GetStatus() == STATUS_WAIT_LEAVE)
         return;
 
-    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
     if (GetStatus() != STATUS_WAIT_JOIN) {
-        if(!GetAlivePlayersCountByTeam(TEAM_ALLIANCE) && GetPlayersCountByTeam(TEAM_HORDE))
-            EndBattleground(TEAM_HORDE);
-        else if(GetPlayersCountByTeam(TEAM_ALLIANCE) && !GetAlivePlayersCountByTeam(TEAM_HORDE))
-            EndBattleground(TEAM_ALLIANCE);
+        if(!GetAlivePlayersCountByTeam(ALLIANCE) && GetPlayersCountByTeam(HORDE))
+            EndBattleground(HORDE);
+        else if(GetPlayersCountByTeam(ALLIANCE) && !GetAlivePlayersCountByTeam(HORDE))
+            EndBattleground(ALLIANCE);
     }
 }
 
@@ -127,18 +127,18 @@ void BattlegroundNA::HandleKillPlayer(Player *player, Player *killer)
 
     Battleground::HandleKillPlayer(player,killer);
 
-    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(TEAM_ALLIANCE));
-    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(TEAM_HORDE));
+    UpdateWorldState(0xa0f, GetAlivePlayersCountByTeam(ALLIANCE));
+    UpdateWorldState(0xa10, GetAlivePlayersCountByTeam(HORDE));
 
-    if(!GetAlivePlayersCountByTeam(TEAM_ALLIANCE))
+    if(!GetAlivePlayersCountByTeam(ALLIANCE))
     {
         // all opponents killed
-        EndBattleground(TEAM_HORDE);
+        EndBattleground(HORDE);
     }
-    else if(!GetAlivePlayersCountByTeam(TEAM_HORDE))
+    else if(!GetAlivePlayersCountByTeam(HORDE))
     {
         // all opponents killed
-        EndBattleground(TEAM_ALLIANCE);
+        EndBattleground(ALLIANCE);
     }
 }
 
@@ -172,8 +172,8 @@ void BattlegroundNA::HandleAreaTrigger(Player *Source, uint32 Trigger)
 
 void BattlegroundNA::FillInitialWorldStates(WorldPacket &data)
 {
-    data << uint32(0xa0f) << uint32(GetAlivePlayersCountByTeam(TEAM_ALLIANCE));           // 7
-    data << uint32(0xa10) << uint32(GetAlivePlayersCountByTeam(TEAM_HORDE));           // 8
+    data << uint32(0xa0f) << uint32(GetAlivePlayersCountByTeam(ALLIANCE));           // 7
+    data << uint32(0xa10) << uint32(GetAlivePlayersCountByTeam(HORDE));           // 8
     data << uint32(0xa11) << uint32(1);           // 9
 }
 

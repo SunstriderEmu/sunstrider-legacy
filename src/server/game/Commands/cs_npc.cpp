@@ -132,7 +132,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     if (Transport* tt = chr->GetTransport())
         if (MotionTransport* trans = tt->ToMotionTransport())
         {
-            uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT);
+            uint32 guid = sObjectMgr->GenerateCreatureSpawnId();
             CreatureData& data = sObjectMgr->NewOrExistCreatureData(guid);
             data.id = id;
             data.posX = chr->GetTransOffsetX();
@@ -162,13 +162,11 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
         }
 
     auto  pCreature = new Creature;
-    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, id))
+    if (!pCreature->Create(sObjectMgr->GenerateCreatureSpawnId(), map, chr->GetPhaseMask(), id, x, y, z, o))
     {
         delete pCreature;
         return false;
     }
-
-    pCreature->Relocate(x,y,z,o);
 
     if(!pCreature->IsPositionValid())
     {
@@ -184,7 +182,7 @@ bool ChatHandler::HandleNpcAddCommand(const char* args)
     // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
     pCreature->LoadFromDB(db_guid, map);
 
-    map->Add(pCreature);
+    map->AddToMap<Creature>(pCreature);
     sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
     return true;
 }
@@ -205,7 +203,7 @@ bool ChatHandler::HandleNpcDeleteCommand(const char* args)
             return false;
 
         if (CreatureData const* cr_data = sObjectMgr->GetCreatureData(lowguid))
-            unit = ObjectAccessor::GetCreature(*m_session->GetPlayer(), MAKE_NEW_GUID(lowguid, cr_data->id, HIGHGUID_UNIT));
+            unit = ObjectAccessor::GetCreature(*m_session->GetPlayer(), MAKE_NEW_GUID(lowguid, cr_data->id, HighGuid::Unit));
     }
     else
         unit = GetSelectedCreature();
@@ -244,7 +242,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
 
         /* FIXME: impossibel without entry
         if(lowguid)
-            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HIGHGUID_UNIT));
+            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HighGuid::Unit));
         */
 
         // Attempting creature load from DB data
@@ -300,7 +298,7 @@ bool ChatHandler::HandleNpcMoveCommand(const char* args)
             const_cast<CreatureData*>(data)->posZ = z;
             const_cast<CreatureData*>(data)->orientation = o;
         }
-        pCreature->SetPosition(x, y, z, o);
+        pCreature->UpdatePosition(x, y, z, o);
         pCreature->InitCreatureAddon(true);
         pCreature->GetMotionMaster()->Initialize();
         if(pCreature->IsAlive())                            // dead creature will reset movement generator at respawn
@@ -562,7 +560,7 @@ bool ChatHandler::HandleNpcSetMoveTypeCommand(const char* args)
 
         /* impossible without entry
         if(lowguid)
-            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HIGHGUID_UNIT));
+            pCreature = ObjectAccessor::GetCreature(*m_session->GetPlayer(),MAKE_GUID(lowguid,HighGuid::Unit));
         */
 
         // attempt check creature existence by DB data
@@ -863,7 +861,7 @@ bool ChatHandler::HandleNpcAddFormationCommand(const char* args)
     if (pCreature->GetMap()->Instanceable())
         leader = pCreature->GetMap()->GetCreatureWithSpawnId(leaderGUID);
     else
-        leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HIGHGUID_UNIT));
+        leader = pCreature->GetMap()->GetCreature(MAKE_NEW_GUID(leaderGUID, data->id, HighGuid::Unit));
 
     if (!leader)
     {
@@ -988,7 +986,7 @@ bool ChatHandler::HandleNpcGoBackHomeCommand(const char* args)
         if (result) {
             Field *fields = result->Fetch();
             uint32 creatureentry = fields[0].GetUInt32();
-            uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HIGHGUID_UNIT);
+            uint64 packedguid = MAKE_NEW_GUID(uintGUID, creatureentry, HighGuid::Unit);
             Unit* pUnit = ObjectAccessor::GetUnit(*plr, packedguid);
             if (!pUnit) {
                 PSendSysMessage("No unit found.");
@@ -1139,7 +1137,7 @@ bool ChatHandler::HandleNpcMassFactionIdCommand(const char* args)
 
     Trinity::FactionDo u_do(entryId, factionId);
     Trinity::WorldObjectWorker<Trinity::FactionDo> worker(player, u_do);
-    player->VisitNearbyGridObject(MAX_SEARCHER_DISTANCE, worker);
+    Cell::VisitGridObjects(player, worker, MAX_SEARCHER_DISTANCE);
 
     return true;
 }

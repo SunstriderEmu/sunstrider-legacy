@@ -22,8 +22,8 @@
 #include "Define.h"
 #include "IVMapManager.h"
 #include <unordered_map>
-enum BaseLiquidType;
-enum BaseLiquidTypeMask;
+enum LiquidType;
+enum LiquidTypeMask;
 
 //===========================================================
 
@@ -121,7 +121,8 @@ namespace VMAP
             bool processCommand(char* /*command*/) override { return false; } // for debug and extensions
 
             bool getAreaInfo(unsigned int pMapId, float x, float y, float& z, uint32& flags, int32& adtId, int32& rootId, int32& groupId) const override;
-            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, BaseLiquidTypeMask reqBaseLiquidTypeMask, float& level, float& floor, BaseLiquidType& typeMask) const override;
+            bool GetLiquidLevel(uint32 pMapId, float x, float y, float z, uint8 reqLiquidTypeMask, float& level, float& floor, LiquidType& typeMask) const override;
+            void getAreaAndLiquidData(unsigned int mapId, float x, float y, float z, uint8 reqLiquidType, AreaAndLiquidData& data) const override;
 
             WorldModel* acquireModelInstance(const std::string& basepath, const std::string& filename, uint32 flags = 0);
             void releaseModelInstance(const std::string& filename);
@@ -134,6 +135,9 @@ namespace VMAP
             LoadResult existsMap(const char* basePath, unsigned int mapId, int x, int y) override;
 
             void getInstanceMapTree(InstanceTreeMap &instanceMapTree);
+
+            typedef uint32(*GetLiquidFlagsFn)(uint32 liquidType);
+            GetLiquidFlagsFn GetLiquidFlagsPtr;
 
             typedef bool(*IsVMAPDisabledForFn)(uint32 entry, uint8 flags);
             IsVMAPDisabledForFn IsVMAPDisabledForPtr;

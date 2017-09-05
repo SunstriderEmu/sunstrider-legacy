@@ -465,28 +465,9 @@ class CreatureGameObjectScriptRegistrySwapHooks
         };
 
         AIFunctionMapWorker<typename std::decay<decltype(evaluator)>::type> worker(std::move(evaluator));
-        /*TC
-        TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
-        containerVisitor.Visit(map->GetObjectsStore());
-        */
-        // -- Sunstrider workaround since we don't use the same structure
-        TypeContainerVisitor<decltype(worker), HashMapHolder<Player>::MapType&>     containerVisitor1(worker);
-        boost::shared_lock<boost::shared_mutex> lock1(*HashMapHolder<Player>::GetLock());
-        HashMapHolder<Player>::MapType& players = const_cast<HashMapHolder<Player>::MapType&>(ObjectAccessor::GetPlayers());
-        containerVisitor1.Visit(players);
+		TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
 
-        TypeContainerVisitor<decltype(worker), HashMapHolder<Creature>::MapType&>   containerVisitor2(worker);
-        boost::shared_lock<boost::shared_mutex> lock2(*HashMapHolder<Creature>::GetLock());
-        HashMapHolder<Creature>::MapType& creatures = const_cast<HashMapHolder<Creature>::MapType&>(ObjectAccessor::GetCreatures());
-        containerVisitor2.Visit(creatures);
-
-        TypeContainerVisitor<decltype(worker), HashMapHolder<GameObject>::MapType&> containerVisitor3(worker);
-        boost::shared_lock<boost::shared_mutex> lock3(*HashMapHolder<GameObject>::GetLock());
-        HashMapHolder<GameObject>::MapType& gameobjects = const_cast<HashMapHolder<GameObject>::MapType&>(ObjectAccessor::GetGameObjects());
-        containerVisitor3.Visit(gameobjects);
-        //containerVisitor.Visit(ObjectAccessor::GetDynamicObjects());
-        //containerVisitor.Visit(ObjectAccessor::GetCorpses());
-        // --
+		containerVisitor.Visit(map->GetObjectsStore());
     }
 
     static void DestroyScriptIdsFromSet(std::unordered_set<uint32> const& idsToRemove)
@@ -1276,13 +1257,6 @@ void DoScriptText(int32 textEntry, Unit* pSource, Unit* target)
 //*********************************
 //*** Functions used internally ***
 
-void ScriptMgr::RegisterOLDScript(OLDScript*& script)
-{
-    auto  cScript = new CreatureScript(script->Name.c_str());
-    cScript->baseScript = script;
-    script = nullptr; //CreatureScript object now own the script pointer, remove it for caller
-}
-
 #define SCR_MAP_BGN(M, V, I, E, C, T) \
     if (V->GetEntry() && V->GetEntry()->T()) \
     { \
@@ -1511,6 +1485,7 @@ char const* ScriptMgr::ScriptsVersion()
     return "Sunstrider scripting library";
 }
 
+/*
 bool ScriptMgr::OnGossipHello( Player * player, Creature *creature)
 {
     ASSERT(player);
@@ -1542,18 +1517,6 @@ bool ScriptMgr::OnGossipSelectCode( Player *player, Creature *creature, uint32 s
     GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, false);
     player->PlayerTalkClass->ClearMenus();
     return tmpscript->OnGossipSelectCode(player, creature, sender, action, code);
-}
-
-
-bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code)
-{
-    ASSERT(player);
-    ASSERT(go);
-    ASSERT(code);
-
-    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
-    player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
 bool ScriptMgr::OnQuestAccept( Player *player, Creature *creature, Quest const *quest)
@@ -1612,14 +1575,6 @@ uint32 ScriptMgr::GetDialogStatus( Player *player, Creature *creature)
     return tmpscript->GetDialogStatus(player, creature);
 }
 
-CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
-{
-    ASSERT(creature);
-
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
-    return tmpscript->GetAI(creature);
-}
-
 void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
 {
     ASSERT(creature);
@@ -1628,6 +1583,27 @@ void ScriptMgr::OnCreatureUpdate(Creature* creature, uint32 diff)
     tmpscript->OnUpdate(creature, diff);
 }
 
+bool ScriptMgr::ReceiveEmote( Player *player, Creature *creature, uint32 emote )
+{
+    ASSERT(player);
+    ASSERT(creature);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnReceiveEmote(player, creature, emote);
+}
+
+*/
+
+CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
+{
+    ASSERT(creature);
+
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
+    return tmpscript->GetAI(creature);
+}
+
+/*
 bool ScriptMgr::OnGossipHello( Player *player, GameObject *go )
 {
     ASSERT(player);
@@ -1645,6 +1621,17 @@ bool ScriptMgr::OnGossipSelect(Player* player, GameObject* go, uint32 sender, ui
 
     GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
     return tmpscript->OnGossipSelect(player, go, sender, action);
+}
+
+bool ScriptMgr::OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code)
+{
+    ASSERT(player);
+    ASSERT(go);
+    ASSERT(code);
+
+    GET_SCRIPT_RET(GameObjectScript, go->GetScriptId(), tmpscript, false);
+    player->PlayerTalkClass->ClearMenus();
+    return tmpscript->OnGossipSelectCode(player, go, sender, action, code);
 }
 
 bool ScriptMgr::OnQuestAccept(Player* player, GameObject* go, Quest const* quest)
@@ -1718,6 +1705,7 @@ void ScriptMgr::OnGameObjectUpdate(GameObject* go, uint32 diff)
     GET_SCRIPT(GameObjectScript, go->GetScriptId(), tmpscript);
     tmpscript->OnUpdate(go, diff);
 }
+*/
 
 GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* go)
 {
@@ -1765,27 +1753,10 @@ bool ScriptMgr::OnItemExpire(Player* player, ItemTemplate const* proto)
     return tmpscript->OnExpire(player, proto);
 }
 
-bool ScriptMgr::ReceiveEmote( Player *player, Creature *creature, uint32 emote )
-{
-    ASSERT(player);
-    ASSERT(creature);
-
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    player->PlayerTalkClass->ClearMenus();
-    return tmpscript->OnReceiveEmote(player, creature, emote);
-}
-
-bool ScriptMgr::EffectDummyCreature(Unit *caster, uint32 spellId, uint32 effIndex, Creature *creature)
-{
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, DIALOG_STATUS_SCRIPTED_NO_STATUS);
-    return tmpscript->OnEffectDummyCreature(caster, spellId, effIndex, creature);
-}
-
 SpellScriptLoader* ScriptMgr::GetSpellScriptLoader(uint32 scriptId)
 {
     return ScriptRegistry<SpellScriptLoader>::Instance()->GetScriptById(scriptId);
 }
-
 
 InstanceScript* ScriptMgr::CreateInstanceScript(InstanceMap* map)
 {
@@ -1829,8 +1800,6 @@ CreatureScript::CreatureScript(const char* name)
 
 CreatureScript::~CreatureScript()
 {
-    //delete used base OLDScript if any
-    delete baseScript;
 }
 
 GameObjectScript::GameObjectScript(const char* name)

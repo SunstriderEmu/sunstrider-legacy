@@ -20,7 +20,7 @@
 #define _MAPREFMANAGER
 
 #include "RefManager.h"
-
+class Player;
 class MapReference;
 
 class MapRefManager : public RefManager<Map, Player>

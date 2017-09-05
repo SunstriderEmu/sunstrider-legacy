@@ -147,7 +147,7 @@ bool ChatHandler::HandleLearnAllDefaultCommand(const char* args)
             return false;
         }
 
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     }
     else
         player = GetSelectedPlayerOrSelf();

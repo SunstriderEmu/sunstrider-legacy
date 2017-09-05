@@ -88,6 +88,7 @@ namespace Movement
 
     #define STR(x) #x
 
+    //TODO: not valid for BC
     char const* g_MovementFlag_names[] =
     {
         STR(Forward            ), // 0x00000001,
@@ -141,6 +142,7 @@ namespace Movement
         STR(Unk10              ),
     };
 
+    //TODO: not valid for BC
     char const* g_SplineFlag_names[32] =
     {
         STR(AnimBit1     ), // 0x00000001,
@@ -155,7 +157,7 @@ namespace Movement
         STR(Falling      ), // 0x00000200,           // Not Compartible With Trajectory Movement
         STR(No_Spline    ), // 0x00000400,
         STR(Trajectory   ), // 0x00000800,           // Not Compartible With Fall Movement
-        STR(Walkmode     ), // 0x00001000,
+        STR(CanSwim      ), // 0x00001000,
         STR(Flying       ), // 0x00002000,           // Smooth Movement(Catmullrom Interpolation Mode), Flying Animation
         STR(Knockback    ), // 0x00004000,           // Model Orientation Fixed
         STR(Final_Point  ), // 0x00008000,
@@ -170,12 +172,13 @@ namespace Movement
         STR(Unknown6     ), // 0x01000000,
         STR(Unknown7     ), // 0x02000000,
         STR(Unknown8     ), // 0x04000000,
-        STR(OrientationInversed ), // 0x08000000,           // Appears With Runmode Flag, Nodes ), // 1, Handles Orientation
+        STR(backward     ), // 0x08000000,           // Appears With Runmode Flag, Nodes ), // 1, Handles Orientation
         STR(Unknown10    ), // 0x10000000,
         STR(Unknown11    ), // 0x20000000,
         STR(Unknown12    ), // 0x40000000,
         STR(Unknown13    ), // 0x80000000,
     };
+
 
     template<class Flags, int N>
     void print_flags(Flags t, char const* (&names)[N], std::string& str)

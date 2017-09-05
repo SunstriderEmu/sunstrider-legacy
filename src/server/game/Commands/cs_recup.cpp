@@ -121,7 +121,7 @@ bool ChatHandler::HandleRecupCommand(const char* args)
 
     /* additionnal checks */
 
-    if ((player->GetTeam() == TEAM_ALLIANCE && faction != 1) || (player->GetTeam() == TEAM_HORDE && faction != 2) || player->GetClass() != classe || phase < 1 || phase > 2) {
+    if ((player->GetTeam() == ALLIANCE && faction != 1) || (player->GetTeam() == HORDE && faction != 2) || player->GetClass() != classe || phase < 1 || phase > 2) {
         PSendSysMessage(LANG_RECUP_WRONG_DATA);
         SetSentErrorMessage(true);
         return false;

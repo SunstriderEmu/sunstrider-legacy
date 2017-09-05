@@ -409,7 +409,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote const& eEmote, const std::string
 
     data.put<uint8>(count_pos, count);
     _session->SendPacket(&data);
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC=" UI64FMTD, npcGUID);
+    //TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_QUEST_LIST NPC=" UI64FMTD, npcGUID);
 }
 
 void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, uint64 npcGUID) const
@@ -419,7 +419,7 @@ void PlayerMenu::SendQuestGiverStatus(uint8 questStatus, uint64 npcGUID) const
     data << uint8(questStatus);
 
     _session->SendPacket(&data);
-    TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC=" UI64FMTD ", status=%u", npcGUID, questStatus);
+    //TC_LOG_DEBUG("network", "WORLD: Sent SMSG_QUESTGIVER_STATUS NPC=" UI64FMTD ", status=%u", npcGUID, questStatus);
 }
 
 void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, bool activateAccept) const

@@ -183,7 +183,7 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 
         // check dest->src move possibility
         ItemPosCountVec sSrc;
-        uint16 eSrc;
+		uint16 eSrc = {};
         if( _player->IsInventoryPos( src ) )
         {
             msg = _player->CanStoreItem( srcbag, srcslot, sSrc, pDstItem, true );
@@ -229,6 +229,11 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
             _player->EquipItem(eSrc, pDstItem, true);
 
         _player->AutoUnequipOffhandIfNeed();
+
+        // if inventory item was moved, check if we can remove dependent auras, because they were not removed in Player::RemoveItem (update was set to false)
+        // do this after swaps are done, we pass nullptr because both weapons could be swapped and none of them should be ignored
+        if ((srcbag == INVENTORY_SLOT_BAG_0 && srcslot < INVENTORY_SLOT_BAG_END) || (dstbag == INVENTORY_SLOT_BAG_0 && dstslot < INVENTORY_SLOT_BAG_END))
+            _player->ApplyItemDependentAuras((Item*)nullptr, false);
     }
 }
 
@@ -759,7 +764,7 @@ void WorldSession::SendListInventory( uint64 vendorguid )
 #ifdef LICH_KING
             // Only display items in vendor lists for the team the
             // player is on. If GM on, display all items.
-            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == TEAM_ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == TEAM_HORDE)))
+            if (!_player->IsGameMaster() && ((crItem->proto->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeamId() == ALLIANCE) || (crItem->proto->Flags2 == ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeamId() == HORDE)))
                 continue;
 #endif
 

@@ -661,13 +661,16 @@ namespace MaNGOS
 Unit* PlayerbotAI::GetUnit(ObjectGuid guid)
 {
     if (!guid)
-        return NULL;
+        return nullptr;
 
     Map* map = bot->GetMap();
     if (!map)
-        return NULL;
+        return nullptr;
 
-    return ObjectAccessor::GetObjectInMap(guid, map, (Unit*)NULL);
+	if (!guid.IsUnit())
+		return nullptr;
+
+	return (Unit*)ObjectAccessor::GetWorldObject(*bot, guid);
 }
 
 

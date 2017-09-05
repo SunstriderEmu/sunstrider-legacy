@@ -148,55 +148,6 @@ void CasterAI::UpdateAI(uint32 diff)
 }
 
 //////////////
-// ArcherAI
-//////////////
-
-ArcherAI::ArcherAI(Creature* c) : CreatureAI(c)
-{
-    if (!me->m_spells[0])
-        sLog->outError("ArcherAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
-
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->m_spells[0]);
-    m_minRange = spellInfo ? spellInfo->GetMinRange(false) : 0;
-
-    if (!m_minRange)
-        m_minRange = MELEE_RANGE;
-    me->m_CombatDistance = spellInfo ? spellInfo->GetMaxRange(false) : 0;
-    me->m_SightDistance = me->m_CombatDistance;
-}
-
-void ArcherAI::AttackStart(Unit* who)
-{
-    if (!who)
-        return;
-
-    if (me->IsWithinCombatRange(who, m_minRange))
-    {
-        if (me->Attack(who, true) && !who->IsFlying())
-            me->GetMotionMaster()->MoveChase(who);
-    }
-    else
-    {
-        if (me->Attack(who, false) && !who->IsFlying())
-            me->GetMotionMaster()->MoveChase(who, me->m_CombatDistance);
-    }
-
-    if (who->IsFlying())
-        me->GetMotionMaster()->MoveIdle();
-}
-
-void ArcherAI::UpdateAI(uint32 /*diff*/)
-{
-    if (!UpdateVictim())
-        return;
-
-    if (!me->IsWithinCombatRange(me->GetVictim(), m_minRange))
-        DoSpellAttackIfReady(me->m_spells[0]);
-    else
-        DoMeleeAttackIfReady();
-}
-
-//////////////
 // TurretAI
 //////////////
 

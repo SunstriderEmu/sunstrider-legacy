@@ -3,6 +3,7 @@
 
 #include "Define.h"
 #include "Unit.h"
+#include "QuestDef.h"
 class Unit;
 class Quest;
 class Player;
@@ -57,7 +58,8 @@ class TC_GAME_API UnitAI
     public:
         UnitAI(Unit *u) : me(u), m_combatDistance(0.5f), m_allowCombatMovement(true), m_restoreCombatMovementOnOOM(false) {}
         virtual ~UnitAI() = default;
-        
+
+        virtual bool CanAIAttack(Unit const* /*target*/) const { return true; }
         virtual void AttackStart(Unit *);
         void AttackStartCaster(Unit* victim, float dist);
         virtual void UpdateAI(const uint32 diff) { }
@@ -85,8 +87,6 @@ class TC_GAME_API UnitAI
         virtual void SetGUID(uint64 /*guid*/, int32 /*id*/ = 0) { }
         virtual uint64 GetGUID(int32 /*id*/ = 0) const { return 0; }
 
-        virtual void AttackedBy(Unit* who) {}
-        
         // Called at any Damage from any attacker (before damage apply)
         virtual void DamageTaken(Unit *done_by, uint32 & /*damage*/) {}
         
@@ -161,13 +161,23 @@ class TC_GAME_API UnitAI
         Unit* SelectTarget(uint32 position, float distMin, float distMax, bool playerOnly, bool auraCheck, bool exceptPossesed, uint32 spellId, uint32 effIndex);
         void SelectUnitList(std::list<Unit*> &targetList, uint32 num, SelectAggroTarget target, float dist, bool playerOnly, uint32 notHavingAuraId = 0, uint8 effIndex = 0);
 
-        virtual void sGossipHello(Player* player) {}
-        virtual void sGossipSelect(Player* player, uint32 sender, uint32 action) {}
-        virtual void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) {}
-        virtual void sQuestAccept(Player* player, Quest const* quest) {}
-        virtual void sQuestSelect(Player* player, Quest const* quest) {}
-        virtual void sQuestComplete(Player* player, Quest const* quest) {}
-        virtual void sQuestReward(Player* player, Quest const* quest, uint32 opt) {}
+        // Called when a player opens a gossip dialog with the creature.
+        virtual bool GossipHello(Player* /*player*/) { return false; }
+
+        // Called when a player selects a gossip item in the creature's gossip menu.
+        virtual bool GossipSelect(Player* /*player*/, uint32 /*menuId*/, uint32 /*gossipListId*/) { return false;  }
+
+        // Called when a player selects a gossip with a code in the creature's gossip menu.
+        virtual bool GossipSelectCode(Player* /*player*/, uint32 /*menuId*/, uint32 /*gossipListId*/, const char*  /*code*/) { return false;  }
+
+        // Called when a player accepts a quest from the creature.
+        virtual void QuestAccept(Player* /*player*/, Quest const* /*quest*/) { }
+
+        // Called when a player completes a quest and is rewarded, opt is the selected item's index or 0
+        virtual void QuestReward(Player* /*player*/, Quest const* /*quest*/, uint32 /*opt*/) { }
+
+        // Called when the dialog status between a player and the creature is requested.
+        virtual uint32 GetDialogStatus(Player* /*player*/) { return DIALOG_STATUS_SCRIPTED_NO_STATUS; }
 };
 
 #endif //TRINITY_UNITAI_H

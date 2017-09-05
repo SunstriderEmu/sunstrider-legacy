@@ -22,6 +22,7 @@ class Player;
 
 #define CENTER_GRID_OFFSET      (SIZE_OF_GRIDS/2)
 
+#define MIN_GRID_DELAY          (MINUTE*IN_MILLISECONDS)
 #define MIN_MAP_UPDATE_DELAY    50
 
 #define MAX_NUMBER_OF_CELLS     8
@@ -80,7 +81,7 @@ typedef NGrid<MAX_NUMBER_OF_CELLS, Player, AllWorldObjectTypes, AllGridObjectTyp
 
 typedef TypeMapContainer<AllGridObjectTypes> GridTypeMapContainer;
 typedef TypeMapContainer<AllWorldObjectTypes> WorldTypeMapContainer;
-//TC typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, uint64> MapStoredObjectTypesContainer;
+typedef TypeUnorderedMapContainer<AllMapStoredObjectTypes, uint64> MapStoredObjectTypesContainer;
 
 template<const uint32 LIMIT>
 struct CoordPair
@@ -128,16 +129,60 @@ struct CoordPair
             y_coord = LIMIT - 1;
     }
 
+	void dec_x(uint32 val)
+	{
+		if (x_coord > val)
+			x_coord -= val;
+		else
+			x_coord = 0;
+	}
+
+	void inc_x(uint32 val)
+	{
+		if (x_coord + val < LIMIT)
+			x_coord += val;
+		else
+			x_coord = LIMIT - 1;
+	}
+
+	void dec_y(uint32 val)
+	{
+		if (y_coord > val)
+			y_coord -= val;
+		else
+			y_coord = 0;
+	}
+
+	void inc_y(uint32 val)
+	{
+		if (y_coord + val < LIMIT)
+			y_coord += val;
+		else
+			y_coord = LIMIT - 1;
+	}
+
     bool IsCoordValid() const
     {
         return x_coord < LIMIT && y_coord < LIMIT;
     }
 
+	CoordPair& normalize()
+	{
+		x_coord = std::min(x_coord, LIMIT - 1);
+		y_coord = std::min(y_coord, LIMIT - 1);
+		return *this;
+	}
+
+	uint32 GetId() const
+	{
+		return y_coord * LIMIT + x_coord;
+	}
+
     uint32 x_coord;
     uint32 y_coord;
 };
 
-typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridPair;
+typedef CoordPair<MAX_NUMBER_OF_GRIDS> GridCoord;
 typedef CoordPair<TOTAL_NUMBER_OF_CELLS_PER_MAP> CellCoord;
 
 namespace Trinity
@@ -154,9 +199,9 @@ namespace Trinity
         return RET_TYPE(x_val, y_val);
     }
 
-    inline GridPair ComputeGridPair(float x, float y)
+    inline GridCoord ComputeGridCoord(float x, float y)
     {
-        return Compute<GridPair, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
+        return Compute<GridCoord, CENTER_GRID_ID>(x, y, CENTER_GRID_OFFSET, SIZE_OF_GRIDS);
     }
 
     inline CellCoord ComputeCellCoord(float x, float y)

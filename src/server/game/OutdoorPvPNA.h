@@ -181,26 +181,26 @@ const creature_type HordeControlNPCs[NA_CONTROL_NPC_NUM] = {
 };
 
 const creature_type AllianceControlNPCs[NA_CONTROL_NPC_NUM] = {
-    {18817,469,530,-1591.18,8020.39,-22.2042,4.59022},
-    {18822,469,530,-1588.0,8019.0,-22.2042,4.06662},
-    {21485,469,530,-1521.93,7927.37,-20.2299,3.24631},
-    {21487,469,530,-1540.33,7971.95,-20.7186,3.07178},
-    {21488,469,530,-1570.01,7993.8,-22.4505,5.02655},
-    {18256,469,530,-1654.06,8000.46,-26.59,3.37},
-    {18256,469,530,-1487.18,7899.1,-19.53,0.954},
-    {18256,469,530,-1480.88,7908.79,-19.19,4.485},
-    {18256,469,530,-1540.56,7995.44,-20.45,0.947},
-    {18256,469,530,-1546.95,8000.85,-20.72,6.035},
-    {18256,469,530,-1595.31,7860.53,-21.51,3.747},
-    {18256,469,530,-1642.31,7995.59,-25.8,3.317},
-    {18256,469,530,-1545.46,7995.35,-20.63,1.094},
-    {18256,469,530,-1487.58,7907.99,-19.27,5.567},
-    {18256,469,530,-1651.54,7988.56,-26.5289,2.98451},
-    {18256,469,530,-1602.46,7866.43,-22.1177,4.74729},
-    {18256,469,530,-1591.22,7875.29,-22.3536,4.34587},
-    {18256,469,530,-1603.75,8000.36,-24.18,4.516},
-    {18256,469,530,-1585.73,7994.68,-23.29,4.439},
-    {18256,469,530,-1595.5,7991.27,-23.53,4.738}
+	{ 18817,469,530,-1591.18f,8020.39f,-22.20f,4.59022f },
+	{ 18822,469,530,-1588.00f,8019.00f,-22.20f,4.06662f },
+	{ 21485,469,530,-1521.93f,7927.37f,-20.23f,3.24631f },
+	{ 21487,469,530,-1540.33f,7971.95f,-20.72f,3.07178f },
+	{ 21488,469,530,-1570.01f,7993.80f,-22.45f,5.02655f },
+	{ 18256,469,530,-1654.06f,8000.46f,-26.59f,3.30007f },
+	{ 18256,469,530,-1487.18f,7899.10f,-19.53f,0.95400f },
+	{ 18256,469,530,-1480.88f,7908.79f,-19.19f,4.48500f },
+	{ 18256,469,530,-1540.56f,7995.44f,-20.45f,0.94700f },
+	{ 18256,469,530,-1546.95f,8000.85f,-20.72f,6.03500f },
+	{ 18256,469,530,-1595.31f,7860.53f,-21.51f,3.74700f },
+	{ 18256,469,530,-1642.31f,7995.59f,-25.80f,3.31700f },
+	{ 18256,469,530,-1545.46f,7995.35f,-20.63f,1.09400f },
+	{ 18256,469,530,-1487.58f,7907.99f,-19.27f,5.56700f },
+	{ 18256,469,530,-1651.54f,7988.56f,-26.52f,2.98451f },
+	{ 18256,469,530,-1602.46f,7866.43f,-22.11f,4.74729f },
+	{ 18256,469,530,-1591.22f,7875.29f,-22.35f,4.34587f },
+	{ 18256,469,530,-1603.75f,8000.36f,-24.18f,4.51600f },
+	{ 18256,469,530,-1585.73f,7994.68f,-23.29f,4.43900f },
+	{ 18256,469,530,-1595.50f,7991.27f,-23.53f,4.73008f },
 };
 
 enum WyvernStates {
@@ -221,16 +221,14 @@ enum HalaaStates {
 class Unit;
 class Creature;
 class OutdoorPvPNA;
-class OutdoorPvPObjectiveNA : public OutdoorPvPObjective
+class OPvPCapturePointNA : public OPvPCapturePoint
 {
 friend class OutdoorPvPNA;
 public:
-    OutdoorPvPObjectiveNA(OutdoorPvP * pvp);
-    bool Update(uint32 diff);
+    OPvPCapturePointNA(OutdoorPvP * pvp);
+	bool Update(uint32 diff) override;
+	void ChangeState() override;
     void FillInitialWorldStates(WorldPacket & data);
-    // used when player is activated/inactivated in the area
-    bool HandlePlayerEnter(Player * plr);
-    void HandlePlayerLeave(Player * plr);
     bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go);
     int32 HandleOpenGo(Player *plr, uint64 guid);
     uint32 GetAliveGuardsCount();
@@ -246,7 +244,6 @@ protected:
     void UpdateWyvernRoostWorldState(uint32 roost);
     void UpdateHalaaWorldState();
 
-    bool HandleCapturePointEvent(Player * plr, uint32 eventId);
 private:
     bool m_capturable;
     uint32 m_GuardsAlive;
@@ -262,7 +259,7 @@ private:
 
 class OutdoorPvPNA : public OutdoorPvP
 {
-friend class OutdoorPvPObjectiveNA;
+friend class OPvPCapturePointNA;
 public:
     OutdoorPvPNA();
     bool SetupOutdoorPvP();
@@ -274,7 +271,7 @@ public:
     void HandleKillImpl(Player * plr, Unit * killed);
     void BuffTeam(uint32 team);
 private:
-    OutdoorPvPObjectiveNA * m_obj;
+    OPvPCapturePointNA * m_obj;
 };
 
 #endif

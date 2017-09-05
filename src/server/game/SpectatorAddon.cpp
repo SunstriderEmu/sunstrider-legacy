@@ -37,7 +37,7 @@ SpectatorAddonMsg::SpectatorAddonMsg()
     powerType = POWER_MANA;
     spellId   = 0;
     castTime  = 0;
-    team      = TEAM_ALLIANCE;
+    team      = ALLIANCE;
     aExpire   = 0;
     aSpellId  = 0;
     aRemove   = false;

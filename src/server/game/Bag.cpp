@@ -80,7 +80,7 @@ bool Bag::Create(uint32 guidlow, uint32 itemid, Player const* owner, ItemTemplat
         return false;
 
     m_itemProto = itemProto;
-    Object::_Create( guidlow, 0, HIGHGUID_CONTAINER );
+    Object::_Create( guidlow, 0, HighGuid::Container );
 
     SetEntry(itemid);
     SetFloatValue(OBJECT_FIELD_SCALE_X, 1.0f);

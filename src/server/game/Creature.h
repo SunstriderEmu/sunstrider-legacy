@@ -18,7 +18,7 @@ class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
-class TemporarySummon;
+class TempSummon;
 class Group;
 
 enum Gossip_Option
@@ -134,7 +134,7 @@ enum CreatureFlagsExtra
     CREATURE_FLAG_EXTRA_NO_TAUNT             = 0x00010000,       // cannot be taunted
     CREATURE_FLAG_EXTRA_NO_CRIT              = 0x00020000,       // creature can't do critical strikes
     CREATURE_FLAG_EXTRA_HOMELESS             = 0x00040000,       // consider current position instead of home position for threat area
-    CREATURE_FLAG_EXTRA_ALIVE_INVISIBLE      = 0x00080000,       // not visible for alive players
+    CREATURE_FLAG_EXTRA_GHOST_VISIBILITY     = 0x00080000,       // creature will be only visible for dead players
     CREATURE_FLAG_EXTRA_PERIODIC_RELOC       = 0x00100000,       // periodic on place relocation when ooc (use this for static mobs only)
     CREATURE_FLAG_EXTRA_DUAL_WIELD           = 0x00200000,       // can dual wield
     CREATURE_FLAG_EXTRA_NO_PLAYER_DAMAGE_REQ = 0x00400000,       // creature does not need to take player damage for kill credit
@@ -480,11 +480,11 @@ typedef std::map<uint32,time_t> CreatureSpellCooldowns;
 typedef std::vector<uint8> CreatureTextRepeatIds;
 typedef std::unordered_map<uint8, CreatureTextRepeatIds> CreatureTextRepeatGroup;
 
-class TC_GAME_API Creature : public Unit
+class TC_GAME_API Creature : public Unit, public GridObject<Creature>, public MapObject
 {
     public:
 
-        explicit Creature();
+        explicit Creature(bool isWorldObject = false);
         ~Creature() override;
 
         void AddToWorld() override;
@@ -495,12 +495,13 @@ class TC_GAME_API Creature : public Unit
 
         void DisappearAndDie();
 
-        bool Create (uint32 guidlow, Map *map, uint32 Entry, const CreatureData *data = nullptr);
+        bool Create (uint32 guidlow, Map *map, uint32 phaseMask, uint32 entry, float x, float y, float z, float ang, const CreatureData *data = nullptr);
         //get data from SQL storage
         void LoadCreatureAddon();
         //reapply creature addon data to creature
         bool InitCreatureAddon(bool reload = false);
         void SelectLevel();
+        void UpdateLevelDependantStats();
         void LoadEquipment(uint32 equip_entry, bool force = false);
         void SetSpawnHealth();
         //Set creature visual weapon (prefer creating values in creature_equip_template in db and loading them with LoadEquipment)
@@ -554,7 +555,7 @@ class TC_GAME_API Creature : public Unit
         }
         bool IsGuard() const override { return (m_creatureInfo->flags_extra & CREATURE_FLAG_EXTRA_GUARD) != 0; }
 
-        uint32 GetLevelForTarget(Unit const* target) const override; // overwrite Unit::GetLevelForTarget for boss level support
+        uint8 GetLevelForTarget(WorldObject const* target) const override; // overwrite Unit::GetLevelForTarget for boss level support
 
         bool isMoving();
         bool IsInEvadeMode() const;
@@ -567,7 +568,7 @@ class TC_GAME_API Creature : public Unit
 
         void WarnDeathToFriendly();
 
-        CreatureAI* AI() { return (CreatureAI*)i_AI; }
+		CreatureAI* AI() const { return reinterpret_cast<CreatureAI*>(i_AI); }
 
         uint32 GetShieldBlockValue() const override                  //dunno mob block value
         {
@@ -653,13 +654,12 @@ class TC_GAME_API Creature : public Unit
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
         uint32 m_GlobalCooldown;
 
-        bool CanSeeOrDetect(Unit const* u, bool detect, bool inVisibleList = false, bool is3dDistance = true) const override;
         bool IsWithinSightDist(Unit const* u) const;
         /* Return if creature can aggro and start attacking target, depending on faction, distance, LoS, if target is attackable, ...
         @assistAggro check for assisting instead of standard aggro. This changes the allowed distance only.
         */
         CanAttackResult CanAggro(Unit const* u, bool assistAggro = false) const;
-        float GetAttackDistance(Unit const* pl) const;
+        float GetAggroRange(Unit const* pl) const;
         
         /** The "suspicious look" is a warning whenever a stealth player is about to be detected by a creature*/
         /* return true if the creature can do a suspicious look on target. This does NOT check for detection range, use CanAggro, CanAttack or CanDetectStealthOf results to ensure this distance is correct. */
@@ -670,7 +670,7 @@ class TC_GAME_API Creature : public Unit
         Unit* SelectNearestTarget(float dist = 0, bool playerOnly = false, bool furthest = false) const;
         //select nearest alive player
         Unit* SelectNearestTargetInAttackDistance(float dist) const;
-
+		Unit* SelectNearestHostileUnitInAggroRange(bool useLOS = false) const;
 
         /** Call assistance at short range (chain aggro mechanic) */
         void CallAssistance();
@@ -684,8 +684,6 @@ class TC_GAME_API Creature : public Unit
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
-
-        bool IsVisibleInGridForPlayer(Player const* pl) const override;
 
         void RemoveCorpse(bool setSpawnTime = true, bool destroyForNearbyPlayers = true);
         
@@ -713,20 +711,11 @@ class TC_GAME_API Creature : public Unit
         bool HasQuest(uint32 quest_id) const override;
         bool HasInvolvedQuest(uint32 quest_id)  const override;
 
-        GridReference<Creature> &GetGridRef() { return m_gridRef; }
         bool isRegeneratingHealth() { return m_regenHealth; }
         void setRegeneratingHealth(bool regenHealth) { m_regenHealth = regenHealth; }
         virtual uint8 GetPetAutoSpellSize() const { return CREATURE_MAX_SPELLS; }
-        virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const
-        {
-            if (pos >= CREATURE_MAX_SPELLS || m_charmInfo->GetCharmSpell(pos)->active != ACT_ENABLED)
-                return 0;
-            else
-                return m_charmInfo->GetCharmSpell(pos)->spellId;
-        }
-
-        void SetPosition(float x, float y, float z, float o);
-        void SetPosition(const Position &pos) { SetPosition(pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()); }
+		virtual uint32 GetPetAutoSpellOnPos(uint8 pos) const;
+		float GetPetChaseDistance() const;
 
         void SetHomePosition(float x, float y, float z, float o) { m_homePosition.Relocate(x, y, z, o); }
         void SetHomePosition(const Position &pos) { m_homePosition.Relocate(pos); }
@@ -806,10 +795,13 @@ class TC_GAME_API Creature : public Unit
         bool SetFeatherFall(bool enable, bool packetOnly = false) override;
         bool SetHover(bool enable, bool packetOnly = false) override;
 
+		float m_SightDistance, m_CombatDistance;
+
         // Handling caster facing during spellcast
         void SetTarget(uint64 guid) override;
         void FocusTarget(Spell const* focusSpell, WorldObject const* target);
         void ReleaseFocus(Spell const* focusSpell);
+        bool IsFocusing(Spell const* focusSpell = nullptr, bool withDelay = false) override;
 
         CreatureTextRepeatIds GetTextRepeatGroup(uint8 textGroup);
         void SetTextRepeatId(uint8 textGroup, uint8 id);
@@ -832,6 +824,9 @@ class TC_GAME_API Creature : public Unit
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, const CreatureData *data = nullptr);
         bool InitEntry(uint32 entry, const CreatureData* data = nullptr);
+
+		bool IsInvisibleDueToDespawn() const override;
+		bool CanAlwaysSee(WorldObject const* obj) const override;
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;

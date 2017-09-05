@@ -264,7 +264,7 @@ bool ChatHandler::HandleListItemCommand(const char* args)
             PSendSysMessage(LANG_ITEMLIST_GUILD,item_guid,guild_name.c_str(),guild_guid,item_pos);
         } while (result->NextRow());
 
-        int64 res_count = result->GetRowCount();
+        //int64 res_count = result->GetRowCount();
     }
 
     if(inv_count+mail_count+auc_count+guild_count == 0)

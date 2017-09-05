@@ -153,8 +153,8 @@ endif( NOT WIN32 )
 if( WIN32 )
     find_program(MYSQL_EXECUTABLE mysql
       PATHS
-		"${PROGRAM_FILES_64}/MySQL/MariaDB 5.6/bin"
-		"${PROGRAM_FILES_64}/MySQL/MariaDB 10.1/bin"
+		"${PROGRAM_FILES_64}/MariaDB 5.6/bin"
+		"${PROGRAM_FILES_64}/MariaDB 10.1/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.7/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.6/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.5/bin"
@@ -164,8 +164,8 @@ if( WIN32 )
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.5/bin/opt"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.1/bin/opt"
         "${PROGRAM_FILES_64}/MySQL/bin"
-		"${PROGRAM_FILES_32}/MySQL/MariaDB 5.6/bin"
-		"${PROGRAM_FILES_32}/MySQL/MariaDB 10.1/bin"
+		"${PROGRAM_FILES_32}/MariaDB 5.6/bin"
+		"${PROGRAM_FILES_32}/MariaDB 10.1/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.7/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.6/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.5/bin"

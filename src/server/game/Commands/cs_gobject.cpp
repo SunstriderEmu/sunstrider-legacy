@@ -75,7 +75,7 @@ bool ChatHandler::HandleTargetObjectCommand(const char* args)
         return false;
     }
 
-    GameObject* target = ObjectAccessor::GetGameObject(*m_session->GetPlayer(),MAKE_NEW_GUID(lowguid,id,HIGHGUID_GAMEOBJECT));
+    GameObject* target = ObjectAccessor::GetGameObject(*m_session->GetPlayer(),MAKE_NEW_GUID(lowguid,id,HighGuid::GameObject));
 
     PSendSysMessage(LANG_GAMEOBJECT_DETAIL, lowguid, goI->name.c_str(), lowguid, id, x, y, z, mapid, o);
 
@@ -131,7 +131,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     if (Transport* trans = chr->GetTransport())
     {
 #ifdef LICH_KING
-        uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+        uint32 guid = sObjectMgr->GenerateGameObjectSpawnId();
         GameObjectData& data = sObjectMgr->NewGOData(guid);
         data.id = id;
         data.posX = chr->GetTransOffsetX();
@@ -166,9 +166,10 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     }
 
     auto pGameObj = new GameObject;
-    uint32 db_lowGUID = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
+	uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
+	//use AddGOData instead? Then how do we spawn them in instance?
 
-    if(!pGameObj->Create(db_lowGUID, goI->entry, map, Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
+    if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
         delete pGameObj;
         return false;
@@ -194,7 +195,7 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
         return false;
     }
 
-    map->Add(pGameObj);
+    map->AddToMap(pGameObj);
 
     sObjectMgr->AddGameobjectToGrid(db_lowGUID, sObjectMgr->GetGOData(db_lowGUID));
 
@@ -265,6 +266,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
         return false;
 
     GameObject* obj = nullptr;
+	Player *chr = m_session->GetPlayer();
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -286,15 +288,13 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     }
     else
     {
-        Player *chr = m_session->GetPlayer();
         o = chr->GetOrientation();
     }
 
     float rot2 = sin(o/2);
     float rot3 = cos(o/2);
 
-    Map* map = sMapMgr->CreateMap(obj->GetMapId(),obj);
-    map->Remove(obj,false);
+    chr->GetMap()->RemoveFromMap(obj, false);
 
     obj->Relocate(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), o);
 
@@ -302,7 +302,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
     obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+2, rot2);
     obj->SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rot3);
 
-    map->Add(obj);
+    chr->GetMap()->AddToMap(obj);
 
     obj->SaveToDB();
     obj->Refresh();
@@ -325,6 +325,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         return false;
 
     GameObject* obj = nullptr;
+	Player* player = m_session->GetPlayer();
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -344,16 +345,16 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     if (!px)
     {
         Player *chr = m_session->GetPlayer();
-
-        Map* map = sMapMgr->CreateMap(obj->GetMapId(),obj);
-        map->Remove(obj,false);
+		
+		Map* map = chr->GetMap();
+        map->RemoveFromMap(obj,false);
 
         obj->Relocate(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), obj->GetOrientation());
         obj->SetFloatValue(GAMEOBJECT_POS_X, chr->GetPositionX());
         obj->SetFloatValue(GAMEOBJECT_POS_Y, chr->GetPositionY());
         obj->SetFloatValue(GAMEOBJECT_POS_Z, chr->GetPositionZ());
 
-        map->Add(obj, true);
+        map->AddToMap(obj, true);
     }
     else
     {
@@ -371,15 +372,15 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
             return false;
         }
 
-        Map* map = sMapMgr->CreateMap(obj->GetMapId(),obj);
-        map->Remove(obj,false);
+		Map* map = player->GetMap();
+        map->RemoveFromMap(obj, false);
 
         obj->Relocate(x, y, z, obj->GetOrientation());
         obj->SetFloatValue(GAMEOBJECT_POS_X, x);
         obj->SetFloatValue(GAMEOBJECT_POS_Y, y);
         obj->SetFloatValue(GAMEOBJECT_POS_Z, z);
 
-        map->Add(obj, true);
+        map->AddToMap(obj, true);
     }
 
     obj->SaveToDB();
@@ -461,9 +462,11 @@ bool ChatHandler::HandleActivateObjectCommand(const char *args)
         return false;
     }
 
+    uint32_t const autoCloseTime = obj->GetGOInfo()->GetAutoCloseTime() ? 10000u : 0u;
+
     // Activate
     obj->SetLootState(GO_READY);
-    obj->UseDoorOrButton(10000);
+    obj->UseDoorOrButton(autoCloseTime);
 
     PSendSysMessage("Object activated!");
 
@@ -677,7 +680,7 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
      GameObject* target = nullptr;
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(guid))
-        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid,go_data->id);
+        target = GetObjectGlobalyWithGuidOrNearWithSpawnId(guid, go_data->id);
 
     if(!target)
     {
@@ -724,10 +727,10 @@ bool ChatHandler::HandleGobSetValueCommand(const char* args)
     }
 
     //update visual
-    if(Map* map = sMapMgr->CreateMap(target->GetMapId(),target))
+    if(Map* map = sMapMgr->FindMap(target->GetMapId(), target->GetInstanceId()))
     {
-        map->Remove(target,false);
-        map->Add(target, true);
+        map->RemoveFromMap(target,false);
+        map->AddToMap(target, true);
     }
 
     return true;

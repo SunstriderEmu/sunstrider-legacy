@@ -13,90 +13,112 @@ namespace Trinity
 {
     namespace Containers
     {
-        template<class T>
-        void RandomResizeList(std::list<T> &list, uint32 size)
+        // replace with std::size in C++17
+        template<class C>
+        constexpr inline std::size_t Size(C const& container)
         {
-            size_t list_size = list.size();
+            return container.size();
+        }
 
-            while (list_size > size)
+        template<class T, std::size_t size>
+        constexpr inline std::size_t Size(T const(&)[size]) noexcept
+        {
+            return size;
+        }
+
+        template<class C>
+        void RandomResize(C& container, std::size_t requestedSize)
+        {
+            uint32 currentSize = uint32(Size(container));
+            while (currentSize > requestedSize)
             {
-                auto itr = list.begin();
-                std::advance(itr, urand(0, list_size - 1));
-                list.erase(itr);
-                --list_size;
+                auto itr = std::begin(container);
+                std::advance(itr, urand(0, currentSize - 1));
+                container.erase(itr);
+                --currentSize;
             }
         }
 
-        template<class T, class Predicate>
-        void RandomResizeList(std::list<T> &list, Predicate& predicate, uint32 size)
+        template<class C, class Predicate>
+        void RandomResize(C& container, Predicate&& predicate, std::size_t requestedSize)
         {
             //! First use predicate filter
-            std::list<T> listCopy;
-            for (typename std::list<T>::iterator itr = list.begin(); itr != list.end(); ++itr)
-                if (predicate(*itr))
-                    listCopy.push_back(*itr);
+            C containerCopy;
+            std::copy_if(std::begin(container), std::end(container), std::inserter(containerCopy, std::end(containerCopy)), predicate);
 
-            if (size)
-                RandomResizeList(listCopy, size);
+            if (requestedSize)
+                RandomResize(containerCopy, requestedSize);
 
-            list = listCopy;
+            container = std::move(containerCopy);
         }
 
         /*
-         * Select a random element from a container.
-         *
-         * Note: container cannot be empty
-         */
-        template <class C>
-        typename C::value_type const& SelectRandomContainerElement(C const& container)
+        * Select a random element from a container.
+        *
+        * Note: container cannot be empty
+        */
+        template<class C>
+        inline auto SelectRandomContainerElement(C const& container) -> typename std::add_const<decltype(*std::begin(container))>::type&
         {
-            typename C::const_iterator it = container.begin();
-            std::advance(it, urand(0, container.size() - 1));
+            auto it = std::begin(container);
+            std::advance(it, urand(0, uint32(Size(container)) - 1));
             return *it;
         }
 
         /*
-         * Select a random element from a container where each element has a different chance to be selected.
-         *
-         * @param container Container to select an element from
-         * @param weights Chances of each element to be selected, must be in the same order as elements in container.
-         *                Caller is responsible for checking that sum of all weights is greater than 0.
-         *
-         * Note: container cannot be empty
-         */
-        template <class C>
-        typename C::const_iterator SelectRandomWeightedContainerElement(C const& container, std::vector<double> weights)
+        * Select a random element from a container where each element has a different chance to be selected.
+        *
+        * @param container Container to select an element from
+        * @param weights Chances of each element to be selected, must be in the same order as elements in container.
+        *                Caller is responsible for checking that sum of all weights is greater than 0.
+        *
+        * Note: container cannot be empty
+        */
+        template<class C>
+        inline auto SelectRandomWeightedContainerElement(C const& container, std::vector<double> weights) -> decltype(std::begin(container))
         {
-			std::discrete_distribution<uint32> dd(weights.begin(), weights.end());
-            typename C::const_iterator it = container.begin();
-            std::advance(it, dd(SFMTEngine::Instance()));
+            auto it = std::begin(container);
+            std::advance(it, urandweighted(weights.size(), weights.data()));
             return it;
         }
 
         /*
-         * Select a random element from a container where each element has a different chance to be selected.
-         *
-         * @param container Container to select an element from
-         * @param weightExtractor Function retrieving chance of each element in container, expected to take an element of the container and returning a double
-         *
-         * Note: container cannot be empty
-         */
-        template <class C, class Fn>
-        typename C::const_iterator SelectRandomWeightedContainerElement(C const& container, Fn weightExtractor)
+        * Select a random element from a container where each element has a different chance to be selected.
+        *
+        * @param container Container to select an element from
+        * @param weightExtractor Function retrieving chance of each element in container, expected to take an element of the container and returning a double
+        *
+        * Note: container cannot be empty
+        */
+        template<class C, class Fn>
+        auto SelectRandomWeightedContainerElement(C const& container, Fn weightExtractor) -> decltype(std::begin(container))
         {
             std::vector<double> weights;
-            weights.reserve(container.size());
+            weights.reserve(Size(container));
             double weightSum = 0.0;
-            for (auto itr = container.begin(); itr != container.end(); ++itr)
+            for (auto& val : container)
             {
-                double weight = weightExtractor(*itr);
+                double weight = weightExtractor(val);
                 weights.push_back(weight);
                 weightSum += weight;
             }
             if (weightSum <= 0.0)
-                weights.assign(container.size(), 1.0);
+                weights.assign(Size(container), 1.0);
 
             return SelectRandomWeightedContainerElement(container, weights);
+        }
+
+        /**
+        * @fn void Trinity::Containers::RandomShuffle(C& container)
+        *
+        * @brief Reorder the elements of the container randomly.
+        *
+        * @param container Container to reorder
+        */
+        template<class C>
+        inline void RandomShuffle(C& container)
+        {
+            std::shuffle(std::begin(container), std::end(container), SFMTEngine::Instance());
         }
 
         /**
@@ -125,6 +147,41 @@ namespace Trinity
             }
 
             return false;
+        }
+
+        /**
+        * Returns a pointer to mapped value (or the value itself if map stores pointers)
+        */
+        template<class M>
+        inline auto MapGetValuePtr(M& map, typename M::key_type const& key) -> decltype(AddressOrSelf(map.find(key)->second))
+        {
+            auto itr = map.find(key);
+            return itr != map.end() ? AddressOrSelf(itr->second) : nullptr;
+        }
+
+        /**
+        * @class IteratorPair
+        *
+        * @brief Utility class to enable range for loop syntax for multimap.equal_range uses
+        */
+        template<class iterator>
+        class IteratorPair
+        {
+        public:
+            IteratorPair() : _iterators() { }
+            IteratorPair(std::pair<iterator, iterator> iterators) : _iterators(iterators) { }
+
+            iterator begin() const { return _iterators.first; }
+            iterator end() const { return _iterators.second; }
+
+        private:
+            std::pair<iterator, iterator> _iterators;
+        };
+
+        template<class M>
+        inline auto MapEqualRange(M& map, typename M::key_type const& key) -> IteratorPair<decltype(map.begin())>
+        {
+            return { map.equal_range(key) };
         }
 
         template<class K, class V, template<class, class, class...> class M, class... Rest>

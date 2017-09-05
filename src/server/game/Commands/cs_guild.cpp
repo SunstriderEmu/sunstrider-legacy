@@ -31,7 +31,7 @@ bool ChatHandler::HandleGuildCreateCommand(const char* args)
 
     std::string guildname = gname;
 
-    Player* player = sObjectAccessor->FindPlayerByName (lname);
+    Player* player = ObjectAccessor::FindPlayerByName (lname);
     if (!player)
     {
         SendSysMessage (LANG_PLAYER_NOT_FOUND);
@@ -81,7 +81,7 @@ bool ChatHandler::HandleGuildInviteCommand(const char *args)
     }
 
     uint64 plGuid = 0;
-    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
         plGuid = targetPlayer->GetGUID ();
     else
         plGuid = sCharacterCache->GetCharacterGuidByName(plName.c_str ());
@@ -124,7 +124,7 @@ bool ChatHandler::HandleGuildUninviteCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId();
@@ -176,7 +176,7 @@ bool ChatHandler::HandleGuildRankCommand(const char *args)
 
     uint64 plGuid = 0;
     uint32 glId   = 0;
-    if (Player* targetPlayer = sObjectAccessor->FindPlayerByName (plName.c_str ()))
+    if (Player* targetPlayer = ObjectAccessor::FindPlayerByName (plName.c_str ()))
     {
         plGuid = targetPlayer->GetGUID ();
         glId   = targetPlayer->GetGuildId ();

@@ -33,8 +33,8 @@ class ChatCommand
 class TC_GAME_API ChatHandler
 {
     public:
-        explicit ChatHandler(WorldSession* session) : m_session(session) {}
-        explicit ChatHandler(Player* player) : m_session(player->GetSession()) {}
+		explicit ChatHandler(WorldSession* session);
+		explicit ChatHandler(Player* player);
          ~ChatHandler() = default;
 
          // Builds chat packet and returns receiver guid position in the packet to substitute in whisper builders
@@ -83,7 +83,7 @@ class TC_GAME_API ChatHandler
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = nullptr);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
-        std::string GetNameLink(Player* chr) const { return playerLink(chr->GetName()); }
+		std::string GetNameLink(Player* chr) const;
 
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player

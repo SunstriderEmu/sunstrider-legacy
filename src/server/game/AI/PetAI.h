@@ -8,6 +8,8 @@
 class Creature;
 class Spell;
 
+typedef std::vector<std::pair<Unit*, Spell*>> TargetSpellList;
+
 class TC_GAME_API PetAI : public CreatureAI
 {
     public:
@@ -20,6 +22,19 @@ class TC_GAME_API PetAI : public CreatureAI
         void UpdateAI(const uint32) override;
         static int Permissible(const Creature *);
         void ResetMovement();
+
+		void MovementInform(uint32 moveType, uint32 data) override;
+		void KilledUnit(Unit* /*victim*/) override;
+        void AttackStart(Unit* target) override; // only start attacking if not attacking something else already
+        void _AttackStart(Unit* target); // always start attacking if possible
+		void OwnerAttackedBy(Unit* attacker) override;
+		void OwnerAttacked(Unit* target) override;
+        void DamageTaken(Unit* attacker, uint32& /*damage*/) override { AttackStart(attacker); }
+		void ReceiveEmote(Player* player, uint32 textEmote) override;
+
+		void ForceAttackBreakable(Unit const* target);
+		void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) override;
+
     protected:
         void Minipet_DistanceCheck(uint32 diff);
     private:
@@ -33,10 +48,16 @@ class TC_GAME_API PetAI : public CreatureAI
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
 
-        typedef std::pair<Unit*, Spell*> TargetSpellPair;
-        std::vector<TargetSpellPair> m_targetSpellStore;
+		TargetSpellList m_targetSpellStore;
+
+		Unit* SelectNextTarget(bool allowAutoSelect) const;
+		void HandleReturnMovement();
+		void DoAttack(Unit* target, bool chase);
+		bool CanAttack(Unit* target);
+		void ClearCharmInfoFlags();
 
         uint32 distanceCheckTimer; //minipet only
+		Unit const* _forceAttackBreakable; //force attack target even though it has breakable aura
 };
 #endif
 

@@ -20,18 +20,18 @@ private:
     std::string action;
 };
 
-float MagePullMultiplier::GetValue(Action* action) 
+float MagePullMultiplier::GetValue(Action* _action) 
 {
-    if (!action) 
+    if (!_action)
         return 1.0f;
 
-    std::string name = action->getName();
+    std::string name = _action->getName();
     if (this->action == name ||
         name == "reach spell" ||
         name == "change strategy")
         return 1.0f;
 
-    return PassiveMultiplier::GetValue(action);
+    return PassiveMultiplier::GetValue(_action);
 }
 
 NextAction** PullStrategy::getDefaultActions()

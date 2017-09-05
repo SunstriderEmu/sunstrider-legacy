@@ -30,7 +30,7 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
     }
 
     // Everything looks OK, create new pet
-    auto  pet = new Pet(HUNTER_PET);
+    Pet* pet = new Pet(player, HUNTER_PET);
 
     if(!pet)
       return false;
@@ -67,13 +67,12 @@ bool ChatHandler::HandleCreatePetCommand(const char* args)
      pet->InitPetCreateSpells();
      pet->SetHealth(pet->GetMaxHealth());
 
-     Map* m = sMapMgr->CreateMap(pet->GetMapId(), pet);
-     m->Add(pet->ToCreature());
+     player->GetMap()->AddToMap(pet->ToCreature(), true);
 
      // visual effect for levelup
      pet->SetUInt32Value(UNIT_FIELD_LEVEL,creatureTarget->GetLevel());
 
-     player->SetPet(pet);
+	 player->SetMinion(pet, true);
      pet->SavePetToDB(PET_SAVE_AS_CURRENT);
      player->PetSpellInitialize();
 

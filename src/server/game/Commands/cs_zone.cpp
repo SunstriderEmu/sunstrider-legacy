@@ -41,7 +41,7 @@ bool ChatHandler::HandleZoneMorphCommand(const char* args)
     for (const auto & player : players) {
         p = player.second;
         if (p && p->IsInWorld() && p->GetZoneId() == m_session->GetPlayer()->GetZoneId() &&
-            ((faction_id == 1 && p->GetTeam() == TEAM_ALLIANCE) || (faction_id == 2 && p->GetTeam() == TEAM_HORDE) || faction_id == 0))
+            ((faction_id == 1 && p->GetTeam() == ALLIANCE) || (faction_id == 2 && p->GetTeam() == HORDE) || faction_id == 0))
             p->SetDisplayId(display_id);
     }
 

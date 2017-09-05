@@ -21,6 +21,7 @@ Current bugs :
 #include "CellImpl.h"
 #include "Totem.h"
 #include "Spell.h"
+#include "ZoneScript.h"
 
 uint32 Transport::GetPathProgress() const 
 {
@@ -50,7 +51,7 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
         return false;
     }
 
-    Object::_Create(guidlow, 0, HIGHGUID_MO_TRANSPORT);
+    Object::_Create(guidlow, 0, HighGuid::Mo_Transport);
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
 
@@ -95,11 +96,11 @@ bool MotionTransport::CreateMoTrans(uint32 guidlow, uint32 entry, uint32 mapid, 
     SetGoAnimProgress(animprogress);
     SetName(goinfo->name);
 
-    // pussywizard: no WorldRotation for MotionTransports
+    // sunwell: no WorldRotation for MotionTransports
 #ifdef LICH_KING
     SetWorldRotation(G3D::Quat());
 #endif
-    // pussywizard: no PathRotation for MotionTransports
+    // sunwell: no PathRotation for MotionTransports
     SetTransportPathRotation(G3D::Quat(0.0f, 0.0f, 0.0f, 1.0f));
 
     m_model = CreateModel();
@@ -258,7 +259,7 @@ void MotionTransport::UpdatePosition(float x, float y, float z, float o)
     bool newActive = GetMap()->IsGridLoaded(x, y);
     Cell oldCell(GetPositionX(), GetPositionY());
     /*
-    if (!GetMap()->IsGridLoaded(x, y)) // pussywizard: should not happen, but just in case
+    if (!GetMap()->IsGridLoaded(x, y)) // sunwell: should not happen, but just in case
         GetMap()->LoadGrid(x, y);
         */
     Relocate(x, y, z, o);
@@ -371,7 +372,7 @@ Creature* MotionTransport::CreateNPCPassenger(uint32 guid, CreatureData const* d
         return nullptr;
     }
 
-    if (!map->Add(creature))
+    if (!map->AddToMap(creature))
     {
         delete creature;
         return nullptr;
@@ -612,7 +613,7 @@ void MotionTransport::DelayedTeleportTransport()
             float destX, destY, destZ, destO;
             obj->m_movementInfo.transport.pos.GetPosition(destX, destY, destZ, destO);
             TransportBase::CalculatePassengerPosition(destX, destY, destZ, &destO, x, y, z, o);
-            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT))
+            if (!obj->ToPlayer()->TeleportTo(newMapId, destX, destY, destZ, destO, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | TELE_TO_TRANSPORT_TELEPORT))
                 _passengers.erase(obj);
         }
         break;
@@ -622,13 +623,12 @@ void MotionTransport::DelayedTeleportTransport()
     }
 
     Map* newMap = sMapMgr->CreateBaseMap(newMapId);
-    GetMap()->Remove<MotionTransport>(this, false);
+    GetMap()->RemoveFromMap<MotionTransport>(this, false);
     newMap->LoadGrid(x, y); // xinef: load before adding passengers to new map
-    //sunwell SetMap(newMap);
-    SetMapId(newMap->GetId());
+    SetMap(newMap);
 
     Relocate(x, y, z, o);
-    GetMap()->Add<MotionTransport>(this);
+    GetMap()->AddToMap<MotionTransport>(this);
 
     LoadStaticPassengers();
 }
@@ -680,7 +680,7 @@ void MotionTransport::UpdatePassengerPositions(PassengerSet& passengers)
             GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o);
             break;
         case TYPEID_DYNAMICOBJECT:
-           // TODO GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
+            GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
             break;
         default:
             break;
@@ -693,13 +693,12 @@ void MotionTransport::DoEventIfAny(KeyFrame const& node, bool departure)
     if (uint32 eventid = departure ? node.Node->departureEventID : node.Node->arrivalEventID)
     {
         //TC_LOG_DEBUG("maps.script", "Taxi %s event %u of node %u of %s path", departure ? "departure" : "arrival", eventid, node.Node->index, GetName().c_str());
-        //GetMap()->ScriptsStart(sEventScripts, eventid, this, this);
-        sWorld->ScriptsStart(sEventScripts, eventid, this, this);
+        GetMap()->ScriptsStart(sEventScripts, eventid, this, this);
         EventInform(eventid);
     }
 }
 
-// pussywizard: StaticTransport below
+// sunwell: StaticTransport below
 
 StaticTransport::StaticTransport() : Transport(), _needDoInitialRelocation(false)
 {
@@ -712,12 +711,10 @@ StaticTransport::~StaticTransport()
     ASSERT(_passengers.empty());
 }
 
-bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
+bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 artKit)
 {
     ASSERT(map);
-    //sunwell SetMap(map);
-    SetMapId(map->GetId());
-    SetInstanceId(map->GetInstanceId());
+    SetMap(map);
 
     Relocate(pos);
     m_stationaryPosition.Relocate(pos);
@@ -728,10 +725,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
         return false;
     }
 
-#ifdef LICH_KING
     SetPhaseMask(phaseMask, false);
-#endif
-    /* TODO zonescript
     SetZoneScript();
     if (m_zoneScript)
     {
@@ -739,7 +733,6 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
         if (!name_id)
             return false;
     }
-    */
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
@@ -749,10 +742,10 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
     }
 
 #ifdef LICH_KING
-    Object::_Create(guidlow, 0, HIGHGUID_TRANSPORT);
+    Object::_Create(guidlow, 0, HighGuid::Transport);
 #else
-    //Object::_Create(guidlow, goinfo->entry, HIGHGUID_GAMEOBJECT); //entry doesn't seem necessary, but keeping this in comment in case this causes problem. If you change this, you'll also need to change it in layer::LoadFromDB (search for "MAKE_NEW_GUID(transGUIDLow, 0, HIGHGUID_GAMEOBJECT)")
-    Object::_Create(guidlow, 0, HIGHGUID_GAMEOBJECT);
+    //Object::_Create(guidlow, goinfo->entry, HighGuid::GameObject); //entry doesn't seem necessary, but keeping this in comment in case this causes problem. If you change this, you'll also need to change it in layer::LoadFromDB (search for "MAKE_NEW_GUID(transGUIDLow, 0, HighGuid::GameObject)")
+    Object::_Create(guidlow, 0, HighGuid::GameObject);
 #endif
 
     m_goInfo = goinfo;
@@ -763,7 +756,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
         return false;
     }
 
-    // pussywizard: temporarily calculate WorldRotation from orientation, do so until values in db are correct
+    // sunwell: temporarily calculate WorldRotation from orientation, do so until values in db are correct
     //SetWorldRotation( /*for StaticTransport we need 2 rotation Quats in db for World- and Path- Rotation*/ );
 #ifdef LICH_KING
     SetWorldRotationAngles(NormalizeOrientation(GetOrientation()), 0.0f, 0.0f);
@@ -773,7 +766,7 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
     SetFloatValue(GAMEOBJECT_POS_Z, pos.GetPositionZ());
     SetFloatValue(GAMEOBJECT_FACING, pos.GetOrientation());                  //this is not facing angle
 #endif
-    // pussywizard: PathRotation for StaticTransport (only StaticTransports have PathRotation)
+    // sunwell: PathRotation for StaticTransport (only StaticTransports have PathRotation)
     SetTransportPathRotation(rotation);
 
     SetObjectScale(goinfo->size);
@@ -807,17 +800,6 @@ bool StaticTransport::Create(uint32 guidlow, uint32 name_id, Map* map, Position 
     }
     else
         SetPathProgress(0);
-
-/* sunwell
-    if (GameObjectAddon const* addon = sObjectMgr->GetGameObjectAddon(guidlow))
-    {
-        if (addon->InvisibilityValue)
-        {
-            m_invisibility.AddFlag(addon->invisibilityType);
-            m_invisibility.AddValue(addon->invisibilityType, addon->InvisibilityValue);
-        }
-    }
-    */
 
     LastUsedScriptID = GetScriptId();
 
@@ -917,7 +899,7 @@ void StaticTransport::RelocateToProgress(uint32 progress)
         pos += G3D::Vector3(percPos * (next->X - curr->X), percPos * (next->Y - curr->Y), percPos * (next->Z - curr->Z));
 
         // rotate path by PathRotation
-        // pussywizard: PathRotation in db is only simple orientation rotation, so don't use sophisticated and not working code
+        // sunwell: PathRotation in db is only simple orientation rotation, so don't use sophisticated and not working code
         // reminder: WorldRotation only influences model rotation, not the path
         float sign = GetFloatValue(GAMEOBJECT_PARENTROTATION + 2) >= 0.0f ? 1.0f : -1.0f;
         float pathRotAngle = sign * 2.0f * acos(GetFloatValue(GAMEOBJECT_PARENTROTATION + 3));
@@ -931,7 +913,7 @@ void StaticTransport::RelocateToProgress(uint32 progress)
         pos += G3D::Vector3(GetStationaryX(), GetStationaryY(), GetStationaryZ());
 
         // rotate by AnimRotation at current segment
-        // pussywizard: AnimRotation in dbc is only simple orientation rotation, so don't use sophisticated and not working code
+        // sunwell: AnimRotation in dbc is only simple orientation rotation, so don't use sophisticated and not working code
 #ifdef LICH_KING
         G3D::Quat currRot, nextRot;
         float percRot;
@@ -956,7 +938,7 @@ void StaticTransport::RelocateToProgress(uint32 progress)
 
 void StaticTransport::UpdatePosition(float x, float y, float z, float o)
 {
-    if (!GetMap()->IsGridLoaded(x, y)) // pussywizard: should not happen, but just in case
+    if (!GetMap()->IsGridLoaded(x, y)) // sunwell: should not happen, but just in case
         GetMap()->LoadGrid(x, y);
 
     GetMap()->GameObjectRelocation(this, x, y, z, o); // this also relocates the model
@@ -997,7 +979,7 @@ void StaticTransport::UpdatePassengerPositions()
             GetMap()->GameObjectRelocation(passenger->ToGameObject(), x, y, z, o);
             break;
         case TYPEID_DYNAMICOBJECT:
-            // TODO GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
+            GetMap()->DynamicObjectRelocation(passenger->ToDynObject(), x, y, z, o);
             break;
         default:
             break;

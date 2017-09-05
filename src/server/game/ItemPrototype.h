@@ -38,19 +38,20 @@ enum ItemModType
     ITEM_MOD_RESILIENCE_RATING        = 35,
     ITEM_MOD_HASTE_RATING             = 36,
     ITEM_MOD_EXPERTISE_RATING         = 37,
+    //bc mods end here
+#ifndef LICH_KING
     ITEM_MOD_ATTACK_POWER             = 38,
     ITEM_MOD_RANGED_ATTACK_POWER      = 39,
-#ifndef LICH_KING
     ITEM_MOD_FERAL_ATTACK_POWER       = 40, //not in 3.3
-#endif
     ITEM_MOD_SPELL_HEALING_DONE       = 41,
     ITEM_MOD_SPELL_DAMAGE_DONE        = 42,
     ITEM_MOD_MANA_REGENERATION        = 43,
-    ITEM_MOD_ARMOR_PENETRATION_RATING = 44,
+    ITEM_MOD_ARMOR_PENETRATION_RATING = 44, //no item on BC has this
     ITEM_MOD_SPELL_POWER              = 45,
     ITEM_MOD_HEALTH_REGEN             = 46,
     ITEM_MOD_SPELL_PENETRATION        = 47,
     ITEM_MOD_BLOCK_VALUE              = 48
+#endif
 };
 
 #define MAX_ITEM_MOD                    49

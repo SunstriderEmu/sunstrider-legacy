@@ -1,4 +1,7 @@
 
+#include "CreatureAIFactory.h"
+#include "GameObjectAIFactory.h"
+
 #include "CreatureAIRegistry.h"
 #include "NullCreatureAI.h"
 #include "AOEAI.h"
@@ -9,10 +12,8 @@
 #include "GameObjectAI.h"
 #include "CombatAI.h"
 #include "ReactorAI.h"
-#include "OutdoorPvPObjectiveAI.h"
 #include "RandomMovementGenerator.h"
 #include "CreatureAIImpl.h"
-#include "MovementGeneratorImpl.h"
 #include "MapManager.h"
 #include "WaypointMovementGenerator.h"
 
@@ -28,14 +29,15 @@ namespace AIRegistry
         (new CreatureAIFactory<GuardAI>("GuardAI"))->RegisterSelf();
         (new CreatureAIFactory<PetAI>("PetAI"))->RegisterSelf();
         (new CreatureAIFactory<TotemAI>("TotemAI"))->RegisterSelf();
-        (new CreatureAIFactory<OutdoorPvPObjectiveAI>("OutdoorPvPObjectiveAI"))->RegisterSelf();
         (new CreatureAIFactory<PossessedAI>("PossessedAI"))->RegisterSelf();
         (new CreatureAIFactory<AOEAI>("AOEAI"))->RegisterSelf();
         (new CreatureAIFactory<SmartAI>(SMARTAI_AI_NAME))->RegisterSelf();
-        
+
+        (new GameObjectAIFactory<NullGameObjectAI>("NullGameObjectAI"))->RegisterSelf();
         (new GameObjectAIFactory<GameObjectAI>("GameObjectAI"))->RegisterSelf();
         (new GameObjectAIFactory<SmartGameObjectAI>(SMARTAI_GOBJECT_AI_NAME))->RegisterSelf();
 
+        (new IdleMovementFactory())->RegisterSelf();
         (new MovementGeneratorFactory<RandomMovementGenerator<Creature> >(RANDOM_MOTION_TYPE))->RegisterSelf();
         (new MovementGeneratorFactory<WaypointMovementGenerator<Creature> >(WAYPOINT_MOTION_TYPE))->RegisterSelf();
     }

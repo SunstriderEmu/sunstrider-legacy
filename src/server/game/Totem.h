@@ -13,19 +13,19 @@ enum TotemType
 
 #define SENTRY_TOTEM_ENTRY  3968
 
-class TC_GAME_API Totem : public Creature
+class TC_GAME_API Totem : public Minion
 {
     public:
-        explicit Totem();
+        explicit Totem(SummonPropertiesEntry const* properties, Unit* owner);
         ~Totem() override;
         void Update( uint32 time ) override;
-        void Summon(Unit* owner);
-        void UnSummon();
-        uint32 GetSpell() const { return m_spells[0]; }
+		void InitStats(uint32 duration) override;
+		void InitSummon() override;
+        //void Summon(Unit* owner);
+        void UnSummon(uint32 msTime = 0) override;
+		uint32 GetSpell(uint8 slot = 0) const { return m_spells[slot]; }
         uint32 GetTotemDuration() const { return m_duration; }
-        Unit *GetOwner();
         TotemType GetTotemType() const { return m_type; }
-        void SetTypeBySummonSpell(SpellInfo const * spellProto);
         void SetDuration(uint32 dur) { m_duration = dur; }
         void SetOwner(uint64 guid);
 

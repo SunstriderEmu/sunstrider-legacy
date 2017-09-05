@@ -29,7 +29,7 @@
 void SetProcessPriority(const std::string logChannel)
 {
 // Suppresses Mac OS X Warning since logChannel isn't used.
-#if PLATFORM_APPLE
+#if TRINITY_PLATFORM_APPLE
     (void)logChannel;
 #endif
 

@@ -121,7 +121,7 @@ namespace ai
         Event getEvent() { return event; }
         bool isSkipPrerequisites() { return skipPrerequisites; }
         void AmendRelevance(float k) {relevance *= k; }
-        void setRelevance(float relevance) { this->relevance = relevance; }
+        void setRelevance(float _relevance) { this->relevance = _relevance; }
     private:
         ActionNode* action;
         float relevance;

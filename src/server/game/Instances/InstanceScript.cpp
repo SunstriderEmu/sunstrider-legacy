@@ -7,7 +7,7 @@
 #include "Language.h"
 #include "ScriptMgr.h"
 
-InstanceScript::InstanceScript(Map *map) : ZoneScript(map)
+InstanceScript::InstanceScript(Map *map) : instance(map)
 {
 #ifdef TRINITY_API_USE_DYNAMIC_LINKING
     uint32 scriptId = sObjectMgr->GetInstanceTemplate(map->GetId())->ScriptId;
@@ -230,153 +230,67 @@ Player* InstanceScript::GetPlayer() const
     return nullptr;
 }
 
-/// Returns a pointer to a loaded Creature that was stored in m_mNpcEntryGuidStore. Can return NULL
-Creature* InstanceScript::GetSingleCreatureFromStorage(uint32 uiEntry, bool bSkipDebugLog /*=false*/)
+void InstanceScript::SaveToDB()
 {
-    auto find = m_mNpcEntryGuidStore.find(uiEntry);
-    if (find != m_mNpcEntryGuidStore.end())
-        return instance->GetCreature(find->second);
+	if (!Save()) 
+		return;
 
-    // Output log, possible reason is not added GO to map, or not yet loaded;
-    if (!bSkipDebugLog)
-        error_log("OLDScript requested creature with entry %u, but no npc of this entry was created yet, or it was not stored by script for map %u.", uiEntry, instance->GetId());
-
-    return nullptr;
+	std::string data = Save();
+	CharacterDatabase.EscapeString(data);
+	CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
-/**
-   Constructor for DialogueHelper
-
-   @param   pDialogueArray The static const array of DialogueEntry holding the information about the dialogue. This array MUST be terminated by {0,0,0}
- */
-DialogueHelper::DialogueHelper(DialogueEntry const* pDialogueArray) :
-    m_pInstance(nullptr),
-    m_pDialogueArray(pDialogueArray),
-    m_pCurrentEntry(nullptr),
-    m_pDialogueTwoSideArray(nullptr),
-    m_pCurrentEntryTwoSide(nullptr),
-    m_uiTimer(0),
-    m_bIsFirstSide(true)
-{}
-
-/**
-   Constructor for DialogueHelper (Two Sides)
-
-   @param   pDialogueTwoSideArray The static const array of DialogueEntryTwoSide holding the information about the dialogue. This array MUST be terminated by {0,0,0,0,0}
- */
-DialogueHelper::DialogueHelper(DialogueEntryTwoSide const* pDialogueTwoSideArray) :
-    m_pInstance(nullptr),
-    m_pDialogueArray(nullptr),
-    m_pCurrentEntry(nullptr),
-    m_pDialogueTwoSideArray(pDialogueTwoSideArray),
-    m_pCurrentEntryTwoSide(nullptr),
-    m_uiTimer(0),
-    m_bIsFirstSide(true)
-{}
-
-/**
-   Function to start a (part of a) dialogue
-
-   @param   iTextEntry The TextEntry of the dialogue that will be started (must be always the entry of first side)
- */
-void DialogueHelper::StartNextDialogueText(int32 iTextEntry)
+void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
 {
-    // Find iTextEntry
-    bool bFound = false;
-
-    if (m_pDialogueArray)                                   // One Side
-    {
-        for (DialogueEntry const* pEntry = m_pDialogueArray; pEntry->iTextEntry; ++pEntry)
-        {
-            if (pEntry->iTextEntry == iTextEntry)
-            {
-                m_pCurrentEntry = pEntry;
-                bFound = true;
-                break;
-            }
-        }
-    }
-    else                                                    // Two Sides
-    {
-        for (DialogueEntryTwoSide const* pEntry = m_pDialogueTwoSideArray; pEntry->iTextEntry; ++pEntry)
-        {
-            if (pEntry->iTextEntry == iTextEntry)
-            {
-                m_pCurrentEntryTwoSide = pEntry;
-                bFound = true;
-                break;
-            }
-        }
-    }
-
-    if (!bFound)
-    {
-        error_log("OLDScript call DialogueHelper::StartNextDialogueText, but textEntry %i is not in provided dialogue (on map id %u)", iTextEntry, m_pInstance ? m_pInstance->instance->GetId() : 0);
-        return;
-    }
-
-    DoNextDialogueStep();
+	if (!go)
+		go = instance->GetGameObject(GUID);
+	if (go)
+		go->SetGoState(GOState(open ? 0 : 1));
+	else
+		TC_LOG_ERROR("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
-/// Internal helper function to do the actual say of a DialogueEntry
-void DialogueHelper::DoNextDialogueStep()
+void InstanceScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
-    // Last Dialogue Entry done?
-    if ((m_pCurrentEntry && !m_pCurrentEntry->iTextEntry) || (m_pCurrentEntryTwoSide && !m_pCurrentEntryTwoSide->iTextEntry))
-    {
-        m_uiTimer = 0;
-        return;
-    }
+	if (GameObject* pGo = instance->GetGameObject(uiGuid))
+	{
+		//not expect any of these should ever be handled
+		if (pGo->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR ||
+			pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON || pGo->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+			return;
 
-    // Get Text, SpeakerEntry and Timer
-    int32 iTextEntry = 0;
-    uint32 uiSpeakerEntry = 0;
+		if (pGo->isSpawned())
+			return;
 
-    if (m_pDialogueArray)                               // One Side
-    {
-        uiSpeakerEntry = m_pCurrentEntry->uiSayerEntry;
-        iTextEntry = m_pCurrentEntry->iTextEntry;
-
-        m_uiTimer = m_pCurrentEntry->uiTimer;
-    }
-    else                                                // Two Sides
-    {
-        // Second Entries can be 0, if they are the entry from first side will be taken
-        uiSpeakerEntry = !m_bIsFirstSide && m_pCurrentEntryTwoSide->uiSayerEntryAlt ? m_pCurrentEntryTwoSide->uiSayerEntryAlt : m_pCurrentEntryTwoSide->uiSayerEntry;
-        iTextEntry = !m_bIsFirstSide && m_pCurrentEntryTwoSide->iTextEntryAlt ? m_pCurrentEntryTwoSide->iTextEntryAlt : m_pCurrentEntryTwoSide->iTextEntry;
-
-        m_uiTimer = m_pCurrentEntryTwoSide->uiTimer;
-    }
-
-    // Simulate Case
-    if (uiSpeakerEntry && iTextEntry < 0)
-    {
-        // Use Speaker if directly provided
-        Creature* pSpeaker = GetSpeakerByEntry(uiSpeakerEntry);
-        if (m_pInstance && !pSpeaker)                       // Get Speaker from instance
-            pSpeaker = m_pInstance->GetSingleCreatureFromStorage(uiSpeakerEntry);
-
-        if (pSpeaker)
-            DoScriptText(iTextEntry, pSpeaker);
-    }
-
-    JustDidDialogueStep(m_pDialogueArray ?  m_pCurrentEntry->iTextEntry : m_pCurrentEntryTwoSide->iTextEntry);
-
-    // Increment position
-    if (m_pDialogueArray)
-        ++m_pCurrentEntry;
-    else
-        ++m_pCurrentEntryTwoSide;
+		pGo->SetRespawnTime(uiTimeToDespawn);
+	}
 }
 
-/// Call this function within any DialogueUpdate method. This is required for saying next steps in a dialogue
-void DialogueHelper::DialogueUpdate(uint32 uiDiff)
+void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
 {
-    if (m_uiTimer)
-    {
-        if (m_uiTimer <= uiDiff)
-            DoNextDialogueStep();
-        else
-            m_uiTimer -= uiDiff;
-    }
+	if (!uiGuid)
+		return;
+
+	GameObject* pGo = instance->GetGameObject(uiGuid);
+
+	if (pGo)
+	{
+		if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR || pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+		{
+			if (pGo->getLootState() == GO_READY)
+				pGo->UseDoorOrButton(uiWithRestoreTime);
+			else if (pGo->getLootState() == GO_ACTIVATED)
+				pGo->ResetDoorOrButton();
+		}
+		else
+			error_log("OSCR: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", pGo->GetEntry(), pGo->GetGoType());
+	}
+}
+
+bool InstanceHasScript(WorldObject const* obj, char const* scriptName)
+{
+    if (InstanceMap* instance = obj->GetMap()->ToInstanceMap())
+        return instance->GetScriptName() == scriptName;
+
+    return false;
 }

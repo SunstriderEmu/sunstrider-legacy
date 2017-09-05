@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 /** \file
     \ingroup world
@@ -30,6 +11,7 @@
 #include "Log.h"
 #include "ObjectMgr.h"
 #include "Util.h"
+#include "GameTime.h"
 
 /// Create the Weather object
 Weather::Weather(uint32 zone, WeatherZoneChances const* weatherChances) : m_zone(zone), m_weatherChances(weatherChances)
@@ -89,7 +71,7 @@ bool Weather::ReGenerate()
 
     //78 days between January 1st and March 20nd; 365/4=91 days by season
     // season source http://aa.usno.navy.mil/data/docs/EarthSeasons.html
-    time_t gtime = sWorld->GetGameTime();
+    time_t gtime = GameTime::GetGameTime();
     struct tm * ltime = localtime(&gtime);
     uint32 season = ((ltime->tm_yday - 78 + 365)/91)%4;
 

@@ -3,12 +3,12 @@
 #include "GlobalEvents.h"
 #include "Monitor.h"
 #include "GitRevision.h"
+#include "GameTime.h"
 
 /// Triggering corpses expire check in world
 bool ChatHandler::HandleServerCorpsesCommand(const char* /*args*/)
 {
-    SendSysMessage("Erasing corpses...");
-    CorpsesErase();
+    SendSysMessage("NYI");
     return true;
 }
 
@@ -25,7 +25,7 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     uint32 activeClientsNum = sWorld->GetActiveSessionCount();
     uint32 queuedClientsNum = sWorld->GetQueuedSessionCount();
     uint32 maxActiveClientsNum = sWorld->GetMaxActiveSessionCount();
-    std::string str = secsToTimeString(sWorld->GetUptime());
+    std::string str = secsToTimeString(GameTime::GetUptime());
 	uint32 currentMapTimeDiff = 0;
 	if (GetSession())
 		if (Player const* p = GetSession()->GetPlayer())

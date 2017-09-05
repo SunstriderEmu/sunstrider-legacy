@@ -127,6 +127,9 @@ class TC_GAME_API SmartAI : public CreatureAI
         // Called when creature gets charmed by another unit
         void OnCharmed(Unit* charmer, bool apply) override;
 
+        // Called when victim is in line of sight
+        bool CanAIAttack(Unit const* who) const override;
+
         // Used in scripts to share variables
         void DoAction(const int32 param = 0) override;
 
@@ -160,13 +163,11 @@ class TC_GAME_API SmartAI : public CreatureAI
 
         void SetInvincibilityHpLevel(uint32 level) { mInvincibilityHpLevel = level; }
 
-        void sGossipHello(Player* player) override;
-        void sGossipSelect(Player* player, uint32 sender, uint32 action) override;
-        void sGossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
-        void sQuestAccept(Player* player, Quest const* quest) override;
-        //void sQuestSelect(Player* player, Quest const* quest);
-        //void sQuestComplete(Player* player, Quest const* quest);
-        void sQuestReward(Player* player, Quest const* quest, uint32 opt) override;
+        bool GossipHello(Player* player) override;
+        bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
+        bool GossipSelectCode(Player* player, uint32 sender, uint32 action, const char* code) override;
+        void QuestAccept(Player* player, Quest const* quest) override;
+        void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         bool sOnDummyEffect(Unit* caster, uint32 spellId, uint32 effIndex) override;
         //FIXME void sOnGameEvent(bool start, uint16 eventId) override;
 
@@ -184,6 +185,8 @@ class TC_GAME_API SmartAI : public CreatureAI
         void OnSpellClick(Unit* clicker, bool& result) override;
 
         void SetWPPauseTimer(uint32 time) { mWPPauseTimer = time; }
+
+        void SetGossipReturn(bool val) { _gossipReturn = val; }
 
         void FriendlyKilled(Creature const* c, float range) override;
 
@@ -237,12 +240,14 @@ class TC_GAME_API SmartAI : public CreatureAI
         bool mHasConditions;
         uint32 mConditionsTimer;
 #endif
+        // Gossip
+        bool _gossipReturn;
 };
 
-class SmartGameObjectAI : public GameObjectAI
+class TC_GAME_API SmartGameObjectAI : public GameObjectAI
 {
     public:
-        SmartGameObjectAI(GameObject* g) : GameObjectAI(g) { }
+        SmartGameObjectAI(GameObject* g) : GameObjectAI(g), _gossipReturn(false) { }
         ~SmartGameObjectAI() override { }
 
         void UpdateAI(const uint32 diff) override;
@@ -251,11 +256,12 @@ class SmartGameObjectAI : public GameObjectAI
         SmartScript* GetScript() { return &mScript; }
         static int Permissible(const GameObject* g);
 
-        bool GossipHello(Player* player, bool reportUse) override;
-        bool OnGossipSelect(Player* player, uint32 sender, uint32 action) override;
-        bool OnGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
-        bool OnQuestAccept(Player* player, Quest const* quest) override;
-        bool QuestReward(Player* player, Quest const* quest, uint32 opt) override;
+        bool GossipHello(Player* player) override;
+        bool OnReportUse(Player* player) override;
+        bool GossipSelect(Player* player, uint32 sender, uint32 action) override;
+        bool GossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) override;
+        void QuestAccept(Player* player, Quest const* quest) override;
+        void QuestReward(Player* player, Quest const* quest, uint32 opt) override;
         void Destroyed(Player* player, uint32 eventId) override;
         void SetData(uint32 id, uint32 value, Unit* setter = nullptr) override;
         void SetScript9(SmartScriptHolder& e, uint32 entry, Unit* invoker); //FIXME
@@ -265,8 +271,12 @@ class SmartGameObjectAI : public GameObjectAI
         void EventInform(uint32 eventId) override; //FIXME
         void SpellHit(Unit* unit, const SpellInfo* spellInfo) override;
 
+        void SetGossipReturn(bool val) { _gossipReturn = val; }
     private:
         SmartScript mScript;
+
+        // Gossip
+        bool _gossipReturn;
 };
 
 /// Registers scripts required by the SAI scripting system

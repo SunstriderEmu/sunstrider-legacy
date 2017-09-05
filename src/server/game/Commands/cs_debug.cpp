@@ -6,6 +6,7 @@
 #include "ChannelMgr.h"
 #include "GossipDef.h"
 
+//FIXME: not working for float values
 void FillSnapshotValues(Unit* target, std::vector<uint32>& values)
 {
     uint32 valuesCount = target->GetValuesCount();
@@ -809,7 +810,7 @@ bool ChatHandler::HandleDebugGetValueCommand(const char* args)
     }
 
     std::vector<uint32> values;
-    FillSnapshotValues(target, values);
+    FillSnapshotValues(target, values); //todo: no need to fill this for all values
 
     TypeID type = TypeID(target->GetTypeId());
     std::string fieldName = "[UNKNOWN]";
@@ -988,7 +989,7 @@ bool ChatHandler::HandleDebugStealthLevel(const char* args)
         
     float modStealth = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH);
     float modStealthLevel = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL);
-    float modDetect = target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT);
+    float modDetect = target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECT);
 
     PSendSysMessage("Stealth: %f - Stealth level: %f - Total: %f (Detect %f)", modStealth, modStealthLevel, (modStealth+modStealthLevel),modDetect);
     return true;
@@ -1000,7 +1001,7 @@ bool ChatHandler::HandleDebugAttackDistance(const char* args)
     if (!target || !target->ToCreature())
         return false;
         
-    PSendSysMessage("AttackDistance: %f - ModDetectRange: %i", target->ToCreature()->GetAttackDistance(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_DETECT_RANGE));
+    PSendSysMessage("AttackDistance: %f - ModDetectRange: %i", target->ToCreature()->GetAggroRange(m_session->GetPlayer()), target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_DETECT_RANGE));
     return true;
 }
 
@@ -1100,7 +1101,7 @@ bool ChatHandler::HandleDebugSendZoneUnderAttack(const char* args)
         return false;
     
     uint32 team = m_session->GetPlayer()->GetTeam();
-    sWorld->SendZoneUnderAttack(zoneId, (team==TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE));
+    sWorld->SendZoneUnderAttack(zoneId, (team==ALLIANCE ? HORDE : ALLIANCE));
     return true;
 }
 
@@ -1142,7 +1143,7 @@ bool ChatHandler::HandleDebugMapHeight(const char* args)
         teleport = atoi(sTeleport);
 
     Player* p = GetSession()->GetPlayer();
-    float mapHeight = p->GetMap()->GetHeight(PhaseMask(1), p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), true, 100.0f, walkableOnly);
+    float mapHeight = p->GetMap()->GetHeight(PHASEMASK_NORMAL, p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), true, 100.0f, walkableOnly);
     if (mapHeight == INVALID_HEIGHT)
     {
         SendSysMessage("No valid height found within 100 yards below");
@@ -1526,7 +1527,7 @@ bool ChatHandler::HandleSpawnBatchObjects(const char* args)
         if (permanent)
         {
             auto pGameObj = new GameObject;
-            if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), itr.entry, player->GetMap(), itr.position, itr.rot, 0, GO_STATE_READY))
+            if (!pGameObj->Create(player->GetMap()->GenerateLowGuid<HighGuid::GameObject>(), itr.entry, player->GetMap(), PHASEMASK_NORMAL, itr.position, itr.rot, 0, GO_STATE_READY))
             {
                 delete pGameObj;
                 PSendSysMessage("Failed to create object %u", itr.entry);

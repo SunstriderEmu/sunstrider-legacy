@@ -49,11 +49,12 @@ const char ItemRandomPropertiesfmt[]="nxiiixxxxxxxxxxxxxxxxxxx";
 const char ItemRandomSuffixfmt[]="nxxxxxxxxxxxxxxxxxxiiiiii";
 const char ItemSetEntryfmt[]="dssssssssssssssssxxxxxxxxxxxxxxxxxxiiiiiiiiiiiiiiiiii";
 #ifdef LICH_KING
+char const LiquidTypefmt[] = "nxxixixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char LightEntryfmt[] = "nifffxxxxxxxxxx";
 #else
+const char LiquidTypefmt[] = "nxii";
 const char LightEntryfmt[] = "nifffxxxxxxx";
 #endif
-const char LiquidTypefmt[] = "nxxi";
 const char LockEntryfmt[]="niiiiiiiiiiiiiiiiiixxxxxxxxxxxxxx";
 const char MailTemplateEntryfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char MapEntryfmt[]="nxixssssssssssssssssxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxixxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxiffiixxi";

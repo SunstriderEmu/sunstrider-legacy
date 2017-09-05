@@ -139,7 +139,7 @@ namespace Trinity
             }
         }
 
-        inline uint32 xp_to_level(uint32 lvl)
+        inline uint32 GetXPForLevel(uint32 lvl)
         {
             uint32 xp = 0;
             if (lvl < 60)

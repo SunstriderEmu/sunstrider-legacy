@@ -76,7 +76,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
         bool foundAura = false;
         for(auto langAura : langAuras)
         {
-            if(langAura->GetModifier()->m_miscvalue == lang)
+            if(langAura->GetModifier()->m_miscvalue == int32(lang))
             {
                 foundAura = true;
                 break;
@@ -244,7 +244,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
             }
 
-            toPlayer = sObjectAccessor->FindConnectedPlayerByName(to.c_str());
+            toPlayer = ObjectAccessor::FindConnectedPlayerByName(to.c_str());
             uint32 playerSecurity = GetSecurity();
             uint32 targetSecurity = toPlayer ? toPlayer->GetSession()->GetSecurity() : 0;
             //stop here if target player not found
@@ -258,7 +258,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             }
 
             // gm shoudln't send whisper addon message while invisible (this may help with players knowing a gamemaster is around in some case where both have addons)
-            if (lang == LANG_ADDON && GetPlayer()->GetVisibility() == VISIBILITY_OFF && !toPlayer->IsGameMaster())
+            if (lang == LANG_ADDON && !GetPlayer()->IsVisible() && !toPlayer->IsGameMaster())
                 break;
 
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
@@ -468,7 +468,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
                     if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
                     {
-                        ChannelFaction faction = _player->GetTeam() == TEAM_ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
+                        ChannelFaction faction = _player->GetTeam() == ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
                         sIRCMgr->onIngameChannelMessage(faction,to.c_str(),_player->GetName(), msg.c_str());
                     }
                 }
@@ -517,8 +517,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 {
-    
-    
     if(!GetPlayer()->IsAlive())
         return;
     
@@ -530,7 +528,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 {
-    if(!_player->m_mover->IsAlive())
+    if(!_player->m_unitMovedByMe->IsAlive())
         return;
 
     GetPlayer()->UpdateSpeakTime();
@@ -540,7 +538,6 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
         return;
     }
-
     
 
     uint32 text_emote, emoteNum;
@@ -571,14 +568,14 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             case EMOTE_ONESHOT_NONE:
                 break;
             default:
-                _player->m_mover->HandleEmoteCommand(emote_anim);
+                _player->m_unitMovedByMe->HandleEmoteCommand(emote_anim);
                 break;
         }
 
-        if(_player->m_mover->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
+        if(_player->m_unitMovedByMe->ToPlayer()) //SMSG_TEXT_EMOTE is for player only
         {
             data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
-            data << _player->m_mover->GetGUID();
+            data << _player->m_unitMovedByMe->GetGUID();
             data << uint32(text_emote);
             data << uint32(emoteNum);
             data << uint32(namlen);
@@ -587,13 +584,12 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
             else
                 data << (uint8)0x00;
         
-            _player->m_mover->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
+            _player->m_unitMovedByMe->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
         }
 
         //Send scripted event call
         if(i_target)
             if (Creature *pCreature = i_target->ToCreature()) {
-                sScriptMgr->ReceiveEmote(GetPlayer(),pCreature, text_emote);
                 pCreature->AI()->ReceiveEmote(GetPlayer(), text_emote);
             }
     }
@@ -601,10 +597,6 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData )
 {
-    
-    
-    
-
     uint64 iguid;
     uint8 reason;
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_CHAT_IGNORED");

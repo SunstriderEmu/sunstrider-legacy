@@ -39,12 +39,7 @@ bool ChatHandler::HandleSpectateCancelCommand(const char* /*args*/)
 
     player->CancelSpectate();
 
-    uint32 map = player->GetBattlegroundEntryPointMap();
-    float positionX = player->GetBattlegroundEntryPointX();
-    float positionY = player->GetBattlegroundEntryPointY();
-    float positionZ = player->GetBattlegroundEntryPointZ();
-    float positionO = player->GetBattlegroundEntryPointO();
-    if (player->TeleportTo(map, positionX, positionY, positionZ, positionO))
+    if (player->TeleportToBGEntryPoint())
     {
         player->SetSpectate(false);
         bg->RemoveSpectator(player->GetGUID());

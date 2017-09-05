@@ -249,8 +249,8 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
             uint32 team = Player::TeamForRace(createInfo->Race);
             switch(team)
             {
-                case TEAM_ALLIANCE: disabled = mask & (1<<0); break;
-                case TEAM_HORDE:    disabled = mask & (1<<1); break;
+                case ALLIANCE: disabled = mask & (1<<0); break;
+                case HORDE:    disabled = mask & (1<<1); break;
             }
 
             if(disabled)
@@ -408,7 +408,7 @@ void WorldSession::HandleCharCreateOpcode( WorldPacket & recvData )
 
             Player newChar(this);
             newChar.GetMotionMaster()->Initialize();
-            if (!newChar.Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PLAYER), createInfo.get()))
+            if (!newChar.Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), createInfo.get()))
             {
                 // Player not create (race/class/etc problem?)
                 newChar.CleanupsBeforeDelete();
@@ -742,8 +742,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         SendPacket(&data);
     }
 
-    if(!pCurrChar->IsAlive())
-        pCurrChar->SendCorpseReclaimDelay(true);
+	if (pCurrChar->HasCorpse())
+	{
+		int32 corpseReclaimDelay = pCurrChar->CalculateCorpseReclaimDelay();
+		if(corpseReclaimDelay >= 0)
+			pCurrChar->SendCorpseReclaimDelay(corpseReclaimDelay);
+	}
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
@@ -771,7 +775,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 #endif
     }
 
-    if (!pCurrChar->GetMap()->Add(pCurrChar))
+    if (!pCurrChar->GetMap()->AddPlayerToMap(pCurrChar))
     {
         AreaTrigger const* at = sObjectMgr->GetGoBackTrigger(pCurrChar->GetMapId());
         if(at)
@@ -780,7 +784,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->TeleportTo(pCurrChar->m_homebindMapId, pCurrChar->m_homebindX, pCurrChar->m_homebindY, pCurrChar->m_homebindZ, pCurrChar->GetOrientation());
     }
 
-    sObjectAccessor->AddObject(pCurrChar);
+	ObjectAccessor::AddObject(pCurrChar);
     //TC_LOG_DEBUG("FIXME","Player %s added to Map.",pCurrChar->GetName());
     pCurrChar->GetSocial()->SendSocialList();
 
@@ -797,7 +801,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->UpdateArenaTitles();
 
     // Place character in world (and load zone) before some object loading
-    pCurrChar->LoadCorpse();
+	//TODO CORPSE pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
 
     // setting Ghost+speed if dead
     if (pCurrChar->m_deathState != ALIVE)
@@ -823,7 +827,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     if(pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP))
         pCurrChar->SetContestedPvP();
 
-    pCurrChar->ClearFarsight();
     pCurrChar->RemoveAurasByType(SPELL_AURA_BIND_SIGHT);
 
     // Apply at_login requests
@@ -876,7 +879,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         // Factions depending on team, like cities and some more stuff
         switch(pCurrChar->GetTeam())
         {
-        case TEAM_ALLIANCE:
+        case ALLIANCE:
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(72),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(47),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(69),42999);
@@ -886,7 +889,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(54),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(946),42999);
             break;
-        case TEAM_HORDE:
+        case HORDE:
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(76),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(68),42999);
             pCurrChar->SetFactionReputation(sFactionStore.LookupEntry(81),42999);
@@ -940,7 +943,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     delete holder;
     
     //avoid bug abuse to enter in heroic instance without needed reputation level
-    if (!sMapMgr->CanPlayerEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
+    if (sMapMgr->PlayerCannotEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
     {
         pCurrChar->RepopAtGraveyard();
     }

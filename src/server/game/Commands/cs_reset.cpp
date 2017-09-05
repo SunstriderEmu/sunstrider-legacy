@@ -204,7 +204,7 @@ bool ChatHandler::HandleResetSpellsCommand(const char * args)
             return false;
         }
 
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if(!player)
             playerGUID = sCharacterCache->GetCharacterGuidByName(name.c_str());
     }
@@ -251,7 +251,7 @@ bool ChatHandler::HandleResetTalentsCommand(const char * args)
             return false;
         }
 
-        player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+        player = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
         if(!player)
             playerGUID = sCharacterCache->GetCharacterGuidByName(name.c_str());
     }

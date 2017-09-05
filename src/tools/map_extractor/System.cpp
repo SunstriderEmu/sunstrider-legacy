@@ -33,6 +33,7 @@
 
 #include <G3D/Plane.h>
 #include <boost/filesystem.hpp>
+#include "WaterDefines.h"
 
 extern ArchiveSet gOpenArchives;
 
@@ -306,19 +307,6 @@ struct map_heightHeader
     float  gridHeight;
     float  gridMaxHeight;
 };
-
-#define MAP_LIQUID_TYPE_NO_WATER    0x00
-#define MAP_LIQUID_TYPE_WATER       0x01
-#define MAP_LIQUID_TYPE_OCEAN       0x02
-#define MAP_LIQUID_TYPE_MAGMA       0x04
-#define MAP_LIQUID_TYPE_SLIME       0x08
-
-#define MAP_LIQUID_TYPE_DARK_WATER  0x10
-#define MAP_LIQUID_TYPE_WMO_WATER   0x20
-
-
-#define MAP_LIQUID_NO_TYPE    0x0001
-#define MAP_LIQUID_NO_HEIGHT  0x0002
 
 struct map_liquidHeader
 {
@@ -707,19 +695,19 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
                 switch (h->liquidType)
 #endif
                 {
-                case LIQUID_TYPE_WATER: liquid_flags[i][j] |= MAP_LIQUID_TYPE_WATER; break;
-                case LIQUID_TYPE_OCEAN: liquid_flags[i][j] |= MAP_LIQUID_TYPE_OCEAN; break;
-                case LIQUID_TYPE_MAGMA: liquid_flags[i][j] |= MAP_LIQUID_TYPE_MAGMA; break;
-                case LIQUID_TYPE_SLIME: liquid_flags[i][j] |= MAP_LIQUID_TYPE_SLIME; break;
+                case ADT_LIQUID_TYPE_WATER: liquid_flags[i][j] |= MAP_LIQUID_TYPE_WATER; break;
+                case ADT_LIQUID_TYPE_OCEAN: liquid_flags[i][j] |= MAP_LIQUID_TYPE_OCEAN; break;
+                case ADT_LIQUID_TYPE_MAGMA: liquid_flags[i][j] |= MAP_LIQUID_TYPE_MAGMA; break;
+                case ADT_LIQUID_TYPE_SLIME: liquid_flags[i][j] |= MAP_LIQUID_TYPE_SLIME; break;
                 default:
                     printf("\nCan't find Liquid type %u for map %s\nchunk %d,%d\n", h->liquidType, inputPath.c_str(), i, j);
                     break;
                 }
                 // Dark water detect
 #ifdef LICH_KING
-                if (LiqType[h->liquidType] == LIQUID_TYPE_OCEAN)
+                if (LiqType[h->liquidType] == ADT_LIQUID_TYPE_OCEAN)
 #else
-                if (h->liquidType == LIQUID_TYPE_OCEAN)
+                if (h->liquidType == ADT_LIQUID_TYPE_OCEAN)
 #endif
                 {
                     uint8 *lm = h2o->getLiquidLightMap(h);
@@ -752,7 +740,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     // Pack liquid data
     //============================================
     uint8 type = liquid_flags[0][0];
-    bool fullType = false;
+    bool fullType = false; //sunstrider: false = use the same type or all this grid
     for (int y = 0; y<ADT_CELLS_PER_GRID; y++)
     {
         for (int x = 0; x<ADT_CELLS_PER_GRID; x++)
@@ -830,7 +818,7 @@ bool ConvertADT(std::string const& inputPath, std::string const& outputPath, int
     }
 
     // map hole info
-    uint16 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
+    uint32 holes[ADT_CELLS_PER_GRID][ADT_CELLS_PER_GRID];
 
     if (map.liquidMapOffset)
         map.holesOffset = map.liquidMapOffset + map.liquidMapSize;

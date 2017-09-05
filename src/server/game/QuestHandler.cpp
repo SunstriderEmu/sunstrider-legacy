@@ -37,21 +37,22 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
     switch (questgiver->GetTypeId()) {
     case TYPEID_UNIT:
     {
+        /*
         Creature* cr_questgiver = questgiver->ToCreature();
         if (!cr_questgiver->IsHostileTo(_player)) // not show quest status to enemies
         {
             questStatus = sScriptMgr->GetDialogStatus(_player, cr_questgiver);
             if (questStatus > 6)
-                questStatus = GetQuestDialogStatus(_player, cr_questgiver, defstatus);
+                questStatus = getquestdialogstatus(_player, cr_questgiver, defstatus);
         }
+        */
+        if (!questgiver->ToCreature()->IsHostileTo(_player)) // do not show quest status to enemies
+            questStatus = _player->GetQuestDialogStatus(questgiver);
         break;
     }
     case TYPEID_GAMEOBJECT:
     {
-        GameObject* go_questgiver = (GameObject*) questgiver;
-        questStatus = sScriptMgr->GetDialogStatus(_player, go_questgiver);
-        if (questStatus > 6)
-            questStatus = GetQuestDialogStatus(_player, go_questgiver, defstatus);
+        _player->GetQuestDialogStatus(questgiver);
         break;
     }
     default:
@@ -82,13 +83,11 @@ void WorldSession::HandleQuestgiverHelloOpcode( WorldPacket & recvData )
     // Stop the npc if moving
     pCreature->StopMoving();
 
-    if(sScriptMgr->OnGossipHello( _player, pCreature ) )
+    if (pCreature->AI()->GossipHello(_player))
         return;
 
     _player->PrepareGossipMenu(pCreature, _player->GetDefaultGossipMenuForSource(pCreature), true);
     _player->SendPreparedGossip(pCreature);
-    
-    pCreature->AI()->sGossipHello(_player);
 }
 
 void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
@@ -172,38 +171,6 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode( WorldPacket & recvData )
                 _player->AutoCompleteQuest(qInfo);
             }
 
-            switch(pObject->GetTypeId())
-            {
-                case TYPEID_UNIT:
-                    sScriptMgr->OnQuestAccept(_player, (pObject->ToCreature()), qInfo );
-                    (pObject->ToCreature())->AI()->sQuestAccept(_player, qInfo);
-                    break;
-                case TYPEID_ITEM:
-                case TYPEID_CONTAINER:
-                {
-                    sScriptMgr->OnQuestAccept(_player, ((Item*)pObject), qInfo );
-
-                    // destroy not required for quest finish quest starting item
-                    bool destroyItem = true;
-                    for(uint32 i : qInfo->RequiredItemId)
-                    {
-                        if ((i == ((Item*)pObject)->GetEntry()) && (((Item*)pObject)->GetTemplate()->MaxCount != 0))
-                        {
-                            destroyItem = false;
-                            break;
-                        }
-                    }
-
-                    if(destroyItem)
-                        _player->DestroyItem(((Item*)pObject)->GetBagSlot(),((Item*)pObject)->GetSlot(),true);
-
-                    break;
-                }
-                case TYPEID_GAMEOBJECT:
-                    sScriptMgr->OnQuestAccept(_player, ((GameObject*)pObject), qInfo );
-                    (pObject->ToGameObject())->AI()->OnQuestAccept(_player, qInfo);
-                    break;
-            }
             _player->PlayerTalkClass->SendCloseGossip();
 
             if( qInfo->GetSrcSpell() > 0 )
@@ -280,25 +247,32 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode( WorldPacket & recvData )
             switch(pObject->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    if( !(sScriptMgr->OnQuestReward( _player, (pObject->ToCreature()), pQuest, reward )) )
-                    {
-                        // Send next quest
-                        if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
-                            _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
-                            
-                        (pObject->ToCreature())->AI()->sQuestReward(_player, pQuest, reward);
-                        sScriptMgr->OnQuestComplete(_player, pObject->ToCreature(), pQuest);
-                    }
-                    break;
-                case TYPEID_GAMEOBJECT:
-                    if( !sScriptMgr->OnQuestReward( _player, ((GameObject*)pObject), pQuest, reward ) )
-                    {
-                        // Send next quest
-                        if(Quest const* nextquest = _player->GetNextQuest( guid ,pQuest ) )
-                            _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest,guid,true);
+                {
+                    // Send next quest
+                    Creature* questgiver = pObject->ToCreature();
+                    if (Quest const* nextquest = _player->GetNextQuest(guid, pQuest))
+                        _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextquest, guid, true);
 
-                        (pObject->ToGameObject())->AI()->OnQuestAccept(_player, pQuest);
+                    _player->PlayerTalkClass->ClearMenus();
+                    questgiver->AI()->QuestReward(_player, pQuest, reward);
+                    break;
+                }
+                case TYPEID_GAMEOBJECT:
+                    // Send next quest
+                    if (Quest const* nextQuest = _player->GetNextQuest(guid, pQuest))
+                    {
+                        // Only send the quest to the player if the conditions are met
+                        if (_player->CanTakeQuest(nextQuest, false)) {
+                            /*TC 
+                             if (nextQuest->IsAutoAccept() && _player->CanAddQuest(nextQuest, true))
+                                _player->AddQuestAndCheckCompletion(nextQuest, object);
+                                */
+                            _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, true);
+                        }
                     }
+
+                    _player->PlayerTalkClass->ClearMenus();
+                    (pObject->ToGameObject())->AI()->QuestReward(_player, pQuest, reward);
                     break;
             }
         }
@@ -350,12 +324,26 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
 
     if( slot < MAX_QUEST_LOG_SIZE )
     {
-        if(uint32 quest = _player->GetQuestSlotQuestId(slot))
+        if(uint32 questId = _player->GetQuestSlotQuestId(slot))
         {
-            if(!_player->TakeQuestSourceItem( quest, true ))
+            if(!_player->TakeQuestSourceItem(questId, true ))
                 return;                                     // can't un-equip some items, reject quest cancel
 
-            _player->SetQuestStatus( quest, QUEST_STATUS_NONE);
+			/* TC
+			if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
+			{
+				if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))
+					_player->RemoveTimedQuest(questId);
+
+				if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
+				{
+					_player->pvpInfo.IsHostile = _player->pvpInfo.IsInHostileArea || _player->HasPvPForcingQuest();
+					_player->UpdatePvPState();
+				}
+			}
+			*/
+
+            _player->SetQuestStatus(questId, QUEST_STATUS_NONE);
         }
 
         _player->SetQuestSlot(slot, 0);
@@ -456,73 +444,106 @@ void WorldSession::HandleQuestgiverQuestAutoLaunch(WorldPacket& /*recvPacket*/)
 
 void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
 {
-    uint32 quest;
-    recvPacket >> quest;
+    uint32 questId;
+    recvPacket >> questId;
 
-    Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest);
-    if( pQuest )
+    Player* sender = _player;
+    if (!sender->CanShareQuest(questId))
+        return;
+
+    Group* group = sender->GetGroup();
+    if (!group)
     {
-        if( _player->GetGroup() )
+#ifdef LICH_KING
+        sender->SendPushToPartyResponse(sender, QUEST_PARTY_MSG_NOT_IN_PARTY);
+#else
+        ChatHandler(sender).PSendSysMessage("You are not in a party.");
+#endif
+        return;
+    }
+
+    Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
+    if (!quest)
+        return;
+
+    for(GroupReference *itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+    {
+        Player* receiver = itr->GetSource();
+        if (!receiver || receiver == sender)     // skip self
+            continue;
+
+        if(sender->GetDistance(receiver) > 10.0f )
         {
-            Group *pGroup = _player->GetGroup();
-            if( pGroup )
-            {
-                for(GroupReference *itr = pGroup->GetFirstMember(); itr != nullptr; itr = itr->next())
-                {
-                    Player *pPlayer = itr->GetSource();
-                    if (!pPlayer || pPlayer == _player)     // skip self
-                        continue;
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_TOO_FAR );
+            continue;
+        }
 
-                    _player->SendPushToPartyResponse(pPlayer, QUEST_PARTY_MSG_SHARING_QUEST);
+        if( !receiver->SatisfyQuestStatus( quest, false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_HAVE_QUEST );
+            continue;
+        }
 
-                    if( _player->GetDistance( pPlayer ) > 10 )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_TOO_FAR );
-                        continue;
-                    }
+        if(receiver->GetQuestStatus( questId ) == QUEST_STATUS_COMPLETE )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_FINISH_QUEST );
+            continue;
+        }
 
-                    if( !pPlayer->SatisfyQuestStatus( pQuest, false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_HAVE_QUEST );
-                        continue;
-                    }
+        if (!receiver->SatisfyQuestDay(quest, false))
+        {
+#ifdef LICH_KING
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_NOT_ELIGIBLE_TODAY);
+#else
+            ChatHandler(sender).PSendSysMessage("You can't take any more daily quests.");
+#endif  
+            continue;
+        }
 
-                    if( pPlayer->GetQuestStatus( quest ) == QUEST_STATUS_COMPLETE )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_FINISH_QUEST );
-                        continue;
-                    }
-
-                    if( !pPlayer->CanTakeQuest( pQuest, false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_CANT_TAKE_QUEST );
-                        continue;
-                    }
-
-                    if( !pPlayer->SatisfyQuestLog( false ) )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_LOG_FULL );
-                        continue;
-                    }
-
-                    if( pPlayer->GetDivider() != 0  )
-                    {
-                        _player->SendPushToPartyResponse( pPlayer, QUEST_PARTY_MSG_BUSY );
-                        continue;
-                    }
-                    
-                    if (sWorld->IsQuestInAPool(pQuest->GetQuestId())) {
-                        if (!sWorld->IsQuestCurrentOfAPool(pQuest->GetQuestId())) {
-                            ChatHandler(_player).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
-                            break;  // Quest cannot be shared today, no point continuing
-                        }
-                    }
-
-                    pPlayer->PlayerTalkClass->SendQuestGiverQuestDetails( pQuest, _player->GetGUID(), true );
-                    pPlayer->SetDivider( _player->GetGUID() );
-                }
+        if (sWorld->IsQuestInAPool(questId)) {
+            if (!sWorld->IsQuestCurrentOfAPool(questId)) {
+                //ChatHandler(sender).PSendSysMessage("Cette quête n'est pas disponible aujourd'hui, vous ne pouvez pas la partager.");
+                ChatHandler(sender).PSendSysMessage("This quest is not available today, you can't share it.");
+                break;  // Quest cannot be shared today, no point continuing
             }
         }
+
+        if( !receiver->CanTakeQuest(quest, false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_CANT_TAKE_QUEST );
+            continue;
+        }
+
+        if( !receiver->SatisfyQuestLog( false ) )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_LOG_FULL );
+            continue;
+        }
+
+        if(receiver->GetDivider() != 0  )
+        {
+            sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_BUSY );
+            continue;
+        }
+
+        sender->SendPushToPartyResponse(receiver, QUEST_PARTY_MSG_SHARING_QUEST);
+                    
+        /* TC
+        if (quest->IsAutoAccept() && receiver->CanAddQuest(quest, true) && receiver->CanTakeQuest(quest, true))
+            receiver->AddQuestAndCheckCompletion(quest, sender);
+            */
+        if ((quest->IsAutoComplete() && quest->IsRepeatable() && !quest->IsDailyOrWeekly()) 
+#ifdef LICH_KING
+            || quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE)
+#endif
+            )
+            receiver->PlayerTalkClass->SendQuestGiverRequestItems(quest, sender->GetGUID(), receiver->CanCompleteRepeatableQuest(quest), true);
+        else
+        {
+            receiver->SetDivider(sender->GetGUID());
+            receiver->PlayerTalkClass->SendQuestGiverQuestDetails(quest, receiver->GetGUID(), true);
+        }
+
     }
 }
 
@@ -532,23 +553,19 @@ void WorldSession::HandleQuestPushResult(WorldPacket& recvPacket)
     uint8 msg;
     recvPacket >> guid >> msg;
 
-    if( _player->GetDivider() != 0 )
+    if(guid == _player->GetDivider())
     {
-        Player *pPlayer = ObjectAccessor::FindPlayer( _player->GetDivider() );
-        if( pPlayer )
-        {
-            WorldPacket data( MSG_QUEST_PUSH_RESULT, (8+1) );
-            data << uint64(guid);
-            data << uint8(msg);                             // valid values: 0-8
-            pPlayer->SendDirectMessage(&data);
-            _player->SetDivider( 0 );
-        }
+        Player* player = ObjectAccessor::FindPlayer(guid);
+        if (player)
+            player->SendPushToPartyResponse(_player, msg);
     }
+
+    _player->SetDivider(0);
 }
 
-uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, uint32 defstatus)
+QuestGiverStatus Player::GetQuestDialogStatus(Object* questgiver)
 {
-    uint32 result = defstatus;
+    QuestGiverStatus result = DIALOG_STATUS_NONE;
 
     QuestRelations const* qir;
     QuestRelations const* qr;
@@ -557,36 +574,42 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
     {
         case TYPEID_GAMEOBJECT:
         {
+            QuestGiverStatus questStatus = QuestGiverStatus(questgiver->ToGameObject()->AI()->GetDialogStatus(this));
+            if (questStatus != DIALOG_STATUS_SCRIPTED_NO_STATUS)
+                return questStatus;
             qir = &sObjectMgr->mGOQuestInvolvedRelations;
             qr  = &sObjectMgr->mGOQuestRelations;
             break;
         }
         case TYPEID_UNIT:
         {
+            QuestGiverStatus questStatus = QuestGiverStatus(questgiver->ToCreature()->AI()->GetDialogStatus(this));
+            if (questStatus != DIALOG_STATUS_SCRIPTED_NO_STATUS)
+                return questStatus;
             qir = &sObjectMgr->mCreatureQuestInvolvedRelations;
             qr  = &sObjectMgr->mCreatureQuestRelations;
             break;
         }
         default:
             //its imposible, but check ^)
-            TC_LOG_ERROR("FIXME","Warning: GetDialogStatus called for unexpected type %u", questgiver->GetTypeId());
+            TC_LOG_ERROR("entities.player.quest","Warning: GetDialogStatus called for unexpected type %u", questgiver->GetTypeId());
             return DIALOG_STATUS_NONE;
     }
 
     for(auto i = qir->lower_bound(questgiver->GetEntry()); i != qir->upper_bound(questgiver->GetEntry()); ++i )
     {
-        uint32 result2 = 0;
+        QuestGiverStatus result2 = DIALOG_STATUS_NONE;
         uint32 quest_id = i->second;
         Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
         if ( !pQuest ) 
             continue;
 
-        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), pPlayer))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), this))
             continue;
 
-        QuestStatus status = pPlayer->GetQuestStatus( quest_id );
-        if( (status == QUEST_STATUS_COMPLETE && !pPlayer->GetQuestRewardStatus(quest_id)) ||
-            (pQuest->IsAutoComplete() && pPlayer->CanTakeQuest(pQuest, false)) )
+        QuestStatus status = this->GetQuestStatus( quest_id );
+        if( (status == QUEST_STATUS_COMPLETE && !this->GetQuestRewardStatus(quest_id)) ||
+            (pQuest->IsAutoComplete() && this->CanTakeQuest(pQuest, false)) )
         {
             if ( pQuest->IsAutoComplete() && pQuest->IsRepeatable() )
                 result2 = DIALOG_STATUS_REWARD_REP;
@@ -602,25 +625,25 @@ uint32 WorldSession::GetQuestDialogStatus(Player *pPlayer, Object* questgiver, u
 
     for(auto i = qr->lower_bound(questgiver->GetEntry()); i != qr->upper_bound(questgiver->GetEntry()); ++i )
     {
-        uint32 result2 = 0;
+        QuestGiverStatus result2 = DIALOG_STATUS_NONE;
         uint32 quest_id = i->second;
         Quest const *pQuest = sObjectMgr->GetQuestTemplate(quest_id);
         if ( !pQuest )
             continue;
 
-        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), pPlayer))
+        if (!sConditionMgr->IsObjectMeetingNotGroupedConditions(CONDITION_SOURCE_TYPE_QUEST_ACCEPT, pQuest->GetQuestId(), this))
             continue;
 
-        QuestStatus status = pPlayer->GetQuestStatus( quest_id );
+        QuestStatus status = this->GetQuestStatus( quest_id );
         if ( status == QUEST_STATUS_NONE )
         {
-            if ( pPlayer->CanSeeStartQuest( pQuest ) )
+            if ( this->CanSeeStartQuest( pQuest ) )
             {
-                if ( pPlayer->SatisfyQuestLevel(pQuest, false) )
+                if (this->SatisfyQuestLevel(pQuest, false) )
                 {
-                    if ( pQuest->IsAutoComplete() || (pQuest->IsRepeatable() && pPlayer->getQuestStatusMap()[quest_id].m_rewarded))
+                    if ( pQuest->IsAutoComplete() || (pQuest->IsRepeatable() && this->getQuestStatusMap()[quest_id].m_rewarded))
                         result2 = DIALOG_STATUS_REWARD_REP;
-                    else if (pPlayer->GetLevel() <= pQuest->GetQuestLevel() + sWorld->getConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF) )
+                    else if (this->GetLevel() <= pQuest->GetQuestLevel() + sWorld->getConfig(CONFIG_QUEST_LOW_LEVEL_HIDE_DIFF) )
                     {
                         if (pQuest->HasFlag(QUEST_FLAGS_DAILY))
                             result2 = DIALOG_STATUS_AVAILABLE_REP;
@@ -661,9 +684,9 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             if(!questgiver->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_QUESTGIVER))
                 continue;
-            questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
+            questStatus = _player->GetQuestDialogStatus(questgiver);
             if( questStatus > 6 )
-                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
+                questStatus = _player->GetQuestDialogStatus(questgiver);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);
@@ -676,9 +699,9 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
                 continue;
             if(questgiver->GetGoType() != GAMEOBJECT_TYPE_QUESTGIVER)
                 continue;
-            questStatus = sScriptMgr->GetDialogStatus(_player, questgiver);
+            questStatus = _player->GetQuestDialogStatus(questgiver);
             if( questStatus > 6 )
-                questStatus = GetQuestDialogStatus(_player, questgiver, defstatus);
+                questStatus = _player->GetQuestDialogStatus(questgiver);
 
             data << uint64(questgiver->GetGUID());
             data << uint8(questStatus);

@@ -28,8 +28,7 @@ TotemAI::~TotemAI()
 {
 }
 
-void
-TotemAI::MoveInLineOfSight(Unit *)
+void TotemAI::MoveInLineOfSight(Unit *)
 {
 }
 
@@ -38,8 +37,7 @@ void TotemAI::EnterEvadeMode(EvadeReason why)
     i_totem.CombatStop();
 }
 
-void
-TotemAI::UpdateAI(const uint32 /*diff*/)
+void TotemAI::UpdateAI(const uint32 /*diff*/)
 {
     if (i_totem.GetTotemType() != TOTEM_ACTIVE)
         return;
@@ -61,12 +59,12 @@ TotemAI::UpdateAI(const uint32 /*diff*/)
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if( !victim ||
         i_totem.CanAttack(victim) != CAN_ATTACK_RESULT_OK || !i_totem.IsWithinDistInMap(victim, max_range) ||
-        i_totem.IsFriendlyTo(victim) || !victim->IsVisibleForOrDetect(&i_totem,false) )
+        i_totem.IsFriendlyTo(victim) || !me->CanSeeOrDetect(victim) )
     {
         victim = nullptr;
         Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
         Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
-        me->VisitNearbyObject(max_range, checker);
+        Cell::VisitGridObjects(me, checker, max_range);
     }
 
     // If have target

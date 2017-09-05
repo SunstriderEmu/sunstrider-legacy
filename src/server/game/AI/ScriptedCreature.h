@@ -50,13 +50,14 @@ private:
     const uint32 m_cooldown;
 };
 
+/*
 //Get a single creature of given entry
 TC_GAME_API Creature* FindCreature(uint32 entry, float range, Unit* Finder);
 //Get every creatures of given entry within given range
 TC_GAME_API void FindCreatures(std::list<Creature*>& list, uint32 entry, float range, Unit* Finder);
-
 //Get a single gameobject of given entry
 TC_GAME_API GameObject* FindGameObject(uint32 entry, float range, Unit* Finder);
+*/
 
 struct TC_GAME_API ScriptedAI : public CreatureAI
 {
@@ -173,7 +174,7 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
     Creature* DoSpawnCreature(uint32 id, float x, float y, float z, float angle, uint32 type, uint32 despawntime);
 
     //Returns spells that meet the specified criteria from the creatures spell list
-    SpellInfo const* SelectSpell(Unit* Target, int32 School, int32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
+    SpellInfo const* SelectSpell(Unit* Target, uint32 School, uint32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effect);
 
     //Checks if you can cast the specified spell
     bool CanCast(Unit* Target, SpellInfo const *Spell, bool Triggered = false);
@@ -212,6 +213,8 @@ public:
     void EnterCombat(Unit* /*who*/) override { _EnterCombat(); }
     void JustDied(Unit* /*killer*/) override { _JustDied(); }
     void JustReachedHome() override { _JustReachedHome(); }
+
+    bool CanAIAttack(Unit const* target) const override;
 
 protected:
     void _Reset();

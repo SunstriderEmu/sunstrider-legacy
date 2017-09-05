@@ -1,27 +1,10 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
 
 #include "Common.h"
 #include "Database/DatabaseEnv.h"
 
 #include "Log.h"
+#include "CreatureAIFactory.h"
+#include "GameObjectAIFactory.h"
 #include "MapManager.h"
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
@@ -46,6 +29,7 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "GameObject.h"
+#include "Formulas.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -109,28 +93,16 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
     return nullptr;
 }
 
-ObjectMgr::ObjectMgr()
+ObjectMgr::ObjectMgr() :
+	_creatureSpawnId(1),
+	_gameObjectSpawnId(1),
+    _hiPetNumber(1),
+    _ItemTextId(1),
+    _mailid(1),
+    _guildId(1),
+    _arenaTeamId(1),
+    _auctionId(1)
 {
-    m_hiCharGuid        = 1;
-    m_hiCreatureGuid    = 1;
-    m_hiTempCreatureGuidStart = 1;
-    m_hiTempCreatureGuid = 1;
-    m_hiCreatureRegularModeGuid = !sWorld->getConfig(CONFIG_GUIDDISTRIB_NEWMETHOD);
-    m_hiPetGuid         = 1;
-    m_hiItemGuid        = 1;
-    m_hiGoGuid          = 1;
-    m_hiTempGoGuidStart = 1;
-    m_hiTempGoGuid = 1;
-    m_hiGoRegularModeGuid = !sWorld->getConfig(CONFIG_GUIDDISTRIB_NEWMETHOD);
-    m_hiDoGuid          = 1;
-    m_hiCorpseGuid      = 1;
-    m_hiTransportGuid   = 1;
-    m_hiPetNumber       = 1;
-    m_ItemTextId        = 1;
-    m_mailid            = 1;
-    m_guildId           = 1;
-    m_arenaTeamId       = 1;
-    m_auctionid         = 1;
 
     mGuildBankTabPrice.resize(GUILD_BANK_MAX_TABS);
     mGuildBankTabPrice[0] = 100;
@@ -142,6 +114,13 @@ ObjectMgr::ObjectMgr()
 
     // Only zero condition left, others will be added while loading DB tables
     mConditions.resize(1);
+
+	for (uint8 i = 0; i < MAX_CLASSES; ++i)
+	{
+		_playerClassInfo[i] = nullptr;
+		for (uint8 j = 0; j < MAX_RACES; ++j)
+			_playerInfo[j][i] = nullptr;
+	}
 }
 
 ObjectMgr::~ObjectMgr()
@@ -167,12 +146,22 @@ ObjectMgr::~ObjectMgr()
     petInfo.clear();
 
     // free only if loaded
-    for (auto & class_ : playerClassInfo)
-        delete[] class_.levelInfo;
+	for (int class_ = 0; class_ < MAX_CLASSES; ++class_)
+	{
+		if (_playerClassInfo[class_])
+			delete[] _playerClassInfo[class_]->levelInfo;
+		delete _playerClassInfo[class_];
+	}
 
-    for (auto & race : playerInfo)
-        for (int class_ = 0; class_ < MAX_CLASSES; ++class_)
-            delete[] race[class_].levelInfo;
+	for (int race = 0; race < MAX_RACES; ++race)
+	{
+		for (int class_ = 0; class_ < MAX_CLASSES; ++class_)
+		{
+			if (_playerInfo[race][class_])
+				delete[] _playerInfo[race][class_]->levelInfo;
+			delete _playerInfo[race][class_];
+		}
+	}
 
     // free group and guild objects
     for (auto itr : mGroupSet)
@@ -648,6 +637,12 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         }
     }
 
+    if (!cInfo->AIName.empty() && !sCreatureAIRegistry->HasItem(cInfo->AIName))
+    {
+        TC_LOG_ERROR("sql.sql", "Creature (Entry: %u) has non-registered `AIName` '%s' set, removing", cInfo->Entry, cInfo->AIName.c_str());
+        const_cast<CreatureTemplate*>(cInfo)->AIName.clear();
+    }
+
     FactionTemplateEntry const* factionTemplate = sFactionTemplateStore.LookupEntry(cInfo->faction);
     if(!factionTemplate) {
         TC_LOG_FATAL("sql.sql", "Creature (Entry: %u) has non-existing faction template (%u). This can lead to crashes, aborting.", cInfo->Entry, cInfo->faction);
@@ -1072,10 +1067,10 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelSameGenderAndRaceAs(uint32& 
         return nullptr;
 
     CreatureModelInfo const* baseModelInfo = GetCreatureModelInfo(baseDisplayId);
-    if (!modelInfo)
+    if (!baseModelInfo)
         return modelInfo;
 
-    uint8 baseGender = modelInfo->gender;
+    uint8 baseGender = baseModelInfo->gender;
     //uint8 baseRace = modelInfo->race;
 
     if (modelInfo->gender == baseGender)
@@ -1314,7 +1309,7 @@ void ObjectMgr::LoadCreatures()
         int32 gameEvent     = fields[16].GetInt32();
         data.poolId         = fields[17].GetUInt32();
 //Not sure this is a correct general rule, correct it if needed. My windows MariaDB returns a NEWDECIMAL while our Debian MariaDB returns a LONGLONG
-#if PLATFORM == PLATFORM_UNIX
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_UNIX
         data.instanceEventId = fields[18].GetUInt64();
 #else
         data.instanceEventId = fields[18].GetDouble();
@@ -1335,6 +1330,12 @@ void ObjectMgr::LoadCreatures()
                 TC_LOG_ERROR("sql.sql","Table `creature` have creature (Entry: %u) with equipment_id %u not found in table `creature_equip_template`, set to no equipment.", data.id, data.equipmentId);
                 data.equipmentId = -1;
             }
+        }
+
+        if (data.movementType >= MAX_DB_MOTION_TYPE)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature` has creature (GUID: %u Entry: %u) with wrong movement generator type (%u), ignored and set to IDLE.", guid, data.id, data.movementType);
+            data.movementType = IDLE_MOTION_TYPE;
         }
 
         if(data.spawndist < 0.0f)
@@ -1381,7 +1382,7 @@ void ObjectMgr::AddCreatureToGrid(uint32 guid, CreatureData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.creatures.insert(guid);
         }
     }
@@ -1397,7 +1398,7 @@ void ObjectMgr::RemoveCreatureFromGrid(uint32 guid, CreatureData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.creatures.erase(guid);
         }
     }
@@ -1548,7 +1549,7 @@ void ObjectMgr::AddGameobjectToGrid(uint32 guid, GameObjectData const* data)
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.gameobjects.insert(guid);
         }
     }
@@ -1564,10 +1565,113 @@ void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data
             CellCoord cell_pair = Trinity::ComputeCellCoord(data->posX, data->posY);
             uint32 cell_id = (cell_pair.y_coord*TOTAL_NUMBER_OF_CELLS_PER_MAP) + cell_pair.x_coord;
 
-            CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(data->mapid,i)][cell_id];
+            CellObjectGuids& cell_guids = _mapObjectGuidsStore[MAKE_PAIR32(data->mapid,i)][cell_id];
             cell_guids.gameobjects.erase(guid);
         }
     }
+}
+
+ObjectGuid::LowType ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay, float rotation0, float rotation1, float rotation2, float rotation3)
+{
+	GameObjectTemplate const* goinfo = GetGameObjectTemplate(entry);
+	if (!goinfo)
+		return 0;
+
+	Map* map = sMapMgr->CreateBaseMap(mapId);
+	if (!map)
+		return 0;
+
+	ObjectGuid::LowType guid = GenerateGameObjectSpawnId();
+
+	GameObjectData& data = NewGOData(guid);
+	data.id = entry;
+	data.mapid = mapId;
+	data.posX = x;
+	data.posY = y;
+	data.posZ = z;
+	data.orientation = o;
+	data.rotation = G3D::Quat(rotation0, rotation1, rotation2, rotation3);
+	data.spawntimesecs = spawntimedelay;
+	data.animprogress = 100;
+	data.spawnMask = 1;
+	data.go_state = GO_STATE_READY;
+	//data.phaseMask = PHASEMASK_NORMAL;
+	//data.artKit = goinfo->type == GAMEOBJECT_TYPE_CAPTURE_POINT ? 21 : 0;
+	//data.dbData = false;
+
+	AddGameobjectToGrid(guid, &data);
+
+	// Spawn if necessary (loaded grids only)
+	// We use spawn coords to spawn
+	if (!map->Instanceable() && map->IsGridLoaded(x, y))
+	{
+		GameObject* go = new GameObject;
+		if (!go->LoadFromDB(guid, map))
+		{
+			TC_LOG_ERROR("misc", "AddGOData: cannot add gameobject entry %u to map", entry);
+			delete go;
+			return 0;
+		}
+	}
+
+	TC_LOG_DEBUG("maps", "AddGOData: dbguid %u entry %u map %u x %f y %f z %f o %f", guid, entry, mapId, x, y, z, o);
+
+	return guid;
+}
+
+
+
+ObjectGuid::LowType ObjectMgr::AddCreatureData(uint32 entry, uint32 mapId, float x, float y, float z, float o, uint32 spawntimedelay /*= 0*/)
+{
+	CreatureTemplate const* cInfo = GetCreatureTemplate(entry);
+	if (!cInfo)
+		return 0;
+
+	uint32 level = cInfo->minlevel == cInfo->maxlevel ? cInfo->minlevel : urand(cInfo->minlevel, cInfo->maxlevel); // Only used for extracting creature base stats
+	CreatureBaseStats const* stats = GetCreatureBaseStats(level, cInfo->unit_class);
+	Map* map = sMapMgr->CreateBaseMap(mapId);
+	if (!map)
+		return 0;
+
+	ObjectGuid::LowType guid = GenerateCreatureSpawnId();
+
+	CreatureData& data = NewOrExistCreatureData(guid);
+	data.id = entry;
+	data.mapid = mapId;
+	data.displayid = 0;
+	data.equipmentId = 0;
+	data.posX = x;
+	data.posY = y;
+	data.posZ = z;
+	data.orientation = o;
+	data.spawntimesecs = spawntimedelay;
+	data.spawndist = 0;
+	data.currentwaypoint = 0;
+	data.curhealth = stats->GenerateHealth(cInfo);
+	data.curmana = stats->GenerateMana(cInfo);
+	data.movementType = cInfo->MovementType;
+	data.spawnMask = 1;
+	//data.phaseMask = PHASEMASK_NORMAL;
+	//data.dbData = false;
+	//data.npcflag = cInfo->npcflag;
+	//data.unit_flags = cInfo->unit_flags;
+	//data.dynamicflags = cInfo->dynamicflags;
+
+	AddCreatureToGrid(guid, &data);
+
+	// We use spawn coords to spawn
+	if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
+	{
+		Creature* creature = new Creature();
+		if (!creature->LoadCreatureFromDB(guid, map))
+		{
+			TC_LOG_ERROR("misc", "AddCreature: Cannot add creature entry %u to map", entry);
+			delete creature;
+			return 0;
+		}
+	}
+
+	return guid;
 }
 
 void ObjectMgr::LoadCreatureRespawnTimes()
@@ -1895,7 +1999,7 @@ void ObjectMgr::LoadItemTemplates()
 #ifdef LICH_KING
         if (itemTemplate.Flags2 & ITEM_FLAG_EXTRA_HORDE_ONLY)
         {
-            if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_HORDE))
+            if (FactionEntry const* faction = sFactionStore.LookupEntry(HORDE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAG_EXTRA_HORDE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
                         entry, itemTemplate.AllowableRace, ITEM_FLAG_EXTRA_HORDE_ONLY);
@@ -1906,7 +2010,7 @@ void ObjectMgr::LoadItemTemplates()
         }
         else if (itemTemplate.Flags2 & ITEM_FLAG_EXTRA_ALLIANCE_ONLY)
         {
-            if (FactionEntry const* faction = sFactionStore.LookupEntry(TEAM_ALLIANCE))
+            if (FactionEntry const* faction = sFactionStore.LookupEntry(ALLIANCE))
                 if ((itemTemplate.AllowableRace & faction->BaseRepRaceMask[0]) == 0)
                     TC_LOG_ERROR("sql.sql", "Item (Entry: %u) has value (%u) in `AllowableRace` races, not compatible with ITEM_FLAG_EXTRA_ALLIANCE_ONLY (%u) in Flags field, item cannot be equipped or used by these races.",
                         entry, itemTemplate.AllowableRace, ITEM_FLAG_EXTRA_ALLIANCE_ONLY);
@@ -2421,16 +2525,17 @@ void ObjectMgr::LoadPlayerInfo()
                 continue;
             }
 
-            PlayerInfo* pInfo = &playerInfo[current_race][current_class];
+			PlayerInfo* info = new PlayerInfo();
 
-            pInfo->mapId     = mapId;
-            pInfo->areaId    = areaId;
-            pInfo->positionX = positionX;
-            pInfo->positionY = positionY;
-            pInfo->positionZ = positionZ;
+			info->mapId     = mapId;
+			info->areaId    = areaId;
+			info->positionX = positionX;
+			info->positionY = positionY;
+			info->positionZ = positionZ;
+			info->displayId_m = rEntry->model_m;
+			info->displayId_f = rEntry->model_f;
 
-            pInfo->displayId_m = rEntry->model_m;
-            pInfo->displayId_f = rEntry->model_f;
+			_playerInfo[current_race][current_class] = info;
 
             ++count;
         }
@@ -2470,7 +2575,7 @@ void ObjectMgr::LoadPlayerInfo()
                     continue;
                 }
 
-                PlayerInfo* pInfo = &playerInfo[current_race][current_class];
+                PlayerInfo* pInfo = _playerInfo[current_race][current_class];
 
                 uint32 item_id = fields[2].GetUInt32();
 
@@ -2533,7 +2638,7 @@ void ObjectMgr::LoadPlayerInfo()
                     continue;
                 }
 
-                PlayerInfo* pInfo = &playerInfo[current_race][current_class];
+                PlayerInfo* pInfo = _playerInfo[current_race][current_class];
                 pInfo->spell.push_back(CreateSpellPair(fields[2].GetUInt32(), fields[3].GetUInt8()));
 
                 ++count;
@@ -2575,7 +2680,7 @@ void ObjectMgr::LoadPlayerInfo()
                     continue;
                 }
 
-                PlayerInfo* pInfo = &playerInfo[current_race][current_class];
+                PlayerInfo* pInfo = _playerInfo[current_race][current_class];
                 pInfo->action[0].push_back(fields[2].GetUInt16());
                 pInfo->action[1].push_back(fields[3].GetUInt16());
                 pInfo->action[2].push_back(fields[4].GetUInt16());
@@ -2627,15 +2732,19 @@ void ObjectMgr::LoadPlayerInfo()
                 continue;
             }
 
-            PlayerClassInfo* pClassInfo = &playerClassInfo[current_class];
+            PlayerClassInfo* info = _playerClassInfo[current_class];
+			if (!info)
+			{
+				info = new PlayerClassInfo();
+				info->levelInfo = new PlayerClassLevelInfo[sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)];
+				_playerClassInfo[current_class] = info;
+			}
 
-            if(!pClassInfo->levelInfo)
-                pClassInfo->levelInfo = new PlayerClassLevelInfo[sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)];
 
-            PlayerClassLevelInfo* pClassLevelInfo = &pClassInfo->levelInfo[current_level-1];
+			PlayerClassLevelInfo& levelInfo = info->levelInfo[current_level - 1];
 
-            pClassLevelInfo->basehealth = fields[2].GetUInt16();
-            pClassLevelInfo->basemana   = fields[3].GetUInt16();
+			levelInfo.basehealth = fields[2].GetUInt16();
+			levelInfo.basemana   = fields[3].GetUInt16();
 
             ++count;
         }
@@ -2651,7 +2760,7 @@ void ObjectMgr::LoadPlayerInfo()
         if(!sChrClassesStore.LookupEntry(class_))
             continue;
 
-        PlayerClassInfo* pClassInfo = &playerClassInfo[class_];
+        PlayerClassInfo* pClassInfo = _playerClassInfo[class_];
 
         // fatal error if no level 1 data
         if(!pClassInfo->levelInfo || pClassInfo->levelInfo[0].basehealth == 0 )
@@ -2712,7 +2821,7 @@ void ObjectMgr::LoadPlayerInfo()
                 continue;
             }
 
-            PlayerInfo* pInfo = &playerInfo[current_race][current_class];
+            PlayerInfo* pInfo = _playerInfo[current_race][current_class];
 
             if(!pInfo->levelInfo)
                 pInfo->levelInfo = new PlayerLevelInfo[sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)];
@@ -2744,7 +2853,9 @@ void ObjectMgr::LoadPlayerInfo()
             if(!sChrClassesStore.LookupEntry(class_))
                 continue;
 
-            PlayerInfo* pInfo = &playerInfo[race][class_];
+            PlayerInfo* pInfo = _playerInfo[race][class_];
+			if (!pInfo)
+				continue;
 
             // skip non loaded combinations
             if(!pInfo->displayId_m || !pInfo->displayId_f)
@@ -2754,14 +2865,16 @@ void ObjectMgr::LoadPlayerInfo()
             if (sWorld->getConfig(CONFIG_EXPANSION) < 1 && (race == RACE_BLOODELF || race == RACE_DRAENEI))
                 continue;
 
+#ifdef LICH_KING
             // skip expansion classes if not playing with expansion
             if (sWorld->getConfig(CONFIG_EXPANSION) < 2 && class_ == CLASS_DEATH_KNIGHT)
                 continue;
+#endif
 
             // fatal error if no level 1 data
             if(!pInfo->levelInfo || pInfo->levelInfo[0].stats[0] == 0 )
             {
-                TC_LOG_ERROR("FIXME","Race %i Class %i Level 1 does not have stats data!",race,class_);
+                TC_LOG_ERROR("sql.sql","Race %i Class %i Level 1 does not have stats data!",race,class_);
                 exit(1);
             }
 
@@ -2770,7 +2883,7 @@ void ObjectMgr::LoadPlayerInfo()
             {
                 if(pInfo->levelInfo[level].stats[0] == 0)
                 {
-                    TC_LOG_ERROR("FIXME","Race %i Class %i Level %i does not have stats data. Using stats data of level %i.",race,class_,level+1, level);
+                    TC_LOG_ERROR("sql.sql","Race %i Class %i Level %i does not have stats data. Using stats data of level %i.",race,class_,level+1, level);
                     pInfo->levelInfo[level] = pInfo->levelInfo[level-1];
                 }
             }
@@ -2783,7 +2896,7 @@ void ObjectMgr::GetPlayerClassLevelInfo(uint32 class_, uint32 level, PlayerClass
     if(level < 1 || class_ >= MAX_CLASSES)
         return;
 
-    PlayerClassInfo const* pInfo = &playerClassInfo[class_];
+    PlayerClassInfo const* pInfo = _playerClassInfo[class_];
 
     if(level > sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL))
         level = sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL);
@@ -2796,7 +2909,7 @@ void ObjectMgr::GetPlayerLevelInfo(uint32 race, uint32 class_, uint32 level, Pla
     if(level < 1 || race   >= MAX_RACES || class_ >= MAX_CLASSES)
         return;
 
-    PlayerInfo const* pInfo = &playerInfo[race][class_];
+    PlayerInfo const* pInfo = _playerInfo[race][class_];
     if(pInfo->displayId_m==0 || pInfo->displayId_f==0)
         return;
 
@@ -2806,10 +2919,19 @@ void ObjectMgr::GetPlayerLevelInfo(uint32 race, uint32 class_, uint32 level, Pla
         BuildPlayerLevelInfo(race,class_,level,info);
 }
 
+PlayerInfo const* ObjectMgr::GetPlayerInfo(uint32 race, uint32 class_) const
+{
+	if (race >= MAX_RACES)   return nullptr;
+	if (class_ >= MAX_CLASSES) return nullptr;
+	PlayerInfo const* info = _playerInfo[race][class_];
+	if (info->displayId_m == 0 || info->displayId_f == 0) return nullptr;
+	return info;
+}
+
 void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, PlayerLevelInfo* info) const
 {
     // base data (last known level)
-    *info = playerInfo[race][_class].levelInfo[sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)-1];
+    *info = _playerInfo[race][_class]->levelInfo[sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)-1];
 
     for(int lvl = sWorld->getConfig(CONFIG_MAX_PLAYER_LEVEL)-1; lvl < level; ++lvl)
     {
@@ -2966,7 +3088,7 @@ void ObjectMgr::LoadGroups()
     {
         Field *fields = result->Fetch();
         ++count;
-        leaderGuid = MAKE_NEW_GUID(fields[15].GetUInt32(),0,HIGHGUID_PLAYER);
+        leaderGuid = MAKE_NEW_GUID(fields[15].GetUInt32(),0,HighGuid::Player);
 
         group = new Group;
         if(!group->LoadGroupFromDB(leaderGuid, result, false))
@@ -2992,7 +3114,7 @@ void ObjectMgr::LoadGroups()
         {
             Field *fields = result->Fetch();
             count++;
-            leaderGuid = MAKE_NEW_GUID(fields[3].GetUInt32(), 0, HIGHGUID_PLAYER);
+            leaderGuid = MAKE_NEW_GUID(fields[3].GetUInt32(), 0, HighGuid::Player);
             if(!group || group->GetLeaderGUID() != leaderGuid)
             {
                 group = GetGroupByLeader(leaderGuid);
@@ -3044,7 +3166,7 @@ void ObjectMgr::LoadGroups()
         {
             Field *fields = result->Fetch();
             count++;
-            leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+            leaderGuid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
             if(!group || group->GetLeaderGUID() != leaderGuid)
             {
                 group = GetGroupByLeader(leaderGuid);
@@ -3868,7 +3990,7 @@ void ObjectMgr::LoadPetCreateSpells()
 
 void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)
 {
-    if(sWorld->IsScriptScheduled())                          // function don't must be called in time scripts use.
+    if(sMapMgr->IsScriptScheduled())                          // function don't must be called in time scripts use.
         return;
 
     TC_LOG_INFO("server.loading", "%s :", tablename);
@@ -4941,7 +5063,7 @@ uint32 ObjectMgr::GetNearestTaxiNode(float x, float y, float z, uint32 mapid, ui
     {
         TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
 
-        if (!node || node->map_id != mapid || (!node->MountCreatureID[team == TEAM_ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
+        if (!node || node->map_id != mapid || (!node->MountCreatureID[team == ALLIANCE ? 1 : 0] && node->MountCreatureID[0] != 32981)) // dk flight
             continue;
 
         uint8  field   = (uint8)((i - 1) / 32);
@@ -5004,7 +5126,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
     if (node)
     {
         uint32 mount_entry = 0;
-        if (team == TEAM_ALLIANCE)
+        if (team == ALLIANCE)
             mount_entry = node->MountCreatureID[1];
         else
             mount_entry = node->MountCreatureID[0];
@@ -5014,7 +5136,7 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         if (mount_entry == 0 && allowed_alt_team)
         {
             // Simply reverse the selection. At least one team in theory should have a valid mount ID to choose.
-            mount_entry = team == TEAM_ALLIANCE ? node->MountCreatureID[0] : node->MountCreatureID[1];
+            mount_entry = team == ALLIANCE ? node->MountCreatureID[0] : node->MountCreatureID[1];
         }
 
         CreatureTemplate const* mount_info = GetCreatureTemplate(mount_entry);
@@ -5080,7 +5202,7 @@ void ObjectMgr::LoadGraveyardZones()
             continue;
         }
 
-        if(team!=0 && team!=TEAM_HORDE && team!=TEAM_ALLIANCE)
+        if(team!=0 && team!=HORDE && team!=ALLIANCE)
         {
             TC_LOG_ERROR("sql.sql","Table `game_graveyard_zone` has record for non player faction (%u), skipped.",team);
             continue;
@@ -5479,6 +5601,22 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
     return nullptr;
 }
 
+AreaTrigger const* ObjectMgr::GetAreaTrigger(uint32 trigger) const
+{
+	auto itr = mAreaTriggers.find(trigger);
+	if (itr != mAreaTriggers.end())
+		return &itr->second;
+	return nullptr;
+}
+
+AccessRequirement const* ObjectMgr::GetAccessRequirement(uint32 requirement) const
+{
+	auto itr = mAccessRequirements.find(requirement);
+	if (itr != mAccessRequirements.end())
+		return &itr->second;
+	return nullptr;
+}
+
 /**
  * Searches for the areatrigger which teleports players to the given map
  */
@@ -5500,142 +5638,145 @@ void ObjectMgr::SetHighestGuids()
 {
     QueryResult result = CharacterDatabase.Query( "SELECT MAX(guid) FROM characters" );
     if( result )
-    {
-        m_hiCharGuid = (*result)[0].GetUInt32()+1;
-    }
-
-    result = WorldDatabase.Query( "SELECT MAX(guid) FROM creature" );
-    if( result )
-    {
-        m_hiCreatureGuid = (*result)[0].GetUInt32()+1;
-        uint32 proportion = sWorld->getConfig(CONFIG_GUIDDISTRIB_PROPORTION);
-        if (proportion > 95 || proportion < 50)
-        {
-            TC_LOG_INFO("server.loading","Invalid GuidDistribution.Proportion in conf, setting to 90");
-            proportion = 90;
-        }
-        m_hiTempCreatureGuidStart = m_hiCreatureGuid + ((0x00FFFFFF-m_hiCreatureGuid) * (100-proportion))/100;
-        m_hiTempCreatureGuid = m_hiTempCreatureGuidStart;
-        TC_LOG_INFO("server.loading","Temporary creatures guid range initialized at %u", m_hiTempCreatureGuid);
-    } else m_hiCreatureRegularModeGuid = true;
-
-    // pet guids are not saved to DB, set to 0 (pet guid != pet id)
-    m_hiPetGuid = 0;
+		GetGuidSequenceGenerator<HighGuid::Player>().Set((*result)[0].GetUInt32() + 1);
 
     result = CharacterDatabase.Query( "SELECT MAX(guid) FROM item_instance" );
-    if( result )
-    {
-        m_hiItemGuid = (*result)[0].GetUInt32()+1;
-    }
+	if( result )
+		GetGuidSequenceGenerator<HighGuid::Item>().Set((*result)[0].GetUInt32() + 1);
 
-    // Cleanup other tables from not existed guids (>=m_hiItemGuid)
+    // Cleanup other tables from not existed guids (>=_hiItemGuid)
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    trans->PAppend("DELETE FROM character_inventory WHERE item >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM mail_items WHERE item_guid >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM auctionhouse WHERE itemguid >= '%u'", m_hiItemGuid);
-    trans->PAppend("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", m_hiItemGuid);
+    trans->PAppend("DELETE FROM character_inventory WHERE item >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM mail_items WHERE item_guid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM auctionhouse WHERE itemguid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
+    trans->PAppend("DELETE FROM guild_bank_item WHERE item_guid >= '%u'", GetGuidSequenceGenerator<HighGuid::Item>().GetNextAfterMaxUsed());
     CharacterDatabase.CommitTransaction(trans);
 
-    result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject" );
-    if( result )
-    {
-        m_hiGoGuid = (*result)[0].GetUInt32()+1;
-        uint32 proportion = sWorld->getConfig(CONFIG_GUIDDISTRIB_PROPORTION);
-        if (proportion > 95 || proportion < 50)
-        {
-            TC_LOG_INFO("server.loading","Invalid GuidDistribution.Proportion in conf, setting to 90");
-            proportion = 90;
-        }
-        m_hiTempGoGuidStart = m_hiGoGuid + ((0x00FFFFFF-m_hiGoGuid) * (100-proportion))/100;
-        m_hiTempGoGuid = m_hiTempGoGuidStart;
-        TC_LOG_INFO("server.loading","Temporary gameobjects guid range initialized at %u", m_hiTempGoGuid);
-    } else m_hiGoRegularModeGuid = true;
+	/* TC
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM transports");
+	if (result)
+		GetGuidSequenceGenerator<HighGuid::Mo_Transport>().Set((*result)[0].GetUInt32() + 1);
+		*/
+	GetGuidSequenceGenerator<HighGuid::Mo_Transport>().Set(1);
 
     result = CharacterDatabase.Query("SELECT MAX(id) FROM auctionhouse" );
     if( result )
     {
-        m_auctionid = (*result)[0].GetUInt32()+1;
+        _auctionId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(id) FROM mail" );
     if( result )
     {
-        m_mailid = (*result)[0].GetUInt32()+1;
+        _mailid = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(id) FROM item_text" );
     if( result )
     {
-        m_ItemTextId = (*result)[0].GetUInt32()+1;
-    }
-
-    result = CharacterDatabase.Query( "SELECT MAX(guid) FROM corpse" );
-    if( result )
-    {
-        m_hiCorpseGuid = (*result)[0].GetUInt32()+1;
+        _ItemTextId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query("SELECT MAX(arenateamid) FROM arena_team");
     if (result)
     {
-        m_arenaTeamId = (*result)[0].GetUInt32()+1;
+        _arenaTeamId = (*result)[0].GetUInt32()+1;
     }
 
     result = CharacterDatabase.Query( "SELECT MAX(guildid) FROM guild" );
     if (result)
     {
-        m_guildId = (*result)[0].GetUInt32()+1;
+        _guildId = (*result)[0].GetUInt32()+1;
     }
+
+	//db guids are actually spawnIds
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM creature");
+	if (result)
+		_creatureSpawnId = (*result)[0].GetUInt32() + 1;
+
+	result = WorldDatabase.Query("SELECT MAX(guid) FROM gameobject");
+	if (result)
+		_gameObjectSpawnId = (*result)[0].GetUInt32() + 1;
 }
 
 uint32 ObjectMgr::GenerateArenaTeamId()
 {
-    if(m_arenaTeamId>=0xFFFFFFFE)
+    if(_arenaTeamId>=0xFFFFFFFE)
     {
         TC_LOG_ERROR("server","Arena team ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_arenaTeamId++;
+    return _arenaTeamId++;
 }
 
 uint32 ObjectMgr::GenerateGuildId()
 {
-    if(m_guildId>=0xFFFFFFFE)
+    if(_guildId>=0xFFFFFFFE)
     {
         TC_LOG_ERROR("server","Guild ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_guildId++;
+    return _guildId++;
 }
 
 uint32 ObjectMgr::GenerateAuctionID()
 {
-    if(m_auctionid>=0xFFFFFFFE)
+    if(_auctionId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Auctions ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Auctions ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_auctionid++;
+    return _auctionId++;
 }
 
 uint32 ObjectMgr::GenerateMailID()
 {
-    if(m_mailid>=0xFFFFFFFE)
+    if(_mailid>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Mail ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Mail ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_mailid++;
+    return _mailid++;
 }
 
 uint32 ObjectMgr::GenerateItemTextID()
 {
-    if(m_ItemTextId>=0xFFFFFFFE)
+    if(_ItemTextId>=0xFFFFFFFE)
     {
-        TC_LOG_ERROR("server","Item text ids overflow!! Can't continue, shutting down server. ");
+        TC_LOG_ERROR("misc","Item text ids overflow!! Can't continue, shutting down server. ");
         World::StopNow(ERROR_EXIT_CODE);
     }
-    return m_ItemTextId++;
+    return _ItemTextId++;
+}
+
+uint32 ObjectMgr::GeneratePetNumber()
+{
+	if (_hiPetNumber >= 0xFFFFFFFE)
+	{
+		TC_LOG_ERROR("misc", "_hiPetNumber Id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info.");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _hiPetNumber++;
+}
+
+uint32 ObjectMgr::GenerateCreatureSpawnId()
+{
+	if (_creatureSpawnId >= uint32(0xFFFFFF))
+	{
+		TC_LOG_ERROR("misc", "Creature spawn id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info.");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _creatureSpawnId++;
+}
+
+uint32 ObjectMgr::GenerateGameObjectSpawnId()
+{
+	if (_gameObjectSpawnId >= uint32(0xFFFFFF))
+	{
+		TC_LOG_ERROR("misc", "Creature spawn id overflow!! Can't continue, shutting down server. Search on forum for TCE00007 for more info. ");
+		World::StopNow(ERROR_EXIT_CODE);
+	}
+	return _gameObjectSpawnId++;
 }
 
 uint32 ObjectMgr::CreateItemText(SQLTransaction& charTrans, std::string const& text)
@@ -5657,152 +5798,6 @@ uint32 ObjectMgr::CreateItemText(std::string const& text)
     uint32 id = CreateItemText(trans, text);
     CharacterDatabase.CommitTransaction(trans);
     return id;
-}
-
-uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh, bool temporary)
-{
-    switch(guidhigh)
-    {
-         case HIGHGUID_MO_TRANSPORT:
-         case HIGHGUID_TRANSPORT:
-             return m_hiTransportGuid++;
-         case HIGHGUID_GAMEOBJECT:
-            if(m_hiGoRegularModeGuid)
-            {
-                if(m_hiGoGuid >= 0x00FFFFFE)
-                {
-                    TC_LOG_ERROR("FIXME","Gameobject guid overflow!! Can't continue, shutting down server. ");
-                    World::StopNow(ERROR_EXIT_CODE);
-                }
-                //TC_LOG_ERROR("FIXME","GenerateLowGuid : returning m_hiGoGuid = %u",m_hiGoGuid);
-                return m_hiGoGuid++;
-            } else {
-                return AltGenerateLowGuid(HIGHGUID_GAMEOBJECT,temporary);
-            }
-        case HIGHGUID_UNIT:
-            if(m_hiCreatureRegularModeGuid)
-            {
-                if(m_hiCreatureGuid >= 0x00FFFFFE)
-                {
-                    TC_LOG_ERROR("server","Creature guid overflow!! Can't continue, shutting down server. ");
-                    World::StopNow(ERROR_EXIT_CODE);
-                }
-                //TC_LOG_ERROR("server","GenerateLowGuid : returning m_hiCreatureGuid = %u",m_hiCreatureGuid);
-                return m_hiCreatureGuid++;
-            } else {
-                return AltGenerateLowGuid(HIGHGUID_UNIT,temporary);
-            }
-        case HIGHGUID_ITEM:
-            if(m_hiItemGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Item guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiItemGuid++;
-        case HIGHGUID_PET:
-            if(m_hiPetGuid >= 0x00FFFFFE)
-            {
-                TC_LOG_ERROR("server","Pet guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiPetGuid++;
-        case HIGHGUID_PLAYER:
-            if(m_hiCharGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Players guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiCharGuid++;
-        case HIGHGUID_CORPSE:
-            if(m_hiCorpseGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","Corpse guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiCorpseGuid++;
-        case HIGHGUID_DYNAMICOBJECT:
-            if(m_hiDoGuid >= 0xFFFFFFFE)
-            {
-                TC_LOG_ERROR("server","DynamicObject guid overflow!! Can't continue, shutting down server. ");
-                World::StopNow(ERROR_EXIT_CODE);
-            }
-            return m_hiDoGuid++;
-        default:
-            ASSERT(0);
-    }
-
-    ASSERT(0);
-    return 0;
-}
-
-uint32 ObjectMgr::AltGenerateLowGuid(uint32 type, bool& temporary)
-{
-    uint32* baseguid;
-    uint32* tempguid;
-    uint32* tempstartguid;
-    bool* regularmode;
-
-    switch(type)
-    {
-    case HIGHGUID_UNIT:
-        baseguid = &m_hiCreatureGuid;
-        tempguid = &m_hiTempCreatureGuid;
-        tempstartguid = &m_hiTempCreatureGuidStart;
-        regularmode = &m_hiCreatureRegularModeGuid;
-        break;
-    case HIGHGUID_GAMEOBJECT:
-        baseguid = &m_hiGoGuid;
-        tempguid = &m_hiTempGoGuid;
-        tempstartguid = &m_hiTempGoGuidStart;
-        regularmode = &m_hiGoRegularModeGuid;
-        break;
-    default:
-        return 0;
-    }
-    
-    if (temporary)
-    {
-        if(*tempguid >= 0x00FFFFFE)
-        {
-           TC_LOG_ERROR("server","ERROR : AltGenerateLowGuid(%i) : Temporary guid range appears to be full. Can't continue, shutting down server. Sorry, it's really flooded and there's nothing I can do without my bucket they stole.",type);
-           World::StopNow(ERROR_EXIT_CODE);
-        }
-
-        return (*tempguid)++;
-    } else {
-        if ((*baseguid) +1 >= *tempstartguid) 
-        {
-                TC_LOG_ERROR("server","AltGenerateLowGuid(%i) : Base guid range is full. Reverting to old guid distribution mode, new objects will now use the same range of guid.",type);
-                *regularmode = true;
-                *baseguid = *tempguid;
-        } 
-        return (*baseguid)++;
-    }
-}
-
-bool ObjectMgr::IsInTemporaryGuidRange(uint32 type, uint32 guid)
-{
-    bool* regularmode;
-    uint32* tempstartguid;
-
-    switch(type)
-    {
-    case HIGHGUID_UNIT:
-        regularmode = &m_hiCreatureRegularModeGuid;
-        tempstartguid = &m_hiTempCreatureGuidStart;
-        break;
-    case HIGHGUID_GAMEOBJECT:
-        regularmode = &m_hiGoRegularModeGuid;
-        tempstartguid = &m_hiTempGoGuidStart;
-        break;
-    default:
-        return false;
-    }
-
-    if (*regularmode)
-        return false;
-    else
-        return (guid >= *tempstartguid);  
 }
 
 void ObjectMgr::LoadGameObjectLocales()
@@ -5880,6 +5875,13 @@ void ObjectMgr::LoadGameObjectTemplate()
 
         got.AIName = fields[32].GetString();
         got.ScriptId = GetScriptId(fields[33].GetCString());
+
+        // Checks
+        if (!got.AIName.empty() && !sGameObjectAIRegistry->HasItem(got.AIName))
+        {
+            TC_LOG_ERROR("sql.sql", "GameObject (Entry: %u) has non-registered `AIName` '%s' set, removing", got.entry, got.AIName.c_str());
+            got.AIName.clear();
+        }
 
         switch(got.type)
         {
@@ -6079,6 +6081,11 @@ uint32 ObjectMgr::GetBaseXP(uint32 level)
     return mBaseXPTable[level] ? mBaseXPTable[level] : 0;
 }
 
+uint32 ObjectMgr::GetXPForLevel(uint8 level) const
+{
+	return Trinity::XP::GetXPForLevel(level);
+}
+
 void ObjectMgr::LoadPetNames()
 {
     uint32 count = 0;
@@ -6115,10 +6122,10 @@ void ObjectMgr::LoadPetNumber()
     if(result)
     {
         Field *fields = result->Fetch();
-        m_hiPetNumber = fields[0].GetUInt32()+1;
+        _hiPetNumber = fields[0].GetUInt32()+1;
     }
 
-    TC_LOG_INFO("server.loading", ">> Loaded the max pet number: %d", m_hiPetNumber-1);
+    TC_LOG_INFO("server.loading", ">> Loaded the max pet number: %d", _hiPetNumber-1);
     
 }
 
@@ -6139,11 +6146,7 @@ std::string ObjectMgr::GeneratePetName(uint32 entry)
     return *(list0.begin()+urand(0, list0.size()-1)) + *(list1.begin()+urand(0, list1.size()-1));
 }
 
-uint32 ObjectMgr::GeneratePetNumber()
-{
-    return ++m_hiPetNumber;
-}
-
+/*
 void ObjectMgr::LoadCorpses()
 {
     uint32 count = 0;
@@ -6170,7 +6173,7 @@ void ObjectMgr::LoadCorpses()
             continue;
         }
 
-        sObjectAccessor->AddCorpse(corpse);
+        GetMap()->AddCorpse(corpse);
 
         ++count;
     }
@@ -6179,6 +6182,7 @@ void ObjectMgr::LoadCorpses()
     TC_LOG_INFO("server.loading", ">> Loaded %u corpses", count );
     
 }
+*/
 
 void ObjectMgr::LoadReputationOnKill()
 {
@@ -6444,20 +6448,6 @@ void ObjectMgr::DeleteGOData(uint32 guid)
         RemoveGameobjectFromGrid(guid, data);
 
     mGameObjectDataMap.erase(guid);
-}
-
-void ObjectMgr::AddCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid, uint32 instance)
-{
-    // corpses are always added to spawn mode 0 and they are spawned by their instance id
-    CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(mapid,0)][cellid];
-    cell_guids.corpses[player_guid] = instance;
-}
-
-void ObjectMgr::DeleteCorpseCellData(uint32 mapid, uint32 cellid, uint32 player_guid)
-{
-    // corpses are always added to spawn mode 0 and they are spawned by their instance id
-    CellObjectGuids& cell_guids = mMapObjectGuids[MAKE_PAIR32(mapid,0)][cellid];
-    cell_guids.corpses.erase(player_guid);
 }
 
 void ObjectMgr::LoadQuestRelationsHelper(QuestRelations& map,char const* table)
@@ -7146,7 +7136,7 @@ bool PlayerCondition::IsValid(OldConditionType condition, uint32 value1, uint32 
         }
         case CONDITION_OLD_TEAM:
         {
-            if (value1 != TEAM_ALLIANCE && value1 != TEAM_HORDE)
+            if (value1 != ALLIANCE && value1 != HORDE)
             {
                 TC_LOG_ERROR("condition","Team condition specifies unknown team (%u), skipped", value1);
                 return false;
@@ -7972,7 +7962,7 @@ bool LoadTrinityStrings(WorldDatabaseWorkerPool& db, char const* table,int32 sta
 
 uint64 ObjectMgr::GenerateGMTicketId()
 {
-  return ++m_GMticketid;
+  return ++_GMticketid;
 }
 
 void ObjectMgr::LoadGMTickets()
@@ -8013,7 +8003,7 @@ void ObjectMgr::LoadGMTickets()
   } while( result->NextRow() );
 
   result = CharacterDatabase.PQuery("SELECT MAX(`guid`) from `gm_tickets`");
-  m_GMticketid = (*result)[0].GetUInt64(); 
+  _GMticketid = (*result)[0].GetUInt64(); 
 
   TC_LOG_INFO("server.loading",">>> %u GM Tickets loaded from the database.", count);
   

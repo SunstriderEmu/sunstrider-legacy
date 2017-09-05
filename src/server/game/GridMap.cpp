@@ -553,7 +553,7 @@ uint8 GridMap::getTerrainType(float x, float y) const
 }
 
 // Get water state on map
-ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidTypeMask ReqLiquidTypeMask, LiquidData* data)
+ZLiquidStatus GridMap::GetLiquidStatus(float x, float y, float z, uint8 ReqLiquidTypeMask, LiquidData* data)
 {
     // Check water type (if no water return)
     if (!_liquidType && !_liquidFlags)
@@ -568,19 +568,51 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidType
 
     // Check water type in cell
     int idx=(x_int>>3)*16 + (y_int>>3);
-    MapLiquidType mapLiquidType = _liquidEntry ? (MapLiquidType)_liquidEntry[idx] : (MapLiquidType)_liquidType;
-    //uint8 flags = _liquidFlags ? _liquidFlags[idx] : 0;
-    if(mapLiquidType == MAP_LIQUID_TYPE_NO_WATER)
+    uint8 typeMask = _liquidFlags ? _liquidFlags[idx] : _liquidType; //renamed from 'type' on TC
+    uint32 entry = 0;
+    if (_liquidEntry)
+    {
+        if (LiquidTypeEntry const* liquidEntry = sLiquidTypeStore.LookupEntry(_liquidEntry[idx]))
+        {
+            entry = liquidEntry->Id;
+            //typeMask &= MAP_LIQUID_TYPE_DARK_WATER;
+            uint32 liqTypeIdx = liquidEntry->GetType();
+            if (entry < LIQUID_TYPE_NAXXRAMAS_SLIME) //LIQUID_TYPE_NAXXRAMAS_SLIME = first non basic liquid type ?
+            {
+                if (AreaTableEntry const* area = sAreaTableStore.LookupEntry(getArea(x, y)))
+                {
+#ifdef LICH_KING
+                    uint32 overrideLiquid = area->LiquidTypeOverride[liquidEntry->Type];
+#else
+                    uint32 overrideLiquid = area->LiquidTypeOverride[0]; //next fields are never set on BC, and it seems the override per type logic is not the same (since there are multiple overrides that replace different types while being always at the first override position)
+#endif
+                    if (!overrideLiquid && area->zone)
+                    {
+                        area = sAreaTableStore.LookupEntry(area->zone);
+                        if (area)
+#ifdef LICH_KING
+                            overrideLiquid = area->LiquidTypeOverride[liquidEntry->Type];
+#else
+                            overrideLiquid = area->LiquidTypeOverride[0];
+#endif
+                    }
+
+                    if (LiquidTypeEntry const* liq = sLiquidTypeStore.LookupEntry(overrideLiquid))
+                    {
+                        entry = overrideLiquid;
+                        liqTypeIdx = liq->GetType();
+                    }
+                }
+            }
+
+            typeMask |= GetLiquidFlagsFromType(liqTypeIdx);
+        }
+    }
+
+    if (typeMask == 0)
         return LIQUID_MAP_NO_WATER;
 
-    //convert MapLiquidType to BaseLiquidType
-    BaseLiquidType baseLiquidType = BaseLiquidType(mapLiquidType);
-    //hackzzz. See comments above enum BaseLiquidType
-    if(mapLiquidType == MAP_LIQUID_TYPE_DARK_WATER)
-        baseLiquidType = BASE_LIQUID_TYPE_DARK_WATER;
-
     // Check req liquid type mask
-    uint32 typeMask = pow(2,uint32(baseLiquidType))-1;
     if (ReqLiquidTypeMask && !(ReqLiquidTypeMask & typeMask))
         return LIQUID_MAP_NO_WATER;
 
@@ -605,7 +637,8 @@ ZLiquidStatus GridMap::getLiquidStatus(float x, float y, float z, BaseLiquidType
     // All ok in water -> store data
     if (data)
     {
-        data->baseLiquidType = baseLiquidType;
+        data->entry = entry;
+        data->type_flags = typeMask;
         data->level = liquid_level;
         data->depth_level = ground_level;
     }

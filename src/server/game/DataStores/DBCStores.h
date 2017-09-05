@@ -456,6 +456,9 @@ typedef std::unordered_multimap<uint32, SkillRaceClassInfoEntry const*> SkillRac
 typedef std::pair<SkillRaceClassInfoMap::iterator, SkillRaceClassInfoMap::iterator> SkillRaceClassInfoBounds;
 TC_GAME_API SkillRaceClassInfoEntry const* GetSkillRaceClassInfo(uint32 skill, uint8 race, uint8 class_);
 
+TC_GAME_API uint32 GetLiquidFlagsFromType(uint32 type); //convert LiquidTypeEntry.Type to MAP_LIQUID_*
+TC_GAME_API uint32 GetLiquidFlags(uint32 liquidTypeRec);
+
 TC_GAME_API uint32 GetTalentInspectBitPosInTab(uint32 talentId);
 TC_GAME_API uint32 GetTalentTabInspectBitSize(uint32 talentTabId);
 TC_GAME_API uint32 const* /*[3]*/ GetTalentTabPages(uint32 cls);

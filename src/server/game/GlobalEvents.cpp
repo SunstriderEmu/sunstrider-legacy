@@ -31,6 +31,7 @@
 #include "ObjectDefines.h"
 #include "Corpse.h"
 
+/*
 static void CorpsesEraseCallBack(QueryResult result, bool bones)
 {
     if(!result)
@@ -43,14 +44,14 @@ static void CorpsesEraseCallBack(QueryResult result, bool bones)
         float positionX = fields[1].GetFloat();
         float positionY = fields[2].GetFloat();
         uint32 mapid    = fields[3].GetUInt32();
-        uint64 player_guid = MAKE_NEW_GUID(fields[4].GetUInt32(), 0, HIGHGUID_PLAYER);
+        uint64 player_guid = MAKE_NEW_GUID(fields[4].GetUInt32(), 0, HighGuid::Player);
 
-        uint64 guid = MAKE_NEW_GUID(guidlow, 0, HIGHGUID_CORPSE);
+        uint64 guid = MAKE_NEW_GUID(guidlow, 0, HighGuid::Corpse);
 
         /// Resurrectable - convert corpses to bones
         if(!bones)
         {
-            if(!sObjectAccessor->ConvertCorpseForPlayer(player_guid))
+            if(!GetMap()->ConvertCorpseToBones(player_guid))
             {
                 CharacterDatabase.PExecute("DELETE FROM corpse WHERE guid = '%u'",guidlow);
             }
@@ -73,13 +74,5 @@ static void CorpsesErase(bool bones,uint32 delay)
     //No SQL injection (uint32 and enum)
     QueryResult result = CharacterDatabase.PQuery("SELECT guid,position_x,position_y,map,player FROM corpse WHERE UNIX_TIMESTAMP()-time > '%u' AND corpse_type %s '0'", delay, (bones ? "=" : "<>"));
     CorpsesEraseCallBack(result, bones);
-    
 }
-
-/// not thread guarded variant for call from other thread
-void CorpsesErase()
-{
-    CorpsesErase(true, 20*MINUTE);
-    CorpsesErase(false,3*DAY);
-}
-
+*/

@@ -1616,9 +1616,11 @@ void SpellMgr::LoadSpellCustomAttr()
         */
         switch (i)
         {
+        case 6495: // Sentry totem
+            spellInfo->EffectRadiusIndex[0] = 0; //remove radius, this spell has 100.0f and we don't want to to be summoned 100 yards away
         case 37540: // Fireball Barrage
         case 37632: // Toxic Barrage
-            spellInfo->EffectImplicitTargetA[effectIndex] = TARGET_UNIT_CASTER;
+            spellInfo->EffectImplicitTargetA[0] = TARGET_UNIT_CASTER;
             break;
 #ifdef LICH_KING
         // Arcane Overload
@@ -2312,6 +2314,17 @@ void SpellMgr::LoadSpellCustomAttr()
             break;
         }
     }
+
+    //hack for some totems/statue/standard. Some examples: SELECT * FROM spell_template WHERE effect1 = 28 AND effectMiscValueB1 = 121
+	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(121)))
+		properties->Type = SUMMON_TYPE_TOTEM;
+#ifdef LICH_KING
+	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(647))) // 52893
+		properties->Type = SUMMON_TYPE_TOTEM;
+	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(628))) // Hungry Plaguehound
+		properties->Category = SUMMON_CATEGORY_PET;
+#endif
+
 }
 
 void SpellMgr::LoadSpellLinked()
@@ -3328,9 +3341,9 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
         // team that controls the workshop in the specified area
         uint32 team = bf->GetData(newArea);
 
-        if (team == TEAM_HORDE)
+        if (team == HORDE)
             return spellId == 56618;
-        else if (team == TEAM_ALLIANCE)
+        else if (team == ALLIANCE)
             return spellId == 56617;
         break;
     }

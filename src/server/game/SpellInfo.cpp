@@ -1000,7 +1000,7 @@ bool SpellInfo::NeedsToBeTriggeredByCaster(SpellInfo const* triggeringSpell, uin
     if (NeedsExplicitUnitTarget())
         return true;
 
-    // pussywizard:
+    // sunwell:
     if (effIndex < MAX_SPELL_EFFECTS && (triggeringSpell->Effects[effIndex].TargetA.GetCheckType() == TARGET_CHECK_ENTRY || triggeringSpell->Effects[effIndex].TargetB.GetCheckType() == TARGET_CHECK_ENTRY))
     {
 #ifdef LICH_KING
@@ -1152,11 +1152,10 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
         return SPELL_FAILED_BAD_TARGETS;
 
     // check visibility - ignore stealth for implicit (area) targets
-#ifdef LICH_KING
     if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
         return SPELL_FAILED_BAD_TARGETS;
-#endif
-    Unit const* unitTarget = target->ToUnit();
+    
+	Unit const* unitTarget = target->ToUnit();
 
     // creature/player specific target checks
     if (unitTarget)
@@ -1325,17 +1324,8 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
                 if (caster->_IsValidAssistTarget(unitTarget, this))
                     return SPELL_CAST_OK;
             if (neededTargets & TARGET_FLAG_UNIT_MINIPET)
-#ifdef LICH_KING
                 if (unitTarget->GetGUID() == caster->GetCritterGUID())
                     return SPELL_CAST_OK;
-#else
-                if (Player const* p = caster->ToPlayer())
-                {
-                    Creature* miniPet = p->GetMiniPet();
-                    if (miniPet && unitTarget->GetGUID() == miniPet->GetGUID())
-                        return SPELL_CAST_OK;
-                }
-#endif
 #ifdef LICH_KING
             if (neededTargets & TARGET_FLAG_UNIT_PASSENGER)
                 if (unitTarget->IsOnVehicle(caster))
@@ -1445,6 +1435,14 @@ float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
         if (Player* modOwner = caster->GetSpellModOwner())
             modOwner->ApplySpellMod(Id, SPELLMOD_RANGE, range, spell);
     return range;
+}
+
+bool SpellInfo::IsCooldownStartedOnEvent() const
+{
+	if (HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
+		return true;
+
+	return Category && Category->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_STARTS_ON_EVENT;
 }
 
 bool SpellInfo::IsChannelCategorySpell() const

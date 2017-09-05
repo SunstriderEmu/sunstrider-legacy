@@ -198,7 +198,7 @@ void Channel::Leave(uint64 p, bool send)
 void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
 {
     uint32 sec = 0;
-    Player *gplr = sObjectAccessor->FindConnectedPlayer(good);
+    Player *gplr = ObjectAccessor::FindConnectedPlayer(good);
     if(gplr)
         sec = gplr->GetSession()->GetSecurity();
         
@@ -219,7 +219,7 @@ void Channel::KickOrBan(uint64 good, std::string const& badname, bool ban)
     }
     else
     {
-        Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
+        Player *bad = ObjectAccessor::FindConnectedPlayerByName(badname);
         if(bad == nullptr || !IsOn(bad->GetGUID()))
         {
             WorldPacket data;
@@ -281,7 +281,7 @@ void Channel::UnBan(uint64 good, std::string const& badname)
     }
     else
     {
-        Player *bad = sObjectAccessor->FindConnectedPlayerByName(badname);
+        Player *bad = ObjectAccessor::FindConnectedPlayerByName(badname);
         if(bad == nullptr || !IsBanned(bad->GetGUID()))
         {
             WorldPacket data;
@@ -352,7 +352,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
     }
     else
     {
-        Player *newp = sObjectAccessor->FindConnectedPlayerByName(p2n);
+        Player *newp = ObjectAccessor::FindConnectedPlayerByName(p2n);
         if(!newp)
         {
             WorldPacket data;
@@ -422,7 +422,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
         return;
     }
 
-    Player *newp = sObjectAccessor->FindConnectedPlayerByName(newname);
+    Player *newp = ObjectAccessor::FindConnectedPlayerByName(newname);
     if(newp == nullptr || !IsOn(newp->GetGUID()))
     {
         WorldPacket data;
@@ -482,7 +482,7 @@ void Channel::List(Player* player)
         //uint32 gmLevelInWhoList = sWorld->getConfig(CONFIG_GM_LEVEL_IN_WHO_LIST);
         uint32 count  = 0;
 
-        for(auto & player : players)
+        for(auto& _player : players)
         {
             /*
             Player *plr = sObjectMgr->GetPlayer(i->first);
@@ -492,10 +492,10 @@ void Channel::List(Player* player)
             if (plr && (player->GetSession()->GetSecurity() > SEC_PLAYER || plr->GetSession()->GetSecurity() <= gmLevelInWhoList) && 
                     plr->IsVisibleGloballyFor(player))
                     */
-            if(!(player.second.invisible))
+            if(!(_player.second.invisible))
             {
-                data << uint64(player.first);
-                data << uint8(player.second.flags);             // flags seems to be changed...
+                data << uint64(_player.first);
+                data << uint8(_player.second.flags);             // flags seems to be changed...
                 ++count;
             }
         }
@@ -619,7 +619,7 @@ void Channel::Say(uint64 playerGUID, const char *what, Language lang)
             if (!cMgrOther)
                 return;
 
-            std::string gmchannelName = plr->GetTeam() == TEAM_HORDE ? "gmworldh" : "gmworlda"; 
+            std::string gmchannelName = plr->GetTeam() == HORDE ? "gmworldh" : "gmworlda"; 
             if (Channel* chan = cMgrOther->GetJoinChannel(gmchannelName, 0)) {
                 WorldPacket data2;
                 ChatHandler::BuildChatPacket(data2, CHAT_MSG_CHANNEL, lang, plr, nullptr, what, 0, gmchannelName);
@@ -639,7 +639,7 @@ void Channel::Invite(uint64 playerGUID, const char *newname)
         return;
     }
 
-    Player *newp = sObjectAccessor->FindConnectedPlayerByName(newname);
+    Player *newp = ObjectAccessor::FindConnectedPlayerByName(newname);
     if(!newp)
     {
         WorldPacket data;

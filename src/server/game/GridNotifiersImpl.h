@@ -36,144 +36,14 @@ Trinity::ObjectUpdater::Visit(CreatureMapType &m)
             iter.GetSource()->Update(i_timeDiff);
 }
 
-inline void PlayerCreatureRelocationWorker(Player* pl, Creature* c)
-{
-    if(!pl->IsAlive() || !c->IsAlive() || pl->IsInFlight() || !c->IsAIEnabled)
-        return;
-
-    bool withinSightDist = c->IsWithinSightDist(pl);
-    if(!withinSightDist) 
-        return;
-
-    // Creature AI reaction
-    if(c->HasReactState(REACT_AGGRESSIVE) && !c->HasUnitState(UNIT_STATE_SIGHTLESS) && !c->IsInEvadeMode())
-    {
-        c->AI()->MoveInLineOfSight(pl);
-    }
-    c->AI()->MoveInLineOfSight2(pl);
-}
-
-inline void CreatureCreatureRelocationWorker(Creature* c1, Creature* c2)
-{
-    bool withinSightDist = c1->IsWithinSightDist(c2);
-    if(!withinSightDist) return;
-
-    if(c1->IsAIEnabled)
-    {
-        if(c1->HasReactState(REACT_AGGRESSIVE) && !c1->HasUnitState(UNIT_STATE_SIGHTLESS) && !c1->IsInEvadeMode())
-        {
-            c1->AI()->MoveInLineOfSight(c2);
-        }
-        c1->AI()->MoveInLineOfSight2(c2);
-    }
-
-    if(c2->IsAIEnabled)
-    {
-        if(c2->HasReactState(REACT_AGGRESSIVE) && !c2->HasUnitState(UNIT_STATE_SIGHTLESS) && !c2->IsInEvadeMode())
-        {
-            c2->AI()->MoveInLineOfSight(c1);
-        }
-        c2->AI()->MoveInLineOfSight2(c1);
-    }
-}
-
 template<class T>
-inline void
-Trinity::PlayerVisibilityNotifier::Visit(GridRefManager<T> &m)
+inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
 {
-    for(typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
-    {
-        i_player.UpdateVisibilityOf(iter->GetSource(),i_data,i_visibleNow);
-        i_clientGUIDs.erase(iter->GetSource()->GetGUID());
-    }
-}
-
-template<>
-inline void
-Trinity::PlayerRelocationNotifier::Visit(PlayerMapType &m)
-{
-    for(auto & iter : m)
-    {
-        i_clientGUIDs.erase(iter.GetSource()->GetGUID()); //remaining guids are marked for deletion later, so erasing here means we're going to keep these at client
-
-        if(iter.GetSource()->m_Notified) //self is also skipped in this check
-            continue;
-
-        i_player.UpdateVisibilityOf(iter.GetSource(),i_data,i_visibleNow);
-        iter.GetSource()->UpdateVisibilityOf(&i_player);
-
-        for (auto it : i_player.GetSharedVisionList())
-            if(Player* p = ObjectAccessor::GetPlayer(i_player, it))
-                p->UpdateVisibilityOf(iter.GetSource());
-
-        // Cancel Trade
-        if(i_player.GetTrader()==iter.GetSource())
-            if(!i_player.IsWithinDistInMap(iter.GetSource(), 5)) // iteraction distance
-                i_player.GetSession()->SendCancelTrade();   // will clode both side trade windows
-    }
-}
-
-template<>
-inline void
-Trinity::PlayerRelocationNotifier::Visit(CreatureMapType &m)
-{
-    for(auto & iter : m)
-    {
-        i_clientGUIDs.erase(iter.GetSource()->GetGUID()); //remaining guids are marked for deletion later, so erasing here means we're going to keep these at client
-
-        if(iter.GetSource()->m_Notified)
-            continue;
-
-        i_player.UpdateVisibilityOf(iter.GetSource(),i_data,i_visibleNow);
-
-        for (auto it : i_player.GetSharedVisionList())
-            if(Player* p = ObjectAccessor::GetPlayer(i_player, it))
-                p->UpdateVisibilityOf(iter.GetSource());
-
-        PlayerCreatureRelocationWorker(&i_player, iter.GetSource());
-    }
-}
-
-template<>
-inline void
-Trinity::CreatureRelocationNotifier::Visit(PlayerMapType &m)
-{
-    for(auto & iter : m)
-    {
-        if(iter.GetSource()->m_Notified)
-            continue;
-
-        iter.GetSource()->UpdateVisibilityOf(&i_creature);
-
-        for (auto it : i_creature.GetSharedVisionList())
-            if(Player* p = ObjectAccessor::GetPlayer(i_creature, it))
-                p->UpdateVisibilityOf(iter.GetSource());
-        
-        PlayerCreatureRelocationWorker(iter.GetSource(), &i_creature);
-    }
-}
-
-template<>
-inline void
-Trinity::CreatureRelocationNotifier::Visit(CreatureMapType &m)
-{
-    if(!i_creature.IsAlive())
-        return;
-
-    for(auto & iter : m)
-    {
-        if(iter.GetSource()->m_Notified)
-            continue;
-        
-        if(!iter.GetSource()->IsAlive())
-            continue;
-
-        for (auto it : i_creature.GetSharedVisionList())
-            if(Player* p = ObjectAccessor::GetPlayer(i_creature, it))
-                p->UpdateVisibilityOf(iter.GetSource());
-
-        CreatureCreatureRelocationWorker(iter.GetSource(), &i_creature);
-    }
+	for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
+	{
+		vis_guids.erase(iter->GetSource()->GetGUID());
+		i_player.UpdateVisibilityOf(iter->GetSource(), i_data, i_visibleNow);
+	}
 }
 
 inline void Trinity::DynamicObjectUpdater::VisitHelper(Unit* target)
@@ -450,9 +320,9 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for(auto & itr : m)
+    for(auto& itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -463,7 +333,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -474,7 +344,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -485,7 +355,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 template<class Check>
@@ -496,7 +366,7 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
 
     for(auto & itr : m)
         if(i_check(itr.GetSource()))
-            i_objects.push_back(itr.GetSource());
+            Insert(itr.GetSource());
 }
 
 // Gameobject searchers

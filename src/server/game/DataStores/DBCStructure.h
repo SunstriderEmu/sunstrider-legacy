@@ -31,16 +31,11 @@ struct AreaTableEntry
     char*     area_name[16];                                // 11-26
                                                             // 27, string flags, unused
     uint32    team;                                         // 28
-    uint32    LiquidTypeOverride[4];                        // 29-32 liquid override by type
+    uint32    LiquidTypeOverride[4];                        // 29-32 liquid override by type. Only values on BC are 61 and 41 in first field. 61 is hyjal water ! 41 is coilfang water.
     float     maxDepth;                                     // 33
 
     // helpers
-    bool IsSanctuary() const
-    {
-        if (mapid == 609)
-            return true;
-        return (flags & AREA_FLAG_SANCTUARY);
-    }
+    bool IsSanctuary() const;
 };
 
 struct AreaTriggerEntry
@@ -470,11 +465,13 @@ struct ItemExtendedCostEntry
     uint32      reqpersonalarenarating;                     // 13 required personal arena rating
 };
 
+#define MAX_ITEM_ENCHANTMENT_EFFECTS 3
+
 struct ItemRandomPropertiesEntry
 {
     uint32    ID;                                           // 0
     //char*     internalName                                // 1   unused
-    uint32    enchant_id[3];                                // 2-4
+    uint32    enchant_id[MAX_ITEM_ENCHANTMENT_EFFECTS];     // 2-4
                                                             // 5-6 unused, 0 only values, reserved for additional enchantments?
     //char*     nameSuffix[16]                              // 7-22, unused
                                                             // 23 nameSufix flags, unused
@@ -486,9 +483,13 @@ struct ItemRandomSuffixEntry
     //char*     name[16]                                    // 1-16 unused
                                                             // 17, name flags, unused
                                                             // 18  unused
-    uint32    enchant_id[3];                                // 19-21
-    uint32    prefix[3];                                    // 22-24
+    uint32    enchant_id[MAX_ITEM_ENCHANTMENT_EFFECTS];     // 19-21
+    uint32    prefix[MAX_ITEM_ENCHANTMENT_EFFECTS];         // 22-24
 };
+
+
+//Not sure for BC #define MAX_ITEM_SET_ITEMS 10
+#define MAX_ITEM_SET_SPELLS 8
 
 struct ItemSetEntry
 {
@@ -497,8 +498,8 @@ struct ItemSetEntry
                                                             // 17 string flags, unused
                                                             // 18-28 items from set, but not have all items listed, use ItemTemplate::ItemSet instead
                                                             // 29-34 unused
-    uint32    spells[8];                                    // 35-42
-    uint32    items_to_triggerspell[8];                     // 43-50
+    uint32    spells[MAX_ITEM_SET_SPELLS];                  // 35-42
+    uint32    items_to_triggerspell[MAX_ITEM_SET_SPELLS];   // 43-50
     uint32    required_skill_id;                            // 51
     uint32    required_skill_value;                         // 52
 };
@@ -1132,13 +1133,29 @@ typedef std::vector<TaxiPathNodeList> TaxiPathNodesByPath;
 #define TaxiMaskSize 16
 typedef uint32 TaxiMask[TaxiMaskSize];
 
+enum BCLiquidTypeType : uint32
+{
+    BCLiquidTypeType_Magma = 0,
+    BCLiquidTypeType_Slime = 2,
+    BCLiquidTypeType_Water = 3,
+    BCLiquidTypeType_Ocean = BCLiquidTypeType_Water,
+};
+
+//this got largely extended with LK. A lot of new fields and new liquid types were added, but those already present were not re ordered. WMO liquid also appeared on LK.
 struct LiquidTypeEntry
 {
+#ifdef LICH_KING
+    FixThis
+#endif
     uint32 Id;
-   //uint32 Unknown; //may be Flags
-   //uint32 Unknown; //may be SoundBank
-   //uint32 Unknown; //may be SoundID
+    //char*  Name;
+    uint32 BCType;  //types were re ordered with LK. See BCLiquidTypeType for BC values. Renamed from Type to BCType to ensure no confusion is made + added a function to access it (only useful if we get LICH_KING support one day...)
     uint32 SpellId;
+
+    uint32 GetType() const
+    {
+        return BCType;
+    };
 };
 
 struct LightEntry

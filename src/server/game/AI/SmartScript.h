@@ -38,18 +38,18 @@ class TC_GAME_API SmartScript
             In the current form, target as "get the closest creature" do not interact well with target flags because they return only one target
             which can then be filtered out by target flags. Instead, we'd prefer returning the closest creature that match target flags.
         */
-        void FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAGS flags, ObjectList& list, WorldObject const* caster);
+        void FilterByTargetFlags(SMARTAI_TARGETS type, SMARTAI_TARGETS_FLAGS flags, ObjectVector& list, WorldObject const* caster);
         bool IsTargetAllowedByTargetFlags(WorldObject const* target, SMARTAI_TARGETS_FLAGS flags, WorldObject const* caster, SMARTAI_TARGETS type);
         //May return null, must be deleted after usage
-        ObjectList* GetTargets(SmartScriptHolder const& e, Unit* invoker = nullptr);
+        void GetTargets(ObjectVector& targets, SmartScriptHolder const& e, Unit* invoker = nullptr);
         //returns a NEW object list, the called must delete if after usage
-        ObjectList* GetWorldObjectsInDist(float dist);
+        void GetWorldObjectsInDist(ObjectVector& targets, float dist) const;
         void InstallTemplate(SmartScriptHolder const& e);
-        SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, PhaseMask phaseMask = PhaseMask(0));
-        void AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, PhaseMask phaseMask = PhaseMask(0));
+        SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0));
+        void AddEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, SmartPhaseMask phaseMask = SmartPhaseMask(0));
         void SetPathId(uint32 id) { mPathId = id; }
         uint32 GetPathId() const { return mPathId; }
-        WorldObject* GetBaseObject()
+        WorldObject* GetBaseObject() const
         {
             WorldObject* obj = nullptr;
             if (me)
@@ -98,21 +98,11 @@ class TC_GAME_API SmartScript
         void DoFindFriendlyMissingBuff(std::list<Creature*>& list, float range, uint32 spellid);
         Unit* DoFindClosestOrFurthestFriendlyInRange(float range, bool playerOnly, bool nearest = true);
 
-        void StoreTargetList(ObjectList* targets, uint32 id)
+        void StoreTargetList(ObjectVector const& targets, uint32 id)
         {
-            if (!targets)
-                return;
-
-            if (mTargetStorage->find(id) != mTargetStorage->end())
-            {
-                // check if already stored
-                if ((*mTargetStorage)[id]->Equals(targets))
-                    return;
-
-                delete (*mTargetStorage)[id];
-            }
-
-            (*mTargetStorage)[id] = new ObjectGuidList(targets, GetBaseObject());
+            // insert or replace
+            _storedTargets.erase(id);
+            _storedTargets.emplace(id, ObjectGuidVector(targets));
         }
 
         bool IsSmart(Creature* c = nullptr)
@@ -144,13 +134,13 @@ class TC_GAME_API SmartScript
             return smart;
         }
 
-        ObjectList* GetTargetList(uint32 id)
+        ObjectVector const* GetStoredTargetVector(uint32 id, WorldObject const& ref) const
         {
-            auto itr = mTargetStorage->find(id);
-            if (itr != mTargetStorage->end())
-                return (*itr).second->GetObjectList();
-
+            auto itr = _storedTargets.find(id);
+            if (itr != _storedTargets.end())
+                return itr->second.GetObjectVector(ref);
             return nullptr;
+
         }
 
         void StoreCounter(uint32 id, uint32 value, uint32 reset)
@@ -200,27 +190,34 @@ class TC_GAME_API SmartScript
             return creatureItr != bounds.second ? creatureItr->second : bounds.first->second;
         }
 
-        ObjectListMap* mTargetStorage;
+        ObjectVectorMap _storedTargets;
 
         void OnReset();
         void ResetBaseObject()
         {
-            if (meOrigGUID)
-            {
-                if (Creature* m = HashMapHolder<Creature>::Find(meOrigGUID))
-                {
-                    me = m;
-                    go = nullptr;
-                }
-            }
-            if (goOrigGUID)
-            {
-                if (GameObject* o = HashMapHolder<GameObject>::Find(goOrigGUID))
-                {
-                    me = nullptr;
-                    go = o;
-                }
-            }
+			WorldObject* lookupRoot = me;
+			if (!lookupRoot)
+				lookupRoot = go;
+
+			if (lookupRoot)
+			{
+				if (meOrigGUID)
+				{
+					if (Creature* m = ObjectAccessor::GetCreature(*lookupRoot, meOrigGUID))
+					{
+						me = m;
+						go = nullptr;
+					}
+				}
+				if (goOrigGUID)
+				{
+					if (GameObject* o = ObjectAccessor::GetGameObject(*lookupRoot, goOrigGUID))
+					{
+						me = nullptr;
+						go = o;
+					}
+				}
+			}
             goOrigGUID = 0;
             meOrigGUID = 0;
         }
@@ -259,7 +256,7 @@ class TC_GAME_API SmartScript
                 mEventPhase = 0;
         }
 
-        bool IsInPhase(PhaseMask phaseMask) const 
+        bool IsInPhase(SmartPhaseMask phaseMask) const 
         { 
             if (mEventPhase == 0)
                 return false;

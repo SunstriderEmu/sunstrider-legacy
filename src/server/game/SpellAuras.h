@@ -96,8 +96,9 @@ class TC_GAME_API Aura
         void HandlePeriodicEnergize(bool Apply, bool Real);
         void HandleAuraModResistanceExclusive(bool Apply, bool Real);
         void HandleModStealth(bool Apply, bool Real);
-        void HandleInvisibility(bool Apply, bool Real);
-        void HandleInvisibilityDetect(bool Apply, bool Real);
+		void HandleModStealthDetect(bool Apply, bool Real);
+        void HandleModInvisibility(bool Apply, bool Real);
+        void HandleModInvisibilityDetect(bool Apply, bool Real);
         void HandleAuraModTotalHealthPercentRegen(bool Apply, bool Real);
         void HandleAuraModTotalPowerPercentRegen(bool Apply, bool Real);
         void HandleAuraModResistance(bool Apply, bool Real);
@@ -123,7 +124,7 @@ class TC_GAME_API Aura
         void HandleAuraModParryPercent(bool Apply, bool Real);
         void HandleAuraModDodgePercent(bool Apply, bool Real);
         void HandleAuraModBlockPercent(bool Apply, bool Real);
-        void HandleAuraModCritPercent(bool Apply, bool Real);
+        void HandleAuraModWeaponCritPercent(bool Apply, bool Real);
         void HandlePeriodicLeech(bool Apply, bool Real);
         void HandleModHitChance(bool Apply, bool Real);
         void HandleModSpellHitChance(bool Apply, bool Real);
@@ -144,7 +145,6 @@ class TC_GAME_API Aura
         void HandleAuraModIncreaseSwimSpeed(bool Apply, bool Real);
         void HandleModPowerCostPCT(bool Apply, bool Real);
         void HandleModPowerCost(bool Apply, bool Real);
-        void HandleFarSight(bool Apply, bool Real);
         void HandleModPossessPet(bool Apply, bool Real);
         void HandleModMechanicImmunity(bool Apply, bool Real);
         void HandleAuraModSkill(bool Apply, bool Real);
@@ -152,10 +152,8 @@ class TC_GAME_API Aura
         void HandleModPercentStat(bool Apply, bool Real);
         void HandleModResistancePercent(bool Apply, bool Real);
         void HandleAuraModBaseResistancePCT(bool Apply, bool Real);
-        void HandleModShieldBlockPCT(bool Apply, bool Real);
         void HandleAuraTrackStealthed(bool Apply, bool Real);
         void HandleModStealthLevel(bool Apply, bool Real);
-        void HandleModShieldBlock(bool Apply, bool Real);
         void HandleForceReaction(bool Apply, bool Real);
         void HandleAuraModRangedHaste(bool Apply, bool Real);
         void HandleRangedAmmoHaste(bool Apply, bool Real);
@@ -175,6 +173,7 @@ class TC_GAME_API Aura
         void HandleModManaRegen(bool apply, bool Real);
         void HandleComprehendLanguage(bool apply, bool Real);
         void HandleShieldBlockValue(bool apply, bool Real);
+        void HandleShieldBlockValuePercent(bool apply, bool Real);
         void HandleModSpellCritChanceShool(bool apply, bool Real);
         void HandleAuraRetainComboPoints(bool apply, bool Real);
         void HandleModSpellDamagePercentFromStat(bool apply, bool Real);
@@ -221,7 +220,7 @@ class TC_GAME_API Aura
         SpellInfo const* GetSpellInfo() const { return m_spellProto; }
         uint32 GetId() const;
         uint64 GetCastItemGUID() const { return m_castItemGuid; }
-        uint32 GetEffIndex() const{ return m_effIndex; }
+		uint8 GetEffIndex() const{ return m_effIndex; }
         uint8 GetEffectMask() const { return 1 << m_effIndex; }
         int32 GetBasePoints() const { return m_currentBasePoints; }
         void SetBasePoints(uint32 basePoints) { m_currentBasePoints = basePoints; }
@@ -286,6 +285,7 @@ class TC_GAME_API Aura
         bool IsTrigger() const { return m_IsTrigger; }
         bool IsPassive() const { return m_isPassive; }
         bool IsPersistent() const { return m_isPersistent; }
+		bool IsCooldownStartedOnEvent() const;
         bool IsDeathPersistent() const { return m_isDeathPersist; }
         bool IsRemovedOnShapeLost() const { return m_isRemovedOnShapeLost; }
         bool IsRemoved() const { return m_isRemoved; }
@@ -305,6 +305,7 @@ class TC_GAME_API Aura
         bool IsUpdated() { return m_updated; }
         void SetUpdated(bool val) { m_updated = val; }
         void SetRemoveMode(AuraRemoveMode mode) { m_removeMode = mode; }
+		AuraRemoveMode GetRemoveMode() const { return m_removeMode; }
 
         int32 m_procCharges;
         void SetCharges(int32 charges) { m_procCharges = charges; }
@@ -339,11 +340,11 @@ class TC_GAME_API Aura
         int32 GetPeriodicTimer() { return m_periodicTimer; }
         void SetPeriodicTimer(int32 newTimer) { m_periodicTimer = newTimer; }
     protected:
-        Aura(SpellInfo const* spellproto, uint32 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
+        Aura(SpellInfo const* spellproto, uint8 eff, int32 *currentBasePoints, Unit *target, Unit *caster = nullptr, Item* castItem = nullptr);
 
         Modifier m_modifier;
         SpellModifier *m_spellmod;
-        uint32 m_effIndex;
+        uint8 m_effIndex;
         SpellInfo const *m_spellProto;
         int32 m_currentBasePoints;                          // cache SpellInfo::EffectBasePoints and use for set custom base points
         uint64 m_caster_guid;

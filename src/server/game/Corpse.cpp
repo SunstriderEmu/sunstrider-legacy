@@ -1,26 +1,8 @@
-/*
- * Copyright (C) 2005-2008 MaNGOS <http://www.mangosproject.org/>
- *
- * Copyright (C) 2008 Trinity <http://www.trinitycore.org/>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
 
 #include "Common.h"
 #include "Corpse.h"
 #include "Player.h"
+#include "CharacterCache.h"
 #include "UpdateMask.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
@@ -31,7 +13,7 @@
 #include "GossipDef.h"
 #include "World.h"
 
-Corpse::Corpse(CorpseType type) : WorldObject()
+Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES)
 {
     m_objectType |= TYPEMASK_CORPSE;
     m_objectTypeId = TYPEID_CORPSE;
@@ -56,7 +38,7 @@ void Corpse::AddToWorld()
 {
     ///- Register the corpse for guid lookup
     if(!IsInWorld()) 
-        sObjectAccessor->AddObject(this);
+		GetMap()->GetObjectsStore().Insert<Corpse>(GetGUID(), this);
 
     Object::AddToWorld();
 }
@@ -65,40 +47,38 @@ void Corpse::RemoveFromWorld()
 {
     ///- Remove the corpse from the accessor
     if(IsInWorld()) 
-        sObjectAccessor->RemoveObject(this);
+		GetMap()->GetObjectsStore().Remove<Corpse>(GetGUID());
 
     Object::RemoveFromWorld();
 }
 
 bool Corpse::Create( uint32 guidlow )
 {
-    Object::_Create(guidlow, 0, HIGHGUID_CORPSE);
+    Object::_Create(guidlow, 0, HighGuid::Corpse);
     return true;
 }
 
-bool Corpse::Create( uint32 guidlow, Player *owner, uint32 mapid, float x, float y, float z, float ang )
+bool Corpse::Create( uint32 guidlow, Player *owner )
 {
-    SetInstanceId(owner->GetInstanceId());
+    WorldObject::_Create(guidlow, HighGuid::Corpse, owner->GetPhaseMask());
 
-    WorldObject::_Create(guidlow, HIGHGUID_CORPSE, mapid);
-
-    Relocate(x,y,z,ang);
+	Relocate(owner->GetPositionX(), owner->GetPositionY(), owner->GetPositionZ(), owner->GetOrientation());
 
     if(!IsPositionValid())
     {
         TC_LOG_ERROR("FIXME","ERROR: Corpse (guidlow %d, owner %s) not created. Suggested coordinates isn't valid (X: %f Y: %f)",
-            guidlow,owner->GetName().c_str(),x,y);
+            guidlow,owner->GetName().c_str(), owner->GetPositionX(), owner->GetPositionY());
         return false;
     }
 
-    SetFloatValue( OBJECT_FIELD_SCALE_X, 1 );
-    SetFloatValue( CORPSE_FIELD_POS_X, x );
-    SetFloatValue( CORPSE_FIELD_POS_Y, y );
-    SetFloatValue( CORPSE_FIELD_POS_Z, z );
-    SetFloatValue( CORPSE_FIELD_FACING, ang );
+	SetObjectScale(1.0f);
+    SetFloatValue( CORPSE_FIELD_POS_X, owner->GetPositionX());
+    SetFloatValue( CORPSE_FIELD_POS_Y, owner->GetPositionY());
+    SetFloatValue( CORPSE_FIELD_POS_Z, owner->GetPositionZ());
+    SetFloatValue( CORPSE_FIELD_FACING, owner->GetOrientation());
     SetUInt64Value( CORPSE_FIELD_OWNER, owner->GetGUID() );
 
-    m_grid = Trinity::ComputeGridPair(GetPositionX(), GetPositionY());
+	_cellCoord = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
 
     return true;
 }
@@ -109,7 +89,9 @@ void Corpse::SaveToDB()
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     DeleteFromDB(trans);
 
-    std::ostringstream ss;
+    /* 
+	TODO CORPSE
+	std::ostringstream ss;
     ss  << "INSERT INTO corpse (guid,player,position_x,position_y,position_z,orientation,zone,map,data,time,corpse_type,instanceId) VALUES ("
         << GetGUIDLow() << ", " << GUID_LOPART(GetOwnerGUID()) << ", " << GetPositionX() << ", " << GetPositionY() << ", " << GetPositionZ() << ", "
         << GetOrientation() << ", "  << GetZoneId() << ", "  << GetMapId() << ", '";
@@ -118,34 +100,25 @@ void Corpse::SaveToDB()
     ss << "'," << uint64(m_time) <<", " << uint32(GetType()) << ", " << int(GetInstanceId()) << ")";
     trans->Append( ss.str().c_str() );
     CharacterDatabase.CommitTransaction(trans);
-}
-
-void Corpse::DeleteBonesFromWorld()
-{
-    assert(GetType()==CORPSE_BONES);
-    Corpse* corpse = ObjectAccessor::GetCorpse(*this, GetGUID());
-
-    if (!corpse)
-    {
-        TC_LOG_ERROR("misc","Bones %u not found in world.", GetGUIDLow());
-        return;
-    }
-
-    AddObjectToRemoveList();
+	*/
 }
 
 uint64 Corpse::GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
 
-void Corpse::DeleteFromDB(SQLTransaction trans)
+void Corpse::DeleteFromDB(SQLTransaction& trans)
 {
-    if(GetType() == CORPSE_BONES)
-        // only specific bones
-        trans->PAppend("DELETE FROM corpse WHERE guid = '%d'", GetGUIDLow());
-    else
-        // all corpses (not bones)
-        trans->PAppend("DELETE FROM corpse WHERE player = '%d' AND corpse_type <> '0'",  GUID_LOPART(GetOwnerGUID()));
+	DeleteFromDB(GetOwnerGUID(), trans);
 }
 
+void Corpse::DeleteFromDB(ObjectGuid const& ownerGuid, SQLTransaction& trans)
+{
+	/* TODO CORPSE
+	PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CORPSE);
+	stmt->setUInt32(0, ownerGuid.GetCounter());
+	CharacterDatabase.ExecuteOrAppend(trans, stmt);
+	*/
+}
+/*
 bool Corpse::LoadFromDB(uint32 guid, QueryResult result, uint32 InstanceId)
 {
     bool external = (result != nullptr);
@@ -195,7 +168,7 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
     uint32 instanceid  = fields[8].GetUInt32();
 
     // overwrite possible wrong/corrupted guid
-    SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HIGHGUID_CORPSE));
+    SetUInt64Value(OBJECT_FIELD_GUID, MAKE_NEW_GUID(guid, 0, HighGuid::Corpse));
 
     // place
     SetInstanceId(instanceid);
@@ -209,13 +182,68 @@ bool Corpse::LoadFromDB(uint32 guid, Field *fields)
         return false;
     }
 
-    m_grid = Trinity::ComputeGridPair(GetPositionX(), GetPositionY());
+    m_grid = Trinity::ComputeGridCoord(GetPositionX(), GetPositionY());
 
     return true;
 }
+*/
 
-bool Corpse::IsVisibleForInState(Player const* u, bool inVisibleList) const
+
+bool Corpse::LoadCorpseFromDB(ObjectGuid::LowType guid, Field* fields)
 {
-    return IsInWorld() && u->IsInWorld() && IsWithinDistInMap(u,World::GetMaxVisibleDistanceForObject()+(inVisibleList ? World::GetVisibleObjectGreyDistance() : 0.0f), false);
+	//        0     1     2     3            4      5          6          7       8       9        10     11        12    13          14          15         16
+	// SELECT posX, posY, posZ, orientation, mapId, displayId, itemCache, bytes1, bytes2, guildId, flags, dynFlags, time, corpseType, instanceId, phaseMask, guid FROM corpse WHERE mapId = ? AND instanceId = ?
+
+
+	ObjectGuid::LowType ownerGuid = fields[16].GetUInt32();
+	float posX = fields[0].GetFloat();
+	float posY = fields[1].GetFloat();
+	float posZ = fields[2].GetFloat();
+	float o = fields[3].GetFloat();
+	uint32 mapId = fields[4].GetUInt16();
+
+	Object::_Create(guid, 0, HighGuid::Corpse);
+
+	SetObjectScale(1.0f);
+	SetUInt32Value(CORPSE_FIELD_DISPLAY_ID, fields[5].GetUInt32());
+	_LoadIntoDataField(fields[6].GetString(), CORPSE_FIELD_ITEM, EQUIPMENT_SLOT_END);
+	SetUInt32Value(CORPSE_FIELD_BYTES_1, fields[7].GetUInt32());
+	SetUInt32Value(CORPSE_FIELD_BYTES_2, fields[8].GetUInt32());
+	SetUInt32Value(CORPSE_FIELD_GUILD, fields[9].GetUInt32());
+	SetUInt32Value(CORPSE_FIELD_FLAGS, fields[10].GetUInt8());
+	SetUInt32Value(CORPSE_FIELD_DYNAMIC_FLAGS, fields[11].GetUInt8());
+	SetGuidValue(CORPSE_FIELD_OWNER, ObjectGuid(HighGuid::Player, ownerGuid));
+
+	m_time = time_t(fields[12].GetUInt32());
+
+	uint32 instanceId = fields[14].GetUInt32();
+	uint32 phaseMask = fields[15].GetUInt32();
+
+	// place
+	SetLocationInstanceId(instanceId);
+	SetLocationMapId(mapId);
+	SetPhaseMask(phaseMask, false);
+	Relocate(posX, posY, posZ, o);
+
+	if (!IsPositionValid())
+	{
+		TC_LOG_ERROR("entities.player", "Corpse (%s, owner: %s) is not created, given coordinates are not valid (X: %f, Y: %f, Z: %f)",
+			ObjectGuid(GetGUID()).ToString().c_str(), ObjectGuid(GetOwnerGUID()).ToString().c_str(), posX, posY, posZ);
+		return false;
+	}
+
+	_cellCoord = Trinity::ComputeCellCoord(GetPositionX(), GetPositionY());
+	return true;
 }
 
+bool Corpse::IsExpired(time_t t) const
+{
+	// Deleted character
+	if (!sCharacterCache->HasCharacterCacheEntry(GetOwnerGUID()))
+		return true;
+
+	if (m_type == CORPSE_BONES)
+		return m_time < t - 60 * MINUTE;
+	else
+		return m_time < t - 3 * DAY;
+}

@@ -299,7 +299,7 @@ void WorldSession::SendPetitionQueryOpcode(uint64 petitionguid)
     if(result)
     {
         Field* fields = result->Fetch();
-        ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+        ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
         name      = fields[1].GetString();
         //signs     = fields[2].GetUInt8(); //not used
         type      = fields[3].GetUInt32();
@@ -436,7 +436,7 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     }
 
     fields = result->Fetch();
-    uint64 ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+    uint64 ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
     uint8 signs = fields[1].GetUInt8();
     uint32 type = fields[2].GetUInt32();
 
@@ -550,7 +550,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
         return;
 
     Field *fields = result->Fetch();
-    ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+    ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
 
     Player *owner = sObjectMgr->GetPlayer(ownerguid);
     if(owner)                                               // petition owner online

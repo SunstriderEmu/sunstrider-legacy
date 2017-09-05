@@ -29,6 +29,7 @@
 #include "GameObjectAI.h"
 #include "IRCMgr.h"
 #include "WhoListStorage.h"
+#include "GameTime.h"
 
 void WorldSession::HandleRepopRequestOpcode( WorldPacket & /*recvData*/ )
 {
@@ -122,14 +123,12 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelectCode(_player, menuId, gossipListId, code.c_str());
-            if (!sScriptMgr->OnGossipSelectCode(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+            if (!unit->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str()))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
         else
         {
-            go->AI()->OnGossipSelectCode(_player, menuId, gossipListId, code.c_str());
-            if (!sScriptMgr->OnGossipSelectCode(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId), code.c_str()))
+            if (!go->AI()->GossipSelectCode(_player, menuId, gossipListId, code.c_str()))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }
@@ -137,14 +136,12 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     {
         if (unit)
         {
-            unit->AI()->sGossipSelect(_player, menuId, gossipListId);
-            if (!sScriptMgr->OnGossipSelect(_player, unit, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
+            if (!unit->AI()->GossipSelect(_player, menuId, gossipListId))
                 _player->OnGossipSelect(unit, gossipListId, menuId);
         }
         else
         {
-            go->AI()->OnGossipSelect(_player, menuId, gossipListId);
-            if (!sScriptMgr->OnGossipSelect(_player, go, _player->PlayerTalkClass->GetGossipOptionSender(gossipListId), _player->PlayerTalkClass->GetGossipOptionAction(gossipListId)))
+            if (!go->AI()->GossipSelect(_player, menuId, gossipListId))
                 _player->OnGossipSelect(go, gossipListId, menuId);
         }
     }
@@ -457,13 +454,8 @@ void WorldSession::HandleTogglePvP( WorldPacket & recvData )
     }
     else
     {
-        if(!GetPlayer()->pvpInfo.inHostileArea && GetPlayer()->IsPvP())
+        if(!GetPlayer()->pvpInfo.IsHostile && GetPlayer()->IsPvP())
             GetPlayer()->pvpInfo.endTimer = time(nullptr);     // start toggle-off
-    }
-
-    if(OutdoorPvP * pvp = _player->GetOutdoorPvP())
-    {
-        pvp->HandlePlayerActivityChanged(_player);
     }
 }
 
@@ -474,9 +466,12 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 
     //TC_LOG_DEBUG("network","WORLD: Recvd ZONE_UPDATE: %u", newZone);
 
-    GetPlayer()->UpdateZone(newZone);
+	// use server side data, but only after update the player position. See Player::UpdatePosition().
+	GetPlayer()->SetNeedsZoneUpdate(true);
 
-    GetPlayer()->SendInitWorldStates(true,newZone);
+    //GetPlayer()->UpdateZone(newZone);
+
+    //GetPlayer()->SendInitWorldStates(true,newZone);
 }
 
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
@@ -525,14 +520,14 @@ void WorldSession::HandleSetSelectionOpcode( WorldPacket & recvData )
 
 void WorldSession::HandleStandStateChangeOpcode( WorldPacket & recvData )
 {
-    if(!_player->m_mover->IsAlive())
+    if(!_player->m_unitMovedByMe->IsAlive())
         return;
 
     uint8 animstate;
     recvData >> animstate;
 
-    if (_player->m_mover->GetStandState() != animstate)
-        _player->m_mover->SetStandState(animstate);
+    if (_player->m_unitMovedByMe->GetStandState() != animstate)
+        _player->m_unitMovedByMe->SetStandState(animstate);
 }
 
 void WorldSession::HandleBugOpcode( WorldPacket & recvData )
@@ -723,10 +718,101 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
     if(!at)
         return;
 
-    if(!GetPlayer()->Satisfy(sObjectMgr->GetAccessRequirement(at->access_id), at->target_mapId, true))
-        return;
+    bool teleported = false;
+    if (pl->GetMapId() != at->target_mapId)
+    {
+        if (Map::EnterState denyReason = sMapMgr->PlayerCannotEnter(at->target_mapId, pl, false))
+        {
+            bool reviveAtTrigger = false; // should we revive the player if he is trying to enter the correct instance?
+            switch (denyReason)
+            {
+            case Map::CANNOT_ENTER_NO_ENTRY:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter map with id %d which has no entry", pl->GetName().c_str(), at->target_mapId);
+                break;
+            case Map::CANNOT_ENTER_UNINSTANCED_DUNGEON:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter dungeon map %d but no instance template was found", pl->GetName().c_str(), at->target_mapId);
+                break;
+            case Map::CANNOT_ENTER_DIFFICULTY_UNAVAILABLE:
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' attempted to enter instance map %d but the requested difficulty was not found", pl->GetName().c_str(), at->target_mapId);
+                if (MapEntry const* entry = sMapStore.LookupEntry(at->target_mapId))
+#ifdef LICH_KING
+                    pl->SendTransferAborted(entry->MapID, TRANSFER_ABORT_DIFFICULTY, player->GetDifficulty(entry->IsRaid()));
+#else
+                    pl->SendTransferAborted(entry->MapID, TRANSFER_ABORT_DIFFICULTY2);
+#endif
+                break;
+            case Map::CANNOT_ENTER_NOT_IN_RAID:
+            {
+                WorldPacket data(SMSG_RAID_GROUP_ONLY, 4 + 4);
+                data << uint32(0);
+#ifdef LICH_KING
+                data << uint32(2); // You must be in a raid group to enter this instance.
+#else
+                data << uint32(1); // You must be in a raid group to enter this instance.
+#endif
+                pl->GetSession()->SendPacket(&data);
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' must be in a raid group to enter instance map %d", pl->GetName().c_str(), at->target_mapId);
+                reviveAtTrigger = true;
+                break;
+            }
+            case Map::CANNOT_ENTER_CORPSE_IN_DIFFERENT_INSTANCE:
+            {
+                /* TC
+                WorldPacket data(SMSG_CORPSE_NOT_IN_INSTANCE);
+                pl->GetSession()->SendPacket(&data);
+                */
+                ChatHandler(pl->GetSession()).PSendSysMessage("Your corpse is in a different instance.");
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' does not have a corpse in instance map %d and cannot enter", pl->GetName().c_str(), at->target_mapId);
+                break;
+            }
+            case Map::CANNOT_ENTER_INSTANCE_BIND_MISMATCH:
+                if (MapEntry const* entry = sMapStore.LookupEntry(at->target_mapId))
+                {
+                    char const* mapName = entry->name[pl->GetSession()->GetSessionDbcLocale()];
+                    TC_LOG_DEBUG("maps", "MAP: Player '%s' cannot enter instance map '%s' because their permanent bind is incompatible with their group's", pl->GetName().c_str(), mapName);
+                    // is there a special opcode for this?
+                    // @todo figure out how to get player localized difficulty string (e.g. "10 player", "Heroic" etc)
+                    //TC ChatHandler(pl->GetSession()).PSendSysMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_BIND_MISMATCH), mapName);
+                    ChatHandler(pl->GetSession()).PSendSysMessage("You are already locked to %s.", mapName);
+                    
+                }
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_TOO_MANY_INSTANCES:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_TOO_MANY_INSTANCES);
+                TC_LOG_DEBUG("maps", "MAP: Player '%s' cannot enter instance map %d because he has exceeded the maximum number of instances per hour.", pl->GetName().c_str(), at->target_mapId);
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_MAX_PLAYERS:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_MAX_PLAYERS);
+                reviveAtTrigger = true;
+                break;
+            case Map::CANNOT_ENTER_ZONE_IN_COMBAT:
+                pl->SendTransferAborted(at->target_mapId, TRANSFER_ABORT_ZONE_IN_COMBAT);
+                reviveAtTrigger = true;
+                break;
+            default:
+                break;
+            }
 
-    GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
+            if (reviveAtTrigger) // check if the player is touching the areatrigger leading to the map his corpse is on
+                if (!pl->IsAlive() && pl->HasCorpse())
+                    if (pl->GetCorpseLocation().GetMapId() == at->target_mapId)
+                    {
+                        pl->ResurrectPlayer(0.5f);
+                        pl->SpawnCorpseBones();
+                    }
+
+            return;
+        }
+
+        if (Group* group = pl->GetGroup())
+            if (group->isLFGGroup() && pl->GetMap()->IsDungeon())
+                teleported = pl->TeleportToBGEntryPoint();
+    }
+
+    if (!teleported)
+        GetPlayer()->TeleportTo(at->target_mapId,at->target_X,at->target_Y,at->target_Z,at->target_Orientation,TELE_TO_NOT_LEAVE_TRANSPORT);
 }
 
 void WorldSession::HandleUpdateAccountData(WorldPacket &/*recvData*/)
@@ -1169,7 +1255,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         return;
     }
 
-    Player *plr = sObjectAccessor->FindConnectedPlayerByName(charname.c_str());
+    Player *plr = ObjectAccessor::FindConnectedPlayerByName(charname.c_str());
 
     if(!plr)
     {
@@ -1275,22 +1361,24 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-    uint8 apply;
-    recvData >> apply;
+	bool apply;
+	recvData >> apply;
 
-    _player->SetFarsightVision(apply);
-    if(apply)
-    {
-        TC_LOG_DEBUG("network", "Added FarSight " UI64FMTD " to player %u", _player->GetGuidValue(PLAYER_FARSIGHT), _player->GetGUIDLow());
+	if (apply)
+	{
+		TC_LOG_DEBUG("network", "Added FarSight %s to player %u", ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str(), ObjectGuid(_player->GetGUID()).GetCounter());
+		if (WorldObject* target = _player->GetViewpoint())
+			_player->SetSeer(target);
+		else
+			TC_LOG_DEBUG("network", "Player %s (%s) requests non-existing seer %s", _player->GetName().c_str(), ObjectGuid(_player->GetGUID()).ToString().c_str(), ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str());
+	}
+	else
+	{
+		TC_LOG_DEBUG("network", "Player %u set vision to self", ObjectGuid(_player->GetGUID()).GetCounter());
+		_player->SetSeer(_player);
+	}
 
-        //set the target to notify, so it updates visibility for shared visions (see PlayerRelocationNotifier and CreatureRelocationNotifier)
-        WorldObject* farSightTarget = _player->GetFarsightTarget();
-        if(farSightTarget && farSightTarget->isType(TYPEMASK_UNIT))
-            farSightTarget->ToUnit()->SetToNotify(); 
-        else
-            TC_LOG_DEBUG("network", "Player %s (%u) requests non-existing seer " UI64FMTD, _player->GetName().c_str(), _player->GetGUIDLow(), _player->GetGuidValue(PLAYER_FARSIGHT));
-    }
-    GetPlayer()->SetToNotify();
+	GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
@@ -1312,13 +1400,26 @@ void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
     GetPlayer()->SetUInt32Value(PLAYER_CHOSEN_TITLE, title);
 }
 
-void WorldSession::HandleAllowMoveAckOpcod( WorldPacket & recvData )
+void WorldSession::HandleTimeSyncResp( WorldPacket & recvData )
 {
-    uint32 counter, time_;
-    recvData >> counter >> time_;
+    uint32 counter, clientTicks;
+    recvData >> counter >> clientTicks;
 
     // time_ seems always more than GetMSTime()
     // uint32 diff = GetMSTimeDiff(GetMSTime(),time_);
+
+    if (counter != _player->m_timeSyncCounter - 1)
+        TC_LOG_DEBUG("network", "Wrong time sync counter from player %s (cheater?)", _player->GetName().c_str());
+
+#ifdef TRINITY_DEBUG
+    TC_LOG_DEBUG("network", "Time sync received: counter %u, client ticks %u, time since last sync %u", counter, clientTicks, clientTicks - _player->m_timeSyncClient);
+    uint32 ourTicks = clientTicks + (GameTime::GetGameTimeMS() - _player->m_timeSyncServer);
+
+    // diff should be small
+    TC_LOG_DEBUG("network", "Our ticks: %u, diff %u, latency %u", ourTicks, ourTicks - clientTicks, GetLatency());
+#endif
+
+    _player->m_timeSyncClient = clientTicks;
 }
 
 void WorldSession::HandleResetInstancesOpcode( WorldPacket & /*recvData*/ )
@@ -1415,10 +1516,21 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
 
     recvData.read_skip<uint32>();                          // unk
 
+#ifdef LICH_KING
+	MovementInfo movementInfo;
+	movementInfo.guid = guid;
+	ReadMovementInfo(recvData, &movementInfo);
+
+	recvData.read_skip<float>();                           // unk2
+
+	_player->m_unitMovedByMe->m_movementInfo.flags = movementInfo.GetMovementFlags();
+#else
     uint32 flags;
     recvData >> flags;
 
-    _player->m_mover->m_movementInfo.flags = flags;
+	_player->m_unitMovedByMe->m_movementInfo.flags = flags;
+#endif
+
 }
 
 void WorldSession::HandleRequestPetInfoOpcode( WorldPacket & /*recvData */)

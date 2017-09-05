@@ -30,7 +30,7 @@ enum AreaTeams
 {
     AREATEAM_NONE  = 0,
     AREATEAM_ALLY  = 2,
-    AREATEAM_HORDE = 4
+    AREAHORDE = 4
 };
 
 enum AreaFlags
@@ -38,7 +38,7 @@ enum AreaFlags
     AREA_FLAG_SNOW             = 0x00000001,                // snow (only Dun Morogh, Naxxramas, Razorfen Downs and Winterspring)
     AREA_FLAG_UNK1             = 0x00000002,                // unknown, (only Naxxramas and Razorfen Downs)
     AREA_FLAG_UNK2             = 0x00000004,                // Only used on development map
-    AREA_FLAG_SLAVE_CAPITAL    = 0x00000008,                // slave capital city flag?
+    AREA_FLAG_SLAVE_CAPITAL    = 0x00000008,                // city and city subzones
     AREA_FLAG_UNK3             = 0x00000010,                // unknown
     AREA_FLAG_SLAVE_CAPITAL2   = 0x00000020,                // slave capital city flag?
     AREA_FLAG_UNK4             = 0x00000040,                // many zones have this flag
@@ -170,6 +170,12 @@ enum SkillRaceClassInfoFlags
     SKILL_FLAG_INCLUDE_IN_SORT          = 0x80,     // Spells belonging to a skill with this flag will additionally compare skill ids when sorting spellbook in client
     SKILL_FLAG_NOT_TRAINABLE            = 0x100,
     SKILL_FLAG_MONO_VALUE               = 0x400     // Skill always has value 1 - clientside display flag, real value can be different
+};
+
+enum SpellCategoryFlags
+{
+    SPELL_CATEGORY_FLAG_COOLDOWN_SCALES_WITH_WEAPON_SPEED   = 0x01, // unused
+    SPELL_CATEGORY_FLAG_COOLDOWN_STARTS_ON_EVENT            = 0x04
 };
 
 enum TotemCategoryType

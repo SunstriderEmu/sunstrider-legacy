@@ -220,7 +220,7 @@ void CreatureGroup::AddMember(Creature *member, MemberPosition* pos)
     {
         //get leader to calc angle and distance from his current pos
         if (!m_leader)
-            m_leader = member->GetMap()->GetCreature(MAKE_PAIR64(m_groupID, HIGHGUID_UNIT));
+            m_leader = member->GetMap()->GetCreature(MAKE_PAIR64(m_groupID, uint32(HighGuid::Unit)));
        
         if (!m_leader)
             return;
@@ -376,9 +376,9 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         // Xinef: this should be automatized, if turn angle is greater than PI/2 (90°) we should swap formation angle
         if (M_PI - fabs(fabs(m_leader->GetOrientation() - pathAngle) - M_PI) > M_PI*0.50f)
         {
-            // pussywizard: in both cases should be 2*M_PI - follow_angle
-            // pussywizard: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
-            // pussywizard: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
+            // sunwell: in both cases should be 2*M_PI - follow_angle
+            // sunwell: also, GetCurrentWaypointID() returns 0..n-1, while point_1 must be > 0, so +1
+            // sunwell: db table waypoint_data shouldn't have point id 0 and shouldn't have any gaps for this to work!
             // if (m_leader->GetCurrentWaypointID()+1 == itr->second->point_1 || m_leader->GetCurrentWaypointID()+1 == itr->second->point_2)
             m_member.second->follow_angle = Position::NormalizeOrientation(m_member.second->follow_angle + M_PI); //(2 * M_PI) - itr->second->follow_angle;
         }
@@ -386,7 +386,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z, bool run)
         Position memberDest = CalculateMemberDestination(member, Position(x, y, z), m_member.second->follow_angle, m_member.second->follow_dist, pathAngle);
 
         member->SetUnitMovementFlags(m_leader->GetUnitMovementFlags());
-        // pussywizard: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
+        // sunwell: setting the same movementflags is not enough, spline decides whether leader walks/runs, so spline param is now passed as "run" parameter to this function
         if (run && member->IsWalking())
             member->RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
         else if (!run && !member->IsWalking())

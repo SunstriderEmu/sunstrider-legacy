@@ -167,7 +167,7 @@ bool ArenaTeam::LoadArenaTeamFromDB(uint32 ArenaTeamId)
 
     Id = fields[0].GetUInt32();
     Name = fields[1].GetString();
-    CaptainGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HIGHGUID_PLAYER);
+    CaptainGuid  = MAKE_NEW_GUID(fields[2].GetUInt32(), 0, HighGuid::Player);
     Type = fields[3].GetUInt8();
     BackgroundColor = fields[4].GetUInt32();
     EmblemStyle = fields[5].GetUInt32();
@@ -226,7 +226,7 @@ void ArenaTeam::LoadMembersFromDB(uint32 ArenaTeamId)
     {
         Field *fields = result->Fetch();
         ArenaTeamMember newmember;
-        newmember.guid            = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
+        newmember.guid            = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HighGuid::Player);
         newmember.games_week      = fields[1].GetUInt32();
         newmember.wins_week       = fields[2].GetUInt32();
         newmember.games_season    = fields[3].GetUInt32();

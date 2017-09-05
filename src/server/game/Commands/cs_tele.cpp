@@ -98,7 +98,7 @@ bool ChatHandler::HandleNameTeleCommand(const char * args)
         return false;
     }
 
-    Player *chr = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+    Player *chr = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     if (chr)
     {
 
@@ -220,7 +220,7 @@ bool ChatHandler::HandleGroupgoCommand(const char* args)
         return false;
     }
 
-    Player *player = sObjectAccessor->FindConnectedPlayerByName(name.c_str());
+    Player *player = ObjectAccessor::FindConnectedPlayerByName(name.c_str());
     if (!player)
     {
         PSendSysMessage(LANG_NO_PLAYER, args);

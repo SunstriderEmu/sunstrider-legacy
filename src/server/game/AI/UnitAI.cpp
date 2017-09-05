@@ -327,7 +327,7 @@ void UnitAI::SelectUnitList(std::list<Unit*> &targetList, uint32 maxTargets, Sel
         targetList.reverse();
 
     if (targetType == SELECT_TARGET_RANDOM)
-        Trinity::Containers::RandomResizeList(targetList, maxTargets);
+        Trinity::Containers::RandomResize(targetList, maxTargets);
     else
         targetList.resize(maxTargets);
 }

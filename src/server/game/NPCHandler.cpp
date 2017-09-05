@@ -289,14 +289,13 @@ void WorldSession::HandleGossipHelloOpcode( WorldPacket & recvData )
         }
     }
 
-    if(!sScriptMgr->OnGossipHello( _player, unit ))
+    _player->PlayerTalkClass->ClearMenus();
+    if (!unit->AI()->GossipHello(_player))
     {
         _player->TalkedToCreature(unit->GetEntry(),unit->GetGUID());
         _player->PrepareGossipMenu(unit, _player->GetDefaultGossipMenuForSource(unit), true);
         _player->SendPreparedGossip(unit);
     }
-    
-    unit->AI()->sGossipHello(_player);
 }
 
 void WorldSession::HandleSpiritHealerActivateOpcode( WorldPacket & recvData )
@@ -329,11 +328,12 @@ void WorldSession::SendSpiritResurrect()
 
     // get corpse nearest graveyard
     WorldSafeLocsEntry const *corpseGrave = nullptr;
-    Corpse *corpse = _player->GetCorpse();
-    if(corpse)
+	WorldLocation corpseLocation = _player->GetCorpseLocation();
+	if (_player->HasCorpse())
+	{
         corpseGrave = sObjectMgr->GetClosestGraveYard(
-            corpse->GetPositionX(), corpse->GetPositionY(), corpse->GetPositionZ(), corpse->GetMapId(), _player->GetTeam() );
-
+			corpseLocation.GetPositionX(), corpseLocation.GetPositionY(), corpseLocation.GetPositionZ(), corpseLocation.GetMapId(), _player->GetTeam() );
+	}
     // now can spawn bones
     _player->SpawnCorpseBones();
 
@@ -347,13 +347,11 @@ void WorldSession::SendSpiritResurrect()
             _player->TeleportTo(corpseGrave->map_id, corpseGrave->x, corpseGrave->y, corpseGrave->z, _player->GetOrientation());
         // or update at original position
         else
-            //ObjectAccessor::UpdateVisibilityForPlayer(_player);
-            _player->SetToNotify();
+            _player->UpdateObjectVisibility();
     }
     // or update at original position
     else
-        //ObjectAccessor::UpdateVisibilityForPlayer(_player);
-        _player->SetToNotify();
+        _player->UpdateObjectVisibility();
 
     _player->SaveToDB();
 }
@@ -632,7 +630,7 @@ void WorldSession::HandleUnstablePetCallback2(uint32 petId, uint32 petEntry, Pre
         return;
     }
 
-    auto  newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -764,7 +762,7 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
     _player->RemovePet(pet, PetSaveMode(slot));
 
     // summon unstabled pet
-    auto  newPet = new Pet(HUNTER_PET);
+    auto  newPet = new Pet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         delete newPet;
@@ -776,10 +774,6 @@ void WorldSession::HandleStableSwapPetCallback(uint32 petId, PreparedQueryResult
 
 void WorldSession::HandleRepairItemOpcode( WorldPacket & recvData )
 {
-    
-    
-    
-
     uint64 npcGUID, itemGUID;
     uint8 guildBank;                                        // new in 2.3.2, bool that means from guild bank money
 

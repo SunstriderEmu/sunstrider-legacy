@@ -2,7 +2,6 @@
 #define TRINITY_SHAREDDEFINES_H
 
 #include "Define.h"
-#include "PhaseMask.h"
 #include <cassert>
 
 enum SpellEffIndex
@@ -120,6 +119,53 @@ enum ReputationRank
 
 #define MIN_REPUTATION_RANK (REP_HATED)
 #define MAX_REPUTATION_RANK 8
+
+enum FactionTemplates
+{
+    FACTION_NONE                        = 0,
+    FACTION_CREATURE                    = 7,
+    FACTION_ESCORTEE_A_NEUTRAL_PASSIVE  = 10,
+    FACTION_MONSTER                     = 14,
+    FACTION_MONSTER_2                   = 16,
+    FACTION_TROLL_BLOODSCALP            = 28,
+    FACTION_PREY                        = 31,
+    FACTION_ESCORTEE_H_NEUTRAL_PASSIVE  = 33,
+    FACTION_FRIENDLY                    = 35,
+    FACTION_OGRE                        = 45,
+    FACTION_ORC_DRAGONMAW               = 62,
+    FACTION_HORDE_GENERIC               = 83,
+    FACTION_ALLIANCE_GENERIC            = 84,
+    FACTION_DEMON                       = 90,
+    FACTION_ELEMENTAL                   = 91,
+    FACTION_DRAGONFLIGHT_BLACK          = 103,
+    FACTION_ESCORTEE_N_NEUTRAL_PASSIVE  = 113,
+    FACTION_ENEMY                       = 168,
+    FACTION_ESCORTEE_A_NEUTRAL_ACTIVE   = 231,
+    FACTION_ESCORTEE_H_NEUTRAL_ACTIVE   = 232,
+    FACTION_ESCORTEE_N_NEUTRAL_ACTIVE   = 250,
+    FACTION_ESCORTEE_N_FRIEND_PASSIVE   = 290,
+    FACTION_TITAN                       = 415,
+    FACTION_ESCORTEE_N_FRIEND_ACTIVE    = 495,
+    FACTION_GOBLIN_DARK_IRON_BAR_PATRON = 736,
+    FACTION_DARK_IRON_DWARVES           = 754,
+    FACTION_ESCORTEE_A_PASSIVE          = 774,
+    FACTION_ESCORTEE_H_PASSIVE          = 775,
+    FACTION_UNDEAD_SCOURGE              = 974,
+#ifdef LICH_KING
+    FACTION_EARTHEN_RING                = 1726,
+    FACTION_ALLIANCE_GENERIC_WG         = 1732,
+    FACTION_HORDE_GENERIC_WG            = 1735,
+    FACTION_ARAKKOA                     = 1738,
+    FACTION_ASHTONGUE_DEATHSWORN        = 1820,
+    FACTION_FLAYER_HUNTER               = 1840,
+    FACTION_MONSTER_SPAR_BUDDY          = 1868,
+    FACTION_ESCORTEE_N_ACTIVE           = 1986,
+    FACTION_ESCORTEE_H_ACTIVE           = 2046,
+    FACTION_UNDEAD_SCOURGE_2            = 2068,
+    FACTION_UNDEAD_SCOURGE_3            = 2084,
+    FACTION_SCARLET_CRUSADE             = 2089
+#endif
+};
 
 enum MoneyConstants
 {
@@ -371,7 +417,7 @@ enum SpellAttr3
     SPELL_ATTR3_REQ_WAND                   = 0x00400000,           // 22 Req wand
     SPELL_ATTR3_UNK23                      = 0x00800000,           // 23
     SPELL_ATTR3_REQ_OFFHAND                = 0x01000000,           // 24 Req offhand weapon
-    SPELL_ATTR3_TREAT_AS_PERIODIC          = 0x02000000, // 25 Makes the spell appear as periodic in client combat logs - used by spells that trigger another spell on each tick
+    SPELL_ATTR3_TREAT_AS_PERIODIC          = 0x02000000,           // 25 Makes the spell appear as periodic in client combat logs - used by spells that trigger another spell on each tick
     SPELL_ATTR3_UNK26                      = 0x04000000,           // 26 //TC: SPELL_ATTR3_CAN_PROC_WITH_TRIGGERED. auras with this attribute can proc from triggered spell casts with SPELL_ATTR3_TRIGGERED_CAN_TRIGGER_PROC_2 (67736 + 52999)
     SPELL_ATTR3_DRAIN_SOUL                 = 0x08000000,           // 27
     SPELL_ATTR3_UNK28                      = 0x10000000,           // 28
@@ -593,14 +639,20 @@ enum Language
 
 #define LANGUAGES_COUNT   19
 
+enum TeamId
+{
+	TEAM_ALLIANCE = 0,
+	TEAM_HORDE,
+	TEAM_NEUTRAL
+};
+
 enum Team
 {
-    TEAM_NONE                = 0,
-    TEAM_HORDE               = 67,
-    TEAM_ALLIANCE            = 469,
+    HORDE               = 67,
+    ALLIANCE            = 469,
     //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code
-    //TEAM_ALLIANCE_FORCES     = 891,
-    //TEAM_HORDE_FORCES        = 892,
+    //ALLIANCE_FORCES     = 891,
+    //HORDE_FORCES        = 892,
     //TEAM_SANCTUARY           = 936,
     //TEAM_OUTLAND             = 980,
     TEAM_OTHER               = 0,                         // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
@@ -762,6 +814,47 @@ enum SpellEffects
     SPELL_EFFECT_152                       = 152,
     SPELL_EFFECT_153                       = 153,
     TOTAL_SPELL_EFFECTS                    = 154
+};
+
+
+enum StealthType
+{
+    STEALTH_GENERAL     = 0,
+    STEALTH_TRAP        = 1,
+
+    TOTAL_STEALTH_TYPES = 2
+};
+
+enum InvisibilityType
+{
+    INVISIBILITY_GENERAL     =  0,
+    INVISIBILITY_UNK1        =  1,
+    INVISIBILITY_UNK2        =  2,
+    INVISIBILITY_TRAP        =  3,
+    INVISIBILITY_UNK4        =  4,
+    INVISIBILITY_UNK5        =  5,
+    INVISIBILITY_DRUNK       =  6,
+    INVISIBILITY_UNK7        =  7,
+    INVISIBILITY_UNK8        =  8,
+    INVISIBILITY_UNK9        =  9,
+    INVISIBILITY_UNK10       = 10,
+    INVISIBILITY_UNK11       = 11,
+
+    TOTAL_INVISIBILITY_TYPES = 12
+};
+
+enum ServerSideVisibilityType
+{
+    SERVERSIDE_VISIBILITY_GM          = 0,
+    SERVERSIDE_VISIBILITY_GHOST       = 1,
+
+    TOTAL_SERVERSIDE_VISIBILITY_TYPES = 2
+};
+
+enum GhostVisibilityType
+{
+    GHOST_VISIBILITY_ALIVE = 0x1,
+    GHOST_VISIBILITY_GHOST = 0x2
 };
 
 // Spell aura states
@@ -2286,38 +2379,54 @@ enum DiminishingGroup : uint32
 
 enum SummonCategory : uint32
 {
-    SUMMON_CATEGORY_WILD = 0,
-    SUMMON_CATEGORY_ALLY = 1,
-    SUMMON_CATEGORY_PET = 2,
-    SUMMON_CATEGORY_PUPPET = 3,
-#ifdef LICH_KING
+    SUMMON_CATEGORY_WILD    = 0,
+    SUMMON_CATEGORY_ALLY    = 1,
+    SUMMON_CATEGORY_PET     = 2,
+    SUMMON_CATEGORY_PUPPET  = 3,
+	//LK only from this point
     SUMMON_CATEGORY_VEHICLE = 4,
-    SUMMON_CATEGORY_UNK = 5  // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
-                             // uses this category
-#endif
+    SUMMON_CATEGORY_UNK     = 5, // as of patch 3.3.5a only Bone Spike in Icecrown Citadel uses this category
 };
 
-enum SummonType : uint32
+//Only ones used on BC: 0,1,2,4,5
+enum SummonType
 {
-    SUMMON_TYPE_CRITTER     = 41,
-    SUMMON_TYPE_GUARDIAN    = 61,
-    SUMMON_TYPE_TOTEM_SLOT1 = 63,
-    SUMMON_TYPE_WILD        = 64,
-    SUMMON_TYPE_POSESSED    = 65,
-    SUMMON_TYPE_DEMON       = 66,
-    SUMMON_TYPE_SUMMON      = 67,
-    SUMMON_TYPE_TOTEM_SLOT2 = 81,
-    SUMMON_TYPE_TOTEM_SLOT3 = 82,
-    SUMMON_TYPE_TOTEM_SLOT4 = 83,
-    SUMMON_TYPE_TOTEM       = 121,
-    SUMMON_TYPE_UNKNOWN3    = 181,
-    SUMMON_TYPE_UNKNOWN4    = 187,
-    SUMMON_TYPE_UNKNOWN1    = 247,
-    SUMMON_TYPE_CRITTER2    = 407,
-    SUMMON_TYPE_CRITTER3    = 307,
-    SUMMON_TYPE_UNKNOWN5    = 409,
-    SUMMON_TYPE_POSESSED3   = 427,
-    SUMMON_TYPE_POSESSED2   = 428
+    SUMMON_TYPE_NONE        = 0,
+    SUMMON_TYPE_PET         = 1,
+    SUMMON_TYPE_GUARDIAN    = 2,
+    SUMMON_TYPE_MINION      = 3,
+    SUMMON_TYPE_TOTEM       = 4,
+    SUMMON_TYPE_MINIPET     = 5,
+    SUMMON_TYPE_GUARDIAN2   = 6,
+    SUMMON_TYPE_WILD2       = 7,
+    SUMMON_TYPE_WILD3       = 8,    // Related to phases and DK prequest line (3.3.5a)
+    SUMMON_TYPE_VEHICLE     = 9,
+    SUMMON_TYPE_VEHICLE2    = 10,   // Oculus and Argent Tournament vehicles (3.3.5a)
+    SUMMON_TYPE_LIGHTWELL   = 11,
+    SUMMON_TYPE_JEEVES      = 12
+};
+
+enum SummonPropertiesId : uint32
+{
+    SUMMON_PROPERTIES_ID_CRITTER     = 41,
+    SUMMON_PROPERTIES_ID_GUARDIAN    = 61,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT1 = 63,
+    SUMMON_PROPERTIES_ID_WILD        = 64,
+    SUMMON_PROPERTIES_ID_POSESSED    = 65,
+    SUMMON_PROPERTIES_ID_DEMON       = 66,
+    SUMMON_PROPERTIES_ID_SUMMON      = 67,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT2 = 81,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT3 = 82,
+    SUMMON_PROPERTIES_ID_TOTEM_SLOT4 = 83,
+    SUMMON_PROPERTIES_ID_TOTEM       = 121,
+    SUMMON_PROPERTIES_ID_UNKNOWN3    = 181,
+    SUMMON_PROPERTIES_ID_UNKNOWN4    = 187,
+    SUMMON_PROPERTIES_ID_UNKNOWN1    = 247,
+    SUMMON_PROPERTIES_ID_CRITTER2    = 407,
+    SUMMON_PROPERTIES_ID_CRITTER3    = 307,
+    SUMMON_PROPERTIES_ID_UNKNOWN5    = 409,
+    SUMMON_PROPERTIES_ID_POSESSED3   = 427,
+    SUMMON_PROPERTIES_ID_POSESSED2   = 428
 };
 
 enum EventId : uint32

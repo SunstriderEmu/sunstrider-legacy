@@ -176,7 +176,7 @@ void WaypointMovementGenerator<Creature>::OnArrived(Creature* creature, uint32 a
     if (arrivedNode->event_id && urand(0, 99) < arrivedNode->event_chance)
     {
         TC_LOG_DEBUG("maps.script", "Creature movement start script %u at point %u for %u", arrivedNode->event_id, arrivedNode->id, creature->GetGUIDLow());
-        sWorld->ScriptsStart(sWaypointScripts, arrivedNode->event_id, creature, NULL, false);
+        creature->GetMap()->ScriptsStart(sWaypointScripts, arrivedNode->event_id, creature, NULL, false);
     }
 
     float x = arrivedNode->x;
@@ -457,7 +457,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                 {
                     nextNode = (*i_path)[nextMemoryNodeId];
 
-                    //stop path at move type change (so we can handle walk/run/take off changes
+                    //stop path at move type change (so we can handle walk/run/take off changes)
                     if (nextNode->move_type != lastMoveType)
                         break;
 
@@ -838,8 +838,7 @@ void FlightPathMovementGenerator::DoEventIfAny(Player* player, TaxiPathNodeEntry
     if (uint32 eventid = departure ? node->departureEventID : node->arrivalEventID)
     {
         // TC_LOG_DEBUG("maps.script", "Taxi %s event %u of node %u of path %u for player %s", departure ? "departure" : "arrival", eventid, node->NodeIndex, node->PathID, player->GetName().c_str());
-        //TC player->GetMap()->ScriptsStart(sEventScripts, eventid, player, player);
-        sWorld->ScriptsStart(sEventScripts, eventid, player, player, true);
+        player->GetMap()->ScriptsStart(sEventScripts, eventid, player, player, true);
     }
 }
 
@@ -873,7 +872,7 @@ void FlightPathMovementGenerator::InitEndGridInfo()
 void FlightPathMovementGenerator::PreloadEndGrid()
 {
     // used to preload the final grid where the flightmaster is
-    Map* endMap = sMapMgr->FindBaseMap(_endMapId); //TC has FindBaseNonInstanceMap, why should we exclude instances ? Makes no differences in our case anyway
+    Map* endMap = sMapMgr->FindBaseNonInstanceMap(_endMapId); //Why should we exclude instances ? Makes no differences in our case anyway
 
     // Load the grid
     if (endMap)

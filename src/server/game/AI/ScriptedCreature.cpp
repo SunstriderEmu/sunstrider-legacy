@@ -263,7 +263,7 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
     return me->SummonCreature(id,me->GetPositionX() + x,me->GetPositionY() + y,me->GetPositionZ() + z, angle, (TempSummonType)type, despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* target, int32 School, int32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, uint32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
 {
     //No target so we can't cast
     if (!target)
@@ -485,6 +485,12 @@ void BossAI::_Reset()
         instance->SetData(_bossId, NOT_STARTED);
 }
 
+bool BossAI::CanAIAttack(Unit const* target) const
+{
+ //TC   return CheckBoundary(target);
+    return true;
+}
+
 void BossAI::_JustDied()
 {
     events.Reset();
@@ -601,6 +607,8 @@ void BossAI::UpdateAI(uint32 diff)
     DoMeleeAttackIfReady();
 }
 
+/* remove this block if you don't know why it's commented out
+
 Creature* FindCreature(uint32 entry, float range, Unit* Finder)
 {
     if(!Finder)
@@ -633,13 +641,14 @@ GameObject* FindGameObject(uint32 entry, float range, Unit* Finder)
     Finder->VisitNearbyGridObject(range, searcher);
     return target;
 }
+*/
 
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     Unit* pUnit = nullptr;
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, pUnit, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pUnit;
 }
 
@@ -648,7 +657,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
     std::list<Creature*> pList;
     Trinity::FriendlyCCedInRange u_check(me, range);
     Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, pList, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
 
@@ -657,7 +666,7 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 s
     std::list<Creature*> pList;
     Trinity::FriendlyMissingBuffInRange u_check(me, range, spellid);
     Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, pList, u_check);
-    me->VisitNearbyObject(range, searcher);
+    Cell::VisitAllObjects(me, searcher, range);
     return pList;
 }
 

@@ -17,9 +17,9 @@
 #define CONTACT_DISTANCE            0.5f
 #define INTERACTION_DISTANCE        5.0f
 #define ATTACK_DISTANCE             5.0f
-#define MAX_SEARCHER_DISTANCE       150.0f // pussywizard: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
+#define MAX_SEARCHER_DISTANCE       150.0f // sunwell: replace the use of MAX_VISIBILITY_DISTANCE in searchers, because MAX_VISIBILITY_DISTANCE is quite too big for this purpos
 #define MAX_VISIBILITY_DISTANCE     250.0f      // max distance for visible object show, limited in 333 yards
-#define VISIBILITY_INC_FOR_GOBJECTS 30.0f // pussywizard
+#define VISIBILITY_INC_FOR_GOBJECTS 30.0f // sunwell
 #define VISIBILITY_COMPENSATION     15.0f // increase searchers
 #define SPELL_SEARCHER_COMPENSATION 30.0f // increase searchers size in case we have large npc near cell border
 #define VISIBILITY_DIST_WINTERGRASP 175.0f // LK
@@ -50,6 +50,20 @@ enum TempSummonType
     TEMPSUMMON_MANUAL_DESPAWN              = 8              // despawns when UnSummon() is called
 };
 
+enum PhaseMasks
+{
+	PHASEMASK_NORMAL = 0x00000001,
+	PHASEMASK_ANYWHERE = 0xFFFFFFFF
+};
+
+enum NotifyFlags
+{
+    NOTIFY_NONE                     = 0x00,
+    NOTIFY_AI_RELOCATION            = 0x01,
+    NOTIFY_VISIBILITY_CHANGED       = 0x02,
+    NOTIFY_ALL                      = 0xFF
+};
+
 class WorldPacket;
 class UpdateData;
 class Creature;
@@ -59,6 +73,7 @@ class GameObject;
 class MotionTransport;
 class WorldObject;
 class CreatureAI;
+class ZoneScript;
 
 namespace G3D
 {
@@ -322,16 +337,48 @@ class TC_GAME_API WorldLocation : public Position
 {
     public:
         explicit WorldLocation(uint32 _mapid = MAPID_INVALID, float _x = 0, float _y = 0, float _z = 0, float _o = 0)
-            : m_mapId(_mapid) { Relocate(_x, _y, _z, _o); }
-        WorldLocation(const WorldLocation &loc) { WorldRelocate(loc); }
+            : Position(_x, _y, _z, _o), m_mapId(_mapid) { }
+
+		WorldLocation(uint32 mapId, Position const& position)
+			: Position(position), m_mapId(mapId) { }
+
+		WorldLocation(WorldLocation const& loc)
+			: Position(loc), m_mapId(loc.GetMapId()) { }
 
         void WorldRelocate(const WorldLocation &loc)
-            { m_mapId = loc.GetMapId(); Relocate(loc); }
+        { 
+			m_mapId = loc.GetMapId(); 
+			Relocate(loc); 
+		}
+
+		void WorldRelocate(uint32 _mapId = MAPID_INVALID, float _x = 0.f, float _y = 0.f, float _z = 0.f, float _o = 0.f)
+		{
+			m_mapId = _mapId;
+			Relocate(_x, _y, _z, _o);
+		}
+
+		WorldLocation GetWorldLocation() const
+		{
+			return *this;
+		}
+
         uint32 GetMapId() const { return m_mapId; }
 
         uint32 m_mapId;
 };
 
+template<class T>
+class GridObject
+{
+public:
+	virtual ~GridObject() { }
+
+	bool IsInGrid() const { return _gridRef.isValid(); }
+	void AddToGrid(GridRefManager<T>& m) { ASSERT(!IsInGrid()); _gridRef.link(&m, (T*)this); }
+	void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef.unlink(); }
+private:
+	GridReference<T> _gridRef;
+};
 
 class TC_GAME_API Object
 {
@@ -409,6 +456,8 @@ class TC_GAME_API Object
         void SetStatFloatValue(uint16 index, float value);
         void SetStatInt32Value(uint16 index, int32 value);
         void SetGuidValue(uint16 index, uint64 value); //for TC compat
+		bool AddGuidValue(uint16 index, ObjectGuid value);
+		bool RemoveGuidValue(uint16 index, ObjectGuid value);
 
         void ApplyModUInt32Value(uint16 index, int32 val, bool apply);
         void ApplyModInt32Value(uint16 index, int32 val, bool apply);
@@ -444,8 +493,10 @@ class TC_GAME_API Object
         virtual bool HasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool HasInvolvedQuest(uint32 /* quest_id */) const { return false; }
 
+
         /** 
             Visits cells around the object, fill players UpdateData with updates from this object if needed
+			player_set is there for performance only, since this function is called a lot, this helps avoiding recreating it at each call. Content is not important and is cleared at each call.
         */
         virtual void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) { }
         /**
@@ -479,9 +530,6 @@ class TC_GAME_API Object
         inline DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return nullptr; }
         inline DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return nullptr; }
 
-        //dont use, used by map only
-        Cell const& GetCurrentCell() const { return _currentCell; }
-        void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
     protected:
 
         Object();
@@ -518,12 +566,13 @@ class TC_GAME_API Object
 
         uint16 _fieldNotifyFlags;
 
+		virtual void AddToObjectUpdate() = 0;
+		virtual void RemoveFromObjectUpdate() = 0;
+		void AddToObjectUpdateIfNeeded();
+
         bool m_objectUpdated;
 
     private:
-        //only used for creatures & gobject for now
-        Cell _currentCell;
-
         bool m_inWorld;
 
         PackedGuid m_PackGUID;
@@ -534,14 +583,73 @@ class TC_GAME_API Object
         Object& operator=(Object const&);                   // prevent generation assigment operator
 };
 
+
+template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>
+class FlaggedValuesArray32
+{
+public:
+	FlaggedValuesArray32()
+	{
+		memset(&m_values, 0x00, sizeof(T_VALUES) * ARRAY_SIZE);
+		m_flags = 0;
+	}
+
+	T_FLAGS  GetFlags() const { return m_flags; }
+	bool     HasFlag(FLAG_TYPE flag) const { return m_flags & (1 << flag); }
+	void     AddFlag(FLAG_TYPE flag) { m_flags |= (1 << flag); }
+	void     DelFlag(FLAG_TYPE flag) { m_flags &= ~(1 << flag); }
+
+	T_VALUES GetValue(FLAG_TYPE flag) const { return m_values[flag]; }
+	void     SetValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] = value; }
+	void     AddValue(FLAG_TYPE flag, T_VALUES value) { m_values[flag] += value; }
+
+private:
+	T_VALUES m_values[ARRAY_SIZE];
+	T_FLAGS m_flags;
+};
+
+enum MapObjectCellMoveState
+{
+	MAP_OBJECT_CELL_MOVE_NONE, //not in move list
+	MAP_OBJECT_CELL_MOVE_ACTIVE, //in move list
+	MAP_OBJECT_CELL_MOVE_INACTIVE, //in move list but should not move
+};
+
+class TC_GAME_API MapObject
+{
+	friend class Map; //map for moving creatures
+	friend class ObjectGridLoader; //grid loader for loading creatures
+
+protected:
+	MapObject() : _moveState(MAP_OBJECT_CELL_MOVE_NONE)
+	{
+		_newPosition.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+private:
+	Cell _currentCell;
+	Cell const& GetCurrentCell() const { return _currentCell; }
+	void SetCurrentCell(Cell const& cell) { _currentCell = cell; }
+
+	MapObjectCellMoveState _moveState;
+	Position _newPosition;
+	void SetNewCellPosition(float x, float y, float z, float o)
+	{
+		_moveState = MAP_OBJECT_CELL_MOVE_ACTIVE;
+		_newPosition.Relocate(x, y, z, o);
+	}
+};
+
 class TC_GAME_API WorldObject : public Object, public WorldLocation
 {
     public:
-        ~WorldObject ( ) override = default;
+		~WorldObject() override;
 
         virtual void Update ( uint32 /*time_diff*/ ) { }
 
-        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 mapid );
+        void _Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask);
+        virtual void AddToWorld() override;
+		virtual void RemoveFromWorld() override;
 
         void GetNearPoint2D( float &x, float &y, float distance, float absAngle) const;
         void GetNearPoint( WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d,float absAngle) const;
@@ -578,23 +686,29 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         //Set Z to closest allowed position, depending on fly/swim/waterwalk ability of object
         void UpdateAllowedPositionZ(float x, float y, float &z, float maxDist = 50.0f) const;
         //Set Z to closest allowed position, depending on given fly/swim/waterwalk abilities given
-        static void UpdateAllowedPositionZ(PhaseMask phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
+        static void UpdateAllowedPositionZ(uint32 phaseMask, uint32 mapId, float x, float y, float &z, bool canSwim, bool canFly, bool waterWalk, float maxDist = 50.0f);
 
         void GetRandomPoint( const Position &pos, float distance, float &rand_x, float &rand_y, float &rand_z ) const;
+		Position GetRandomPoint(Position const &srcPos, float distance) const;
 
-        void SetMapId(uint32 newMap) { m_mapId = newMap; m_map = nullptr; }
+		virtual void SetMap(Map* map);
+		virtual void ResetMap();
 
-        void SetInstanceId(uint32 val) { m_InstanceId = val; m_map = nullptr; }
+		void SetZoneScript();
+		void ClearZoneScript();
+		ZoneScript* GetZoneScript() const { return m_zoneScript; }
+
         uint32 GetInstanceId() const { return m_InstanceId; }
 
-        uint32 GetZoneId() const;
-        uint32 GetAreaId() const;
-        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const;
+        uint32 GetZoneId() const { return m_zoneId; }
+        uint32 GetAreaId() const { return m_areaId; }
+        void GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const { zoneid = m_zoneId, areaid = m_areaId; }
 
         //for trinitycore compatibility
-        PhaseMask GetPhaseMask() const { return PhaseMask(1); }
-        bool InSamePhase(WorldObject const* obj) const { return true; }
-        bool InSamePhase(PhaseMask phasemask) const { return true; }
+        uint32 GetPhaseMask() const { return m_phaseMask; }
+		bool InSamePhase(WorldObject const* obj) const;
+		bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask) != 0; }
+		virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
 
         InstanceScript* GetInstanceScript();
 
@@ -635,10 +749,12 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true);  // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
-        virtual void SendMessageToSet(WorldPacket *data, bool self, bool to_possessor = true);
-        virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool to_possessor = true);
+        virtual void SendMessageToSet(WorldPacket *data, bool self);
+        virtual void SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin = false, Player const* skipped_rcvr = nullptr);
         virtual void SendMessageToSet(WorldPacket* data, Player* skipped_rcvr);
         void BuildHeartBeatMsg( WorldPacket *data ) const;
+
+		virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const { return 1; }
 
         void SendObjectDeSpawnAnim(uint64 guid);
 
@@ -646,13 +762,19 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
 
         void AddObjectToRemoveList();
 
-        float GetVisibilityRange() const;
+		float GetGridActivationRange() const;
+		float GetVisibilityRange() const;
+		float GetSightRange(WorldObject const* target = nullptr) const;
+		bool CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false, bool checkAlert = false) const;
 
-        // main visibility check function in normal case (ignore grey zone distance check)
-        bool isVisibleFor(Player const* u) const { return IsVisibleForInState(u,false); }
+		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
+		FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
 
-        // low level function for visibility change code, must be define in all main world object subclasses
-        virtual bool IsVisibleForInState(Player const* u, bool inVisibleList) const = 0;
+		FlaggedValuesArray32<int32, uint32, InvisibilityType, TOTAL_INVISIBILITY_TYPES> m_invisibility;
+		FlaggedValuesArray32<int32, uint32, InvisibilityType, TOTAL_INVISIBILITY_TYPES> m_invisibilityDetect;
+
+		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibility;
+		FlaggedValuesArray32<int32, uint32, ServerSideVisibilityType, TOTAL_SERVERSIDE_VISIBILITY_TYPES> m_serverSideVisibilityDetect;
 
         // Low Level Packets
         void PlayDirectSound(uint32 Sound, Player* target = nullptr);
@@ -660,16 +782,12 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
         void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
 
-        //Get unit map. Will create map if it is not created yet.
-        Map      * GetMap() const   { return m_map ? m_map : const_cast<WorldObject*>(this)->_getMap(); }
-        //Get unit map. May return null if map is not created yet.
-        Map      * FindMap() const  { return m_map ? m_map : const_cast<WorldObject*>(this)->FindBaseMap(); }
+		Map* GetMap() const { ASSERT(m_currMap); return m_currMap; }
+		Map* FindMap() const { return m_currMap; }
+
         Map const* GetBaseMap() const;
-        inline Creature* SummonCreature(uint32 id, Position const& pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const
-        {
-            return SummonCreature(id, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(), spwtype, despwtime);
-        }
-        Creature* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
+		TempSummon* SummonCreature(uint32 id, Position const& pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
+		TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0) const;
         GameObject* SummonGameObject(uint32 entry, Position const& pos, G3D::Quat const& rot, uint32 respawnTime) const;
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, G3D::Quat const& rot, uint32 respawnTime /* s */);
         Creature* SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = nullptr);
@@ -680,19 +798,25 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         Player* SelectNearestPlayer(float distance, bool alive = true) const;
 
         bool isActiveObject() const { return m_isActive; }
-        /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitNearbyObject).
+        /** Old setActive. Force an object to be considered as active. An active object will keep a grid loaded an make every other objects around in grid being updated as well (= cause VisitAllObjects).
         So when using this, don't forget to set it as false as soon as you don't need it anymore.
         */
         void SetKeepActive(bool isActiveObject);
         void SetWorldObject(bool apply);
-        template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier) const { GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier); }
-        bool IsTempWorldObject;
+		bool IsPermanentWorldObject() const { return m_isWorldObject; }
+		bool IsWorldObject() const;
+
+        bool m_isTempWorldObject;
 
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint64 lootingGroupLeaderGUID;                      // used to find group which is looting corpse
 
+		void DestroyForNearbyPlayers();
+		virtual void UpdateObjectVisibility(bool forced = true);
+		virtual void UpdateObjectVisibilityOnCreate()
+		{
+			UpdateObjectVisibility(true);
+		}
         
         MovementInfo m_movementInfo;
         
@@ -713,25 +837,65 @@ class TC_GAME_API WorldObject : public Object, public WorldLocation
         virtual float GetStationaryZ() const { return GetPositionZ(); }
         virtual float GetStationaryO() const { return GetOrientation(); }
 
+        void UpdatePositionData();
+        float GetFloorZ() const;
+
         void BuildUpdate(UpdateDataMapType&, UpdatePlayerSet& player_set) override;
+
+		void AddToObjectUpdate() override;
+		void RemoveFromObjectUpdate() override;
+
+		//relocation and visibility system functions
+		void AddToNotify(uint16 f) { m_notifyflags |= f; }
+		bool isNeedNotify(uint16 f) const { return (m_notifyflags & f) != 0; }
+		uint16 GetNotifyFlags() const { return m_notifyflags; }
+		bool NotifyExecuted(uint16 f) const { return (m_executed_notifies & f) != 0; }
+		void SetNotified(uint16 f) { m_executed_notifies |= f; }
+		void ResetAllNotifies() { m_notifyflags = 0; m_executed_notifies = 0; }
+
     protected:
-        explicit WorldObject();
+        explicit WorldObject(bool isWorldObject); //note: here it means if it is in grid object list or world object list
         std::string m_name;
+		const bool m_isWorldObject;
+		ZoneScript* m_zoneScript;
         bool m_isActive;
+
+		//these functions are used mostly for Relocate() and Corpse/Player specific stuff...
+		//use them ONLY in LoadFromDB()/Create() funcs and nowhere else!
+		//mapId/instanceId should be set in SetMap() function!
+		void SetLocationMapId(uint32 _mapId) { m_mapId = _mapId; }
+		void SetLocationInstanceId(uint32 _instanceId) { m_InstanceId = _instanceId; }
+
+		virtual bool IsNeverVisible() const { return !IsInWorld(); }
+		virtual bool IsAlwaysVisibleFor(WorldObject const* /*seer*/) const { return false; }
+		virtual bool IsInvisibleDueToDespawn() const { return false; }
+		//difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
+		virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
 
         // transports
         Transport* m_transport;
 
-    private:
-        uint32 m_InstanceId;
-        Map    *m_map;
+        virtual void ProcessPositionDataChanged(PositionFullTerrainStatus const& data);
+        uint32 m_zoneId;
+        uint32 m_areaId;
+        float m_staticFloorZ;
 
+    private:
+        Map*   m_currMap;                                   //current object's Map location
+		uint32 m_InstanceId;                                // in map copy with instance id
+        uint32 m_phaseMask;                                 // in area phase state
+
+		uint16 m_notifyflags;
+		uint16 m_executed_notifies;
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D, bool incOwnRadius = true, bool incTargetRadius = true) const;
 
-        Map* _getMap();
-        Map* FindBaseMap();
-
         bool mSemaphoreTeleport;
+
+		bool CanNeverSee(WorldObject const* obj) const;
+		virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
+		bool CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert = false) const;
+		bool CanDetectInvisibilityOf(WorldObject const* obj) const;
+		bool CanDetectStealthOf(WorldObject const* obj, bool checkAlert = false) const;
 };
 
 namespace Trinity

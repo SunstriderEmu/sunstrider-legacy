@@ -9,13 +9,26 @@
 int GuardAI::Permissible(const Creature *creature)
 {
     if( creature->IsGuard())
-        return PERMIT_BASE_SPECIAL;
+        return PERMIT_BASE_PROACTIVE;
 
     return PERMIT_BASE_NO;
 }
 
 GuardAI::GuardAI(Creature *c) : CreatureAI(c), i_creature(*c), i_victimGuid(0), i_state(STATE_NORMAL), i_tracker(TIME_INTERVAL_LOOK)
 {
+}
+
+bool GuardAI::CanSeeAlways(WorldObject const* obj)
+{
+	if (!obj->isType(TYPEMASK_UNIT))
+		return false;
+
+	ThreatContainer::StorageType threatList = me->getThreatManager().getThreatList();
+	for (ThreatContainer::StorageType::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+		if ((*itr)->getUnitGuid() == obj->GetGUID())
+			return true;
+
+	return false;
 }
 
 void GuardAI::MoveInLineOfSight(Unit *u)
@@ -28,7 +41,7 @@ void GuardAI::MoveInLineOfSight(Unit *u)
         && u->isInAccessiblePlaceFor(&i_creature) 
         && ( u->IsHostileToPlayers() || i_creature.IsHostileTo(u) ))
     {
-        float attackRadius = i_creature.GetAttackDistance(u);
+        float attackRadius = i_creature.GetAggroRange(u);
         if(i_creature.IsWithinDistInMap(u,attackRadius))
             AttackStart(u);
     }
@@ -43,12 +56,10 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
         i_state = STATE_NORMAL;
 
         i_victimGuid = 0;
-        i_creature.CombatStop();
+        i_creature.CombatStop(true);
         i_creature.DeleteThreatList();
         return;
     }
-
-    Unit* victim = ObjectAccessor::GetUnit(i_creature, i_victimGuid );
 
     i_creature.RemoveAllAuras();
     i_creature.DeleteThreatList();
@@ -59,6 +70,9 @@ void GuardAI::EnterEvadeMode(EvadeReason why)
     // Remove TargetedMovementGenerator from MotionMaster stack list, and add HomeMovementGenerator instead
     if( i_creature.GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE )
         i_creature.GetMotionMaster()->MoveTargetedHome();
+
+	//stealth detection! This aura also show the stealth detect icon on the npc when stealthed. This has infinite detect range, is this correct? Else there is also 37691 which has the visual but no stealth detect improvement
+	i_creature.AddAura(8279, &i_creature);
 }
 
 void GuardAI::UpdateAI(const uint32 /*diff*/)

@@ -9,6 +9,11 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 
+CreatureAI::CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c), m_MoveInLineOfSight_locked(false)
+{
+
+}
+
 //Disable CreatureAI when charmed
 void CreatureAI::OnCharmed(Unit* charmer, bool apply)
 {
@@ -70,29 +75,38 @@ bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
     return false;
 }
 
+// scripts does not take care about MoveInLineOfSight loops
+// MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
+void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
+{
+	if (m_MoveInLineOfSight_locked == true)
+		return;
+	m_MoveInLineOfSight_locked = true;
+	MoveInLineOfSight(who);
+	m_MoveInLineOfSight_locked = false;
+}
+
 void CreatureAI::MoveInLineOfSight(Unit* who)
 {
     //if has just respawned and not a summon, wait a bit before reacting
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-    if(AssistPlayerInCombatAgainst(who))
-        return;
+	if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
+		return;
 
-    CanAttackResult result = me->CanAggro(who, false);
-    if(   result == CAN_ATTACK_RESULT_CANNOT_DETECT_STEALTH_ALERT_RANGE
-       && me->CanDoStealthAlert(who))
-    {
-        me->StartStealthAlert(who);
-    }
-
-    if(result != CAN_ATTACK_RESULT_OK) 
-        return;
+	if (!me->HasReactState(REACT_AGGRESSIVE))
+		return;
 
     //attack target if no current victim, else just enter combat with it
     if (!me->GetVictim())
     {
-        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+		if (AssistPlayerInCombatAgainst(who))
+			return;
+
+		CanAttackResult result = me->CanAggro(who, false);
+		if (result != CAN_ATTACK_RESULT_OK)
+			return;
 
         if (me->HasUnitState(UNIT_STATE_DISTRACTED))
         {
@@ -101,7 +115,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         }
 
         me->ClearUnitState(UNIT_STATE_EVADE);
-
+		who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
     } else {
         if(!me->IsInCombatWith(who))
@@ -109,6 +123,20 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
             who->SetInCombatWith(me);
             me->AddThreat(who, 0.0f);
         }
+    }
+}
+
+void CreatureAI::_OnOwnerCombatInteraction(Unit* target)
+{
+    if (!target || !me->IsAlive())
+        return;
+
+    if (!me->HasReactState(REACT_PASSIVE) && /*me->CanStartAttack(target, true)*/ me->CanAttack(target, true))
+    {
+        if (me->IsInCombat())
+            me->AddThreat(target, 0.0f);
+        else
+            AttackStart(target);
     }
 }
 
@@ -128,6 +156,9 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
     if (!_EnterEvadeMode(why))
         return;
 
+    if (!me->IsAlive())
+        return;
+
     //TC_LOG_DEBUG("entities.unit", "Creature %u enters evade mode.", me->GetEntry());
 
 #ifdef LICH_KING
@@ -141,20 +172,11 @@ void CreatureAI::EnterEvadeMode(EvadeReason why)
         }
         else
         {
-            // Required to prevent attacking creatures that are evading and cause them to reenter combat
-            // Does not apply to MoveFollow
-            me->AddUnitState(UNIT_STATE_EVADE);
             me->GetMotionMaster()->MoveTargetedHome();
         }
 #ifdef LICH_KING
     }
 #endif
-
-    if(me->IsAlive())
-    {
-        me->AddUnitState(UNIT_STATE_EVADE);
-        me->GetMotionMaster()->MoveTargetedHome();
-    }
 
     Reset();
 

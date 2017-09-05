@@ -39,8 +39,8 @@ Group::~Group()
 {
     if(m_bgGroup)
     {
-        if(m_bgGroup->GetBgRaid(TEAM_ALLIANCE) == this) m_bgGroup->SetBgRaid(TEAM_ALLIANCE, nullptr);
-        else if(m_bgGroup->GetBgRaid(TEAM_HORDE) == this) m_bgGroup->SetBgRaid(TEAM_HORDE, nullptr);
+        if(m_bgGroup->GetBgRaid(ALLIANCE) == this) m_bgGroup->SetBgRaid(ALLIANCE, nullptr);
+        else if(m_bgGroup->GetBgRaid(HORDE) == this) m_bgGroup->SetBgRaid(HORDE, nullptr);
         else TC_LOG_ERROR("FIXME","Group::~Group: battleground group is not linked to the correct battleground.");
     }
     Rolls::iterator itr;
@@ -142,7 +142,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
     m_mainTank = (*result)[0].GetUInt32();
     m_mainAssistant = (*result)[1].GetUInt64();
     m_lootMethod = (LootMethod)(*result)[2].GetUInt8();
-    m_looterGuid = MAKE_NEW_GUID((*result)[3].GetUInt32(), 0, HIGHGUID_PLAYER);
+    m_looterGuid = MAKE_NEW_GUID((*result)[3].GetUInt32(), 0, HighGuid::Player);
     m_lootThreshold = (ItemQualities)(*result)[4].GetUInt8();
 
     for(int i=0; i<TARGETICONCOUNT; i++)
@@ -170,7 +170,7 @@ bool Group::LoadGroupFromDB(const uint64 &leaderGuid, QueryResult result, bool l
 bool Group::LoadMemberFromDB(uint32 guidLow, uint8 subgroup, bool assistant)
 {
     MemberSlot member;
-    member.guid      = MAKE_NEW_GUID(guidLow, 0, HIGHGUID_PLAYER);
+    member.guid      = MAKE_NEW_GUID(guidLow, 0, HighGuid::Player);
 
     // skip non-existed member
     if(!sCharacterCache->GetCharacterNameByGuid(member.guid, member.name))
@@ -676,7 +676,8 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
         //roll for over-threshold item if it's one-player loot
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM),0,HIGHGUID_ITEM);
+			uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
+
             auto  r=new Roll(newitemGUID,*i);
 
             //a vector is filled with only near party members
@@ -742,7 +743,7 @@ void Group::NeedBeforeGreed(const uint64& playerGUID, Loot *loot, WorldObject* o
         //only roll for one-player items, not for ones everyone can get
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-            uint64 newitemGUID = MAKE_NEW_GUID(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM),0,HIGHGUID_ITEM);
+            uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
             auto  r=new Roll(newitemGUID,*i);
 
             for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
@@ -1078,13 +1079,28 @@ void Group::SendUpdate()
         if (!player || !player->GetSession() || player->GetGroup() != this)
             continue;
 
-                                                            // guess size
+        //LK OK                                             // guess size
         WorldPacket data(SMSG_GROUP_LIST, (1+1+1+1+8+4+GetMembersCount()*20));
         data << (uint8)m_groupType;                         // group type
+#ifndef LICH_KING
         data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
+#endif
         data << (uint8)(citr->group);                       // groupid
+#ifdef LICH_KING
+		data << uint8(slot->flags);
+#endif
         data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
+#ifdef LICH_KING
+		if (isLFGGroup())
+		{
+			data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
+			data << uint32(sLFGMgr->GetDungeon(m_guid));
+		}
+		data << uint64(m_guid);
+		data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
+#else
         data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
+#endif
         data << uint32(GetMembersCount()-1);
         for(member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
         {
@@ -1100,6 +1116,9 @@ void Group::SendUpdate()
                                                             // online-state
             data << (uint8)(onlineState);
             data << (uint8)(citr2->group);                  // groupid
+#ifdef LICH_KING
+			data << uint8(citr->flags);                     // See enum GroupMemberFlags
+#endif
             data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
         }
 
@@ -1113,7 +1132,10 @@ void Group::SendUpdate()
                 data << uint64(0);
             data << (uint8)m_lootThreshold;                 // loot threshold
             data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
-
+#ifdef LICH_KING
+			data << uint8(m_raidDifficulty);                // Raid Difficulty
+			data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
+#endif
         }
         player->SendDirectMessage( &data );
     }
@@ -1147,7 +1169,7 @@ void Group::UpdatePlayerOutOfRange(Player* pPlayer)
     for(GroupReference *itr = GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         player = itr->GetSource();
-        if (player && player != pPlayer && !pPlayer->isVisibleFor(player))
+        if (player && player != pPlayer && !pPlayer->HaveAtClient(player))
             player->SendDirectMessage(&data);
     }
 }
@@ -1922,7 +1944,7 @@ Player* Group::GetRandomMember()
         players.push_back(player);
     }
     
-    Trinity::Containers::RandomResizeList(players, 1);
+    Trinity::Containers::RandomResize(players, 1);
     
     return players.front();
 }

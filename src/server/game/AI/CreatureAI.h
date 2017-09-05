@@ -3,7 +3,6 @@
 #define TRINITY_CREATUREAI_H
 
 #include "Define.h"
-#include "Dynamic/FactoryHolder.h"
 #include "UnitAI.h"
 
 class Unit;
@@ -64,7 +63,7 @@ class TC_GAME_API CreatureAI : public UnitAI
             EVADE_REASON_OTHER,
         };
 
-        CreatureAI(Creature *c) : UnitAI((Unit*)c), me(c) {}
+		explicit CreatureAI(Creature *c);
 
         ~CreatureAI() override = default;
 
@@ -77,11 +76,8 @@ class TC_GAME_API CreatureAI : public UnitAI
         //Called when MoveInLineOfSight, check if 'who' is a player or has a player owner, and help him if any of his attackers are in assist range. Return true if started helping.
         virtual bool AssistPlayerInCombatAgainst(Unit* who);
 
-        // Called at each *who move, AND if creature is aggressive
-        virtual void MoveInLineOfSight(Unit *);
-        
-        //Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
-        virtual void MoveInLineOfSight2(Unit *) {}
+		// Called if IsVisible(Unit* who) is true at each who move, reaction at visibility zone enter
+		void MoveInLineOfSight_Safe(Unit* who);
 
         // Called for reaction at stopping attack at no attackers or targets
         virtual void EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);
@@ -105,8 +101,6 @@ class TC_GAME_API CreatureAI : public UnitAI
         // Called when spell hits a target
         virtual void SpellHitTarget(Unit* target, const SpellInfo*) {}
 
-        // Called when the creature is target of hostile action: swing, hostile spell landed, fear/etc)
-        void AttackedBy(Unit* /*attacker*/) override { }
         virtual bool IsEscorted() const { return false; }
         virtual void AttackedUnitDied(Unit* /* attacked */) { }
 
@@ -129,7 +123,14 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual void EnterCombat(Unit* enemy) {}
         
         virtual void ReceiveEmote(Player* /*player*/, uint32 /*text_emote*/) {}
-        
+
+		// Called when owner takes damage
+        virtual void OwnerAttackedBy(Unit* attacker) { _OnOwnerCombatInteraction(attacker); }
+
+		// Called when owner attacks something
+        virtual void OwnerAttacked(Unit* target) { _OnOwnerCombatInteraction(target); }
+
+
         virtual void DespawnDueToGameEventEnd(int32 /*eventId*/) {}
 
         // called when the corpse of this creature gets removed
@@ -144,11 +145,17 @@ class TC_GAME_API CreatureAI : public UnitAI
         //called for friendly creatures death FOR UP TO 60m
         virtual void FriendlyKilled(Creature const* c, float range) {}
 
+        //remove me as soon as you can
         virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, uint32 /*effIndex*/) { return false; }
 
         virtual void OnRemove() {}
-        
+
+		//LK
+		virtual void PassengerBoarded(Unit* /*passenger*/, int8 /*seatId*/, bool /*apply*/) { }
+
         virtual void OnSpellClick(Unit* /*clicker*/, bool& /*result*/) { }
+
+		virtual bool CanSeeAlways(WorldObject const* /*obj*/) { return false; }
 
         /* Script interaction */
         virtual uint64 message(uint32 id, uint64 data) { return 0; }
@@ -159,23 +166,17 @@ class TC_GAME_API CreatureAI : public UnitAI
         virtual PlayerAI* GetAIForCharmedPlayer(Player* /*who*/) { return nullptr; }
 
     protected:
-        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);        
-};
+		// Called at each *who move, AND if creature is aggressive
+		virtual void MoveInLineOfSight(Unit *);
 
-struct SelectableAI : public FactoryHolder<CreatureAI>, public Permissible<Creature>
-{
+		//Same as MoveInLineOfSight but with is called with every react state (so not only if the creature is aggressive)
+		virtual void MoveInLineOfSight2(Unit *) {}
 
-    SelectableAI(const char *id) : FactoryHolder<CreatureAI>(id) {}
-};
+        bool _EnterEvadeMode(EvadeReason why = EVADE_REASON_OTHER);  
 
-template<class REAL_AI>
-struct CreatureAIFactory : public SelectableAI
-{
-    CreatureAIFactory(const char *name) : SelectableAI(name) {}
-
-    CreatureAI* Create(void *) const override;
-
-    int Permit(const Creature *c) const override { return REAL_AI::Permissible(c); }
+	private:
+		bool m_MoveInLineOfSight_locked;
+        void _OnOwnerCombatInteraction(Unit* target);
 };
 
 enum Permitions
@@ -187,40 +188,6 @@ enum Permitions
     PERMIT_BASE_FACTION_SPECIFIC   = 400,
     PERMIT_BASE_SPECIAL            = 800
 };
-
-typedef FactoryHolder<CreatureAI> CreatureAICreator;
-typedef FactoryHolder<CreatureAI>::FactoryHolderRegistry CreatureAIRegistry;
-
-#define sCreatureAIRegistry CreatureAIRegistry::instance()
-
-//GO
-struct SelectableGameObjectAI : public FactoryHolder<GameObjectAI>, public Permissible<GameObject>
-{
-    SelectableGameObjectAI(const char *id) : FactoryHolder<GameObjectAI>(id) {}
-};
-
-template<class REAL_GO_AI>
-struct GameObjectAIFactory : public SelectableGameObjectAI
-{
-    GameObjectAIFactory(const char *name) : SelectableGameObjectAI(name) {}
-
-    GameObjectAI* Create(void *) const override;
-
-    int Permit(const GameObject *g) const override { return REAL_GO_AI::Permissible(g); }
-};
-
-template<class REAL_GO_AI>
-inline GameObjectAI*
-GameObjectAIFactory<REAL_GO_AI>::Create(void *data) const
-{
-    GameObject* go = reinterpret_cast<GameObject *>(data);
-    return (new REAL_GO_AI(go));
-}
-
-typedef FactoryHolder<GameObjectAI> GameObjectAICreator;
-typedef FactoryHolder<GameObjectAI>::FactoryHolderRegistry GameObjectAIRegistry;
-
-#define sGameObjectAIRegistry GameObjectAIRegistry::instance()
 
 #endif
 
