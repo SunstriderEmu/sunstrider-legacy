@@ -368,6 +368,8 @@ extern int main(int argc, char **argv)
 
     sLog->SetSynchronous();
 
+    sIRCMgr->stopSessions(); //stop irc sessions if any
+
     //  sScriptMgr->OnShutdown();
 
     // set server offline
