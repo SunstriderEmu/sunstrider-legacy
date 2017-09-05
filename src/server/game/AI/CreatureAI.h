@@ -3,7 +3,6 @@
 #define TRINITY_CREATUREAI_H
 
 #include "Define.h"
-#include "Dynamic/FactoryHolder.h"
 #include "UnitAI.h"
 
 class Unit;

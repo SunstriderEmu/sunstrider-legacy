@@ -688,8 +688,8 @@ bool MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
     {
         bool delayed = (_top == slot && (_cleanFlag & MMCF_UPDATE));
 
-        Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
-        //kelno: crashfix from sunwell: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
+        Impl[slot] = nullptr; // in case a new one is generated in this slot during directdelete
+        //kelno: clear slot AND decrease top immediately to avoid crashes when referencing null top in DirectDelete
         while (!empty() && !top())
             --_top;
 
