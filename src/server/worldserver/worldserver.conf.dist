@@ -291,7 +291,7 @@ InstanceCrashRecovery.Enable = 0
 #        Default : false
 #
 #    Anticheat.Movement.Warn
-#        Global GM warning + IRC if enabled
+#        Global GM warning
 #         Default : True
 #
 ###################################################################################################################
