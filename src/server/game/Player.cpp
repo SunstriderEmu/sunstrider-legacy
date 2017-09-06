@@ -50,7 +50,6 @@
 #include "InstanceScript.h"
 #include "ConditionMgr.h"
 #include "SpectatorAddon.h"
-#include "IRCMgr.h"
 #include "ScriptMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "Mail.h"

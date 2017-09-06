@@ -143,14 +143,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "set",            SEC_ADMINISTRATOR,   true,  true,  nullptr,                                           "", serverSetCommandTable },
     };
 
-    static std::vector<ChatCommand> ircCommandtable =
-    {
-        { "reconnect",      SEC_ADMINISTRATOR,   true,  false, &ChatHandler::HandleIRCReconnectCommand,        "" },
-        { "join",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCJoinCommand,             "" },
-        { "part",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCPartCommand,             "" },
-        { "quit",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCQuitCommand,             "" },
-    };
-
     static std::vector<ChatCommand> mmapCommandTable =
     {
         { "path",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmapPathCommand,            "" },
@@ -737,7 +729,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "honor",          SEC_GAMEMASTER2,  false, false, nullptr,                                        "", honorCommandTable },
         { "hover",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleHoverCommand,               "" },
         { "instance",       SEC_GAMEMASTER3,  true,  true,  nullptr,                                        "", instanceCommandTable },
-        { "irc",            SEC_GAMEMASTER3,  true,  false, nullptr,                                        "", ircCommandtable },
         { "itemmove",       SEC_GAMEMASTER2,  false, false, &ChatHandler::HandleItemMoveCommand,            "" },
         { "kick",           SEC_GAMEMASTER2,  true,  false, &ChatHandler::HandleKickPlayerCommand,          "" },
         { "learn",          SEC_GAMEMASTER1,  false, false, nullptr,                                        "", learnCommandTable },

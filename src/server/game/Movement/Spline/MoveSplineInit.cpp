@@ -165,11 +165,11 @@ namespace Movement
         
 #ifdef LICH_KING
         if (!args.flags.backward)
-            moveFlags = moveFlags & ~(MOVEMENTFLAG_BACKWARD) | MOVEMENTFLAG_FORWARD;
+            moveFlags = (moveFlags & ~(MOVEMENTFLAG_BACKWARD)) | MOVEMENTFLAG_FORWARD;
         else
-            moveFlags = moveFlags & ~(MOVEMENTFLAG_FORWARD) | MOVEMENTFLAG_BACKWARD;
+            moveFlags = (moveFlags & ~(MOVEMENTFLAG_FORWARD)) | MOVEMENTFLAG_BACKWARD;
 #else
-        moveFlags = moveFlags & ~(MOVEMENTFLAG_BACKWARD) | MOVEMENTFLAG_FORWARD;
+        moveFlags = (moveFlags & ~(MOVEMENTFLAG_BACKWARD)) | MOVEMENTFLAG_FORWARD;
 #endif
 
         if (moveFlags & MOVEMENTFLAG_ROOT)

@@ -32,6 +32,7 @@
 #include "ObjectMgr.h"
 #include "World.h"
 #include "Pet.h"
+#include "Chat.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
 

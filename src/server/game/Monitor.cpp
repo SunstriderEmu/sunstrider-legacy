@@ -2,6 +2,7 @@
 #include "World.h"
 #include "BattleGroundMgr.h"
 #include "Language.h"
+#include "Chat.h"
 
 Monitor::Monitor()
 	: _worldTickCount(0),
