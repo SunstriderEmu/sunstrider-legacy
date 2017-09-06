@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "Player.h"
 #include "BattleGroundMgr.h"
-#include "BattlegroundQueue.h"
+#include "BattleGroundQueue.h"
 #include "BattleGroundAV.h"
 #include "BattleGroundAB.h"
 #include "BattleGroundEY.h"

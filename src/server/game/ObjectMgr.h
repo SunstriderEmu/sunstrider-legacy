@@ -28,7 +28,6 @@ struct PlayerClassInfo;
 struct PlayerClassLevelInfo;
 struct PlayerInfo;
 struct PlayerLevelInfo;
-struct AccessRequirement;
 
 struct PageText
 {

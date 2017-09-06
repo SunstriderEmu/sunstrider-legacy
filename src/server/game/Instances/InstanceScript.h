@@ -98,18 +98,15 @@ class TC_GAME_API InstanceScript : public ZoneScript
         InstanceScript(Map *map);
         ~InstanceScript() override = default;
 
-		Map* instance;
+	Map* instance;
 			
-        //All-purpose data storage 64 bit
-        virtual uint64 GetData64(uint32 Data) const { return 0; }
-        virtual void SetData64(uint32 Data, uint64 Value) { }
 
         //Used by the map's CannotEnter function.
         //This is to prevent players from entering during boss encounters.
         virtual bool IsEncounterInProgress() const;
 
-		//Called every map update
-		virtual void Update(uint32 /*diff*/) {}
+	//Called every map update
+	virtual void Update(uint32 /*diff*/) {}
 
         // Save and Load instance data to the database
         virtual std::string GetSaveData() { return ""; } //TC has a more advanced system here but this would need a lot more work to transform actual scripts
@@ -135,20 +132,20 @@ class TC_GAME_API InstanceScript : public ZoneScript
 
         Player* GetPlayer() const;
 
-		//Handle open / close objects
-		//use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
-		//use HandleGameObject(GUID,boolen,NULL); in any other script
-		void HandleGameObject(uint64 GUID, bool open, GameObject *go = nullptr);
+	//Handle open / close objects
+	//use HandleGameObject(NULL,boolen,GO); in OnGameObjectCreate in instance scripts
+	//use HandleGameObject(GUID,boolen,NULL); in any other script
+	void HandleGameObject(uint64 GUID, bool open, GameObject *go = nullptr);
 
-		//Respawns a GO having negative spawntimesecs in gameobject-table
-		void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);
+	//Respawns a GO having negative spawntimesecs in gameobject-table
+	void DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn = MINUTE);
 
-		//change active state of doors or buttons
-		void DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime = 0, bool bUseAlternativeState = false);
+	//change active state of doors or buttons
+	void DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime = 0, bool bUseAlternativeState = false);
 
-		void SaveToDB();
-		//When save is needed, this function generates the data
-		virtual const char* Save() { return ""; }
+	void SaveToDB();
+	//When save is needed, this function generates the data
+	virtual const char* Save() { return ""; }
 
 
     protected:

@@ -1063,20 +1063,6 @@ struct InstancePlayerBind
     InstancePlayerBind() : save(nullptr), perm(false) {}
 };
 
-struct AccessRequirement
-{
-    uint8  levelMin;
-    uint8  levelMax;
-    uint32 item;
-    uint32 item2;
-    uint32 heroicKey;
-    uint32 heroicKey2;
-    uint32 quest;
-    uint32 questFailedText; //entry in trinity_string
-    uint32 heroicQuest;
-    uint32 heroicQuestFailedText; //entry in trinity_string
-};
-
 enum CharDeleteMethod
 {
     CHAR_DELETE_REMOVE = 0,                      // Completely remove from the database

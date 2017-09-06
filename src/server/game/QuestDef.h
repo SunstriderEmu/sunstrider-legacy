@@ -366,5 +366,20 @@ struct QuestStatusData
     uint32 m_itemcount[ QUEST_OBJECTIVES_COUNT ];
     uint32 m_creatureOrGOcount[ QUEST_OBJECTIVES_COUNT ];
 };
+
+struct AccessRequirement
+{
+    uint8  levelMin;
+    uint8  levelMax;
+    uint32 item;
+    uint32 item2;
+    uint32 heroicKey;
+    uint32 heroicKey2;
+    uint32 quest;
+    uint32 questFailedText; //entry in trinity_string
+    uint32 heroicQuest;
+    uint32 heroicQuestFailedText; //entry in trinity_string
+};
+
 #endif
 

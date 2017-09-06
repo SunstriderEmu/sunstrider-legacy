@@ -183,7 +183,7 @@ void WorldSession::HandleLootMoneyOpcode( WorldPacket & /*recvData*/ )
 
     Loot *pLoot = nullptr;
 
-    switch(GUID_HIPART(guid))
+    switch(HighGuid(GUID_HIPART(guid)))
     {
         case HighGuid::GameObject:
         {

@@ -61,14 +61,14 @@ public:
             {
                 Node& node = getGrid(x, y);
                 node.insert(value);
-                memberTable.insert(MemberTable::value_type(&value, &node));
+                memberTable.emplace(&value, &node);
             }
         }
     }
 
     void remove(const T& value)
     {
-        for (MemberTable::value_type& p : Trinity::Containers::MapEqualRange(memberTable, &value))
+        for (auto& p : Trinity::Containers::MapEqualRange(memberTable, &value))
             p.second->remove(value);
         // Remove the member
         memberTable.erase(&value);

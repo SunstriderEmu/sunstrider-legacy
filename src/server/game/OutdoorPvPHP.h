@@ -71,8 +71,8 @@ class OPvPCapturePointHP : public OPvPCapturePoint
 public:
     OPvPCapturePointHP(OutdoorPvP * pvp, OutdoorPvPHPTowerType type);
     //bool Update(uint32 diff);
-	void ChangeState() override;
-    void FillInitialWorldStates(WorldPacket & data);
+    void ChangeState() override;
+    void FillInitialWorldStates(WorldPacket & data) override;
 private:
     OutdoorPvPHPTowerType m_TowerType;
 };

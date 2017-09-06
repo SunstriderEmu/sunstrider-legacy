@@ -23,7 +23,6 @@
 #include "IVMapManager.h"
 #include <unordered_map>
 enum LiquidType;
-enum LiquidTypeMask;
 
 //===========================================================
 

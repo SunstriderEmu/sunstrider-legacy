@@ -303,11 +303,11 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, uint32 Mec
             continue;
 
         //Check for school if specified
-        if (School >= 0 && TempSpell->SchoolMask & School)
+        if (School != 0 && TempSpell->SchoolMask & School)
             continue;
 
         //Check for spell mechanic if specified
-        if (Mechanic >= 0 && TempSpell->Mechanic != Mechanic)
+        if (Mechanic != 0 && TempSpell->Mechanic != Mechanic)
             continue;
 
         //Make sure that the spell uses the requested amount of power

@@ -226,11 +226,11 @@ class OPvPCapturePointNA : public OPvPCapturePoint
 friend class OutdoorPvPNA;
 public:
     OPvPCapturePointNA(OutdoorPvP * pvp);
-	bool Update(uint32 diff) override;
-	void ChangeState() override;
-    void FillInitialWorldStates(WorldPacket & data);
-    bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go);
-    int32 HandleOpenGo(Player *plr, uint64 guid);
+    bool Update(uint32 diff) override;
+    void ChangeState() override;
+    void FillInitialWorldStates(WorldPacket & data) override;
+    bool HandleCustomSpell(Player *plr, uint32 spellId, GameObject * go) override;
+    int32 HandleOpenGo(Player *plr, uint64 guid) override;
     uint32 GetAliveGuardsCount();
 protected:
     // called when a faction takes control

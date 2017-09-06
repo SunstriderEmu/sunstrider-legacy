@@ -45,9 +45,6 @@ void HomeMovementGenerator<Creature>::DoFinalize(Creature* owner)
 }
 
 template<>
-void HomeMovementGenerator<Creature>::DoReset(Creature*) { }
-
-template<>
 void HomeMovementGenerator<Creature>::SetTargetLocation(Creature* owner)
 {
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))

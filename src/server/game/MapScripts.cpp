@@ -104,12 +104,12 @@ void Map::ScriptsProcess()
 
         if(step.sourceGUID)
         {
-            switch(GUID_HIPART(step.sourceGUID))
+            switch(HighGuid(GUID_HIPART(step.sourceGUID)))
             {
                 case HighGuid::Item:
-					if (Player* player = GetPlayer(step.ownerGUID))
-						source = player->GetItemByGuid(step.sourceGUID);
-					break;
+                    if (Player* player = GetPlayer(step.ownerGUID))
+		        source = player->GetItemByGuid(step.sourceGUID);
+                    break;
                 case HighGuid::Unit:
                     source = GetCreature(step.sourceGUID);
                     break;
@@ -119,7 +119,7 @@ void Map::ScriptsProcess()
                 case HighGuid::Player:
                     source = GetPlayer(step.sourceGUID);
                     break;
-				case HighGuid::Transport:
+	        case HighGuid::Transport:
                 case HighGuid::GameObject:
                     source = source = GetGameObject(step.sourceGUID);
                     break;
@@ -127,8 +127,8 @@ void Map::ScriptsProcess()
                     source = GetCorpse(step.sourceGUID);
                     break;
                 case HighGuid::Mo_Transport:
-					GetTransport(step.sourceGUID);
-					break;
+                    GetTransport(step.sourceGUID);
+		    break;
                 default:
                     TC_LOG_ERROR("scripts","*_script source with unsupported high guid value %u",GUID_HIPART(step.sourceGUID));
                     break;
@@ -141,7 +141,7 @@ void Map::ScriptsProcess()
 
         if(step.targetGUID)
         {
-            switch(GUID_HIPART(step.targetGUID))
+            switch(HighGuid(GUID_HIPART(step.targetGUID)))
             {
                 case HighGuid::Unit:
                     target = GetCreature(step.targetGUID);
@@ -158,9 +158,9 @@ void Map::ScriptsProcess()
                 case HighGuid::Corpse:
                     target = GetCorpse(step.targetGUID);
                     break;
-				case HighGuid::Mo_Transport:
-					target = GetTransport(step.targetGUID);
-					break;
+                case HighGuid::Mo_Transport:
+                    target = GetTransport(step.targetGUID);
+                    break;
                 default:
                     TC_LOG_ERROR("scripts","*_script source with unsupported high guid value %u",GUID_HIPART(step.targetGUID));
                     break;

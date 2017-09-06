@@ -4,7 +4,7 @@
 
 #include "SharedDefines.h"
 #include "BattleGround.h"
-#include "BattlegroundQueue.h"
+#include "BattleGroundQueue.h"
 
 //TODO it is not possible to have this structure, because we should have BattlegroundSet for each queue
 //so i propose to change this type to array 1..MAX_BATTLEGROUND_TYPE_ID of sets or maps..

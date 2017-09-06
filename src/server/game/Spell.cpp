@@ -303,7 +303,7 @@ void SpellCastTargets::SetGOTarget(GameObject* target)
 
 uint64 SpellCastTargets::GetCorpseTargetGUID() const
 {
-    switch (GUID_HIPART(m_objectTargetGUID))
+    switch (HighGuid(GUID_HIPART(m_objectTargetGUID)))
     {
     case HighGuid::Corpse:
         return m_objectTargetGUID;

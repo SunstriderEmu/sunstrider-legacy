@@ -29,7 +29,7 @@
 #include "UpdateFieldFlags.h"
 #include <G3D/Vector3.h>
 #include "ZoneScript.h"
-#include "OutdoorPvpMgr.h"
+#include "OutdoorPvPMgr.h"
 
 #include "TemporarySummon.h"
 #include "DynamicTree.h"

@@ -67,6 +67,7 @@ class TC_GAME_API OPvPCapturePoint
 {
 public:
     OPvPCapturePoint(OutdoorPvP * pvp);
+    virtual ~OPvPCapturePoint() {}
 
     virtual void FillInitialWorldStates(WorldPacket & data) {}
 

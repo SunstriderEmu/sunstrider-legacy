@@ -119,7 +119,7 @@ class TC_GAME_API SmartAI : public CreatureAI
         void CorpseRemoved(uint32& respawnDelay) override;
 
         // Called when a Player/Creature enters the creature (vehicle)
-        void PassengerBoarded(Unit* who, int8 seatId, bool apply) /* override */; //LK
+        void PassengerBoarded(Unit* who, int8 seatId, bool apply) override; //LK
 
         // Called when gets initialized, when creature is added to world
         void InitializeAI() override;

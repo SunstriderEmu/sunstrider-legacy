@@ -80,9 +80,9 @@ class OPvPCapturePointTF : public OPvPCapturePoint
 {
 public:
     OPvPCapturePointTF(OutdoorPvP * pvp, OutdoorPvPTF_TowerType type);
-    bool Update(uint32 diff);
-	void ChangeState() override;
-    void FillInitialWorldStates(WorldPacket & data);
+    bool Update(uint32 diff) override;
+    void ChangeState() override;
+    void FillInitialWorldStates(WorldPacket & data) override;
     void UpdateTowerState();
     void RewardDailyQuest(uint32 team);
 protected:

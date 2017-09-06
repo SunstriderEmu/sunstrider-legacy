@@ -10,27 +10,27 @@ class TC_GAME_API TempSummon : public Creature
         explicit TempSummon(SummonPropertiesEntry const* properties, Unit* owner, bool isWorldObject);
 		~TempSummon() {};
         void Update(uint32 time) override;
-		virtual void InitStats(uint32 lifetime);
-		virtual void InitSummon();
+	virtual void InitStats(uint32 lifetime);
+	virtual void InitSummon();
         //void Summon(TempSummonType type, uint32 lifetime, Map* map);
-		virtual void UnSummon(uint32 msTime = 0);
-		void RemoveFromWorld() override;
+	virtual void UnSummon(uint32 msTime = 0);
+	void RemoveFromWorld() override;
         void SetTempSummonType(TempSummonType type);
         void SaveToDB(uint32 mapid, uint8 spawnMask) override { }
 
-		Unit* GetSummoner() const;
-		Creature* GetSummonerCreatureBase() const;
-		uint64 GetSummonerGUID() const { return m_summonerGUID; }
+	Unit* GetSummoner() const override;
+	Creature* GetSummonerCreatureBase() const;
+	uint64 GetSummonerGUID() const { return m_summonerGUID; }
         TempSummonType GetSummonType() { return m_type; }
-		uint32 GetTimer() const { return m_timer; }
+	uint32 GetTimer() const { return m_timer; }
 //        Unit* GetSummoner() const override { return m_summoner ? ObjectAccessor::GetUnit(*this, m_summoner) : nullptr; }
 
-		const SummonPropertiesEntry* const m_Properties;
+	const SummonPropertiesEntry* const m_Properties;
     private:
         TempSummonType m_type;
         uint32 m_timer;
         uint32 m_lifetime;
-		uint64 m_summonerGUID;
+	uint64 m_summonerGUID;
 };
 
 class TC_GAME_API Minion : public TempSummon
