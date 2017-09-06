@@ -15,7 +15,6 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "ChannelMgr.h"
-#include "IRCMgr.h"
 #include "AccountMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "CharacterCache.h"
@@ -151,7 +150,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "part",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCPartCommand,             "" },
         { "quit",           SEC_ADMINISTRATOR,   true,  true,  &ChatHandler::HandleIRCQuitCommand,             "" },
     };
-    
+
     static std::vector<ChatCommand> mmapCommandTable =
     {
         { "path",           SEC_GAMEMASTER3,     false, false, &ChatHandler::HandleMmapPathCommand,            "" },
@@ -215,7 +214,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "character",      SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleBanInfoCharacterCommand,    "" },
         { "ip",             SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleBanInfoIPCommand,           "" },
     };
-    
+
     static std::vector<ChatCommand> muteinfoCommandTable =
     {
         { "account",        SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleMuteInfoAccountCommand,      "" },
@@ -236,7 +235,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "ip",             SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleUnBanIPCommand,             "" },
     };
 
-	
+
 	static std::vector<ChatCommand> profilingCommandTable =
 	{
 		{ "start",   SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStartCommand,             "" },
@@ -341,7 +340,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "command",                     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCommandCommand,                 "" },
         { "conditions",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadConditions,                     "" },
         { "config",                      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadConfigCommand,                  "" },
-        { "creature_gossip",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureGossipCommand,          "" },  
+        { "creature_gossip",             SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureGossipCommand,          "" },
         { "creature_questender",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureQuestEndersCommand,     "" },
         { "creature_linked_respawn",     SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadCreatureLinkedRespawnCommand,   "" },
         { "creature_loot_template",      SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLootTemplatesCreatureCommand,   "" },
@@ -368,9 +367,9 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "locales_gossip_text",         SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesGossipTextCommand,       "" },
         { "locales_page_text",           SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesPageTextCommand,         "" },
         { "locales_quest",               SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadLocalesQuestCommand,            "" },
-        { "gossip_menu",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGossipMenuCommand,              "" },  
+        { "gossip_menu",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGossipMenuCommand,              "" },
         { "gossip_menu_option",          SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGossipMenuOptionCommand,        "" },
-        { "gossip_text",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGossipTextCommand,              "" },  
+        { "gossip_text",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadGossipTextCommand,              "" },
         { "npc_trainer",                 SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadNpcTrainerCommand,              "" },
         { "npc_vendor",                  SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadNpcVendorCommand,               "" },
         { "page_text",                   SEC_ADMINISTRATOR, true,  false, &ChatHandler::HandleReloadPageTextsCommand,               "" },
@@ -832,7 +831,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
             {
                 Field* fields = result->Fetch();
                 std::string fullName = fields[0].GetString();
-                
+
                 SetDataForCommandInTable(commandTable, fullName.c_str(), fields[1].GetUInt8(), fields[2].GetString(), fullName, fields[3].GetBool());
 
             } while(result->NextRow());
@@ -842,17 +841,17 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     return commandTable;
 }
 
-ChatHandler::ChatHandler(WorldSession* session) 
-	: m_session(session) 
+ChatHandler::ChatHandler(WorldSession* session)
+	: m_session(session)
 {}
 
-ChatHandler::ChatHandler(Player* player) 
-	: m_session(player->GetSession()) 
+ChatHandler::ChatHandler(Player* player)
+	: m_session(player->GetSession())
 {}
 
 std::string ChatHandler::GetNameLink(Player* chr) const
-{ 
-	return playerLink(chr->GetName()); 
+{
+	return playerLink(chr->GetName());
 }
 
 void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)
@@ -988,12 +987,6 @@ void ChatHandler::SendGlobalSysMessage(const char *str)
     }
 
     free(buf);
-
-    if (sWorld->getConfig(CONFIG_IRC_ENABLED))
-    {
-        std::string msg(str);
-        sIRCMgr->sendGlobalMsgToIRC(msg);
-    }
 }
 
 void ChatHandler::SendGlobalGMSysMessage(const char *str)
@@ -1011,12 +1004,6 @@ void ChatHandler::SendGlobalGMSysMessage(const char *str)
         sWorld->SendGlobalGMMessage(&data);
     }
     free(buf);
-
-    if (sWorld->getConfig(CONFIG_IRC_ENABLED))
-    {
-        std::string msg(str);
-        sIRCMgr->sendGlobalMsgToIRC(msg);
-    }
 }
 
 void ChatHandler::SendSysMessage(int32 entry)
@@ -1239,7 +1226,7 @@ size_t ChatHandler::BuildChatPacket(WorldPacket& data, ChatMsg chatType, Languag
                                   std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
                                   uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/)
 {
-    
+
 #ifndef LICH_KING
     gmMessage = false;  // SMSG_GM_MESSAGECHAT seems to have a different structure on BC, disable it for now
 #endif

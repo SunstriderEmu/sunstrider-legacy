@@ -205,7 +205,7 @@ Locale = 0
 #        Enable/Disable VMmap support for line of sight and height calculation
 #        Default: 1 (true)
 #                 0 (false)
-#        
+#
 #    TargetPosRecalculateRange
 #        Max distance from movement target point (+moving unit size) and targeted object (+size)
 #        after that new target movmeent point calculated. Max: melee attack range (5), min: contact range (0.5)
@@ -293,7 +293,7 @@ InstanceCrashRecovery.Enable = 0
 #    Anticheat.Movement.Warn
 #        Global GM warning + IRC if enabled
 #         Default : True
-#        
+#
 ###################################################################################################################
 
 Anticheat.Movement.Enable = 1
@@ -600,12 +600,12 @@ Anticheat.Movement.Warn = true
 #        Default: 1
 #
 #    Spam.Report.Threshold
-#        Amount of different players who must report a spam 
+#        Amount of different players who must report a spam
 #        for the alert to be triggered
 #        Default: 3
 #
 #    Spam.Report.Period
-#        Period of time (in seconds) before a spam report 
+#        Period of time (in seconds) before a spam report
 #        is discarded
 #        Default: 120
 #
@@ -1634,15 +1634,15 @@ CharDelete.KeepDays = 30
 #        Honor Kills needed for each rank, use "," between values.
 #        Whole string must be enclosed with " "
 #        Always specify 14 values, for 14 ranks
-#        Default: 
+#        Default:
 #            "1000,1500,2500,3500,5000,6500,9000,13000,18000,25000,35000,50000,75000,100000"
 #
 #    Arena.Season
 #        Actual arena season
 #        Default: 0
-#    
+#
 #    Arena.NewTitleDistribution.Enabled
-#        New automatic title distribution system for the 3 firsts teams, OR the teams defined in  
+#        New automatic title distribution system for the 3 firsts teams, OR the teams defined in
 #        Arena.NewTitleDistribution.LeaderTeams if Arena.Season = 0.
 #        Default : 0
 #
@@ -1663,7 +1663,7 @@ CharDelete.KeepDays = 30
 #         Default ""
 #
 #     Arena.Decay.Enabled
-#         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after 
+#         Automatic team rating decay on point distribution, if less than 10 matchs have been played. Starts after
 #         Arena.Decay.ConsecutiveWeeks
 #         Default : 0
 #
@@ -1679,7 +1679,7 @@ CharDelete.KeepDays = 30
 #         Default : 2
 #
 #    ArenaServer.Enabled
-#        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas 
+#        (for WM Tournoi) Change the following rules : Non 3v3 arenas are closed, player limitation to Hyjal & ZG & battlegrounds/arenas
 #        and more starting spells. NEVER SET THIS TO TRUE IN THE MAIN LIVE SERVER.
 #        Default: 0
 #
@@ -1721,7 +1721,7 @@ ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
 
 ###################################################################################################################
-# BETA SERVER 
+# BETA SERVER
 #
 #	BetaServer.Enabled
 #		Enable Beta server features
@@ -1751,25 +1751,6 @@ Teleporter.MaxLevel = 255
 ###################################################################################################################
 
 BuggyQuests.AutoComplete = 0
-
-###################################################################################################################
-# IRC
-#
-#   IRC.Enabled
-#       Enabled IRC bridge. Default: 0
-#
-#   IRC.Commands
-#       Enable ingame command to be available in IRC. (start command with ! instead of . )
-#       Default: 0 (Disabled)
-#
-#   IRC.CharGUID
-#       Character name to show for in game message
-#
-###################################################################################################################
-
-IRC.Enabled = 0
-IRC.Commands = 0
-IRC.CharGUID = 0
 
 ###############################################################################
 # WARDEN SETTINGS
@@ -1807,7 +1788,7 @@ IRC.CharGUID = 0
 #
 #    Warden.BanTime
 #        Warden ban time in secs ("0" for infinite). Has to be a string !
-#        Default = "180d" 
+#        Default = "180d"
 #
 ###############################################################################
 
@@ -2039,7 +2020,7 @@ DBLog.char.rename = 30
 DBLog.gm.char.rename = -1
 DBLog.GMCommands = -1
 DBLog.sanctions = -1
-	
+
 #
 #    Allow.IP.Based.Action.Logging
 #        Description: Logs actions, e.g. account login and logout to name a few, based on IP of

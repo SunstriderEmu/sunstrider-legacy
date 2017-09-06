@@ -1575,43 +1575,6 @@ CREATE TABLE `temp_equipcache` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Table structure for table `wrchat_channels`
---
-
-DROP TABLE IF EXISTS `wrchat_channels`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `wrchat_channels` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `server` int(10) unsigned NOT NULL DEFAULT '0',
-  `irc_channel` varchar(50) NOT NULL DEFAULT '',
-  `password` varchar(50) NOT NULL DEFAULT '',
-  `ingame_channel` varchar(50) NOT NULL DEFAULT '',
-  `channel_type` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `join_message` varchar(255) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  KEY `server` (`server`),
-  CONSTRAINT `wrchat_channels_ibfk_1` FOREIGN KEY (`server`) REFERENCES `wrchat_servers` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `wrchat_servers`
---
-
-DROP TABLE IF EXISTS `wrchat_servers`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `wrchat_servers` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `host` varchar(50) NOT NULL DEFAULT '127.0.0.1',
-  `port` int(10) unsigned NOT NULL DEFAULT '6667',
-  `ssl` tinyint(4) NOT NULL DEFAULT '0',
-  `nick` varchar(50) NOT NULL DEFAULT 'W',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

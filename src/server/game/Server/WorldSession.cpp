@@ -24,7 +24,6 @@
 #include "SocialMgr.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
-#include "IRCMgr.h"
 #include "WardenWin.h"
 #include "WardenMac.h"
 #include "BigNumber.h"
@@ -55,7 +54,7 @@ bool MapSessionFilter::Process(WorldPacket * packet)
     //let's check if our opcode can be really processed in Map::Update()
     if(opHandle->ProcessingPlace == PROCESS_INPLACE)
         return true;
-        
+
     //we do not process thread-unsafe packets
     if(opHandle->ProcessingPlace == PROCESS_THREADUNSAFE)
         return false;
@@ -77,7 +76,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
     //check if packet handler is supposed to be safe
     if(opHandle->ProcessingPlace == PROCESS_INPLACE)
         return true;
-        
+
     //thread-unsafe packets should be processed in World::UpdateSessions()
     if(opHandle->ProcessingPlace == PROCESS_THREADUNSAFE)
         return true;
@@ -94,31 +93,31 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, ClientBuild clientBuild, std::string&& name, std::shared_ptr<WorldSocket> sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter) :
 m_clientBuild(clientBuild),
-LookingForGroup_auto_join(false), 
-LookingForGroup_auto_add(false), 
+LookingForGroup_auto_join(false),
+LookingForGroup_auto_add(false),
 AntiDOS(this),
 m_muteTime(mute_time),
-_player(NULL), 
+_player(NULL),
 m_Socket(sock),
 _security(sec),
-_accountId(id), 
+_accountId(id),
 _accountName(std::move(name)),
 m_expansion(expansion),
-m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)), 
+m_sessionDbcLocale(sWorld->GetAvailableDbcLocale(locale)),
 m_sessionDbLocaleIndex(locale),
-_logoutTime(0), 
-m_inQueue(false), 
-m_playerLoading(false), 
-m_playerLogout(false), 
+_logoutTime(0),
+m_inQueue(false),
+m_playerLoading(false),
+m_playerLogout(false),
 m_playerRecentlyLogout(false),
 m_playerSave(false),
-m_latency(0), 
+m_latency(0),
 m_clientTimeDelay(0),
 m_TutorialsChanged(false),
-_warden(NULL), 
+_warden(NULL),
 lastCheatWarn(time(NULL)),
 forceExit(false),
-expireTime(60000) 
+expireTime(60000)
 {
     memset(m_Tutorials, 0, sizeof(m_Tutorials));
 
@@ -143,7 +142,7 @@ WorldSession::~WorldSession()
         m_Socket->CloseSocket();
         m_Socket = nullptr;
     }
-    
+
     if (_warden)
         delete _warden;
 
@@ -177,7 +176,7 @@ void WorldSession::SendPacket(WorldPacket* packet)
 
     #ifdef PLAYERBOT
     // Playerbot mod: send packet to bot AI
-    if (GetPlayer()) 
+    if (GetPlayer())
     {
         if (GetPlayer()->GetPlayerbotAI())
             GetPlayer()->GetPlayerbotAI()->HandleBotOutgoingPacket(*packet);
@@ -298,7 +297,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
                 lock.unlock_shared(); //unlock before calling ClearLastPacketsSent
                 TC_LOG_ERROR("network.opcode","==================================================================");
                 m_Socket->ClearLastPacketsSent();
-            } else 
+            } else
                 lock.unlock_shared();
         }
         m_Socket->CloseSocket();
@@ -318,7 +317,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     //reset hasMoved info
     if(_player)
         _player->SetHasMovedInUpdate(false);
-    
+
     while (m_Socket && _recvQueue.next(packet, updater))
     {
         ClientOpcodeHandler const* opHandle = opcodeTable.GetHandler(static_cast<OpcodeClient>(packet->GetOpcode()), GetClientBuild());
@@ -591,7 +590,7 @@ void WorldSession::LogoutPlayer(bool Save)
         {
             if (!bg->IsArena())
                 bg->EventPlayerLoggedOut(_player);
-            
+
             if (bg->IsArena())
                 _player->LeaveBattleground();
         }
@@ -625,10 +624,7 @@ void WorldSession::LogoutPlayer(bool Save)
             data<<_player->GetName();
             data<<_player->GetGUID();
             guild->BroadcastPacket(&data);
-            
-            if (sWorld->getConfig(CONFIG_IRC_ENABLED))
-                sIRCMgr->onIngameGuildLeft(guild->GetId(), guild->GetName(), _player->GetName());
-        }
+          }
 
         ///- Remove pet
         _player->RemovePet(NULL,PET_SAVE_AS_CURRENT, true);
@@ -663,7 +659,7 @@ void WorldSession::LogoutPlayer(bool Save)
         // the player may not be in the world when logging out
         // e.g if he got disconnected during a transfer to another map
         // calls to GetMap in this case may cause crashes
-        if(_player->IsInWorld()) 
+        if(_player->IsInWorld())
 			_player->GetMap()->RemovePlayerFromMap(_player, false);
 
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
@@ -695,7 +691,7 @@ void WorldSession::LogoutPlayer(bool Save)
         ///- Since each account can only have one online character at any given time, ensure all characters for active account are marked as offline
         CharacterDatabase.PExecute("UPDATE characters SET online = 0 WHERE account = '%u'", GetAccountId());
     }
-    
+
     //Hook for OnLogout Event
     //    sScriptMgr->OnPlayerLogout(_player);
 
@@ -955,7 +951,7 @@ void WorldSession::SendAddonsInfo()
     SendPacket(&data);
 }
 
-void WorldSession::ReadAddon(ByteBuffer& addonInfo) 
+void WorldSession::ReadAddon(ByteBuffer& addonInfo)
 {
     // check next addon data format correctness
     if (addonInfo.rpos() + 1 > addonInfo.size())
@@ -1255,7 +1251,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
 #endif
         case CMSG_QUERY_TIME:                           //   0               1
 #ifdef LICH_KING
-        case CMSG_CORPSE_MAP_POSITION_QUERY:            //   0               1  
+        case CMSG_CORPSE_MAP_POSITION_QUERY:            //   0               1
 #endif // LICH_KING
         case CMSG_MOVE_TIME_SKIPPED:                    //   0               1
         case MSG_QUERY_NEXT_MAIL_TIME:                  //   0               1
@@ -1346,7 +1342,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
             maxPacketCounterAllowed = 0;
             break;
         }
-        
+
         case CMSG_QUESTGIVER_ACCEPT_QUEST:              //   0               4
         case CMSG_QUESTLOG_REMOVE_QUEST:                //   0               4
         case CMSG_QUESTGIVER_CHOOSE_REWARD:             //   0               4
@@ -1391,7 +1387,7 @@ uint32 WorldSession::DosProtection::GetMaxPacketCounterAllowed(uint16 opcode) co
             break;
         }
         case CMSG_GM_REPORT_LAG:                        //   1               3         1 async db query
-            
+
 #endif
         case CMSG_SPELLCLICK:                           // not profiled
 #ifdef LICH_KING
@@ -1590,7 +1586,7 @@ void WorldSession::SendMotd()
         data << str_motd.substr(pos);
         ++linecount;
     }
-        
+
     data.put(0, linecount);
 
     SendPacket( &data );
@@ -1790,7 +1786,7 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 #endif
     }
 
-    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING)) 
+    if (mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
 #ifdef LICH_KING
         || mi->HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING)
 #endif
@@ -1812,7 +1808,7 @@ void WorldSession::WriteMovementInfo(WorldPacket* data, MovementInfo* mi)
 }
 
 
-// send update packet with apropriate version for session. Will build packets for version only if needed. 
+// send update packet with apropriate version for session. Will build packets for version only if needed.
 // /!\ You'll need to destroy them yourself by calling this
 void WorldSession::SendUpdateDataPacketForBuild(UpdateData& data, WorldPacket*& packetBC, WorldPacket*& packetLK, WorldSession* session, bool hasTransport)
 {
@@ -1861,7 +1857,7 @@ bool WorldSession::StartRecording(std::string const& recordName)
     if (recordName == "")
         return false;
 
-    if (m_replayRecorder) 
+    if (m_replayRecorder)
         return false; //recorder already running
 
     if (!_player)

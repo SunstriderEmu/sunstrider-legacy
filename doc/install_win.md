@@ -41,7 +41,7 @@ the linking will fail.
    a new variable named `MYSQL_ADD_LIBRARIES_PATH`; and the location of the
    MySQL headers in a new variabled named `MYSQL_ADD_INCLUDE_PATH`.
 
-7. Click Generate, and select your compiler. 
+7. Click Generate, and select your compiler.
 
 8. Open the `Sunstrider.sln` solution generated in the build directory.
 
@@ -99,7 +99,7 @@ You can skip this step by downloading [the already extracted data folders][githu
 
 Otherwise, if those files were missing, outdated, if if you want to do it by yourself, follow these steps after compiling the core.
 
-- Copy `dep/lib/<build>_release/libmySQL.dll` from the source directory to your 
+- Copy `dep/lib/<build>_release/libmySQL.dll` from the source directory to your
   burning crusade install directory. (This dependency should be removed)
 
 - Copy `src/tools/map_extractor/<configuration>/mapextractor.exe`from the build
@@ -143,7 +143,6 @@ https://github.com/kelno/sunstrider/releases
 	- `libeay32.dll` from the OpenSSL install directory.
 	- `dep/lib/<build>_release/libmySQL.dll` (from there or from your MariaDB
       directory)
-	- `dep/lib/<build>_release/libircclient.dll`
 
 <!-- comment for spacing -->
 
@@ -155,7 +154,7 @@ https://github.com/kelno/sunstrider/releases
 
 - Update `authserver.conf` options:  
 	- **LoginDatabaseInfo**: See info in conf file
-	
+
 - Update `worldserver.conf` options:  
 	- **LoginDatabaseInfo**: See info in conf file
 	- **WorldDatabaseInfo**: See info in conf file
@@ -180,9 +179,9 @@ You need to change the output directory of the executables so that they get put
 somewhere where the config files and DLLs are available (typically, the "install
 directory").
 
-You may also want to change the working directory of the worldserver project 
-to the same folder to be able to easily run the worldserver in the visual studio 
-debugger. (If you do don't forget to also right click the worldserver and set 
+You may also want to change the working directory of the worldserver project
+to the same folder to be able to easily run the worldserver in the visual studio
+debugger. (If you do don't forget to also right click the worldserver and set
 as startup project.)
 
 To change the output directories, right click the `worldserver` project, then

@@ -27,7 +27,6 @@
 #include "AccountMgr.h"
 #include "ScriptMgr.h"
 #include "GameObjectAI.h"
-#include "IRCMgr.h"
 #include "WhoListStorage.h"
 #include "GameTime.h"
 
@@ -353,9 +352,9 @@ void WorldSession::HandleLogoutRequestOpcode( WorldPacket & /*recvData*/ )
     if (GetPlayer()->IsInCombat() && !canLogoutInCombat)
         reason = 1;
     else if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING | MOVEMENTFLAG_FALLING_FAR)) // is jumping or falling
-        reason = 3;                                           
+        reason = 3;
     else if (GetPlayer()->duel || GetPlayer()->HasAura(9454)) // is dueling or frozen by GM via freeze command
-        reason = 0xC;  //not right id, need to get the correct value    
+        reason = 0xC;  //not right id, need to get the correct value
 
 
     WorldPacket data(SMSG_LOGOUT_RESPONSE, 4+1);
@@ -477,7 +476,7 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 void WorldSession::HandleSetTargetOpcode( WorldPacket & recvData )
 {
     // When this packet send?
-    
+
 
     uint64 guid ;
     recvData >> guid;
@@ -613,7 +612,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
 {
     uint32 triggerId;
     recvData >> triggerId;
-    
+
     //TC_LOG_DEBUG("network", "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
 
     if(GetPlayer()->IsGameMaster())
@@ -774,7 +773,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recvData)
                     // @todo figure out how to get player localized difficulty string (e.g. "10 player", "Heroic" etc)
                     //TC ChatHandler(pl->GetSession()).PSendSysMessage(player->GetSession()->GetTrinityString(LANG_INSTANCE_BIND_MISMATCH), mapName);
                     ChatHandler(pl->GetSession()).PSendSysMessage("You are already locked to %s.", mapName);
-                    
+
                 }
                 reviveAtTrigger = true;
                 break;
@@ -1001,7 +1000,7 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 
     //TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
     /*
-        
+
 
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK" );
         recvData.hexlike();
@@ -1033,7 +1032,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
     // no used
     recvData.rfinish();                       // prevent warnings spam
     /*
-        
+
 
         TC_LOG_DEBUG("network", "WORLD: CMSG_FORCE_MOVE_ROOT_ACK" );
         recvData.hexlike();
@@ -1099,7 +1098,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     Player *plr = ObjectAccessor::GetPlayer(*_player, guid);
     if(!plr)                                                // wrong player
         return;
-    
+
     uint32 talent_points = 0x3D; //bc talent count
     uint32 guid_size = plr->GetPackGUID().size();
     WorldPacket data(SMSG_INSPECT_TALENT, guid_size+4+talent_points);
@@ -1306,13 +1305,13 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     switch (ComplaintType)
     {
         case 0:
-            
+
             recvData >> unk1;                              // const 0
             recvData >> unk2;                              // probably mail id
             recvData >> unk3;                              // const 0
             break;
         case 1:
-            
+
             recvData >> unk1;                              // probably language
             recvData >> unk2;                              // message type?
             recvData >> unk3;                              // probably channel id
@@ -1328,7 +1327,7 @@ void WorldSession::HandleComplainOpcode( WorldPacket & recvData )
     WorldPacket data(SMSG_COMPLAIN_RESULT, 1);
     data << uint8(0);
     SendPacket(&data);
-    
+
     if (ComplaintType == 1) {
         if (Player* spammer = sObjectMgr->GetPlayer(spammer_guid))
             spammer->addSpamReport(_player->GetGUID(), description.c_str());
@@ -1552,4 +1551,3 @@ void WorldSession::HandleSetTaxiBenchmarkOpcode( WorldPacket & recvData )
 
     //TC_LOG_DEBUG("network", "Client used \"/timetest %d\" command", mode);
 }
-

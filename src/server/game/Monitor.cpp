@@ -2,7 +2,6 @@
 #include "World.h"
 #include "BattleGroundMgr.h"
 #include "Language.h"
-#include "IRCMgr.h"
 
 Monitor::Monitor()
 	: _worldTickCount(0),

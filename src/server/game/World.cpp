@@ -248,7 +248,7 @@ World::AddSession_(WorldSession* s)
         //sLog->outDetail ("PlayerQueue: Account id %u is in Queue Position (%u).", s->GetAccountId (), ++QueueSize);
         return;
     }
-    
+
     s->InitializeSession();
 
     UpdateMaxSessionCounters ();
@@ -960,7 +960,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfigMgr->GetIntDefault("Battleground.TimeLimit.Arena", 0);
 
     m_configs[CONFIG_INSTANT_LOGOUT] = sConfigMgr->GetIntDefault("InstantLogout", SEC_GAMEMASTER1);
-    
+
     m_configs[CONFIG_GROUPLEADER_RECONNECT_PERIOD] = sConfigMgr->GetIntDefault("GroupLeaderReconnectPeriod", 180);
 
     //visibility on continents
@@ -1049,7 +1049,7 @@ void World::LoadConfigSettings(bool reload)
     TC_LOG_INFO("server.loading", "WORLD: VMap support included. LineOfSight:%i, getHeight:%i",enableLOS, enableHeight);
     TC_LOG_INFO("server.loading", "WORLD: VMap data directory is: %svmaps",m_dataPath.c_str());
     TC_LOG_INFO("server.loading", "WORLD: VMap config keys are: vmap.enableLOS, vmap.enableHeight, vmap.ignoreMapIds");
-    
+
     m_configs[CONFIG_PREMATURE_BG_REWARD] = sConfigMgr->GetBoolDefault("Battleground.PrematureReward", true);
     m_configs[CONFIG_START_ALL_SPELLS] = sConfigMgr->GetBoolDefault("PlayerStart.AllSpells", false);
     m_configs[CONFIG_START_ALL_EXPLORED] = sConfigMgr->GetBoolDefault("PlayerStart.MapsExplored", false);
@@ -1067,9 +1067,9 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_INTERVAL_LOG_UPDATE] = sConfigMgr->GetIntDefault("RecordUpdateTimeDiffInterval", 60000);
     m_configs[CONFIG_MIN_LOG_UPDATE] = sConfigMgr->GetIntDefault("MinRecordUpdateTimeDiff", 10);
     m_configs[CONFIG_NUMTHREADS] = sConfigMgr->GetIntDefault("MapUpdate.InstanceThreads", 4);
-    
+
     m_configs[CONFIG_WORLDCHANNEL_MINLEVEL] = sConfigMgr->GetIntDefault("WorldChannel.MinLevel", 10);
-    
+
 
     m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.Enabled", false);
     m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20);
@@ -1099,14 +1099,14 @@ void World::LoadConfigSettings(bool reload)
         token = strtok(nullptr,delim);
     }
     delete[] forbiddenMaps;
-    
+
     m_configs[CONFIG_PLAYER_GENDER_CHANGE_DELAY]    = sConfigMgr->GetIntDefault("Player.Change.Gender.Delay", 14);
-    
+
 
     m_configs[CONFIG_BUGGY_QUESTS_AUTOCOMPLETE] = sConfigMgr->GetBoolDefault("BuggyQuests.AutoComplete", false);
-    
+
     m_configs[CONFIG_AUTOANNOUNCE_ENABLED] = sConfigMgr->GetBoolDefault("AutoAnnounce.Enable", false);
-    
+
     // warden
     m_configs[CONFIG_WARDEN_ENABLED] = sConfigMgr->GetBoolDefault("Warden.Enabled", true);
     m_configs[CONFIG_WARDEN_KICK] = sConfigMgr->GetBoolDefault("Warden.Kick", false);
@@ -1131,9 +1131,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_DECAY_VALUE] = sConfigMgr->GetIntDefault("Arena.Decay.Value", 20);
     m_configs[CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS] = sConfigMgr->GetIntDefault("Arena.Decay.ConsecutiveWeeks", 2);
 
-    m_configs[CONFIG_IRC_ENABLED] = sConfigMgr->GetBoolDefault("IRC.Enabled", false);
     m_configs[CONFIG_IRC_COMMANDS] = sConfigMgr->GetBoolDefault("IRC.Commands", false);
-    
+
     //packet spoof punishment
     m_configs[CONFIG_PACKET_SPOOF_POLICY] = sConfigMgr->GetIntDefault("PacketSpoof.Policy", (uint32)WorldSession::DosProtection::POLICY_KICK);
     m_configs[CONFIG_PACKET_SPOOF_BANMODE] = sConfigMgr->GetIntDefault("PacketSpoof.BanMode", (uint32)SANCTION_BAN_ACCOUNT);
@@ -1143,14 +1142,14 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_SPAM_REPORT_THRESHOLD] = sConfigMgr->GetIntDefault("Spam.Report.Threshold", 3);
     m_configs[CONFIG_SPAM_REPORT_PERIOD] = sConfigMgr->GetIntDefault("Spam.Report.Period", 120); // In seconds
     m_configs[CONFIG_SPAM_REPORT_COOLDOWN] = sConfigMgr->GetIntDefault("Spam.Report.Cooldown", 120); // In seconds
-    
+
     m_configs[CONFIG_FACTION_CHANGE_ENABLED] = sConfigMgr->GetBoolDefault("Faction.Change.Enabled", false);
     m_configs[CONFIG_FACTION_CHANGE_A2H] = sConfigMgr->GetBoolDefault("Faction.Change.AllianceToHorde", false);
     m_configs[CONFIG_FACTION_CHANGE_H2A] = sConfigMgr->GetBoolDefault("Faction.Change.HordeToAlliance", false);
     m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfigMgr->GetIntDefault("Faction.Change.AllianceToHorde.Cost", 4);
     m_configs[CONFIG_FACTION_CHANGE_H2A_COST] = sConfigMgr->GetIntDefault("Faction.Change.HordeToAlliance.Cost", 4);
     m_configs[CONFIG_RACE_CHANGE_COST] = sConfigMgr->GetIntDefault("Race.Change.Cost", 4);
-    
+
     m_configs[CONFIG_ARENASERVER_ENABLED] = sConfigMgr->GetBoolDefault("ArenaServer.Enabled", false);
     m_configs[CONFIG_ARENASERVER_USE_CLOSESCHEDULE] = sConfigMgr->GetBoolDefault("ArenaServer.UseCloseSchedule", false);
     m_configs[CONFIG_ARENASERVER_PLAYER_REPARTITION_THRESHOLD] = sConfigMgr->GetIntDefault("ArenaServer.PlayerRepartitionThreshold", 0);
@@ -1163,7 +1162,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
     m_configs[CONFIG_DEBUG_DISABLE_TRANSPORTS] = sConfigMgr->GetBoolDefault("Debug.DisableTransports", 0);
-   
+
 
     if (int32 clientCacheId = sConfigMgr->GetIntDefault("ClientCacheVersion", 0))
     {
@@ -1204,7 +1203,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize the random number generator
     srand((uint32)time(nullptr));
-    
+
     ///- Initialize detour memory management
     dtAllocSetCustom(dtCustomAlloc, dtCustomFree);
 
@@ -1217,7 +1216,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize config settings
     LoadConfigSettings();
-    
+
     ///- Initialize motd and twitter
     LoadMotdAndTwitter();
 
@@ -1232,8 +1231,8 @@ void World::SetInitialWorldSettings()
         || !MapManager::ExistMapAndVMap(0, 1676.35f, 1677.45f)
         || !MapManager::ExistMapAndVMap(1, 10311.3f, 832.463f)
         || !MapManager::ExistMapAndVMap(1,-2917.58f,-257.98f)
-        || (m_configs[CONFIG_EXPANSION] 
-           && (!MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f)) ) 
+        || (m_configs[CONFIG_EXPANSION]
+           && (!MapManager::ExistMapAndVMap(530,10349.6f,-6357.29f) || !MapManager::ExistMapAndVMap(530,-3961.64f,-13931.2f)) )
       )
     {
         TC_LOG_ERROR("server.loading", "Correct *.map files not found in path '%smaps' or *.vmap/*vmdir files in '%svmaps'. Please place *.map/*.vmap/*.vmdir files in appropriate directories or correct the DataDir value in the worldserver.conf file.", m_dataPath.c_str(), m_dataPath.c_str());
@@ -1289,7 +1288,7 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading SpellInfo store...");  //must be after all SpellEntry's alterations
     sSpellMgr->LoadSpellInfoStore(false);
-    
+
     TC_LOG_INFO("server.loading", "Loading Spell Elixir types..." ); //must be after SpellInfo
     sSpellMgr->LoadSpellElixirs();
 
@@ -1298,10 +1297,10 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Spell Learn Skills..." );
     sSpellMgr->LoadSpellLearnSkills();                        // must be after LoadSpellChains and after SpellInfo
-    
+
     TC_LOG_INFO("server.loading", "Loading Spell Learn Spells..." );  //must be after SpellInfo
     sSpellMgr->LoadSpellLearnSpells();
-    
+
     TC_LOG_INFO("server.loading", "Loading Spell Bonus Data...");
     sSpellMgr->LoadSpellBonusess();
 
@@ -1392,7 +1391,7 @@ void World::SetInitialWorldSettings()
     {
         TC_LOG_INFO("server.loading", "Loading Creature Data..." );
         sObjectMgr->LoadCreatures();
-    
+
         TC_LOG_INFO("server.loading", "Loading Creature Linked Respawn..." );
         sObjectMgr->LoadCreatureLinkedRespawn();                     // must be after LoadCreatures()
 
@@ -1417,7 +1416,7 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Weather Data..." );
     sObjectMgr->LoadWeatherZoneChances();
-    
+
     TC_LOG_INFO("server.loading","Loading GameObject models...");
     LoadGameObjectModelList(sWorld->GetDataPath());
 
@@ -1459,7 +1458,7 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading spell pet auras..." );
     sSpellMgr->LoadSpellPetAuras();
-    
+
     TC_LOG_INFO("server.loading","Overriding SpellItemEnchantment...");
     sSpellMgr->OverrideSpellItemEnchantment();
 
@@ -1518,10 +1517,10 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading GameTeleports..." );
     sObjectMgr->LoadGameTele();
-    
+
     TC_LOG_INFO("server.loading", "Loading Npc gossip menus..." );
     sObjectMgr->LoadGossipMenu();
-    
+
     TC_LOG_INFO("server.loading", "Loading Npc Options..." );
     sObjectMgr->LoadGossipMenuItems();
 
@@ -1536,13 +1535,13 @@ void World::SetInitialWorldSettings()
 
     TC_LOG_INFO("server.loading", "Loading Waypoints..." );
     sWaypointMgr->Load();
-    
+
     TC_LOG_INFO("server.loading","Loading SmartAI Waypoints...");
     sSmartWaypointMgr->LoadFromDB();
 
     TC_LOG_INFO("server.loading", "Loading Creature Formations..." );
     sCreatureGroupMgr->LoadCreatureFormations();
-    
+
     TC_LOG_INFO("server.loading","Loading Conditions...");
     sConditionMgr->LoadConditions();
 
@@ -1555,7 +1554,7 @@ void World::SetInitialWorldSettings()
     ///- Handle outdated emails (delete/return)
     TC_LOG_INFO("server.loading", "Returning old mails..." );
     sObjectMgr->ReturnOrDeleteOldMails(false);
-    
+
     TC_LOG_INFO("server.loading","*** Faction change system ***");
     TC_LOG_INFO("server.loading","Loading faction change items...");
     sObjectMgr->LoadFactionChangeItems();
@@ -1593,7 +1592,7 @@ void World::SetInitialWorldSettings()
     if(!LoadScriptingModule())
         exit(1);
     sScriptReloadMgr->Initialize();
-        
+
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
 
@@ -1640,7 +1639,7 @@ void World::SetInitialWorldSettings()
     ///- Initialize MapManager
     TC_LOG_INFO("server.loading", "Starting Map System" );
     sMapMgr->Initialize();
-    
+
     // Load Warden Data
     TC_LOG_INFO("server.loading","Loading Warden Data..." );
     WardenDataStorage.Init();
@@ -1673,13 +1672,13 @@ void World::SetInitialWorldSettings()
 
     //TC_LOG_INFO("server.loading","Initialize AuctionHouseBot...");
     //auctionbot.Initialize();
-    
+
     TC_LOG_INFO("server.loading", "Initializing Opcodes...");
     opcodeTable.Initialize();
 
     TC_LOG_INFO("server.loading","Initialize Quest Pools...");
     LoadQuestPoolsData();
-    
+
     TC_LOG_INFO("server.loading","Loading automatic announces...");
     LoadAutoAnnounce();
 
@@ -1767,7 +1766,7 @@ uint32 World::GetCurrentQuestForPool(uint32 poolId)
     std::map<uint32, uint32>::const_iterator itr = m_currentQuestInPools.find(poolId);
     if (itr != m_currentQuestInPools.end())
         return itr->second;
-        
+
     return 0;
 }
 
@@ -1777,7 +1776,7 @@ bool World::IsQuestInAPool(uint32 questId)
         if (*itr == questId)
             return true;
     }
-    
+
     return false;
 }
 
@@ -1787,7 +1786,7 @@ bool World::IsQuestCurrentOfAPool(uint32 questId)
         if (itr->second == questId)
             return true;
     }
-    
+
     return false;
 }
 
@@ -1798,7 +1797,7 @@ void World::LoadQuestPoolsData()
     QueryResult result = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool");
     if (!result)
         return;
-        
+
     do {
         Field* fields = result->Fetch();
         uint32 questId = fields[0].GetUInt32();
@@ -1808,7 +1807,7 @@ void World::LoadQuestPoolsData()
     result = WorldDatabase.PQuery("SELECT pool_id, quest_id FROM quest_pool_current");
     if (!result)
         return;
-        
+
     do {
         Field* fields = result->Fetch();
         uint32 poolId = fields[0].GetUInt32();
@@ -1840,7 +1839,7 @@ void World::Update(time_t diff)
             ++m_updateTimeCount;
         }
     }
-    
+
     ///- Update the different timers
     for(auto & m_timer : m_timers)
         if(m_timer.GetCurrent()>=0)
@@ -1893,7 +1892,7 @@ void World::Update(time_t diff)
         m_timers[WUPDATE_CHECK_FILECHANGES].Reset();
     }
 
-    /// <li> Handle session updates 
+    /// <li> Handle session updates
     ResetTimeDiffRecord();
     UpdateSessions(diff);
     RecordTimeDiff("UpdateSessions");
@@ -1961,17 +1960,17 @@ void World::Update(time_t diff)
 
         UpdateArenaSeasonLogs();
     }
-    
+
     // execute callbacks from sql queries that were queued recently
     ResetTimeDiffRecord();
     ProcessQueryCallbacks();
     RecordTimeDiff("ProcessQueryCallbacks");
 
     ///- Announce if a timer has passed
-    if (m_timers[WUPDATE_ANNOUNCES].Passed()) 
+    if (m_timers[WUPDATE_ANNOUNCES].Passed())
     {
         m_timers[WUPDATE_ANNOUNCES].Reset();
-        
+
         if (getConfig(CONFIG_AUTOANNOUNCE_ENABLED)) {
             time_t curTime = time(nullptr);
             for (auto & autoAnnounce : autoAnnounces) {
@@ -2266,7 +2265,7 @@ BanReturn World::BanAccount(SanctionType mode, std::string const& _nameOrIP, uin
     //AccountTypes authorSecurity = author_session ? AccountTypes(author_session->GetSecurity()) : SEC_ADMINISTRATOR;
 
     QueryResult resultAccounts = nullptr;                     //used for kicking
-    
+
 //    uint32 authorGUID = sCharacterCache->GetCharacterGuidByName(safe_author);
 
     ///- Update the database with ban information
@@ -2448,7 +2447,7 @@ void World::ShutdownMsg(bool show, Player* player, std::string reason)
         std::string str = secsToTimeString(m_ShutdownTimer);
 
         uint32 msgid = (m_ShutdownMask & SHUTDOWN_MASK_RESTART) ? SERVER_MSG_RESTART_TIME : SERVER_MSG_SHUTDOWN_TIME;
-        
+
         std::stringstream sst;
         std::string msgToSend;
         sst << str.c_str() << ": " << reason;
@@ -2671,7 +2670,7 @@ void World::UpdateAllowedSecurity()
 void World::ResetDailyQuests()
 {
     TC_LOG_DEBUG("misc","Daily quests reset for all characters.");
-    
+
     // Every 1st of the month, delete data for quests 9884, 9885, 9886, 9887
     time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
@@ -2680,7 +2679,7 @@ void World::ResetDailyQuests()
         reinitConsortium = true;
         CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus WHERE quest IN (9884, 9885, 9886, 9887)");
     }
-    
+
     CharacterDatabase.AsyncQuery("DELETE FROM character_queststatus_daily");
     for(auto & m_session : m_sessions) {
         if(m_session.second->GetPlayer()) {
@@ -2703,17 +2702,17 @@ void World::InitNewDataForQuestPools()
         TC_LOG_ERROR("misc","World::InitNewDataForQuestPools: No quest_pool found!");
         return;
     }
-    
+
     do {
         Field* fields = result->Fetch();
         uint32 poolId = fields[0].GetUInt32();
-        
+
         QueryResult resquests = WorldDatabase.PQuery("SELECT quest_id FROM quest_pool WHERE pool_id = %u", poolId);
         if (!resquests) {
             TC_LOG_ERROR("misc","World::InitNewDataForQuestPools: No quest in pool (%u)!", poolId);
             continue;
         }
-        
+
         std::vector<uint32> questIds;
         do {
             Field* fieldquests = resquests->Fetch();
@@ -2726,7 +2725,7 @@ void World::InitNewDataForQuestPools()
         uint32 chosenQuestId = questIds.at(randomIdx);
         WorldDatabase.PQuery("UPDATE quest_pool_current SET quest_id = %u WHERE pool_id = %u", chosenQuestId, poolId);
     } while (result->NextRow());
-    
+
     LoadQuestPoolsData();
 }
 
@@ -2838,7 +2837,7 @@ void World::LoadFishingWords()
         return;
 
     tempstr = badstr;
-    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos) 
+    while ((cutAt = tempstr.find_first_of(",")) != tempstr.npos)
     {
         if (cutAt > 0)
             fishingWords.push_back(tempstr.substr(0, cutAt));
@@ -2881,10 +2880,10 @@ void World::LoadAutoAnnounce()
     autoAnnounces.clear();
 
     uint32 count = 0;
-        
+
     do {
         Field* fields = result->Fetch();
-        
+
         auto  ann = new AutoAnnounceMessage;
         ann->message = fields[1].GetString();
         uint32 hour = fields[2].GetUInt32();
@@ -2898,13 +2897,13 @@ void World::LoadAutoAnnounce()
 
         // current day reset time
         time_t curDayAnnounceTime = mktime(&localTm);
-        
+
         ann->nextAnnounce = (curTime >= curDayAnnounceTime) ? curDayAnnounceTime + DAY : curDayAnnounceTime;
 
         autoAnnounces[fields[0].GetUInt32()] = ann;
         count++;
     } while (result->NextRow());
-    
+
     TC_LOG_INFO("server.loading","Loaded %u automatic announces.", count);
 }
 
@@ -2940,12 +2939,12 @@ CharTitlesEntry const* World::getArenaLeaderTitle(uint8 rank)
     return sCharTitlesStore.LookupEntry(id);
 }
 
-/* 
+/*
 Update arena_season_stats. This table keeps count of how much time a team kept a rank.
 This should be called every minute.
 
 Table structure :
-teamid, time1, time2, time3 
+teamid, time1, time2, time3
 */
 void World::UpdateArenaSeasonLogs()
 {

@@ -718,9 +718,6 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             data << pCurrChar->GetGUID();
             guild->BroadcastPacket(&data);
 
-            if (sWorld->getConfig(CONFIG_IRC_ENABLED))
-                sIRCMgr->onIngameGuildJoin(guild->GetId(), guild->GetName(), pCurrChar->GetName());
-
             TC_LOG_DEBUG("network", "WORLD: Sent guild-signed-on (SMSG_GUILD_EVENT)");
 
             // Increment online members of the guild
@@ -762,7 +759,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         {
             if (cEntry->cinematicSequence)
                 pCurrChar->SendCinematicStart(cEntry->cinematicSequence);
-            else 
+            else
 #endif
                 if (ChrRacesEntry const* rEntry = sChrRacesStore.LookupEntry(pCurrChar->GetRace()))
                     pCurrChar->SendCinematicStart(rEntry->cinematicSequence);
@@ -854,7 +851,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         if (pCurrChar->IsDead())
             pCurrChar->ResurrectPlayer(1.f);
     }
-    
+
     if (pCurrChar->HasAtLoginFlag(AT_LOGIN_RESET_FLYS)) {
         pCurrChar->m_taxi.ResetTaximask();
         pCurrChar->InitTaxiNodesForLevel();
@@ -904,7 +901,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         }
         pCurrChar->RemoveAtLoginFlag(AT_LOGIN_ALL_REP);
     }
-    
+
     // announce group about member online (must be after add to player list to receive announce to self)
     if(Group *group = pCurrChar->GetGroup())
     {
@@ -928,7 +925,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
    //     GetAccountId(),IP_str.c_str(),pCurrChar->GetName() ,pCurrChar->GetGUIDLow());
 
     m_playerLoading = false;
-    
+
     #ifdef PLAYERBOT
     if (!_player->GetPlayerbotAI())
     {
@@ -941,7 +938,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
     //    sScriptMgr->OnPlayerLogin(pCurrChar, firstLogin);
 
     delete holder;
-    
+
     //avoid bug abuse to enter in heroic instance without needed reputation level
     if (sMapMgr->PlayerCannotEnter(pCurrChar->GetMap()->GetId(), pCurrChar))
     {
@@ -951,7 +948,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
 
 void WorldSession::HandleSetFactionAtWar( WorldPacket & recvData )
 {
-    
+
 
    // TC_LOG_DEBUG("network.opcode", "WORLD: Received CMSG_SET_FACTION_ATWAR" );
 
@@ -1039,7 +1036,7 @@ void WorldSession::HandleTutorialReset( WorldPacket & /*recvData*/ )
 
 void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 {
-    
+
 
     //TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_WATCHED_FACTION");
     uint32 fact;
@@ -1049,7 +1046,7 @@ void WorldSession::HandleSetWatchedFactionOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleSetFactionInactiveOpcode(WorldPacket & recvData)
 {
-    
+
 
    // TC_LOG_DEBUG("network.opcode","WORLD: Received CMSG_SET_FACTION_INACTIVE");
     uint32 replistid;
@@ -1153,7 +1150,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 {
     uint64 guid;
 
-    
+
     recvData >> guid;
 
     // not accept declined names for unsupported languages
@@ -1189,7 +1186,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
     std::string name2;
     DeclinedName declinedname;
 
-    
+
     recvData >> name2;
 
     if(name2 != name)                                       // character have different name
@@ -1203,7 +1200,7 @@ void WorldSession::HandleSetPlayerDeclinedNames(WorldPacket& recvData)
 
     for(auto & i : declinedname.name)
     {
-        
+
         recvData >> i;
         if(!normalizePlayerName(i))
         {

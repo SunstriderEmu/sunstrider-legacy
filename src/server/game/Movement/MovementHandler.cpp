@@ -31,7 +31,6 @@
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 #include "World.h"
-#include "IRCMgr.h"
 #include "Pet.h"
 
 #define MOVEMENT_PACKET_TIME_DELAY 0
@@ -274,11 +273,11 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
 
 /*
 MSG_MOVE_START_FORWARD MSG_MOVE_START_BACKWARD MSG_MOVE_STOP MSG_MOVE_START_STRAFE_LEFT MSG_MOVE_START_STRAFE_RIGHT
-MSG_MOVE_STOP_STRAFE MSG_MOVE_JUMP MSG_MOVE_START_TURN_LEFT MSG_MOVE_START_TURN_RIGHT MSG_MOVE_STOP_TURN 
+MSG_MOVE_STOP_STRAFE MSG_MOVE_JUMP MSG_MOVE_START_TURN_LEFT MSG_MOVE_START_TURN_RIGHT MSG_MOVE_STOP_TURN
 MSG_MOVE_START_PITCH_UP MSG_MOVE_START_PITCH_DOWN MSG_MOVE_STOP_PITCH MSG_MOVE_SET_RUN_MODE MSG_MOVE_SET_WALK_MODE
 MSG_MOVE_FALL_LAND MSG_MOVE_START_SWIM MSG_MOVE_STOP_SWIM MSG_MOVE_SET_FACING MSG_MOVE_SET_PITCH MSG_MOVE_HEARTBEAT
 CMSG_MOVE_FALL_RESET CMSG_MOVE_SET_FLY MSG_MOVE_START_ASCEND MSG_MOVE_STOP_ASCEND CMSG_MOVE_CHNG_TRANSPORT
-MSG_MOVE_START_DESCEND 
+MSG_MOVE_START_DESCEND
 */
 void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 {
@@ -295,7 +294,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     {
         recvData.rfinish();                     // prevent warnings spam
         return;
-    } 
+    }
 
 #ifdef LICH_KING
     uint64 guid;
@@ -332,7 +331,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
 
         // transports size limited
         // (also received at zeppelin leave by some reason with t_* as absolute in continent coordinates, can be safely skipped)
-        if (fabs(movementInfo.transport.pos.GetPositionX()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionY()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionZ()) > 75.0f ) 
+        if (fabs(movementInfo.transport.pos.GetPositionX()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionY()) > 75.0f || fabs(movementInfo.transport.pos.GetPositionZ()) > 75.0f )
         {
             recvData.rfinish();                   // prevent warnings spam
             return;
@@ -397,7 +396,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         // To fix this: It seems the client does not set the PLAYER_FLYING flag while swimming. But I'm not 100% sure there is no case it could happen. If this is false and we should check for Map::IsUnderWater as well
         if (((movementInfo.flags & MOVEMENTFLAG_PLAYER_FLYING) != 0) && plrMover->IsInWater())
         {
-            plrMover->SetInWater(false); 
+            plrMover->SetInWater(false);
         }
         else if (((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())
         {
@@ -415,7 +414,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
         if (opcode == MSG_MOVE_FALL_LAND && plrMover && !plrMover->IsInFlight())
         {
             //alternate falltime calculation
-            if (plrMover->m_anti_beginfalltime != 0) 
+            if (plrMover->m_anti_beginfalltime != 0)
             {
                 uint32 ServerFallTime = GetMSTime() - plrMover->m_anti_beginfalltime;
                 if (movementInfo.fallTime < ServerFallTime && (time(NULL) - plrMover->m_anti_TeleTime) > 15) {
@@ -477,7 +476,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
                                 (float) (CurTime - (FH__Tmp1 - 500)), &movementInfo);
                     }
                 }
-        
+
                 if (delta > 80.0f) {
                     Anti__ReportCheat("Tele hack", delta, GetOpcodeNameForLogging(static_cast<OpcodeClient>(opcode)).c_str());
                 }
@@ -541,7 +540,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvData)
     WriteMovementInfo(&data, &movementInfo);
     mover->SendMessageToSet(&data, _player);
     mover->m_movementInfo = movementInfo;
-    
+
 #ifdef LICH_KING
     // this is almost never true (sunwell: only one packet when entering vehicle), normally use mover->IsVehicle()
     if (mover->GetVehicle())
@@ -701,7 +700,7 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     uint64 guid;
     recvData >> guid; //Client started controlling this unit
 
-	/*TC 
+	/*TC
 	if (GetPlayer()->IsInWorld())
         if (_player->m_unitMovedByMe->GetGUID() != guid)
             TC_LOG_DEBUG("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is %s and should be %s" , guid.ToString().c_str(), _player->m_unitMovedByMe->GetGUID().ToString().c_str());
@@ -784,7 +783,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
         m_clientTimeDelay = mstime - movementInfo.time;
     move_time = (movementInfo.time - (mstime - m_clientTimeDelay)) + mstime + 500;
     movementInfo.time = move_time;
-    
+
     // Save movement flags
     GetPlayer()->SetUnitMovementFlags(movementInfo.GetMovementFlags());
 
@@ -797,7 +796,7 @@ void WorldSession::HandleMoveKnockBackAck(WorldPacket& recvData)
     data << movementInfo.jump.sinAngle;
     data << movementInfo.jump.cosAngle;
     data << movementInfo.jump.xyspeed;
-    data << movementInfo.jump.zspeed; //InitVertSpeed 
+    data << movementInfo.jump.zspeed; //InitVertSpeed
 
     /* Do we really need to send the data to everyone? Seemed to work better */
     _player->SendMessageToSet(&data, false);

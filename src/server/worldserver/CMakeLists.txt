@@ -38,8 +38,7 @@ set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAG
 if (UNIX)
     #this should be changed, see comments is CMakeLists from irc project
 	#todo: is gomp still used ?
-	#todo2: Add .so add a target_link_library in irc project ? Not sure this will work since this file only exists after irc project is built
-    set(UNIX_LIBS gomp ${CMAKE_BINARY_DIR}/libircclient/src/libircclient.so)
+    set(UNIX_LIBS gomp)
 endif()
 
 #todo3: This fixes some linking problem, but is it still necessary ?
@@ -53,7 +52,6 @@ target_link_libraries(worldserver
     readline
 	${UNIX_LIBS}
   PRIVATE
-	irc
 	segvcatch
 )
 
@@ -69,7 +67,7 @@ target_include_directories(worldserver
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR})
 
-link_directories(${LIBSDIR}) 
+link_directories(${LIBSDIR})
 
 set_target_properties(worldserver
     PROPERTIES

@@ -167,7 +167,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             return;
         }
    }
-    
+
    std::string msg = "";
    std::string to = "";
 
@@ -262,9 +262,9 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 break;
 
             // can't whisper others players before CONFIG_WHISPER_MINLEVEL but can still whisper GM's
-            if (targetSecurity == SEC_PLAYER && 
-                playerSecurity == SEC_PLAYER && 
-                GetPlayer()->GetLevel() < sWorld->getConfig(CONFIG_WHISPER_MINLEVEL) && 
+            if (targetSecurity == SEC_PLAYER &&
+                playerSecurity == SEC_PLAYER &&
+                GetPlayer()->GetLevel() < sWorld->getConfig(CONFIG_WHISPER_MINLEVEL) &&
                 lang != LANG_ADDON &&
                 GetPlayer()->GetTotalPlayedTime() < 1 * DAY)
             {
@@ -300,7 +300,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                 /* receiver->m_speakTime = 0;
                 receiver->m_speakCount = 0; */
             }
-            else 
+            else
             #endif
                 GetPlayer()->Whisper(msg, Language(lang),toPlayer);
         } break;
@@ -346,8 +346,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Guild *guild = sObjectMgr->GetGuildById(guildId);
             if (guild) {
                 guild->BroadcastToGuild(this, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
-                if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
-                    sIRCMgr->onIngameGuildMessage(guild->GetId(), _player->GetName(), msg.c_str());
             }
             #ifdef PLAYERBOT
             // Playerbot mod: broadcast message to bot members
@@ -385,12 +383,12 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
             Group* targetGroup = nullptr;
             Group* originalGroup = GetPlayer()->GetOriginalGroup();
             Group* currentGroup = GetPlayer()->GetGroup();
-            
+
             if(originalGroup && originalGroup->isRaidGroup() && !originalGroup->isBGGroup())
                 targetGroup = originalGroup;
             else if(currentGroup && currentGroup->isRaidGroup() && !currentGroup->isBGGroup())
                 targetGroup = currentGroup;
-            
+
             //no valid group found
             if(!targetGroup)
                 return;
@@ -428,7 +426,7 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
 
             logChannelId = group->GetLeaderGUID();
         } break;
-        
+
         case CHAT_MSG_BATTLEGROUND_LEADER:
         {
             //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
@@ -466,11 +464,6 @@ void WorldSession::HandleMessagechatOpcode( WorldPacket & recvData )
                     #endif
 
                     chn->Say(_player->GetGUID(),msg.c_str(), Language(lang));
-                    if (sWorld->getConfig(CONFIG_IRC_ENABLED) && lang != LANG_ADDON)
-                    {
-                        ChannelFaction faction = _player->GetTeam() == ALLIANCE ? CHAN_FACTION_ALLIANCE : CHAN_FACTION_HORDE;
-                        sIRCMgr->onIngameChannelMessage(faction,to.c_str(),_player->GetName(), msg.c_str());
-                    }
                 }
             }
         } break;
@@ -519,7 +512,7 @@ void WorldSession::HandleEmoteOpcode( WorldPacket & recvData )
 {
     if(!GetPlayer()->IsAlive())
         return;
-    
+
 
     uint32 emote;
     recvData >> emote;
@@ -538,7 +531,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING),timeStr.c_str());
         return;
     }
-    
+
 
     uint32 text_emote, emoteNum;
     uint64 guid;
@@ -546,7 +539,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
     recvData >> text_emote;
     recvData >> emoteNum;
     recvData >> guid;
-    
+
     Unit* i_target = ObjectAccessor::GetUnit(*_player, guid);
 
     LocaleConstant loc_idx = _player->GetSession()->GetSessionDbcLocale();
@@ -583,7 +576,7 @@ void WorldSession::HandleTextEmoteOpcode( WorldPacket & recvData )
                 data << name;
             else
                 data << (uint8)0x00;
-        
+
             _player->m_unitMovedByMe->SendMessageToSetInRange(&data,sWorld->getConfig(CONFIG_LISTEN_RANGE_TEXTEMOTE),true);
         }
 
@@ -617,4 +610,3 @@ void WorldSession::HandleChannelDeclineInvite(WorldPacket &recvPacket)
 {
     // TODO
 }
-

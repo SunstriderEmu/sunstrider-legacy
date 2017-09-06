@@ -223,10 +223,10 @@ enum WorldConfigs
     CONFIG_ENABLE_SINFO_LOGIN,
     CONFIG_PREMATURE_BG_REWARD,
     CONFIG_NUMTHREADS,
-    
+
     CONFIG_WORLDCHANNEL_MINLEVEL,
 
-    //logs duration in days. -1 to keep forever. 0 to disable logging. 
+    //logs duration in days. -1 to keep forever. 0 to disable logging.
     CONFIG_LOG_BG_STATS,
     CONFIG_LOG_BOSS_DOWNS,
     CONFIG_LOG_CHAR_DELETE,
@@ -263,9 +263,9 @@ enum WorldConfigs
     CONFIG_MYSQL_BUNDLE_WORLDDB,
 
     CONFIG_BUGGY_QUESTS_AUTOCOMPLETE,
-    
+
     CONFIG_AUTOANNOUNCE_ENABLED,
-    
+
     CONFIG_WARDEN_ENABLED,
     CONFIG_WARDEN_KICK,
     CONFIG_WARDEN_NUM_CHECKS,
@@ -273,7 +273,7 @@ enum WorldConfigs
     CONFIG_WARDEN_CLIENT_RESPONSE_DELAY,
     CONFIG_WARDEN_DB_LOG,
     CONFIG_WARDEN_BAN_TIME,
-    
+
     CONFIG_WHISPER_MINLEVEL,
 
     CONFIG_ARENA_SPECTATOR_ENABLE,
@@ -289,9 +289,8 @@ enum WorldConfigs
     CONFIG_ARENA_DECAY_VALUE,
     CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS,
 
-    CONFIG_IRC_ENABLED,
     CONFIG_IRC_COMMANDS,
-    
+
     CONFIG_PACKET_SPOOF_POLICY,
     CONFIG_PACKET_SPOOF_BANMODE,
     CONFIG_PACKET_SPOOF_BANDURATION,
@@ -299,7 +298,7 @@ enum WorldConfigs
     CONFIG_SPAM_REPORT_THRESHOLD,
     CONFIG_SPAM_REPORT_PERIOD,
     CONFIG_SPAM_REPORT_COOLDOWN,
-    
+
     CONFIG_FACTION_CHANGE_ENABLED,
     CONFIG_FACTION_CHANGE_A2H,
     CONFIG_FACTION_CHANGE_H2A,
@@ -658,7 +657,7 @@ class TC_GAME_API World
         // unbanAuthor can be null
         bool RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSession const* unbanAuthor);
 
-        
+
         bool IsAllowedMap(uint32 mapid) { return m_forbiddenMapIds.count(mapid) == 0 ;}
 
         // for max speed access
@@ -685,7 +684,7 @@ class TC_GAME_API World
 
         inline std::string GetWardenBanTime()          {return m_wardenBanTime;}
 
-        
+
         void ProcessCliCommands();
         void QueueCliCommand(CliCommandHolder* commandHolder) { cliCmdQueue.add(commandHolder); }
 
@@ -715,7 +714,7 @@ class TC_GAME_API World
         void ResetTimeDiffRecord();
         /** Print time diff since last ResetTimeDiffRecord() or since last RecordTimeDiff() (this function also does the reset) */
         void RecordTimeDiff(std::string const& text);
-        
+
         uint32 GetCurrentQuestForPool(uint32 poolId);
         bool IsQuestInAPool(uint32 questId);
         bool IsQuestCurrentOfAPool(uint32 questId);
@@ -723,7 +722,7 @@ class TC_GAME_API World
         void LogPhishing(uint32 src, uint32 dst, std::string msg);
         void ResetDailyQuests();
         void LoadAutoAnnounce();
-        
+
         std::vector<ArenaTeam*> getArenaLeaderTeams() { return firstArenaTeams; };
         void updateArenaLeaderTeams(uint8 maxcount, uint8 type = 2, uint32 minimalRating = 1800);
         void updateArenaLeadersTitles();
@@ -828,10 +827,10 @@ class TC_GAME_API World
         //used versions
         std::string m_DBVersion;
         std::string m_ScriptsVersion;
-        
+
         std::vector<uint32> m_questInPools;
         std::map<uint32, uint32> m_currentQuestInPools;
-        
+
         std::map<uint32, AutoAnnounceMessage*> autoAnnounces;
 
         std::vector<ArenaTeam*> firstArenaTeams;
@@ -845,4 +844,3 @@ TC_GAME_API extern Realm realm;
 #define sWorld World::instance()
 #endif
 /// @}
-

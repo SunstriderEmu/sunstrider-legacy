@@ -32,7 +32,6 @@
 #include "ProcessPriority.h"
 #include "Timer.h"
 #include "MapManager.h"
-#include "IRCMgr.h"
 #include "ScriptReloadMgr.h"
 #include "AppenderDB.h"
 #include <segvcatch.h>
@@ -264,7 +263,7 @@ extern int main(int argc, char **argv)
     });
     // Initialize the World
     sWorld->SetInitialWorldSettings();
-    
+
     std::shared_ptr<void> mapManagementHandle(nullptr, [](void*)
     {
         // unload battleground templates before different singletons destroyed
@@ -290,13 +289,6 @@ extern int main(int argc, char **argv)
             thr->join();
             delete thr;
         });
-    }
-
-    ///- Start up the IRC client
-    if (sConfigMgr->GetBoolDefault("IRC.Enabled", false))
-    {
-        TC_LOG_INFO("server.worldserver", "IRC bridge is enabled.");
-        sIRCMgr->startSessions();
     }
 
     // Launch the worldserver listener socket
@@ -368,8 +360,6 @@ extern int main(int argc, char **argv)
 
     sLog->SetSynchronous();
 
-    sIRCMgr->stopSessions(); //stop irc sessions if any
-
     //  sScriptMgr->OnShutdown();
 
     // set server offline
@@ -380,7 +370,7 @@ extern int main(int argc, char **argv)
     // 0 - normal shutdown
     // 1 - shutdown at error
     // 2 - restart command used, this code can be used by restarter for restart Trinityd
-    
+
     return World::GetExitCode();
 }
 
@@ -450,7 +440,7 @@ void ShutdownCLIThread(std::thread* cliThread)
 bool StartDB()
 {
     MySQL::Library_Init();
-	
+
     // Load databases
     DatabaseLoader loader("server.worldserver", DatabaseLoader::DATABASE_NONE);
     loader
@@ -459,7 +449,7 @@ bool StartDB()
         .AddDatabase(WorldDatabase, "World");
 
 	loader.AddDatabase(LogsDatabase, "Logs"); //Strange reference bug when I append this to the last command, so I kept this out
-	
+
     if (!loader.Load())
         return false;
 
