@@ -36,8 +36,7 @@ endif()
 set_target_properties(worldserver PROPERTIES LINK_FLAGS "${worldserver_LINK_FLAGS}")
 
 if (UNIX)
-    #this should be changed, see comments is CMakeLists from irc project
-	#todo: is gomp still used ?
+    #todo: is gomp still used ?
     set(UNIX_LIBS gomp)
 endif()
 
@@ -50,9 +49,9 @@ target_link_libraries(worldserver
     game
     gsoap
     readline
-	${UNIX_LIBS}
+    ${UNIX_LIBS}
   PRIVATE
-	segvcatch
+    segvcatch
 )
 
 CollectIncludeDirectories(

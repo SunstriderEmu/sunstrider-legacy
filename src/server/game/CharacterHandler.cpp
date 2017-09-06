@@ -24,7 +24,6 @@
 #include "Config.h"
 #include "ScriptCalls.h"
 #include "ScriptMgr.h"
-#include "IRCMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "GitRevision.h"
 #include "CharacterCache.h"

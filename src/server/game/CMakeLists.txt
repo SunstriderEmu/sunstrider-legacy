@@ -57,8 +57,7 @@ target_link_libraries(game
   PUBLIC
     game-interface
   PRIVATE
-	${gperftools_lib}
-	irc
+    ${gperftools_lib}
     efsw
     segvcatch
     catch

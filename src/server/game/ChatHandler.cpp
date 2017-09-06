@@ -38,7 +38,6 @@
 #include "Language.h"
 #include "Util.h"
 #include "ScriptMgr.h"
-#include "IRCMgr.h"
 #include "LogsDatabaseAccessor.h"
 
 #ifdef PLAYERBOT
