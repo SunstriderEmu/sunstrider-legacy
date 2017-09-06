@@ -1131,8 +1131,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_DECAY_VALUE] = sConfigMgr->GetIntDefault("Arena.Decay.Value", 20);
     m_configs[CONFIG_ARENA_DECAY_CONSECUTIVE_WEEKS] = sConfigMgr->GetIntDefault("Arena.Decay.ConsecutiveWeeks", 2);
 
-    m_configs[CONFIG_IRC_COMMANDS] = sConfigMgr->GetBoolDefault("IRC.Commands", false);
-
     //packet spoof punishment
     m_configs[CONFIG_PACKET_SPOOF_POLICY] = sConfigMgr->GetIntDefault("PacketSpoof.Policy", (uint32)WorldSession::DosProtection::POLICY_KICK);
     m_configs[CONFIG_PACKET_SPOOF_BANMODE] = sConfigMgr->GetIntDefault("PacketSpoof.BanMode", (uint32)SANCTION_BAN_ACCOUNT);
