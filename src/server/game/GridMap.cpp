@@ -1,4 +1,5 @@
 #include "GridMap.h"
+#include "CellImpl.h"
 #include "Log.h"
 #include "World.h"
 #include "DBCStructure.h"
