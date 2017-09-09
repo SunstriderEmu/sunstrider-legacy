@@ -33,7 +33,7 @@ list<ObjectGuid> NearestGameObjects::Calculate()
 
     AnyGameObjectInObjectRangeCheck u_check(bot, range);
     GameObjectListSearcher<AnyGameObjectInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(bot->GetMap()->GetVisibilityRange(), searcher);
+	Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
 
     list<ObjectGuid> result;
     for(list<GameObject*>::iterator tIter = targets.begin(); tIter != targets.end(); ++tIter)

@@ -113,7 +113,7 @@ bool RandomPlayerbotFactory::CreateRandomBot(uint8 cls)
     cci.FacialHair = facialHair;
     cci.OutfitId = outfitId;
 
-    if (!player->Create(sObjectMgr->GenerateLowGuid(HighGuid::Player), &cci))
+    if (!player->Create(sObjectMgr->GetGenerator<HighGuid::Player>().Generate(), &cci))
     {
         player->DeleteFromDB(player->GetGUID(), accountId, true/*, true */);
         delete session;

@@ -27,7 +27,7 @@ void NearestCorpsesValue::FindUnits(list<Unit*> &targets)
 {
     AnyDeadUnitInObjectRangeCheck u_check(bot, range);
     UnitListSearcher<AnyDeadUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-    bot->VisitNearbyObject(bot->GetMap()->GetVisibilityRange(), searcher);
+	Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
 }
 
 bool NearestCorpsesValue::AcceptUnit(Unit* unit)
