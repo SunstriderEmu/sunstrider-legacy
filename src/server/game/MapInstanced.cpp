@@ -179,8 +179,14 @@ Map* MapInstanced::CreateInstanceForPlayer(const uint32 mapId, Player* player, u
 		{
 			if (loginInstanceId) // if the player has a saved instance id on login, we either use this instance or relocate him out (return null)
 			{
+				//sunstrider: logic changed a bit here: we don't want to relocate player out of instance after a crash
 				map = FindInstanceMap(loginInstanceId);
-				return (map && map->GetId() == GetId()) ? map : nullptr; // is this check necessary? or does MapInstanced only find instances of itself?
+				if (map)
+					return map->GetId() == GetId() ? map : nullptr;
+				else if (pSave && pSave->GetInstanceId() == loginInstanceId) //else create map if a save exists
+					return CreateInstance(loginInstanceId, pSave, pSave->GetDifficulty());
+				else
+					return nullptr; //relocate him out
 			}
 
 			InstanceGroupBind* groupBind = nullptr;
