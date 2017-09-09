@@ -28,16 +28,16 @@ class SHA1Randx
 public:
     SHA1Randx(uint8* buff, uint32 size)
     {
-        uint32 taken = size/2;
+        uint32 _taken = size/2;
 
         sh.Initialize();
-        sh.UpdateData(buff, taken);
+        sh.UpdateData(buff, _taken);
         sh.Finalize();
 
         memcpy(o1, sh.GetDigest(), 20);
 
         sh.Initialize();
-        sh.UpdateData(buff + taken, size - taken);
+        sh.UpdateData(buff + _taken, size - _taken);
         sh.Finalize();
 
         memcpy(o2, sh.GetDigest(), 20);

@@ -440,28 +440,28 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
             {
                 uint32 lastMemoryNodeId = nextMemoryNodeId;
                 //insert first node
-                WaypointData* nextNode = (*i_path)[nextMemoryNodeId];
+                WaypointData* next_node = (*i_path)[nextMemoryNodeId];
 
-                GeneratePathToNextPoint(creature, creature, nextNode, splineId);
+                GeneratePathToNextPoint(creature, creature, next_node, splineId);
 
                 //stop path if node has delay
-                if (nextNode->delay)
+                if (next_node->delay)
                     break;
                 //get move type of this first node
                 WaypointMoveType lastMoveType = WaypointMoveType(currentNode->move_type);
 
-                WaypointData* lastNode = nextNode;
+                WaypointData* lastNode = next_node;
 
                 //next nodes
                 while (GetNextMemoryNode(nextMemoryNodeId, nextMemoryNodeId, false))
                 {
-                    nextNode = (*i_path)[nextMemoryNodeId];
+					next_node = (*i_path)[nextMemoryNodeId];
 
                     //stop path at move type change (so we can handle walk/run/take off changes)
-                    if (nextNode->move_type != lastMoveType)
+                    if (next_node->move_type != lastMoveType)
                         break;
 
-                    GeneratePathToNextPoint(Position(lastNode->x, lastNode->y, lastNode->z), creature, nextNode, splineId);
+                    GeneratePathToNextPoint(Position(lastNode->x, lastNode->y, lastNode->z), creature, next_node, splineId);
 
                     //stop if this is the last node in path
                     if (IsLastMemoryNode(nextMemoryNodeId))
@@ -471,10 +471,10 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                     }
 
                     //stop path if node has delay
-                    if (nextNode->delay)
+                    if (next_node->delay)
                         break;
 
-                    lastNode = nextNode;
+                    lastNode = next_node;
                 }
 
                 //if last node has orientation, set it to spline

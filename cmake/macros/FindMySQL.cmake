@@ -74,6 +74,7 @@ find_path(MYSQL_INCLUDE_DIR
 	"C:/Program Files/MariaDB 5.6/include/mysql"
 	"C:/Program Files/MariaDB 5.7/include/mysql"
     "C:/Program Files/MariaDB 10.1/include/mysql"
+	#Not compatible anymore "C:/Program Files/MariaDB 10.2/include/mysql"
     "C:/Program Files/MySQL/MySQL Server 5.6/include"
 	"${PROGRAM_FILES_32}/MySQL/MySQL Server 5.7/include"
     "C:/Program Files/MySQL/include"
@@ -108,10 +109,11 @@ endif( UNIX )
 if( WIN32 )
   find_library( MYSQL_LIBRARY
     NAMES
-      libmysql
+      libmysql libmariadb
     PATHS
       ${MYSQL_ADD_LIBRARIES_PATH}
 	  "C:/Program Files/MariaDB 10.1/lib"
+	  #Not compatible anymore "C:/Program Files/MariaDB 10.2/lib"
 	  "C:/Program Files/MariaDB 5.6/lib"
       "C:/Program Files/MySQL/MySQL Server 5.6/lib/opt"
       "C:/Program Files/MySQL/MySQL Server 10.1/lib/opt"
@@ -155,6 +157,7 @@ if( WIN32 )
       PATHS
 		"${PROGRAM_FILES_64}/MariaDB 5.6/bin"
 		"${PROGRAM_FILES_64}/MariaDB 10.1/bin"
+		#Not compatible anymore "${PROGRAM_FILES_64}/MariaDB 10.2/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.7/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.6/bin"
         "${PROGRAM_FILES_64}/MySQL/MySQL Server 5.5/bin"
@@ -166,6 +169,7 @@ if( WIN32 )
         "${PROGRAM_FILES_64}/MySQL/bin"
 		"${PROGRAM_FILES_32}/MariaDB 5.6/bin"
 		"${PROGRAM_FILES_32}/MariaDB 10.1/bin"
+		#Not compatible anymore "${PROGRAM_FILES_32}/MariaDB 10.2/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.7/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.6/bin"
         "${PROGRAM_FILES_32}/MySQL/MySQL Server 5.5/bin"

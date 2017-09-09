@@ -322,11 +322,11 @@ class TC_GAME_API Guild
         {
             return (members.find(LowGuid) != members.end());
         }
-        MemberSlot* GetMemberSlot(const std::string& name, uint64& guid)
+        MemberSlot* GetMemberSlot(const std::string& member_name, uint64& guid)
         {
-            for(auto & member : members)
+            for(auto& member : members)
             {
-                if(member.second.name == name)
+                if(member.second.name == member_name)
                 {
                     guid = member.first;
                     return &member.second;
