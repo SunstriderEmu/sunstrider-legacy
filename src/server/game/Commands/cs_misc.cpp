@@ -6,10 +6,10 @@
 #include "BattleGroundMgr.h"
 #include "TestMgr.h"
 #include "Weather.h"
-#include "ScriptCalls.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 #include "AccountMgr.h"
+#include "ScriptMgr.h"
 
 #ifdef PLAYERBOT
 #include "playerbot.h"
@@ -356,8 +356,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
 bool ChatHandler::HandleLoadScriptsCommand(const char* args)
 {
-    if(!LoadScriptingModule()) 
-        return true;
+	sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
 
     sWorld->SendGMText(LANG_SCRIPTS_RELOADED);
     return true;

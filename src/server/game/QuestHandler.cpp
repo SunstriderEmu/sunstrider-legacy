@@ -10,7 +10,6 @@
 #include "GossipDef.h"
 #include "QuestDef.h"
 #include "ObjectAccessor.h"
-#include "ScriptCalls.h"
 #include "Group.h"
 #include "BattleGround.h"
 #include "BattleGroundAV.h"

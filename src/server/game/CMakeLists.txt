@@ -9,7 +9,7 @@ CollectSourceFiles(
   ${CMAKE_CURRENT_SOURCE_DIR}/PrecompiledHeaders
   ${EXCLUDE_PLAYERBOT}
 )
-
+ 
 set(PRIVATE_PCH_HEADER PrecompiledHeaders/gamePCH.h)
 set(PRIVATE_PCH_SOURCE PrecompiledHeaders/gamePCH.cpp)
 

@@ -1480,11 +1480,6 @@ void ScriptMgr::OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId
     tmpscript->OnRelocate(transport, waypointId, mapId, x, y, z); */
 }
 
-char const* ScriptMgr::ScriptsVersion()
-{
-    return "Sunstrider scripting library";
-}
-
 /*
 bool ScriptMgr::OnGossipHello( Player * player, Creature *creature)
 {

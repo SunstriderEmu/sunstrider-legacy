@@ -22,7 +22,6 @@
 #include "Language.h"
 #include "Chat.h"
 #include "Config.h"
-#include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "LogsDatabaseAccessor.h"
 #include "GitRevision.h"

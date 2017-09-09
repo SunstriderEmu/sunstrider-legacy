@@ -22,7 +22,6 @@
 #include "Language.h"                                       // for CMSG_CANCEL_MOUNT_AURA handler
 #include "Chat.h"
 #include "SocialMgr.h"
-#include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "WardenWin.h"
 #include "WardenMac.h"

@@ -704,10 +704,6 @@ class TC_GAME_API World
         void LoadDBVersion();
         char const* GetDBVersion() { return m_DBVersion.c_str(); }
 
-        //used Script version
-        void SetScriptsVersion(char const* version) { m_ScriptsVersion = version ? version : "unknown scripting library"; }
-        char const* GetScriptsVersion() { return m_ScriptsVersion.c_str(); }
-
         /** Record current time to start from for the next RecordTimeDiff call */
         void ResetTimeDiffRecord();
         /** Print time diff since last ResetTimeDiffRecord() or since last RecordTimeDiff() (this function also does the reset) */
@@ -824,7 +820,6 @@ class TC_GAME_API World
 
         //used versions
         std::string m_DBVersion;
-        std::string m_ScriptsVersion;
 
         std::vector<uint32> m_questInPools;
         std::map<uint32, uint32> m_currentQuestInPools;

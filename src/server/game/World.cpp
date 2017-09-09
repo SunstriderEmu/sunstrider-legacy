@@ -39,7 +39,6 @@
 #include "Player.h"
 #include "Pet.h"
 #include "QueryCallback.h"
-#include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "ScriptReloadMgr.h"
 #include "SkillDiscovery.h"
@@ -1587,9 +1586,8 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadDbScriptStrings();
 
     TC_LOG_INFO("server.loading", "Initializing Scripts..." );
-    if(!LoadScriptingModule())
-        exit(1);
-    sScriptReloadMgr->Initialize();
+	sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
+//TC	sScriptMgr->OnConfigLoad(false);                                // must be done after the ScriptMgr has been properly initialized
 
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();

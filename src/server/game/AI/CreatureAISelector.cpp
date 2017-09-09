@@ -5,7 +5,6 @@
 #include "CreatureAIFactory.h"
 #include "NullCreatureAI.h"
 #include "MovementGenerator.h"
-#include "ScriptCalls.h"
 #include "Pet.h"
 #include "ScriptMgr.h"
 

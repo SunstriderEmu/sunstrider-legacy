@@ -13,7 +13,6 @@
 #include "GossipDef.h"
 #include "SpellAuras.h"
 #include "UpdateMask.h"
-#include "ScriptCalls.h"
 #include "ObjectAccessor.h"
 #include "Creature.h"
 #include "MapManager.h"

@@ -32,7 +32,6 @@
 #include "CreatureGroups.h"
 #include "PetAI.h"
 #include "NullCreatureAI.h"
-#include "ScriptCalls.h"
 #include "ScriptMgr.h"
 #include "TemporarySummon.h"
 #include "PlayerAI.h"

@@ -14,7 +14,6 @@
 #include "UpdateData.h"
 #include "LootMgr.h"
 #include "Chat.h"
-#include "ScriptCalls.h"
 #include "MapManager.h"
 #include "ObjectAccessor.h"
 #include "Object.h"
