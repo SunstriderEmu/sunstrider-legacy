@@ -1363,6 +1363,7 @@ enum TextEmotes
     TEXTEMOTE_FLIRT                = 328,
     TEXTEMOTE_JOKE                 = 329,
     TEXTEMOTE_COMMEND              = 243,
+	TEXTEMOTE_TRAIN                = 264,
     TEXTEMOTE_WINK                 = 363,
     TEXTEMOTE_PAT                  = 364,
     TEXTEMOTE_SERIOUS              = 365,
