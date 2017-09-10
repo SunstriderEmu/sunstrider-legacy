@@ -206,10 +206,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsUnit(target))
                 {
-                    Player* target = e.action.sound.onlySelf ? target->ToPlayer() : nullptr;
-                    target->PlayDirectSound(e.action.sound.sound, target);
-                    TC_LOG_DEBUG("scripts.ai","SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
-                        target->GetName().c_str(), target->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
+                    if (e.action.sound.onlySelf)
+                    {
+                        Player* targetPlayer = nullptr;
+                        targetPlayer = target->ToPlayer();
+                        targetPlayer->PlayDirectSound(e.action.sound.sound, targetPlayer); // because target is potentially null
+                        TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
+                        targetPlayer->GetName().c_str(), targetPlayer->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
+                    }
                 }
             }
 
@@ -1786,10 +1790,10 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
 
             for (WorldObject* target : targets)
             {
-                if (Creature* target = target->ToCreature())
-                    if (IsSmart(target) && target->GetVictim())
-                        if (CAST_AI(SmartAI, target->AI())->CanCombatMove())
-                            target->GetMotionMaster()->MoveChase(target->GetVictim(), attackDistance, attackAngle);
+                if (Creature* targetCreature = target->ToCreature())
+                    if (IsSmart(targetCreature) && targetCreature->GetVictim())
+                        if (CAST_AI(SmartAI, targetCreature->AI())->CanCombatMove())
+                            targetCreature->GetMotionMaster()->MoveChase(targetCreature->GetVictim(), attackDistance, attackAngle);
             }
             break;
         }

@@ -9733,7 +9733,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 
     SpellImmuneList const& mechanicList = m_spellImmune[IMMUNITY_MECHANIC];
     for(auto itr : mechanicList)
-        if(itr.type == spellInfo->Mechanic)
+        if(itr.type == (uint32) spellInfo->Mechanic)
             return true;
 
     if(ToCreature() && ToCreature()->IsTotem())
@@ -13185,9 +13185,9 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
             case SPELL_AURA_PROC_TRIGGER_DAMAGE:
             {
                 SpellNonMeleeDamage damageInfo(this, pTarget, spellInfo->Id, spellInfo->SchoolMask);
-                uint32 damage = SpellDamageBonusDone(pTarget, spellInfo, auraModifier->m_amount, SPELL_DIRECT_DAMAGE); // Redeclaration of damage?
-                damage = pTarget->SpellDamageBonusTaken(this, spellInfo, damage, SPELL_DIRECT_DAMAGE);
-                CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
+                uint32 triggerDamage = SpellDamageBonusDone(pTarget, spellInfo, auraModifier->m_amount, SPELL_DIRECT_DAMAGE); // Redeclaration of damage?
+                triggerDamage = pTarget->SpellDamageBonusTaken(this, spellInfo, triggerDamage, SPELL_DIRECT_DAMAGE);
+                CalculateSpellDamageTaken(&damageInfo, triggerDamage, spellInfo);
                 SendSpellNonMeleeDamageLog(&damageInfo);
                 DealSpellDamage(&damageInfo, true);
                 break;
@@ -13258,12 +13258,12 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
                 break;
             case SPELL_AURA_MECHANIC_IMMUNITY:
                 // Compare mechanic
-                if (procSpell==nullptr || procSpell->Mechanic != auraModifier->m_miscvalue)
+                if (procSpell==nullptr || (uint32) procSpell->Mechanic != auraModifier->m_miscvalue)
                     continue;
                 break;
             case SPELL_AURA_MOD_MECHANIC_RESISTANCE:
                 // Compare mechanic
-                if (procSpell==nullptr || procSpell->Mechanic != auraModifier->m_miscvalue)
+                if (procSpell==nullptr || (uint32) procSpell->Mechanic != auraModifier->m_miscvalue)
                     continue;
                 break;
             default:
