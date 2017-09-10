@@ -16,7 +16,7 @@ struct Modifier
 {
     AuraType m_auraname;
     int32 m_amount;
-    int32 m_miscvalue;
+    uint32 m_miscvalue;
     uint32 periodictime;
 };
 
@@ -206,7 +206,7 @@ class TC_GAME_API Aura
         //Compat TC
         inline Aura* GetBase() { return this; }
 
-        void SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue);
+        void SetModifier(AuraType t, int32 a, uint32 pt, uint32 miscValue);
         AuraType GetAuraType() const { return m_modifier.m_auraname; }
         Modifier const* GetModifier() const { return &m_modifier;}
         int32 GetAmount() const { return m_modifier.m_amount; }

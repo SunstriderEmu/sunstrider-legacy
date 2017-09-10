@@ -263,7 +263,7 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
     return me->SummonCreature(id,me->GetPositionX() + x,me->GetPositionY() + y,me->GetPositionZ() + z, angle, (TempSummonType)type, despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, uint32 Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
 {
     //No target so we can't cast
     if (!target)

@@ -549,7 +549,7 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
+        int32 val = sConfigMgr->GetIntDefault("WorldServerPort", DEFAULT_WORLDSERVER_PORT);
         if(val!=m_configs[CONFIG_PORT_WORLD])
             TC_LOG_ERROR("server.loading","WorldServerPort option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_PORT_WORLD]);
     }
@@ -564,7 +564,7 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("GameType", 0);
+        int32 val = sConfigMgr->GetIntDefault("GameType", 0);
         if(val!=m_configs[CONFIG_GAME_TYPE])
             TC_LOG_ERROR("server.loading","GameType option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_GAME_TYPE]);
     }
@@ -573,7 +573,7 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
+        int32 val = sConfigMgr->GetIntDefault("RealmZone", REALM_ZONE_DEVELOPMENT);
         if(val!=m_configs[CONFIG_REALM_ZONE])
             TC_LOG_ERROR("server.loading","RealmZone option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_REALM_ZONE]);
     }
@@ -620,7 +620,7 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("MaxPlayerLevel", 70);
+        int32 val = sConfigMgr->GetIntDefault("MaxPlayerLevel", 70);
         if(val!=m_configs[CONFIG_MAX_PLAYER_LEVEL])
             TC_LOG_ERROR("server.loading","MaxPlayerLevel option can't be changed at config reload, using current value (%u).",m_configs[CONFIG_MAX_PLAYER_LEVEL]);
     }
@@ -895,7 +895,7 @@ void World::LoadConfigSettings(bool reload)
 
     if(reload)
     {
-        uint32 val = sConfigMgr->GetIntDefault("Expansion",1);
+        int32 val = sConfigMgr->GetIntDefault("Expansion",1);
         if(val!=m_configs[CONFIG_EXPANSION])
             TC_LOG_ERROR("server.loading","Expansion option can't be changed at worldserver.conf reload, using current value (%u).",m_configs[CONFIG_EXPANSION]);
     }
@@ -1706,7 +1706,7 @@ void World::DetectDBCLang()
 
     std::string availableLocalsStr;
 
-    int default_locale = TOTAL_LOCALES;
+    uint8 default_locale = TOTAL_LOCALES;
     for (int i = MAX_LOCALE; i >= 0; --i)
     {
         if ( strlen(race->name[i]) > 0)                     // check by race names

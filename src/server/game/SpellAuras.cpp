@@ -573,7 +573,7 @@ Unit* Aura::GetCaster() const
     return unit && unit->IsInWorld() ? unit : nullptr;
 }
 
-void Aura::SetModifier(AuraType t, int32 a, uint32 pt, int32 miscValue)
+void Aura::SetModifier(AuraType t, int32 a, uint32 pt, uint32 miscValue)
 {
     m_modifier.m_auraname = t;
     m_modifier.m_amount   = a;

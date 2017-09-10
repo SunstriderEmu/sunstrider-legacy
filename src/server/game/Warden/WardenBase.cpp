@@ -35,7 +35,7 @@ void WardenBase::Init(WorldSession *pClient, BigNumber *K)
 ClientWardenModule *WardenBase::GetModuleForClient(WorldSession *session)
 {
     ABORT();
-    return NULL;
+    // return NULL;
 }
 
 void WardenBase::InitializeModule()

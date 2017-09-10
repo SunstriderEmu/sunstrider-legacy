@@ -334,7 +334,7 @@ public:
     //can be null
     SpellCategoryEntry const* Category;
     uint32 Dispel;
-    uint32 Mechanic;
+    Mechanics Mechanic;
     uint32 Attributes;
     uint32 AttributesEx;
     uint32 AttributesEx2;
@@ -350,7 +350,7 @@ public:
     uint32 TargetCreatureType;
     uint32 RequiresSpellFocus;
     uint32 FacingCasterFlags;
-    uint32 CasterAuraState;
+    AuraStateType CasterAuraState;
     uint32 TargetAuraState;
     uint32 CasterAuraStateNot;
     uint32 TargetAuraStateNot;

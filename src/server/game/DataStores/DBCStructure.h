@@ -3,6 +3,7 @@
 
 #include "DBCEnums.h"
 #include "Define.h"
+#include "SharedDefines.h"
 
 #include <map>
 #include <set>
@@ -548,7 +549,7 @@ struct MapEntry
                                                             // 99 text flags
     //chat*     unknownText2                                // 100-115 unknown empty text fields
                                                             // 116 text flags
-    int32       entrance_map;                               // 117 map_id of entrance map
+    uint32      entrance_map;                               // 117 map_id of entrance map
     float       entrance_x;                                 // 118 entrance x coordinate (if exist single entry)
     float       entrance_y;                                 // 119 entrance y coordinate (if exist single entry)
     uint32 resetTimeRaid;                                   // 120
@@ -706,7 +707,7 @@ struct SpellEntry
     uint32    Category;                                     // 1
     //uint32     castUI                                     // 2 not used
     uint32    Dispel;                                       // 3
-    uint32    Mechanic;                                     // 4
+    Mechanics    Mechanic;                                     // 4
     uint32    Attributes;                                   // 5
     uint32    AttributesEx;                                 // 6
     uint32    AttributesEx2;                                // 7
@@ -720,7 +721,7 @@ struct SpellEntry
     uint32    TargetCreatureType;                           // 15
     uint32    RequiresSpellFocus;                           // 16
     uint32    FacingCasterFlags;                            // 17
-    uint32    CasterAuraState;                              // 18
+    AuraStateType CasterAuraState;                              // 18
     uint32    TargetAuraState;                              // 19
     uint32    CasterAuraStateNot;                           // 20
     uint32    TargetAuraStateNot;                           // 21

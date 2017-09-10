@@ -13185,7 +13185,7 @@ void Unit::ProcDamageAndSpellFor( bool isVictim, Unit * pTarget, uint32 procFlag
             case SPELL_AURA_PROC_TRIGGER_DAMAGE:
             {
                 SpellNonMeleeDamage damageInfo(this, pTarget, spellInfo->Id, spellInfo->SchoolMask);
-                uint32 damage = SpellDamageBonusDone(pTarget, spellInfo, auraModifier->m_amount, SPELL_DIRECT_DAMAGE);
+                uint32 damage = SpellDamageBonusDone(pTarget, spellInfo, auraModifier->m_amount, SPELL_DIRECT_DAMAGE); // Redeclaration of damage?
                 damage = pTarget->SpellDamageBonusTaken(this, spellInfo, damage, SPELL_DIRECT_DAMAGE);
                 CalculateSpellDamageTaken(&damageInfo, damage, spellInfo);
                 SendSpellNonMeleeDamageLog(&damageInfo);

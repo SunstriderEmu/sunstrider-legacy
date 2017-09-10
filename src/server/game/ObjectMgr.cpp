@@ -3958,7 +3958,7 @@ void ObjectMgr::LoadPetCreateSpells()
 
     uint32 count = 0;
 
-    mPetCreateSpell.clear();
+    this->mPetCreateSpell.clear();
 
     do
     {
@@ -3978,7 +3978,7 @@ void ObjectMgr::LoadPetCreateSpells()
                 TC_LOG_ERROR("sql.sql","Spell %u listed in `petcreateinfo_spell` does not exist",PetCreateSpell.spellid[i]);
         }
 
-        mPetCreateSpell[creature_id] = PetCreateSpell;
+        this->mPetCreateSpell[creature_id] = PetCreateSpell;
 
         ++count;
     }
@@ -5284,7 +5284,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
                 +(entry->y - mapEntry->entrance_y)*(entry->y - mapEntry->entrance_y);
             if(foundEntr)
             {
-                if(dist2 < distEntr)
+                if(dist2 < distEntr) // distEntr not initialized?
                 {
                     distEntr = dist2;
                     entryEntr = entry;
@@ -5303,7 +5303,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
             float dist2 = (entry->x - x)*(entry->x - x)+(entry->y - y)*(entry->y - y)+(entry->z - z)*(entry->z - z);
             if(foundNear)
             {
-                if(dist2 < distNear)
+                if(dist2 < distNear) // distNear not initialized?
                 {
                     distNear = dist2;
                     entryNear = entry;
@@ -8175,7 +8175,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->Id = fields[0].GetUInt32();
         spell->Category = fields[1].GetUInt32();
         spell->Dispel = fields[2].GetUInt32();
-        spell->Mechanic = fields[3].GetUInt32();
+        spell->Mechanic = (Mechanics) fields[3].GetUInt32();
         spell->Attributes = fields[4].GetUInt32();
         spell->AttributesEx = fields[5].GetUInt32();
         spell->AttributesEx2 = fields[6].GetUInt32();
@@ -8189,7 +8189,7 @@ void ObjectMgr::LoadSpellTemplates()
         spell->TargetCreatureType = fields[14].GetUInt32();
         spell->RequiresSpellFocus = fields[15].GetUInt32();
         spell->FacingCasterFlags = fields[16].GetUInt32();
-        spell->CasterAuraState = fields[17].GetUInt32();
+        spell->CasterAuraState = (AuraStateType) fields[17].GetUInt32();
         spell->TargetAuraState = fields[18].GetUInt32();
         spell->CasterAuraStateNot = fields[19].GetUInt32();
         spell->TargetAuraStateNot = fields[20].GetUInt32();
