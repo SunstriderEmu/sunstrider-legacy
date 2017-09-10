@@ -22,7 +22,7 @@
 #include <vector>
 #include <unordered_map>
 
-enum WaypointMoveType
+enum WaypointMoveType : uint32
 {
     WAYPOINT_MOVE_TYPE_WALK     = 0,
     WAYPOINT_MOVE_TYPE_RUN      = 1,

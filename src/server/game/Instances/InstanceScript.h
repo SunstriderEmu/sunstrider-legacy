@@ -13,7 +13,7 @@ class ModuleReference;
 #define OUT_LOAD_INST_DATA_COMPLETE    
 #define OUT_LOAD_INST_DATA_FAIL        TC_LOG_ERROR("scripts","Unable to load Instance Data for Instance %s (Map %d, Instance Id: %d).",instance->GetMapName(), instance->GetId(), instance->GetInstanceId())
 
-enum EncounterState
+enum EncounterState : uint32
 {
     NOT_STARTED = 0,
     IN_PROGRESS = 1,
