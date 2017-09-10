@@ -206,14 +206,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsUnit(target))
                 {
-                    if (e.action.sound.onlySelf)
-                    {
-                        Player* targetPlayer = nullptr;
-                        targetPlayer = target->ToPlayer();
-                        targetPlayer->PlayDirectSound(e.action.sound.sound, targetPlayer); // because target is potentially null
-                        TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
-                        targetPlayer->GetName().c_str(), targetPlayer->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
-                    }
+					if (e.action.sound.onlySelf)
+					{
+						if (Player* p = target->ToPlayer())
+							p->PlayDirectSound(e.action.sound.sound, p);
+					}
+					else {
+						target->PlayDirectSound(e.action.sound.sound);
+					}
+                    TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
+						target->GetName().c_str(), target->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
                 }
             }
 
@@ -1120,8 +1122,6 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_RANDOM_SOUND: target: %s (" UI64FMTD " ), sound: %u, onlyself: %s",
                         target->GetName().c_str(), target->GetGUID(), sound, onlySelf ? "true" : "false");
                 }
-    
-                break; // Why breaking immediatly the loop?
             }
         }
         case SMART_ACTION_SET_CORPSE_DELAY:

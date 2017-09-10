@@ -123,10 +123,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
 {
-    
-    
-    
-
     TC_LOG_DEBUG("network","WORLD: CMSG_OPEN_ITEM packet, data length = %u", (uint32)recvPacket.size());
 
     Player* pUser = _player;
@@ -195,7 +191,6 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
                 //not found
                 pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
                 return;
-                // Why breaking immediatly the loop?
             }
         }
     }
