@@ -498,7 +498,7 @@ MARK_LOG();
 MARK_LOG();
 logPrintf("%s\n", msg.c_str());
         throw FileNotFound(full, msg);
-        alwaysAssertM(false, msg);
+        // alwaysAssertM(false, msg);
     }
 MARK_LOG();
 

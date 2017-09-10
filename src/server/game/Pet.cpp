@@ -804,13 +804,14 @@ int32 Pet::GetTPForSpell(uint32 spellid)
     uint32 basetrainp = 0;
 
     SkillLineAbilityMapBounds skill_bounds = sSpellMgr->GetSkillLineAbilityMapBounds(spellid);
+
     for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
     {
         if(!_spell_idx->second->reqtrainpoints)
             return 0;
 
         basetrainp = _spell_idx->second->reqtrainpoints;
-        break;
+        break; // Why breaking immediatly the loop?
     }
 
     uint32 spenttrainp = 0;
@@ -1837,7 +1838,7 @@ void Pet::InitPetCreateSpells()
             for(auto _spell_idx = skill_bounds.first; _spell_idx != skill_bounds.second; ++_spell_idx)
             {
                 usedtrainpoints += _spell_idx->second->reqtrainpoints;
-                break;
+                break; // Why breaking immediatly the loop?
             }
         }
     }

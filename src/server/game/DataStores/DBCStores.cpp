@@ -556,7 +556,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
         InterpolationPair const* interpolationPair = reinterpret_cast<InterpolationPair const*>(buffer + (sizeof(InterpolationPair) * k) + cam->target_positions.interpolation_ranges.offset_elements);
         targetInterpolationMin = interpolationPair->min;
         targetInterpolationMax = interpolationPair->max;
-        break;
+        break; // Why breaking immediatly the loop?
     }
 
     //can this have more than 1 entry ? if so, this code is invalid
@@ -568,7 +568,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
         InterpolationPair const* interpolationPair = reinterpret_cast<InterpolationPair const*>(buffer + (sizeof(InterpolationPair) * k) + cam->positions.interpolation_ranges.offset_elements);
         interpolationMin = interpolationPair->min;
         interpolationMax = interpolationPair->max;
-        break;
+        break; // Why breaking immediatly the loop?
     }
 
     //interpolationMax may be at 0 for some cases ?

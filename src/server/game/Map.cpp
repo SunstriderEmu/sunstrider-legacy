@@ -2710,7 +2710,7 @@ Map::EnterState InstanceMap::CannotEnter(Player* player)
     {
         TC_LOG_ERROR("maps","InstanceMap::CanEnter - player %s(%u) already in map %d,%d,%d!", player->GetName().c_str(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
         ABORT();
-        return CANNOT_ENTER_ALREADY_IN_MAP;
+        // return CANNOT_ENTER_ALREADY_IN_MAP;
     }
 
     // cannot enter if the instance is full (player cap), GMs don't count
@@ -3132,7 +3132,7 @@ Map::EnterState BattlegroundMap::CannotEnter(Player* player)
     {
         TC_LOG_ERROR("maps","BGMap::CanEnter - player %u already in map!", player->GetGUIDLow());
         ABORT();
-        return CANNOT_ENTER_ALREADY_IN_MAP;
+        // return CANNOT_ENTER_ALREADY_IN_MAP;
     }
 
     if(player->GetBattlegroundId() != GetInstanceId())

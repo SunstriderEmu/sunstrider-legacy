@@ -195,6 +195,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
                 //not found
                 pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
                 return;
+                // Why breaking immediatly the loop?
             }
         }
     }

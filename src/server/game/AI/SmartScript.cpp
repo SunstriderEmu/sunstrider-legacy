@@ -1117,7 +1117,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                         target->GetName().c_str(), target->GetGUID(), sound, onlySelf ? "true" : "false");
                 }
     
-                break;
+                break; // Why breaking immediatly the loop?
             }
         }
         case SMART_ACTION_SET_CORPSE_DELAY:

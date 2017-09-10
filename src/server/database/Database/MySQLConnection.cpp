@@ -523,12 +523,12 @@ bool MySQLConnection::_HandleMySQLErrno(uint32 errNo)
             TC_LOG_ERROR("sql.sql", "Your database structure is not up to date.");
             std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
-            return false;
+            // return false;
         case ER_PARSE_ERROR:
             TC_LOG_ERROR("sql.sql", "Error while parsing SQL. Core fix required.");
             std::this_thread::sleep_for(std::chrono::seconds(10));
             std::abort();
-            return false;
+            // return false;
         default:
             TC_LOG_ERROR("sql.sql", "Unhandled MySQL errno %u. Unexpected behaviour possible.", errNo);
             return false;
