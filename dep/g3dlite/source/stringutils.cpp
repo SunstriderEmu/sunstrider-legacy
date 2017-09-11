@@ -98,7 +98,7 @@ std::string replace(const std::string& s, const std::string& pattern, const std:
     if (pattern.length() == 0) {
         return s;
     }
-	std::string temp = "";
+    std::string temp = "";
     size_t lastindex = 0;
     size_t nextindex = 0;
     do {

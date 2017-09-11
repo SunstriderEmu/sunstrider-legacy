@@ -4,23 +4,23 @@
 namespace efsw {
 
 Mutex::Mutex() :
-	mMutexImpl( new Platform::MutexImpl() )
+    mMutexImpl( new Platform::MutexImpl() )
 {
 }
 
 Mutex::~Mutex()
 {
-	efSAFE_DELETE( mMutexImpl );
+    efSAFE_DELETE( mMutexImpl );
 }
 
 void Mutex::lock()
 {
-	mMutexImpl->lock();
+    mMutexImpl->lock();
 }
 
 void Mutex::unlock()
 {
-	mMutexImpl->unlock();
+    mMutexImpl->unlock();
 }
 
 }

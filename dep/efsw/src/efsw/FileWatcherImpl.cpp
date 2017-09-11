@@ -5,11 +5,11 @@
 namespace efsw {
 
 FileWatcherImpl::FileWatcherImpl( FileWatcher * parent ) :
-	mFileWatcher( parent ),
-	mInitOK( false ),
-	mIsGeneric( false )
+    mFileWatcher( parent ),
+    mInitOK( false ),
+    mIsGeneric( false )
 {
-	System::maxFD();
+    System::maxFD();
 }
 
 FileWatcherImpl::~FileWatcherImpl()
@@ -18,12 +18,12 @@ FileWatcherImpl::~FileWatcherImpl()
 
 bool FileWatcherImpl::initOK()
 {
-	return mInitOK;
+    return mInitOK;
 }
 
 bool FileWatcherImpl::linkAllowed( const std::string& curPath, const std::string& link )
 {
-	return ( mFileWatcher->followSymlinks() && mFileWatcher->allowOutOfScopeLinks() ) || -1 != String::strStartsWith( curPath, link );
+    return ( mFileWatcher->followSymlinks() && mFileWatcher->allowOutOfScopeLinks() ) || -1 != String::strStartsWith( curPath, link );
 }
 
 }

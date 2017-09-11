@@ -314,7 +314,7 @@ bool Any::containsKey(const std::string& x) const {
     beforeRead();
     verifyType(TABLE);
     if (size() == 0) {
-		//catches the case of an empty container, where value.t is null
+        //catches the case of an empty container, where value.t is null
         return false;
     }
     Any* a = m_data->value.t->getPointer(x);
@@ -1472,7 +1472,7 @@ void Any::deserializeBody(TextInput& ti, Token& token) {
         bracket = BRACE;
     } else {
         debugAssertM(false, "Illegal bracket type");
-	bracket = PAREN;
+    bracket = PAREN;
     }
     closeSymbol = bracket[1];
 

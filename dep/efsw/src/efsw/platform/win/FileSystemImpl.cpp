@@ -3,7 +3,7 @@
 #if EFSW_PLATFORM == EFSW_PLATFORM_WIN32
 
 #ifndef WIN32_LEAN_AND_MEAN
-	#define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
 
@@ -15,73 +15,73 @@ namespace efsw { namespace Platform {
 
 FileInfoMap FileSystem::filesInfoFromPath( const std::string& path )
 {
-	FileInfoMap files;
+    FileInfoMap files;
 
-	String tpath( path );
+    String tpath( path );
 
-	if ( tpath[ tpath.size() - 1 ] == '/' || tpath[ tpath.size() - 1 ] == '\\' )
-	{
-		tpath += "*";
-	}
-	else
-	{
-		tpath += "\\*";
-	}
+    if ( tpath[ tpath.size() - 1 ] == '/' || tpath[ tpath.size() - 1 ] == '\\' )
+    {
+        tpath += "*";
+    }
+    else
+    {
+        tpath += "\\*";
+    }
 
-	WIN32_FIND_DATAW findFileData;
-	HANDLE hFind = FindFirstFileW( (LPCWSTR)tpath.toWideString().c_str(), &findFileData );
+    WIN32_FIND_DATAW findFileData;
+    HANDLE hFind = FindFirstFileW( (LPCWSTR)tpath.toWideString().c_str(), &findFileData );
 
-	if( hFind != INVALID_HANDLE_VALUE )
-	{
-		std::string name( String( findFileData.cFileName ).toUtf8() );
-		std::string fpath( path + name );
+    if( hFind != INVALID_HANDLE_VALUE )
+    {
+        std::string name( String( findFileData.cFileName ).toUtf8() );
+        std::string fpath( path + name );
 
-		if ( name != "." && name != ".." )
-		{
-			files[ name ] = FileInfo( fpath );
-		}
+        if ( name != "." && name != ".." )
+        {
+            files[ name ] = FileInfo( fpath );
+        }
 
-		while( FindNextFileW( hFind, &findFileData ) )
-		{
-			name = String( findFileData.cFileName ).toUtf8();
-			fpath = path + name;
+        while( FindNextFileW( hFind, &findFileData ) )
+        {
+            name = String( findFileData.cFileName ).toUtf8();
+            fpath = path + name;
 
-			if ( name != "." && name != ".." )
-			{
-				files[ name ] = FileInfo( fpath );
-			}
-		}
+            if ( name != "." && name != ".." )
+            {
+                files[ name ] = FileInfo( fpath );
+            }
+        }
 
-		FindClose( hFind );
-	}
+        FindClose( hFind );
+    }
 
-	return files;
+    return files;
 }
 
 char FileSystem::getOSSlash()
 {
-	return '\\';
+    return '\\';
 }
 
 bool FileSystem::isDirectory( const std::string& path )
 {
-	return 0 != ( GetFileAttributesW( String( path ).toWideString().c_str() ) & FILE_ATTRIBUTE_DIRECTORY );
+    return 0 != ( GetFileAttributesW( String( path ).toWideString().c_str() ) & FILE_ATTRIBUTE_DIRECTORY );
 }
 
 bool FileSystem::isRemoteFS( const std::string& directory )
 {
-	if ((directory[0] == '\\' || directory[0] == '/')  &&
-		(directory[1] == '\\' || directory[1] == '/'))
-	{
-		return true;
-	}
+    if ((directory[0] == '\\' || directory[0] == '/')  &&
+        (directory[1] == '\\' || directory[1] == '/'))
+    {
+        return true;
+    }
 
-	if ( directory.size() >= 3 )
-	{
-		return 4 == GetDriveTypeA( directory.substr( 0, 3 ).c_str() );
-	}
+    if ( directory.size() >= 3 )
+    {
+        return 4 == GetDriveTypeA( directory.substr( 0, 3 ).c_str() );
+    }
 
-	return false;
+    return false;
 }
 
 }}

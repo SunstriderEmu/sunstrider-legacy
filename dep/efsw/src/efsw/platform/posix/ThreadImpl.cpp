@@ -10,57 +10,57 @@
 namespace efsw { namespace Platform {
 
 ThreadImpl::ThreadImpl( Thread * owner ) :
-	mIsActive(false)
+    mIsActive(false)
 {
-	mIsActive = pthread_create( &mThread, NULL, &ThreadImpl::entryPoint, owner ) == 0;
+    mIsActive = pthread_create( &mThread, NULL, &ThreadImpl::entryPoint, owner ) == 0;
 
-	if ( !mIsActive )
-	{
-		efDEBUG( "Failed to create thread\n" );
-	}
+    if ( !mIsActive )
+    {
+        efDEBUG( "Failed to create thread\n" );
+    }
 }
 
 void ThreadImpl::wait()
 {
-	// Wait for the thread to finish, no timeout
-	if ( mIsActive )
-	{
-		assert( pthread_equal( pthread_self(), mThread ) == 0 );
+    // Wait for the thread to finish, no timeout
+    if ( mIsActive )
+    {
+        assert( pthread_equal( pthread_self(), mThread ) == 0 );
 
-		pthread_join( mThread, NULL );
+        pthread_join( mThread, NULL );
 
-		mIsActive = false; // Reset the thread state
-	}
+        mIsActive = false; // Reset the thread state
+    }
 }
 
 void ThreadImpl::terminate()
 {
-	if ( mIsActive )
-	{
-		#if !defined( __ANDROID__ ) && !defined( ANDROID )
-			pthread_cancel( mThread );
-		#else
-			pthread_kill( mThread , SIGUSR1 );
-		#endif
+    if ( mIsActive )
+    {
+        #if !defined( __ANDROID__ ) && !defined( ANDROID )
+            pthread_cancel( mThread );
+        #else
+            pthread_kill( mThread , SIGUSR1 );
+        #endif
 
-		mIsActive = false;
-	}
+        mIsActive = false;
+    }
 }
 
 void * ThreadImpl::entryPoint( void * userData )
 {
-	// The Thread instance is stored in the user data
-	Thread * owner = static_cast<Thread*>( userData );
+    // The Thread instance is stored in the user data
+    Thread * owner = static_cast<Thread*>( userData );
 
-	// Tell the thread to handle cancel requests immediatly
-	#ifdef PTHREAD_CANCEL_ASYNCHRONOUS
-		pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
-	#endif
+    // Tell the thread to handle cancel requests immediatly
+    #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
+        pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
+    #endif
 
-	// Forward to the owner
-	owner->run();
+    // Forward to the owner
+    owner->run();
 
-	return NULL;
+    return NULL;
 }
 
 }}
