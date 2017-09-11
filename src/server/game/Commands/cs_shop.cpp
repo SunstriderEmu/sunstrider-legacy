@@ -384,20 +384,6 @@ bool ChatHandler::HandleReskinCommand(const char* args)
     
     if (t_race != m_race /*|| t_gender != m_gender */|| t_guid == m_session->GetPlayer()->GetGUIDLow() || t_account != m_session->GetAccountId())
         return false;
-        
-    if (m_session->GetPlayer()->GetLastGenderChange() > (time(nullptr) - sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY) * 86400)) {
-        if (t_gender != m_gender) {
-            uint32 delta = time(nullptr) - m_session->GetPlayer()->GetLastGenderChange();
-            uint32 days = uint32(delta / 86400.0f);
-            uint32 hours = uint32((delta - (days * 86400)) / 3600.0f);
-            uint32 minutes = uint32((delta - (days * 86400) - (hours * 3600)) / 60.0f);
-            //TODO translate
-            PSendSysMessage("Vous ne pouvez pas faire plus d'un changement de sexe tous les %u jours. Dernier changement il y a %u jours %u heures %u minutes.",
-            //PSendSysMessage("You can't change your character gender more than once every %u days. Last change was %u days %u hours %u minutes ago.",
-                sWorld->getConfig(CONFIG_PLAYER_GENDER_CHANGE_DELAY), days, hours, minutes);
-            return true;
-        }
-    }
 
     uint32 bankBags = m_session->GetPlayer()->GetByteValue(PLAYER_BYTES_2, 2);
 

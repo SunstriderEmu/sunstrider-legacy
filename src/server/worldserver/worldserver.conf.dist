@@ -227,7 +227,7 @@ Locale = 0
 #        Default: 1 (permit addon channel)
 #                 0 (do not permit addon channel)
 #
-#    MapUpdate.InstanceThreads
+#    MapUpdate.Threads
 #        Number of threads to update maps.
 #        Default: 4
 #
@@ -490,7 +490,12 @@ Anticheat.Movement.Warn = true
 #        Default: 0 (false)
 #                 1 (true)
 #
-#   Battleground.PrematureReward
+#    Battleground.QueueAnnouncer.WorldOnly
+#        If this is set to false, queue announcer will be made to all connected players instead of world channel only
+#        Default: 1 (true)
+#                 0 (false)
+#
+#    Battleground.PrematureReward
 #        Reward players in case of prematurely finished BG
 #        Default: 1 (true)
 #               0 (false)
@@ -596,8 +601,12 @@ Anticheat.Movement.Warn = true
 #        Default: 10
 #
 #    ArenaSpectator.Ghost
-#        Spectators can see stealth & invisible units
+#        Spectators can see invisible units
 #        Default: 1
+
+#    ArenaSpectator.Stealth
+#        Spectators can see stealth units
+#        Default: 0
 #
 #    Spam.Report.Threshold
 #        Amount of different players who must report a spam
@@ -645,6 +654,10 @@ Anticheat.Movement.Warn = true
 #        Default:     1 - (Enable)
 #                     0 - (Disable)
 #
+#    WorldChannel.MinLevel
+#        Minimum level to be able to speak in world channel
+#        Default:     10
+#
 ###################################################################################################################
 
 GameType = 1
@@ -675,6 +688,7 @@ ActivateWeather = 1
 Battleground.CastDeserter = 1
 Battleground.QueueAnnouncer.Enable = 1
 Battleground.QueueAnnouncer.PlayerOnly = 0
+Battleground.QueueAnnouncer.WorldOnly = 1
 Battleground.PrematureReward = 1
 Battleground.Arena.Rated.Enable = 1
 Battleground.Arena.NightClose.Mask = 1
@@ -698,6 +712,7 @@ Server.LoginInfo = 0
 ArenaSpectator.Enable = 1
 ArenaSpectator.Max = 10
 ArenaSpectator.Ghost = 1
+ArenaSpectator.Stealth = 0
 Spam.Report.Threshold = 3
 Spam.Report.Period = 120
 Spam.Report.Cooldown = 120
@@ -710,6 +725,15 @@ Race.Change.Cost = 4
 FFAZone = ""
 SanctuaryZone = ""
 AutoAnnounce.Enable = 1
+WorldChannel.MinLevel = 10
+
+#
+#    ClientCacheVersion
+#        Description: Client cache version for client cache data reset. Use any value different
+#                     from DB and not recently been used to trigger client side cache reset.
+#        Default:     0 - (Use DB value from world DB version.cache_id field)
+
+ClientCacheVersion = 0
 
 #
 #    Motd
@@ -763,6 +787,10 @@ Motd = "Welcome to Sunstrider!"
 #        Minimum level to be able to whisper other players.
 #        Default: 1
 #
+#    PhishingWords
+#        Comma separated list of words blocked and logged
+#        Default: ""
+#
 ###################################################################################################################
 
 AllowTwoSide.Accounts = 0
@@ -777,6 +805,7 @@ AllowTwoSide.AddFriend = 0
 AllowTwoSide.Trade = 0
 TalentsInspecting = 1
 Whisper.MinLevel = 1
+PhishingWords = ""
 
 ###################################################################################################################
 # CREATURE SETTINGS
@@ -1256,19 +1285,20 @@ Arena.AutoDistributeInterval = 7
 #                       in milliseconds
 #              Default: 300000
 #                       0 - disable
-#    BattleGround.TimeLimit.Warsong
+#
+#    Battleground.TimeLimit.Warsong
 #              Maximum time in seconds
 #              Default: 0
 #
-#    BattleGround.TimeLimit.Arena
+#    Battleground.TimeLimit.Arena
 #              Maximum time in seconds
 #              Default: 0
 #
 ###################################################################################################################
 
-BattleGround.PrematureFinishTimer = 300000
-BattleGround.TimeLimit.Warsong = 0
-BattleGround.TimeLimit.Arena = 0
+Battleground.PrematureFinishTimer = 300000
+Battleground.TimeLimit.Warsong = 0
+Battleground.TimeLimit.Arena = 0
 
 ###################################################################################################
 # NETWORK CONFIG
@@ -1350,6 +1380,10 @@ CharDelete.KeepDays = 30
 #    PvPToken.ItemCount
 #        Modify the item ID count - Default: 1
 #
+#    PvPToken.ZoneID
+#        Restrict PvP tokens to this zone if not 0
+#        Default: 0
+#    
 #    NoResetTalentsCost
 #        Enable or disable no cost when reseting talents
 #
@@ -1442,6 +1476,10 @@ CharDelete.KeepDays = 30
 #    ArenaServer.RepartitionThreshold
 #        (for WM Tournoi) Will try to split players into the two pvp zones when player count reach given value
 #        Default: 0
+# 
+#    ForbiddenMaps
+#        List of forbidden maps, delimited with a comma
+#        Default: (none)
 #
 ###################################################################################################################
 
@@ -1453,6 +1491,7 @@ PvPToken.Enable = 0
 PvPToken.MapAllowType = 4
 PvPToken.ItemID = 29434
 PvPToken.ItemCount = 1
+PvPToken.ZoneID = 0
 NoResetTalentsCost = 0
 ShowKickInWorld = 0
 RecordUpdateTimeDiffInterval = 60000
@@ -1471,6 +1510,7 @@ Arena.Decay.ConsecutiveWeeks = 2
 ArenaServer.Enabled = 0
 ArenaServer.UseCloseSchedule = 1
 ArenaServer.RepartitionThreshold = 0
+ForbiddenMaps = ""
 
 ###################################################################################################################
 # BETA SERVER
