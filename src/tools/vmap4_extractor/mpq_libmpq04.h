@@ -53,7 +53,7 @@ public:
         char *token;
 
         token = strtok( buffer, seps );
-        uint32 counter = 0;
+        libmpq__off_t counter = 0;
         while ((token != NULL) && (counter < size)) {
             //cout << token << endl;
             token[strlen(token) - 1] = 0;
@@ -92,8 +92,8 @@ public:
     char* getBuffer() { return buffer; }
     char* getPointer() { return buffer + pointer; }
     bool isEof() { return eof; }
-    void seek(int offset);
-    void seekRelative(int offset);
+    void seek(size_t offset);
+    void seekRelative(size_t offset);
     void close();
 };
 

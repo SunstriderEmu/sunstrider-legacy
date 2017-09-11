@@ -142,7 +142,7 @@ public:
     }
 
     unorm16& operator*=(const int i) {
-        m_bits *= i;
+        m_bits *= (G3D::int16) i;
         return *this;
     }
 
@@ -151,7 +151,7 @@ public:
     }
 
     unorm16& operator/=(const int i) {
-        m_bits /= i;
+        m_bits /= (G3D::int16) i;
         return *this;
     }
 

@@ -65,7 +65,7 @@ typedef struct
 }map_id;
 
 map_id * map_ids;
-uint32 map_count;
+size_t map_count;
 char output_path[128]=".";
 char input_path[1024]=".";
 bool hasInputPathParam = false;
@@ -93,7 +93,7 @@ void strToLower(char* str)
 {
     while(*str)
     {
-        *str=tolower(*str);
+        *str=(char) tolower(*str);
         ++str;
     }
 }
@@ -485,7 +485,7 @@ int main(int argc, char ** argv)
             printf("FATAL ERROR: Map.dbc not found in data file.\n");
             return 1;
         }
-        map_count=dbc->getRecordCount ();
+        map_count=dbc->getRecordCount();
         map_ids=new map_id[map_count];
         for (unsigned int x=0;x<map_count;++x)
         {

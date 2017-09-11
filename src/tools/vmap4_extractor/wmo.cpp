@@ -344,7 +344,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         //-------INDX------------------------------------
         //-------MOPY--------
         MoviEx = new uint16[nTriangles*3]; // "worst case" size...
-        int *IndexRenum = new int[nVertices];
+        uint16 *IndexRenum = new uint16[nVertices];
         memset(IndexRenum, 0xFF, nVertices*sizeof(int));
         for (int i=0; i<nTriangles; ++i)
         {
@@ -366,7 +366,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         }
 
         // assign new vertex index numbers
-        int nColVertices = 0;
+        uint16 nColVertices = 0;
         for (uint32 i=0; i<nVertices; ++i)
         {
             if (IndexRenum[i] == 1)
@@ -390,7 +390,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
 
         // write vertices
         int VERT[] = {0x54524556, nColVertices*3*static_cast<int>(sizeof(float))+4, nColVertices};// "VERT"
-        int check = 3*nColVertices;
+        size_t check = 3*nColVertices;
         fwrite(VERT,4,3,output);
         for (uint32 i=0; i<nVertices; ++i)
             if(IndexRenum[i] >= 0)
@@ -409,7 +409,7 @@ int WMOGroup::ConvertToVMAPGroupWmo(FILE *output, WMORoot *rootWMO, bool precise
         fwrite(LIQU_h, 4, 2, output);
 
         // according to WoW.Dev Wiki:
-        uint32 liquidEntry = 0;
+        short liquidEntry = 0;
 #ifdef LICH_KING
         //can never happen on BC
         if (rootWMO->liquidType & 4)
@@ -548,7 +548,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices
     int nVertices;
-    int count = fread(&nVertices, sizeof (int), 1, input);
+    size_t count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
 
     if (count != 1 || nVertices == 0)
@@ -581,7 +581,7 @@ WMOInstance::WMOInstance(MPQFile& f, char const* WmoInstName, uint32 mapID, uint
     fwrite(&scale, sizeof(float), 1, pDirfile);
     fwrite(&pos2, sizeof(float), 3, pDirfile);
     fwrite(&pos3, sizeof(float), 3, pDirfile);
-    uint32 nlen=strlen(WmoInstName);
+    size_t nlen=strlen(WmoInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(WmoInstName, sizeof(char), nlen, pDirfile);
 

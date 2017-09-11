@@ -115,13 +115,13 @@ size_t MPQFile::read(void* dest, size_t bytes)
     return bytes;
 }
 
-void MPQFile::seek(int offset)
+void MPQFile::seek(size_t offset)
 {
     pointer = offset;
     eof = (pointer >= size);
 }
 
-void MPQFile::seekRelative(int offset)
+void MPQFile::seekRelative(size_t offset)
 {
     pointer += offset;
     eof = (pointer >= size);

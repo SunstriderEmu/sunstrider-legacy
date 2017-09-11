@@ -162,7 +162,7 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     if (!input)
     {
         //printf("ModelInstance::ModelInstance couldn't open %s\n", tempname);
-        int len = strlen(tempname); // mdx not found, try with m2 extension
+        int len = (int) strlen(tempname); // mdx not found, try with m2 extension
         tempname[len-1] = '\0';
         tempname[len-2] = '2';
         input = fopen(tempname, "r+b");
@@ -172,7 +172,7 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
 
     fseek(input, 8, SEEK_SET); // get the correct no of vertices
     int nVertices;
-    int count = fread(&nVertices, sizeof (int), 1, input);
+    size_t count = fread(&nVertices, sizeof (int), 1, input);
     fclose(input);
 
     if (count != 1 || nVertices == 0)
@@ -193,7 +193,7 @@ ModelInstance::ModelInstance(MPQFile& f, char const* ModelInstName, uint32 mapID
     fwrite(&pos, sizeof(float), 3, pDirfile);
     fwrite(&rot, sizeof(float), 3, pDirfile);
     fwrite(&sc, sizeof(float), 1, pDirfile);
-    uint32 nlen=strlen(ModelInstName);
+    size_t nlen=strlen(ModelInstName);
     fwrite(&nlen, sizeof(uint32), 1, pDirfile);
     fwrite(ModelInstName, sizeof(char), nlen, pDirfile);
 
