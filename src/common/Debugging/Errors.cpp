@@ -74,17 +74,17 @@ void DebugAssert(char const* file, int line, char const* function, char const* m
 
 void Fatal(char const* file, int line, char const* function, char const* message, ...)
 {
-	va_list args;
-	va_start(args, message);
+    va_list args;
+    va_start(args, message);
 
-	fprintf(stderr, "\n%s:%i in %s FATAL ERROR:\n  ", file, line, function);
-	vfprintf(stderr, message, args);
-	fprintf(stderr, "\n");
-	fflush(stderr);
+    fprintf(stderr, "\n%s:%i in %s FATAL ERROR:\n  ", file, line, function);
+    vfprintf(stderr, message, args);
+    fprintf(stderr, "\n");
+    fflush(stderr);
 
-	std::this_thread::sleep_for(std::chrono::seconds(10));
-	*((volatile int*)NULL) = 0;
-	exit(1);
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    *((volatile int*)NULL) = 0;
+    exit(1);
 }
 
 void Error(char const* file, int line, char const* function, char const* message)

@@ -171,7 +171,7 @@ bool BigNumber::IsZero() const
 
 bool BigNumber::IsNegative() const
 {
-	return BN_is_negative(_bn);
+    return BN_is_negative(_bn);
 }
 
 std::unique_ptr<uint8[]> BigNumber::AsByteArray(int32 minSize, bool littleEndian)
@@ -196,17 +196,17 @@ std::unique_ptr<uint8[]> BigNumber::AsByteArray(int32 minSize, bool littleEndian
 
 std::string BigNumber::AsHexStr() const
 {
-	char* ch = BN_bn2hex(_bn);
-	std::string ret = ch;
-	OPENSSL_free(ch);
-	return ret;
+    char* ch = BN_bn2hex(_bn);
+    std::string ret = ch;
+    OPENSSL_free(ch);
+    return ret;
 }
 
 std::string BigNumber::AsDecStr() const
 {
-	char* ch = BN_bn2dec(_bn);
-	std::string ret = ch;
-	OPENSSL_free(ch);
-	return ret;
+    char* ch = BN_bn2dec(_bn);
+    std::string ret = ch;
+    OPENSSL_free(ch);
+    return ret;
 }
 

@@ -389,7 +389,7 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
     float o = tInfo->keyFrames.begin()->InitialOrientation;
 
     // initialize the gameobject base
-	uint32 guidLow = guid ? guid : sObjectMgr->GetGenerator<HighGuid::Mo_Transport>().Generate();
+    uint32 guidLow = guid ? guid : sObjectMgr->GetGenerator<HighGuid::Mo_Transport>().Generate();
     if (!trans->CreateMoTrans(guidLow, entry, mapId, x, y, z, o, 100))
     {
         delete trans;
@@ -406,10 +406,10 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
         }
     }
 
-	// use preset map for instances (need to know which instance)
-	trans->SetMap(map ? map : sMapMgr->CreateMap(mapId, NULL));
-	if (map && map->IsDungeon())
-		trans->m_zoneScript = map->ToInstanceMap()->GetInstanceScript();
+    // use preset map for instances (need to know which instance)
+    trans->SetMap(map ? map : sMapMgr->CreateMap(mapId, NULL));
+    if (map && map->IsDungeon())
+        trans->m_zoneScript = map->ToInstanceMap()->GetInstanceScript();
 
     // Passengers will be loaded once a player is near
 
@@ -436,8 +436,8 @@ MotionTransport* TransportMgr::CreateTransport(uint32 entry, uint32 guid /*= 0*/
 
     // xinef: transports are active so passengers can be relocated (grids must be loaded)
     ///trans->SetKeepActive(true);
-	// Passengers will be loaded once a player is near
-	HashMapHolder<MotionTransport>::Insert(trans);
+    // Passengers will be loaded once a player is near
+    HashMapHolder<MotionTransport>::Insert(trans);
     trans->GetMap()->AddToMap<MotionTransport>(trans);
     return trans;
 }

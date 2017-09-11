@@ -737,12 +737,12 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         SendPacket(&data);
     }
 
-	if (pCurrChar->HasCorpse())
-	{
-		int32 corpseReclaimDelay = pCurrChar->CalculateCorpseReclaimDelay();
-		if(corpseReclaimDelay >= 0)
-			pCurrChar->SendCorpseReclaimDelay(corpseReclaimDelay);
-	}
+    if (pCurrChar->HasCorpse())
+    {
+        int32 corpseReclaimDelay = pCurrChar->CalculateCorpseReclaimDelay();
+        if(corpseReclaimDelay >= 0)
+            pCurrChar->SendCorpseReclaimDelay(corpseReclaimDelay);
+    }
 
     pCurrChar->SendInitialPacketsBeforeAddToMap();
 
@@ -779,7 +779,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
             pCurrChar->TeleportTo(pCurrChar->m_homebindMapId, pCurrChar->m_homebindX, pCurrChar->m_homebindY, pCurrChar->m_homebindZ, pCurrChar->GetOrientation());
     }
 
-	ObjectAccessor::AddObject(pCurrChar);
+    ObjectAccessor::AddObject(pCurrChar);
     //TC_LOG_DEBUG("FIXME","Player %s added to Map.",pCurrChar->GetName());
     pCurrChar->GetSocial()->SendSocialList();
 
@@ -796,7 +796,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder * holder)
         pCurrChar->UpdateArenaTitles();
 
     // Place character in world (and load zone) before some object loading
-	//TODO CORPSE pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
+    //TODO CORPSE pCurrChar->LoadCorpse(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOAD_CORPSE_LOCATION));
 
     // setting Ghost+speed if dead
     if (pCurrChar->m_deathState != ALIVE)

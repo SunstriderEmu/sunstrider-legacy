@@ -58,7 +58,7 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
 
 int main(int argc, char** argv)
 {
-	auto configFile = fs::absolute(_TRINITY_REALM_CONFIG);
+    auto configFile = fs::absolute(_TRINITY_REALM_CONFIG);
     std::string configService;
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
     // exit if help is enabled
@@ -78,13 +78,13 @@ int main(int argc, char** argv)
 #endif
 
     std::string configError;
-	if (!sConfigMgr->LoadInitial(configFile.generic_string(),
-		std::vector<std::string>(argv, argv + argc),
-		configError))
-	{
-		printf("Error in config file: %s\n", configError.c_str());
-		return 1;
-	}
+    if (!sConfigMgr->LoadInitial(configFile.generic_string(),
+        std::vector<std::string>(argv, argv + argc),
+        configError))
+    {
+        printf("Error in config file: %s\n", configError.c_str());
+        return 1;
+    }
 
     sLog->RegisterAppender<AppenderDB>();
     sLog->Initialize(nullptr);
@@ -281,8 +281,8 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, s
     options_description all("Allowed options");
     all.add_options()
         ("help,h", "print usage message")
-		("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_REALM_CONFIG)),
-			"use <arg> as configuration file")
+        ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_REALM_CONFIG)),
+            "use <arg> as configuration file")
         ;
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
     options_description win("Windows platform specific options");

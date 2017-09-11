@@ -16,7 +16,7 @@ int AOEAI::Permissible(const Creature *creature)
 AOEAI::AOEAI(Creature *c) : CreatureAI(c)
 {
     DEBUG_ASSERT(me->m_spells[0]);
-	me->SetVisible(true);
+    me->SetVisible(true);
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);//can't be targeted
     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_ATTACKABLE_1);//can't be damaged
     me->SetDisplayId(11686);//invisible model,around a size of a player

@@ -54,7 +54,7 @@ AiObjectContext* AiFactory::createAiObjectContext(Player* player, PlayerbotAI* a
 
 int AiFactory::GetPlayerSpecTab(Player* player)
 {
-	/*  TODO PLAYERBOT
+    /*  TODO PLAYERBOT
     int c0 = 0, c1 = 0, c2 = 0;
     PlayerTalentMap& talentMap = player->GetTalentMap(0);
     for (PlayerTalentMap::iterator i = talentMap.begin(); i != talentMap.end(); ++i)

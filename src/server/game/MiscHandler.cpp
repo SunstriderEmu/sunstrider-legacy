@@ -464,8 +464,8 @@ void WorldSession::HandleZoneUpdateOpcode( WorldPacket & recvData )
 
     //TC_LOG_DEBUG("network","WORLD: Recvd ZONE_UPDATE: %u", newZone);
 
-	// use server side data, but only after update the player position. See Player::UpdatePosition().
-	GetPlayer()->SetNeedsZoneUpdate(true);
+    // use server side data, but only after update the player position. See Player::UpdatePosition().
+    GetPlayer()->SetNeedsZoneUpdate(true);
 
     //GetPlayer()->UpdateZone(newZone);
 
@@ -1359,24 +1359,24 @@ void WorldSession::HandleFarSightOpcode( WorldPacket & recvData )
 {
     //TC_LOG_DEBUG("network", "WORLD: CMSG_FAR_SIGHT");
 
-	bool apply;
-	recvData >> apply;
+    bool apply;
+    recvData >> apply;
 
-	if (apply)
-	{
-		TC_LOG_DEBUG("network", "Added FarSight %s to player %u", ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str(), ObjectGuid(_player->GetGUID()).GetCounter());
-		if (WorldObject* target = _player->GetViewpoint())
-			_player->SetSeer(target);
-		else
-			TC_LOG_DEBUG("network", "Player %s (%s) requests non-existing seer %s", _player->GetName().c_str(), ObjectGuid(_player->GetGUID()).ToString().c_str(), ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str());
-	}
-	else
-	{
-		TC_LOG_DEBUG("network", "Player %u set vision to self", ObjectGuid(_player->GetGUID()).GetCounter());
-		_player->SetSeer(_player);
-	}
+    if (apply)
+    {
+        TC_LOG_DEBUG("network", "Added FarSight %s to player %u", ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str(), ObjectGuid(_player->GetGUID()).GetCounter());
+        if (WorldObject* target = _player->GetViewpoint())
+            _player->SetSeer(target);
+        else
+            TC_LOG_DEBUG("network", "Player %s (%s) requests non-existing seer %s", _player->GetName().c_str(), ObjectGuid(_player->GetGUID()).ToString().c_str(), ObjectGuid(_player->GetGuidValue(PLAYER_FARSIGHT)).ToString().c_str());
+    }
+    else
+    {
+        TC_LOG_DEBUG("network", "Player %u set vision to self", ObjectGuid(_player->GetGUID()).GetCounter());
+        _player->SetSeer(_player);
+    }
 
-	GetPlayer()->UpdateVisibilityForPlayer();
+    GetPlayer()->UpdateVisibilityForPlayer();
 }
 
 void WorldSession::HandleSetTitleOpcode( WorldPacket & recvData )
@@ -1515,18 +1515,18 @@ void WorldSession::HandleMoveSetCanFlyAckOpcode( WorldPacket & recvData )
     recvData.read_skip<uint32>();                          // unk
 
 #ifdef LICH_KING
-	MovementInfo movementInfo;
-	movementInfo.guid = guid;
-	ReadMovementInfo(recvData, &movementInfo);
+    MovementInfo movementInfo;
+    movementInfo.guid = guid;
+    ReadMovementInfo(recvData, &movementInfo);
 
-	recvData.read_skip<float>();                           // unk2
+    recvData.read_skip<float>();                           // unk2
 
-	_player->m_unitMovedByMe->m_movementInfo.flags = movementInfo.GetMovementFlags();
+    _player->m_unitMovedByMe->m_movementInfo.flags = movementInfo.GetMovementFlags();
 #else
     uint32 flags;
     recvData >> flags;
 
-	_player->m_unitMovedByMe->m_movementInfo.flags = flags;
+    _player->m_unitMovedByMe->m_movementInfo.flags = flags;
 #endif
 
 }

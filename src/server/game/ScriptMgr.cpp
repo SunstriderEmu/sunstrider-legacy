@@ -465,9 +465,9 @@ class CreatureGameObjectScriptRegistrySwapHooks
         };
 
         AIFunctionMapWorker<typename std::decay<decltype(evaluator)>::type> worker(std::move(evaluator));
-		TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
+        TypeContainerVisitor<decltype(worker), MapStoredObjectTypesContainer> containerVisitor(worker);
 
-		containerVisitor.Visit(map->GetObjectsStore());
+        containerVisitor.Visit(map->GetObjectsStore());
     }
 
     static void DestroyScriptIdsFromSet(std::unordered_set<uint32> const& idsToRemove)
@@ -1249,11 +1249,11 @@ void CreateSpellOrAuraScripts(uint32 spellId, std::vector<T*>& scriptVector, F&&
             continue;
 
         script->_Init(&tmpscript->GetName(), spellId);
-		if (!script->_Load(objectInvoker))
-		{
-			delete script;
-			continue;
-		}
+        if (!script->_Load(objectInvoker))
+        {
+            delete script;
+            continue;
+        }
 
         scriptVector.push_back(script);
     }

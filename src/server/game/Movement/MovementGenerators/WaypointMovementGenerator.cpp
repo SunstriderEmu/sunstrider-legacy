@@ -455,7 +455,7 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                 //next nodes
                 while (GetNextMemoryNode(nextMemoryNodeId, nextMemoryNodeId, false))
                 {
-					next_node = (*i_path)[nextMemoryNodeId];
+                    next_node = (*i_path)[nextMemoryNodeId];
 
                     //stop path at move type change (so we can handle walk/run/take off changes)
                     if (next_node->move_type != lastMoveType)

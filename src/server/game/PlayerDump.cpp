@@ -378,17 +378,17 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
 
     // make sure the same guid doesn't already exist and is safe to use
     bool incHighest = true;
-	if (guid != 0 && guid < sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed())
-	{
-		result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE guid = '%d'", guid);
-		if (result)
-		{
-			guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();                     // use first free if exists
-		}
-		else incHighest = false;
-	}
-	else
-		guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();
+    if (guid != 0 && guid < sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed())
+    {
+        result = CharacterDatabase.PQuery("SELECT * FROM characters WHERE guid = '%d'", guid);
+        if (result)
+        {
+            guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();                     // use first free if exists
+        }
+        else incHighest = false;
+    }
+    else
+        guid = sObjectMgr->GetGenerator<HighGuid::Player>().GetNextAfterMaxUsed();
 
     // normalize the name if specified and check if it exists
     if(!normalizePlayerName(name))
@@ -615,11 +615,11 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     // in case of name conflict player has to rename at login anyway
     //sCharacterCache->AddCharacterCacheEntry(guid, account, name, gender, race, playerClass, level, mails.size(), 0);
 
-	sObjectMgr->GetGenerator<HighGuid::Item>().Set(sObjectMgr->GetGenerator<HighGuid::Item>().GetNextAfterMaxUsed() + items.size());
+    sObjectMgr->GetGenerator<HighGuid::Item>().Set(sObjectMgr->GetGenerator<HighGuid::Item>().GetNextAfterMaxUsed() + items.size());
     sObjectMgr->_mailid     += mails.size();
 
     if(incHighest)
-		sObjectMgr->GetGenerator<HighGuid::Player>().Generate();
+        sObjectMgr->GetGenerator<HighGuid::Player>().Generate();
 
     fclose(fin);
 

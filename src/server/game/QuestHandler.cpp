@@ -328,19 +328,19 @@ void WorldSession::HandleQuestLogRemoveQuest(WorldPacket& recvData)
             if(!_player->TakeQuestSourceItem(questId, true ))
                 return;                                     // can't un-equip some items, reject quest cancel
 
-			/* TC
-			if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
-			{
-				if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))
-					_player->RemoveTimedQuest(questId);
+            /* TC
+            if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
+            {
+                if (quest->HasSpecialFlag(QUEST_SPECIAL_FLAGS_TIMED))
+                    _player->RemoveTimedQuest(questId);
 
-				if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
-				{
-					_player->pvpInfo.IsHostile = _player->pvpInfo.IsInHostileArea || _player->HasPvPForcingQuest();
-					_player->UpdatePvPState();
-				}
-			}
-			*/
+                if (quest->HasFlag(QUEST_FLAGS_FLAGS_PVP))
+                {
+                    _player->pvpInfo.IsHostile = _player->pvpInfo.IsInHostileArea || _player->HasPvPForcingQuest();
+                    _player->UpdatePvPState();
+                }
+            }
+            */
 
             _player->SetQuestStatus(questId, QUEST_STATUS_NONE);
         }

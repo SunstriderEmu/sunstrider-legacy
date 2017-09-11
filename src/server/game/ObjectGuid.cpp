@@ -41,12 +41,12 @@ std::string ObjectGuid::ToString() const
 
 ObjectGuid ObjectGuid::Global(HighGuid type, LowType counter)
 {
-	return ObjectGuid(type, counter);
+    return ObjectGuid(type, counter);
 }
 
 ObjectGuid ObjectGuid::MapSpecific(HighGuid type, uint32 entry, LowType counter)
 {
-	return ObjectGuid(type, entry, counter);
+    return ObjectGuid(type, entry, counter);
 }
 
 ByteBuffer& operator<<(ByteBuffer& buf, ObjectGuid const& guid)
@@ -74,8 +74,8 @@ ByteBuffer& operator>>(ByteBuffer& buf, PackedGuidReader const& guid)
 
 void ObjectGuidGeneratorBase::HandleCounterOverflow(HighGuid high)
 {
-	TC_LOG_ERROR("misc", "%s guid overflow!! Can't continue, shutting down server. ", ObjectGuid::GetTypeName(high));
-	World::StopNow(ERROR_EXIT_CODE);
+    TC_LOG_ERROR("misc", "%s guid overflow!! Can't continue, shutting down server. ", ObjectGuid::GetTypeName(high));
+    World::StopNow(ERROR_EXIT_CODE);
 }
 
 #define GUID_TRAIT_INSTANTIATE_GUID( HIGH_GUID ) \

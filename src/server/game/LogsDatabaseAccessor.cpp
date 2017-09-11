@@ -144,10 +144,10 @@ void LogsDatabaseAccessor::GMCommand(WorldSession const* m_session, Unit const* 
     if (target)
     {
         //be sure to have table guid
-		if (target->GetTypeId() == TYPEID_UNIT)
-			targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HighGuid::Unit);
-		else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
-			targetGUID = ObjectGuid(HighGuid::GameObject, target->ToGameObject()->GetEntry(), target->ToGameObject()->GetSpawnId()).GetRawValue();
+        if (target->GetTypeId() == TYPEID_UNIT)
+            targetGUID = MAKE_NEW_GUID(target->ToCreature()->GetSpawnId(), target->ToCreature()->GetEntry(), HighGuid::Unit);
+        else if (target->GetTypeId() == TYPEID_GAMEOBJECT)
+            targetGUID = ObjectGuid(HighGuid::GameObject, target->ToGameObject()->GetEntry(), target->ToGameObject()->GetSpawnId()).GetRawValue();
         else
             targetGUID = target->GetGUID();
     }

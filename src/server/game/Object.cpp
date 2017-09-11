@@ -395,11 +395,11 @@ void Object::BuildValuesUpdate(uint8 updateType, ByteBuffer * data, Player *targ
 
 void Object::AddToObjectUpdateIfNeeded()
 {
-	if (m_inWorld && !m_objectUpdated)
-	{
-		AddToObjectUpdate();
-		m_objectUpdated = true;
-	}
+    if (m_inWorld && !m_objectUpdated)
+    {
+        AddToObjectUpdate();
+        m_objectUpdated = true;
+    }
 }
 
 void Object::ClearUpdateMask(bool remove)
@@ -409,7 +409,7 @@ void Object::ClearUpdateMask(bool remove)
     if(m_objectUpdated)
     {
         if(remove)
-			RemoveFromObjectUpdate();
+            RemoveFromObjectUpdate();
 
         m_objectUpdated = false;
     }
@@ -443,7 +443,7 @@ void Object::SetInt32Value( uint16 index, int32 value )
         m_int32Values[ index ] = value;
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -456,7 +456,7 @@ void Object::SetUInt32Value( uint16 index, uint32 value )
         m_uint32Values[ index ] = value;
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -478,7 +478,7 @@ void Object::SetUInt64Value(uint16 index, uint64 value)
         _changesMask.SetBit(index);
         _changesMask.SetBit(index + 1);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -491,7 +491,7 @@ void Object::SetFloatValue( uint16 index, float value )
         m_floatValues[ index ] = value;
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -511,7 +511,7 @@ void Object::SetByteValue( uint16 index, uint8 offset, uint8 value )
         m_uint32Values[ index ] |= uint32(uint32(value) << (offset * 8));
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -531,7 +531,7 @@ void Object::SetUInt16Value( uint16 index, uint8 offset, uint16 value )
         m_uint32Values[ index ] |= uint32(uint32(value) << (offset * 16));
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -544,44 +544,44 @@ void Object::SetGuidValue(uint16 index, uint64 value)
         _changesMask.SetBit(index);
         _changesMask.SetBit(index + 1);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
 
 bool Object::AddGuidValue(uint16 index, ObjectGuid value)
 {
-	ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
-	if (value && !*((ObjectGuid*)&(m_uint32Values[index])))
-	{
-		*((ObjectGuid*)&(m_uint32Values[index])) = value;
-		_changesMask.SetBit(index);
-		_changesMask.SetBit(index + 1);
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
+    if (value && !*((ObjectGuid*)&(m_uint32Values[index])))
+    {
+        *((ObjectGuid*)&(m_uint32Values[index])) = value;
+        _changesMask.SetBit(index);
+        _changesMask.SetBit(index + 1);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 bool Object::RemoveGuidValue(uint16 index, ObjectGuid value)
 {
-	ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
-	if (value && *((ObjectGuid*)&(m_uint32Values[index])) == value)
-	{
-		m_uint32Values[index] = 0;
-		m_uint32Values[index + 1] = 0;
-		_changesMask.SetBit(index);
-		_changesMask.SetBit(index + 1);
+    ASSERT(index + 1 < m_valuesCount || PrintIndexError(index, true));
+    if (value && *((ObjectGuid*)&(m_uint32Values[index])) == value)
+    {
+        m_uint32Values[index] = 0;
+        m_uint32Values[index + 1] = 0;
+        _changesMask.SetBit(index);
+        _changesMask.SetBit(index + 1);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
 
-		return true;
-	}
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 void Object::SetStatFloatValue( uint16 index, float value)
@@ -650,7 +650,7 @@ void Object::SetFlag( uint16 index, uint32 newFlag )
         m_uint32Values[ index ] = newval;
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -665,7 +665,7 @@ void Object::RemoveFlag( uint16 index, uint32 oldFlag )
         m_uint32Values[ index ] = newval;
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -698,7 +698,7 @@ void Object::SetByteFlag( uint16 index, uint8 offset, uint8 newFlag )
         m_uint32Values[ index ] |= uint32(uint32(newFlag) << (offset * 8));
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -717,7 +717,7 @@ void Object::RemoveByteFlag( uint16 index, uint8 offset, uint8 oldFlag )
         m_uint32Values[ index ] &= ~uint32(uint32(oldFlag) << (offset * 8));
         _changesMask.SetBit(index);
 
-		AddToObjectUpdateIfNeeded();
+        AddToObjectUpdateIfNeeded();
     }
 }
 
@@ -786,30 +786,30 @@ bool Object::PrintIndexError(uint32 index, bool set) const
 WorldObject::WorldObject(bool isWorldObject) :
     LastUsedScriptID(0),
     lootingGroupLeaderGUID(0),
-	m_isWorldObject(isWorldObject),
-	m_InstanceId(0),
-	m_currMap(nullptr),
-	m_zoneScript(nullptr),
-	m_name(""),
+    m_isWorldObject(isWorldObject),
+    m_InstanceId(0),
+    m_currMap(nullptr),
+    m_zoneScript(nullptr),
+    m_name(""),
     m_zoneId(0),
     m_areaId(0),
     m_staticFloorZ(VMAP_INVALID_HEIGHT),
-	m_groupLootTimer(0),
-	m_notifyflags(0),
-	m_executed_notifies(0),
-	mSemaphoreTeleport(false),
-	m_isActive(false),
-	m_isTempWorldObject(false),
-	m_transport(nullptr),
-	m_phaseMask(PHASEMASK_NORMAL)
+    m_groupLootTimer(0),
+    m_notifyflags(0),
+    m_executed_notifies(0),
+    mSemaphoreTeleport(false),
+    m_isActive(false),
+    m_isTempWorldObject(false),
+    m_transport(nullptr),
+    m_phaseMask(PHASEMASK_NORMAL)
 {
     m_positionX         = 0.0f;
     m_positionY         = 0.0f;
     m_positionZ         = 0.0f;
     m_orientation       = 0.0f;
 
-	m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
-	m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+    m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
+    m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 }
 
 void WorldObject::SetWorldObject(bool on)
@@ -822,13 +822,13 @@ void WorldObject::SetWorldObject(bool on)
 
 bool WorldObject::IsWorldObject() const
 {
-	if (m_isWorldObject)
-		return true;
+    if (m_isWorldObject)
+        return true;
 
-	if (ToCreature() && ToCreature()->m_isTempWorldObject)
-		return true;
+    if (ToCreature() && ToCreature()->m_isTempWorldObject)
+        return true;
 
-	return false;
+    return false;
 }
 
 void WorldObject::SetKeepActive( bool on )
@@ -873,21 +873,21 @@ void WorldObject::CleanupsBeforeDelete(bool /*finalCleanup*/)
 void WorldObject::_Create( uint32 guidlow, HighGuid guidhigh, uint32 phaseMask)
 {
     Object::_Create(guidlow, 0, guidhigh);
-	m_phaseMask = phaseMask;
+    m_phaseMask = phaseMask;
 }
 
 WorldObject::~WorldObject()
 {
-	if (IsWorldObject() && m_currMap)
-	{
-		if (GetTypeId() == TYPEID_CORPSE)
-		{
-			TC_LOG_FATAL("misc", "WorldObject::~WorldObject Corpse Type: %d (%s) deleted but still in map!!",
-				ToCorpse()->GetType(), ObjectGuid(GetGUID()).ToString().c_str());
-			ABORT();
-		}
-		ResetMap();
-	}
+    if (IsWorldObject() && m_currMap)
+    {
+        if (GetTypeId() == TYPEID_CORPSE)
+        {
+            TC_LOG_FATAL("misc", "WorldObject::~WorldObject Corpse Type: %d (%s) deleted but still in map!!",
+                ToCorpse()->GetType(), ObjectGuid(GetGUID()).ToString().c_str());
+            ABORT();
+        }
+        ResetMap();
+    }
 }
 
 
@@ -915,45 +915,45 @@ void WorldObject::AddToWorld()
 
 void WorldObject::RemoveFromWorld()
 {
-	if (!IsInWorld())
-		return;
+    if (!IsInWorld())
+        return;
 
-	DestroyForNearbyPlayers();
+    DestroyForNearbyPlayers();
 
-	Object::RemoveFromWorld();
+    Object::RemoveFromWorld();
 }
 
 void WorldObject::SetMap(Map* map)
 {
-	ASSERT(map);
-	ASSERT(!IsInWorld());
-	if (m_currMap == map) // command add npc: first create, than loadfromdb
-		return;
-	if (m_currMap)
-	{
-		TC_LOG_FATAL("misc", "WorldObject::SetMap: obj %u new map %u %u, old map %u %u", (uint32)GetTypeId(), map->GetId(), map->GetInstanceId(), m_currMap->GetId(), m_currMap->GetInstanceId());
-		ABORT();
-	}
-	m_currMap = map;
-	m_mapId = map->GetId();
-	m_InstanceId = map->GetInstanceId();
-	if (IsWorldObject())
-		m_currMap->AddWorldObject(this);
+    ASSERT(map);
+    ASSERT(!IsInWorld());
+    if (m_currMap == map) // command add npc: first create, than loadfromdb
+        return;
+    if (m_currMap)
+    {
+        TC_LOG_FATAL("misc", "WorldObject::SetMap: obj %u new map %u %u, old map %u %u", (uint32)GetTypeId(), map->GetId(), map->GetInstanceId(), m_currMap->GetId(), m_currMap->GetInstanceId());
+        ABORT();
+    }
+    m_currMap = map;
+    m_mapId = map->GetId();
+    m_InstanceId = map->GetInstanceId();
+    if (IsWorldObject())
+        m_currMap->AddWorldObject(this);
 }
 
 void WorldObject::ResetMap()
 {
-	ASSERT(m_currMap);
-	ASSERT(!IsInWorld());
-	if (IsWorldObject())
-		m_currMap->RemoveWorldObject(this);
-	m_currMap = nullptr;
+    ASSERT(m_currMap);
+    ASSERT(!IsInWorld());
+    if (IsWorldObject())
+        m_currMap->RemoveWorldObject(this);
+    m_currMap = nullptr;
 }
 
 Map const* WorldObject::GetBaseMap() const
 {
-	ASSERT(m_currMap);
-	return m_currMap->GetParent();
+    ASSERT(m_currMap);
+    return m_currMap->GetParent();
 }
 
 /*
@@ -1252,9 +1252,9 @@ void WorldObject::GetRandomPoint( const Position &pos, float distance, float &ra
 
 Position WorldObject::GetRandomPoint(const Position &srcPos, float distance) const
 {
-	float x, y, z;
-	GetRandomPoint(srcPos, distance, x, y, z);
-	return Position(x, y, z, GetOrientation());
+    float x, y, z;
+    GetRandomPoint(srcPos, distance, x, y, z);
+    return Position(x, y, z, GetOrientation());
 }
 
 void WorldObject::UpdateGroundPositionZ(float x, float y, float &z) const
@@ -1315,15 +1315,15 @@ bool WorldObject::IsPositionValid() const
 
 void WorldObject::SetPhaseMask(uint32 newPhaseMask, bool update)
 {
-	m_phaseMask = newPhaseMask;
+    m_phaseMask = newPhaseMask;
 
-	if (update && IsInWorld())
-		UpdateObjectVisibility();
+    if (update && IsInWorld())
+        UpdateObjectVisibility();
 }
 
 bool WorldObject::InSamePhase(WorldObject const* obj) const
 {
-	return InSamePhase(obj->GetPhaseMask());
+    return InSamePhase(obj->GetPhaseMask());
 }
 
 void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
@@ -1339,7 +1339,7 @@ void WorldObject::PlayDirectSound(uint32 sound_id, Player* target /*= NULL*/)
 void Object::ForceValuesUpdateAtIndex(uint32 i)
 {
     _changesMask.SetBit(i);
-	AddToObjectUpdateIfNeeded();
+    AddToObjectUpdateIfNeeded();
 }
 
 void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
@@ -1362,22 +1362,22 @@ void WorldObject::BuildHeartBeatMsg(WorldPacket *data) const
 
 void WorldObject::SendMessageToSet(WorldPacket *data, bool self)
 {
-	if (IsInWorld()) 
-		SendMessageToSetInRange(data, GetVisibilityRange(), self, true);
+    if (IsInWorld()) 
+        SendMessageToSetInRange(data, GetVisibilityRange(), self, true);
 }
 
 void WorldObject::SendMessageToSet(WorldPacket* data, Player* skipped_rcvr)
 {
-	if (IsInWorld()) 
-		SendMessageToSetInRange(data, GetVisibilityRange(), false, true, skipped_rcvr);
+    if (IsInWorld()) 
+        SendMessageToSetInRange(data, GetVisibilityRange(), false, true, skipped_rcvr);
 }
 
 void WorldObject::SendMessageToSetInRange(WorldPacket *data, float dist, bool self, bool includeMargin /*= false*/, Player const* skipped_rcvr /*= nullptr*/)
 {
-	dist += GetCombatReach();
-	if (includeMargin)
-		dist += VISIBILITY_COMPENSATION; // pussywizard: to ensure everyone receives all important packets
-	Trinity::MessageDistDeliverer notifier(this, data, dist, false, skipped_rcvr);
+    dist += GetCombatReach();
+    if (includeMargin)
+        dist += VISIBILITY_COMPENSATION; // pussywizard: to ensure everyone receives all important packets
+    Trinity::MessageDistDeliverer notifier(this, data, dist, false, skipped_rcvr);
     Cell::VisitWorldObjects(this, notifier, dist);
 }
 
@@ -1416,367 +1416,367 @@ float WorldObject::GetVisibilityRange() const
     else
         return GetMap()->GetVisibilityRange();
 #endif
-	//+ Todo: creatures like the hellfire peninsula walker?
+    //+ Todo: creatures like the hellfire peninsula walker?
 }
 
 float WorldObject::GetGridActivationRange() const
 {
-	if (isActiveObject())
-	{
-		/*TC
-		if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetCinematicMgr()->IsOnCinematic())
-			return std::max(DEFAULT_VISIBILITY_INSTANCE, GetMap()->GetVisibilityRange());
-			*/
-		return GetMap()->GetVisibilityRange();
-	}
+    if (isActiveObject())
+    {
+        /*TC
+        if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->GetCinematicMgr()->IsOnCinematic())
+            return std::max(DEFAULT_VISIBILITY_INSTANCE, GetMap()->GetVisibilityRange());
+            */
+        return GetMap()->GetVisibilityRange();
+    }
 
-	if (Creature const* thisCreature = ToCreature())
-		return thisCreature->m_SightDistance;
+    if (Creature const* thisCreature = ToCreature())
+        return thisCreature->m_SightDistance;
 
-	return 0.0f;
+    return 0.0f;
 }
 
 
 float WorldObject::GetSightRange(const WorldObject* target) const
 {
-	if (ToUnit())
-	{
-		if (ToPlayer())
-		{
-			if (target && target->isActiveObject() && !target->ToPlayer())
-				return MAX_VISIBILITY_DISTANCE;
-			/* TC
-			else if (ToPlayer()->GetCinematicMgr()->IsOnCinematic())
-				return DEFAULT_VISIBILITY_INSTANCE;
-				*/
-			else
-				return GetMap()->GetVisibilityRange();
-		}
-		else if (ToCreature())
-			return ToCreature()->m_SightDistance;
-		else
-			return SIGHT_RANGE_UNIT;
-	}
+    if (ToUnit())
+    {
+        if (ToPlayer())
+        {
+            if (target && target->isActiveObject() && !target->ToPlayer())
+                return MAX_VISIBILITY_DISTANCE;
+            /* TC
+            else if (ToPlayer()->GetCinematicMgr()->IsOnCinematic())
+                return DEFAULT_VISIBILITY_INSTANCE;
+                */
+            else
+                return GetMap()->GetVisibilityRange();
+        }
+        else if (ToCreature())
+            return ToCreature()->m_SightDistance;
+        else
+            return SIGHT_RANGE_UNIT;
+    }
 
-	if (ToDynObject() && isActiveObject())
-	{
-		return GetMap()->GetVisibilityRange();
-	}
+    if (ToDynObject() && isActiveObject())
+    {
+        return GetMap()->GetVisibilityRange();
+    }
 
-	return 0.0f;
+    return 0.0f;
 }
 
 bool WorldObject::CanSeeOrDetect(WorldObject const* obj, bool ignoreStealth, bool distanceCheck, bool checkAlert) const
 {
-	if (this == obj)
-		return true;
+    if (this == obj)
+        return true;
 
-	if (obj->IsNeverVisible() || CanNeverSee(obj))
-		return false;
+    if (obj->IsNeverVisible() || CanNeverSee(obj))
+        return false;
 
-	if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
-		return true;
+    if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
+        return true;
 
-	bool corpseVisibility = false;
-	if (distanceCheck)
-	{
-		bool corpseCheck = false;
-		if (Player const* thisPlayer = ToPlayer())
-		{
-			if (thisPlayer->IsDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
-				!(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & GHOST_VISIBILITY_GHOST))
-			{
-				if (Corpse* corpse = thisPlayer->GetCorpse())
-				{
-					corpseCheck = true;
-					if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj), false))
-						if (corpse->IsWithinDist(obj, GetSightRange(obj), false))
-							corpseVisibility = true;
-				}
-			}
+    bool corpseVisibility = false;
+    if (distanceCheck)
+    {
+        bool corpseCheck = false;
+        if (Player const* thisPlayer = ToPlayer())
+        {
+            if (thisPlayer->IsDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
+                !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & GHOST_VISIBILITY_GHOST))
+            {
+                if (Corpse* corpse = thisPlayer->GetCorpse())
+                {
+                    corpseCheck = true;
+                    if (corpse->IsWithinDist(thisPlayer, GetSightRange(obj), false))
+                        if (corpse->IsWithinDist(obj, GetSightRange(obj), false))
+                            corpseVisibility = true;
+                }
+            }
 
 #ifdef LICH_KING
-			if (Unit const* target = obj->ToUnit())
-			{
-				// Don't allow to detect vehicle accessories if you can't see vehicle
-				if (Unit const* vehicle = target->GetVehicleBase())
-					if (!thisPlayer->HaveAtClient(vehicle))
-						return false;
-			}
+            if (Unit const* target = obj->ToUnit())
+            {
+                // Don't allow to detect vehicle accessories if you can't see vehicle
+                if (Unit const* vehicle = target->GetVehicleBase())
+                    if (!thisPlayer->HaveAtClient(vehicle))
+                        return false;
+            }
 #endif
-		}
+        }
 
-		WorldObject const* viewpoint = this;
-		if (Player const* player = this->ToPlayer())
-			viewpoint = player->GetViewpoint();
+        WorldObject const* viewpoint = this;
+        if (Player const* player = this->ToPlayer())
+            viewpoint = player->GetViewpoint();
 
-		if (!viewpoint)
-			viewpoint = this;
+        if (!viewpoint)
+            viewpoint = this;
 
-		if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
-			return false;
-	}
+        if (!corpseCheck && !viewpoint->IsWithinDist(obj, GetSightRange(obj), false))
+            return false;
+    }
 
-	// GM visibility off or hidden NPC
-	if (!obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM))
-	{
-		//target is not gm hidden
-		// Stop checking other things for GMs
-		if (m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GM))
-			return true;
-	}
-	else {
-		//target is gm hidden
-		Player const* me = ToPlayer();
-		Player const* targetP = obj->ToPlayer();
-		if (me && targetP)
-		{
-			//both units involved are players :
-			//custom sunstrider gm visibility rules
-			//gm with rank 1 can only see other gm with rank 1, not higher gm's
-			if (me->GetSession()->GetSecurity() <= SEC_GAMEMASTER1
-				&& targetP->GetSession()->GetSecurity() > SEC_GAMEMASTER1
-				&& !me->IsInSameGroupWith(targetP)) //still visible if in same group
-				return false;
-		}
-		return m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GM) >= obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM);
-	}
+    // GM visibility off or hidden NPC
+    if (!obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM))
+    {
+        //target is not gm hidden
+        // Stop checking other things for GMs
+        if (m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GM))
+            return true;
+    }
+    else {
+        //target is gm hidden
+        Player const* me = ToPlayer();
+        Player const* targetP = obj->ToPlayer();
+        if (me && targetP)
+        {
+            //both units involved are players :
+            //custom sunstrider gm visibility rules
+            //gm with rank 1 can only see other gm with rank 1, not higher gm's
+            if (me->GetSession()->GetSecurity() <= SEC_GAMEMASTER1
+                && targetP->GetSession()->GetSecurity() > SEC_GAMEMASTER1
+                && !me->IsInSameGroupWith(targetP)) //still visible if in same group
+                return false;
+        }
+        return m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GM) >= obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM);
+    }
 
-	// Ghost players, Spirit Healers, and some other NPCs
-	if (!corpseVisibility && !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GHOST)))
-	{
-		// Alive players can see dead players in some cases, but other objects can't do that
-		if (Player const* thisPlayer = ToPlayer())
-		{
-			if (Player const* objPlayer = obj->ToPlayer())
-			{
-				if (thisPlayer->GetTeam() != objPlayer->GetTeam() || !thisPlayer->IsGroupVisibleFor(objPlayer))
-					return false;
-			}
-			else
-				return false;
-		}
-		else
-			return false;
-	}
+    // Ghost players, Spirit Healers, and some other NPCs
+    if (!corpseVisibility && !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GHOST)))
+    {
+        // Alive players can see dead players in some cases, but other objects can't do that
+        if (Player const* thisPlayer = ToPlayer())
+        {
+            if (Player const* objPlayer = obj->ToPlayer())
+            {
+                if (thisPlayer->GetTeam() != objPlayer->GetTeam() || !thisPlayer->IsGroupVisibleFor(objPlayer))
+                    return false;
+            }
+            else
+                return false;
+        }
+        else
+            return false;
+    }
 
-	if (obj->IsInvisibleDueToDespawn())
-		return false;
+    if (obj->IsInvisibleDueToDespawn())
+        return false;
 
-	if (!CanDetect(obj, ignoreStealth, checkAlert))
-		return false;
+    if (!CanDetect(obj, ignoreStealth, checkAlert))
+        return false;
 
-	return true;
+    return true;
 }
 
 
 bool WorldObject::CanNeverSee(WorldObject const* obj) const
 {
-	return GetMap() != obj->GetMap() || !InSamePhase(obj);
+    return GetMap() != obj->GetMap() || !InSamePhase(obj);
 }
 
 bool WorldObject::CanDetect(WorldObject const* obj, bool ignoreStealth, bool checkAlert) const
 {
-	const WorldObject* seer = this;
+    const WorldObject* seer = this;
 
-	// Pets don't have detection, they use the detection of their masters
-	if (Unit const* thisUnit = ToUnit())
-		if (Unit* controller = thisUnit->GetCharmerOrOwner())
-			seer = controller;
+    // Pets don't have detection, they use the detection of their masters
+    if (Unit const* thisUnit = ToUnit())
+        if (Unit* controller = thisUnit->GetCharmerOrOwner())
+            seer = controller;
 
-	if (obj->IsAlwaysDetectableFor(seer))
-		return true;
+    if (obj->IsAlwaysDetectableFor(seer))
+        return true;
 
-	if (!ignoreStealth && !seer->CanDetectInvisibilityOf(obj))
-		return false;
+    if (!ignoreStealth && !seer->CanDetectInvisibilityOf(obj))
+        return false;
 
-	if (!ignoreStealth && !seer->CanDetectStealthOf(obj, checkAlert))
-		return false;
+    if (!ignoreStealth && !seer->CanDetectStealthOf(obj, checkAlert))
+        return false;
 
-	return true;
+    return true;
 }
 
 bool WorldObject::CanDetectInvisibilityOf(WorldObject const* obj) const
 {
-	uint32 mask = obj->m_invisibility.GetFlags() & m_invisibilityDetect.GetFlags();
+    uint32 mask = obj->m_invisibility.GetFlags() & m_invisibilityDetect.GetFlags();
 
-	// Check for not detected types
-	if (mask != obj->m_invisibility.GetFlags())
-		return false;
+    // Check for not detected types
+    if (mask != obj->m_invisibility.GetFlags())
+        return false;
 
-	// It isn't possible in invisibility to detect something that can't detect the invisible object
-	// (it's at least true for spell: 66)
-	// It seems like that only Units are affected by this check (couldn't see arena doors with preparation invisibility)
-	if (obj->ToUnit())
-		if ((m_invisibility.GetFlags() & obj->m_invisibilityDetect.GetFlags()) != m_invisibility.GetFlags())
-			return false;
+    // It isn't possible in invisibility to detect something that can't detect the invisible object
+    // (it's at least true for spell: 66)
+    // It seems like that only Units are affected by this check (couldn't see arena doors with preparation invisibility)
+    if (obj->ToUnit())
+        if ((m_invisibility.GetFlags() & obj->m_invisibilityDetect.GetFlags()) != m_invisibility.GetFlags())
+            return false;
 
-	for (uint32 i = 0; i < TOTAL_INVISIBILITY_TYPES; ++i)
-	{
-		if (!(mask & (1 << i)))
-			continue;
+    for (uint32 i = 0; i < TOTAL_INVISIBILITY_TYPES; ++i)
+    {
+        if (!(mask & (1 << i)))
+            continue;
 
-		int32 objInvisibilityValue = obj->m_invisibility.GetValue(InvisibilityType(i));
-		int32 ownInvisibilityDetectValue = m_invisibilityDetect.GetValue(InvisibilityType(i));
+        int32 objInvisibilityValue = obj->m_invisibility.GetValue(InvisibilityType(i));
+        int32 ownInvisibilityDetectValue = m_invisibilityDetect.GetValue(InvisibilityType(i));
 
-		// Too low value to detect
-		if (ownInvisibilityDetectValue < objInvisibilityValue)
-			return false;
-	}
+        // Too low value to detect
+        if (ownInvisibilityDetectValue < objInvisibilityValue)
+            return false;
+    }
 
-	return true;
+    return true;
 }
 
 bool WorldObject::CanDetectStealthOf(WorldObject const* obj, bool checkAlert) const
 {
-	// custom sunstrider rules, based on http://wolfendonkane.pagesperso-orange.fr/furtivite.html
+    // custom sunstrider rules, based on http://wolfendonkane.pagesperso-orange.fr/furtivite.html
 
-	// Combat reach is the minimal distance (both in front and behind),
-	//   and it is also used in the range calculation.
-	// One stealth point increases the visibility range by 0.3 yard.
+    // Combat reach is the minimal distance (both in front and behind),
+    //   and it is also used in the range calculation.
+    // One stealth point increases the visibility range by 0.3 yard.
 
-	if (!obj->m_stealth.GetFlags())
-		return true;
+    if (!obj->m_stealth.GetFlags())
+        return true;
 
-	float distance = GetExactDist(obj);
-	float combatReach = 0.0f;
+    float distance = GetExactDist(obj);
+    float combatReach = 0.0f;
 
-	Unit const* unit = ToUnit();
-	if (unit && !unit->IsAlive())
-		return false;
+    Unit const* unit = ToUnit();
+    if (unit && !unit->IsAlive())
+        return false;
 
-	Unit const* unitTarget = obj->ToUnit();
-	if (unitTarget)
-	{
-		if (unitTarget->HasAuraEffect(18461, 0)) //vanish dummy spell, 2.5s duration after vanish
-			return false;
+    Unit const* unitTarget = obj->ToUnit();
+    if (unitTarget)
+    {
+        if (unitTarget->HasAuraEffect(18461, 0)) //vanish dummy spell, 2.5s duration after vanish
+            return false;
 
-		//use combat reach of target unit instead of our own, else rogue won't be able to approach some big units
-		combatReach = unit->GetCombatReach();
-	}
+        //use combat reach of target unit instead of our own, else rogue won't be able to approach some big units
+        combatReach = unit->GetCombatReach();
+    }
 
-	if (distance < combatReach) //collision
-		return true;
+    if (distance < combatReach) //collision
+        return true;
 
-	if (!HasInArc(M_PI / 2.0f*3.0f, obj)) // can't see 90° behind
-		return false;
+    if (!HasInArc(M_PI / 2.0f*3.0f, obj)) // can't see 90° behind
+        return false;
 
-	for (uint32 i = 0; i < TOTAL_STEALTH_TYPES; ++i)
-	{
-		if (!(obj->m_stealth.GetFlags() & (1 << i)))
-			continue;
+    for (uint32 i = 0; i < TOTAL_STEALTH_TYPES; ++i)
+    {
+        if (!(obj->m_stealth.GetFlags() & (1 << i)))
+            continue;
 
-		if (unit && unit->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
-			return true;
+        if (unit && unit->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
+            return true;
 
-		float visibleDistance = 0.0f;
-		switch(i)
-		{
-		default:
-		case STEALTH_GENERAL:
-			visibleDistance = 17.5 + combatReach;
-			//SPELL_AURA_MOD_STEALTH and SPELL_AURA_MOD_STEALTH_LEVEL are both affecting m_stealth. 
-			//SPELL_AURA_MOD_STEALTH is the base stealth spell while SPELL_AURA_MOD_STEALTH_LEVEL are bonus auras and talents
-			//max level stealth spell have 350 SPELL_AURA_MOD_STEALTH
-			//so for this next line will equal 0 if for the same level and no talent/items boost
-			//Talent such as "Master of Deception" will descrease the detect range by 15 when maxed out
-			visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
-			//spells like Track Hidden have 30 here, so you can see 30 yards further. 
-			visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i));
-			break;
-		case STEALTH_TRAP:
-			//according to some sources, only stealth units can see traps
-			if (!m_stealth.GetFlags())
-				break;
+        float visibleDistance = 0.0f;
+        switch(i)
+        {
+        default:
+        case STEALTH_GENERAL:
+            visibleDistance = 17.5 + combatReach;
+            //SPELL_AURA_MOD_STEALTH and SPELL_AURA_MOD_STEALTH_LEVEL are both affecting m_stealth. 
+            //SPELL_AURA_MOD_STEALTH is the base stealth spell while SPELL_AURA_MOD_STEALTH_LEVEL are bonus auras and talents
+            //max level stealth spell have 350 SPELL_AURA_MOD_STEALTH
+            //so for this next line will equal 0 if for the same level and no talent/items boost
+            //Talent such as "Master of Deception" will descrease the detect range by 15 when maxed out
+            visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
+            //spells like Track Hidden have 30 here, so you can see 30 yards further. 
+            visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i));
+            break;
+        case STEALTH_TRAP:
+            //according to some sources, only stealth units can see traps
+            if (!m_stealth.GetFlags())
+                break;
 
-			visibleDistance = 0.0f;
-			visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
-			//Rogue trap detects also have 70. Dunno how to use this, let's divide it by 5
-			visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i)) / 5.0f;
-			break;
-		}
+            visibleDistance = 0.0f;
+            visibleDistance += float(GetLevelForTarget(obj)) - obj->m_stealth.GetValue(StealthType(i)) / 5.0f;
+            //Rogue trap detects also have 70. Dunno how to use this, let's divide it by 5
+            visibleDistance += (float)m_stealthDetect.GetValue(StealthType(i)) / 5.0f;
+            break;
+        }
 
-		if (visibleDistance <= 0.0f)
-			break; //in this case we can already stop here
+        if (visibleDistance <= 0.0f)
+            break; //in this case we can already stop here
 
-		/* Reduce range depending on angle. Logic here is :
-		- Full range in 90° in front
-		- else /1.5 range if in 180° front
-		- else /2 range if behind (somewhere between 180° and 270°)
-		- else can't see if 90° back (already handled at this point)
-		*/
-		if (!HasInArc(M_PI, obj)) //not in front (180°)
-			visibleDistance = visibleDistance / 2;
-		else if (!HasInArc(M_PI / 2, obj)) //not in 90° cone in front
-			visibleDistance = visibleDistance / 1.5;
+        /* Reduce range depending on angle. Logic here is :
+        - Full range in 90° in front
+        - else /1.5 range if in 180° front
+        - else /2 range if behind (somewhere between 180° and 270°)
+        - else can't see if 90° back (already handled at this point)
+        */
+        if (!HasInArc(M_PI, obj)) //not in front (180°)
+            visibleDistance = visibleDistance / 2;
+        else if (!HasInArc(M_PI / 2, obj)) //not in 90° cone in front
+            visibleDistance = visibleDistance / 1.5;
 
-		if (checkAlert)
-			visibleDistance += (visibleDistance * 0.08f) + 1.5f;
+        if (checkAlert)
+            visibleDistance += (visibleDistance * 0.08f) + 1.5f;
 
-		// If this unit is an NPC then player detect range doesn't apply
-		if (unit && unit->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
-			visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
+        // If this unit is an NPC then player detect range doesn't apply
+        if (unit && unit->GetTypeId() == TYPEID_PLAYER && visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE)
+            visibleDistance = MAX_PLAYER_STEALTH_DETECT_RANGE;
 
-		if (checkAlert && unit && unit->ToCreature() && visibleDistance <= unit->ToCreature()->GetAggroRange(unitTarget) + unit->ToCreature()->m_CombatDistance)
-			return true;
+        if (checkAlert && unit && unit->ToCreature() && visibleDistance <= unit->ToCreature()->GetAggroRange(unitTarget) + unit->ToCreature()->m_CombatDistance)
+            return true;
 
-		if (distance <= visibleDistance)
-			return true;
-	}
+        if (distance <= visibleDistance)
+            return true;
+    }
 
-	return false;
+    return false;
 }
 
 void WorldObject::SetZoneScript()
 {
-	if (Map* map = FindMap())
-	{
-		if (map->IsDungeon())
-			m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceScript();
-		else if (!map->IsBattlegroundOrArena())
-		{
+    if (Map* map = FindMap())
+    {
+        if (map->IsDungeon())
+            m_zoneScript = (ZoneScript*)((InstanceMap*)map)->GetInstanceScript();
+        else if (!map->IsBattlegroundOrArena())
+        {
 #ifdef LICH_KING
-			if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-				m_zoneScript = bf;
-			else
+            if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
+                m_zoneScript = bf;
+            else
 #endif
-				m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
-		}
-	}
+                m_zoneScript = sOutdoorPvPMgr->GetZoneScript(GetZoneId());
+        }
+    }
 }
 
 void WorldObject::ClearZoneScript()
 {
-	m_zoneScript = NULL;
+    m_zoneScript = NULL;
 }
 
 TempSummon* WorldObject::SummonCreature(uint32 entry, Position const& pos, TempSummonType spwtype /*= TEMPSUMMON_MANUAL_DESPAWN*/, uint32 duration /*= 0*/) const
 {
-	if (Map* map = FindMap())
-	{
-		if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL))
-		{
-			summon->SetTempSummonType(spwtype);
-			return summon;
-		}
-	}
+    if (Map* map = FindMap())
+    {
+        if (TempSummon* summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? (Unit*)this : NULL))
+        {
+            summon->SetTempSummonType(spwtype);
+            return summon;
+        }
+    }
 
-	return nullptr;
+    return nullptr;
 }
 
 TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, float ang, TempSummonType spwtype,uint32 despwtime) const
 {
-	if (!x && !y && !z)
-	{
-		GetClosePoint(x, y, z, GetCombatReach());
-		ang = GetOrientation();
-	}
+    if (!x && !y && !z)
+    {
+        GetClosePoint(x, y, z, GetCombatReach());
+        ang = GetOrientation();
+    }
 
-	Position pos;
-	pos.Relocate(x, y, z, ang);
-	return SummonCreature(id, pos, spwtype, despwtime);
+    Position pos;
+    pos.Relocate(x, y, z, ang);
+    return SummonCreature(id, pos, spwtype, despwtime);
 
-	/*
+    /*
     auto pCreature = new TempSummon(GetGUID());
 
     if (!pCreature->Create(GetMap()->GenerateLowGuid<HighGuid::Unit>(), GetMap(), GetPhaseMask(), id, x, y, z, ang))
@@ -1798,7 +1798,7 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
     }
 
     pCreature->SetHomePosition(x, y, z, ang);
-	pCreature->Summon(spwtype, despwtime, GetMap());
+    pCreature->Summon(spwtype, despwtime, GetMap());
     
     //script hooks
     if(pCreature->AI())
@@ -1820,7 +1820,7 @@ TempSummon* WorldObject::SummonCreature(uint32 id, float x, float y, float z, fl
 
     //return the creature therewith the summoner has access to it
     return pCreature;
-	*/
+    */
 }
 
 Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
@@ -1864,17 +1864,17 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
         return nullptr;
     }
 
-	Map *map = GetMap();
-	uint32 pet_number = sObjectMgr->GeneratePetNumber();
-	if (!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
-	{
-		TC_LOG_ERROR("FIXME", "no such creature entry %u", entry);
-		delete pet;
-		return nullptr;
-	}
+    Map *map = GetMap();
+    uint32 pet_number = sObjectMgr->GeneratePetNumber();
+    if (!pet->Create(map->GenerateLowGuid<HighGuid::Pet>(), map, GetPhaseMask(), entry, pet_number))
+    {
+        TC_LOG_ERROR("FIXME", "no such creature entry %u", entry);
+        delete pet;
+        return nullptr;
+    }
 
-	pet->SetCreatorGUID(GetGUID());
-	pet->SetFaction(GetFaction());
+    pet->SetCreatorGUID(GetGUID());
+    pet->SetFaction(GetFaction());
 
     // this enables pet details window (Shift+P)
     pet->GetCharmInfo()->SetPetNumber(pet_number, false);
@@ -1886,36 +1886,36 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
     pet->InitStatsForLevel(GetLevel());
 
-	SetMinion(pet, true);
+    SetMinion(pet, true);
 
     switch(petType)
     {
         case SUMMON_PET:
-			// this enables pet details window (Shift+P)
-			pet->GetCharmInfo()->SetPetNumber(pet_number, true);
-			pet->SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, CLASS_MAGE);
+            // this enables pet details window (Shift+P)
+            pet->GetCharmInfo()->SetPetNumber(pet_number, true);
+            pet->SetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, CLASS_MAGE);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-			pet->SetFullHealth();
+            pet->SetFullHealth();
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
             break;
         default:
             break;
     }
 
-	map->AddToMap(pet->ToCreature(), true);
+    map->AddToMap(pet->ToCreature(), true);
 
-	switch (petType)
-	{
-		case SUMMON_PET:
-			pet->InitPetCreateSpells();
-			//TC pet->InitTalentForLevel();
-			pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-			PetSpellInitialize();
-			break;
-		default:
-			break;
-	}
+    switch (petType)
+    {
+        case SUMMON_PET:
+            pet->InitPetCreateSpells();
+            //TC pet->InitTalentForLevel();
+            pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+            PetSpellInitialize();
+            break;
+        default:
+            break;
+    }
 
     if(petType == SUMMON_PET)
     {
@@ -1981,7 +1981,7 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1,0);
     pet->InitStatsForLevel(GetLevel());
 
-	SetMinion(pet, true);
+    SetMinion(pet, true);
 
     switch(petType)
     {
@@ -1989,26 +1989,26 @@ Pet* Unit::SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 
             pet->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
             pet->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
-			pet->SetFullHealth();
+            pet->SetFullHealth();
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
             break;
         default:
             break;
     }
 
-	map->AddToMap(pet->ToCreature());
+    map->AddToMap(pet->ToCreature());
 
-	switch (petType)
-	{
-	case SUMMON_PET:
-		pet->InitPetCreateSpells();
-		//TC pet->InitTalentForLevel();
-		pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-		PetSpellInitialize();
-		break;
-	default:
-		break;
-	}
+    switch (petType)
+    {
+    case SUMMON_PET:
+        pet->InitPetCreateSpells();
+        //TC pet->InitTalentForLevel();
+        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        PetSpellInitialize();
+        break;
+    default:
+        break;
+    }
 
 
     if(duration > 0)
@@ -2500,7 +2500,7 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, ui
     Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(this, lList, check);
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-	cell.Visit(pair, visitor, *(this->GetMap()), *this, fMaxSearchRange);
+    cell.Visit(pair, visitor, *(this->GetMap()), *this, fMaxSearchRange);
 }
 
 void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const
@@ -2765,8 +2765,8 @@ Position::Position(const WorldObject* obj)
 
 void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 {
-	//updates object's visibility for nearby players
-	Trinity::VisibleChangesNotifier notifier(*this);
+    //updates object's visibility for nearby players
+    Trinity::VisibleChangesNotifier notifier(*this);
     Cell::VisitWorldObjects(this, notifier, GetVisibilityRange());
 }
 
@@ -2794,7 +2794,7 @@ struct WorldObjectChangeAccumulator
             {
                 //has player shared vision with us ?
                  for (auto p : source->GetSharedVisionList())
-					BuildPacket(p);
+                    BuildPacket(p);
             }
         }
     }
@@ -2870,43 +2870,43 @@ void WorldObject::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet& play
 
 void WorldObject::AddToObjectUpdate()
 {
-	GetMap()->AddUpdateObject(this);
+    GetMap()->AddUpdateObject(this);
 }
 
 void WorldObject::RemoveFromObjectUpdate()
 {
-	GetMap()->RemoveUpdateObject(this);
+    GetMap()->RemoveUpdateObject(this);
 }
 
 
 void WorldObject::DestroyForNearbyPlayers()
 {
-	if (!IsInWorld())
-		return;
+    if (!IsInWorld())
+        return;
 
-	std::list<Player*> targets;
-	Trinity::AnyPlayerInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
-	Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
+    std::list<Player*> targets;
+    Trinity::AnyPlayerInObjectRangeCheck check(this, GetMap()->GetVisibilityRange());
+    Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, targets, check);
     Cell::VisitWorldObjects(this, searcher, GetMap()->GetVisibilityRange());
-	for (auto& player : targets) {
-		if (player == this)
-			continue;
+    for (auto& player : targets) {
+        if (player == this)
+            continue;
 
-		if (!player->HaveAtClient(this))
-			continue;
+        if (!player->HaveAtClient(this))
+            continue;
 
-		/*
-		if (isType(TYPEMASK_UNIT) && ToUnit()->GetCharmerGUID() == player->GetGUID()) /// @todo this is for puppet
-			continue;
-		*/
+        /*
+        if (isType(TYPEMASK_UNIT) && ToUnit()->GetCharmerGUID() == player->GetGUID()) /// @todo this is for puppet
+            continue;
+        */
 
-		if(GetTypeId() == TYPEID_UNIT)
-			DestroyForPlayer(player, ToUnit()->IsDuringRemoveFromWorld() && ToCreature()->IsDead()); // at remove from world (destroy) show kill animation
-		else
-			DestroyForPlayer(player);
+        if(GetTypeId() == TYPEID_UNIT)
+            DestroyForPlayer(player, ToUnit()->IsDuringRemoveFromWorld() && ToCreature()->IsDead()); // at remove from world (destroy) show kill animation
+        else
+            DestroyForPlayer(player);
 
-		player->m_clientGUIDs.erase(GetGUID());
-	}
+        player->m_clientGUIDs.erase(GetGUID());
+    }
 }
 
 uint64 WorldObject::GetTransGUID() const

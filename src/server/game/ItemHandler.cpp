@@ -183,7 +183,7 @@ void WorldSession::HandleAutoEquipItemOpcode( WorldPacket & recvData )
 
         // check dest->src move possibility
         ItemPosCountVec sSrc;
-		uint16 eSrc = {};
+        uint16 eSrc = {};
         if( _player->IsInventoryPos( src ) )
         {
             msg = _player->CanStoreItem( srcbag, srcslot, sSrc, pDstItem, true );

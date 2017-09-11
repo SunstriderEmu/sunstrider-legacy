@@ -447,7 +447,7 @@ void WorldSession::HandleTotemDestroyed( WorldPacket& recvPacket)
     if(!_player->m_SummonSlot[slotId])
         return;
 
-	Creature* totem = ObjectAccessor::GetCreature(*_player, _player->m_SummonSlot[slotId]);
+    Creature* totem = ObjectAccessor::GetCreature(*_player, _player->m_SummonSlot[slotId]);
 
     // Don't unsummon sentry totem
     if(totem && totem->IsTotem() && totem->GetEntry() != SENTRY_TOTEM_ENTRY)

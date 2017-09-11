@@ -144,7 +144,7 @@ extern int main(int argc, char **argv)
 #endif
 
     ///- Command line parsing to get the configuration file name
-	auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
+    auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
     std::string configService;
 
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
@@ -153,26 +153,26 @@ extern int main(int argc, char **argv)
         return 0;
 
 #ifdef _WIN32
-	/*
+    /*
     if (configService.compare("install") == 0)
         return WinServiceInstall() == true ? 0 : 1;
     else if (configService.compare("uninstall") == 0)
         return WinServiceUninstall() == true ? 0 : 1;
     else if (configService.compare("run") == 0)
         WinServiceRun();
-		*/
+        */
 #endif
 
     std::string configError;
     if (!sConfigMgr->LoadInitial(configFile.generic_string(),
-								 std::vector<std::string>(argv, argv + argc),
-								 configError))
+                                 std::vector<std::string>(argv, argv + argc),
+                                 configError))
     {
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
     }
 
-	if (sWorld->getConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
+    if (sWorld->getConfig(CONFIG_MAP_CRASH_RECOVERY_ENABLED))
     {
         segvcatch::init_segv(handle_segv);
         segvcatch::init_fpe(handle_segv);
@@ -255,7 +255,7 @@ extern int main(int argc, char **argv)
 
     LoadRealmInfo(*ioService);
 
-	sScriptMgr->SetScriptLoader(AddScripts);
+    sScriptMgr->SetScriptLoader(AddScripts);
     std::shared_ptr<void> sScriptMgrHandle(nullptr, [](void*)
     {
         sScriptMgr->Unload();
@@ -295,13 +295,13 @@ extern int main(int argc, char **argv)
     uint16 worldPort = uint16(sWorld->getIntConfig(CONFIG_PORT_WORLD));
     std::string worldListener = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-	int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
+    int networkThreads = sConfigMgr->GetIntDefault("Network.Threads", 1);
 
-	if (networkThreads <= 0)
-	{
-		TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
-		return 1;
-	}
+    if (networkThreads <= 0)
+    {
+        TC_LOG_ERROR("server.worldserver", "Network.Threads must be greater than 0");
+        return 1;
+    }
 
     if (!sWorldSocketMgr.StartNetwork(*ioService, worldListener, worldPort, networkThreads))
     {
@@ -448,7 +448,7 @@ bool StartDB()
         .AddDatabase(CharacterDatabase, "Character")
         .AddDatabase(WorldDatabase, "World");
 
-	loader.AddDatabase(LogsDatabase, "Logs"); //Strange reference bug when I append this to the last command, so I kept this out
+    loader.AddDatabase(LogsDatabase, "Logs"); //Strange reference bug when I append this to the last command, so I kept this out
 
     if (!loader.Load())
         return false;
@@ -505,11 +505,11 @@ variables_map GetConsoleArguments(int argc, char** argv,  fs::path& configFile, 
     (void)configService;
 
     options_description all("Allowed options");
-	all.add_options()
-		("help,h", "print usage message")
-		("version,v", "print version build info")
-		("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
-			"use <arg> as configuration file");
+    all.add_options()
+        ("help,h", "print usage message")
+        ("version,v", "print version build info")
+        ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
+            "use <arg> as configuration file");
 #ifdef _WIN32
     options_description win("Windows platform specific options");
     win.add_options()
@@ -619,54 +619,54 @@ AsyncAcceptor* StartRaSocketAcceptor(boost::asio::io_service& ioService)
 
 bool LoadRealmInfo(boost::asio::io_service& ioService)
 {
-	boost::asio::ip::tcp::resolver resolver(ioService);
-	boost::asio::ip::tcp::resolver::iterator end;
+    boost::asio::ip::tcp::resolver resolver(ioService);
+    boost::asio::ip::tcp::resolver::iterator end;
 
-	QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
-	if (!result)
-		return false;
+    QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
+    if (!result)
+        return false;
 
-	Field* fields = result->Fetch();
-	realm.Name = fields[1].GetString();
-	boost::asio::ip::tcp::resolver::query externalAddressQuery(ip::tcp::v4(), fields[2].GetString(), "");
+    Field* fields = result->Fetch();
+    realm.Name = fields[1].GetString();
+    boost::asio::ip::tcp::resolver::query externalAddressQuery(ip::tcp::v4(), fields[2].GetString(), "");
 
-	boost::system::error_code ec;
-	boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
-	if (endPoint == end || ec)
-	{
-		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[2].GetString().c_str());
-		return false;
-	}
+    boost::system::error_code ec;
+    boost::asio::ip::tcp::resolver::iterator endPoint = resolver.resolve(externalAddressQuery, ec);
+    if (endPoint == end || ec)
+    {
+        TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[2].GetString().c_str());
+        return false;
+    }
 
-	realm.ExternalAddress = (*endPoint).endpoint().address();
+    realm.ExternalAddress = (*endPoint).endpoint().address();
 
-	boost::asio::ip::tcp::resolver::query localAddressQuery(ip::tcp::v4(), fields[3].GetString(), "");
-	endPoint = resolver.resolve(localAddressQuery, ec);
-	if (endPoint == end || ec)
-	{
-		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[3].GetString().c_str());
-		return false;
-	}
+    boost::asio::ip::tcp::resolver::query localAddressQuery(ip::tcp::v4(), fields[3].GetString(), "");
+    endPoint = resolver.resolve(localAddressQuery, ec);
+    if (endPoint == end || ec)
+    {
+        TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[3].GetString().c_str());
+        return false;
+    }
 
-	realm.LocalAddress = (*endPoint).endpoint().address();
+    realm.LocalAddress = (*endPoint).endpoint().address();
 
-	boost::asio::ip::tcp::resolver::query localSubmaskQuery(ip::tcp::v4(), fields[4].GetString(), "");
-	endPoint = resolver.resolve(localSubmaskQuery, ec);
-	if (endPoint == end || ec)
-	{
-		TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[4].GetString().c_str());
-		return false;
-	}
+    boost::asio::ip::tcp::resolver::query localSubmaskQuery(ip::tcp::v4(), fields[4].GetString(), "");
+    endPoint = resolver.resolve(localSubmaskQuery, ec);
+    if (endPoint == end || ec)
+    {
+        TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[4].GetString().c_str());
+        return false;
+    }
 
-	realm.LocalSubnetMask = (*endPoint).endpoint().address();
+    realm.LocalSubnetMask = (*endPoint).endpoint().address();
 
-	realm.Port = fields[5].GetUInt16();
-	realm.Type = fields[6].GetUInt8();
-	realm.Flags = RealmFlags(fields[7].GetUInt8());
-	realm.Timezone = fields[8].GetUInt8();
-	realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
-	realm.PopulationLevel = fields[10].GetFloat();
-	realm.Build = fields[11].GetUInt32();
-	return true;
+    realm.Port = fields[5].GetUInt16();
+    realm.Type = fields[6].GetUInt8();
+    realm.Flags = RealmFlags(fields[7].GetUInt8());
+    realm.Timezone = fields[8].GetUInt8();
+    realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
+    realm.PopulationLevel = fields[10].GetFloat();
+    realm.Build = fields[11].GetUInt32();
+    return true;
 }
 /// @}

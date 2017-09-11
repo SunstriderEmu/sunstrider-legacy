@@ -72,29 +72,29 @@ GameObject::~GameObject()
 
 void GameObject::CleanupsBeforeDelete(bool finalCleanup)
 {
-	WorldObject::CleanupsBeforeDelete(finalCleanup);
+    WorldObject::CleanupsBeforeDelete(finalCleanup);
 
-	if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
-		RemoveFromOwner();
+    if (m_uint32Values)                                      // field array can be not exist if GameOBject not loaded
+        RemoveFromOwner();
 }
 
 void GameObject::RemoveFromOwner()
 {
-	ObjectGuid ownerGUID = GetOwnerGUID();
-	if (!ownerGUID)
-		return;
+    ObjectGuid ownerGUID = GetOwnerGUID();
+    if (!ownerGUID)
+        return;
 
-	if (Unit* owner = ObjectAccessor::GetUnit(*this, ownerGUID))
-	{
-		owner->RemoveGameObject(this, false);
-		ASSERT(!GetOwnerGUID());
-		return;
-	}
+    if (Unit* owner = ObjectAccessor::GetUnit(*this, ownerGUID))
+    {
+        owner->RemoveGameObject(this, false);
+        ASSERT(!GetOwnerGUID());
+        return;
+    }
 
-	// This happens when a mage portal is despawned after the caster changes map (for example using the portal)
-	TC_LOG_DEBUG("misc", "Removed GameObject (GUID: %u Entry: %u SpellId: %u LinkedGO: %u) that just lost any reference to the owner (%s) GO list",
-		ObjectGuid(GetGUID()).GetCounter(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.ToString().c_str());
-	SetOwnerGUID(0 /*ObjectGuid::Empty*/);
+    // This happens when a mage portal is despawned after the caster changes map (for example using the portal)
+    TC_LOG_DEBUG("misc", "Removed GameObject (GUID: %u Entry: %u SpellId: %u LinkedGO: %u) that just lost any reference to the owner (%s) GO list",
+        ObjectGuid(GetGUID()).GetCounter(), GetGOInfo()->entry, m_spellId, GetGOInfo()->GetLinkedGameObjectEntry(), ownerGUID.ToString().c_str());
+    SetOwnerGUID(0 /*ObjectGuid::Empty*/);
 }
 
 std::string GameObject::GetAIName() const
@@ -210,10 +210,10 @@ void GameObject::AddToWorld()
     if(!IsInWorld())
     ///- Register the gameobject for guid lookup
     {
-		if (m_zoneScript)
-			m_zoneScript->OnGameObjectCreate(this);
+        if (m_zoneScript)
+            m_zoneScript->OnGameObjectCreate(this);
 
-		GetMap()->GetObjectsStore().Insert<GameObject>(GetGUID(), this);
+        GetMap()->GetObjectsStore().Insert<GameObject>(GetGUID(), this);
 
         if (m_spawnId)
             GetMap()->GetGameObjectBySpawnIdStore().insert(std::make_pair(m_spawnId, this));
@@ -236,10 +236,10 @@ void GameObject::RemoveFromWorld()
     ///- Remove the gameobject from the accessor
     if(IsInWorld())
     {
-		if (m_zoneScript)
-			m_zoneScript->OnGameObjectRemove(this);
+        if (m_zoneScript)
+            m_zoneScript->OnGameObjectRemove(this);
 
-		//RemoveFromOwner();
+        //RemoveFromOwner();
         if (m_model)
             if (GetMap()->ContainsGameObjectModel(*m_model))
                 GetMap()->RemoveGameObjectModel(*m_model);
@@ -247,7 +247,7 @@ void GameObject::RemoveFromWorld()
         if (Transport* transport = GetTransport())
             transport->RemovePassenger(this, true);
 
-		GetMap()->GetObjectsStore().Remove<GameObject>(GetGUID());
+        GetMap()->GetObjectsStore().Remove<GameObject>(GetGUID());
 
         if (m_spawnId)
             Trinity::Containers::MultimapErasePair(GetMap()->GetGameObjectBySpawnIdStore(), m_spawnId, this);
@@ -260,7 +260,7 @@ void GameObject::RemoveFromWorld()
 bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMask, Position const& pos, G3D::Quat const& rotation, uint32 animprogress, GOState go_state, uint32 ArtKit)
 {
     ASSERT(map);
-	SetMap(map);
+    SetMap(map);
 
     Relocate(pos);
     m_stationaryPosition.Relocate(pos);
@@ -271,16 +271,16 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
         return false;
     }
 
-	SetPhaseMask(phaseMask, false);
+    SetPhaseMask(phaseMask, false);
     UpdatePositionData();
 
-	SetZoneScript();
-	if (m_zoneScript)
-	{
-		name_id = m_zoneScript->GetGameObjectEntry(guidlow, name_id);
-		if (!name_id)
-			return false;
-	}
+    SetZoneScript();
+    if (m_zoneScript)
+    {
+        name_id = m_zoneScript->GetGameObjectEntry(guidlow, name_id);
+        if (!name_id)
+            return false;
+    }
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(name_id);
     if (!goinfo)
@@ -333,25 +333,25 @@ bool GameObject::Create(uint32 guidlow, uint32 name_id, Map *map, uint32 phaseMa
 
     SetGoArtKit(ArtKit);
 
-	switch (goinfo->type)
-	{
-	case GAMEOBJECT_TYPE_TRAP:
-		if (GetGOInfo()->trap.stealthed)
-		{
-			m_stealth.AddFlag(STEALTH_TRAP);
-			m_stealth.AddValue(STEALTH_TRAP, 350); //TC has 70 here
-		}
+    switch (goinfo->type)
+    {
+    case GAMEOBJECT_TYPE_TRAP:
+        if (GetGOInfo()->trap.stealthed)
+        {
+            m_stealth.AddFlag(STEALTH_TRAP);
+            m_stealth.AddValue(STEALTH_TRAP, 350); //TC has 70 here
+        }
 
-		if (GetGOInfo()->trap.invisible)
-		{
-			m_invisibility.AddFlag(INVISIBILITY_TRAP);
-			m_invisibility.AddValue(INVISIBILITY_TRAP, 300);
-		}
-		break;
-	default:
-		SetGoAnimProgress(animprogress);
-		break;
-	}
+        if (GetGOInfo()->trap.invisible)
+        {
+            m_invisibility.AddFlag(INVISIBILITY_TRAP);
+            m_invisibility.AddValue(INVISIBILITY_TRAP, 300);
+        }
+        break;
+    default:
+        SetGoAnimProgress(animprogress);
+        break;
+    }
 
     // Spell charges for GAMEOBJECT_TYPE_SPELLCASTER (22)
     if (goinfo->type == GAMEOBJECT_TYPE_SPELLCASTER)
@@ -542,10 +542,10 @@ void GameObject::Update(uint32 diff)
                         Cell::VisitWorldObjects(this, checker, radius);
                     }
                 }
-				else if (GetOwnerGUID())
-				{ // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
-					m_despawnTime = 1; //trigger despawn
-				}
+                else if (GetOwnerGUID())
+                { // We got a owner but it was not found? Possible case: Hunter traps from disconnected players
+                    m_despawnTime = 1; //trigger despawn
+                }
                 else // environmental trap
                 {   
                     // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
@@ -681,7 +681,7 @@ void GameObject::Update(uint32 diff)
             if(sWorld->getConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
                 SaveRespawnTime();
 
-			DestroyForNearbyPlayers();
+            DestroyForNearbyPlayers();
             break;
         }
     }
@@ -752,7 +752,7 @@ void GameObject::SaveToDB(uint32 mapid, uint8 spawnMask)
         return;
 
     if (!m_spawnId)
-		m_spawnId = sObjectMgr->GenerateGameObjectSpawnId();
+        m_spawnId = sObjectMgr->GenerateGameObjectSpawnId();
 
     // update in loaded data (changing data only in this place)
     GameObjectData& data = sObjectMgr->NewGOData(m_spawnId);
@@ -1190,55 +1190,55 @@ void GameObject::ResetDoorOrButton()
 
 bool GameObject::IsNeverVisible() const
 {
-	if (WorldObject::IsNeverVisible())
-		return true;
+    if (WorldObject::IsNeverVisible())
+        return true;
 
-	if (GetGoType() == GAMEOBJECT_TYPE_SPELL_FOCUS && GetGOInfo()->spellFocus.serverOnly == 1)
-		return true;
+    if (GetGoType() == GAMEOBJECT_TYPE_SPELL_FOCUS && GetGOInfo()->spellFocus.serverOnly == 1)
+        return true;
 
-	return false;
+    return false;
 }
 
 bool GameObject::IsAlwaysVisibleFor(WorldObject const* seer) const
 {
-	if (WorldObject::IsAlwaysVisibleFor(seer))
-		return true;
+    if (WorldObject::IsAlwaysVisibleFor(seer))
+        return true;
 
-	if (IsTransport() || IsMotionTransport() 
+    if (IsTransport() || IsMotionTransport() 
 #ifdef LICH_KING
-		|| IsDestructibleBuilding()
+        || IsDestructibleBuilding()
 #endif
-		)
-		return true;
+        )
+        return true;
 
-	if (!seer)
-		return false;
+    if (!seer)
+        return false;
 
-	// Always seen by owner and friendly units
-	if (ObjectGuid guid = GetOwnerGUID())
-	{
-		if (seer->GetGUID() == guid)
-			return true;
+    // Always seen by owner and friendly units
+    if (ObjectGuid guid = GetOwnerGUID())
+    {
+        if (seer->GetGUID() == guid)
+            return true;
 
-		Unit* owner = GetOwner();
-		if (Unit const* unitSeer = seer->ToUnit())
-			if (owner && owner->IsFriendlyTo(unitSeer))
-				return true;
-	}
+        Unit* owner = GetOwner();
+        if (Unit const* unitSeer = seer->ToUnit())
+            if (owner && owner->IsFriendlyTo(unitSeer))
+                return true;
+    }
 
-	return false;
+    return false;
 }
 
 bool GameObject::IsInvisibleDueToDespawn() const
 {
-	if (WorldObject::IsInvisibleDueToDespawn())
-		return true;
+    if (WorldObject::IsInvisibleDueToDespawn())
+        return true;
 
-	// Despawned
-	if (!isSpawned())
-		return true;
+    // Despawned
+    if (!isSpawned())
+        return true;
 
-	return false;
+    return false;
 }
 
 void GameObject::SetGoArtKit(uint32 kit)
@@ -1414,8 +1414,8 @@ void GameObject::Use(Unit* user)
                 player->SendDirectMessage(&data);
             }
 
-			if (GetEntry() == 187578)
-				SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
+            if (GetEntry() == 187578)
+                SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
             return;
             
@@ -1712,48 +1712,48 @@ void GameObject::Use(Unit* user)
 
 uint32 GameObject::CastSpell(Unit* target, uint32 spellId, uint64 originalCaster)
 {
-	SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
-	if (!spellInfo)
-		return SPELL_FAILED_UNKNOWN;
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return SPELL_FAILED_UNKNOWN;
 
-	bool self = false;
-	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-	{
-		if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
-		{
-			self = true;
-			break;
-		}
-	}
+    bool self = false;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (spellInfo->Effects[i].TargetA.GetTarget() == TARGET_UNIT_CASTER)
+        {
+            self = true;
+            break;
+        }
+    }
 
-	if (self)
-	{
-		if (target)
-			return target->CastSpell(target, spellInfo, true);
-		return SPELL_FAILED_UNKNOWN;
-	}
+    if (self)
+    {
+        if (target)
+            return target->CastSpell(target, spellInfo, true);
+        return SPELL_FAILED_UNKNOWN;
+    }
 
     //summon world trigger
     Creature *trigger = SummonTrigger(GetPositionX(), GetPositionY(), GetPositionZ(), 0, 1);
     if(!trigger) 
         return SPELL_FAILED_UNKNOWN;
 
-	// remove immunity flags, to allow spell to target anything
-	trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
+    // remove immunity flags, to allow spell to target anything
+    trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_IMMUNE_TO_PC);
 
     trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
     if(Unit *owner = GetOwner())
     {
-		if (owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
-			trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+        if (owner->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
+            trigger->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
         trigger->SetFaction(owner->GetFaction());
-		// needed for GO casts for proper target validation checks
+        // needed for GO casts for proper target validation checks
         trigger->SetOwnerGUID(owner->GetGUID());
         return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster ? originalCaster : owner->GetGUID());
     }
     else
     {
-		trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
+        trigger->SetFaction(spellInfo->IsPositive() ? FACTION_FRIENDLY : FACTION_MONSTER);
         return trigger->CastSpell(target, spellId, true, nullptr, nullptr, originalCaster);
     }
 }

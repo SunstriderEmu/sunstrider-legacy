@@ -667,10 +667,10 @@ Unit* PlayerbotAI::GetUnit(ObjectGuid guid)
     if (!map)
         return nullptr;
 
-	if (!guid.IsUnit())
-		return nullptr;
+    if (!guid.IsUnit())
+        return nullptr;
 
-	return (Unit*)ObjectAccessor::GetWorldObject(*bot, guid);
+    return (Unit*)ObjectAccessor::GetWorldObject(*bot, guid);
 }
 
 

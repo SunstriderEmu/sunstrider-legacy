@@ -152,7 +152,7 @@ void BIH::subdivide(int left, int right, std::vector<uint32> &tempTree, buildDat
         else if (left > right)
         {
             // all right
-			right = rightOrig;
+            right = rightOrig;
             if (prevAxis == axis && G3D::fuzzyEq(prevSplit, split)) {
                 // we are stuck here - create a leaf
                 stats.updateLeaf(depth, right - left + 1);

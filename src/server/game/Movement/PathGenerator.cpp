@@ -643,14 +643,14 @@ void PathGenerator::UpdateFilter()
     // allow creatures to cheat and use different movement types if they are moved
     // forcefully into terrain they can't normally move in
     bool sourceInWater = false;
-	//we could always check sourcepos but this function is used a lot and _sourceUnit->IsInWater should be a lot more performant
+    //we could always check sourcepos but this function is used a lot and _sourceUnit->IsInWater should be a lot more performant
     if (_sourceUnit && _sourceUnit->GetExactDist(_sourcePos) < 2.0f) 
     {
         sourceInWater = _sourceUnit->IsInWater() || _sourceUnit->IsUnderWater();
     }
     else {
-		Map const* baseMap = sMapMgr->CreateBaseMap(_sourceMapId);
-		sourceInWater = baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
+        Map const* baseMap = sMapMgr->CreateBaseMap(_sourceMapId);
+        sourceInWater = baseMap->IsInWater(_sourcePos.GetPositionX(), _sourcePos.GetPositionY(), _sourcePos.GetPositionZ());
     }
 
     if(sourceInWater)
@@ -667,8 +667,8 @@ void PathGenerator::UpdateFilter()
 NavTerrain PathGenerator::GetNavTerrain(float x, float y, float z)
 {
     LiquidData data;
-	Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
-	ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data);
+    Map const* map = _sourceUnit ? _sourceUnit->GetBaseMap() : sMapMgr->CreateBaseMap(_sourceMapId);
+    ZLiquidStatus liquidStatus = map->GetLiquidStatus(x, y, z, MAP_ALL_LIQUIDS, &data);
 
     if (liquidStatus == LIQUID_MAP_NO_WATER)
         return NAV_GROUND;

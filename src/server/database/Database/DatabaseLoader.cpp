@@ -178,7 +178,7 @@ bool DatabaseLoader::Load()
 {
    /* TC if (!_updateFlags)
         TC_LOG_INFO("sql.updates", "Automatic database updates are disabled for all databases!");
-		*/
+        */
     if (!OpenDatabases())
         return false;
 

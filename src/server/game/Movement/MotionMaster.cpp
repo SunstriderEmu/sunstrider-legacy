@@ -82,35 +82,35 @@ void MotionMaster::UpdateMotion(uint32 diff)
         _cleanFlag &= ~MMCF_UPDATE;
 
     if (!_expireList.empty())
-		ClearExpireList();
+        ClearExpireList();
 }
 
 void MotionMaster::Clear(bool reset /* = true*/)
 {
-	if (_cleanFlag & MMCF_UPDATE)
-	{
-		if (reset)
-			_cleanFlag |= MMCF_RESET;
-		else
-			_cleanFlag &= ~MMCF_RESET;
-		DelayedClean();
-	}
-	else
-		DirectClean(reset);
+    if (_cleanFlag & MMCF_UPDATE)
+    {
+        if (reset)
+            _cleanFlag |= MMCF_RESET;
+        else
+            _cleanFlag &= ~MMCF_RESET;
+        DelayedClean();
+    }
+    else
+        DirectClean(reset);
 }
 
 void MotionMaster::MovementExpired(bool reset /* = true*/)
 {
-	if (_cleanFlag & MMCF_UPDATE)
-	{
-		if (reset)
-			_cleanFlag |= MMCF_RESET;
-		else
-			_cleanFlag &= ~MMCF_RESET;
-		DelayedExpire(false);
-	}
-	else
-		DirectExpire(reset, false);
+    if (_cleanFlag & MMCF_UPDATE)
+    {
+        if (reset)
+            _cleanFlag |= MMCF_RESET;
+        else
+            _cleanFlag &= ~MMCF_RESET;
+        DelayedExpire(false);
+    }
+    else
+        DirectExpire(reset, false);
 }
 
 void MotionMaster::ClearExpireList()
@@ -120,14 +120,14 @@ void MotionMaster::ClearExpireList()
 
     _expireList.clear();
 
-	if (empty())
-		Initialize();
-	else if (needInitTop())
-		InitTop();
-	else if (_cleanFlag & MMCF_RESET)
-		top()->Reset(_owner);
+    if (empty())
+        Initialize();
+    else if (needInitTop())
+        InitTop();
+    else if (_cleanFlag & MMCF_RESET)
+        top()->Reset(_owner);
 
-	_cleanFlag &= ~MMCF_RESET;
+    _cleanFlag &= ~MMCF_RESET;
 }
 
 void MotionMaster::DirectClean(bool reset)
@@ -438,11 +438,11 @@ void MotionMaster::MoveTakeoff(uint32 id, Position const& pos)
 
 void MotionMaster::MoveKnockbackFrom(float srcX, float srcY, float speedXY, float speedZ)
 {
-	//this function may make players fall below map
-	if (_owner->GetTypeId() == TYPEID_PLAYER)
-		return;
+    //this function may make players fall below map
+    if (_owner->GetTypeId() == TYPEID_PLAYER)
+        return;
 
-	//BC creatures can't be knocked back
+    //BC creatures can't be knocked back
 #ifdef LICH_KING
     else
         return; //BC creatures can't be knocked back

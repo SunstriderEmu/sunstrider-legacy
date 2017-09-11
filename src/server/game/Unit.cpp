@@ -184,8 +184,8 @@ m_duringRemoveFromWorld(false)
     for(uint64& i : m_SummonSlot)
         i = 0;
 
-	for (uint64& i : m_ObjectSlot)
-		i = 0;
+    for (uint64& i : m_ObjectSlot)
+        i = 0;
 
     //m_Aura = NULL;
     //m_AurasCheck = 2000;
@@ -199,18 +199,18 @@ m_duringRemoveFromWorld(false)
     m_ShapeShiftFormSpellId = 0;
     m_canModifyStats = false;
 
-	for (uint8 i = 0; i < UNIT_MOD_END; ++i)
-	{
-		m_auraFlatModifiersGroup[i][BASE_VALUE] = 0.0f;
-		m_auraFlatModifiersGroup[i][TOTAL_VALUE] = 0.0f;
-		m_auraPctModifiersGroup[i][BASE_PCT] = 1.0f;
-		m_auraPctModifiersGroup[i][TOTAL_PCT] = 1.0f;
-	}
+    for (uint8 i = 0; i < UNIT_MOD_END; ++i)
+    {
+        m_auraFlatModifiersGroup[i][BASE_VALUE] = 0.0f;
+        m_auraFlatModifiersGroup[i][TOTAL_VALUE] = 0.0f;
+        m_auraPctModifiersGroup[i][BASE_PCT] = 1.0f;
+        m_auraPctModifiersGroup[i][TOTAL_PCT] = 1.0f;
+    }
 
     for (auto & i : m_spellImmune)
         i.clear();
                                                             // implement 50% base damage from offhand
-	m_auraPctModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
+    m_auraPctModifiersGroup[UNIT_MOD_DAMAGE_OFFHAND][TOTAL_PCT] = 0.5f;
 
     for (auto & i : m_weaponDamage)
     {
@@ -252,7 +252,7 @@ m_duringRemoveFromWorld(false)
 
     _lastLiquid = nullptr;
 
-	m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+    m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 }
 
 Unit::~Unit()
@@ -279,12 +279,12 @@ Unit::~Unit()
     if(m_charmInfo) 
         delete m_charmInfo;
 
-	assert(!m_duringRemoveFromWorld);
+    assert(!m_duringRemoveFromWorld);
     assert(!m_attacking);
     assert(m_attackers.empty());
     assert(m_sharedVision.empty());
-	ASSERT(m_Controlled.empty());
-	ASSERT(m_gameObj.empty());
+    ASSERT(m_Controlled.empty());
+    ASSERT(m_gameObj.empty());
 }
 
 void Unit::Update( uint32 p_time )
@@ -605,11 +605,11 @@ bool Unit::HasAuraTypeWithCaster(AuraType auraType, uint64 casterGUID) const
 
 bool Unit::HasAuraTypeWithMiscvalue(AuraType auratype, int32 miscvalue) const
 {
-	AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
-	for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-		if (miscvalue == (*i)->GetMiscValue())
-			return true;
-	return false;
+    AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+    for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+        if (miscvalue == (*i)->GetMiscValue())
+            return true;
+    return false;
 }
 
 bool Unit::HasAuraWithCaster(uint32 spellId, uint8 effIndex, uint64 casterGUID) const
@@ -666,11 +666,11 @@ void Unit::RemoveSpellbyDamageTaken(uint32 damage, uint32 spellId)
 
 uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const *spellProto, bool durabilityLoss)
 {
-	if (pVictim->IsImmunedToDamage(spellProto))
-	{
-		SendSpellDamageImmune(pVictim, spellProto->Id);
-		return 0;
-	}
+    if (pVictim->IsImmunedToDamage(spellProto))
+    {
+        SendSpellDamageImmune(pVictim, spellProto->Id);
+        return 0;
+    }
 
     if(pVictim->GetTypeId()== TYPEID_UNIT && (pVictim->ToCreature())->IsAIEnabled)
     {
@@ -684,8 +684,8 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
     if (!pVictim->IsAlive() || pVictim->IsInFlight() || (pVictim->GetTypeId() == TYPEID_UNIT && (pVictim->ToCreature())->IsInEvadeMode()))
         return 0;
 
-	if (pVictim->GetTypeId() == TYPEID_PLAYER && this != pVictim)
-	{
+    if (pVictim->GetTypeId() == TYPEID_PLAYER && this != pVictim)
+    {
         if (this != pVictim)
         {
             // Signal to pets that their owner was attacked - except when DOT.
@@ -701,7 +701,7 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         //sunstrider: moved out of last check, some damage are caused by self
         if (pVictim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
             return 0;
-	}
+    }
 
     // Kidney Shot hackz
     if (pVictim->HasAuraEffect(408) || pVictim->HasAuraEffect(8643)) {
@@ -866,14 +866,14 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         Kill(pVictim, durabilityLoss);
         
         //Hook for OnPVPKill Event
-		/*
+        /*
         if (pVictim->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER)
         {
             Player *killer = ToPlayer();
             Player *killed = pVictim->ToPlayer();
             sScriptMgr->OnPVPKill(killer, killed);
         }
-		*/
+        */
     }
     else                                                    // if (health <= damage)
     {
@@ -2533,7 +2533,7 @@ SpellMissInfo Unit::MeleeSpellHitResult(Unit *pVictim, SpellInfo const *spell)
     }
 
     uint32 roll = GetMap()->urand (0, 10000);
-	uint32 tmp = 0;
+    uint32 tmp = 0;
     if (canMiss)
     {
         uint32 missChance = uint32(MeleeSpellMissChance(pVictim, attType, fullSkillDiff, spell->Id)*100.0f);
@@ -4674,9 +4674,9 @@ void Unit::RemoveAura(AuraMap::iterator &i, AuraRemoveMode mode)
 {
     Aura* Aur = i->second;
 
-	// Do not remove aura which is already being removed
-	if (Aur->GetRemoveMode())
-		return;
+    // Do not remove aura which is already being removed
+    if (Aur->GetRemoveMode())
+        return;
 
     // if unit currently update aura list then make safe update iterator shift to next
     if (m_AurasUpdateIterator == i)
@@ -5109,8 +5109,8 @@ void Unit::AddGameObject(GameObject* gameObj)
     m_gameObj.push_back(gameObj);
     gameObj->SetOwnerGUID(GetGUID());
 
-	/* TC 
-	if (gameObj->GetSpellId())
+    /* TC 
+    if (gameObj->GetSpellId())
     {
         SpellInfo const* createBySpell = sSpellMgr->GetSpellInfo(gameObj->GetSpellId());
         // Need disable spell use for owner
@@ -5118,7 +5118,7 @@ void Unit::AddGameObject(GameObject* gameObj)
             // note: item based cooldowns and cooldown spell mods with charges ignored (unknown existing cases)
             GetSpellHistory()->StartCooldown(createBySpell, 0, nullptr, true);
     }
-	*/
+    */
 }
 
 void Unit::RemoveGameObject(GameObject* gameObj, bool del)
@@ -7621,8 +7621,8 @@ bool Unit::Attack(Unit *victim, bool meleeAttack)
         SendMeleeAttackStart(victim);
     }
 
-	// Let the pet know we've started attacking someting. Handles melee attacks only
-	// Spells such as auto-shot and others handled in WorldSession::HandleCastSpellOpcode
+    // Let the pet know we've started attacking someting. Handles melee attacks only
+    // Spells such as auto-shot and others handled in WorldSession::HandleCastSpellOpcode
     if (GetTypeId() == TYPEID_PLAYER)
     {
         for (Unit* controlled : m_Controlled)
@@ -7684,8 +7684,8 @@ void Unit::CombatStopWithPets(bool includingCast)
 {
     CombatStop(includingCast);
 
-	for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-		(*itr)->CombatStop(includingCast);
+    for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+        (*itr)->CombatStop(includingCast);
 }
 
 bool Unit::IsAttackingPlayer() const
@@ -7885,17 +7885,17 @@ Pet* Unit::GetPet() const
 
 Minion *Unit::GetFirstMinion() const
 {
-	if (ObjectGuid pet_guid = GetMinionGUID())
-	{
-		if (Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, pet_guid))
-			if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
-				return (Minion*)pet;
+    if (ObjectGuid pet_guid = GetMinionGUID())
+    {
+        if (Creature* pet = ObjectAccessor::GetCreatureOrPetOrVehicle(*this, pet_guid))
+            if (pet->HasUnitTypeMask(UNIT_MASK_MINION))
+                return (Minion*)pet;
 
-		TC_LOG_ERROR("entities.unit", "Unit::GetFirstMinion: Minion %s not exist.", pet_guid.ToString().c_str());
-		const_cast<Unit*>(this)->SetMinionGUID(ObjectGuid::Empty);
-	}
+        TC_LOG_ERROR("entities.unit", "Unit::GetFirstMinion: Minion %s not exist.", pet_guid.ToString().c_str());
+        const_cast<Unit*>(this)->SetMinionGUID(ObjectGuid::Empty);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 Guardian* Unit::GetGuardianPet() const
@@ -7921,7 +7921,7 @@ Unit* Unit::GetCharm() const
             return pet;
 
         TC_LOG_ERROR("entities.pet","Unit::GetCharm: Charmed creature %u not exist.",GUID_LOPART(charm_guid));
-		const_cast<Unit*>(this)->SetGuidValue(UNIT_FIELD_CHARM,0);
+        const_cast<Unit*>(this)->SetGuidValue(UNIT_FIELD_CHARM,0);
     }
 
     return nullptr;
@@ -7942,282 +7942,282 @@ void Unit::SetPet(Pet* pet)
 
 void Unit::SetMinion(Minion *minion, bool apply)
 {
-	TC_LOG_DEBUG("entities.unit", "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
+    TC_LOG_DEBUG("entities.unit", "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
 
-	if (apply)
-	{
-		if (minion->GetOwnerGUID())
-		{
-			TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
-			return;
-		}
+    if (apply)
+    {
+        if (minion->GetOwnerGUID())
+        {
+            TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
+            return;
+        }
 
-		minion->SetOwnerGUID(GetGUID());
+        minion->SetOwnerGUID(GetGUID());
 
-		m_Controlled.insert(minion);
+        m_Controlled.insert(minion);
 
-		if (GetTypeId() == TYPEID_PLAYER)
-		{
-			minion->m_ControlledByPlayer = true;
-			minion->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-		}
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            minion->m_ControlledByPlayer = true;
+            minion->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+        }
 
-		// Can only have one pet. If a new one is summoned, dismiss the old one.
-		if (minion->IsGuardianPet())
-		{
-			if (Guardian* oldPet = GetGuardianPet())
-			{
-				if (oldPet != minion && (oldPet->IsPet() || minion->IsPet() || oldPet->GetEntry() != minion->GetEntry()))
-				{
-					// remove existing minion pet
-					if (oldPet->IsPet())
-						((Pet*)oldPet)->Remove(PET_SAVE_AS_CURRENT);
-					else
-						oldPet->UnSummon();
-					SetPetGUID(minion->GetGUID());
-					SetMinionGUID(ObjectGuid::Empty);
-				}
-			}
-			else
-			{
-				SetPetGUID(minion->GetGUID());
-				SetMinionGUID(ObjectGuid::Empty);
-			}
-		}
+        // Can only have one pet. If a new one is summoned, dismiss the old one.
+        if (minion->IsGuardianPet())
+        {
+            if (Guardian* oldPet = GetGuardianPet())
+            {
+                if (oldPet != minion && (oldPet->IsPet() || minion->IsPet() || oldPet->GetEntry() != minion->GetEntry()))
+                {
+                    // remove existing minion pet
+                    if (oldPet->IsPet())
+                        ((Pet*)oldPet)->Remove(PET_SAVE_AS_CURRENT);
+                    else
+                        oldPet->UnSummon();
+                    SetPetGUID(minion->GetGUID());
+                    SetMinionGUID(ObjectGuid::Empty);
+                }
+            }
+            else
+            {
+                SetPetGUID(minion->GetGUID());
+                SetMinionGUID(ObjectGuid::Empty);
+            }
+        }
 
-		if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
-		{
-			if (AddGuidValue(UNIT_FIELD_SUMMON, minion->GetGUID()))
-			{
-			}
-		}
+        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+        {
+            if (AddGuidValue(UNIT_FIELD_SUMMON, minion->GetGUID()))
+            {
+            }
+        }
 
-		if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-			SetCritterGUID(minion->GetGUID());
+        if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
+            SetCritterGUID(minion->GetGUID());
 
-		// PvP, FFAPvP
+        // PvP, FFAPvP
 #ifdef LICH_KING
-		minion->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
+        minion->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-		minion->SetPvP(true);
+        minion->SetPvP(true);
 #endif
 
-		// FIXME: hack, speed must be set only at follow
-		if (GetTypeId() == TYPEID_PLAYER && minion->IsPet())
-			for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
-				minion->SetSpeedRate(UnitMoveType(i), m_speed_rate[i]);
+        // FIXME: hack, speed must be set only at follow
+        if (GetTypeId() == TYPEID_PLAYER && minion->IsPet())
+            for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
+                minion->SetSpeedRate(UnitMoveType(i), m_speed_rate[i]);
 
-		// Ghoul pets have energy instead of mana (is anywhere better place for this code?)
-		if (minion->IsPetGhoul() || minion->IsRisenAlly())
-			minion->SetPowerType(POWER_ENERGY);
+        // Ghoul pets have energy instead of mana (is anywhere better place for this code?)
+        if (minion->IsPetGhoul() || minion->IsRisenAlly())
+            minion->SetPowerType(POWER_ENERGY);
 
-		// Send infinity cooldown - client does that automatically but after relog cooldown needs to be set again
-		/* TC
-		SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
-		if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
-			GetSpellHistory()->StartCooldown(spellInfo, 0, nullptr, true);
-			*/
-	}
-	else
-	{
-		if (minion->GetOwnerGUID() != GetGUID())
-		{
-			TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
-			return;
-		}
+        // Send infinity cooldown - client does that automatically but after relog cooldown needs to be set again
+        /* TC
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
+            GetSpellHistory()->StartCooldown(spellInfo, 0, nullptr, true);
+            */
+    }
+    else
+    {
+        if (minion->GetOwnerGUID() != GetGUID())
+        {
+            TC_LOG_FATAL("entities.unit", "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
+            return;
+        }
 
-		m_Controlled.erase(minion);
+        m_Controlled.erase(minion);
 
-		if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-			if (GetCritterGUID() == minion->GetGUID())
-				SetCritterGUID(ObjectGuid::Empty);
+        if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
+            if (GetCritterGUID() == minion->GetGUID())
+                SetCritterGUID(ObjectGuid::Empty);
 
-		if (minion->IsGuardianPet())
-		{
-			if (GetPetGUID() == minion->GetGUID())
-				SetPetGUID(ObjectGuid::Empty);
-		}
-		else if (minion->IsTotem())
-		{
-			// All summoned by totem minions must disappear when it is removed.
-			if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(minion->ToTotem()->GetSpell()))
-				for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
-				{
-					if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
-						continue;
+        if (minion->IsGuardianPet())
+        {
+            if (GetPetGUID() == minion->GetGUID())
+                SetPetGUID(ObjectGuid::Empty);
+        }
+        else if (minion->IsTotem())
+        {
+            // All summoned by totem minions must disappear when it is removed.
+            if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(minion->ToTotem()->GetSpell()))
+                for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                {
+                    if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
+                        continue;
 
-					RemoveAllMinionsByEntry(spInfo->Effects[i].MiscValue);
-				}
-		}
+                    RemoveAllMinionsByEntry(spInfo->Effects[i].MiscValue);
+                }
+        }
 
-		SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
-		// Remove infinity cooldown
-		/* TC
-		if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
-			GetSpellHistory()->SendCooldownEvent(spellInfo);
-		*/
-		if(spellInfo && spellInfo->IsCooldownStartedOnEvent())
-			if(Player* player = ToPlayer())
-				player->SendCooldownEvent(spellInfo);
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(minion->GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        // Remove infinity cooldown
+        /* TC
+        if (spellInfo && (spellInfo->IsCooldownStartedOnEvent()))
+            GetSpellHistory()->SendCooldownEvent(spellInfo);
+        */
+        if(spellInfo && spellInfo->IsCooldownStartedOnEvent())
+            if(Player* player = ToPlayer())
+                player->SendCooldownEvent(spellInfo);
 
 
-		//if (minion->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
-		{
-			if (RemoveGuidValue(UNIT_FIELD_SUMMON, minion->GetGUID()))
-			{
-				// Check if there is another minion
-				for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-				{
-					// do not use this check, creature do not have charm guid
-					//if (GetCharmGUID() == (*itr)->GetGUID())
-					if (GetGUID() == (*itr)->GetCharmerGUID())
-						continue;
+        //if (minion->HasUnitTypeMask(UNIT_MASK_GUARDIAN))
+        {
+            if (RemoveGuidValue(UNIT_FIELD_SUMMON, minion->GetGUID()))
+            {
+                // Check if there is another minion
+                for (ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+                {
+                    // do not use this check, creature do not have charm guid
+                    //if (GetCharmGUID() == (*itr)->GetGUID())
+                    if (GetGUID() == (*itr)->GetCharmerGUID())
+                        continue;
 
-					//ASSERT((*itr)->GetOwnerGUID() == GetGUID());
-					if ((*itr)->GetOwnerGUID() != GetGUID())
-					{
-						/*OutDebugInfo();
-						(*itr)->OutDebugInfo();*/
-						ABORT();
-					}
-					ASSERT((*itr)->GetTypeId() == TYPEID_UNIT);
+                    //ASSERT((*itr)->GetOwnerGUID() == GetGUID());
+                    if ((*itr)->GetOwnerGUID() != GetGUID())
+                    {
+                        /*OutDebugInfo();
+                        (*itr)->OutDebugInfo();*/
+                        ABORT();
+                    }
+                    ASSERT((*itr)->GetTypeId() == TYPEID_UNIT);
 
-					if (!(*itr)->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
-						continue;
+                    if (!(*itr)->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+                        continue;
 
-					if (AddGuidValue(UNIT_FIELD_SUMMON, (*itr)->GetGUID()))
-					{
-						// show another pet bar if there is no charm bar
-						if (GetTypeId() == TYPEID_PLAYER && !GetCharmGUID())
-						{
-							if ((*itr)->IsPet())
-								ToPlayer()->PetSpellInitialize();
-							else
-								ToPlayer()->CharmSpellInitialize();
-						}
-					}
-					break;
-				}
-			}
-		}
-	}
+                    if (AddGuidValue(UNIT_FIELD_SUMMON, (*itr)->GetGUID()))
+                    {
+                        // show another pet bar if there is no charm bar
+                        if (GetTypeId() == TYPEID_PLAYER && !GetCharmGUID())
+                        {
+                            if ((*itr)->IsPet())
+                                ToPlayer()->PetSpellInitialize();
+                            else
+                                ToPlayer()->CharmSpellInitialize();
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
 
 void Unit::GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry)
 {
-	for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
-	{
-		Unit* unit = *itr;
-		++itr;
-		if (unit->GetEntry() == entry && unit->GetTypeId() == TYPEID_UNIT
-			&& unit->IsSummon()) // minion, actually
-			Minions.push_back(unit->ToCreature());
-	}
+    for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
+    {
+        Unit* unit = *itr;
+        ++itr;
+        if (unit->GetEntry() == entry && unit->GetTypeId() == TYPEID_UNIT
+            && unit->IsSummon()) // minion, actually
+            Minions.push_back(unit->ToCreature());
+    }
 }
 
 void Unit::RemoveAllMinionsByEntry(uint32 entry)
 {
-	for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
-	{
-		Unit* unit = *itr;
-		++itr;
-		if (unit->GetEntry() == entry && unit->GetTypeId() == TYPEID_UNIT
-			&& unit->IsSummon()) // minion, actually
-			unit->ToTempSummon()->UnSummon();
-		// i think this is safe because i have never heard that a despawned minion will trigger a same minion
-	}
+    for (Unit::ControlList::iterator itr = m_Controlled.begin(); itr != m_Controlled.end();)
+    {
+        Unit* unit = *itr;
+        ++itr;
+        if (unit->GetEntry() == entry && unit->GetTypeId() == TYPEID_UNIT
+            && unit->IsSummon()) // minion, actually
+            unit->ToTempSummon()->UnSummon();
+        // i think this is safe because i have never heard that a despawned minion will trigger a same minion
+    }
 }
 
 void Unit::SetCharm(Unit* charm, bool apply)
 {
-	if (apply)
-	{
-		if (GetTypeId() == TYPEID_PLAYER)
-		{
-			if (!AddGuidValue(UNIT_FIELD_CHARM, charm->GetGUID()))
-				TC_LOG_FATAL("entities.unit", "Player %s is trying to charm unit %u, but it already has a charmed unit %s", GetName().c_str(), charm->GetEntry(), ObjectGuid(GetCharmGUID()).ToString().c_str());
+    if (apply)
+    {
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            if (!AddGuidValue(UNIT_FIELD_CHARM, charm->GetGUID()))
+                TC_LOG_FATAL("entities.unit", "Player %s is trying to charm unit %u, but it already has a charmed unit %s", GetName().c_str(), charm->GetEntry(), ObjectGuid(GetCharmGUID()).ToString().c_str());
 
-			charm->m_ControlledByPlayer = true;
-			/// @todo maybe we can use this flag to check if controlled by player
-			charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-		}
-		else
-			charm->m_ControlledByPlayer = false;
+            charm->m_ControlledByPlayer = true;
+            /// @todo maybe we can use this flag to check if controlled by player
+            charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+        }
+        else
+            charm->m_ControlledByPlayer = false;
 
-		// PvP, FFAPvP
+        // PvP, FFAPvP
 #ifdef LICH_KING
-		charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
+        charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-		charm->SetPvP(true);
+        charm->SetPvP(true);
 #endif
 
-		if (!charm->AddGuidValue(UNIT_FIELD_CHARMEDBY, GetGUID()))
-			TC_LOG_FATAL("entities.unit", "Unit %u is being charmed, but it already has a charmer %s", charm->GetEntry(), ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
+        if (!charm->AddGuidValue(UNIT_FIELD_CHARMEDBY, GetGUID()))
+            TC_LOG_FATAL("entities.unit", "Unit %u is being charmed, but it already has a charmer %s", charm->GetEntry(), ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
 
-		/* TC
-		_isWalkingBeforeCharm = charm->IsWalking();
-		if (_isWalkingBeforeCharm)
-		{
-			charm->SetWalk(false);
-			charm->SendMovementFlagUpdate();
-		}
-		*/
+        /* TC
+        _isWalkingBeforeCharm = charm->IsWalking();
+        if (_isWalkingBeforeCharm)
+        {
+            charm->SetWalk(false);
+            charm->SendMovementFlagUpdate();
+        }
+        */
 
-		m_Controlled.insert(charm);
-	}
-	else
-	{
-		if (GetTypeId() == TYPEID_PLAYER)
-		{
-			if (!RemoveGuidValue(UNIT_FIELD_CHARM, charm->GetGUID()))
-				TC_LOG_FATAL("entities.unit", "Player %s is trying to uncharm unit %u, but it has another charmed unit %s", GetName().c_str(), charm->GetEntry(), ObjectGuid(GetCharmGUID()).ToString().c_str());
-		}
+        m_Controlled.insert(charm);
+    }
+    else
+    {
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            if (!RemoveGuidValue(UNIT_FIELD_CHARM, charm->GetGUID()))
+                TC_LOG_FATAL("entities.unit", "Player %s is trying to uncharm unit %u, but it has another charmed unit %s", GetName().c_str(), charm->GetEntry(), ObjectGuid(GetCharmGUID()).ToString().c_str());
+        }
 
-		if (!charm->RemoveGuidValue(UNIT_FIELD_CHARMEDBY, GetGUID()))
-			TC_LOG_FATAL("entities.unit", "Unit %u is being uncharmed, but it has another charmer %s", charm->GetEntry(), ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
+        if (!charm->RemoveGuidValue(UNIT_FIELD_CHARMEDBY, GetGUID()))
+            TC_LOG_FATAL("entities.unit", "Unit %u is being uncharmed, but it has another charmer %s", charm->GetEntry(), ObjectGuid(charm->GetCharmerGUID()).ToString().c_str());
 
-		if (charm->GetTypeId() == TYPEID_PLAYER)
-		{
-			charm->m_ControlledByPlayer = true;
-			charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
-			charm->ToPlayer()->UpdatePvPState();
-		}
-		else if (Player* player = charm->GetCharmerOrOwnerPlayerOrPlayerItself())
-		{
-			charm->m_ControlledByPlayer = true;
-			charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+        if (charm->GetTypeId() == TYPEID_PLAYER)
+        {
+            charm->m_ControlledByPlayer = true;
+            charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+            charm->ToPlayer()->UpdatePvPState();
+        }
+        else if (Player* player = charm->GetCharmerOrOwnerPlayerOrPlayerItself())
+        {
+            charm->m_ControlledByPlayer = true;
+            charm->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 #ifdef LICH_KING
-			charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, player->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
+            charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, player->GetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG));
 #else
-			charm->SetPvP(true);
-#endif	
-		}
-		else
-		{
-			charm->m_ControlledByPlayer = false;
-			charm->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+            charm->SetPvP(true);
+#endif    
+        }
+        else
+        {
+            charm->m_ControlledByPlayer = false;
+            charm->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
 #ifdef LICH_KING
-			charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, 0);
+            charm->SetByteValue(UNIT_FIELD_BYTES_2, UNIT_BYTES_2_OFFSET_PVP_FLAG, 0);
 #else
-			charm->SetPvP(false);
-#endif	
-		}
+            charm->SetPvP(false);
+#endif    
+        }
 
-		/* TC
-		if (charm->IsWalking() != _isWalkingBeforeCharm)
-		{
-			charm->SetWalk(_isWalkingBeforeCharm);
-			charm->SendMovementFlagUpdate(true); // send packet to self, to update movement state on player.
-		}
-		*/
+        /* TC
+        if (charm->IsWalking() != _isWalkingBeforeCharm)
+        {
+            charm->SetWalk(_isWalkingBeforeCharm);
+            charm->SendMovementFlagUpdate(true); // send packet to self, to update movement state on player.
+        }
+        */
 
-		if (charm->GetTypeId() == TYPEID_PLAYER
-			|| !charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_MINION)
-			|| charm->GetOwnerGUID() != GetGUID())
-		{
-			m_Controlled.erase(charm);
-		}
-	}
+        if (charm->GetTypeId() == TYPEID_PLAYER
+            || !charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_MINION)
+            || charm->GetOwnerGUID() != GetGUID())
+        {
+            m_Controlled.erase(charm);
+        }
+    }
 }
 
 // only called in Player::SetViewpoint
@@ -8230,13 +8230,13 @@ void Unit::AddPlayerToVision(Player* plr)
         SetKeepActive(true);
         SetWorldObject(true);
     }
-	m_sharedVision.push_back(plr);
+    m_sharedVision.push_back(plr);
 }
 
 // only called in Player::SetViewpoint
 void Unit::RemovePlayerFromVision(Player* plr)
 {
-	m_sharedVision.remove(plr);
+    m_sharedVision.remove(plr);
     if(m_sharedVision.empty())
     {
         SetKeepActive(false);
@@ -8351,10 +8351,10 @@ Unit* Unit::GetFirstControlled() const
     // Sequence: charmed, pet, other guardians
     Unit* unit = GetCharm();
     if (!unit)
-		if (uint64 guid = GetMinionGUID())
-		{
-			unit = ObjectAccessor::GetUnit(*this, guid);
-		}
+        if (uint64 guid = GetMinionGUID())
+        {
+            unit = ObjectAccessor::GetUnit(*this, guid);
+        }
 
 
     return unit;
@@ -9653,17 +9653,17 @@ int32 Unit::SpellBaseHealingBonusTaken(SpellSchoolMask schoolMask)
 
 bool Unit::IsImmunedToDamage(SpellInfo const* spellInfo) const
 {
-	if (!spellInfo)
-		return false;
+    if (!spellInfo)
+        return false;
 
-	// for example 40175
-	if (spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY) && spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
-		return false;
+    // for example 40175
+    if (spellInfo->HasAttribute(SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY) && spellInfo->HasAttribute(SPELL_ATTR3_IGNORE_HIT_RESULT))
+        return false;
 
-	if (spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) || spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
-		return false;
+    if (spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE) || spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+        return false;
 
-	return IsImmunedToDamage(spellInfo->GetSchoolMask());
+    return IsImmunedToDamage(spellInfo->GetSchoolMask());
 }
 
 bool Unit::IsImmunedToDamage(SpellSchoolMask schoolMask) const
@@ -9716,7 +9716,7 @@ bool Unit::IsImmunedToSpell(SpellInfo const* spellInfo, bool useCharges)
 
     if( !(spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE)) &&         // unaffected by school immunity
         !(spellInfo->HasAttribute(SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY)) &&             // can remove immune (by dispell or immune it)
-		!(spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE)) &&
+        !(spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE)) &&
          (spellInfo->Id != 42292))
     {
         SpellImmuneList const& schoolList = m_spellImmune[IMMUNITY_SCHOOL];
@@ -9784,15 +9784,15 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
                         return true;
 
 #ifdef LICH_KING
-		if (!spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
-		{
-			// Check for immune to application of harmful magical effects
-			AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
-			for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
-				if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
-					(!IsFriendlyTo(caster) || !spellInfo->IsPositiveEffect(index)))  // Harmful
-					return true;
-		}
+        if (!spellInfo->HasAttribute(SPELL_ATTR2_UNAFFECTED_BY_AURA_SCHOOL_IMMUNE))
+        {
+            // Check for immune to application of harmful magical effects
+            AuraEffectList const& immuneAuraApply = GetAuraEffectsByType(SPELL_AURA_MOD_IMMUNE_AURA_APPLY_SCHOOL);
+            for (AuraEffectList::const_iterator iter = immuneAuraApply.begin(); iter != immuneAuraApply.end(); ++iter)
+                if (((*iter)->GetMiscValue() & spellInfo->GetSchoolMask()) &&        // Check school
+                    (!IsFriendlyTo(caster) || !spellInfo->IsPositiveEffect(index)))  // Harmful
+                    return true;
+        }
 #endif
     }
 
@@ -10279,81 +10279,81 @@ void Unit::ClearInCombat()
 
 void Unit::ClearInPetCombat()
 {
-	RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
-	if (Unit* owner = GetOwner())
-		owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+    RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
+    if (Unit* owner = GetOwner())
+        owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PET_IN_COMBAT);
 }
 
 
 void CharmInfo::SetIsCommandAttack(bool val)
 {
-	_isCommandAttack = val;
+    _isCommandAttack = val;
 }
 
 bool CharmInfo::IsCommandAttack()
 {
-	return _isCommandAttack;
+    return _isCommandAttack;
 }
 
 void CharmInfo::SetIsCommandFollow(bool val)
 {
-	_isCommandFollow = val;
+    _isCommandFollow = val;
 }
 
 bool CharmInfo::IsCommandFollow()
 {
-	return _isCommandFollow;
+    return _isCommandFollow;
 }
 
 void CharmInfo::SaveStayPosition()
 {
-	//! At this point a new spline destination is enabled because of Unit::StopMoving()
-	G3D::Vector3 stayPos = m_unit->movespline->FinalDestination();
+    //! At this point a new spline destination is enabled because of Unit::StopMoving()
+    G3D::Vector3 stayPos = m_unit->movespline->FinalDestination();
 
-	if (m_unit->movespline->onTransport)
-		if (TransportBase* transport = m_unit->GetTransport())
-			transport->CalculatePassengerPosition(stayPos.x, stayPos.y, stayPos.z);
+    if (m_unit->movespline->onTransport)
+        if (TransportBase* transport = m_unit->GetTransport())
+            transport->CalculatePassengerPosition(stayPos.x, stayPos.y, stayPos.z);
 
-	_stayX = stayPos.x;
-	_stayY = stayPos.y;
-	_stayZ = stayPos.z;
+    _stayX = stayPos.x;
+    _stayY = stayPos.y;
+    _stayZ = stayPos.z;
 }
 
 void CharmInfo::GetStayPosition(float &x, float &y, float &z)
 {
-	x = _stayX;
-	y = _stayY;
-	z = _stayZ;
+    x = _stayX;
+    y = _stayY;
+    z = _stayZ;
 }
 
 void CharmInfo::SetIsAtStay(bool val)
 {
-	_isAtStay = val;
+    _isAtStay = val;
 }
 
 bool CharmInfo::IsAtStay()
 {
-	return _isAtStay;
+    return _isAtStay;
 }
 
 void CharmInfo::SetIsFollowing(bool val)
 {
-	_isFollowing = val;
+    _isFollowing = val;
 }
 
 bool CharmInfo::IsFollowing()
 {
-	return _isFollowing;
+    return _isFollowing;
 }
 
 void CharmInfo::SetIsReturning(bool val)
 {
-	_isReturning = val;
+    _isReturning = val;
 }
 
 bool CharmInfo::IsReturning()
 {
-	return _isReturning;
+    return _isReturning;
 }
 
 // force will use IsFriendlyTo instead of IsHostileTo, so that neutral creatures can also attack players
@@ -10396,7 +10396,7 @@ CanAttackResult Unit::CanAttack(Unit const* target, bool force /*= true*/) const
     if (target->GetEntry() == 24892 && IsPet())
         return CAN_ATTACK_RESULT_OTHERS;
 
-	if(!CanSeeOrDetect(target, true))
+    if(!CanSeeOrDetect(target, true))
         return CAN_ATTACK_RESULT_CANNOT_DETECT;
 
     return CAN_ATTACK_RESULT_OK;
@@ -10465,26 +10465,26 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
                 return false;
 #endif
 
-	// visibility checks
-	// skip visibility check for GO casts, needs removal when go cast is implemented. Also ignore for gameobject and dynauras
-	if (GetEntry() != WORLD_TRIGGER && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT)))
-	{
-		// can't attack invisible
-		if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE))
-		{
-			if (obj && !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
-				return false;
-			else if (!obj)
-			{
-				// ignore stealth for aoe spells. Ignore stealth if target is player and unit in combat with same player
-				bool const ignoreStealthCheck = (bySpell && bySpell->IsAffectingArea()) ||
-					(target->GetTypeId() == TYPEID_PLAYER && target->HasStealthAura() && target->IsInCombat() && IsInCombatWith(target));
+    // visibility checks
+    // skip visibility check for GO casts, needs removal when go cast is implemented. Also ignore for gameobject and dynauras
+    if (GetEntry() != WORLD_TRIGGER && (!obj || !obj->isType(TYPEMASK_GAMEOBJECT | TYPEMASK_DYNAMICOBJECT)))
+    {
+        // can't attack invisible
+        if (!bySpell || !bySpell->HasAttribute(SPELL_ATTR6_CAN_TARGET_INVISIBLE))
+        {
+            if (obj && !obj->CanSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()))
+                return false;
+            else if (!obj)
+            {
+                // ignore stealth for aoe spells. Ignore stealth if target is player and unit in combat with same player
+                bool const ignoreStealthCheck = (bySpell && bySpell->IsAffectingArea()) ||
+                    (target->GetTypeId() == TYPEID_PLAYER && target->HasStealthAura() && target->IsInCombat() && IsInCombatWith(target));
 
-				if (!CanSeeOrDetect(target, ignoreStealthCheck))
-					return false;
-			}
+                if (!CanSeeOrDetect(target, ignoreStealthCheck))
+                    return false;
+            }
 }
-	}
+    }
 
     // can't attack dead
     if ((!bySpell || !bySpell->IsAllowingDeadTarget()) && !target->IsAlive())
@@ -10921,8 +10921,8 @@ void Unit::SetVisibility(UnitVisibility x)
 {
     m_Visibility = x;
 
-	if (IsInWorld())
-		UpdateObjectVisibility();
+    if (IsInWorld())
+        UpdateObjectVisibility();
 
     if(x == VISIBILITY_GROUP_STEALTH)
         DestroyForNearbyPlayers();
@@ -10931,127 +10931,127 @@ void Unit::SetVisibility(UnitVisibility x)
 
 bool Unit::IsAlwaysVisibleFor(WorldObject const* seer) const
 {
-	if (WorldObject::IsAlwaysVisibleFor(seer))
-		return true;
+    if (WorldObject::IsAlwaysVisibleFor(seer))
+        return true;
 
-	// Always seen by owner
-	if (ObjectGuid guid = GetCharmerOrOwnerGUID())
-		if (seer->GetGUID() == guid)
-			return true;
+    // Always seen by owner
+    if (ObjectGuid guid = GetCharmerOrOwnerGUID())
+        if (seer->GetGUID() == guid)
+            return true;
 
-	if (Player const* seerPlayer = seer->ToPlayer())
-		if (Unit* owner = GetOwner())
-			if (Player* ownerPlayer = owner->ToPlayer())
-				if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
-					return true;
+    if (Player const* seerPlayer = seer->ToPlayer())
+        if (Unit* owner = GetOwner())
+            if (Player* ownerPlayer = owner->ToPlayer())
+                if (ownerPlayer->IsGroupVisibleFor(seerPlayer))
+                    return true;
 
-	return false;
+    return false;
 }
 
 bool Unit::IsAlwaysDetectableFor(WorldObject const* seer) const
 {
-	if (WorldObject::IsAlwaysDetectableFor(seer))
-		return true;
+    if (WorldObject::IsAlwaysDetectableFor(seer))
+        return true;
 
-	if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
-		return true;
+    if (HasAuraTypeWithCaster(SPELL_AURA_MOD_STALKED, seer->GetGUID()))
+        return true;
 
-	return false;
+    return false;
 }
 
 bool Unit::IsVisible() const
 {
-	return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true;
+    return (m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GM) > SEC_PLAYER) ? false : true;
 }
 
 void Unit::SetVisible(bool x)
 {
-	if (!x)
-		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER1);
-	else
-		m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+    if (!x)
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_GAMEMASTER1);
+    else
+        m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
 
-	UpdateObjectVisibility();
+    UpdateObjectVisibility();
 }
 
 
 void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
 {
-	if (newPhaseMask == GetPhaseMask())
-		return;
+    if (newPhaseMask == GetPhaseMask())
+        return;
 
-	if (IsInWorld())
-	{
-		// modify hostile references for new phasemask, some special cases deal with hostile references themselves
-		if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
-		{
-			HostileRefManager& refManager = GetHostileRefManager();
-			HostileReference* ref = refManager.getFirst();
+    if (IsInWorld())
+    {
+        // modify hostile references for new phasemask, some special cases deal with hostile references themselves
+        if (GetTypeId() == TYPEID_UNIT || (!ToPlayer()->IsGameMaster() && !ToPlayer()->GetSession()->PlayerLogout()))
+        {
+            HostileRefManager& refManager = GetHostileRefManager();
+            HostileReference* ref = refManager.getFirst();
 
-			while (ref)
-			{
-				if (Unit* unit = ref->GetSource()->GetOwner())
-					if (Creature* creature = unit->ToCreature())
-						refManager.setOnlineOfflineState(creature, creature->InSamePhase(newPhaseMask));
+            while (ref)
+            {
+                if (Unit* unit = ref->GetSource()->GetOwner())
+                    if (Creature* creature = unit->ToCreature())
+                        refManager.setOnlineOfflineState(creature, creature->InSamePhase(newPhaseMask));
 
-				ref = ref->next();
-			}
+                ref = ref->next();
+            }
 
-			// modify threat lists for new phasemask
-			if (GetTypeId() != TYPEID_PLAYER)
-			{
-				std::list<HostileReference*> threatList = getThreatManager().getThreatList();
-				std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
+            // modify threat lists for new phasemask
+            if (GetTypeId() != TYPEID_PLAYER)
+            {
+                std::list<HostileReference*> threatList = getThreatManager().getThreatList();
+                std::list<HostileReference*> offlineThreatList = getThreatManager().getOfflineThreatList();
 
-				// merge expects sorted lists
-				threatList.sort();
-				offlineThreatList.sort();
-				threatList.merge(offlineThreatList);
+                // merge expects sorted lists
+                threatList.sort();
+                offlineThreatList.sort();
+                threatList.merge(offlineThreatList);
 
-				for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
-					if (Unit* unit = (*itr)->getTarget())
-						unit->GetHostileRefManager().setOnlineOfflineState(ToCreature(), unit->InSamePhase(newPhaseMask));
-			}
-		}
-	}
+                for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+                    if (Unit* unit = (*itr)->getTarget())
+                        unit->GetHostileRefManager().setOnlineOfflineState(ToCreature(), unit->InSamePhase(newPhaseMask));
+            }
+        }
+    }
 
-	// Phase player, dont update
-	WorldObject::SetPhaseMask(newPhaseMask, false);
+    // Phase player, dont update
+    WorldObject::SetPhaseMask(newPhaseMask, false);
 
-	/*
-	// Phase pets and summons
-	if (IsInWorld())
-	{
-		for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
-			if ((*itr)->GetTypeId() == TYPEID_UNIT)
-				(*itr)->SetPhaseMask(newPhaseMask, true);
+    /*
+    // Phase pets and summons
+    if (IsInWorld())
+    {
+        for (ControlList::const_iterator itr = m_Controlled.begin(); itr != m_Controlled.end(); ++itr)
+            if ((*itr)->GetTypeId() == TYPEID_UNIT)
+                (*itr)->SetPhaseMask(newPhaseMask, true);
 
-		for (uint8 i = 0; i < MAX_SUMMON_SLOT; ++i)
-			if (m_SummonSlot[i])
-				if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
-					summon->SetPhaseMask(newPhaseMask, true);
+        for (uint8 i = 0; i < MAX_SUMMON_SLOT; ++i)
+            if (m_SummonSlot[i])
+                if (Creature* summon = GetMap()->GetCreature(m_SummonSlot[i]))
+                    summon->SetPhaseMask(newPhaseMask, true);
 
-		RemoveNotOwnSingleTargetAuras(newPhaseMask); // we can lost access to caster or target
-	}
-	*/
+        RemoveNotOwnSingleTargetAuras(newPhaseMask); // we can lost access to caster or target
+    }
+    */
 
-	// Update visibility after phasing pets and summons so they wont despawn
-	if (update)
-		UpdateObjectVisibility();
+    // Update visibility after phasing pets and summons so they wont despawn
+    if (update)
+        UpdateObjectVisibility();
 }
 
 
 void Unit::UpdateObjectVisibility(bool forced)
 {
-	if (!forced)
-		AddToNotify(NOTIFY_VISIBILITY_CHANGED);
-	else
-	{
-		WorldObject::UpdateObjectVisibility(true);
-		// call MoveInLineOfSight for nearby creatures
-		Trinity::AIRelocationNotifier notifier(*this);
+    if (!forced)
+        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+    else
+    {
+        WorldObject::UpdateObjectVisibility(true);
+        // call MoveInLineOfSight for nearby creatures
+        Trinity::AIRelocationNotifier notifier(*this);
         Cell::VisitAllObjects(this, notifier, GetVisibilityRange());
-	}
+    }
 }
 
 void Unit::UpdateSpeed(UnitMoveType mtype)
@@ -11194,8 +11194,8 @@ void Unit::SetSpeedRate(UnitMoveType mtype, float rate, bool sendUpdate /*= true
             }
 
             if (uint64 minipet_guid = GetCritterGUID())
-				if(Unit* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
-					minipet->SetSpeedRate(mtype, m_speed_rate[mtype], sendUpdate);
+                if(Unit* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
+                    minipet->SetSpeedRate(mtype, m_speed_rate[mtype], sendUpdate);
         }
     }
 
@@ -11261,9 +11261,9 @@ void Unit::SetDeathState(DeathState s)
         if(IsNonMeleeSpellCast(false))
             InterruptNonMeleeSpells(false);
 
-		RemoveAllAurasOnDeath();
-		UnsummonAllTotems();
-		RemoveAllControlled();
+        RemoveAllAurasOnDeath();
+        UnsummonAllTotems();
+        RemoveAllControlled();
     }
 
     if (s == JUST_DIED)
@@ -11287,7 +11287,7 @@ void Unit::SetDeathState(DeathState s)
         //dont know why since in IncreaseMaxHealth currenthealth is checked
         SetHealth(0);
         SetPower(GetPowerType(), 0);
-		SetEmoteState(0);
+        SetEmoteState(0);
     }
     else if(s == JUST_RESPAWNED)
     {
@@ -11510,7 +11510,7 @@ Unit* Creature::SelectVictim(bool evade)
             {
                 --aura;
                 caster = (*aura)->GetCaster();
-				if (caster && CanSeeOrDetect(caster, true) && IsValidAttackTarget(caster) && caster->isInAccessiblePlaceFor(ToCreature()))
+                if (caster && CanSeeOrDetect(caster, true) && IsValidAttackTarget(caster) && caster->isInAccessiblePlaceFor(ToCreature()))
                 //if (caster && CanSeeOrDetect(caster, true) && /* IsValidAttackTarget */ CanAttack(caster) == CAN_ATTACK_RESULT_OK && caster->isInAccessiblePlaceFor(ToCreature()))
                 {
                     target = caster;
@@ -11522,22 +11522,22 @@ Unit* Creature::SelectVictim(bool evade)
             target = GetVictim();
     }
 
-	if (CanHaveThreatList())
-	{
-		if (!target && !m_ThreatManager.isThreatListEmpty())
-		{
-			//TC_LOG_INFO("%s SelectVictim2", GetName());
-			if (!HasAuraType(SPELL_AURA_MOD_TAUNT)) {
-				//TC_LOG_INFO("FIXME","%s if");
-				target = m_ThreatManager.getHostilTarget();
-			}
-			else {
-				//TC_LOG_INFO("%s else");
-				target = GetVictim();
-			}
-		}
-	}
-	else if (!HasReactState(REACT_PASSIVE))
+    if (CanHaveThreatList())
+    {
+        if (!target && !m_ThreatManager.isThreatListEmpty())
+        {
+            //TC_LOG_INFO("%s SelectVictim2", GetName());
+            if (!HasAuraType(SPELL_AURA_MOD_TAUNT)) {
+                //TC_LOG_INFO("FIXME","%s if");
+                target = m_ThreatManager.getHostilTarget();
+            }
+            else {
+                //TC_LOG_INFO("%s else");
+                target = GetVictim();
+            }
+        }
+    }
+    else if (!HasReactState(REACT_PASSIVE))
     {
         // We have player pet probably
         target = GetAttackerForHelper();
@@ -11568,8 +11568,8 @@ Unit* Creature::SelectVictim(bool evade)
     if(target && CanAttack(target) == CAN_ATTACK_RESULT_OK)
     {
         //TC_LOG_INFO("%s SelectVictim3", GetName());
-		if (!IsFocusing(nullptr, true))
-			SetInFront(target); 
+        if (!IsFocusing(nullptr, true))
+            SetInFront(target); 
         return target;
     }
     
@@ -11600,8 +11600,8 @@ Unit* Creature::SelectVictim(bool evade)
     if(HasReactState(REACT_AGGRESSIVE))
     {
         //TC_LOG_INFO("%s SelectVictim6", GetName());
-		target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
-		if (target && /*_IsTargetAcceptable(target) &&*/ CanAggro(target))
+        target = SelectNearestTargetInAttackDistance(m_CombatDistance ? m_CombatDistance : ATTACK_DISTANCE);
+        if (target && /*_IsTargetAcceptable(target) &&*/ CanAggro(target))
             return target;
     }
     
@@ -11609,16 +11609,16 @@ Unit* Creature::SelectVictim(bool evade)
         return NULL; */
 
     Unit::AuraList const& iAuras = GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
-	if (!iAuras.empty())
-	{
-		for (auto iAura : iAuras)
-			if (iAura->IsPermanent() && evade)
-			{
-				AI()->EnterEvadeMode();
-				break;
-			}
-		return nullptr;
-	}
+    if (!iAuras.empty())
+    {
+        for (auto iAura : iAuras)
+            if (iAura->IsPermanent() && evade)
+            {
+                AI()->EnterEvadeMode();
+                break;
+            }
+        return nullptr;
+    }
 
     // enter in evade mode in other case
     if (evade) {
@@ -12049,9 +12049,9 @@ float Unit::GetTotalAuraModValue(UnitMods unitMod) const
         return 0.0f;
 
 
-	float value = GetFlatModifierValue(unitMod, BASE_VALUE);
-	value *= GetPctModifierValue(unitMod, BASE_PCT);
-	value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
+    float value = GetFlatModifierValue(unitMod, BASE_VALUE);
+    value *= GetPctModifierValue(unitMod, BASE_PCT);
+    value += GetFlatModifierValue(unitMod, TOTAL_VALUE);
     
     //add dynamic flat mods
     if (unitMod == UNIT_MOD_ATTACK_POWER_RANGED && (GetClassMask() & CLASSMASK_WAND_USERS) == 0) {
@@ -12059,7 +12059,7 @@ float Unit::GetTotalAuraModValue(UnitMods unitMod) const
         for (auto i : mRAPbyIntellect)
             value += int32(GetStat(Stats(i->GetModifier()->m_miscvalue)) * i->GetModifierValue() / 100.0f);
     }
-	value *= GetPctModifierValue(unitMod, TOTAL_PCT);
+    value *= GetPctModifierValue(unitMod, TOTAL_PCT);
 
     return value;
 }
@@ -12522,45 +12522,45 @@ void Unit::RemoveFromWorld()
     // cleanup
     if(IsInWorld())
     {
-		m_duringRemoveFromWorld = true;
+        m_duringRemoveFromWorld = true;
 #ifdef LICH_KING
-		if (IsVehicle())
-			RemoveVehicleKit();
+        if (IsVehicle())
+            RemoveVehicleKit();
 #endif
         RemoveCharmAuras();
         RemoveBindSightAuras();
         RemoveNotOwnSingleTargetAuras();
 
-		RemoveAllGameObjects();
-		RemoveAllDynObjects();
+        RemoveAllGameObjects();
+        RemoveAllDynObjects();
 
 #ifdef LICH_KING
-		ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
+        ExitVehicle();  // Remove applied auras with SPELL_AURA_CONTROL_VEHICLE
 #endif
-		UnsummonAllTotems();
-		RemoveAllControlled();
+        UnsummonAllTotems();
+        RemoveAllControlled();
 
-		//TC RemoveAreaAurasDueToLeaveWorld();
+        //TC RemoveAreaAurasDueToLeaveWorld();
 
-		if (IsCharmed())
-			RemoveCharmedBy(nullptr);
+        if (IsCharmed())
+            RemoveCharmedBy(nullptr);
 
-		if (GetCharmerGUID())
-		{
-			TC_LOG_FATAL("entities.unit", "Unit %u has charmer guid when removed from world", GetEntry());
-			ABORT();
-		}
-		if (Unit* owner = GetOwner())
-		{
-			if (owner->m_Controlled.find(this) != owner->m_Controlled.end())
-			{
-				TC_LOG_FATAL("entities.unit", "Unit %u is in controlled list of %u when removed from world", GetEntry(), owner->GetEntry());
-				ABORT();
-			}
-		}
+        if (GetCharmerGUID())
+        {
+            TC_LOG_FATAL("entities.unit", "Unit %u has charmer guid when removed from world", GetEntry());
+            ABORT();
+        }
+        if (Unit* owner = GetOwner())
+        {
+            if (owner->m_Controlled.find(this) != owner->m_Controlled.end())
+            {
+                TC_LOG_FATAL("entities.unit", "Unit %u is in controlled list of %u when removed from world", GetEntry(), owner->GetEntry());
+                ABORT();
+            }
+        }
 
         WorldObject::RemoveFromWorld();
-		m_duringRemoveFromWorld = false;
+        m_duringRemoveFromWorld = false;
     }
 }
 
@@ -12840,26 +12840,26 @@ void CharmInfo::InitCharmCreateSpells()
 
 void CharmInfo::LoadPetActionBar(const std::string& data)
 {
-	// permanent controlled pets store state in DB
-	Tokens tokens = StrSplit(data, " ");
+    // permanent controlled pets store state in DB
+    Tokens tokens = StrSplit(data, " ");
 
-	if (tokens.size() != (ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_START) * 2)
-		return;                                             // non critical, will reset to default
+    if (tokens.size() != (ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_START) * 2)
+        return;                                             // non critical, will reset to default
 
-	int index;
-	Tokens::iterator iter;
-	for (iter = tokens.begin(), index = 0; index < 10; ++iter, ++index)
-	{
-		GetActionBarEntry(index)->Type = atol((*iter).c_str());
-		++iter;
-		GetActionBarEntry(index)->SpellOrAction = atol((*iter).c_str());
+    int index;
+    Tokens::iterator iter;
+    for (iter = tokens.begin(), index = 0; index < 10; ++iter, ++index)
+    {
+        GetActionBarEntry(index)->Type = atol((*iter).c_str());
+        ++iter;
+        GetActionBarEntry(index)->SpellOrAction = atol((*iter).c_str());
 
-		// patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
-		// so overwrite old state
-		SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(GetActionBarEntry(index)->SpellOrAction);
-		if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET))
-			GetActionBarEntry(index)->Type = ACT_CAST;
-	}
+        // patch for old data where some spells have ACT_DECIDE but should have ACT_CAST
+        // so overwrite old state
+        SpellInfo const *spellInfo = sSpellMgr->GetSpellInfo(GetActionBarEntry(index)->SpellOrAction);
+        if (spellInfo && spellInfo->HasAttribute(SPELL_ATTR1_UNAUTOCASTABLE_BY_PET))
+            GetActionBarEntry(index)->Type = ACT_CAST;
+    }
 }
 
 bool CharmInfo::AddSpellToActionBar(uint32 oldid, uint32 newid, uint8 index, ActiveStates newstate)
@@ -13706,13 +13706,13 @@ void Unit::SetContestedPvP(Player *attackedPlayer)
         player->AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_CONTESTED_PVP);
         // call MoveInLineOfSight for nearby contested guards
-		UpdateObjectVisibility();
+        UpdateObjectVisibility();
     }
     if(!HasUnitState(UNIT_STATE_ATTACK_PLAYER))
     {
         AddUnitState(UNIT_STATE_ATTACK_PLAYER);
         // call MoveInLineOfSight for nearby contested guards
-		UpdateObjectVisibility();
+        UpdateObjectVisibility();
     }
 }
 
@@ -14097,11 +14097,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
         }
             
         if (GetTypeId() == TYPEID_PLAYER) {
-			if (uint64 minipet_guid = GetCritterGUID())
-			{
-				if (Creature* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
-					if (minipet->IsAIEnabled)
-						minipet->AI()->MasterKilledUnit(pVictim);
+            if (uint64 minipet_guid = GetCritterGUID())
+            {
+                if (Creature* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
+                    if (minipet->IsAIEnabled)
+                        minipet->AI()->MasterKilledUnit(pVictim);
             }
             if (Pet* pet = ToPlayer()->GetPet()) {
                 if (pet->IsAIEnabled)
@@ -14146,11 +14146,11 @@ void Unit::Kill(Unit *pVictim, bool durabilityLoss)
             
         if (GetTypeId() == TYPEID_PLAYER) 
         {
-			if (uint64 minipet_guid = GetCritterGUID())
-			{
-				if (Creature* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
-					if (minipet->IsAIEnabled)
-						minipet->AI()->MasterKilledUnit(pVictim);
+            if (uint64 minipet_guid = GetCritterGUID())
+            {
+                if (Creature* minipet = ObjectAccessor::GetCreature(*this, minipet_guid))
+                    if (minipet->IsAIEnabled)
+                        minipet->AI()->MasterKilledUnit(pVictim);
             }
             if (Pet* pet = ToPlayer()->GetPet()) {
                 if (pet->IsAIEnabled)
@@ -14540,16 +14540,16 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type, AuraApplication const* au
         return false;
     }
 
-	if (ToCreature())
-		ToCreature()->SetWalk(false);
-	else
-		RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
+    if (ToCreature())
+        ToCreature()->SetWalk(false);
+    else
+        RemoveUnitMovementFlag(MOVEMENTFLAG_WALKING);
 
     CastStop();
     CombatStop(); /// @todo CombatStop(true) may cause crash (interrupt spells)
     DeleteThreatList();
-	SetEmoteState(0);
-	HandleEmoteCommand(0);
+    SetEmoteState(0);
+    HandleEmoteCommand(0);
 
     Player* playerCharmer = charmer->ToPlayer();
 
@@ -14695,7 +14695,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
         type = CHARM_TYPE_CHARM;
 
     CastStop();
-	AttackStop();
+    AttackStop();
     CombatStop(); //TODO: CombatStop(true) may cause crash (interrupt spells)
     GetHostileRefManager().deleteReferences();
     DeleteThreatList();
@@ -14729,7 +14729,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
     ASSERT(type != CHARM_TYPE_VEHICLE || (GetTypeId() == TYPEID_UNIT && IsVehicle()));
 #endif
 
-	charmer->SetCharm(this, false);
+    charmer->SetCharm(this, false);
     Player* playerCharmer = charmer->ToPlayer();
 
     if (playerCharmer)
@@ -14836,12 +14836,12 @@ bool Unit::IsInPartyWith(Unit const *unit) const
 
     if(u1->GetTypeId() == TYPEID_PLAYER && u2->GetTypeId() == TYPEID_PLAYER)
         return (u1->ToPlayer())->IsInSameGroupWith(u2->ToPlayer());
-	
+    
     //consider creature in same party when they have the same faction
-	if(u1->GetTypeId() == TYPEID_UNIT && u2->GetTypeId() == TYPEID_UNIT)
-		return u1->GetFaction() == u2->GetFaction();
+    if(u1->GetTypeId() == TYPEID_UNIT && u2->GetTypeId() == TYPEID_UNIT)
+        return u1->GetFaction() == u2->GetFaction();
 
-	return false;
+    return false;
 }
 
 bool Unit::IsInRaidWith(Unit const *unit) const
@@ -14906,7 +14906,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
                 if(Target->IsAlive() && IsWithinDistInMap(Target, radius) )
                     TagUnitMap.push_back(Target);
 
-				if (Guardian* pet = Target->GetGuardianPet())
+                if (Guardian* pet = Target->GetGuardianPet())
                     if(pet->IsAlive() && IsWithinDistInMap(pet, radius) )
                         TagUnitMap.push_back(pet);
             }
@@ -14916,7 +14916,7 @@ void Unit::GetPartyMember(std::list<Unit*> &TagUnitMap, float radius)
     {
         if(owner->IsAlive() && (owner == this || IsWithinDistInMap(owner, radius)))
             TagUnitMap.push_back(owner);
-		if (Guardian* pet = owner->GetGuardianPet())
+        if (Guardian* pet = owner->GetGuardianPet())
             if(pet->IsAlive() && (pet == this && IsWithinDistInMap(pet, radius)))
                 TagUnitMap.push_back(pet);
     }
@@ -15461,7 +15461,7 @@ TransportBase* Unit::GetDirectTransport() const
 
 void Unit::BuildMovementPacket(ByteBuffer *data) const
 {
-	Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
+    Unit::BuildMovementPacket(Position(GetPositionX(), GetPositionY(), GetPositionZMinusOffset(), GetOrientation()), m_movementInfo.transport.pos, m_movementInfo, data);
 }
 
 void Unit::BuildMovementPacket(Position const& pos, Position const& transportPos, MovementInfo const& movementInfo, ByteBuffer* data)
@@ -15474,46 +15474,46 @@ void Unit::BuildMovementPacket(Position const& pos, Position const& transportPos
 #endif
     *data << uint32(GetMSTime());                       // time / counter
     *data << float(pos.GetPositionX());
-	*data << float(pos.GetPositionY());
-	*data << float(pos.GetPositionZ());
-	*data << float(pos.GetOrientation());
+    *data << float(pos.GetPositionY());
+    *data << float(pos.GetPositionZ());
+    *data << float(pos.GetOrientation());
 
     // 0x00000200
     if (movementInfo.HasMovementFlag(MOVEMENTFLAG_ONTRANSPORT))
     {
 #ifdef LICH_KING
-		*data << movementInfo.transport.guid.WriteAsPacked();
+        *data << movementInfo.transport.guid.WriteAsPacked();
 #else
-		*data << uint64(movementInfo.transport.guid);
+        *data << uint64(movementInfo.transport.guid);
 #endif
-		*data << float(transportPos.GetPositionX());
-		*data << float(transportPos.GetPositionY());
-		*data << float(transportPos.GetPositionZ());
-		*data << float(transportPos.GetOrientation());
-		*data << uint32(movementInfo.transport.time);
+        *data << float(transportPos.GetPositionX());
+        *data << float(transportPos.GetPositionY());
+        *data << float(transportPos.GetPositionZ());
+        *data << float(transportPos.GetOrientation());
+        *data << uint32(movementInfo.transport.time);
 #ifdef LICH_KING
-		*data << int8(movementInfo.transport.seat);
+        *data << int8(movementInfo.transport.seat);
 #endif
     }
 
     // 0x02200000
-	if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
-		*data << float(movementInfo.pitch);
+    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_PLAYER_FLYING))
+        *data << float(movementInfo.pitch);
 
-	*data << uint32(movementInfo.fallTime);
+    *data << uint32(movementInfo.fallTime);
 
     // 0x00001000
     if (movementInfo.HasMovementFlag(MOVEMENTFLAG_JUMPING_OR_FALLING))
     {
-		*data << float(movementInfo.jump.zspeed);
-		*data << float(movementInfo.jump.sinAngle);
-		*data << float(movementInfo.jump.cosAngle);
-		*data << float(movementInfo.jump.xyspeed);
+        *data << float(movementInfo.jump.zspeed);
+        *data << float(movementInfo.jump.sinAngle);
+        *data << float(movementInfo.jump.cosAngle);
+        *data << float(movementInfo.jump.xyspeed);
     }
 
     // 0x04000000
-	if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
-		*data << float(movementInfo.splineElevation);
+    if (movementInfo.HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION))
+        *data << float(movementInfo.splineElevation);
 }
 
 void Unit::KnockbackFrom(float x, float y, float speedXY, float speedZ)
@@ -15604,16 +15604,16 @@ bool Unit::IsFalling() const
 void Unit::NearTeleportTo(Position const& pos, bool casting /*= false*/)
 {
     DisableSpline();
-	if (GetTypeId() == TYPEID_PLAYER)
-	{
-		WorldLocation target(GetMapId(), pos);
-		ToPlayer()->TeleportTo(target, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
-	}
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        WorldLocation target(GetMapId(), pos);
+        ToPlayer()->TeleportTo(target, TELE_TO_NOT_LEAVE_TRANSPORT | TELE_TO_NOT_LEAVE_COMBAT | TELE_TO_NOT_UNSUMMON_PET | (casting ? TELE_TO_SPELL : 0));
+    }
     else
     {
-		SendTeleportPacket(pos);
-		UpdatePosition(pos, true);
-		UpdateObjectVisibility();
+        SendTeleportPacket(pos);
+        UpdatePosition(pos, true);
+        UpdateObjectVisibility();
     }
 }
 
@@ -15638,7 +15638,7 @@ void Unit::SendTeleportPacket(Position const& pos, bool teleportingTransport /*=
         }
     }
 
-	WorldPacket moveUpdateTeleport(MSG_MOVE_TELEPORT, 38);
+    WorldPacket moveUpdateTeleport(MSG_MOVE_TELEPORT, 38);
     moveUpdateTeleport << GetPackGUID();
     Unit* broadcastSource = this;
 
@@ -15668,13 +15668,13 @@ bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool tel
         return false;
     }
 
-	bool const turn = (GetOrientation() != orientation);
+    bool const turn = (GetOrientation() != orientation);
 
-	// G3D::fuzzyEq won't help here, in some cases magnitudes differ by a little more than G3D::eps, but should be considered equal
-	bool const relocated = (teleport ||
-		std::fabs(GetPositionX() - x) > 0.001f ||
-		std::fabs(GetPositionY() - y) > 0.001f ||
-		std::fabs(GetPositionZ() - z) > 0.001f);
+    // G3D::fuzzyEq won't help here, in some cases magnitudes differ by a little more than G3D::eps, but should be considered equal
+    bool const relocated = (teleport ||
+        std::fabs(GetPositionX() - x) > 0.001f ||
+        std::fabs(GetPositionY() - y) > 0.001f ||
+        std::fabs(GetPositionZ() - z) > 0.001f);
 
     // TODO: Check if orientation transport offset changed instead of only global orientation
     if (turn)
@@ -15708,8 +15708,8 @@ void Unit::UpdateOrientation(float orientation)
 {
     SetOrientation(orientation);
 #ifdef LICH_KING
-	if (IsVehicle())
-		GetVehicleKit()->RelocatePassengers();
+    if (IsVehicle())
+        GetVehicleKit()->RelocatePassengers();
 #endif
 }
 
@@ -15718,8 +15718,8 @@ void Unit::UpdateHeight(float newZ)
 {
     Relocate(GetPositionX(), GetPositionY(), newZ);
 #ifdef LICH_KING
-	if (IsVehicle())
-		GetVehicleKit()->RelocatePassengers();
+    if (IsVehicle())
+        GetVehicleKit()->RelocatePassengers();
 #endif
 }
 

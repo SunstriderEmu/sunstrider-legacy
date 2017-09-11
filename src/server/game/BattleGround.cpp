@@ -143,7 +143,7 @@ Battleground::Battleground()
     m_MinPlayers        = 0;
 
     m_MapId             = 0;
-	m_Map               = nullptr;
+    m_Map               = nullptr;
 
     m_TeamStartLocX[BG_ALLIANCE]   = 0;
     m_TeamStartLocX[BG_HORDE]      = 0;
@@ -208,11 +208,11 @@ Battleground::~Battleground()
     // remove from battlegrounds
     sBattlegroundMgr->RemoveBattleground(GetInstanceID());
     // unload map
-	if (m_Map)
+    if (m_Map)
     {
-		m_Map->SetUnload();
-		m_Map->SetBG(nullptr);
-		m_Map = nullptr;
+        m_Map->SetUnload();
+        m_Map->SetBG(nullptr);
+        m_Map = nullptr;
     }
     // remove from bg free slot queue
     this->RemoveFromBGFreeSlotQueue();
@@ -332,7 +332,7 @@ void Battleground::Update(time_t diff)
                 continue;
             plr->ResurrectPlayer(1.0f);
             plr->CastSpell(plr, SPELL_SPIRIT_HEAL_MANA, true);
-			plr->GetMap()->ConvertCorpseToBones(itr);
+            plr->GetMap()->ConvertCorpseToBones(itr);
         }
         m_ResurrectQueue.clear();
     }
@@ -782,7 +782,7 @@ void Battleground::EndBattleground(uint32 winner)
     }
 
     // inform invited players about the removal
-	auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
+    auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
     sBattlegroundMgr->m_BattlegroundQueues[queueTypeId].BGEndedRemoveInvites(this);
 
     if(Source)
@@ -1177,9 +1177,9 @@ void Battleground::RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPac
 
         if(Transport)
         {
-			bool ok = plr->TeleportToBGEntryPoint();
-			if (!ok)
-				plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
+            bool ok = plr->TeleportToBGEntryPoint();
+            if (!ok)
+                plr->TeleportTo(plr->m_homebindMapId, plr->m_homebindX, plr->m_homebindY, plr->m_homebindZ, plr->GetOrientation());
         }
 
         // Log
@@ -1493,9 +1493,9 @@ void Battleground::RemovePlayerFromResurrectQueue(uint64 player_guid)
 
 bool Battleground::AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, bool inactive)
 {
-	Map* map = FindBgMap();
-	if (!map)
-		return false;
+    Map* map = FindBgMap();
+    if (!map)
+        return false;
 
     // must be created this way, adding to godatamap would add it to the base map of the instance
     // and when loading it (in go::LoadFromDB()), a new guid would be assigned to the object, and a new object would be created
@@ -1552,32 +1552,32 @@ void Battleground::DoorOpen(uint32 type)
 
 GameObject* Battleground::GetBGObject(uint32 type, bool logError)
 {
-	GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]);
-	if (!obj)
-	{
-		if (logError)
-			TC_LOG_ERROR("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
-		else
-			TC_LOG_INFO("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
-	}
-	return obj;
+    GameObject* obj = GetBgMap()->GetGameObject(BgObjects[type]);
+    if (!obj)
+    {
+        if (logError)
+            TC_LOG_ERROR("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+                type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
+        else
+            TC_LOG_INFO("bg.battleground", "Battleground::GetBGObject: gameobject (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+                type, ObjectGuid(BgObjects[type]).ToString().c_str(), m_MapId, m_InstanceID);
+    }
+    return obj;
 }
 
 Creature* Battleground::GetBGCreature(uint32 type, bool logError)
 {
-	Creature* creature = GetBgMap()->GetCreature(BgCreatures[type]);
-	if (!creature)
-	{
-		if (logError)
-			TC_LOG_ERROR("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
-		else
-			TC_LOG_INFO("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
-				type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
-	}
-	return creature;
+    Creature* creature = GetBgMap()->GetCreature(BgCreatures[type]);
+    if (!creature)
+    {
+        if (logError)
+            TC_LOG_ERROR("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+                type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
+        else
+            TC_LOG_INFO("bg.battleground", "Battleground::GetBGCreature: creature (type: %u, %s) not found for BG (map: %u, instance id: %u)!",
+                type, ObjectGuid(BgCreatures[type]).ToString().c_str(), m_MapId, m_InstanceID);
+    }
+    return creature;
 }
 
 void Battleground::SpawnBGObject(uint32 type, uint32 respawntime)
@@ -1610,7 +1610,7 @@ Creature* Battleground::AddCreature(uint32 entry, uint32 type, float x, float y,
     if (!map)
         return nullptr;
 
-	auto  pCreature = new Creature();
+    auto  pCreature = new Creature();
     if (!pCreature->Create(map->GenerateLowGuid<HighGuid::Unit>(), map, PHASEMASK_NORMAL, entry, x, y, z, o))
     {
         TC_LOG_ERROR("battleground","Can't create creature entry: %u",entry);
@@ -1737,7 +1737,7 @@ void Battleground::EndNow()
     SetStatus(STATUS_WAIT_LEAVE);
     SetRemovalTimer(TIME_TO_AUTOREMOVE);
     // inform invited players about the removal
-	auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
+    auto queueTypeId = sBattlegroundMgr->BGQueueTypeId(GetTypeID(), GetArenaType());
     sBattlegroundMgr->m_BattlegroundQueues[queueTypeId].BGEndedRemoveInvites(this);
 }
 
@@ -1967,15 +1967,15 @@ bool Battleground::canEnterSpectator(Player *spectator)
 
 Group* Battleground::GetBgRaid(uint32 TeamID) const
 { 
-	return TeamID == ALLIANCE ? m_BgRaids[BG_ALLIANCE] : m_BgRaids[BG_HORDE]; 
+    return TeamID == ALLIANCE ? m_BgRaids[BG_ALLIANCE] : m_BgRaids[BG_HORDE]; 
 }
 
 void Battleground::SetBgRaid(uint32 TeamID, Group *bg_raid)
 {
-	Group* &old_raid = TeamID == ALLIANCE ? m_BgRaids[BG_ALLIANCE] : m_BgRaids[BG_HORDE];
-	if (old_raid)
-		old_raid->SetBattlegroundGroup(nullptr);
-	if (bg_raid)
-		bg_raid->SetBattlegroundGroup(this);
-	old_raid = bg_raid;
+    Group* &old_raid = TeamID == ALLIANCE ? m_BgRaids[BG_ALLIANCE] : m_BgRaids[BG_HORDE];
+    if (old_raid)
+        old_raid->SetBattlegroundGroup(nullptr);
+    if (bg_raid)
+        bg_raid->SetBattlegroundGroup(this);
+    old_raid = bg_raid;
 }

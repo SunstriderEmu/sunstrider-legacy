@@ -16,7 +16,7 @@
 MapManager::MapManager() : 
     _nextInstanceId(0), _scheduledScripts(0)
 {
-	i_gridCleanUpDelay = 5 * MINUTE * IN_MILLISECONDS ; //sWorld->getIntConfig(CONFIG_INTERVAL_GRIDCLEAN);
+    i_gridCleanUpDelay = 5 * MINUTE * IN_MILLISECONDS ; //sWorld->getIntConfig(CONFIG_INTERVAL_GRIDCLEAN);
     i_timer.SetInterval(sWorld->getConfig(CONFIG_INTERVAL_MAPUPDATE));
 }
 
@@ -25,7 +25,7 @@ MapManager::~MapManager()
 
 void MapManager::Initialize()
 {
-	Map::InitStateMachine();
+    Map::InitStateMachine();
 
     int num_threads(sWorld->getIntConfig(CONFIG_NUMTHREADS));
     // Start mtmaps if needed.
@@ -55,8 +55,8 @@ Map* MapManager::CreateBaseMap(uint32 id)
         else
         {
             m = new Map(MAP_TYPE_MAP, id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
-			//TC map->LoadRespawnTimes();
-			m->LoadCorpseData();
+            //TC map->LoadRespawnTimes();
+            m->LoadCorpseData();
         }
         i_maps[id] = m;
     }
@@ -84,7 +84,7 @@ Map* MapManager::CreateMap(uint32 id, Player* player, uint32 loginInstanceId)
     Map *m = CreateBaseMap(id);
 
     if (m && m->Instanceable()) 
-		m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
+        m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player, loginInstanceId);
 
     return m;
 }
@@ -204,9 +204,9 @@ void MapManager::Update(time_t diff)
 
     if (m_updater.activated())
     {
-		/* We keep instances updates looping while continents are updated.
-		Once all continents are done, we wait for the current instances updates to finish and stop.
-		*/
+        /* We keep instances updates looping while continents are updated.
+        Once all continents are done, we wait for the current instances updates to finish and stop.
+        */
         m_updater.enableUpdateLoop(true);
         m_updater.waitUpdateOnces();
         m_updater.enableUpdateLoop(false);
@@ -253,7 +253,7 @@ void MapManager::UnloadAll()
     if (m_updater.activated())
         m_updater.deactivate();
 
-	Map::DeleteStateMachine();
+    Map::DeleteStateMachine();
 }
 
 uint32 MapManager::GetNumInstances()

@@ -1155,7 +1155,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->CanSeeOrDetect(target, implicit))
         return SPELL_FAILED_BAD_TARGETS;
     
-	Unit const* unitTarget = target->ToUnit();
+    Unit const* unitTarget = target->ToUnit();
 
     // creature/player specific target checks
     if (unitTarget)
@@ -1439,10 +1439,10 @@ float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
 
 bool SpellInfo::IsCooldownStartedOnEvent() const
 {
-	if (HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
-		return true;
+    if (HasAttribute(SPELL_ATTR0_DISABLED_WHILE_ACTIVE))
+        return true;
 
-	return Category && Category->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_STARTS_ON_EVENT;
+    return Category && Category->Flags & SPELL_CATEGORY_FLAG_COOLDOWN_STARTS_ON_EVENT;
 }
 
 bool SpellInfo::IsChannelCategorySpell() const
@@ -2183,9 +2183,9 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
     if (IsPassive() && GetTalentSpellCost(Id))
         return true;
 
-	if (HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
-		|| HasAttribute(SPELL_ATTR0_NEGATIVE_1))
-		return false;
+    if (HasAttribute(SPELL_ATTR1_CANT_BE_REFLECTED) //all those should be negative
+        || HasAttribute(SPELL_ATTR0_NEGATIVE_1))
+        return false;
 
     switch(Id)
     {
@@ -2259,28 +2259,28 @@ bool SpellInfo::_IsPositiveEffect(uint32 effIndex, bool deep) const
             return false;
     }
 
-	switch (Mechanic)
-	{
-	case MECHANIC_IMMUNE_SHIELD:
-		return true;
-	default:
-		break;
-	}
+    switch (Mechanic)
+    {
+    case MECHANIC_IMMUNE_SHIELD:
+        return true;
+    default:
+        break;
+    }
 
-	// Special case: effects which determine positivity of whole spell
-	for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-	{
-		if (Effects[i].IsAura())
-		{
-			switch (Effects[i].ApplyAuraName)
-			{
-			case SPELL_AURA_MOD_STEALTH:
-				return true;
-			case SPELL_AURA_CHANNEL_DEATH_ITEM:
-				return false;
-			}
-		}
-	}
+    // Special case: effects which determine positivity of whole spell
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (Effects[i].IsAura())
+        {
+            switch (Effects[i].ApplyAuraName)
+            {
+            case SPELL_AURA_MOD_STEALTH:
+                return true;
+            case SPELL_AURA_CHANNEL_DEATH_ITEM:
+                return false;
+            }
+        }
+    }
 
     switch(Effects[effIndex].Effect)
     {

@@ -35,7 +35,7 @@ class MapUpdateRequest
 
         void call()
         {
-			sMonitor->MapUpdateStart(m_map);
+            sMonitor->MapUpdateStart(m_map);
             if (crash_recovery_enabled)
             {
                 try
@@ -51,18 +51,18 @@ class MapUpdateRequest
             {
                 m_map.DoUpdate(m_diff, MINIMUM_MAP_UPDATE_INTERVAL);
             }
-			sMonitor->MapUpdateEnd(m_map);
+            sMonitor->MapUpdateEnd(m_map);
             m_loopCount++;
         }
 };
 
 void MapUpdater::activate(size_t num_threads)
 {
-	//spawn instances & battlegrounds threads
+    //spawn instances & battlegrounds threads
     for (size_t i = 0; i < num_threads; ++i)
         _loop_maps_workerThreads.push_back(std::thread(&MapUpdater::LoopWorkerThread, this, &_enable_updates_loop));
 
-	//continents threads are spawned later when request are received
+    //continents threads are spawned later when request are received
 }
 
 void MapUpdater::deactivate()
@@ -70,7 +70,7 @@ void MapUpdater::deactivate()
     _cancelationToken = true;
 
     _loop_queue.Cancel();
-	_once_queue.Cancel();
+    _once_queue.Cancel();
 
     waitUpdateOnces();
     waitUpdateLoops();
@@ -113,8 +113,8 @@ void MapUpdater::waitUpdateLoops()
 
 void MapUpdater::spawnMissingOnceUpdateThreads()
 {
-	for (uint32 i = _once_maps_workerThreads.size(); i < pending_once_maps; i++)
-		_once_maps_workerThreads.push_back(std::thread(&MapUpdater::OnceWorkerThread, this));
+    for (uint32 i = _once_maps_workerThreads.size(); i < pending_once_maps; i++)
+        _once_maps_workerThreads.push_back(std::thread(&MapUpdater::OnceWorkerThread, this));
 }
 
 void MapUpdater::schedule_update(Map& map, uint32 diff)
@@ -127,10 +127,10 @@ void MapUpdater::schedule_update(Map& map, uint32 diff)
         _loop_queue.Push(request);
     } else {
         pending_once_maps++;
-		_once_queue.Push(request);
+        _once_queue.Push(request);
     }
 
-	spawnMissingOnceUpdateThreads();
+    spawnMissingOnceUpdateThreads();
 }
 
 bool MapUpdater::activated()
@@ -167,23 +167,23 @@ void MapUpdater::LoopWorkerThread(std::atomic<bool>* enable_instance_updates_loo
 
 void MapUpdater::OnceWorkerThread()
 {
-	while (1)
-	{
-		MapUpdateRequest* request = nullptr;
+    while (1)
+    {
+        MapUpdateRequest* request = nullptr;
 
-		_once_queue.WaitAndPop(request);
+        _once_queue.WaitAndPop(request);
 
-		if (_cancelationToken) {
-			onceMapFinished();
-			return;
-		}
+        if (_cancelationToken) {
+            onceMapFinished();
+            return;
+        }
 
-		ASSERT(request);
-		request->call();
+        ASSERT(request);
+        request->call();
 
-		delete request;
-		onceMapFinished();
-	}
+        delete request;
+        onceMapFinished();
+    }
 }
 
 void MapUpdater::onceMapFinished()

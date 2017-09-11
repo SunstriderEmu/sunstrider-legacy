@@ -68,38 +68,38 @@ void WorldSession::HandleMoveWorldportAck()
     if(GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
 
-	Map* oldMap = GetPlayer()->GetMap();
-	Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
+    Map* oldMap = GetPlayer()->GetMap();
+    Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
 
-	if (GetPlayer()->IsInWorld())
-	{
-		TC_LOG_ERROR("network", "%s %s is still in world when teleported from map %s (%u) to new map %s (%u)", ObjectGuid(GetPlayer()->GetGUID()).ToString().c_str(), GetPlayer()->GetName().c_str(), oldMap->GetMapName(), oldMap->GetId(), newMap ? newMap->GetMapName() : "Unknown", loc.GetMapId());
-		oldMap->RemovePlayerFromMap(GetPlayer(), false);
-	}
+    if (GetPlayer()->IsInWorld())
+    {
+        TC_LOG_ERROR("network", "%s %s is still in world when teleported from map %s (%u) to new map %s (%u)", ObjectGuid(GetPlayer()->GetGUID()).ToString().c_str(), GetPlayer()->GetName().c_str(), oldMap->GetMapName(), oldMap->GetId(), newMap ? newMap->GetMapName() : "Unknown", loc.GetMapId());
+        oldMap->RemovePlayerFromMap(GetPlayer(), false);
+    }
 
-	// relocate the player to the teleport destination
-	// the CannotEnter checks are done in TeleporTo but conditions may change
-	// while the player is in transit, for example the map may get full
-	if (!newMap || newMap->CannotEnter(GetPlayer()))
-	{
-		TC_LOG_ERROR("network", "Map %d (%s) could not be created for player %d (%s), porting player to homebind", loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown", ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), GetPlayer()->GetName().c_str());
-		GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
-		return;
-	}
+    // relocate the player to the teleport destination
+    // the CannotEnter checks are done in TeleporTo but conditions may change
+    // while the player is in transit, for example the map may get full
+    if (!newMap || newMap->CannotEnter(GetPlayer()))
+    {
+        TC_LOG_ERROR("network", "Map %d (%s) could not be created for player %d (%s), porting player to homebind", loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown", ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), GetPlayer()->GetName().c_str());
+        GetPlayer()->TeleportTo(GetPlayer()->m_homebindMapId, GetPlayer()->m_homebindX, GetPlayer()->m_homebindY, GetPlayer()->m_homebindZ, GetPlayer()->GetOrientation());
+        return;
+    }
 
 
-	float z = loc.GetPositionZ();
-	if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+    float z = loc.GetPositionZ();
+    if (GetPlayer()->HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
 #ifdef LICH_KING
-		z += GetPlayer()->GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
+        z += GetPlayer()->GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
 #else
-		z += DEFAULT_HOVER_HEIGHT;
+        z += DEFAULT_HOVER_HEIGHT;
 #endif
     GetPlayer()->Relocate(loc.m_positionX, loc.m_positionY, z, loc.m_orientation);
     GetPlayer()->SetFallInformation(0, GetPlayer()->GetPositionZ());
 
-	GetPlayer()->ResetMap();
-	GetPlayer()->SetMap(newMap);
+    GetPlayer()->ResetMap();
+    GetPlayer()->SetMap(newMap);
 
     // check this before Map::Add(player), because that will create the instance save!
     bool reset_notify = (GetPlayer()->GetBoundInstance(GetPlayer()->GetMapId(), GetPlayer()->GetDifficulty()) == NULL);
@@ -109,10 +109,10 @@ void WorldSession::HandleMoveWorldportAck()
     // while the player is in transit, for example the map may get full
     if(!GetPlayer()->GetMap()->AddPlayerToMap(GetPlayer()))
     {
-		TC_LOG_ERROR("network", "WORLD: failed to teleport player %s (%d) to map %d (%s) because of unknown reason!",
-			GetPlayer()->GetName().c_str(), ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
-		GetPlayer()->ResetMap();
-		GetPlayer()->SetMap(oldMap);
+        TC_LOG_ERROR("network", "WORLD: failed to teleport player %s (%d) to map %d (%s) because of unknown reason!",
+            GetPlayer()->GetName().c_str(), ObjectGuid(GetPlayer()->GetGUID()).GetCounter(), loc.GetMapId(), newMap ? newMap->GetMapName() : "Unknown");
+        GetPlayer()->ResetMap();
+        GetPlayer()->SetMap(oldMap);
 
         // teleport the player home
         GetPlayer()->SetDontMove(false);
@@ -168,8 +168,8 @@ void WorldSession::HandleMoveWorldportAck()
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
-	if (mEntry->IsDungeon() && !GetPlayer()->IsAlive())
-		if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
+    if (mEntry->IsDungeon() && !GetPlayer()->IsAlive())
+        if (GetPlayer()->GetCorpseLocation().GetMapId() == mEntry->MapID)
     {
         if( mEntry->IsDungeon() )
         {
@@ -240,21 +240,21 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvData)
     plMover->UpdatePosition(dest, true);
     plMover->SetFallInformation(0, GetPlayer()->GetPositionZ());
 
-	uint32 newzone, newarea;
-	plMover->GetZoneAndAreaId(newzone, newarea);
-	plMover->UpdateZone(newzone, newarea);
+    uint32 newzone, newarea;
+    plMover->GetZoneAndAreaId(newzone, newarea);
+    plMover->UpdateZone(newzone, newarea);
 
-	// new zone
-	if (old_zone != newzone)
-	{
-		// honorless target
-		if (plMover->pvpInfo.IsHostile)
-			plMover->CastSpell(plMover, 2479, true);
+    // new zone
+    if (old_zone != newzone)
+    {
+        // honorless target
+        if (plMover->pvpInfo.IsHostile)
+            plMover->CastSpell(plMover, 2479, true);
 
-		// in friendly area
-		else if (plMover->IsPvP() && !plMover->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
-			plMover->UpdatePvP(false, false);
-	}
+        // in friendly area
+        else if (plMover->IsPvP() && !plMover->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_IN_PVP))
+            plMover->UpdatePvP(false, false);
+    }
 
     // teleport pets if they are not unsummoned
     if (Pet* pet = plMover->GetPet())
@@ -701,11 +701,11 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket &recvData)
     uint64 guid;
     recvData >> guid; //Client started controlling this unit
 
-	/*TC
-	if (GetPlayer()->IsInWorld())
+    /*TC
+    if (GetPlayer()->IsInWorld())
         if (_player->m_unitMovedByMe->GetGUID() != guid)
             TC_LOG_DEBUG("network", "HandleSetActiveMoverOpcode: incorrect mover guid: mover is %s and should be %s" , guid.ToString().c_str(), _player->m_unitMovedByMe->GetGUID().ToString().c_str());
-			*/
+            */
     Unit* movedUnit = ObjectAccessor::GetUnit(*_player, guid);
     if(movedUnit)
         _player->SetMover(movedUnit);

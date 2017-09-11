@@ -166,8 +166,8 @@ bool ChatHandler::HandleGameObjectAddCommand(const char* args)
     }
 
     auto pGameObj = new GameObject;
-	uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
-	//use AddGOData instead? Then how do we spawn them in instance?
+    uint32 db_lowGUID = sObjectMgr->GenerateGameObjectSpawnId();
+    //use AddGOData instead? Then how do we spawn them in instance?
 
     if(!pGameObj->Create(db_lowGUID, goI->entry, map, chr->GetPhaseMask(), Position(x, y, z, o), G3D::Quat(0, 0, rot2, rot3), 0, GO_STATE_READY))
     {
@@ -266,7 +266,7 @@ bool ChatHandler::HandleTurnObjectCommand(const char* args)
         return false;
 
     GameObject* obj = nullptr;
-	Player *chr = m_session->GetPlayer();
+    Player *chr = m_session->GetPlayer();
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -325,7 +325,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
         return false;
 
     GameObject* obj = nullptr;
-	Player* player = m_session->GetPlayer();
+    Player* player = m_session->GetPlayer();
 
     // by DB guid
     if (GameObjectData const* go_data = sObjectMgr->GetGOData(lowguid))
@@ -345,8 +345,8 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
     if (!px)
     {
         Player *chr = m_session->GetPlayer();
-		
-		Map* map = chr->GetMap();
+        
+        Map* map = chr->GetMap();
         map->RemoveFromMap(obj,false);
 
         obj->Relocate(chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), obj->GetOrientation());
@@ -372,7 +372,7 @@ bool ChatHandler::HandleMoveObjectCommand(const char* args)
             return false;
         }
 
-		Map* map = player->GetMap();
+        Map* map = player->GetMap();
         map->RemoveFromMap(obj, false);
 
         obj->Relocate(x, y, z, obj->GetOrientation());

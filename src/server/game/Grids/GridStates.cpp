@@ -28,11 +28,11 @@ void ActiveState::Update(Map& map, NGridType& grid, GridInfo&  info, uint32 diff
 
 void IdleState::Update(Map& map, NGridType& grid, GridInfo&, uint32) const
 {
-	/*
+    /*
     map.ResetGridExpiry(grid);
     grid.SetGridState(GRID_STATE_REMOVAL);
     TC_LOG_DEBUG("maps", "Grid[%u, %u] on map %u moved to REMOVAL state", grid.getX(), grid.getY(), map.GetId());
-	*/
+    */
 }
 
 /*

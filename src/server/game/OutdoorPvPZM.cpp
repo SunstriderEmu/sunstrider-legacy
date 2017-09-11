@@ -37,47 +37,47 @@ void OPvPCapturePointZM_Beacon::UpdateTowerState()
 
 void OPvPCapturePointZM_Beacon::ChangeState()
 {
-	// if changing from controlling alliance to horde
-	if (m_OldState == OBJECTIVESTATE_ALLIANCE)
-	{
-		if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled)
-			((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled--;
-		sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconLooseA[m_TowerType]));
-	}
-	// if changing from controlling horde to alliance
-	else if (m_OldState == OBJECTIVESTATE_HORDE)
-	{
-		if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled)
-			((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled--;
-		sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconLooseH[m_TowerType]));
-	}
+    // if changing from controlling alliance to horde
+    if (m_OldState == OBJECTIVESTATE_ALLIANCE)
+    {
+        if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled)
+            ((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled--;
+        sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconLooseA[m_TowerType]));
+    }
+    // if changing from controlling horde to alliance
+    else if (m_OldState == OBJECTIVESTATE_HORDE)
+    {
+        if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled)
+            ((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled--;
+        sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconLooseH[m_TowerType]));
+    }
 
-	switch (m_State)
-	{
-	case OBJECTIVESTATE_ALLIANCE:
-		m_TowerState = ZM_TOWERSTATE_A;
-		if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled<ZM_NUM_BEACONS)
-			((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled++;
-		sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconCaptureA[m_TowerType]));
-		//m_PvP->SendDefenseMessage(ZM_GRAVEYARD_ZONE, ZMBeaconCaptureA[m_TowerType]);
-		break;
-	case OBJECTIVESTATE_HORDE:
-		m_TowerState = ZM_TOWERSTATE_H;
-		if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled<ZM_NUM_BEACONS)
-			((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled++;
-		m_PvP->SendDefenseMessage(ZM_GRAVEYARD_ZONE, ZMBeaconCaptureH[m_TowerType]);
-		//sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconCaptureH[m_TowerType]));
-		break;
-	case OBJECTIVESTATE_NEUTRAL:
-	case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
-	case OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE:
-	case OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE:
-	case OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE:
-		m_TowerState = ZM_TOWERSTATE_N;
-		break;
-	}
+    switch (m_State)
+    {
+    case OBJECTIVESTATE_ALLIANCE:
+        m_TowerState = ZM_TOWERSTATE_A;
+        if (((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled<ZM_NUM_BEACONS)
+            ((OutdoorPvPZM*)m_PvP)->m_AllianceTowersControlled++;
+        sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconCaptureA[m_TowerType]));
+        //m_PvP->SendDefenseMessage(ZM_GRAVEYARD_ZONE, ZMBeaconCaptureA[m_TowerType]);
+        break;
+    case OBJECTIVESTATE_HORDE:
+        m_TowerState = ZM_TOWERSTATE_H;
+        if (((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled<ZM_NUM_BEACONS)
+            ((OutdoorPvPZM*)m_PvP)->m_HordeTowersControlled++;
+        m_PvP->SendDefenseMessage(ZM_GRAVEYARD_ZONE, ZMBeaconCaptureH[m_TowerType]);
+        //sWorld->SendZoneText(ZM_GRAVEYARD_ZONE, sObjectMgr->GetTrinityStringForDBCLocale(ZMBeaconCaptureH[m_TowerType]));
+        break;
+    case OBJECTIVESTATE_NEUTRAL:
+    case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
+    case OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE:
+    case OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE:
+    case OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE:
+        m_TowerState = ZM_TOWERSTATE_N;
+        break;
+    }
 
-	UpdateTowerState();
+    UpdateTowerState();
 }
 
 bool OutdoorPvPZM::Update(uint32 diff)
@@ -134,7 +134,7 @@ bool OutdoorPvPZM::SetupOutdoorPvP()
     m_AllianceTowersControlled = 0;
     m_HordeTowersControlled = 0;
 
-	SetMapFromZone(OutdoorPvPZMBuffZones[0]);
+    SetMapFromZone(OutdoorPvPZMBuffZones[0]);
 
     // add the zones affected by the pvp buff
     for(uint32 OutdoorPvPZMBuffZone : OutdoorPvPZMBuffZones)

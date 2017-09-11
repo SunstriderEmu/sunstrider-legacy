@@ -144,9 +144,9 @@ void AuctionHouseMgr::SendAuctionWonMail(SQLTransaction& trans, AuctionEntry *au
 
 void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionEntry * auction )
 {
-	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+    ObjectGuid owner_guid(HighGuid::Player, auction->owner);
     Player *owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
-	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
+    uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist (online or offline)
     if(owner || owner_accId)
@@ -174,9 +174,9 @@ void AuctionHouseMgr::SendAuctionSalePendingMail(SQLTransaction& trans, AuctionE
 //call this method to send mail to auction owner, when auction is successful, it does not clear ram
 void AuctionHouseMgr::SendAuctionSuccessfulMail(SQLTransaction& trans, AuctionEntry * auction )
 {
-	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
-	Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
-	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
+    ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+    Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
+    uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist
     if(owner || owner_accId)
@@ -218,9 +218,9 @@ void AuctionHouseMgr::SendAuctionExpiredMail(SQLTransaction& trans, AuctionEntry
         return;
     }
 
-	ObjectGuid owner_guid(HighGuid::Player, auction->owner);
-	Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
-	uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
+    ObjectGuid owner_guid(HighGuid::Player, auction->owner);
+    Player* owner = ObjectAccessor::FindConnectedPlayer(owner_guid);
+    uint32 owner_accId = sCharacterCache->GetCharacterAccountIdByGuid(owner_guid);
 
     // owner exist
     if(owner || owner_accId)

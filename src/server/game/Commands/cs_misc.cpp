@@ -356,7 +356,7 @@ bool ChatHandler::HandleMuteCommand(const char* args)
 
 bool ChatHandler::HandleLoadScriptsCommand(const char* args)
 {
-	sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
+    sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
 
     sWorld->SendGMText(LANG_SCRIPTS_RELOADED);
     return true;

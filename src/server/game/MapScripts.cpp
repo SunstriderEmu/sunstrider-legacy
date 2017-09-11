@@ -41,19 +41,19 @@ void Map::ScriptsStart(ScriptMapMap const& scripts, uint32 id, Object* source, O
 
         sa.script = &iter.second;
         //TC_LOG_INFO("SCRIPT: Inserting script with source guid " UI64FMTD " target guid " UI64FMTD " owner guid " UI64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, id);
-		m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + iter.first), sa));
+        m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + iter.first), sa));
         if (iter.first == 0)
             immedScript = true;
 
-		sMapMgr->IncreaseScheduledScriptsCount();
+        sMapMgr->IncreaseScheduledScriptsCount();
     }
     ///- If one of the effects should be immediate, launch the script execution
-	if (start && immedScript && !i_scriptLock)
-	{
-		i_scriptLock = true;
-		ScriptsProcess();
-		i_scriptLock = false;
-	}
+    if (start && immedScript && !i_scriptLock)
+    {
+        i_scriptLock = true;
+        ScriptsProcess();
+        i_scriptLock = false;
+    }
 }
 
 void Map::ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* source, Object* target)
@@ -74,17 +74,17 @@ void Map::ScriptCommandStart(ScriptInfo const& script, uint32 delay, Object* sou
 
     sa.script = &script;
     //TC_LOG_INFO("SCRIPTCMD: Inserting script with source guid " UI64FMTD " target guid " UI64FMTD " owner guid " UI64FMTD " script id %u", sourceGUID, targetGUID, ownerGUID, script.id);
-	m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + delay), sa));
+    m_scriptSchedule.insert(ScriptScheduleMap::value_type(time_t(GameTime::GetGameTime() + delay), sa));
 
-	sMapMgr->IncreaseScheduledScriptsCount();
+    sMapMgr->IncreaseScheduledScriptsCount();
 
     ///- If effects should be immediate, launch the script execution
-	if (delay == 0 && !i_scriptLock)
-	{
-		i_scriptLock = true;
-		ScriptsProcess();
-		i_scriptLock = false;
-	}
+    if (delay == 0 && !i_scriptLock)
+    {
+        i_scriptLock = true;
+        ScriptsProcess();
+        i_scriptLock = false;
+    }
 }
 
 /// Process queued scripts
@@ -96,7 +96,7 @@ void Map::ScriptsProcess()
     ///- Process overdue queued scripts
     auto iter = m_scriptSchedule.begin();
                                                             // ok as multimap is a *sorted* associative container
-	while (!m_scriptSchedule.empty() && (iter->first <= GameTime::GetGameTime()))
+    while (!m_scriptSchedule.empty() && (iter->first <= GameTime::GetGameTime()))
     {
         ScriptAction const& step = iter->second;
 
@@ -108,7 +108,7 @@ void Map::ScriptsProcess()
             {
                 case HighGuid::Item:
                     if (Player* player = GetPlayer(step.ownerGUID))
-		        source = player->GetItemByGuid(step.sourceGUID);
+                source = player->GetItemByGuid(step.sourceGUID);
                     break;
                 case HighGuid::Unit:
                     source = GetCreature(step.sourceGUID);
@@ -119,7 +119,7 @@ void Map::ScriptsProcess()
                 case HighGuid::Player:
                     source = GetPlayer(step.sourceGUID);
                     break;
-	        case HighGuid::Transport:
+            case HighGuid::Transport:
                 case HighGuid::GameObject:
                     source = source = GetGameObject(step.sourceGUID);
                     break;
@@ -128,7 +128,7 @@ void Map::ScriptsProcess()
                     break;
                 case HighGuid::Mo_Transport:
                     GetTransport(step.sourceGUID);
-		    break;
+            break;
                 default:
                     TC_LOG_ERROR("scripts","*_script source with unsupported high guid value %u",GUID_HIPART(step.sourceGUID));
                     break;
@@ -844,7 +844,7 @@ void Map::ScriptsProcess()
         m_scriptSchedule.erase(iter);
 
         iter = m_scriptSchedule.begin();
-		sMapMgr->DecreaseScheduledScriptCount();
+        sMapMgr->DecreaseScheduledScriptCount();
     }
     return;
 }

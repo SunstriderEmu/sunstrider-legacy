@@ -13,7 +13,7 @@ void PossibleTargetsValue::FindUnits(list<Unit*> &targets)
 {
     AnyUnfriendlyUnitInObjectRangeCheck u_check(bot, bot, range);
     UnitListSearcher<AnyUnfriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-	Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
+    Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
 }
 
 bool PossibleTargetsValue::AcceptUnit(Unit* unit)

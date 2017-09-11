@@ -659,7 +659,7 @@ void WorldSession::LogoutPlayer(bool Save)
         // e.g if he got disconnected during a transfer to another map
         // calls to GetMap in this case may cause crashes
         if(_player->IsInWorld())
-			_player->GetMap()->RemovePlayerFromMap(_player, false);
+            _player->GetMap()->RemovePlayerFromMap(_player, false);
 
         // RemoveFromWorld does cleanup that requires the player to be in the accessor
         ObjectAccessor::RemoveObject(_player);

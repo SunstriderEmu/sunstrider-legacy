@@ -79,11 +79,11 @@ bool CreatureAI::AssistPlayerInCombatAgainst(Unit* who)
 // MoveInLineOfSight can be called inside another MoveInLineOfSight and cause stack overflow
 void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
 {
-	if (m_MoveInLineOfSight_locked == true)
-		return;
-	m_MoveInLineOfSight_locked = true;
-	MoveInLineOfSight(who);
-	m_MoveInLineOfSight_locked = false;
+    if (m_MoveInLineOfSight_locked == true)
+        return;
+    m_MoveInLineOfSight_locked = true;
+    MoveInLineOfSight(who);
+    m_MoveInLineOfSight_locked = false;
 }
 
 void CreatureAI::MoveInLineOfSight(Unit* who)
@@ -92,21 +92,21 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
     if (me->HasJustRespawned() && !me->GetSummonerGUID())
         return;
 
-	if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
-		return;
+    if (me->GetCreatureType() == CREATURE_TYPE_NON_COMBAT_PET) // non-combat pets should just stand there and look good;)
+        return;
 
-	if (!me->HasReactState(REACT_AGGRESSIVE))
-		return;
+    if (!me->HasReactState(REACT_AGGRESSIVE))
+        return;
 
     //attack target if no current victim, else just enter combat with it
     if (!me->GetVictim())
     {
-		if (AssistPlayerInCombatAgainst(who))
-			return;
+        if (AssistPlayerInCombatAgainst(who))
+            return;
 
-		CanAttackResult result = me->CanAggro(who, false);
-		if (result != CAN_ATTACK_RESULT_OK)
-			return;
+        CanAttackResult result = me->CanAggro(who, false);
+        if (result != CAN_ATTACK_RESULT_OK)
+            return;
 
         if (me->HasUnitState(UNIT_STATE_DISTRACTED))
         {
@@ -115,7 +115,7 @@ void CreatureAI::MoveInLineOfSight(Unit* who)
         }
 
         me->ClearUnitState(UNIT_STATE_EVADE);
-		who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
+        who->RemoveAurasByType(SPELL_AURA_MOD_STEALTH);
         AttackStart(who);
     } else {
         if(!me->IsInCombatWith(who))

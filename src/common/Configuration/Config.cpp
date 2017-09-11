@@ -31,7 +31,7 @@ bool ConfigMgr::LoadInitial(std::string const& file, std::vector<std::string> ar
     std::lock_guard<std::mutex> lock(_configLock);
 
     _filename = file;
-	_args = args;
+    _args = args;
 
     try
     {
@@ -61,8 +61,8 @@ bool ConfigMgr::LoadInitial(std::string const& file, std::vector<std::string> ar
 
 ConfigMgr* ConfigMgr::instance()
 {
-	static ConfigMgr instance;
-	return &instance;
+    static ConfigMgr instance;
+    return &instance;
 }
 
 bool ConfigMgr::Reload(std::string& error)
@@ -73,68 +73,68 @@ bool ConfigMgr::Reload(std::string& error)
 template<class T>
 T ConfigMgr::GetValueDefault(std::string const& name, T def) const
 {
-	try
-	{
-		return _config.get<T>(ptree::path_type(name, '/'));
-	}
-	catch (boost::property_tree::ptree_bad_path)
-	{
-		TC_LOG_WARN("server.loading", "Missing name %s in config file %s, add \"%s = %s\" to this file",
-			name.c_str(), _filename.c_str(), name.c_str(), std::to_string(def).c_str());
-	}
-	catch (boost::property_tree::ptree_bad_data)
-	{
-		TC_LOG_ERROR("server.loading", "Bad value defined for name %s in config file %s, going to use %s instead",
-			name.c_str(), _filename.c_str(), std::to_string(def).c_str());
-	}
+    try
+    {
+        return _config.get<T>(ptree::path_type(name, '/'));
+    }
+    catch (boost::property_tree::ptree_bad_path)
+    {
+        TC_LOG_WARN("server.loading", "Missing name %s in config file %s, add \"%s = %s\" to this file",
+            name.c_str(), _filename.c_str(), name.c_str(), std::to_string(def).c_str());
+    }
+    catch (boost::property_tree::ptree_bad_data)
+    {
+        TC_LOG_ERROR("server.loading", "Bad value defined for name %s in config file %s, going to use %s instead",
+            name.c_str(), _filename.c_str(), std::to_string(def).c_str());
+    }
 
-	return def;
+    return def;
 }
 
 template<>
 std::string ConfigMgr::GetValueDefault<std::string>(std::string const& name, std::string def) const
 {
-	try
-	{
-		return _config.get<std::string>(ptree::path_type(name, '/'));
-	}
-	catch (boost::property_tree::ptree_bad_path)
-	{
-		TC_LOG_WARN("server.loading", "Missing name %s in config file %s, add \"%s = %s\" to this file",
-			name.c_str(), _filename.c_str(), name.c_str(), def.c_str());
-	}
-	catch (boost::property_tree::ptree_bad_data)
-	{
-		TC_LOG_ERROR("server.loading", "Bad value defined for name %s in config file %s, going to use %s instead",
-			name.c_str(), _filename.c_str(), def.c_str());
-	}
+    try
+    {
+        return _config.get<std::string>(ptree::path_type(name, '/'));
+    }
+    catch (boost::property_tree::ptree_bad_path)
+    {
+        TC_LOG_WARN("server.loading", "Missing name %s in config file %s, add \"%s = %s\" to this file",
+            name.c_str(), _filename.c_str(), name.c_str(), def.c_str());
+    }
+    catch (boost::property_tree::ptree_bad_data)
+    {
+        TC_LOG_ERROR("server.loading", "Bad value defined for name %s in config file %s, going to use %s instead",
+            name.c_str(), _filename.c_str(), def.c_str());
+    }
 
-	return def;
+    return def;
 }
 
 
 std::string ConfigMgr::GetStringDefault(std::string const& name, const std::string& def) const
 {
-	std::string val = GetValueDefault(name, def);
-	val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
-	return val;
+    std::string val = GetValueDefault(name, def);
+    val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
+    return val;
 }
 
 bool ConfigMgr::GetBoolDefault(std::string const& name, bool def) const
 {
-	std::string val = GetValueDefault(name, std::string(def ? "1" : "0"));
-	val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
-	return (val == "1" || val == "true" || val == "TRUE" || val == "yes" || val == "YES");
+    std::string val = GetValueDefault(name, std::string(def ? "1" : "0"));
+    val.erase(std::remove(val.begin(), val.end(), '"'), val.end());
+    return (val == "1" || val == "true" || val == "TRUE" || val == "yes" || val == "YES");
 }
 
 int ConfigMgr::GetIntDefault(std::string const& name, int def) const
 {
-	return GetValueDefault(name, def);
+    return GetValueDefault(name, def);
 }
 
 float ConfigMgr::GetFloatDefault(std::string const& name, float def) const
 {
-	return GetValueDefault(name, def);
+    return GetValueDefault(name, def);
 }
 
 std::string const& ConfigMgr::GetFilename()

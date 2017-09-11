@@ -115,11 +115,11 @@ void OutdoorPvPMgr::AddZone(uint32 zoneid, OutdoorPvP *handle)
 
 ZoneScript* OutdoorPvPMgr::GetZoneScript(uint32 zoneId)
 {
-	OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneId);
-	if (itr != m_OutdoorPvPMap.end())
-		return itr->second;
-	else
-		return nullptr;
+    OutdoorPvPMap::iterator itr = m_OutdoorPvPMap.find(zoneId);
+    if (itr != m_OutdoorPvPMap.end())
+        return itr->second;
+    else
+        return nullptr;
 }
 
 void OutdoorPvPMgr::HandlePlayerEnterZone(Player *plr, uint32 zoneid)
@@ -149,12 +149,12 @@ void OutdoorPvPMgr::HandlePlayerLeaveZone(Player *plr, uint32 zoneid)
 
 void OutdoorPvPMgr::HandlePlayerResurrects(Player* player, uint32 zoneid)
 {
-	auto itr = m_OutdoorPvPMap.find(zoneid);
-	if (itr == m_OutdoorPvPMap.end())
-		return;
+    auto itr = m_OutdoorPvPMap.find(zoneid);
+    if (itr == m_OutdoorPvPMap.end())
+        return;
 
-	if (itr->second->HasPlayer(player))
-		itr->second->HandlePlayerResurrects(player, zoneid);
+    if (itr->second->HasPlayer(player))
+        itr->second->HandlePlayerResurrects(player, zoneid);
 }
 
 OutdoorPvP * OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)

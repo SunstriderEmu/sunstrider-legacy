@@ -1020,9 +1020,9 @@ void World::LoadConfigSettings(bool reload)
         m_MaxVisibleDistanceInFlight = MAX_VISIBILITY_DISTANCE;
     }
 
-	m_visibility_notify_periodOnContinents = sConfigMgr->GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
-	m_visibility_notify_periodInInstances = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InInstances", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
-	m_visibility_notify_periodInBGArenas = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InBGArenas", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+    m_visibility_notify_periodOnContinents = sConfigMgr->GetIntDefault("Visibility.Notify.Period.OnContinents", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+    m_visibility_notify_periodInInstances = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InInstances", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
+    m_visibility_notify_periodInBGArenas = sConfigMgr->GetIntDefault("Visibility.Notify.Period.InBGArenas", DEFAULT_VISIBILITY_NOTIFY_PERIOD);
 
     ///- Read the "Data" directory from the config file
     std::string dataPath = sConfigMgr->GetStringDefault("DataDir","./");
@@ -1073,17 +1073,17 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_MONITORING_ENABLED] = sConfigMgr->GetBoolDefault("Monitor.Enabled", false);
     m_configs[CONFIG_MONITORING_GENERALINFOS_UPDATE] = sConfigMgr->GetIntDefault("Monitor.GeneralInfo.Update", 20);
     m_configs[CONFIG_MONITORING_KEEP_DURATION] = sConfigMgr->GetIntDefault("Monitor.KeepDays", 0);
-	m_configs[CONFIG_MONITORING_ABNORMAL_WORLD_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.World", 500);
-	m_configs[CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.Map", 400);
-	m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Count", 10);
-	m_configs[CONFIG_MONITORING_LAG_AUTO_REBOOT_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAutoReboot.Count", 8000);
-	m_configs[CONFIG_MONITORING_DYNAMIC_LOS] = sConfigMgr->GetBoolDefault("Monitor.DynamicLoS.Enable", 0);
-	m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicLoS.MinDistance", 60);
-	if (m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] < 60)
-	{
-		TC_LOG_ERROR("server.loading", "DynamicLoS.MinDistance must be at least 60 yards, setting it to 60");
-		m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = 60;
-	}
+    m_configs[CONFIG_MONITORING_ABNORMAL_WORLD_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.World", 500);
+    m_configs[CONFIG_MONITORING_ABNORMAL_MAP_UPDATE_DIFF] = sConfigMgr->GetIntDefault("Monitor.AbnormalDiff.Map", 400);
+    m_configs[CONFIG_MONITORING_ALERT_THRESHOLD_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAlertThreshold.Count", 10);
+    m_configs[CONFIG_MONITORING_LAG_AUTO_REBOOT_COUNT] = sConfigMgr->GetIntDefault("Monitor.LagAutoReboot.Count", 8000);
+    m_configs[CONFIG_MONITORING_DYNAMIC_LOS] = sConfigMgr->GetBoolDefault("Monitor.DynamicLoS.Enable", 0);
+    m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = sConfigMgr->GetIntDefault("Monitor.DynamicLoS.MinDistance", 60);
+    if (m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] < 60)
+    {
+        TC_LOG_ERROR("server.loading", "DynamicLoS.MinDistance must be at least 60 yards, setting it to 60");
+        m_configs[CONFIG_MONITORING_DYNAMIC_LOS_MINDIST] = 60;
+    }
 
     std::string forbiddenmaps = sConfigMgr->GetStringDefault("ForbiddenMaps", "");
     auto  forbiddenMaps = new char[forbiddenmaps.length() + 1];
@@ -1586,15 +1586,15 @@ void World::SetInitialWorldSettings()
     sObjectMgr->LoadDbScriptStrings();
 
     TC_LOG_INFO("server.loading", "Initializing Scripts..." );
-	sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
-//TC	sScriptMgr->OnConfigLoad(false);                                // must be done after the ScriptMgr has been properly initialized
+    sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
+//TC    sScriptMgr->OnConfigLoad(false);                                // must be done after the ScriptMgr has been properly initialized
 
     TC_LOG_INFO("server.loading","Loading SmartAI scripts...");
     sSmartScriptMgr->LoadSmartAIFromDB();
 
-	///- Initialize game time and timers
-	TC_LOG_INFO("server.loading", "Initialize game time and timers");
-	GameTime::UpdateGameTimers();
+    ///- Initialize game time and timers
+    TC_LOG_INFO("server.loading", "Initialize game time and timers");
+    GameTime::UpdateGameTimers();
 
     tm local;
     time_t curr;
@@ -1625,9 +1625,9 @@ void World::SetInitialWorldSettings()
     //to set mailtimer to return mails every day between 4 and 5 am
     //mailtimer is increased when updating auctions
     //one second is 1000 -(tested on win system)
-	tm localTm;
-	time_t gameTime = GameTime::GetGameTime();
-	localtime_r(&gameTime, &localTm);
+    tm localTm;
+    time_t gameTime = GameTime::GetGameTime();
+    localtime_r(&gameTime, &localTm);
     mail_timer = ((((localTm.tm_hour + 20) % 24)* HOUR * IN_MILLISECONDS) / m_timers[WUPDATE_AUCTIONS].GetInterval());
                                                             //1440
     mail_timer_expires = ( (DAY * IN_MILLISECONDS) / (m_timers[WUPDATE_AUCTIONS].GetInterval()));
@@ -1815,11 +1815,11 @@ void World::LoadQuestPoolsData()
 /// Update the World !
 void World::Update(time_t diff)
 {
-	///- Update the game time and check for shutdown time
-	_UpdateGameTime();
-	time_t currentGameTime = GameTime::GetGameTime();
+    ///- Update the game time and check for shutdown time
+    _UpdateGameTime();
+    time_t currentGameTime = GameTime::GetGameTime();
 
-	sMonitor->StartedWorldLoop();
+    sMonitor->StartedWorldLoop();
 
     if(m_configs[CONFIG_INTERVAL_LOG_UPDATE])
     {
@@ -1922,32 +1922,32 @@ void World::Update(time_t diff)
     /// <li> Update uptime table
     if (m_timers[WUPDATE_UPTIME].Passed())
     {
-		uint32 tmpDiff = GameTime::GetUptime();
+        uint32 tmpDiff = GameTime::GetUptime();
         uint32 maxClientsNum = GetMaxActiveSessionCount();
 
         m_timers[WUPDATE_UPTIME].Reset();
         LoginDatabase.PExecute("UPDATE uptime SET uptime = %u, maxplayers = %u WHERE realmid = %u AND starttime = " UI64FMTD, tmpDiff, maxClientsNum, realm.Id.Realm, uint64(m_startTime));
     }
 
-	///- Update objects (maps, transport, creatures,...)
+    ///- Update objects (maps, transport, creatures,...)
     sMapMgr->Update(diff);
-	RecordTimeDiff("UpdateMapMgr");
+    RecordTimeDiff("UpdateMapMgr");
 
-	sBattlegroundMgr->Update(diff);
-	RecordTimeDiff("UpdateBattlegroundMgr");
+    sBattlegroundMgr->Update(diff);
+    RecordTimeDiff("UpdateBattlegroundMgr");
 
-	sOutdoorPvPMgr->Update(diff);
-	RecordTimeDiff("UpdateOutdoorPvPMgr");
+    sOutdoorPvPMgr->Update(diff);
+    RecordTimeDiff("UpdateOutdoorPvPMgr");
 
     ///- Erase corpses once every 20 minutes
     if (m_timers[WUPDATE_CORPSES].Passed())
     {
         m_timers[WUPDATE_CORPSES].Reset();
 
-		sMapMgr->DoForAllMaps([](Map* map)
-		{
-			map->RemoveOldCorpses();
-		});
+        sMapMgr->DoForAllMaps([](Map* map)
+        {
+            map->RemoveOldCorpses();
+        });
     }
 
     if (m_timers[WUPDATE_ARENASEASONLOG].Passed())
@@ -2004,8 +2004,8 @@ void World::Update(time_t diff)
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
 
-	sMonitor->FinishedWorldLoop();
-	sMonitor->Update(diff);
+    sMonitor->FinishedWorldLoop();
+    sMonitor->Update(diff);
 
    // sScriptMgr->OnWorldUpdate(diff);
 }
@@ -2360,11 +2360,11 @@ bool World::RemoveBanAccount(SanctionType mode, std::string nameOrIP, WorldSessi
 /// Update the game time
 void World::_UpdateGameTime()
 {
-	///- update the time
-	time_t lastGameTime = GameTime::GetGameTime();
-	GameTime::UpdateGameTimers();
+    ///- update the time
+    time_t lastGameTime = GameTime::GetGameTime();
+    GameTime::UpdateGameTimers();
 
-	uint32 elapsed = uint32(GameTime::GetGameTime() - lastGameTime);
+    uint32 elapsed = uint32(GameTime::GetGameTime() - lastGameTime);
 
     ///- if there is a shutdown timer
     if(!m_stopEvent && m_ShutdownTimer > 0 && elapsed > 0)

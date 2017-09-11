@@ -228,12 +228,12 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
     };
 
 
-	static std::vector<ChatCommand> profilingCommandTable =
-	{
-		{ "start",   SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStartCommand,             "" },
-		{ "stop",    SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStopCommand,              "" },
-		{ "status",  SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStatusCommand,            "" },
-	};
+    static std::vector<ChatCommand> profilingCommandTable =
+    {
+        { "start",   SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStartCommand,             "" },
+        { "stop",    SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStopCommand,              "" },
+        { "status",  SEC_SUPERADMIN,   true,  true,  &ChatHandler::HandleProfilingStatusCommand,            "" },
+    };
 
     static std::vector<ChatCommand> debugCommandTable =
     {
@@ -759,7 +759,7 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "playall",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePlayAllCommand,             "" },
         { "plimit",         SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandlePLimitCommand,              "" },
         { "possess",        SEC_GAMEMASTER3,  false, false, &ChatHandler::HandlePossessCommand,             "" },
-		{ "profiling",      SEC_SUPERADMIN,   false, false, nullptr,                                        "", profilingCommandTable },
+        { "profiling",      SEC_SUPERADMIN,   false, false, nullptr,                                        "", profilingCommandTable },
         { "quest",          SEC_GAMEMASTER3,  false, false, nullptr,                                        "", questCommandTable },
         { "recall",         SEC_GAMEMASTER1,  false, false, &ChatHandler::HandleRecallCommand,              "" },
         { "recup",          SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleRecupCommand,               "" },
@@ -833,16 +833,16 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
 }
 
 ChatHandler::ChatHandler(WorldSession* session)
-	: m_session(session)
+    : m_session(session)
 {}
 
 ChatHandler::ChatHandler(Player* player)
-	: m_session(player->GetSession())
+    : m_session(player->GetSession())
 {}
 
 std::string ChatHandler::GetNameLink(Player* chr) const
 {
-	return playerLink(chr->GetName());
+    return playerLink(chr->GetName());
 }
 
 void ChatHandler::SendMessageWithoutAuthor(char const* channel, const char* msg)

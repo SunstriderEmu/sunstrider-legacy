@@ -257,7 +257,7 @@ void AuthSession::SendPacket(ByteBuffer& packet)
 
 bool AuthSession::HandleLogonChallenge()
 {
-	_status = STATUS_CLOSED;
+    _status = STATUS_CLOSED;
 
     sAuthLogonChallenge_C* challenge = reinterpret_cast<sAuthLogonChallenge_C*>(GetReadBuffer().GetReadPointer());
     if (challenge->size - (sizeof(sAuthLogonChallenge_C) - AUTH_LOGON_CHALLENGE_INITIAL_SIZE - 1) != challenge->I_len)
@@ -383,11 +383,11 @@ void AuthSession::LogonChallengeCallback(PreparedQueryResult result)
     unk3.SetRand(16 * 8);
 
     // Fill the response packet with the result
-	if (AuthHelper::IsAcceptedClientBuild(_build))
-	{
-		pkt << uint8(WOW_SUCCESS);
-		_status = STATUS_LOGON_PROOF;
-	} else
+    if (AuthHelper::IsAcceptedClientBuild(_build))
+    {
+        pkt << uint8(WOW_SUCCESS);
+        _status = STATUS_LOGON_PROOF;
+    } else
         pkt << uint8(WOW_FAIL_VERSION_INVALID);
 
     // B may be calculated < 32B so we force minimal length to 32B
@@ -435,7 +435,7 @@ void AuthSession::LogonChallengeCallback(PreparedQueryResult result)
 bool AuthSession::HandleLogonProof()
 {
     TC_LOG_DEBUG("server.authserver", "Entering _HandleLogonProof");
-	_status = STATUS_CLOSED;
+    _status = STATUS_CLOSED;
 
     // Read the packet
     sAuthLogonProof_C *logonProof = reinterpret_cast<sAuthLogonProof_C*>(GetReadBuffer().GetReadPointer());
@@ -545,24 +545,24 @@ bool AuthSession::HandleLogonProof()
             }
         }
 
-		TC_LOG_DEBUG("server.authserver", "'%s:%d' User '%s' successfully authenticated", GetRemoteIpAddress().to_string().c_str(), GetRemotePort(), _accountInfo.Login.c_str());
+        TC_LOG_DEBUG("server.authserver", "'%s:%d' User '%s' successfully authenticated", GetRemoteIpAddress().to_string().c_str(), GetRemotePort(), _accountInfo.Login.c_str());
 
-		// Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
-		// No SQL injection (escaped user name) and IP address as received by socket
+        // Update the sessionkey, last_ip, last login time and reset number of failed logins in the account table for this account
+        // No SQL injection (escaped user name) and IP address as received by socket
 
-		PreparedStatement *stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LOGONPROOF);
-		stmt->setString(0, K.AsHexStr());
-		stmt->setString(1, GetRemoteIpAddress().to_string().c_str());
-		stmt->setUInt32(2, GetLocaleByName(_localizationName));
-		stmt->setString(3, _os);
-		stmt->setUInt16(4, _build);
-		stmt->setString(5, _accountInfo.Login);
-		LoginDatabase.DirectExecute(stmt);
+        PreparedStatement *stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LOGONPROOF);
+        stmt->setString(0, K.AsHexStr());
+        stmt->setString(1, GetRemoteIpAddress().to_string().c_str());
+        stmt->setUInt32(2, GetLocaleByName(_localizationName));
+        stmt->setString(3, _os);
+        stmt->setUInt16(4, _build);
+        stmt->setString(5, _accountInfo.Login);
+        LoginDatabase.DirectExecute(stmt);
 
-		// Finish SRP6 and send the final result to the client
-		sha.Initialize();
-		sha.UpdateBigNumbers(&A, &M, &K, NULL);
-		sha.Finalize();
+        // Finish SRP6 and send the final result to the client
+        sha.Initialize();
+        sha.UpdateBigNumbers(&A, &M, &K, NULL);
+        sha.Finalize();
 
         ByteBuffer packet;
         if (_expversion & POST_BC_EXP_FLAG)                 // 2.x and 3.x clients
@@ -659,7 +659,7 @@ bool AuthSession::HandleLogonProof()
 
 bool AuthSession::HandleReconnectChallenge()
 {
-	_status = STATUS_CLOSED;
+    _status = STATUS_CLOSED;
 
     sAuthLogonChallenge_C* challenge = reinterpret_cast<sAuthLogonChallenge_C*>(GetReadBuffer().GetReadPointer());
     if (challenge->size - (sizeof(sAuthLogonChallenge_C) - AUTH_LOGON_CHALLENGE_INITIAL_SIZE - 1) != challenge->I_len)
@@ -707,7 +707,7 @@ void AuthSession::ReconnectChallengeCallback(PreparedQueryResult result)
     _accountInfo.LoadResult(fields);
     K.SetHexStr(fields[9].GetCString());
     _reconnectProof.SetRand(16 * 8);
-	_status = STATUS_RECONNECT_PROOF;
+    _status = STATUS_RECONNECT_PROOF;
 
     pkt << uint8(WOW_SUCCESS);
     pkt.append(_reconnectProof.AsByteArray(16).get(), 16);  // 16 bytes random
@@ -719,7 +719,7 @@ void AuthSession::ReconnectChallengeCallback(PreparedQueryResult result)
 bool AuthSession::HandleReconnectProof()
 {
     TC_LOG_DEBUG("server.authserver", "Entering _HandleReconnectProof");
-	_status = STATUS_CLOSED;
+    _status = STATUS_CLOSED;
 
     sAuthReconnectProof_C *reconnectProof = reinterpret_cast<sAuthReconnectProof_C*>(GetReadBuffer().GetReadPointer());
 

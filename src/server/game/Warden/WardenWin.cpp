@@ -332,15 +332,15 @@ void WardenWin::HandleData(ByteBuffer &buff)
         uint32 newClientTicks;
         buff >> newClientTicks;
 
-		/*
-		 uint32 ticksNow = GameTime::GetGameTimeMS();
+        /*
+         uint32 ticksNow = GameTime::GetGameTimeMS();
         uint32 ourTicks = newClientTicks + (ticksNow - _serverTicks);
 
         TC_LOG_DEBUG("warden", "ServerTicks %u", ticksNow);         // Now
         TC_LOG_DEBUG("warden", "RequestTicks %u", _serverTicks);    // At request
         TC_LOG_DEBUG("warden", "Ticks %u", newClientTicks);         // At response
         TC_LOG_DEBUG("warden", "Ticks diff %u", ourTicks - newClientTicks);
-		*/
+        */
     }
 
     WardenDataResult *rs;

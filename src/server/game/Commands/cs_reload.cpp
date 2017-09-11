@@ -810,7 +810,7 @@ bool ChatHandler::HandleReloadSmartAICommand(const char* args)
                 target->AIM_Initialize();
             PSendSysMessage("Reloaded SmartAI scripts for targeted creature (%s)", target->GetName().c_str());
         } else if (Player* player = GetSession()->GetPlayer()) {
-			sSmartScriptMgr->ReloadCreaturesScripts(player->GetMap());
+            sSmartScriptMgr->ReloadCreaturesScripts(player->GetMap());
             SendGlobalGMSysMessage("Reloaded SmartAI scripts for all existing creatures in current map. (NYI)");
         }
     }

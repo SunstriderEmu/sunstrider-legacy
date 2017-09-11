@@ -14,7 +14,7 @@ void NearestNpcsValue::FindUnits(list<Unit*> &targets)
 {
     AnyFriendlyUnitInObjectRangeCheck u_check(bot, bot, range);
     UnitListSearcher<AnyFriendlyUnitInObjectRangeCheck> searcher(bot, targets, u_check);
-	Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
+    Cell::VisitAllObjects(bot, searcher, bot->GetMap()->GetVisibilityRange());
 }
 
 bool NearestNpcsValue::AcceptUnit(Unit* unit)

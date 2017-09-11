@@ -23,8 +23,8 @@
 
 namespace MMAP
 {
-	static char const* const MAP_FILE_NAME_FORMAT = "%s/mmaps/%03i.mmap";
-	static char const* const TILE_FILE_NAME_FORMAT = "%s/mmaps/%03i%02i%02i.mmtile";
+    static char const* const MAP_FILE_NAME_FORMAT = "%s/mmaps/%03i.mmap";
+    static char const* const TILE_FILE_NAME_FORMAT = "%s/mmaps/%03i%02i%02i.mmtile";
 
     // ######################## MMapManager ########################
     MMapManager::~MMapManager()
@@ -73,8 +73,8 @@ namespace MMAP
         }
 
         // load and init dtNavMesh - read parameters from file
-		std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId);
-		FILE* file = fopen(fileName.c_str(), "rb");
+        std::string fileName = Trinity::StringFormat(MAP_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId);
+        FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
             TC_LOG_DEBUG("maps", "MMAP:loadMapData: Error: Could not open mmap file '%s'", fileName.c_str());
@@ -82,7 +82,7 @@ namespace MMAP
         }
 
         dtNavMeshParams params;
-		uint32 count = uint32(fread(&params, sizeof(dtNavMeshParams), 1, file));
+        uint32 count = uint32(fread(&params, sizeof(dtNavMeshParams), 1, file));
         fclose(file);
         if (count != 1)
         {
@@ -129,8 +129,8 @@ namespace MMAP
             return false;
 
         // load this tile :: mmaps/MMMXXYY.mmtile
-		std::string fileName = Trinity::StringFormat(TILE_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId, x, y);
-		FILE* file = fopen(fileName.c_str(), "rb");
+        std::string fileName = Trinity::StringFormat(TILE_FILE_NAME_FORMAT, sConfigMgr->GetStringDefault("DataDir", ".").c_str(), mapId, x, y);
+        FILE* file = fopen(fileName.c_str(), "rb");
         if (!file)
         {
             TC_LOG_DEBUG("maps", "MMAP:loadMap: Could not open mmtile file '%s'", fileName.c_str());

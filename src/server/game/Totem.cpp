@@ -43,11 +43,11 @@ void Totem::Update( uint32 time )
 
 void Totem::UnSummon(uint32 msTime)
 {
-	if (msTime)
-	{
-		m_Events.AddEvent(new ForcedUnsummonDelayEvent(*this), m_Events.CalculateTime(msTime));
-		return;
-	}
+    if (msTime)
+    {
+        m_Events.AddEvent(new ForcedUnsummonDelayEvent(*this), m_Events.CalculateTime(msTime));
+        return;
+    }
 
     SendObjectDeSpawnAnim(GetGUID());
 
@@ -56,16 +56,16 @@ void Totem::UnSummon(uint32 msTime)
     Unit *owner = this->GetOwner();
     if (owner)
     {
-		// clear owner's totem slot
-		for (uint8 i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
-		{
-			if (GetOwner()->m_SummonSlot[i] == GetGUID())
-			{
-				//GetOwner()->m_SummonSlot[i].Clear();
-				GetOwner()->m_SummonSlot[i] = 0;
-				break;
-			}
-		}
+        // clear owner's totem slot
+        for (uint8 i = SUMMON_SLOT_TOTEM; i < MAX_TOTEM_SLOT; ++i)
+        {
+            if (GetOwner()->m_SummonSlot[i] == GetGUID())
+            {
+                //GetOwner()->m_SummonSlot[i].Clear();
+                GetOwner()->m_SummonSlot[i] = 0;
+                break;
+            }
+        }
 
         owner->RemoveAurasDueToSpell(GetSpell());
 
@@ -150,9 +150,9 @@ void Totem::InitSummon()
         }
     }
 
-	// Some totems can have both instant effect and passive spell
-	if (GetSpell(1))
-		CastSpell(this, GetSpell(1), true);
+    // Some totems can have both instant effect and passive spell
+    if (GetSpell(1))
+        CastSpell(this, GetSpell(1), true);
 
 #ifndef LICH_KING
     WorldPacket data(SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE, 8);
@@ -163,38 +163,38 @@ void Totem::InitSummon()
 
 void Totem::InitStats(uint32 duration)
 {
-	// client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
-	if (GetOwner()->GetTypeId() == TYPEID_PLAYER
-		&& m_Properties->Slot >= SUMMON_SLOT_TOTEM
-		&& m_Properties->Slot < MAX_TOTEM_SLOT)
-	{
-		WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
-		data << uint8(m_Properties->Slot - 1);
-		data << uint64(GetGUID());
-		data << uint32(duration);
-		data << uint32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
-		GetOwner()->ToPlayer()->SendDirectMessage(&data);
+    // client requires SMSG_TOTEM_CREATED to be sent before adding to world and before removing old totem
+    if (GetOwner()->GetTypeId() == TYPEID_PLAYER
+        && m_Properties->Slot >= SUMMON_SLOT_TOTEM
+        && m_Properties->Slot < MAX_TOTEM_SLOT)
+    {
+        WorldPacket data(SMSG_TOTEM_CREATED, 1 + 8 + 4 + 4);
+        data << uint8(m_Properties->Slot - 1);
+        data << uint64(GetGUID());
+        data << uint32(duration);
+        data << uint32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
+        GetOwner()->ToPlayer()->SendDirectMessage(&data);
 
-		// set display id depending on caster's race
-		SetDisplayId(GetOwner()->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
-	}
+        // set display id depending on caster's race
+        SetDisplayId(GetOwner()->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
+    }
 
-	Minion::InitStats(duration);
+    Minion::InitStats(duration);
 
-	// Get spell cast by totem
-	if (SpellInfo const* totemSpell = sSpellMgr->GetSpellInfo(GetSpell()))
-	{
-		if (totemSpell->CalcCastTime())   // If spell has cast time -> its an active totem
-			m_type = TOTEM_ACTIVE;
+    // Get spell cast by totem
+    if (SpellInfo const* totemSpell = sSpellMgr->GetSpellInfo(GetSpell()))
+    {
+        if (totemSpell->CalcCastTime())   // If spell has cast time -> its an active totem
+            m_type = TOTEM_ACTIVE;
 
-		if (totemSpell->SpellIconID == 2056)
-			m_type = TOTEM_STATUE;                              //Jewelery statue
-	}
+        if (totemSpell->SpellIconID == 2056)
+            m_type = TOTEM_STATUE;                              //Jewelery statue
+    }
 
-	if (GetEntry() == SENTRY_TOTEM_ENTRY)
-		SetReactState(REACT_AGGRESSIVE);
+    if (GetEntry() == SENTRY_TOTEM_ENTRY)
+        SetReactState(REACT_AGGRESSIVE);
 
-	m_duration = duration;
+    m_duration = duration;
 
-	SetLevel(GetOwner()->GetLevel());
+    SetLevel(GetOwner()->GetLevel());
 }

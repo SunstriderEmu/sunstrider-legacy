@@ -23,13 +23,13 @@ void TestStacksCount(Player* caster, Unit* target, uint32 talent, uint32 castSpe
 }
 
 TEST_CASE( "Aura stacking limit", "[aura,stacking]" ) {
-	
+    
     // Setting up
     Player* playerBot = nullptr;
     Creature* targetCreature = nullptr;
     Testing::PrepareCasterAndTarget(playerBot, targetCreature);
 
-    SECTION( "Improved Scorch talent ('Fire Vulnerability' aura)" ) {	
+    SECTION( "Improved Scorch talent ('Fire Vulnerability' aura)" ) {    
         uint32 TALENT_IMPROVED_SCORCH = 12873;
         uint32 SPELL_SCORCH = 10207;
         uint32 SPELL_FIRE_VULNERABILITY = 22959;

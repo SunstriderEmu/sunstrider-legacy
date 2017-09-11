@@ -1049,8 +1049,8 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
             break;
         case SMART_ACTION_WP_START:
             {
-				auto const path = sSmartWaypointMgr->GetPath(e.action.wpStart.pathID);
-				if (!path || path->empty())
+                auto const path = sSmartWaypointMgr->GetPath(e.action.wpStart.pathID);
+                if (!path || path->empty())
                 {
                     SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Creature %d Event %u Action %u uses non-existent or empty WaypointPath id %u, skipped.", e.entryOrGuid, e.event_id, e.GetActionType(), e.action.wpStart.pathID);
                     return false;
@@ -1289,15 +1289,15 @@ void SmartAIMgr::ReloadCreaturesScripts(Map* map)
     //get creature list then release lock, as function inside AIM_Init may need this lock as well
     std::list<Creature*> updateList;
     {
-		
+        
         /*
-		FIXME
-		boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
+        FIXME
+        boost::shared_lock<boost::shared_mutex> lock(*HashMapHolder<Creature>::GetLock());
         auto creatures = ObjectAccessor::GetCreatures();
 
         for (auto pair : creatures)
             updateList.push_back(pair.second);
-			*/ 
+            */ 
     }
     for (auto c : updateList)
     {

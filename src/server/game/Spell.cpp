@@ -1513,7 +1513,7 @@ void Spell::SelectImplicitCasterDestTargets(SpellEffIndex effIndex, SpellImplici
                 || m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_JUMP_DEST
 #endif
                 || (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Effects[effIndex].Effect == SPELL_EFFECT_SUMMON)
-				)
+                )
                 pos = m_caster->GetLeapPosition(dist);
             else
                 pos = m_caster->GetNearPosition(dist, angle);
@@ -1622,7 +1622,7 @@ void Spell::SelectImplicitCasterObjectTargets(SpellEffIndex effIndex, SpellImpli
         target = m_caster->GetCharmerOrOwner();
         break;
     case TARGET_UNIT_PET:
-		target = m_caster->GetGuardianPet();
+        target = m_caster->GetGuardianPet();
         if (!target)
             target = m_caster->GetCharm();
         break;
@@ -2747,7 +2747,7 @@ void Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask)
         && !(m_spellInfo->Attributes & SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY)
         && !(m_spellInfo->HasAttribute(SPELL_ATTR1_UNAFFECTED_BY_SCHOOL_IMMUNE))
         && unit->IsImmunedToSpell(m_spellInfo,true) 
-	  )
+      )
     {
         caster->SendSpellMiss(unit, m_spellInfo->Id, SPELL_MISS_IMMUNE);
         m_damage = 0;
@@ -3241,7 +3241,7 @@ uint32 Spell::prepare(SpellCastTargets const* targets, Aura* triggeredByAura)
             && GetCurrentContainer() == CURRENT_GENERIC_SPELL)
             cast(true);
     }
-	return uint32(SPELL_CAST_OK);
+    return uint32(SPELL_CAST_OK);
 }
 
 void Spell::cancel()
@@ -3356,22 +3356,22 @@ void Spell::cast(bool skipCheck)
 
     }
 
-	if (Player* playerCaster = m_caster->ToPlayer())
-	{
-		// now that we've done the basic check, now run the scripts
-		// should be done before the spell is actually executed
-		// sScriptMgr->OnPlayerSpellCast(playerCaster, this, skipCheck);
+    if (Player* playerCaster = m_caster->ToPlayer())
+    {
+        // now that we've done the basic check, now run the scripts
+        // should be done before the spell is actually executed
+        // sScriptMgr->OnPlayerSpellCast(playerCaster, this, skipCheck);
 
-		// As of 3.0.2 pets begin attacking their owner's target immediately
-		// Let any pets know we've attacked something. Check DmgClass for harmful spells only
-		// This prevents spells such as Hunter's Mark from triggering pet attack
-		if (this->GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE)
+        // As of 3.0.2 pets begin attacking their owner's target immediately
+        // Let any pets know we've attacked something. Check DmgClass for harmful spells only
+        // This prevents spells such as Hunter's Mark from triggering pet attack
+        if (this->GetSpellInfo()->DmgClass != SPELL_DAMAGE_CLASS_NONE)
             if (Unit* unitTarget = m_targets.GetUnitTarget())
                 for (Unit* controlled : playerCaster->m_Controlled)
                     if (Creature* cControlled = controlled->ToCreature())
                         if (cControlled->IsAIEnabled)
                             cControlled->AI()->OwnerAttacked(unitTarget);
-	}
+    }
 
     SetExecutedCurrently(true);
     SpellCastResult castResult = SPELL_CAST_OK;
@@ -3986,15 +3986,15 @@ void Spell::finish(bool ok, bool cancelChannel)
     if(!m_caster->IsNonMeleeSpellCast(false, false, true))
         m_caster->ClearUnitState(UNIT_STATE_CASTING);
 
-	// Unsummon summon as possessed creatures on spell cancel
-	if (m_spellInfo->IsChanneled() && m_caster->GetTypeId() == TYPEID_PLAYER)
-	{
-		if (Unit* charm = m_caster->GetCharm())
-			if (charm->GetTypeId() == TYPEID_UNIT
-				&& charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET)
-				&& charm->GetUInt32Value(UNIT_CREATED_BY_SPELL) == m_spellInfo->Id)
-				((Puppet*)charm)->UnSummon();
-	}
+    // Unsummon summon as possessed creatures on spell cancel
+    if (m_spellInfo->IsChanneled() && m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        if (Unit* charm = m_caster->GetCharm())
+            if (charm->GetTypeId() == TYPEID_UNIT
+                && charm->ToCreature()->HasUnitTypeMask(UNIT_MASK_PUPPET)
+                && charm->GetUInt32Value(UNIT_CREATED_BY_SPELL) == m_spellInfo->Id)
+                ((Puppet*)charm)->UnSummon();
+    }
 
     if (m_caster->GetTypeId() == TYPEID_UNIT && (m_caster->ToCreature())->IsAIEnabled)
         (m_caster->ToCreature())->AI()->OnSpellFinish(m_caster, m_spellInfo->Id, m_targets.GetUnitTarget(), ok);
@@ -4058,182 +4058,182 @@ void Spell::finish(bool ok, bool cancelChannel)
 
 void Spell::WriteCastResultInfo(WorldPacket& data, Player* caster, SpellInfo const* spellInfo, uint8 castCount, SpellCastResult result, /*SpellCustomErrors customError, */ uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/)
 {
-	data << uint32(spellInfo->Id);
-	data << uint8(result);                              // problem
-	data << uint8(castCount);                        // single cast or multi 2.3 (0/1)
-	switch (result)
-	{
-	case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
-		if (param1)
-			data << uint32(*param1);
-		else
-			data << uint32(spellInfo->RequiresSpellFocus);
-		break;
-	case SPELL_FAILED_REQUIRES_AREA:
-		// hardcode areas limitation case
-		if (param1)
-			data << uint32(*param1);
-		else
-		{
-			switch (spellInfo->Id)
-			{
-			case 41617:                             // Cenarion Mana Salve
-			case 41619:                             // Cenarion Healing Salve
-				data << uint32(3905);
-				break;
-			case 41618:                             // Bottled Nethergon Energy
-			case 41620:                             // Bottled Nethergon Vapor
-				data << uint32(3842);
-				break;
-			case 45373:                             // Bloodberry Elixir
-				data << uint32(4075);
-				break;
-			default:                                // default case
-				data << uint32(spellInfo->AreaId);
-				break;
-			}
-		}
-		break;
-	case SPELL_FAILED_TOTEMS:
-		if (param1)
-		{
-			data << uint32(*param1);
-			if (param2)
-				data << uint32(*param2);
-		}
-		else {
-			if (spellInfo->Totem[0])
-				data << uint32(spellInfo->Totem[0]);
-			if (spellInfo->Totem[1])
-				data << uint32(spellInfo->Totem[1]);
-		}
-		break;
-	case SPELL_FAILED_TOTEM_CATEGORY:
-		if (param1)
-		{
-			data << uint32(*param1);
-			if (param2)
-				data << uint32(*param2);
-		}
-		else {
-			if (spellInfo->TotemCategory[0])
-				data << uint32(spellInfo->TotemCategory[0]);
-			if (spellInfo->TotemCategory[1])
-				data << uint32(spellInfo->TotemCategory[1]);
-		}
-		break;
-	case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
-		if (param1)
-			data << uint32(*param1);
-		else {
-			data << uint32(spellInfo->EquippedItemClass);
-			data << uint32(spellInfo->EquippedItemSubClassMask);
-			data << uint32(spellInfo->EquippedItemInventoryTypeMask);
-		}
-		break;
+    data << uint32(spellInfo->Id);
+    data << uint8(result);                              // problem
+    data << uint8(castCount);                        // single cast or multi 2.3 (0/1)
+    switch (result)
+    {
+    case SPELL_FAILED_REQUIRES_SPELL_FOCUS:
+        if (param1)
+            data << uint32(*param1);
+        else
+            data << uint32(spellInfo->RequiresSpellFocus);
+        break;
+    case SPELL_FAILED_REQUIRES_AREA:
+        // hardcode areas limitation case
+        if (param1)
+            data << uint32(*param1);
+        else
+        {
+            switch (spellInfo->Id)
+            {
+            case 41617:                             // Cenarion Mana Salve
+            case 41619:                             // Cenarion Healing Salve
+                data << uint32(3905);
+                break;
+            case 41618:                             // Bottled Nethergon Energy
+            case 41620:                             // Bottled Nethergon Vapor
+                data << uint32(3842);
+                break;
+            case 45373:                             // Bloodberry Elixir
+                data << uint32(4075);
+                break;
+            default:                                // default case
+                data << uint32(spellInfo->AreaId);
+                break;
+            }
+        }
+        break;
+    case SPELL_FAILED_TOTEMS:
+        if (param1)
+        {
+            data << uint32(*param1);
+            if (param2)
+                data << uint32(*param2);
+        }
+        else {
+            if (spellInfo->Totem[0])
+                data << uint32(spellInfo->Totem[0]);
+            if (spellInfo->Totem[1])
+                data << uint32(spellInfo->Totem[1]);
+        }
+        break;
+    case SPELL_FAILED_TOTEM_CATEGORY:
+        if (param1)
+        {
+            data << uint32(*param1);
+            if (param2)
+                data << uint32(*param2);
+        }
+        else {
+            if (spellInfo->TotemCategory[0])
+                data << uint32(spellInfo->TotemCategory[0]);
+            if (spellInfo->TotemCategory[1])
+                data << uint32(spellInfo->TotemCategory[1]);
+        }
+        break;
+    case SPELL_FAILED_EQUIPPED_ITEM_CLASS:
+        if (param1)
+            data << uint32(*param1);
+        else {
+            data << uint32(spellInfo->EquippedItemClass);
+            data << uint32(spellInfo->EquippedItemSubClassMask);
+            data << uint32(spellInfo->EquippedItemInventoryTypeMask);
+        }
+        break;
 #ifdef LICH_KING
-	case SPELL_FAILED_TOO_MANY_OF_ITEM:
-		if (param1)
-			data << uint32(*param1);
-		else
-		{
-			uint32 item = 0;
-			for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS && !item; ++effIndex)
-				if (uint32 itemType = spellInfo->Effects[effIndex].ItemType)
-					item = itemType;
+    case SPELL_FAILED_TOO_MANY_OF_ITEM:
+        if (param1)
+            data << uint32(*param1);
+        else
+        {
+            uint32 item = 0;
+            for (uint8 effIndex = 0; effIndex < MAX_SPELL_EFFECTS && !item; ++effIndex)
+                if (uint32 itemType = spellInfo->Effects[effIndex].ItemType)
+                    item = itemType;
 
-			ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
-			if (proto && proto->ItemLimitCategory)
-				data << uint32(proto->ItemLimitCategory);
-		}
-		break;
-	case SPELL_FAILED_CUSTOM_ERROR:
-		data << uint32(customError);
-		break;
+            ItemTemplate const* proto = sObjectMgr->GetItemTemplate(item);
+            if (proto && proto->ItemLimitCategory)
+                data << uint32(proto->ItemLimitCategory);
+        }
+        break;
+    case SPELL_FAILED_CUSTOM_ERROR:
+        data << uint32(customError);
+        break;
 
-	case SPELL_FAILED_NEED_MORE_ITEMS:
-		if (param1 && param2)
-		{
-			data << uint32(*param1);
-			data << uint32(*param2);
-		}
-		else
-		{
-			data << uint32(0); // Item entry
-			data << uint32(0); // Count
-		}
-		break;
-	case SPELL_FAILED_FISHING_TOO_LOW:
-		if (param1)
-			data << uint32(*param1);
-		else
-			data << uint32(0); // Skill level
-		break;
-	case SPELL_FAILED_NEED_EXOTIC_AMMO:
-		if (param1)
-			data << uint32(*param1);
-		else
-			data << uint32(spellInfo->EquippedItemSubClassMask);
-		break;
+    case SPELL_FAILED_NEED_MORE_ITEMS:
+        if (param1 && param2)
+        {
+            data << uint32(*param1);
+            data << uint32(*param2);
+        }
+        else
+        {
+            data << uint32(0); // Item entry
+            data << uint32(0); // Count
+        }
+        break;
+    case SPELL_FAILED_FISHING_TOO_LOW:
+        if (param1)
+            data << uint32(*param1);
+        else
+            data << uint32(0); // Skill level
+        break;
+    case SPELL_FAILED_NEED_EXOTIC_AMMO:
+        if (param1)
+            data << uint32(*param1);
+        else
+            data << uint32(spellInfo->EquippedItemSubClassMask);
+        break;
 #endif
-	case SPELL_FAILED_PREVENTED_BY_MECHANIC: //BC OK?
-		if (param1)
-			data << uint32(*param1);
-		else
-			data << uint32(spellInfo->Mechanic);
-		break;
-	case SPELL_FAILED_MIN_SKILL: //BC OK?
-		if (param1 && param2)
-		{
-			data << uint32(*param1);
-			data << uint32(*param2);
-		}
-		else
-		{
-			data << uint32(0); // SkillLine.dbc Id
-			data << uint32(0); // Amount
-		}
-		break;
-	case SPELL_FAILED_REAGENTS: //BC OK?
-	{
-		if (param1)
-			data << uint32(*param1);
-		else
-		{
-			uint32 missingItem = 0;
-			for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
-			{
-				if (spellInfo->Reagent[i] <= 0)
-					continue;
+    case SPELL_FAILED_PREVENTED_BY_MECHANIC: //BC OK?
+        if (param1)
+            data << uint32(*param1);
+        else
+            data << uint32(spellInfo->Mechanic);
+        break;
+    case SPELL_FAILED_MIN_SKILL: //BC OK?
+        if (param1 && param2)
+        {
+            data << uint32(*param1);
+            data << uint32(*param2);
+        }
+        else
+        {
+            data << uint32(0); // SkillLine.dbc Id
+            data << uint32(0); // Amount
+        }
+        break;
+    case SPELL_FAILED_REAGENTS: //BC OK?
+    {
+        if (param1)
+            data << uint32(*param1);
+        else
+        {
+            uint32 missingItem = 0;
+            for (uint32 i = 0; i < MAX_SPELL_REAGENTS; i++)
+            {
+                if (spellInfo->Reagent[i] <= 0)
+                    continue;
 
-				uint32 itemid = spellInfo->Reagent[i];
-				uint32 itemcount = spellInfo->ReagentCount[i];
+                uint32 itemid = spellInfo->Reagent[i];
+                uint32 itemcount = spellInfo->ReagentCount[i];
 
-				if (!caster->HasItemCount(itemid, itemcount))
-				{
-					missingItem = itemid;
-					break;
-				}
-			}
+                if (!caster->HasItemCount(itemid, itemcount))
+                {
+                    missingItem = itemid;
+                    break;
+                }
+            }
 
-			data << uint32(missingItem);  // first missing item
-		}
-		break;
-	}
-	default:
-		break;
-	}
+            data << uint32(missingItem);  // first missing item
+        }
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void Spell::SendCastResult(Player* caster, SpellInfo const* spellInfo, uint8 castCount, SpellCastResult result, /*SpellCustomErrors customError,*/ uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/)
 {
-	if (result == SPELL_CAST_OK)
-		return;
+    if (result == SPELL_CAST_OK)
+        return;
 
-	WorldPacket data(SMSG_CAST_FAILED, 1 + 4 + 1);
-	WriteCastResultInfo(data, caster, spellInfo, castCount, result, /* customError, */param1, param2);
+    WorldPacket data(SMSG_CAST_FAILED, 1 + 4 + 1);
+    WriteCastResultInfo(data, caster, spellInfo, castCount, result, /* customError, */param1, param2);
 
-	caster->SendDirectMessage(&data);
+    caster->SendDirectMessage(&data);
 }
 
 void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/, uint32* param2 /*= nullptr*/) const
@@ -4253,7 +4253,7 @@ void Spell::SendCastResult(SpellCastResult result, uint32* param1 /*= nullptr*/,
     if(result != SPELL_CAST_OK)
     {
         WorldPacket data(SMSG_CAST_FAILED, (4+1+1));
-		SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, /*m_customError, */ param1, param2);
+        SendCastResult(m_caster->ToPlayer(), m_spellInfo, m_cast_count, result, /*m_customError, */ param1, param2);
     }
     else
     {
@@ -5795,7 +5795,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             }
             case SPELL_EFFECT_RESURRECT_PET:
             {
-				Creature* pet = m_caster->GetGuardianPet();
+                Creature* pet = m_caster->GetGuardianPet();
                 if(!pet)
                     return SPELL_FAILED_NO_PET;
 
@@ -5809,7 +5809,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             // These won't show up in m_caster->GetMinionGUID()
             case SPELL_EFFECT_SUMMON:
             {
-			 SummonPropertiesEntry const* SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->Effects[i].MiscValueB);
+             SummonPropertiesEntry const* SummonProperties = sSummonPropertiesStore.LookupEntry(m_spellInfo->Effects[i].MiscValueB);
                 if (!SummonProperties)
                     break;
                 switch (SummonProperties->Category)
@@ -5822,11 +5822,11 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (m_caster->GetCharmGUID())
                             return SPELL_FAILED_ALREADY_HAVE_CHARM;
                         break;
-					case SUMMON_CATEGORY_ALLY:
-						//hack for?
-						if (m_spellInfo->Id == 13166 && m_caster && m_caster->GetMapId() == 580)
-							return SPELL_FAILED_TRY_AGAIN;
-						break;
+                    case SUMMON_CATEGORY_ALLY:
+                        //hack for?
+                        if (m_spellInfo->Id == 13166 && m_caster && m_caster->GetMapId() == 580)
+                            return SPELL_FAILED_TRY_AGAIN;
+                        break;
                 }
                 break;
             }
@@ -7529,15 +7529,15 @@ bool SpellEvent::IsDeletable() const
 bool ReflectEvent::Execute(uint64 e_time, uint32 p_time)
 {
     WorldObject* target = ObjectAccessor::GetWorldObject(*_caster, _targetGUID);
-	if (!target)
-		return true;
+    if (!target)
+        return true;
 
-	Unit* unit_target = target->ToUnit();
-	if (!unit_target)
-		return true;
+    Unit* unit_target = target->ToUnit();
+    if (!unit_target)
+        return true;
 
     // Start triggers for remove charges if need (trigger only for victim, and mark as active spell)
-	_caster->ProcDamageAndSpell(unit_target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, _spellInfo);
+    _caster->ProcDamageAndSpell(unit_target, PROC_FLAG_NONE, PROC_FLAG_TAKEN_NEGATIVE_SPELL_HIT, PROC_EX_REFLECT, 1, BASE_ATTACK, _spellInfo);
     // FIXME: Add a flag on unit itself, not to setRemoveReflect if unit is already flagged for it (prevent infinite delay on reflect lolz)
     if (Spell* sp = _caster->m_currentSpells[CURRENT_CHANNELED_SPELL])
         sp->setRemoveReflect();
@@ -7580,7 +7580,7 @@ void Spell::HandleLaunchPhase()
     }
 #endif
 
-	PrepareTargetProcessing();
+    PrepareTargetProcessing();
 
     bool firstTarget = true;
     for (auto & target : m_UniqueTargetInfo)
@@ -7618,7 +7618,7 @@ void Spell::HandleLaunchPhase()
         firstTarget = false;
     }
 
-	FinishTargetProcessing();
+    FinishTargetProcessing();
 }
 
 void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier, bool firstTarget)
@@ -7650,8 +7650,8 @@ void Spell::DoAllEffectOnLaunchTarget(TargetInfo& targetInfo, float* multiplier,
                 {
                     m_damage = unit->CalculateAOEDamageReduction(m_damage, m_spellInfo->SchoolMask, m_caster);
 
-					// Handle area damage cap
-					//gamepedia: "Since patch 2.2.0, most area effect damage effects have an 'area damage cap' which limits the potency of the spell if used against a large number of targets simultaneously"
+                    // Handle area damage cap
+                    //gamepedia: "Since patch 2.2.0, most area effect damage effects have an 'area damage cap' which limits the potency of the spell if used against a large number of targets simultaneously"
                     if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     {
                         uint32 targetAmount = m_UniqueTargetInfo.size();
@@ -8080,7 +8080,7 @@ bool Spell::CallScriptEffectHandlers(SpellEffIndex effIndex, SpellEffectHandleMo
 
     for (auto & m_loadedScript : m_loadedScripts)
     {
-		HookList<SpellScript::EffectHandler>::iterator effItr, effEndItr;
+        HookList<SpellScript::EffectHandler>::iterator effItr, effEndItr;
         SpellScriptHookType hookType;
         switch (mode)
         {

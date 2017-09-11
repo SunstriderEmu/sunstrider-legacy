@@ -206,16 +206,16 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
             {
                 if (IsUnit(target))
                 {
-					if (e.action.sound.onlySelf)
-					{
-						if (Player* p = target->ToPlayer())
-							p->PlayDirectSound(e.action.sound.sound, p);
-					}
-					else {
-						target->PlayDirectSound(e.action.sound.sound);
-					}
+                    if (e.action.sound.onlySelf)
+                    {
+                        if (Player* p = target->ToPlayer())
+                            p->PlayDirectSound(e.action.sound.sound, p);
+                    }
+                    else {
+                        target->PlayDirectSound(e.action.sound.sound);
+                    }
                     TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_SOUND: target: %s (GuidLow: %u), sound: %u, onlyself: %u",
-						target->GetName().c_str(), target->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
+                        target->GetName().c_str(), target->GetGUIDLow(), e.action.sound.sound, e.action.sound.onlySelf);
                 }
             }
 

@@ -3,10 +3,10 @@
 
 bool AreaTableEntry::IsSanctuary() const
 {
-	if (mapid == 609)
-		return true;
-	if (sWorld->IsZoneSanctuary(ID))
-		return true;
+    if (mapid == 609)
+        return true;
+    if (sWorld->IsZoneSanctuary(ID))
+        return true;
 
-	return (flags & AREA_FLAG_SANCTUARY);
+    return (flags & AREA_FLAG_SANCTUARY);
 }

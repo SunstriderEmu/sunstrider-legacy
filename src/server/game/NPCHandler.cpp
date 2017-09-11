@@ -327,12 +327,12 @@ void WorldSession::SendSpiritResurrect()
 
     // get corpse nearest graveyard
     WorldSafeLocsEntry const *corpseGrave = nullptr;
-	WorldLocation corpseLocation = _player->GetCorpseLocation();
-	if (_player->HasCorpse())
-	{
+    WorldLocation corpseLocation = _player->GetCorpseLocation();
+    if (_player->HasCorpse())
+    {
         corpseGrave = sObjectMgr->GetClosestGraveYard(
-			corpseLocation.GetPositionX(), corpseLocation.GetPositionY(), corpseLocation.GetPositionZ(), corpseLocation.GetMapId(), _player->GetTeam() );
-	}
+            corpseLocation.GetPositionX(), corpseLocation.GetPositionY(), corpseLocation.GetPositionZ(), corpseLocation.GetMapId(), _player->GetTeam() );
+    }
     // now can spawn bones
     _player->SpawnCorpseBones();
 

@@ -2316,13 +2316,13 @@ void SpellMgr::LoadSpellCustomAttr()
     }
 
     //hack for some totems/statue/standard. Some examples: SELECT * FROM spell_template WHERE effect1 = 28 AND effectMiscValueB1 = 121
-	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(121)))
-		properties->Type = SUMMON_TYPE_TOTEM;
+    if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(121)))
+        properties->Type = SUMMON_TYPE_TOTEM;
 #ifdef LICH_KING
-	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(647))) // 52893
-		properties->Type = SUMMON_TYPE_TOTEM;
-	if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(628))) // Hungry Plaguehound
-		properties->Category = SUMMON_CATEGORY_PET;
+    if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(647))) // 52893
+        properties->Type = SUMMON_TYPE_TOTEM;
+    if (SummonPropertiesEntry* properties = const_cast<SummonPropertiesEntry*>(sSummonPropertiesStore.LookupEntry(628))) // Hungry Plaguehound
+        properties->Category = SUMMON_CATEGORY_PET;
 #endif
 
 }

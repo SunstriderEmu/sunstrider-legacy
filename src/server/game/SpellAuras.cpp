@@ -497,8 +497,8 @@ PersistentAreaAura::PersistentAreaAura(SpellInfo const* spellproto, uint32 eff, 
 
 PersistentAreaAura::~PersistentAreaAura()
 {
-	for (auto itr : sourceDynObjects)
-		if (DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*m_target, itr))
+    for (auto itr : sourceDynObjects)
+        if (DynamicObject* dynObj = ObjectAccessor::GetDynamicObject(*m_target, itr))
             dynObj->RemoveAffected(m_target);
 }
 
@@ -3251,7 +3251,7 @@ void Aura::HandleBindSight(bool apply, bool Real)
     if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-	caster->ToPlayer()->SetViewpoint(m_target, apply);
+    caster->ToPlayer()->SetViewpoint(m_target, apply);
 }
 
 void Aura::HandleAuraTrackCreatures(bool apply, bool Real)
@@ -3287,7 +3287,7 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
     if(m_target->GetTypeId()==TYPEID_PLAYER)
     {
         if(Real)
-			m_target->UpdateObjectVisibility(); //update current vision
+            m_target->UpdateObjectVisibility(); //update current vision
     } else {
         return;
     }
@@ -3307,22 +3307,22 @@ void Aura::HandleAuraTrackStealthed(bool apply, bool Real)
 
 void Aura::HandleModStealthLevel(bool apply, bool Real)
 {
-	Unit* target = GetTarget();
-	StealthType type = StealthType(GetMiscValue());
+    Unit* target = GetTarget();
+    StealthType type = StealthType(GetMiscValue());
 
 
-	if (Real) 
-	{
-		//TC has not *5 here. Here I assume having 1 "stealth level" is being considered 1 level higher on stealth detection calculation
-		//Ismproved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
+    if (Real) 
+    {
+        //TC has not *5 here. Here I assume having 1 "stealth level" is being considered 1 level higher on stealth detection calculation
+        //Ismproved stealth for rogue and druid add 15 yards in total (15 points). Items with Increases your effective stealth level by 1 have 5.
 
-		if (apply)
-			target->m_stealth.AddValue(type, GetAmount() * 5); 
-		else
-			target->m_stealth.AddValue(type, -GetAmount() * 5);
+        if (apply)
+            target->m_stealth.AddValue(type, GetAmount() * 5); 
+        else
+            target->m_stealth.AddValue(type, -GetAmount() * 5);
 
-		m_target->UpdateObjectVisibility(); //update visibility for nearby units
-	}
+        m_target->UpdateObjectVisibility(); //update visibility for nearby units
+    }
 }
 
 void Aura::HandleAuraModScale(bool apply, bool Real)
@@ -3352,7 +3352,7 @@ void Aura::HandleModPossess(bool apply, bool Real)
         if (m_target == caster)
             TC_LOG_ERROR("FIXME", "HandleModPossess: unit " UI64FMTD " (typeId %u, entry %u) tried to charm itself", caster->GetGUID(), caster->GetTypeId(), caster->GetEntry());
         else
-			m_target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, this);
+            m_target->SetCharmedBy(caster, CHARM_TYPE_POSSESS, this);
     }
     else
     {
@@ -3380,40 +3380,40 @@ void Aura::HandleModPossessPet(bool apply, bool Real)
     if(!caster || caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-	if (m_target->GetTypeId() != TYPEID_UNIT || !m_target->IsPet())
-		return;
+    if (m_target->GetTypeId() != TYPEID_UNIT || !m_target->IsPet())
+        return;
 
-	Pet* pet = m_target->ToPet();
+    Pet* pet = m_target->ToPet();
 
     if(apply)
     {
         if(caster->GetPet() != pet)
             return;
 
-		// Must clear current motion or pet leashes back to owner after a few yards
-		//  when under spell 'Eyes of the Beast'
-		pet->GetMotionMaster()->Clear();
-		pet->SetCharmedBy(caster, CHARM_TYPE_POSSESS, this);
+        // Must clear current motion or pet leashes back to owner after a few yards
+        //  when under spell 'Eyes of the Beast'
+        pet->GetMotionMaster()->Clear();
+        pet->SetCharmedBy(caster, CHARM_TYPE_POSSESS, this);
     }
-	else
-	{
-		pet->RemoveCharmedBy(caster);
+    else
+    {
+        pet->RemoveCharmedBy(caster);
 
-		if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
-			pet->Remove(PET_SAVE_NOT_IN_SLOT, true);
-		else
-		{
-			// Reinitialize the pet bar and make the pet come back to the owner
-			(caster->ToPlayer())->PetSpellInitialize();
+        if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
+            pet->Remove(PET_SAVE_NOT_IN_SLOT, true);
+        else
+        {
+            // Reinitialize the pet bar and make the pet come back to the owner
+            (caster->ToPlayer())->PetSpellInitialize();
 
-			// Follow owner only if not fighting or owner didn't click "stay" at new location
-			// This may be confusing because pet bar shows "stay" when under the spell but it retains
-			//  the "follow" flag. Player MUST click "stay" while under the spell.
-			if (!pet->GetVictim() && !pet->GetCharmInfo()->HasCommandState(COMMAND_STAY))
-			{
-				pet->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, pet->GetFollowAngle());
-			}
-		}
+            // Follow owner only if not fighting or owner didn't click "stay" at new location
+            // This may be confusing because pet bar shows "stay" when under the spell but it retains
+            //  the "follow" flag. Player MUST click "stay" while under the spell.
+            if (!pet->GetVictim() && !pet->GetCharmInfo()->HasCommandState(COMMAND_STAY))
+            {
+                pet->GetMotionMaster()->MoveFollow(caster, PET_FOLLOW_DIST, pet->GetFollowAngle());
+            }
+        }
     }
 }
 
@@ -3434,7 +3434,7 @@ void Aura::HandleModCharm(bool apply, bool Real)
                 return;
         }
 
-		m_target->SetCharmedBy(caster, CHARM_TYPE_CHARM, this);
+        m_target->SetCharmedBy(caster, CHARM_TYPE_CHARM, this);
     }
     else
         m_target->RemoveCharmedBy(caster);
@@ -3638,43 +3638,43 @@ void Aura::HandleAuraModStun(bool apply, bool Real)
 
 void Aura::HandleModStealthDetect(bool apply, bool Real)
 {
-	if (!Real)
-		return;
+    if (!Real)
+        return;
 
-	Unit* target = GetTarget();
-	StealthType type = StealthType(GetMiscValue());
+    Unit* target = GetTarget();
+    StealthType type = StealthType(GetMiscValue());
 
-	if (apply)
-	{
-		target->m_stealthDetect.AddFlag(type);
-		target->m_stealthDetect.AddValue(type, GetAmount());
-	}
-	else
-	{
-		if (!target->HasAuraType(SPELL_AURA_MOD_STEALTH_DETECT))
-			target->m_stealthDetect.DelFlag(type);
+    if (apply)
+    {
+        target->m_stealthDetect.AddFlag(type);
+        target->m_stealthDetect.AddValue(type, GetAmount());
+    }
+    else
+    {
+        if (!target->HasAuraType(SPELL_AURA_MOD_STEALTH_DETECT))
+            target->m_stealthDetect.DelFlag(type);
 
-		target->m_stealthDetect.AddValue(type, -GetAmount());
-	}
+        target->m_stealthDetect.AddValue(type, -GetAmount());
+    }
 
-	// call functions which may have additional effects after chainging state of unit
-	target->UpdateObjectVisibility();
+    // call functions which may have additional effects after chainging state of unit
+    target->UpdateObjectVisibility();
 }
 
 void Aura::HandleModStealth(bool apply, bool Real)
 {
-	if (!Real)
-		return;
+    if (!Real)
+        return;
 
-	Unit* target = GetTarget();
-	StealthType type = StealthType(GetMiscValue());
+    Unit* target = GetTarget();
+    StealthType type = StealthType(GetMiscValue());
 
     if(apply)
     {
         if(m_target->GetTypeId()==TYPEID_PLAYER)
         {
-			target->m_stealth.AddFlag(type);
-			target->m_stealth.AddValue(type, GetAmount());
+            target->m_stealth.AddFlag(type);
+            target->m_stealth.AddValue(type, GetAmount());
 
             m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);  // drop flag at stealth in bg
         }
@@ -3685,12 +3685,12 @@ void Aura::HandleModStealth(bool apply, bool Real)
     }
     else
     {
-		target->m_stealth.AddValue(type, -GetAmount());
+        target->m_stealth.AddValue(type, -GetAmount());
 
         // if last SPELL_AURA_MOD_STEALTH and no GM invisibility
         if(!m_target->HasAuraType(SPELL_AURA_MOD_STEALTH))
         {
-			target->m_stealth.DelFlag(type);
+            target->m_stealth.DelFlag(type);
 
             m_target->RemoveStandFlags(UNIT_STAND_FLAGS_CREEP);
             if(m_target->GetTypeId()==TYPEID_PLAYER)
@@ -3720,7 +3720,7 @@ void Aura::HandleModStealth(bool apply, bool Real)
 
 void Aura::HandleModInvisibility(bool apply, bool Real)
 {
-	InvisibilityType type = InvisibilityType(GetMiscValue());
+    InvisibilityType type = InvisibilityType(GetMiscValue());
 
     if(apply)
     {
@@ -3729,77 +3729,77 @@ void Aura::HandleModInvisibility(bool apply, bool Real)
         m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION); // also drop flag at invisibiliy in bg
 
         if(Real && m_target->GetTypeId()==TYPEID_PLAYER)
-			m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+            m_target->SetByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
-		m_target->m_invisibility.AddFlag(type);
-		m_target->m_invisibility.AddValue(type, GetAmount());
+        m_target->m_invisibility.AddFlag(type);
+        m_target->m_invisibility.AddValue(type, GetAmount());
     }
     else
     {
-		if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
-		{
-			// if not have different invisibility auras.
-			// remove glow vision
-			if (Real && m_target->GetTypeId() == TYPEID_PLAYER)
-				m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
+        if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY))
+        {
+            // if not have different invisibility auras.
+            // remove glow vision
+            if (Real && m_target->GetTypeId() == TYPEID_PLAYER)
+                m_target->RemoveByteFlag(PLAYER_FIELD_BYTES2, PLAYER_FIELD_BYTES_2_OFFSET_AURA_VISION, PLAYER_FIELD_BYTE2_INVISIBILITY_GLOW);
 
-			m_target->m_invisibility.DelFlag(type);
-		}
-		else {
-			bool found = false;
-			Unit::AuraEffectList const& invisAuras = m_target->GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
-			for (Unit::AuraEffectList::const_iterator i = invisAuras.begin(); i != invisAuras.end(); ++i)
-			{
-				if (GetMiscValue() == (*i)->GetMiscValue())
-				{
-					found = true;
-					break;
-				}
-			}
-			if (!found)
-				m_target->m_invisibility.DelFlag(type);
-		}
+            m_target->m_invisibility.DelFlag(type);
+        }
+        else {
+            bool found = false;
+            Unit::AuraEffectList const& invisAuras = m_target->GetAuraEffectsByType(SPELL_AURA_MOD_INVISIBILITY);
+            for (Unit::AuraEffectList::const_iterator i = invisAuras.begin(); i != invisAuras.end(); ++i)
+            {
+                if (GetMiscValue() == (*i)->GetMiscValue())
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                m_target->m_invisibility.DelFlag(type);
+        }
 
-		m_target->m_invisibility.AddValue(type, -GetAmount());
-	}
+        m_target->m_invisibility.AddValue(type, -GetAmount());
+    }
 
-	if(apply && Real)
-		m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
+    if(apply && Real)
+        m_target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
 
-	m_target->UpdateObjectVisibility();
+    m_target->UpdateObjectVisibility();
 
     // recalculate value at modifier remove (current aura already removed)
-	/*
+    /*
     m_target->m_invisibilityMask = 0;
     Unit::AuraList const& auras = m_target->GetAurasByType(SPELL_AURA_MOD_INVISIBILITY);
     for(auto itr = auras.begin(); itr != auras.end(); ++itr)
         m_target->m_invisibilityMask |= (1 << m_modifier.m_miscvalue);
-	*/
+    */
     // only at real aura remove and if not have different invisibility auras.
 }
 
 void Aura::HandleModInvisibilityDetect(bool apply, bool Real)
 {
-	if (!Real)
-		return;
+    if (!Real)
+        return;
 
-	InvisibilityType type = InvisibilityType(GetMiscValue());
+    InvisibilityType type = InvisibilityType(GetMiscValue());
 
-	if (apply)
-	{
-		m_target->m_invisibilityDetect.AddFlag(type);
-		m_target->m_invisibilityDetect.AddValue(type, GetAmount());
-	}
-	else
-	{
-		if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY_DETECTION))
-			m_target->m_invisibilityDetect.DelFlag(type);
+    if (apply)
+    {
+        m_target->m_invisibilityDetect.AddFlag(type);
+        m_target->m_invisibilityDetect.AddValue(type, GetAmount());
+    }
+    else
+    {
+        if (!m_target->HasAuraType(SPELL_AURA_MOD_INVISIBILITY_DETECTION))
+            m_target->m_invisibilityDetect.DelFlag(type);
 
-		m_target->m_invisibilityDetect.AddValue(type, -GetAmount());
-	}
+        m_target->m_invisibilityDetect.AddValue(type, -GetAmount());
+    }
 
-	// call functions which may have additional effects after chainging state of unit
-	m_target->UpdateObjectVisibility();
+    // call functions which may have additional effects after chainging state of unit
+    m_target->UpdateObjectVisibility();
 }
 
 void Aura::HandleAuraModRoot(bool apply, bool Real)
@@ -4599,18 +4599,18 @@ void Aura::HandleAuraModResistanceExclusive(bool apply, bool Real)
 {
     for(int8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL;x++)
     {
-		if (GetMiscValue() & (1 << x))
-		{
-			int32 amount = m_target->GetMaxPositiveAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE, 1 << x, this);
-			if (amount < GetAmount())
-			{
-				float value = float(GetAmount() - amount);
-				m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, value, apply);
-				if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
-					m_target->UpdateResistanceBuffModsMod(SpellSchools(x));
-			}
+        if (GetMiscValue() & (1 << x))
+        {
+            int32 amount = m_target->GetMaxPositiveAuraModifierByMiscMask(SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE, 1 << x, this);
+            if (amount < GetAmount())
+            {
+                float value = float(GetAmount() - amount);
+                m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_VALUE, value, apply);
+                if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
+                    m_target->UpdateResistanceBuffModsMod(SpellSchools(x));
+            }
 
-		}
+        }
     }
 }
 
@@ -4620,9 +4620,9 @@ void Aura::HandleAuraModResistance(bool apply, bool Real)
     {
          if (GetMiscValue() & (1 << x))
         {
-			 m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
+             m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
             if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
-				m_target->UpdateResistanceBuffModsMod(SpellSchools(x));
+                m_target->UpdateResistanceBuffModsMod(SpellSchools(x));
         }
     }
 }
@@ -4632,33 +4632,33 @@ void Aura::HandleAuraModBaseResistancePCT(bool apply, bool Real)
     // only players have base stats
     if(m_target->GetTypeId() != TYPEID_PLAYER)
     {
-		//pets only have base armor
-		if (m_target->IsPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
-		{
-			if (apply)
-				m_target->ApplyStatPctModifier(UNIT_MOD_ARMOR, BASE_PCT, float(GetAmount()));
-			else
-			{
-				float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, SPELL_SCHOOL_MASK_NORMAL);
-				m_target->SetStatPctModifier(UNIT_MOD_ARMOR, BASE_PCT, amount);
-			}
-		}
+        //pets only have base armor
+        if (m_target->IsPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+        {
+            if (apply)
+                m_target->ApplyStatPctModifier(UNIT_MOD_ARMOR, BASE_PCT, float(GetAmount()));
+            else
+            {
+                float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, SPELL_SCHOOL_MASK_NORMAL);
+                m_target->SetStatPctModifier(UNIT_MOD_ARMOR, BASE_PCT, amount);
+            }
+        }
     }
     else
     {
-		for (uint8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL; ++x)
-		{
-			if (GetMiscValue() & (1 << x))
-			{
-				if (apply)
-					m_target->ApplyStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(GetAmount()));
-				else
-				{
-					float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, 1 << x);
-					m_target->SetStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, amount);
-				}
-			}
-		}
+        for (uint8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL; ++x)
+        {
+            if (GetMiscValue() & (1 << x))
+            {
+                if (apply)
+                    m_target->ApplyStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(GetAmount()));
+                else
+                {
+                    float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_BASE_RESISTANCE_PCT, 1 << x);
+                    m_target->SetStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, amount);
+                }
+            }
+        }
     }
 }
 
@@ -4668,13 +4668,13 @@ void Aura::HandleModResistancePercent(bool apply, bool Real)
     {
         if (GetMiscValue() & int32(1<<i))
         {
-			float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1 << i);
-			if (m_target->GetPctModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_PCT) == amount)
-				continue;
+            float amount = m_target->GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_RESISTANCE_PCT, 1 << i);
+            if (m_target->GetPctModifierValue(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_PCT) == amount)
+                continue;
 
-			m_target->SetStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_PCT, amount);
-			if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
-				m_target->UpdateResistanceBuffModsMod(SpellSchools(i));
+            m_target->SetStatPctModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_PCT, amount);
+            if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
+                m_target->UpdateResistanceBuffModsMod(SpellSchools(i));
         }
     }
 }
@@ -4686,13 +4686,13 @@ void Aura::HandleModBaseResistance(bool apply, bool Real)
     {
         //only pets have base stats
         if((m_target->ToCreature())->IsPet() && (m_modifier.m_miscvalue & SPELL_SCHOOL_MASK_NORMAL))
-			m_target->HandleStatFlatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(GetAmount()), apply);
+            m_target->HandleStatFlatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(GetAmount()), apply);
     }
     else
     {
         for(int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; i++)
             if(m_modifier.m_miscvalue & (1<<i))
-				m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_VALUE, float(GetAmount()), apply);
+                m_target->HandleStatFlatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_VALUE, float(GetAmount()), apply);
     }
 }
 
@@ -4708,63 +4708,63 @@ void Aura::HandleAuraModStat(bool apply, bool Real)
         return;
     }
 
-	Unit* target = m_target; //aurApp->GetTarget();
-	/* TODO STACKS int32 spellGroupVal = target->GetHighestExclusiveSameEffectSpellGroupValue(this, SPELL_AURA_MOD_STAT, true, GetMiscValue());
-	if (abs(spellGroupVal) >= abs(GetAmount()))
-		return;
+    Unit* target = m_target; //aurApp->GetTarget();
+    /* TODO STACKS int32 spellGroupVal = target->GetHighestExclusiveSameEffectSpellGroupValue(this, SPELL_AURA_MOD_STAT, true, GetMiscValue());
+    if (abs(spellGroupVal) >= abs(GetAmount()))
+        return;
         */
 
     for(int32 i = STAT_STRENGTH; i < MAX_STATS; i++)
     {
-		// -1 or -2 is all stats (misc < -2 checked in function beginning)
-		if (GetMiscValue() < 0 || GetMiscValue() == i)
-		{
+        // -1 or -2 is all stats (misc < -2 checked in function beginning)
+        if (GetMiscValue() < 0 || GetMiscValue() == i)
+        {
             /* TODO STACKS
-			if (spellGroupVal)
-			{
-				target->HandleStatFlatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_VALUE, float(spellGroupVal), !apply);
-				if (target->GetTypeId() == TYPEID_PLAYER || target->IsPet())
-					target->UpdateStatBuffMod(Stats(i));
-			}
+            if (spellGroupVal)
+            {
+                target->HandleStatFlatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_VALUE, float(spellGroupVal), !apply);
+                if (target->GetTypeId() == TYPEID_PLAYER || target->IsPet())
+                    target->UpdateStatBuffMod(Stats(i));
+            }
             */
 
-			target->HandleStatFlatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_VALUE, float(GetAmount()), apply);
-			if (target->GetTypeId() == TYPEID_PLAYER || target->IsPet())
-				target->UpdateStatBuffMod(Stats(i));
-		}
+            target->HandleStatFlatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_VALUE, float(GetAmount()), apply);
+            if (target->GetTypeId() == TYPEID_PLAYER || target->IsPet())
+                target->UpdateStatBuffMod(Stats(i));
+        }
     }
 }
 
 void Aura::HandleModPercentStat(bool apply, bool Real)
 {
-	if (GetMiscValue() < -1 || GetMiscValue() > 4)
-	{
-		TC_LOG_ERROR("spells", "WARNING: Misc Value for SPELL_AURA_MOD_PERCENT_STAT not valid");
-		return;
-	}
+    if (GetMiscValue() < -1 || GetMiscValue() > 4)
+    {
+        TC_LOG_ERROR("spells", "WARNING: Misc Value for SPELL_AURA_MOD_PERCENT_STAT not valid");
+        return;
+    }
 
     // only players have base stats
     if (m_target->GetTypeId() != TYPEID_PLAYER)
         return;
 
-	for (int32 i = STAT_STRENGTH; i < MAX_STATS; ++i)
-	{
-		if (GetMiscValue() == i || GetMiscValue() == -1)
-		{
-			if (apply)
-				m_target->ApplyStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, float(GetAmount()));
-			else
-			{
-				float amount = m_target->GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [i](AuraEffect const* aurEff) -> bool
-				{
-					if (aurEff->GetMiscValue() == i || aurEff->GetMiscValue() == -1)
-						return true;
-					return false;
-				});
-				m_target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, amount);
-			}
-		}
-	}
+    for (int32 i = STAT_STRENGTH; i < MAX_STATS; ++i)
+    {
+        if (GetMiscValue() == i || GetMiscValue() == -1)
+        {
+            if (apply)
+                m_target->ApplyStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, float(GetAmount()));
+            else
+            {
+                float amount = m_target->GetTotalAuraMultiplier(SPELL_AURA_MOD_PERCENT_STAT, [i](AuraEffect const* aurEff) -> bool
+                {
+                    if (aurEff->GetMiscValue() == i || aurEff->GetMiscValue() == -1)
+                        return true;
+                    return false;
+                });
+                m_target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), BASE_PCT, amount);
+            }
+        }
+    }
 }
 
 void Aura::HandleModSpellDamagePercentFromStat(bool /*apply*/, bool Real)
@@ -4826,33 +4826,33 @@ void Aura::HandleModTotalPercentStat(bool apply, bool Real)
     }
 
     //save current and max HP before applying aura
-	float healthPct = m_target->GetHealthPct();
-	bool zeroHealth = !m_target->IsAlive();
+    float healthPct = m_target->GetHealthPct();
+    bool zeroHealth = !m_target->IsAlive();
 
     for (int32 i = STAT_STRENGTH; i < MAX_STATS; i++)
     {
-		if (GetMiscValue() == i || GetMiscValue() == -1) // affect the same stats
-		{
-			float amount = m_target->GetTotalAuraMultiplier(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, [i](AuraEffect const* aurEff) -> bool
-			{
-				if (aurEff->GetMiscValue() == i || aurEff->GetMiscValue() == -1)
-					return true;
-				return false;
-			});
+        if (GetMiscValue() == i || GetMiscValue() == -1) // affect the same stats
+        {
+            float amount = m_target->GetTotalAuraMultiplier(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, [i](AuraEffect const* aurEff) -> bool
+            {
+                if (aurEff->GetMiscValue() == i || aurEff->GetMiscValue() == -1)
+                    return true;
+                return false;
+            });
 
-			if (m_target->GetPctModifierValue(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT) == amount)
-				continue;
+            if (m_target->GetPctModifierValue(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT) == amount)
+                continue;
 
-			m_target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT, amount);
-			if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
-				m_target->UpdateStatBuffMod(Stats(i));
-		}
+            m_target->SetStatPctModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT, amount);
+            if (m_target->GetTypeId() == TYPEID_PLAYER || m_target->IsPet())
+                m_target->UpdateStatBuffMod(Stats(i));
+        }
     }
 
-	// recalculate current HP/MP after applying aura modifications (only for spells with SPELL_ATTR0_ABILITY 0x00000010 flag)
-	// this check is total bullshit i think
-	if ((GetMiscValue() == STAT_STAMINA || GetMiscValue() == -1) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_ABILITY))
-		m_target->SetHealth(std::max<uint32>(CalculatePct(m_target->GetMaxHealth(), healthPct), (zeroHealth ? 0 : 1)));
+    // recalculate current HP/MP after applying aura modifications (only for spells with SPELL_ATTR0_ABILITY 0x00000010 flag)
+    // this check is total bullshit i think
+    if ((GetMiscValue() == STAT_STAMINA || GetMiscValue() == -1) && GetSpellInfo()->HasAttribute(SPELL_ATTR0_ABILITY))
+        m_target->SetHealth(std::max<uint32>(CalculatePct(m_target->GetMaxHealth(), healthPct), (zeroHealth ? 0 : 1)));
 
 }
 
@@ -5568,8 +5568,8 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
     if(apply)
     {
         m_target->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
-		m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
-		m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
+        m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
+        m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_GHOST);
     }
     else
     {
@@ -5577,8 +5577,8 @@ void Aura::HandleAuraGhost(bool apply, bool Real)
             return;
 
         m_target->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
-		m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
-		m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+        m_target->m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
+        m_target->m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
     }
 }
 
@@ -6141,7 +6141,7 @@ void Aura::PeriodicTick()
             if (pdamage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
 
-			pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
+            pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, true);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
             break;
         }
@@ -6253,7 +6253,7 @@ void Aura::PeriodicTick()
             pdamage = (pdamage <= absorb+resist) ? 0 : (pdamage-absorb-resist);
             if (pdamage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
-			int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
+            int32 new_damage = pCaster->DealDamage(target, pdamage, &cleanDamage, DOT, spellProto->GetSchoolMask(), spellProto, false);
             pCaster->ProcDamageAndSpell(target, procAttacker, procVictim, procEx, pdamage, BASE_ATTACK, spellProto);
 
             if (!target->IsAlive() && pCaster->IsNonMeleeSpellCast(false))
@@ -6443,7 +6443,7 @@ void Aura::PeriodicTick()
                 m_target->AddThreat(pCaster, float(gain) * 0.5f, GetSpellInfo()->GetSchoolMask(), GetSpellInfo());
             }
 
-			//no procs?
+            //no procs?
 
             // Mark of Kaz'rogal
             if(GetId() == 31447 && m_target->GetPower(power) == 0)
@@ -6579,7 +6579,7 @@ void Aura::PeriodicTick()
             if (damageInfo.damage)
                 procVictim|=PROC_FLAG_TAKEN_ANY_DAMAGE;
 
-			pCaster->DealSpellDamage(&damageInfo, true);
+            pCaster->DealSpellDamage(&damageInfo, true);
             pCaster->ProcDamageAndSpell(damageInfo.target, procAttacker, procVictim, procEx, damageInfo.damage, BASE_ATTACK, spellProto);
             break;
         }
@@ -7071,7 +7071,7 @@ void Aura::HandleAOECharm(bool apply, bool Real)
     Unit* caster = GetCaster();
 
     if (apply)
-		m_target->SetCharmedBy(caster, CHARM_TYPE_CONVERT, this);
+        m_target->SetCharmedBy(caster, CHARM_TYPE_CONVERT, this);
     else
         m_target->RemoveCharmedBy(caster);
 }

@@ -984,14 +984,14 @@ void Item::BuildUpdate(UpdateDataMapType& data_map, UpdatePlayerSet&)
 
 void Item::AddToObjectUpdate()
 {
-	if (Player* owner = GetOwner())
-		owner->GetMap()->AddUpdateObject(this);
+    if (Player* owner = GetOwner())
+        owner->GetMap()->AddUpdateObject(this);
 }
 
 void Item::RemoveFromObjectUpdate()
 {
-	if (Player* owner = GetOwner())
-		owner->GetMap()->RemoveUpdateObject(this);
+    if (Player* owner = GetOwner())
+        owner->GetMap()->RemoveUpdateObject(this);
 }
 
 uint64 Item::GetOwnerGUID() const { return GetUInt64Value(ITEM_FIELD_OWNER); }

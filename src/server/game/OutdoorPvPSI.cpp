@@ -40,7 +40,7 @@ void OutdoorPvPSI::UpdateWorldState()
 
 bool OutdoorPvPSI::SetupOutdoorPvP()
 {
-	SetMapFromZone(OutdoorPvPSIBuffZones[0]);
+    SetMapFromZone(OutdoorPvPSIBuffZones[0]);
 
     for(uint32 OutdoorPvPSIBuffZone : OutdoorPvPSIBuffZones)
         sOutdoorPvPMgr->AddZone(OutdoorPvPSIBuffZone,this);

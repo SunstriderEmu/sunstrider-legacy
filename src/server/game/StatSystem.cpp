@@ -33,168 +33,168 @@
 
 void Unit::UpdateAllResistances()
 {
-	for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
-		UpdateResistances(i);
+    for (uint8 i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
+        UpdateResistances(i);
 }
 
 
 void Unit::UpdateDamagePhysical(WeaponAttackType attType)
 {
-	float minDamage = 0.0f;
-	float maxDamage = 0.0f;
+    float minDamage = 0.0f;
+    float maxDamage = 0.0f;
 
-	CalculateMinMaxDamage(attType, false, true, minDamage, maxDamage);
+    CalculateMinMaxDamage(attType, false, true, minDamage, maxDamage);
 
-	switch (attType)
-	{
-	case BASE_ATTACK:
-	default:
-		SetStatFloatValue(UNIT_FIELD_MINDAMAGE, minDamage);
-		SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxDamage);
-		break;
-	case OFF_ATTACK:
-		SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, minDamage);
-		SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, maxDamage);
-		break;
-	case RANGED_ATTACK:
-		SetStatFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, minDamage);
-		SetStatFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxDamage);
-		break;
-	}
+    switch (attType)
+    {
+    case BASE_ATTACK:
+    default:
+        SetStatFloatValue(UNIT_FIELD_MINDAMAGE, minDamage);
+        SetStatFloatValue(UNIT_FIELD_MAXDAMAGE, maxDamage);
+        break;
+    case OFF_ATTACK:
+        SetStatFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE, minDamage);
+        SetStatFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE, maxDamage);
+        break;
+    case RANGED_ATTACK:
+        SetStatFloatValue(UNIT_FIELD_MINRANGEDDAMAGE, minDamage);
+        SetStatFloatValue(UNIT_FIELD_MAXRANGEDDAMAGE, maxDamage);
+        break;
+    }
 }
 
 void Unit::HandleStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float amount, bool apply)
 {
-	if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_FLAT_END)
-	{
-		TC_LOG_ERROR("entities.unit", "ERROR in HandleStatFlatModifier(): non-existing UnitMods or wrong UnitModifierType!");
-		return;
-	}
+    if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_FLAT_END)
+    {
+        TC_LOG_ERROR("entities.unit", "ERROR in HandleStatFlatModifier(): non-existing UnitMods or wrong UnitModifierType!");
+        return;
+    }
 
-	if (!amount)
-		return;
+    if (!amount)
+        return;
 
-	switch (modifierType)
-	{
-	case BASE_VALUE:
-	case TOTAL_VALUE:
-		m_auraFlatModifiersGroup[unitMod][modifierType] += apply ? amount : -amount;
-		break;
-	default:
-		break;
-	}
+    switch (modifierType)
+    {
+    case BASE_VALUE:
+    case TOTAL_VALUE:
+        m_auraFlatModifiersGroup[unitMod][modifierType] += apply ? amount : -amount;
+        break;
+    default:
+        break;
+    }
 
-	UpdateUnitMod(unitMod);
+    UpdateUnitMod(unitMod);
 }
 
 void Unit::ApplyStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float pct)
 {
-	if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_PCT_END)
-	{
-		TC_LOG_ERROR("entities.unit", "ERROR in ApplyStatPctModifier(): non-existing UnitMods or wrong UnitModifierType!");
-		return;
-	}
+    if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_PCT_END)
+    {
+        TC_LOG_ERROR("entities.unit", "ERROR in ApplyStatPctModifier(): non-existing UnitMods or wrong UnitModifierType!");
+        return;
+    }
 
-	if (!pct)
-		return;
+    if (!pct)
+        return;
 
-	switch (modifierType)
-	{
-	case BASE_PCT:
-	case TOTAL_PCT:
-		AddPct(m_auraPctModifiersGroup[unitMod][modifierType], pct);
-		break;
-	default:
-		break;
-	}
+    switch (modifierType)
+    {
+    case BASE_PCT:
+    case TOTAL_PCT:
+        AddPct(m_auraPctModifiersGroup[unitMod][modifierType], pct);
+        break;
+    default:
+        break;
+    }
 
-	UpdateUnitMod(unitMod);
+    UpdateUnitMod(unitMod);
 }
 
 void Unit::SetStatFlatModifier(UnitMods unitMod, UnitModifierFlatType modifierType, float val)
 {
-	if (m_auraFlatModifiersGroup[unitMod][modifierType] == val)
-		return;
+    if (m_auraFlatModifiersGroup[unitMod][modifierType] == val)
+        return;
 
-	m_auraFlatModifiersGroup[unitMod][modifierType] = val;
-	UpdateUnitMod(unitMod);
+    m_auraFlatModifiersGroup[unitMod][modifierType] = val;
+    UpdateUnitMod(unitMod);
 }
 
 void Unit::SetStatPctModifier(UnitMods unitMod, UnitModifierPctType modifierType, float val)
 {
-	if (m_auraPctModifiersGroup[unitMod][modifierType] == val)
-		return;
+    if (m_auraPctModifiersGroup[unitMod][modifierType] == val)
+        return;
 
-	m_auraPctModifiersGroup[unitMod][modifierType] = val;
-	UpdateUnitMod(unitMod);
+    m_auraPctModifiersGroup[unitMod][modifierType] = val;
+    UpdateUnitMod(unitMod);
 }
 
 float Unit::GetFlatModifierValue(UnitMods unitMod, UnitModifierFlatType modifierType) const
 {
-	if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_FLAT_END)
-	{
-		TC_LOG_ERROR("entities.unit", "attempt to access non-existing modifier value from UnitMods!");
-		return 0.0f;
-	}
+    if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_FLAT_END)
+    {
+        TC_LOG_ERROR("entities.unit", "attempt to access non-existing modifier value from UnitMods!");
+        return 0.0f;
+    }
 
-	return m_auraFlatModifiersGroup[unitMod][modifierType];
+    return m_auraFlatModifiersGroup[unitMod][modifierType];
 }
 
 float Unit::GetPctModifierValue(UnitMods unitMod, UnitModifierPctType modifierType) const
 {
-	if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_PCT_END)
-	{
-		TC_LOG_ERROR("entities.unit", "attempt to access non-existing modifier value from UnitMods!");
-		return 0.0f;
-	}
+    if (unitMod >= UNIT_MOD_END || modifierType >= MODIFIER_TYPE_PCT_END)
+    {
+        TC_LOG_ERROR("entities.unit", "attempt to access non-existing modifier value from UnitMods!");
+        return 0.0f;
+    }
 
-	return m_auraPctModifiersGroup[unitMod][modifierType];
+    return m_auraPctModifiersGroup[unitMod][modifierType];
 }
 
 void Unit::UpdateUnitMod(UnitMods unitMod)
 {
-	if (!CanModifyStats())
-		return;
+    if (!CanModifyStats())
+        return;
 
-	switch (unitMod)
-	{
-	case UNIT_MOD_STAT_STRENGTH:
-	case UNIT_MOD_STAT_AGILITY:
-	case UNIT_MOD_STAT_STAMINA:
-	case UNIT_MOD_STAT_INTELLECT:
-	case UNIT_MOD_STAT_SPIRIT:         UpdateStats(GetStatByAuraGroup(unitMod));  break;
+    switch (unitMod)
+    {
+    case UNIT_MOD_STAT_STRENGTH:
+    case UNIT_MOD_STAT_AGILITY:
+    case UNIT_MOD_STAT_STAMINA:
+    case UNIT_MOD_STAT_INTELLECT:
+    case UNIT_MOD_STAT_SPIRIT:         UpdateStats(GetStatByAuraGroup(unitMod));  break;
 
-	case UNIT_MOD_ARMOR:               UpdateArmor();           break;
-	case UNIT_MOD_HEALTH:              UpdateMaxHealth();       break;
+    case UNIT_MOD_ARMOR:               UpdateArmor();           break;
+    case UNIT_MOD_HEALTH:              UpdateMaxHealth();       break;
 
-	case UNIT_MOD_MANA:
-	case UNIT_MOD_RAGE:
-	case UNIT_MOD_FOCUS:
-	case UNIT_MOD_ENERGY:
-	case UNIT_MOD_HAPPINESS:
+    case UNIT_MOD_MANA:
+    case UNIT_MOD_RAGE:
+    case UNIT_MOD_FOCUS:
+    case UNIT_MOD_ENERGY:
+    case UNIT_MOD_HAPPINESS:
 #ifdef LICH_KING
-	case UNIT_MOD_RUNE:
-	case UNIT_MOD_RUNIC_POWER:          
+    case UNIT_MOD_RUNE:
+    case UNIT_MOD_RUNIC_POWER:          
 #endif
                                        UpdateMaxPower(GetPowerTypeByAuraGroup(unitMod));          break;
 
-	case UNIT_MOD_RESISTANCE_HOLY:
-	case UNIT_MOD_RESISTANCE_FIRE:
-	case UNIT_MOD_RESISTANCE_NATURE:
-	case UNIT_MOD_RESISTANCE_FROST:
-	case UNIT_MOD_RESISTANCE_SHADOW:
-	case UNIT_MOD_RESISTANCE_ARCANE:   UpdateResistances(GetSpellSchoolByAuraGroup(unitMod));      break;
+    case UNIT_MOD_RESISTANCE_HOLY:
+    case UNIT_MOD_RESISTANCE_FIRE:
+    case UNIT_MOD_RESISTANCE_NATURE:
+    case UNIT_MOD_RESISTANCE_FROST:
+    case UNIT_MOD_RESISTANCE_SHADOW:
+    case UNIT_MOD_RESISTANCE_ARCANE:   UpdateResistances(GetSpellSchoolByAuraGroup(unitMod));      break;
 
-	case UNIT_MOD_ATTACK_POWER:        UpdateAttackPowerAndDamage();         break;
-	case UNIT_MOD_ATTACK_POWER_RANGED: UpdateAttackPowerAndDamage(true);     break;
+    case UNIT_MOD_ATTACK_POWER:        UpdateAttackPowerAndDamage();         break;
+    case UNIT_MOD_ATTACK_POWER_RANGED: UpdateAttackPowerAndDamage(true);     break;
 
-	case UNIT_MOD_DAMAGE_MAINHAND:     UpdateDamagePhysical(BASE_ATTACK);    break;
-	case UNIT_MOD_DAMAGE_OFFHAND:      UpdateDamagePhysical(OFF_ATTACK);     break;
-	case UNIT_MOD_DAMAGE_RANGED:       UpdateDamagePhysical(RANGED_ATTACK);  break;
+    case UNIT_MOD_DAMAGE_MAINHAND:     UpdateDamagePhysical(BASE_ATTACK);    break;
+    case UNIT_MOD_DAMAGE_OFFHAND:      UpdateDamagePhysical(OFF_ATTACK);     break;
+    case UNIT_MOD_DAMAGE_RANGED:       UpdateDamagePhysical(RANGED_ATTACK);  break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 }
 
 void Unit::UpdateDamageDoneMods(WeaponAttackType attackType)
@@ -396,7 +396,7 @@ bool Player::UpdateAllStats()
 #ifdef LICH_KING
     RecalculateRating(CR_ARMOR_PENETRATION);
 #endif
-	UpdateAllResistances();
+    UpdateAllResistances();
 
     return true;
 }
@@ -651,7 +651,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
     SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
 
     //automatically update weapon damage after attack power modification
-	Pet *pet = GetPet();                                //update pet's AP
+    Pet *pet = GetPet();                                //update pet's AP
     if(ranged)
     {
         UpdateDamagePhysical(RANGED_ATTACK);
@@ -675,7 +675,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged )
         if (pet && pet->IsPetGhoul()) // At melee attack power change for DK pet
             pet->UpdateAttackPowerAndDamage();
 
-		Guardian* guardian = GetGuardianPet();
+        Guardian* guardian = GetGuardianPet();
         if (guardian && guardian->IsSpiritWolf()) // At melee attack power change for Shaman feral spirit
             guardian->UpdateAttackPowerAndDamage();
 #endif
@@ -996,7 +996,7 @@ bool Creature::UpdateAllStats()
     for(int i = POWER_MANA; i < MAX_POWERS; ++i)
         UpdateMaxPower(Powers(i));
 
-	UpdateAllResistances(); 
+    UpdateAllResistances(); 
 
     return true;
 }
@@ -1152,66 +1152,66 @@ bool Guardian::UpdateStats(Stats stat)
 
     // value = ((base_value * base_pct) + total_value) * total_pct
     float value  = GetTotalStatValue(stat);
-	float ownersBonus = 0.0f;
+    float ownersBonus = 0.0f;
 
     Unit *owner = GetOwner();
 #ifdef LICH_KING
-	if ((IsPetGhoul() || IsRisenAlly()) && (stat == STAT_STAMINA || stat == STAT_STRENGTH))
-	{
-		if (stat == STAT_STAMINA)
-			mod = 0.3f; // Default Owner's Stamina scale
-		else
-			mod = 0.7f; // Default Owner's Strength scale
+    if ((IsPetGhoul() || IsRisenAlly()) && (stat == STAT_STAMINA || stat == STAT_STRENGTH))
+    {
+        if (stat == STAT_STAMINA)
+            mod = 0.3f; // Default Owner's Stamina scale
+        else
+            mod = 0.7f; // Default Owner's Strength scale
 
-						// Check just if owner has Ravenous Dead since it's effect is not an aura
-		AuraEffect const* aurEff = owner->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DEATHKNIGHT, 3010, 0);
-		if (aurEff)
-		{
-			SpellInfo const* spellInfo = aurEff->GetSpellInfo();                                                 // Then get the SpellProto and add the dummy effect value
-			AddPct(mod, spellInfo->Effects[EFFECT_1].CalcValue());                                              // Ravenous Dead edits the original scale
-		}
-		// Glyph of the Ghoul
-		aurEff = owner->GetAuraEffect(58686, 0);
-		if (aurEff)
-			mod += CalculatePct(1.0f, aurEff->GetAmount());                                                    // Glyph of the Ghoul adds a flat value to the scale mod
-		ownersBonus = float(owner->GetStat(stat)) * mod;
-		value += ownersBonus;
-	} else
+                        // Check just if owner has Ravenous Dead since it's effect is not an aura
+        AuraEffect const* aurEff = owner->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DEATHKNIGHT, 3010, 0);
+        if (aurEff)
+        {
+            SpellInfo const* spellInfo = aurEff->GetSpellInfo();                                                 // Then get the SpellProto and add the dummy effect value
+            AddPct(mod, spellInfo->Effects[EFFECT_1].CalcValue());                                              // Ravenous Dead edits the original scale
+        }
+        // Glyph of the Ghoul
+        aurEff = owner->GetAuraEffect(58686, 0);
+        if (aurEff)
+            mod += CalculatePct(1.0f, aurEff->GetAmount());                                                    // Glyph of the Ghoul adds a flat value to the scale mod
+        ownersBonus = float(owner->GetStat(stat)) * mod;
+        value += ownersBonus;
+    } else
 #endif
     if ( stat == STAT_STAMINA )
     {
-		//1 stamina gives 0.45 stamina untalented (erroneously reported as 0.3 stamina in the Hunter's stamina tooltip), or 0.63 stamina with 2/2 Wild Hunt (LK))s
-		float mod = 0.45f;
+        //1 stamina gives 0.45 stamina untalented (erroneously reported as 0.3 stamina in the Hunter's stamina tooltip), or 0.63 stamina with 2/2 Wild Hunt (LK))s
+        float mod = 0.45f;
 #ifdef LICH_KING
-		if (IsPet())
-		{
-			PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
-			if (itr == ToPet()->m_spells.end())
-				itr = ToPet()->m_spells.find(62762);                            // Wild Hunt rank 2
+        if (IsPet())
+        {
+            PetSpellMap::const_iterator itr = (ToPet()->m_spells.find(62758)); // Wild Hunt rank 1
+            if (itr == ToPet()->m_spells.end())
+                itr = ToPet()->m_spells.find(62762);                            // Wild Hunt rank 2
 
-			if (itr != ToPet()->m_spells.end())                                 // If pet has Wild Hunt
-			{
-				SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
-				AddPct(mod, spellInfo->Effects[EFFECT_0].CalcValue());
-			}
-		}
+            if (itr != ToPet()->m_spells.end())                                 // If pet has Wild Hunt
+            {
+                SpellInfo const* spellInfo = sSpellMgr->AssertSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
+                AddPct(mod, spellInfo->Effects[EFFECT_0].CalcValue());
+            }
+        }
 #endif
-		ownersBonus = float(owner->GetStat(stat)) * mod;
-		value += ownersBonus;
+        ownersBonus = float(owner->GetStat(stat)) * mod;
+        value += ownersBonus;
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
     else if ( stat == STAT_INTELLECT )
     {
-		if (owner->GetClass() == CLASS_WARLOCK || owner->GetClass() == CLASS_MAGE)
-		{
-			ownersBonus = CalculatePct(owner->GetStat(stat), 30);
-			value += ownersBonus;
-		}
+        if (owner->GetClass() == CLASS_WARLOCK || owner->GetClass() == CLASS_MAGE)
+        {
+            ownersBonus = CalculatePct(owner->GetStat(stat), 30);
+            value += ownersBonus;
+        }
     }
 
     SetStat(stat, int32(value));
-	m_statFromOwner[stat] = ownersBonus;
-	UpdateStatBuffMod(stat);
+    m_statFromOwner[stat] = ownersBonus;
+    UpdateStatBuffMod(stat);
 
     switch(stat)
     {
@@ -1235,7 +1235,7 @@ bool Guardian::UpdateAllStats()
     for(int i = POWER_MANA; i < MAX_POWERS; i++)
         UpdateMaxPower(Powers(i));
 
-	UpdateAllResistances();
+    UpdateAllResistances();
 
     return true;
 }
@@ -1246,9 +1246,9 @@ void Guardian::UpdateResistances(uint32 school)
     {
         float value  = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
 
-		// hunter and warlock pets gain 40% of owner's resistance
-		if (IsPet())
-			value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
+        // hunter and warlock pets gain 40% of owner's resistance
+        if (IsPet())
+            value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
 
         SetResistance(SpellSchools(school), int32(value));
     }
@@ -1281,7 +1281,7 @@ void Guardian::UpdateMaxHealth()
     UnitMods unitMod = UNIT_MOD_HEALTH;
     float stamina = GetStat(STAT_STAMINA) - GetCreateStat(STAT_STAMINA);
 
-	    float multiplicator;
+        float multiplicator;
     switch (GetEntry())
     {
         case ENTRY_IMP:         multiplicator = 8.4f;   break;
@@ -1309,7 +1309,7 @@ void Guardian::UpdateMaxPower(Powers power)
 
     float addValue = (power == POWER_MANA) ? GetStat(STAT_INTELLECT) - GetCreateStat(STAT_INTELLECT) : 0.0f;
 
-	float multiplicator;
+    float multiplicator;
 
     switch (GetEntry())
     {
@@ -1348,45 +1348,45 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
     {
         if(IsHunterPet())                      //hunter pets benefit from owner's attack power
         {
-			float mod = 1.0f;                                                 //Hunter contribution modifier
-			//... TC 
+            float mod = 1.0f;                                                 //Hunter contribution modifier
+            //... TC 
 #ifdef LICH_KING
-			if (IsPet())
-			{
-				PetSpellMap::const_iterator itr = ToPet()->m_spells.find(62758);    //Wild Hunt rank 1
-				if (itr == ToPet()->m_spells.end())
-					itr = ToPet()->m_spells.find(62762);                            //Wild Hunt rank 2
+            if (IsPet())
+            {
+                PetSpellMap::const_iterator itr = ToPet()->m_spells.find(62758);    //Wild Hunt rank 1
+                if (itr == ToPet()->m_spells.end())
+                    itr = ToPet()->m_spells.find(62762);                            //Wild Hunt rank 2
 
-				if (itr != ToPet()->m_spells.end())                                 // If pet has Wild Hunt
-				{
-					SpellInfo const* sProto = sSpellMgr->AssertSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
-					mod += CalculatePct(1.0f, sProto->Effects[1].CalcValue());
-				}
-			}
+                if (itr != ToPet()->m_spells.end())                                 // If pet has Wild Hunt
+                {
+                    SpellInfo const* sProto = sSpellMgr->AssertSpellInfo(itr->first); // Then get the SpellProto and add the dummy effect value
+                    mod += CalculatePct(1.0f, sProto->Effects[1].CalcValue());
+                }
+            }
 #endif
             bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
-			//TC if (AuraEffect* aurEff = owner->GetAuraEffectOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
-			if (AuraEffect* aurEff = owner->GetAuraOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
-			{
-				AddPct(bonusAP, aurEff->GetAmount());
-				AddPct(val, aurEff->GetAmount());
-			}
+            //TC if (AuraEffect* aurEff = owner->GetAuraEffectOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
+            if (AuraEffect* aurEff = owner->GetAuraOfRankedSpell(34453, EFFECT_1, owner->GetGUID())) // Animal Handler
+            {
+                AddPct(bonusAP, aurEff->GetAmount());
+                AddPct(val, aurEff->GetAmount());
+            }
             SetBonusDamage( int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.125f));
         }
 #ifdef LICH_KING
-		else if (IsPetGhoul() || IsRisenAlly()) //ghouls benefit from deathknight's attack power (may be summon pet or not)
-		{
-			bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
-			SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
-		}
-		else if (IsSpiritWolf()) //wolf benefit from shaman's attack power
-		{
-			float dmg_multiplier = 0.31f;
-			if (m_owner->GetAuraEffect(63271, 0)) // Glyph of Feral Spirit
-				dmg_multiplier = 0.61f;
-			bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier;
-			SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier));
-		}
+        else if (IsPetGhoul() || IsRisenAlly()) //ghouls benefit from deathknight's attack power (may be summon pet or not)
+        {
+            bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
+            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
+        }
+        else if (IsSpiritWolf()) //wolf benefit from shaman's attack power
+        {
+            float dmg_multiplier = 0.31f;
+            if (m_owner->GetAuraEffect(63271, 0)) // Glyph of Feral Spirit
+                dmg_multiplier = 0.61f;
+            bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier;
+            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * dmg_multiplier));
+        }
 #endif
         //demons benefit from warlocks shadow or fire damage
         else if (IsPet())

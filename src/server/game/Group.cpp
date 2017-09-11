@@ -676,7 +676,7 @@ void Group::GroupLoot(const uint64& playerGUID, Loot *loot, WorldObject* object)
         //roll for over-threshold item if it's one-player loot
         if (item->Quality >= uint32(m_lootThreshold) && !i->freeforall)
         {
-			uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
+            uint64 newitemGUID = ObjectGuid::Create<HighGuid::Item>(sObjectMgr->GetGenerator<HighGuid::Item>().Generate()).GetRawValue();
 
             auto  r=new Roll(newitemGUID,*i);
 
@@ -1087,17 +1087,17 @@ void Group::SendUpdate()
 #endif
         data << (uint8)(citr->group);                       // groupid
 #ifdef LICH_KING
-		data << uint8(slot->flags);
+        data << uint8(slot->flags);
 #endif
         data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
 #ifdef LICH_KING
-		if (isLFGGroup())
-		{
-			data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
-			data << uint32(sLFGMgr->GetDungeon(m_guid));
-		}
-		data << uint64(m_guid);
-		data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
+        if (isLFGGroup())
+        {
+            data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
+            data << uint32(sLFGMgr->GetDungeon(m_guid));
+        }
+        data << uint64(m_guid);
+        data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
 #else
         data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
 #endif
@@ -1117,7 +1117,7 @@ void Group::SendUpdate()
             data << (uint8)(onlineState);
             data << (uint8)(citr2->group);                  // groupid
 #ifdef LICH_KING
-			data << uint8(citr->flags);                     // See enum GroupMemberFlags
+            data << uint8(citr->flags);                     // See enum GroupMemberFlags
 #endif
             data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
         }
@@ -1133,8 +1133,8 @@ void Group::SendUpdate()
             data << (uint8)m_lootThreshold;                 // loot threshold
             data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
 #ifdef LICH_KING
-			data << uint8(m_raidDifficulty);                // Raid Difficulty
-			data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
+            data << uint8(m_raidDifficulty);                // Raid Difficulty
+            data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
 #endif
         }
         player->SendDirectMessage( &data );

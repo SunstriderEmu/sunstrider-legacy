@@ -232,59 +232,59 @@ Player* InstanceScript::GetPlayer() const
 
 void InstanceScript::SaveToDB()
 {
-	if (!Save()) 
-		return;
+    if (!Save()) 
+        return;
 
-	std::string data = Save();
-	CharacterDatabase.EscapeString(data);
-	CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
+    std::string data = Save();
+    CharacterDatabase.EscapeString(data);
+    CharacterDatabase.PExecute("UPDATE instance SET data = '%s' WHERE id = '%d'", data.c_str(), instance->GetInstanceId());
 }
 
 void InstanceScript::HandleGameObject(uint64 GUID, bool open, GameObject *go)
 {
-	if (!go)
-		go = instance->GetGameObject(GUID);
-	if (go)
-		go->SetGoState(GOState(open ? 0 : 1));
-	else
-		TC_LOG_ERROR("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
+    if (!go)
+        go = instance->GetGameObject(GUID);
+    if (go)
+        go->SetGoState(GOState(open ? 0 : 1));
+    else
+        TC_LOG_ERROR("scripts", "ZoneScript: HandleGameObject failed for gameobject with GUID %u", GUID_LOPART(GUID));
 }
 
 void InstanceScript::DoRespawnGameObject(uint64 uiGuid, uint32 uiTimeToDespawn)
 {
-	if (GameObject* pGo = instance->GetGameObject(uiGuid))
-	{
-		//not expect any of these should ever be handled
-		if (pGo->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR ||
-			pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON || pGo->GetGoType() == GAMEOBJECT_TYPE_TRAP)
-			return;
+    if (GameObject* pGo = instance->GetGameObject(uiGuid))
+    {
+        //not expect any of these should ever be handled
+        if (pGo->GetGoType() == GAMEOBJECT_TYPE_FISHINGNODE || pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR ||
+            pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON || pGo->GetGoType() == GAMEOBJECT_TYPE_TRAP)
+            return;
 
-		if (pGo->isSpawned())
-			return;
+        if (pGo->isSpawned())
+            return;
 
-		pGo->SetRespawnTime(uiTimeToDespawn);
-	}
+        pGo->SetRespawnTime(uiTimeToDespawn);
+    }
 }
 
 void InstanceScript::DoUseDoorOrButton(uint64 uiGuid, uint32 uiWithRestoreTime, bool bUseAlternativeState)
 {
-	if (!uiGuid)
-		return;
+    if (!uiGuid)
+        return;
 
-	GameObject* pGo = instance->GetGameObject(uiGuid);
+    GameObject* pGo = instance->GetGameObject(uiGuid);
 
-	if (pGo)
-	{
-		if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR || pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
-		{
-			if (pGo->getLootState() == GO_READY)
-				pGo->UseDoorOrButton(uiWithRestoreTime);
-			else if (pGo->getLootState() == GO_ACTIVATED)
-				pGo->ResetDoorOrButton();
-		}
-		else
-			error_log("OSCR: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", pGo->GetEntry(), pGo->GetGoType());
-	}
+    if (pGo)
+    {
+        if (pGo->GetGoType() == GAMEOBJECT_TYPE_DOOR || pGo->GetGoType() == GAMEOBJECT_TYPE_BUTTON)
+        {
+            if (pGo->getLootState() == GO_READY)
+                pGo->UseDoorOrButton(uiWithRestoreTime);
+            else if (pGo->getLootState() == GO_ACTIVATED)
+                pGo->ResetDoorOrButton();
+        }
+        else
+            error_log("OSCR: Script call DoUseDoorOrButton, but gameobject entry %u is type %u.", pGo->GetEntry(), pGo->GetGoType());
+    }
 }
 
 bool InstanceHasScript(WorldObject const* obj, char const* scriptName)

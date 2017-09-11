@@ -240,7 +240,7 @@ bool OutdoorPvPNA::SetupOutdoorPvP()
 //    m_TypeId = OUTDOOR_PVP_NA; _MUST_ be set in ctor, because of spawns cleanup
     // add the zones affected by the pvp buff
     sOutdoorPvPMgr->AddZone(NA_BUFF_ZONE, this);
-	SetMapFromZone(NA_BUFF_ZONE);
+    SetMapFromZone(NA_BUFF_ZONE);
 
     // halaa
     m_obj = new OPvPCapturePointNA(this);
@@ -600,42 +600,42 @@ bool OPvPCapturePointNA::Update(uint32 diff)
 
 void OPvPCapturePointNA::ChangeState()
 {
-	uint32 artkit = 21;
-	switch (m_State) {
-	case OBJECTIVESTATE_NEUTRAL:
-		m_HalaaState = HALAA_N;
-		break;
-	case OBJECTIVESTATE_ALLIANCE:
-		m_HalaaState = HALAA_A;
-		FactionTakeOver(TEAM_ALLIANCE);
-		artkit = 2;
-		break;
-	case OBJECTIVESTATE_HORDE:
-		m_HalaaState = HALAA_H;
-		FactionTakeOver(TEAM_HORDE);
-		artkit = 1;
-		break;
-	case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
-		m_HalaaState = HALAA_N_A;
-		break;
-	case OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE:
-		m_HalaaState = HALAA_N_H;
-		break;
-	case OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE:
-		m_HalaaState = HALAA_N_A;
-		artkit = 2;
-		break;
-	case OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE:
-		m_HalaaState = HALAA_N_H;
-		artkit = 1;
-		break;
-	}
+    uint32 artkit = 21;
+    switch (m_State) {
+    case OBJECTIVESTATE_NEUTRAL:
+        m_HalaaState = HALAA_N;
+        break;
+    case OBJECTIVESTATE_ALLIANCE:
+        m_HalaaState = HALAA_A;
+        FactionTakeOver(TEAM_ALLIANCE);
+        artkit = 2;
+        break;
+    case OBJECTIVESTATE_HORDE:
+        m_HalaaState = HALAA_H;
+        FactionTakeOver(TEAM_HORDE);
+        artkit = 1;
+        break;
+    case OBJECTIVESTATE_NEUTRAL_ALLIANCE_CHALLENGE:
+        m_HalaaState = HALAA_N_A;
+        break;
+    case OBJECTIVESTATE_NEUTRAL_HORDE_CHALLENGE:
+        m_HalaaState = HALAA_N_H;
+        break;
+    case OBJECTIVESTATE_ALLIANCE_HORDE_CHALLENGE:
+        m_HalaaState = HALAA_N_A;
+        artkit = 2;
+        break;
+    case OBJECTIVESTATE_HORDE_ALLIANCE_CHALLENGE:
+        m_HalaaState = HALAA_N_H;
+        artkit = 1;
+        break;
+    }
 
-	auto bounds = sMapMgr->FindMap(530, 0)->GetGameObjectBySpawnIdStore().equal_range(m_capturePointSpawnId);
-	for (auto itr = bounds.first; itr != bounds.second; ++itr)
-		itr->second->SetGoArtKit(artkit);
+    auto bounds = sMapMgr->FindMap(530, 0)->GetGameObjectBySpawnIdStore().equal_range(m_capturePointSpawnId);
+    for (auto itr = bounds.first; itr != bounds.second; ++itr)
+        itr->second->SetGoArtKit(artkit);
 
-	UpdateHalaaWorldState();
+    UpdateHalaaWorldState();
 }
 
 void OPvPCapturePointNA::UpdateHalaaWorldState()
