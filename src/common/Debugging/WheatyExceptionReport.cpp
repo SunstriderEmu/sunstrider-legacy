@@ -6,7 +6,6 @@
 #include "CompilerDefs.h"
 
 #if PLATFORM == PLATFORM_WINDOWS && !defined(__MINGW32__)
-#define WIN32_LEAN_AND_MEAN // Macro redefinition?
 #pragma warning(disable:4996)
 #pragma warning(disable:4312)
 #pragma warning(disable:4311)

@@ -637,7 +637,7 @@ bool WaypointMovementGenerator<Creature>::DoUpdate(Creature* creature, uint32 di
             return StartSplinePath(creature);
 
         if (arrived)
-            bool result = StartSplinePath(creature, true); // Result not used?
+            return StartSplinePath(creature, true);
     }
 
      return true;
