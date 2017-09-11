@@ -64,7 +64,7 @@ CREATE TABLE `ai_playerbot_guild_names` (
   PRIMARY KEY (`name_id`),
   UNIQUE KEY `name_id` (`name_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=642 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='PlayerbotAI guild names';
+) ENGINE=MyISAM AUTO_INCREMENT=642 DEFAULT CHARSET=utf8 COMMENT='PlayerbotAI guild names';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -109,7 +109,7 @@ CREATE TABLE `ai_playerbot_names` (
   PRIMARY KEY (`name_id`),
   UNIQUE KEY `name_id` (`name_id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM AUTO_INCREMENT=100001 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='PlayerbotAI AutoBot names';
+) ENGINE=MyISAM AUTO_INCREMENT=100001 DEFAULT CHARSET=utf8 COMMENT='PlayerbotAI AutoBot names';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -969,7 +969,7 @@ CREATE TABLE `group_member` (
   `assistant` tinyint(1) unsigned NOT NULL,
   `subgroup` smallint(6) unsigned NOT NULL,
   PRIMARY KEY (`leaderGuid`,`memberGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Groups';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Groups';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -997,7 +997,7 @@ CREATE TABLE `groups` (
   `isRaid` tinyint(1) unsigned NOT NULL,
   `difficulty` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`leaderGuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Groups';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Groups';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1155,7 +1155,7 @@ CREATE TABLE `guild_member` (
   UNIQUE KEY `guid_key` (`guid`),
   KEY `guildid_key` (`guildid`),
   KEY `guildid_rank_key` (`guildid`,`rank`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Guild System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Guild System';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1349,7 +1349,7 @@ CREATE TABLE `item_text` (
   `id` int(11) unsigned NOT NULL DEFAULT '0',
   `text` longtext,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Item System';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Item System';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1559,7 +1559,7 @@ CREATE TABLE `saved_variables` (
   `GmWeekBeginTime` bigint(40) unsigned NOT NULL DEFAULT '0',
   `allowed_pvp_rewards` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED COMMENT='Variable Saves';
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COMMENT='Variable Saves';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
