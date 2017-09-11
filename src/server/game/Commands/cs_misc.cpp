@@ -354,13 +354,6 @@ bool ChatHandler::HandleMuteCommand(const char* args)
     return true;
 }
 
-bool ChatHandler::HandleLoadScriptsCommand(const char* args)
-{
-    sScriptMgr->Initialize(_TRINITY_SCRIPT_CONFIG);
-
-    sWorld->SendGMText(LANG_SCRIPTS_RELOADED);
-    return true;
-}
 bool ChatHandler::HandleMaxSkillCommand(const char* /*args*/)
 {
     Player* SelectedPlayer = GetSelectedPlayerOrSelf();

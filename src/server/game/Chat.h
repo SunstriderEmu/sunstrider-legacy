@@ -333,7 +333,6 @@ class TC_GAME_API ChatHandler
         bool HandleHonorAddKillCommand(const char* args);
         bool HandleUpdateHonorFieldsCommand(const char* args);
 
-        bool HandleLoadScriptsCommand(const char* args);
         bool HandleDebugSendQuestPartyMsgCommand(const char* args);
         bool HandleDebugSendQuestInvalidMsgCommand(const char* args);
 

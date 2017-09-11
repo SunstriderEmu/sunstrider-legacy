@@ -737,7 +737,6 @@ std::vector<ChatCommand> const& ChatHandler::getCommandTable()
         { "list",           SEC_GAMEMASTER3,  true,  false, nullptr,                                        "", listCommandTable },
         { "listfreeze",     SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleListFreezeCommand,          "" },
         { "loadpath",       SEC_GAMEMASTER3,  false, false, &ChatHandler::HandleReloadAllPaths,             "" },
-        { "loadscripts",    SEC_GAMEMASTER3,  true,  false, &ChatHandler::HandleLoadScriptsCommand,         "" },
         { "lockaccount",    SEC_PLAYER,       false, false, &ChatHandler::HandleLockAccountCommand,         "" },
         { "lookup",         SEC_GAMEMASTER3,  true,  false, nullptr,                                        "", lookupCommandTable },
         { "maxpool",        SEC_GAMEMASTER3,  true,  true,  &ChatHandler::HandleGetMaxCreaturePoolIdCommand,"" },
