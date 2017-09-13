@@ -1244,7 +1244,7 @@ class TC_GAME_API Unit : public WorldObject
 
         //Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, uint32 despwtime);
 
-        uint8 GetLevel() const { return GetByteValue(UNIT_FIELD_LEVEL, 0); }
+        uint32 GetLevel() const { return GetUInt32Value(UNIT_FIELD_LEVEL); }
         virtual uint8 GetLevelForTarget(WorldObject const* /*target*/) const override { return GetLevel(); }
         void SetLevel(uint32 lvl);
         uint8 GetRace() const { return GetByteValue(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
