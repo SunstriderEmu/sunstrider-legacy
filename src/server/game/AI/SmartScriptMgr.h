@@ -1700,6 +1700,12 @@ typedef std::map<int32, std::list<std::string> > SmartAIDBErrorMap;
     sSmartScriptMgr->LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
     }
 
+#define SMARTAI_DB_WARNING(entryOrGuid, str, ...) \
+    { \
+    TC_LOG_WARN("sql.sql", str, __VA_ARGS__); \
+    sSmartScriptMgr->LogSmartAIDBError(entryOrGuid, str, __VA_ARGS__); \
+    }
+
 class TC_GAME_API SmartAIMgr
 {
     public:

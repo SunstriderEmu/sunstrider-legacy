@@ -956,7 +956,7 @@ bool SmartAIMgr::IsEventValid(SmartScriptHolder& e)
 
             CacheSpellContainerBounds sBounds = GetSummonCreatureSpellContainerBounds(e.action.summonCreature.creature);
             for (auto itr = sBounds.first; itr != sBounds.second; ++itr)
-                SMARTAI_DB_ERROR( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u creature summon: There is a summon spell for creature entry %u (SpellId: %u, effect: %u)",
+                SMARTAI_DB_WARNING( e.entryOrGuid, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u creature summon: There is a summon spell for creature entry %u (SpellId: %u, effect: %u)",
                                 e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType(), e.action.summonCreature.creature, itr->second.first, itr->second.second);
 
             if(e.action.summonCreature.attackInvoker && e.action.summonCreature.attackVictim)
