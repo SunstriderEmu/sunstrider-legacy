@@ -20,6 +20,7 @@
 #include "VMapManager2.h"
 #include "VMapDefinitions.h"
 #include "WorldModel.h"
+#include "RegularGrid.h"
 
 #include "Models/GameObjectModel.h"
 #include "Log.h"
@@ -126,6 +127,12 @@ bool GameObjectModel::initialize(std::unique_ptr<GameObjectModelOwnerBase> model
         modelOwner->DebugVisualizeCorner(pos);
     }
 #endif
+
+    //sunstrider: some object may be spawned at map borders and have bounds going outside of them
+    RegularGrid2D<int, int>::Cell low = RegularGrid2D<int, int>::Cell::ComputeCell(iBound.low().x, iBound.low().y);
+    RegularGrid2D<int, int>::Cell high = RegularGrid2D<int, int>::Cell::ComputeCell(iBound.high().x, iBound.high().y);
+    if (!low.isValid() || !high.isValid())
+        return false;
 
     owner = std::move(modelOwner);
     return true;

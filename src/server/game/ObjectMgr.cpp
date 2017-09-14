@@ -1526,7 +1526,6 @@ void ObjectMgr::LoadGameobjects()
         }
 #endif
 
-
         if (gameEvent==0)                                   // if not this is to be managed by GameEventMgr System
             AddGameobjectToGrid(guid, &data);
 
