@@ -25,6 +25,10 @@ bool OPvPCapturePoint::HandlePlayerEnter(Player * player)
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate3, m_neutralValuePct);
     }
 
+    //avoid having gamemasters capturing points
+    if (player->IsGameMaster())
+        return false;
+
     return m_activePlayers[player->GetTeamId()].insert(player->GetGUID()).second;
 }
 
