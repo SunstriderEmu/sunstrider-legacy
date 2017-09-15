@@ -1283,7 +1283,7 @@ void Creature::SaveToDB(uint32 mapid, uint8 spawnMask)
 void Creature::UpdateLevelDependantStats()
 {
     CreatureTemplate const* cInfo = GetCreatureTemplate();
-    uint32 rank = IsPet() ? 0 : cInfo->rank;
+    // uint32 rank = IsPet() ? 0 : cInfo->rank;
     CreatureBaseStats const* stats = sObjectMgr->GetCreatureBaseStats(GetLevel(), cInfo->unit_class);
 
 

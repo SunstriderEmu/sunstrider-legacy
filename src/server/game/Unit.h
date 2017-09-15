@@ -448,7 +448,7 @@ enum DeathState
     JUST_RESPAWNED = 4
 };
 
-enum UnitState
+enum UnitState : uint32
 {
     UNIT_STATE_DIED                  = 0x00000001,
     UNIT_STATE_MELEE_ATTACKING       = 0x00000002,                     // player is melee attacking someone

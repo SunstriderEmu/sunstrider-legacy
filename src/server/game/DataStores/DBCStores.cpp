@@ -528,7 +528,6 @@ G3D::Vector3 TranslateLocation(G3D::Vector4 const* DBCPosition, G3D::Vector3 con
 // Number of cameras not used. Multiple cameras never used in 3.3.5
 bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, CinematicCameraEntry const* dbcentry)
 {
-    char const* buffer = reinterpret_cast<char const*>(header);
 
     FlyByCameraCollection cameras;
     FlyByCameraCollection targetcam;
@@ -540,6 +539,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     DBCData.w = dbcentry->base_o;
 
 #ifndef LICH_KING 
+    char const* buffer = reinterpret_cast<char const*>(header);
 #ifdef NOT_TESTED
     // kelno: This is adapted from LK code, not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
 

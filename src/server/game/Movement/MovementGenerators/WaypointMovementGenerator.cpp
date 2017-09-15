@@ -489,14 +489,14 @@ bool WaypointMovementGenerator<Creature>::StartSplinePath(Creature* creature, bo
                 Position lastPosition = creature->GetPosition();
                 while (GetNextMemoryNode(nextMemoryNodeId, nextMemoryNodeId, true) && count < 10)
                 {
-                    WaypointData* nextNode = (*i_path)[nextMemoryNodeId];
+                    WaypointData* nxtNode = (*i_path)[nextMemoryNodeId];
 
-                    GeneratePathToNextPoint(lastPosition, creature, nextNode, splineId);
-                    lastPosition = Position(nextNode->x, nextNode->y, nextNode->z);
+                    GeneratePathToNextPoint(lastPosition, creature, nxtNode, splineId);
+                    lastPosition = Position(nxtNode->x, nxtNode->y, nxtNode->z);
                     count++;
 
                     //stop path if node has delay
-                    if (nextNode->delay)
+                    if (nxtNode->delay)
                         break;
                 }
             }

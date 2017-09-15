@@ -4,7 +4,7 @@
 #include "Define.h"
 #include <cassert>
 
-enum SpellEffIndex
+enum SpellEffIndex : uint8
 {
     EFFECT_0 = 0,
     EFFECT_1 = 1,
@@ -185,7 +185,7 @@ enum Stats
 
 #define MAX_STATS                        5
 
-enum Powers
+enum Powers : uint32
 {
     POWER_MANA                          = 0,
     POWER_RAGE                          = 1,
@@ -193,7 +193,7 @@ enum Powers
     POWER_ENERGY                        = 3,
     POWER_HAPPINESS                     = 4,
     MAX_POWERS                          = 5,
-    POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
+    POWER_HEALTH                        = 0xFFFFFFFE    // Used as uint32 in the code, -2 if signed
 };
 
 #define MAX_POWERS                        5                 // not count POWER_RUNES for now
@@ -896,7 +896,7 @@ enum AuraRemoveMode
 };
 
 // Spell mechanics
-enum Mechanics
+enum Mechanics : uint32
 {
     MECHANIC_NONE             = 0,
     MECHANIC_CHARM            = 1,

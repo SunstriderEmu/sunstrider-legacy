@@ -25,7 +25,6 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode( WorldPacket & recvData )
     uint64 guid;
     recvData >> guid;
     uint8 questStatus = DIALOG_STATUS_NONE;
-    uint8 defstatus = DIALOG_STATUS_NONE;
 
     Object* questgiver = ObjectAccessor::GetObjectByTypeMask(*_player, guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
     if (!questgiver) {
@@ -674,7 +673,6 @@ void WorldSession::HandleQuestgiverStatusMultipleQuery(WorldPacket& /*recvPacket
     for(uint64 m_clientGUID : _player->m_clientGUIDs)
     {
         uint8 questStatus = DIALOG_STATUS_NONE;
-        uint8 defstatus = DIALOG_STATUS_NONE;
 
         if(IS_CREATURE_GUID(m_clientGUID))
         {

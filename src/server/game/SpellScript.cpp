@@ -78,7 +78,7 @@ std::string const* _SpellScript::_GetScriptName() const
     return m_scriptName;
 }
 
-_SpellScript::EffectHook::EffectHook(uint8 _effIndex)
+_SpellScript::EffectHook::EffectHook(SpellEffIndex _effIndex)
 {
     // effect index must be in range <0;2>, allow use of special effindexes
     ASSERT(_effIndex == EFFECT_ALL || _effIndex == EFFECT_FIRST_FOUND || _effIndex < MAX_SPELL_EFFECTS);
@@ -94,7 +94,7 @@ uint8 _SpellScript::EffectHook::GetAffectedEffectsMask(SpellInfo const* spellEnt
         {
             if ((effIndex == EFFECT_FIRST_FOUND) && mask)
                 return mask;
-            if (CheckEffect(spellEntry, i))
+            if (CheckEffect(spellEntry, (SpellEffIndex) i))
                 mask |= (uint8)1<<i;
         }
     }
@@ -106,9 +106,9 @@ uint8 _SpellScript::EffectHook::GetAffectedEffectsMask(SpellInfo const* spellEnt
     return mask;
 }
 
-bool _SpellScript::EffectHook::IsEffectAffected(SpellInfo const* spellEntry, uint8 effIndex)
+bool _SpellScript::EffectHook::IsEffectAffected(SpellInfo const* spellEntry, SpellEffIndex localEffIndex)
 {
-    return GetAffectedEffectsMask(spellEntry) & 1<<effIndex;
+    return GetAffectedEffectsMask(spellEntry) & 1<< localEffIndex;
 }
 
 std::string _SpellScript::EffectHook::EffIndexToString()
@@ -129,7 +129,7 @@ std::string _SpellScript::EffectHook::EffIndexToString()
     return "Invalid Value";
 }
 
-bool _SpellScript::EffectNameCheck::Check(SpellInfo const* spellEntry, uint8 effIndex)
+bool _SpellScript::EffectNameCheck::Check(SpellInfo const* spellEntry, SpellEffIndex effIndex)
 {
     if (!spellEntry->Effects[effIndex].Effect && !effName)
         return true;
@@ -151,7 +151,7 @@ std::string _SpellScript::EffectNameCheck::ToString()
     }
 }
 
-bool _SpellScript::EffectAuraNameCheck::Check(SpellInfo const* spellEntry, uint8 effIndex)
+bool _SpellScript::EffectAuraNameCheck::Check(SpellInfo const* spellEntry, SpellEffIndex effIndex)
 {
     if (!spellEntry->Effects[effIndex].ApplyAuraName && !effAurName)
         return true;
@@ -193,7 +193,7 @@ SpellCastResult SpellScript::CheckCastHandler::Call(SpellScript* spellScript)
     return (spellScript->*_checkCastHandlerScript)();
 }
 
-SpellScript::EffectHandler::EffectHandler(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName)
+SpellScript::EffectHandler::EffectHandler(SpellEffectFnType _pEffectHandlerScript, SpellEffIndex _effIndex, uint16 _effName)
     : _SpellScript::EffectNameCheck(_effName), _SpellScript::EffectHook(_effIndex)
 {
     pEffectHandlerScript = _pEffectHandlerScript;
@@ -204,14 +204,14 @@ std::string SpellScript::EffectHandler::ToString()
     return "Index: " + EffIndexToString() + " Name: " +_SpellScript::EffectNameCheck::ToString();
 }
 
-bool SpellScript::EffectHandler::CheckEffect(SpellInfo const* spellEntry, uint8 effIndex)
+bool SpellScript::EffectHandler::CheckEffect(SpellInfo const* spellEntry, SpellEffIndex localEffIndex)
 {
-    return _SpellScript::EffectNameCheck::Check(spellEntry, effIndex);
+    return _SpellScript::EffectNameCheck::Check(spellEntry, localEffIndex);
 }
 
-void SpellScript::EffectHandler::Call(SpellScript* spellScript, SpellEffIndex effIndex)
+void SpellScript::EffectHandler::Call(SpellScript* spellScript, SpellEffIndex localEffIndex)
 {
-    (spellScript->*pEffectHandlerScript)(effIndex);
+    (spellScript->*pEffectHandlerScript)(localEffIndex);
 }
 
 SpellScript::HitHandler::HitHandler(SpellHitFnType _pHitHandlerScript)
@@ -224,7 +224,7 @@ void SpellScript::HitHandler::Call(SpellScript* spellScript)
     (spellScript->*pHitHandlerScript)();
 }
 
-SpellScript::TargetHook::TargetHook(uint8 _effectIndex, uint16 _targetType, bool _area, bool _dest)
+SpellScript::TargetHook::TargetHook(SpellEffIndex _effectIndex, uint16 _targetType, bool _area, bool _dest)
     : _SpellScript::EffectHook(_effectIndex), targetType(_targetType), area(_area), dest(_dest) { }
 
 std::string SpellScript::TargetHook::ToString()
@@ -234,7 +234,7 @@ std::string SpellScript::TargetHook::ToString()
     return oss.str();
 }
 
-bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 effIndex)
+bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, SpellEffIndex localEffIndex)
 {
     if (!targetType)
         return false;
@@ -280,7 +280,7 @@ bool SpellScript::TargetHook::CheckEffect(SpellInfo const* spellEntry, uint8 eff
     return false;
 }
 
-SpellScript::ObjectAreaTargetSelectHandler::ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType)
+SpellScript::ObjectAreaTargetSelectHandler::ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType)
     : TargetHook(_effIndex, _targetType, true, false)
 {
     pObjectAreaTargetSelectHandlerScript = _pObjectAreaTargetSelectHandlerScript;
@@ -291,7 +291,7 @@ void SpellScript::ObjectAreaTargetSelectHandler::Call(SpellScript* spellScript, 
     (spellScript->*pObjectAreaTargetSelectHandlerScript)(targets);
 }
 
-SpellScript::ObjectTargetSelectHandler::ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType)
+SpellScript::ObjectTargetSelectHandler::ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType)
     : TargetHook(_effIndex, _targetType, false, false)
 {
     pObjectTargetSelectHandlerScript = _pObjectTargetSelectHandlerScript;
@@ -302,7 +302,7 @@ void SpellScript::ObjectTargetSelectHandler::Call(SpellScript* spellScript, Worl
     (spellScript->*pObjectTargetSelectHandlerScript)(target);
 }
 
-SpellScript::DestinationTargetSelectHandler::DestinationTargetSelectHandler(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType)
+SpellScript::DestinationTargetSelectHandler::DestinationTargetSelectHandler(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType)
     : TargetHook(_effIndex, _targetType, false, true)
 {
     DestinationTargetSelectHandlerScript = _DestinationTargetSelectHandlerScript;

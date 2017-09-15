@@ -1067,19 +1067,19 @@ void Spell::EffectDummy(uint32 i)
                     if(!unitTarget)
                         return;
 
-                    float damage;
+                    float localDamage;
                     // DW should benefit of attack power, damage percent mods etc.
                     // TODO: check if using offhand damage is correct and if it should be divided by 2
                     if (m_caster->HaveOffhandWeapon() && m_caster->GetAttackTimer(BASE_ATTACK) > m_caster->GetAttackTimer(OFF_ATTACK))
-                        damage = (m_caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE))/2;
+                        localDamage = (m_caster->GetFloatValue(UNIT_FIELD_MINOFFHANDDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXOFFHANDDAMAGE))/2;
                     else
-                        damage = (m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE))/2;
+                        localDamage = (m_caster->GetFloatValue(UNIT_FIELD_MINDAMAGE) + m_caster->GetFloatValue(UNIT_FIELD_MAXDAMAGE))/2;
 
                     switch (m_spellInfo->Id)
                     {
-                        case 12850: damage *= 0.2f; break;
-                        case 12162: damage *= 0.4f; break;
-                        case 12868: damage *= 0.6f; break;
+                        case 12850: localDamage *= 0.2f; break;
+                        case 12162: localDamage *= 0.4f; break;
+                        case 12868: localDamage *= 0.6f; break;
                         default:
                             TC_LOG_ERROR("FIXME","Spell::EffectDummy: Spell %u not handled in DW",m_spellInfo->Id);
                             return;
@@ -1424,7 +1424,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         Creature *cr = nullptr;
                         uint8 spawnNum = 6 + rand()%3;
-                        for (uint8 i = 0; i < spawnNum; i++) 
+                        for (uint8 idx = 0; idx < spawnNum; idx++)
                         {
                             cr = unitTarget->SummonCreature(20805, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
                             if (cr && cr->IsAIEnabled) {
@@ -1438,7 +1438,7 @@ void Spell::EffectDummy(uint32 i)
                     {
                         Creature *cr = nullptr;
                         uint8 spawnNum = 6 + rand()%3;
-                        for (uint8 i = 0; i < spawnNum; i++) 
+                        for (uint8 idx = 0; idx < spawnNum; idx++)
                         {
                             cr = unitTarget->SummonCreature(20806, unitTarget->GetPositionX(), unitTarget->GetPositionY(), unitTarget->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0);
                             if (cr && cr->IsAIEnabled) {
@@ -1554,8 +1554,8 @@ void Spell::EffectDummy(uint32 i)
                     uint8 rands[4];
                    
                     // Select 4 random spells
-                    for (unsigned char & i : rands)
-                        i = rand() % 2;
+                    for (unsigned char & idx : rands)
+                        idx = rand() % 2;
  
                     m_caster->CastSpell(unitTarget, Disease[rands[0]], true);
                     m_caster->CastSpell(unitTarget, Curse[rands[1]], true);
@@ -2269,9 +2269,9 @@ void Spell::EffectDummy(uint32 i)
                 if(m_caster->GetTypeId() != TYPEID_PLAYER)
                     return;
 
-                for(int i = BASE_ATTACK; i <= OFF_ATTACK; ++i)
+                for(int idx = BASE_ATTACK; idx <= OFF_ATTACK; ++idx)
                 {
-                    if(Item* item = (m_caster->ToPlayer())->GetWeaponForAttack(WeaponAttackType(i)))
+                    if(Item* item = (m_caster->ToPlayer())->GetWeaponForAttack(WeaponAttackType(idx)))
                     {
                         if(item->IsFitToSpellRequirements(m_spellInfo))
                         {
@@ -2538,7 +2538,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             if (!spell)
                 return;
 
-            for (int i=0; i < spell->StackAmount; ++i)
+            for (int idx=0; idx < spell->StackAmount; ++idx)
                 m_caster->CastSpell(unitTarget,spell->Id, true, m_CastItem, nullptr, m_originalCasterGUID);
             return;
         }
@@ -2549,7 +2549,7 @@ void Spell::EffectTriggerSpell(uint32 i)
             if (!spell)
                 return;
 
-            for (int i=0; i < spell->StackAmount; ++i)
+            for (int idx=0; idx < spell->StackAmount; ++idx)
                 m_caster->CastSpell(unitTarget,spell->Id, true, m_CastItem, nullptr, m_originalCasterGUID);
             return;
         }
@@ -3930,10 +3930,10 @@ void Spell::EffectSummonChangeItem(uint32 i)
     if( !pNewItem )
         return;
 
-    for(uint8 i= PERM_ENCHANTMENT_SLOT; i<=TEMP_ENCHANTMENT_SLOT; ++i)
+    for(uint8 idx = PERM_ENCHANTMENT_SLOT; idx<=TEMP_ENCHANTMENT_SLOT; ++idx)
     {
-        if(m_CastItem->GetEnchantmentId(EnchantmentSlot(i)))
-            pNewItem->SetEnchantment(EnchantmentSlot(i), m_CastItem->GetEnchantmentId(EnchantmentSlot(i)), m_CastItem->GetEnchantmentDuration(EnchantmentSlot(i)), m_CastItem->GetEnchantmentCharges(EnchantmentSlot(i)));
+        if(m_CastItem->GetEnchantmentId(EnchantmentSlot(idx)))
+            pNewItem->SetEnchantment(EnchantmentSlot(idx), m_CastItem->GetEnchantmentId(EnchantmentSlot(idx)), m_CastItem->GetEnchantmentDuration(EnchantmentSlot(idx)), m_CastItem->GetEnchantmentCharges(EnchantmentSlot(idx)));
     }
 
     if(m_CastItem->GetUInt32Value(ITEM_FIELD_DURABILITY) < m_CastItem->GetUInt32Value(ITEM_FIELD_MAXDURABILITY))
@@ -4918,12 +4918,12 @@ void Spell::EffectWeaponDmg(uint32 i)
         if (m_spellInfo->SpellFamilyFlags & 0x001000000000LL)
         {
             Unit::AuraList const& m_OverrideClassScript = m_caster->GetAurasByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-            for (auto i : m_OverrideClassScript)
+            for (auto idx : m_OverrideClassScript)
             {
                 // Stormstrike AP Buff
-                if (i->GetModifier()->m_miscvalue == 5634)
+                if (idx->GetModifier()->m_miscvalue == 5634)
                 {
-                    m_caster->CastSpell(m_caster, 38430, true, nullptr, i);
+                    m_caster->CastSpell(m_caster, 38430, true, nullptr, idx);
                     break;
                 }
             }
@@ -5069,19 +5069,19 @@ void Spell::EffectInterruptCast(uint32 i)
 
     // TODO: not all spells that used this effect apply cooldown at school spells
     // also exist case: apply cooldown to interrupted cast only and to all spells
-    for (uint32 i = CURRENT_FIRST_NON_MELEE_SPELL; i < CURRENT_MAX_SPELL; i++)
+    for (uint32 idx = CURRENT_FIRST_NON_MELEE_SPELL; idx < CURRENT_MAX_SPELL; idx++)
     {
-        if (unitTarget->GetCurrentSpell(i))
+        if (unitTarget->GetCurrentSpell(idx))
         {
             // check if we can interrupt spell
-            if ( (unitTarget->m_currentSpells[i]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[i]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[i]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[i]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[i]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
+            if ( (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_CASTING || (unitTarget->m_currentSpells[idx]->getState() == SPELL_STATE_PREPARING && unitTarget->m_currentSpells[idx]->GetCastTime() > 0.0f)) && unitTarget->m_currentSpells[idx]->m_spellInfo->InterruptFlags & SPELL_INTERRUPT_FLAG_INTERRUPT && unitTarget->m_currentSpells[idx]->m_spellInfo->PreventionType == SPELL_PREVENTION_TYPE_SILENCE )
             {
                 if(m_originalCaster)
                 {
-                    int32 duration = m_originalCaster->CalculateSpellDuration(m_spellInfo, i, unitTarget);
-                    unitTarget->ProhibitSpellSchool(unitTarget->m_currentSpells[i]->m_spellInfo->GetSchoolMask(), duration/*m_spellInfo->GetDuration()*/);
+                    int32 duration = m_originalCaster->CalculateSpellDuration(m_spellInfo, idx, unitTarget);
+                    unitTarget->ProhibitSpellSchool(unitTarget->m_currentSpells[idx]->m_spellInfo->GetSchoolMask(), duration/*m_spellInfo->GetDuration()*/);
                 }
-                unitTarget->InterruptSpell(i,false);
+                unitTarget->InterruptSpell(idx,false);
             }
         }
     }
@@ -7061,7 +7061,7 @@ void Spell::EffectTransmitted(uint32 effIndex)
     if(goinfo->type==GAMEOBJECT_TYPE_FISHINGNODE)
     {
         LiquidData liqData;
-        uint32 area_id = m_caster->GetAreaId();
+        // uint32 area_id = m_caster->GetAreaId();
         ZLiquidStatus status = cMap->GetLiquidStatus(fx, fy, fz + 1.0f, MAP_LIQUID_TYPE_WATER | MAP_LIQUID_TYPE_OCEAN, &liqData);
         if(status == LIQUID_MAP_NO_WATER)
             if ( !cMap->IsInWater(fx, fy, fz + 1.f/* -0.5f */, &liqData))             // Hack to prevent fishing bobber from failing to land on fishing hole

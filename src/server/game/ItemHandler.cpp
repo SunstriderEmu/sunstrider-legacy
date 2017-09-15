@@ -456,15 +456,14 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
         data << pProto->ArmorDamageModifier;
         data << pProto->Duration;                                 // added in 2.4.2.8209, duration (seconds)
 
-#ifdef LICH_KING
+#ifdef BUILD_335_SUPPORT
+    #ifdef LICH_KING
         uint32 itemLimitCategory = pProto->ItemLimitCategory;
         uint32 holidayId = pProto->HolidayId;
-#else
+    #else
         uint32 itemLimitCategory = 0;
         uint32 holidayId = 0;
-#endif
-
-#ifdef BUILD_335_SUPPORT
+    #endif
         if (GetClientBuild() == BUILD_335)
         {
             data << itemLimitCategory;                  // WotLK, ItemLimitCategory
