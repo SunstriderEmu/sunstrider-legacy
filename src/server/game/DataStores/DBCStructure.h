@@ -697,6 +697,10 @@ struct SoundEntriesEntry
                                                             // 29       new in 3.1
 };
 
+#define EFFECT_0_MASK 0x1
+#define EFFECT_1_MASK 0x2
+#define EFFECT_2_MASK 0x4
+
 #define MAX_SPELL_EFFECTS 3
 #define MAX_EFFECT_MASK 7
 #define MAX_SPELL_REAGENTS 8

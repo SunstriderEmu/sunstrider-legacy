@@ -2689,7 +2689,8 @@ bool Spell::UpdateChanneledTargetList()
 
             if (IsValidDeadOrAliveTarget(unit))
             {
-                if (channelAuraMask & ihit.effectMask)
+                //sunstrider: exclude omnidirectional spells for range check... seems pretty okay in all cases I can see If you remove this, re implement mind control exclusion
+                if (m_spellInfo->HasAttribute(SPELL_ATTR1_CHANNEL_TRACK_TARGET) && channelAuraMask & ihit.effectMask) 
                 {
                     if (auto* aurApp = unit->GetAuraApplication(m_spellInfo->Id, m_originalCasterGUID))
                     {
@@ -2702,7 +2703,7 @@ bool Spell::UpdateChanneledTargetList()
                                 unit->RemoveAura(aurApp->GetId(), aurApp->GetEffIndex());
                                 continue;
                             }
-                            // Xinef: Update Orientation server side (non players wont sent appropriate packets)
+                            // sunwell: Update Orientation server side (non players wont sent appropriate packets)
                             else if (m_spellInfo->HasAttribute(SPELL_ATTR1_CHANNEL_TRACK_TARGET))
                                 m_caster->UpdateOrientation(m_caster->GetAngle(unit));
                         }
