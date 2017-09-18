@@ -26,6 +26,15 @@ enum LevelLimit
 // also see MAX_LEVEL and GT_MAX_LEVEL define
 #define STRONG_MAX_LEVEL 255
 
+enum BattlegroundBracketId                                  // bracketId for level ranges
+{
+    BG_BRACKET_ID_FIRST = 0,
+    BG_BRACKET_ID_LAST = 15
+};
+
+// must be max value in PvPDificulty slot+1
+#define MAX_BATTLEGROUND_BRACKETS  16
+
 enum AreaTeams
 {
     AREATEAM_NONE  = 0,

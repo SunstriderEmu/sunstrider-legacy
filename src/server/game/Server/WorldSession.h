@@ -296,7 +296,7 @@ class TC_GAME_API WorldSession
 
         void SendMeleeAttackStop(Unit const* enemy);
 
-        void SendBattleGroundList( uint64 guid, uint32 bgTypeId );
+        void SendBattleGroundList( uint64 guid, BattlegroundTypeId bgTypeId );
 
         void SendTradeStatus(uint32 status);
         void SendCancelTrade();
@@ -802,7 +802,7 @@ class TC_GAME_API WorldSession
 
         //Battleground
         void HandleBattleMasterHelloOpcode(WorldPacket &recvData);
-        void _HandleBattlegroundJoin(uint32 bgTypeId,uint32 instanceId,bool joinAsGroup);
+        void _HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 instanceId, bool joinAsGroup);
         void HandleBattlemasterJoinOpcode(WorldPacket &recvData);
         void HandleBattlegroundPlayerPositionsOpcode(WorldPacket& recvData);
         void HandlePVPLogDataOpcode( WorldPacket &recvData );

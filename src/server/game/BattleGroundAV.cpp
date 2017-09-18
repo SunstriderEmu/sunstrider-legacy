@@ -208,17 +208,17 @@ void BattlegroundAV::UpdateScore(uint16 team, int16 points )
 
     m_score[teamindex] = m_Team_Scores[teamindex];
 
-    UpdateWorldState(((teamindex==BG_HORDE)?AV_Horde_Score:AV_Alliance_Score), m_Team_Scores[teamindex]);
+    UpdateWorldState(((teamindex==TEAM_HORDE)?AV_Horde_Score:AV_Alliance_Score), m_Team_Scores[teamindex]);
     if( points < 0)
     {
         if( m_Team_Scores[teamindex] < 1)
         {
             m_Team_Scores[teamindex]=0;
-            EndBattleground(((teamindex==BG_HORDE)?ALLIANCE:HORDE));
+            EndBattleground(((teamindex==TEAM_HORDE)?ALLIANCE:HORDE));
         }
         else if(!m_IsInformedNearVictory[teamindex] && m_Team_Scores[teamindex] < SEND_MSG_NEAR_LOSE)
         {
-            SendMessageToAll(GetTrinityString((teamindex==BG_HORDE)?LANG_BG_AV_H_NEAR_LOSE:LANG_BG_AV_A_NEAR_LOSE));
+            SendMessageToAll(GetTrinityString((teamindex==TEAM_HORDE)?LANG_BG_AV_H_NEAR_LOSE:LANG_BG_AV_A_NEAR_LOSE));
             PlaySoundToAll(AV_SOUND_NEAR_VICTORY);
             m_IsInformedNearVictory[teamindex] = true;
         }
@@ -509,7 +509,7 @@ void BattlegroundAV::AddPlayer(Player *plr)
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
     auto  sc = new BattlegroundAVScore;
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
     if(m_MaxLevel==0)
         m_MaxLevel=(plr->GetLevel()%10 == 0)? plr->GetLevel() : (plr->GetLevel()-(plr->GetLevel()%10))+10; //TODO: just look at the code \^_^/ --but queue-info should provide this information..
 
@@ -632,9 +632,9 @@ void BattlegroundAV::HandleAreaTrigger(Player *Source, uint32 Trigger)
 void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
 {
 
-    auto itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = PlayerScores.find(Source->GetGUID());
 
-    if(itr == m_PlayerScores.end())                         // player not found...
+    if(itr == PlayerScores.end())                         // player not found...
         return;
 
     switch(type)

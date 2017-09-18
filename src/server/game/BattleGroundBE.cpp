@@ -95,7 +95,7 @@ void BattlegroundBE::AddPlayer(Player *plr)
     //create score and add it to map, default values are set in constructor
     auto  sc = new BattlegroundBEScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
 
     UpdateWorldState(0x9f1, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0x9f0, GetAlivePlayersCountByTeam(HORDE));
@@ -210,9 +210,9 @@ bool BattlegroundBE::SetupBattleground()
 void BattlegroundBE::UpdatePlayerScore(Player* Source, uint32 type, uint32 value)
 {
 
-    auto itr = m_PlayerScores.find(Source->GetGUID());
+    auto itr = PlayerScores.find(Source->GetGUID());
 
-    if(itr == m_PlayerScores.end())                         // player not found...
+    if(itr == PlayerScores.end())                         // player not found...
         return;
 
     //there is nothing special in this score

@@ -777,6 +777,36 @@ void ArenaTeam::GetMembers(std::list<ArenaTeamMember*>& memberList)
         memberList.push_back(&member);
 }
 
+uint32 ArenaTeam::GetAverageMMR(Group* group) const
+{
+    if (!group)
+        return 0;
+
+    uint32 matchMakerRating = 0;
+    uint32 playerDivider = 0;
+    for (MemberList::const_iterator itr = Members.begin(); itr != Members.end(); ++itr)
+    {
+        // Skip if player is not online
+        if (!ObjectAccessor::FindConnectedPlayer(itr->Guid))
+            continue;
+
+        // Skip if player is not member of group
+        if (!group->IsMember(itr->Guid))
+            continue;
+
+        matchMakerRating += itr->MatchMakerRating;
+        ++playerDivider;
+    }
+
+    // x/0 = crash
+    if (playerDivider == 0)
+        playerDivider = 1;
+
+    matchMakerRating /= playerDivider;
+
+    return matchMakerRating;
+}
+
 /*
 arenateam fields (id from 2.3.3 client):
 1414 - arena team id 2v2

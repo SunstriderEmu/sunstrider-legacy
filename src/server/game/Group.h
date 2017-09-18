@@ -244,10 +244,17 @@ class TC_GAME_API Group
         }
 
         // some additional raid methods
+#ifdef LICH_KING
+        void ConvertToLFG();
+#endif
         void ConvertToRaid();
 
         void SetBattlegroundGroup(Battleground *bg) { m_bgGroup = bg; }
-        uint32 CanJoinBattlegroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot);
+        //uint32 CanJoinBattlegroundQueue(uint32 bgTypeId, uint32 bgQueueType, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot);
+#ifdef LICH_KING
+        void SetBattlefieldGroup(Battlefield* bf);
+#endif
+        GroupJoinBattlegroundResult CanJoinBattlegroundQueue(Battleground const* bgOrTemplate, BattlegroundQueueTypeId bgQueueTypeId, uint32 MinPlayerCount, uint32 MaxPlayerCount, bool isRated, uint32 arenaSlot);
 
         void ChangeMembersGroup(const uint64 &guid, const uint8 &group);
         void ChangeMembersGroup(Player *player, const uint8 &group);

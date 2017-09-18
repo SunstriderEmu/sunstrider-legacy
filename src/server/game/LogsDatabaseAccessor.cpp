@@ -73,6 +73,7 @@ void LogsDatabaseAccessor::BattlegroundStats(uint32 mapId, time_t start, time_t 
     stmt->setString(3, winnerDB);
     stmt->setUInt32(4, scoreAlliance);
     stmt->setUInt32(5, scoreHorde);
+    //+ also log brackets? GetUniqueBracketId()
 
     LogsDatabase.Execute(stmt);
 }

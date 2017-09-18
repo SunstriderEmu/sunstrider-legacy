@@ -93,7 +93,7 @@ void BattlegroundRL::AddPlayer(Player *plr)
     //create score and add it to map, default values are set in constructor
     auto  sc = new BattlegroundRLScore;
 
-    m_PlayerScores[plr->GetGUID()] = sc;
+    PlayerScores[plr->GetGUID()] = sc;
 
     UpdateWorldState(0xbb8, GetAlivePlayersCountByTeam(ALLIANCE));
     UpdateWorldState(0xbb9, GetAlivePlayersCountByTeam(HORDE));
