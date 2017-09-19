@@ -1419,7 +1419,7 @@ void Aura::TriggerSpell()
                         if (target->GetPower(POWER_MANA) >= 10)
                         {
                             target->ModifyPower( POWER_MANA, -10 );
-                            target->SendEnergizeSpellLog(target, 27746, -10, POWER_MANA);
+                            // target->SendEnergizeSpellLog(target, (uint32) 27746, -10, POWER_MANA); // DEBUG, problem with -10
                         } else
                         {
                             target->RemoveAurasDueToSpell(27746);
@@ -5014,7 +5014,7 @@ void  Aura::HandleAuraModIncreaseMaxHealth(bool apply, bool Real)
 void Aura::HandleAuraModIncreaseEnergy(bool apply, bool Real)
 {
     Powers powerType = m_target->GetPowerType();
-    if(int32(powerType) != m_modifier.m_miscvalue)
+    if(powerType != m_modifier.m_miscvalue)
         return;
 
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
@@ -5025,7 +5025,7 @@ void Aura::HandleAuraModIncreaseEnergy(bool apply, bool Real)
 void Aura::HandleAuraModIncreaseEnergyPercent(bool apply, bool /*Real*/)
 {
     Powers powerType = m_target->GetPowerType();
-    if(int32(powerType) != m_modifier.m_miscvalue)
+    if(powerType != m_modifier.m_miscvalue)
         return;
 
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + powerType);
@@ -5845,7 +5845,7 @@ void Aura::CleanupTriggeredSpells()
     // needed for spell 43680, maybe others
     // TODO: is there a spell flag, which can solve this in a more sophisticated way?
     if(m_spellProto->Effects[GetEffIndex()].ApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL &&
-            m_spellProto->GetDuration() == m_spellProto->Effects[GetEffIndex()].Amplitude)
+            (uint32) m_spellProto->GetDuration() == m_spellProto->Effects[GetEffIndex()].Amplitude)
         return;
     m_target->RemoveAurasDueToSpell(tSpellId);
 }
@@ -6644,7 +6644,7 @@ void Aura::PeriodicTick()
                 else 
                     m_periodicTimer = 2000;
 
-                if(int32(pt) != m_modifier.m_miscvalue)
+                if(pt != m_modifier.m_miscvalue)
                     return;
 
                 if ( GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED )

@@ -30,7 +30,7 @@ namespace Trinity { struct ObjectUpdater; }
 namespace VMAP { enum class ModelIgnoreFlags : uint32; }
 struct MapDifficulty;
 struct MapEntry;
-enum Difficulty : int;
+enum Difficulty : uint32;
 class BattlegroundMap;
 class InstanceMap;
 class MapInstanced;

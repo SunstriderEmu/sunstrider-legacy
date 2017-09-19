@@ -54,22 +54,22 @@ class TC_GAME_API _SpellScript
         class EffectHook
         {
             public:
-                EffectHook(uint8 _effIndex);
+                EffectHook(SpellEffIndex _effIndex);
                 virtual ~EffectHook() { }
 
                 uint8 GetAffectedEffectsMask(SpellInfo const* spellEntry);
-                bool IsEffectAffected(SpellInfo const* spellEntry, uint8 effIndex);
-                virtual bool CheckEffect(SpellInfo const* spellEntry, uint8 effIndex) = 0;
+                bool IsEffectAffected(SpellInfo const* spellEntry, SpellEffIndex localEffIndex);
+                virtual bool CheckEffect(SpellInfo const* spellEntry, SpellEffIndex localEffIndex) = 0;
                 std::string EffIndexToString();
             protected:
-                uint8 effIndex;
+                SpellEffIndex effIndex;
         };
 
         class EffectNameCheck
         {
             public:
                 EffectNameCheck(uint16 _effName) { effName = _effName; }
-                bool Check(SpellInfo const* spellEntry, uint8 effIndex);
+                bool Check(SpellInfo const* spellEntry, SpellEffIndex effIndex);
                 std::string ToString();
             private:
                 uint16 effName;
@@ -79,7 +79,7 @@ class TC_GAME_API _SpellScript
         {
             public:
                 EffectAuraNameCheck(uint16 _effAurName) { effAurName = _effAurName; }
-                bool Check(SpellInfo const* spellEntry, uint8 effIndex);
+                bool Check(SpellInfo const* spellEntry, SpellEffIndex effIndex);
                 std::string ToString();
             private:
                 uint16 effAurName;
@@ -180,10 +180,10 @@ class TC_GAME_API SpellScript : public _SpellScript
         class TC_GAME_API EffectHandler : public  _SpellScript::EffectNameCheck, public _SpellScript::EffectHook
         {
             public:
-                EffectHandler(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName);
+                EffectHandler(SpellEffectFnType _pEffectHandlerScript, SpellEffIndex _effIndex, uint16 _effName);
                 std::string ToString();
-                bool CheckEffect(SpellInfo const* spellEntry, uint8 effIndex) override;
-                void Call(SpellScript* spellScript, SpellEffIndex effIndex);
+                bool CheckEffect(SpellInfo const* spellEntry, SpellEffIndex localEffIndex) override;
+                void Call(SpellScript* spellScript, SpellEffIndex localEffIndex);
             private:
                 SpellEffectFnType pEffectHandlerScript;
         };
@@ -200,8 +200,8 @@ class TC_GAME_API SpellScript : public _SpellScript
         class TC_GAME_API TargetHook : public _SpellScript::EffectHook
         {
             public:
-                TargetHook(uint8 _effectIndex, uint16 _targetType, bool _area, bool _dest);
-                bool CheckEffect(SpellInfo const* spellInfo, uint8 effIndex) override;
+                TargetHook(SpellEffIndex _effectIndex, uint16 _targetType, bool _area, bool _dest);
+                bool CheckEffect(SpellInfo const* spellInfo, SpellEffIndex effIndex) override;
                 std::string ToString();
                 uint16 GetTarget() const { return targetType; }
             protected:
@@ -213,7 +213,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         class TC_GAME_API ObjectAreaTargetSelectHandler : public TargetHook
         {
             public:
-                ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
+                ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType);
                 void Call(SpellScript* spellScript, std::list<WorldObject*>& targets);
             private:
                 SpellObjectAreaTargetSelectFnType pObjectAreaTargetSelectHandlerScript;
@@ -222,7 +222,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         class TC_GAME_API ObjectTargetSelectHandler : public TargetHook
         {
             public:
-                ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
+                ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType);
                 void Call(SpellScript* spellScript, WorldObject*& target);
             private:
                 SpellObjectTargetSelectFnType pObjectTargetSelectHandlerScript;
@@ -231,7 +231,7 @@ class TC_GAME_API SpellScript : public _SpellScript
         class TC_GAME_API DestinationTargetSelectHandler : public TargetHook
         {
             public:
-                DestinationTargetSelectHandler(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
+                DestinationTargetSelectHandler(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType);
                 void Call(SpellScript* spellScript, SpellDestination& target);
             private:
                 SpellDestinationTargetSelectFnType DestinationTargetSelectHandlerScript;
@@ -240,11 +240,11 @@ class TC_GAME_API SpellScript : public _SpellScript
         #define SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME) \
         class CastHandlerFunction : public SpellScript::CastHandler { public: CastHandlerFunction(SpellCastFnType _pCastHandlerScript) : SpellScript::CastHandler((SpellScript::SpellCastFnType)_pCastHandlerScript) {} }; \
         class CheckCastHandlerFunction : public SpellScript::CheckCastHandler { public: CheckCastHandlerFunction(SpellCheckCastFnType _checkCastHandlerScript) : SpellScript::CheckCastHandler((SpellScript::SpellCheckCastFnType)_checkCastHandlerScript) {} }; \
-        class EffectHandlerFunction : public SpellScript::EffectHandler { public: EffectHandlerFunction(SpellEffectFnType _pEffectHandlerScript, uint8 _effIndex, uint16 _effName) : SpellScript::EffectHandler((SpellScript::SpellEffectFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
+        class EffectHandlerFunction : public SpellScript::EffectHandler { public: EffectHandlerFunction(SpellEffectFnType _pEffectHandlerScript, SpellEffIndex _effIndex, uint16 _effName) : SpellScript::EffectHandler((SpellScript::SpellEffectFnType)_pEffectHandlerScript, _effIndex, _effName) {} }; \
         class HitHandlerFunction : public SpellScript::HitHandler { public: HitHandlerFunction(SpellHitFnType _pHitHandlerScript) : SpellScript::HitHandler((SpellScript::SpellHitFnType)_pHitHandlerScript) {} }; \
-        class ObjectAreaTargetSelectHandlerFunction : public SpellScript::ObjectAreaTargetSelectHandler { public: ObjectAreaTargetSelectHandlerFunction(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType) : SpellScript::ObjectAreaTargetSelectHandler((SpellScript::SpellObjectAreaTargetSelectFnType)_pObjectAreaTargetSelectHandlerScript, _effIndex, _targetType) {} }; \
-        class ObjectTargetSelectHandlerFunction : public SpellScript::ObjectTargetSelectHandler { public: ObjectTargetSelectHandlerFunction(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType) : SpellScript::ObjectTargetSelectHandler((SpellScript::SpellObjectTargetSelectFnType)_pObjectTargetSelectHandlerScript, _effIndex, _targetType) { } }; \
-        class DestinationTargetSelectHandlerFunction : public SpellScript::DestinationTargetSelectHandler { public: DestinationTargetSelectHandlerFunction(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType) : SpellScript::DestinationTargetSelectHandler((SpellScript::SpellDestinationTargetSelectFnType)_DestinationTargetSelectHandlerScript, _effIndex, _targetType) { } };
+        class ObjectAreaTargetSelectHandlerFunction : public SpellScript::ObjectAreaTargetSelectHandler { public: ObjectAreaTargetSelectHandlerFunction(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType) : SpellScript::ObjectAreaTargetSelectHandler((SpellScript::SpellObjectAreaTargetSelectFnType)_pObjectAreaTargetSelectHandlerScript, _effIndex, _targetType) {} }; \
+        class ObjectTargetSelectHandlerFunction : public SpellScript::ObjectTargetSelectHandler { public: ObjectTargetSelectHandlerFunction(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType) : SpellScript::ObjectTargetSelectHandler((SpellScript::SpellObjectTargetSelectFnType)_pObjectTargetSelectHandlerScript, _effIndex, _targetType) { } }; \
+        class DestinationTargetSelectHandlerFunction : public SpellScript::DestinationTargetSelectHandler { public: DestinationTargetSelectHandlerFunction(SpellDestinationTargetSelectFnType _DestinationTargetSelectHandlerScript, SpellEffIndex _effIndex, uint16 _targetType) : SpellScript::DestinationTargetSelectHandler((SpellScript::SpellDestinationTargetSelectFnType)_DestinationTargetSelectHandlerScript, _effIndex, _targetType) { } };
 
         #define PrepareSpellScript(CLASSNAME) SPELLSCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) SPELLSCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME)
     public:

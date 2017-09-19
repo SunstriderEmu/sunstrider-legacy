@@ -454,7 +454,7 @@ void PetAI::UpdateAI(const uint32 diff)
                     continue;
             }
 
-            auto spell = new Spell(&i_pet, spellInfo, false, 0);
+            // auto spell = new Spell(&i_pet, spellInfo, false, 0);
 
             if (spellInfo->IsPositive())
             {
@@ -531,7 +531,6 @@ void PetAI::UpdateAI(const uint32 diff)
         {
             TargetSpellList::iterator it = m_targetSpellStore.begin();
             std::advance(it, urand(0, m_targetSpellStore.size() - 1));
-            uint32 index = urand(0, m_targetSpellStore.size() - 1);
 
             Spell* spell = (*it).second;
             Unit*  target = (*it).first;

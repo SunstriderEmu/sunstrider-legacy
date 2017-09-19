@@ -263,7 +263,7 @@ Creature* ScriptedAI::DoSpawnCreature(uint32 id, float x, float y, float z, floa
     return me->SummonCreature(id,me->GetPositionX() + x,me->GetPositionY() + y,me->GetPositionZ() + z, angle, (TempSummonType)type, despawntime);
 }
 
-SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
+SpellInfo const* ScriptedAI::SelectSpell(Unit* target, SpellSchoolMask School, Mechanics Mechanic, SelectSpellTarget Targets, uint32 PowerCostMin, uint32 PowerCostMax, float RangeMin, float RangeMax, SelectEffect Effects)
 {
     //No target so we can't cast
     if (!target)
@@ -303,11 +303,11 @@ SpellInfo const* ScriptedAI::SelectSpell(Unit* target, uint32 School, Mechanics 
             continue;
 
         //Check for school if specified
-        if (School != 0 && TempSpell->SchoolMask & School)
+        if (School != SPELL_SCHOOL_MASK_NONE && !(TempSpell->SchoolMask & School))
             continue;
 
         //Check for spell mechanic if specified
-        if (Mechanic != 0 && TempSpell->Mechanic != Mechanic)
+        if (Mechanic != MECHANIC_NONE && TempSpell->Mechanic != Mechanic)
             continue;
 
         //Make sure that the spell uses the requested amount of power
