@@ -539,8 +539,8 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     DBCData.w = dbcentry->base_o;
 
 #ifndef LICH_KING 
-    char const* buffer = reinterpret_cast<char const*>(header);
 #ifdef NOT_TESTED
+    char const* buffer = reinterpret_cast<char const*>(header);
     // kelno: This is adapted from LK code, not tested yet. Note, positions seems to be wrong, maybe target_positions is swapped on BC
 
     uint32 targetInterpolationMin = 0;
@@ -679,6 +679,7 @@ bool readCamera(M2Camera const* cam, uint32 buffSize, M2Header const* header, Ci
     }
 #endif //NOT_TESTED
 #else
+    char const* buffer = reinterpret_cast<char const*>(header);
     // Read target locations, only so that we can calculate orientation
     for (uint32 k = 0; k < cam->target_positions.timestampsLK.number; ++k)
     {

@@ -999,8 +999,8 @@ void WorldSession::HandleGuildBankSwapItems( WorldPacket & recvData )
     uint64 GoGuid;
     uint8 BankToBank;
 
-    uint8 BankTab, BankTabSlot, AutoStore, AutoStoreCount, PlayerSlot, PlayerBag, SplitedAmount = 0;
-    uint8 BankTabDst, BankTabSlotDst, unk2, ToChar = 1;
+    uint8 BankTab, BankTabSlot, AutoStore = 0, AutoStoreCount, PlayerSlot = 0, PlayerBag = 0, SplitedAmount = 0;
+    uint8 BankTabDst = 0, BankTabSlotDst = 0, unk2, ToChar = 1;
     uint32 ItemEntry, unk1;
 
     

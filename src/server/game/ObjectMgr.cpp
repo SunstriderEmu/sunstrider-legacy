@@ -3969,7 +3969,8 @@ void ObjectMgr::LoadPetCreateSpells()
         if(!creature_id || !sObjectMgr->GetCreatureTemplate(creature_id))
             continue;
 
-        PetCreateSpellEntry PetCreateSpell;
+        PetCreateSpellEntry PetCreateSpell = { {0,0,0,0} }; // Initialize PetCreateSpell.spellid to all 0
+
         for(int i = 0; i < 4; i++)
         {
             PetCreateSpell.spellid[i] = fields[i + 1].GetUInt32();
@@ -5238,12 +5239,12 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
 
     // at corpse map
     bool foundNear = false;
-    float distNear;
+    float distNear = 0;
     WorldSafeLocsEntry const* entryNear = nullptr;
 
     // at entrance map for corpse map
     bool foundEntr = false;
-    float distEntr;
+    float distEntr = 0;
     WorldSafeLocsEntry const* entryEntr = nullptr;
 
     // some where other
@@ -5284,7 +5285,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
                 +(entry->y - mapEntry->entrance_y)*(entry->y - mapEntry->entrance_y);
             if(foundEntr)
             {
-                if(dist2 < distEntr) // distEntr not initialized?
+                if(dist2 < distEntr)
                 {
                     distEntr = dist2;
                     entryEntr = entry;
@@ -5303,7 +5304,7 @@ WorldSafeLocsEntry const *ObjectMgr::GetClosestGraveYard(float x, float y, float
             float dist2 = (entry->x - x)*(entry->x - x)+(entry->y - y)*(entry->y - y)+(entry->z - z)*(entry->z - z);
             if(foundNear)
             {
-                if(dist2 < distNear) // distNear not initialized?
+                if(dist2 < distNear)
                 {
                     distNear = dist2;
                     entryNear = entry;

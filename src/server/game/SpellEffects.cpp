@@ -5289,7 +5289,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
              || unitTarget->HasAuraEffect(26274,0))
                 return;
 
-            uint32 iTmpSpellId;
+            uint32 iTmpSpellId=0;
 
             switch(m_caster->GetMap()->urand(0,3))
             {
@@ -5651,7 +5651,7 @@ void Spell::EffectScriptEffect(uint32 effIndex)
             if(!unitTarget)
                 return;
 
-            uint32 spellId;
+            uint32 spellId = 0;
             switch((uint32)m_caster->GetMap()->rand32()%4)
             {
                 case 0:

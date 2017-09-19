@@ -81,18 +81,18 @@ std::string const* _SpellScript::_GetScriptName() const
 _SpellScript::EffectHook::EffectHook(SpellEffIndex _effIndex)
 {
     // effect index must be in range <0;2>, allow use of special effindexes
-    ASSERT(_effIndex == EFFECT_ALL || _effIndex == EFFECT_FIRST_FOUND || _effIndex < MAX_SPELL_EFFECTS);
+    ASSERT((uint8) _effIndex == EFFECT_ALL || (uint8) _effIndex == EFFECT_FIRST_FOUND || _effIndex < MAX_SPELL_EFFECTS);
     effIndex = _effIndex;
 }
 
 uint8 _SpellScript::EffectHook::GetAffectedEffectsMask(SpellInfo const* spellEntry)
 {
     uint8 mask = 0;
-    if ((effIndex == EFFECT_ALL) || (effIndex == EFFECT_FIRST_FOUND))
+    if (((uint8) effIndex == EFFECT_ALL) || ((uint8) effIndex == EFFECT_FIRST_FOUND))
     {
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if ((effIndex == EFFECT_FIRST_FOUND) && mask)
+            if (((uint8) effIndex == EFFECT_FIRST_FOUND) && mask)
                 return mask;
             if (CheckEffect(spellEntry, (SpellEffIndex) i))
                 mask |= (uint8)1<<i;
@@ -113,7 +113,7 @@ bool _SpellScript::EffectHook::IsEffectAffected(SpellInfo const* spellEntry, Spe
 
 std::string _SpellScript::EffectHook::EffIndexToString()
 {
-    switch (effIndex)
+    switch ((uint8) effIndex)
     {
         case EFFECT_ALL:
             return "EFFECT_ALL";

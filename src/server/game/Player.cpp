@@ -12430,7 +12430,7 @@ void Player::SwapItem( uint16 src, uint16 dst )
 
         // check src->dest move possibility
         ItemPosCountVec sDest;
-        uint16 eDest;
+        uint16 eDest = 0;
         if( IsInventoryPos( dst ) )
             msg = CanStoreItem( dstbag, dstslot, sDest, pSrcItem, true );
         else if( IsBankPos( dst ) )
