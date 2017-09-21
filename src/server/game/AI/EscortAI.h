@@ -47,12 +47,7 @@ struct TC_GAME_API npc_escortAI : public ScriptedAI
         void Reset() override = 0;
 
         // CreatureAI functions
-        npc_escortAI(Creature *c) : ScriptedAI(c), 
-            PlayerTimer(1000), MaxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE), CanMelee(true), 
-            DespawnAtEnd(true), DespawnAtFar(true) 
-        {
-            me->GetPosition(LastPos.x, LastPos.y, LastPos.z);
-        }
+		npc_escortAI(Creature *c);
 
         void AttackStart(Unit * who) override;
 
