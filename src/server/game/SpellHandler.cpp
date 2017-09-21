@@ -179,17 +179,22 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recvPacket)
         if (lockInfo->requiredlockskill) 
         {
             // check key
+            bool isFound = false;
             for (int i = 0; i < 5; ++i) 
             {
                 // type==1 This means lockInfo->key[i] is an item
                 if (lockInfo->Type[i]==LOCK_KEY_ITEM && lockInfo->Index[i]) {
                     if (pUser->HasItemCount(lockInfo->Index[i], 1, false)) {
+                        isFound = true;
                         break; //found
                     }
                 }
-                
-                //not found
-                pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr );
+            }
+
+            //not found
+            if(!isFound) 
+            { 
+                pUser->SendEquipError(EQUIP_ERR_ITEM_LOCKED, pItem, nullptr);
                 return;
             }
         }
