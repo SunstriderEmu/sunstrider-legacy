@@ -727,7 +727,7 @@ enum AtLoginFlags
     AT_LOGIN_ALL_REP       = 0x20,
     AT_LOGIN_FIRST         = 0x40,
 	//0x80
-	//AT_LOGIN_RESURRECT     = 0x100, //NYI
+	AT_LOGIN_RESURRECT     = 0x100,
 };
 
 typedef std::map<uint32, QuestStatusData> QuestStatusMap;
@@ -1024,9 +1024,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 15,
     PLAYER_LOGIN_QUERY_LOADGUILD                = 16,
     PLAYER_LOGIN_QUERY_LOADARENAINFO            = 17,
-    PLAYER_LOGIN_QUERY_LOADBGCOORD              = 18,
-    PLAYER_LOGIN_QUERY_LOADSKILLS               = 19,
-    PLAYER_LOGIN_QUERY_LOAD_BG_DATA             = 20,
+    PLAYER_LOGIN_QUERY_LOADSKILLS               = 18,
+    PLAYER_LOGIN_QUERY_LOAD_BG_DATA             = 19,
 
     MAX_PLAYER_LOGIN_QUERY
 };
@@ -1036,8 +1035,8 @@ enum PlayerDelayedOperations
     DELAYED_SAVE_PLAYER         = 0x01,
     DELAYED_RESURRECT_PLAYER    = 0x02,
     DELAYED_SPELL_CAST_DESERTER = 0x04,
-  //  DELAYED_BG_MOUNT_RESTORE    = 0x08,    NYI                 ///< Flag to restore mount state after teleport from BG
-  //  DELAYED_BG_TAXI_RESTORE     = 0x10,    NYI                 ///< Flag to restore taxi state after teleport from BG
+    DELAYED_BG_MOUNT_RESTORE    = 0x08,                     ///< Flag to restore mount state after teleport from BG
+    DELAYED_BG_TAXI_RESTORE     = 0x10,                     ///< Flag to restore taxi state after teleport from BG
     DELAYED_BG_GROUP_RESTORE    = 0x20,                     ///< Flag to restore group state after teleport from BG
     DELAYED_END
 };
@@ -2539,7 +2538,6 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         void _SaveActions(SQLTransaction trans);
         void _SaveAuras(SQLTransaction trans);
-        void _SaveBattlegroundCoord(SQLTransaction trans);
         void _SaveInventory(SQLTransaction trans);
         void _SaveMail(SQLTransaction trans);
         void _SaveQuestStatus(SQLTransaction trans);
@@ -2547,6 +2545,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void _SaveReputation(SQLTransaction trans);
         void _SaveSpells(SQLTransaction trans);
         void _SaveSkills(SQLTransaction trans);
+        void _SaveBGData(SQLTransaction& trans);
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/

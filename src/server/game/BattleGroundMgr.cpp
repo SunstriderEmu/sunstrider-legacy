@@ -19,6 +19,12 @@
 #include "World.h"
 #include "Chat.h"
 #include "ArenaTeam.h"
+#include "ArenaTeamMgr.h"
+
+bool BattlegroundTemplate::IsArena() const
+{
+    return BattlemasterEntry->type == MAP_ARENA;
+}
 
 /*********************************************************/
 /***            BATTLEGROUND MANAGER                   ***/
@@ -33,7 +39,6 @@ BattlegroundMgr::BattlegroundMgr() :
     m_AutoDistributePoints = (bool)sWorld->getConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_POINTS);
     m_MaxRatingDifference = sWorld->getConfig(CONFIG_ARENA_MAX_RATING_DIFFERENCE);
     m_RatingDiscardTimer = sWorld->getConfig(CONFIG_ARENA_RATING_DISCARD_TIMER);
-    m_PrematureFinishTimer = sWorld->getConfig(CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER);
     */
 }
 
@@ -139,8 +144,7 @@ void BattlegroundMgr::Update(time_t diff)
         {
             if (time(nullptr) > m_NextAutoDistributionTime)
             {
-                //sArenaTeamMgr->DistributeArenaPoints();
-                DistributeArenaPoints();
+                sArenaTeamMgr->DistributeArenaPoints();
                 m_NextAutoDistributionTime = m_NextAutoDistributionTime + BATTLEGROUND_ARENA_POINT_DISTRIBUTION_DAY * sWorld->getIntConfig(CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS);
                 //TC sWorld->setWorldState(WS_ARENA_DISTRIBUTION_TIME, uint64(m_NextAutoDistributionTime));
                 CharacterDatabase.PExecute("UPDATE saved_variables SET NextArenaPointDistributionTime = '" UI64FMTD "'", m_NextAutoDistributionTime);
@@ -152,19 +156,19 @@ void BattlegroundMgr::Update(time_t diff)
     }
 }
 
-void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battleground *bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint32 arenatype, uint32 arenaFaction)
+void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battleground *bg, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint32 arenaFaction)
 {
-    // we can be in 3 queues in same time... (2 on LK?)
+    // we can be in 3 queues in same time..
     if(StatusID == 0 || !bg)
     {
         data->Initialize(SMSG_BATTLEFIELD_STATUS, 4+8);
-        *data << uint32(QueueSlot);                         // queue id (0...2)
+        *data << uint32(QueueSlot);                         // queue id (0...1)
         *data << uint64(0);
         return;
     }
 
     data->Initialize(SMSG_BATTLEFIELD_STATUS, (4+8+1+4+2+4+1+4+4+4));
-    *data << uint32(QueueSlot);                             // queue id (0...2) - player can be in 3 queues in time
+    *data << uint32(QueueSlot);                             // queue id (0...1) - player can be in 2 queues in time
     // The following segment is read as uint64 in client but can be appended as their original type.
     *data << uint8(arenatype);
 #ifdef LICH_KING
@@ -183,7 +187,8 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket *data, Battlegro
 
     // alliance/horde for BG and skirmish/rated for Arenas
     // following displays the minimap-icon 0 = faction icon 1 = arenaicon
-    *data << uint8(bg->IsArena() ? bg->isRated() : bg->GetTeamIndexByTeamId(team));
+    //*data << uint8(bg->IsArena() ? bg->isRated() : bg->GetTeamIndexByTeamId(team));
+    *data << uint8(bg->isRated());                          // 1 for rated match, 0 for bg or non rated match
 
     *data << uint32(StatusID);                              // status
     switch(StatusID)
@@ -423,7 +428,6 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId original
         return nullptr;
     }
 
-    bool isRandom = bgTypeId != originalBgTypeId && !bg->IsArena();
 
     bg->SetBracket(bracketEntry);
     bg->SetInstanceID(sMapMgr->GenerateInstanceId());
@@ -433,6 +437,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId original
     bg->SetArenaType(arenaType);
     bg->SetTypeID(originalBgTypeId);
 #ifdef LICH_KING
+    bool isRandom = bgTypeId != originalBgTypeId && !bg->IsArena();
     bg->SetRandomTypeID(bgTypeId);
     bg->SetRandom(isRandom);
 #endif
@@ -635,7 +640,11 @@ void BattlegroundMgr::LoadBattlegroundTemplates()
 
         _battlegroundTemplates[bgTypeId] = bgTemplate;
 
+#ifdef LICH_KING
         if (bgTemplate.BattlemasterEntry->mapid[1] == -1) // in this case we have only one mapId
+#else
+        if (bgTemplate.BattlemasterEntry->mapid[1] == 0) // in this case we have only one mapId
+#endif
             _battlegroundMapTemplates[bgTemplate.BattlemasterEntry->mapid[0]] = &_battlegroundTemplates[bgTypeId];
 
         ++count;
@@ -665,69 +674,10 @@ void BattlegroundMgr::InitAutomaticArenaPointDistribution()
     TC_LOG_DEBUG("bg.battleground", "Automatic Arena Point Distribution initialized.");
 }
 
-void BattlegroundMgr::DistributeArenaPoints()
-{
-    // used to distribute arena points based on last week's stats
-    sWorld->SendGlobalText("Flushing Arena points based on team ratings, this may take a few minutes. Please stand by...", nullptr);
-
-    sWorld->SendGlobalText("Distributing arena points to players...", nullptr);
-
-    //temporary structure for storing maximum points to add values for all players
-    std::map<uint32, uint32> PlayerPoints;
-
-    //at first update all points for all team members
-    for(auto team_itr = sObjectMgr->GetArenaTeamMapBegin(); team_itr != sObjectMgr->GetArenaTeamMapEnd(); ++team_itr)
-    {
-        if(ArenaTeam * at = team_itr->second)
-        {
-            at->UpdateArenaPointsHelper(PlayerPoints);
-        }
-    }
-
-    //cycle that gives points to all players
-    for (auto & PlayerPoint : PlayerPoints)
-    {
-        // Update database
-        CharacterDatabase.PExecute("UPDATE characters SET arenaPoints = arenaPoints + '%u' WHERE guid = '%u'", PlayerPoint.second, PlayerPoint.first);
-        
-        // Add points if player is online
-        Player* pl = ObjectAccessor::FindConnectedPlayer(PlayerPoint.first);
-        if (pl)
-            pl->ModifyArenaPoints(PlayerPoint.second);
-    }
-
-    PlayerPoints.clear();
-
-    sWorld->SendGlobalText("Finished setting arena points for online players.", nullptr);
-
-    sWorld->SendGlobalText("Modifying played count, arena points etc. for loaded arena teams, sending updated stats to online players...", nullptr);
-    for(auto titr = sObjectMgr->GetArenaTeamMapBegin(); titr != sObjectMgr->GetArenaTeamMapEnd(); ++titr)
-    {
-        if(ArenaTeam * at = titr->second)
-        {
-            if(at->GetType() == ARENA_TEAM_2v2 && sWorld->getConfig(CONFIG_ARENA_DECAY_ENABLED))
-                at->HandleDecay();
-           
-            at->FinishWeek();                              // set played this week etc values to 0 in memory, too
-            at->SaveToDB();                                // save changes
-            at->NotifyStatsChanged();                      // notify the players of the changes
-        }
-    }
-
-    if(sWorld->getConfig(CONFIG_ARENA_NEW_TITLE_DISTRIB))
-        sWorld->updateArenaLeadersTitles();
-
-    sWorld->SendGlobalText("Modification done.", nullptr);
-
-    sWorld->SendGlobalText("Done flushing Arena points.", nullptr);
-}
-
 void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket *data, uint64 guid, Player* player, BattlegroundTypeId bgTypeId, uint8 fromWhere)
 {
     if (!player)
         return;
-
-    uint32 PlayerLevel = 10;
 
     data->Initialize(SMSG_BATTLEFIELD_LIST);
     *data << uint64(guid);                                  // battlemaster guid
@@ -963,10 +913,10 @@ void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
 
 void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 arenaType, BattlegroundQueueTypeId bgQueueTypeId, BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
 {
-    ADDMUTEX; //Check if this is needed
     //This method must be atomic, @todo add mutex
     //we will use only 1 number created of bgTypeId and bracket_id
     uint64 const scheduleId = ((uint64)arenaMatchmakerRating << 32) | ((uint64)arenaType << 24) | ((uint64)bgQueueTypeId << 16) | ((uint64)bgTypeId << 8) | (uint64)bracket_id;
+    std::lock_guard<std::mutex> lock(m_QueueUpdateSchedulerLock); //sunstrider addition
     if (std::find(m_QueueUpdateScheduler.begin(), m_QueueUpdateScheduler.end(), scheduleId) == m_QueueUpdateScheduler.end())
         m_QueueUpdateScheduler.push_back(scheduleId);
 
@@ -991,7 +941,7 @@ uint32 BattlegroundMgr::GetPrematureFinishTime() const
     return sWorld->getIntConfig(CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER);
 }
 
-uint32 BattlegroundMgr::GetAverageQueueWaitTimeForMaxLevels() const
+uint32 BattlegroundMgr::GetAverageQueueWaitTimeForMaxLevels(BattlegroundQueueTypeId type) const
 {
     /* TODO!
     You'll need to find the bracket for the max level +
@@ -1019,6 +969,9 @@ BattlegroundTypeId BattlegroundMgr::GetRandomBG(BattlegroundTypeId bgTypeId)
                 weights.push_back(bg->Weight);
             }
         }
+        //sunstrider possible crash fix
+        if(ids.empty() || weights.empty())
+            return BATTLEGROUND_TYPE_NONE;
 
         return *Trinity::Containers::SelectRandomWeightedContainerElement(ids, weights);
     }

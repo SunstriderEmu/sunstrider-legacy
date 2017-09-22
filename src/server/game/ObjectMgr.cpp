@@ -3984,7 +3984,6 @@ void ObjectMgr::LoadPetCreateSpells()
     while (result->NextRow());
 
     TC_LOG_INFO("server.loading", ">> Loaded %u pet create spells", count );
-    
 }
 
 void ObjectMgr::LoadScripts(ScriptMapMap& scripts, char const* tablename)

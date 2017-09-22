@@ -956,6 +956,8 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_ARENA_AUTO_DISTRIBUTE_INTERVAL_DAYS] = sConfigMgr->GetIntDefault("Arena.AutoDistributeInterval", 7);
 
     m_configs[CONFIG_BATTLEGROUND_PREMATURE_FINISH_TIMER] = sConfigMgr->GetIntDefault("Battleground.PrematureFinishTimer", 0);
+    m_configs[CONFIG_BATTLEGROUND_PREMADE_GROUP_WAIT_FOR_MATCH] = sConfigMgr->GetIntDefault("Battleground.PremadeGroupWaitForMatch", 30 * SECOND * IN_MILLISECONDS);
+    m_configs[CONFIG_BATTLEGROUND_INVITATION_TYPE] = sConfigMgr->GetIntDefault("Battleground.InvitationType", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_WARSONG] = sConfigMgr->GetIntDefault("Battleground.TimeLimit.Warsong", 0);
     m_configs[CONFIG_BATTLEGROUND_TIMELIMIT_ARENA] = sConfigMgr->GetIntDefault("Battleground.TimeLimit.Arena", 0);
 
@@ -1153,6 +1155,7 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_DEBUG_LOG_LAST_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogLastPackets", 0);
     m_configs[CONFIG_DEBUG_LOG_ALL_PACKETS] = sConfigMgr->GetBoolDefault("Debug.LogAllPackets", 0);
     m_configs[CONFIG_DEBUG_DISABLE_CREATURES_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableCreaturesLoading", 0);
+    m_configs[CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING] = sConfigMgr->GetBoolDefault("Debug.DisableGameObjectsLoading", 0);
     m_configs[CONFIG_DEBUG_DISABLE_TRANSPORTS] = sConfigMgr->GetBoolDefault("Debug.DisableTransports", 0);
 
 
@@ -1394,14 +1397,17 @@ void World::SetInitialWorldSettings()
         sObjectMgr->LoadCreatureRespawnTimes();
     }
 
-    TC_LOG_INFO("server.loading", "Loading Gameobject Data..." );
-    sObjectMgr->LoadGameobjects();
+    if (!getConfig(CONFIG_DEBUG_DISABLE_GAMEOBJECTS_LOADING))
+    {
+        TC_LOG_INFO("server.loading", "Loading Gameobject Data...");
+        sObjectMgr->LoadGameobjects();
+
+        TC_LOG_INFO("server.loading", "Loading Gameobject Respawn Data..."); // must be after PackInstances()
+        sObjectMgr->LoadGameobjectRespawnTimes();
+    }
 
     TC_LOG_INFO("server.loading","Loading Transport templates...");
     sTransportMgr->LoadTransportTemplates();
-
-    TC_LOG_INFO("server.loading", "Loading Gameobject Respawn Data..." ); // must be after PackInstances()
-    sObjectMgr->LoadGameobjectRespawnTimes();
 
     TC_LOG_INFO("server.loading", "Loading Game Event Data...");
     sGameEventMgr->LoadFromDB();

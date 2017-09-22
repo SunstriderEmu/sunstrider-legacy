@@ -40,15 +40,11 @@ void WhoListStorageMgr::Update()
         uint32 playerZoneId = itr->second->GetZoneId();
         if (playerZoneId == 3698 || playerZoneId == 3968 || playerZoneId == 3702)
         {
-            uint32 mapId = itr->second->GetBattlegroundEntryPointMap();
-            Map * map = sMapMgr->FindBaseNonInstanceMap(mapId);
+            WorldLocation const& loc = itr->second->GetBattlegroundEntryPoint();
+            uint32 mapId = loc.GetMapId();
+            Map const* map = sMapMgr->FindBaseNonInstanceMap(mapId);
             if (map)
-            {
-                float x = itr->second->GetBattlegroundEntryPointX();
-                float y = itr->second->GetBattlegroundEntryPointY();
-                float z = itr->second->GetBattlegroundEntryPointZ();
-                playerZoneId = map->GetZoneId(x, y, z);
-            }
+                playerZoneId = map->GetZoneId(loc.GetPositionX(), loc.GetPositionY(), loc.GetPositionZ());
         }
 
         _whoListStorage.emplace_back(itr->second->GetGUID(), itr->second->GetTeam(), itr->second->GetSession()->GetSecurity(), itr->second->GetLevel(), 

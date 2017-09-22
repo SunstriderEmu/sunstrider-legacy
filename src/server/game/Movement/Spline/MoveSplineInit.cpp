@@ -63,16 +63,11 @@ namespace Movement
         {
             packet->SetOpcode(SMSG_MONSTER_MOVE_TRANSPORT);
             packet->appendPackGUID(unit->GetTransGUID());
-#ifdef BUILD_335_SUPPORT
-            if(build == BUILD_335)
-            {
+
 #ifdef LICH_KING
-                packetLK << int8(unit->GetTransSeat());
-#else
-                *packet << int8(0);
+            packet << int8(unit->GetTransSeat());
 #endif
-            }
-#endif
+
         }
         return packet;
     }
@@ -91,28 +86,6 @@ namespace Movement
     // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
     void SendLaunchToSet(Unit* unit, bool transport)
     {
-#ifdef BUILD_335_SUPPORT
-        // this part currently buggy, most monsters do not appear to move (only first move visible ?)
-        // One difference with #else code : the broadcast is sent to every player with unit at client, instead of broadcasting to all players in visibility range
-        WorldPacket* packetBC = nullptr;
-        WorldPacket* packetLK = nullptr;
-
-        auto& players = unit->GetMap()->GetPlayers();
-        for(auto& itr : players)
-        {
-            if(!itr.GetSource()->HaveAtClient(unit))
-                continue;
-
-            WorldSession* session = itr.GetSource()->GetSession();
-            if(session->GetClientBuild() == BUILD_335)
-                SendLaunchPacketForVersion(packetLK, session, BUILD_335, unit, transport);
-            else
-                
-        }
-
-        delete packetBC;
-        delete packetLK;
-#else //simpler logic for performance
         WorldPacket data(SMSG_MONSTER_MOVE, 64);
         data << unit->GetPackGUID();
         if (transport)
@@ -123,7 +96,6 @@ namespace Movement
 
         PacketBuilder::WriteMonsterMove(*(unit->movespline), data, BUILD_243);
         unit->SendMessageToSet(&data, true);
-#endif
     }
 
     int32 MoveSplineInit::Launch()
@@ -203,50 +175,6 @@ namespace Movement
 
         return move_spline.Duration();
     }
-
-    // will build packet if needed
-    /*
-    FIXME: Packets send by this function have no effect. No idea what's wrong.
-    void SendStopPacketForVersion(WorldPacket*& packet, WorldSession* session, ClientBuild build, Unit const* unit, bool transport, Location& loc, uint32 splineId)
-    {
-        if(packet == nullptr)
-        {
-            packet = PrepareMovePacketForVersion(build, unit, transport);
-            PacketBuilder::WriteStopMovement(loc, splineId, *packet, build);
-        }
-        session->SendPacket(packet);
-    }
-
-    // send to player having this unit in sight, according to their client version. Will build packet for version only if needed
-   FIXME: Packets send by this function have no effect. No idea what's wrong.
-    void SendStopToSet(Unit* unit, bool transport, Location& loc, uint32 splineId)
-    {
-        WorldPacket* packetBC = nullptr;
-#ifdef BUILD_335_SUPPORT
-        WorldPacket* packetLK = nullptr;
-#endif
-
-        auto& players = unit->GetMap()->GetPlayers();
-        for(auto& itr : players)
-        {
-            if(!itr.GetSource()->HaveAtClient(unit))
-                continue;
-
-            WorldSession* session = itr.GetSource()->GetSession();
-#ifdef BUILD_335_SUPPORT
-            if(session->GetClientBuild() == BUILD_335)
-                SendStopPacketForVersion(packetLK, session, BUILD_335, unit, transport, loc, splineId);
-            else
-#endif
-                SendStopPacketForVersion(packetBC, session, BUILD_243, unit, transport, loc, splineId);
-        }
-
-        delete packetBC;
-#ifdef BUILD_335_SUPPORT
-        delete packetLK;
-#endif
-    }
-    */
 
     void MoveSplineInit::Stop()
     {

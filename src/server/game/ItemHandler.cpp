@@ -459,12 +459,7 @@ void WorldSession::HandleItemQuerySingleOpcode( WorldPacket & recvData )
 #ifdef LICH_KING
         uint32 itemLimitCategory = pProto->ItemLimitCategory;
         uint32 holidayId = pProto->HolidayId;
-#else
-        uint32 itemLimitCategory = 0;
-        uint32 holidayId = 0;
-#endif
 
-#ifdef BUILD_335_SUPPORT
         if (GetClientBuild() == BUILD_335)
         {
             data << itemLimitCategory;                  // WotLK, ItemLimitCategory

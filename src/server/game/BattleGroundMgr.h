@@ -104,8 +104,6 @@ class TC_GAME_API BattlegroundMgr
         const bool IsArenaTesting() const { return m_ArenaTesting; }
         const bool IsBattleGroundTesting() const { return m_Testing; }
 
-        BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES]; // public, because we need to access them in BG handler code
-
         void SendAreaSpiritHealerQueryOpcode(Player *pl, Battleground *bg, uint64 guid);
 
         static BattlegroundQueueTypeId BGQueueTypeId(BattlegroundTypeId bgTypeId, uint8 arenaType);
@@ -116,8 +114,6 @@ class TC_GAME_API BattlegroundMgr
         uint32 GetRatingDiscardTimer()  const;
 
         void InitAutomaticArenaPointDistribution();
-        void DistributeArenaPoints();
-        uint32 GetPrematureFinishTime() const {return m_PrematureFinishTimer;}
 
     private:
 
@@ -132,13 +128,13 @@ class TC_GAME_API BattlegroundMgr
 
         BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES];
 
+        std::mutex m_QueueUpdateSchedulerLock;
         std::vector<uint64> m_QueueUpdateScheduler;
         uint32 m_NextRatingDiscardUpdate;
         uint32 m_NextRatedArenaUpdate;
         //bool   m_AutoDistributePoints;
         uint64 m_NextAutoDistributionTime;
         uint32 m_AutoDistributionTimeChecker;
-        //uint32 m_PrematureFinishTimer;
         uint32 m_UpdateTimer;
         bool   m_ArenaTesting;
         bool   m_Testing; 

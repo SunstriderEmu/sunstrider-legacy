@@ -295,6 +295,7 @@ class TC_GAME_API Group
         //void SendInit(WorldSession *session);
         void SendTargetIconList(WorldSession *session);
         void SendUpdate();
+        void SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot = nullptr);
         void Update(time_t diff);
         void UpdatePlayerOutOfRange(Player* pPlayer);
 

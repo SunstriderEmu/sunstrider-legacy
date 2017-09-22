@@ -1069,83 +1069,93 @@ void Group::SendTargetIconList(WorldSession *session)
     session->SendPacket(&data);
 }
 
-void Group::SendUpdate()
+void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 {
-    Player *player;
+    Player* player = sObjectMgr->GetPlayer(playerGUID);
+    if (!player || !player->GetSession() || player->GetGroup() != this)
+        return;
 
-    for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+    // if MemberSlot wasn't provided
+    if (!slot)
     {
-        player = sObjectMgr->GetPlayer(citr->guid);
-        if (!player || !player->GetSession() || player->GetGroup() != this)
+        member_witerator witr = _getMemberWSlot(playerGUID);
+
+        if (witr == m_memberSlots.end()) // if there is no MemberSlot for such a player
+            return;
+
+        slot = &(*witr);
+    }
+
+    //LK OK                                             // guess size
+    WorldPacket data(SMSG_GROUP_LIST, (1 + 1 + 1 + 1 + 8 + 4 + GetMembersCount() * 20));
+    data << (uint8)m_groupType;                         // group type
+#ifndef LICH_KING
+    data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
+#endif
+    data << (uint8)(slot->group);                       // groupid
+#ifdef LICH_KING
+    data << uint8(slot->flags);
+#endif
+    data << (uint8)(slot->assistant ? 0x01 : 0);            // 0x2 main assist, 0x4 main tank
+#ifdef LICH_KING
+    if (isLFGGroup())
+    {
+        data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
+        data << uint32(sLFGMgr->GetDungeon(m_guid));
+    }
+    data << uint64(m_guid);
+    data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
+#else
+    data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
+#endif
+    data << uint32(GetMembersCount() - 1);
+    for (member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
+    {
+        if (slot->guid == citr2->guid)
             continue;
 
-        //LK OK                                             // guess size
-        WorldPacket data(SMSG_GROUP_LIST, (1+1+1+1+8+4+GetMembersCount()*20));
-        data << (uint8)m_groupType;                         // group type
-#ifndef LICH_KING
-        data << (uint8)(isBGGroup() ? 1 : 0);               // 2.0.x, isBattlegroundGroup?
-#endif
-        data << (uint8)(citr->group);                       // groupid
-#ifdef LICH_KING
-        data << uint8(slot->flags);
-#endif
-        data << (uint8)(citr->assistant?0x01:0);            // 0x2 main assist, 0x4 main tank
-#ifdef LICH_KING
-        if (isLFGGroup())
-        {
-            data << uint8(sLFGMgr->GetState(m_guid) == lfg::LFG_STATE_FINISHED_DUNGEON ? 2 : 0); // FIXME - Dungeon save status? 2 = done
-            data << uint32(sLFGMgr->GetDungeon(m_guid));
-        }
-        data << uint64(m_guid);
-        data << uint32(m_counter++);                        // 3.3, value increases every time this packet gets sent
-#else
-        data << uint64(0x50000000FFFFFFFELL);               // related to voice chat?
-#endif
-        data << uint32(GetMembersCount()-1);
-        for(member_citerator citr2 = m_memberSlots.begin(); citr2 != m_memberSlots.end(); ++citr2)
-        {
-            if(citr->guid == citr2->guid)
-                continue;
-                
-            Player* member = sObjectMgr->GetPlayer(citr2->guid);
-            uint8 onlineState = (member) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
-            onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
+        Player* member = sObjectMgr->GetPlayer(citr2->guid);
+        uint8 onlineState = (member) ? MEMBER_STATUS_ONLINE : MEMBER_STATUS_OFFLINE;
+        onlineState = onlineState | ((isBGGroup()) ? MEMBER_STATUS_PVP : 0);
 
-            data << citr2->name;
-            data << (uint64)citr2->guid;
-                                                            // online-state
-            data << (uint8)(onlineState);
-            data << (uint8)(citr2->group);                  // groupid
+        data << citr2->name;
+        data << (uint64)citr2->guid;
+        // online-state
+        data << (uint8)(onlineState);
+        data << (uint8)(citr2->group);                  // groupid
 #ifdef LICH_KING
-            data << uint8(citr->flags);                     // See enum GroupMemberFlags
+        data << uint8(citr->flags);                     // See enum GroupMemberFlags
 #endif
-            data << (uint8)(citr2->assistant?0x01:0);       // 0x2 main assist, 0x4 main tank
-        }
-
-        data << uint64(m_leaderGuid);                       // leader guid
-        if(GetMembersCount()-1)
-        {
-            data << (uint8)m_lootMethod;                    // loot method
-            if (m_lootMethod == MASTER_LOOT)
-                data << uint64(m_masterLooterGuid);         // master looter guid
-            else
-                data << uint64(0);
-            data << (uint8)m_lootThreshold;                 // loot threshold
-            data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
-#ifdef LICH_KING
-            data << uint8(m_raidDifficulty);                // Raid Difficulty
-            data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
-#endif
-        }
-        player->SendDirectMessage( &data );
+        data << (uint8)(citr2->assistant ? 0x01 : 0);       // 0x2 main assist, 0x4 main tank
     }
+
+    data << uint64(m_leaderGuid);                       // leader guid
+    if (GetMembersCount() - 1)
+    {
+        data << (uint8)m_lootMethod;                    // loot method
+        if (m_lootMethod == MASTER_LOOT)
+            data << uint64(m_masterLooterGuid);         // master looter guid
+        else
+            data << uint64(0);
+        data << (uint8)m_lootThreshold;                 // loot threshold
+        data << (uint8)m_dungeonDifficulty;             // Heroic Mod Group
+#ifdef LICH_KING
+        data << uint8(m_raidDifficulty);                // Raid Difficulty
+        data << uint8(m_raidDifficulty >= RAID_DIFFICULTY_10MAN_HEROIC);    // 3.3 Dynamic Raid Difficulty - 0 normal/1 heroic
+#endif
+    }
+    player->SendDirectMessage(&data);
+}
+
+void Group::SendUpdate()
+{
+    for(member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
+        SendUpdateToPlayer(citr->guid);
 }
 
 // Automatic Update by World thread
 void Group::Update(time_t diff)
 {
-    
-
     //change the leader if it has disconnect for a long time
     if (m_leaderLogoutTime) {
         time_t thisTime = time(nullptr);

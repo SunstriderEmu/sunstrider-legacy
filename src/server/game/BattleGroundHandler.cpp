@@ -120,7 +120,7 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
 #endif
 
         // check Deserter debuff
-        if( !_player->CanJoinToBattleground() )
+        if( !_player->CanJoinToBattleground(bg) )
         {
             WorldPacket data(SMSG_GROUP_JOINED_BATTLEGROUND, 4);
             sBattlegroundMgr->BuildGroupJoinedBattlegroundPacket(&data, ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS);
@@ -213,6 +213,7 @@ void WorldSession::_HandleBattlegroundJoin(BattlegroundTypeId bgTypeId, uint32 i
         }
         TC_LOG_DEBUG("bg.battleground", "Battleground: group end");
     }
+    sBattlegroundMgr->ScheduleQueueUpdate(0, 0, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
 }
 
 void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
@@ -220,7 +221,6 @@ void WorldSession::HandleBattlemasterJoinOpcode( WorldPacket & recvData )
     uint64 guid;
     uint32 bgTypeId_;
     uint32 instanceId;
-    bool isPremade = false;
     uint8 joinAsGroup;
 
     //LK OK
@@ -351,7 +351,6 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
 {
     uint8 type;                                             // arenatype if arena
     uint8 unk2;                                             // unk, can be 0x0 (may be if was invited?) and 0x1
-    uint32 instanceId;
     uint32 bgTypeId_;                                       // type id from dbc
     uint16 unk;                                             // 0x1F90 constant?
     uint8 action;                                           // enter battle 0x1, leave queue 0x0
@@ -576,7 +575,6 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
     }
     */
  //get GroupQueueInfo from BattlegroundQueue
-    BattlegroundTypeId bgTypeId = BattlegroundTypeId(bgTypeId_);
     BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bgTypeId, type);
     BattlegroundQueue& bgQueue = sBattlegroundMgr->GetBattlegroundQueue(bgQueueTypeId);
     //we must use temporary variable, because GroupQueueInfo pointer can be deleted in BattlegroundQueue::RemovePlayer() function
@@ -718,6 +716,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
         TC_LOG_DEBUG("bg.battleground", "Battleground: player %s (%u) left queue for bgtype %u, queue type %u.", _player->GetName().c_str(), _player->GetGUIDLow(), bg->GetTypeID(), bgQueueTypeId);
 
         // track if player refuses to join the BG after being invited
+        /* TC
         if (bg->isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_TRACK_DESERTERS) &&
                 (bg->GetStatus() == STATUS_IN_PROGRESS || bg->GetStatus() == STATUS_WAIT_JOIN))
         {
@@ -726,6 +725,7 @@ void WorldSession::HandleBattleFieldPortOpcode( WorldPacket &recvData )
             stmt->setUInt8(1, BG_DESERTION_TYPE_LEAVE_QUEUE);
             CharacterDatabase.Execute(stmt);
         }
+        */
     }
 }
 
@@ -1019,40 +1019,11 @@ void WorldSession::HandleBattlemasterJoinArena( WorldPacket & recvData )
         }
         // get the team rating for queueing
         arenaRating = at->GetRating();
-        matchmakerRating = at->GetAverageMMR(grp);
+        //TC matchmakerRating = at->GetAverageMMR(grp);
+        matchmakerRating = arenaRating; //equals for now, we may want to review this later
 
         if (arenaRating <= 0)
             arenaRating = 1;
-
-        // the arenateam id must match for everyone in the group
-        // get the personal ratings for queueing
-        /*
-        uint32 avg_pers_rating = 0;
-        uint32 max_pers_rating = 0;
-        for(GroupReference *itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
-        {
-            Player *member = itr->GetSource();
-            
-            uint32 cur_pers_rating = member->GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (arenaslot *6) + 5);
-
-            // max personal rating
-            if (cur_pers_rating > max_pers_rating)
-                max_pers_rating = cur_pers_rating;
-
-            // calc avg personal rating
-            avg_pers_rating += member->GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (arenaslot *6) + 5);
-        }
-
-        if( arenatype )
-            avg_pers_rating /= arenatype;
-
-
-            // anti abuse: if avg personal rating is more than 150 points below the teams rating, the team will be queued against an opponent matching or similar to the maximal personal rating in the team
-        if(avg_pers_rating + 150 < arenaRating) {
-            //arenaRating = avg_pers_rating;
-            arenaRating = max_pers_rating;
-        }
-        */
 
         if(sWorld->getConfig(CONFIG_BATTLEGROUND_ARENA_ANNOUNCE))
         {

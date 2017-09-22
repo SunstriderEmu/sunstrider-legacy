@@ -1108,7 +1108,7 @@ bool Creature::isCanInteractWithBattleMaster(Player* pPlayer, bool msg) const
     if(!IsBattleMaster())
         return false;
 
-    uint32 bgTypeId = sObjectMgr->GetBattleMasterBG(GetEntry());
+    BattlegroundTypeId bgTypeId = sObjectMgr->GetBattleMasterBG(GetEntry());
     if(!msg)
         return pPlayer->GetBGAccessByLevel(bgTypeId);
 

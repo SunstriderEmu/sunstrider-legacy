@@ -62,20 +62,20 @@ enum BattlegroundSpells
 
 enum BattlegroundTimeIntervals
 {
-    CHECK_PLAYER_POSITION_INVERVAL  = 1000,                 // ms
-    RESURRECTION_INTERVAL           = 30000,                // ms
-    //REMIND_INTERVAL                 = 30000,                // ms
-    INVITATION_REMIND_TIME          = 20000,                // ms
-    INVITE_ACCEPT_WAIT_TIME         = 80000,                // ms
-    TIME_TO_AUTOREMOVE              = 120000,               // ms
-    MAX_OFFLINE_TIME                = 120000,               // ms
-    START_DELAY0                    = 120000,               // ms
-    START_DELAY1                    = 60000,                // ms
-    START_DELAY2                    = 30000,                // ms
-    START_DELAY3                    = 15000,                // ms used only in arena
-    RESPAWN_ONE_DAY                 = 86400,                // secs
+    CHECK_PLAYER_POSITION_INVERVAL  = 1 * SECOND * IN_MILLISECONDS,  // ms
+    RESURRECTION_INTERVAL           = 30 * SECOND * IN_MILLISECONDS, // ms
+    //REMIND_INTERVAL                 = 30 * SECOND * IN_MILLISECONDS,
+    INVITATION_REMIND_TIME          = 20 * SECOND * IN_MILLISECONDS, // ms
+    INVITE_ACCEPT_WAIT_TIME         = 80 * SECOND * IN_MILLISECONDS, // ms
+    TIME_TO_AUTOREMOVE              = 2 * MINUTE * IN_MILLISECONDS,
+    MAX_OFFLINE_TIME                = 2 * MINUTE * IN_MILLISECONDS,
+    START_DELAY0                    = 2 * MINUTE * IN_MILLISECONDS,
+    START_DELAY1                    = 1 * MINUTE * IN_MILLISECONDS,
+    START_DELAY2                    = 30 * SECOND * IN_MILLISECONDS,
+    START_DELAY3                    = 15 * SECOND * IN_MILLISECONDS, //used only in arena
+    RESPAWN_ONE_DAY                 = DAY,                  // secs
     RESPAWN_IMMEDIATELY             = 0,                    // secs
-    BUFF_RESPAWN_TIME               = 180,                  // secs
+    BUFF_RESPAWN_TIME               = 3 * MINUTE,           // secs
     BG_HONOR_SCORE_TICKS            = 330                   // points
 };
 
@@ -109,7 +109,8 @@ enum BattlegroundStartingEvents
 
 struct BattlegroundPlayer
 {
-    uint32  ElapsedTimeDisconnected;                                 // for tracking and removing offline players from queue after 5 minutes
+    uint32  OfflineRemoveTime;                              // for tracking and removing offline players from queue after 5 minutes
+    uint32  TotalOfflineTime;
     uint32  Team;                                           // Player's team
 };
 
@@ -255,7 +256,6 @@ class TC_GAME_API Battleground
         uint32 GetInstanceID() const          { return m_InstanceID; }
         uint32 GetStatus() const              { return m_Status; }
         uint32 GetClientInstanceID() const    { return m_ClientInstanceID; }
-        uint32 GetRemovalTimer() const        { return m_RemovalTime; }
         uint32 GetLastResurrectTime() const   { return m_LastResurrectTime; }
         uint32 GetMaxPlayers() const          { return m_MaxPlayers; }
         uint32 GetMinPlayers() const          { return m_MinPlayers; }
@@ -271,8 +271,10 @@ class TC_GAME_API Battleground
         time_t GetStartTimestamp() const      { return time(nullptr) - GetStartTime(); }
         uint8 GetArenaType() const            { return m_ArenaType; }
         uint8 GetWinner() const               { return m_Winner; }
+        uint32 GetScriptId() const            { return ScriptId; }
         uint32 GetBattlemasterEntry() const;
         uint32 GetStartTime() const           { return m_StartTime; }
+        uint32 GetEndTime() const             { return m_EndTime; }
 
         // Set methods:
         void SetName(std::string Name)        { m_Name = Name; }
@@ -282,7 +284,8 @@ class TC_GAME_API Battleground
         void SetInstanceID(uint32 InstanceID) { m_InstanceID = InstanceID; }
         void SetStatus(uint32 Status);
         void SetClientInstanceID(uint32 InstanceID) { m_ClientInstanceID = InstanceID; }
-        void SetStartTime(uint32 Time) { m_StartTime = Time; }
+        void SetStartTime(uint32 Time)      { m_StartTime = Time; }
+        void SetEndTime(uint32 Time)        { m_EndTime = Time; }
         void SetLastResurrectTime(uint32 Time) { m_LastResurrectTime = Time; }
         void SetMaxPlayers(uint32 MaxPlayers) { m_MaxPlayers = MaxPlayers; }
         void SetMinPlayers(uint32 MinPlayers) { m_MinPlayers = MinPlayers; }
@@ -293,8 +296,6 @@ class TC_GAME_API Battleground
         void SetWinner(uint8 winner)        { m_Winner = winner; }
         void SetScriptId(uint32 scriptId)   { ScriptId = scriptId; }
 
-        //Set time before battleground removal
-        void SetRemovalTimer(uint32 timer)  { m_RemovalTime = timer; }
         //Set a time limit before closing
         void SetTimeLimit(uint32 limit)    { m_timeLimit = limit; }
         //Decrease timer before gates opening
@@ -329,7 +330,6 @@ class TC_GAME_API Battleground
         typedef std::map<uint64, BattlegroundPlayer> BattlegroundPlayerMap;
         BattlegroundPlayerMap const& GetPlayers() const { return m_Players; }
         uint32 GetPlayersSize() const { return m_Players.size(); }
-        uint32 GetRemovedPlayersSize() const { return m_RemovedPlayers.size(); }
 
         std::map<uint64, BattlegroundScore*>::const_iterator GetPlayerScoresBegin() const { return PlayerScores.begin(); }
         std::map<uint64, BattlegroundScore*>::const_iterator GetPlayerScoresEnd() const { return PlayerScores.end(); }
@@ -431,12 +431,15 @@ class TC_GAME_API Battleground
         virtual void EventPlayerDroppedFlag(Player* /*player*/) {}
         virtual void EventPlayerClickedOnFlag(Player* /*player*/, GameObject* /*target_obj*/) {}
         virtual void EventPlayerCapturedFlag(Player* /*player*/, uint32 /* BgObjectType */) {}
+        void EventPlayerLoggedIn(Player* player);
         void EventPlayerLoggedOut(Player* player);
 
         /* Death related */
         virtual WorldSafeLocsEntry const* GetClosestGraveYard(float /*x*/, float /*y*/, float /*z*/, uint32 /*team*/)  { return nullptr; }
 
         virtual void AddPlayer(Player *plr);                // must be implemented in BG subclass
+
+        void AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team);
 
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
@@ -487,9 +490,11 @@ class TC_GAME_API Battleground
     protected:
         //this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
+        void PlayerAddedToBGCheckIfBGIsRunning(Player* player);
 
-        void _ProcessOfflineQueue();
+        void _ProcessOfflineQueue(uint32 diff);
         void _CheckSafePositions(uint32 diff);
+        void _ProcessLeave(uint32 diff);
 
         /* Scorekeeping */
         std::map<uint64, BattlegroundScore*>    PlayerScores; // Player scores
@@ -517,7 +522,7 @@ class TC_GAME_API Battleground
         uint32 m_Status;
         uint32 m_ClientInstanceID;                          // the instance-id which is sent to the client and without any other internal use
         uint32 m_StartTime;                                 //elapsed time since the very beginning
-        uint32 m_RemovalTime;                               //time of battleground removal
+        int32  m_EndTime;                                   // it is set to 120000 when bg is ending and it decreases itself
         uint32 m_ValidStartPositionTimer;
         uint32 m_LastResurrectTime;
         BattlegroundBracketId m_BracketId;
@@ -539,7 +544,7 @@ class TC_GAME_API Battleground
 
         /* Player lists */
         std::vector<uint64> m_ResurrectQueue;               // Player GUID
-        std::map<uint64, uint8> m_RemovedPlayers;           // uint8 is remove type (0 - bgqueue, 1 - bg, 2 - resurrect queue)
+        GuidDeque m_OfflineQueue;                           // Player GUID, contain all disconected players not yet kicked out
 
         /* Invited counters are useful for player invitation to BG - do not allow, if BG is started to one faction to have 2 more players than another faction */
         /* Invited counters will be changed only when removing already invited player from queue, removing player from battleground and inviting player to BG */

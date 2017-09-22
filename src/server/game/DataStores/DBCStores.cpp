@@ -1131,9 +1131,9 @@ uint32 GetLiquidFlags(uint32 liquidTypeRec)
 
 #ifndef LICH_KING
 //only for BC, use this instead of the non existing DBC
-std::map<uint32, PvPDifficultyEntry>& GetBCDifficultyEntries()
+std::map<uint32, PvPDifficultyEntry> const& GetBCDifficultyEntries()
 {
-    static std::map<uint32, PvPDifficultyEntry> BCDifficultyEntries;
+    auto& BCDifficultyEntries = sObjectMgr->BCDifficultyEntries;
     if (!BCDifficultyEntries.empty())
         return BCDifficultyEntries;
 
@@ -1215,7 +1215,7 @@ PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 lev
         if (PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i))
 #else
     auto const& BCDifficultyEntries = GetBCDifficultyEntries();
-    for (auto itr : BCDifficultyEntries)
+    for (auto const& itr : BCDifficultyEntries)
     {
         PvPDifficultyEntry const* entry = &(itr.second);
 #endif
@@ -1242,15 +1242,19 @@ PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundB
 #ifdef LICH_KING
     for (uint32 i = 0; i < sPvPDifficultyStore.GetNumRows(); ++i)
     {
-        if (PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i))
+        PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
 #else
     auto const& BCDifficultyEntries = GetBCDifficultyEntries();
-    for (auto itr : BCDifficultyEntries)
+    for (auto const& itr : BCDifficultyEntries)
     {
         PvPDifficultyEntry const* entry = &(itr.second);
 #endif
-            if (entry->mapId == mapid && entry->GetBracketId() == id)
-                return entry;
+        if (entry->mapId == mapid && entry->GetBracketId() == id)
+            return entry;
+    }
 
     return nullptr;
 }

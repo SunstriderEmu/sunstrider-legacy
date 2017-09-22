@@ -598,6 +598,7 @@ struct PvPDifficultyEntry
     uint32      maxLevel;                                   // 4
     uint32      difficulty;                                 // 5
 
+    PvPDifficultyEntry() {}
     PvPDifficultyEntry(uint32 mapId, uint32 bracketId, uint32 minLevel, uint32 maxLevel, uint32 difficulty)
         : mapId(mapId), bracketId(bracketId), minLevel(minLevel), maxLevel(maxLevel), difficulty(difficulty)
     {}

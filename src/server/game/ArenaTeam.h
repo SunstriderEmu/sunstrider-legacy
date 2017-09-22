@@ -75,32 +75,32 @@ enum ArenaTeamTypes
     ARENA_TEAM_5v5      = 5
 };
 
-struct ArenaTeamMember
+struct TC_GAME_API ArenaTeamMember
 {
-    uint64 guid;
-    uint32 games_week;
+    uint64 Guid;
+    uint32 WeekGames;
     uint32 wins_week;
-    uint32 games_season;
+    uint32 SeasonGames;
     uint32 wins_season;
-    uint32 personal_rating;
+    uint32 PersonalRating;
 
     void ModifyPersonalRating(Player* plr, int32 mod, uint32 slot)
     {
-        if ((int32(personal_rating) + mod) < 0)
-            personal_rating = 0;
+        if ((int32(PersonalRating) + mod) < 0)
+            PersonalRating = 0;
         else
-            personal_rating += mod;
+            PersonalRating += mod;
         if(plr)
-            plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, personal_rating);
+            plr->SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot*6) + 5, PersonalRating);
     }
 };
 
 struct ArenaTeamStats
 {
     uint32 rating;
-    uint32 games_week;
+    uint32 WeekGames;
     uint32 wins_week;
-    uint32 games_season;
+    uint32 SeasonGames;
     uint32 wins_season;
     uint32 rank;
     uint32 non_played_weeks;
@@ -108,7 +108,7 @@ struct ArenaTeamStats
 
 #define MAX_ARENA_SLOT 3                                    // 0..2 slots
 
-class ArenaTeam
+class TC_GAME_API ArenaTeam
 {
     public:
         ArenaTeam();
@@ -129,7 +129,7 @@ class ArenaTeam
         const ArenaTeamStats& GetStats() const { return stats; }
         void SetStats(uint32 stat_type, uint32 value);
         uint32 GetRating() const          { return stats.rating; }
-        uint32 GetAverageMMR(Group* group) const;
+        //uint32 GetAverageMMR(Group* group) const;
         uint32 GetRank() const            { return stats.rank;   }
 
         uint32 GetEmblemStyle() const     { return EmblemStyle; }
@@ -149,10 +149,10 @@ class ArenaTeam
 
         void HandleDecay();
 
-        size_t GetMembersSize() const       { return members.size(); }
-        bool   Empty() const                { return members.empty(); }
-        MemberList::iterator membersBegin() { return members.begin(); }
-        MemberList::iterator membersEnd()   { return members.end(); }
+        size_t GetMembersSize() const       { return Members.size(); }
+        bool   Empty() const                { return Members.empty(); }
+        MemberList::iterator membersBegin() { return Members.begin(); }
+        MemberList::iterator membersEnd()   { return Members.end(); }
         bool HaveMember(const uint64& guid) const;
 
         ArenaTeamMember* GetMember(const uint64& guid);
@@ -160,18 +160,7 @@ class ArenaTeam
 
         void GetMembers(std::list<ArenaTeamMember*>& memberList);
 
-        bool IsFighting() const
-        {
-            for (const auto & member : members)
-            {
-                if (Player *p = sObjectMgr->GetPlayer(member.guid))
-                {
-                    if (p->GetMap()->IsBattleArena())
-                        return true;
-                }
-            }
-            return false;
-        }
+        bool IsFighting() const;
 
         bool LoadArenaTeamFromDB(uint32 ArenaTeamId);
         bool LoadArenaTeamFromDB(const std::string teamname);
@@ -188,11 +177,13 @@ class ArenaTeam
         void InspectStats(WorldSession *session, uint64 guid);
 
         uint32 GetPoints(uint32 MemberRating);
+        int32 GetRatingMod(uint32 ownRating, uint32 opponentRating, bool won);
         float GetChanceAgainst(uint32 own_rating, uint32 enemy_rating);
         int32 WonAgainst(uint32 againstRating);
         void MemberWon(Player * plr, uint32 againstRating);
         int32 LostAgainst(uint32 againstRating);
         void MemberLost(Player * plr, uint32 againstRating);
+        void OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
 
         void UpdateArenaPointsHelper(std::map<uint32, uint32> & PlayerPoints);
         void UpdateRank();
@@ -215,7 +206,7 @@ class ArenaTeam
         uint32 BorderStyle;     // border image id
         uint32 BorderColor;     // ARGB format
 
-        MemberList members;
+        MemberList Members;
         ArenaTeamStats stats;
 };
 #endif

@@ -285,7 +285,7 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
 {
     ARGS_CHECK
 
-        std::string name = args;
+    std::string name = args;
 
     if (!normalizePlayerName(name))
     {
@@ -324,9 +324,10 @@ bool ChatHandler::HandleNamegoCommand(const char* args)
             }
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            target->SetBattlegroundId(m_session->GetPlayer()->GetBattlegroundId());
+            target->SetBattlegroundId(m_session->GetPlayer()->GetBattlegroundId(), m_session->GetPlayer()->GetBattlegroundTypeId());
             // remember current position as entry point for return at bg end teleportation
-            target->SetBattlegroundEntryPoint(target->GetMapId(), target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation());
+            if (!target->GetMap()->IsBattlegroundOrArena())
+                target->SetBattlegroundEntryPoint();
         }
         else if (pMap->IsDungeon())
         {
@@ -433,7 +434,7 @@ bool ChatHandler::HandleGonameCommand(const char* args)
 
             // all's well, set bg id
             // when porting out from the bg, it will be reset to 0
-            _player->SetBattlegroundId(target->GetBattlegroundId());
+            _player->SetBattlegroundId(target->GetBattlegroundId(), target->GetBattlegroundTypeId());
             // remember current position as entry point for return at bg end teleportation
             if (!_player->GetMap()->IsBattlegroundOrArena())
                 _player->SetBattlegroundEntryPoint();

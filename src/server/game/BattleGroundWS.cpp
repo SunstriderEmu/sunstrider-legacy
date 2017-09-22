@@ -54,6 +54,7 @@ void BattlegroundWS::Update(time_t diff)
             m_Events |= BG_STARTING_EVENT_1;
 
             // setup here, only when at least one player has ported to the map
+            /*
             if(!SetupBattleground())
             {
                 EndNow();
@@ -70,6 +71,7 @@ void BattlegroundWS::Update(time_t diff)
             }
             for(uint32 i = BG_WS_OBJECT_A_FLAG; i <= BG_WS_OBJECT_BERSERKBUFF_2; i++)
                 SpawnBGObject(i, RESPAWN_ONE_DAY);
+                */
 
             SetStartDelayTime(START_DELAY0);
         }

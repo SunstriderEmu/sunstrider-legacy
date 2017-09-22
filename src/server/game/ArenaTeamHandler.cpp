@@ -244,18 +244,18 @@ void WorldSession::HandleArenaTeamRemoveOpcode(WorldPacket & recvData)
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", name, ERR_ARENA_TEAM_PLAYER_NOT_FOUND_S);
         return;
     }
-    if (Player* plr = sObjectMgr->GetPlayer(member->guid)) {
+    if (Player* plr = sObjectMgr->GetPlayer(member->Guid)) {
         if (plr->InArena())
             return;
     }
 
-    if(at->GetCaptain() == member->guid)
+    if(at->GetCaptain() == member->Guid)
     {
         SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_LEADER_LEAVE_S);
         return;
     }
 
-    at->DeleteMember(member->guid);
+    at->DeleteMember(member->Guid);
 
     // event
     WorldPacket data;
@@ -291,10 +291,10 @@ void WorldSession::HandleArenaTeamLeaderOpcode(WorldPacket & recvData)
         return;
     }
 
-    if(at->GetCaptain() == member->guid)                    // target player already captain
+    if(at->GetCaptain() == member->Guid)                    // target player already captain
         return;
 
-    at->SetCaptain(member->guid);
+    at->SetCaptain(member->Guid);
 
     // event
     WorldPacket data;
