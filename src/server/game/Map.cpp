@@ -3153,7 +3153,7 @@ bool BattlegroundMap::AddPlayerToMap(Player * player)
         // reset instance validity, battleground maps do not homebind
         player->m_InstanceValid = true;
     }
-    return Map::AddToMap(player);
+    return Map::AddPlayerToMap(player);
 }
 
 void BattlegroundMap::RemovePlayerFromMap(Player *player, bool remove)
